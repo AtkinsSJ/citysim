@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <SFML/System.hpp>
 
-int main(int argc, char *argv[]) {
-	printf("Hello, world!", );
-	return 0;
+int main()
+{
+	printf("Hello, world!");
+    sf::Clock clock;
+    return 0;
 }
