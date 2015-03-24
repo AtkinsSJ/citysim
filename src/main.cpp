@@ -1,23 +1,34 @@
-#include <SFML/Graphics.hpp>
+#include <SDL.h>
+#include <stdio.h>
+
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
 int main(int argc, char *argv[]) {
-	sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-	sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);
+	SDL_Window *window = NULL;
+	SDL_Surface *screenSurface = NULL;
 
-	while (window.isOpen())
-	{
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-				window.close();
-		}
-
-		window.clear();
-		window.draw(shape);
-		window.display();
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("SDL could not be initialised! :(\n %s", SDL_GetError());
+		return 1;
 	}
+
+	window = SDL_CreateWindow("SDL Tutorial",
+					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+					SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (window == NULL) {
+		printf("Window could not be created! :(\n %s", SDL_GetError());
+		return 1;
+	}
+
+	screenSurface = SDL_GetWindowSurface(window);
+	SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+	SDL_UpdateWindowSurface(window);
+
+	SDL_Delay(2000);
+
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 
 	return 0;
 }
