@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"SC",
+				"SCREEN_HEIGHT"
+			],
+			[
+				"SCREE",
+				"SCREEN_WIDTH"
+			],
+			[
 				"re",
 				"response"
 			],
@@ -331,28 +339,41 @@
 			"file": "src/main.cpp",
 			"settings":
 			{
-				"buffer_size": 428,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/build.bat",
-			"settings":
-			{
-				"buffer_size": 259,
+				"buffer_size": 819,
 				"line_ending": "Windows"
 			}
 		}
 	],
 	"build_system": "Packages/User/bat-build.sublime-build",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
 	"command_palette":
 	{
 		"height": 400.0,
+		"last_filter": "control",
 		"selected_items":
 		[
 			[
+				"control",
+				"Package Control: Upgrade Package"
+			],
+			[
 				"ins",
 				"Package Control: Install Package"
+			],
+			[
+				"repo",
+				"Package Control: Add Repository"
+			],
+			[
+				"rem",
+				"Package Control: Remove Package"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
 			],
 			[
 				"insta",
@@ -464,12 +485,13 @@
 	"expanded_folders":
 	[
 		"/C/Users/Sam/Documents/Citysim",
-		"/C/Users/Sam/Documents/Citysim/include",
 		"/C/Users/Sam/Documents/Citysim/lib",
+		"/C/Users/Sam/Documents/Citysim/lib/x86",
 		"/C/Users/Sam/Documents/Citysim/src"
 	],
 	"file_history":
 	[
+		"/C/Users/Sam/Documents/Citysim/src/build.bat",
 		"/C/Users/Sam/AppData/Local/Temp/server.c",
 		"/C/Users/Sam/AppData/Local/Temp/client.c",
 		"/C/Users/Sam/AppData/Roaming/Sublime Text 3/Packages/User/bat-build.sublime-build",
@@ -596,8 +618,7 @@
 		"/C/xampp/htdocs/CrowFinance/controller/categories.php",
 		"/C/xampp/htdocs/CrowFinance/view/categories/index.php",
 		"/C/xampp/htdocs/CrowFinance/view/categories/edit.php",
-		"/C/xampp/htdocs/CrowFinance/controller/thirdparties.php",
-		"/C/xampp/htdocs/CrowFinance/index.php"
+		"/C/xampp/htdocs/CrowFinance/controller/thirdparties.php"
 	],
 	"find":
 	{
@@ -693,7 +714,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -702,15 +723,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 428,
+						"buffer_size": 819,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								369,
-								369
+								764,
+								764
 							]
 						],
 						"settings":
@@ -720,36 +741,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/build.bat",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 259,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								254,
-								254
-							]
-						],
-						"settings":
-						{
-							"color_scheme": "Packages/User/Color Highlighter/themes/brogrammer.tmTheme",
-							"syntax": "Packages/Batch File/Batch File.tmLanguage"
-						},
-						"translation.x": 267.0,
-						"translation.y": 0.0,
+						"translation.y": 232.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -791,12 +783,13 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 225.0
+		"height": 228.0
 	},
 	"output.find_results":
 	{
 		"height": 0.0
 	},
+	"pinned_build_system": "",
 	"project": "citysim.sublime-project",
 	"replace":
 	{
@@ -806,6 +799,7 @@
 	"select_file":
 	{
 		"height": 0.0,
+		"last_filter": "",
 		"selected_items":
 		[
 			[
@@ -914,6 +908,7 @@
 	"select_project":
 	{
 		"height": 500.0,
+		"last_filter": "",
 		"selected_items":
 		[
 			[
@@ -926,6 +921,7 @@
 	"select_symbol":
 	{
 		"height": 0.0,
+		"last_filter": "",
 		"selected_items":
 		[
 		],

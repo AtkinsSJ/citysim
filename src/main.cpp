@@ -1,6 +1,10 @@
 #include <SDL.h>
 #include <stdio.h>
 
+#include "types.h"
+#include "city.h"
+#include "city.cpp"
+
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
@@ -13,7 +17,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	window = SDL_CreateWindow("SDL Tutorial",
+	window = SDL_CreateWindow("Impressionable",
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 					SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	if (window == NULL) {
@@ -25,7 +29,13 @@ int main(int argc, char *argv[]) {
 	SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
 	SDL_UpdateWindowSurface(window);
 
-	SDL_Delay(2000);
+	City city = createCity(40,30);
+	printf("Created new city, %d by %d.\n", city.width, city.height);
+	printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
+	generateTerrain(&city);
+	printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
+	freeCity(&city);
+	// printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]); <-- Crashes, hooray!
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();
