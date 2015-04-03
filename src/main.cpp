@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
 	generateTerrain(&city);
 	printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
 	freeCity(&city);
-	// printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]); <-- Crashes, hooray!
 
 	SDL_DestroyWindow(window);
 	SDL_Quit();

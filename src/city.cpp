@@ -3,13 +3,13 @@ inline City createCity(uint16 width, uint16 height) {
 	City city;
 	city.width = width;
 	city.height = height;
-	city.terrain = (Terrain*) calloc(width*height, sizeof(Terrain));
+	city.terrain = new Terrain[width*height]();
 
 	return city;
 }
 
 inline void freeCity(City* city) {
-	free(city->terrain);
+	delete[] city->terrain;
 	(*city) = {};
 }
 
