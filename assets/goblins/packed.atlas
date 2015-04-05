@@ -1,0 +1,112 @@
+
+packed.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+menu
+  rotate: false
+  xy: 1, 205
+  size: 400, 300
+  orig: 400, 300
+  offset: 0, 0
+  index: -1
+maptiles
+  rotate: false
+  xy: 1, 75
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+coders-crux
+  rotate: false
+  xy: 1, 9
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+pit
+  rotate: false
+  xy: 403, 425
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+campfire
+  rotate: false
+  xy: 131, 155
+  size: 48, 48
+  orig: 48, 48
+  offset: 0, 0
+  index: -1
+paddock
+  rotate: false
+  xy: 403, 375
+  size: 48, 48
+  orig: 48, 48
+  offset: 0, 0
+  index: -1
+butcher
+  rotate: false
+  xy: 131, 121
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+goblin
+  rotate: false
+  xy: 181, 171
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+window-background
+  rotate: false
+  xy: 403, 343
+  size: 30, 30
+  split: 7, 7, 7, 7
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+icons
+  rotate: false
+  xy: 485, 473
+  size: 16, 32
+  orig: 16, 32
+  offset: 0, 0
+  index: -1
+goat
+  rotate: false
+  xy: 453, 399
+  size: 16, 24
+  orig: 16, 24
+  offset: 0, 0
+  index: -1
+hovel
+  rotate: false
+  xy: 131, 103
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+tiles
+  rotate: false
+  xy: 215, 187
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+village
+  rotate: false
+  xy: 403, 325
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+button
+  rotate: false
+  xy: 1, 1
+  size: 6, 6
+  split: 2, 2, 2, 2
+  orig: 6, 6
+  offset: 0, 0
+  index: -1

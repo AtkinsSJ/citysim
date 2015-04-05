@@ -10,3 +10,5 @@ struct City {
 	uint16 width, height;
 	Terrain *terrain;
 };
+
+#include "city.cpp"
