@@ -3,6 +3,7 @@
 enum Terrain {
 	Terrain_Ground,
 	Terrain_Water,
+	Terrain_Size
 };
 
 struct City {

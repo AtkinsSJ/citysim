@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "types.h"
 #include "city.h"
@@ -29,10 +30,17 @@ int main(int argc, char *argv[]) {
 	SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
 	SDL_UpdateWindowSurface(window);
 
+	srand(0);
+
 	City city = createCity(40,30);
 	printf("Created new city, %d by %d.\n", city.width, city.height);
-	printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
 	generateTerrain(&city);
+	for (int y=0; y < city.height; y++) {
+		for (int x=0; x < city.width; x++) {
+			printf("%c", city.terrain[tileIndex(&city,x,y)] == Terrain_Water ? '~' : '#');
+		}
+		printf("\n");
+	}
 	printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
 	freeCity(&city);
 
