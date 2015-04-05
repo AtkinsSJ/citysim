@@ -8,6 +8,9 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
+const int TILE_WIDTH = 16,
+			TILE_HEIGHT = 16;
+
 SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 	SDL_Texture *texture = NULL;
 
@@ -54,7 +57,7 @@ int main(int argc, char *argv[]) {
 
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-	texture = loadTexture(renderer, "hello_world.bmp");
+	texture = loadTexture(renderer, "tiles.bmp");
 	if (!texture) return 1;
 
 	srand(0);
@@ -70,7 +73,6 @@ int main(int argc, char *argv[]) {
 		printf("\n");
 	}
 	printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
-	freeCity(&city);
 
 // GAME LOOP
 	bool quit = false;
@@ -86,11 +88,38 @@ int main(int argc, char *argv[]) {
 		}
 
 		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, texture, NULL, NULL);
+		SDL_Rect sourceRect, destRect;
+		sourceRect.x = 0;
+		sourceRect.y = 0;
+		sourceRect.w = TILE_WIDTH;
+		sourceRect.h = TILE_HEIGHT;
+		destRect.x = 0;
+		destRect.y = 0;
+		destRect.w = TILE_WIDTH;
+		destRect.h = TILE_HEIGHT;
+
+		for (int y=0; y < city.height; y++) {
+			destRect.y = y * TILE_HEIGHT;
+			for (int x=0; x < city.width; x++) {
+				destRect.x = x * TILE_WIDTH;
+				Terrain t = city.terrain[tileIndex(&city,x,y)];
+				switch (t) {
+					case Terrain_Ground: {
+						sourceRect.x = 0;
+					} break;
+					case Terrain_Water: {
+						sourceRect.x = TILE_WIDTH;
+					} break;
+				}
+				SDL_RenderCopy(renderer, texture, &sourceRect, &destRect);
+			}
+		}
+		// SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 	}
 
 // CLEAN UP
+	freeCity(&city);
 
 	SDL_DestroyTexture(texture);
 	texture = NULL;
