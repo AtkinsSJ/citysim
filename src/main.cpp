@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "types.h"
 #include "city.h"
@@ -35,6 +36,9 @@ int main(int argc, char *argv[]) {
 	SDL_Window *window = NULL;
 	SDL_Renderer *renderer = NULL;
 	SDL_Texture *texture = NULL;
+	uint32 lastFrame = 0,
+			currentFrame = 0;
+	real32 framesPerSecond = 0;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("SDL could not be initialised! :(\n %s", SDL_GetError());
@@ -43,7 +47,8 @@ int main(int argc, char *argv[]) {
 
 	window = SDL_CreateWindow("Impressionable",
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-					SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+					SCREEN_WIDTH, SCREEN_HEIGHT,
+					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if (window == NULL) {
 		printf("Window could not be created! :(\n %s", SDL_GetError());
 		return 1;
@@ -114,8 +119,12 @@ int main(int argc, char *argv[]) {
 				SDL_RenderCopy(renderer, texture, &sourceRect, &destRect);
 			}
 		}
-		// SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
+
+		currentFrame = SDL_GetTicks(); // Milliseconds
+		framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
+		printf("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
+		lastFrame = currentFrame;
 	}
 
 // CLEAN UP
