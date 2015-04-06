@@ -1,7 +1,9 @@
-#include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include <SDL.h>
+#include <SDL_image.h>
 
 #include "types.h"
 #include "city.h"
@@ -31,7 +33,7 @@ const int TILE_WIDTH = 16,
 SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 	SDL_Texture *texture = NULL;
 
-	SDL_Surface *loadedSurface = SDL_LoadBMP(path);
+	SDL_Surface *loadedSurface = IMG_Load(path);
 	if (loadedSurface == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
 	} else {
@@ -48,11 +50,20 @@ SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 
 // *& is a reference to the pointer. Like a pointer-pointer
 bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
+	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s", SDL_GetError());
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
 		return false;
 	}
 
+	// SDL_image
+	uint8 imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
+		return false;
+	}
+
+	// Window
 	window = SDL_CreateWindow("Impressionable",
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 					SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -62,6 +73,7 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 		return false;
 	}
 
+	// Renderer
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	if (renderer == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
@@ -85,7 +97,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	texture = loadTexture(renderer, "tiles.bmp");
+	texture = loadTexture(renderer, "tiles.png");
 	if (!texture) return 1;
 
 	srand(0);
@@ -164,7 +176,7 @@ int main(int argc, char *argv[]) {
 
 		for (int i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
 			if (justPressedMouse(mouseState, i)) {
-				SDL_Log("Just pressed mouse button: %d\n", i);
+				SDL_Log("Just pressed mouse button: %d at %d,%d\n", i, mouseState.x, mouseState.y);
 			} else if (justReleasedMouse(mouseState, i)) {
 				SDL_Log("Just released mouse button: %d\n", i);
 			}
