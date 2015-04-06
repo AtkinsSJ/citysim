@@ -24,11 +24,20 @@ inline bool justReleasedMouse(MouseState &mouseState, uint8 mouseButton) {
 	return !mouseState.down[buttonIndex] && mouseState.wasDown[buttonIndex];
 }
 
+const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
+struct KeyboardState {
+	bool down[KEYBOARD_KEY_COUNT];
+};
+
+
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
+
+const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
+const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
 SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 	SDL_Texture *texture = NULL;
@@ -92,6 +101,7 @@ int main(int argc, char *argv[]) {
 	uint32 lastFrame = 0,
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
+	V2 cameraPos = {};
 
 	if (!initialize(window, renderer)) {
 		return 1;
@@ -100,7 +110,7 @@ int main(int argc, char *argv[]) {
 	texture = loadTexture(renderer, "tiles.png");
 	if (!texture) return 1;
 
-	srand(0);
+	srand(0); // TODO: Seed the random number generator!
 
 	City city = createCity(40,30);
 	generateTerrain(&city);
@@ -121,6 +131,7 @@ int main(int argc, char *argv[]) {
 	bool quit = false;
 	SDL_Event event;
 	MouseState mouseState = {};
+	KeyboardState keyboardState = {};
 
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -164,12 +175,16 @@ int main(int argc, char *argv[]) {
 					// }
 				} break;
 
-
+				// KEYBOARD EVENTS
 				case SDL_KEYDOWN: {
-
+					keyboardState.down[event.key.keysym.scancode] = true;
+					SDL_Log("Pressed key: %d", event.key.keysym.scancode);
+					// SDL_Log("Pressed key: %c / %d", event.key.keysym.sym, event.key.keysym.sym);
 				} break;
 				case SDL_KEYUP: {
-
+					keyboardState.down[event.key.keysym.scancode] = false;
+					SDL_Log("Released key: %d", event.key.keysym.scancode);
+					// SDL_Log("Released key: %c / %d", event.key.keysym.sym, event.key.keysym.sym);
 				} break;				
 			}
 		}
@@ -217,9 +232,16 @@ int main(int argc, char *argv[]) {
 		SDL_RenderPresent(renderer);
 
 		currentFrame = SDL_GetTicks(); // Milliseconds
-		framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
+		uint32 msForFrame = currentFrame - lastFrame;
+
+		// Cap the framerate!
+		if (msForFrame < MS_PER_FRAME) {
+			SDL_Delay(MS_PER_FRAME - msForFrame);
+		}
+
+		// framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
 		// SDL_Log("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
-		lastFrame = currentFrame;
+		lastFrame = SDL_GetTicks();
 	}
 
 // CLEAN UP
@@ -233,6 +255,7 @@ int main(int argc, char *argv[]) {
 	renderer = NULL;
 	window = NULL;
 
+	IMG_Quit();
 	SDL_Quit();
 
 	return 0;

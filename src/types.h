@@ -19,3 +19,7 @@ typedef double real64;
 struct Coord {
 	uint32 x,y;
 };
+
+struct V2 {
+	real32 x,y;
+};
