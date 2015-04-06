@@ -6,6 +6,22 @@
 #include "types.h"
 #include "city.h"
 
+const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
+struct MouseState {
+	uint32 x,y;
+	bool down[MOUSE_BUTTON_COUNT];
+	bool wasDown[MOUSE_BUTTON_COUNT];
+	int32 wheelX, wheelY;
+};
+inline bool justPressedMouse(MouseState &mouseState, uint8 mouseButton) {
+	uint8 buttonIndex = mouseButton - 1;
+	return mouseState.down[buttonIndex] && !mouseState.wasDown[buttonIndex];
+}
+inline bool justReleasedMouse(MouseState &mouseState, uint8 mouseButton) {
+	uint8 buttonIndex = mouseButton - 1;
+	return !mouseState.down[buttonIndex] && mouseState.wasDown[buttonIndex];
+}
+
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
@@ -69,8 +85,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-
 	texture = loadTexture(renderer, "tiles.bmp");
 	if (!texture) return 1;
 
@@ -91,14 +105,71 @@ int main(int argc, char *argv[]) {
 // GAME LOOP
 	bool quit = false;
 	SDL_Event event;
+	MouseState mouseState = {};
 
+	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
+
+		// Clear mouse state
+		mouseState.wheelX = 0;
+		mouseState.wheelY = 0;
+
+		for (int i = 0; i < MOUSE_BUTTON_COUNT; ++i) {
+			mouseState.wasDown[i] = mouseState.down[i];
+		}
+
 		while (SDL_PollEvent(&event) != 0) {
 			switch (event.type) {
 				case SDL_QUIT: {
 					quit = true;
 				} break;
+
+				// MOUSE EVENTS
+				// NB: If we later handle TOUCH events, then we need to discard mouse events where event.X.which = SDL_TOUCH_MOUSEID
+				case SDL_MOUSEMOTION: {
+					mouseState.x = event.motion.x;
+					mouseState.y = event.motion.y;
+				} break;
+				case SDL_MOUSEBUTTONDOWN: {
+					uint8 buttonIndex = event.button.button - 1;
+					mouseState.down[buttonIndex] = true;
+				} break;
+				case SDL_MOUSEBUTTONUP: {
+					uint8 buttonIndex = event.button.button - 1;
+					mouseState.down[buttonIndex] = false;
+				} break;
+				case SDL_MOUSEWHEEL: {
+					// TODO: Uncomment if we upgrade to SDL 2.0.4+, to handle inverted scroll wheel values.
+					// if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+					// 	mouseState.wheelX = -event.wheel.x;
+					// 	mouseState.wheelY = -event.wheel.y;
+					// } else {
+						mouseState.wheelX = event.wheel.x;
+						mouseState.wheelY = event.wheel.y;
+					// }
+				} break;
+
+
+				case SDL_KEYDOWN: {
+
+				} break;
+				case SDL_KEYUP: {
+
+				} break;				
 			}
+		}
+
+		for (int i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
+			if (justPressedMouse(mouseState, i)) {
+				SDL_Log("Just pressed mouse button: %d\n", i);
+			} else if (justReleasedMouse(mouseState, i)) {
+				SDL_Log("Just released mouse button: %d\n", i);
+			}
+		}
+		if (mouseState.wheelX != 0) {
+			SDL_Log("Scrolled mouse in X: %d\n", mouseState.wheelX);
+		} else if (mouseState.wheelY != 0) {
+			SDL_Log("Scrolled mouse in Y: %d\n", mouseState.wheelY);
 		}
 
 		SDL_RenderClear(renderer);
@@ -132,7 +203,7 @@ int main(int argc, char *argv[]) {
 
 		currentFrame = SDL_GetTicks(); // Milliseconds
 		framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
-		SDL_Log("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
+		// SDL_Log("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
 		lastFrame = currentFrame;
 	}
 
