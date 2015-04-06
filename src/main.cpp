@@ -17,11 +17,11 @@ SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 
 	SDL_Surface *loadedSurface = SDL_LoadBMP(path);
 	if (loadedSurface == NULL) {
-		printf("Failed to load image at '%s': %s\n", path, SDL_GetError());
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
 	} else {
 		texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
 		if (texture == NULL) {
-			printf("Failed to create texture from image at '%s': %s\n", path, SDL_GetError());
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create texture from image at '%s': %s\n", path, SDL_GetError());
 		}
 
 		SDL_FreeSurface(loadedSurface);
@@ -33,7 +33,7 @@ SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 // *& is a reference to the pointer. Like a pointer-pointer
 bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("SDL could not be initialised! :(\n %s", SDL_GetError());
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s", SDL_GetError());
 		return false;
 	}
 
@@ -42,13 +42,13 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 					SCREEN_WIDTH, SCREEN_HEIGHT,
 					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if (window == NULL) {
-		printf("Window could not be created! :(\n %s", SDL_GetError());
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
 		return false;
 	}
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	if (renderer == NULL) {
-		printf("Renderer could not be created! :(\n %s", SDL_GetError());
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
 		return false;
 	}
 
@@ -79,14 +79,14 @@ int main(int argc, char *argv[]) {
 	City city = createCity(40,30);
 	generateTerrain(&city);
 
-	printf("Created new city, %d by %d.\n", city.width, city.height);
+	SDL_Log("Created new city, %d by %d.\n", city.width, city.height);
 	for (int y=0; y < city.height; y++) {
 		for (int x=0; x < city.width; x++) {
-			printf("%c", city.terrain[tileIndex(&city,x,y)] == Terrain_Water ? '~' : '#');
+			SDL_Log("%c", city.terrain[tileIndex(&city,x,y)] == Terrain_Water ? '~' : '#');
 		}
-		printf("\n");
+		SDL_Log("\n");
 	}
-	printf("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
+	SDL_Log("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
 
 // GAME LOOP
 	bool quit = false;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 
 		currentFrame = SDL_GetTicks(); // Milliseconds
 		framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
-		printf("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
+		SDL_Log("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
 		lastFrame = currentFrame;
 	}
 
