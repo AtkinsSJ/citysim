@@ -94,12 +94,15 @@ int main(int argc, char *argv[]) {
 	generateTerrain(&city);
 
 	SDL_Log("Created new city, %d by %d.\n", city.width, city.height);
+	char *line = new char[city.width+1];
+	line[city.width] = 0;
 	for (int y=0; y < city.height; y++) {
 		for (int x=0; x < city.width; x++) {
-			SDL_Log("%c", city.terrain[tileIndex(&city,x,y)] == Terrain_Water ? '~' : '#');
+			line[x] = city.terrain[tileIndex(&city,x,y)] == Terrain_Water ? '~' : '#';
 		}
-		SDL_Log("\n");
+		SDL_Log(line);
 	}
+	delete[] line;
 	SDL_Log("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
 
 // GAME LOOP
