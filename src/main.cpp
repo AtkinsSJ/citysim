@@ -30,6 +30,34 @@ SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 	return texture;
 }
 
+// Passing pointers-to-pointers, so that we can edit the original pointer
+bool initialize(SDL_Window **outWindow, SDL_Renderer **outRenderer) {
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("SDL could not be initialised! :(\n %s", SDL_GetError());
+		return false;
+	}
+
+	SDL_Window *window = SDL_CreateWindow("Impressionable",
+					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+					SCREEN_WIDTH, SCREEN_HEIGHT,
+					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	if (window == NULL) {
+		printf("Window could not be created! :(\n %s", SDL_GetError());
+		return false;
+	}
+
+	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	if (renderer == NULL) {
+		printf("Renderer could not be created! :(\n %s", SDL_GetError());
+		return false;
+	}
+
+	(*outWindow) = window;
+	(*outRenderer) = renderer;
+
+	return true;
+}
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -40,23 +68,7 @@ int main(int argc, char *argv[]) {
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("SDL could not be initialised! :(\n %s", SDL_GetError());
-		return 1;
-	}
-
-	window = SDL_CreateWindow("Impressionable",
-					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-					SCREEN_WIDTH, SCREEN_HEIGHT,
-					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
-	if (window == NULL) {
-		printf("Window could not be created! :(\n %s", SDL_GetError());
-		return 1;
-	}
-
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (renderer == NULL) {
-		printf("Renderer could not be created! :(\n %s", SDL_GetError());
+	if (!initialize(&window, &renderer)) {
 		return 1;
 	}
 
