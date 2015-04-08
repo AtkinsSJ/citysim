@@ -13,15 +13,20 @@ struct MouseState {
 	uint32 x,y;
 	bool down[MOUSE_BUTTON_COUNT];
 	bool wasDown[MOUSE_BUTTON_COUNT];
+	Coord clickStartPosition[MOUSE_BUTTON_COUNT];
 	int32 wheelX, wheelY;
 };
-inline bool justPressedMouse(MouseState &mouseState, uint8 mouseButton) {
+inline bool mouseButtonJustPressed(MouseState &mouseState, uint8 mouseButton) {
 	uint8 buttonIndex = mouseButton - 1;
 	return mouseState.down[buttonIndex] && !mouseState.wasDown[buttonIndex];
 }
-inline bool justReleasedMouse(MouseState &mouseState, uint8 mouseButton) {
+inline bool mouseButtonJustReleased(MouseState &mouseState, uint8 mouseButton) {
 	uint8 buttonIndex = mouseButton - 1;
 	return !mouseState.down[buttonIndex] && mouseState.wasDown[buttonIndex];
+}
+inline bool mouseButtonPressed(MouseState &mouseState, uint8 mouseButton) {
+	uint8 buttonIndex = mouseButton - 1;
+	return mouseState.down[buttonIndex];
 }
 
 const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
@@ -208,9 +213,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		for (int i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
-			if (justPressedMouse(mouseState, i)) {
+			if (mouseButtonJustPressed(mouseState, i)) {
+				mouseState.clickStartPosition[i] = {mouseState.x, mouseState.y};
 				SDL_Log("Just pressed mouse button: %d at %d,%d\n", i, mouseState.x, mouseState.y);
-			} else if (justReleasedMouse(mouseState, i)) {
+			} else if (mouseButtonJustReleased(mouseState, i)) {
 				SDL_Log("Just released mouse button: %d\n", i);
 			}
 		}
@@ -224,20 +230,26 @@ int main(int argc, char *argv[]) {
 		{
 			real32 scrollSpeed = SCROLL_SPEED * camera.zoom * SECONDS_PER_FRAME;
 
-			if (keyboardState.down[SDL_SCANCODE_LEFT]
-				|| (mouseState.x < EDGE_SCROLL_MARGIN)) {
-				camera.pos.x -= scrollSpeed;
-			} else if (keyboardState.down[SDL_SCANCODE_RIGHT]
-				|| (mouseState.x > (camera.windowWidth - EDGE_SCROLL_MARGIN))) {
-				camera.pos.x += scrollSpeed;
-			}
+			if (mouseButtonPressed(&mouseState, SDL_BUTTON_MIDDLE) {
+				// Click-scrolling!
 
-			if (keyboardState.down[SDL_SCANCODE_UP]
-				|| (mouseState.y < EDGE_SCROLL_MARGIN)) {
-				camera.pos.y -= scrollSpeed;
-			} else if (keyboardState.down[SDL_SCANCODE_DOWN]
-				|| (mouseState.y > (camera.windowHeight - EDGE_SCROLL_MARGIN))) {
-				camera.pos.y += scrollSpeed;
+			} else {
+				// Direct-input scrolling
+				if (keyboardState.down[SDL_SCANCODE_LEFT]
+					|| (mouseState.x < EDGE_SCROLL_MARGIN)) {
+					camera.pos.x -= scrollSpeed;
+				} else if (keyboardState.down[SDL_SCANCODE_RIGHT]
+					|| (mouseState.x > (camera.windowWidth - EDGE_SCROLL_MARGIN))) {
+					camera.pos.x += scrollSpeed;
+				}
+
+				if (keyboardState.down[SDL_SCANCODE_UP]
+					|| (mouseState.y < EDGE_SCROLL_MARGIN)) {
+					camera.pos.y -= scrollSpeed;
+				} else if (keyboardState.down[SDL_SCANCODE_DOWN]
+					|| (mouseState.y > (camera.windowHeight - EDGE_SCROLL_MARGIN))) {
+					camera.pos.y += scrollSpeed;
+				}
 			}
 
 			// Clamp camera
