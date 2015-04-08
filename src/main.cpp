@@ -31,10 +31,11 @@ struct KeyboardState {
 
 struct Camera {
 	int32 windowWidth, windowHeight;
-	V2 pos;
+	V2 pos; // Centre of screen
 	real32 zoom;
 };
 const real32 SCROLL_SPEED = 250.0f;
+const int EDGE_SCROLL_MARGIN = 8;
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -223,14 +224,19 @@ int main(int argc, char *argv[]) {
 		{
 			real32 scrollSpeed = SCROLL_SPEED * camera.zoom * SECONDS_PER_FRAME;
 
-			if (keyboardState.down[SDL_SCANCODE_LEFT]) {
+			if (keyboardState.down[SDL_SCANCODE_LEFT]
+				|| (mouseState.x < EDGE_SCROLL_MARGIN)) {
 				camera.pos.x -= scrollSpeed;
-			} else if (keyboardState.down[SDL_SCANCODE_RIGHT]) {
+			} else if (keyboardState.down[SDL_SCANCODE_RIGHT]
+				|| (mouseState.x > (camera.windowWidth - EDGE_SCROLL_MARGIN))) {
 				camera.pos.x += scrollSpeed;
 			}
-			if (keyboardState.down[SDL_SCANCODE_UP]) {
+
+			if (keyboardState.down[SDL_SCANCODE_UP]
+				|| (mouseState.y < EDGE_SCROLL_MARGIN)) {
 				camera.pos.y -= scrollSpeed;
-			} else if (keyboardState.down[SDL_SCANCODE_DOWN]) {
+			} else if (keyboardState.down[SDL_SCANCODE_DOWN]
+				|| (mouseState.y > (camera.windowHeight - EDGE_SCROLL_MARGIN))) {
 				camera.pos.y += scrollSpeed;
 			}
 
@@ -275,8 +281,8 @@ int main(int argc, char *argv[]) {
 		destRect.h = TILE_HEIGHT;
 
 		// Convert camera position to ints, to stop gaps in the rendering caused by float imprecision.
-		int camX = (int)camera.pos.x;
-		int camY = (int)camera.pos.y;
+		int camX = (int)camera.pos.x - camera.windowWidth/2.0f;
+		int camY = (int)camera.pos.y - camera.windowHeight/2.0f;
 
 		for (int y=0; y < city.height; y++) {
 			destRect.y = (y * TILE_HEIGHT) - camY;
