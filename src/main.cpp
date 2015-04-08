@@ -39,7 +39,7 @@ struct KeyboardState {
 struct Camera {
 	int32 windowWidth, windowHeight;
 	V2 pos; // Centre of screen
-	real32 zoom;
+	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 };
 const real32 SCROLL_SPEED = 250.0f;
 const int EDGE_SCROLL_MARGIN = 8;
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
 	Camera camera = {};
-	camera.zoom = 1;
+	camera.zoom = 1.0f;
 	SDL_GetWindowSize(window, &camera.windowWidth, &camera.windowHeight);
 
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
@@ -231,8 +231,13 @@ int main(int argc, char *argv[]) {
 
 		// Camera controls
 		{
-			real32 scrollSpeed = SCROLL_SPEED * camera.zoom * SECONDS_PER_FRAME;
+			// Zooming
+			if (mouseState.wheelY != 0) {
+				camera.zoom = clamp(camera.zoom + mouseState.wheelY * 0.1f, 0.1f, 10.0f);
+			}
 
+			// Panning
+			real32 scrollSpeed = SCROLL_SPEED * (1.0f/camera.zoom) * SECONDS_PER_FRAME;
 			if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
 				// Click-scrolling!
 				float scale = scrollSpeed * 0.01f;
@@ -259,10 +264,10 @@ int main(int argc, char *argv[]) {
 			}
 
 			// Clamp camera
-			real32 cameraWidth = camera.windowWidth * camera.zoom,
-					cameraHeight = camera.windowHeight * camera.zoom;
-			real32 cityWidth = city.width * TILE_WIDTH,
-					cityHeight = city.height * TILE_HEIGHT;
+			real32 cameraWidth = camera.windowWidth,
+					cameraHeight = camera.windowHeight;
+			real32 cityWidth = city.width * TILE_WIDTH * camera.zoom,
+					cityHeight = city.height * TILE_HEIGHT * camera.zoom;
 
 			if (cityWidth < cameraWidth) {
 				// City smaller than camera, so centre on it
@@ -295,17 +300,17 @@ int main(int argc, char *argv[]) {
 		sourceRect.h = TILE_HEIGHT;
 		destRect.x = 0;
 		destRect.y = 0;
-		destRect.w = TILE_WIDTH;
-		destRect.h = TILE_HEIGHT;
+		destRect.w = TILE_WIDTH * camera.zoom;
+		destRect.h = TILE_HEIGHT * camera.zoom;
 
 		// Convert camera position to ints, to stop gaps in the rendering caused by float imprecision.
 		int camX = (int)camera.pos.x - camera.windowWidth/2.0f;
 		int camY = (int)camera.pos.y - camera.windowHeight/2.0f;
 
 		for (int y=0; y < city.height; y++) {
-			destRect.y = (y * TILE_HEIGHT) - camY;
+			destRect.y = (y * TILE_HEIGHT * camera.zoom) - camY;
 			for (int x=0; x < city.width; x++) {
-				destRect.x = (x * TILE_WIDTH) - camX;
+				destRect.x = (x * TILE_WIDTH * camera.zoom) - camX;
 				Terrain t = city.terrain[tileIndex(&city,x,y)];
 				switch (t) {
 					case Terrain_Ground: {
