@@ -88,6 +88,7 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
 		return false;
 	}
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
 	return true;
 }
@@ -101,7 +102,6 @@ int main(int argc, char *argv[]) {
 	uint32 lastFrame = 0,
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
-	V2 cameraPos = {};
 
 	if (!initialize(window, renderer)) {
 		return 1;
@@ -132,6 +132,7 @@ int main(int argc, char *argv[]) {
 	SDL_Event event;
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
+	V2 cameraPos = {};
 
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -202,6 +203,18 @@ int main(int argc, char *argv[]) {
 			SDL_Log("Scrolled mouse in Y: %d\n", mouseState.wheelY);
 		}
 
+		// Camera controls
+		if (keyboardState.down[SDL_SCANCODE_LEFT]) {
+			cameraPos.x -= SECONDS_PER_FRAME * 100.0f;
+		} else if (keyboardState.down[SDL_SCANCODE_RIGHT]) {
+			cameraPos.x += SECONDS_PER_FRAME * 100.0f;
+		}
+		if (keyboardState.down[SDL_SCANCODE_UP]) {
+			cameraPos.y -= SECONDS_PER_FRAME * 100.0f;
+		} else if (keyboardState.down[SDL_SCANCODE_DOWN]) {
+			cameraPos.y += SECONDS_PER_FRAME * 100.0f;
+		}
+
 		SDL_RenderClear(renderer);
 		SDL_Rect sourceRect, destRect;
 		sourceRect.x = 0;
@@ -214,9 +227,9 @@ int main(int argc, char *argv[]) {
 		destRect.h = TILE_HEIGHT;
 
 		for (int y=0; y < city.height; y++) {
-			destRect.y = y * TILE_HEIGHT;
+			destRect.y = (y * TILE_HEIGHT) - cameraPos.y;
 			for (int x=0; x < city.width; x++) {
-				destRect.x = x * TILE_WIDTH;
+				destRect.x = (x * TILE_WIDTH) - cameraPos.x;
 				Terrain t = city.terrain[tileIndex(&city,x,y)];
 				switch (t) {
 					case Terrain_Ground: {
