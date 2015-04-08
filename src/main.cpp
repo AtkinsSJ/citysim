@@ -226,10 +226,13 @@ int main(int argc, char *argv[]) {
 		destRect.w = TILE_WIDTH;
 		destRect.h = TILE_HEIGHT;
 
+		int camX = (int)cameraPos.x;
+		int camY = (int)cameraPos.y;
+
 		for (int y=0; y < city.height; y++) {
-			destRect.y = (y * TILE_HEIGHT) - cameraPos.y;
+			destRect.y = (y * TILE_HEIGHT) - camY;
 			for (int x=0; x < city.width; x++) {
-				destRect.x = (x * TILE_WIDTH) - cameraPos.x;
+				destRect.x = (x * TILE_WIDTH) - camX;
 				Terrain t = city.terrain[tileIndex(&city,x,y)];
 				switch (t) {
 					case Terrain_Ground: {
