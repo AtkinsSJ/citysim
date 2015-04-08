@@ -29,12 +29,18 @@ struct KeyboardState {
 	bool down[KEYBOARD_KEY_COUNT];
 };
 
+struct Camera {
+	V2 pos;
+	real32 zoom;
+};
+const real32 SCROLL_SPEED = 250.0f;
 
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
+const int CAMERA_MARGIN = 20;
 
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
@@ -132,7 +138,8 @@ int main(int argc, char *argv[]) {
 	SDL_Event event;
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
-	V2 cameraPos = {};
+	Camera camera = {};
+	camera.zoom = 1;
 
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -204,15 +211,40 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Camera controls
-		if (keyboardState.down[SDL_SCANCODE_LEFT]) {
-			cameraPos.x -= SECONDS_PER_FRAME * 100.0f;
-		} else if (keyboardState.down[SDL_SCANCODE_RIGHT]) {
-			cameraPos.x += SECONDS_PER_FRAME * 100.0f;
-		}
-		if (keyboardState.down[SDL_SCANCODE_UP]) {
-			cameraPos.y -= SECONDS_PER_FRAME * 100.0f;
-		} else if (keyboardState.down[SDL_SCANCODE_DOWN]) {
-			cameraPos.y += SECONDS_PER_FRAME * 100.0f;
+		{
+			real32 scrollSpeed = SCROLL_SPEED * camera.zoom * SECONDS_PER_FRAME;
+
+			if (keyboardState.down[SDL_SCANCODE_LEFT]) {
+				camera.pos.x -= scrollSpeed;
+			} else if (keyboardState.down[SDL_SCANCODE_RIGHT]) {
+				camera.pos.x += scrollSpeed;
+			}
+			if (keyboardState.down[SDL_SCANCODE_UP]) {
+				camera.pos.y -= scrollSpeed;
+			} else if (keyboardState.down[SDL_SCANCODE_DOWN]) {
+				camera.pos.y += scrollSpeed;
+			}
+
+			// Clamp camera
+			int windowWidth, windowHeight;
+			// TODO: Monitor for resize events, rather than asking each frame
+			SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+
+			real32 cameraWidth = windowWidth * camera.zoom,
+					cameraHeight = windowHeight * camera.zoom;
+			real32 cityWidth = city.width * TILE_WIDTH,
+					cityHeight = city.height * TILE_HEIGHT;
+
+			if (cityWidth < cameraWidth) {
+				// City smaller than camera, so centre on it
+				camera.pos.x = cityWidth / 2.0f;
+			} else {
+				camera.pos.x = clamp(
+					camera.pos.x,
+					cameraWidth/2.0f - CAMERA_MARGIN,
+					cityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
+				);
+			}
 		}
 
 		SDL_RenderClear(renderer);
@@ -226,8 +258,9 @@ int main(int argc, char *argv[]) {
 		destRect.w = TILE_WIDTH;
 		destRect.h = TILE_HEIGHT;
 
-		int camX = (int)cameraPos.x;
-		int camY = (int)cameraPos.y;
+		// Convert camera position to ints, to stop gaps in the rendering caused by float imprecision.
+		int camX = (int)camera.pos.x;
+		int camY = (int)camera.pos.y;
 
 		for (int y=0; y < city.height; y++) {
 			destRect.y = (y * TILE_HEIGHT) - camY;
