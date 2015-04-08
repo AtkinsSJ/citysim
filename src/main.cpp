@@ -30,6 +30,7 @@ struct KeyboardState {
 };
 
 struct Camera {
+	int32 windowWidth, windowHeight;
 	V2 pos;
 	real32 zoom;
 };
@@ -140,6 +141,7 @@ int main(int argc, char *argv[]) {
 	KeyboardState keyboardState = {};
 	Camera camera = {};
 	camera.zoom = 1;
+	SDL_GetWindowSize(window, &camera.windowWidth, &camera.windowHeight);
 
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -154,8 +156,17 @@ int main(int argc, char *argv[]) {
 
 		while (SDL_PollEvent(&event) != 0) {
 			switch (event.type) {
+				// WINDOW EVENTS
 				case SDL_QUIT: {
 					quit = true;
+				} break;
+				case SDL_WINDOWEVENT: {
+					switch (event.window.event) {
+						case SDL_WINDOWEVENT_RESIZED: {
+							camera.windowWidth = event.window.data1;
+							camera.windowHeight = event.window.data2;
+						} break;
+					}
 				} break;
 
 				// MOUSE EVENTS
@@ -186,13 +197,11 @@ int main(int argc, char *argv[]) {
 				// KEYBOARD EVENTS
 				case SDL_KEYDOWN: {
 					keyboardState.down[event.key.keysym.scancode] = true;
-					SDL_Log("Pressed key: %d", event.key.keysym.scancode);
-					// SDL_Log("Pressed key: %c / %d", event.key.keysym.sym, event.key.keysym.sym);
+					// SDL_Log("Pressed key: %d", event.key.keysym.scancode);
 				} break;
 				case SDL_KEYUP: {
 					keyboardState.down[event.key.keysym.scancode] = false;
-					SDL_Log("Released key: %d", event.key.keysym.scancode);
-					// SDL_Log("Released key: %c / %d", event.key.keysym.sym, event.key.keysym.sym);
+					// SDL_Log("Released key: %d", event.key.keysym.scancode);
 				} break;				
 			}
 		}
@@ -226,12 +235,8 @@ int main(int argc, char *argv[]) {
 			}
 
 			// Clamp camera
-			int windowWidth, windowHeight;
-			// TODO: Monitor for resize events, rather than asking each frame
-			SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-
-			real32 cameraWidth = windowWidth * camera.zoom,
-					cameraHeight = windowHeight * camera.zoom;
+			real32 cameraWidth = camera.windowWidth * camera.zoom,
+					cameraHeight = camera.windowHeight * camera.zoom;
 			real32 cityWidth = city.width * TILE_WIDTH,
 					cityHeight = city.height * TILE_HEIGHT;
 
@@ -243,6 +248,17 @@ int main(int argc, char *argv[]) {
 					camera.pos.x,
 					cameraWidth/2.0f - CAMERA_MARGIN,
 					cityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
+				);
+			}
+
+			if (cityHeight < cameraHeight) {
+				// City smaller than camera, so centre on it
+				camera.pos.y = cityHeight / 2.0f;
+			} else {
+				camera.pos.y = clamp(
+					camera.pos.y,
+					cameraHeight/2.0f - CAMERA_MARGIN,
+					cityHeight - (cameraHeight/2.0f - CAMERA_MARGIN)
 				);
 			}
 		}
