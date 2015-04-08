@@ -10,23 +10,25 @@
 
 const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
 struct MouseState {
-	uint32 x,y;
+	int32 x,y;
 	bool down[MOUSE_BUTTON_COUNT];
 	bool wasDown[MOUSE_BUTTON_COUNT];
 	Coord clickStartPosition[MOUSE_BUTTON_COUNT];
 	int32 wheelX, wheelY;
 };
+inline uint8 mouseButtonIndex(uint8 sdlMouseButton) {
+	return sdlMouseButton - 1;
+}
 inline bool mouseButtonJustPressed(MouseState &mouseState, uint8 mouseButton) {
-	uint8 buttonIndex = mouseButton - 1;
+	uint8 buttonIndex = mouseButtonIndex(mouseButton);
 	return mouseState.down[buttonIndex] && !mouseState.wasDown[buttonIndex];
 }
 inline bool mouseButtonJustReleased(MouseState &mouseState, uint8 mouseButton) {
-	uint8 buttonIndex = mouseButton - 1;
+	uint8 buttonIndex = mouseButtonIndex(mouseButton);
 	return !mouseState.down[buttonIndex] && mouseState.wasDown[buttonIndex];
 }
 inline bool mouseButtonPressed(MouseState &mouseState, uint8 mouseButton) {
-	uint8 buttonIndex = mouseButton - 1;
-	return mouseState.down[buttonIndex];
+	return mouseState.down[mouseButtonIndex(mouseButton)];
 }
 
 const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
@@ -214,7 +216,8 @@ int main(int argc, char *argv[]) {
 
 		for (int i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
 			if (mouseButtonJustPressed(mouseState, i)) {
-				mouseState.clickStartPosition[i] = {mouseState.x, mouseState.y};
+				// Store the initial click position
+				mouseState.clickStartPosition[mouseButtonIndex(i)] = {mouseState.x, mouseState.y};
 				SDL_Log("Just pressed mouse button: %d at %d,%d\n", i, mouseState.x, mouseState.y);
 			} else if (mouseButtonJustReleased(mouseState, i)) {
 				SDL_Log("Just released mouse button: %d\n", i);
@@ -230,9 +233,12 @@ int main(int argc, char *argv[]) {
 		{
 			real32 scrollSpeed = SCROLL_SPEED * camera.zoom * SECONDS_PER_FRAME;
 
-			if (mouseButtonPressed(&mouseState, SDL_BUTTON_MIDDLE) {
+			if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
 				// Click-scrolling!
-
+				float scale = scrollSpeed * 0.01f;
+				Coord clickStartPos = mouseState.clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
+				camera.pos.x += (mouseState.x - clickStartPos.x) * scale;
+				camera.pos.y += (mouseState.y - clickStartPos.y) * scale;
 			} else {
 				// Direct-input scrolling
 				if (keyboardState.down[SDL_SCANCODE_LEFT]

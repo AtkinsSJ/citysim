@@ -17,7 +17,7 @@ typedef float real32;
 typedef double real64;
 
 struct Coord {
-	uint32 x,y;
+	int32 x,y;
 };
 
 struct V2 {
