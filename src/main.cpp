@@ -99,7 +99,7 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 	return true;
 }
 
-void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityW, int32 cityH) {
+void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
 	if (mouseState.wheelY != 0) {
 		camera.zoom = clamp(camera.zoom + mouseState.wheelY * 0.1f, 0.1f, 10.0f);
@@ -108,13 +108,13 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 	// Panning
 	real32 scrollSpeed = SCROLL_SPEED * (1.0f/camera.zoom) * SECONDS_PER_FRAME;
 	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
-		// Click-scrolling!
+		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
 		Coord clickStartPos = mouseState.clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
 		camera.pos.x += (mouseState.x - clickStartPos.x) * scale;
 		camera.pos.y += (mouseState.y - clickStartPos.y) * scale;
 	} else {
-		// Direct-input scrolling
+		// Keyboard/edge-of-screen panning
 		if (keyboardState.down[SDL_SCANCODE_LEFT]
 			|| (mouseState.x < EDGE_SCROLL_MARGIN)) {
 			camera.pos.x -= scrollSpeed;
@@ -135,28 +135,28 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 	// Clamp camera
 	real32 cameraWidth = camera.windowWidth,
 			cameraHeight = camera.windowHeight;
-	real32 cityWidth = cityW * camera.zoom,
-			cityHeight = cityH * camera.zoom;
+	real32 scaledCityWidth = cityWidth * camera.zoom,
+			scaledCityHeight = cityHeight * camera.zoom;
 
-	if (cityWidth < cameraWidth) {
+	if (scaledCityWidth < cameraWidth) {
 		// City smaller than camera, so centre on it
-		camera.pos.x = cityWidth / 2.0f;
+		camera.pos.x = scaledCityWidth / 2.0f;
 	} else {
 		camera.pos.x = clamp(
 			camera.pos.x,
 			cameraWidth/2.0f - CAMERA_MARGIN,
-			cityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
+			scaledCityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
 		);
 	}
 
-	if (cityHeight < cameraHeight) {
+	if (scaledCityHeight < cameraHeight) {
 		// City smaller than camera, so centre on it
-		camera.pos.y = cityHeight / 2.0f;
+		camera.pos.y = scaledCityHeight / 2.0f;
 	} else {
 		camera.pos.y = clamp(
 			camera.pos.y,
 			cameraHeight/2.0f - CAMERA_MARGIN,
-			cityHeight - (cameraHeight/2.0f - CAMERA_MARGIN)
+			scaledCityHeight - (cameraHeight/2.0f - CAMERA_MARGIN)
 		);
 	}
 }
