@@ -9,6 +9,13 @@
 #include "city.h"
 #include "input.h"
 
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
+
+const int TILE_WIDTH = 16,
+			TILE_HEIGHT = 16;
+const int CAMERA_MARGIN = 20;
+
 struct Camera {
 	int32 windowWidth, windowHeight;
 	V2 pos; // Centre of screen
@@ -16,13 +23,17 @@ struct Camera {
 };
 const real32 SCROLL_SPEED = 250.0f;
 const int EDGE_SCROLL_MARGIN = 8;
-
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-
-const int TILE_WIDTH = 16,
-			TILE_HEIGHT = 16;
-const int CAMERA_MARGIN = 20;
+/**
+ * Takes x and y in screen space, and returns a position in world-tile space.
+ */
+inline V2 screenPosToWorldPos(int32 x, int32 y, Camera &camera) {
+	return {(x - camera.windowWidth/2 + camera.pos.x) / (camera.zoom * TILE_WIDTH),
+			(y - camera.windowHeight/2 + camera.pos.y) / (camera.zoom * TILE_HEIGHT)};
+}
+inline Coord tilePosition(V2 worldPixelPos) {
+	return {(int)floor(worldPixelPos.x),
+			(int)floor(worldPixelPos.y)};
+}
 
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
@@ -44,6 +55,26 @@ struct TextureMap {
 	SDL_Texture *texture;
 	SDL_Rect rects[TextureMapItemCount];
 };
+
+// TODO: This should take a Coord rather than a Rect for the destination!
+void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &textureMap, TextureMapItem textureMapItem, SDL_Rect worldPosRect) {
+	
+	const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
+				 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
+
+	const int32 tileWidth = TILE_WIDTH * camera.zoom,
+				tileHeight = TILE_HEIGHT * camera.zoom;
+
+	SDL_Rect *sourceRect = &textureMap.rects[textureMapItem];
+	SDL_Rect destRect = {
+		(worldPosRect.x * tileWidth) - camLeft,
+		(worldPosRect.y * tileHeight) - camTop,
+		sourceRect->w * worldPosRect.w * camera.zoom,
+		sourceRect->h * worldPosRect.h * camera.zoom
+	};
+	
+	SDL_RenderCopy(renderer, textureMap.texture, sourceRect, &destRect);
+}
 
 SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 	SDL_Texture *texture = NULL;
@@ -102,7 +133,8 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
 	if (mouseState.wheelY != 0) {
-		camera.zoom = clamp(camera.zoom + mouseState.wheelY * 0.1f, 0.1f, 10.0f);
+		// floor()ing the zoom so it doesn't gradually drift due to float imprecision
+		camera.zoom = clamp(round(10 * camera.zoom + mouseState.wheelY) * 0.1f, 0.1f, 10.0f);
 	}
 
 	// Panning
@@ -257,11 +289,9 @@ int main(int argc, char *argv[]) {
 				// KEYBOARD EVENTS
 				case SDL_KEYDOWN: {
 					keyboardState.down[event.key.keysym.scancode] = true;
-					// SDL_Log("Pressed key: %d", event.key.keysym.scancode);
 				} break;
 				case SDL_KEYUP: {
 					keyboardState.down[event.key.keysym.scancode] = false;
-					// SDL_Log("Released key: %d", event.key.keysym.scancode);
 				} break;				
 			}
 		}
@@ -270,15 +300,7 @@ int main(int argc, char *argv[]) {
 			if (mouseButtonJustPressed(mouseState, i)) {
 				// Store the initial click position
 				mouseState.clickStartPosition[mouseButtonIndex(i)] = {mouseState.x, mouseState.y};
-				SDL_Log("Just pressed mouse button: %d at %d,%d\n", i, mouseState.x, mouseState.y);
-			} else if (mouseButtonJustReleased(mouseState, i)) {
-				SDL_Log("Just released mouse button: %d\n", i);
 			}
-		}
-		if (mouseState.wheelX != 0) {
-			SDL_Log("Scrolled mouse in X: %d\n", mouseState.wheelX);
-		} else if (mouseState.wheelY != 0) {
-			SDL_Log("Scrolled mouse in Y: %d\n", mouseState.wheelY);
 		}
 
 		// Camera controls
@@ -287,28 +309,51 @@ int main(int argc, char *argv[]) {
 		SDL_RenderClear(renderer);
 		SDL_Rect sourceRect, destRect;
 
-		int camX = (int)camera.pos.x - camera.windowWidth/2.0f;
-		int camY = (int)camera.pos.y - camera.windowHeight/2.0f;
+		const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
+					 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
 
+		const int32 tileWidth = TILE_WIDTH * camera.zoom,
+					tileHeight = TILE_HEIGHT * camera.zoom;
+		TextureMapItem textureMapItem = TextureMapItem_GroundTile;
+
+		destRect.w = 1;
+		destRect.h = 1;
 		for (int y=0; y < city.height; y++) {
-			destRect.y = (y * TILE_HEIGHT * camera.zoom) - camY;
+			destRect.y = y;
 			for (int x=0; x < city.width; x++) {
-				destRect.x = (x * TILE_WIDTH * camera.zoom) - camX;
+				destRect.x = x;
 				Terrain t = city.terrain[tileIndex(&city,x,y)];
 				switch (t) {
 					case Terrain_Ground: {
-						sourceRect = textureMap.rects[TextureMapItem_GroundTile];
+						textureMapItem = TextureMapItem_GroundTile;
 					} break;
 					case Terrain_Water: {
-						sourceRect = textureMap.rects[TextureMapItem_WaterTile];
+						textureMapItem = TextureMapItem_WaterTile;
 					} break;
 				}
 
-				destRect.w = sourceRect.w * camera.zoom;
-				destRect.h = sourceRect.h * camera.zoom;
-				SDL_RenderCopy(renderer, textureMap.texture, &sourceRect, &destRect);
+				drawAtWorldPos(renderer, camera, textureMap, textureMapItem, destRect);
 			}
 		}
+
+		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, camera);
+		Coord mouseTilePos = tilePosition(mouseWorldPos);
+
+		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+			SDL_Log("Clicked at world position: %f, %f; tile position %d, %d",
+					mouseWorldPos.x, mouseWorldPos.y, mouseTilePos.x, mouseTilePos.y);
+		}
+
+		destRect.x = mouseTilePos.x;
+		destRect.y = mouseTilePos.y;
+		destRect.w = 1;
+		destRect.h = 1;
+
+		drawAtWorldPos(renderer, camera, textureMap, TextureMapItem_Butcher, destRect);
+
+		// sourceRect = textureMap.rects[TextureMapItem_Butcher];
+		// SDL_RenderCopy(renderer, textureMap.texture, &sourceRect, &destRect);
+
 		SDL_RenderPresent(renderer);
 
 		currentFrame = SDL_GetTicks(); // Milliseconds

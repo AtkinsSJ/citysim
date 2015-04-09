@@ -18,8 +18,8 @@ inline uint32 tileIndex(City *city, uint16 x, uint16 y) {
 }
 
 void generateTerrain(City* city) {
-	for (int y = 0; y < city->height; y++) {
-		for (int x = 0; x < city->width; x++) {
+	for (uint16 y = 0; y < city->height; y++) {
+		for (uint16 x = 0; x < city->width; x++) {
 			Terrain t = Terrain_Ground;
 			if ((rand() % 100) < 10) {
 				t = Terrain_Water;
