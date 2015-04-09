@@ -99,6 +99,68 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 	return true;
 }
 
+void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityW, int32 cityH) {
+	// Zooming
+	if (mouseState.wheelY != 0) {
+		camera.zoom = clamp(camera.zoom + mouseState.wheelY * 0.1f, 0.1f, 10.0f);
+	}
+
+	// Panning
+	real32 scrollSpeed = SCROLL_SPEED * (1.0f/camera.zoom) * SECONDS_PER_FRAME;
+	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
+		// Click-scrolling!
+		float scale = scrollSpeed * 0.01f;
+		Coord clickStartPos = mouseState.clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
+		camera.pos.x += (mouseState.x - clickStartPos.x) * scale;
+		camera.pos.y += (mouseState.y - clickStartPos.y) * scale;
+	} else {
+		// Direct-input scrolling
+		if (keyboardState.down[SDL_SCANCODE_LEFT]
+			|| (mouseState.x < EDGE_SCROLL_MARGIN)) {
+			camera.pos.x -= scrollSpeed;
+		} else if (keyboardState.down[SDL_SCANCODE_RIGHT]
+			|| (mouseState.x > (camera.windowWidth - EDGE_SCROLL_MARGIN))) {
+			camera.pos.x += scrollSpeed;
+		}
+
+		if (keyboardState.down[SDL_SCANCODE_UP]
+			|| (mouseState.y < EDGE_SCROLL_MARGIN)) {
+			camera.pos.y -= scrollSpeed;
+		} else if (keyboardState.down[SDL_SCANCODE_DOWN]
+			|| (mouseState.y > (camera.windowHeight - EDGE_SCROLL_MARGIN))) {
+			camera.pos.y += scrollSpeed;
+		}
+	}
+
+	// Clamp camera
+	real32 cameraWidth = camera.windowWidth,
+			cameraHeight = camera.windowHeight;
+	real32 cityWidth = cityW * camera.zoom,
+			cityHeight = cityH * camera.zoom;
+
+	if (cityWidth < cameraWidth) {
+		// City smaller than camera, so centre on it
+		camera.pos.x = cityWidth / 2.0f;
+	} else {
+		camera.pos.x = clamp(
+			camera.pos.x,
+			cameraWidth/2.0f - CAMERA_MARGIN,
+			cityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
+		);
+	}
+
+	if (cityHeight < cameraHeight) {
+		// City smaller than camera, so centre on it
+		camera.pos.y = cityHeight / 2.0f;
+	} else {
+		camera.pos.y = clamp(
+			camera.pos.y,
+			cameraHeight/2.0f - CAMERA_MARGIN,
+			cityHeight - (cameraHeight/2.0f - CAMERA_MARGIN)
+		);
+	}
+}
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -123,6 +185,7 @@ int main(int argc, char *argv[]) {
 	textureMap.rects[TextureMapItem_Goblin] = {tw,tw*5,tw*2,tw*2};
 	textureMap.rects[TextureMapItem_Goat] = {0,tw*5,tw,tw*2};
 
+// Game setup
 	srand(0); // TODO: Seed the random number generator!
 	City city = createCity(40,30);
 	generateTerrain(&city);
@@ -219,67 +282,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Camera controls
-		{
-			// Zooming
-			if (mouseState.wheelY != 0) {
-				camera.zoom = clamp(camera.zoom + mouseState.wheelY * 0.1f, 0.1f, 10.0f);
-			}
-
-			// Panning
-			real32 scrollSpeed = SCROLL_SPEED * (1.0f/camera.zoom) * SECONDS_PER_FRAME;
-			if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
-				// Click-scrolling!
-				float scale = scrollSpeed * 0.01f;
-				Coord clickStartPos = mouseState.clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-				camera.pos.x += (mouseState.x - clickStartPos.x) * scale;
-				camera.pos.y += (mouseState.y - clickStartPos.y) * scale;
-			} else {
-				// Direct-input scrolling
-				if (keyboardState.down[SDL_SCANCODE_LEFT]
-					|| (mouseState.x < EDGE_SCROLL_MARGIN)) {
-					camera.pos.x -= scrollSpeed;
-				} else if (keyboardState.down[SDL_SCANCODE_RIGHT]
-					|| (mouseState.x > (camera.windowWidth - EDGE_SCROLL_MARGIN))) {
-					camera.pos.x += scrollSpeed;
-				}
-
-				if (keyboardState.down[SDL_SCANCODE_UP]
-					|| (mouseState.y < EDGE_SCROLL_MARGIN)) {
-					camera.pos.y -= scrollSpeed;
-				} else if (keyboardState.down[SDL_SCANCODE_DOWN]
-					|| (mouseState.y > (camera.windowHeight - EDGE_SCROLL_MARGIN))) {
-					camera.pos.y += scrollSpeed;
-				}
-			}
-
-			// Clamp camera
-			real32 cameraWidth = camera.windowWidth,
-					cameraHeight = camera.windowHeight;
-			real32 cityWidth = city.width * TILE_WIDTH * camera.zoom,
-					cityHeight = city.height * TILE_HEIGHT * camera.zoom;
-
-			if (cityWidth < cameraWidth) {
-				// City smaller than camera, so centre on it
-				camera.pos.x = cityWidth / 2.0f;
-			} else {
-				camera.pos.x = clamp(
-					camera.pos.x,
-					cameraWidth/2.0f - CAMERA_MARGIN,
-					cityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
-				);
-			}
-
-			if (cityHeight < cameraHeight) {
-				// City smaller than camera, so centre on it
-				camera.pos.y = cityHeight / 2.0f;
-			} else {
-				camera.pos.y = clamp(
-					camera.pos.y,
-					cameraHeight/2.0f - CAMERA_MARGIN,
-					cityHeight - (cameraHeight/2.0f - CAMERA_MARGIN)
-				);
-			}
-		}
+		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
 		SDL_RenderClear(renderer);
 		SDL_Rect sourceRect, destRect;
