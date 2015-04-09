@@ -7,34 +7,7 @@
 
 #include "types.h"
 #include "city.h"
-
-const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
-struct MouseState {
-	int32 x,y;
-	bool down[MOUSE_BUTTON_COUNT];
-	bool wasDown[MOUSE_BUTTON_COUNT];
-	Coord clickStartPosition[MOUSE_BUTTON_COUNT];
-	int32 wheelX, wheelY;
-};
-inline uint8 mouseButtonIndex(uint8 sdlMouseButton) {
-	return sdlMouseButton - 1;
-}
-inline bool mouseButtonJustPressed(MouseState &mouseState, uint8 mouseButton) {
-	uint8 buttonIndex = mouseButtonIndex(mouseButton);
-	return mouseState.down[buttonIndex] && !mouseState.wasDown[buttonIndex];
-}
-inline bool mouseButtonJustReleased(MouseState &mouseState, uint8 mouseButton) {
-	uint8 buttonIndex = mouseButtonIndex(mouseButton);
-	return !mouseState.down[buttonIndex] && mouseState.wasDown[buttonIndex];
-}
-inline bool mouseButtonPressed(MouseState &mouseState, uint8 mouseButton) {
-	return mouseState.down[mouseButtonIndex(mouseButton)];
-}
-
-const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
-struct KeyboardState {
-	bool down[KEYBOARD_KEY_COUNT];
-};
+#include "input.h"
 
 struct Camera {
 	int32 windowWidth, windowHeight;
@@ -53,6 +26,24 @@ const int CAMERA_MARGIN = 20;
 
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
+
+enum TextureMapItem {
+	TextureMapItem_GroundTile = 0,
+	TextureMapItem_WaterTile,
+	TextureMapItem_Butcher,
+	TextureMapItem_Hovel,
+	TextureMapItem_Paddock,
+	TextureMapItem_Pit,
+	TextureMapItem_Road,
+	TextureMapItem_Goblin,
+	TextureMapItem_Goat,
+
+	TextureMapItemCount
+};
+struct TextureMap {
+	SDL_Texture *texture;
+	SDL_Rect rects[TextureMapItemCount];
+};
 
 SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
 	SDL_Texture *texture = NULL;
@@ -113,34 +104,28 @@ int main(int argc, char *argv[]) {
 // INIT
 	SDL_Window *window = NULL;
 	SDL_Renderer *renderer = NULL;
-	SDL_Texture *texture = NULL;
-	uint32 lastFrame = 0,
-			currentFrame = 0;
-	real32 framesPerSecond = 0;
-
 	if (!initialize(window, renderer)) {
 		return 1;
 	}
 
-	texture = loadTexture(renderer, "tiles.png");
-	if (!texture) return 1;
+// Load texture data
+	TextureMap textureMap = {};
+	textureMap.texture = loadTexture(renderer, "combined.png");
+	if (!textureMap.texture) return 1;
+	const int tw = TILE_WIDTH;
+	textureMap.rects[TextureMapItem_GroundTile] = {0,0,tw,tw};
+	textureMap.rects[TextureMapItem_WaterTile] = {tw,0,tw,tw};
+	textureMap.rects[TextureMapItem_Butcher] = {tw*3,tw*5,tw*2,tw*2};
+	textureMap.rects[TextureMapItem_Hovel] = {tw,tw,tw,tw};
+	textureMap.rects[TextureMapItem_Paddock] = {0,tw*2,tw*3,tw*3};
+	textureMap.rects[TextureMapItem_Pit] = {tw*3,0,tw*5,tw*5};
+	textureMap.rects[TextureMapItem_Road] = {0,tw,tw,tw};
+	textureMap.rects[TextureMapItem_Goblin] = {tw,tw*5,tw*2,tw*2};
+	textureMap.rects[TextureMapItem_Goat] = {0,tw*5,tw,tw*2};
 
 	srand(0); // TODO: Seed the random number generator!
-
 	City city = createCity(40,30);
 	generateTerrain(&city);
-
-	SDL_Log("Created new city, %d by %d.\n", city.width, city.height);
-	char *line = new char[city.width+1];
-	line[city.width] = 0;
-	for (int y=0; y < city.height; y++) {
-		for (int x=0; x < city.width; x++) {
-			line[x] = city.terrain[tileIndex(&city,x,y)] == Terrain_Water ? '~' : '#';
-		}
-		SDL_Log(line);
-	}
-	delete[] line;
-	SDL_Log("Terrain at 5,10 is %d.\n", city.terrain[tileIndex(&city,5,10)]);
 
 // GAME LOOP
 	bool quit = false;
@@ -150,6 +135,10 @@ int main(int argc, char *argv[]) {
 	Camera camera = {};
 	camera.zoom = 1.0f;
 	SDL_GetWindowSize(window, &camera.windowWidth, &camera.windowHeight);
+
+	uint32 lastFrame = 0,
+			currentFrame = 0;
+	real32 framesPerSecond = 0;
 
 	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -294,16 +283,7 @@ int main(int argc, char *argv[]) {
 
 		SDL_RenderClear(renderer);
 		SDL_Rect sourceRect, destRect;
-		sourceRect.x = 0;
-		sourceRect.y = 0;
-		sourceRect.w = TILE_WIDTH;
-		sourceRect.h = TILE_HEIGHT;
-		destRect.x = 0;
-		destRect.y = 0;
-		destRect.w = TILE_WIDTH * camera.zoom;
-		destRect.h = TILE_HEIGHT * camera.zoom;
 
-		// Convert camera position to ints, to stop gaps in the rendering caused by float imprecision.
 		int camX = (int)camera.pos.x - camera.windowWidth/2.0f;
 		int camY = (int)camera.pos.y - camera.windowHeight/2.0f;
 
@@ -314,13 +294,16 @@ int main(int argc, char *argv[]) {
 				Terrain t = city.terrain[tileIndex(&city,x,y)];
 				switch (t) {
 					case Terrain_Ground: {
-						sourceRect.x = 0;
+						sourceRect = textureMap.rects[TextureMapItem_GroundTile];
 					} break;
 					case Terrain_Water: {
-						sourceRect.x = TILE_WIDTH;
+						sourceRect = textureMap.rects[TextureMapItem_WaterTile];
 					} break;
 				}
-				SDL_RenderCopy(renderer, texture, &sourceRect, &destRect);
+
+				destRect.w = sourceRect.w * camera.zoom;
+				destRect.h = sourceRect.h * camera.zoom;
+				SDL_RenderCopy(renderer, textureMap.texture, &sourceRect, &destRect);
 			}
 		}
 		SDL_RenderPresent(renderer);
@@ -341,13 +324,10 @@ int main(int argc, char *argv[]) {
 // CLEAN UP
 	freeCity(&city);
 
-	SDL_DestroyTexture(texture);
-	texture = NULL;
+	SDL_DestroyTexture(textureMap.texture);
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
-	renderer = NULL;
-	window = NULL;
 
 	IMG_Quit();
 	SDL_Quit();
