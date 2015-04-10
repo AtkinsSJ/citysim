@@ -21,8 +21,8 @@ struct Camera {
 	V2 pos; // Centre of screen
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 };
-const real32 SCROLL_SPEED = 0.5f; // Measured in camera-widths per second
-const int EDGE_SCROLL_MARGIN = 8;
+const real32 CAMERA_PAN_SPEED = 0.5f; // Measured in camera-widths per second
+const int CAMERA_EDGE_SCROLL_MARGIN = 8;
 /**
  * Takes x and y in screen space, and returns a position in world-tile space.
  */
@@ -138,7 +138,7 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 	}
 
 	// Panning
-	real32 scrollSpeed = SCROLL_SPEED * (camera.windowWidth/camera.zoom) * SECONDS_PER_FRAME;
+	real32 scrollSpeed = CAMERA_PAN_SPEED * (camera.windowWidth/sqrt(camera.zoom)) * SECONDS_PER_FRAME;
 	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
 		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
@@ -148,18 +148,18 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 	} else {
 		// Keyboard/edge-of-screen panning
 		if (keyboardState.down[SDL_SCANCODE_LEFT]
-			|| (mouseState.x < EDGE_SCROLL_MARGIN)) {
+			|| (mouseState.x < CAMERA_EDGE_SCROLL_MARGIN)) {
 			camera.pos.x -= scrollSpeed;
 		} else if (keyboardState.down[SDL_SCANCODE_RIGHT]
-			|| (mouseState.x > (camera.windowWidth - EDGE_SCROLL_MARGIN))) {
+			|| (mouseState.x > (camera.windowWidth - CAMERA_EDGE_SCROLL_MARGIN))) {
 			camera.pos.x += scrollSpeed;
 		}
 
 		if (keyboardState.down[SDL_SCANCODE_UP]
-			|| (mouseState.y < EDGE_SCROLL_MARGIN)) {
+			|| (mouseState.y < CAMERA_EDGE_SCROLL_MARGIN)) {
 			camera.pos.y -= scrollSpeed;
 		} else if (keyboardState.down[SDL_SCANCODE_DOWN]
-			|| (mouseState.y > (camera.windowHeight - EDGE_SCROLL_MARGIN))) {
+			|| (mouseState.y > (camera.windowHeight - CAMERA_EDGE_SCROLL_MARGIN))) {
 			camera.pos.y += scrollSpeed;
 		}
 	}
