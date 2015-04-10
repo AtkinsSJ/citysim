@@ -56,8 +56,7 @@ struct TextureMap {
 	SDL_Rect rects[TextureMapItemCount];
 };
 
-// TODO: This should take a Coord rather than a Rect for the destination!
-void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &textureMap, TextureMapItem textureMapItem, SDL_Rect worldPosRect) {
+void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &textureMap, TextureMapItem textureMapItem, Coord worldTilePosition) {
 	
 	const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
 				 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
@@ -67,10 +66,10 @@ void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &texture
 
 	SDL_Rect *sourceRect = &textureMap.rects[textureMapItem];
 	SDL_Rect destRect = {
-		(int)((worldPosRect.x * tileWidth) - camLeft),
-		(int)((worldPosRect.y * tileHeight) - camTop),
-		(int)(sourceRect->w * worldPosRect.w * camera.zoom),
-		(int)(sourceRect->h * worldPosRect.h * camera.zoom)
+		(int)((worldTilePosition.x * tileWidth) - camLeft),
+		(int)((worldTilePosition.y * tileHeight) - camTop),
+		(int)(sourceRect->w * camera.zoom),
+		(int)(sourceRect->h * camera.zoom)
 	};
 	
 	SDL_RenderCopy(renderer, textureMap.texture, sourceRect, &destRect);
@@ -133,7 +132,7 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
 	if (mouseState.wheelY != 0) {
-		// floor()ing the zoom so it doesn't gradually drift due to float imprecision
+		// round()ing the zoom so it doesn't gradually drift due to float imprecision
 		camera.zoom = clamp(round(10 * camera.zoom + mouseState.wheelY) * 0.1f, 0.1f, 10.0f);
 	}
 
@@ -306,17 +305,13 @@ int main(int argc, char *argv[]) {
 		// Camera controls
 		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
+	// RENDERING
 		SDL_RenderClear(renderer);
-		SDL_Rect destRect;
 
 		TextureMapItem textureMapItem = TextureMapItem_GroundTile;
 
-		destRect.w = 1;
-		destRect.h = 1;
 		for (uint16 y=0; y < city.height; y++) {
-			destRect.y = y;
 			for (uint16 x=0; x < city.width; x++) {
-				destRect.x = x;
 				Terrain t = city.terrain[tileIndex(&city,x,y)];
 				switch (t) {
 					case Terrain_Ground: {
@@ -327,7 +322,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawAtWorldPos(renderer, camera, textureMap, textureMapItem, destRect);
+				drawAtWorldPos(renderer, camera, textureMap, textureMapItem, {x,y});
 			}
 		}
 
@@ -340,13 +335,11 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw a thing at the cursor position
-		destRect.x = mouseTilePos.x;
-		destRect.y = mouseTilePos.y;
-		destRect.w = 1;
-		destRect.h = 1;
-		drawAtWorldPos(renderer, camera, textureMap, TextureMapItem_Butcher, destRect);
+		drawAtWorldPos(renderer, camera, textureMap, TextureMapItem_Butcher, mouseTilePos);
 
 		SDL_RenderPresent(renderer);
+
+	// FRAMERATE MONITORING AND CAPPING
 
 		currentFrame = SDL_GetTicks(); // Milliseconds
 		uint32 msForFrame = currentFrame - lastFrame;
