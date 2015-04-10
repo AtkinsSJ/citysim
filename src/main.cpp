@@ -21,7 +21,7 @@ struct Camera {
 	V2 pos; // Centre of screen
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 };
-const real32 SCROLL_SPEED = 250.0f;
+const real32 SCROLL_SPEED = 0.5f; // Measured in camera-widths per second
 const int EDGE_SCROLL_MARGIN = 8;
 /**
  * Takes x and y in screen space, and returns a position in world-tile space.
@@ -138,7 +138,7 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 	}
 
 	// Panning
-	real32 scrollSpeed = SCROLL_SPEED * (1.0f/camera.zoom) * SECONDS_PER_FRAME;
+	real32 scrollSpeed = SCROLL_SPEED * (camera.windowWidth/camera.zoom) * SECONDS_PER_FRAME;
 	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
 		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
