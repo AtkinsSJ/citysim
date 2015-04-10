@@ -62,7 +62,7 @@ void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &texture
 	const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
 				 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
 
-	const int32 tileWidth = TILE_WIDTH * camera.zoom,
+	const real32 tileWidth = TILE_WIDTH * camera.zoom,
 				tileHeight = TILE_HEIGHT * camera.zoom;
 
 	SDL_Rect *sourceRect = &textureMap.rects[textureMapItem];
@@ -344,15 +344,12 @@ int main(int argc, char *argv[]) {
 					mouseWorldPos.x, mouseWorldPos.y, mouseTilePos.x, mouseTilePos.y);
 		}
 
+		// Draw a thing at the cursor position
 		destRect.x = mouseTilePos.x;
 		destRect.y = mouseTilePos.y;
 		destRect.w = 1;
 		destRect.h = 1;
-
 		drawAtWorldPos(renderer, camera, textureMap, TextureMapItem_Butcher, destRect);
-
-		// sourceRect = textureMap.rects[TextureMapItem_Butcher];
-		// SDL_RenderCopy(renderer, textureMap.texture, &sourceRect, &destRect);
 
 		SDL_RenderPresent(renderer);
 
