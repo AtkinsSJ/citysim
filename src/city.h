@@ -8,15 +8,15 @@ enum Terrain {
 };
 
 struct Building {
-	Coord position;
+	Rect footprint;
 };
 
 struct City {
-	uint16 width, height;
+	uint32 width, height;
 	Terrain *terrain;
 
-	uint16 buildingCount;
-	Building buildings[16];
+	uint32 buildingCount;
+	Building buildings[256]; // TODO: Make the number of buildings unlimited!
 };
 
 #include "city.cpp"

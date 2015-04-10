@@ -22,8 +22,23 @@ struct Coord {
 	int32 x,y;
 };
 
+union Rect {
+	struct {
+		Coord pos;
+		uint32 w,h;
+	};
+	struct {
+		uint32 x, y;
+		uint32 w, h;
+	};
+};
+
 struct V2 {
 	real32 x,y;
+};
+
+struct Color {
+	uint8 r, g, b, a;
 };
 
 inline real32 clamp(real32 value, real32 min, real32 max) {

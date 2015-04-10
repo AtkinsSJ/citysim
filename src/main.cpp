@@ -56,7 +56,7 @@ struct TextureAtlas {
 	SDL_Rect rects[TextureAtlasItemCount];
 };
 
-void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textureAtlas, TextureAtlasItem textureAtlasItem, Coord worldTilePosition) {
+void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textureAtlas, TextureAtlasItem textureAtlasItem, Coord worldTilePosition, Color *color=0) {
 	
 	const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
 				 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
@@ -71,6 +71,11 @@ void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textu
 		(int)(sourceRect->w * camera.zoom),
 		(int)(sourceRect->h * camera.zoom)
 	};
+
+	if (color) {	
+		SDL_SetTextureColorMod(textureAtlas.texture, color->r, color->g, color->b);
+		SDL_SetTextureAlphaMod(textureAtlas.texture, color->a);
+	}
 	
 	SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
 }
@@ -309,23 +314,10 @@ int main(int argc, char *argv[]) {
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			Coord mouseTilePos = tilePosition(screenPosToWorldPos(mouseState.x, mouseState.y, camera));
 			// Try and build a thing
-			SDL_Rect footprint = {mouseTilePos.x, mouseTilePos.y, 1, 1};
-			bool failed = false;
-			for (uint8 y=0; y<footprint.h; y++) {
-				for (uint8 x=0; x<footprint.w; x++) {
-					if (terrainAt(city, footprint.x + x, footprint.y + y) != Terrain_Ground) {
-						failed = true;
-						break;
-					}
-				}
-				if (failed) break;
-			}
-			if (!failed) {
-				// Create the building!
-				Building building = {mouseTilePos};
-				failed = !addBuilding(city, building);
-				SDL_Log("Attempted to add building, and %s", failed ? "failed" : "succeeded");
-			}
+			Rect footprint = {mouseTilePos.x, mouseTilePos.y, 1, 1};
+			Building building = {footprint};
+			bool succeeded = placeBuilding(city, building);
+			SDL_Log("Attempted to add building, and %s", succeeded ? "succeeded" : "failed");
 		}
 
 	// RENDERING
@@ -352,7 +344,7 @@ int main(int argc, char *argv[]) {
 
 		// Draw buildings
 		for (uint16 i=0; i<city.buildingCount; i++) {
-			drawAtWorldPos(renderer, camera, textureAtlas, TextureAtlasItem_Hovel, city.buildings[i].position);
+			drawAtWorldPos(renderer, camera, textureAtlas, TextureAtlasItem_Hovel, city.buildings[i].footprint.pos);
 		}
 
 		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, camera);
@@ -363,7 +355,7 @@ int main(int argc, char *argv[]) {
 					mouseWorldPos.x, mouseWorldPos.y, mouseTilePos.x, mouseTilePos.y);
 		}
 
-		// Draw a thing at the cursor position
+		// Building preview
 		drawAtWorldPos(renderer, camera, textureAtlas, TextureAtlasItem_Hovel, mouseTilePos);
 
 		SDL_RenderPresent(renderer);
