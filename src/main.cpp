@@ -67,10 +67,10 @@ void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &texture
 
 	SDL_Rect *sourceRect = &textureMap.rects[textureMapItem];
 	SDL_Rect destRect = {
-		(worldPosRect.x * tileWidth) - camLeft,
-		(worldPosRect.y * tileHeight) - camTop,
-		sourceRect->w * worldPosRect.w * camera.zoom,
-		sourceRect->h * worldPosRect.h * camera.zoom
+		(int)((worldPosRect.x * tileWidth) - camLeft),
+		(int)((worldPosRect.y * tileHeight) - camTop),
+		(int)(sourceRect->w * worldPosRect.w * camera.zoom),
+		(int)(sourceRect->h * worldPosRect.h * camera.zoom)
 	};
 	
 	SDL_RenderCopy(renderer, textureMap.texture, sourceRect, &destRect);
@@ -165,7 +165,7 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 	}
 
 	// Clamp camera
-	real32 cameraWidth = camera.windowWidth,
+	int32 cameraWidth = camera.windowWidth,
 			cameraHeight = camera.windowHeight;
 	real32 scaledCityWidth = cityWidth * camera.zoom,
 			scaledCityHeight = cityHeight * camera.zoom;
@@ -296,7 +296,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		for (int i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
+		for (uint8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
 			if (mouseButtonJustPressed(mouseState, i)) {
 				// Store the initial click position
 				mouseState.clickStartPosition[mouseButtonIndex(i)] = {mouseState.x, mouseState.y};
@@ -307,20 +307,15 @@ int main(int argc, char *argv[]) {
 		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
 		SDL_RenderClear(renderer);
-		SDL_Rect sourceRect, destRect;
+		SDL_Rect destRect;
 
-		const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
-					 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
-
-		const int32 tileWidth = TILE_WIDTH * camera.zoom,
-					tileHeight = TILE_HEIGHT * camera.zoom;
 		TextureMapItem textureMapItem = TextureMapItem_GroundTile;
 
 		destRect.w = 1;
 		destRect.h = 1;
-		for (int y=0; y < city.height; y++) {
+		for (uint16 y=0; y < city.height; y++) {
 			destRect.y = y;
-			for (int x=0; x < city.width; x++) {
+			for (uint16 x=0; x < city.width; x++) {
 				destRect.x = x;
 				Terrain t = city.terrain[tileIndex(&city,x,y)];
 				switch (t) {
