@@ -38,25 +38,25 @@ inline Coord tilePosition(V2 worldPixelPos) {
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-enum TextureMapItem {
-	TextureMapItem_GroundTile = 0,
-	TextureMapItem_WaterTile,
-	TextureMapItem_Butcher,
-	TextureMapItem_Hovel,
-	TextureMapItem_Paddock,
-	TextureMapItem_Pit,
-	TextureMapItem_Road,
-	TextureMapItem_Goblin,
-	TextureMapItem_Goat,
+enum TextureAtlasItem {
+	TextureAtlasItem_GroundTile = 0,
+	TextureAtlasItem_WaterTile,
+	TextureAtlasItem_Butcher,
+	TextureAtlasItem_Hovel,
+	TextureAtlasItem_Paddock,
+	TextureAtlasItem_Pit,
+	TextureAtlasItem_Road,
+	TextureAtlasItem_Goblin,
+	TextureAtlasItem_Goat,
 
-	TextureMapItemCount
+	TextureAtlasItemCount
 };
-struct TextureMap {
+struct TextureAtlas {
 	SDL_Texture *texture;
-	SDL_Rect rects[TextureMapItemCount];
+	SDL_Rect rects[TextureAtlasItemCount];
 };
 
-void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &textureMap, TextureMapItem textureMapItem, Coord worldTilePosition) {
+void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textureAtlas, TextureAtlasItem textureAtlasItem, Coord worldTilePosition) {
 	
 	const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
 				 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
@@ -64,7 +64,7 @@ void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &texture
 	const real32 tileWidth = TILE_WIDTH * camera.zoom,
 				tileHeight = TILE_HEIGHT * camera.zoom;
 
-	SDL_Rect *sourceRect = &textureMap.rects[textureMapItem];
+	SDL_Rect *sourceRect = &textureAtlas.rects[textureAtlasItem];
 	SDL_Rect destRect = {
 		(int)((worldTilePosition.x * tileWidth) - camLeft),
 		(int)((worldTilePosition.y * tileHeight) - camTop),
@@ -72,7 +72,7 @@ void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureMap &texture
 		(int)(sourceRect->h * camera.zoom)
 	};
 	
-	SDL_RenderCopy(renderer, textureMap.texture, sourceRect, &destRect);
+	SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
 }
 
 SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
@@ -202,24 +202,24 @@ int main(int argc, char *argv[]) {
 	}
 
 // Load texture data
-	TextureMap textureMap = {};
-	textureMap.texture = loadTexture(renderer, "combined.png");
-	if (!textureMap.texture) return 1;
+	TextureAtlas textureAtlas = {};
+	textureAtlas.texture = loadTexture(renderer, "combined.png");
+	if (!textureAtlas.texture) return 1;
 	const int tw = TILE_WIDTH;
-	textureMap.rects[TextureMapItem_GroundTile] = {0,0,tw,tw};
-	textureMap.rects[TextureMapItem_WaterTile] = {tw,0,tw,tw};
-	textureMap.rects[TextureMapItem_Butcher] = {tw*3,tw*5,tw*2,tw*2};
-	textureMap.rects[TextureMapItem_Hovel] = {tw,tw,tw,tw};
-	textureMap.rects[TextureMapItem_Paddock] = {0,tw*2,tw*3,tw*3};
-	textureMap.rects[TextureMapItem_Pit] = {tw*3,0,tw*5,tw*5};
-	textureMap.rects[TextureMapItem_Road] = {0,tw,tw,tw};
-	textureMap.rects[TextureMapItem_Goblin] = {tw,tw*5,tw*2,tw*2};
-	textureMap.rects[TextureMapItem_Goat] = {0,tw*5,tw,tw*2};
+	textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
+	textureAtlas.rects[TextureAtlasItem_WaterTile] = {tw,0,tw,tw};
+	textureAtlas.rects[TextureAtlasItem_Butcher] = {tw*3,tw*5,tw*2,tw*2};
+	textureAtlas.rects[TextureAtlasItem_Hovel] = {tw,tw,tw,tw};
+	textureAtlas.rects[TextureAtlasItem_Paddock] = {0,tw*2,tw*3,tw*3};
+	textureAtlas.rects[TextureAtlasItem_Pit] = {tw*3,0,tw*5,tw*5};
+	textureAtlas.rects[TextureAtlasItem_Road] = {0,tw,tw,tw};
+	textureAtlas.rects[TextureAtlasItem_Goblin] = {tw,tw*5,tw*2,tw*2};
+	textureAtlas.rects[TextureAtlasItem_Goat] = {0,tw*5,tw,tw*2};
 
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
 	City city = createCity(40,30);
-	generateTerrain(&city);
+	generateTerrain(city);
 
 // GAME LOOP
 	bool quit = false;
@@ -305,25 +305,54 @@ int main(int argc, char *argv[]) {
 		// Camera controls
 		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
+	// UI CODE
+		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+			Coord mouseTilePos = tilePosition(screenPosToWorldPos(mouseState.x, mouseState.y, camera));
+			// Try and build a thing
+			SDL_Rect footprint = {mouseTilePos.x, mouseTilePos.y, 1, 1};
+			bool failed = false;
+			for (uint8 y=0; y<footprint.h; y++) {
+				for (uint8 x=0; x<footprint.w; x++) {
+					if (terrainAt(city, x, y) != Terrain_Ground) {
+						failed = true;
+						break;
+					}
+				}
+				if (failed) break;
+			}
+			if (!failed) {
+				// Create the building!
+				Building building = {mouseTilePos};
+				failed = !addBuilding(city, building);
+				SDL_Log("Attempted to add building, and %s", failed ? "failed" : "succeeded");
+			}
+		}
+
 	// RENDERING
 		SDL_RenderClear(renderer);
 
-		TextureMapItem textureMapItem = TextureMapItem_GroundTile;
+		TextureAtlasItem textureAtlasItem = TextureAtlasItem_GroundTile;
 
+		// Draw terrain
 		for (uint16 y=0; y < city.height; y++) {
 			for (uint16 x=0; x < city.width; x++) {
-				Terrain t = city.terrain[tileIndex(&city,x,y)];
+				Terrain t = terrainAt(city,x,y);
 				switch (t) {
 					case Terrain_Ground: {
-						textureMapItem = TextureMapItem_GroundTile;
+						textureAtlasItem = TextureAtlasItem_GroundTile;
 					} break;
 					case Terrain_Water: {
-						textureMapItem = TextureMapItem_WaterTile;
+						textureAtlasItem = TextureAtlasItem_WaterTile;
 					} break;
 				}
 
-				drawAtWorldPos(renderer, camera, textureMap, textureMapItem, {x,y});
+				drawAtWorldPos(renderer, camera, textureAtlas, textureAtlasItem, {x,y});
 			}
+		}
+
+		// Draw buildings
+		for (uint16 i=0; i<city.buildingCount; i++) {
+			drawAtWorldPos(renderer, camera, textureAtlas, TextureAtlasItem_Hovel, city.buildings[i].position);
 		}
 
 		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, camera);
@@ -335,7 +364,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw a thing at the cursor position
-		drawAtWorldPos(renderer, camera, textureMap, TextureMapItem_Butcher, mouseTilePos);
+		drawAtWorldPos(renderer, camera, textureAtlas, TextureAtlasItem_Hovel, mouseTilePos);
 
 		SDL_RenderPresent(renderer);
 
@@ -355,9 +384,9 @@ int main(int argc, char *argv[]) {
 	}
 
 // CLEAN UP
-	freeCity(&city);
+	freeCity(city);
 
-	SDL_DestroyTexture(textureMap.texture);
+	SDL_DestroyTexture(textureAtlas.texture);
 
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
