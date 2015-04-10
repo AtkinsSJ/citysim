@@ -313,7 +313,7 @@ int main(int argc, char *argv[]) {
 			bool failed = false;
 			for (uint8 y=0; y<footprint.h; y++) {
 				for (uint8 x=0; x<footprint.w; x++) {
-					if (terrainAt(city, x, y) != Terrain_Ground) {
+					if (terrainAt(city, footprint.x + x, footprint.y + y) != Terrain_Ground) {
 						failed = true;
 						break;
 					}
