@@ -22,15 +22,12 @@ struct Coord {
 	int32 x,y;
 };
 
-union Rect {
-	struct {
-		Coord pos;
-		uint32 w,h;
+struct Rect {
+	union {
+		struct {Coord pos;};
+		struct {uint32 x, y;};
 	};
-	struct {
-		uint32 x, y;
-		uint32 w, h;
-	};
+	uint32 w,h;
 };
 
 struct V2 {
