@@ -10,141 +10,11 @@
 #include <SDL_image.h>
 #endif
 
-enum TextureAtlasItem {
-	TextureAtlasItem_GroundTile = 0,
-	TextureAtlasItem_WaterTile,
-	TextureAtlasItem_Butcher,
-	TextureAtlasItem_Hovel,
-	TextureAtlasItem_Paddock,
-	TextureAtlasItem_Pit,
-	TextureAtlasItem_Road,
-	TextureAtlasItem_Goblin,
-	TextureAtlasItem_Goat,
-
-	TextureAtlasItemCount
-};
-struct TextureAtlas {
-	SDL_Texture *texture;
-	SDL_Rect rects[TextureAtlasItemCount];
-};
-
 #include "types.h"
+#include "render.h"
 #include "building.h"
 #include "city.h"
 #include "input.h"
-
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-
-const int TILE_WIDTH = 16,
-			TILE_HEIGHT = 16;
-const int CAMERA_MARGIN = 20;
-
-struct Camera {
-	int32 windowWidth, windowHeight;
-	V2 pos; // Centre of screen
-	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
-};
-const real32 CAMERA_PAN_SPEED = 0.5f; // Measured in camera-widths per second
-const int CAMERA_EDGE_SCROLL_MARGIN = 8;
-/**
- * Takes x and y in screen space, and returns a position in world-tile space.
- */
-inline V2 screenPosToWorldPos(int32 x, int32 y, Camera &camera) {
-	return {(x - camera.windowWidth/2 + camera.pos.x) / (camera.zoom * TILE_WIDTH),
-			(y - camera.windowHeight/2 + camera.pos.y) / (camera.zoom * TILE_HEIGHT)};
-}
-inline Coord tilePosition(V2 worldPixelPos) {
-	return {(int)floor(worldPixelPos.x),
-			(int)floor(worldPixelPos.y)};
-}
-
-const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
-const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
-
-
-void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textureAtlas, TextureAtlasItem textureAtlasItem, Coord worldTilePosition, Color *color=0) {
-	
-	const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
-				 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
-
-	const real32 tileWidth = TILE_WIDTH * camera.zoom,
-				tileHeight = TILE_HEIGHT * camera.zoom;
-
-	SDL_Rect *sourceRect = &textureAtlas.rects[textureAtlasItem];
-	SDL_Rect destRect = {
-		(int)((worldTilePosition.x * tileWidth) - camLeft),
-		(int)((worldTilePosition.y * tileHeight) - camTop),
-		(int)(sourceRect->w * camera.zoom),
-		(int)(sourceRect->h * camera.zoom)
-	};
-
-	if (color) {
-		SDL_SetTextureColorMod(textureAtlas.texture, color->r, color->g, color->b);
-		SDL_SetTextureAlphaMod(textureAtlas.texture, color->a);
-
-		SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
-
-		SDL_SetTextureColorMod(textureAtlas.texture, 255, 255, 255);
-		SDL_SetTextureAlphaMod(textureAtlas.texture, 255);
-	} else {
-		SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
-	}
-}
-
-SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
-	SDL_Texture *texture = NULL;
-
-	SDL_Surface *loadedSurface = IMG_Load(path);
-	if (loadedSurface == NULL) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
-	} else {
-		texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-		if (texture == NULL) {
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create texture from image at '%s': %s\n", path, SDL_GetError());
-		}
-
-		SDL_FreeSurface(loadedSurface);
-	}
-
-	return texture;
-}
-
-// *& is a reference to the pointer. Like a pointer-pointer
-bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
-	// SDL
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
-		return false;
-	}
-
-	// SDL_image
-	uint8 imgFlags = IMG_INIT_PNG;
-	if (!(IMG_Init(imgFlags) & imgFlags)) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
-		return false;
-	}
-
-	// Window
-	window = SDL_CreateWindow("Impressionable",
-					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-					SCREEN_WIDTH, SCREEN_HEIGHT,
-					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
-	if (window == NULL) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
-		return false;
-	}
-
-	// Renderer
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	if (renderer == NULL) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
-		return false;
-	}
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-
-	return true;
-}
 
 void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
@@ -209,6 +79,42 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 	}
 }
 
+// *& is a reference to the pointer. Like a pointer-pointer
+bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
+	// SDL
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
+		return false;
+	}
+
+	// SDL_image
+	uint8 imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
+		return false;
+	}
+
+	// Window
+	window = SDL_CreateWindow("Impressionable",
+					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+					SCREEN_WIDTH, SCREEN_HEIGHT,
+					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	if (window == NULL) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
+		return false;
+	}
+
+	// Renderer
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	if (renderer == NULL) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
+		return false;
+	}
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
+	return true;
+}
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -216,6 +122,12 @@ int main(int argc, char *argv[]) {
 	SDL_Renderer *renderer = NULL;
 	if (!initialize(window, renderer)) {
 		return 1;
+	}
+
+// Help text until we have a UI
+	SDL_Log("BUILDING HOTKEYS:\n");
+	for (int i = 0; i < BA_Count; i++) {
+		SDL_Log("%d : %s\n", (i+1), buildingDefinitions[i].name.c_str());
 	}
 
 // Load texture data
@@ -247,7 +159,7 @@ int main(int argc, char *argv[]) {
 	camera.zoom = 1.0f;
 	SDL_GetWindowSize(window, &camera.windowWidth, &camera.windowHeight);
 
-	BuildingArchetype selectedBuildingArchetype = BA_Pit;
+	BuildingArchetype selectedBuildingArchetype = BA_None;
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;
@@ -347,10 +259,6 @@ int main(int argc, char *argv[]) {
 			// Try and build a thing
 			Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
 			bool succeeded = placeBuilding(city, building);
-			SDL_Log("Attempted to add building '%s', and %s", 
-					buildingDefinitions[selectedBuildingArchetype].name.c_str(),
-					succeeded ? "succeeded" : "failed"
-			);
 		}
 
 	// RENDERING
@@ -380,11 +288,6 @@ int main(int argc, char *argv[]) {
 			Building building = city.buildings[i];
 			BuildingDefinition *def = buildingDefinitions + building.archetype;
 			drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
-		}
-
-		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
-			SDL_Log("Clicked at world position: %f, %f; tile position %d, %d",
-					mouseWorldPos.x, mouseWorldPos.y, mouseTilePos.x, mouseTilePos.y);
 		}
 
 		// Building preview

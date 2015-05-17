@@ -7,7 +7,7 @@ enum BuildingArchetype {
 	BA_Paddock,
 	BA_Butcher,
 	BA_Road,
-	BA_COUNT
+	BA_Count
 };
 
 struct BuildingDefinition {
