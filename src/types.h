@@ -21,6 +21,8 @@ typedef double real64;
 
 typedef std::string string;
 
+const int null = 0;
+
 struct Coord {
 	int32 x,y;
 };
@@ -32,6 +34,13 @@ struct Rect {
 	};
 	int32 w,h;
 };
+
+inline bool inRect(Rect rect, Coord coord) {
+	return coord.x >= rect.x
+		&& coord.x < (rect.x + rect.w)
+		&& coord.y >= rect.y
+		&& coord.y < (rect.y + rect.h);
+}
 
 struct V2 {
 	real32 x,y;

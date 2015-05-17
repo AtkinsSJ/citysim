@@ -115,6 +115,15 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 	return true;
 }
 
+enum ActionMode {
+	ActionMode_None = 0,
+
+	ActionMode_Build,
+	ActionMode_Demolish,
+
+	ActionMode_Count,
+};
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -159,6 +168,7 @@ int main(int argc, char *argv[]) {
 	camera.zoom = 1.0f;
 	SDL_GetWindowSize(window, &camera.windowWidth, &camera.windowHeight);
 
+	ActionMode actionMode = ActionMode_None;
 	BuildingArchetype selectedBuildingArchetype = BA_None;
 
 	uint32 lastFrame = 0,
@@ -241,24 +251,46 @@ int main(int argc, char *argv[]) {
 
 	// UI CODE
 		if (keyboardState.down[SDL_SCANCODE_1]) {
+			actionMode = ActionMode_Build;
 			selectedBuildingArchetype = BA_Hovel;
 		} else if (keyboardState.down[SDL_SCANCODE_2]) {
 			selectedBuildingArchetype = BA_Pit;
+			actionMode = ActionMode_Build;
 		} else if (keyboardState.down[SDL_SCANCODE_3]) {
 			selectedBuildingArchetype = BA_Paddock;
+			actionMode = ActionMode_Build;
 		} else if (keyboardState.down[SDL_SCANCODE_4]) {
 			selectedBuildingArchetype = BA_Butcher;
+			actionMode = ActionMode_Build;
 		} else if (keyboardState.down[SDL_SCANCODE_5]) {
 			selectedBuildingArchetype = BA_Road;
+			actionMode = ActionMode_Build;
+
+		} else if (keyboardState.down[SDL_SCANCODE_X]) {
+			actionMode = ActionMode_Demolish;
+
 		} else if (keyboardState.down[SDL_SCANCODE_ESCAPE]) {
-			selectedBuildingArchetype = BA_None;
+			actionMode = ActionMode_None;
 		}
 
-		if (selectedBuildingArchetype != BA_None
-			&& mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
-			// Try and build a thing
-			Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
-			bool succeeded = placeBuilding(city, building);
+		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+			switch (actionMode) {
+				case ActionMode_Build: {
+					// Try and build a thing
+					Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
+					bool succeeded = placeBuilding(city, building);
+				} break;
+
+				case ActionMode_Demolish: {
+					// Try and demolish a thing
+					bool succeeded = demolish(city, mouseTilePos);
+					SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
+				} break;
+
+				case ActionMode_None: {
+					SDL_Log("Building ID at position = %d", city.tileBuildings[tileIndex(city, mouseTilePos.x, mouseTilePos.y)]);
+				} break;
+			}
 		}
 
 	// RENDERING
@@ -286,12 +318,24 @@ int main(int argc, char *argv[]) {
 		// Draw buildings
 		for (uint16 i=0; i<city.buildingCount; i++) {
 			Building building = city.buildings[i];
+			if (!building.exists) continue;
+
 			BuildingDefinition *def = buildingDefinitions + building.archetype;
-			drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
+
+			if (actionMode == ActionMode_Demolish
+				&& inRect(building.footprint, mouseTilePos)) {
+				// Draw building red to preview demolition
+				Color demolishColor = {255,128,128,255};
+				drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos, &demolishColor);
+			} else {
+				drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
+			}
 		}
 
 		// Building preview
-		if (selectedBuildingArchetype != BA_None) {
+		if (actionMode == ActionMode_Build
+			&& selectedBuildingArchetype != BA_None) {
+
 			Color ghostColor = {255,255,255,128};
 			if (!canPlaceBuilding(city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};

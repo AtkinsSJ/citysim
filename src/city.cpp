@@ -4,7 +4,7 @@ inline City createCity(uint32 width, uint32 height) {
 	city.width = width;
 	city.height = height;
 	city.terrain = new Terrain[width*height]();
-	city.tileBuildings = new Building*[width*height]();
+	city.tileBuildings = new uint32[width*height]();
 
 	return city;
 }
@@ -40,12 +40,12 @@ void generateTerrain(City &city) {
 	}
 }
 
-inline bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArchetype, Coord position) {
+bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArchetype, Coord position) {
 	// Check terrain is buildable and empty
-	BuildingDefinition *def = buildingDefinitions + selectedBuildingArchetype;
+	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
-	for (int32 y=0; y<def->height; y++) {
-		for (int32 x=0; x<def->width; x++) {
+	for (int32 y=0; y<def.height; y++) {
+		for (int32 x=0; x<def.width; x++) {
 			uint32 ti = tileIndex(city, position.x + x, position.y + y);
 			if (city.terrain[ti] != Terrain_Ground) {
 				return false;
@@ -58,28 +58,11 @@ inline bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArche
 	}
 	return true;
 }
-/*
-inline bool canPlaceBuilding(City &city, Building building) {
-	// Check terrain is buildable
-	for (int32 y=0; y<building.footprint.h; y++) {
-		for (int32 x=0; x<building.footprint.w; x++) {
-			uint32 ti = tileIndex(city, building.footprint.x + x, building.footprint.y + y);
-			if (city.terrain[ti] != Terrain_Ground) {
-				return false;
-			}
-
-			if (city.tileBuildings[ti] != 0) {
-				return false;
-			}
-		}
-	}
-	return true;
-}*/
 
 /**
  * Attempt to place a building. Returns whether successful.
  */
-inline bool placeBuilding(City &city, Building building) {
+bool placeBuilding(City &city, Building building) {
 	if (!canPlaceBuilding(city, building.archetype, building.footprint.pos)) {
 		return false;
 	}
@@ -87,12 +70,50 @@ inline bool placeBuilding(City &city, Building building) {
 	if (city.buildingCount >= ArrayCount(city.buildings)) {
 		return false;
 	}
-	Building *b = &(city.buildings[city.buildingCount++]);
+	uint32 buildingID = ++city.buildingCount;
+	Building *b = getBuildingByID(city, buildingID); //&(city.buildings[city.buildingCount++]);
 	*b = building;
 	for (int16 y=0; y<building.footprint.h; y++) {
 		for (int16 x=0; x<building.footprint.w; x++) {
-			city.tileBuildings[tileIndex(city,building.footprint.x+x,building.footprint.y+y)] = b;
+			city.tileBuildings[tileIndex(city,building.footprint.x+x,building.footprint.y+y)] = buildingID;
 		}
 	}
 	return true;
+}
+
+bool demolish(City &city, Coord position) {
+	if (!tileExists(city, position.x, position.y)) return false;
+
+	uint32 posTI = tileIndex(city, position.x, position.y);
+
+	uint32 buildingID = city.tileBuildings[posTI];
+	if (buildingID) {
+		// TODO: Demolition cost
+
+		// Clear all references to this building
+		Building *building = getBuildingByID(city, buildingID);
+		SDL_assert(building);
+
+		for (int32 y = building->footprint.y;
+			y < building->footprint.y + building->footprint.h;
+			y++) {
+
+			for (int32 x = building->footprint.x;
+				x < building->footprint.x + building->footprint.w;
+				x++) {
+
+				city.tileBuildings[tileIndex(city, x, y)] = 0;
+			}
+		}
+		// Mark the building as non-existent, then next time we create a new building,
+		// we'll find the first non-existent building to replace!
+		building->exists = false;
+
+		return true;
+
+	} else {
+		// TODO: Handle clearing of terrain here.
+		return false;
+	}
+	
 }
