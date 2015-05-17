@@ -13,6 +13,7 @@ struct City {
 
 	uint32 buildingCount;
 	Building buildings[256]; // TODO: Make the number of buildings unlimited!
+	Building **tileBuildings; // Map from x,y -> building pointer at that location
 };
 
 #include "city.cpp"

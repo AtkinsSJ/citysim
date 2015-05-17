@@ -4,6 +4,7 @@ inline City createCity(uint32 width, uint32 height) {
 	city.width = width;
 	city.height = height;
 	city.terrain = new Terrain[width*height]();
+	city.tileBuildings = new Building*[width*height]();
 
 	return city;
 }
@@ -43,7 +44,13 @@ inline bool canPlaceBuilding(City &city, Building building) {
 	// Check terrain is buildable
 	for (int32 y=0; y<building.footprint.h; y++) {
 		for (int32 x=0; x<building.footprint.w; x++) {
-			if (terrainAt(city, building.footprint.x + x, building.footprint.y + y) != Terrain_Ground) {
+			int32 tileX = building.footprint.x + x;
+			int32 tileY = building.footprint.y + y;
+			if (terrainAt(city, tileX, tileY) != Terrain_Ground) {
+				return false;
+			}
+
+			if (city.tileBuildings[tileIndex(city, tileX, tileY)] != 0) {
 				return false;
 			}
 		}
@@ -62,6 +69,12 @@ inline bool placeBuilding(City &city, Building building) {
 	if (city.buildingCount >= ArrayCount(city.buildings)) {
 		return false;
 	}
-	city.buildings[city.buildingCount++] = building;
+	Building *b = &(city.buildings[city.buildingCount++]);
+	*b = building;
+	for (int16 y=0; y<building.footprint.h; y++) {
+		for (int16 x=0; x<building.footprint.w; x++) {
+			city.tileBuildings[tileIndex(city,building.footprint.x+x,building.footprint.y+y)] = b;
+		}
+	}
 	return true;
 }
