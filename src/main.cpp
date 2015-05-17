@@ -79,12 +79,17 @@ void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textu
 		(int)(sourceRect->h * camera.zoom)
 	};
 
-	if (color) {	
+	if (color) {
 		SDL_SetTextureColorMod(textureAtlas.texture, color->r, color->g, color->b);
 		SDL_SetTextureAlphaMod(textureAtlas.texture, color->a);
+
+		SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
+
+		SDL_SetTextureColorMod(textureAtlas.texture, 255, 255, 255);
+		SDL_SetTextureAlphaMod(textureAtlas.texture, 255);
+	} else {
+		SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
 	}
-	
-	SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
 }
 
 SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
@@ -319,6 +324,9 @@ int main(int argc, char *argv[]) {
 		// Camera controls
 		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
+		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, camera);
+		Coord mouseTilePos = tilePosition(mouseWorldPos);
+
 	// UI CODE
 		if (keyboardState.down[SDL_SCANCODE_1]) {
 			selectedBuildingArchetype = BA_Hovel;
@@ -336,7 +344,6 @@ int main(int argc, char *argv[]) {
 
 		if (selectedBuildingArchetype != BA_None
 			&& mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
-			Coord mouseTilePos = tilePosition(screenPosToWorldPos(mouseState.x, mouseState.y, camera));
 			// Try and build a thing
 			Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
 			bool succeeded = placeBuilding(city, building);
@@ -375,9 +382,6 @@ int main(int argc, char *argv[]) {
 			drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
 		}
 
-		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, camera);
-		Coord mouseTilePos = tilePosition(mouseWorldPos);
-
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			SDL_Log("Clicked at world position: %f, %f; tile position %d, %d",
 					mouseWorldPos.x, mouseWorldPos.y, mouseTilePos.x, mouseTilePos.y);
@@ -385,7 +389,11 @@ int main(int argc, char *argv[]) {
 
 		// Building preview
 		if (selectedBuildingArchetype != BA_None) {
-			drawAtWorldPos(renderer, camera, textureAtlas, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos);
+			Color ghostColor = {255,255,255,128};
+			if (!canPlaceBuilding(city, selectedBuildingArchetype, mouseTilePos)) {
+				ghostColor = {255,0,0,128};
+			}
+			drawAtWorldPos(renderer, camera, textureAtlas, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
 		}
 
 		SDL_RenderPresent(renderer);

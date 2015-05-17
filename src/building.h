@@ -15,7 +15,6 @@ struct BuildingDefinition {
 	string name;
 	TextureAtlasItem textureAtlasItem;
 };
-
 BuildingDefinition buildingDefinitions[] = {
 	{1,1, "Hovel", TextureAtlasItem_Hovel},
 	{5,5, "Pit", TextureAtlasItem_Pit},

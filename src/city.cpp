@@ -40,29 +40,47 @@ void generateTerrain(City &city) {
 	}
 }
 
-inline bool canPlaceBuilding(City &city, Building building) {
-	// Check terrain is buildable
-	for (int32 y=0; y<building.footprint.h; y++) {
-		for (int32 x=0; x<building.footprint.w; x++) {
-			int32 tileX = building.footprint.x + x;
-			int32 tileY = building.footprint.y + y;
-			if (terrainAt(city, tileX, tileY) != Terrain_Ground) {
+inline bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArchetype, Coord position) {
+	// Check terrain is buildable and empty
+	BuildingDefinition *def = buildingDefinitions + selectedBuildingArchetype;
+
+	for (int32 y=0; y<def->height; y++) {
+		for (int32 x=0; x<def->width; x++) {
+			uint32 ti = tileIndex(city, position.x + x, position.y + y);
+			if (city.terrain[ti] != Terrain_Ground) {
 				return false;
 			}
 
-			if (city.tileBuildings[tileIndex(city, tileX, tileY)] != 0) {
+			if (city.tileBuildings[ti] != 0) {
 				return false;
 			}
 		}
 	}
 	return true;
 }
+/*
+inline bool canPlaceBuilding(City &city, Building building) {
+	// Check terrain is buildable
+	for (int32 y=0; y<building.footprint.h; y++) {
+		for (int32 x=0; x<building.footprint.w; x++) {
+			uint32 ti = tileIndex(city, building.footprint.x + x, building.footprint.y + y);
+			if (city.terrain[ti] != Terrain_Ground) {
+				return false;
+			}
+
+			if (city.tileBuildings[ti] != 0) {
+				return false;
+			}
+		}
+	}
+	return true;
+}*/
 
 /**
  * Attempt to place a building. Returns whether successful.
  */
 inline bool placeBuilding(City &city, Building building) {
-	if (!canPlaceBuilding(city, building)) {
+	if (!canPlaceBuilding(city, building.archetype, building.footprint.pos)) {
 		return false;
 	}
 
