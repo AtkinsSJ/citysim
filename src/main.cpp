@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
 
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
-	City city = createCity(40,30);
+	City city = createCity(100,100);
 	generateTerrain(city);
 
 // GAME LOOP

@@ -32,7 +32,7 @@ void generateTerrain(City &city) {
 	for (uint32 y = 0; y < city.height; y++) {
 		for (uint32 x = 0; x < city.width; x++) {
 			Terrain t = Terrain_Ground;
-			if ((rand() % 100) < 10) {
+			if ((rand() % 100) < 5) {
 				t = Terrain_Water;
 			}
 			city.terrain[tileIndex(city,x,y)] = t;

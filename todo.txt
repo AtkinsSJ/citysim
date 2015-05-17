@@ -1,3 +1,6 @@
-What are we doing?
+TODO:
+- An actual random number generator!
+- Demolition
 
-- A basic system for picking which thing to build, then building it
+BUGS:
+- Weird rendering issues with gaps between tiles at non-default zoom levels.
