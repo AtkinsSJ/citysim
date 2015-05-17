@@ -11,6 +11,7 @@
 #endif
 
 #include "types.h"
+#include "building.h"
 #include "city.h"
 #include "input.h"
 
@@ -319,8 +320,9 @@ int main(int argc, char *argv[]) {
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			Coord mouseTilePos = tilePosition(screenPosToWorldPos(mouseState.x, mouseState.y, camera));
 			// Try and build a thing
-			Rect footprint = {mouseTilePos.x, mouseTilePos.y, 1, 1};
-			Building building = {footprint};
+			// Rect footprint = {mouseTilePos.x, mouseTilePos.y, 1, 1};
+			// Building building = {footprint};
+			Building building = createBuilding(BA_Hovel, mouseTilePos);
 			bool succeeded = placeBuilding(city, building);
 			SDL_Log("Attempted to add building, and %s", succeeded ? "succeeded" : "failed");
 		}

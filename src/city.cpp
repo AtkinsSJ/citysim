@@ -41,8 +41,8 @@ void generateTerrain(City &city) {
 
 inline bool canPlaceBuilding(City &city, Building building) {
 	// Check terrain is buildable
-	for (uint32 y=0; y<building.footprint.h; y++) {
-		for (uint32 x=0; x<building.footprint.w; x++) {
+	for (int32 y=0; y<building.footprint.h; y++) {
+		for (int32 x=0; x<building.footprint.w; x++) {
 			if (terrainAt(city, building.footprint.x + x, building.footprint.y + y) != Terrain_Ground) {
 				return false;
 			}

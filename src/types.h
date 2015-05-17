@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string>
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
@@ -18,6 +19,8 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
+typedef std::string string;
+
 struct Coord {
 	int32 x,y;
 };
@@ -25,9 +28,9 @@ struct Coord {
 struct Rect {
 	union {
 		struct {Coord pos;};
-		struct {uint32 x, y;};
+		struct {int32 x, y;};
 	};
-	uint32 w,h;
+	int32 w,h;
 };
 
 struct V2 {

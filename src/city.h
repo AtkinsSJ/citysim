@@ -7,10 +7,6 @@ enum Terrain {
 	Terrain_Size
 };
 
-struct Building {
-	Rect footprint;
-};
-
 struct City {
 	uint32 width, height;
 	Terrain *terrain;
