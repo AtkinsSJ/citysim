@@ -320,12 +320,24 @@ int main(int argc, char *argv[]) {
 		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
 	// UI CODE
+		if (keyboardState.down[SDL_SCANCODE_1]) {
+			selectedBuildingArchetype = BA_Hovel;
+		} else if (keyboardState.down[SDL_SCANCODE_2]) {
+			selectedBuildingArchetype = BA_Pit;
+		} else if (keyboardState.down[SDL_SCANCODE_3]) {
+			selectedBuildingArchetype = BA_Paddock;
+		} else if (keyboardState.down[SDL_SCANCODE_4]) {
+			selectedBuildingArchetype = BA_Butcher;
+		} else if (keyboardState.down[SDL_SCANCODE_5]) {
+			selectedBuildingArchetype = BA_Road;
+		} else if (keyboardState.down[SDL_SCANCODE_ESCAPE]) {
+			selectedBuildingArchetype = BA_None;
+		}
+
 		if (selectedBuildingArchetype != BA_None
 			&& mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			Coord mouseTilePos = tilePosition(screenPosToWorldPos(mouseState.x, mouseState.y, camera));
 			// Try and build a thing
-			// Rect footprint = {mouseTilePos.x, mouseTilePos.y, 1, 1};
-			// Building building = {footprint};
 			Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
 			bool succeeded = placeBuilding(city, building);
 			SDL_Log("Attempted to add building '%s', and %s", 

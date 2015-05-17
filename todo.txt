@@ -1,0 +1,3 @@
+What are we doing?
+
+- A basic system for picking which thing to build, then building it
