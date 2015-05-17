@@ -1,7 +1,8 @@
 #pragma once
 
 enum BuildingArchetype {
-	BA_Hovel,
+	BA_None = -1,
+	BA_Hovel = 0,
 	BA_Pit,
 	BA_Paddock,
 	BA_Butcher,
@@ -12,14 +13,15 @@ enum BuildingArchetype {
 struct BuildingDefinition {
 	int32 width, height;
 	string name;
+	TextureAtlasItem textureAtlasItem;
 };
 
 BuildingDefinition buildingDefinitions[] = {
-	{1,1, "Hovel"},
-	{5,5, "Pit"},
-	{3,3, "Paddock"},
-	{2,2, "Butcher"},
-	{1,1, "Road"},
+	{1,1, "Hovel", TextureAtlasItem_Hovel},
+	{5,5, "Pit", TextureAtlasItem_Pit},
+	{3,3, "Paddock", TextureAtlasItem_Paddock},
+	{2,2, "Butcher", TextureAtlasItem_Butcher},
+	{1,1, "Road", TextureAtlasItem_Road},
 };
 
 struct Building {

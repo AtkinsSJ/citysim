@@ -10,6 +10,24 @@
 #include <SDL_image.h>
 #endif
 
+enum TextureAtlasItem {
+	TextureAtlasItem_GroundTile = 0,
+	TextureAtlasItem_WaterTile,
+	TextureAtlasItem_Butcher,
+	TextureAtlasItem_Hovel,
+	TextureAtlasItem_Paddock,
+	TextureAtlasItem_Pit,
+	TextureAtlasItem_Road,
+	TextureAtlasItem_Goblin,
+	TextureAtlasItem_Goat,
+
+	TextureAtlasItemCount
+};
+struct TextureAtlas {
+	SDL_Texture *texture;
+	SDL_Rect rects[TextureAtlasItemCount];
+};
+
 #include "types.h"
 #include "building.h"
 #include "city.h"
@@ -44,23 +62,6 @@ inline Coord tilePosition(V2 worldPixelPos) {
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-enum TextureAtlasItem {
-	TextureAtlasItem_GroundTile = 0,
-	TextureAtlasItem_WaterTile,
-	TextureAtlasItem_Butcher,
-	TextureAtlasItem_Hovel,
-	TextureAtlasItem_Paddock,
-	TextureAtlasItem_Pit,
-	TextureAtlasItem_Road,
-	TextureAtlasItem_Goblin,
-	TextureAtlasItem_Goat,
-
-	TextureAtlasItemCount
-};
-struct TextureAtlas {
-	SDL_Texture *texture;
-	SDL_Rect rects[TextureAtlasItemCount];
-};
 
 void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textureAtlas, TextureAtlasItem textureAtlasItem, Coord worldTilePosition, Color *color=0) {
 	
@@ -241,6 +242,8 @@ int main(int argc, char *argv[]) {
 	camera.zoom = 1.0f;
 	SDL_GetWindowSize(window, &camera.windowWidth, &camera.windowHeight);
 
+	BuildingArchetype selectedBuildingArchetype = BA_Pit;
+
 	uint32 lastFrame = 0,
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
@@ -317,14 +320,18 @@ int main(int argc, char *argv[]) {
 		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
 	// UI CODE
-		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+		if (selectedBuildingArchetype != BA_None
+			&& mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			Coord mouseTilePos = tilePosition(screenPosToWorldPos(mouseState.x, mouseState.y, camera));
 			// Try and build a thing
 			// Rect footprint = {mouseTilePos.x, mouseTilePos.y, 1, 1};
 			// Building building = {footprint};
-			Building building = createBuilding(BA_Hovel, mouseTilePos);
+			Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
 			bool succeeded = placeBuilding(city, building);
-			SDL_Log("Attempted to add building, and %s", succeeded ? "succeeded" : "failed");
+			SDL_Log("Attempted to add building '%s', and %s", 
+					buildingDefinitions[selectedBuildingArchetype].name.c_str(),
+					succeeded ? "succeeded" : "failed"
+			);
 		}
 
 	// RENDERING
@@ -351,7 +358,9 @@ int main(int argc, char *argv[]) {
 
 		// Draw buildings
 		for (uint16 i=0; i<city.buildingCount; i++) {
-			drawAtWorldPos(renderer, camera, textureAtlas, TextureAtlasItem_Hovel, city.buildings[i].footprint.pos);
+			Building building = city.buildings[i];
+			BuildingDefinition *def = buildingDefinitions + building.archetype;
+			drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
 		}
 
 		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, camera);
@@ -363,7 +372,9 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Building preview
-		drawAtWorldPos(renderer, camera, textureAtlas, TextureAtlasItem_Hovel, mouseTilePos);
+		if (selectedBuildingArchetype != BA_None) {
+			drawAtWorldPos(renderer, camera, textureAtlas, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos);
+		}
 
 		SDL_RenderPresent(renderer);
 
