@@ -55,6 +55,8 @@ struct Renderer {
 	Camera camera;
 
 	TextureAtlas textureAtlas;
+
+	TTF_Font *font;
 };
 
 #include "render.cpp"

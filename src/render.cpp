@@ -34,6 +34,12 @@ bool initializeRenderer(Renderer *renderer) {
 		return false;
 	}
 
+	// SDL_ttf
+	if (TTF_Init() < 0) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_ttf could not be initialized! :(\n %s\n", TTF_GetError());
+			return false;
+	}
+
 	// Window
 	renderer->sdl_window = SDL_CreateWindow("Impressionable",
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -48,7 +54,7 @@ bool initializeRenderer(Renderer *renderer) {
 	renderer->sdl_renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 	if (renderer->sdl_renderer == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
-		return null;
+		return false;
 	}
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
@@ -79,6 +85,13 @@ bool initializeRenderer(Renderer *renderer) {
 	renderer->textureAtlas.rects[TextureAtlasItem_Goat] = {0,tw*5,tw,tw*2};
 	*/
 
+	// Load font
+	renderer->font = TTF_OpenFont("OpenSans-Regular.ttf", 12);
+	if (!renderer->font) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Font could not be loaded. :(\n %s", TTF_GetError());
+		return false;
+	}
+
 	return true;
 }
 
@@ -86,9 +99,12 @@ void freeRenderer(Renderer *renderer) {
 
 	SDL_DestroyTexture(renderer->textureAtlas.texture);
 
+	TTF_CloseFont(renderer->font);
+
 	SDL_DestroyRenderer(renderer->sdl_renderer);
 	SDL_DestroyWindow(renderer->sdl_window);
 
+	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }

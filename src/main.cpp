@@ -5,9 +5,11 @@
 #ifdef __linux__
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #else
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #endif
 
 #include "types.h"
@@ -280,6 +282,15 @@ int main(int argc, char *argv[]) {
 			}
 			drawAtWorldPos(&renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
 		}
+
+		// Draw some UI
+		// FIXME: UGH! Horrible and inefficient and yucky
+		SDL_Surface *textSurface = TTF_RenderUTF8_Solid(renderer.font, "Hello world!", {0,0,0,255});
+		SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer.sdl_renderer, textSurface);
+		SDL_Rect textRect = {0, 0,  textSurface->w, textSurface->h};
+		SDL_RenderCopy(renderer.sdl_renderer, textTexture, null, &textRect);
+		SDL_DestroyTexture(textTexture);
+		SDL_FreeSurface(textSurface);
 
 		SDL_RenderPresent(renderer.sdl_renderer);
 
