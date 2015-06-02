@@ -6,7 +6,7 @@ inline City createCity(uint32 width, uint32 height) {
 	city.terrain = new Terrain[width*height]();
 	city.tileBuildings = new uint32[width*height]();
 	city.buildingCount = 0;
-	city.buildingCountMax = ArrayCount(city.buildings) - 1;
+	city.buildingCountMax = ArrayCount(city.buildings);
 
 	return city;
 }
@@ -126,6 +126,7 @@ bool demolish(City &city, Coord position) {
 		// Mark the building as non-existent, then next time we create a new building,
 		// we'll find the first non-existent building to replace!
 		building->exists = false;
+		city.buildingCount--;
 
 		return true;
 

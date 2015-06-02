@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw buildings
-		for (uint16 i=0; i<city.buildingCount; i++) {
+		for (uint16 i=0; i<city.buildingCountMax; i++) {
 			Building building = city.buildings[i];
 			if (!building.exists) continue;
 
