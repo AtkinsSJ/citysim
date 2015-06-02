@@ -37,9 +37,11 @@ struct TextureAtlas {
 };
 
 struct Renderer {
-	SDL_Renderer* sdl_renderer;
-	SDL_Window* sdl_window;
+	SDL_Renderer *sdl_renderer;
+	SDL_Window *sdl_window;
 	Camera camera;
+
+	TextureAtlas textureAtlas;
 };
 
 #include "render.cpp"

@@ -78,42 +78,6 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 		);
 	}
 }
-/*
-// *& is a reference to the pointer. Like a pointer-pointer
-bool initialize(SDL_Window **window, SDL_Renderer **renderer) {
-	// SDL
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
-		return false;
-	}
-
-	// SDL_image
-	uint8 imgFlags = IMG_INIT_PNG;
-	if (!(IMG_Init(imgFlags) & imgFlags)) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
-		return false;
-	}
-
-	// Window
-	(*window) = SDL_CreateWindow("Impressionable",
-					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-					SCREEN_WIDTH, SCREEN_HEIGHT,
-					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
-	if (window == NULL) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
-		return false;
-	}
-
-	// Renderer
-	(*renderer) = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
-	if (renderer == NULL) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
-		return false;
-	}
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-
-	return true;
-}*/
 
 enum ActionMode {
 	ActionMode_None = 0,
@@ -132,32 +96,11 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	// SDL_Window *window = NULL;
-	// SDL_Renderer *renderer = NULL;
-	// if (!initialize(window, renderer)) {
-	// 	return 1;
-	// }
-
 // Help text until we have a UI
 	SDL_Log("BUILDING HOTKEYS:\n");
 	for (int i = 0; i < BA_Count; i++) {
 		SDL_Log("%d : %s\n", (i+1), buildingDefinitions[i].name.c_str());
 	}
-
-// Load texture data
-	TextureAtlas textureAtlas = {};
-	textureAtlas.texture = loadTexture(renderer.sdl_renderer, "combined.png");
-	if (!textureAtlas.texture) return 1;
-	const int tw = TILE_WIDTH;
-	textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
-	textureAtlas.rects[TextureAtlasItem_WaterTile] = {tw,0,tw,tw};
-	textureAtlas.rects[TextureAtlasItem_Butcher] = {tw*3,tw*5,tw*2,tw*2};
-	textureAtlas.rects[TextureAtlasItem_Hovel] = {tw,tw,tw,tw};
-	textureAtlas.rects[TextureAtlasItem_Paddock] = {0,tw*2,tw*3,tw*3};
-	textureAtlas.rects[TextureAtlasItem_Pit] = {tw*3,0,tw*5,tw*5};
-	textureAtlas.rects[TextureAtlasItem_Road] = {0,tw,tw,tw};
-	textureAtlas.rects[TextureAtlasItem_Goblin] = {tw,tw*5,tw*2,tw*2};
-	textureAtlas.rects[TextureAtlasItem_Goat] = {0,tw*5,tw,tw*2};
 
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
@@ -318,7 +261,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, textureAtlasItem, {x,y});
+				drawAtWorldPos(&renderer, textureAtlasItem, {x,y});
 			}
 		}
 
@@ -333,9 +276,9 @@ int main(int argc, char *argv[]) {
 				&& inRect(building.footprint, mouseTilePos)) {
 				// Draw building red to preview demolition
 				Color demolishColor = {255,128,128,255};
-				drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, def->textureAtlasItem, building.footprint.pos, &demolishColor);
+				drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &demolishColor);
 			} else {
-				drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
+				drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos);
 			}
 		}
 
@@ -347,7 +290,7 @@ int main(int argc, char *argv[]) {
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
-			drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
+			drawAtWorldPos(&renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
 		}
 
 		SDL_RenderPresent(renderer.sdl_renderer);
@@ -369,8 +312,6 @@ int main(int argc, char *argv[]) {
 
 // CLEAN UP
 	freeCity(&city);
-
-	SDL_DestroyTexture(textureAtlas.texture);
 
 	freeRenderer(&renderer);
 

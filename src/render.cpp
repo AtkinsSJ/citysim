@@ -1,4 +1,22 @@
 
+SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
+	SDL_Texture *texture = NULL;
+
+	SDL_Surface *loadedSurface = IMG_Load(path);
+	if (loadedSurface == NULL) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
+	} else {
+		texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+		if (texture == NULL) {
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create texture from image at '%s': %s\n", path, SDL_GetError());
+		}
+
+		SDL_FreeSurface(loadedSurface);
+	}
+
+	return texture;
+}
+
 bool initializeRenderer(Renderer *renderer) {
 
 	(*renderer) = {};
@@ -34,10 +52,30 @@ bool initializeRenderer(Renderer *renderer) {
 	}
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
+	// Load texture data
+	renderer->textureAtlas = {};
+	renderer->textureAtlas.texture = loadTexture(renderer->sdl_renderer, "combined.png");
+	if (!renderer->textureAtlas.texture) {
+		return false;
+	}
+	const int tw = TILE_WIDTH;
+	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
+	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {tw,0,tw,tw};
+	renderer->textureAtlas.rects[TextureAtlasItem_Butcher] = {tw*3,tw*5,tw*2,tw*2};
+	renderer->textureAtlas.rects[TextureAtlasItem_Hovel] = {tw,tw,tw,tw};
+	renderer->textureAtlas.rects[TextureAtlasItem_Paddock] = {0,tw*2,tw*3,tw*3};
+	renderer->textureAtlas.rects[TextureAtlasItem_Pit] = {tw*3,0,tw*5,tw*5};
+	renderer->textureAtlas.rects[TextureAtlasItem_Road] = {0,tw,tw,tw};
+	renderer->textureAtlas.rects[TextureAtlasItem_Goblin] = {tw,tw*5,tw*2,tw*2};
+	renderer->textureAtlas.rects[TextureAtlasItem_Goat] = {0,tw*5,tw,tw*2};
+
 	return true;
 }
 
 void freeRenderer(Renderer *renderer) {
+
+	SDL_DestroyTexture(renderer->textureAtlas.texture);
+
 	SDL_DestroyRenderer(renderer->sdl_renderer);
 	SDL_DestroyWindow(renderer->sdl_window);
 
@@ -57,49 +95,31 @@ inline Coord tilePosition(V2 worldPixelPos) {
 			(int)floor(worldPixelPos.y)};
 }
 
-void drawAtWorldPos(SDL_Renderer *&renderer, Camera &camera, TextureAtlas &textureAtlas, TextureAtlasItem textureAtlasItem, Coord worldTilePosition, Color *color=0) {
+void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord worldTilePosition, Color *color=0) {
 	
-	const real32 camLeft = camera.pos.x - (camera.windowWidth * 0.5f),
-				 camTop = camera.pos.y - (camera.windowHeight * 0.5f);
+	const real32 camLeft = renderer->camera.pos.x - (renderer->camera.windowWidth * 0.5f),
+				 camTop = renderer->camera.pos.y - (renderer->camera.windowHeight * 0.5f);
 
-	const real32 tileWidth = TILE_WIDTH * camera.zoom,
-				tileHeight = TILE_HEIGHT * camera.zoom;
+	const real32 tileWidth = TILE_WIDTH * renderer->camera.zoom,
+				tileHeight = TILE_HEIGHT * renderer->camera.zoom;
 
-	SDL_Rect *sourceRect = &textureAtlas.rects[textureAtlasItem];
+	SDL_Rect *sourceRect = &renderer->textureAtlas.rects[textureAtlasItem];
 	SDL_Rect destRect = {
 		(int)((worldTilePosition.x * tileWidth) - camLeft),
 		(int)((worldTilePosition.y * tileHeight) - camTop),
-		(int)(sourceRect->w * camera.zoom),
-		(int)(sourceRect->h * camera.zoom)
+		(int)(sourceRect->w * renderer->camera.zoom),
+		(int)(sourceRect->h * renderer->camera.zoom)
 	};
 
 	if (color) {
-		SDL_SetTextureColorMod(textureAtlas.texture, color->r, color->g, color->b);
-		SDL_SetTextureAlphaMod(textureAtlas.texture, color->a);
+		SDL_SetTextureColorMod(renderer->textureAtlas.texture, color->r, color->g, color->b);
+		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture, color->a);
 
-		SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture, sourceRect, &destRect);
 
-		SDL_SetTextureColorMod(textureAtlas.texture, 255, 255, 255);
-		SDL_SetTextureAlphaMod(textureAtlas.texture, 255);
+		SDL_SetTextureColorMod(renderer->textureAtlas.texture, 255, 255, 255);
+		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture, 255);
 	} else {
-		SDL_RenderCopy(renderer, textureAtlas.texture, sourceRect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture, sourceRect, &destRect);
 	}
-}
-
-SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
-	SDL_Texture *texture = NULL;
-
-	SDL_Surface *loadedSurface = IMG_Load(path);
-	if (loadedSurface == NULL) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
-	} else {
-		texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-		if (texture == NULL) {
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create texture from image at '%s': %s\n", path, SDL_GetError());
-		}
-
-		SDL_FreeSurface(loadedSurface);
-	}
-
-	return texture;
 }
