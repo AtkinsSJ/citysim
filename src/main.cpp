@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
 	City city = createCity(100,100);
-	generateTerrain(city);
+	generateTerrain(&city);
 
 // GAME LOOP
 	bool quit = false;
@@ -278,19 +278,19 @@ int main(int argc, char *argv[]) {
 				case ActionMode_Build: {
 					// Try and build a thing
 					Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
-					bool succeeded = placeBuilding(city, building);
+					bool succeeded = placeBuilding(&city, building);
 				} break;
 
 				case ActionMode_Demolish: {
 					// Try and demolish a thing
-					bool succeeded = demolish(city, mouseTilePos);
+					bool succeeded = demolish(&city, mouseTilePos);
 					SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
 				} break;
 
 				case ActionMode_None: {
 					SDL_Log("Building ID at position (%d,%d) = %d",
 						mouseTilePos.x, mouseTilePos.y,
-						city.tileBuildings[tileIndex(city, mouseTilePos.x, mouseTilePos.y)]);
+						city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
 				} break;
 			}
 		}
@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
 		// Draw terrain
 		for (uint16 y=0; y < city.height; y++) {
 			for (uint16 x=0; x < city.width; x++) {
-				Terrain t = terrainAt(city,x,y);
+				Terrain t = terrainAt(&city,x,y);
 				switch (t) {
 					case Terrain_Ground: {
 						textureAtlasItem = TextureAtlasItem_GroundTile;
@@ -339,7 +339,7 @@ int main(int argc, char *argv[]) {
 			&& selectedBuildingArchetype != BA_None) {
 
 			Color ghostColor = {255,255,255,128};
-			if (!canPlaceBuilding(city, selectedBuildingArchetype, mouseTilePos)) {
+			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
 			drawAtWorldPos(renderer, camera, textureAtlas, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
@@ -363,7 +363,7 @@ int main(int argc, char *argv[]) {
 	}
 
 // CLEAN UP
-	freeCity(city);
+	freeCity(&city);
 
 	SDL_DestroyTexture(textureAtlas.texture);
 

@@ -11,43 +11,44 @@ inline City createCity(uint32 width, uint32 height) {
 	return city;
 }
 
-inline void freeCity(City &city) {
-	delete[] city.terrain;
-	city = {};
+inline void freeCity(City *city) {
+	delete[] city->terrain;
+	delete[] city->tileBuildings;
+	*city = {};
 }
 
-inline uint32 tileIndex(City &city, uint32 x, uint32 y) {
-	return (y * city.width) + x;
+inline uint32 tileIndex(City *city, uint32 x, uint32 y) {
+	return (y * city->width) + x;
 }
 
-inline bool tileExists(City &city, uint32 x, uint32 y) {
-	return (x >= 0) && (x < city.width)
-		&& (y >= 0) && (y < city.height);
+inline bool tileExists(City *city, uint32 x, uint32 y) {
+	return (x >= 0) && (x < city->width)
+		&& (y >= 0) && (y < city->height);
 }
 
-inline Terrain terrainAt(City &city, uint32 x, uint32 y) {
+inline Terrain terrainAt(City *city, uint32 x, uint32 y) {
 	if (!tileExists(city, x, y)) return Terrain_Invalid;
-	return city.terrain[tileIndex(city, x, y)];
+	return city->terrain[tileIndex(city, x, y)];
 }
 
-void generateTerrain(City &city) {
-	for (uint32 y = 0; y < city.height; y++) {
-		for (uint32 x = 0; x < city.width; x++) {
+void generateTerrain(City *city) {
+	for (uint32 y = 0; y < city->height; y++) {
+		for (uint32 x = 0; x < city->width; x++) {
 			Terrain t = Terrain_Ground;
 			if ((rand() % 100) < 5) {
 				t = Terrain_Water;
 			}
-			city.terrain[tileIndex(city,x,y)] = t;
+			city->terrain[tileIndex(city,x,y)] = t;
 		}
 	}
 }
 
-bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArchetype, Coord position) {
+bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position) {
 
 	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
 	// Are we in bounds?
-	if (!rectInRect({0,0, city.width, city.height}, {position, def.width, def.height})) {
+	if (!rectInRect({0,0, city->width, city->height}, {position, def.width, def.height})) {
 		return false;
 	}
 
@@ -55,11 +56,11 @@ bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArchetype, C
 	for (int32 y=0; y<def.height; y++) {
 		for (int32 x=0; x<def.width; x++) {
 			uint32 ti = tileIndex(city, position.x + x, position.y + y);
-			if (city.terrain[ti] != Terrain_Ground) {
+			if (city->terrain[ti] != Terrain_Ground) {
 				return false;
 			}
 
-			if (city.tileBuildings[ti] != 0) {
+			if (city->tileBuildings[ti] != 0) {
 				return false;
 			}
 		}
@@ -70,19 +71,19 @@ bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArchetype, C
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(City &city, Building building) {
+bool placeBuilding(City *city, Building building) {
 	if (!canPlaceBuilding(city, building.archetype, building.footprint.pos)) {
 		return false;
 	}
 
-	if (city.buildingCount >= city.buildingCountMax) {
+	if (city->buildingCount >= city->buildingCountMax) {
 		return false;
 	}
 
 	// Find first free building
 	uint32 buildingID = 0;
-	for (int i = 0; i < city.buildingCountMax; ++i) {
-		if (!city.buildings[i].exists) {
+	for (int i = 0; i < city->buildingCountMax; ++i) {
+		if (!city->buildings[i].exists) {
 			buildingID = i + 1;
 			break;
 		}
@@ -93,24 +94,24 @@ bool placeBuilding(City &city, Building building) {
 		return false;
 	}
 
-	city.buildingCount++;
+	city->buildingCount++;
 
 	Building *b = getBuildingByID(city, buildingID);
 	*b = building;
 	for (int16 y=0; y<building.footprint.h; y++) {
 		for (int16 x=0; x<building.footprint.w; x++) {
-			city.tileBuildings[tileIndex(city,building.footprint.x+x,building.footprint.y+y)] = buildingID;
+			city->tileBuildings[tileIndex(city,building.footprint.x+x,building.footprint.y+y)] = buildingID;
 		}
 	}
 	return true;
 }
 
-bool demolish(City &city, Coord position) {
+bool demolish(City *city, Coord position) {
 	if (!tileExists(city, position.x, position.y)) return false;
 
 	uint32 posTI = tileIndex(city, position.x, position.y);
 
-	uint32 buildingID = city.tileBuildings[posTI];
+	uint32 buildingID = city->tileBuildings[posTI];
 	if (buildingID) {
 		// TODO: Demolition cost
 
@@ -126,13 +127,13 @@ bool demolish(City &city, Coord position) {
 				x < building->footprint.x + building->footprint.w;
 				x++) {
 
-				city.tileBuildings[tileIndex(city, x, y)] = 0;
+				city->tileBuildings[tileIndex(city, x, y)] = 0;
 			}
 		}
 		// Mark the building as non-existent, then next time we create a new building,
 		// we'll find the first non-existent building to replace!
 		building->exists = false;
-		city.buildingCount--;
+		city->buildingCount--;
 
 		return true;
 

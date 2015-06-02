@@ -1,6 +1,5 @@
 TODO:
 - An actual random number generator!
-- Decide how building storage works. Currently, demolished buildings still take up space! Probably when we create a new building, find the first building where exists = false. 
 
 BUGS:
 - Weird rendering issues with gaps between tiles at non-default zoom levels.

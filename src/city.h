@@ -19,12 +19,12 @@ struct City {
 	// from position 0!
 };
 
-inline Building* getBuildingByID(City &city, uint32 buildingID) {
-	if (buildingID <= 0 || buildingID > city.buildingCountMax) {
+inline Building* getBuildingByID(City *city, uint32 buildingID) {
+	if (buildingID <= 0 || buildingID > city->buildingCountMax) {
 		return null;
 	}
 
-	return &(city.buildings[buildingID - 1]);
+	return &(city->buildings[buildingID - 1]);
 }
 
 #include "city.cpp"
