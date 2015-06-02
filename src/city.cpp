@@ -5,6 +5,8 @@ inline City createCity(uint32 width, uint32 height) {
 	city.height = height;
 	city.terrain = new Terrain[width*height]();
 	city.tileBuildings = new uint32[width*height]();
+	city.buildingCount = 0;
+	city.buildingCountMax = ArrayCount(city.buildings) - 1;
 
 	return city;
 }
@@ -67,11 +69,27 @@ bool placeBuilding(City &city, Building building) {
 		return false;
 	}
 
-	if (city.buildingCount >= ArrayCount(city.buildings)) {
+	if (city.buildingCount >= city.buildingCountMax) {
 		return false;
 	}
-	uint32 buildingID = ++city.buildingCount;
-	Building *b = getBuildingByID(city, buildingID); //&(city.buildings[city.buildingCount++]);
+
+	// Find first free building
+	uint32 buildingID = 0;
+	for (int i = 0; i < city.buildingCountMax; ++i) {
+		if (!city.buildings[i].exists) {
+			buildingID = i + 1;
+			break;
+		}
+	}
+
+	if (!buildingID) {
+		// We didn't find a free building slot
+		return false;
+	}
+
+	city.buildingCount++;
+
+	Building *b = getBuildingByID(city, buildingID);
 	*b = building;
 	for (int16 y=0; y<building.footprint.h; y++) {
 		for (int16 x=0; x<building.footprint.w; x++) {
