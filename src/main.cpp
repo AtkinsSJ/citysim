@@ -199,19 +199,7 @@ int main(int argc, char *argv[]) {
 
 	// UI CODE
 		if (keyboardState.down[SDL_SCANCODE_1]) {
-			actionMode = ActionMode_Build;
-			selectedBuildingArchetype = BA_Hovel;
-		} else if (keyboardState.down[SDL_SCANCODE_2]) {
-			selectedBuildingArchetype = BA_Pit;
-			actionMode = ActionMode_Build;
-		} else if (keyboardState.down[SDL_SCANCODE_3]) {
-			selectedBuildingArchetype = BA_Paddock;
-			actionMode = ActionMode_Build;
-		} else if (keyboardState.down[SDL_SCANCODE_4]) {
-			selectedBuildingArchetype = BA_Butcher;
-			actionMode = ActionMode_Build;
-		} else if (keyboardState.down[SDL_SCANCODE_5]) {
-			selectedBuildingArchetype = BA_Road;
+			selectedBuildingArchetype = BA_Field;
 			actionMode = ActionMode_Build;
 
 		} else if (keyboardState.down[SDL_SCANCODE_X]) {

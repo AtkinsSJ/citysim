@@ -18,6 +18,18 @@ struct Camera {
 const real32 CAMERA_PAN_SPEED = 0.5f; // Measured in camera-widths per second
 const int CAMERA_EDGE_SCROLL_MARGIN = 8;
 
+// Farming
+enum TextureAtlasItem {
+	TextureAtlasItem_GroundTile = 0,
+	TextureAtlasItem_WaterTile,
+	TextureAtlasItem_Field,
+	TextureAtlasItem_Crop,
+
+	TextureAtlasItemCount
+};
+
+// Goblin Fortress
+/*
 enum TextureAtlasItem {
 	TextureAtlasItem_GroundTile = 0,
 	TextureAtlasItem_WaterTile,
@@ -31,6 +43,7 @@ enum TextureAtlasItem {
 
 	TextureAtlasItemCount
 };
+*/
 struct TextureAtlas {
 	SDL_Texture *texture;
 	SDL_Rect rects[TextureAtlasItemCount];

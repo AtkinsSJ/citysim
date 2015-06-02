@@ -59,6 +59,15 @@ bool initializeRenderer(Renderer *renderer) {
 		return false;
 	}
 	const int tw = TILE_WIDTH;
+
+	// Farming
+	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
+	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {tw,0,tw,tw};
+	renderer->textureAtlas.rects[TextureAtlasItem_Field] = {tw*4,0,tw*4,tw*4};
+	renderer->textureAtlas.rects[TextureAtlasItem_Crop] = {0,tw,tw,tw};
+
+	// Goblin Fortress
+	/*
 	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
 	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {tw,0,tw,tw};
 	renderer->textureAtlas.rects[TextureAtlasItem_Butcher] = {tw*3,tw*5,tw*2,tw*2};
@@ -68,6 +77,7 @@ bool initializeRenderer(Renderer *renderer) {
 	renderer->textureAtlas.rects[TextureAtlasItem_Road] = {0,tw,tw,tw};
 	renderer->textureAtlas.rects[TextureAtlasItem_Goblin] = {tw,tw*5,tw*2,tw*2};
 	renderer->textureAtlas.rects[TextureAtlasItem_Goat] = {0,tw*5,tw,tw*2};
+	*/
 
 	return true;
 }
