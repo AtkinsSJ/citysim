@@ -78,9 +78,9 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 		);
 	}
 }
-
+/*
 // *& is a reference to the pointer. Like a pointer-pointer
-bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
+bool initialize(SDL_Window **window, SDL_Renderer **renderer) {
 	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
@@ -95,7 +95,7 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 	}
 
 	// Window
-	window = SDL_CreateWindow("Impressionable",
+	(*window) = SDL_CreateWindow("Impressionable",
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 					SCREEN_WIDTH, SCREEN_HEIGHT,
 					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
@@ -105,7 +105,7 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 	}
 
 	// Renderer
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	(*renderer) = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
 	if (renderer == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
 		return false;
@@ -113,7 +113,7 @@ bool initialize(SDL_Window *&window, SDL_Renderer *&renderer) {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
 	return true;
-}
+}*/
 
 enum ActionMode {
 	ActionMode_None = 0,
@@ -127,11 +127,16 @@ enum ActionMode {
 int main(int argc, char *argv[]) {
 
 // INIT
-	SDL_Window *window = NULL;
-	SDL_Renderer *renderer = NULL;
-	if (!initialize(window, renderer)) {
+	Renderer renderer;
+	if (!initializeRenderer(&renderer)) {
 		return 1;
 	}
+
+	// SDL_Window *window = NULL;
+	// SDL_Renderer *renderer = NULL;
+	// if (!initialize(window, renderer)) {
+	// 	return 1;
+	// }
 
 // Help text until we have a UI
 	SDL_Log("BUILDING HOTKEYS:\n");
@@ -141,7 +146,7 @@ int main(int argc, char *argv[]) {
 
 // Load texture data
 	TextureAtlas textureAtlas = {};
-	textureAtlas.texture = loadTexture(renderer, "combined.png");
+	textureAtlas.texture = loadTexture(renderer.sdl_renderer, "combined.png");
 	if (!textureAtlas.texture) return 1;
 	const int tw = TILE_WIDTH;
 	textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
@@ -164,9 +169,9 @@ int main(int argc, char *argv[]) {
 	SDL_Event event;
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
-	Camera camera = {};
-	camera.zoom = 1.0f;
-	SDL_GetWindowSize(window, &camera.windowWidth, &camera.windowHeight);
+
+	renderer.camera.zoom = 1.0f;
+	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
 
 	ActionMode actionMode = ActionMode_None;
 	BuildingArchetype selectedBuildingArchetype = BA_None;
@@ -175,7 +180,7 @@ int main(int argc, char *argv[]) {
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
 
-	SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+	SDL_SetRenderDrawColor(renderer.sdl_renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
 
 		// Clear mouse state
@@ -195,8 +200,8 @@ int main(int argc, char *argv[]) {
 				case SDL_WINDOWEVENT: {
 					switch (event.window.event) {
 						case SDL_WINDOWEVENT_RESIZED: {
-							camera.windowWidth = event.window.data1;
-							camera.windowHeight = event.window.data2;
+							renderer.camera.windowWidth = event.window.data1;
+							renderer.camera.windowHeight = event.window.data2;
 						} break;
 					}
 				} break;
@@ -244,9 +249,9 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Camera controls
-		updateCamera(camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
+		updateCamera(renderer.camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
-		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, camera);
+		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, renderer.camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 	// UI CODE
@@ -296,7 +301,7 @@ int main(int argc, char *argv[]) {
 		}
 
 	// RENDERING
-		SDL_RenderClear(renderer);
+		SDL_RenderClear(renderer.sdl_renderer);
 
 		TextureAtlasItem textureAtlasItem = TextureAtlasItem_GroundTile;
 
@@ -313,7 +318,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawAtWorldPos(renderer, camera, textureAtlas, textureAtlasItem, {x,y});
+				drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, textureAtlasItem, {x,y});
 			}
 		}
 
@@ -328,9 +333,9 @@ int main(int argc, char *argv[]) {
 				&& inRect(building.footprint, mouseTilePos)) {
 				// Draw building red to preview demolition
 				Color demolishColor = {255,128,128,255};
-				drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos, &demolishColor);
+				drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, def->textureAtlasItem, building.footprint.pos, &demolishColor);
 			} else {
-				drawAtWorldPos(renderer, camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
+				drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, def->textureAtlasItem, building.footprint.pos);
 			}
 		}
 
@@ -342,10 +347,10 @@ int main(int argc, char *argv[]) {
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
-			drawAtWorldPos(renderer, camera, textureAtlas, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
+			drawAtWorldPos(renderer.sdl_renderer, renderer.camera, textureAtlas, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
 		}
 
-		SDL_RenderPresent(renderer);
+		SDL_RenderPresent(renderer.sdl_renderer);
 
 	// FRAMERATE MONITORING AND CAPPING
 
@@ -367,11 +372,7 @@ int main(int argc, char *argv[]) {
 
 	SDL_DestroyTexture(textureAtlas.texture);
 
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-
-	IMG_Quit();
-	SDL_Quit();
+	freeRenderer(&renderer);
 
 	return 0;
 }

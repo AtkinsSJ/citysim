@@ -82,7 +82,7 @@ bool placeBuilding(City *city, Building building) {
 
 	// Find first free building
 	uint32 buildingID = 0;
-	for (int i = 0; i < city->buildingCountMax; ++i) {
+	for (uint32 i = 0; i < city->buildingCountMax; ++i) {
 		if (!city->buildings[i].exists) {
 			buildingID = i + 1;
 			break;

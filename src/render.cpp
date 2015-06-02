@@ -1,4 +1,50 @@
 
+bool initializeRenderer(Renderer *renderer) {
+
+	(*renderer) = {};
+
+	// SDL
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
+		return false;
+	}
+
+	// SDL_image
+	uint8 imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
+		return false;
+	}
+
+	// Window
+	renderer->sdl_window = SDL_CreateWindow("Impressionable",
+					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+					SCREEN_WIDTH, SCREEN_HEIGHT,
+					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+	if (renderer->sdl_window == NULL) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
+		return false;
+	}
+
+	// Renderer
+	renderer->sdl_renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
+	if (renderer->sdl_renderer == NULL) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Renderer could not be created! :(\n %s", SDL_GetError());
+		return null;
+	}
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
+	return true;
+}
+
+void freeRenderer(Renderer *renderer) {
+	SDL_DestroyRenderer(renderer->sdl_renderer);
+	SDL_DestroyWindow(renderer->sdl_window);
+
+	IMG_Quit();
+	SDL_Quit();
+}
+
 /**
  * Takes x and y in screen space, and returns a position in world-tile space.
  */
