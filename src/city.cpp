@@ -43,9 +43,15 @@ void generateTerrain(City &city) {
 }
 
 bool canPlaceBuilding(City &city, BuildingArchetype selectedBuildingArchetype, Coord position) {
-	// Check terrain is buildable and empty
+
 	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
+	// Are we in bounds?
+	if (!rectInRect({0,0, city.width, city.height}, {position, def.width, def.height})) {
+		return false;
+	}
+
+	// Check terrain is buildable and empty
 	for (int32 y=0; y<def.height; y++) {
 		for (int32 x=0; x<def.width; x++) {
 			uint32 ti = tileIndex(city, position.x + x, position.y + y);

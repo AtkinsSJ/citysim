@@ -288,7 +288,9 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				case ActionMode_None: {
-					SDL_Log("Building ID at position = %d", city.tileBuildings[tileIndex(city, mouseTilePos.x, mouseTilePos.y)]);
+					SDL_Log("Building ID at position (%d,%d) = %d",
+						mouseTilePos.x, mouseTilePos.y,
+						city.tileBuildings[tileIndex(city, mouseTilePos.x, mouseTilePos.y)]);
 				} break;
 			}
 		}

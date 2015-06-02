@@ -42,6 +42,13 @@ inline bool inRect(Rect rect, Coord coord) {
 		&& coord.y < (rect.y + rect.h);
 }
 
+inline bool rectInRect(Rect outer, Rect inner) {
+	return inner.x >= outer.x
+		&& (inner.x + inner.w) <= (outer.x + outer.w)
+		&& inner.y >= outer.y
+		&& (inner.y + inner.h) <= (outer.y + outer.h);
+}
+
 struct V2 {
 	real32 x,y;
 };
