@@ -1,20 +1,38 @@
 
-SDL_Texture* loadTexture(SDL_Renderer *renderer, char *path) {
-	SDL_Texture *texture = NULL;
+Texture textureFromSurface(Renderer *renderer, SDL_Surface *surface) {
+	Texture texture = {};
+	texture.sdl_texture = SDL_CreateTextureFromSurface(renderer->sdl_renderer, surface);
+	if (texture.sdl_texture) {
+		texture.valid = true;
+		SDL_QueryTexture(texture.sdl_texture, null, null, &texture.w, &texture.h);
+	}
+
+	return texture;
+}
+
+Texture loadTexture(Renderer *renderer, char *path) {
+
+	Texture texture = {};
 
 	SDL_Surface *loadedSurface = IMG_Load(path);
 	if (loadedSurface == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
 	} else {
-		texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-		if (texture == NULL) {
+		texture = textureFromSurface(renderer, loadedSurface);
+
+		if (!texture.valid) {
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create texture from image at '%s': %s\n", path, SDL_GetError());
 		}
-
+		
 		SDL_FreeSurface(loadedSurface);
 	}
 
 	return texture;
+}
+
+void freeTexture(Texture *texture) {
+	SDL_DestroyTexture(texture->sdl_texture);
+	texture = {};
 }
 
 bool initializeRenderer(Renderer *renderer) {
@@ -43,7 +61,7 @@ bool initializeRenderer(Renderer *renderer) {
 	// Window
 	renderer->sdl_window = SDL_CreateWindow("Impressionable",
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-					SCREEN_WIDTH, SCREEN_HEIGHT,
+					800, 600, // Initial screen resolution
 					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if (renderer->sdl_window == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
@@ -60,8 +78,8 @@ bool initializeRenderer(Renderer *renderer) {
 
 	// Load texture data
 	renderer->textureAtlas = {};
-	renderer->textureAtlas.texture = loadTexture(renderer->sdl_renderer, "combined.png");
-	if (!renderer->textureAtlas.texture) {
+	renderer->textureAtlas.texture = loadTexture(renderer, "combined.png");
+	if (!renderer->textureAtlas.texture.valid) {
 		return false;
 	}
 	const int tw = TILE_WIDTH;
@@ -97,7 +115,7 @@ bool initializeRenderer(Renderer *renderer) {
 
 void freeRenderer(Renderer *renderer) {
 
-	SDL_DestroyTexture(renderer->textureAtlas.texture);
+	freeTexture(&renderer->textureAtlas.texture);
 
 	TTF_CloseFont(renderer->font);
 
@@ -144,25 +162,14 @@ void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord
 	};
 
 	if (color) {
-		SDL_SetTextureColorMod(renderer->textureAtlas.texture, color->r, color->g, color->b);
-		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture, color->a);
+		SDL_SetTextureColorMod(renderer->textureAtlas.texture.sdl_texture, color->r, color->g, color->b);
+		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture.sdl_texture, color->a);
 
-		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture, sourceRect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture.sdl_texture, sourceRect, &destRect);
 
-		SDL_SetTextureColorMod(renderer->textureAtlas.texture, 255, 255, 255);
-		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture, 255);
+		SDL_SetTextureColorMod(renderer->textureAtlas.texture.sdl_texture, 255, 255, 255);
+		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture.sdl_texture, 255);
 	} else {
-		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture, sourceRect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture.sdl_texture, sourceRect, &destRect);
 	}
-}
-
-/**
- * Draws a rectangle relative to the screen.
- */
-void drawUiRect(Renderer *renderer, int32 x, int32 y, int32 width, int32 height, Color color) {
-	SDL_SetRenderDrawColor(renderer->sdl_renderer, color.r, color.g, color.b, color.a);
-	SDL_SetRenderDrawBlendMode(renderer->sdl_renderer, SDL_BLENDMODE_BLEND);
-
-	SDL_Rect rect = {x,y,width,height};
-	SDL_RenderFillRect(renderer->sdl_renderer, &rect);
 }

@@ -14,6 +14,7 @@
 
 #include "types.h"
 #include "render.h"
+#include "ui.h"
 #include "building.h"
 #include "city.h"
 #include "input.h"
@@ -125,6 +126,13 @@ int main(int argc, char *argv[]) {
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
 
+	// Build UI
+	Rect buttonRect = {100, 20, 150, 75};
+	Color buttonTextColor = {0,0,0,255};
+	Color buttonBackgroundColor = {255,255,255,255};
+	Color buttonBackgroundHoverColor = {128,255,128,255};
+	UiButton button = createButton(&renderer, buttonRect, "Build Field", renderer.font, buttonTextColor, buttonBackgroundColor, buttonBackgroundHoverColor);
+
 	SDL_SetRenderDrawColor(renderer.sdl_renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
 
@@ -212,24 +220,31 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
-			switch (actionMode) {
-				case ActionMode_Build: {
-					// Try and build a thing
-					Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
-					bool succeeded = placeBuilding(&city, building);
-				} break;
 
-				case ActionMode_Demolish: {
-					// Try and demolish a thing
-					bool succeeded = demolish(&city, mouseTilePos);
-					SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
-				} break;
+			if (inRect(button.rect, {mouseState.x, mouseState.y})) {
+				// We clicked the button!
+				SDL_Log("We clicked on the button!");
+			} else {
 
-				case ActionMode_None: {
-					SDL_Log("Building ID at position (%d,%d) = %d",
-						mouseTilePos.x, mouseTilePos.y,
-						city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
-				} break;
+				switch (actionMode) {
+					case ActionMode_Build: {
+						// Try and build a thing
+						Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
+						bool succeeded = placeBuilding(&city, building);
+					} break;
+
+					case ActionMode_Demolish: {
+						// Try and demolish a thing
+						bool succeeded = demolish(&city, mouseTilePos);
+						SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
+					} break;
+
+					case ActionMode_None: {
+						SDL_Log("Building ID at position (%d,%d) = %d",
+							mouseTilePos.x, mouseTilePos.y,
+							city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
+					} break;
+				}
 			}
 		}
 
@@ -284,7 +299,9 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw some UI
-		drawUiRect(&renderer, 0,0, renderer.camera.windowWidth, 100, {255,0,0,128});
+		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 100}, {255,0,0,128});
+
+		drawUiButton(&renderer, &button);
 
 		// FIXME: UGH! Horrible and inefficient and yucky
 		SDL_Surface *textSurface = TTF_RenderUTF8_Solid(renderer.font, "Hello world!", {255,255,255,255});

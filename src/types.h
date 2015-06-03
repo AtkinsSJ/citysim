@@ -27,13 +27,17 @@ struct Coord {
 	int32 x,y;
 };
 
-struct Rect {
-	union {
-		struct {Coord pos;};
-		struct {int32 x, y;};
+union Rect {
+	struct {
+		union {
+			struct {Coord pos;};
+			struct {int32 x, y;};
+		};
+		int32 w,h;
 	};
-	int32 w,h;
+	SDL_Rect sdl_rect;
 };
+
 
 inline bool inRect(Rect rect, Coord coord) {
 	return coord.x >= rect.x
@@ -53,9 +57,7 @@ struct V2 {
 	real32 x,y;
 };
 
-struct Color {
-	uint8 r, g, b, a;
-};
+typedef SDL_Color Color;
 
 inline real32 clamp(real32 value, real32 min, real32 max) {
 	if (value < min) return min;

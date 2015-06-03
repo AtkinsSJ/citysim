@@ -3,9 +3,6 @@
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
-
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
 const int CAMERA_MARGIN = 20;
@@ -44,8 +41,15 @@ enum TextureAtlasItem {
 	TextureAtlasItemCount
 };
 */
+
+struct Texture {
+	bool valid;
+	SDL_Texture *sdl_texture;
+	int32 w, h;
+};
+
 struct TextureAtlas {
-	SDL_Texture *texture;
+	Texture texture;
 	SDL_Rect rects[TextureAtlasItemCount];
 };
 
