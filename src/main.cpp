@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
 		}
 
 	// RENDERING
-		SDL_RenderClear(renderer.sdl_renderer);
+		clearToBlack(&renderer);
 
 		TextureAtlasItem textureAtlasItem = TextureAtlasItem_GroundTile;
 
@@ -284,8 +284,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw some UI
+		drawUiRect(&renderer, 0,0, renderer.camera.windowWidth, 100, {255,0,0,128});
+
 		// FIXME: UGH! Horrible and inefficient and yucky
-		SDL_Surface *textSurface = TTF_RenderUTF8_Solid(renderer.font, "Hello world!", {0,0,0,255});
+		SDL_Surface *textSurface = TTF_RenderUTF8_Solid(renderer.font, "Hello world!", {255,255,255,255});
 		SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer.sdl_renderer, textSurface);
 		SDL_Rect textRect = {0, 0,  textSurface->w, textSurface->h};
 		SDL_RenderCopy(renderer.sdl_renderer, textTexture, null, &textRect);

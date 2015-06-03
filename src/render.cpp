@@ -86,7 +86,7 @@ bool initializeRenderer(Renderer *renderer) {
 	*/
 
 	// Load font
-	renderer->font = TTF_OpenFont("OpenSans-Regular.ttf", 12);
+	renderer->font = TTF_OpenFont("OpenSans-Regular.ttf", 24);
 	if (!renderer->font) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Font could not be loaded. :(\n %s", TTF_GetError());
 		return false;
@@ -121,6 +121,12 @@ inline Coord tilePosition(V2 worldPixelPos) {
 			(int)floor(worldPixelPos.y)};
 }
 
+void clearToBlack(Renderer *renderer) {
+	SDL_SetRenderDrawColor(renderer->sdl_renderer, 0, 0, 0, 255);
+	SDL_SetRenderDrawBlendMode(renderer->sdl_renderer, SDL_BLENDMODE_NONE);
+	SDL_RenderClear(renderer->sdl_renderer);
+}
+
 void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord worldTilePosition, Color *color=0) {
 	
 	const real32 camLeft = renderer->camera.pos.x - (renderer->camera.windowWidth * 0.5f),
@@ -148,4 +154,15 @@ void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord
 	} else {
 		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture, sourceRect, &destRect);
 	}
+}
+
+/**
+ * Draws a rectangle relative to the screen.
+ */
+void drawUiRect(Renderer *renderer, int32 x, int32 y, int32 width, int32 height, Color color) {
+	SDL_SetRenderDrawColor(renderer->sdl_renderer, color.r, color.g, color.b, color.a);
+	SDL_SetRenderDrawBlendMode(renderer->sdl_renderer, SDL_BLENDMODE_BLEND);
+
+	SDL_Rect rect = {x,y,width,height};
+	SDL_RenderFillRect(renderer->sdl_renderer, &rect);
 }
