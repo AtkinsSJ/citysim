@@ -11,6 +11,10 @@ struct UiButton {
 
 	Color backgroundColor;
 	Color backgroundHoverColor;
+	Color backgroundPressedColor;
+
+	bool mouseOver;
+	bool clickStarted;
 };
 
 #include "ui.cpp"

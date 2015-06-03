@@ -2,14 +2,15 @@
 
 UiButton createButton(Renderer *renderer, Rect rect,
 				char *text, TTF_Font* font, Color buttonTextColor,
-				Color buttonBackgroundColor, Color buttonBackgroundHoverColor) {
+				Color color, Color hoverColor, Color pressedColor) {
 	UiButton button;
 	button.rect = rect;
 	button.text = text;
 	button.textColor = buttonTextColor;
 	button.font = font;
-	button.backgroundColor = buttonBackgroundColor;
-	button.backgroundHoverColor = buttonBackgroundHoverColor;
+	button.backgroundColor = color;
+	button.backgroundHoverColor = hoverColor;
+	button.backgroundPressedColor = pressedColor;
 
 	// Generate the text texture
 	SDL_Surface *textSurface = TTF_RenderUTF8_Solid(button.font, button.text, button.textColor);
@@ -45,6 +46,14 @@ void drawUiTexture(Renderer *renderer, Texture *texture, Rect rect) {
 }
 
 void drawUiButton(Renderer *renderer, UiButton *button) {
-	drawUiRect(renderer, button->rect, button->backgroundColor);
+	if (button->mouseOver) {
+		if (button->clickStarted) {
+			drawUiRect(renderer, button->rect, button->backgroundPressedColor);
+		} else {
+			drawUiRect(renderer, button->rect, button->backgroundHoverColor);
+		}
+	} else {
+		drawUiRect(renderer, button->rect, button->backgroundColor);
+	}
 	drawUiTexture(renderer, &button->textTexture, button->textRect);
 }

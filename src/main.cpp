@@ -128,10 +128,12 @@ int main(int argc, char *argv[]) {
 
 	// Build UI
 	Rect buttonRect = {100, 20, 150, 75};
-	Color buttonTextColor = {0,0,0,255};
-	Color buttonBackgroundColor = {255,255,255,255};
-	Color buttonBackgroundHoverColor = {128,255,128,255};
-	UiButton button = createButton(&renderer, buttonRect, "Build Field", renderer.font, buttonTextColor, buttonBackgroundColor, buttonBackgroundHoverColor);
+	UiButton button = createButton(&renderer, buttonRect, "Build Field", renderer.font,
+		{0,0,0,255}, // text color
+		{255,255,255,255},  // Background
+		{192,192,255,255}, // Hover
+		{128,128,255,255}
+	); // Pressed
 
 	SDL_SetRenderDrawColor(renderer.sdl_renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -201,6 +203,14 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+	// UiButton/Mouse interaction
+		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+			// See if a button is click-started
+			button.clickStarted = inRect(button.rect, {mouseState.x, mouseState.y});
+			SDL_Log("Just clicked button? %s", button.clickStarted ? "true" : "false");
+		}
+		button.mouseOver = inRect(button.rect, {mouseState.x, mouseState.y});
+
 		// Camera controls
 		updateCamera(renderer.camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
@@ -221,9 +231,8 @@ int main(int argc, char *argv[]) {
 
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 
-			if (inRect(button.rect, {mouseState.x, mouseState.y})) {
-				// We clicked the button!
-				SDL_Log("We clicked on the button!");
+			if (button.mouseOver) {
+				// Don't trigger world interaction
 			} else {
 
 				switch (actionMode) {
@@ -246,6 +255,13 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 			}
+		} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
+			// Did we trigger a button?
+			if (button.clickStarted && button.mouseOver) {
+				SDL_Log("We clicked on the button!");
+			}
+		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
+			button.clickStarted = false;
 		}
 
 	// RENDERING
@@ -303,6 +319,7 @@ int main(int argc, char *argv[]) {
 
 		drawUiButton(&renderer, &button);
 
+#if 0
 		// FIXME: UGH! Horrible and inefficient and yucky
 		SDL_Surface *textSurface = TTF_RenderUTF8_Solid(renderer.font, "Hello world!", {255,255,255,255});
 		SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer.sdl_renderer, textSurface);
@@ -310,6 +327,7 @@ int main(int argc, char *argv[]) {
 		SDL_RenderCopy(renderer.sdl_renderer, textTexture, null, &textRect);
 		SDL_DestroyTexture(textTexture);
 		SDL_FreeSurface(textSurface);
+#endif
 
 		SDL_RenderPresent(renderer.sdl_renderer);
 
@@ -330,6 +348,8 @@ int main(int argc, char *argv[]) {
 
 // CLEAN UP
 	freeCity(&city);
+
+	freeButton(&button);
 
 	freeRenderer(&renderer);
 
