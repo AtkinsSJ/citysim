@@ -39,7 +39,9 @@ Texture renderText(Renderer *renderer, TTF_Font *font, char *text, Color color) 
 }
 
 void freeTexture(Texture *texture) {
-	SDL_DestroyTexture(texture->sdl_texture);
+	if (texture->valid) {
+		SDL_DestroyTexture(texture->sdl_texture);
+	}
 	texture = {};
 }
 

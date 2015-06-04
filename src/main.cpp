@@ -6,7 +6,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-#else
+#else // Windows
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -139,27 +139,32 @@ int main(int argc, char *argv[]) {
 	real32 framesPerSecond = 0;
 
 	// Build UI
+	const int uiPadding = 4;
 	Color buttonTextColor = {0,0,0,255},
 		buttonBackgroundColor = {255,255,255,255},
 		buttonHoverColor = {192,192,255,255},
 		buttonPressedColor = {128,128,255,255},
 		uiTextColor = {255,255,255,255};
 
-	UiText textCityName = createText(&renderer, {8,0}, city.name, renderer.fontLarge, uiTextColor);
+	Coord textPosition = {8,4};
+	UiText textCityName = createText(&renderer, textPosition, city.name, renderer.fontLarge, uiTextColor);
+
+	textPosition.x += textCityName.rect.w + uiPadding;
+	UiText textCityFunds = createText(&renderer, textPosition, "£000000", renderer.fontLarge, uiTextColor);
 
 	Rect buttonRect = {100, 20, 80, 24};
 	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
-	buttonRect.x += buttonRect.w + 4;
+	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton buttonDemolish = createButton(&renderer, buttonRect, "Demolish", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
-	buttonRect.x += buttonRect.w + 4;
+	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton buttonPlant = createButton(&renderer, buttonRect, "Plant", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
-	buttonRect.x += buttonRect.w + 4;
+	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton buttonHarvest = createButton(&renderer, buttonRect, "Harvest", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
@@ -296,6 +301,7 @@ int main(int argc, char *argv[]) {
 						// Try and demolish a thing
 						bool succeeded = demolish(&city, mouseTilePos);
 						SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
+						setText(&renderer, &textCityFunds, "Hello World!");
 					} break;
 
 					case ActionMode_Plant: {
@@ -454,6 +460,7 @@ int main(int argc, char *argv[]) {
 		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 100}, {255,0,0,128});
 
 		drawUiText(&renderer, &textCityName);
+		drawUiText(&renderer, &textCityFunds);
 
 		drawUiButton(&renderer, &buttonBuildField);
 		drawUiButton(&renderer, &buttonDemolish);
@@ -487,6 +494,8 @@ int main(int argc, char *argv[]) {
 	SDL_FreeCursor(cursorHarvest);
 
 	freeText(&textCityName);
+	freeText(&textCityFunds);
+
 	freeButton(&buttonBuildField);
 	freeButton(&buttonDemolish);
 	freeButton(&buttonPlant);

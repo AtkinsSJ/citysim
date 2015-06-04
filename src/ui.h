@@ -1,13 +1,18 @@
 #pragma once
 // ui.h
 
-struct UiButton {
+struct UiText {
 	Rect rect;
 	char *text;
-	TTF_Font* font;
-	Color textColor;
-	Texture textTexture;
-	Rect textRect; // NOT relative right now. Maybe will be later?
+	TTF_Font *font;
+	Color color;
+	Texture texture;
+};
+
+struct UiButton {
+	Rect rect;
+
+	UiText text;
 
 	Color backgroundColor;
 	Color backgroundHoverColor;
@@ -18,12 +23,5 @@ struct UiButton {
 	bool active;
 };
 
-struct UiText {
-	Rect rect;
-	char *text;
-	TTF_Font *font;
-	Color color;
-	Texture texture;
-};
 
 #include "ui.cpp"
