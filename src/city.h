@@ -59,6 +59,9 @@ struct FieldData {
 };
 
 struct City {
+	char *name;
+	int32 funds;
+
 	uint32 width, height;
 	Terrain *terrain;
 

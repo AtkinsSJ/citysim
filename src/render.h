@@ -61,6 +61,7 @@ struct Renderer {
 	TextureAtlas textureAtlas;
 
 	TTF_Font *font;
+	TTF_Font *fontLarge;
 };
 
 #include "render.cpp"

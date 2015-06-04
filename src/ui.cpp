@@ -3,7 +3,7 @@
 UiButton createButton(Renderer *renderer, Rect rect,
 				char *text, TTF_Font* font, Color buttonTextColor,
 				Color color, Color hoverColor, Color pressedColor) {
-	UiButton button;
+	UiButton button = {};
 	button.rect = rect;
 	button.text = text;
 	button.textColor = buttonTextColor;
@@ -13,9 +13,7 @@ UiButton createButton(Renderer *renderer, Rect rect,
 	button.backgroundPressedColor = pressedColor;
 
 	// Generate the text texture
-	SDL_Surface *textSurface = TTF_RenderUTF8_Blended(button.font, button.text, button.textColor);
-	button.textTexture = textureFromSurface(renderer, textSurface);
-	SDL_FreeSurface(textSurface);
+	button.textTexture = renderText(renderer, button.font, button.text, button.textColor);
 
 	// Centre the text on the button
 	button.textRect.w = button.textTexture.w;
@@ -29,6 +27,23 @@ UiButton createButton(Renderer *renderer, Rect rect,
 void freeButton(UiButton *button) {
 	freeTexture(&button->textTexture);
 	button = {};
+}
+
+UiText createText(Renderer *renderer, Coord position, char *text, TTF_Font *font, Color color) {
+	UiText uiText = {};
+	uiText.text = text;
+	uiText.font = font;
+	uiText.color = color;
+
+	uiText.texture = renderText(renderer, uiText.font, uiText.text, uiText.color);
+	uiText.rect = {position, uiText.texture.w, uiText.texture.h};
+
+	return uiText;
+}
+
+void freeText(UiText *uiText) {
+	freeTexture(&uiText->texture);
+	uiText = {};
 }
 
 /**
@@ -58,4 +73,8 @@ void drawUiButton(Renderer *renderer, UiButton *button) {
 		drawUiRect(renderer, button->rect, button->backgroundColor);
 	}
 	drawUiTexture(renderer, &button->textTexture, button->textRect);
+}
+
+void drawUiText(Renderer *renderer, UiText *text) {
+	drawUiTexture(renderer, &text->texture, text->rect);
 }

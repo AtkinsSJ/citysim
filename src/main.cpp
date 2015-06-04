@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
-	City city = createCity(100,100);
+	City city = createCity(100,100, "Best Farm", 20000);
 	generateTerrain(&city);
 
 // GAME LOOP
@@ -142,7 +142,10 @@ int main(int argc, char *argv[]) {
 	Color buttonTextColor = {0,0,0,255},
 		buttonBackgroundColor = {255,255,255,255},
 		buttonHoverColor = {192,192,255,255},
-		buttonPressedColor = {128,128,255,255};
+		buttonPressedColor = {128,128,255,255},
+		uiTextColor = {255,255,255,255};
+
+	UiText textCityName = createText(&renderer, {8,0}, city.name, renderer.fontLarge, uiTextColor);
 
 	Rect buttonRect = {100, 20, 80, 24};
 	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
@@ -315,7 +318,7 @@ int main(int argc, char *argv[]) {
 							FieldData *field = (FieldData*)building->data;
 							if (field->hasPlants) {
 								field->hasPlants = false;
-								SDL_Log("Pretending to harvest something in this field.");
+								SDL_Log("Harvested %d plants from this field.", field->growth);
 							}
 						}
 					} break;
@@ -450,6 +453,8 @@ int main(int argc, char *argv[]) {
 		// Draw some UI
 		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 100}, {255,0,0,128});
 
+		drawUiText(&renderer, &textCityName);
+
 		drawUiButton(&renderer, &buttonBuildField);
 		drawUiButton(&renderer, &buttonDemolish);
 		drawUiButton(&renderer, &buttonPlant);
@@ -481,6 +486,7 @@ int main(int argc, char *argv[]) {
 	SDL_FreeCursor(cursorPlant);
 	SDL_FreeCursor(cursorHarvest);
 
+	freeText(&textCityName);
 	freeButton(&buttonBuildField);
 	freeButton(&buttonDemolish);
 	freeButton(&buttonPlant);

@@ -18,4 +18,12 @@ struct UiButton {
 	bool active;
 };
 
+struct UiText {
+	Rect rect;
+	char *text;
+	TTF_Font *font;
+	Color color;
+	Texture texture;
+};
+
 #include "ui.cpp"

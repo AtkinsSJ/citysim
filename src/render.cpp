@@ -30,6 +30,14 @@ Texture loadTexture(Renderer *renderer, char *path) {
 	return texture;
 }
 
+Texture renderText(Renderer *renderer, TTF_Font *font, char *text, Color color) {
+	SDL_Surface *textSurface = TTF_RenderUTF8_Blended(font, text, color);
+	Texture texture = textureFromSurface(renderer, textSurface);
+	SDL_FreeSurface(textSurface);
+
+	return texture;
+}
+
 void freeTexture(Texture *texture) {
 	SDL_DestroyTexture(texture->sdl_texture);
 	texture = {};
@@ -105,7 +113,8 @@ bool initializeRenderer(Renderer *renderer) {
 
 	// Load font
 	renderer->font = TTF_OpenFont("OpenSans-Regular.ttf", 12);
-	if (!renderer->font) {
+	renderer->fontLarge = TTF_OpenFont("OpenSans-Regular.ttf", 16);
+	if (!renderer->font || !renderer->fontLarge) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Font could not be loaded. :(\n %s", TTF_GetError());
 		return false;
 	}
@@ -118,6 +127,7 @@ void freeRenderer(Renderer *renderer) {
 	freeTexture(&renderer->textureAtlas.texture);
 
 	TTF_CloseFont(renderer->font);
+	TTF_CloseFont(renderer->fontLarge);
 
 	SDL_DestroyRenderer(renderer->sdl_renderer);
 	SDL_DestroyWindow(renderer->sdl_window);

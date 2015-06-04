@@ -1,6 +1,8 @@
 
-inline City createCity(uint32 width, uint32 height) {
+inline City createCity(uint32 width, uint32 height, char *name, int32 funds) {
 	City city = {};
+	city.name = name;
+	city.funds = funds;
 	city.width = width;
 	city.height = height;
 	city.terrain = new Terrain[width*height]();
