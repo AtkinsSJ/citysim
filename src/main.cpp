@@ -230,6 +230,20 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+	// Update stuff!
+		// Fields
+		for (int i = 0; i < ArrayCount(city.fieldData); i++) {
+			FieldData *field = city.fieldData + i;
+			if (field->exists && field->hasPlants && field->growth < 16) {
+				// Simulate the field!
+				field->growthCounter += MS_PER_FRAME;
+				if (field->growthCounter >= 1000) {
+					field->growthCounter -= 1000;
+					field->growth++;
+				}
+			}
+		}
+
 	// UiButton/Mouse interaction
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			// See if a button is click-started
@@ -288,6 +302,7 @@ int main(int argc, char *argv[]) {
 							FieldData *field = (FieldData*)building->data;
 							if (!field->hasPlants) {
 								field->hasPlants = true;
+								field->growth = 0;
 								SDL_Log("Pretending to plant something in this field.");
 							}
 						}
@@ -405,12 +420,12 @@ int main(int argc, char *argv[]) {
 			switch (building.archetype) {
 				case BA_Field: {
 					drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &drawColor);
-					if ( ((FieldData*)building.data)->hasPlants ) {	
-						for (int y = 0; y < 4; y++) {
-							for (int x = 0; x < 4; x++) {
-								drawAtWorldPos(&renderer, TextureAtlasItem_Crop,
-									{building.footprint.pos.x + x, building.footprint.pos.y + y}, &drawColor);
-							}
+					FieldData *field = (FieldData*)building.data;
+					if ( field->hasPlants ) {
+						for (int i=0; i < field->growth; i++) {
+							drawAtWorldPos(&renderer, TextureAtlasItem_Crop,
+									{building.footprint.pos.x + (i%4),
+									 building.footprint.pos.y + (i/4)}, &drawColor);
 						}
 					}
 				} break;
@@ -439,16 +454,6 @@ int main(int argc, char *argv[]) {
 		drawUiButton(&renderer, &buttonDemolish);
 		drawUiButton(&renderer, &buttonPlant);
 		drawUiButton(&renderer, &buttonHarvest);
-
-#if 0
-		// FIXME: UGH! Horrible and inefficient and yucky
-		SDL_Surface *textSurface = TTF_RenderUTF8_Solid(renderer.font, "Hello world!", {255,255,255,255});
-		SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer.sdl_renderer, textSurface);
-		SDL_Rect textRect = {0, 0,  textSurface->w, textSurface->h};
-		SDL_RenderCopy(renderer.sdl_renderer, textTexture, null, &textRect);
-		SDL_DestroyTexture(textTexture);
-		SDL_FreeSurface(textSurface);
-#endif
 
 		SDL_RenderPresent(renderer.sdl_renderer);
 

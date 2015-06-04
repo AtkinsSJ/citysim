@@ -54,6 +54,8 @@ struct Building {
 struct FieldData {
 	bool exists;
 	bool hasPlants;
+	int32 growth;
+	int32 growthCounter;
 };
 
 struct City {

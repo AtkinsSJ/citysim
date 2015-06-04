@@ -129,6 +129,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 			
 			fieldData->exists = true;
 			fieldData->hasPlants = false;
+			fieldData->growth = 0;
 
 		} break;
 	}
