@@ -31,6 +31,18 @@ inline Terrain terrainAt(City *city, uint32 x, uint32 y) {
 	return city->terrain[tileIndex(city, x, y)];
 }
 
+inline Building* getBuildingByID(City *city, uint32 buildingID) {
+	if (buildingID <= 0 || buildingID > city->buildingCountMax) {
+		return null;
+	}
+
+	return &(city->buildings[buildingID - 1]);
+}
+
+inline Building* getBuildingAtPosition(City *city, uint32 x, uint32 y) {
+	return getBuildingByID(city, city->tileBuildings[tileIndex(city,x,y)]);
+}
+
 void generateTerrain(City *city) {
 	for (uint32 y = 0; y < city->height; y++) {
 		for (uint32 x = 0; x < city->width; x++) {
@@ -71,14 +83,12 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(City *city, Building building) {
-	if (!canPlaceBuilding(city, building.archetype, building.footprint.pos)) {
+bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
+	if (!canPlaceBuilding(city, archetype, position)) {
 		return false;
 	}
 
-	if (city->buildingCount >= city->buildingCountMax) {
-		return false;
-	}
+	SDL_assert(city->buildingCount < city->buildingCountMax);
 
 	// Find first free building
 	uint32 buildingID = 0;
@@ -89,18 +99,43 @@ bool placeBuilding(City *city, Building building) {
 		}
 	}
 
-	if (!buildingID) {
-		// We didn't find a free building slot
-		return false;
-	}
+	SDL_assert(buildingID);
 
 	city->buildingCount++;
 
-	Building *b = getBuildingByID(city, buildingID);
-	*b = building;
-	for (int16 y=0; y<building.footprint.h; y++) {
-		for (int16 x=0; x<building.footprint.w; x++) {
-			city->tileBuildings[tileIndex(city,building.footprint.x+x,building.footprint.y+y)] = buildingID;
+	Building *building = getBuildingByID(city, buildingID);
+	BuildingDefinition *def = buildingDefinitions + archetype;
+
+	*building = {};
+	building->exists = true;
+	building->archetype = archetype;
+	building->footprint = {position, def->width, def->height};
+
+	// Building-specific stuff
+	switch (archetype) {
+		case BA_Field: {
+
+			for (int i = 0; i < ArrayCount(city->fieldData); ++i) {
+				if (!city->fieldData[i].exists) {
+					building->data = city->fieldData + i;
+					SDL_Log("Allocating fieldData #%d for building #%d", i, buildingID);
+					break;
+				}
+			}
+
+			SDL_assert(building->data == null);
+
+			FieldData *fieldData = (FieldData*)building->data;
+			
+			fieldData->exists = true;
+			fieldData->hasPlants = false;
+
+		} break;
+	}
+
+	for (int16 y=0; y<building->footprint.h; y++) {
+		for (int16 x=0; x<building->footprint.w; x++) {
+			city->tileBuildings[tileIndex(city,building->footprint.x+x,building->footprint.y+y)] = buildingID;
 		}
 	}
 	return true;
@@ -134,6 +169,14 @@ bool demolish(City *city, Coord position) {
 		// we'll find the first non-existent building to replace!
 		building->exists = false;
 		city->buildingCount--;
+
+		// Clear the building's data
+		switch (building->archetype) {
+			case BA_Field: {
+				FieldData *fieldData = (FieldData*)building->data;
+				fieldData->exists = false;
+			} break;
+		}
 
 		return true;
 

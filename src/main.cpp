@@ -15,7 +15,6 @@
 #include "types.h"
 #include "render.h"
 #include "ui.h"
-#include "building.h"
 #include "city.h"
 #include "input.h"
 
@@ -117,12 +116,6 @@ int main(int argc, char *argv[]) {
 	SDL_Cursor *cursorHarvest = createCursor("cursor_harvest.png");
 
 	SDL_SetCursor(cursorMain);
-
-// Help text until we have a UI
-	SDL_Log("BUILDING HOTKEYS:\n");
-	for (int i = 0; i < BA_Count; i++) {
-		SDL_Log("%d : %s\n", (i+1), buildingDefinitions[i].name.c_str());
-	}
 
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
@@ -280,14 +273,29 @@ int main(int argc, char *argv[]) {
 				switch (actionMode) {
 					case ActionMode_Build: {
 						// Try and build a thing
-						Building building = createBuilding(selectedBuildingArchetype, mouseTilePos);
-						bool succeeded = placeBuilding(&city, building);
+						bool succeeded = placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
 					} break;
 
 					case ActionMode_Demolish: {
 						// Try and demolish a thing
 						bool succeeded = demolish(&city, mouseTilePos);
 						SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
+					} break;
+
+					case ActionMode_Plant: {
+						// Only do something if we clicked on a field!
+						Building *building = getBuildingAtPosition(&city, mouseTilePos.x, mouseTilePos.y);
+						if (building && building->archetype == BA_Field) {
+							SDL_Log("Pretending to plant something in this field.");
+						}
+					} break;
+
+					case ActionMode_Harvest: {
+						// Only do something if we clicked on a field!
+						Building *building = getBuildingAtPosition(&city, mouseTilePos.x, mouseTilePos.y);
+						if (building && building->archetype == BA_Field) {
+							SDL_Log("Pretending to harvest something in this field.");
+						}
 					} break;
 
 					case ActionMode_None: {
