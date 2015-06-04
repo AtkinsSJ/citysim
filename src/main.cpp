@@ -111,7 +111,10 @@ int main(int argc, char *argv[]) {
 
 	// Make some cursors!
 	SDL_Cursor *cursorMain = createCursor("cursor_main.png");
+	SDL_Cursor *cursorBuild = createCursor("cursor_build.png");
 	SDL_Cursor *cursorDemolish = createCursor("cursor_demolish.png");
+	SDL_Cursor *cursorPlant = createCursor("cursor_plant.png");
+	SDL_Cursor *cursorHarvest = createCursor("cursor_harvest.png");
 
 	SDL_SetCursor(cursorMain);
 
@@ -304,7 +307,7 @@ int main(int argc, char *argv[]) {
 				buttonBuildField.active = true;
 				selectedBuildingArchetype = BA_Field;
 				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorMain);
+				SDL_SetCursor(cursorBuild);
 			} else if (buttonDemolish.clickStarted && buttonDemolish.mouseOver) {
 				if (activeButton) {
 					activeButton->active = false;
@@ -320,7 +323,7 @@ int main(int argc, char *argv[]) {
 				activeButton = &buttonPlant;
 				buttonPlant.active = true;
 				actionMode = ActionMode_Plant;
-				SDL_SetCursor(cursorMain);
+				SDL_SetCursor(cursorPlant);
 			} else if (buttonHarvest.clickStarted && buttonHarvest.mouseOver) {
 				if (activeButton) {
 					activeButton->active = false;
@@ -328,7 +331,7 @@ int main(int argc, char *argv[]) {
 				activeButton = &buttonHarvest;
 				buttonHarvest.active = true;
 				actionMode = ActionMode_Harvest;
-				SDL_SetCursor(cursorMain);
+				SDL_SetCursor(cursorHarvest);
 			}
 		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
 			buttonBuildField.clickStarted = false;
@@ -436,7 +439,10 @@ int main(int argc, char *argv[]) {
 	freeCity(&city);
 
 	SDL_FreeCursor(cursorMain);
+	SDL_FreeCursor(cursorBuild);
 	SDL_FreeCursor(cursorDemolish);
+	SDL_FreeCursor(cursorPlant);
+	SDL_FreeCursor(cursorHarvest);
 
 	freeButton(&buttonBuildField);
 	freeButton(&buttonDemolish);
