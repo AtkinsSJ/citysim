@@ -273,7 +273,11 @@ int main(int argc, char *argv[]) {
 		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
 			buttonBuildField.clickStarted = false;
 			buttonDemolish.clickStarted = false;
+		}
 
+		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_RIGHT)) {
+			// Unselect current thing
+			actionMode = ActionMode_None;
 		}
 
 	// RENDERING
