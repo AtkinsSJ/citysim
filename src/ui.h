@@ -15,6 +15,7 @@ struct UiButton {
 
 	bool mouseOver;
 	bool clickStarted;
+	bool active;
 };
 
 #include "ui.cpp"

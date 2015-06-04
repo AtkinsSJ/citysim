@@ -87,6 +87,8 @@ enum ActionMode {
 
 	ActionMode_Build,
 	ActionMode_Demolish,
+	ActionMode_Plant,
+	ActionMode_Harvest,
 
 	ActionMode_Count,
 };
@@ -139,6 +141,16 @@ int main(int argc, char *argv[]) {
 	buttonRect.x += buttonRect.w + 4;
 	UiButton buttonDemolish = createButton(&renderer, buttonRect, "Demolish", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+
+	buttonRect.x += buttonRect.w + 4;
+	UiButton buttonPlant = createButton(&renderer, buttonRect, "Plant", renderer.font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+
+	buttonRect.x += buttonRect.w + 4;
+	UiButton buttonHarvest = createButton(&renderer, buttonRect, "Harvest", renderer.font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+
+	UiButton *activeButton = null;
 
 	SDL_SetRenderDrawColor(renderer.sdl_renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -213,9 +225,13 @@ int main(int argc, char *argv[]) {
 			// See if a button is click-started
 			buttonBuildField.clickStarted = inRect(buttonBuildField.rect, {mouseState.x, mouseState.y});
 			buttonDemolish.clickStarted = inRect(buttonDemolish.rect, {mouseState.x, mouseState.y});
+			buttonPlant.clickStarted = inRect(buttonPlant.rect, {mouseState.x, mouseState.y});
+			buttonHarvest.clickStarted = inRect(buttonHarvest.rect, {mouseState.x, mouseState.y});
 		}
 		buttonBuildField.mouseOver = inRect(buttonBuildField.rect, {mouseState.x, mouseState.y});
 		buttonDemolish.mouseOver = inRect(buttonDemolish.rect, {mouseState.x, mouseState.y});
+		buttonPlant.mouseOver = inRect(buttonPlant.rect, {mouseState.x, mouseState.y});
+		buttonHarvest.mouseOver = inRect(buttonHarvest.rect, {mouseState.x, mouseState.y});
 
 		// Camera controls
 		updateCamera(renderer.camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
@@ -224,6 +240,7 @@ int main(int argc, char *argv[]) {
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 	// UI CODE
+#if 0
 		if (keyboardState.down[SDL_SCANCODE_1]) {
 			selectedBuildingArchetype = BA_Field;
 			actionMode = ActionMode_Build;
@@ -234,11 +251,12 @@ int main(int argc, char *argv[]) {
 		} else if (keyboardState.down[SDL_SCANCODE_ESCAPE]) {
 			actionMode = ActionMode_None;
 		}
+#endif
 		
 
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 
-			if (buttonBuildField.mouseOver || buttonDemolish.mouseOver) {
+			if (buttonBuildField.mouseOver || buttonDemolish.mouseOver || buttonPlant.mouseOver || buttonHarvest.mouseOver) {
 				// Don't trigger world interaction
 			} else {
 
@@ -265,18 +283,48 @@ int main(int argc, char *argv[]) {
 		} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
 			// Did we trigger a button?
 			if (buttonBuildField.clickStarted && buttonBuildField.mouseOver) {
+				if (activeButton) {
+					activeButton->active = false;
+				}
+				activeButton = &buttonBuildField;
+				buttonBuildField.active = true;
 				selectedBuildingArchetype = BA_Field;
 				actionMode = ActionMode_Build;
 			} else if (buttonDemolish.clickStarted && buttonDemolish.mouseOver) {
+				if (activeButton) {
+					activeButton->active = false;
+				}
+				activeButton = &buttonDemolish;
+				buttonDemolish.active = true;
 				actionMode = ActionMode_Demolish;
+			} else if (buttonPlant.clickStarted && buttonPlant.mouseOver) {
+				if (activeButton) {
+					activeButton->active = false;
+				}
+				activeButton = &buttonPlant;
+				buttonPlant.active = true;
+				actionMode = ActionMode_Plant;
+			} else if (buttonHarvest.clickStarted && buttonHarvest.mouseOver) {
+				if (activeButton) {
+					activeButton->active = false;
+				}
+				activeButton = &buttonHarvest;
+				buttonHarvest.active = true;
+				actionMode = ActionMode_Harvest;
 			}
 		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
 			buttonBuildField.clickStarted = false;
 			buttonDemolish.clickStarted = false;
+			buttonPlant.clickStarted = false;
+			buttonHarvest.clickStarted = false;
 		}
 
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_RIGHT)) {
 			// Unselect current thing
+			if (activeButton) {
+				activeButton->active = false;
+				activeButton = null;
+			}
 			actionMode = ActionMode_None;
 		}
 
@@ -335,6 +383,8 @@ int main(int argc, char *argv[]) {
 
 		drawUiButton(&renderer, &buttonBuildField);
 		drawUiButton(&renderer, &buttonDemolish);
+		drawUiButton(&renderer, &buttonPlant);
+		drawUiButton(&renderer, &buttonHarvest);
 
 #if 0
 		// FIXME: UGH! Horrible and inefficient and yucky
@@ -368,6 +418,8 @@ int main(int argc, char *argv[]) {
 
 	freeButton(&buttonBuildField);
 	freeButton(&buttonDemolish);
+	freeButton(&buttonPlant);
+	freeButton(&buttonHarvest);
 
 	freeRenderer(&renderer);
 

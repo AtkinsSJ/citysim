@@ -46,7 +46,9 @@ void drawUiTexture(Renderer *renderer, Texture *texture, Rect rect) {
 }
 
 void drawUiButton(Renderer *renderer, UiButton *button) {
-	if (button->mouseOver) {
+	if (button->active) {
+		drawUiRect(renderer, button->rect, button->backgroundPressedColor);
+	} else if (button->mouseOver) {
 		if (button->clickStarted) {
 			drawUiRect(renderer, button->rect, button->backgroundPressedColor);
 		} else {
