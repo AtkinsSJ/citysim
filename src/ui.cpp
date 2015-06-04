@@ -13,7 +13,7 @@ UiButton createButton(Renderer *renderer, Rect rect,
 	button.backgroundPressedColor = pressedColor;
 
 	// Generate the text texture
-	SDL_Surface *textSurface = TTF_RenderUTF8_Solid(button.font, button.text, button.textColor);
+	SDL_Surface *textSurface = TTF_RenderUTF8_Blended(button.font, button.text, button.textColor);
 	button.textTexture = textureFromSurface(renderer, textSurface);
 	SDL_FreeSurface(textSurface);
 

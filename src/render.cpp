@@ -104,7 +104,7 @@ bool initializeRenderer(Renderer *renderer) {
 	*/
 
 	// Load font
-	renderer->font = TTF_OpenFont("OpenSans-Regular.ttf", 24);
+	renderer->font = TTF_OpenFont("OpenSans-Regular.ttf", 12);
 	if (!renderer->font) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Font could not be loaded. :(\n %s", TTF_GetError());
 		return false;

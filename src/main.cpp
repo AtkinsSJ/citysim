@@ -127,13 +127,18 @@ int main(int argc, char *argv[]) {
 	real32 framesPerSecond = 0;
 
 	// Build UI
-	Rect buttonRect = {100, 20, 150, 75};
-	UiButton button = createButton(&renderer, buttonRect, "Build Field", renderer.font,
-		{0,0,0,255}, // text color
-		{255,255,255,255},  // Background
-		{192,192,255,255}, // Hover
-		{128,128,255,255}
-	); // Pressed
+	Color buttonTextColor = {0,0,0,255},
+		buttonBackgroundColor = {255,255,255,255},
+		buttonHoverColor = {192,192,255,255},
+		buttonPressedColor = {128,128,255,255};
+
+	Rect buttonRect = {100, 20, 80, 24};
+	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+
+	buttonRect.x += buttonRect.w + 4;
+	UiButton buttonDemolish = createButton(&renderer, buttonRect, "Demolish", renderer.font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	SDL_SetRenderDrawColor(renderer.sdl_renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -206,10 +211,11 @@ int main(int argc, char *argv[]) {
 	// UiButton/Mouse interaction
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			// See if a button is click-started
-			button.clickStarted = inRect(button.rect, {mouseState.x, mouseState.y});
-			SDL_Log("Just clicked button? %s", button.clickStarted ? "true" : "false");
+			buttonBuildField.clickStarted = inRect(buttonBuildField.rect, {mouseState.x, mouseState.y});
+			buttonDemolish.clickStarted = inRect(buttonDemolish.rect, {mouseState.x, mouseState.y});
 		}
-		button.mouseOver = inRect(button.rect, {mouseState.x, mouseState.y});
+		buttonBuildField.mouseOver = inRect(buttonBuildField.rect, {mouseState.x, mouseState.y});
+		buttonDemolish.mouseOver = inRect(buttonDemolish.rect, {mouseState.x, mouseState.y});
 
 		// Camera controls
 		updateCamera(renderer.camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
@@ -228,10 +234,11 @@ int main(int argc, char *argv[]) {
 		} else if (keyboardState.down[SDL_SCANCODE_ESCAPE]) {
 			actionMode = ActionMode_None;
 		}
+		
 
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 
-			if (button.mouseOver) {
+			if (buttonBuildField.mouseOver || buttonDemolish.mouseOver) {
 				// Don't trigger world interaction
 			} else {
 
@@ -257,11 +264,16 @@ int main(int argc, char *argv[]) {
 			}
 		} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
 			// Did we trigger a button?
-			if (button.clickStarted && button.mouseOver) {
-				SDL_Log("We clicked on the button!");
+			if (buttonBuildField.clickStarted && buttonBuildField.mouseOver) {
+				selectedBuildingArchetype = BA_Field;
+				actionMode = ActionMode_Build;
+			} else if (buttonDemolish.clickStarted && buttonDemolish.mouseOver) {
+				actionMode = ActionMode_Demolish;
 			}
 		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
-			button.clickStarted = false;
+			buttonBuildField.clickStarted = false;
+			buttonDemolish.clickStarted = false;
+
 		}
 
 	// RENDERING
@@ -317,7 +329,8 @@ int main(int argc, char *argv[]) {
 		// Draw some UI
 		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 100}, {255,0,0,128});
 
-		drawUiButton(&renderer, &button);
+		drawUiButton(&renderer, &buttonBuildField);
+		drawUiButton(&renderer, &buttonDemolish);
 
 #if 0
 		// FIXME: UGH! Horrible and inefficient and yucky
@@ -349,7 +362,8 @@ int main(int argc, char *argv[]) {
 // CLEAN UP
 	freeCity(&city);
 
-	freeButton(&button);
+	freeButton(&buttonBuildField);
+	freeButton(&buttonDemolish);
 
 	freeRenderer(&renderer);
 
