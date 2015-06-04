@@ -93,6 +93,14 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
+SDL_Cursor *createCursor(char *path) {
+	SDL_Surface *cursorSurface = IMG_Load(path);
+	SDL_Cursor *cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
+	SDL_FreeSurface(cursorSurface);
+
+	return cursor;
+}
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -100,6 +108,12 @@ int main(int argc, char *argv[]) {
 	if (!initializeRenderer(&renderer)) {
 		return 1;
 	}
+
+	// Make some cursors!
+	SDL_Cursor *cursorMain = createCursor("cursor_main.png");
+	SDL_Cursor *cursorDemolish = createCursor("cursor_demolish.png");
+
+	SDL_SetCursor(cursorMain);
 
 // Help text until we have a UI
 	SDL_Log("BUILDING HOTKEYS:\n");
@@ -290,6 +304,7 @@ int main(int argc, char *argv[]) {
 				buttonBuildField.active = true;
 				selectedBuildingArchetype = BA_Field;
 				actionMode = ActionMode_Build;
+				SDL_SetCursor(cursorMain);
 			} else if (buttonDemolish.clickStarted && buttonDemolish.mouseOver) {
 				if (activeButton) {
 					activeButton->active = false;
@@ -297,6 +312,7 @@ int main(int argc, char *argv[]) {
 				activeButton = &buttonDemolish;
 				buttonDemolish.active = true;
 				actionMode = ActionMode_Demolish;
+				SDL_SetCursor(cursorDemolish);
 			} else if (buttonPlant.clickStarted && buttonPlant.mouseOver) {
 				if (activeButton) {
 					activeButton->active = false;
@@ -304,6 +320,7 @@ int main(int argc, char *argv[]) {
 				activeButton = &buttonPlant;
 				buttonPlant.active = true;
 				actionMode = ActionMode_Plant;
+				SDL_SetCursor(cursorMain);
 			} else if (buttonHarvest.clickStarted && buttonHarvest.mouseOver) {
 				if (activeButton) {
 					activeButton->active = false;
@@ -311,6 +328,7 @@ int main(int argc, char *argv[]) {
 				activeButton = &buttonHarvest;
 				buttonHarvest.active = true;
 				actionMode = ActionMode_Harvest;
+				SDL_SetCursor(cursorMain);
 			}
 		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
 			buttonBuildField.clickStarted = false;
@@ -326,6 +344,7 @@ int main(int argc, char *argv[]) {
 				activeButton = null;
 			}
 			actionMode = ActionMode_None;
+			SDL_SetCursor(cursorMain);
 		}
 
 	// RENDERING
@@ -415,6 +434,9 @@ int main(int argc, char *argv[]) {
 
 // CLEAN UP
 	freeCity(&city);
+
+	SDL_FreeCursor(cursorMain);
+	SDL_FreeCursor(cursorDemolish);
 
 	freeButton(&buttonBuildField);
 	freeButton(&buttonDemolish);
