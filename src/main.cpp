@@ -262,7 +262,6 @@ int main(int argc, char *argv[]) {
 			actionMode = ActionMode_None;
 		}
 #endif
-		
 
 		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 
@@ -286,7 +285,11 @@ int main(int argc, char *argv[]) {
 						// Only do something if we clicked on a field!
 						Building *building = getBuildingAtPosition(&city, mouseTilePos.x, mouseTilePos.y);
 						if (building && building->archetype == BA_Field) {
-							SDL_Log("Pretending to plant something in this field.");
+							FieldData *field = (FieldData*)building->data;
+							if (!field->hasPlants) {
+								field->hasPlants = true;
+								SDL_Log("Pretending to plant something in this field.");
+							}
 						}
 					} break;
 
@@ -294,7 +297,11 @@ int main(int argc, char *argv[]) {
 						// Only do something if we clicked on a field!
 						Building *building = getBuildingAtPosition(&city, mouseTilePos.x, mouseTilePos.y);
 						if (building && building->archetype == BA_Field) {
-							SDL_Log("Pretending to harvest something in this field.");
+							FieldData *field = (FieldData*)building->data;
+							if (field->hasPlants) {
+								field->hasPlants = false;
+								SDL_Log("Pretending to harvest something in this field.");
+							}
 						}
 					} break;
 
@@ -387,13 +394,30 @@ int main(int argc, char *argv[]) {
 
 			BuildingDefinition *def = buildingDefinitions + building.archetype;
 
+			Color drawColor = {255,255,255,255};
+
 			if (actionMode == ActionMode_Demolish
 				&& inRect(building.footprint, mouseTilePos)) {
 				// Draw building red to preview demolition
-				Color demolishColor = {255,128,128,255};
-				drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &demolishColor);
-			} else {
-				drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos);
+				drawColor = {255,128,128,255};
+			}
+
+			switch (building.archetype) {
+				case BA_Field: {
+					drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &drawColor);
+					if ( ((FieldData*)building.data)->hasPlants ) {	
+						for (int y = 0; y < 4; y++) {
+							for (int x = 0; x < 4; x++) {
+								drawAtWorldPos(&renderer, TextureAtlasItem_Crop,
+									{building.footprint.pos.x + x, building.footprint.pos.y + y}, &drawColor);
+							}
+						}
+					}
+				} break;
+
+				default: {
+					drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &drawColor);
+				} break;
 			}
 		}
 
