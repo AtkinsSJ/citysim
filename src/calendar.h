@@ -4,13 +4,14 @@
 
 struct Calendar {
 	int32 day; // 0-indexed
+	int32 dayOfWeek; // 0-indexed
 	int32 month; // 0-indexed
 	int32 year; // Real year
 
 	int32 ticksPerFrame;
 	int32 _dayTicksCounter;
 };
-const int32 ticksPerDay = 2000; // How big does Calendar.dayCounter have to be to increment the day?
+const int32 ticksPerDay = 500; // How big does Calendar.dayCounter have to be to increment the day?
 const int32 daysInMonth[] = {
 	31, // J
 	28, // F
@@ -51,6 +52,7 @@ const char *monthNames[] = {
 
 void initCalendar(Calendar *calendar, int32 framesPerSecond) {
 	calendar->day = 0;
+	calendar->dayOfWeek = 0;
 	calendar->month = 0;
 	calendar->year = 2000;
 	calendar->_dayTicksCounter = 0;
@@ -59,7 +61,7 @@ void initCalendar(Calendar *calendar, int32 framesPerSecond) {
 
 void getDateString(Calendar *calendar, char *buffer) {
 	sprintf(buffer, "%s %d of %s %d",
-		dayNames[calendar->day],
+		dayNames[calendar->dayOfWeek],
 		calendar->day + 1,
 		monthNames[calendar->month],
 		calendar->year
@@ -67,15 +69,17 @@ void getDateString(Calendar *calendar, char *buffer) {
 }
 
 /**
- * Add an amount of sub-day time to the calendar, and return how many days have passed.
+ * Add an amount of sub-day time to the calendar, return whether the date changed.
  */
-int32 incrementCalendar(Calendar *calendar) {
-	int32 daysPassed = 0;
+bool incrementCalendar(Calendar *calendar) {
+	bool dayChanged = false;
 	calendar->_dayTicksCounter += calendar->ticksPerFrame;
-	while (calendar->_dayTicksCounter >= ticksPerDay) {
+	if (calendar->_dayTicksCounter >= ticksPerDay) {
 		calendar->_dayTicksCounter -= ticksPerDay;
 		calendar->day++;
-		daysPassed++;
+		dayChanged = true;
+
+		calendar->dayOfWeek = (calendar->dayOfWeek + 1) % 7;
 
 		// Month rollover
 		if (calendar->day == daysInMonth[calendar->month]) {
@@ -90,5 +94,5 @@ int32 incrementCalendar(Calendar *calendar) {
 		}
 	}
 
-	return daysPassed;
+	return dayChanged;
 }

@@ -273,21 +273,21 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-	// Update stuff!
+	// Game simulation
 		if (incrementCalendar(&calendar)) {
 			getDateString(&calendar, dateStringBuffer);
 			setText(&renderer, &labelDate, dateStringBuffer);
-		}
 
-		// Fields
-		for (int i = 0; i < ArrayCount(city.fieldData); i++) {
-			FieldData *field = city.fieldData + i;
-			if (field->exists && field->hasPlants && field->growth < 16) {
-				// Simulate the field!
-				field->growthCounter += MS_PER_FRAME;
-				if (field->growthCounter >= 1000) {
-					field->growthCounter -= 1000;
-					field->growth++;
+			// Fields
+			for (int i = 0; i < ArrayCount(city.fieldData); i++) {
+				FieldData *field = city.fieldData + i;
+				if (field->exists && field->hasPlants && field->growth < 16) {
+					// Simulate the field!
+					field->growthCounter += 1;
+					if (field->growthCounter >= 7) {
+						field->growthCounter -= 7;
+						field->growth++;
+					}
 				}
 			}
 		}
