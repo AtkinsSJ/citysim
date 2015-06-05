@@ -92,12 +92,34 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
-SDL_Cursor *createCursor(char *path) {
-	SDL_Surface *cursorSurface = IMG_Load(path);
-	SDL_Cursor *cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
-	SDL_FreeSurface(cursorSurface);
+bool plantField(City *city, Coord tilePosition) {
+	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
+	if (building && building->archetype == BA_Field) {
+		FieldData *field = (FieldData*)building->data;
+		if (!field->hasPlants && (city->funds >= 350)) {
+			field->hasPlants = true;
+			field->growth = 0;
+			city->funds -= 500;
+			return true;
+		}
+	}
 
-	return cursor;
+	return false;
+}
+
+bool harvestField(City *city, Coord tilePosition) {
+	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
+	if (building && building->archetype == BA_Field) {
+		FieldData *field = (FieldData*)building->data;
+		if (field->hasPlants) {
+			SDL_Log("Harvested %d plants from this field.", field->growth);
+			city->funds += field->growth * 150;
+			field->hasPlants = false;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 int main(int argc, char *argv[]) {
@@ -144,15 +166,17 @@ int main(int argc, char *argv[]) {
 		buttonBackgroundColor = {255,255,255,255},
 		buttonHoverColor = {192,192,255,255},
 		buttonPressedColor = {128,128,255,255},
-		uiTextColor = {255,255,255,255};
+		labelColor = {255,255,255,255};
 
 	Coord textPosition = {8,4};
-	UiText textCityName = createText(&renderer, textPosition, city.name, renderer.fontLarge, uiTextColor);
+	UiLabel textCityName = createText(&renderer, textPosition, city.name, renderer.fontLarge, labelColor);
 
 	textPosition.x += textCityName.rect.w + uiPadding;
-	UiText textCityFunds = createText(&renderer, textPosition, "£000000", renderer.fontLarge, uiTextColor);
+	char buffer[20];
+	getCityFundsString(&city, buffer);
+	UiLabel textCityFunds = createText(&renderer, textPosition, buffer, renderer.fontLarge, labelColor);
 
-	Rect buttonRect = {100, 20, 80, 24};
+	Rect buttonRect = {8, textPosition.y + textCityName.rect.h + uiPadding, 80, 24};
 	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
@@ -295,37 +319,40 @@ int main(int argc, char *argv[]) {
 					case ActionMode_Build: {
 						// Try and build a thing
 						bool succeeded = placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
+						if (succeeded) {
+							char buffer[20];
+							getCityFundsString(&city, buffer);
+							setText(&renderer, &textCityFunds, buffer);
+						}
 					} break;
 
 					case ActionMode_Demolish: {
 						// Try and demolish a thing
 						bool succeeded = demolish(&city, mouseTilePos);
 						SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
-						setText(&renderer, &textCityFunds, "Hello World!");
+						if (succeeded) {
+							char buffer[20];
+							getCityFundsString(&city, buffer);
+							setText(&renderer, &textCityFunds, buffer);
+						}
 					} break;
 
 					case ActionMode_Plant: {
 						// Only do something if we clicked on a field!
-						Building *building = getBuildingAtPosition(&city, mouseTilePos.x, mouseTilePos.y);
-						if (building && building->archetype == BA_Field) {
-							FieldData *field = (FieldData*)building->data;
-							if (!field->hasPlants) {
-								field->hasPlants = true;
-								field->growth = 0;
-								SDL_Log("Pretending to plant something in this field.");
-							}
+						if (plantField(&city, mouseTilePos)) {
+							char buffer[20];
+							getCityFundsString(&city, buffer);
+							setText(&renderer, &textCityFunds, buffer);
+							SDL_Log("Pretending to plant something in this field.");
 						}
 					} break;
 
 					case ActionMode_Harvest: {
 						// Only do something if we clicked on a field!
-						Building *building = getBuildingAtPosition(&city, mouseTilePos.x, mouseTilePos.y);
-						if (building && building->archetype == BA_Field) {
-							FieldData *field = (FieldData*)building->data;
-							if (field->hasPlants) {
-								field->hasPlants = false;
-								SDL_Log("Harvested %d plants from this field.", field->growth);
-							}
+						if (harvestField(&city, mouseTilePos)) {
+							char buffer[20];
+							getCityFundsString(&city, buffer);
+							setText(&renderer, &textCityFunds, buffer);
 						}
 					} break;
 
@@ -459,8 +486,8 @@ int main(int argc, char *argv[]) {
 		// Draw some UI
 		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 100}, {255,0,0,128});
 
-		drawUiText(&renderer, &textCityName);
-		drawUiText(&renderer, &textCityFunds);
+		drawUiLabel(&renderer, &textCityName);
+		drawUiLabel(&renderer, &textCityFunds);
 
 		drawUiButton(&renderer, &buttonBuildField);
 		drawUiButton(&renderer, &buttonDemolish);

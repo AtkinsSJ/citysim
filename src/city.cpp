@@ -61,6 +61,11 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 
 	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
+	// Can we afford to build this?
+	if (city->funds < def.buildCost) {
+		return false;
+	}
+
 	// Are we in bounds?
 	if (!rectInRect({0,0, city->width, city->height}, {position, def.width, def.height})) {
 		return false;
@@ -108,6 +113,8 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	Building *building = getBuildingByID(city, buildingID);
 	BuildingDefinition *def = buildingDefinitions + archetype;
 
+	city->funds -= def->buildCost;
+
 	*building = {};
 	building->exists = true;
 	building->archetype = archetype;
@@ -151,11 +158,18 @@ bool demolish(City *city, Coord position) {
 
 	uint32 buildingID = city->tileBuildings[posTI];
 	if (buildingID) {
-		// TODO: Demolition cost
 
 		// Clear all references to this building
 		Building *building = getBuildingByID(city, buildingID);
 		SDL_assert(building);
+		BuildingDefinition def = buildingDefinitions[building->archetype];
+
+		// Can we afford to demolish this?
+		if (city->funds < def.demolishCost) {
+			return false;
+		}
+
+		city->funds -= def.demolishCost;
 
 		for (int32 y = building->footprint.y;
 			y < building->footprint.y + building->footprint.h;
@@ -188,4 +202,8 @@ bool demolish(City *city, Coord position) {
 		return false;
 	}
 	
+}
+
+inline void getCityFundsString(City *city, char *buffer) {
+	sprintf(buffer, "£%d", city->funds);
 }

@@ -1,7 +1,7 @@
 #pragma once
 // ui.h
 
-struct UiText {
+struct UiLabel {
 	Rect rect;
 	char *text;
 	TTF_Font *font;
@@ -12,7 +12,7 @@ struct UiText {
 struct UiButton {
 	Rect rect;
 
-	UiText text;
+	UiLabel text;
 
 	Color backgroundColor;
 	Color backgroundHoverColor;

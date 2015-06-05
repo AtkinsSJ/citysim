@@ -1,31 +1,31 @@
 // ui.cpp
 
-UiText createText(Renderer *renderer, Coord position, char *text, TTF_Font *font, Color color) {
-	UiText uiText = {};
-	uiText.text = text;
-	uiText.font = font;
-	uiText.color = color;
+UiLabel createText(Renderer *renderer, Coord position, char *text, TTF_Font *font, Color color) {
+	UiLabel label = {};
+	label.text = text;
+	label.font = font;
+	label.color = color;
 
-	uiText.texture = renderText(renderer, uiText.font, uiText.text, uiText.color);
-	uiText.rect = {position, uiText.texture.w, uiText.texture.h};
+	label.texture = renderText(renderer, label.font, label.text, label.color);
+	label.rect = {position, label.texture.w, label.texture.h};
 
-	return uiText;
+	return label;
 }
 
-void freeText(UiText *uiText) {
-	freeTexture(&uiText->texture);
-	uiText = {};
+void freeText(UiLabel *label) {
+	freeTexture(&label->texture);
+	label = {};
 }
 
 /**
- * Change the text of the given UiText, which regenerates the Texture.
+ * Change the text of the given UiLabel, which regenerates the Texture.
  */
-void setText(Renderer *renderer, UiText *uiText, char *newText) {
-	freeTexture(&uiText->texture);
-	uiText->text = newText;
-	uiText->texture = renderText(renderer, uiText->font, uiText->text, uiText->color);
-	uiText->rect.w = uiText->texture.w;
-	uiText->rect.h = uiText->texture.h;
+void setText(Renderer *renderer, UiLabel *label, char *newText) {
+	freeTexture(&label->texture);
+	label->text = newText;
+	label->texture = renderText(renderer, label->font, label->text, label->color);
+	label->rect.w = label->texture.w;
+	label->rect.h = label->texture.h;
 }
 
 UiButton createButton(Renderer *renderer, Rect rect,
@@ -39,7 +39,7 @@ UiButton createButton(Renderer *renderer, Rect rect,
 	button.backgroundHoverColor = hoverColor;
 	button.backgroundPressedColor = pressedColor;
 
-	// Generate the UiText, and centre it
+	// Generate the UiLabel, and centre it
 	button.text = createText(renderer, {0,0}, text, font, buttonTextColor);
 	button.text.rect.x = button.rect.x + (button.rect.w - button.text.rect.w) / 2;
 	button.text.rect.y = button.rect.y + (button.rect.h - button.text.rect.h) / 2;
@@ -62,12 +62,12 @@ void drawUiRect(Renderer *renderer, Rect rect, Color color) {
 	SDL_RenderFillRect(renderer->sdl_renderer, &rect.sdl_rect);
 }
 
-void drawUiTexture(Renderer *renderer, Texture *texture, Rect rect) {
+void drawUiLabelure(Renderer *renderer, Texture *texture, Rect rect) {
 	SDL_RenderCopy(renderer->sdl_renderer, texture->sdl_texture, null, &rect.sdl_rect);
 }
 
-void drawUiText(Renderer *renderer, UiText *text) {
-	drawUiTexture(renderer, &text->texture, text->rect);
+void drawUiLabel(Renderer *renderer, UiLabel *text) {
+	drawUiLabelure(renderer, &text->texture, text->rect);
 }
 
 void drawUiButton(Renderer *renderer, UiButton *button) {
@@ -82,6 +82,6 @@ void drawUiButton(Renderer *renderer, UiButton *button) {
 	} else {
 		drawUiRect(renderer, button->rect, button->backgroundColor);
 	}
-	drawUiText(renderer, &button->text);
-	// drawUiTexture(renderer, &button->textTexture, button->textRect);
+	drawUiLabel(renderer, &button->text);
+	// drawUiLabelure(renderer, &button->textTexture, button->textRect);
 }

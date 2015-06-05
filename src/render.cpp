@@ -1,4 +1,12 @@
 
+SDL_Cursor *createCursor(char *path) {
+	SDL_Surface *cursorSurface = IMG_Load(path);
+	SDL_Cursor *cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
+	SDL_FreeSurface(cursorSurface);
+
+	return cursor;
+}
+
 Texture textureFromSurface(Renderer *renderer, SDL_Surface *surface) {
 	Texture texture = {};
 	texture.sdl_texture = SDL_CreateTextureFromSurface(renderer->sdl_renderer, surface);

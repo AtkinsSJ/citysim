@@ -12,6 +12,8 @@ struct BuildingDefinition {
 	int32 width, height;
 	string name;
 	TextureAtlasItem textureAtlasItem;
+	int32 buildCost;
+	int32 demolishCost;
 };
 
 // Farming stuff
@@ -21,7 +23,7 @@ enum BuildingArchetype {
 	BA_Count
 };
 BuildingDefinition buildingDefinitions[] = {
-	{4,4, "Field", TextureAtlasItem_Field},
+	{4,4, "Field", TextureAtlasItem_Field, 200, 20},
 };
 
 // Goblin Fortress stuff

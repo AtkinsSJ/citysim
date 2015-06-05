@@ -1,7 +1,5 @@
 TODO:
 
-- Rename UiText to UiLabel
-- Display the funds in textCityFunds (int to char*)
 - Things cost money.
 
 - An actual random number generator!
