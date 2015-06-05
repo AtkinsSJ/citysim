@@ -39,8 +39,14 @@ struct UiButton {
 
 	bool mouseOver;
 	bool clickStarted;
+	bool justClicked;
 	bool active;
 };
 
+struct UiButtonGroup {
+	int32 buttonCount;
+	UiButton *buttons[8]; // TODO: Decide how many buttons we need
+	UiButton *activeButton;
+};
 
 #include "ui.cpp"

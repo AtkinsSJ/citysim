@@ -14,57 +14,57 @@
 
 #include "types.h"
 #include "render.h"
+#include "input.h"
 #include "ui.h"
 #include "city.h"
-#include "input.h"
 #include "calendar.h"
 
-void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityWidth, int32 cityHeight) {
+void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
-	if (mouseState.wheelY != 0) {
+	if (mouseState->wheelY != 0) {
 		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera.zoom = clamp(round(10 * camera.zoom + mouseState.wheelY) * 0.1f, 0.1f, 10.0f);
+		camera->zoom = clamp(round(10 * camera->zoom + mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
 	}
 
 	// Panning
-	real32 scrollSpeed = CAMERA_PAN_SPEED * (camera.windowWidth/sqrt(camera.zoom)) * SECONDS_PER_FRAME;
+	real32 scrollSpeed = CAMERA_PAN_SPEED * (camera->windowWidth/sqrt(camera->zoom)) * SECONDS_PER_FRAME;
 	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
 		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
-		Coord clickStartPos = mouseState.clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera.pos.x += (mouseState.x - clickStartPos.x) * scale;
-		camera.pos.y += (mouseState.y - clickStartPos.y) * scale;
+		Coord clickStartPos = mouseState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
+		camera->pos.x += (mouseState->x - clickStartPos.x) * scale;
+		camera->pos.y += (mouseState->y - clickStartPos.y) * scale;
 	} else {
 		// Keyboard/edge-of-screen panning
-		if (keyboardState.down[SDL_SCANCODE_LEFT]
-			|| (mouseState.x < CAMERA_EDGE_SCROLL_MARGIN)) {
-			camera.pos.x -= scrollSpeed;
-		} else if (keyboardState.down[SDL_SCANCODE_RIGHT]
-			|| (mouseState.x > (camera.windowWidth - CAMERA_EDGE_SCROLL_MARGIN))) {
-			camera.pos.x += scrollSpeed;
+		if (keyboardState->down[SDL_SCANCODE_LEFT]
+			|| (mouseState->x < CAMERA_EDGE_SCROLL_MARGIN)) {
+			camera->pos.x -= scrollSpeed;
+		} else if (keyboardState->down[SDL_SCANCODE_RIGHT]
+			|| (mouseState->x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN))) {
+			camera->pos.x += scrollSpeed;
 		}
 
-		if (keyboardState.down[SDL_SCANCODE_UP]
-			|| (mouseState.y < CAMERA_EDGE_SCROLL_MARGIN)) {
-			camera.pos.y -= scrollSpeed;
-		} else if (keyboardState.down[SDL_SCANCODE_DOWN]
-			|| (mouseState.y > (camera.windowHeight - CAMERA_EDGE_SCROLL_MARGIN))) {
-			camera.pos.y += scrollSpeed;
+		if (keyboardState->down[SDL_SCANCODE_UP]
+			|| (mouseState->y < CAMERA_EDGE_SCROLL_MARGIN)) {
+			camera->pos.y -= scrollSpeed;
+		} else if (keyboardState->down[SDL_SCANCODE_DOWN]
+			|| (mouseState->y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN))) {
+			camera->pos.y += scrollSpeed;
 		}
 	}
 
 	// Clamp camera
-	int32 cameraWidth = camera.windowWidth,
-			cameraHeight = camera.windowHeight;
-	real32 scaledCityWidth = cityWidth * camera.zoom,
-			scaledCityHeight = cityHeight * camera.zoom;
+	int32 cameraWidth = camera->windowWidth,
+			cameraHeight = camera->windowHeight;
+	real32 scaledCityWidth = cityWidth * camera->zoom,
+			scaledCityHeight = cityHeight * camera->zoom;
 
 	if (scaledCityWidth < cameraWidth) {
 		// City smaller than camera, so centre on it
-		camera.pos.x = scaledCityWidth / 2.0f;
+		camera->pos.x = scaledCityWidth / 2.0f;
 	} else {
-		camera.pos.x = clamp(
-			camera.pos.x,
+		camera->pos.x = clamp(
+			camera->pos.x,
 			cameraWidth/2.0f - CAMERA_MARGIN,
 			scaledCityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
 		);
@@ -72,10 +72,10 @@ void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboar
 
 	if (scaledCityHeight < cameraHeight) {
 		// City smaller than camera, so centre on it
-		camera.pos.y = scaledCityHeight / 2.0f;
+		camera->pos.y = scaledCityHeight / 2.0f;
 	} else {
-		camera.pos.y = clamp(
-			camera.pos.y,
+		camera->pos.y = clamp(
+			camera->pos.y,
 			cameraHeight/2.0f - CAMERA_MARGIN,
 			scaledCityHeight - (cameraHeight/2.0f - CAMERA_MARGIN)
 		);
@@ -178,32 +178,36 @@ int main(int argc, char *argv[]) {
 	Coord textPosition = {8,4};
 	UiLabel textCityName = createText(&renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.fontLarge, labelColor);
 
-	textPosition.x = 800 - 8;
+	textPosition.x = 800 / 2;
 	char buffer[20];
 	getCityFundsString(&city, buffer);
-	UiLabel textCityFunds = createText(&renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, buffer, renderer.fontLarge, labelColor);
+	UiLabel textCityFunds = createText(&renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP, buffer, renderer.fontLarge, labelColor);
 
-	textPosition.x = 800 / 2;
+	textPosition.x = 800 - 8;
 	getDateString(&calendar, dateStringBuffer);
-	UiLabel labelDate = createText(&renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
+	UiLabel labelDate = createText(&renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
+
+	UiButtonGroup actionButtonGroup = {};
 
 	Rect buttonRect = {8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24};
 	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	addButtonToGroup(&buttonBuildField, &actionButtonGroup);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton buttonDemolish = createButton(&renderer, buttonRect, "Demolish", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	addButtonToGroup(&buttonDemolish, &actionButtonGroup);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton buttonPlant = createButton(&renderer, buttonRect, "Plant", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	addButtonToGroup(&buttonPlant, &actionButtonGroup);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton buttonHarvest = createButton(&renderer, buttonRect, "Harvest", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-
-	UiButton *activeButton = null;
+	addButtonToGroup(&buttonHarvest, &actionButtonGroup);
 
 	SDL_SetRenderDrawColor(renderer.sdl_renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -267,7 +271,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		for (uint8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
-			if (mouseButtonJustPressed(mouseState, i)) {
+			if (mouseButtonJustPressed(&mouseState, i)) {
 				// Store the initial click position
 				mouseState.clickStartPosition[mouseButtonIndex(i)] = {mouseState.x, mouseState.y};
 			}
@@ -293,144 +297,90 @@ int main(int argc, char *argv[]) {
 		}
 
 	// UiButton/Mouse interaction
-		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
-			// See if a button is click-started
-			buttonBuildField.clickStarted = inRect(buttonBuildField.rect, {mouseState.x, mouseState.y});
-			buttonDemolish.clickStarted = inRect(buttonDemolish.rect, {mouseState.x, mouseState.y});
-			buttonPlant.clickStarted = inRect(buttonPlant.rect, {mouseState.x, mouseState.y});
-			buttonHarvest.clickStarted = inRect(buttonHarvest.rect, {mouseState.x, mouseState.y});
+		bool buttonAteMouseEvent = false;
+		if (updateButtonGroup(&actionButtonGroup, &mouseState)) {
+			buttonAteMouseEvent = true;
 		}
-		buttonBuildField.mouseOver = inRect(buttonBuildField.rect, {mouseState.x, mouseState.y});
-		buttonDemolish.mouseOver = inRect(buttonDemolish.rect, {mouseState.x, mouseState.y});
-		buttonPlant.mouseOver = inRect(buttonPlant.rect, {mouseState.x, mouseState.y});
-		buttonHarvest.mouseOver = inRect(buttonHarvest.rect, {mouseState.x, mouseState.y});
 
 		// Camera controls
-		updateCamera(renderer.camera, mouseState, keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
+		updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
 		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, renderer.camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
-	// UI CODE
-#if 0
-		if (keyboardState.down[SDL_SCANCODE_1]) {
-			selectedBuildingArchetype = BA_Field;
-			actionMode = ActionMode_Build;
+		if (!buttonAteMouseEvent && mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 
-		} else if (keyboardState.down[SDL_SCANCODE_X]) {
-			actionMode = ActionMode_Demolish;
+			switch (actionMode) {
+				case ActionMode_Build: {
+					// Try and build a thing
+					bool succeeded = placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
+					if (succeeded) {
+						char buffer[20];
+						getCityFundsString(&city, buffer);
+						setText(&renderer, &textCityFunds, buffer);
+					}
+				} break;
 
-		} else if (keyboardState.down[SDL_SCANCODE_ESCAPE]) {
-			actionMode = ActionMode_None;
-		}
-#endif
+				case ActionMode_Demolish: {
+					// Try and demolish a thing
+					bool succeeded = demolish(&city, mouseTilePos);
+					SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
+					if (succeeded) {
+						char buffer[20];
+						getCityFundsString(&city, buffer);
+						setText(&renderer, &textCityFunds, buffer);
+					}
+				} break;
 
-		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+				case ActionMode_Plant: {
+					// Only do something if we clicked on a field!
+					if (plantField(&city, mouseTilePos)) {
+						char buffer[20];
+						getCityFundsString(&city, buffer);
+						setText(&renderer, &textCityFunds, buffer);
+						SDL_Log("Pretending to plant something in this field.");
+					}
+				} break;
 
-			if (buttonBuildField.mouseOver || buttonDemolish.mouseOver || buttonPlant.mouseOver || buttonHarvest.mouseOver) {
-				// Don't trigger world interaction
-			} else {
+				case ActionMode_Harvest: {
+					// Only do something if we clicked on a field!
+					if (harvestField(&city, mouseTilePos)) {
+						char buffer[20];
+						getCityFundsString(&city, buffer);
+						setText(&renderer, &textCityFunds, buffer);
+					}
+				} break;
 
-				switch (actionMode) {
-					case ActionMode_Build: {
-						// Try and build a thing
-						bool succeeded = placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
-						if (succeeded) {
-							char buffer[20];
-							getCityFundsString(&city, buffer);
-							setText(&renderer, &textCityFunds, buffer);
-						}
-					} break;
-
-					case ActionMode_Demolish: {
-						// Try and demolish a thing
-						bool succeeded = demolish(&city, mouseTilePos);
-						SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
-						if (succeeded) {
-							char buffer[20];
-							getCityFundsString(&city, buffer);
-							setText(&renderer, &textCityFunds, buffer);
-						}
-					} break;
-
-					case ActionMode_Plant: {
-						// Only do something if we clicked on a field!
-						if (plantField(&city, mouseTilePos)) {
-							char buffer[20];
-							getCityFundsString(&city, buffer);
-							setText(&renderer, &textCityFunds, buffer);
-							SDL_Log("Pretending to plant something in this field.");
-						}
-					} break;
-
-					case ActionMode_Harvest: {
-						// Only do something if we clicked on a field!
-						if (harvestField(&city, mouseTilePos)) {
-							char buffer[20];
-							getCityFundsString(&city, buffer);
-							setText(&renderer, &textCityFunds, buffer);
-						}
-					} break;
-
-					case ActionMode_None: {
-						SDL_Log("Building ID at position (%d,%d) = %d",
-							mouseTilePos.x, mouseTilePos.y,
-							city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
-					} break;
-				}
+				case ActionMode_None: {
+					SDL_Log("Building ID at position (%d,%d) = %d",
+						mouseTilePos.x, mouseTilePos.y,
+						city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
+				} break;
 			}
-		} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
-			// Did we trigger a button?
-			if (buttonBuildField.clickStarted && buttonBuildField.mouseOver) {
-				if (activeButton) {
-					activeButton->active = false;
-				}
-				activeButton = &buttonBuildField;
-				buttonBuildField.active = true;
+
+		}
+
+		if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
+			// Unselect current thing
+			actionMode = ActionMode_None;
+			SDL_SetCursor(cursorMain);
+		} else {
+			if (buttonBuildField.justClicked) {
 				selectedBuildingArchetype = BA_Field;
 				actionMode = ActionMode_Build;
 				SDL_SetCursor(cursorBuild);
-			} else if (buttonDemolish.clickStarted && buttonDemolish.mouseOver) {
-				if (activeButton) {
-					activeButton->active = false;
-				}
-				activeButton = &buttonDemolish;
-				buttonDemolish.active = true;
+			} else if (buttonDemolish.justClicked) {
 				actionMode = ActionMode_Demolish;
 				SDL_SetCursor(cursorDemolish);
-			} else if (buttonPlant.clickStarted && buttonPlant.mouseOver) {
-				if (activeButton) {
-					activeButton->active = false;
-				}
-				activeButton = &buttonPlant;
-				buttonPlant.active = true;
+			} else if (buttonPlant.justClicked) {
 				actionMode = ActionMode_Plant;
 				SDL_SetCursor(cursorPlant);
-			} else if (buttonHarvest.clickStarted && buttonHarvest.mouseOver) {
-				if (activeButton) {
-					activeButton->active = false;
-				}
-				activeButton = &buttonHarvest;
-				buttonHarvest.active = true;
+			} else if (buttonHarvest.justClicked) {
 				actionMode = ActionMode_Harvest;
 				SDL_SetCursor(cursorHarvest);
 			}
-		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
-			buttonBuildField.clickStarted = false;
-			buttonDemolish.clickStarted = false;
-			buttonPlant.clickStarted = false;
-			buttonHarvest.clickStarted = false;
 		}
 
-		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_RIGHT)) {
-			// Unselect current thing
-			if (activeButton) {
-				activeButton->active = false;
-				activeButton = null;
-			}
-			actionMode = ActionMode_None;
-			SDL_SetCursor(cursorMain);
-		}
 
 	// RENDERING
 		clearToBlack(&renderer);

@@ -15,16 +15,16 @@ struct MouseState {
 inline uint8 mouseButtonIndex(uint8 sdlMouseButton) {
 	return sdlMouseButton - 1;
 }
-inline bool mouseButtonJustPressed(MouseState &mouseState, uint8 mouseButton) {
+inline bool mouseButtonJustPressed(MouseState *mouseState, uint8 mouseButton) {
 	uint8 buttonIndex = mouseButtonIndex(mouseButton);
-	return mouseState.down[buttonIndex] && !mouseState.wasDown[buttonIndex];
+	return mouseState->down[buttonIndex] && !mouseState->wasDown[buttonIndex];
 }
-inline bool mouseButtonJustReleased(MouseState &mouseState, uint8 mouseButton) {
+inline bool mouseButtonJustReleased(MouseState *mouseState, uint8 mouseButton) {
 	uint8 buttonIndex = mouseButtonIndex(mouseButton);
-	return !mouseState.down[buttonIndex] && mouseState.wasDown[buttonIndex];
+	return !mouseState->down[buttonIndex] && mouseState->wasDown[buttonIndex];
 }
-inline bool mouseButtonPressed(MouseState &mouseState, uint8 mouseButton) {
-	return mouseState.down[mouseButtonIndex(mouseButton)];
+inline bool mouseButtonPressed(MouseState *mouseState, uint8 mouseButton) {
+	return mouseState->down[mouseButtonIndex(mouseButton)];
 }
 
 /**

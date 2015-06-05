@@ -110,3 +110,56 @@ void drawUiButton(Renderer *renderer, UiButton *button) {
 	}
 	drawUiLabel(renderer, &button->text);
 }
+
+void addButtonToGroup(UiButton *button, UiButtonGroup *group) {
+	SDL_assert(group->buttonCount < ArrayCount(group->buttons));
+
+	group->buttons[group->buttonCount++] = button;
+}
+
+/**
+ * Get the buttongroup to update its buttons' states, and return whether a button "ate" any click events
+ */
+bool updateButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
+
+	bool eventEaten = false;
+
+	for (int32 i=0; i<group->buttonCount; i++) {
+		UiButton *button = group->buttons[i];
+		button->justClicked = false;
+
+		button->mouseOver = inRect(button->rect, {mouseState->x, mouseState->y});
+		if (button->mouseOver) {
+			eventEaten = true;
+		}
+
+		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+			// See if a button is click-started
+			button->clickStarted = button->mouseOver;
+		} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
+			// Did we trigger a button?
+			if (button->clickStarted && button->mouseOver) {
+				button->justClicked = true;
+
+				// Active button
+				if (group->activeButton) {
+					group->activeButton->active = false;
+				}
+				group->activeButton = button;
+				button->active = true;
+			}
+		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
+			button->clickStarted = false;
+		}
+	}
+
+	if (mouseButtonJustPressed(mouseState, SDL_BUTTON_RIGHT)) {
+		// Unselect current thing
+		if (group->activeButton) {
+			group->activeButton->active = false;
+			group->activeButton = null;
+		}
+	}
+
+	return eventEaten;
+}
