@@ -1,22 +1,5 @@
 // ui.cpp
 
-UiLabel createText(Renderer *renderer, Coord position, char *text, TTF_Font *font, Color color) {
-	UiLabel label = {};
-	label.text = text;
-	label.font = font;
-	label.color = color;
-
-	label.texture = renderText(renderer, label.font, label.text, label.color);
-	label.rect = {position, label.texture.w, label.texture.h};
-
-	return label;
-}
-
-void freeText(UiLabel *label) {
-	freeTexture(&label->texture);
-	label = {};
-}
-
 /**
  * Change the text of the given UiLabel, which regenerates the Texture.
  */
@@ -25,8 +8,50 @@ void setText(Renderer *renderer, UiLabel *label, char *newText) {
 	freeTexture(&label->texture);
 	label->text = newText;
 	label->texture = renderText(renderer, label->font, label->text, label->color);
-	label->rect.w = label->texture.w;
-	label->rect.h = label->texture.h;
+	label->_rect.w = label->texture.w;
+	label->_rect.h = label->texture.h;
+
+	switch (label->align & ALIGN_H) {
+		case ALIGN_H_CENTER: {
+			label->_rect.x = label->origin.x - label->_rect.w/2;
+		} break;
+		case ALIGN_RIGHT: {
+			label->_rect.x = label->origin.x - label->_rect.w;
+		} break;
+		default: { // Left is default
+			label->_rect.x = label->origin.x;
+		} break;
+	}
+
+	switch (label->align & ALIGN_V) {
+		case ALIGN_V_CENTER: {
+			label->_rect.y = label->origin.y - label->_rect.h/2;
+		} break;
+		case ALIGN_BOTTOM: {
+			label->_rect.y = label->origin.y - label->_rect.h;
+		} break;
+		default: { // Top is default
+			label->_rect.y = label->origin.y;
+		} break;
+	}
+}
+
+UiLabel createText(Renderer *renderer, Coord position, int32 align, char *text, TTF_Font *font, Color color) {
+	UiLabel label = {};
+	label.text = text;
+	label.font = font;
+	label.color = color;
+	label.origin = position;
+	label.align = align;
+
+	setText(renderer, &label, text);
+
+	return label;
+}
+
+void freeText(UiLabel *label) {
+	freeTexture(&label->texture);
+	label = {};
 }
 
 UiButton createButton(Renderer *renderer, Rect rect,
@@ -41,9 +66,9 @@ UiButton createButton(Renderer *renderer, Rect rect,
 	button.backgroundPressedColor = pressedColor;
 
 	// Generate the UiLabel, and centre it
-	button.text = createText(renderer, {0,0}, text, font, buttonTextColor);
-	button.text.rect.x = button.rect.x + (button.rect.w - button.text.rect.w) / 2;
-	button.text.rect.y = button.rect.y + (button.rect.h - button.text.rect.h) / 2;
+	Coord buttonCenter = {button.rect.x + button.rect.w / 2,
+							button.rect.y + button.rect.h / 2};
+	button.text = createText(renderer, buttonCenter, ALIGN_CENTER, text, font, buttonTextColor);
 
 	return button;
 }
@@ -68,7 +93,7 @@ void drawUiLabelure(Renderer *renderer, Texture *texture, Rect rect) {
 }
 
 void drawUiLabel(Renderer *renderer, UiLabel *text) {
-	drawUiLabelure(renderer, &text->texture, text->rect);
+	drawUiLabelure(renderer, &text->texture, text->_rect);
 }
 
 void drawUiButton(Renderer *renderer, UiButton *button) {
@@ -84,5 +109,4 @@ void drawUiButton(Renderer *renderer, UiButton *button) {
 		drawUiRect(renderer, button->rect, button->backgroundColor);
 	}
 	drawUiLabel(renderer, &button->text);
-	// drawUiLabelure(renderer, &button->textTexture, button->textRect);
 }

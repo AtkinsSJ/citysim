@@ -176,18 +176,18 @@ int main(int argc, char *argv[]) {
 		labelColor = {255,255,255,255};
 
 	Coord textPosition = {8,4};
-	UiLabel textCityName = createText(&renderer, textPosition, city.name, renderer.fontLarge, labelColor);
+	UiLabel textCityName = createText(&renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.fontLarge, labelColor);
 
-	textPosition.x += textCityName.rect.w + uiPadding;
+	textPosition.x = 800 - 8;
 	char buffer[20];
 	getCityFundsString(&city, buffer);
-	UiLabel textCityFunds = createText(&renderer, textPosition, buffer, renderer.fontLarge, labelColor);
+	UiLabel textCityFunds = createText(&renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, buffer, renderer.fontLarge, labelColor);
 
-	textPosition.x += textCityFunds.rect.w + uiPadding;
+	textPosition.x = 800 / 2;
 	getDateString(&calendar, dateStringBuffer);
-	UiLabel labelDate = createText(&renderer, textPosition, dateStringBuffer, renderer.fontLarge, labelColor);
+	UiLabel labelDate = createText(&renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
 
-	Rect buttonRect = {8, textPosition.y + textCityName.rect.h + uiPadding, 80, 24};
+	Rect buttonRect = {8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24};
 	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
