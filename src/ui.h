@@ -45,7 +45,7 @@ struct UiButton {
 
 struct UiButtonGroup {
 	int32 buttonCount;
-	UiButton *buttons[8]; // TODO: Decide how many buttons we need
+	UiButton buttons[8]; // TODO: Decide how many buttons we need
 	UiButton *activeButton;
 };
 

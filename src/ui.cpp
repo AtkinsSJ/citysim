@@ -54,21 +54,28 @@ void freeText(UiLabel *label) {
 	label = {};
 }
 
+void initButton(UiButton *button, Renderer *renderer, Rect rect,
+					char *text, TTF_Font* font, Color buttonTextColor,
+					Color color, Color hoverColor, Color pressedColor) {
+	button->rect = rect;
+
+	button->backgroundColor = color;
+	button->backgroundHoverColor = hoverColor;
+	button->backgroundPressedColor = pressedColor;
+
+	// Generate the UiLabel, and centre it
+	Coord buttonCenter = {button->rect.x + button->rect.w / 2,
+							button->rect.y + button->rect.h / 2};
+	button->text = createText(renderer, buttonCenter, ALIGN_CENTER, text, font, buttonTextColor);
+}
+
 UiButton createButton(Renderer *renderer, Rect rect,
 					char *text, TTF_Font* font, Color buttonTextColor,
 					Color color, Color hoverColor, Color pressedColor) {
 
 	UiButton button = {};
-	button.rect = rect;
-
-	button.backgroundColor = color;
-	button.backgroundHoverColor = hoverColor;
-	button.backgroundPressedColor = pressedColor;
-
-	// Generate the UiLabel, and centre it
-	Coord buttonCenter = {button.rect.x + button.rect.w / 2,
-							button.rect.y + button.rect.h / 2};
-	button.text = createText(renderer, buttonCenter, ALIGN_CENTER, text, font, buttonTextColor);
+	
+	initButton(&button, renderer, rect, text, font, buttonTextColor, color, hoverColor, pressedColor);
 
 	return button;
 }
@@ -111,10 +118,9 @@ void drawUiButton(Renderer *renderer, UiButton *button) {
 	drawUiLabel(renderer, &button->text);
 }
 
-void addButtonToGroup(UiButton *button, UiButtonGroup *group) {
+UiButton *addButtonToGroup(UiButtonGroup *group) {
 	SDL_assert(group->buttonCount < ArrayCount(group->buttons));
-
-	group->buttons[group->buttonCount++] = button;
+	return &group->buttons[group->buttonCount++];
 }
 
 /**
@@ -125,7 +131,7 @@ bool updateButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
 	bool eventEaten = false;
 
 	for (int32 i=0; i<group->buttonCount; i++) {
-		UiButton *button = group->buttons[i];
+		UiButton *button = group->buttons + i;
 		button->justClicked = false;
 
 		button->mouseOver = inRect(button->rect, {mouseState->x, mouseState->y});

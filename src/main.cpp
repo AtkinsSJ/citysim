@@ -190,24 +190,25 @@ int main(int argc, char *argv[]) {
 	UiButtonGroup actionButtonGroup = {};
 
 	Rect buttonRect = {8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24};
-	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	addButtonToGroup(&buttonBuildField, &actionButtonGroup);
+
+	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
+	initButton(buttonBuildField, &renderer, buttonRect, "Build Field", renderer.font,
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton buttonDemolish = createButton(&renderer, buttonRect, "Demolish", renderer.font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	addButtonToGroup(&buttonDemolish, &actionButtonGroup);
+	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
+	initButton(buttonDemolish, &renderer, buttonRect, "Demolish", renderer.font,
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton buttonPlant = createButton(&renderer, buttonRect, "Plant", renderer.font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	addButtonToGroup(&buttonPlant, &actionButtonGroup);
+	UiButton *buttonPlant = addButtonToGroup(&actionButtonGroup);
+	initButton(buttonPlant, &renderer, buttonRect, "Plant", renderer.font,
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton buttonHarvest = createButton(&renderer, buttonRect, "Harvest", renderer.font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	addButtonToGroup(&buttonHarvest, &actionButtonGroup);
+	UiButton *buttonHarvest = addButtonToGroup(&actionButtonGroup);
+	initButton(buttonHarvest, &renderer, buttonRect, "Harvest", renderer.font,
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	SDL_SetRenderDrawColor(renderer.sdl_renderer, 0x00, 0x00, 0x00, 0xFF);
 	while (!quit) {
@@ -365,17 +366,17 @@ int main(int argc, char *argv[]) {
 			actionMode = ActionMode_None;
 			SDL_SetCursor(cursorMain);
 		} else {
-			if (buttonBuildField.justClicked) {
+			if (buttonBuildField->justClicked) {
 				selectedBuildingArchetype = BA_Field;
 				actionMode = ActionMode_Build;
 				SDL_SetCursor(cursorBuild);
-			} else if (buttonDemolish.justClicked) {
+			} else if (buttonDemolish->justClicked) {
 				actionMode = ActionMode_Demolish;
 				SDL_SetCursor(cursorDemolish);
-			} else if (buttonPlant.justClicked) {
+			} else if (buttonPlant->justClicked) {
 				actionMode = ActionMode_Plant;
 				SDL_SetCursor(cursorPlant);
-			} else if (buttonHarvest.justClicked) {
+			} else if (buttonHarvest->justClicked) {
 				actionMode = ActionMode_Harvest;
 				SDL_SetCursor(cursorHarvest);
 			}
@@ -456,10 +457,10 @@ int main(int argc, char *argv[]) {
 		drawUiLabel(&renderer, &textCityFunds);
 		drawUiLabel(&renderer, &labelDate);
 
-		drawUiButton(&renderer, &buttonBuildField);
-		drawUiButton(&renderer, &buttonDemolish);
-		drawUiButton(&renderer, &buttonPlant);
-		drawUiButton(&renderer, &buttonHarvest);
+		drawUiButton(&renderer, buttonBuildField);
+		drawUiButton(&renderer, buttonDemolish);
+		drawUiButton(&renderer, buttonPlant);
+		drawUiButton(&renderer, buttonHarvest);
 
 		SDL_RenderPresent(renderer.sdl_renderer);
 
@@ -490,10 +491,10 @@ int main(int argc, char *argv[]) {
 	freeText(&textCityName);
 	freeText(&textCityFunds);
 
-	freeButton(&buttonBuildField);
-	freeButton(&buttonDemolish);
-	freeButton(&buttonPlant);
-	freeButton(&buttonHarvest);
+	freeButton(buttonBuildField);
+	freeButton(buttonDemolish);
+	freeButton(buttonPlant);
+	freeButton(buttonHarvest);
 
 	freeRenderer(&renderer);
 
