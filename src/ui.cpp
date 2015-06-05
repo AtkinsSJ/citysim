@@ -69,17 +69,6 @@ void initButton(UiButton *button, Renderer *renderer, Rect rect,
 	button->text = createText(renderer, buttonCenter, ALIGN_CENTER, text, font, buttonTextColor);
 }
 
-UiButton createButton(Renderer *renderer, Rect rect,
-					char *text, TTF_Font* font, Color buttonTextColor,
-					Color color, Color hoverColor, Color pressedColor) {
-
-	UiButton button = {};
-	
-	initButton(&button, renderer, rect, text, font, buttonTextColor, color, hoverColor, pressedColor);
-
-	return button;
-}
-
 void freeButton(UiButton *button) {
 	freeText(&button->text);
 	button = {};
@@ -123,6 +112,16 @@ UiButton *addButtonToGroup(UiButtonGroup *group) {
 	return &group->buttons[group->buttonCount++];
 }
 
+void setActiveButton(UiButtonGroup *group, UiButton *button) {
+	if (group->activeButton) {
+		group->activeButton->active = false;
+	}
+	group->activeButton = button;
+	if (button) {
+		button->active = true;
+	}
+}
+
 /**
  * Get the buttongroup to update its buttons' states, and return whether a button "ate" any click events
  */
@@ -148,22 +147,10 @@ bool updateButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
 				button->justClicked = true;
 
 				// Active button
-				if (group->activeButton) {
-					group->activeButton->active = false;
-				}
-				group->activeButton = button;
-				button->active = true;
+				setActiveButton(group, button);
 			}
 		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
 			button->clickStarted = false;
-		}
-	}
-
-	if (mouseButtonJustPressed(mouseState, SDL_BUTTON_RIGHT)) {
-		// Unselect current thing
-		if (group->activeButton) {
-			group->activeButton->active = false;
-			group->activeButton = null;
 		}
 	}
 

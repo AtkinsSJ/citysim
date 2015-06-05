@@ -2,16 +2,23 @@
 
 // calendar.h
 
+enum CalendarSpeed { // Ticks per frame
+	SpeedPaused = 0,
+	Speed1 = 500 / FRAMES_PER_SECOND,
+	Speed2 = 1000 / FRAMES_PER_SECOND,
+	Speed3 = 2000 / FRAMES_PER_SECOND,
+};
+
 struct Calendar {
 	int32 day; // 0-indexed
 	int32 dayOfWeek; // 0-indexed
 	int32 month; // 0-indexed
 	int32 year; // Real year
 
-	int32 ticksPerFrame;
+	CalendarSpeed speed; // Ticks per frame
 	int32 _dayTicksCounter;
 };
-const int32 ticksPerDay = 500; // How big does Calendar.dayCounter have to be to increment the day?
+const int32 ticksPerDay = 1000; // How big does Calendar.dayCounter have to be to increment the day?
 const int32 daysInMonth[] = {
 	31, // J
 	28, // F
@@ -50,13 +57,13 @@ const char *monthNames[] = {
 	"December,"
 };
 
-void initCalendar(Calendar *calendar, int32 framesPerSecond) {
+void initCalendar(Calendar *calendar) {
 	calendar->day = 0;
 	calendar->dayOfWeek = 0;
 	calendar->month = 0;
 	calendar->year = 2000;
 	calendar->_dayTicksCounter = 0;
-	calendar->ticksPerFrame = 1000 / framesPerSecond;
+	calendar->speed = SpeedPaused;
 }
 
 void getDateString(Calendar *calendar, char *buffer) {
@@ -73,7 +80,7 @@ void getDateString(Calendar *calendar, char *buffer) {
  */
 bool incrementCalendar(Calendar *calendar) {
 	bool dayChanged = false;
-	calendar->_dayTicksCounter += calendar->ticksPerFrame;
+	calendar->_dayTicksCounter += calendar->speed;
 	if (calendar->_dayTicksCounter >= ticksPerDay) {
 		calendar->_dayTicksCounter -= ticksPerDay;
 		calendar->day++;
