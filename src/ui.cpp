@@ -21,6 +21,7 @@ void freeText(UiLabel *label) {
  * Change the text of the given UiLabel, which regenerates the Texture.
  */
 void setText(Renderer *renderer, UiLabel *label, char *newText) {
+	// TODO: If the text is the same, do nothing!
 	freeTexture(&label->texture);
 	label->text = newText;
 	label->texture = renderText(renderer, label->font, label->text, label->color);

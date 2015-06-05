@@ -1,8 +1,59 @@
+----------------------------------------------------------------------------------
 TODO:
+----------------------------------------------------------------------------------
 
-- Things cost money.
+- Time! A simple calendar that can be sped up, slowed down, and paused.
+	- Display the current day
+	- Growth is relative to time
+	- Game automatically pauses when fields are harvestable
+
+- Tasks take time!
+	- Planting
+	- Harvesting
+
+- Different crops!
+	- Worth different amounts
+	- Different growth speed
+	- Grow at different times of year?
+	- Different graphics
+
+- Random events
+	- Frost!
+	- Heatwave!
+	- Bugs!
+	- Disease!
+	- Machinery breaks!
+
+- Farm machinery
+	- Each can only do one task at a time
+	- Machinery speeds-up task time
+	- Several ranks of machinery
+	- Tractor
+	- Combine Harvester
+
+- Field maintenance
+	- Fertilizer / Manure
+	- 
+
+- Weather!
+	- Wetness and temperature based on time of year
+	- Wet/dryness affects plant growth
+	- Can water fields when it's dry
 
 - An actual random number generator!
 
+- Name your farm!
+
+- Text alignment
+
+----------------------------------------------------------------------------------
 BUGS:
+----------------------------------------------------------------------------------
 - Weird rendering issues with gaps between tiles at non-default zoom levels.
+
+----------------------------------------------------------------------------------
+PLANTS:
+----------------------------------------------------------------------------------
+Potatoes
+Plant March/April
+Harvest June to September, depending on variety

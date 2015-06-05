@@ -484,7 +484,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw some UI
-		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 100}, {255,0,0,128});
+		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 64}, {0,0,0,128});
 
 		drawUiLabel(&renderer, &textCityName);
 		drawUiLabel(&renderer, &textCityFunds);
