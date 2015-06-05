@@ -17,6 +17,7 @@
 #include "ui.h"
 #include "city.h"
 #include "input.h"
+#include "calendar.h"
 
 void updateCamera(Camera &camera, MouseState &mouseState, KeyboardState &keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
@@ -122,6 +123,8 @@ bool harvestField(City *city, Coord tilePosition) {
 	return false;
 }
 
+
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -143,6 +146,10 @@ int main(int argc, char *argv[]) {
 	srand(0); // TODO: Seed the random number generator!
 	City city = createCity(100,100, "Best Farm", 20000);
 	generateTerrain(&city);
+
+	Calendar calendar = {};
+	char dateStringBuffer[50];
+	initCalendar(&calendar, FRAMES_PER_SECOND);
 
 // GAME LOOP
 	bool quit = false;
@@ -175,6 +182,10 @@ int main(int argc, char *argv[]) {
 	char buffer[20];
 	getCityFundsString(&city, buffer);
 	UiLabel textCityFunds = createText(&renderer, textPosition, buffer, renderer.fontLarge, labelColor);
+
+	textPosition.x += textCityFunds.rect.w + uiPadding;
+	getDateString(&calendar, dateStringBuffer);
+	UiLabel labelDate = createText(&renderer, textPosition, dateStringBuffer, renderer.fontLarge, labelColor);
 
 	Rect buttonRect = {8, textPosition.y + textCityName.rect.h + uiPadding, 80, 24};
 	UiButton buttonBuildField = createButton(&renderer, buttonRect, "Build Field", renderer.font,
@@ -263,6 +274,11 @@ int main(int argc, char *argv[]) {
 		}
 
 	// Update stuff!
+		if (incrementCalendar(&calendar)) {
+			getDateString(&calendar, dateStringBuffer);
+			setText(&renderer, &labelDate, dateStringBuffer);
+		}
+
 		// Fields
 		for (int i = 0; i < ArrayCount(city.fieldData); i++) {
 			FieldData *field = city.fieldData + i;
@@ -488,6 +504,7 @@ int main(int argc, char *argv[]) {
 
 		drawUiLabel(&renderer, &textCityName);
 		drawUiLabel(&renderer, &textCityFunds);
+		drawUiLabel(&renderer, &labelDate);
 
 		drawUiButton(&renderer, &buttonBuildField);
 		drawUiButton(&renderer, &buttonDemolish);
