@@ -457,10 +457,7 @@ int main(int argc, char *argv[]) {
 		drawUiLabel(&renderer, &textCityFunds);
 		drawUiLabel(&renderer, &labelDate);
 
-		drawUiButton(&renderer, buttonBuildField);
-		drawUiButton(&renderer, buttonDemolish);
-		drawUiButton(&renderer, buttonPlant);
-		drawUiButton(&renderer, buttonHarvest);
+		drawUiButtonGroup(&renderer, &actionButtonGroup);
 
 		SDL_RenderPresent(renderer.sdl_renderer);
 
@@ -491,10 +488,7 @@ int main(int argc, char *argv[]) {
 	freeText(&textCityName);
 	freeText(&textCityFunds);
 
-	freeButton(buttonBuildField);
-	freeButton(buttonDemolish);
-	freeButton(buttonPlant);
-	freeButton(buttonHarvest);
+	freeButtonGroup(&actionButtonGroup);
 
 	freeRenderer(&renderer);
 

@@ -169,3 +169,15 @@ bool updateButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
 
 	return eventEaten;
 }
+
+void drawUiButtonGroup(Renderer *renderer, UiButtonGroup *group) {
+	for (int32 i=0; i<group->buttonCount; i++) {
+		drawUiButton(renderer, group->buttons + i);
+	}
+}
+
+void freeButtonGroup(UiButtonGroup *group) {
+	for (int32 i=0; i<group->buttonCount; i++) {
+		freeButton(group->buttons + i);
+	}
+}
