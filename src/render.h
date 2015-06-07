@@ -21,7 +21,10 @@ enum TextureAtlasItem {
 	TextureAtlasItem_GroundTile = 0,
 	TextureAtlasItem_WaterTile,
 	TextureAtlasItem_Field,
-	TextureAtlasItem_Crop,
+	TextureAtlasItem_Crop0_0,
+	TextureAtlasItem_Crop0_1,
+	TextureAtlasItem_Crop0_2,
+	TextureAtlasItem_Crop0_3,
 
 	TextureAtlasItemCount
 };

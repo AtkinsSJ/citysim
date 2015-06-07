@@ -4,9 +4,9 @@
 
 enum CalendarSpeed { // Ticks per frame
 	SpeedPaused = 0,
-	Speed1 = 500 / FRAMES_PER_SECOND,
-	Speed2 = 1000 / FRAMES_PER_SECOND,
-	Speed3 = 2000 / FRAMES_PER_SECOND,
+	Speed1 = 1000 / FRAMES_PER_SECOND,
+	Speed2 = 2000 / FRAMES_PER_SECOND,
+	Speed3 = 5000 / FRAMES_PER_SECOND,
 };
 
 struct Calendar {

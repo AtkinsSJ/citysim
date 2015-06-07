@@ -310,11 +310,11 @@ int main(int argc, char *argv[]) {
 			// Fields
 			for (int i = 0; i < ArrayCount(city.fieldData); i++) {
 				FieldData *field = city.fieldData + i;
-				if (field->exists && field->hasPlants && field->growth < 16) {
+				if (field->exists && field->hasPlants && field->growth < (16 * 4)) {
 					// Simulate the field!
 					field->growthCounter += 1;
-					if (field->growthCounter >= 7) {
-						field->growthCounter -= 7;
+					if (field->growthCounter >= 2) {
+						field->growthCounter -= 2;
 						field->growth++;
 					}
 				}
@@ -464,10 +464,28 @@ int main(int argc, char *argv[]) {
 					drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &drawColor);
 					FieldData *field = (FieldData*)building.data;
 					if ( field->hasPlants ) {
-						for (int i=0; i < field->growth; i++) {
-							drawAtWorldPos(&renderer, TextureAtlasItem_Crop,
+						const int32 fieldTiles = 16;
+						int32 baseGrowthStage = field->growth / fieldTiles;
+						int32 beyondGrowth = field->growth % fieldTiles;
+
+						if (baseGrowthStage == 0) {
+							for (int32 i=0; i < beyondGrowth; i++) {
+								drawAtWorldPos(&renderer,
+									TextureAtlasItem_Crop0_0,
 									{building.footprint.pos.x + (i%4),
-									 building.footprint.pos.y + (i/4)}, &drawColor);
+									 building.footprint.pos.y + (i/4)},
+									&drawColor
+								);
+							}
+						} else {
+							for (int32 i=0; i < fieldTiles; i++) {
+								drawAtWorldPos(&renderer,
+									(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage - 1 + (i < beyondGrowth ? 1 : 0)),
+									{building.footprint.pos.x + (i%4),
+									 building.footprint.pos.y + (i/4)},
+									&drawColor
+								);
+							}
 						}
 					}
 				} break;
