@@ -5,6 +5,7 @@ TODO:
 - Time! A simple calendar that can be sped up, slowed down, and paused.
 //	- Display the current day
 //	- Growth is relative to time
+//	- Controls for time
 	- Game automatically pauses when fields are harvestable
 
 - Tasks take time!
