@@ -97,8 +97,8 @@ bool plantField(City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
-		if (!field->hasPlants && (city->funds >= 350)) {
-			field->hasPlants = true;
+		if ((field->state == FieldState_Empty) && (city->funds >= 350)) {
+			field->state = FieldState_Planting;
 			field->growth = 0;
 			city->funds -= 500;
 			return true;
@@ -112,10 +112,11 @@ bool harvestField(City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
-		if (field->hasPlants) {
+		if (field->state == FieldState_Growing) {
 			SDL_Log("Harvested %d plants from this field.", field->growth);
 			city->funds += field->growth * 150;
-			field->hasPlants = false;
+			field->state = FieldState_Empty;
+			field->growth = 0;
 			return true;
 		}
 	}
@@ -123,7 +124,50 @@ bool harvestField(City *city, Coord tilePosition) {
 	return false;
 }
 
+void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 
+	drawAtWorldPos(renderer, TextureAtlasItem_Field, building->footprint.pos, drawColor);
+
+	FieldData *field = (FieldData*)building->data;
+
+	switch (field->state) {
+		case FieldState_Planting: {
+			// 
+		} break;
+		case FieldState_Growing: {
+
+		} break;
+		case FieldState_Harvesting: {
+
+		} break;
+	}
+
+	if ( field->growth ) {
+		const int32 fieldTiles = 16;
+		int32 baseGrowthStage = field->growth / fieldTiles;
+		int32 beyondGrowth = field->growth % fieldTiles;
+
+		if (baseGrowthStage == 0) {
+			for (int32 i=0; i < beyondGrowth; i++) {
+				drawAtWorldPos(renderer,
+					TextureAtlasItem_Crop0_0,
+					{building->footprint.pos.x + (i%4),
+					 building->footprint.pos.y + (i/4)},
+					drawColor
+				);
+			}
+		} else {
+			for (int32 i=0; i < fieldTiles; i++) {
+				drawAtWorldPos(renderer,
+					(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage - 1 + (i < beyondGrowth ? 1 : 0)),
+					{building->footprint.pos.x + (i%4),
+					 building->footprint.pos.y + (i/4)},
+					drawColor
+				);
+			}
+		}
+	}
+}
 
 int main(int argc, char *argv[]) {
 
@@ -310,7 +354,8 @@ int main(int argc, char *argv[]) {
 			// Fields
 			for (int i = 0; i < ArrayCount(city.fieldData); i++) {
 				FieldData *field = city.fieldData + i;
-				if (field->exists && field->hasPlants && field->growth < (16 * 4)) {
+				updateField(field);
+				if (field->exists && (field->state != FieldState_Empty) && field->growth < (16 * 4)) {
 					// Simulate the field!
 					field->growthCounter += 1;
 					if (field->growthCounter >= 2) {
@@ -461,33 +506,7 @@ int main(int argc, char *argv[]) {
 
 			switch (building.archetype) {
 				case BA_Field: {
-					drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &drawColor);
-					FieldData *field = (FieldData*)building.data;
-					if ( field->hasPlants ) {
-						const int32 fieldTiles = 16;
-						int32 baseGrowthStage = field->growth / fieldTiles;
-						int32 beyondGrowth = field->growth % fieldTiles;
-
-						if (baseGrowthStage == 0) {
-							for (int32 i=0; i < beyondGrowth; i++) {
-								drawAtWorldPos(&renderer,
-									TextureAtlasItem_Crop0_0,
-									{building.footprint.pos.x + (i%4),
-									 building.footprint.pos.y + (i/4)},
-									&drawColor
-								);
-							}
-						} else {
-							for (int32 i=0; i < fieldTiles; i++) {
-								drawAtWorldPos(&renderer,
-									(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage - 1 + (i < beyondGrowth ? 1 : 0)),
-									{building.footprint.pos.x + (i%4),
-									 building.footprint.pos.y + (i/4)},
-									&drawColor
-								);
-							}
-						}
-					}
+					drawField(&renderer, &building, &drawColor);
 				} break;
 
 				default: {

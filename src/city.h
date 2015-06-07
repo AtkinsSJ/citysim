@@ -53,9 +53,15 @@ struct Building {
 	void *data;
 };
 
+enum FieldState {
+	FieldState_Empty = 0,
+	FieldState_Planting,
+	FieldState_Growing,
+	FieldState_Harvesting,
+};
 struct FieldData {
 	bool exists;
-	bool hasPlants;
+	FieldState state;
 	int32 growth;
 	int32 growthCounter;
 };

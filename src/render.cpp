@@ -110,6 +110,7 @@ bool initializeRenderer(Renderer *renderer) {
 	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_1] = {tw,tw,tw,tw};
 	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_2] = {tw*2,tw,tw,tw};
 	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_3] = {tw*3,tw,tw,tw};
+	renderer->textureAtlas.rects[TextureAtlasItem_Potato] = {0,tw*2,tw,tw};
 
 	// Goblin Fortress
 	/*

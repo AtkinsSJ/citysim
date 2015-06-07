@@ -137,7 +137,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 			FieldData *fieldData = (FieldData*)building->data;
 			
 			fieldData->exists = true;
-			fieldData->hasPlants = false;
+			fieldData->state = FieldState_Empty;
 			fieldData->growth = 0;
 
 		} break;

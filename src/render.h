@@ -25,6 +25,7 @@ enum TextureAtlasItem {
 	TextureAtlasItem_Crop0_1,
 	TextureAtlasItem_Crop0_2,
 	TextureAtlasItem_Crop0_3,
+	TextureAtlasItem_Potato,
 
 	TextureAtlasItemCount
 };
