@@ -189,6 +189,11 @@ int main(int argc, char *argv[]) {
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
+	UiButton *buttonBuildBarn = addButtonToGroup(&actionButtonGroup);
+	initButton(buttonBuildBarn, &renderer, buttonRect, "Build Barn", renderer.font,
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+
+	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
 	initButton(buttonDemolish, &renderer, buttonRect, "Demolish", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
@@ -339,7 +344,6 @@ int main(int argc, char *argv[]) {
 						char buffer[20];
 						getCityFundsString(&city, buffer);
 						setText(&renderer, &textCityFunds, buffer);
-						SDL_Log("Pretending to plant something in this field.");
 					}
 				} break;
 
@@ -358,7 +362,6 @@ int main(int argc, char *argv[]) {
 						city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
 				} break;
 			}
-
 		}
 
 		if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
@@ -369,6 +372,10 @@ int main(int argc, char *argv[]) {
 		} else {
 			if (buttonBuildField->justClicked) {
 				selectedBuildingArchetype = BA_Field;
+				actionMode = ActionMode_Build;
+				SDL_SetCursor(cursorBuild);
+			} else if (buttonBuildBarn->justClicked) {
+				selectedBuildingArchetype = BA_Barn;
 				actionMode = ActionMode_Build;
 				SDL_SetCursor(cursorBuild);
 			} else if (buttonDemolish->justClicked) {

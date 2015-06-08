@@ -19,11 +19,15 @@ struct BuildingDefinition {
 // Farming stuff
 enum BuildingArchetype {
 	BA_None = -1,
+
 	BA_Field = 0,
+	BA_Barn = 1,
+
 	BA_Count
 };
 BuildingDefinition buildingDefinitions[] = {
 	{4,4, "Field", TextureAtlasItem_Field, 200, 20},
+	{4,4, "Barn", TextureAtlasItem_Barn, 2000, 250},
 };
 
 // Goblin Fortress stuff

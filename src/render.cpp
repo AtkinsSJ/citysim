@@ -100,29 +100,33 @@ bool initializeRenderer(Renderer *renderer) {
 	if (!renderer->textureAtlas.texture.valid) {
 		return false;
 	}
-	const int tw = TILE_WIDTH;
 
 	// Farming
-	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {tw,0,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Field] = {tw*4,0,tw*4,tw*4};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_0] = {0,tw,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_1] = {tw,tw,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_2] = {tw*2,tw,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_3] = {tw*3,tw,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Potato] = {0,tw*2,tw,tw};
+	const int w1 = TILE_WIDTH;
+	const int w2 = w1 * 2;
+	const int w3 = w1 * 3;
+	const int w4 = w1 * 4;
+	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {w1,0,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Field] = {w4,0,w4,w4};
+	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_0] = {0,w1,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_1] = {w1,w1,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_2] = {w2,w1,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_3] = {w3,w1,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Potato] = {0,w2,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Barn] = {0,w4,w4,w4};
 
 	// Goblin Fortress
 	/*
-	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {tw,0,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Butcher] = {tw*3,tw*5,tw*2,tw*2};
-	renderer->textureAtlas.rects[TextureAtlasItem_Hovel] = {tw,tw,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Paddock] = {0,tw*2,tw*3,tw*3};
-	renderer->textureAtlas.rects[TextureAtlasItem_Pit] = {tw*3,0,tw*5,tw*5};
-	renderer->textureAtlas.rects[TextureAtlasItem_Road] = {0,tw,tw,tw};
-	renderer->textureAtlas.rects[TextureAtlasItem_Goblin] = {tw,tw*5,tw*2,tw*2};
-	renderer->textureAtlas.rects[TextureAtlasItem_Goat] = {0,tw*5,tw,tw*2};
+	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {w1,0,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Butcher] = {w1*3,w1*5,w1*2,w1*2};
+	renderer->textureAtlas.rects[TextureAtlasItem_Hovel] = {w1,w1,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Paddock] = {0,w1*2,w1*3,w1*3};
+	renderer->textureAtlas.rects[TextureAtlasItem_Pit] = {w1*3,0,w1*5,w1*5};
+	renderer->textureAtlas.rects[TextureAtlasItem_Road] = {0,w1,w1,w1};
+	renderer->textureAtlas.rects[TextureAtlasItem_Goblin] = {w1,w1*5,w1*2,w1*2};
+	renderer->textureAtlas.rects[TextureAtlasItem_Goat] = {0,w1*5,w1,w1*2};
 	*/
 
 	// Load font
