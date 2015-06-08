@@ -57,6 +57,7 @@ enum FieldState {
 	FieldState_Empty = 0,
 	FieldState_Planting,
 	FieldState_Growing,
+	FieldState_Grown,
 	FieldState_Harvesting,
 };
 struct FieldData {
@@ -65,6 +66,8 @@ struct FieldData {
 	int32 growth;
 	int32 growthCounter;
 };
+const int fieldSize = 16;
+const int fieldMaxGrowth = fieldSize*3;
 
 struct City {
 	char *name;
