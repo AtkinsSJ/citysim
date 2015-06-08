@@ -73,7 +73,7 @@ void updateField(FieldData *field) {
 
 void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 
-	drawAtWorldPos(renderer, TextureAtlasItem_Field, building->footprint.pos, drawColor);
+	drawAtWorldPos(renderer, TextureAtlasItem_Field, v2(building->footprint.pos), drawColor);
 
 	FieldData *field = (FieldData*)building->data;
 

@@ -28,6 +28,13 @@ enum TextureAtlasItem {
 	TextureAtlasItem_Potato,
 	TextureAtlasItem_Barn,
 
+	TextureAtlasItem_Farmer_Stand,
+	TextureAtlasItem_Farmer_Walk0,
+	TextureAtlasItem_Farmer_Walk1,
+	TextureAtlasItem_Farmer_Hold,
+	TextureAtlasItem_Farmer_Carry0,
+	TextureAtlasItem_Farmer_Carry1,
+
 	TextureAtlasItemCount
 };
 

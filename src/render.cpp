@@ -106,6 +106,11 @@ bool initializeRenderer(Renderer *renderer) {
 	if (!textureCombinedPng->valid) {
 		return false;
 	}
+	renderer->textures[1] = loadTexture(renderer, "farmer.png");
+	Texture *textureFarmerPng = &renderer->textures[1];
+	if (!textureFarmerPng->valid) {
+		return false;
+	}
 
 	// Farming
 	const int w1 = TILE_WIDTH;
@@ -122,6 +127,13 @@ bool initializeRenderer(Renderer *renderer) {
 	setTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	textureCombinedPng, {w3, w1, w1, w1});
 	setTextureRegion(renderer, TextureAtlasItem_Potato, 	textureCombinedPng, { 0, w2, w1, w1});
 	setTextureRegion(renderer, TextureAtlasItem_Barn, 		textureCombinedPng, { 0, w4, w4, w4});
+
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  textureFarmerPng, { 0,  0,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  textureFarmerPng, { 8,  0,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Walk1,  textureFarmerPng, {16,  0,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   textureFarmerPng, { 0,  8,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, textureFarmerPng, { 8,  8,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, textureFarmerPng, {16,  8,  8,  8});
 
 	// Goblin Fortress
 	/*
@@ -182,7 +194,7 @@ void clearToBlack(Renderer *renderer) {
 	SDL_RenderClear(renderer->sdl_renderer);
 }
 
-void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord worldTilePosition, Color *color=0) {
+void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 worldTilePosition, Color *color=0) {
 	
 	const real32 camLeft = renderer->camera.pos.x - (renderer->camera.windowWidth * 0.5f),
 				 camTop = renderer->camera.pos.y - (renderer->camera.windowHeight * 0.5f);

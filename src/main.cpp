@@ -19,6 +19,7 @@
 #include "city.h"
 #include "calendar.h"
 #include "field.h"
+#include "worker.h"
 
 void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
@@ -115,6 +116,14 @@ int main(int argc, char *argv[]) {
 	srand(0); // TODO: Seed the random number generator!
 	City city = createCity(100,100, "Best Farm", 20000);
 	generateTerrain(&city);
+
+	WorkerList workers = {};
+	initWorker(addWorker(&workers), 10.0f,10.0f);
+	initWorker(addWorker(&workers), 11.0f,10.5f);
+	initWorker(addWorker(&workers), 12.0f,11.0f);
+	initWorker(addWorker(&workers), 13.0f,11.5f);
+	initWorker(addWorker(&workers), 14.0f,12.0f);
+	initWorker(addWorker(&workers), 15.0f,12.5f);
 
 	Calendar calendar = {};
 	char dateStringBuffer[50];
@@ -434,8 +443,15 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
-					drawAtWorldPos(&renderer, def->textureAtlasItem, building.footprint.pos, &drawColor);
+					drawAtWorldPos(&renderer, def->textureAtlasItem, v2(building.footprint.pos), &drawColor);
 				} break;
+			}
+		}
+
+		// Draw workers!
+		for (int i = 0; i < ArrayCount(workers.list); ++i) {
+			if (workers.list[i].exists) {
+				drawAtWorldPos(&renderer, TextureAtlasItem_Farmer_Stand, workers.list[i].pos);
 			}
 		}
 
@@ -447,7 +463,7 @@ int main(int argc, char *argv[]) {
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
-			drawAtWorldPos(&renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, mouseTilePos, &ghostColor);
+			drawAtWorldPos(&renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, v2(mouseTilePos), &ghostColor);
 		}
 
 		// Draw some UI
