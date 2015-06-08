@@ -107,12 +107,6 @@ bool initializeRenderer(Renderer *renderer) {
 		return false;
 	}
 
-	// renderer->textureAtlas = {};
-	// renderer->textureAtlas.texture = loadTexture(renderer, "combined.png");
-	// if (!renderer->textureAtlas.texture.valid) {
-	// 	return false;
-	// }
-
 	// Farming
 	const int w1 = TILE_WIDTH;
 	const int w2 = w1 * 2;
@@ -155,7 +149,9 @@ bool initializeRenderer(Renderer *renderer) {
 
 void freeRenderer(Renderer *renderer) {
 
-	freeTexture(&renderer->textureAtlas.texture);
+	for (int i=0; i < ArrayCount(renderer->textures); i++) {
+		freeTexture(&renderer->textures[i]);
+	}
 
 	TTF_CloseFont(renderer->font);
 	TTF_CloseFont(renderer->fontLarge);
@@ -194,23 +190,24 @@ void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord
 	const real32 tileWidth = TILE_WIDTH * renderer->camera.zoom,
 				tileHeight = TILE_HEIGHT * renderer->camera.zoom;
 
-	SDL_Rect *sourceRect = &renderer->textureAtlas.rects[textureAtlasItem];
+	TextureRegion *region = &renderer->regions[textureAtlasItem];
+
 	SDL_Rect destRect = {
 		(int)((worldTilePosition.x * tileWidth) - camLeft),
 		(int)((worldTilePosition.y * tileHeight) - camTop),
-		(int)(sourceRect->w * renderer->camera.zoom),
-		(int)(sourceRect->h * renderer->camera.zoom)
+		(int)(region->rect.w * renderer->camera.zoom),
+		(int)(region->rect.h * renderer->camera.zoom)
 	};
 
 	if (color) {
-		SDL_SetTextureColorMod(renderer->textureAtlas.texture.sdl_texture, color->r, color->g, color->b);
-		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture.sdl_texture, color->a);
+		SDL_SetTextureColorMod(region->texture->sdl_texture, color->r, color->g, color->b);
+		SDL_SetTextureAlphaMod(region->texture->sdl_texture, color->a);
 
-		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture.sdl_texture, sourceRect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect);
 
-		SDL_SetTextureColorMod(renderer->textureAtlas.texture.sdl_texture, 255, 255, 255);
-		SDL_SetTextureAlphaMod(renderer->textureAtlas.texture.sdl_texture, 255);
+		SDL_SetTextureColorMod(region->texture->sdl_texture, 255, 255, 255);
+		SDL_SetTextureAlphaMod(region->texture->sdl_texture, 255);
 	} else {
-		SDL_RenderCopy(renderer->sdl_renderer, renderer->textureAtlas.texture.sdl_texture, sourceRect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect);
 	}
 }
