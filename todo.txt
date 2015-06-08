@@ -8,9 +8,14 @@ TODO:
 //	- Controls for time
 	- Game automatically pauses when fields are harvestable
 
-- Tasks take time!
-	- Planting
-	- Harvesting
+//- Tasks take time!
+//	- Planting
+//	- Harvesting
+
+- Scenarios?
+	- System for loading a level
+	- Load a pre-built farm on game start
+	- Have multiple different ones? 
 
 - Different crops!
 	- Worth different amounts

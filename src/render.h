@@ -50,13 +50,14 @@ enum TextureAtlasItem {
 
 struct Texture {
 	bool valid;
+	const char* filename;
 	SDL_Texture *sdl_texture;
 	int32 w, h;
 };
 
-struct TextureAtlas {
-	Texture texture;
-	SDL_Rect rects[TextureAtlasItemCount];
+struct TextureRegion {
+	Texture *texture;
+	Rect rect;
 };
 
 struct Renderer {
@@ -64,7 +65,8 @@ struct Renderer {
 	SDL_Window *sdl_window;
 	Camera camera;
 
-	TextureAtlas textureAtlas;
+	Texture textures[16];
+	TextureRegion regions[TextureAtlasItemCount];
 
 	TTF_Font *font;
 	TTF_Font *fontLarge;

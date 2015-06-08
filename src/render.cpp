@@ -53,6 +53,12 @@ void freeTexture(Texture *texture) {
 	texture = {};
 }
 
+void setTextureRegion(Renderer *renderer, TextureAtlasItem index, Texture *texture, Rect rect) {
+	TextureRegion *region = renderer->regions + index;
+	region->texture = texture;
+	region->rect = rect;
+}
+
 bool initializeRenderer(Renderer *renderer) {
 
 	(*renderer) = {};
@@ -95,26 +101,33 @@ bool initializeRenderer(Renderer *renderer) {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
 	// Load texture data
-	renderer->textureAtlas = {};
-	renderer->textureAtlas.texture = loadTexture(renderer, "combined.png");
-	if (!renderer->textureAtlas.texture.valid) {
+	renderer->textures[0] = loadTexture(renderer, "combined.png");
+	Texture *textureCombinedPng = &renderer->textures[0];
+	if (!textureCombinedPng->valid) {
 		return false;
 	}
+
+	// renderer->textureAtlas = {};
+	// renderer->textureAtlas.texture = loadTexture(renderer, "combined.png");
+	// if (!renderer->textureAtlas.texture.valid) {
+	// 	return false;
+	// }
 
 	// Farming
 	const int w1 = TILE_WIDTH;
 	const int w2 = w1 * 2;
 	const int w3 = w1 * 3;
 	const int w4 = w1 * 4;
-	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,w1,w1};
-	renderer->textureAtlas.rects[TextureAtlasItem_WaterTile] = {w1,0,w1,w1};
-	renderer->textureAtlas.rects[TextureAtlasItem_Field] = {w4,0,w4,w4};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_0] = {0,w1,w1,w1};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_1] = {w1,w1,w1,w1};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_2] = {w2,w1,w1,w1};
-	renderer->textureAtlas.rects[TextureAtlasItem_Crop0_3] = {w3,w1,w1,w1};
-	renderer->textureAtlas.rects[TextureAtlasItem_Potato] = {0,w2,w1,w1};
-	renderer->textureAtlas.rects[TextureAtlasItem_Barn] = {0,w4,w4,w4};
+
+	setTextureRegion(renderer, TextureAtlasItem_GroundTile,	textureCombinedPng, { 0,  0, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_WaterTile, 	textureCombinedPng, {w1,  0, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_Field, 		textureCombinedPng, {w4,  0, w4, w4});
+	setTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	textureCombinedPng, { 0, w1, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	textureCombinedPng, {w1, w1, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_Crop0_2, 	textureCombinedPng, {w2, w1, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	textureCombinedPng, {w3, w1, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_Potato, 	textureCombinedPng, { 0, w2, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_Barn, 		textureCombinedPng, { 0, w4, w4, w4});
 
 	// Goblin Fortress
 	/*
