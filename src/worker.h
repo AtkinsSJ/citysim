@@ -28,3 +28,15 @@ void initWorker(Worker *worker, real32 x, real32 y) {
 void freeWorker(Worker *worker) {
 	worker->exists = false;
 }
+
+void updateWorker(Worker *worker) {
+	if (!worker->exists) return;
+
+	worker->pos.x += 0.1f;
+}
+
+void drawWorker(Renderer *renderer, Worker *worker) {
+	if (!worker->exists) return;
+
+	drawAtWorldPos(renderer, TextureAtlasItem_Farmer_Stand, worker->pos);
+}

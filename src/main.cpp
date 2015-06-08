@@ -295,6 +295,11 @@ int main(int argc, char *argv[]) {
 				FieldData *field = city.fieldData + i;
 				updateField(field);
 			}
+
+			// Workers!
+			for (int i = 0; i < ArrayCount(workers.list); ++i) {
+				updateWorker(workers.list + i);
+			}
 		}
 
 	// UiButton/Mouse interaction
@@ -450,9 +455,7 @@ int main(int argc, char *argv[]) {
 
 		// Draw workers!
 		for (int i = 0; i < ArrayCount(workers.list); ++i) {
-			if (workers.list[i].exists) {
-				drawAtWorldPos(&renderer, TextureAtlasItem_Farmer_Stand, workers.list[i].pos);
-			}
+			drawWorker(&renderer, workers.list + i);
 		}
 
 		// Building preview
