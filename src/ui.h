@@ -49,4 +49,10 @@ struct UiButtonGroup {
 	UiButton *activeButton;
 };
 
+struct UiMessage {
+	Renderer *renderer;
+	UiLabel label;
+	int32 messageCountdown; // In milliseconds
+};
+
 #include "ui.cpp"

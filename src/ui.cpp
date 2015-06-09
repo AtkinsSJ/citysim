@@ -3,7 +3,7 @@
 /**
  * Change the text of the given UiLabel, which regenerates the Texture.
  */
-void setText(Renderer *renderer, UiLabel *label, char *newText) {
+void setUiLabelText(Renderer *renderer, UiLabel *label, char *newText) {
 	// TODO: If the text is the same, do nothing!
 	freeTexture(&label->texture);
 	label->text = newText;
@@ -36,25 +36,31 @@ void setText(Renderer *renderer, UiLabel *label, char *newText) {
 	}
 }
 
-UiLabel createText(Renderer *renderer, Coord position, int32 align, char *text, TTF_Font *font, Color color) {
-	UiLabel label = {};
-	label.text = text;
-	label.font = font;
-	label.color = color;
-	label.origin = position;
-	label.align = align;
+void initUiLabel(UiLabel *label, Renderer *renderer, Coord position, int32 align,
+				char *text, TTF_Font *font, Color color) {
+	label->text = text;
+	label->font = font;
+	label->color = color;
+	label->origin = position;
+	label->align = align;
 
-	setText(renderer, &label, text);
+	setUiLabelText(renderer, label, text);
+}
+
+UiLabel createUiLabel(Renderer *renderer, Coord position, int32 align, char *text, TTF_Font *font, Color color) {
+	UiLabel label = {};
+	
+	initUiLabel(&label, renderer, position, align, text, font, color);
 
 	return label;
 }
 
-void freeText(UiLabel *label) {
+void freeUiLabel(UiLabel *label) {
 	freeTexture(&label->texture);
 	label = {};
 }
 
-void initButton(UiButton *button, Renderer *renderer, Rect rect,
+void initUiButton(UiButton *button, Renderer *renderer, Rect rect,
 					char *text, TTF_Font* font, Color buttonTextColor,
 					Color color, Color hoverColor, Color pressedColor) {
 	button->rect = rect;
@@ -66,11 +72,11 @@ void initButton(UiButton *button, Renderer *renderer, Rect rect,
 	// Generate the UiLabel, and centre it
 	Coord buttonCenter = {button->rect.x + button->rect.w / 2,
 							button->rect.y + button->rect.h / 2};
-	button->text = createText(renderer, buttonCenter, ALIGN_CENTER, text, font, buttonTextColor);
+	initUiLabel(&button->text, renderer, buttonCenter, ALIGN_CENTER, text, font, buttonTextColor);
 }
 
-void freeButton(UiButton *button) {
-	freeText(&button->text);
+void freeUiButton(UiButton *button) {
+	freeUiLabel(&button->text);
 	button = {};
 }
 
@@ -84,12 +90,12 @@ void drawUiRect(Renderer *renderer, Rect rect, Color color) {
 	SDL_RenderFillRect(renderer->sdl_renderer, &rect.sdl_rect);
 }
 
-void drawUiLabelure(Renderer *renderer, Texture *texture, Rect rect) {
+void drawUiTexture(Renderer *renderer, Texture *texture, Rect rect) {
 	SDL_RenderCopy(renderer->sdl_renderer, texture->sdl_texture, null, &rect.sdl_rect);
 }
 
 void drawUiLabel(Renderer *renderer, UiLabel *text) {
-	drawUiLabelure(renderer, &text->texture, text->_rect);
+	drawUiTexture(renderer, &text->texture, text->_rect);
 }
 
 void drawUiButton(Renderer *renderer, UiButton *button) {
@@ -125,7 +131,7 @@ void setActiveButton(UiButtonGroup *group, UiButton *button) {
 /**
  * Get the buttongroup to update its buttons' states, and return whether a button "ate" any click events
  */
-bool updateButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
+bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
 
 	bool eventEaten = false;
 
@@ -163,8 +169,38 @@ void drawUiButtonGroup(Renderer *renderer, UiButtonGroup *group) {
 	}
 }
 
-void freeButtonGroup(UiButtonGroup *group) {
+void freeUiButtonGroup(UiButtonGroup *group) {
 	for (int32 i=0; i<group->buttonCount; i++) {
-		freeButton(group->buttons + i);
+		freeUiButton(group->buttons + i);
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//                                UI MESSAGE                                     //
+///////////////////////////////////////////////////////////////////////////////////
+UiMessage __globalUiMessage;
+
+void initUiMessage(Renderer *renderer) {
+	__globalUiMessage = {};
+	__globalUiMessage.renderer = renderer;
+	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM, "", renderer->fontLarge, {255, 255, 255, 255});
+}
+
+void pushUiMessage(char *message) {
+	setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
+	__globalUiMessage.messageCountdown = 5000;
+}
+
+void drawUiMessage(Renderer *renderer) {
+	if (__globalUiMessage.messageCountdown > 0) {
+		__globalUiMessage.messageCountdown -= MS_PER_FRAME;
+
+		if (__globalUiMessage.messageCountdown > 0) {
+			drawUiLabel(renderer, &__globalUiMessage.label);
+		}
+	}
+}
+
+void freeUiMessage() {
+	freeUiLabel(&__globalUiMessage.label);
 }

@@ -154,37 +154,43 @@ int main(int argc, char *argv[]) {
 		labelColor = {255,255,255,255};
 
 	Coord textPosition = {8,4};
-	UiLabel textCityName = createText(&renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.fontLarge, labelColor);
+	UiLabel textCityName;
+	initUiLabel(&textCityName, &renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.fontLarge, labelColor);
 
 	textPosition.x = 800 / 2;
 	char buffer[20];
 	getCityFundsString(&city, buffer);
-	UiLabel textCityFunds = createText(&renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP, buffer, renderer.fontLarge, labelColor);
+	UiLabel textCityFunds;
+	initUiLabel(&textCityFunds, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP, buffer, renderer.fontLarge, labelColor);
+
+	initUiMessage(&renderer);
+	
 
 	// CALENDAR
 	textPosition.x = 800 - 8;
 	getDateString(&calendar, dateStringBuffer);
-	UiLabel labelDate = createText(&renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
+	UiLabel labelDate;
+	initUiLabel(&labelDate, &renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
 
 	UiButtonGroup calendarButtonGroup = {};
 	Rect buttonRect = {800 - 8 - 24, 31, 24, 24};
 	UiButton *buttonPlay3 = addButtonToGroup(&calendarButtonGroup);
-	initButton(buttonPlay3, &renderer, buttonRect, ">>>", renderer.font,
+	initUiButton(buttonPlay3, &renderer, buttonRect, ">>>", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x -= 24 + uiPadding;
 	UiButton *buttonPlay2 = addButtonToGroup(&calendarButtonGroup);
-	initButton(buttonPlay2, &renderer, buttonRect, ">>", renderer.font,
+	initUiButton(buttonPlay2, &renderer, buttonRect, ">>", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x -= 24 + uiPadding;
 	UiButton *buttonPlay1 = addButtonToGroup(&calendarButtonGroup);
-	initButton(buttonPlay1, &renderer, buttonRect, ">", renderer.font,
+	initUiButton(buttonPlay1, &renderer, buttonRect, ">", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x -= 24 + uiPadding;
 	UiButton *buttonPause = addButtonToGroup(&calendarButtonGroup);
-	initButton(buttonPause, &renderer, buttonRect, "||", renderer.font,
+	initUiButton(buttonPause, &renderer, buttonRect, "||", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	setActiveButton(&calendarButtonGroup, buttonPause);
@@ -194,32 +200,32 @@ int main(int argc, char *argv[]) {
 	buttonRect = {8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24};
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
-	initButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", renderer.font,
+	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
-	initButton(buttonBuildField, &renderer, buttonRect, "Build Field", renderer.font,
+	initUiButton(buttonBuildField, &renderer, buttonRect, "Build Field", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildBarn = addButtonToGroup(&actionButtonGroup);
-	initButton(buttonBuildBarn, &renderer, buttonRect, "Build Barn", renderer.font,
+	initUiButton(buttonBuildBarn, &renderer, buttonRect, "Build Barn", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
-	initButton(buttonDemolish, &renderer, buttonRect, "Demolish", renderer.font,
+	initUiButton(buttonDemolish, &renderer, buttonRect, "Demolish", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonPlant = addButtonToGroup(&actionButtonGroup);
-	initButton(buttonPlant, &renderer, buttonRect, "Plant", renderer.font,
+	initUiButton(buttonPlant, &renderer, buttonRect, "Plant", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonHarvest = addButtonToGroup(&actionButtonGroup);
-	initButton(buttonHarvest, &renderer, buttonRect, "Harvest", renderer.font,
+	initUiButton(buttonHarvest, &renderer, buttonRect, "Harvest", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	// GAME LOOP
@@ -293,7 +299,7 @@ int main(int argc, char *argv[]) {
 	// Game simulation
 		if (incrementCalendar(&calendar)) {
 			getDateString(&calendar, dateStringBuffer);
-			setText(&renderer, &labelDate, dateStringBuffer);
+			setUiLabelText(&renderer, &labelDate, dateStringBuffer);
 
 			// Fields
 			for (int i = 0; i < ArrayCount(city.fieldData); i++) {
@@ -309,10 +315,10 @@ int main(int argc, char *argv[]) {
 
 	// UiButton/Mouse interaction
 		bool buttonAteMouseEvent = false;
-		if (updateButtonGroup(&actionButtonGroup, &mouseState)) {
+		if (updateUiButtonGroup(&actionButtonGroup, &mouseState)) {
 			buttonAteMouseEvent = true;
 		}
-		if (updateButtonGroup(&calendarButtonGroup, &mouseState)) {
+		if (updateUiButtonGroup(&calendarButtonGroup, &mouseState)) {
 			buttonAteMouseEvent = true;
 		}
 
@@ -342,7 +348,7 @@ int main(int argc, char *argv[]) {
 					if (succeeded) {
 						char buffer[20];
 						getCityFundsString(&city, buffer);
-						setText(&renderer, &textCityFunds, buffer);
+						setUiLabelText(&renderer, &textCityFunds, buffer);
 					}
 				} break;
 
@@ -353,7 +359,7 @@ int main(int argc, char *argv[]) {
 					if (succeeded) {
 						char buffer[20];
 						getCityFundsString(&city, buffer);
-						setText(&renderer, &textCityFunds, buffer);
+						setUiLabelText(&renderer, &textCityFunds, buffer);
 					}
 				} break;
 
@@ -362,7 +368,7 @@ int main(int argc, char *argv[]) {
 					if (plantField(&city, mouseTilePos)) {
 						char buffer[20];
 						getCityFundsString(&city, buffer);
-						setText(&renderer, &textCityFunds, buffer);
+						setUiLabelText(&renderer, &textCityFunds, buffer);
 					}
 				} break;
 
@@ -371,7 +377,7 @@ int main(int argc, char *argv[]) {
 					if (harvestField(&city, mouseTilePos)) {
 						char buffer[20];
 						getCityFundsString(&city, buffer);
-						setText(&renderer, &textCityFunds, buffer);
+						setUiLabelText(&renderer, &textCityFunds, buffer);
 					}
 				} break;
 
@@ -485,6 +491,8 @@ int main(int argc, char *argv[]) {
 		drawUiLabel(&renderer, &textCityFunds);
 		drawUiLabel(&renderer, &labelDate);
 
+		drawUiMessage(&renderer);
+
 		drawUiButtonGroup(&renderer, &actionButtonGroup);
 		drawUiButtonGroup(&renderer, &calendarButtonGroup);
 
@@ -514,11 +522,12 @@ int main(int argc, char *argv[]) {
 	SDL_FreeCursor(cursorPlant);
 	SDL_FreeCursor(cursorHarvest);
 
-	freeText(&textCityName);
-	freeText(&textCityFunds);
+	freeUiLabel(&textCityName);
+	freeUiLabel(&textCityFunds);
+	freeUiMessage();
 
-	freeButtonGroup(&actionButtonGroup);
-	freeButtonGroup(&calendarButtonGroup);
+	freeUiButtonGroup(&actionButtonGroup);
+	freeUiButtonGroup(&calendarButtonGroup);
 
 	freeRenderer(&renderer);
 
