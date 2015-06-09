@@ -159,10 +159,14 @@ bool demolish(City *city, Coord position) {
 	uint32 buildingID = city->tileBuildings[posTI];
 	if (buildingID) {
 
-		// Clear all references to this building
 		Building *building = getBuildingByID(city, buildingID);
 		SDL_assert(building);
 		BuildingDefinition def = buildingDefinitions[building->archetype];
+
+		// Is this building indestructible?
+		if (def.demolishCost == -1) {
+			return false;
+		}
 
 		// Can we afford to demolish this?
 		if (city->funds < def.demolishCost) {
@@ -171,6 +175,7 @@ bool demolish(City *city, Coord position) {
 
 		city->funds -= def.demolishCost;
 
+		// Clear all references to this building
 		for (int32 y = building->footprint.y;
 			y < building->footprint.y + building->footprint.h;
 			y++) {

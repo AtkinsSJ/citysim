@@ -193,6 +193,11 @@ int main(int argc, char *argv[]) {
 	UiButtonGroup actionButtonGroup = {};
 	buttonRect = {8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24};
 
+	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
+	initButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", renderer.font,
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+
+	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
 	initButton(buttonBuildField, &renderer, buttonRect, "Build Field", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
@@ -384,7 +389,11 @@ int main(int argc, char *argv[]) {
 			actionMode = ActionMode_None;
 			SDL_SetCursor(cursorMain);
 		} else {
-			if (buttonBuildField->justClicked) {
+			if (buttonBuildHouse->justClicked) {
+				selectedBuildingArchetype = BA_Farmhouse;
+				actionMode = ActionMode_Build;
+				SDL_SetCursor(cursorBuild);
+			} else if (buttonBuildField->justClicked) {
 				selectedBuildingArchetype = BA_Field;
 				actionMode = ActionMode_Build;
 				SDL_SetCursor(cursorBuild);

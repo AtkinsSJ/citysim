@@ -27,6 +27,7 @@ enum TextureAtlasItem {
 	TextureAtlasItem_Crop0_3,
 	TextureAtlasItem_Potato,
 	TextureAtlasItem_Barn,
+	TextureAtlasItem_House,
 
 	TextureAtlasItem_Farmer_Stand,
 	TextureAtlasItem_Farmer_Walk0,

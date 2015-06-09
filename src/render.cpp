@@ -127,6 +127,7 @@ bool initializeRenderer(Renderer *renderer) {
 	setTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	textureCombinedPng, {w3, w1, w1, w1});
 	setTextureRegion(renderer, TextureAtlasItem_Potato, 	textureCombinedPng, { 0, w2, w1, w1});
 	setTextureRegion(renderer, TextureAtlasItem_Barn, 		textureCombinedPng, { 0, w4, w4, w4});
+	setTextureRegion(renderer, TextureAtlasItem_House, 		textureCombinedPng, {w4, w4, w4, w4});
 
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  textureFarmerPng, { 0,  0,  8,  8});
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  textureFarmerPng, { 8,  0,  8,  8});

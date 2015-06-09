@@ -22,12 +22,14 @@ enum BuildingArchetype {
 
 	BA_Field = 0,
 	BA_Barn = 1,
+	BA_Farmhouse,
 
 	BA_Count
 };
 BuildingDefinition buildingDefinitions[] = {
 	{4,4, "Field", TextureAtlasItem_Field, 200, 20},
 	{4,4, "Barn", TextureAtlasItem_Barn, 2000, 250},
+	{4,4, "Farmhouse", TextureAtlasItem_House, 2000, -1},
 };
 
 // Goblin Fortress stuff
