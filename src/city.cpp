@@ -10,6 +10,8 @@ inline City createCity(uint32 width, uint32 height, char *name, int32 funds) {
 	city.buildingCount = 0;
 	city.buildingCountMax = ArrayCount(city.buildings);
 
+	city.farmhouse = null;
+
 	return city;
 }
 
@@ -58,6 +60,11 @@ void generateTerrain(City *city) {
 }
 
 bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position) {
+
+	// Only allow one farmhouse!
+	if (selectedBuildingArchetype == BA_Farmhouse && city->farmhouse) {
+		return false;
+	}
 
 	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
@@ -122,6 +129,10 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 
 	// Building-specific stuff
 	switch (archetype) {
+		case BA_Farmhouse: {
+			city->farmhouse = building;
+		} break;
+
 		case BA_Field: {
 
 			for (int i = 0; i < ArrayCount(city->fieldData); ++i) {
@@ -163,11 +174,6 @@ bool demolish(City *city, Coord position) {
 		SDL_assert(building);
 		BuildingDefinition def = buildingDefinitions[building->archetype];
 
-		// Is this building indestructible?
-		if (def.demolishCost == -1) {
-			return false;
-		}
-
 		// Can we afford to demolish this?
 		if (city->funds < def.demolishCost) {
 			return false;
@@ -194,6 +200,10 @@ bool demolish(City *city, Coord position) {
 
 		// Clear the building's data
 		switch (building->archetype) {
+			case BA_Farmhouse: {
+				city->farmhouse = null;
+			} break;
+
 			case BA_Field: {
 				FieldData *fieldData = (FieldData*)building->data;
 				fieldData->exists = false;

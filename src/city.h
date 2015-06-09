@@ -28,8 +28,8 @@ enum BuildingArchetype {
 };
 BuildingDefinition buildingDefinitions[] = {
 	{4,4, "Field", TextureAtlasItem_Field, 200, 20},
-	{4,4, "Barn", TextureAtlasItem_Barn, 2000, 250},
-	{4,4, "Farmhouse", TextureAtlasItem_House, 2000, -1},
+	{4,4, "Barn", TextureAtlasItem_Barn, 2000, 1000},
+	{4,4, "Farmhouse", TextureAtlasItem_House, 2000, 1000},
 };
 
 // Goblin Fortress stuff
@@ -88,6 +88,8 @@ struct City {
 	uint32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null), however they're still stored
 	// from position 0!
+
+	Building *farmhouse;
 
 	FieldData fieldData[256]; // TODO: Decide on field limit!
 };
