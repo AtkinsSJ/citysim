@@ -38,6 +38,8 @@ void setUiLabelText(Renderer *renderer, UiLabel *label, char *newText) {
 
 void initUiLabel(UiLabel *label, Renderer *renderer, Coord position, int32 align,
 				char *text, TTF_Font *font, Color color) {
+	*label = {};
+
 	label->text = text;
 	label->font = font;
 	label->color = color;
@@ -45,14 +47,6 @@ void initUiLabel(UiLabel *label, Renderer *renderer, Coord position, int32 align
 	label->align = align;
 
 	setUiLabelText(renderer, label, text);
-}
-
-UiLabel createUiLabel(Renderer *renderer, Coord position, int32 align, char *text, TTF_Font *font, Color color) {
-	UiLabel label = {};
-	
-	initUiLabel(&label, renderer, position, align, text, font, color);
-
-	return label;
 }
 
 void freeUiLabel(UiLabel *label) {
@@ -63,6 +57,8 @@ void freeUiLabel(UiLabel *label) {
 void initUiButton(UiButton *button, Renderer *renderer, Rect rect,
 					char *text, TTF_Font* font, Color buttonTextColor,
 					Color color, Color hoverColor, Color pressedColor) {
+	*button = {};
+
 	button->rect = rect;
 
 	button->backgroundColor = color;

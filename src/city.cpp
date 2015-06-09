@@ -98,6 +98,13 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
  * Attempt to place a building. Returns whether successful.
  */
 bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
+
+	// Only allow one farmhouse!
+	if (archetype == BA_Farmhouse && city->farmhouse) {
+		pushUiMessage("You can only have one farmhouse!");
+		return false;
+	}
+
 	if (!canPlaceBuilding(city, archetype, position)) {
 		return false;
 	}
