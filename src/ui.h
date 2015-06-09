@@ -51,6 +51,8 @@ struct UiButtonGroup {
 
 struct UiMessage {
 	Renderer *renderer;
+	Rect rect;
+	Color background;
 	UiLabel label;
 	int32 messageCountdown; // In milliseconds
 };

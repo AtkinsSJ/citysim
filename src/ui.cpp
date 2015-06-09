@@ -179,12 +179,20 @@ UiMessage __globalUiMessage;
 void initUiMessage(Renderer *renderer) {
 	__globalUiMessage = {};
 	__globalUiMessage.renderer = renderer;
+
+	__globalUiMessage.background = {0,0,0,128};
+
 	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM, "", renderer->fontLarge, {255, 255, 255, 255});
 }
 
 void pushUiMessage(char *message) {
 	setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
 	__globalUiMessage.messageCountdown = 2000;
+
+	__globalUiMessage.rect.x = __globalUiMessage.label._rect.x - 4;
+	__globalUiMessage.rect.y = __globalUiMessage.label._rect.y - 4;
+	__globalUiMessage.rect.w = __globalUiMessage.label._rect.w + 8;
+	__globalUiMessage.rect.h = __globalUiMessage.label._rect.h + 8;
 }
 
 void drawUiMessage(Renderer *renderer) {
@@ -192,6 +200,9 @@ void drawUiMessage(Renderer *renderer) {
 		__globalUiMessage.messageCountdown -= MS_PER_FRAME;
 
 		if (__globalUiMessage.messageCountdown > 0) {
+
+			drawUiRect(renderer, __globalUiMessage.rect, __globalUiMessage.background);
+
 			drawUiLabel(renderer, &__globalUiMessage.label);
 		}
 	}
