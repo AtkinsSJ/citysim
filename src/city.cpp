@@ -59,10 +59,14 @@ void generateTerrain(City *city) {
 	}
 }
 
-bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position) {
+bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
+	bool isAttemptingToBuild = false) {
 
 	// Only allow one farmhouse!
 	if (selectedBuildingArchetype == BA_Farmhouse && city->farmhouse) {
+		if (isAttemptingToBuild) {
+			pushUiMessage("You can only have one farmhouse!");
+		}
 		return false;
 	}
 
@@ -99,13 +103,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
  */
 bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 
-	// Only allow one farmhouse!
-	if (archetype == BA_Farmhouse && city->farmhouse) {
-		pushUiMessage("You can only have one farmhouse!");
-		return false;
-	}
-
-	if (!canPlaceBuilding(city, archetype, position)) {
+	if (!canPlaceBuilding(city, archetype, position, true)) {
 		return false;
 	}
 

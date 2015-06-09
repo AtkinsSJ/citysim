@@ -184,7 +184,7 @@ void initUiMessage(Renderer *renderer) {
 
 void pushUiMessage(char *message) {
 	setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
-	__globalUiMessage.messageCountdown = 5000;
+	__globalUiMessage.messageCountdown = 2000;
 }
 
 void drawUiMessage(Renderer *renderer) {
