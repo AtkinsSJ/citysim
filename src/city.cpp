@@ -74,11 +74,17 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 
 	// Can we afford to build this?
 	if (city->funds < def.buildCost) {
+		if (isAttemptingToBuild) {
+			pushUiMessage("Not enough money to build this.");
+		}
 		return false;
 	}
 
 	// Are we in bounds?
 	if (!rectInRect({0,0, city->width, city->height}, {position, def.width, def.height})) {
+		if (isAttemptingToBuild) {
+			pushUiMessage("You cannot build there.");
+		}
 		return false;
 	}
 
@@ -87,10 +93,16 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 		for (int32 x=0; x<def.width; x++) {
 			uint32 ti = tileIndex(city, position.x + x, position.y + y);
 			if (city->terrain[ti] != Terrain_Ground) {
+				if (isAttemptingToBuild) {
+					pushUiMessage("You cannot build there.");
+				}
 				return false;
 			}
 
 			if (city->tileBuildings[ti] != 0) {
+				if (isAttemptingToBuild) {
+					pushUiMessage("You cannot overlap buildings.");
+				}
 				return false;
 			}
 		}
@@ -181,6 +193,7 @@ bool demolish(City *city, Coord position) {
 
 		// Can we afford to demolish this?
 		if (city->funds < def.demolishCost) {
+			pushUiMessage("Not enough money to demolish this.");
 			return false;
 		}
 
@@ -219,6 +232,7 @@ bool demolish(City *city, Coord position) {
 
 	} else {
 		// TODO: Handle clearing of terrain here.
+		pushUiMessage("There is nothing here to demolish.");
 		return false;
 	}
 	

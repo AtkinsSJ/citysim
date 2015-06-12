@@ -482,7 +482,7 @@ int main(int argc, char *argv[]) {
 		if (actionMode == ActionMode_Build
 			&& selectedBuildingArchetype != BA_None) {
 
-			Color ghostColor = {255,255,255,128};
+			Color ghostColor = {128,255,128,255};
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}

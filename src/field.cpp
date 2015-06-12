@@ -12,9 +12,13 @@ bool plantField(City *city, Coord tilePosition) {
 			field->growth = 0;
 			city->funds -= 500;
 			return true;
+		} else {
+			pushUiMessage("This field has already been planted.");
+			return false;
 		}
 	}
 
+	pushUiMessage("You can only plant fields.");
 	return false;
 }
 
@@ -28,9 +32,13 @@ bool harvestField(City *city, Coord tilePosition) {
 			field->state = FieldState_Empty;
 			field->growth = 0;
 			return true;
+		} else {
+			pushUiMessage("There are no plants here ready for harvesting.");
+			return false;
 		}
 	}
 
+	pushUiMessage("You can only harvest fields.");
 	return false;
 }
 
