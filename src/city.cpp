@@ -119,7 +119,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 		return false;
 	}
 
-	SDL_assert(city->buildingCount < city->buildingCountMax);
+	ASSERT(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
 
 	// Find first free building
 	uint32 buildingID = 0;
@@ -130,7 +130,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 		}
 	}
 
-	SDL_assert(buildingID);
+	ASSERT(buildingID, "No free building! Means that the buildingCount is wrong!");
 
 	city->buildingCount++;
 
@@ -160,7 +160,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 				}
 			}
 
-			SDL_assert(building->data == null);
+			ASSERT(building->data == null, "Building already has data!");
 
 			FieldData *fieldData = (FieldData*)building->data;
 			
@@ -188,7 +188,7 @@ bool demolish(City *city, Coord position) {
 	if (buildingID) {
 
 		Building *building = getBuildingByID(city, buildingID);
-		SDL_assert(building);
+		ASSERT(building, "Tile is storing an invalid building ID!");
 		BuildingDefinition def = buildingDefinitions[building->archetype];
 
 		// Can we afford to demolish this?

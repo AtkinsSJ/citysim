@@ -23,9 +23,7 @@ bool hireWorker(City *city) {
 			return true;
 		}
 	}
-	SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "No room to allocate a new worker!");
-	pushUiMessage("The worker limit has been reached.");
-	SDL_assert(false);
+	ASSERT(false, "No room to allocate a new worker!");
 	return false;
 }
 
@@ -35,6 +33,8 @@ void freeWorker(Worker *worker) {
 
 void updateWorker(Worker *worker) {
 	if (!worker->exists) return;
+
+
 
 	worker->pos.x += 0.1f;
 }

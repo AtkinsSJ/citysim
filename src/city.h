@@ -80,6 +80,23 @@ struct Worker {
 };
 const int workerHireCost = 100;
 
+enum JobType {
+	JobType_None = -1,
+
+	JobType_Plant = 0,
+	JobType_Harvest = 1,
+
+	JobTypeCount
+};
+struct Job {
+	JobType type;
+	Building *building;
+};
+struct JobBoard {
+	Job jobs[128];
+	int32 jobCount;
+};
+
 struct City {
 	char *name;
 	int32 funds;
@@ -100,6 +117,7 @@ struct City {
 
 	// Workers!
 	Worker workers[128]; // TODO: Decide on number of workers!
+	JobBoard jobBoard;
 };
 
 #include "city.cpp"

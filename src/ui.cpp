@@ -110,7 +110,7 @@ void drawUiButton(Renderer *renderer, UiButton *button) {
 }
 
 UiButton *addButtonToGroup(UiButtonGroup *group) {
-	SDL_assert(group->buttonCount < ArrayCount(group->buttons));
+	ASSERT(group->buttonCount < ArrayCount(group->buttons), "UiButtonGroup is full!");
 	return &group->buttons[group->buttonCount++];
 }
 

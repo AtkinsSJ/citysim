@@ -12,6 +12,9 @@
 #include <SDL_ttf.h>
 #endif
 
+// Really janky assertion macro, yay
+#define ASSERT(expr, msg) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg); *(int *)0 = 0;}
+
 #include "types.h"
 #include "render.h"
 #include "input.h"
