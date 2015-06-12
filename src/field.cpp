@@ -92,21 +92,21 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 
 	switch (field->state) {
 		case FieldState_Planting: {
-			if (field->growth) {
-				for (int32 i=0; i < field->growth; i++) {
-					drawAtWorldPos(renderer,
-						TextureAtlasItem_Crop0_0,
-						v2(	building->footprint.pos.x + (i%4),
-						 	building->footprint.pos.y + (i/4)),
-						drawColor
-					);
-				}
-			} else {
+			for (int32 i=0; i < field->growth; i++) {
 				drawAtWorldPos(renderer,
-					TextureAtlasItem_Icon_Planting,
-					v2( building->footprint.pos )
+					TextureAtlasItem_Crop0_0,
+					v2(	building->footprint.pos.x + (i%4),
+					 	building->footprint.pos.y + (i/4)),
+					drawColor
 				);
 			}
+
+			// 'Planting' indicator
+			drawAtWorldPos(renderer,
+				TextureAtlasItem_Icon_Planting,
+				v2( building->footprint.pos.x - 1 + building->footprint.w/2,
+					building->footprint.pos.y - 2 + building->footprint.h/2 )
+			);
 		} break;
 
 		case FieldState_Growing: {
@@ -134,7 +134,12 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 		} break;
 
 		case FieldState_Harvesting: {
-
+			// 'Harvesting' indicator
+			drawAtWorldPos(renderer,
+				TextureAtlasItem_Icon_Harvesting,
+				v2( building->footprint.pos.x - 1 + building->footprint.w/2,
+					building->footprint.pos.y - 2 + building->footprint.h/2 )
+			);
 		} break;
 	}
 }
