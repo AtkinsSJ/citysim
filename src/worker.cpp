@@ -31,12 +31,29 @@ void freeWorker(Worker *worker) {
 	worker->exists = false;
 }
 
-void updateWorker(Worker *worker) {
+void updateWorker(City *city, Worker *worker) {
 	if (!worker->exists) return;
 
+	switch (worker->job.type) {
+		case JobType_Idle: {
+			if (workExists(&city->jobBoard)) {
+				worker->job = takeJob(&city->jobBoard);
+			}
+		} break;
 
+		case JobType_Plant: {
+			if (inRect(worker->job.building->footprint, worker->pos)) {
+				DO STUFF HERE NEXT!
+			} else {
+				// Move to field
 
-	worker->pos.x += 0.1f;
+			}
+		} break;
+
+		case JobType_Harvest: {
+
+		} break;
+	}
 }
 
 void drawWorker(Renderer *renderer, Worker *worker) {

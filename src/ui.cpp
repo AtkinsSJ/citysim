@@ -135,7 +135,7 @@ bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
 		UiButton *button = group->buttons + i;
 		button->justClicked = false;
 
-		button->mouseOver = inRect(button->rect, {mouseState->x, mouseState->y});
+		button->mouseOver = inRect(button->rect, coord(mouseState->x, mouseState->y));
 		if (button->mouseOver) {
 			eventEaten = true;
 		}

@@ -74,17 +74,10 @@ struct FieldData {
 const int fieldSize = 16;
 const int fieldMaxGrowth = fieldSize*3;
 
-struct Worker {
-	bool exists;
-	V2 pos;
-};
-const int workerHireCost = 100;
-
 enum JobType {
-	JobType_None = -1,
-
-	JobType_Plant = 0,
-	JobType_Harvest = 1,
+	JobType_Idle = 0,
+	JobType_Plant = 1,
+	JobType_Harvest,
 
 	JobTypeCount
 };
@@ -96,6 +89,14 @@ struct JobBoard {
 	Job jobs[128];
 	int32 jobCount;
 };
+
+struct Worker {
+	bool exists;
+	V2 pos;
+
+	Job job;
+};
+const int workerHireCost = 100;
 
 struct City {
 	char *name;

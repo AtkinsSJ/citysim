@@ -318,7 +318,7 @@ int main(int argc, char *argv[]) {
 
 			// Workers!
 			for (int i = 0; i < ArrayCount(city.workers); ++i) {
-				updateWorker(city.workers + i);
+				updateWorker(&city, city.workers + i);
 			}
 		}
 

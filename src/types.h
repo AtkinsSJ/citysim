@@ -21,11 +21,17 @@ typedef double real64;
 
 typedef std::string string;
 
+typedef SDL_Color Color;
+
 const int null = 0;
 
 struct Coord {
 	int32 x,y;
 };
+
+inline Coord coord(int32 x, int32 y) {
+	return {x,y};
+}
 
 union Rect {
 	struct {
@@ -64,7 +70,12 @@ inline V2 v2(int x, int y) {
 	return {(real32)x, (real32)y};
 }
 
-typedef SDL_Color Color;
+inline bool inRect(Rect rect, V2 pos) {
+	return pos.x >= rect.x
+		&& pos.x < (rect.x + rect.w)
+		&& pos.y >= rect.y
+		&& pos.y < (rect.y + rect.h);
+}
 
 inline real32 clamp(real32 value, real32 min, real32 max) {
 	if (value < min) return min;
