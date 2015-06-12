@@ -7,7 +7,6 @@ enum Terrain {
 	Terrain_Size
 };
 
-
 struct BuildingDefinition {
 	int32 width, height;
 	string name;
@@ -75,6 +74,12 @@ struct FieldData {
 const int fieldSize = 16;
 const int fieldMaxGrowth = fieldSize*3;
 
+struct Worker {
+	bool exists;
+	V2 pos;
+};
+const int workerHireCost = 100;
+
 struct City {
 	char *name;
 	int32 funds;
@@ -92,6 +97,9 @@ struct City {
 	Building *farmhouse;
 
 	FieldData fieldData[256]; // TODO: Decide on field limit!
+
+	// Workers!
+	Worker workers[128]; // TODO: Decide on number of workers!
 };
 
 #include "city.cpp"

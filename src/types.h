@@ -58,7 +58,7 @@ struct V2 {
 };
 
 inline V2 v2(Coord coord) {
-	return {coord.x, coord.y};
+	return {(real32)coord.x, (real32)coord.y};
 }
 
 typedef SDL_Color Color;

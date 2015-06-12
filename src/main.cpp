@@ -18,8 +18,8 @@
 #include "ui.h"
 #include "city.h"
 #include "calendar.h"
-#include "field.h"
-#include "worker.h"
+#include "field.cpp"
+#include "worker.cpp"
 
 void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
@@ -117,13 +117,13 @@ int main(int argc, char *argv[]) {
 	City city = createCity(100,100, "Best Farm", 20000);
 	generateTerrain(&city);
 
-	WorkerList workers = {};
-	initWorker(addWorker(&workers), 10.0f,10.0f);
-	initWorker(addWorker(&workers), 11.0f,10.5f);
-	initWorker(addWorker(&workers), 12.0f,11.0f);
-	initWorker(addWorker(&workers), 13.0f,11.5f);
-	initWorker(addWorker(&workers), 14.0f,12.0f);
-	initWorker(addWorker(&workers), 15.0f,12.5f);
+	// WorkerList workers = {};
+	// initWorker(addWorker(&workers), 10.0f,10.0f);
+	// initWorker(addWorker(&workers), 11.0f,10.5f);
+	// initWorker(addWorker(&workers), 12.0f,11.0f);
+	// initWorker(addWorker(&workers), 13.0f,11.5f);
+	// initWorker(addWorker(&workers), 14.0f,12.0f);
+	// initWorker(addWorker(&workers), 15.0f,12.5f);
 
 	Calendar calendar = {};
 	char dateStringBuffer[50];
@@ -228,6 +228,11 @@ int main(int argc, char *argv[]) {
 	initUiButton(buttonHarvest, &renderer, buttonRect, "Harvest", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
+	buttonRect.x += buttonRect.w + uiPadding;
+	UiButton *buttonHireWorker = addButtonToGroup(&actionButtonGroup);
+	initUiButton(buttonHireWorker, &renderer, buttonRect, "Hire worker", renderer.font,
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+
 	// GAME LOOP
 	while (!quit) {
 
@@ -308,8 +313,8 @@ int main(int argc, char *argv[]) {
 			}
 
 			// Workers!
-			for (int i = 0; i < ArrayCount(workers.list); ++i) {
-				updateWorker(workers.list + i);
+			for (int i = 0; i < ArrayCount(city.workers); ++i) {
+				updateWorker(city.workers + i);
 			}
 		}
 
@@ -346,9 +351,7 @@ int main(int argc, char *argv[]) {
 					// Try and build a thing
 					bool succeeded = placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
 					if (succeeded) {
-						char buffer[20];
-						getCityFundsString(&city, buffer);
-						setUiLabelText(&renderer, &textCityFunds, buffer);
+						updateFundsLabel(&renderer, &city, &textCityFunds);
 					}
 				} break;
 
@@ -357,27 +360,21 @@ int main(int argc, char *argv[]) {
 					bool succeeded = demolish(&city, mouseTilePos);
 					SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
 					if (succeeded) {
-						char buffer[20];
-						getCityFundsString(&city, buffer);
-						setUiLabelText(&renderer, &textCityFunds, buffer);
+						updateFundsLabel(&renderer, &city, &textCityFunds);
 					}
 				} break;
 
 				case ActionMode_Plant: {
 					// Only do something if we clicked on a field!
 					if (plantField(&city, mouseTilePos)) {
-						char buffer[20];
-						getCityFundsString(&city, buffer);
-						setUiLabelText(&renderer, &textCityFunds, buffer);
+						updateFundsLabel(&renderer, &city, &textCityFunds);
 					}
 				} break;
 
 				case ActionMode_Harvest: {
 					// Only do something if we clicked on a field!
 					if (harvestField(&city, mouseTilePos)) {
-						char buffer[20];
-						getCityFundsString(&city, buffer);
-						setUiLabelText(&renderer, &textCityFunds, buffer);
+						updateFundsLabel(&renderer, &city, &textCityFunds);
 					}
 				} break;
 
@@ -416,6 +413,14 @@ int main(int argc, char *argv[]) {
 			} else if (buttonHarvest->justClicked) {
 				actionMode = ActionMode_Harvest;
 				SDL_SetCursor(cursorHarvest);
+			} else if (buttonHireWorker->justClicked) {
+				actionMode = ActionMode_None;
+				SDL_SetCursor(cursorMain);
+
+				// Try and hire a worker!
+				if (hireWorker(&city)) {
+					updateFundsLabel(&renderer, &city, &textCityFunds);
+				}
 			}
 		}
 
@@ -469,8 +474,8 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw workers!
-		for (int i = 0; i < ArrayCount(workers.list); ++i) {
-			drawWorker(&renderer, workers.list + i);
+		for (int i = 0; i < ArrayCount(city.workers); ++i) {
+			drawWorker(&renderer, city.workers + i);
 		}
 
 		// Building preview

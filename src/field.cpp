@@ -82,8 +82,8 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 			for (int32 i=0; i < field->growth; i++) {
 				drawAtWorldPos(renderer,
 					TextureAtlasItem_Crop0_0,
-					{building->footprint.pos.x + (i%4),
-					 building->footprint.pos.y + (i/4)},
+					v2({building->footprint.pos.x + (i%4),
+					 building->footprint.pos.y + (i/4)}),
 					drawColor
 				);
 			}
@@ -95,8 +95,8 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 			for (int32 i=0; i < fieldSize; i++) {
 				drawAtWorldPos(renderer,
 					(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage + (i < beyondGrowth ? 1 : 0)),
-					{building->footprint.pos.x + (i%4),
-					 building->footprint.pos.y + (i/4)},
+					v2({building->footprint.pos.x + (i%4),
+					 building->footprint.pos.y + (i/4)}),
 					drawColor
 				);
 			}
@@ -106,8 +106,8 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 			for (int32 i=0; i < fieldSize; i++) {
 				drawAtWorldPos(renderer,
 					TextureAtlasItem_Crop0_3,
-					{building->footprint.pos.x + (i%4),
-					 building->footprint.pos.y + (i/4)},
+					v2({building->footprint.pos.x + (i%4),
+					 building->footprint.pos.y + (i/4)}),
 					drawColor
 				);
 			}
