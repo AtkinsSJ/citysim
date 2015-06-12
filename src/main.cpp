@@ -21,6 +21,7 @@
 #include "ui.h"
 #include "city.h"
 #include "calendar.h"
+#include "job.cpp"
 #include "field.cpp"
 #include "worker.cpp"
 

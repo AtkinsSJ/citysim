@@ -60,6 +60,9 @@ struct V2 {
 inline V2 v2(Coord coord) {
 	return {(real32)coord.x, (real32)coord.y};
 }
+inline V2 v2(int x, int y) {
+	return {(real32)x, (real32)y};
+}
 
 typedef SDL_Color Color;
 

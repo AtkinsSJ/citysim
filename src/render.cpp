@@ -27,6 +27,7 @@ Texture loadTexture(Renderer *renderer, char *path) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
 	} else {
 		texture = textureFromSurface(renderer, loadedSurface);
+		texture.filename = path;
 
 		if (!texture.valid) {
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create texture from image at '%s': %s\n", path, SDL_GetError());
@@ -111,6 +112,11 @@ bool initializeRenderer(Renderer *renderer) {
 	if (!textureFarmerPng->valid) {
 		return false;
 	}
+	renderer->textures[2] = loadTexture(renderer, "icons.png");
+	Texture *textureIconsPng = &renderer->textures[2];
+	if (!textureIconsPng->valid) {
+		return false;
+	}
 
 	// Farming
 	const int w1 = TILE_WIDTH;
@@ -135,6 +141,9 @@ bool initializeRenderer(Renderer *renderer) {
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   textureFarmerPng, { 0,  8,  8,  8});
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, textureFarmerPng, { 8,  8,  8,  8});
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, textureFarmerPng, {16,  8,  8,  8});
+
+	setTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	textureIconsPng, { 0,  0, 32, 32});
+	setTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting,textureIconsPng, {16,  0, 32, 32});
 
 	// Goblin Fortress
 	/*
@@ -195,7 +204,8 @@ void clearToBlack(Renderer *renderer) {
 	SDL_RenderClear(renderer->sdl_renderer);
 }
 
-void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 worldTilePosition, Color *color=0) {
+void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 worldTilePosition,
+	Color *color=0) {
 	
 	const real32 camLeft = renderer->camera.pos.x - (renderer->camera.windowWidth * 0.5f),
 				 camTop = renderer->camera.pos.y - (renderer->camera.windowHeight * 0.5f);

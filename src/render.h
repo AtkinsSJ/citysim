@@ -36,6 +36,9 @@ enum TextureAtlasItem {
 	TextureAtlasItem_Farmer_Carry0,
 	TextureAtlasItem_Farmer_Carry1,
 
+	TextureAtlasItem_Icon_Planting,
+	TextureAtlasItem_Icon_Harvesting,
+
 	TextureAtlasItemCount
 };
 

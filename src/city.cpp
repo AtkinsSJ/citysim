@@ -160,7 +160,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 				}
 			}
 
-			ASSERT(building->data == null, "Building already has data!");
+			ASSERT(building->data != null, "Failed to allocate field data!");
 
 			FieldData *fieldData = (FieldData*)building->data;
 			

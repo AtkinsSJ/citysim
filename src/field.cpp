@@ -11,6 +11,9 @@ bool plantField(City *city, Coord tilePosition) {
 			field->state = FieldState_Planting;
 			field->growth = 0;
 			city->funds -= 500;
+
+			addPlantJob(&city->jobBoard, building);
+
 			return true;
 		} else {
 			pushUiMessage("This field has already been planted.");
@@ -49,11 +52,13 @@ void updateField(FieldData *field) {
 		case FieldState_Planting: {
 			// Planting a seed at each position
 			// We reuse growth/growthCounter because we can
-			field->growthCounter += 1;
-			if (field->growthCounter >= 2) {
-				field->growthCounter -= 2;
-				field->growth++;
-			}
+
+			// field->growthCounter += 1;
+			// if (field->growthCounter >= 2) {
+			// 	field->growthCounter -= 2;
+			// 	field->growth++;
+			// }
+
 			if (field->growth >= fieldSize) {
 				field->state = FieldState_Growing;
 				field->growth = 0;
@@ -87,12 +92,19 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 
 	switch (field->state) {
 		case FieldState_Planting: {
-			for (int32 i=0; i < field->growth; i++) {
+			if (field->growth) {
+				for (int32 i=0; i < field->growth; i++) {
+					drawAtWorldPos(renderer,
+						TextureAtlasItem_Crop0_0,
+						v2(	building->footprint.pos.x + (i%4),
+						 	building->footprint.pos.y + (i/4)),
+						drawColor
+					);
+				}
+			} else {
 				drawAtWorldPos(renderer,
-					TextureAtlasItem_Crop0_0,
-					v2({building->footprint.pos.x + (i%4),
-					 building->footprint.pos.y + (i/4)}),
-					drawColor
+					TextureAtlasItem_Icon_Planting,
+					v2( building->footprint.pos )
 				);
 			}
 		} break;
