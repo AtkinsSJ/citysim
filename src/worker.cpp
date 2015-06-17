@@ -31,6 +31,40 @@ void freeWorker(Worker *worker) {
 	worker->exists = false;
 }
 
+void endJob(Worker *worker) {
+	worker->job = {};
+} 
+
+/**
+ * Contribute a day of work to the field.
+ */
+void doPlantingWork(Worker *worker, FieldData *field) {
+	if (field->state != FieldState_Planting) {
+		// Not planting!
+		endJob(worker);
+	} else {
+		field->growthCounter += 1;
+		if (field->growthCounter >= 2) {
+			field->growthCounter -= 2;
+			field->growth++;
+		}
+
+		if (field->growth >= fieldSize) {
+			field->state = FieldState_Growing;
+			field->growth = 0;
+			field->growthCounter = 0;
+
+			endJob(worker);
+		}
+	}
+}
+
+void travelTowards(Worker *worker, Rect *rect) {
+	real32 speed = 1.0f;
+	V2 movement = centre(rect) - worker->pos;
+	worker->pos += limit(movement, speed);
+}
+
 void updateWorker(City *city, Worker *worker) {
 	if (!worker->exists) return;
 
@@ -42,11 +76,13 @@ void updateWorker(City *city, Worker *worker) {
 		} break;
 
 		case JobType_Plant: {
+			Building *building = worker->job.building;
 			if (inRect(worker->job.building->footprint, worker->pos)) {
-				DO STUFF HERE NEXT!
+				FieldData *field = (FieldData*)building->data;
+				doPlantingWork(worker, field);
 			} else {
 				// Move to field
-
+				travelTowards(worker, &building->footprint);
 			}
 		} break;
 

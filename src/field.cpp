@@ -59,11 +59,11 @@ void updateField(FieldData *field) {
 			// 	field->growth++;
 			// }
 
-			if (field->growth >= fieldSize) {
-				field->state = FieldState_Growing;
-				field->growth = 0;
-				field->growthCounter = 0;
-			}
+			// if (field->growth >= fieldSize) {
+			// 	field->state = FieldState_Growing;
+			// 	field->growth = 0;
+			// 	field->growthCounter = 0;
+			// }
 		} break;
 
 		case FieldState_Growing: {

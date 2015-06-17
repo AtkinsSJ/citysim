@@ -66,6 +66,9 @@ struct V2 {
 inline V2 v2(Coord coord) {
 	return {(real32)coord.x, (real32)coord.y};
 }
+inline V2 v2(real32 x, real32 y) {
+	return {x,y};
+}
 inline V2 v2(int x, int y) {
 	return {(real32)x, (real32)y};
 }
@@ -77,8 +80,58 @@ inline bool inRect(Rect rect, V2 pos) {
 		&& pos.y < (rect.y + rect.h);
 }
 
+inline V2 centre(Rect *rect) {
+	return v2(
+		(real32)rect->x + (real32)rect->w / 2.0f,
+		(real32)rect->y + (real32)rect->h / 2.0f
+	);
+}
+
 inline real32 clamp(real32 value, real32 min, real32 max) {
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;
+}
+
+inline real32 v2Length(V2 v) {
+	return sqrt(v.x*v.x + v.y*v.y);
+}
+
+inline V2 operator+(V2 lhs, V2 rhs) {
+	V2 result;
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+	return result;
+}
+inline V2 operator+=(V2 &lhs, V2 rhs) {
+	lhs = lhs + rhs;
+	return lhs;
+}
+inline V2 operator-(V2 lhs, V2 rhs) {
+	V2 result;
+	result.x = lhs.x - rhs.x;
+	result.y = lhs.y - rhs.y;
+	return result;
+}
+inline V2 operator-=(V2 &lhs, V2 rhs) {
+	lhs = lhs - rhs;
+	return lhs;
+}
+inline V2 operator*(V2 v, real32 s) {
+	V2 result;
+	result.x = v.x * s;
+	result.y = v.y * s;
+	return result;
+}
+inline V2 operator*=(V2 &v, real32 s) {
+	v = v * s;
+	return v;
+}
+
+inline V2 limit(V2 vector, real32 maxLength) {
+	real32 length = v2Length(vector);
+	if (length > maxLength) {
+		vector *= maxLength / length;
+	}
+	return vector;
 }
