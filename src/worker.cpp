@@ -29,19 +29,16 @@ bool hireWorker(City *city) {
 
 void freeWorker(Worker *worker) {
 	worker->exists = false;
-}
-
-void endJob(Worker *worker) {
-	worker->job = {};
 } 
 
 /**
  * Contribute a day of work to the field.
+ * Returns whether the job is done.
  */
-void doPlantingWork(Worker *worker, FieldData *field) {
+bool doPlantingWork(Worker *worker, FieldData *field) {
 	if (field->state != FieldState_Planting) {
 		// Not planting!
-		endJob(worker);
+		return true;
 	} else {
 		field->progressCounter += 1;
 		if (field->progressCounter >= fieldProgressToPlant) {
@@ -54,16 +51,21 @@ void doPlantingWork(Worker *worker, FieldData *field) {
 			field->progress = 0;
 			field->progressCounter = 0;
 
-			endJob(worker);
+			return true;
 		}
 	}
+	return false;
 }
 
-void doHarvestingWork(City *city, Worker *worker, Building *building) {
+/**
+ * Contribute a day of work to the field.
+ * Returns whether the job is done.
+ */
+bool doHarvestingWork(City *city, Worker *worker, Building *building) {
 	FieldData *field = (FieldData*) building->data;
 	if (field->state != FieldState_Harvesting) {
 		// Not harvesting!
-		endJob(worker);
+		return true;
 	} else {
 		field->progressCounter += 1;
 		if (field->progressCounter >= fieldProgressToHarvest) {
@@ -95,9 +97,15 @@ void doHarvestingWork(City *city, Worker *worker, Building *building) {
 			field->progress = 0;
 			field->progressCounter = 0;
 
-			endJob(worker);
+			return true;
 		}
 	}
+
+	return false;
+}
+
+void endJob(Worker *worker) {
+	worker->job = {};
 }
 
 void continueMoving(Worker *worker, RealRect rect) {
@@ -109,6 +117,29 @@ void continueMoving(Worker *worker, RealRect rect) {
 	real32 speed = 1.0f;
 	V2 movement = centre(&rect) - worker->pos;
 	worker->dayEndPos = worker->pos + limit(movement, speed);
+}
+
+/**
+ * Returns whether the worker has reached the destination.
+ */
+bool workerMoveTo(Worker *worker, RealRect rect) {
+	if (inRect(rect, worker->pos)) {
+		// We've reached the destination
+		worker->pos = worker->dayEndPos;
+		worker->isAtDestination = true;
+		worker->isMoving = false;
+		return true;
+	}
+	if (!worker->isMoving) {
+		// Start move
+		worker->isMoving = true;
+		worker->dayEndPos = worker->pos;
+		worker->movementInterpolation = 0;
+	}
+	// Continue move
+	continueMoving(worker, rect);
+
+	return inRect(rect, worker->pos);
 }
 
 void updateWorker(City *city, Worker *worker) {
@@ -126,26 +157,11 @@ void updateWorker(City *city, Worker *worker) {
 
 			if (worker->isAtDestination) {
 				FieldData *field = (FieldData*)building->data;
-				doPlantingWork(worker, field);
-			} else {
-				// Move to the destination
-
-				if (inRect(building->footprint, worker->pos)) {
-					// We've reached the destination
-					worker->pos = worker->dayEndPos;
-					worker->isAtDestination = true;
-					worker->isMoving = false;
-				} else if (worker->isMoving) {
-					// Continue move
-					continueMoving(worker, realRect(building->footprint));
-				} else {
-					// Start move
-					worker->isMoving = true;
-					worker->dayEndPos = worker->pos;
-					worker->movementInterpolation = 0;
-
-					continueMoving(worker, realRect(building->footprint));
+				if (doPlantingWork(worker, field)) {
+					endJob(worker);
 				}
+			} else {
+				workerMoveTo(worker, realRect(building->footprint));
 			}
 			
 		} break;
@@ -154,26 +170,11 @@ void updateWorker(City *city, Worker *worker) {
 			Building *building = worker->job.building;
 
 			if (worker->isAtDestination) {
-				doHarvestingWork(city, worker, building);
-			} else {
-				// Move to the destination
-
-				if (inRect(building->footprint, worker->pos)) {
-					// We've reached the destination
-					worker->pos = worker->dayEndPos;
-					worker->isAtDestination = true;
-					worker->isMoving = false;
-				} else if (worker->isMoving) {
-					// Continue move
-					continueMoving(worker, realRect(building->footprint));
-				} else {
-					// Start move
-					worker->isMoving = true;
-					worker->dayEndPos = worker->pos;
-					worker->movementInterpolation = 0;
-
-					continueMoving(worker, realRect(building->footprint));
+				if (doHarvestingWork(city, worker, building)) {
+					endJob(worker);
 				}
+			} else {
+				workerMoveTo(worker, realRect(building->footprint));
 			}
 		} break;
 
@@ -195,7 +196,9 @@ void updateWorker(City *city, Worker *worker) {
 
 					worker->job.building = closestBarn;
 				}
-			} else {
+			}
+
+			if (worker->job.building) {
 				Building *building = worker->job.building;
 				if (worker->isCarryingPotato) {
 					if (worker->isAtDestination) {
@@ -204,15 +207,8 @@ void updateWorker(City *city, Worker *worker) {
 						worker->isCarryingPotato = false;
 						endJob(worker);
 
-					} else if (worker->isMoving) {
-						continueMoving(worker, realRect(building->footprint));
 					} else {
-						// Start move
-						worker->isMoving = true;
-						worker->dayEndPos = worker->pos;
-						worker->movementInterpolation = 0;
-
-						continueMoving(worker, realRect(building->footprint));
+						workerMoveTo(worker, realRect(building->footprint));
 					}
 				} else {
 					Potato *potato = worker->job.potato;
@@ -222,15 +218,8 @@ void updateWorker(City *city, Worker *worker) {
 						worker->isCarryingPotato = true;
 						worker->isAtDestination = false;
 
-					} else if (worker->isMoving) {
-						continueMoving(worker, potato->bounds);
 					} else {
-						// Start move
-						worker->isMoving = true;
-						worker->dayEndPos = worker->pos;
-						worker->movementInterpolation = 0;
-
-						continueMoving(worker, potato->bounds);
+						workerMoveTo(worker, realRect(building->footprint));
 					}
 				}
 			}
