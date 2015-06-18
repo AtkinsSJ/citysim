@@ -92,7 +92,13 @@ struct JobBoard {
 
 struct Worker {
 	bool exists;
-	V2 pos;
+	V2 pos; // Position at start of day
+
+	bool isMoving;
+	bool isAtDestination;
+	V2 renderPos;
+	V2 dayEndPos;
+	real32 movementInterpolation;
 
 	Job job;
 };

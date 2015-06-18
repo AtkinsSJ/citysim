@@ -59,10 +59,15 @@ void doPlantingWork(Worker *worker, FieldData *field) {
 	}
 }
 
-void travelTowards(Worker *worker, Rect *rect) {
+void continueMoving(Worker *worker, Rect *rect) {
+	// Move to position for end of previous day
+	worker->pos = worker->dayEndPos;
+	worker->movementInterpolation = 0;
+
+	// Set-up movement for this day
 	real32 speed = 1.0f;
 	V2 movement = centre(rect) - worker->pos;
-	worker->pos += limit(movement, speed);
+	worker->dayEndPos = worker->pos + limit(movement, speed);
 }
 
 void updateWorker(City *city, Worker *worker) {
@@ -71,19 +76,37 @@ void updateWorker(City *city, Worker *worker) {
 	switch (worker->job.type) {
 		case JobType_Idle: {
 			if (workExists(&city->jobBoard)) {
-				worker->job = takeJob(&city->jobBoard);
+				takeJob(&city->jobBoard, worker);
 			}
 		} break;
 
 		case JobType_Plant: {
 			Building *building = worker->job.building;
-			if (inRect(worker->job.building->footprint, worker->pos)) {
+
+			if (worker->isAtDestination) {
 				FieldData *field = (FieldData*)building->data;
 				doPlantingWork(worker, field);
 			} else {
-				// Move to field
-				travelTowards(worker, &building->footprint);
+				// Move to the destination
+
+				if (inRect(building->footprint, worker->pos)) {
+					// We've reached the destination
+					worker->pos = worker->dayEndPos;
+					worker->isAtDestination = true;
+					worker->isMoving = false;
+				} else if (worker->isMoving) {
+					// Continue move
+					continueMoving(worker, &building->footprint);
+				} else {
+					// Start move
+					worker->isMoving = true;
+					worker->dayEndPos = worker->pos;
+					worker->movementInterpolation = 0;
+
+					continueMoving(worker, &building->footprint);
+				}
 			}
+			
 		} break;
 
 		case JobType_Harvest: {
@@ -92,8 +115,16 @@ void updateWorker(City *city, Worker *worker) {
 	}
 }
 
-void drawWorker(Renderer *renderer, Worker *worker) {
+void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 	if (!worker->exists) return;
 
-	drawAtWorldPos(renderer, TextureAtlasItem_Farmer_Stand, worker->pos);
+	V2 drawPos = worker->pos;
+
+	// Interpolate position!
+	if (worker->isMoving) {
+		worker->movementInterpolation += daysPerFrame;
+		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
+	}
+
+	drawAtWorldPos(renderer, TextureAtlasItem_Farmer_Stand, drawPos);
 }

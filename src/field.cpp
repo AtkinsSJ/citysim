@@ -7,7 +7,7 @@ bool plantField(City *city, Coord tilePosition) {
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
 		if ((field->state == FieldState_Empty) && (city->funds >= 350)) {
-			SDL_Log("Planting something in this field.");
+			SDL_Log("Marking field for planting.");
 			field->state = FieldState_Planting;
 			field->growth = 0;
 			city->funds -= 500;

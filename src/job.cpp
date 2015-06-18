@@ -16,9 +16,10 @@ bool workExists(JobBoard *board) {
 	return board->jobCount > 0;
 }
 
-Job takeJob(JobBoard *board) {
-	Job job = board->jobs[0];
+void takeJob(JobBoard *board, Worker *worker) {
+	worker->job = board->jobs[0];
+	worker->isAtDestination = false;
+	
 	// Move the last job to the top of the list, and decrease the job count, in one go!
 	board->jobs[0] = board->jobs[--board->jobCount];
-	return job;
 }

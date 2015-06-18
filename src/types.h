@@ -135,3 +135,7 @@ inline V2 limit(V2 vector, real32 maxLength) {
 	}
 	return vector;
 }
+
+inline V2 interpolate(V2 a, V2 b, real32 position) {
+	return a + (b-a)*position;
+}

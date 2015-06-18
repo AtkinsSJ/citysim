@@ -18,7 +18,7 @@ struct Calendar {
 	CalendarSpeed speed; // Ticks per frame
 	int32 _dayTicksCounter;
 };
-const int32 ticksPerDay = 1000; // How big does Calendar.dayCounter have to be to increment the day?
+const int32 calendarTicksPerDay = 1000; // How big does Calendar.dayCounter have to be to increment the day?
 const int32 daysInMonth[] = {
 	31, // J
 	28, // F
@@ -81,8 +81,8 @@ void getDateString(Calendar *calendar, char *buffer) {
 bool incrementCalendar(Calendar *calendar) {
 	bool dayChanged = false;
 	calendar->_dayTicksCounter += calendar->speed;
-	if (calendar->_dayTicksCounter >= ticksPerDay) {
-		calendar->_dayTicksCounter -= ticksPerDay;
+	if (calendar->_dayTicksCounter >= calendarTicksPerDay) {
+		calendar->_dayTicksCounter -= calendarTicksPerDay;
 		calendar->day++;
 		dayChanged = true;
 
@@ -102,4 +102,8 @@ bool incrementCalendar(Calendar *calendar) {
 	}
 
 	return dayChanged;
+}
+
+inline real32 gameDaysPerFrame(Calendar *calendar) {
+	return calendar->speed / 1000.0f;
 }

@@ -434,6 +434,8 @@ int main(int argc, char *argv[]) {
 
 		TextureAtlasItem textureAtlasItem = TextureAtlasItem_GroundTile;
 
+		real32 daysPerFrame = gameDaysPerFrame(&calendar);
+
 		// Draw terrain
 		for (uint16 y=0; y < city.height; y++) {
 			for (uint16 x=0; x < city.width; x++) {
@@ -479,7 +481,7 @@ int main(int argc, char *argv[]) {
 
 		// Draw workers!
 		for (int i = 0; i < ArrayCount(city.workers); ++i) {
-			drawWorker(&renderer, city.workers + i);
+			drawWorker(&renderer, city.workers + i, daysPerFrame);
 		}
 
 		// Building preview
