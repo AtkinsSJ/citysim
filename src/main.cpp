@@ -484,6 +484,13 @@ int main(int argc, char *argv[]) {
 			drawWorker(&renderer, city.workers + i, daysPerFrame);
 		}
 
+		// Draw potatoes!
+		for (int i = 0; i < ArrayCount(city.potatoes); ++i) {
+			if (city.potatoes[i].exists) {
+				drawAtWorldPos(&renderer, TextureAtlasItem_Potato, city.potatoes[i].bounds.pos);
+			}
+		}
+
 		// Building preview
 		if (actionMode == ActionMode_Build
 			&& selectedBuildingArchetype != BA_None) {

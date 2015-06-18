@@ -9,15 +9,33 @@ typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
-typedef int32 bool32;
+
+const int8 int8Min = INT8_MIN;
+const int8 int8Max = INT8_MAX;
+const int16 int16Min = INT16_MIN;
+const int16 int16Max = INT16_MAX;
+const int32 int32Min = INT32_MIN;
+const int32 int32Max = INT32_MAX;
+const int64 int64Min = INT64_MIN;
+const int64 int64Max = INT64_MAX;
 
 typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
+const uint8 uint8Max = UINT8_MAX;
+const uint16 uint16Max = UINT16_MAX;
+const uint32 uint32Max = UINT32_MAX;
+const uint64 uint64Max = UINT64_MAX;
+
 typedef float real32;
 typedef double real64;
+
+const real32 real32Min = FLT_MIN;
+const real32 real32Max = FLT_MAX;
+const real64 real64Min = DBL_MIN;
+const real64 real64Max = DBL_MAX;
 
 typedef std::string string;
 
@@ -73,7 +91,40 @@ inline V2 v2(int x, int y) {
 	return {(real32)x, (real32)y};
 }
 
+struct RealRect {
+	struct {
+		union {
+			struct {V2 pos;};
+			struct {real32 x, y;};
+		};
+		real32 w,h;
+	};
+};
+
+inline RealRect realRect(V2 pos, real32 w, real32 h) {
+	RealRect rect = {};
+	rect.pos = pos;
+	rect.w = w;
+	rect.h = h;
+	return rect;
+}
+
+inline RealRect realRect(Rect intRect) {
+	RealRect rect = {};
+	rect.x = (real32) intRect.x;
+	rect.y = (real32) intRect.y;
+	rect.w = (real32) intRect.w;
+	rect.h = (real32) intRect.h;
+	return rect;
+}
+
 inline bool inRect(Rect rect, V2 pos) {
+	return pos.x >= rect.x
+		&& pos.x < (rect.x + rect.w)
+		&& pos.y >= rect.y
+		&& pos.y < (rect.y + rect.h);
+}
+inline bool inRect(RealRect rect, V2 pos) {
 	return pos.x >= rect.x
 		&& pos.x < (rect.x + rect.w)
 		&& pos.y >= rect.y
@@ -84,6 +135,12 @@ inline V2 centre(Rect *rect) {
 	return v2(
 		(real32)rect->x + (real32)rect->w / 2.0f,
 		(real32)rect->y + (real32)rect->h / 2.0f
+	);
+}
+inline V2 centre(RealRect *rect) {
+	return v2(
+		rect->x + rect->w / 2.0f,
+		rect->y + rect->h / 2.0f
 	);
 }
 

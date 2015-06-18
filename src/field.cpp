@@ -145,7 +145,7 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 
 			for (int32 i=0; i < fieldSize; i++) {
 				if (i < field->progress) continue;
-				
+
 				drawAtWorldPos(renderer,
 					TextureAtlasItem_Crop0_3,
 					v2({building->footprint.pos.x + (i%4),

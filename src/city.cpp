@@ -150,6 +150,10 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 			city->farmhouse = building;
 		} break;
 
+		case BA_Barn: {
+			city->barns[city->barnCount++] = building;
+		} break;
+
 		case BA_Field: {
 
 			for (int i = 0; i < ArrayCount(city->fieldData); ++i) {
@@ -222,6 +226,16 @@ bool demolish(City *city, Coord position) {
 				city->farmhouse = null;
 			} break;
 
+			case BA_Barn: {
+				for (uint32 i=0; i<city->barnCount; i++) {
+					if (city->barns[i] == building) {
+						// Take the last building and move it to position 'i'
+						city->barns[i] = city->barns[--city->barnCount];
+						break;
+					}
+				}
+			} break;
+
 			case BA_Field: {
 				FieldData *fieldData = (FieldData*)building->data;
 				fieldData->exists = false;
@@ -246,4 +260,8 @@ inline void updateFundsLabel(Renderer *renderer, City *city, UiLabel *label) {
 	char buffer[20];
 	getCityFundsString(city, buffer);
 	setUiLabelText(renderer, label, buffer);
+}
+
+void sellAPotato(City *city) {
+	city->funds += 100;
 }

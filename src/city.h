@@ -71,21 +71,30 @@ struct FieldData {
 	int32 progress;
 	int32 progressCounter;
 };
-const int fieldSize = 16;
+const int fieldWidth = 4;
+const int fieldHeight = 4;
+const int fieldSize = fieldWidth * fieldHeight;
 const int fieldMaxGrowth = fieldSize*3;
 const int fieldProgressToPlant = 1;
 const int fieldProgressToHarvest = 1;
+
+struct Potato {
+	bool exists;
+	RealRect bounds;
+};
 
 enum JobType {
 	JobType_Idle = 0,
 	JobType_Plant = 1,
 	JobType_Harvest,
+	JobType_StoreCrop,
 
 	JobTypeCount
 };
 struct Job {
 	JobType type;
 	Building *building;
+	Potato *potato;
 };
 struct JobBoard {
 	Job jobs[128];
@@ -101,6 +110,8 @@ struct Worker {
 	V2 renderPos;
 	V2 dayEndPos;
 	real32 movementInterpolation;
+
+	bool isCarryingPotato;
 
 	Job job;
 };
@@ -122,11 +133,16 @@ struct City {
 
 	Building *farmhouse;
 
+	uint32 barnCount;
+	Building *barns[64];
+
 	FieldData fieldData[256]; // TODO: Decide on field limit!
 
 	// Workers!
 	Worker workers[128]; // TODO: Decide on number of workers!
 	JobBoard jobBoard;
+
+	Potato potatoes[128]; // TODO: We really need to organise proper storage for random junk
 };
 
 #include "city.cpp"

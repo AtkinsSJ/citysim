@@ -2,6 +2,9 @@
 TODO:
 ---------------------------------------------
 
+- Animate farmers!
+- Potatoes that are harvested, then are carried to barns and sold for money
+
 - Time! A simple calendar that can be sped up, slowed down, and paused.
 //	- Display the current day
 //	- Growth is relative to time
