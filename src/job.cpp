@@ -6,6 +6,7 @@ Job* getFreeJob(JobBoard *board) {
 	ASSERT((board->jobCount < ArrayCount(board->jobs)), "No room in JobBoard to add new job!");
 
 	Job *job = board->jobs + board->jobCount++;
+	*job = {};
 	return job;
 }
 

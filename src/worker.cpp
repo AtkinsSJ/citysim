@@ -83,7 +83,7 @@ bool doHarvestingWork(City *city, Worker *worker, Building *building) {
 			potato->bounds = realRect(
 				v2(building->footprint.pos)
 					 + v2(field->progress % fieldWidth, field->progress / fieldWidth),
-				16, 16
+				1,1
 			);
 
 			addStoreCropJob(&city->jobBoard, potato);
@@ -219,9 +219,11 @@ void updateWorker(City *city, Worker *worker) {
 						worker->isAtDestination = false;
 
 					} else {
-						workerMoveTo(worker, realRect(building->footprint));
+						workerMoveTo(worker, potato->bounds);
 					}
 				}
+			} else {
+				SDL_Log("There are no barns!");
 			}
 		} break;
 	}
@@ -239,4 +241,7 @@ void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 	}
 
 	drawAtWorldPos(renderer, TextureAtlasItem_Farmer_Stand, drawPos);
+	if (worker->isCarryingPotato) {
+		drawAtWorldPos(renderer, TextureAtlasItem_Potato, drawPos + potatoCarryOffset);
+	}
 }

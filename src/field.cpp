@@ -77,8 +77,8 @@ void updateField(FieldData *field) {
 		case FieldState_Growing: {
 			// Growing each plant in turn
 			field->progressCounter += 1;
-			if (field->progressCounter >= 2) {
-				field->progressCounter -= 2;
+			if (field->progressCounter >= 1) {
+				field->progressCounter -= 1;
 				field->progress++;
 			}
 			if (field->progress >= fieldMaxGrowth) {
