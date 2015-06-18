@@ -6,18 +6,21 @@ bool plantField(City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
-		if ((field->state == FieldState_Empty) && (city->funds >= 350)) {
+		if (city->funds < 350) {
+			pushUiMessage("Not enough money to plant this field.");
+			return false;
+		} else if (field->state != FieldState_Empty) {
+			pushUiMessage("This field has already been planted.");
+			return false;
+		} else {
 			SDL_Log("Marking field for planting.");
 			field->state = FieldState_Planting;
-			field->growth = 0;
+			field->progress = 0;
 			city->funds -= 500;
 
 			addPlantJob(&city->jobBoard, building);
 
 			return true;
-		} else {
-			pushUiMessage("This field has already been planted.");
-			return false;
 		}
 	}
 
@@ -29,15 +32,20 @@ bool harvestField(City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
-		if (field->state == FieldState_Grown) {
-			SDL_Log("Harvested %d plants from this field.", field->growth);
-			city->funds += field->growth * 150;
-			field->state = FieldState_Empty;
-			field->growth = 0;
-			return true;
-		} else {
+		if (field->state != FieldState_Grown) {
 			pushUiMessage("There are no plants here ready for harvesting.");
 			return false;
+		} else {
+			SDL_Log("Marking field for harvesting.");
+			// city->funds += field->growth * 150;
+			// field->state = FieldState_Empty;
+			// field->growth = 0;
+
+			field->state = FieldState_Harvesting;
+			field->progress = 0;
+			addHarvestJob(&city->jobBoard, building);
+
+			return true;
 		}
 	}
 
@@ -68,12 +76,12 @@ void updateField(FieldData *field) {
 
 		case FieldState_Growing: {
 			// Growing each plant in turn
-			field->growthCounter += 1;
-			if (field->growthCounter >= 2) {
-				field->growthCounter -= 2;
-				field->growth++;
+			field->progressCounter += 1;
+			if (field->progressCounter >= 2) {
+				field->progressCounter -= 2;
+				field->progress++;
 			}
-			if (field->growth >= fieldMaxGrowth) {
+			if (field->progress >= fieldMaxGrowth) {
 				field->state = FieldState_Grown;
 			}
 		} break;
@@ -92,7 +100,7 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 
 	switch (field->state) {
 		case FieldState_Planting: {
-			for (int32 i=0; i < field->growth; i++) {
+			for (int32 i=0; i < field->progress; i++) {
 				drawAtWorldPos(renderer,
 					TextureAtlasItem_Crop0_0,
 					v2(	building->footprint.pos.x + (i%4),
@@ -110,8 +118,8 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 		} break;
 
 		case FieldState_Growing: {
-			int32 baseGrowthStage = field->growth / fieldSize;
-			int32 beyondGrowth = field->growth % fieldSize;
+			int32 baseGrowthStage = field->progress / fieldSize;
+			int32 beyondGrowth = field->progress % fieldSize;
 			for (int32 i=0; i < fieldSize; i++) {
 				drawAtWorldPos(renderer,
 					(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage + (i < beyondGrowth ? 1 : 0)),
@@ -134,6 +142,18 @@ void drawField(Renderer *renderer, Building *building, Color *drawColor) {
 		} break;
 
 		case FieldState_Harvesting: {
+
+			for (int32 i=0; i < fieldSize; i++) {
+				if (i < field->progress) continue;
+				
+				drawAtWorldPos(renderer,
+					TextureAtlasItem_Crop0_3,
+					v2({building->footprint.pos.x + (i%4),
+					 building->footprint.pos.y + (i/4)}),
+					drawColor
+				);
+			}
+
 			// 'Harvesting' indicator
 			drawAtWorldPos(renderer,
 				TextureAtlasItem_Icon_Harvesting,

@@ -43,16 +43,39 @@ void doPlantingWork(Worker *worker, FieldData *field) {
 		// Not planting!
 		endJob(worker);
 	} else {
-		field->growthCounter += 1;
-		if (field->growthCounter >= 2) {
-			field->growthCounter -= 2;
-			field->growth++;
+		field->progressCounter += 1;
+		if (field->progressCounter >= fieldProgressToPlant) {
+			field->progressCounter -= fieldProgressToPlant;
+			field->progress++;
 		}
 
-		if (field->growth >= fieldSize) {
+		if (field->progress >= fieldSize) {
 			field->state = FieldState_Growing;
-			field->growth = 0;
-			field->growthCounter = 0;
+			field->progress = 0;
+			field->progressCounter = 0;
+
+			endJob(worker);
+		}
+	}
+}
+
+void doHarvestingWork(Worker *worker, FieldData *field) {
+	if (field->state != FieldState_Harvesting) {
+		// Not harvesting!
+		endJob(worker);
+	} else {
+		field->progressCounter += 1;
+		if (field->progressCounter >= fieldProgressToHarvest) {
+			// TODO: Create a crop item!
+
+			field->progressCounter -= fieldProgressToHarvest;
+			field->progress++;
+		}
+
+		if (field->progress >= fieldSize) {
+			field->state = FieldState_Empty;
+			field->progress = 0;
+			field->progressCounter = 0;
 
 			endJob(worker);
 		}
@@ -110,7 +133,31 @@ void updateWorker(City *city, Worker *worker) {
 		} break;
 
 		case JobType_Harvest: {
+			Building *building = worker->job.building;
 
+			if (worker->isAtDestination) {
+				FieldData *field = (FieldData*)building->data;
+				doHarvestingWork(worker, field);
+			} else {
+				// Move to the destination
+
+				if (inRect(building->footprint, worker->pos)) {
+					// We've reached the destination
+					worker->pos = worker->dayEndPos;
+					worker->isAtDestination = true;
+					worker->isMoving = false;
+				} else if (worker->isMoving) {
+					// Continue move
+					continueMoving(worker, &building->footprint);
+				} else {
+					// Start move
+					worker->isMoving = true;
+					worker->dayEndPos = worker->pos;
+					worker->movementInterpolation = 0;
+
+					continueMoving(worker, &building->footprint);
+				}
+			}
 		} break;
 	}
 }

@@ -143,7 +143,7 @@ bool initializeRenderer(Renderer *renderer) {
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, textureFarmerPng, {16,  8,  8,  8});
 
 	setTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	textureIconsPng, { 0,  0, 32, 32});
-	setTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting,textureIconsPng, {16,  0, 32, 32});
+	setTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting,textureIconsPng, {32,  0, 32, 32});
 
 	// Goblin Fortress
 	/*

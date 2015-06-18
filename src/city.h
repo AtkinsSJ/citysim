@@ -68,11 +68,13 @@ enum FieldState {
 struct FieldData {
 	bool exists;
 	FieldState state;
-	int32 growth;
-	int32 growthCounter;
+	int32 progress;
+	int32 progressCounter;
 };
 const int fieldSize = 16;
 const int fieldMaxGrowth = fieldSize*3;
+const int fieldProgressToPlant = 1;
+const int fieldProgressToHarvest = 1;
 
 enum JobType {
 	JobType_Idle = 0,
