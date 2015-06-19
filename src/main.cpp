@@ -162,13 +162,11 @@ int main(int argc, char *argv[]) {
 	initUiLabel(&textCityName, &renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.fontLarge, labelColor);
 
 	textPosition.x = 800 / 2;
-	char buffer[20];
-	getCityFundsString(&city, buffer);
-	UiLabel textCityFunds;
-	initUiLabel(&textCityFunds, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP, buffer, renderer.fontLarge, labelColor);
+	UiIntLabel labelCityFunds;
+	initUiIntLabel(&labelCityFunds, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
+				renderer.fontLarge, labelColor, &city.funds, "£%d");
 
 	initUiMessage(&renderer);
-	
 
 	// CALENDAR
 	textPosition.x = 800 - 8;
@@ -354,32 +352,20 @@ int main(int argc, char *argv[]) {
 				case ActionMode_Build: {
 					// Try and build a thing
 					bool succeeded = placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
-					if (succeeded) {
-						updateFundsLabel(&renderer, &city, &textCityFunds);
-					}
 				} break;
 
 				case ActionMode_Demolish: {
 					// Try and demolish a thing
 					bool succeeded = demolish(&city, mouseTilePos);
 					SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
-					if (succeeded) {
-						updateFundsLabel(&renderer, &city, &textCityFunds);
-					}
 				} break;
 
 				case ActionMode_Plant: {
-					// Only do something if we clicked on a field!
-					if (plantField(&city, mouseTilePos)) {
-						updateFundsLabel(&renderer, &city, &textCityFunds);
-					}
+					plantField(&city, mouseTilePos);
 				} break;
 
 				case ActionMode_Harvest: {
-					// Only do something if we clicked on a field!
-					if (harvestField(&city, mouseTilePos)) {
-						updateFundsLabel(&renderer, &city, &textCityFunds);
-					}
+					harvestField(&city, mouseTilePos);
 				} break;
 
 				case ActionMode_None: {
@@ -422,9 +408,7 @@ int main(int argc, char *argv[]) {
 				SDL_SetCursor(cursorMain);
 
 				// Try and hire a worker!
-				if (hireWorker(&city)) {
-					updateFundsLabel(&renderer, &city, &textCityFunds);
-				}
+				hireWorker(&city);
 			}
 		}
 
@@ -506,7 +490,7 @@ int main(int argc, char *argv[]) {
 		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 64}, {0,0,0,128});
 
 		drawUiLabel(&renderer, &textCityName);
-		drawUiLabel(&renderer, &textCityFunds);
+		drawUiIntLabel(&renderer, &labelCityFunds);
 		drawUiLabel(&renderer, &labelDate);
 
 		drawUiMessage(&renderer);
@@ -541,7 +525,7 @@ int main(int argc, char *argv[]) {
 	SDL_FreeCursor(cursorHarvest);
 
 	freeUiLabel(&textCityName);
-	freeUiLabel(&textCityFunds);
+	freeUiIntLabel(&labelCityFunds);
 	freeUiMessage();
 
 	freeUiButtonGroup(&actionButtonGroup);

@@ -3,7 +3,6 @@ TODO:
 ---------------------------------------------
 
 - Animate farmers!
-- Farmers selling potatoes doesn't update funds display!
 
 - Time! A simple calendar that can be sped up, slowed down, and paused.
 //	- Display the current day

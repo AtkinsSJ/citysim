@@ -51,7 +51,23 @@ void initUiLabel(UiLabel *label, Renderer *renderer, Coord position, int32 align
 
 void freeUiLabel(UiLabel *label) {
 	freeTexture(&label->texture);
-	label = {};
+	*label = {};
+}
+
+void initUiIntLabel(UiIntLabel *label, Renderer *renderer, Coord position, int32 align,
+				TTF_Font *font, Color color, int32 *watchValue, char *formatString) {
+	*label = {};
+	label->formatString = formatString;
+	label->value = watchValue;
+	label->lastValue = *watchValue;
+
+	sprintf(label->buffer, label->formatString, *label->value);
+	initUiLabel(&label->label, renderer, position, align, label->buffer, font, color);
+}
+
+void freeUiIntLabel(UiIntLabel *label) {
+	freeUiLabel(&label->label);
+	*label = {};
 }
 
 void initUiButton(UiButton *button, Renderer *renderer, Rect rect,
@@ -92,6 +108,15 @@ void drawUiTexture(Renderer *renderer, Texture *texture, Rect rect) {
 
 void drawUiLabel(Renderer *renderer, UiLabel *text) {
 	drawUiTexture(renderer, &text->texture, text->_rect);
+}
+
+void drawUiIntLabel(Renderer *renderer, UiIntLabel *label) {
+	if (*label->value != label->lastValue) {
+		label->lastValue = *label->value;
+		sprintf(label->buffer, label->formatString, *label->value);
+		setUiLabelText(renderer, &label->label, label->buffer);
+	}
+	drawUiLabel(renderer, &label->label);
 }
 
 void drawUiButton(Renderer *renderer, UiButton *button) {

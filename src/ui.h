@@ -28,6 +28,14 @@ struct UiLabel {
 	Texture texture;
 };
 
+struct UiIntLabel {
+	UiLabel label;
+	int32 *value;
+	int32 lastValue;
+	char buffer[128];
+	char *formatString;
+};
+
 struct UiButton {
 	Rect rect;
 
