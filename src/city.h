@@ -82,7 +82,7 @@ struct Potato {
 	bool exists;
 	RealRect bounds; // In tiles!
 };
-const V2 potatoCarryOffset = v2(-4.0f/16.0f, 6.0f/16.0f);
+const V2 potatoCarryOffset = v2(-4.0f/16.0f, -14.0f/16.0f);
 
 enum JobType {
 	JobType_Idle = 0,
