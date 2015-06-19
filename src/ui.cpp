@@ -211,13 +211,19 @@ void initUiMessage(Renderer *renderer) {
 }
 
 void pushUiMessage(char *message) {
-	setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
-	__globalUiMessage.messageCountdown = 2000;
 
-	__globalUiMessage.rect.x = __globalUiMessage.label._rect.x - 4;
-	__globalUiMessage.rect.y = __globalUiMessage.label._rect.y - 4;
-	__globalUiMessage.rect.w = __globalUiMessage.label._rect.w + 8;
-	__globalUiMessage.rect.h = __globalUiMessage.label._rect.h + 8;
+	if (strcmp(message, __globalUiMessage.label.text)) {
+		// Message is differenct
+		setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
+
+		__globalUiMessage.rect.x = __globalUiMessage.label._rect.x - 4;
+		__globalUiMessage.rect.y = __globalUiMessage.label._rect.y - 4;
+		__globalUiMessage.rect.w = __globalUiMessage.label._rect.w + 8;
+		__globalUiMessage.rect.h = __globalUiMessage.label._rect.h + 8;
+	}
+
+	// Always refresh the countdown
+	__globalUiMessage.messageCountdown = 2000;
 }
 
 void drawUiMessage(Renderer *renderer) {

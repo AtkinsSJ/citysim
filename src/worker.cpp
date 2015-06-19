@@ -223,7 +223,7 @@ void updateWorker(City *city, Worker *worker) {
 					}
 				}
 			} else {
-				SDL_Log("There are no barns!");
+				pushUiMessage("Construct a barn to store harvested crops!");
 			}
 		} break;
 	}
