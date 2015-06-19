@@ -107,26 +107,18 @@ bool doHarvestingWork(City *city, Worker *worker, Building *building) {
 
 void endJob(Worker *worker) {
 	worker->job = {};
-}
-
-void continueMoving(Worker *worker, RealRect rect) {
-	// Move to position for end of previous day
-	worker->pos = worker->dayEndPos;
-	worker->movementInterpolation = 0;
-
-	// Set-up movement for this day
-	real32 speed = 1.0f;
-	V2 movement = centre(&rect) - worker->pos;
-	worker->dayEndPos = worker->pos + limit(movement, speed);
+	worker->isAtDestination = false;
 }
 
 /**
  * Returns whether the worker has reached the destination.
  */
-bool workerMoveTo(Worker *worker, RealRect rect) {
+bool workerMoveTo(Worker *worker, RealRect rect, real32 speed = 1.0f) {
 	if (inRect(rect, worker->pos)) {
 		// We've reached the destination
-		worker->pos = worker->dayEndPos;
+		if (worker->isMoving) {
+			worker->pos = worker->dayEndPos;
+		}
 		worker->isAtDestination = true;
 		worker->isMoving = false;
 		return true;
@@ -137,8 +129,14 @@ bool workerMoveTo(Worker *worker, RealRect rect) {
 		worker->dayEndPos = worker->pos;
 		worker->movementInterpolation = 0;
 	}
-	// Continue move
-	continueMoving(worker, rect);
+
+	// Move to position for end of previous day
+	worker->pos = worker->dayEndPos;
+	worker->movementInterpolation = 0;
+
+	// Set-up movement for this day
+	V2 movement = centre(&rect) - worker->pos;
+	worker->dayEndPos = worker->pos + limit(movement, speed);
 
 	return inRect(rect, worker->pos);
 }
@@ -150,6 +148,11 @@ void updateWorker(City *city, Worker *worker) {
 		case JobType_Idle: {
 			if (workExists(&city->jobBoard)) {
 				takeJob(&city->jobBoard, worker);
+			} else {
+				if (!worker->isAtDestination && city->farmhouse) {
+					// Slowly wander back to the farmhouse
+					workerMoveTo(worker, realRect(city->farmhouse->footprint), 0.5f);
+				}
 			}
 		} break;
 
