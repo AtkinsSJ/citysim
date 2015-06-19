@@ -244,7 +244,7 @@ void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 		}
 	} else {
 		if (worker->isAtDestination && worker->job.type == JobType_Plant) {
-
+			targetAnimation = Animation_Farmer_Plant;
 		} else if (worker->isAtDestination && worker->job.type == JobType_Harvest) {
 			targetAnimation = Animation_Farmer_Harvest;
 		} else if (worker->isCarryingPotato) {

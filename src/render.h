@@ -39,6 +39,10 @@ enum TextureAtlasItem {
 	TextureAtlasItem_Farmer_Harvest1,
 	TextureAtlasItem_Farmer_Harvest2,
 	TextureAtlasItem_Farmer_Harvest3,
+	TextureAtlasItem_Farmer_Plant0,
+	TextureAtlasItem_Farmer_Plant1,
+	TextureAtlasItem_Farmer_Plant2,
+	TextureAtlasItem_Farmer_Plant3,
 
 	TextureAtlasItem_Icon_Planting,
 	TextureAtlasItem_Icon_Harvesting,
@@ -81,6 +85,7 @@ enum AnimationID {
 	Animation_Farmer_Hold,
 	Animation_Farmer_Carry,
 	Animation_Farmer_Harvest,
+	Animation_Farmer_Plant,
 	
 	Animation_Count,
 };

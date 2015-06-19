@@ -2,7 +2,6 @@
 TODO:
 ---------------------------------------------
 
-- Animate farmers!
 - Draw things centred
 - Weird rendering issues with gaps between tiles at non-default zoom levels.
 - Closest barn isn't being chosen sometimes? No idea why.
