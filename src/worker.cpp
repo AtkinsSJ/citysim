@@ -144,19 +144,21 @@ bool workerMoveTo(Worker *worker, RealRect rect, real32 speed = 1.0f) {
 void updateWorker(City *city, Worker *worker) {
 	if (!worker->exists) return;
 
+	// Find a job!
+	if (worker->job.type == JobType_Idle && workExists(&city->jobBoard)) {
+		
+		// Prevent jumping if we were moving towards the farmhouse.
+		if (worker->isMoving) {
+			worker->pos = worker->renderPos;
+		}
+		takeJob(&city->jobBoard, worker);
+	}
+
 	switch (worker->job.type) {
 		case JobType_Idle: {
-			if (workExists(&city->jobBoard)) {
-				// Prevent jumping if we were moving towards the farmhouse.
-				if (worker->isMoving) {
-					worker->pos = worker->renderPos;
-				}
-				takeJob(&city->jobBoard, worker);
-			} else {
-				if (!worker->isAtDestination && city->farmhouse) {
-					// Slowly wander back to the farmhouse
-					workerMoveTo(worker, realRect(city->farmhouse->footprint), 0.5f);
-				}
+			 if (!worker->isAtDestination && city->farmhouse) {
+				// Slowly wander back to the farmhouse
+				workerMoveTo(worker, realRect(city->farmhouse->footprint), 0.5f);
 			}
 		} break;
 
