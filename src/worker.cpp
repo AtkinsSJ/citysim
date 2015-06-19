@@ -147,6 +147,10 @@ void updateWorker(City *city, Worker *worker) {
 	switch (worker->job.type) {
 		case JobType_Idle: {
 			if (workExists(&city->jobBoard)) {
+				// Prevent jumping if we were moving towards the farmhouse.
+				if (worker->isMoving) {
+					worker->pos = worker->renderPos;
+				}
 				takeJob(&city->jobBoard, worker);
 			} else {
 				if (!worker->isAtDestination && city->farmhouse) {

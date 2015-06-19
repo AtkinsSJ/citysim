@@ -2,13 +2,20 @@
 TODO:
 ---------------------------------------------
 
-- Draw things centred
+Rendering:
+- Draw things with an offset, defined per-texture-region(?)
 - Weird rendering issues with gaps between tiles at non-default zoom levels.
+- Flash funds label when it changes
+- Fade-out the message popup
+
+UI:
+- A menu!
+- Name your farm! (Editable text)
+
+Bugs:
 - Closest barn isn't being chosen sometimes? No idea why.
 - When demolishing a building, all related jobs continue anyway, with fun results!
 	- New buildings replace demolished buildings in memory, so workers can end-up treating a barn as a field, etc. Crashes galore!
-- Flash funds label when it changes
-- Name your farm!
 
 - Scenarios?
 	- System for loading a level
