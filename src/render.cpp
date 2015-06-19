@@ -145,6 +145,22 @@ bool initializeRenderer(Renderer *renderer) {
 	setTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	textureIconsPng, { 0,  0, 32, 32});
 	setTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting,textureIconsPng, {32,  0, 32, 32});
 
+	Animation *animation;
+	
+	animation = renderer->animations + Animation_Farmer_Stand;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Stand;
+
+	animation = renderer->animations + Animation_Farmer_Walk;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk0;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk1;
+	
+	animation = renderer->animations + Animation_Farmer_Hold;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Hold;
+
+	animation = renderer->animations + Animation_Farmer_Carry;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry0;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry1;
+
 	// Goblin Fortress
 	/*
 	renderer->textureAtlas.rects[TextureAtlasItem_GroundTile] = {0,0,w1,w1};
@@ -240,4 +256,27 @@ void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 wo
 	} else {
 		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect);
 	}
+}
+
+////////////////////////////////////////////////////////////////////
+//                          ANIMATIONS!                           //
+////////////////////////////////////////////////////////////////////
+void setAnimation(Animator *animator, Renderer *renderer, AnimationID animationID, bool restart = false) {
+	Animation *anim = renderer->animations + animationID;
+	// We do nothing if the animation is already playing
+	if (restart || animator->animation != anim) {
+		animator->animation = anim;
+		animator->currentFrame = 0;
+		animator->frameCounter = 0.0f;
+	}
+}
+
+void drawAnimator(Renderer *renderer, Animator *animator, real32 daysPerFrame, V2 worldTilePosition, Color *color = 0) {
+	animator->frameCounter += daysPerFrame * animationFramesPerDay;
+	while (animator->frameCounter >= 1) {
+		int32 framesElapsed = (int)animator->frameCounter;
+		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
+		animator->frameCounter -= framesElapsed;
+	}
+	drawAtWorldPos(renderer, animator->animation->frames[animator->currentFrame], worldTilePosition, color);
 }

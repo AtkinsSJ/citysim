@@ -99,28 +99,6 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
-struct Animation {
-	TextureAtlasItem frames[16];
-	uint32 frameCount;
-};
-
-struct Animator {
-	Animation *animation;
-	uint32 currentFrame;
-	real32 frameCounter; // Sub-frame ticks
-};
-const real32 animationFramesPerDay = 10.0f;
-
-void drawAnimator(Renderer *renderer, Animator *animator, real32 daysPerFrame) {
-	animator->frameCounter += daysPerFrame * animationFramesPerDay;
-	while (animator->frameCounter >= 1) {
-		int32 framesElapsed = (int)animator->frameCounter;
-		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
-		animator->frameCounter -= framesElapsed;
-	}
-	drawAtScreenPos(renderer, animator->animation->frames[animator->currentFrame], {100,10});
-}
-
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -154,15 +132,6 @@ int main(int argc, char *argv[]) {
 	Calendar calendar = {};
 	char dateStringBuffer[50];
 	initCalendar(&calendar);
-
-	Animation testAnimation = {};
-	testAnimation.frames[testAnimation.frameCount++] = TextureAtlasItem_Farmer_Walk0;
-	testAnimation.frames[testAnimation.frameCount++] = TextureAtlasItem_Farmer_Walk1;
-
-	Animator testAnimator = {
-		&testAnimation,
-		0, 0
-	};
 
 // GAME LOOP
 	bool quit = false;
@@ -528,9 +497,6 @@ int main(int argc, char *argv[]) {
 
 		drawUiButtonGroup(&renderer, &actionButtonGroup);
 		drawUiButtonGroup(&renderer, &calendarButtonGroup);
-
-		// Draw test animator
-		drawAnimator(&renderer, &testAnimator, daysPerFrame);
 
 		SDL_RenderPresent(renderer.sdl_renderer);
 

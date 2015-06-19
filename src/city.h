@@ -105,6 +105,7 @@ struct JobBoard {
 struct Worker {
 	bool exists;
 	V2 pos; // Position at start of day
+	Animator animator;
 
 	bool isMoving;
 	bool isAtDestination;

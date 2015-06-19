@@ -71,6 +71,27 @@ struct TextureRegion {
 	Rect rect;
 };
 
+enum AnimationID {
+	Animation_Farmer_Stand,
+	Animation_Farmer_Walk,
+	Animation_Farmer_Hold,
+	Animation_Farmer_Carry,
+	
+	Animation_Count,
+};
+
+struct Animation {
+	TextureAtlasItem frames[16];
+	uint32 frameCount;
+};
+
+struct Animator {
+	Animation *animation;
+	uint32 currentFrame;
+	real32 frameCounter; // Sub-frame ticks
+};
+const real32 animationFramesPerDay = 10.0f;
+
 struct Renderer {
 	SDL_Renderer *sdl_renderer;
 	SDL_Window *sdl_window;
@@ -78,6 +99,8 @@ struct Renderer {
 
 	Texture textures[16];
 	TextureRegion regions[TextureAtlasItemCount];
+
+	Animation animations[Animation_Count];
 
 	TTF_Font *font;
 	TTF_Font *fontLarge;

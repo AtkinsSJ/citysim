@@ -232,6 +232,24 @@ void updateWorker(City *city, Worker *worker) {
 void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 	if (!worker->exists) return;
 
+	AnimationID targetAnimation = Animation_Farmer_Stand;
+
+	if (worker->isMoving) {
+		if (worker->isCarryingPotato) {
+			targetAnimation = Animation_Farmer_Carry;
+		} else {
+			targetAnimation = Animation_Farmer_Walk;
+		}
+	} else {
+		if (worker->isCarryingPotato) {
+			targetAnimation = Animation_Farmer_Hold;
+		} else {
+			targetAnimation = Animation_Farmer_Stand;
+		}
+	}
+
+	setAnimation(&worker->animator, renderer, targetAnimation);
+
 	V2 drawPos = worker->pos;
 
 	// Interpolate position!
@@ -240,7 +258,8 @@ void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
 	}
 
-	drawAtWorldPos(renderer, TextureAtlasItem_Farmer_Stand, drawPos);
+	drawAnimator(renderer, &worker->animator, daysPerFrame, drawPos);
+
 	if (worker->isCarryingPotato) {
 		drawAtWorldPos(renderer, TextureAtlasItem_Potato, drawPos + potatoCarryOffset);
 	}
