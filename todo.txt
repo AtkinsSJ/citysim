@@ -3,16 +3,11 @@ TODO:
 ---------------------------------------------
 
 - Animate farmers!
-
-- Time! A simple calendar that can be sped up, slowed down, and paused.
-//	- Display the current day
-//	- Growth is relative to time
-//	- Controls for time
-	- Game automatically pauses when fields are harvestable
-
-//- Tasks take time!
-//	- Planting
-//	- Harvesting
+- Pay farmers monthly
+- Closest barn isn't being chosen sometimes? No idea why.
+- When demolishing a building, all related jobs continue anyway, with fun results!
+	- New buildings replace demolished buildings in memory, so workers can end-up treating a barn as a field, etc. Crashes galore!
+- Flash funds label when it changes
 
 - Scenarios?
 	- System for loading a level

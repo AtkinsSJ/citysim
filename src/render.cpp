@@ -204,6 +204,13 @@ void clearToBlack(Renderer *renderer) {
 	SDL_RenderClear(renderer->sdl_renderer);
 }
 
+void drawAtScreenPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord position) {
+	TextureRegion *region = &renderer->regions[textureAtlasItem];
+	SDL_Rect srcRect = region->rect.sdl_rect;
+	SDL_Rect destRect = {position.x, position.y, srcRect.w, srcRect.h};
+	SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &srcRect, &destRect);
+}
+
 void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 worldTilePosition,
 	Color *color=0) {
 	

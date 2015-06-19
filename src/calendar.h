@@ -2,6 +2,13 @@
 
 // calendar.h
 
+/**
+Calendars are a little complicated!
+What this boils down to though, is that we measure game time in days.
+You can get the fraction of a day that equates to a frame with getDaysPerFrame().
+The default, slowest speed is one second = one day.
+*/
+
 enum CalendarSpeed { // Ticks per frame
 	SpeedPaused = 0,
 	Speed1 = 1000 / FRAMES_PER_SECOND,
@@ -104,6 +111,6 @@ bool incrementCalendar(Calendar *calendar) {
 	return dayChanged;
 }
 
-inline real32 gameDaysPerFrame(Calendar *calendar) {
+inline real32 getDaysPerFrame(Calendar *calendar) {
 	return calendar->speed / 1000.0f;
 }
