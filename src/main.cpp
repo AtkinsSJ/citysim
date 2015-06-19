@@ -355,14 +355,11 @@ int main(int argc, char *argv[]) {
 
 			switch (actionMode) {
 				case ActionMode_Build: {
-					// Try and build a thing
-					bool succeeded = placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
+					placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
 				} break;
 
 				case ActionMode_Demolish: {
-					// Try and demolish a thing
-					bool succeeded = demolish(&city, mouseTilePos);
-					SDL_Log("Attempted to demolish a building, and %s", succeeded ? "succeeded" : "failed");
+					demolish(&city, mouseTilePos);
 				} break;
 
 				case ActionMode_Plant: {

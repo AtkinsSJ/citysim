@@ -233,8 +233,9 @@ void updateWorker(City *city, Worker *worker) {
 void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 	if (!worker->exists) return;
 
+	// TODO: Replace this animation-choosing code, because it's horrible.
+	// We shouldset the animation when stuff happens, not calculate it every frame!
 	AnimationID targetAnimation = Animation_Farmer_Stand;
-
 	if (worker->isMoving) {
 		if (worker->isCarryingPotato) {
 			targetAnimation = Animation_Farmer_Carry;
@@ -242,7 +243,11 @@ void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 			targetAnimation = Animation_Farmer_Walk;
 		}
 	} else {
-		if (worker->isCarryingPotato) {
+		if (worker->isAtDestination && worker->job.type == JobType_Plant) {
+
+		} else if (worker->isAtDestination && worker->job.type == JobType_Harvest) {
+			targetAnimation = Animation_Farmer_Harvest;
+		} else if (worker->isCarryingPotato) {
 			targetAnimation = Animation_Farmer_Hold;
 		} else {
 			targetAnimation = Animation_Farmer_Stand;

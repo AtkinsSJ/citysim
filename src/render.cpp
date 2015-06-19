@@ -142,6 +142,11 @@ bool initializeRenderer(Renderer *renderer) {
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, textureFarmerPng, { 8,  8,  8,  8});
 	setTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, textureFarmerPng, {16,  8,  8,  8});
 
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest0, textureFarmerPng, { 0, 16,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest1, textureFarmerPng, { 8, 16,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest2, textureFarmerPng, {16, 16,  8,  8});
+	setTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest3, textureFarmerPng, {24, 16,  8,  8});
+
 	setTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	textureIconsPng, { 0,  0, 32, 32});
 	setTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting,textureIconsPng, {32,  0, 32, 32});
 
@@ -160,6 +165,12 @@ bool initializeRenderer(Renderer *renderer) {
 	animation = renderer->animations + Animation_Farmer_Carry;
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry0;
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry1;
+
+	animation = renderer->animations + Animation_Farmer_Harvest;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest0;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest1;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest2;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest3;
 
 	// Goblin Fortress
 	/*
