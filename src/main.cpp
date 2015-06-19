@@ -304,7 +304,8 @@ int main(int argc, char *argv[]) {
 		}
 
 	// Game simulation
-		if (incrementCalendar(&calendar)) {
+		CalendarChange calendarChange = incrementCalendar(&calendar);
+		if (calendarChange.isNewDay) {
 			getDateString(&calendar, dateStringBuffer);
 			setUiLabelText(&renderer, &labelDate, dateStringBuffer);
 
@@ -318,6 +319,10 @@ int main(int argc, char *argv[]) {
 			for (int i = 0; i < ArrayCount(city.workers); ++i) {
 				updateWorker(&city, city.workers + i);
 			}
+		}
+		if (calendarChange.isNewMonth) {
+			// Pay workers!
+			city.funds -= city.workerCount * workerMonthlyCost;
 		}
 
 	// UiButton/Mouse interaction

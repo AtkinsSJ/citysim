@@ -118,6 +118,7 @@ struct Worker {
 	Job job;
 };
 const int workerHireCost = 100;
+const int workerMonthlyCost = 50;
 
 struct City {
 	char *name;
@@ -141,10 +142,11 @@ struct City {
 	FieldData fieldData[256]; // TODO: Decide on field limit!
 
 	// Workers!
-	Worker workers[128]; // TODO: Decide on number of workers!
+	uint32 workerCount;
+	Worker workers[512]; // TODO: Decide on number of workers!
 	JobBoard jobBoard;
 
-	Potato potatoes[128]; // TODO: We really need to organise proper storage for random junk
+	Potato potatoes[2048]; // TODO: We really need to organise proper storage for random junk
 };
 
 #include "city.cpp"

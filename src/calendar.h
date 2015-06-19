@@ -85,30 +85,40 @@ void getDateString(Calendar *calendar, char *buffer) {
 /**
  * Add an amount of sub-day time to the calendar, return whether the date changed.
  */
-bool incrementCalendar(Calendar *calendar) {
-	bool dayChanged = false;
+struct CalendarChange {
+	bool isNewDay;
+	bool isNewWeek;
+	bool isNewMonth;
+	bool isNewYear;
+};
+CalendarChange incrementCalendar(Calendar *calendar) {
+	CalendarChange result = {};
+
 	calendar->_dayTicksCounter += calendar->speed;
 	if (calendar->_dayTicksCounter >= calendarTicksPerDay) {
 		calendar->_dayTicksCounter -= calendarTicksPerDay;
 		calendar->day++;
-		dayChanged = true;
+		result.isNewDay = true;
 
 		calendar->dayOfWeek = (calendar->dayOfWeek + 1) % 7;
+		result.isNewWeek = (calendar->dayOfWeek == 0);
 
 		// Month rollover
 		if (calendar->day == daysInMonth[calendar->month]) {
 			calendar->day = 0;
 			calendar->month++;
+			result.isNewMonth = true;
 
 			// Year rollover
 			if (calendar->month == 12) {
 				calendar->month = 0;
 				calendar->year++;
+				result.isNewYear = true;
 			}
 		}
 	}
 
-	return dayChanged;
+	return result;
 }
 
 inline real32 getDaysPerFrame(Calendar *calendar) {

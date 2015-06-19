@@ -18,6 +18,7 @@ bool hireWorker(City *city) {
 		if (worker->exists == false) {
 			// We found an unused worker!
 			city->funds -= workerHireCost;
+			city->workerCount++;
 			worker->exists = true;
 			worker->pos = v2(city->farmhouse->footprint.pos);
 			return true;
