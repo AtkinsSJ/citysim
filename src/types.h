@@ -62,6 +62,14 @@ union Rect {
 	SDL_Rect sdl_rect;
 };
 
+inline Rect rect(int32 x, int32 y, int32 w, int32 h) {
+	Rect rect = {};
+	rect.x = x;
+	rect.y = y;
+	rect.w = w;
+	rect.h = h;
+	return rect;
+}
 
 inline bool inRect(Rect rect, Coord coord) {
 	return coord.x >= rect.x

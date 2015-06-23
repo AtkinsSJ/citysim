@@ -227,9 +227,9 @@ void freeRenderer(Renderer *renderer) {
 /**
  * Takes x and y in screen space, and returns a position in world-tile space.
  */
-inline V2 screenPosToWorldPos(int32 x, int32 y, Camera *camera) {
-	return {(x - camera->windowWidth/2 + camera->pos.x) / (camera->zoom * TILE_WIDTH),
-			(y - camera->windowHeight/2 + camera->pos.y) / (camera->zoom * TILE_HEIGHT)};
+inline V2 screenPosToWorldPos(int32 x, int32 y, Renderer *renderer, Camera *camera) {
+	return {(x - renderer->viewportSize.x/2 + camera->pos.x) / (camera->zoom * TILE_WIDTH),
+			(y - renderer->viewportSize.y/2 + camera->pos.y) / (camera->zoom * TILE_HEIGHT)};
 }
 void centreCameraOnPosition(Camera *camera, V2 position) {
 	camera->pos = v2(
@@ -248,43 +248,69 @@ void clearToBlack(Renderer *renderer) {
 	SDL_RenderClear(renderer->sdl_renderer);
 }
 
-void drawAtScreenPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord position) {
-	TextureRegion *region = &renderer->regions[textureAtlasItem];
-	SDL_Rect srcRect = region->rect.sdl_rect;
-	SDL_Rect destRect = {position.x, position.y, srcRect.w, srcRect.h};
-	SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &srcRect, &destRect);
-}
-
-void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 worldTilePosition,
-	Color *color=0) {
-	
-	const real32 camLeft = renderer->camera.pos.x - (renderer->camera.windowWidth * 0.5f),
-				 camTop = renderer->camera.pos.y - (renderer->camera.windowHeight * 0.5f);
-
-	const real32 tileWidth = TILE_WIDTH * renderer->camera.zoom,
-				tileHeight = TILE_HEIGHT * renderer->camera.zoom;
-
+void drawAtlasItem(Renderer *renderer, Camera *camera, TextureAtlasItem textureAtlasItem, V2 position, Color *color=0) {
 	TextureRegion *region = &renderer->regions[textureAtlasItem];
 
-	SDL_Rect destRect = {
-		(int)((worldTilePosition.x * tileWidth) - camLeft),
-		(int)((worldTilePosition.y * tileHeight) - camTop),
-		(int)(region->rect.w * renderer->camera.zoom),
-		(int)(region->rect.h * renderer->camera.zoom)
-	};
+	const real32 camLeft = camera->pos.x - (renderer->viewportSize.x * 0.5f),
+				 camTop = camera->pos.y - (renderer->viewportSize.y * 0.5f);
+
+	Rect destRect = rect(
+		position.x - camLeft,
+		position.y - camTop,
+		region->rect.w * camera->zoom,
+		region->rect.h * camera->zoom
+	);
 
 	if (color) {
 		SDL_SetTextureColorMod(region->texture->sdl_texture, color->r, color->g, color->b);
 		SDL_SetTextureAlphaMod(region->texture->sdl_texture, color->a);
 
-		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect.sdl_rect);
 
 		SDL_SetTextureColorMod(region->texture->sdl_texture, 255, 255, 255);
 		SDL_SetTextureAlphaMod(region->texture->sdl_texture, 255);
 	} else {
-		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect);
+		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect.sdl_rect);
 	}
 }
+
+// void drawAtScreenPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, Coord position) {
+// 	TextureRegion *region = &renderer->regions[textureAtlasItem];
+// 	SDL_Rect srcRect = region->rect.sdl_rect;
+// 	SDL_Rect destRect = {position.x, position.y, srcRect.w, srcRect.h};
+// 	SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &srcRect, &destRect);
+// }
+
+// void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 worldTilePosition,
+// 	Color *color=0) {
+	
+// 	const real32 camLeft = renderer->camera.pos.x - (renderer->camera.windowWidth * 0.5f),
+// 				 camTop = renderer->camera.pos.y - (renderer->camera.windowHeight * 0.5f);
+
+// 	const real32 tileWidth = TILE_WIDTH * renderer->camera.zoom,
+// 				tileHeight = TILE_HEIGHT * renderer->camera.zoom;
+
+// 	TextureRegion *region = &renderer->regions[textureAtlasItem];
+
+// 	SDL_Rect destRect = {
+// 		(int)((worldTilePosition.x * tileWidth) - camLeft),
+// 		(int)((worldTilePosition.y * tileHeight) - camTop),
+// 		(int)(region->rect.w * renderer->camera.zoom),
+// 		(int)(region->rect.h * renderer->camera.zoom)
+// 	};
+
+// 	if (color) {
+// 		SDL_SetTextureColorMod(region->texture->sdl_texture, color->r, color->g, color->b);
+// 		SDL_SetTextureAlphaMod(region->texture->sdl_texture, color->a);
+
+// 		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect);
+
+// 		SDL_SetTextureColorMod(region->texture->sdl_texture, 255, 255, 255);
+// 		SDL_SetTextureAlphaMod(region->texture->sdl_texture, 255);
+// 	} else {
+// 		SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &destRect);
+// 	}
+// }
 
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
