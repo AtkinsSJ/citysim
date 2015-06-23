@@ -242,8 +242,12 @@ int main(int argc, char *argv[]) {
 		mouseState.wheelX = 0;
 		mouseState.wheelY = 0;
 
-		for (int i = 0; i < MOUSE_BUTTON_COUNT; ++i) {
+		for (int i = 0; i < MOUSE_BUTTON_COUNT; i++) {
 			mouseState.wasDown[i] = mouseState.down[i];
+		}
+
+		for (int i=0; i < KEYBOARD_KEY_COUNT; i++) {
+			keyboardState.wasDown[i] = keyboardState.down[i];
 		}
 
 		while (SDL_PollEvent(&event) != 0) {
@@ -346,9 +350,19 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Camera controls
+		// HOME resets the camera and centres on the HQ
+		if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
+			renderer.camera.zoom = 1;
+			// Jump to the farmhouse if we have one!
+			if (city.farmhouse) {
+				centreCameraOnPosition(&renderer.camera, centre(&city.farmhouse->footprint));
+			} else {
+				pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
+			}
+		}
 		updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
-		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, renderer.camera);
+		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, &renderer.camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 		if (!buttonAteMouseEvent && mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {

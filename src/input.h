@@ -33,5 +33,10 @@ inline bool mouseButtonPressed(MouseState *mouseState, uint8 mouseButton) {
 
 const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
 struct KeyboardState {
+	bool wasDown[KEYBOARD_KEY_COUNT];
 	bool down[KEYBOARD_KEY_COUNT];
 };
+
+inline bool keyJustPressed(KeyboardState *keyboardState, SDL_Keycode key) {
+	return keyboardState->down[key] && !keyboardState->wasDown[key];
+}

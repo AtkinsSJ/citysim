@@ -227,9 +227,15 @@ void freeRenderer(Renderer *renderer) {
 /**
  * Takes x and y in screen space, and returns a position in world-tile space.
  */
-inline V2 screenPosToWorldPos(int32 x, int32 y, Camera &camera) {
-	return {(x - camera.windowWidth/2 + camera.pos.x) / (camera.zoom * TILE_WIDTH),
-			(y - camera.windowHeight/2 + camera.pos.y) / (camera.zoom * TILE_HEIGHT)};
+inline V2 screenPosToWorldPos(int32 x, int32 y, Camera *camera) {
+	return {(x - camera->windowWidth/2 + camera->pos.x) / (camera->zoom * TILE_WIDTH),
+			(y - camera->windowHeight/2 + camera->pos.y) / (camera->zoom * TILE_HEIGHT)};
+}
+void centreCameraOnPosition(Camera *camera, V2 position) {
+	camera->pos = v2(
+		(position.x * camera->zoom * TILE_WIDTH),
+		(position.y * camera->zoom * TILE_HEIGHT)
+	);
 }
 inline Coord tilePosition(V2 worldPixelPos) {
 	return {(int)floor(worldPixelPos.x),
