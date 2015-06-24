@@ -132,9 +132,21 @@ int main(int argc, char *argv[]) {
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
 
+<<<<<<< HEAD
 	renderer.camera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
 	centreCameraOnPosition(&renderer.camera, v2(city.width/2, city.height/2));
+=======
+	Camera worldCamera = {};
+	worldCamera.pixelsPerUnit = TILE_WIDTH;
+	worldCamera.zoom = 1;
+
+	Camera uiCamera = {};
+	uiCamera.pixelsPerUnit = 1;
+	uiCamera.zoom = 1;
+
+	SDL_GetWindowSize(renderer.sdl_window, &renderer.viewportSize.x, &renderer.viewportSize.y);
+>>>>>>> 7ca856d4d884a7c0ab0ddab842cb5754b23c17ea
 
 	ActionMode actionMode = ActionMode_None;
 	BuildingArchetype selectedBuildingArchetype = BA_None;
@@ -356,7 +368,7 @@ int main(int argc, char *argv[]) {
 		}
 		updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
-		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, &renderer.camera);
+		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, &renderer, &worldCamera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 		if (!buttonAteMouseEvent && mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {

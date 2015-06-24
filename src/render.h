@@ -10,8 +10,8 @@ const int CAMERA_MARGIN = 20;
 const bool canZoom = false;
 
 struct Camera {
-	int32 windowWidth, windowHeight;
 	V2 pos; // Centre of screen
+	int32 pixelsPerUnit;
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 };
 const real32 CAMERA_PAN_SPEED = 0.5f; // Measured in camera-widths per second
@@ -107,7 +107,8 @@ const real32 animationFramesPerDay = 10.0f;
 struct Renderer {
 	SDL_Renderer *sdl_renderer;
 	SDL_Window *sdl_window;
-	Camera camera;
+
+	Coord viewportSize;
 
 	Texture textures[16];
 	TextureRegion regions[TextureAtlasItemCount];
