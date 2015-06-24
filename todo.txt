@@ -2,11 +2,6 @@
 TODO:
 ---------------------------------------------
 
-Camera:
-- Multiple cameras!
-- project() and unproject()
-- Pass the camera when you draw something
-
 Rendering:
 - Draw things with an offset, defined per-texture-region(?)
 - Weird rendering issues with gaps between tiles at non-default zoom levels.
