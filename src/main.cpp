@@ -27,7 +27,7 @@
 
 void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
-	if (mouseState->wheelY != 0) {
+	if (canZoom && mouseState->wheelY != 0) {
 		// round()ing the zoom so it doesn't gradually drift due to float imprecision
 		camera->zoom = clamp(round(10 * camera->zoom + mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
 	}
