@@ -7,6 +7,7 @@ enum Terrain {
 	Terrain_Forest,
 	Terrain_Size
 };
+const int deforestCost = 100;
 
 struct BuildingDefinition {
 	int32 width, height;

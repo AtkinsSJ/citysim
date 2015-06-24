@@ -21,16 +21,16 @@ inline void freeCity(City *city) {
 	*city = {};
 }
 
-inline uint32 tileIndex(City *city, uint32 x, uint32 y) {
+inline uint32 tileIndex(City *city, int32 x, int32 y) {
 	return (y * city->width) + x;
 }
 
-inline bool tileExists(City *city, uint32 x, uint32 y) {
+inline bool tileExists(City *city, int32 x, int32 y) {
 	return (x >= 0) && (x < city->width)
 		&& (y >= 0) && (y < city->height);
 }
 
-inline Terrain terrainAt(City *city, uint32 x, uint32 y) {
+inline Terrain terrainAt(City *city, int32 x, int32 y) {
 	if (!tileExists(city, x, y)) return Terrain_Invalid;
 	return city->terrain[tileIndex(city, x, y)];
 }
@@ -43,13 +43,13 @@ inline Building* getBuildingByID(City *city, uint32 buildingID) {
 	return &(city->buildings[buildingID - 1]);
 }
 
-inline Building* getBuildingAtPosition(City *city, uint32 x, uint32 y) {
+inline Building* getBuildingAtPosition(City *city, int32 x, int32 y) {
 	return getBuildingByID(city, city->tileBuildings[tileIndex(city,x,y)]);
 }
 
 void generateTerrain(City *city) {
-	for (uint32 y = 0; y < city->height; y++) {
-		for (uint32 x = 0; x < city->width; x++) {
+	for (int32 y = 0; y < city->height; y++) {
+		for (int32 x = 0; x < city->width; x++) {
 
 			real32 px = (real32)x * 0.1f;
 			real32 py = (real32)y * 0.1f;
@@ -248,8 +248,18 @@ bool demolish(City *city, Coord position) {
 
 		return true;
 
+	} else if (city->terrain[posTI] == Terrain_Forest) {
+		// Tear down all the trees!
+		if (city->funds >= deforestCost) {
+			city->funds -= deforestCost;
+			city->terrain[posTI] = Terrain_Ground;
+			return true;
+		} else {
+			pushUiMessage("Not enough money to destroy these trees.");
+			return false;
+		}
+
 	} else {
-		// TODO: Handle clearing of terrain here.
 		pushUiMessage("There is nothing here to demolish.");
 		return false;
 	}
