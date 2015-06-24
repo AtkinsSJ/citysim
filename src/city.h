@@ -4,6 +4,7 @@ enum Terrain {
 	Terrain_Invalid = 0,
 	Terrain_Ground,
 	Terrain_Water,
+	Terrain_Forest,
 	Terrain_Size
 };
 
@@ -124,7 +125,7 @@ struct City {
 	char *name;
 	int32 funds;
 
-	uint32 width, height;
+	int32 width, height;
 	Terrain *terrain;
 
 	uint32 buildingCount;

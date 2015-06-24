@@ -16,6 +16,7 @@
 #define ASSERT(expr, msg) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg); *(int *)0 = 0;}
 
 #include "types.h"
+#include "maths.h"
 #include "render.h"
 #include "input.h"
 #include "ui.h"
@@ -121,14 +122,6 @@ int main(int argc, char *argv[]) {
 	City city = createCity(100,100, "Best Farm", 20000);
 	generateTerrain(&city);
 
-	// WorkerList workers = {};
-	// initWorker(addWorker(&workers), 10.0f,10.0f);
-	// initWorker(addWorker(&workers), 11.0f,10.5f);
-	// initWorker(addWorker(&workers), 12.0f,11.0f);
-	// initWorker(addWorker(&workers), 13.0f,11.5f);
-	// initWorker(addWorker(&workers), 14.0f,12.0f);
-	// initWorker(addWorker(&workers), 15.0f,12.5f);
-
 	Calendar calendar = {};
 	char dateStringBuffer[50];
 	initCalendar(&calendar);
@@ -141,6 +134,7 @@ int main(int argc, char *argv[]) {
 
 	renderer.camera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
+	centreCameraOnPosition(&renderer.camera, v2(city.width/2, city.height/2));
 
 	ActionMode actionMode = ActionMode_None;
 	BuildingArchetype selectedBuildingArchetype = BA_None;
@@ -443,6 +437,9 @@ int main(int argc, char *argv[]) {
 				switch (t) {
 					case Terrain_Ground: {
 						textureAtlasItem = TextureAtlasItem_GroundTile;
+					} break;
+					case Terrain_Forest: {
+						textureAtlasItem = TextureAtlasItem_ForestTile;
 					} break;
 					case Terrain_Water: {
 						textureAtlasItem = TextureAtlasItem_WaterTile;

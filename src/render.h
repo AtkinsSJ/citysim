@@ -21,6 +21,7 @@ const int CAMERA_EDGE_SCROLL_MARGIN = 8;
 enum TextureAtlasItem {
 	TextureAtlasItem_GroundTile = 0,
 	TextureAtlasItem_WaterTile,
+	TextureAtlasItem_ForestTile,
 	TextureAtlasItem_Field,
 	TextureAtlasItem_Crop0_0,
 	TextureAtlasItem_Crop0_1,

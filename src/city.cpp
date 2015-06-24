@@ -50,11 +50,21 @@ inline Building* getBuildingAtPosition(City *city, uint32 x, uint32 y) {
 void generateTerrain(City *city) {
 	for (uint32 y = 0; y < city->height; y++) {
 		for (uint32 x = 0; x < city->width; x++) {
-			Terrain t = Terrain_Ground;
-			if ((rand() % 100) < 5) {
-				t = Terrain_Water;
-			}
-			city->terrain[tileIndex(city,x,y)] = t;
+
+			real32 px = (real32)x * 0.1f;// / (real32)city->width;
+			real32 py = (real32)y * 0.1f;// / (real32)city->height;
+
+			real32 perlinValue = stb_perlin_noise3(px, py, 0);
+
+			city->terrain[tileIndex(city, x, y)] = (perlinValue > 0.0f)
+				? Terrain_Forest
+				: Terrain_Ground;
+
+			// Terrain t = Terrain_Ground;
+			// if ((rand() % 100) < 5) {
+			// 	t = Terrain_Water;
+			// }
+			// city->terrain[tileIndex(city,x,y)] = t;
 		}
 	}
 }

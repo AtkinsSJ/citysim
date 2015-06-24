@@ -126,6 +126,7 @@ bool initializeRenderer(Renderer *renderer) {
 
 	setTextureRegion(renderer, TextureAtlasItem_GroundTile,	textureCombinedPng, { 0,  0, w1, w1});
 	setTextureRegion(renderer, TextureAtlasItem_WaterTile, 	textureCombinedPng, {w1,  0, w1, w1});
+	setTextureRegion(renderer, TextureAtlasItem_ForestTile, textureCombinedPng, {w2,  0, w1, w1});
 	setTextureRegion(renderer, TextureAtlasItem_Field, 		textureCombinedPng, {w4,  0, w4, w4});
 	setTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	textureCombinedPng, { 0, w1, w1, w1});
 	setTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	textureCombinedPng, {w1, w1, w1, w1});
