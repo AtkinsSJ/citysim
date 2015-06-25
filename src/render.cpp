@@ -287,6 +287,28 @@ void drawAtWorldPos(Renderer *renderer, TextureAtlasItem textureAtlasItem, V2 wo
 	}
 }
 
+void drawWorldRect(Renderer *renderer, Rect worldRect, Color color) {
+
+	// World->screen code, copied from above. (Yay copypasta!)
+	const real32 camLeft = renderer->camera.pos.x - (renderer->camera.windowWidth * 0.5f),
+				 camTop = renderer->camera.pos.y - (renderer->camera.windowHeight * 0.5f);
+
+	const real32 tileWidth = TILE_WIDTH * renderer->camera.zoom,
+				tileHeight = TILE_HEIGHT * renderer->camera.zoom;
+
+	Rect drawRect = rect(
+		(int)((worldRect.x * tileWidth) - camLeft),
+		(int)((worldRect.y * tileHeight) - camTop),
+		(int)(worldRect.w * tileWidth),
+		(int)(worldRect.h * tileHeight)
+	);
+
+	SDL_SetRenderDrawColor(renderer->sdl_renderer, color.r, color.g, color.b, color.a);
+	SDL_SetRenderDrawBlendMode(renderer->sdl_renderer, SDL_BLENDMODE_BLEND);
+
+	SDL_RenderFillRect(renderer->sdl_renderer, &drawRect.sdl_rect);
+}
+
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
 ////////////////////////////////////////////////////////////////////

@@ -47,10 +47,6 @@ struct Coord {
 	int32 x,y;
 };
 
-inline Coord coord(int32 x, int32 y) {
-	return {x,y};
-}
-
 union Rect {
 	struct {
 		union {
@@ -62,6 +58,50 @@ union Rect {
 	SDL_Rect sdl_rect;
 };
 
+struct V2 {
+	real32 x,y;
+};
+
+struct RealRect {
+	union {
+		struct {V2 pos;};
+		struct {real32 x, y;};
+	};
+	real32 w,h;
+};
+
+inline Coord coord(int32 x, int32 y) {
+	return {x,y};
+}
+
+inline Rect rect(int32 x, int32 y, int32 w, int32 h) {
+	Rect rect = {};
+	rect.x = x;
+	rect.y = y;
+	rect.w = w;
+	rect.h = h;
+	return rect;
+}
+
+inline Rect rectCovering(V2 a, V2 b) {
+	Rect rect = {};
+	if (a.x < b.x) {
+		rect.x = (int32)(a.x);
+		rect.w = (int32)(b.x - a.x + 0.5f);
+	} else {
+		rect.x = (int32)(b.x);
+		rect.w = (int32)(a.x - b.x + 0.5f);
+	}
+
+	if (a.y < b.y) {
+		rect.y = (int32)(a.y);
+		rect.h = (int32)(b.y - a.y + 0.5f);
+	} else {
+		rect.y = (int32)(b.y);
+		rect.h = (int32)(a.y - b.y + 0.5f);
+	}
+	return rect;
+}
 
 inline bool inRect(Rect rect, Coord coord) {
 	return coord.x >= rect.x
@@ -77,10 +117,6 @@ inline bool rectInRect(Rect outer, Rect inner) {
 		&& (inner.y + inner.h) <= (outer.y + outer.h);
 }
 
-struct V2 {
-	real32 x,y;
-};
-
 inline V2 v2(Coord coord) {
 	return {(real32)coord.x, (real32)coord.y};
 }
@@ -90,16 +126,6 @@ inline V2 v2(real32 x, real32 y) {
 inline V2 v2(int x, int y) {
 	return {(real32)x, (real32)y};
 }
-
-struct RealRect {
-	struct {
-		union {
-			struct {V2 pos;};
-			struct {real32 x, y;};
-		};
-		real32 w,h;
-	};
-};
 
 inline RealRect realRect(V2 pos, real32 w, real32 h) {
 	RealRect rect = {};

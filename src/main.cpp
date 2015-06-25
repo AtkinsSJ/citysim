@@ -132,6 +132,8 @@ int main(int argc, char *argv[]) {
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
 
+	V2 mouseDragStartPos;
+
 	renderer.camera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
 	centreCameraOnPosition(&renderer.camera, v2(city.width/2, city.height/2));
@@ -367,7 +369,8 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				case ActionMode_Demolish: {
-					demolish(&city, mouseTilePos);
+					mouseDragStartPos = mouseWorldPos;
+					// demolish(&city, mouseTilePos);
 				} break;
 
 				case ActionMode_Plant: {
@@ -459,11 +462,11 @@ int main(int argc, char *argv[]) {
 
 			Color drawColor = {255,255,255,255};
 
-			if (actionMode == ActionMode_Demolish
-				&& inRect(building.footprint, mouseTilePos)) {
-				// Draw building red to preview demolition
-				drawColor = {255,128,128,255};
-			}
+			// if (actionMode == ActionMode_Demolish
+			// 	&& inRect(building.footprint, mouseTilePos)) {
+			// 	// Draw building red to preview demolition
+			// 	drawColor = {255,128,128,255};
+			// }
 
 			switch (building.archetype) {
 				case BA_Field: {
@@ -497,6 +500,11 @@ int main(int argc, char *argv[]) {
 				ghostColor = {255,0,0,128};
 			}
 			drawAtWorldPos(&renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, v2(mouseTilePos), &ghostColor);
+		} else if (actionMode == ActionMode_Demolish
+			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+			// Demolition outline
+			Rect demolitionRect = rectCovering(mouseDragStartPos, mouseWorldPos);
+			drawWorldRect(&renderer, demolitionRect, {255, 0, 0, 128});
 		}
 
 		// Draw some UI
