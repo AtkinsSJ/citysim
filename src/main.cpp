@@ -418,6 +418,7 @@ int main(int argc, char *argv[]) {
 					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 						plantField(&city, mouseTilePos);
 					}
+					showCostTooltip(&tooltip, &renderer, fieldPlantCost, city.funds);
 				} break;
 
 				case ActionMode_Harvest: {

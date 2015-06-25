@@ -73,6 +73,7 @@ struct FieldData {
 	int32 progress;
 	int32 progressCounter;
 };
+const int32 fieldPlantCost = 500;
 const int fieldWidth = 4;
 const int fieldHeight = 4;
 const int fieldSize = fieldWidth * fieldHeight;

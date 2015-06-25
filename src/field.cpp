@@ -6,7 +6,7 @@ bool plantField(City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
-		if (city->funds < 350) {
+		if (city->funds < fieldPlantCost) {
 			pushUiMessage("Not enough money to plant this field.");
 			return false;
 		} else if (field->state != FieldState_Empty) {
@@ -16,7 +16,7 @@ bool plantField(City *city, Coord tilePosition) {
 			SDL_Log("Marking field for planting.");
 			field->state = FieldState_Planting;
 			field->progress = 0;
-			city->funds -= 500;
+			city->funds -= fieldPlantCost;
 
 			addPlantJob(&city->jobBoard, building);
 
