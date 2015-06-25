@@ -8,7 +8,7 @@ bool hireWorker(City *city, V2 position) {
 		return false;
 	}
 
-	if (city->funds < workerHireCost) {
+	if (!canAfford(city, workerHireCost)) {
 		pushUiMessage("Not enough money to hire a worker.");
 		return false;
 	}
@@ -17,7 +17,7 @@ bool hireWorker(City *city, V2 position) {
 		Worker *worker = city->workers + i;
 		if (worker->exists == false) {
 			// We found an unused worker!
-			city->funds -= workerHireCost;
+			spend(city, workerHireCost);
 			city->workerCount++;
 			worker->exists = true;
 			worker->pos = position; //v2(city->farmhouse->footprint.pos);

@@ -347,7 +347,7 @@ int main(int argc, char *argv[]) {
 		}
 		if (calendarChange.isNewMonth) {
 			// Pay workers!
-			city.funds -= city.workerCount * workerMonthlyCost;
+			spend(&city, city.workerCount * workerMonthlyCost);
 		}
 
 	// UiButton/Mouse interaction

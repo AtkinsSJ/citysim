@@ -63,6 +63,17 @@ void generateTerrain(City *city) {
 	}
 }
 
+bool canAfford(City *city, int32 cost) {
+	return city->funds >= cost;
+}
+
+void spend(City *city, int32 cost) {
+	city->funds -= cost;
+	if (city->funds < 0) {
+		ASSERT(false, "Ran out of money!");
+	}
+}
+
 bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
 	bool isAttemptingToBuild = false) {
 
@@ -77,7 +88,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
 	// Can we afford to build this?
-	if (city->funds < def.buildCost) {
+	if (!canAfford(city, def.buildCost)) {
 		if (isAttemptingToBuild) {
 			pushUiMessage("Not enough money to build this.");
 		}
@@ -141,7 +152,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	Building *building = getBuildingByID(city, buildingID);
 	BuildingDefinition *def = buildingDefinitions + archetype;
 
-	city->funds -= def->buildCost;
+	spend(city, def->buildCost);
 
 	*building = {};
 	building->exists = true;
@@ -200,12 +211,12 @@ bool demolishTile(City *city, Coord position) {
 		BuildingDefinition def = buildingDefinitions[building->archetype];
 
 		// Can we afford to demolish this?
-		if (city->funds < def.demolishCost) {
+		if (!canAfford(city, def.demolishCost)) {
 			pushUiMessage("Not enough money to demolish this.");
 			return false;
 		}
 
-		city->funds -= def.demolishCost;
+		spend(city, def.demolishCost);
 
 		// Clear all references to this building
 		for (int32 y = building->footprint.y;
@@ -250,8 +261,8 @@ bool demolishTile(City *city, Coord position) {
 
 	} else if (city->terrain[posTI] == Terrain_Forest) {
 		// Tear down all the trees!
-		if (city->funds >= forestDemolishCost) {
-			city->funds -= forestDemolishCost;
+		if (canAfford(city, forestDemolishCost)) {
+			spend(city, forestDemolishCost);
 			city->terrain[posTI] = Terrain_Ground;
 			return true;
 		} else {
@@ -293,7 +304,7 @@ int32 calculateDemolitionCost(City *city, Rect rect) {
 bool demolishRect(City *city, Rect rect) {
 
 	int32 cost = calculateDemolitionCost(city, rect);
-	if (cost > city->funds) {
+	if (!canAfford(city, cost)) {
 		pushUiMessage("Not enough money for demolition.");
 		return false;
 	}

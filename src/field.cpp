@@ -6,7 +6,7 @@ bool plantField(City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
-		if (city->funds < fieldPlantCost) {
+		if (!canAfford(city, fieldPlantCost)) {
 			pushUiMessage("Not enough money to plant this field.");
 			return false;
 		} else if (field->state != FieldState_Empty) {
@@ -16,7 +16,7 @@ bool plantField(City *city, Coord tilePosition) {
 			SDL_Log("Marking field for planting.");
 			field->state = FieldState_Planting;
 			field->progress = 0;
-			city->funds -= fieldPlantCost;
+			spend(city, fieldPlantCost);
 
 			addPlantJob(&city->jobBoard, building);
 
@@ -32,14 +32,14 @@ bool harvestField(City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
 	if (building && building->archetype == BA_Field) {
 		FieldData *field = (FieldData*)building->data;
-		if (field->state != FieldState_Grown) {
+		if (field->state == FieldState_Harvesting) {
+			pushUiMessage("This field is already marked for harvesting.");
+			return false;
+		} else if (field->state != FieldState_Grown) {
 			pushUiMessage("There are no plants here ready for harvesting.");
 			return false;
 		} else {
 			SDL_Log("Marking field for harvesting.");
-			// city->funds += field->growth * 150;
-			// field->state = FieldState_Empty;
-			// field->growth = 0;
 
 			field->state = FieldState_Harvesting;
 			field->progress = 0;
