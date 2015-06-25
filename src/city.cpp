@@ -187,8 +187,8 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	return true;
 }
 
-bool demolish(City *city, Coord position) {
-	if (!tileExists(city, position.x, position.y)) return false;
+bool demolishTile(City *city, Coord position) {
+	if (!tileExists(city, position.x, position.y)) return true;
 
 	uint32 posTI = tileIndex(city, position.x, position.y);
 
@@ -260,10 +260,21 @@ bool demolish(City *city, Coord position) {
 		}
 
 	} else {
-		pushUiMessage("There is nothing here to demolish.");
-		return false;
+		return true;
 	}
 	
+}
+
+bool demolishRect(City *city, Rect rect) {
+	for (int y=0; y<rect.h; y++) {
+		for (int x=0; x<rect.w; x++) {
+			if (!demolishTile(city, {rect.x + x, rect.y + y})) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 inline void getCityFundsString(City *city, char *buffer) {

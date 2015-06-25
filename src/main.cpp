@@ -133,6 +133,7 @@ int main(int argc, char *argv[]) {
 	KeyboardState keyboardState = {};
 
 	V2 mouseDragStartPos;
+	Rect dragRect;
 
 	renderer.camera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
@@ -370,6 +371,7 @@ int main(int argc, char *argv[]) {
 
 				case ActionMode_Demolish: {
 					mouseDragStartPos = mouseWorldPos;
+					dragRect = rect(mouseTilePos.x, mouseTilePos.y, 1, 1);
 					// demolish(&city, mouseTilePos);
 				} break;
 
@@ -385,6 +387,19 @@ int main(int argc, char *argv[]) {
 					SDL_Log("Building ID at position (%d,%d) = %d",
 						mouseTilePos.x, mouseTilePos.y,
 						city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
+				} break;
+			}
+		}
+
+		if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+			dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
+		}
+
+		if (!buttonAteMouseEvent && mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
+			switch (actionMode) {
+				case ActionMode_Demolish: {
+					// Demolish everything within dragRect!
+					demolishRect(&city, dragRect);
 				} break;
 			}
 		}
@@ -503,8 +518,7 @@ int main(int argc, char *argv[]) {
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
-			Rect demolitionRect = rectCovering(mouseDragStartPos, mouseWorldPos);
-			drawWorldRect(&renderer, demolitionRect, {255, 0, 0, 128});
+			drawWorldRect(&renderer, dragRect, {255, 0, 0, 128});
 		}
 
 		// Draw some UI
