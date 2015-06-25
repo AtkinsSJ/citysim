@@ -164,27 +164,47 @@ void updateWorker(City *city, Worker *worker) {
 
 		case JobType_Plant: {
 			Building *building = worker->job.building;
+			FieldData *field = (FieldData*)building->data;
 
-			if (worker->isAtDestination) {
-				FieldData *field = (FieldData*)building->data;
-				if (doPlantingWork(worker, field)) {
-					endJob(worker);
+			// Check job is valid
+			if (!worker->job.building->exists
+				|| worker->job.building->archetype != BA_Field
+				|| !field
+				|| field->state != FieldState_Planting) {
+
+				endJob(worker);
+			} else { // Job is valid, yay!
+
+				if (worker->isAtDestination) {
+					if (doPlantingWork(worker, field)) {
+						endJob(worker);
+					}
+				} else {
+					workerMoveTo(worker, realRect(building->footprint));
 				}
-			} else {
-				workerMoveTo(worker, realRect(building->footprint));
 			}
 			
 		} break;
 
 		case JobType_Harvest: {
 			Building *building = worker->job.building;
+			FieldData *field = (FieldData*)building->data;
 
-			if (worker->isAtDestination) {
-				if (doHarvestingWork(city, worker, building)) {
-					endJob(worker);
+			// Check job is valid
+			if (!worker->job.building->exists
+				|| worker->job.building->archetype != BA_Field
+				|| !field
+				|| field->state != FieldState_Harvesting) {
+
+				endJob(worker);
+			} else { // Job is valid, yay!
+				if (worker->isAtDestination) {
+					if (doHarvestingWork(city, worker, building)) {
+						endJob(worker);
+					}
+				} else {
+					workerMoveTo(worker, realRect(building->footprint));
 				}
-			} else {
-				workerMoveTo(worker, realRect(building->footprint));
 			}
 		} break;
 
