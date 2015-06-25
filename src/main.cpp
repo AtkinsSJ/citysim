@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 	KeyboardState keyboardState = {};
 
 	V2 mouseDragStartPos;
-	Rect dragRect;
+	Rect dragRect = rect(-1,-1,0,0);
 
 	renderer.camera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
@@ -400,6 +400,7 @@ int main(int argc, char *argv[]) {
 				case ActionMode_Demolish: {
 					// Demolish everything within dragRect!
 					demolishRect(&city, dragRect);
+					dragRect = rect(-1,-1,0,0);
 				} break;
 			}
 		}
@@ -477,11 +478,11 @@ int main(int argc, char *argv[]) {
 
 			Color drawColor = {255,255,255,255};
 
-			// if (actionMode == ActionMode_Demolish
-			// 	&& inRect(building.footprint, mouseTilePos)) {
-			// 	// Draw building red to preview demolition
-			// 	drawColor = {255,128,128,255};
-			// }
+			if (actionMode == ActionMode_Demolish
+				&& rectsOverlap(building.footprint, dragRect)) {
+				// Draw building red to preview demolition
+				drawColor = {255,128,128,255};
+			}
 
 			switch (building.archetype) {
 				case BA_Field: {

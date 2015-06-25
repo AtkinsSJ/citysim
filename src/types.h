@@ -157,6 +157,13 @@ inline bool inRect(RealRect rect, V2 pos) {
 		&& pos.y < (rect.y + rect.h);
 }
 
+inline bool rectsOverlap(Rect a, Rect b) {
+	return (a.x < b.x + b.w)
+		&& (b.x < a.x + a.w)
+		&& (a.y < b.y + b.h)
+		&& (b.y < a.y + a.h);
+}
+
 inline V2 centre(Rect *rect) {
 	return v2(
 		(real32)rect->x + (real32)rect->w / 2.0f,
