@@ -99,6 +99,24 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
+struct Tooltip {
+	UiLabel label;
+	bool show;
+	Coord offsetFromCursor;
+	char buffer[128];
+};
+
+void showCostTooltip(Tooltip *tooltip, Renderer *renderer, int32 cost, int32 cityFunds) {
+	if (cost > cityFunds) {
+		tooltip->label.color = {255,0,0,255};
+	} else {
+		tooltip->label.color =  {255,255,255,255};
+	}
+	sprintf(tooltip->buffer, "-£%d", cost);
+	setUiLabelText(renderer, &tooltip->label, tooltip->buffer);
+	tooltip->show = true;
+}
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -165,11 +183,9 @@ int main(int argc, char *argv[]) {
 	initUiMessage(&renderer);
 
 	// Tooltip
-	bool showTooltip = true;
-	Coord tooltipOffset = coord(16, 20);
-	char tooltipBuffer[128];
-	UiLabel tooltip;
-	initUiLabel(&tooltip, &renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "TOOLTIP!", renderer.fontLarge, labelColor);
+	Tooltip tooltip = {};
+	tooltip.offsetFromCursor = coord(16, 20);
+	initUiLabel(&tooltip.label, &renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer.fontLarge, labelColor);
 
 	// CALENDAR
 	textPosition.x = 800 - 8;
@@ -368,7 +384,7 @@ int main(int argc, char *argv[]) {
 		V2 mouseWorldPos = screenPosToWorldPos(mouseState.pos, &renderer.camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
-		showTooltip = false;
+		tooltip.show = false;
 
 		if (!buttonAteMouseEvent && mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 
@@ -402,14 +418,7 @@ int main(int argc, char *argv[]) {
 			if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 				dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
 				int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
-				if (demolitionCost > city.funds) {
-					tooltip.color = {255,0,0,255};
-				} else {
-					tooltip.color =  {255,255,255,255};
-				}
-				sprintf(tooltipBuffer, "-£%d", demolitionCost);
-				setUiLabelText(&renderer, &tooltip, tooltipBuffer);
-				showTooltip = true;
+				showCostTooltip(&tooltip, &renderer, demolitionCost, city.funds);
 			}
 
 			if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
@@ -418,8 +427,6 @@ int main(int argc, char *argv[]) {
 				dragRect = rect(-1,-1,0,0);
 			}
 		}
-
-		
 
 		if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
 			// Unselect current thing
@@ -526,6 +533,9 @@ int main(int argc, char *argv[]) {
 		if (actionMode == ActionMode_Build
 			&& selectedBuildingArchetype != BA_None) {
 
+			int32 cost = buildingDefinitions[selectedBuildingArchetype].buildCost;
+			showCostTooltip(&tooltip, &renderer, cost, city.funds);
+
 			Color ghostColor = {128,255,128,255};
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
@@ -550,9 +560,9 @@ int main(int argc, char *argv[]) {
 		drawUiButtonGroup(&renderer, &calendarButtonGroup);
 
 		// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
-		if (showTooltip) {
-			setUiLabelOrigin(&tooltip, mouseState.pos + tooltipOffset);
-			drawUiLabel(&renderer, &tooltip);
+		if (tooltip.show) {
+			setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
+			drawUiLabel(&renderer, &tooltip.label);
 		}
 
 		SDL_RenderPresent(renderer.sdl_renderer);
@@ -582,7 +592,7 @@ int main(int argc, char *argv[]) {
 	SDL_FreeCursor(cursorHarvest);
 
 	freeUiLabel(&textCityName);
-	freeUiLabel(&tooltip);
+	freeUiLabel(&tooltip.label);
 	freeUiIntLabel(&labelCityFunds);
 	freeUiMessage();
 
