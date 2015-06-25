@@ -74,6 +74,13 @@ inline Coord coord(int32 x, int32 y) {
 	return {x,y};
 }
 
+inline Coord operator+(Coord lhs, Coord rhs) {
+	Coord result;
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+	return result;
+}
+
 inline Rect rect(int32 x, int32 y, int32 w, int32 h) {
 	Rect rect = {};
 	rect.x = x;

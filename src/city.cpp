@@ -250,8 +250,8 @@ bool demolishTile(City *city, Coord position) {
 
 	} else if (city->terrain[posTI] == Terrain_Forest) {
 		// Tear down all the trees!
-		if (city->funds >= deforestCost) {
-			city->funds -= deforestCost;
+		if (city->funds >= forestDemolishCost) {
+			city->funds -= forestDemolishCost;
 			city->terrain[posTI] = Terrain_Ground;
 			return true;
 		} else {
@@ -265,7 +265,39 @@ bool demolishTile(City *city, Coord position) {
 	
 }
 
+int32 calculateDemolitionCost(City *city, Rect rect) {
+	int32 total = 0;
+
+	// Terrain clearing cost
+	for (int y=0; y<rect.h; y++) {
+		for (int x=0; x<rect.w; x++) {
+			if (terrainAt(city, rect.x + x, rect.y + y) == Terrain_Forest) {
+				total += forestDemolishCost;
+			}
+		}
+	}
+
+	// We want to only get the cost of each building once.
+	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
+	for (uint16 i=0; i<city->buildingCountMax; i++) {
+		Building building = city->buildings[i];
+		if (!building.exists) continue;
+		if (rectsOverlap(building.footprint, rect)) {
+			total += buildingDefinitions[building.archetype].demolishCost;
+		}
+	}
+
+	return total;
+}
+
 bool demolishRect(City *city, Rect rect) {
+
+	int32 cost = calculateDemolitionCost(city, rect);
+	if (cost > city->funds) {
+		pushUiMessage("Not enough money for demolition.");
+		return false;
+	}
+
 	for (int y=0; y<rect.h; y++) {
 		for (int x=0; x<rect.w; x++) {
 			if (!demolishTile(city, {rect.x + x, rect.y + y})) {

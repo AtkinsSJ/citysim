@@ -39,23 +39,22 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
 		Coord clickStartPos = mouseState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos.x += (mouseState->x - clickStartPos.x) * scale;
-		camera->pos.y += (mouseState->y - clickStartPos.y) * scale;
+		camera->pos += (v2(mouseState->pos) - v2(clickStartPos)) * scale;
 	} else {
 		// Keyboard/edge-of-screen panning
 		if (keyboardState->down[SDL_SCANCODE_LEFT]
-			|| (mouseState->x < CAMERA_EDGE_SCROLL_MARGIN)) {
+			|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN)) {
 			camera->pos.x -= scrollSpeed;
 		} else if (keyboardState->down[SDL_SCANCODE_RIGHT]
-			|| (mouseState->x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN))) {
+			|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN))) {
 			camera->pos.x += scrollSpeed;
 		}
 
 		if (keyboardState->down[SDL_SCANCODE_UP]
-			|| (mouseState->y < CAMERA_EDGE_SCROLL_MARGIN)) {
+			|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN)) {
 			camera->pos.y -= scrollSpeed;
 		} else if (keyboardState->down[SDL_SCANCODE_DOWN]
-			|| (mouseState->y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN))) {
+			|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN))) {
 			camera->pos.y += scrollSpeed;
 		}
 	}
@@ -132,7 +131,7 @@ int main(int argc, char *argv[]) {
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
 
-	V2 mouseDragStartPos;
+	V2 mouseDragStartPos = {};
 	Rect dragRect = rect(-1,-1,0,0);
 
 	renderer.camera.zoom = 1.0f;
@@ -164,6 +163,13 @@ int main(int argc, char *argv[]) {
 				renderer.fontLarge, labelColor, &city.funds, "£%d");
 
 	initUiMessage(&renderer);
+
+	// Tooltip
+	bool showTooltip = true;
+	Coord tooltipOffset = coord(16, 20);
+	char tooltipBuffer[128];
+	UiLabel tooltip;
+	initUiLabel(&tooltip, &renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "TOOLTIP!", renderer.fontLarge, labelColor);
 
 	// CALENDAR
 	textPosition.x = 800 - 8;
@@ -247,7 +253,7 @@ int main(int argc, char *argv[]) {
 			keyboardState.wasDown[i] = keyboardState.down[i];
 		}
 
-		while (SDL_PollEvent(&event) != 0) {
+		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 				// WINDOW EVENTS
 				case SDL_QUIT: {
@@ -265,8 +271,8 @@ int main(int argc, char *argv[]) {
 				// MOUSE EVENTS
 				// NB: If we later handle TOUCH events, then we need to discard mouse events where event.X.which = SDL_TOUCH_MOUSEID
 				case SDL_MOUSEMOTION: {
-					mouseState.x = event.motion.x;
-					mouseState.y = event.motion.y;
+					mouseState.pos.x = event.motion.x;
+					mouseState.pos.y = event.motion.y;
 				} break;
 				case SDL_MOUSEBUTTONDOWN: {
 					uint8 buttonIndex = event.button.button - 1;
@@ -300,7 +306,7 @@ int main(int argc, char *argv[]) {
 		for (uint8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
 			if (mouseButtonJustPressed(&mouseState, i)) {
 				// Store the initial click position
-				mouseState.clickStartPosition[mouseButtonIndex(i)] = {mouseState.x, mouseState.y};
+				mouseState.clickStartPosition[mouseButtonIndex(i)] = mouseState.pos;
 			}
 		}
 
@@ -359,8 +365,10 @@ int main(int argc, char *argv[]) {
 		}
 		updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
-		V2 mouseWorldPos = screenPosToWorldPos(mouseState.x, mouseState.y, &renderer.camera);
+		V2 mouseWorldPos = screenPosToWorldPos(mouseState.pos, &renderer.camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
+
+		showTooltip = false;
 
 		if (!buttonAteMouseEvent && mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 
@@ -372,7 +380,6 @@ int main(int argc, char *argv[]) {
 				case ActionMode_Demolish: {
 					mouseDragStartPos = mouseWorldPos;
 					dragRect = rect(mouseTilePos.x, mouseTilePos.y, 1, 1);
-					// demolish(&city, mouseTilePos);
 				} break;
 
 				case ActionMode_Plant: {
@@ -391,19 +398,28 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
-			dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
-		}
+		if (actionMode == ActionMode_Demolish && !buttonAteMouseEvent) {
+			if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+				dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
+				int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
+				if (demolitionCost > city.funds) {
+					tooltip.color = {255,0,0,255};
+				} else {
+					tooltip.color =  {255,255,255,255};
+				}
+				sprintf(tooltipBuffer, "-£%d", demolitionCost);
+				setUiLabelText(&renderer, &tooltip, tooltipBuffer);
+				showTooltip = true;
+			}
 
-		if (!buttonAteMouseEvent && mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
-			switch (actionMode) {
-				case ActionMode_Demolish: {
-					// Demolish everything within dragRect!
-					demolishRect(&city, dragRect);
-					dragRect = rect(-1,-1,0,0);
-				} break;
+			if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
+				// Demolish everything within dragRect!
+				demolishRect(&city, dragRect);
+				dragRect = rect(-1,-1,0,0);
 			}
 		}
+
+		
 
 		if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
 			// Unselect current thing
@@ -440,7 +456,6 @@ int main(int argc, char *argv[]) {
 				hireWorker(&city);
 			}
 		}
-
 
 	// RENDERING
 		clearToBlack(&renderer);
@@ -534,6 +549,12 @@ int main(int argc, char *argv[]) {
 		drawUiButtonGroup(&renderer, &actionButtonGroup);
 		drawUiButtonGroup(&renderer, &calendarButtonGroup);
 
+		// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
+		if (showTooltip) {
+			setUiLabelOrigin(&tooltip, mouseState.pos + tooltipOffset);
+			drawUiLabel(&renderer, &tooltip);
+		}
+
 		SDL_RenderPresent(renderer.sdl_renderer);
 
 	// FRAMERATE MONITORING AND CAPPING
@@ -561,6 +582,7 @@ int main(int argc, char *argv[]) {
 	SDL_FreeCursor(cursorHarvest);
 
 	freeUiLabel(&textCityName);
+	freeUiLabel(&tooltip);
 	freeUiIntLabel(&labelCityFunds);
 	freeUiMessage();
 

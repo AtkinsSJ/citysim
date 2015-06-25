@@ -1,16 +1,6 @@
 // ui.cpp
 
-/**
- * Change the text of the given UiLabel, which regenerates the Texture.
- */
-void setUiLabelText(Renderer *renderer, UiLabel *label, char *newText) {
-	// TODO: If the text is the same, do nothing!
-	freeTexture(&label->texture);
-	label->text = newText;
-	label->texture = renderText(renderer, label->font, label->text, label->color);
-	label->_rect.w = label->texture.w;
-	label->_rect.h = label->texture.h;
-
+void updateUiLabelPosition(UiLabel *label) {
 	switch (label->align & ALIGN_H) {
 		case ALIGN_H_CENTER: {
 			label->_rect.x = label->origin.x - label->_rect.w/2;
@@ -36,6 +26,20 @@ void setUiLabelText(Renderer *renderer, UiLabel *label, char *newText) {
 	}
 }
 
+/**
+ * Change the text of the given UiLabel, which regenerates the Texture.
+ */
+void setUiLabelText(Renderer *renderer, UiLabel *label, char *newText) {
+	// TODO: If the text is the same, do nothing!
+	freeTexture(&label->texture);
+	label->text = newText;
+	label->texture = renderText(renderer, label->font, label->text, label->color);
+	label->_rect.w = label->texture.w;
+	label->_rect.h = label->texture.h;
+
+	updateUiLabelPosition(label);
+}
+
 void initUiLabel(UiLabel *label, Renderer *renderer, Coord position, int32 align,
 				char *text, TTF_Font *font, Color color) {
 	*label = {};
@@ -47,6 +51,11 @@ void initUiLabel(UiLabel *label, Renderer *renderer, Coord position, int32 align
 	label->align = align;
 
 	setUiLabelText(renderer, label, text);
+}
+
+void setUiLabelOrigin(UiLabel *label, Coord origin) {
+	label->origin = origin;
+	updateUiLabelPosition(label);
 }
 
 void freeUiLabel(UiLabel *label) {
@@ -160,7 +169,7 @@ bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
 		UiButton *button = group->buttons + i;
 		button->justClicked = false;
 
-		button->mouseOver = inRect(button->rect, coord(mouseState->x, mouseState->y));
+		button->mouseOver = inRect(button->rect, mouseState->pos);
 		if (button->mouseOver) {
 			eventEaten = true;
 		}

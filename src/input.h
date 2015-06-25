@@ -6,7 +6,7 @@
 
 const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
 struct MouseState {
-	int32 x,y;
+	Coord pos;
 	bool down[MOUSE_BUTTON_COUNT];
 	bool wasDown[MOUSE_BUTTON_COUNT];
 	Coord clickStartPosition[MOUSE_BUTTON_COUNT];
