@@ -95,6 +95,7 @@ enum ActionMode {
 	ActionMode_Demolish,
 	ActionMode_Plant,
 	ActionMode_Harvest,
+	ActionMode_Hire,
 
 	ActionMode_Count,
 };
@@ -131,6 +132,7 @@ int main(int argc, char *argv[]) {
 	SDL_Cursor *cursorDemolish = createCursor("cursor_demolish.png");
 	SDL_Cursor *cursorPlant = createCursor("cursor_plant.png");
 	SDL_Cursor *cursorHarvest = createCursor("cursor_harvest.png");
+	SDL_Cursor *cursorHire = createCursor("cursor_hire.png");
 
 	SDL_SetCursor(cursorMain);
 
@@ -427,6 +429,13 @@ int main(int argc, char *argv[]) {
 					}
 				} break;
 
+				case ActionMode_Hire: {
+					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						hireWorker(&city, mouseWorldPos);
+					}
+					showCostTooltip(&tooltip, &renderer, workerHireCost, city.funds);
+				} break;
+
 				case ActionMode_None: {
 					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 						SDL_Log("Building ID at position (%d,%d) = %d",
@@ -465,11 +474,11 @@ int main(int argc, char *argv[]) {
 				actionMode = ActionMode_Harvest;
 				SDL_SetCursor(cursorHarvest);
 			} else if (buttonHireWorker->justClicked) {
-				actionMode = ActionMode_None;
-				SDL_SetCursor(cursorMain);
+				actionMode = ActionMode_Hire;
+				SDL_SetCursor(cursorHire);
 
 				// Try and hire a worker!
-				hireWorker(&city);
+				// hireWorker(&city);
 			}
 		}
 
@@ -596,6 +605,7 @@ int main(int argc, char *argv[]) {
 	SDL_FreeCursor(cursorDemolish);
 	SDL_FreeCursor(cursorPlant);
 	SDL_FreeCursor(cursorHarvest);
+	SDL_FreeCursor(cursorHire);
 
 	freeUiLabel(&textCityName);
 	freeUiLabel(&tooltip.label);

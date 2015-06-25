@@ -2,7 +2,7 @@
 
 // worker.cpp
 
-bool hireWorker(City *city) {
+bool hireWorker(City *city, V2 position) {
 	if (!city->farmhouse) {
 		pushUiMessage("You need a headquarters to hire workers.");
 		return false;
@@ -20,7 +20,7 @@ bool hireWorker(City *city) {
 			city->funds -= workerHireCost;
 			city->workerCount++;
 			worker->exists = true;
-			worker->pos = v2(city->farmhouse->footprint.pos);
+			worker->pos = position; //v2(city->farmhouse->footprint.pos);
 			return true;
 		}
 	}
