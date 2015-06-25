@@ -87,18 +87,18 @@ inline Rect rectCovering(V2 a, V2 b) {
 	Rect rect = {};
 	if (a.x < b.x) {
 		rect.x = (int32)(a.x);
-		rect.w = (int32)(b.x - a.x + 0.5f);
+		rect.w = (int32)(b.x) - (int32)(a.x) + 1;
 	} else {
 		rect.x = (int32)(b.x);
-		rect.w = (int32)(a.x - b.x + 0.5f);
+		rect.w = (int32)(a.x+0.5f) - (int32)(b.x);
 	}
 
 	if (a.y < b.y) {
 		rect.y = (int32)(a.y);
-		rect.h = (int32)(b.y - a.y + 0.5f);
+		rect.h = (int32)(b.y) - (int32)(a.y) + 1;
 	} else {
 		rect.y = (int32)(b.y);
-		rect.h = (int32)(a.y - b.y + 0.5f);
+		rect.h = (int32)(a.y+0.5f) - (int32)(b.y);
 	}
 	return rect;
 }
