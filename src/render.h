@@ -6,7 +6,7 @@ const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
-const int CAMERA_MARGIN = 20;
+const int CAMERA_MARGIN = 0;
 const bool canZoom = false;
 
 struct Camera {
