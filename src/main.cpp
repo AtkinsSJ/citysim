@@ -386,45 +386,53 @@ int main(int argc, char *argv[]) {
 
 		tooltip.show = false;
 
-		if (!buttonAteMouseEvent && mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-
+		if (!buttonAteMouseEvent) {
 			switch (actionMode) {
 				case ActionMode_Build: {
-					placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
+					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
+					}
+
+					int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
+					showCostTooltip(&tooltip, &renderer, buildCost, city.funds);
 				} break;
 
 				case ActionMode_Demolish: {
-					mouseDragStartPos = mouseWorldPos;
-					dragRect = rect(mouseTilePos.x, mouseTilePos.y, 1, 1);
+					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						mouseDragStartPos = mouseWorldPos;
+						dragRect = rect(mouseTilePos.x, mouseTilePos.y, 1, 1);
+					} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
+						int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
+						showCostTooltip(&tooltip, &renderer, demolitionCost, city.funds);
+					}
+
+					if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
+						// Demolish everything within dragRect!
+						demolishRect(&city, dragRect);
+						dragRect = rect(-1,-1,0,0);
+					}
 				} break;
 
 				case ActionMode_Plant: {
-					plantField(&city, mouseTilePos);
+					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						plantField(&city, mouseTilePos);
+					}
 				} break;
 
 				case ActionMode_Harvest: {
-					harvestField(&city, mouseTilePos);
+					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						harvestField(&city, mouseTilePos);
+					}
 				} break;
 
 				case ActionMode_None: {
-					SDL_Log("Building ID at position (%d,%d) = %d",
+					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						SDL_Log("Building ID at position (%d,%d) = %d",
 						mouseTilePos.x, mouseTilePos.y,
 						city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
+					}
 				} break;
-			}
-		}
-
-		if (actionMode == ActionMode_Demolish && !buttonAteMouseEvent) {
-			if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
-				dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
-				int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
-				showCostTooltip(&tooltip, &renderer, demolitionCost, city.funds);
-			}
-
-			if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
-				// Demolish everything within dragRect!
-				demolishRect(&city, dragRect);
-				dragRect = rect(-1,-1,0,0);
 			}
 		}
 
@@ -532,9 +540,6 @@ int main(int argc, char *argv[]) {
 		// Building preview
 		if (actionMode == ActionMode_Build
 			&& selectedBuildingArchetype != BA_None) {
-
-			int32 cost = buildingDefinitions[selectedBuildingArchetype].buildCost;
-			showCostTooltip(&tooltip, &renderer, cost, city.funds);
 
 			Color ghostColor = {128,255,128,255};
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
