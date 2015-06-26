@@ -132,9 +132,11 @@ int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
+	char gameName[] = "Potato Farm Manager 2000";
+
 // INIT
 	Renderer renderer;
-	if (!initializeRenderer(&renderer, "Potato Farm Manager 2000")) {
+	if (!initializeRenderer(&renderer, gameName)) {
 		return 1;
 	}
 
@@ -151,8 +153,9 @@ int main(int argc, char *argv[]) {
 // Game setup
 
 	char cityName[256] = {};
+	sprintf(cityName, "My Farm");
 	int32 cityNameMaxLength = 128;
-	int32 cityNameLength = 0;
+	int32 cityNameLength = strlen(cityName);
 	bool cityNameTextDirty = true;
 	
 	srand(0); // TODO: Seed the random number generator!
@@ -193,9 +196,6 @@ int main(int argc, char *argv[]) {
 		buttonPressedColor = {128,128,255,255},
 		labelColor = {255,255,255,255},
 		transparentBlack = {0,0,0,128};
-
-	UiLabel cityNameEntryLabel;
-	initUiLabel(&cityNameEntryLabel, &renderer, renderer.camera.windowSize / 2, ALIGN_CENTER, cityName, renderer.fontLarge, labelColor); 
 
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
@@ -280,6 +280,13 @@ int main(int argc, char *argv[]) {
 	initUiButton(buttonHireWorker, &renderer, buttonRect, "Hire worker", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
+	// Game setp screen
+	UiLabel cityNameEntryLabel, gameTitleLabel, gameSetupLabel;
+	Coord screenCentre = renderer.camera.windowSize / 2;
+	initUiLabel(&gameTitleLabel, &renderer, screenCentre - coord(0, 100), ALIGN_CENTER, gameName, renderer.fontLarge, labelColor);
+	initUiLabel(&gameSetupLabel, &renderer, screenCentre - coord(0, 50), ALIGN_CENTER, "Type a name for your farm, and press Enter.", renderer.fontLarge, labelColor);
+	initUiLabel(&cityNameEntryLabel, &renderer, screenCentre, ALIGN_CENTER, cityName, renderer.fontLarge, labelColor);
+
 	// Game over UI
 	UiLabel gameOverLabel;
 	initUiLabel(&gameOverLabel, &renderer, renderer.camera.windowSize / 2, ALIGN_CENTER, "You ran out of money! :(", renderer.fontLarge, labelColor);
@@ -351,6 +358,9 @@ int main(int argc, char *argv[]) {
 							cityName[cityNameLength-1] = 0;
 							cityNameLength--;
 							cityNameTextDirty = true;
+						} else if (event.key.keysym.sym == SDLK_RETURN) {
+							gameStatus = GameStatus_Playing;
+							setUiLabelText(&renderer, &textCityName, cityName);
 						}
 					}
 				} break;
@@ -657,7 +667,9 @@ int main(int argc, char *argv[]) {
 				setUiLabelText(&renderer, &cityNameEntryLabel, cityName);
 			}
 			drawUiRect(&renderer, rect(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
-			drawUiLabel(&renderer, &cityNameEntryLabel); 
+			drawUiLabel(&renderer, &gameTitleLabel);
+			drawUiLabel(&renderer, &gameSetupLabel);
+			drawUiLabel(&renderer, &cityNameEntryLabel);
 
 		} else {
 			// Draw some UI
