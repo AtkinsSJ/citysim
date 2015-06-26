@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 
 // INIT
 	Renderer renderer;
-	if (!initializeRenderer(&renderer)) {
+	if (!initializeRenderer(&renderer, "Potato Farm Manager 2000")) {
 		return 1;
 	}
 
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
 
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
-	City city = createCity(100,100, "Best Farm", gameStartFunds);
+	City city = createCity(100,100, "My Farm", gameStartFunds);
 	generateTerrain(&city);
 
 	Calendar calendar = {};

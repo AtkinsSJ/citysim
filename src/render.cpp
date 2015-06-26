@@ -60,7 +60,7 @@ void setTextureRegion(Renderer *renderer, TextureAtlasItem index, Texture *textu
 	region->rect = rect;
 }
 
-bool initializeRenderer(Renderer *renderer) {
+bool initializeRenderer(Renderer *renderer, char *windowTitle) {
 
 	(*renderer) = {};
 
@@ -84,10 +84,10 @@ bool initializeRenderer(Renderer *renderer) {
 	}
 
 	// Window
-	renderer->sdl_window = SDL_CreateWindow("Impressionable",
+	renderer->sdl_window = SDL_CreateWindow(windowTitle,
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 					800, 600, // Initial screen resolution
-					SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+					SDL_WINDOW_SHOWN);
 	if (renderer->sdl_window == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
 		return false;
