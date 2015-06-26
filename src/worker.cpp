@@ -37,6 +37,8 @@ void freeWorker(Worker *worker) {
  * Returns whether the job is done.
  */
 bool doPlantingWork(Worker *worker, FieldData *field) {
+	if (!worker) {} // Here to keep the compiler quiet re: unused parameter
+
 	if (field->state != FieldState_Planting) {
 		// Not planting!
 		return true;
@@ -63,6 +65,8 @@ bool doPlantingWork(Worker *worker, FieldData *field) {
  * Returns whether the job is done.
  */
 bool doHarvestingWork(City *city, Worker *worker, Building *building) {
+	if (!worker) {} // Here to keep the compiler quiet re: unused parameter
+
 	FieldData *field = (FieldData*) building->data;
 	if (field->state != FieldState_Harvesting) {
 		// Not harvesting!

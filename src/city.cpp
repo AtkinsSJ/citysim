@@ -69,9 +69,6 @@ bool canAfford(City *city, int32 cost) {
 
 void spend(City *city, int32 cost) {
 	city->funds -= cost;
-	if (city->funds < 0) {
-		gameStatus = GameStatus_Lost;
-	}
 }
 
 bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position,

@@ -21,8 +21,6 @@ enum GameStatus {
 	GameStatus_Lost,
 };
 
-static GameStatus gameStatus = GameStatus_Playing;
-
 #include "types.h"
 #include "maths.h"
 #include "render.h"
@@ -130,6 +128,8 @@ const int gameStartFunds = 10000;
 const int gameWinFunds = 50000;
 
 int main(int argc, char *argv[]) {
+	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
+	if (argc && argv) {}
 
 // INIT
 	Renderer renderer;
@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
 
 // GAME LOOP
 	bool quit = false;
+	GameStatus gameStatus = GameStatus_Playing;
 
 	SDL_Event event;
 	MouseState mouseState = {};
@@ -175,7 +176,7 @@ int main(int argc, char *argv[]) {
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;
-	real32 framesPerSecond = 0;
+	// real32 framesPerSecond = 0;
 
 	// Build UI
 	const int uiPadding = 4;
@@ -387,11 +388,15 @@ int main(int argc, char *argv[]) {
 			spend(&city, city.workerCount * workerMonthlyCost);
 		}
 
+	// Win and Lose!
 		if (city.funds >= gameWinFunds) {
 			gameStatus = GameStatus_Won;
 			char buffer[256];
 			sprintf(buffer, "You won! You earned £%d in %d days", gameWinFunds, calendar.totalDays);
 			setUiLabelText(&renderer, &gameOverLabel, buffer);
+		} else if (city.funds < 0) {
+			gameStatus = GameStatus_Lost;
+			setUiLabelText(&renderer, &gameOverLabel, "Game over! You ran out of money! :(");
 		}
 
 	// UiButton/Mouse interaction
