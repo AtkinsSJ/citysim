@@ -281,11 +281,16 @@ int main(int argc, char *argv[]) {
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	// Game setp screen
-	UiLabel cityNameEntryLabel, gameTitleLabel, gameSetupLabel;
+	UiLabel cityNameEntryLabel, gameTitleLabel, gameSetupLabel, gameRulesWinLoseLabel, gameRulesWorkersLabel;
 	Coord screenCentre = renderer.camera.windowSize / 2;
 	initUiLabel(&gameTitleLabel, &renderer, screenCentre - coord(0, 100), ALIGN_CENTER, gameName, renderer.fontLarge, labelColor);
 	initUiLabel(&gameSetupLabel, &renderer, screenCentre - coord(0, 50), ALIGN_CENTER, "Type a name for your farm, and press Enter.", renderer.fontLarge, labelColor);
 	initUiLabel(&cityNameEntryLabel, &renderer, screenCentre, ALIGN_CENTER, cityName, renderer.fontLarge, labelColor);
+	char tempBuffer[256];
+	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
+	initUiLabel(&gameRulesWinLoseLabel, &renderer, screenCentre + coord(0, 50), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
+	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
+	initUiLabel(&gameRulesWorkersLabel, &renderer, screenCentre + coord(0, 100), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
 
 	// Game over UI
 	UiLabel gameOverLabel;
@@ -670,6 +675,8 @@ int main(int argc, char *argv[]) {
 			drawUiLabel(&renderer, &gameTitleLabel);
 			drawUiLabel(&renderer, &gameSetupLabel);
 			drawUiLabel(&renderer, &cityNameEntryLabel);
+			drawUiLabel(&renderer, &gameRulesWinLoseLabel);
+			drawUiLabel(&renderer, &gameRulesWorkersLabel);
 
 		} else {
 			// Draw some UI
@@ -716,22 +723,23 @@ int main(int argc, char *argv[]) {
 	}
 
 // CLEAN UP
-	freeCity(&city);
+	// Is any of this actually necessary???
+	// freeCity(&city);
 
-	SDL_FreeCursor(cursorMain);
-	SDL_FreeCursor(cursorBuild);
-	SDL_FreeCursor(cursorDemolish);
-	SDL_FreeCursor(cursorPlant);
-	SDL_FreeCursor(cursorHarvest);
-	SDL_FreeCursor(cursorHire);
+	// SDL_FreeCursor(cursorMain);
+	// SDL_FreeCursor(cursorBuild);
+	// SDL_FreeCursor(cursorDemolish);
+	// SDL_FreeCursor(cursorPlant);
+	// SDL_FreeCursor(cursorHarvest);
+	// SDL_FreeCursor(cursorHire);
 
-	freeUiLabel(&textCityName);
-	freeUiLabel(&tooltip.label);
-	freeUiIntLabel(&labelCityFunds);
-	freeUiMessage();
+	// freeUiLabel(&textCityName);
+	// freeUiLabel(&tooltip.label);
+	// freeUiIntLabel(&labelCityFunds);
+	// freeUiMessage();
 
-	freeUiButtonGroup(&actionButtonGroup);
-	freeUiButtonGroup(&calendarButtonGroup);
+	// freeUiButtonGroup(&actionButtonGroup);
+	// freeUiButtonGroup(&calendarButtonGroup);
 
 	freeRenderer(&renderer);
 

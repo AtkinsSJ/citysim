@@ -121,7 +121,7 @@ struct Worker {
 	Job job;
 };
 const int workerHireCost = 100;
-const int workerMonthlyCost = 50;
+const int workerMonthlyCost = workerHireCost / 2;
 
 struct City {
 	char *name;
