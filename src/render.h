@@ -10,7 +10,10 @@ const int CAMERA_MARGIN = 0;
 const bool canZoom = false;
 
 struct Camera {
-	int32 windowWidth, windowHeight;
+	union {
+		Coord windowSize;
+		struct{int32 windowWidth, windowHeight;};
+	};
 	V2 pos; // Centre of screen
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 };

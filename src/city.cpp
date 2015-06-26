@@ -70,7 +70,7 @@ bool canAfford(City *city, int32 cost) {
 void spend(City *city, int32 cost) {
 	city->funds -= cost;
 	if (city->funds < 0) {
-		ASSERT(false, "Ran out of money!");
+		gameStatus = GameStatus_Lost;
 	}
 }
 

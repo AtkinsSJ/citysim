@@ -80,6 +80,40 @@ inline Coord operator+(Coord lhs, Coord rhs) {
 	result.y = lhs.y + rhs.y;
 	return result;
 }
+inline Coord operator+=(Coord &lhs, Coord rhs) {
+	lhs = lhs + rhs;
+	return lhs;
+}
+inline Coord operator-(Coord lhs, Coord rhs) {
+	Coord result;
+	result.x = lhs.x - rhs.x;
+	result.y = lhs.y - rhs.y;
+	return result;
+}
+inline Coord operator-=(Coord &lhs, Coord rhs) {
+	lhs = lhs - rhs;
+	return lhs;
+}
+inline Coord operator*(Coord v, int32 s) {
+	Coord result;
+	result.x = v.x * s;
+	result.y = v.y * s;
+	return result;
+}
+inline Coord operator*=(Coord &v, int32 s) {
+	v = v * s;
+	return v;
+}
+inline Coord operator/(Coord v, int32 s) {
+	Coord result;
+	result.x = v.x / s;
+	result.y = v.y / s;
+	return result;
+}
+inline Coord operator/=(Coord &v, int32 s) {
+	v = v / s;
+	return v;
+}
 
 inline Rect rect(int32 x, int32 y, int32 w, int32 h) {
 	Rect rect = {};
@@ -222,6 +256,16 @@ inline V2 operator*(V2 v, real32 s) {
 }
 inline V2 operator*=(V2 &v, real32 s) {
 	v = v * s;
+	return v;
+}
+inline V2 operator/(V2 v, real32 s) {
+	V2 result;
+	result.x = v.x / s;
+	result.y = v.y / s;
+	return result;
+}
+inline V2 operator/=(V2 &v, real32 s) {
+	v = v / s;
 	return v;
 }
 

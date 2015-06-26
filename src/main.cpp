@@ -15,6 +15,14 @@
 // Really janky assertion macro, yay
 #define ASSERT(expr, msg) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg); *(int *)0 = 0;}
 
+enum GameStatus {
+	GameStatus_Playing,
+	GameStatus_Won,
+	GameStatus_Lost,
+};
+
+static GameStatus gameStatus = GameStatus_Playing;
+
 #include "types.h"
 #include "maths.h"
 #include "render.h"
@@ -147,6 +155,7 @@ int main(int argc, char *argv[]) {
 
 // GAME LOOP
 	bool quit = false;
+
 	SDL_Event event;
 	MouseState mouseState = {};
 	KeyboardState keyboardState = {};
@@ -171,7 +180,8 @@ int main(int argc, char *argv[]) {
 		buttonBackgroundColor = {255,255,255,255},
 		buttonHoverColor = {192,192,255,255},
 		buttonPressedColor = {128,128,255,255},
-		labelColor = {255,255,255,255};
+		labelColor = {255,255,255,255},
+		transparentBlack = {0,0,0,128};
 
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
@@ -256,6 +266,10 @@ int main(int argc, char *argv[]) {
 	initUiButton(buttonHireWorker, &renderer, buttonRect, "Hire worker", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
+	// Game over UI
+	UiLabel gameOverLabel;
+	initUiLabel(&gameOverLabel, &renderer, renderer.camera.windowSize / 2, ALIGN_CENTER, "You ran out of money! :(", renderer.fontLarge, labelColor);
+
 	// GAME LOOP
 	while (!quit) {
 
@@ -328,6 +342,26 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		// Janky way of pausing when the game ends.
+		if (gameStatus != GameStatus_Playing) {
+			calendar.speed = SpeedPaused;
+
+			// Highlight the pause button!
+			if (calendarButtonGroup.activeButton) {
+				calendarButtonGroup.activeButton->active = false;
+			}
+			buttonPause->active = true;
+			calendarButtonGroup.activeButton = buttonPause;
+
+			// Also set the cursor!
+			SDL_SetCursor(cursorMain);
+
+			// Disable action buttons
+			if (actionButtonGroup.activeButton) {
+				actionButtonGroup.activeButton->active = false;
+			}
+		}
+
 	// Game simulation
 		CalendarChange calendarChange = incrementCalendar(&calendar);
 		if (calendarChange.isNewDay) {
@@ -351,134 +385,136 @@ int main(int argc, char *argv[]) {
 		}
 
 	// UiButton/Mouse interaction
-		bool buttonAteMouseEvent = false;
-		if (updateUiButtonGroup(&actionButtonGroup, &mouseState)) {
-			buttonAteMouseEvent = true;
-		}
-		if (updateUiButtonGroup(&calendarButtonGroup, &mouseState)) {
-			buttonAteMouseEvent = true;
-		}
-
-		// Speed controls
-		if (buttonPause->justClicked) {
-			calendar.speed = SpeedPaused;
-		} else if (buttonPlay1->justClicked) {
-			calendar.speed = Speed1;
-		} else if (buttonPlay2->justClicked) {
-			calendar.speed = Speed2;
-		} else if (buttonPlay3->justClicked) {
-			calendar.speed = Speed3;
-		}
-
-		// Camera controls
-		// HOME resets the camera and centres on the HQ
-		if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
-			renderer.camera.zoom = 1;
-			// Jump to the farmhouse if we have one!
-			if (city.farmhouse) {
-				centreCameraOnPosition(&renderer.camera, centre(&city.farmhouse->footprint));
-			} else {
-				pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
-			}
-		}
-		updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
-
 		V2 mouseWorldPos = screenPosToWorldPos(mouseState.pos, &renderer.camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
-		tooltip.show = false;
-
-		if (!buttonAteMouseEvent) {
-			switch (actionMode) {
-				case ActionMode_Build: {
-					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
-					}
-
-					int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
-					showCostTooltip(&tooltip, &renderer, buildCost, city.funds);
-				} break;
-
-				case ActionMode_Demolish: {
-					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						mouseDragStartPos = mouseWorldPos;
-						dragRect = rect(mouseTilePos.x, mouseTilePos.y, 1, 1);
-					} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
-						int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
-						showCostTooltip(&tooltip, &renderer, demolitionCost, city.funds);
-					}
-
-					if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
-						// Demolish everything within dragRect!
-						demolishRect(&city, dragRect);
-						dragRect = rect(-1,-1,0,0);
-					}
-				} break;
-
-				case ActionMode_Plant: {
-					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						plantField(&city, mouseTilePos);
-					}
-					showCostTooltip(&tooltip, &renderer, fieldPlantCost, city.funds);
-				} break;
-
-				case ActionMode_Harvest: {
-					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						harvestField(&city, mouseTilePos);
-					}
-				} break;
-
-				case ActionMode_Hire: {
-					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						hireWorker(&city, mouseWorldPos);
-					}
-					showCostTooltip(&tooltip, &renderer, workerHireCost, city.funds);
-				} break;
-
-				case ActionMode_None: {
-					if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						SDL_Log("Building ID at position (%d,%d) = %d",
-						mouseTilePos.x, mouseTilePos.y,
-						city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
-					}
-				} break;
+		if (gameStatus == GameStatus_Playing) {
+			bool buttonAteMouseEvent = false;
+			if (updateUiButtonGroup(&actionButtonGroup, &mouseState)) {
+				buttonAteMouseEvent = true;
 			}
-		}
+			if (updateUiButtonGroup(&calendarButtonGroup, &mouseState)) {
+				buttonAteMouseEvent = true;
+			}
 
-		if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
-			// Unselect current thing
-			setActiveButton(&actionButtonGroup, null);
-			actionMode = ActionMode_None;
-			SDL_SetCursor(cursorMain);
-		} else {
-			if (buttonBuildHouse->justClicked) {
-				selectedBuildingArchetype = BA_Farmhouse;
-				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorBuild);
-			} else if (buttonBuildField->justClicked) {
-				selectedBuildingArchetype = BA_Field;
-				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorBuild);
-			} else if (buttonBuildBarn->justClicked) {
-				selectedBuildingArchetype = BA_Barn;
-				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorBuild);
-			} else if (buttonDemolish->justClicked) {
-				actionMode = ActionMode_Demolish;
-				SDL_SetCursor(cursorDemolish);
-			} else if (buttonPlant->justClicked) {
-				actionMode = ActionMode_Plant;
-				SDL_SetCursor(cursorPlant);
-			} else if (buttonHarvest->justClicked) {
-				actionMode = ActionMode_Harvest;
-				SDL_SetCursor(cursorHarvest);
-			} else if (buttonHireWorker->justClicked) {
-				actionMode = ActionMode_Hire;
-				SDL_SetCursor(cursorHire);
+			// Speed controls
+			if (buttonPause->justClicked) {
+				calendar.speed = SpeedPaused;
+			} else if (buttonPlay1->justClicked) {
+				calendar.speed = Speed1;
+			} else if (buttonPlay2->justClicked) {
+				calendar.speed = Speed2;
+			} else if (buttonPlay3->justClicked) {
+				calendar.speed = Speed3;
+			}
 
-				// Try and hire a worker!
-				// hireWorker(&city);
+			// Camera controls
+			// HOME resets the camera and centres on the HQ
+			if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
+				renderer.camera.zoom = 1;
+				// Jump to the farmhouse if we have one!
+				if (city.farmhouse) {
+					centreCameraOnPosition(&renderer.camera, centre(&city.farmhouse->footprint));
+				} else {
+					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
+				}
+			}
+			updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
+
+			tooltip.show = false;
+
+			if (!buttonAteMouseEvent) {
+				switch (actionMode) {
+					case ActionMode_Build: {
+						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
+						}
+
+						int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
+						showCostTooltip(&tooltip, &renderer, buildCost, city.funds);
+					} break;
+
+					case ActionMode_Demolish: {
+						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							mouseDragStartPos = mouseWorldPos;
+							dragRect = rect(mouseTilePos.x, mouseTilePos.y, 1, 1);
+						} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
+							int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
+							showCostTooltip(&tooltip, &renderer, demolitionCost, city.funds);
+						}
+
+						if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
+							// Demolish everything within dragRect!
+							demolishRect(&city, dragRect);
+							dragRect = rect(-1,-1,0,0);
+						}
+					} break;
+
+					case ActionMode_Plant: {
+						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							plantField(&city, mouseTilePos);
+						}
+						showCostTooltip(&tooltip, &renderer, fieldPlantCost, city.funds);
+					} break;
+
+					case ActionMode_Harvest: {
+						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							harvestField(&city, mouseTilePos);
+						}
+					} break;
+
+					case ActionMode_Hire: {
+						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							hireWorker(&city, mouseWorldPos);
+						}
+						showCostTooltip(&tooltip, &renderer, workerHireCost, city.funds);
+					} break;
+
+					case ActionMode_None: {
+						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							SDL_Log("Building ID at position (%d,%d) = %d",
+							mouseTilePos.x, mouseTilePos.y,
+							city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
+						}
+					} break;
+				}
+			}
+
+			if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
+				// Unselect current thing
+				setActiveButton(&actionButtonGroup, null);
+				actionMode = ActionMode_None;
+				SDL_SetCursor(cursorMain);
+			} else {
+				if (buttonBuildHouse->justClicked) {
+					selectedBuildingArchetype = BA_Farmhouse;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
+				} else if (buttonBuildField->justClicked) {
+					selectedBuildingArchetype = BA_Field;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
+				} else if (buttonBuildBarn->justClicked) {
+					selectedBuildingArchetype = BA_Barn;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
+				} else if (buttonDemolish->justClicked) {
+					actionMode = ActionMode_Demolish;
+					SDL_SetCursor(cursorDemolish);
+				} else if (buttonPlant->justClicked) {
+					actionMode = ActionMode_Plant;
+					SDL_SetCursor(cursorPlant);
+				} else if (buttonHarvest->justClicked) {
+					actionMode = ActionMode_Harvest;
+					SDL_SetCursor(cursorHarvest);
+				} else if (buttonHireWorker->justClicked) {
+					actionMode = ActionMode_Hire;
+					SDL_SetCursor(cursorHire);
+
+					// Try and hire a worker!
+					// hireWorker(&city);
+				}
 			}
 		}
 
@@ -563,7 +599,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw some UI
-		drawUiRect(&renderer, {0,0, renderer.camera.windowWidth, 64}, {0,0,0,128});
+		drawUiRect(&renderer, rect(0,0, renderer.camera.windowWidth, 64), transparentBlack);
 
 		drawUiLabel(&renderer, &textCityName);
 		drawUiIntLabel(&renderer, &labelCityFunds);
@@ -578,6 +614,12 @@ int main(int argc, char *argv[]) {
 		if (tooltip.show) {
 			setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
 			drawUiLabel(&renderer, &tooltip.label);
+		}
+
+		// GAME OVER
+		if (gameStatus == GameStatus_Lost) {
+			drawUiRect(&renderer, rect(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
+			drawUiLabel(&renderer, &gameOverLabel); 
 		}
 
 		SDL_RenderPresent(renderer.sdl_renderer);
