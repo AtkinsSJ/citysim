@@ -22,6 +22,8 @@ struct Calendar {
 	int32 month; // 0-indexed
 	int32 year; // Real year
 
+	int32 totalDays; // Days since game start
+
 	CalendarSpeed speed; // Ticks per frame
 	int32 _dayTicksCounter;
 };
@@ -69,6 +71,7 @@ void initCalendar(Calendar *calendar) {
 	calendar->dayOfWeek = 0;
 	calendar->month = 0;
 	calendar->year = 2000;
+	calendar->totalDays = 1;
 	calendar->_dayTicksCounter = 0;
 	calendar->speed = SpeedPaused;
 }
@@ -98,6 +101,7 @@ CalendarChange incrementCalendar(Calendar *calendar) {
 	if (calendar->_dayTicksCounter >= calendarTicksPerDay) {
 		calendar->_dayTicksCounter -= calendarTicksPerDay;
 		calendar->day++;
+		calendar->totalDays++;
 		result.isNewDay = true;
 
 		calendar->dayOfWeek = (calendar->dayOfWeek + 1) % 7;

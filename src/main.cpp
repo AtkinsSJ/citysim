@@ -126,6 +126,9 @@ void showCostTooltip(Tooltip *tooltip, Renderer *renderer, int32 cost, int32 cit
 	tooltip->show = true;
 }
 
+const int gameStartFunds = 10000;
+const int gameWinFunds = 50000;
+
 int main(int argc, char *argv[]) {
 
 // INIT
@@ -146,7 +149,7 @@ int main(int argc, char *argv[]) {
 
 // Game setup
 	srand(0); // TODO: Seed the random number generator!
-	City city = createCity(100,100, "Best Farm", 20000);
+	City city = createCity(100,100, "Best Farm", gameStartFunds);
 	generateTerrain(&city);
 
 	Calendar calendar = {};
@@ -384,11 +387,23 @@ int main(int argc, char *argv[]) {
 			spend(&city, city.workerCount * workerMonthlyCost);
 		}
 
+		if (city.funds >= gameWinFunds) {
+			gameStatus = GameStatus_Won;
+			char buffer[256];
+			sprintf(buffer, "You won! You earned £%d in %d days", gameWinFunds, calendar.totalDays);
+			setUiLabelText(&renderer, &gameOverLabel, buffer);
+		}
+
 	// UiButton/Mouse interaction
 		V2 mouseWorldPos = screenPosToWorldPos(mouseState.pos, &renderer.camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 		if (gameStatus == GameStatus_Playing) {
+
+			if (keyJustPressed(&keyboardState, SDL_SCANCODE_INSERT)) {
+				city.funds += 10000;
+			}
+
 			bool buttonAteMouseEvent = false;
 			if (updateUiButtonGroup(&actionButtonGroup, &mouseState)) {
 				buttonAteMouseEvent = true;
@@ -617,7 +632,8 @@ int main(int argc, char *argv[]) {
 		}
 
 		// GAME OVER
-		if (gameStatus == GameStatus_Lost) {
+		if (gameStatus == GameStatus_Lost
+			|| gameStatus == GameStatus_Won) {
 			drawUiRect(&renderer, rect(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
 			drawUiLabel(&renderer, &gameOverLabel); 
 		}
