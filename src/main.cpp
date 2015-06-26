@@ -16,6 +16,7 @@
 #define ASSERT(expr, msg) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg); *(int *)0 = 0;}
 
 enum GameStatus {
+	GameStatus_Setup,
 	GameStatus_Playing,
 	GameStatus_Won,
 	GameStatus_Lost,
@@ -148,8 +149,14 @@ int main(int argc, char *argv[]) {
 	SDL_SetCursor(cursorMain);
 
 // Game setup
+
+	char cityName[256] = {};
+	int32 cityNameMaxLength = 128;
+	int32 cityNameLength = 0;
+	bool cityNameTextDirty = true;
+	
 	srand(0); // TODO: Seed the random number generator!
-	City city = createCity(100,100, "My Farm", gameStartFunds);
+	City city = createCity(100,100, cityName, gameStartFunds);
 	generateTerrain(&city);
 
 	Calendar calendar = {};
@@ -158,7 +165,7 @@ int main(int argc, char *argv[]) {
 
 // GAME LOOP
 	bool quit = false;
-	GameStatus gameStatus = GameStatus_Playing;
+	GameStatus gameStatus = GameStatus_Setup;
 
 	SDL_Event event;
 	MouseState mouseState = {};
@@ -186,6 +193,9 @@ int main(int argc, char *argv[]) {
 		buttonPressedColor = {128,128,255,255},
 		labelColor = {255,255,255,255},
 		transparentBlack = {0,0,0,128};
+
+	UiLabel cityNameEntryLabel;
+	initUiLabel(&cityNameEntryLabel, &renderer, renderer.camera.windowSize / 2, ALIGN_CENTER, cityName, renderer.fontLarge, labelColor); 
 
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
@@ -332,10 +342,33 @@ int main(int argc, char *argv[]) {
 				// KEYBOARD EVENTS
 				case SDL_KEYDOWN: {
 					keyboardState.down[event.key.keysym.scancode] = true;
+
+					if (gameStatus == GameStatus_Setup) {
+						// Enter farm name!
+						if (event.key.keysym.sym == SDLK_BACKSPACE
+							&& cityNameLength > 0) {
+
+							cityName[cityNameLength-1] = 0;
+							cityNameLength--;
+							cityNameTextDirty = true;
+						}
+					}
 				} break;
 				case SDL_KEYUP: {
 					keyboardState.down[event.key.keysym.scancode] = false;
-				} break;				
+				} break;
+				case SDL_TEXTINPUT: {
+					if (gameStatus == GameStatus_Setup) {
+						// Enter farm name!
+						uint32 pos = 0;
+						while (event.text.text[pos]
+							&& cityNameLength < cityNameMaxLength) {
+							cityNameTextDirty = true;
+							cityName[cityNameLength++] = event.text.text[pos];
+							pos++;
+						}
+					}
+				} break;
 			}
 		}
 
@@ -618,22 +651,32 @@ int main(int argc, char *argv[]) {
 			drawWorldRect(&renderer, dragRect, {255, 0, 0, 128});
 		}
 
-		// Draw some UI
-		drawUiRect(&renderer, rect(0,0, renderer.camera.windowWidth, 64), transparentBlack);
+		if (gameStatus == GameStatus_Setup) {
+			if (cityNameTextDirty) {
+				cityNameTextDirty = false;
+				setUiLabelText(&renderer, &cityNameEntryLabel, cityName);
+			}
+			drawUiRect(&renderer, rect(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
+			drawUiLabel(&renderer, &cityNameEntryLabel); 
 
-		drawUiLabel(&renderer, &textCityName);
-		drawUiIntLabel(&renderer, &labelCityFunds);
-		drawUiLabel(&renderer, &labelDate);
+		} else {
+			// Draw some UI
+			drawUiRect(&renderer, rect(0,0, renderer.camera.windowWidth, 64), transparentBlack);
 
-		drawUiMessage(&renderer);
+			drawUiLabel(&renderer, &textCityName);
+			drawUiIntLabel(&renderer, &labelCityFunds);
+			drawUiLabel(&renderer, &labelDate);
 
-		drawUiButtonGroup(&renderer, &actionButtonGroup);
-		drawUiButtonGroup(&renderer, &calendarButtonGroup);
+			drawUiMessage(&renderer);
 
-		// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
-		if (tooltip.show) {
-			setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
-			drawUiLabel(&renderer, &tooltip.label);
+			drawUiButtonGroup(&renderer, &actionButtonGroup);
+			drawUiButtonGroup(&renderer, &calendarButtonGroup);
+
+			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
+			if (tooltip.show) {
+				setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
+				drawUiLabel(&renderer, &tooltip.label);
+			}
 		}
 
 		// GAME OVER
