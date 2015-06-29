@@ -10,10 +10,11 @@ The default, slowest speed is one second = one day.
 */
 
 enum CalendarSpeed { // Ticks per frame
-	SpeedPaused = 0,
 	Speed1 = 1000 / FRAMES_PER_SECOND,
 	Speed2 = 2000 / FRAMES_PER_SECOND,
 	Speed3 = 5000 / FRAMES_PER_SECOND,
+
+	SpeedCount,
 };
 
 struct Calendar {
@@ -25,6 +26,7 @@ struct Calendar {
 	int32 totalDays; // Days since game start
 
 	CalendarSpeed speed; // Ticks per frame
+	bool paused;
 	int32 _dayTicksCounter;
 };
 const int32 calendarTicksPerDay = 1000; // How big does Calendar.dayCounter have to be to increment the day?
@@ -73,7 +75,8 @@ void initCalendar(Calendar *calendar) {
 	calendar->year = 2000;
 	calendar->totalDays = 1;
 	calendar->_dayTicksCounter = 0;
-	calendar->speed = SpeedPaused;
+	calendar->speed = Speed1;
+	calendar->paused = true;
 }
 
 void getDateString(Calendar *calendar, char *buffer) {
@@ -96,28 +99,29 @@ struct CalendarChange {
 };
 CalendarChange incrementCalendar(Calendar *calendar) {
 	CalendarChange result = {};
+	if (!calendar->paused) {
+		calendar->_dayTicksCounter += calendar->speed;
+		if (calendar->_dayTicksCounter >= calendarTicksPerDay) {
+			calendar->_dayTicksCounter -= calendarTicksPerDay;
+			calendar->day++;
+			calendar->totalDays++;
+			result.isNewDay = true;
 
-	calendar->_dayTicksCounter += calendar->speed;
-	if (calendar->_dayTicksCounter >= calendarTicksPerDay) {
-		calendar->_dayTicksCounter -= calendarTicksPerDay;
-		calendar->day++;
-		calendar->totalDays++;
-		result.isNewDay = true;
+			calendar->dayOfWeek = (calendar->dayOfWeek + 1) % 7;
+			result.isNewWeek = (calendar->dayOfWeek == 0);
 
-		calendar->dayOfWeek = (calendar->dayOfWeek + 1) % 7;
-		result.isNewWeek = (calendar->dayOfWeek == 0);
+			// Month rollover
+			if (calendar->day == daysInMonth[calendar->month]) {
+				calendar->day = 0;
+				calendar->month++;
+				result.isNewMonth = true;
 
-		// Month rollover
-		if (calendar->day == daysInMonth[calendar->month]) {
-			calendar->day = 0;
-			calendar->month++;
-			result.isNewMonth = true;
-
-			// Year rollover
-			if (calendar->month == 12) {
-				calendar->month = 0;
-				calendar->year++;
-				result.isNewYear = true;
+				// Year rollover
+				if (calendar->month == 12) {
+					calendar->month = 0;
+					calendar->year++;
+					result.isNewYear = true;
+				}
 			}
 		}
 	}

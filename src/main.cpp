@@ -233,12 +233,31 @@ bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
 
 	// Speed controls
 	if (ui->buttonPause->justClicked) {
-		ui->calendar->speed = SpeedPaused;
+		if (ui->calendar->paused) {
+			ui->calendar->paused = false;
+			// Activate the button!
+			switch (ui->calendar->speed) {
+				case Speed1: {
+					setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
+				} break;
+				case Speed2: {
+					setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
+				} break;
+				case Speed3: {
+					setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
+				} break;
+			}
+		} else {
+			ui->calendar->paused = true;
+		}
 	} else if (ui->buttonPlaySlow->justClicked) {
+		ui->calendar->paused = false;
 		ui->calendar->speed = Speed1;
 	} else if (ui->buttonPlayMedium->justClicked) {
+		ui->calendar->paused = false;
 		ui->calendar->speed = Speed2;
 	} else if (ui->buttonPlayFast->justClicked) {
+		ui->calendar->paused = false;
 		ui->calendar->speed = Speed3;
 	}
 
@@ -472,7 +491,7 @@ int main(int argc, char *argv[]) {
 
 		// Janky way of pausing when the game ends.
 		if (gameStatus != GameStatus_Playing) {
-			calendar.speed = SpeedPaused;
+			calendar.paused = true;
 
 			// Highlight the pause button!
 			if (calendarUI.buttonGroup.activeButton) {
@@ -805,6 +824,7 @@ int main(int argc, char *argv[]) {
 
 // CLEAN UP
 	// Is any of this actually necessary???
+	// A bunch of stuff is missing from this anyway.
 	// freeCity(&city);
 
 	// SDL_FreeCursor(cursorMain);
