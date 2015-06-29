@@ -305,20 +305,20 @@ int main(int argc, char *argv[]) {
 	UiButton buttonStart, buttonExit, buttonWebsite;
 	Coord screenCentre = renderer.camera.windowSize / 2;
 	initUiLabel(&gameTitleLabel, &renderer, screenCentre - coord(0, 100), ALIGN_CENTER, gameName, renderer.fontLarge, labelColor);
-	initUiLabel(&gameSetupLabel, &renderer, screenCentre - coord(0, 50), ALIGN_CENTER, "Type a name for your farm, and press Enter.", renderer.fontLarge, labelColor);
+	initUiLabel(&gameSetupLabel, &renderer, screenCentre - coord(0, 50), ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer.fontLarge, labelColor);
 	initUiLabel(&cityNameEntryLabel, &renderer, screenCentre, ALIGN_CENTER, cityName, renderer.fontLarge, textboxTextColor);
 	char tempBuffer[256];
 	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
 	initUiLabel(&gameRulesWinLoseLabel, &renderer, screenCentre + coord(0, 50), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
 	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
 	initUiLabel(&gameRulesWorkersLabel, &renderer, screenCentre + coord(0, 100), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
-	buttonRect = rectXYWH(uiPadding, uiPadding, 80, 24);
+	buttonRect = rectXYWH(uiPadding, renderer.camera.windowHeight - uiPadding - 24, 80, 24);
 	initUiButton(&buttonExit, &renderer, buttonRect, "Exit", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	buttonRect.x += 100;
+	buttonRect.x = (renderer.camera.windowWidth - buttonRect.w)/2;
 	initUiButton(&buttonWebsite, &renderer, buttonRect, "Website", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	buttonRect.x += 100;
+	buttonRect.x = renderer.camera.windowWidth - uiPadding - buttonRect.w;
 	initUiButton(&buttonStart, &renderer, buttonRect, "Play", renderer.font,
 		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
