@@ -296,7 +296,7 @@ void drawWorldRect(Renderer *renderer, Rect worldRect, Color color) {
 	const real32 tileWidth = TILE_WIDTH * renderer->camera.zoom,
 				tileHeight = TILE_HEIGHT * renderer->camera.zoom;
 
-	Rect drawRect = rect(
+	Rect drawRect = rectXYWH(
 		(int)((worldRect.x * tileWidth) - camLeft),
 		(int)((worldRect.y * tileHeight) - camTop),
 		(int)(worldRect.w * tileWidth),

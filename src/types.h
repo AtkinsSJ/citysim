@@ -115,7 +115,7 @@ inline Coord operator/=(Coord &v, int32 s) {
 	return v;
 }
 
-inline Rect rect(int32 x, int32 y, int32 w, int32 h) {
+inline Rect rectXYWH(int32 x, int32 y, int32 w, int32 h) {
 	Rect rect = {};
 	rect.x = x;
 	rect.y = y;
@@ -211,12 +211,22 @@ inline V2 centre(Rect *rect) {
 		(real32)rect->y + (real32)rect->h / 2.0f
 	);
 }
+inline Rect expandRect(Rect rect, int32 addRadius) {
+	return rectXYWH(
+		rect.x - addRadius,
+		rect.y - addRadius,
+		rect.w + (addRadius * 2),
+		rect.h + (addRadius * 2)
+	);
+}
+
 inline V2 centre(RealRect *rect) {
 	return v2(
 		rect->x + rect->w / 2.0f,
 		rect->y + rect->h / 2.0f
 	);
 }
+
 
 inline real32 clamp(real32 value, real32 min, real32 max) {
 	if (value < min) return min;

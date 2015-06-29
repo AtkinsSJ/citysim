@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
 	KeyboardState keyboardState = {};
 
 	V2 mouseDragStartPos = {};
-	Rect dragRect = rect(-1,-1,0,0);
+	Rect dragRect = rectXYWH(-1,-1,0,0);
 
 	renderer.camera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
@@ -199,7 +199,9 @@ int main(int argc, char *argv[]) {
 		buttonHoverColor = {192,192,255,255},
 		buttonPressedColor = {128,128,255,255},
 		labelColor = {255,255,255,255},
-		transparentBlack = {0,0,0,128};
+		transparentBlack = {0,0,0,128},
+		textboxTextColor = {0,0,0,255},
+		textboxBackgroundColor = {255,255,255,255};
 
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
@@ -229,7 +231,7 @@ int main(int argc, char *argv[]) {
 	initUiLabel(&labelDate, &renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
 
 	UiButtonGroup calendarButtonGroup = {};
-	Rect buttonRect = rect(800 - 8 - 24, 31, 24, 24);
+	Rect buttonRect = rectXYWH(800 - 8 - 24, 31, 24, 24);
 	UiButton *buttonPlay3 = addButtonToGroup(&calendarButtonGroup);
 	initUiButton(buttonPlay3, &renderer, buttonRect, ">>>", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
@@ -254,7 +256,7 @@ int main(int argc, char *argv[]) {
 
 	// ACTION BUTTONS
 	UiButtonGroup actionButtonGroup = {};
-	buttonRect = rect(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
+	buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", renderer.font,
@@ -302,7 +304,7 @@ int main(int argc, char *argv[]) {
 	Coord screenCentre = renderer.camera.windowSize / 2;
 	initUiLabel(&gameTitleLabel, &renderer, screenCentre - coord(0, 100), ALIGN_CENTER, gameName, renderer.fontLarge, labelColor);
 	initUiLabel(&gameSetupLabel, &renderer, screenCentre - coord(0, 50), ALIGN_CENTER, "Type a name for your farm, and press Enter.", renderer.fontLarge, labelColor);
-	initUiLabel(&cityNameEntryLabel, &renderer, screenCentre, ALIGN_CENTER, cityName, renderer.fontLarge, labelColor);
+	initUiLabel(&cityNameEntryLabel, &renderer, screenCentre, ALIGN_CENTER, cityName, renderer.fontLarge, textboxTextColor);
 	char tempBuffer[256];
 	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
 	initUiLabel(&gameRulesWinLoseLabel, &renderer, screenCentre + coord(0, 50), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
@@ -522,7 +524,7 @@ int main(int argc, char *argv[]) {
 					case ActionMode_Demolish: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 							mouseDragStartPos = mouseWorldPos;
-							dragRect = rect(mouseTilePos.x, mouseTilePos.y, 1, 1);
+							dragRect = rectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 						} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 							dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
@@ -532,7 +534,7 @@ int main(int argc, char *argv[]) {
 						if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
 							demolishRect(&city, dragRect);
-							dragRect = rect(-1,-1,0,0);
+							dragRect = rectXYWH(-1,-1,0,0);
 						}
 					} break;
 
@@ -691,16 +693,18 @@ int main(int argc, char *argv[]) {
 				cityNameTextDirty = false;
 				setUiLabelText(&renderer, &cityNameEntryLabel, cityName);
 			}
-			drawUiRect(&renderer, rect(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
+			drawUiRect(&renderer, rectXYWH(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
 			drawUiLabel(&renderer, &gameTitleLabel);
 			drawUiLabel(&renderer, &gameSetupLabel);
-			drawUiLabel(&renderer, &cityNameEntryLabel);
 			drawUiLabel(&renderer, &gameRulesWinLoseLabel);
 			drawUiLabel(&renderer, &gameRulesWorkersLabel);
 
+			drawUiRect(&renderer, expandRect(cityNameEntryLabel._rect, 4), textboxBackgroundColor);
+			drawUiLabel(&renderer, &cityNameEntryLabel);
+
 		} else {
 			// Draw some UI
-			drawUiRect(&renderer, rect(0,0, renderer.camera.windowWidth, 64), transparentBlack);
+			drawUiRect(&renderer, rectXYWH(0,0, renderer.camera.windowWidth, 64), transparentBlack);
 
 			drawUiLabel(&renderer, &textCityName);
 			drawUiIntLabel(&renderer, &labelCityFunds);
@@ -722,7 +726,7 @@ int main(int argc, char *argv[]) {
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
-			drawUiRect(&renderer, rect(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
+			drawUiRect(&renderer, rectXYWH(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
 			drawUiLabel(&renderer, &gameOverLabel); 
 		}
 
