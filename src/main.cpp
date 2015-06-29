@@ -112,6 +112,9 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
+const int gameStartFunds = 10000;
+const int gameWinFunds = 30000;
+
 void showCostTooltip(Tooltip *tooltip, Renderer *renderer, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
 		tooltip->label.color = {255,0,0,255};
@@ -123,8 +126,61 @@ void showCostTooltip(Tooltip *tooltip, Renderer *renderer, int32 cost, int32 cit
 	tooltip->show = true;
 }
 
-const int gameStartFunds = 10000;
-const int gameWinFunds = 30000;
+const int uiPadding = 4;
+
+struct MainMenuUI {
+	UiLabel cityNameEntryLabel,
+			gameTitleLabel,
+			gameSetupLabel,
+			gameRulesWinLoseLabel,
+			gameRulesWorkersLabel;
+	UiButton buttonStart,
+			buttonExit,
+			buttonWebsite;
+};
+void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *gameName, char *cityName,
+		Color labelColor, Color textboxTextColor, Color buttonTextColor, Color buttonBackgroundColor, Color buttonHoverColor, Color buttonPressedColor) {
+
+	*menu = {};
+	Coord screenCentre = renderer->camera.windowSize / 2;
+	
+	initUiLabel(&menu->gameTitleLabel, renderer, screenCentre - coord(0, 100),
+				ALIGN_CENTER, gameName, renderer->fontLarge, labelColor);
+	initUiLabel(&menu->gameSetupLabel, renderer, screenCentre - coord(0, 50),
+				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->fontLarge, labelColor);
+	initUiLabel(&menu->cityNameEntryLabel, renderer, screenCentre,
+				ALIGN_CENTER, cityName, renderer->fontLarge, textboxTextColor);
+
+	char tempBuffer[256];
+	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
+	initUiLabel(&menu->gameRulesWinLoseLabel, renderer, screenCentre + coord(0, 50), ALIGN_CENTER, tempBuffer, renderer->fontLarge, labelColor);
+	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
+	initUiLabel(&menu->gameRulesWorkersLabel, renderer, screenCentre + coord(0, 100), ALIGN_CENTER, tempBuffer, renderer->fontLarge, labelColor);
+	Rect buttonRect = rectXYWH(uiPadding, renderer->camera.windowHeight - uiPadding - 24, 80, 24);
+	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit", renderer->font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	buttonRect.x = screenCentre.x - buttonRect.w/2;
+	initUiButton(&menu->buttonWebsite, renderer, buttonRect, "Website", renderer->font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	buttonRect.x = renderer->camera.windowWidth - uiPadding - buttonRect.w;
+	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", renderer->font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor, SDL_SCANCODE_RETURN);
+}
+
+void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer, Color overlayColor, Color textboxBackgroundColor) {
+	drawUiRect(renderer, rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight), overlayColor);
+	drawUiLabel(renderer, &menu->gameTitleLabel);
+	drawUiLabel(renderer, &menu->gameSetupLabel);
+	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
+	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
+
+	drawUiRect(renderer, expandRect(menu->cityNameEntryLabel._rect, 4), textboxBackgroundColor);
+	drawUiLabel(renderer, &menu->cityNameEntryLabel);
+
+	drawUiButton(renderer, &menu->buttonExit);
+	drawUiButton(renderer, &menu->buttonWebsite);
+	drawUiButton(renderer, &menu->buttonStart);
+}
 
 int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
@@ -187,7 +243,6 @@ int main(int argc, char *argv[]) {
 	// real32 framesPerSecond = 0;
 
 	// Build UI
-	const int uiPadding = 4;
 	Color buttonTextColor = {0,0,0,255},
 		buttonBackgroundColor = {255,255,255,255},
 		buttonHoverColor = {192,192,255,255},
@@ -294,26 +349,9 @@ int main(int argc, char *argv[]) {
 			SDL_SCANCODE_G, "(G)");
 
 	// Game menu
-	UiLabel cityNameEntryLabel, gameTitleLabel, gameSetupLabel, gameRulesWinLoseLabel, gameRulesWorkersLabel;
-	UiButton buttonStart, buttonExit, buttonWebsite;
-	Coord screenCentre = renderer.camera.windowSize / 2;
-	initUiLabel(&gameTitleLabel, &renderer, screenCentre - coord(0, 100), ALIGN_CENTER, gameName, renderer.fontLarge, labelColor);
-	initUiLabel(&gameSetupLabel, &renderer, screenCentre - coord(0, 50), ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer.fontLarge, labelColor);
-	initUiLabel(&cityNameEntryLabel, &renderer, screenCentre, ALIGN_CENTER, cityName, renderer.fontLarge, textboxTextColor);
-	char tempBuffer[256];
-	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
-	initUiLabel(&gameRulesWinLoseLabel, &renderer, screenCentre + coord(0, 50), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
-	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
-	initUiLabel(&gameRulesWorkersLabel, &renderer, screenCentre + coord(0, 100), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
-	buttonRect = rectXYWH(uiPadding, renderer.camera.windowHeight - uiPadding - 24, 80, 24);
-	initUiButton(&buttonExit, &renderer, buttonRect, "Exit", renderer.font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	buttonRect.x = (renderer.camera.windowWidth - buttonRect.w)/2;
-	initUiButton(&buttonWebsite, &renderer, buttonRect, "Website", renderer.font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
-	buttonRect.x = renderer.camera.windowWidth - uiPadding - buttonRect.w;
-	initUiButton(&buttonStart, &renderer, buttonRect, "Play", renderer.font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	MainMenuUI mainMenuUI;
+	initMainMenuUI(&mainMenuUI, &renderer, gameName, cityName,
+		labelColor, textboxTextColor, buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	// Game over UI
 	UiLabel gameOverLabel;
@@ -610,16 +648,16 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		} else if (gameStatus == GameStatus_Setup) {
-			updateUiButton(&renderer, &tooltip, &buttonExit, &mouseState, &keyboardState);
-			updateUiButton(&renderer, &tooltip, &buttonWebsite, &mouseState, &keyboardState);
-			updateUiButton(&renderer, &tooltip, &buttonStart, &mouseState, &keyboardState);
+			updateUiButton(&renderer, &tooltip, &mainMenuUI.buttonExit, &mouseState, &keyboardState);
+			updateUiButton(&renderer, &tooltip, &mainMenuUI.buttonWebsite, &mouseState, &keyboardState);
+			updateUiButton(&renderer, &tooltip, &mainMenuUI.buttonStart, &mouseState, &keyboardState);
 
-			if (buttonExit.justClicked) {
+			if (mainMenuUI.buttonExit.justClicked) {
 				quit = true;
 				continue;
-			} else if (buttonWebsite.justClicked) {
+			} else if (mainMenuUI.buttonWebsite.justClicked) {
 				openUrlUnsafe("http://samatkins.co.uk");
-			} else if (buttonStart.justClicked) {
+			} else if (mainMenuUI.buttonStart.justClicked) {
 				gameStatus = GameStatus_Playing;
 				setUiLabelText(&renderer, &textCityName, cityName);
 			}
@@ -708,20 +746,9 @@ int main(int argc, char *argv[]) {
 		if (gameStatus == GameStatus_Setup) {
 			if (cityNameTextDirty) {
 				cityNameTextDirty = false;
-				setUiLabelText(&renderer, &cityNameEntryLabel, cityName);
+				setUiLabelText(&renderer, &mainMenuUI.cityNameEntryLabel, cityName);
 			}
-			drawUiRect(&renderer, rectXYWH(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
-			drawUiLabel(&renderer, &gameTitleLabel);
-			drawUiLabel(&renderer, &gameSetupLabel);
-			drawUiLabel(&renderer, &gameRulesWinLoseLabel);
-			drawUiLabel(&renderer, &gameRulesWorkersLabel);
-
-			drawUiRect(&renderer, expandRect(cityNameEntryLabel._rect, 4), textboxBackgroundColor);
-			drawUiLabel(&renderer, &cityNameEntryLabel);
-
-			drawUiButton(&renderer, &buttonExit);
-			drawUiButton(&renderer, &buttonWebsite);
-			drawUiButton(&renderer, &buttonStart);
+			drawMainMenuUI(&mainMenuUI, &renderer, transparentBlack, textboxBackgroundColor);
 
 		} else {
 			// Draw some UI
