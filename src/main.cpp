@@ -112,13 +112,6 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
-struct Tooltip {
-	UiLabel label;
-	bool show;
-	Coord offsetFromCursor;
-	char buffer[128];
-};
-
 void showCostTooltip(Tooltip *tooltip, Renderer *renderer, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
 		tooltip->label.color = {255,0,0,255};
@@ -262,7 +255,7 @@ int main(int argc, char *argv[]) {
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_Q, "Q");
+			SDL_SCANCODE_Q, "(Q)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
@@ -479,16 +472,17 @@ int main(int argc, char *argv[]) {
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 		if (gameStatus == GameStatus_Playing) {
+			tooltip.show = false;
 
 			if (keyJustPressed(&keyboardState, SDL_SCANCODE_INSERT)) {
 				city.funds += 10000;
 			}
 
 			bool buttonAteMouseEvent = false;
-			if (updateUiButtonGroup(&actionButtonGroup, &mouseState, &keyboardState)) {
+			if (updateUiButtonGroup(&renderer, &tooltip, &actionButtonGroup, &mouseState, &keyboardState)) {
 				buttonAteMouseEvent = true;
 			}
-			if (updateUiButtonGroup(&calendarButtonGroup, &mouseState, &keyboardState)) {
+			if (updateUiButtonGroup(&renderer, &tooltip, &calendarButtonGroup, &mouseState, &keyboardState)) {
 				buttonAteMouseEvent = true;
 			}
 
@@ -516,7 +510,6 @@ int main(int argc, char *argv[]) {
 			}
 			updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
-			tooltip.show = false;
 
 			if (!buttonAteMouseEvent) {
 				switch (actionMode) {
@@ -615,9 +608,9 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		} else if (gameStatus == GameStatus_Setup) {
-			updateUiButton(&buttonExit, &mouseState, &keyboardState);
-			updateUiButton(&buttonWebsite, &mouseState, &keyboardState);
-			updateUiButton(&buttonStart, &mouseState, &keyboardState);
+			updateUiButton(&renderer, &tooltip, &buttonExit, &mouseState, &keyboardState);
+			updateUiButton(&renderer, &tooltip, &buttonWebsite, &mouseState, &keyboardState);
+			updateUiButton(&renderer, &tooltip, &buttonStart, &mouseState, &keyboardState);
 
 			if (buttonExit.justClicked) {
 				quit = true;
@@ -745,6 +738,7 @@ int main(int argc, char *argv[]) {
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
 				setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
+				drawUiRect(&renderer, expandRect(tooltip.label._rect, 4), transparentBlack);
 				drawUiLabel(&renderer, &tooltip.label);
 			}
 		}

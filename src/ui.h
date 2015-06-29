@@ -68,4 +68,12 @@ struct UiMessage {
 	int32 messageCountdown; // In milliseconds
 };
 
+struct Tooltip {
+	UiLabel label;
+	bool show;
+	Coord offsetFromCursor;
+	char buffer[128];
+};
+void showTooltip(Tooltip *tooltip, Renderer *renderer, char *text);
+
 #include "ui.cpp"

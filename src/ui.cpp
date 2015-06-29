@@ -132,10 +132,14 @@ void drawUiIntLabel(Renderer *renderer, UiIntLabel *label) {
 	drawUiLabel(renderer, &label->label);
 }
 
-void updateUiButton(UiButton *button, MouseState *mouseState, KeyboardState *keyboardState) {
+void updateUiButton(Renderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState, KeyboardState *keyboardState) {
 	button->justClicked = false;
 
 	button->mouseOver = inRect(button->rect, mouseState->pos);
+	if (button->mouseOver && button->tooltip) {
+		// Display the tooltip!
+		showTooltip(tooltip, renderer, button->tooltip);
+	}
 
 	if (button->shortcutKey
 		&& keyJustPressed(keyboardState, button->shortcutKey) ) {
@@ -189,7 +193,7 @@ void setActiveButton(UiButtonGroup *group, UiButton *button) {
 /**
  * Get the buttongroup to update its buttons' states, and return whether a button "ate" any click events
  */
-bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState, KeyboardState *keyboardState) {
+bool updateUiButtonGroup(Renderer *renderer, Tooltip *tooltip, UiButtonGroup *group, MouseState *mouseState, KeyboardState *keyboardState) {
 
 	bool eventEaten = false;
 
@@ -200,6 +204,11 @@ bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState, KeyboardS
 		button->mouseOver = inRect(button->rect, mouseState->pos);
 		if (button->mouseOver) {
 			eventEaten = true;
+
+			if (button->tooltip) {
+				// Display the tooltip!
+				showTooltip(tooltip, renderer, button->tooltip);
+			}
 		}
 
 		if (button->shortcutKey
@@ -285,4 +294,17 @@ void drawUiMessage(Renderer *renderer) {
 
 void freeUiMessage() {
 	freeUiLabel(&__globalUiMessage.label);
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//                                 TOOLTIPS                                      //
+///////////////////////////////////////////////////////////////////////////////////
+
+void showTooltip(Tooltip *tooltip, Renderer *renderer, char *text) {
+	if (strcmp(tooltip->buffer, text)) {
+		strcpy(tooltip->buffer, text);
+		tooltip->label.color = {255,255,255,255};
+		setUiLabelText(renderer, &tooltip->label, tooltip->buffer);
+	}
+	tooltip->show = true;
 }
