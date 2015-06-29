@@ -476,6 +476,8 @@ int main(int argc, char *argv[]) {
 
 			if (keyJustPressed(&keyboardState, SDL_SCANCODE_INSERT)) {
 				city.funds += 10000;
+			} else if (keyJustPressed(&keyboardState, SDL_SCANCODE_DELETE)) {
+				city.funds -= 10000;
 			}
 
 			bool buttonAteMouseEvent = false;
