@@ -107,6 +107,23 @@ struct Animator {
 };
 const real32 animationFramesPerDay = 10.0f;
 
+struct UiTheme {
+	TTF_Font *font,
+			*buttonFont;
+
+	Color overlayColor;
+			
+	Color labelColor;
+
+	Color buttonTextColor,
+		buttonBackgroundColor,
+		buttonHoverColor,
+		buttonPressedColor;
+
+	Color textboxTextColor,
+		textboxBackgroundColor;
+};
+
 struct Renderer {
 	SDL_Renderer *sdl_renderer;
 	SDL_Window *sdl_window;
@@ -117,8 +134,7 @@ struct Renderer {
 
 	Animation animations[Animation_Count];
 
-	TTF_Font *font;
-	TTF_Font *fontLarge;
+	UiTheme theme;
 };
 
 #include "render.cpp"

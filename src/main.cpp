@@ -138,43 +138,43 @@ struct MainMenuUI {
 			buttonExit,
 			buttonWebsite;
 };
-void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *gameName, char *cityName,
-		Color labelColor, Color textboxTextColor, Color buttonTextColor, Color buttonBackgroundColor, Color buttonHoverColor, Color buttonPressedColor) {
+void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *gameName, char *cityName) {
 
 	*menu = {};
 	Coord screenCentre = renderer->camera.windowSize / 2;
 	
 	initUiLabel(&menu->gameTitleLabel, renderer, screenCentre - coord(0, 100),
-				ALIGN_CENTER, gameName, renderer->fontLarge, labelColor);
+				ALIGN_CENTER, gameName, renderer->theme.font, renderer->theme.labelColor);
 	initUiLabel(&menu->gameSetupLabel, renderer, screenCentre - coord(0, 50),
-				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->fontLarge, labelColor);
+				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->theme.font, renderer->theme.labelColor);
 	initUiLabel(&menu->cityNameEntryLabel, renderer, screenCentre,
-				ALIGN_CENTER, cityName, renderer->fontLarge, textboxTextColor);
+				ALIGN_CENTER, cityName, renderer->theme.font, renderer->theme.textboxTextColor);
 
 	char tempBuffer[256];
 	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
-	initUiLabel(&menu->gameRulesWinLoseLabel, renderer, screenCentre + coord(0, 50), ALIGN_CENTER, tempBuffer, renderer->fontLarge, labelColor);
+	initUiLabel(&menu->gameRulesWinLoseLabel, renderer, screenCentre + coord(0, 50),
+				ALIGN_CENTER, tempBuffer, renderer->theme.font, renderer->theme.labelColor);
+
 	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
-	initUiLabel(&menu->gameRulesWorkersLabel, renderer, screenCentre + coord(0, 100), ALIGN_CENTER, tempBuffer, renderer->fontLarge, labelColor);
+	initUiLabel(&menu->gameRulesWorkersLabel, renderer, screenCentre + coord(0, 100),
+				ALIGN_CENTER, tempBuffer, renderer->theme.font, renderer->theme.labelColor);
+
 	Rect buttonRect = rectXYWH(uiPadding, renderer->camera.windowHeight - uiPadding - 24, 80, 24);
-	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit", renderer->font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
 	buttonRect.x = screenCentre.x - buttonRect.w/2;
-	initUiButton(&menu->buttonWebsite, renderer, buttonRect, "Website", renderer->font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	initUiButton(&menu->buttonWebsite, renderer, buttonRect, "Website");
 	buttonRect.x = renderer->camera.windowWidth - uiPadding - buttonRect.w;
-	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", renderer->font,
-		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor, SDL_SCANCODE_RETURN);
+	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
 }
 
-void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer, Color overlayColor, Color textboxBackgroundColor) {
-	drawUiRect(renderer, rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight), overlayColor);
+void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer) {
+	drawUiRect(renderer, rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight), renderer->theme.overlayColor);
 	drawUiLabel(renderer, &menu->gameTitleLabel);
 	drawUiLabel(renderer, &menu->gameSetupLabel);
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
 	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
 
-	drawUiRect(renderer, expandRect(menu->cityNameEntryLabel._rect, 4), textboxBackgroundColor);
+	drawUiRect(renderer, expandRect(menu->cityNameEntryLabel._rect, 4), renderer->theme.textboxBackgroundColor);
 	drawUiLabel(renderer, &menu->cityNameEntryLabel);
 
 	drawUiButton(renderer, &menu->buttonExit);
@@ -243,63 +243,49 @@ int main(int argc, char *argv[]) {
 	// real32 framesPerSecond = 0;
 
 	// Build UI
-	Color buttonTextColor = {0,0,0,255},
-		buttonBackgroundColor = {255,255,255,255},
-		buttonHoverColor = {192,192,255,255},
-		buttonPressedColor = {128,128,255,255},
-		labelColor = {255,255,255,255},
-		transparentBlack = {0,0,0,128},
-		textboxTextColor = {0,0,0,255},
-		textboxBackgroundColor = {255,255,255,255};
-
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
-	initUiLabel(&textCityName, &renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.fontLarge, labelColor);
+	initUiLabel(&textCityName, &renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.theme.font, renderer.theme.labelColor);
 
 	textPosition.x = 800 / 2 - 100;
 	UiIntLabel labelCityFunds;
 	initUiIntLabel(&labelCityFunds, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer.fontLarge, labelColor, &city.funds, "£%d");
+				renderer.theme.font, renderer.theme.labelColor, &city.funds, "£%d");
 
 	textPosition.x = 800 / 2 + 100;
 	UiIntLabel labelMonthlyExpenditure;
 	initUiIntLabel(&labelMonthlyExpenditure, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer.fontLarge, labelColor, &city.monthlyExpenditure, "(-£%d/month)");
+				renderer.theme.font, renderer.theme.labelColor, &city.monthlyExpenditure, "(-£%d/month)");
 
 	initUiMessage(&renderer);
 
 	// Tooltip
 	Tooltip tooltip = {};
 	tooltip.offsetFromCursor = coord(16, 20);
-	initUiLabel(&tooltip.label, &renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer.fontLarge, labelColor);
+	initUiLabel(&tooltip.label, &renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer.theme.font, renderer.theme.labelColor);
 
 	// CALENDAR
 	textPosition.x = 800 - 8;
 	getDateString(&calendar, dateStringBuffer);
 	UiLabel labelDate;
-	initUiLabel(&labelDate, &renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
+	initUiLabel(&labelDate, &renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.theme.font, renderer.theme.labelColor);
 
 	UiButtonGroup calendarButtonGroup = {};
 	Rect buttonRect = rectXYWH(800 - 8 - 24, 31, 24, 24);
 	UiButton *buttonPlay3 = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPlay3, &renderer, buttonRect, ">>>", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	initUiButton(buttonPlay3, &renderer, buttonRect, ">>>");
 
 	buttonRect.x -= 24 + uiPadding;
 	UiButton *buttonPlay2 = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPlay2, &renderer, buttonRect, ">>", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	initUiButton(buttonPlay2, &renderer, buttonRect, ">>");
 
 	buttonRect.x -= 24 + uiPadding;
 	UiButton *buttonPlay1 = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPlay1, &renderer, buttonRect, ">", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	initUiButton(buttonPlay1, &renderer, buttonRect, ">");
 
 	buttonRect.x -= 24 + uiPadding;
 	UiButton *buttonPause = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPause, &renderer, buttonRect, "||", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_SPACE);
+	initUiButton(buttonPause, &renderer, buttonRect, "||", SDL_SCANCODE_SPACE);
 
 	setActiveButton(&calendarButtonGroup, buttonPause);
 
@@ -308,54 +294,40 @@ int main(int argc, char *argv[]) {
 	buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_Q, "(Q)");
+	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", SDL_SCANCODE_Q, "(Q)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildField, &renderer, buttonRect, "Build Field", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_F, "(F)");
+	initUiButton(buttonBuildField, &renderer, buttonRect, "Build Field", SDL_SCANCODE_F, "(F)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildBarn = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildBarn, &renderer, buttonRect, "Build Barn", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_B, "(B)");
+	initUiButton(buttonBuildBarn, &renderer, buttonRect, "Build Barn", SDL_SCANCODE_B, "(B)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonDemolish, &renderer, buttonRect, "Demolish", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_X, "(X)");
+	initUiButton(buttonDemolish, &renderer, buttonRect, "Demolish", SDL_SCANCODE_X, "(X)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonPlant = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonPlant, &renderer, buttonRect, "Plant", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_P, "(P)");
+	initUiButton(buttonPlant, &renderer, buttonRect, "Plant", SDL_SCANCODE_P, "(P)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonHarvest = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonHarvest, &renderer, buttonRect, "Harvest", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_H, "(H)");
+	initUiButton(buttonHarvest, &renderer, buttonRect, "Harvest", SDL_SCANCODE_H, "(H)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonHireWorker = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonHireWorker, &renderer, buttonRect, "Hire worker", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
-			SDL_SCANCODE_G, "(G)");
+	initUiButton(buttonHireWorker, &renderer, buttonRect, "Hire worker", SDL_SCANCODE_G, "(G)");
 
 	// Game menu
 	MainMenuUI mainMenuUI;
-	initMainMenuUI(&mainMenuUI, &renderer, gameName, cityName,
-		labelColor, textboxTextColor, buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	initMainMenuUI(&mainMenuUI, &renderer, gameName, cityName);
 
 	// Game over UI
 	UiLabel gameOverLabel;
-	initUiLabel(&gameOverLabel, &renderer, renderer.camera.windowSize / 2, ALIGN_CENTER, "You ran out of money! :(", renderer.fontLarge, labelColor);
+	initUiLabel(&gameOverLabel, &renderer, renderer.camera.windowSize / 2,
+				ALIGN_CENTER, "You ran out of money! :(", renderer.theme.font, renderer.theme.labelColor);
 
 	// GAME LOOP
 	while (!quit) {
@@ -748,11 +720,11 @@ int main(int argc, char *argv[]) {
 				cityNameTextDirty = false;
 				setUiLabelText(&renderer, &mainMenuUI.cityNameEntryLabel, cityName);
 			}
-			drawMainMenuUI(&mainMenuUI, &renderer, transparentBlack, textboxBackgroundColor);
+			drawMainMenuUI(&mainMenuUI, &renderer);
 
 		} else {
 			// Draw some UI
-			drawUiRect(&renderer, rectXYWH(0,0, renderer.camera.windowWidth, 64), transparentBlack);
+			drawUiRect(&renderer, rectXYWH(0,0, renderer.camera.windowWidth, 64), renderer.theme.overlayColor);
 
 			drawUiLabel(&renderer, &textCityName);
 			drawUiIntLabel(&renderer, &labelCityFunds);
@@ -767,7 +739,7 @@ int main(int argc, char *argv[]) {
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
 				setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
-				drawUiRect(&renderer, expandRect(tooltip.label._rect, 4), transparentBlack);
+				drawUiRect(&renderer, expandRect(tooltip.label._rect, 4), renderer.theme.overlayColor);
 				drawUiLabel(&renderer, &tooltip.label);
 			}
 		}
@@ -775,7 +747,9 @@ int main(int argc, char *argv[]) {
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
-			drawUiRect(&renderer, rectXYWH(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight), transparentBlack);
+			drawUiRect(&renderer,
+						rectXYWH(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight),
+						renderer.theme.overlayColor);
 			drawUiLabel(&renderer, &gameOverLabel); 
 		}
 

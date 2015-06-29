@@ -79,17 +79,15 @@ void freeUiIntLabel(UiIntLabel *label) {
 	*label = {};
 }
 
-void initUiButton(UiButton *button, Renderer *renderer, Rect rect,
-					char *text, TTF_Font* font, Color buttonTextColor,
-					Color color, Color hoverColor, Color pressedColor,
+void initUiButton(UiButton *button, Renderer *renderer, Rect rect, char *text,
 					SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0) {
 	*button = {};
 
 	button->rect = rect;
 
-	button->backgroundColor = color;
-	button->backgroundHoverColor = hoverColor;
-	button->backgroundPressedColor = pressedColor;
+	button->backgroundColor = renderer->theme.buttonBackgroundColor;
+	button->backgroundHoverColor = renderer->theme.buttonHoverColor;
+	button->backgroundPressedColor = renderer->theme.buttonPressedColor;
 
 	button->shortcutKey = shortcutKey;
 	button->tooltip = tooltip;
@@ -97,7 +95,8 @@ void initUiButton(UiButton *button, Renderer *renderer, Rect rect,
 	// Generate the UiLabel, and centre it
 	Coord buttonCenter = {button->rect.x + button->rect.w / 2,
 							button->rect.y + button->rect.h / 2};
-	initUiLabel(&button->text, renderer, buttonCenter, ALIGN_CENTER, text, font, buttonTextColor);
+	initUiLabel(&button->text, renderer, buttonCenter, ALIGN_CENTER, text,
+				renderer->theme.buttonFont, renderer->theme.buttonTextColor);
 }
 
 void freeUiButton(UiButton *button) {
@@ -260,7 +259,7 @@ void initUiMessage(Renderer *renderer) {
 
 	__globalUiMessage.background = {0,0,0,128};
 
-	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM, "", renderer->fontLarge, {255, 255, 255, 255});
+	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM, "", renderer->theme.font, {255, 255, 255, 255});
 }
 
 void pushUiMessage(char *message) {

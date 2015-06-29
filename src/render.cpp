@@ -197,10 +197,20 @@ bool initializeRenderer(Renderer *renderer, char *windowTitle) {
 	renderer->textureAtlas.rects[TextureAtlasItem_Goat] = {0,w1*5,w1,w1*2};
 	*/
 
+	// UI theme
+	renderer->theme.buttonTextColor = {0,0,0,255};
+	renderer->theme.buttonBackgroundColor = {255,255,255,255};
+	renderer->theme.buttonHoverColor = {192,192,255,255};
+	renderer->theme.buttonPressedColor = {128,128,255,255};
+	renderer->theme.labelColor = {255,255,255,255};
+	renderer->theme.overlayColor = {0,0,0,128};
+	renderer->theme.textboxTextColor = {0,0,0,255};
+	renderer->theme.textboxBackgroundColor = {255,255,255,255};
+
 	// Load font
-	renderer->font = TTF_OpenFont("OpenSans-Regular.ttf", 12);
-	renderer->fontLarge = TTF_OpenFont("OpenSans-Regular.ttf", 16);
-	if (!renderer->font || !renderer->fontLarge) {
+	renderer->theme.font = TTF_OpenFont("OpenSans-Regular.ttf", 16);
+	renderer->theme.buttonFont = TTF_OpenFont("OpenSans-Regular.ttf", 12);
+	if (!renderer->theme.font || !renderer->theme.buttonFont) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Font could not be loaded. :(\n %s", TTF_GetError());
 		return false;
 	}
@@ -214,8 +224,8 @@ void freeRenderer(Renderer *renderer) {
 		freeTexture(&renderer->textures[i]);
 	}
 
-	TTF_CloseFont(renderer->font);
-	TTF_CloseFont(renderer->fontLarge);
+	TTF_CloseFont(renderer->theme.font);
+	TTF_CloseFont(renderer->theme.buttonFont);
 
 	SDL_DestroyRenderer(renderer->sdl_renderer);
 	SDL_DestroyWindow(renderer->sdl_window);
