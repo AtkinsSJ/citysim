@@ -299,8 +299,9 @@ int main(int argc, char *argv[]) {
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
 			SDL_SCANCODE_G, "(G)");
 
-	// Game setp screen
+	// Game menu
 	UiLabel cityNameEntryLabel, gameTitleLabel, gameSetupLabel, gameRulesWinLoseLabel, gameRulesWorkersLabel;
+	UiButton buttonStart, buttonExit, buttonWebsite;
 	Coord screenCentre = renderer.camera.windowSize / 2;
 	initUiLabel(&gameTitleLabel, &renderer, screenCentre - coord(0, 100), ALIGN_CENTER, gameName, renderer.fontLarge, labelColor);
 	initUiLabel(&gameSetupLabel, &renderer, screenCentre - coord(0, 50), ALIGN_CENTER, "Type a name for your farm, and press Enter.", renderer.fontLarge, labelColor);
@@ -310,6 +311,15 @@ int main(int argc, char *argv[]) {
 	initUiLabel(&gameRulesWinLoseLabel, &renderer, screenCentre + coord(0, 50), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
 	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
 	initUiLabel(&gameRulesWorkersLabel, &renderer, screenCentre + coord(0, 100), ALIGN_CENTER, tempBuffer, renderer.fontLarge, labelColor);
+	buttonRect = rectXYWH(uiPadding, uiPadding, 80, 24);
+	initUiButton(&buttonExit, &renderer, buttonRect, "Exit", renderer.font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	buttonRect.x += 100;
+	initUiButton(&buttonWebsite, &renderer, buttonRect, "Website", renderer.font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+	buttonRect.x += 100;
+	initUiButton(&buttonStart, &renderer, buttonRect, "Play", renderer.font,
+		buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
 
 	// Game over UI
 	UiLabel gameOverLabel;
@@ -382,9 +392,6 @@ int main(int argc, char *argv[]) {
 							cityName[cityNameLength-1] = 0;
 							cityNameLength--;
 							cityNameTextDirty = true;
-						} else if (event.key.keysym.sym == SDLK_RETURN) {
-							gameStatus = GameStatus_Playing;
-							setUiLabelText(&renderer, &textCityName, cityName);
 						}
 					}
 				} break;
@@ -606,6 +613,19 @@ int main(int argc, char *argv[]) {
 					// hireWorker(&city);
 				}
 			}
+		} else if (gameStatus == GameStatus_Setup) {
+			updateUiButton(&buttonExit, &mouseState, &keyboardState);
+			updateUiButton(&buttonWebsite, &mouseState, &keyboardState);
+			updateUiButton(&buttonStart, &mouseState, &keyboardState);
+
+			if (buttonExit.justClicked) {
+
+			} else if (buttonWebsite.justClicked) {
+
+			} else if (buttonStart.justClicked) {
+				gameStatus = GameStatus_Playing;
+				setUiLabelText(&renderer, &textCityName, cityName);
+			}
 		}
 
 	// RENDERING
@@ -701,6 +721,10 @@ int main(int argc, char *argv[]) {
 
 			drawUiRect(&renderer, expandRect(cityNameEntryLabel._rect, 4), textboxBackgroundColor);
 			drawUiLabel(&renderer, &cityNameEntryLabel);
+
+			drawUiButton(&renderer, &buttonExit);
+			drawUiButton(&renderer, &buttonWebsite);
+			drawUiButton(&renderer, &buttonStart);
 
 		} else {
 			// Draw some UI

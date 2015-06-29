@@ -132,6 +132,30 @@ void drawUiIntLabel(Renderer *renderer, UiIntLabel *label) {
 	drawUiLabel(renderer, &label->label);
 }
 
+void updateUiButton(UiButton *button, MouseState *mouseState, KeyboardState *keyboardState) {
+	button->justClicked = false;
+
+	button->mouseOver = inRect(button->rect, mouseState->pos);
+
+	if (button->shortcutKey
+		&& keyJustPressed(keyboardState, button->shortcutKey) ) {
+
+		// We triggered the shortcut!
+		button->justClicked = true;
+
+	} else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+		// See if a button is click-started
+		button->clickStarted = button->mouseOver;
+	} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
+		// Did we trigger a button?
+		if (button->clickStarted && button->mouseOver) {
+			button->justClicked = true;
+		}
+	} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
+		button->clickStarted = false;
+	}
+}
+
 void drawUiButton(Renderer *renderer, UiButton *button) {
 	if (button->active) {
 		drawUiRect(renderer, button->rect, button->backgroundPressedColor);
