@@ -23,6 +23,7 @@ enum GameStatus {
 };
 
 #include "types.h"
+#include "platform.h"
 #include "maths.h"
 #include "render.h"
 #include "input.h"
@@ -619,9 +620,10 @@ int main(int argc, char *argv[]) {
 			updateUiButton(&buttonStart, &mouseState, &keyboardState);
 
 			if (buttonExit.justClicked) {
-
+				quit = true;
+				continue;
 			} else if (buttonWebsite.justClicked) {
-
+				openUrlUnsafe("http://samatkins.co.uk");
 			} else if (buttonStart.justClicked) {
 				gameStatus = GameStatus_Playing;
 				setUiLabelText(&renderer, &textCityName, cityName);
