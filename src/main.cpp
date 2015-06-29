@@ -130,7 +130,7 @@ void showCostTooltip(Tooltip *tooltip, Renderer *renderer, int32 cost, int32 cit
 }
 
 const int gameStartFunds = 10000;
-const int gameWinFunds = 50000;
+const int gameWinFunds = 30000;
 
 int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
@@ -205,10 +205,15 @@ int main(int argc, char *argv[]) {
 	UiLabel textCityName;
 	initUiLabel(&textCityName, &renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.fontLarge, labelColor);
 
-	textPosition.x = 800 / 2;
+	textPosition.x = 800 / 2 - 100;
 	UiIntLabel labelCityFunds;
 	initUiIntLabel(&labelCityFunds, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
 				renderer.fontLarge, labelColor, &city.funds, "£%d");
+
+	textPosition.x = 800 / 2 + 100;
+	UiIntLabel labelMonthlyExpenditure;
+	initUiIntLabel(&labelMonthlyExpenditure, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
+				renderer.fontLarge, labelColor, &city.monthlyExpenditure, "(-£%d/month)");
 
 	initUiMessage(&renderer);
 
@@ -224,7 +229,7 @@ int main(int argc, char *argv[]) {
 	initUiLabel(&labelDate, &renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.fontLarge, labelColor);
 
 	UiButtonGroup calendarButtonGroup = {};
-	Rect buttonRect = {800 - 8 - 24, 31, 24, 24};
+	Rect buttonRect = rect(800 - 8 - 24, 31, 24, 24);
 	UiButton *buttonPlay3 = addButtonToGroup(&calendarButtonGroup);
 	initUiButton(buttonPlay3, &renderer, buttonRect, ">>>", renderer.font,
 			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
@@ -242,47 +247,55 @@ int main(int argc, char *argv[]) {
 	buttonRect.x -= 24 + uiPadding;
 	UiButton *buttonPause = addButtonToGroup(&calendarButtonGroup);
 	initUiButton(buttonPause, &renderer, buttonRect, "||", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_SPACE);
 
 	setActiveButton(&calendarButtonGroup, buttonPause);
 
 	// ACTION BUTTONS
 	UiButtonGroup actionButtonGroup = {};
-	buttonRect = {8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24};
+	buttonRect = rect(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_Q, "Q");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildField, &renderer, buttonRect, "Build Field", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_F, "(F)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildBarn = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildBarn, &renderer, buttonRect, "Build Barn", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_B, "(B)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonDemolish, &renderer, buttonRect, "Demolish", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_X, "(X)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonPlant = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonPlant, &renderer, buttonRect, "Plant", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_P, "(P)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonHarvest = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonHarvest, &renderer, buttonRect, "Harvest", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_H, "(H)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonHireWorker = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonHireWorker, &renderer, buttonRect, "Hire worker", renderer.font,
-			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor);
+			buttonTextColor, buttonBackgroundColor, buttonHoverColor, buttonPressedColor,
+			SDL_SCANCODE_G, "(G)");
 
 	// Game setp screen
 	UiLabel cityNameEntryLabel, gameTitleLabel, gameSetupLabel, gameRulesWinLoseLabel, gameRulesWorkersLabel;
@@ -462,10 +475,10 @@ int main(int argc, char *argv[]) {
 			}
 
 			bool buttonAteMouseEvent = false;
-			if (updateUiButtonGroup(&actionButtonGroup, &mouseState)) {
+			if (updateUiButtonGroup(&actionButtonGroup, &mouseState, &keyboardState)) {
 				buttonAteMouseEvent = true;
 			}
-			if (updateUiButtonGroup(&calendarButtonGroup, &mouseState)) {
+			if (updateUiButtonGroup(&calendarButtonGroup, &mouseState, &keyboardState)) {
 				buttonAteMouseEvent = true;
 			}
 
@@ -538,7 +551,10 @@ int main(int argc, char *argv[]) {
 
 					case ActionMode_Hire: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							hireWorker(&city, mouseWorldPos);
+							if (hireWorker(&city, mouseWorldPos)) {
+								// Update the monthly spend display
+								city.monthlyExpenditure = city.workerCount * workerMonthlyCost;
+							}
 						}
 						showCostTooltip(&tooltip, &renderer, workerHireCost, city.funds);
 					} break;
@@ -688,6 +704,7 @@ int main(int argc, char *argv[]) {
 
 			drawUiLabel(&renderer, &textCityName);
 			drawUiIntLabel(&renderer, &labelCityFunds);
+			drawUiIntLabel(&renderer, &labelMonthlyExpenditure);
 			drawUiLabel(&renderer, &labelDate);
 
 			drawUiMessage(&renderer);

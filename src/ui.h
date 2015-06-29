@@ -45,6 +45,9 @@ struct UiButton {
 	Color backgroundHoverColor;
 	Color backgroundPressedColor;
 
+	SDL_Scancode shortcutKey;
+	char *tooltip;
+
 	bool mouseOver;
 	bool clickStarted;
 	bool justClicked;

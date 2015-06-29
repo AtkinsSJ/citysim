@@ -81,7 +81,8 @@ void freeUiIntLabel(UiIntLabel *label) {
 
 void initUiButton(UiButton *button, Renderer *renderer, Rect rect,
 					char *text, TTF_Font* font, Color buttonTextColor,
-					Color color, Color hoverColor, Color pressedColor) {
+					Color color, Color hoverColor, Color pressedColor,
+					SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0) {
 	*button = {};
 
 	button->rect = rect;
@@ -89,6 +90,9 @@ void initUiButton(UiButton *button, Renderer *renderer, Rect rect,
 	button->backgroundColor = color;
 	button->backgroundHoverColor = hoverColor;
 	button->backgroundPressedColor = pressedColor;
+
+	button->shortcutKey = shortcutKey;
+	button->tooltip = tooltip;
 
 	// Generate the UiLabel, and centre it
 	Coord buttonCenter = {button->rect.x + button->rect.w / 2,
@@ -161,7 +165,7 @@ void setActiveButton(UiButtonGroup *group, UiButton *button) {
 /**
  * Get the buttongroup to update its buttons' states, and return whether a button "ate" any click events
  */
-bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
+bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState, KeyboardState *keyboardState) {
 
 	bool eventEaten = false;
 
@@ -174,7 +178,14 @@ bool updateUiButtonGroup(UiButtonGroup *group, MouseState *mouseState) {
 			eventEaten = true;
 		}
 
-		if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+		if (button->shortcutKey
+			&& keyJustPressed(keyboardState, button->shortcutKey) ) {
+
+			// We triggered the shortcut!
+			button->justClicked = true;
+			setActiveButton(group, button);
+
+		} else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
 			// See if a button is click-started
 			button->clickStarted = button->mouseOver;
 		} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {

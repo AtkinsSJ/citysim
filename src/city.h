@@ -126,6 +126,7 @@ const int workerMonthlyCost = workerHireCost / 2;
 struct City {
 	char *name;
 	int32 funds;
+	int32 monthlyExpenditure;
 
 	int32 width, height;
 	Terrain *terrain;
