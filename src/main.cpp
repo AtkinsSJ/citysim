@@ -166,7 +166,6 @@ void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *gameName, char *
 	buttonRect.x = renderer->camera.windowWidth - uiPadding - buttonRect.w;
 	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
 }
-
 void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer) {
 	drawUiRect(renderer, rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight), renderer->theme.overlayColor);
 	drawUiLabel(renderer, &menu->gameTitleLabel);
@@ -180,6 +179,75 @@ void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer) {
 	drawUiButton(renderer, &menu->buttonExit);
 	drawUiButton(renderer, &menu->buttonWebsite);
 	drawUiButton(renderer, &menu->buttonStart);
+}
+
+struct CalendarUI {
+	Calendar *calendar;
+	UiButtonGroup buttonGroup;
+	UiButton *buttonPause,
+			*buttonPlaySlow,
+			*buttonPlayMedium,
+			*buttonPlayFast;
+	UiLabel labelDate;
+	char dateStringBuffer[50];
+};
+void initCalendarUI(CalendarUI *ui, Renderer *renderer, Calendar *calendar) {
+
+	*ui = {};
+	ui->calendar = calendar;
+
+	Coord textPosition = coord(renderer->camera.windowWidth - uiPadding, uiPadding);
+	getDateString(calendar, ui->dateStringBuffer);
+	initUiLabel(&ui->labelDate, renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP,
+				ui->dateStringBuffer, renderer->theme.font, renderer->theme.labelColor);
+
+	const int buttonSize = 24;
+	Rect buttonRect = rectXYWH(renderer->camera.windowWidth - uiPadding - buttonSize, 31,
+								buttonSize, buttonSize);
+	ui->buttonPlayFast = addButtonToGroup(&ui->buttonGroup);
+	initUiButton(ui->buttonPlayFast, renderer, buttonRect, ">>>");
+
+	buttonRect.x -= buttonSize + uiPadding;
+	ui->buttonPlayMedium = addButtonToGroup(&ui->buttonGroup);
+	initUiButton(ui->buttonPlayMedium, renderer, buttonRect, ">>");
+
+	buttonRect.x -= buttonSize + uiPadding;
+	ui->buttonPlaySlow = addButtonToGroup(&ui->buttonGroup);
+	initUiButton(ui->buttonPlaySlow, renderer, buttonRect, ">");
+
+	buttonRect.x -= buttonSize + uiPadding;
+	ui->buttonPause = addButtonToGroup(&ui->buttonGroup);
+	initUiButton(ui->buttonPause, renderer, buttonRect, "||", SDL_SCANCODE_SPACE);
+
+	setActiveButton(&ui->buttonGroup, ui->buttonPause);
+}
+bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
+					MouseState *mouseState, KeyboardState *keyboardState,
+					CalendarChange *change) {
+
+	bool buttonAteMouseEvent = false;
+
+	if (updateUiButtonGroup(renderer, tooltip, &ui->buttonGroup, mouseState, keyboardState)) {
+		buttonAteMouseEvent = true;
+	}
+
+	// Speed controls
+	if (ui->buttonPause->justClicked) {
+		ui->calendar->speed = SpeedPaused;
+	} else if (ui->buttonPlaySlow->justClicked) {
+		ui->calendar->speed = Speed1;
+	} else if (ui->buttonPlayMedium->justClicked) {
+		ui->calendar->speed = Speed2;
+	} else if (ui->buttonPlayFast->justClicked) {
+		ui->calendar->speed = Speed3;
+	}
+
+	if (change->isNewDay) {
+		getDateString(ui->calendar, ui->dateStringBuffer);
+		setUiLabelText(renderer, &ui->labelDate, ui->dateStringBuffer);
+	}
+
+	return buttonAteMouseEvent;
 }
 
 int main(int argc, char *argv[]) {
@@ -217,7 +285,6 @@ int main(int argc, char *argv[]) {
 	generateTerrain(&city);
 
 	Calendar calendar = {};
-	char dateStringBuffer[50];
 	initCalendar(&calendar);
 
 // GAME LOOP
@@ -265,33 +332,12 @@ int main(int argc, char *argv[]) {
 	initUiLabel(&tooltip.label, &renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer.theme.font, renderer.theme.labelColor);
 
 	// CALENDAR
-	textPosition.x = 800 - 8;
-	getDateString(&calendar, dateStringBuffer);
-	UiLabel labelDate;
-	initUiLabel(&labelDate, &renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP, dateStringBuffer, renderer.theme.font, renderer.theme.labelColor);
-
-	UiButtonGroup calendarButtonGroup = {};
-	Rect buttonRect = rectXYWH(800 - 8 - 24, 31, 24, 24);
-	UiButton *buttonPlay3 = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPlay3, &renderer, buttonRect, ">>>");
-
-	buttonRect.x -= 24 + uiPadding;
-	UiButton *buttonPlay2 = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPlay2, &renderer, buttonRect, ">>");
-
-	buttonRect.x -= 24 + uiPadding;
-	UiButton *buttonPlay1 = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPlay1, &renderer, buttonRect, ">");
-
-	buttonRect.x -= 24 + uiPadding;
-	UiButton *buttonPause = addButtonToGroup(&calendarButtonGroup);
-	initUiButton(buttonPause, &renderer, buttonRect, "||", SDL_SCANCODE_SPACE);
-
-	setActiveButton(&calendarButtonGroup, buttonPause);
+	CalendarUI calendarUI;
+	initCalendarUI(&calendarUI, &renderer, &calendar);
 
 	// ACTION BUTTONS
 	UiButtonGroup actionButtonGroup = {};
-	buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
+	Rect buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", SDL_SCANCODE_Q, "(Q)");
@@ -429,11 +475,11 @@ int main(int argc, char *argv[]) {
 			calendar.speed = SpeedPaused;
 
 			// Highlight the pause button!
-			if (calendarButtonGroup.activeButton) {
-				calendarButtonGroup.activeButton->active = false;
+			if (calendarUI.buttonGroup.activeButton) {
+				calendarUI.buttonGroup.activeButton->active = false;
 			}
-			buttonPause->active = true;
-			calendarButtonGroup.activeButton = buttonPause;
+			calendarUI.buttonPause->active = true;
+			calendarUI.buttonGroup.activeButton = calendarUI.buttonPause;
 
 			// Also set the cursor!
 			SDL_SetCursor(cursorMain);
@@ -447,9 +493,7 @@ int main(int argc, char *argv[]) {
 	// Game simulation
 		CalendarChange calendarChange = incrementCalendar(&calendar);
 		if (calendarChange.isNewDay) {
-			getDateString(&calendar, dateStringBuffer);
-			setUiLabelText(&renderer, &labelDate, dateStringBuffer);
-
+			
 			// Fields
 			for (int i = 0; i < ArrayCount(city.fieldData); i++) {
 				FieldData *field = city.fieldData + i;
@@ -494,19 +538,8 @@ int main(int argc, char *argv[]) {
 			if (updateUiButtonGroup(&renderer, &tooltip, &actionButtonGroup, &mouseState, &keyboardState)) {
 				buttonAteMouseEvent = true;
 			}
-			if (updateUiButtonGroup(&renderer, &tooltip, &calendarButtonGroup, &mouseState, &keyboardState)) {
+			if (updateCalendarUI(&calendarUI, &renderer, &tooltip, &mouseState, &keyboardState, &calendarChange)) {
 				buttonAteMouseEvent = true;
-			}
-
-			// Speed controls
-			if (buttonPause->justClicked) {
-				calendar.speed = SpeedPaused;
-			} else if (buttonPlay1->justClicked) {
-				calendar.speed = Speed1;
-			} else if (buttonPlay2->justClicked) {
-				calendar.speed = Speed2;
-			} else if (buttonPlay3->justClicked) {
-				calendar.speed = Speed3;
 			}
 
 			// Camera controls
@@ -729,12 +762,12 @@ int main(int argc, char *argv[]) {
 			drawUiLabel(&renderer, &textCityName);
 			drawUiIntLabel(&renderer, &labelCityFunds);
 			drawUiIntLabel(&renderer, &labelMonthlyExpenditure);
-			drawUiLabel(&renderer, &labelDate);
+			drawUiLabel(&renderer, &calendarUI.labelDate);
 
 			drawUiMessage(&renderer);
 
 			drawUiButtonGroup(&renderer, &actionButtonGroup);
-			drawUiButtonGroup(&renderer, &calendarButtonGroup);
+			drawUiButtonGroup(&renderer, &calendarUI.buttonGroup);
 
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
