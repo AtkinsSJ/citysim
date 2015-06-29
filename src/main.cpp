@@ -50,17 +50,21 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 	} else {
 		// Keyboard/edge-of-screen panning
 		if (keyboardState->down[SDL_SCANCODE_LEFT]
+			|| keyboardState->down[SDL_SCANCODE_A]
 			|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN)) {
 			camera->pos.x -= scrollSpeed;
 		} else if (keyboardState->down[SDL_SCANCODE_RIGHT]
+			|| keyboardState->down[SDL_SCANCODE_D]
 			|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN))) {
 			camera->pos.x += scrollSpeed;
 		}
 
 		if (keyboardState->down[SDL_SCANCODE_UP]
+			|| keyboardState->down[SDL_SCANCODE_W]
 			|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN)) {
 			camera->pos.y -= scrollSpeed;
 		} else if (keyboardState->down[SDL_SCANCODE_DOWN]
+			|| keyboardState->down[SDL_SCANCODE_S]
 			|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN))) {
 			camera->pos.y += scrollSpeed;
 		}
