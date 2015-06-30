@@ -133,5 +133,6 @@ CalendarChange incrementCalendar(Calendar *calendar) {
 }
 
 inline real32 getDaysPerFrame(Calendar *calendar) {
+	if (calendar->paused) return 0;
 	return calendar->speed / 1000.0f;
 }
