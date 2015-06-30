@@ -705,6 +705,11 @@ int main(int argc, char *argv[]) {
 				freeCity(&city);
 				startGame(&city, &calendar, cityName);
 
+				// Reset calendar display. This is a bit hacky.
+				CalendarChange change = {};
+				change.isNewDay = true;
+				updateCalendarUI(&calendarUI, &renderer, &tooltip, &mouseState, &keyboardState,	&change);
+
 				gameStatus = GameStatus_Setup;
 			}
 		}
