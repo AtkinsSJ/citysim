@@ -269,6 +269,15 @@ bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
 	return buttonAteMouseEvent;
 }
 
+void startGame(City *city, Calendar *calendar, char *cityName) {
+	srand(0); // TODO: Seed the random number generator!
+
+	initCity(city, 100,100, cityName, gameStartFunds);
+	generateTerrain(city);
+
+	initCalendar(calendar);
+}
+
 int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
@@ -299,12 +308,9 @@ int main(int argc, char *argv[]) {
 	int32 cityNameLength = strlen(cityName);
 	bool cityNameTextDirty = true;
 	
-	srand(0); // TODO: Seed the random number generator!
-	City city = createCity(100,100, cityName, gameStartFunds);
-	generateTerrain(&city);
-
-	Calendar calendar = {};
-	initCalendar(&calendar);
+	City city;
+	Calendar calendar;
+	startGame(&city, &calendar, cityName);
 
 // GAME LOOP
 	bool quit = false;
@@ -329,6 +335,7 @@ int main(int argc, char *argv[]) {
 	// real32 framesPerSecond = 0;
 
 	// Build UI
+	Coord cameraCentre = renderer.camera.windowSize / 2;
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
 	initUiLabel(&textCityName, &renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.theme.font, renderer.theme.labelColor);
@@ -391,8 +398,12 @@ int main(int argc, char *argv[]) {
 
 	// Game over UI
 	UiLabel gameOverLabel;
-	initUiLabel(&gameOverLabel, &renderer, renderer.camera.windowSize / 2,
+	initUiLabel(&gameOverLabel, &renderer, cameraCentre,
 				ALIGN_CENTER, "You ran out of money! :(", renderer.theme.font, renderer.theme.labelColor);
+	UiButton buttonMenu;
+	buttonRect.pos = cameraCentre - buttonRect.dim/2;
+	buttonRect.y += gameOverLabel._rect.h + uiPadding;
+	initUiButton(&buttonMenu, &renderer, buttonRect, "Menu");
 
 	// GAME LOOP
 	while (!quit) {
@@ -685,6 +696,17 @@ int main(int argc, char *argv[]) {
 				gameStatus = GameStatus_Playing;
 				setUiLabelText(&renderer, &textCityName, cityName);
 			}
+		} else if (gameStatus == GameStatus_Lost
+				|| gameStatus == GameStatus_Won) {
+
+			updateUiButton(&renderer, &tooltip, &buttonMenu, &mouseState, &keyboardState);
+			if (buttonMenu.justClicked) {
+
+				freeCity(&city);
+				startGame(&city, &calendar, cityName);
+
+				gameStatus = GameStatus_Setup;
+			}
 		}
 
 	// RENDERING
@@ -803,6 +825,7 @@ int main(int argc, char *argv[]) {
 						rectXYWH(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight),
 						renderer.theme.overlayColor);
 			drawUiLabel(&renderer, &gameOverLabel); 
+			drawUiButton(&renderer, &buttonMenu);
 		}
 
 		SDL_RenderPresent(renderer.sdl_renderer);

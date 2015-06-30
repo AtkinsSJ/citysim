@@ -1,18 +1,16 @@
 
-inline City createCity(uint32 width, uint32 height, char *name, int32 funds) {
-	City city = {};
-	city.name = name;
-	city.funds = funds;
-	city.width = width;
-	city.height = height;
-	city.terrain = new Terrain[width*height]();
-	city.tileBuildings = new uint32[width*height]();
-	city.buildingCount = 0;
-	city.buildingCountMax = ArrayCount(city.buildings);
+inline void initCity(City *city, uint32 width, uint32 height, char *name, int32 funds) {
+	*city = {};
+	city->name = name;
+	city->funds = funds;
+	city->width = width;
+	city->height = height;
+	city->terrain = new Terrain[width*height]();
+	city->tileBuildings = new uint32[width*height]();
+	city->buildingCount = 0;
+	city->buildingCountMax = ArrayCount(city->buildings);
 
-	city.farmhouse = null;
-
-	return city;
+	city->farmhouse = null;
 }
 
 inline void freeCity(City *city) {

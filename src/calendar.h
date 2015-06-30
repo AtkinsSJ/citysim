@@ -69,6 +69,9 @@ const char *monthNames[] = {
 };
 
 void initCalendar(Calendar *calendar) {
+
+	*calendar = {};
+
 	calendar->day = 0;
 	calendar->dayOfWeek = 0;
 	calendar->month = 0;

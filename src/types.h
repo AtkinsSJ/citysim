@@ -53,7 +53,10 @@ union Rect {
 			struct {Coord pos;};
 			struct {int32 x, y;};
 		};
-		int32 w,h;
+		union {
+			struct {Coord dim;};
+			struct {int32 w, h;};
+		};
 	};
 	SDL_Rect sdl_rect;
 };
