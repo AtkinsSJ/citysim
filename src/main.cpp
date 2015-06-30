@@ -187,7 +187,7 @@ void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer) {
 struct CalendarUI {
 	Calendar *calendar;
 	UiButtonGroup buttonGroup;
-	UiButton *buttonPause,
+	UiButton buttonPause,
 			*buttonPlaySlow,
 			*buttonPlayMedium,
 			*buttonPlayFast;
@@ -219,10 +219,19 @@ void initCalendarUI(CalendarUI *ui, Renderer *renderer, Calendar *calendar) {
 	initUiButton(ui->buttonPlaySlow, renderer, buttonRect, ">");
 
 	buttonRect.x -= buttonSize + uiPadding;
-	ui->buttonPause = addButtonToGroup(&ui->buttonGroup);
-	initUiButton(ui->buttonPause, renderer, buttonRect, "||", SDL_SCANCODE_SPACE);
+	initUiButton(&ui->buttonPause, renderer, buttonRect, "||", SDL_SCANCODE_SPACE, "(Space)");
 
-	setActiveButton(&ui->buttonGroup, ui->buttonPause);
+	switch (ui->calendar->speed) {
+		case Speed1: {
+			setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
+		} break;
+		case Speed2: {
+			setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
+		} break;
+		case Speed3: {
+			setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
+		} break;
+	}
 }
 bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
 					MouseState *mouseState, KeyboardState *keyboardState,
@@ -230,29 +239,40 @@ bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
 
 	bool buttonAteMouseEvent = false;
 
-	if (updateUiButtonGroup(renderer, tooltip, &ui->buttonGroup, mouseState, keyboardState)) {
+	if (updateUiButtonGroup(renderer, tooltip, &ui->buttonGroup, mouseState, keyboardState)
+		|| updateUiButton(renderer, tooltip, &ui->buttonPause, mouseState, keyboardState) ) {
 		buttonAteMouseEvent = true;
 	}
 
 	// Speed controls
-	if (ui->buttonPause->justClicked) {
-		if (ui->calendar->paused) {
-			ui->calendar->paused = false;
-			// Activate the button!
-			switch (ui->calendar->speed) {
-				case Speed1: {
-					setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
-				} break;
-				case Speed2: {
-					setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
-				} break;
-				case Speed3: {
-					setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
-				} break;
-			}
-		} else {
-			ui->calendar->paused = true;
+#if 0
+	int32 speedChange = 0;
+	if (keyJustPressed(keyboardState, SDL_GetScancodeFromKey(SDLK_MINUS))) {
+		if (ui->calendar->speed > Speed1) {
+			speedChange = -1;
 		}
+	} else if (keyJustPressed(keyboardState, SDL_GetScancodeFromKey(SDLK_PLUS))) {
+		if (ui->calendar->speed < Speed3) {
+			speedChange = 1;
+		}
+	}
+	if (speedChange) {
+		ui->calendar->speed = (CalendarSpeed)(ui->calendar->speed + speedChange);
+		switch (ui->calendar->speed) {
+			case Speed1: {
+				setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
+			} break;
+			case Speed2: {
+				setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
+			} break;
+			case Speed3: {
+				setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
+			} break;
+		}
+	}
+#endif
+	if (ui->buttonPause.justClicked) {
+		ui->calendar->paused = !ui->calendar->paused;
 	} else if (ui->buttonPlaySlow->justClicked) {
 		ui->calendar->paused = false;
 		ui->calendar->speed = Speed1;
@@ -263,6 +283,7 @@ bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
 		ui->calendar->paused = false;
 		ui->calendar->speed = Speed3;
 	}
+	ui->buttonPause.active = ui->calendar->paused;
 
 	if (change->isNewDay) {
 		getDateString(ui->calendar, ui->dateStringBuffer);
@@ -511,11 +532,7 @@ int main(int argc, char *argv[]) {
 			calendar.paused = true;
 
 			// Highlight the pause button!
-			if (calendarUI.buttonGroup.activeButton) {
-				calendarUI.buttonGroup.activeButton->active = false;
-			}
-			calendarUI.buttonPause->active = true;
-			calendarUI.buttonGroup.activeButton = calendarUI.buttonPause;
+			calendarUI.buttonPause.active = true;
 
 			// Also set the cursor!
 			SDL_SetCursor(cursorMain);
@@ -820,6 +837,7 @@ int main(int argc, char *argv[]) {
 
 			drawUiButtonGroup(&renderer, &actionButtonGroup);
 			drawUiButtonGroup(&renderer, &calendarUI.buttonGroup);
+			drawUiButton(&renderer, &calendarUI.buttonPause);
 
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {

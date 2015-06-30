@@ -136,13 +136,20 @@ void drawUiIntLabel(Renderer *renderer, UiIntLabel *label) {
 	drawUiLabel(renderer, &label->label);
 }
 
-void updateUiButton(Renderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState, KeyboardState *keyboardState) {
+bool updateUiButton(Renderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState, KeyboardState *keyboardState) {
+	
+	bool eventEaten = false;
+
 	button->justClicked = false;
 
 	button->mouseOver = inRect(button->rect, mouseState->pos);
-	if (button->mouseOver && button->tooltip) {
-		// Display the tooltip!
-		showTooltip(tooltip, renderer, button->tooltip);
+	if (button->mouseOver) {
+		eventEaten = true;
+
+		if (button->tooltip) {
+			// Display the tooltip!
+			showTooltip(tooltip, renderer, button->tooltip);
+		}
 	}
 
 	if (button->shortcutKey
@@ -162,6 +169,8 @@ void updateUiButton(Renderer *renderer, Tooltip *tooltip, UiButton *button, Mous
 	} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
 		button->clickStarted = false;
 	}
+
+	return eventEaten;
 }
 
 void drawUiButton(Renderer *renderer, UiButton *button) {
