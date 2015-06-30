@@ -117,6 +117,11 @@ bool initializeRenderer(Renderer *renderer, char *windowTitle) {
 	if (!textureIconsPng->valid) {
 		return false;
 	}
+	renderer->textures[3] = loadTexture(renderer, "farming-logo.png");
+	Texture *textureLogoPng = &renderer->textures[3];
+	if (!textureLogoPng->valid) {
+		return false;
+	}
 
 	// Farming
 	const int w1 = TILE_WIDTH;
@@ -155,6 +160,8 @@ bool initializeRenderer(Renderer *renderer, char *windowTitle) {
 
 	setTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	textureIconsPng, { 0,  0, 32, 32});
 	setTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting,textureIconsPng, {32,  0, 32, 32});
+
+	setTextureRegion(renderer, TextureAtlasItem_Menu_Logo, textureLogoPng, {0,  0, 499, 154});
 
 	Animation *animation;
 	

@@ -52,6 +52,8 @@ enum TextureAtlasItem {
 	TextureAtlasItem_Icon_Planting,
 	TextureAtlasItem_Icon_Harvesting,
 
+	TextureAtlasItem_Menu_Logo,
+
 	TextureAtlasItemCount
 };
 

@@ -130,7 +130,6 @@ const int uiPadding = 4;
 
 struct MainMenuUI {
 	UiLabel cityNameEntryLabel,
-			gameTitleLabel,
 			gameSetupLabel,
 			gameRulesWinLoseLabel,
 			gameRulesWorkersLabel;
@@ -138,13 +137,11 @@ struct MainMenuUI {
 			buttonExit,
 			buttonWebsite;
 };
-void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *gameName, char *cityName) {
+void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *cityName) {
 
 	*menu = {};
 	Coord screenCentre = renderer->camera.windowSize / 2;
 	
-	initUiLabel(&menu->gameTitleLabel, renderer, screenCentre - coord(0, 100),
-				ALIGN_CENTER, gameName, renderer->theme.font, renderer->theme.labelColor);
 	initUiLabel(&menu->gameSetupLabel, renderer, screenCentre - coord(0, 50),
 				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->theme.font, renderer->theme.labelColor);
 	initUiLabel(&menu->cityNameEntryLabel, renderer, screenCentre,
@@ -168,7 +165,13 @@ void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *gameName, char *
 }
 void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer) {
 	drawUiRect(renderer, rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight), renderer->theme.overlayColor);
-	drawUiLabel(renderer, &menu->gameTitleLabel);
+
+	TextureRegion *logoRegion = renderer->regions + TextureAtlasItem_Menu_Logo;
+	Rect logoRect = logoRegion->rect;
+	logoRect.x = (renderer->camera.windowWidth - logoRect.w) / 2;
+	logoRect.y = 80;
+	drawUiTexture(renderer, logoRegion->texture, logoRect);
+
 	drawUiLabel(renderer, &menu->gameSetupLabel);
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
 	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
@@ -269,6 +272,9 @@ bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
 	return buttonAteMouseEvent;
 }
 
+// This is less 'start game' and more 'reset the map and everything so we can show 
+// an empty map in the background of the menu'. But also does resetting of things for when you
+// click 'Play'. This code is madness, basically.
 void startGame(City *city, Calendar *calendar, char *cityName) {
 	srand(0); // TODO: Seed the random number generator!
 
@@ -282,7 +288,7 @@ int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
-	char gameName[] = "Potato Farm Manager 2000";
+	char gameName[] = "Potato Farming Manager 2000";
 
 // INIT
 	Renderer renderer;
@@ -394,7 +400,7 @@ int main(int argc, char *argv[]) {
 
 	// Game menu
 	MainMenuUI mainMenuUI;
-	initMainMenuUI(&mainMenuUI, &renderer, gameName, cityName);
+	initMainMenuUI(&mainMenuUI, &renderer, cityName);
 
 	// Game over UI
 	UiLabel gameOverLabel;

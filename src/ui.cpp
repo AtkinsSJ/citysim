@@ -118,6 +118,11 @@ void drawUiTexture(Renderer *renderer, Texture *texture, Rect rect) {
 	SDL_RenderCopy(renderer->sdl_renderer, texture->sdl_texture, null, &rect.sdl_rect);
 }
 
+void drawUiTextureAtlasItem(Renderer *renderer, TextureAtlasItem item, Rect rect) {
+	TextureRegion *region = renderer->regions + item;
+	SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &rect.sdl_rect);
+}
+
 void drawUiLabel(Renderer *renderer, UiLabel *text) {
 	drawUiTexture(renderer, &text->texture, text->_rect);
 }
