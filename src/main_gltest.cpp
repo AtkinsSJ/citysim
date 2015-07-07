@@ -4,13 +4,18 @@
 #include <gl/glu.h>
 #include <stdio.h>
 
+const int WINDOW_W = 800,
+		WINDOW_H = 600;
+
 SDL_Window *gWindow = NULL;
 SDL_GLContext gContext;
 
 GLuint gProgramID = 0;
-GLint gVertextPos2DLocation = -1;
+GLint gVertextPos2DLocation = -1,
+	gWindowSizeLocation = -1;
 GLuint gVBO = 0;
 GLuint gIBO = 0;
+
 bool gRenderQuad = true;
 
 bool initOpenGL();
@@ -33,7 +38,7 @@ bool init() {
 	// Window
 	gWindow = SDL_CreateWindow("OpenGL test",
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-					800, 600, // Initial screen resolution
+					WINDOW_W, WINDOW_H, // Initial screen resolution
 					SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 	if (gWindow == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
@@ -70,6 +75,8 @@ bool init() {
 	return true;
 }
 
+
+
 bool initOpenGL() {
 	gProgramID = glCreateProgram();
 
@@ -77,7 +84,7 @@ bool initOpenGL() {
 	{
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 		const GLchar* vertexShaderSource[] = {
-			"#version 140\n"
+			"#version 150\n"
 			"in vec2 LVertexPos2D;"
 			"void main() {"
 				"gl_Position = vec4( LVertexPos2D.x, LVertexPos2D.y, 0, 1 );"
@@ -96,15 +103,16 @@ bool initOpenGL() {
 		}
 		glAttachShader(gProgramID, vertexShader);
 	}
-	
+
 	// FRAGMENT SHADER
 	{
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 		const GLchar* fragmentShaderSource[] = {
-			"#version 140\n"
+			"#version 150\n"
 			"out vec4 LFragment;"
+			"uniform vec2 uWindowSize;"
 			"void main() {"
-				"LFragment = vec4( 1.0, 1.0, 1.0, 1.0 );"
+				"LFragment = vec4( 0.0, gl_FragCoord.y/uWindowSize.y, 1.0, 1.0 );"
 			"}"
 		};
 		glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
@@ -134,6 +142,11 @@ bool initOpenGL() {
 	gVertextPos2DLocation = glGetAttribLocation(gProgramID, "LVertexPos2D");
 	if (gVertextPos2DLocation == -1) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "LVertexPos2D is not a valid glsl program variable!\n");
+		return false;
+	}
+	gWindowSizeLocation = glGetUniformLocation(gProgramID, "uWindowSize");
+	if (gWindowSizeLocation == -1) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uWindowSize is not a valid glsl program variable!\n");
 		return false;
 	}
 
@@ -231,6 +244,8 @@ void render() {
 
 		glBindBuffer(GL_ARRAY_BUFFER, gVBO);
 		glVertexAttribPointer(gVertextPos2DLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+
+		glUniform2f(gWindowSizeLocation, (float)WINDOW_W, (float)WINDOW_H);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
 		glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
