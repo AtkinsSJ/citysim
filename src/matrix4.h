@@ -1,5 +1,13 @@
 #pragma once
 
+/*
+	Matrices! Pretty sure I'm only going to use this for the camera projection,
+	so certain things are missing - notably, we can only rotate in the z-axis
+	because (for now) the game will be in 2D.
+
+	TODO: When I move to 3D, implement full rotation of matrices!
+*/
+
 struct Matrix4 {
 	union {
 		GLfloat v[4][4]; // Column-major order, so [COLUMN][ROW]

@@ -11,23 +11,28 @@ const int WINDOW_W = 800,
 		WINDOW_H = 600;
 
 SDL_Window *gWindow = NULL;
-SDL_GLContext gContext;
 
-GLuint gProgramID = 0;
-GLint gVertextPos2DLocation = -1,
-	gWindowSizeLocation = -1,
-	gProjectionMatrixLocation = -1;
-GLuint gVBO = 0;
-GLuint gIBO = 0;
+
+struct GLRenderer {
+	SDL_GLContext context;
+
+	GLuint shaderProgramID;
+	GLuint VBO,
+		   IBO;
+	GLint uWindowSizeLoc,
+		  uProjectionMatrixLoc;
+	GLint aPositionLoc;
+
+	Matrix4 projectionMatrix;
+};
 
 bool gRenderQuad = true;
-Matrix4 projectionMatrix;
 
-bool initOpenGL();
+bool initOpenGL(GLRenderer *glRenderer);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 
-bool init() {
+bool init(GLRenderer *glRenderer) {
 
 	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -51,8 +56,8 @@ bool init() {
 	}
 
 	// Create context
-	gContext = SDL_GL_CreateContext(gWindow);
-	if (gContext == NULL) {
+	glRenderer->context = SDL_GL_CreateContext(gWindow);
+	if (glRenderer->context == NULL) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
 		return false;
 	}
@@ -72,7 +77,7 @@ bool init() {
 	}
 
 	// Init OpenGL
-	if (!initOpenGL()) {
+	if (!initOpenGL(glRenderer)) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
 		return false;
 	}
@@ -82,18 +87,18 @@ bool init() {
 
 
 
-bool initOpenGL() {
-	gProgramID = glCreateProgram();
+bool initOpenGL(GLRenderer *glRenderer) {
+	glRenderer->shaderProgramID = glCreateProgram();
 
 	// VERTEX SHADER
 	{
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 		const GLchar* vertexShaderSource[] = {
 			"#version 150\n"
-			"in vec2 LVertexPos2D;"
+			"in vec3 aPosition;"
 			"uniform mat4 uProjectionMatrix;"
 			"void main() {"
-				"gl_Position = uProjectionMatrix * vec4( LVertexPos2D.x, LVertexPos2D.y, 0, 1 );"
+				"gl_Position = uProjectionMatrix * vec4( aPosition.xyz, 1 );"
 			"}"
 		};
 
@@ -107,7 +112,7 @@ bool initOpenGL() {
 			printShaderLog(vertexShader);
 			return false;
 		}
-		glAttachShader(gProgramID, vertexShader);
+		glAttachShader(glRenderer->shaderProgramID, vertexShader);
 	}
 
 	// FRAGMENT SHADER
@@ -131,32 +136,37 @@ bool initOpenGL() {
 			printShaderLog(fragmentShader);
 			return false;
 		}
-		glAttachShader(gProgramID, fragmentShader);
+		glAttachShader(glRenderer->shaderProgramID, fragmentShader);
 	}
 
 	// Link shader program
-	glLinkProgram(gProgramID);
+	glLinkProgram(glRenderer->shaderProgramID);
 	GLint programSuccess = GL_FALSE;
-	glGetProgramiv(gProgramID, GL_LINK_STATUS, &programSuccess);
+	glGetProgramiv(glRenderer->shaderProgramID, GL_LINK_STATUS, &programSuccess);
 	if (programSuccess != GL_TRUE) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", gProgramID);
-		printProgramLog(gProgramID);
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", glRenderer->shaderProgramID);
+		printProgramLog(glRenderer->shaderProgramID);
 		return false;
 	}
 
 	// Vertex attribute location
-	gVertextPos2DLocation = glGetAttribLocation(gProgramID, "LVertexPos2D");
-	if (gVertextPos2DLocation == -1) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "LVertexPos2D is not a valid glsl program variable!\n");
+	glRenderer->aPositionLoc = glGetAttribLocation(glRenderer->shaderProgramID, "aPosition");
+	if (glRenderer->aPositionLoc == -1) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
 		return false;
 	}
-	gWindowSizeLocation = glGetUniformLocation(gProgramID, "uWindowSize");
-	if (gWindowSizeLocation == -1) {
+	// gVertextPos2DLocation = glGetAttribLocation(glRenderer->shaderProgramID, "LVertexPos2D");
+	// if (gVertextPos2DLocation == -1) {
+	// 	SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "LVertexPos2D is not a valid glsl program variable!\n");
+	// 	return false;
+	// }
+	glRenderer->uWindowSizeLoc = glGetUniformLocation(glRenderer->shaderProgramID, "uWindowSize");
+	if (glRenderer->uWindowSizeLoc == -1) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uWindowSize is not a valid glsl program variable!\n");
 		return false;
 	}
-	gProjectionMatrixLocation = glGetUniformLocation(gProgramID, "uProjectionMatrix");
-	if (gProjectionMatrixLocation == -1) {
+	glRenderer->uProjectionMatrixLoc = glGetUniformLocation(glRenderer->shaderProgramID, "uProjectionMatrix");
+	if (glRenderer->uProjectionMatrixLoc == -1) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
 		return false;
 	}
@@ -170,14 +180,14 @@ bool initOpenGL() {
 		  0.5f,  0.5f,
 		 -0.5f,  0.5f
 	};
-	glGenBuffers(1, &gVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, gVBO);
+	glGenBuffers(1, &glRenderer->VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
 	glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
 
 	// Create IBO
 	GLuint indexData[] = { 0, 1, 2, 3 };
-	glGenBuffers(1, &gIBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
+	glGenBuffers(1, &glRenderer->IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
 
 	return true;
@@ -245,24 +255,24 @@ void printShaderLog( GLuint shader ) {
 	}
 }
 
-void render() {
+void render(GLRenderer *glRenderer) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	if (gRenderQuad) {
-		glUseProgram(gProgramID);
+		glUseProgram(glRenderer->shaderProgramID);
 
-		glEnableVertexAttribArray(gVertextPos2DLocation);
+		glEnableVertexAttribArray(glRenderer->aPositionLoc);
 
-		glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-		glVertexAttribPointer(gVertextPos2DLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
+		glVertexAttribPointer(glRenderer->aPositionLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
 
-		glUniform2f(gWindowSizeLocation, (float)WINDOW_W, (float)WINDOW_H);
-		glUniformMatrix4fv(gProjectionMatrixLocation, 1, false, projectionMatrix.flat);
+		glUniform2f(glRenderer->uWindowSizeLoc, (float)WINDOW_W, (float)WINDOW_H);
+		glUniformMatrix4fv(glRenderer->uProjectionMatrixLoc, 1, false, glRenderer->projectionMatrix.flat);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
 		glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 
-		glDisableVertexAttribArray(gVertextPos2DLocation);
+		glDisableVertexAttribArray(glRenderer->aPositionLoc);
 
 		glUseProgram(NULL);
 	}
@@ -270,14 +280,16 @@ void render() {
 
 int main(int argc, char *argv[]) {
 
-	if (!init()) {
+	GLRenderer glRenderer;
+	if (!init(&glRenderer)) {
 		return 1;
 	}
 	SDL_StartTextInput();
 
 	bool quit = false;
 	SDL_Event event;
-	projectionMatrix = identityMatrix4();
+
+	glRenderer.projectionMatrix = identityMatrix4();
 	real32 seconds = 0.0f;
 	
 	while( !quit )
@@ -299,19 +311,21 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+#if 1
 		seconds = SDL_GetTicks() / 1000.0f;
-		projectionMatrix = identityMatrix4();
-		scale(&projectionMatrix, v3(sin(seconds) * 0.5f + 1.0f, cos(seconds) * 0.5f + 1.0f, 1.0f) );
-		rotateZ(&projectionMatrix, seconds);
-		translate(&projectionMatrix, v3(sin(seconds) / 3.0f, cos(seconds) / 3.0f, 0) );
+		glRenderer.projectionMatrix = identityMatrix4();
+		scale(&glRenderer.projectionMatrix, v3(sin(seconds) * 0.5f + 1.0f, cos(seconds) * 0.5f + 1.0f, 1.0f) );
+		rotateZ(&glRenderer.projectionMatrix, seconds);
+		translate(&glRenderer.projectionMatrix, v3(sin(seconds) / 3.0f, cos(seconds) / 3.0f, 0) );
+#endif
 
 		//Render quad
-		render();
+		render(&glRenderer);
 		SDL_GL_SwapWindow( gWindow );
 	}
 	
 	SDL_StopTextInput();
-	glDeleteProgram( gProgramID );
+	glDeleteProgram( glRenderer.shaderProgramID );
 	SDL_DestroyWindow( gWindow );
 	SDL_Quit();
 
