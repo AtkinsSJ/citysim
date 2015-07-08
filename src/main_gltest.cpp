@@ -4,6 +4,9 @@
 #include <gl/glu.h>
 #include <stdio.h>
 
+#include "types.h"
+#include "matrix4.h"
+
 const int WINDOW_W = 800,
 		WINDOW_H = 600;
 
@@ -12,11 +15,13 @@ SDL_GLContext gContext;
 
 GLuint gProgramID = 0;
 GLint gVertextPos2DLocation = -1,
-	gWindowSizeLocation = -1;
+	gWindowSizeLocation = -1,
+	gProjectionMatrixLocation = -1;
 GLuint gVBO = 0;
 GLuint gIBO = 0;
 
 bool gRenderQuad = true;
+matrix4 projectionMatrix;
 
 bool initOpenGL();
 void printProgramLog(GLuint program);
@@ -86,8 +91,9 @@ bool initOpenGL() {
 		const GLchar* vertexShaderSource[] = {
 			"#version 150\n"
 			"in vec2 LVertexPos2D;"
+			"uniform mat4 uProjectionMatrix;"
 			"void main() {"
-				"gl_Position = vec4( LVertexPos2D.x, LVertexPos2D.y, 0, 1 );"
+				"gl_Position = vec4( LVertexPos2D.x, LVertexPos2D.y, 0, 1 ) * uProjectionMatrix;"
 			"}"
 		};
 
@@ -147,6 +153,11 @@ bool initOpenGL() {
 	gWindowSizeLocation = glGetUniformLocation(gProgramID, "uWindowSize");
 	if (gWindowSizeLocation == -1) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uWindowSize is not a valid glsl program variable!\n");
+		return false;
+	}
+	gProjectionMatrixLocation = glGetUniformLocation(gProgramID, "uProjectionMatrix");
+	if (gProjectionMatrixLocation == -1) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
 		return false;
 	}
 
@@ -246,6 +257,7 @@ void render() {
 		glVertexAttribPointer(gVertextPos2DLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
 
 		glUniform2f(gWindowSizeLocation, (float)WINDOW_W, (float)WINDOW_H);
+		glUniformMatrix4fv(gProjectionMatrixLocation, 1, false, projectionMatrix.flatValues);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
 		glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
@@ -265,6 +277,7 @@ int main(int argc, char *argv[]) {
 
 	bool quit = false;
 	SDL_Event event;
+	projectionMatrix = identityMatrix4();
 	
 	while( !quit )
 	{
