@@ -21,7 +21,7 @@ GLuint gVBO = 0;
 GLuint gIBO = 0;
 
 bool gRenderQuad = true;
-matrix4 projectionMatrix;
+Matrix4 projectionMatrix;
 
 bool initOpenGL();
 void printProgramLog(GLuint program);
@@ -93,7 +93,7 @@ bool initOpenGL() {
 			"in vec2 LVertexPos2D;"
 			"uniform mat4 uProjectionMatrix;"
 			"void main() {"
-				"gl_Position = vec4( LVertexPos2D.x, LVertexPos2D.y, 0, 1 ) * uProjectionMatrix;"
+				"gl_Position = uProjectionMatrix * vec4( LVertexPos2D.x, LVertexPos2D.y, 0, 1 );"
 			"}"
 		};
 
@@ -257,7 +257,7 @@ void render() {
 		glVertexAttribPointer(gVertextPos2DLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
 
 		glUniform2f(gWindowSizeLocation, (float)WINDOW_W, (float)WINDOW_H);
-		glUniformMatrix4fv(gProjectionMatrixLocation, 1, false, projectionMatrix.flatValues);
+		glUniformMatrix4fv(gProjectionMatrixLocation, 1, false, projectionMatrix.flat);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
 		glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
@@ -278,6 +278,7 @@ int main(int argc, char *argv[]) {
 	bool quit = false;
 	SDL_Event event;
 	projectionMatrix = identityMatrix4();
+	real32 seconds = 0.0f;
 	
 	while( !quit )
 	{
@@ -297,6 +298,12 @@ int main(int argc, char *argv[]) {
 				} break;
 			}
 		}
+
+		seconds = SDL_GetTicks() / 1000.0f;
+		projectionMatrix = identityMatrix4();
+		scale(&projectionMatrix, v3(sin(seconds) * 0.5f + 1.0f, cos(seconds) * 0.5f + 1.0f, 1.0f) );
+		rotateZ(&projectionMatrix, seconds);
+		translate(&projectionMatrix, v3(sin(seconds) / 3.0f, cos(seconds) / 3.0f, 0) );
 
 		//Render quad
 		render();

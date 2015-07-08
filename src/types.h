@@ -65,6 +65,10 @@ struct V2 {
 	real32 x,y;
 };
 
+struct V3 {
+	real32 x,y,z;
+};
+
 struct RealRect {
 	union {
 		struct {V2 pos;};
@@ -292,4 +296,13 @@ inline V2 limit(V2 vector, real32 maxLength) {
 
 inline V2 interpolate(V2 a, V2 b, real32 position) {
 	return a + (b-a)*position;
+}
+
+inline V3 v3(real32 x, real32 y, real32 z) {
+	V3 v = {};
+	v.x = x;
+	v.y = y;
+	v.z = z;
+
+	return v;
 }
