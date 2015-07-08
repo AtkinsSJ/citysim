@@ -25,6 +25,20 @@ Matrix4 identityMatrix4() {
 	return m;
 }
 
+Matrix4 orthographicMatrix4(GLfloat left, GLfloat right, GLfloat top, GLfloat bottom, GLfloat nearClip, GLfloat farClip) {
+	Matrix4 m = {};
+	m.v[0][0] = 2.0f / (right-left);
+	m.v[1][1] = 2.0f / (top-bottom);
+	m.v[2][2] = -2.0f / (farClip-nearClip);
+
+	m.v[3][0] = -(right+left) / (right-left);
+	m.v[3][1] = -(top+bottom) / (top-bottom);
+	m.v[3][2] = -(farClip+nearClip) / (farClip-nearClip);
+	m.v[3][3] = 1.0f;
+
+	return m;
+}
+
 inline Matrix4 operator+(Matrix4 a, Matrix4 b) {
 	Matrix4 result = {};
 	

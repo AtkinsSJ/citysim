@@ -175,14 +175,14 @@ bool initOpenGL(GLRenderer *glRenderer) {
 
 	// Create VBO
 	GLfloat vertexData[] = {
-		 -0.5f, -0.5f,
-		  0.5f, -0.5f,
-		  0.5f,  0.5f,
-		 -0.5f,  0.5f
+		 -0.5f, -0.5f, 0.0f,
+		  0.5f, -0.5f, 1.0f,
+		  0.5f,  0.5f, 2.0f,
+		 -0.5f,  0.5f, 3.0f,
 	};
 	glGenBuffers(1, &glRenderer->VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
-	glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
 
 	// Create IBO
 	GLuint indexData[] = { 0, 1, 2, 3 };
@@ -264,7 +264,7 @@ void render(GLRenderer *glRenderer) {
 		glEnableVertexAttribArray(glRenderer->aPositionLoc);
 
 		glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
-		glVertexAttribPointer(glRenderer->aPositionLoc, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+		glVertexAttribPointer(glRenderer->aPositionLoc, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
 
 		glUniform2f(glRenderer->uWindowSizeLoc, (float)WINDOW_W, (float)WINDOW_H);
 		glUniformMatrix4fv(glRenderer->uProjectionMatrixLoc, 1, false, glRenderer->projectionMatrix.flat);
@@ -289,7 +289,7 @@ int main(int argc, char *argv[]) {
 	bool quit = false;
 	SDL_Event event;
 
-	glRenderer.projectionMatrix = identityMatrix4();
+	glRenderer.projectionMatrix = orthographicMatrix4(-1.0f, 1.0f, -1.0f, 1.0f, -100.0f, 100.0f);
 	real32 seconds = 0.0f;
 	
 	while( !quit )
@@ -311,7 +311,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-#if 1
+#if 0
 		seconds = SDL_GetTicks() / 1000.0f;
 		glRenderer.projectionMatrix = identityMatrix4();
 		scale(&glRenderer.projectionMatrix, v3(sin(seconds) * 0.5f + 1.0f, cos(seconds) * 0.5f + 1.0f, 1.0f) );
