@@ -3,6 +3,7 @@
 #include <SDL_opengl.h>
 #include <gl/glu.h>
 #include <stdio.h>
+#include <SDL_image.h>
 
 #include "types.h"
 #include "matrix4.h"
@@ -19,19 +20,23 @@ struct GLRenderer {
 	GLuint shaderProgramID;
 	GLuint VBO,
 		   IBO;
-	GLint uProjectionMatrixLoc;
+	GLint uProjectionMatrixLoc,
+		  uTextureLoc;
 	GLint aPositionLoc,
-		  aColorLoc;
+		  aColorLoc,
+		  aUVLoc;
 
 	Matrix4 projectionMatrix;
+
+	GLuint texture;
+	GLenum textureFormat;
 };
 
 struct VertexData {
 	V3 pos;
 	V4 color;
+	V2 uv;
 };
-
-bool gRenderQuad = true;
 
 bool initOpenGL(GLRenderer *glRenderer);
 void printProgramLog(GLuint program);
@@ -42,6 +47,13 @@ bool init(GLRenderer *glRenderer) {
 	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
+		return false;
+	}
+
+	// SDL_image
+	uint8 imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
 		return false;
 	}
 
@@ -95,18 +107,27 @@ bool init(GLRenderer *glRenderer) {
 bool initOpenGL(GLRenderer *glRenderer) {
 	glRenderer->shaderProgramID = glCreateProgram();
 
+	glEnable(GL_TEXTURE_2D);
+
 	// VERTEX SHADER
 	{
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 		const GLchar* vertexShaderSource[] = {
 			"#version 150\n"
+
 			"in vec3 aPosition;"
 			"in vec4 aColor;"
+			"in vec2 aUV;"
+
 			"out vec4 vColor;"
+			"out vec2 vUV;"
+
 			"uniform mat4 uProjectionMatrix;"
+
 			"void main() {"
 				"gl_Position = uProjectionMatrix * vec4( aPosition.xyz, 1 );"
 				"vColor = aColor;"
+				"vUV = aUV;"
 			"}"
 		};
 
@@ -129,10 +150,16 @@ bool initOpenGL(GLRenderer *glRenderer) {
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 		const GLchar* fragmentShaderSource[] = {
 			"#version 150\n"
+
+			"uniform sampler2D uTexture;"
+
 			"in vec4 vColor;"
+			"in vec2 vUV;"
+
 			"out vec4 fragColor;"
+
 			"void main() {"
-				"fragColor = vColor;"
+				"fragColor = texture(uTexture, vUV) * vColor;"
 			"}"
 		};
 		glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
@@ -170,6 +197,11 @@ bool initOpenGL(GLRenderer *glRenderer) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
 		return false;
 	}
+	glRenderer->aUVLoc = glGetAttribLocation(glRenderer->shaderProgramID, "aUV");
+	if (glRenderer->aUVLoc == -1) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
+		return false;
+	}
 
 	// Uniform locations
 	glRenderer->uProjectionMatrixLoc = glGetUniformLocation(glRenderer->shaderProgramID, "uProjectionMatrix");
@@ -177,15 +209,20 @@ bool initOpenGL(GLRenderer *glRenderer) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
 		return false;
 	}
+	glRenderer->uTextureLoc = glGetUniformLocation(glRenderer->shaderProgramID, "uTexture");
+	if (glRenderer->uTextureLoc == -1) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTexture is not a valid glsl program variable!\n");
+		return false;
+	}
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
 	// Create VBO
 	VertexData vertexData[] = {
-		{v3( -10.5f, -10.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f)},
-		{v3(  10.5f, -10.5f, 1.0f), v4(1.0f, 0.0f, 0.0f, 1.0f)},
-		{v3(  10.5f,  10.5f, 2.0f), v4(0.0f, 0.0f, 1.0f, 1.0f)},
-		{v3( -10.5f,  10.5f, 3.0f), v4(0.0f, 1.0f, 0.0f, 1.0f)},
+		{v3( -3.5f, -3.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)},
+		{v3(  3.5f, -3.5f, 1.0f), v4(1.0f, 0.0f, 0.0f, 1.0f), v2(1.0f, 0.0f)},
+		{v3(  3.5f,  3.5f, 2.0f), v4(0.0f, 0.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)},
+		{v3( -3.5f,  3.5f, 3.0f), v4(0.0f, 1.0f, 0.0f, 1.0f), v2(0.0f, 1.0f)},
 	};
 	glGenBuffers(1, &glRenderer->VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
@@ -195,7 +232,7 @@ bool initOpenGL(GLRenderer *glRenderer) {
 	GLuint indexData[] = { 0, 1, 2, 3 };
 	glGenBuffers(1, &glRenderer->IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ArrayCount(indexData) * sizeof(GLuint), indexData, GL_STATIC_DRAW);
 
 	return true;
 }
@@ -265,26 +302,34 @@ void printShaderLog( GLuint shader ) {
 void render(GLRenderer *glRenderer) {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	if (gRenderQuad) {
-		glUseProgram(glRenderer->shaderProgramID);
+	glUseProgram(glRenderer->shaderProgramID);
 
-		glEnableVertexAttribArray(glRenderer->aPositionLoc);
-		glEnableVertexAttribArray(glRenderer->aColorLoc);
+	// Bind the texture to TEXTURE0, then set 0 as the uniform
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->texture);
+	glUniform1i(glRenderer->uTextureLoc, 0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
-		glVertexAttribPointer(glRenderer->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
-		glVertexAttribPointer(glRenderer->aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	glEnableVertexAttribArray(glRenderer->aPositionLoc);
+	glEnableVertexAttribArray(glRenderer->aColorLoc);
+	glEnableVertexAttribArray(glRenderer->aUVLoc);
 
-		glUniformMatrix4fv(glRenderer->uProjectionMatrixLoc, 1, false, glRenderer->projectionMatrix.flat);
+	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
+	glVertexAttribPointer(glRenderer->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+	glVertexAttribPointer(glRenderer->aColorLoc, 	4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	glVertexAttribPointer(glRenderer->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
-		glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
+	glUniformMatrix4fv(glRenderer->uProjectionMatrixLoc, 1, false, glRenderer->projectionMatrix.flat);
 
-		glDisableVertexAttribArray(glRenderer->aPositionLoc);
-		glDisableVertexAttribArray(glRenderer->aColorLoc);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
+	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 
-		glUseProgram(NULL);
-	}
+	glDisableVertexAttribArray(glRenderer->aPositionLoc);
+	glDisableVertexAttribArray(glRenderer->aColorLoc);
+	glDisableVertexAttribArray(glRenderer->aUVLoc);
+
+	glUseProgram(NULL);
+
+	SDL_GL_SwapWindow( gWindow );
 }
 
 int main(int argc, char *argv[]) {
@@ -293,6 +338,22 @@ int main(int argc, char *argv[]) {
 	if (!init(&glRenderer)) {
 		return 1;
 	}
+
+	// Load a texture
+	{
+		SDL_Surface *surface = IMG_Load("combined.png");
+		if (!surface) {
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load png!\n%s", IMG_GetError());
+			return 1;
+		}
+		glGenTextures(1, &glRenderer.texture);
+		glBindTexture(GL_TEXTURE_2D, glRenderer.texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+		SDL_FreeSurface(surface);
+	}
+
 	SDL_StartTextInput();
 
 	bool quit = false;
@@ -314,32 +375,25 @@ int main(int argc, char *argv[]) {
 				case SDL_QUIT: {
 					quit = true;
 				} break;
-
-				case SDL_TEXTINPUT: {
-					if( event.text.text[ 0 ] == 'q' )
-					{
-						gRenderQuad = !gRenderQuad;
-					}
-				} break;
 			}
 		}
 
-#if 0
+#if 1
 		seconds = SDL_GetTicks() / 1000.0f;
-		glRenderer.projectionMatrix = identityMatrix4();
+		glRenderer.projectionMatrix = orthographicMatrix4(-halfCamWidth, halfCamWidth, -halfCamHeight, halfCamHeight, -100.0f, 100.0f);
 		scale(&glRenderer.projectionMatrix, v3(sin(seconds) * 0.5f + 1.0f, cos(seconds) * 0.5f + 1.0f, 1.0f) );
-		rotateZ(&glRenderer.projectionMatrix, seconds);
+		rotateZ(&glRenderer.projectionMatrix, -seconds);
 		translate(&glRenderer.projectionMatrix, v3(sin(seconds) / 3.0f, cos(seconds) / 3.0f, 0) );
 #endif
 
 		//Render quad
 		render(&glRenderer);
-		SDL_GL_SwapWindow( gWindow );
 	}
 	
 	SDL_StopTextInput();
 	glDeleteProgram( glRenderer.shaderProgramID );
 	SDL_DestroyWindow( gWindow );
+	IMG_Quit();
 	SDL_Quit();
 
 	return 0;

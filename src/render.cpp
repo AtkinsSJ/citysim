@@ -24,7 +24,7 @@ Texture loadTexture(Renderer *renderer, char *path) {
 
 	SDL_Surface *loadedSurface = IMG_Load(path);
 	if (loadedSurface == NULL) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, SDL_GetError());
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load image at '%s': %s\n", path, IMG_GetError());
 	} else {
 		texture = textureFromSurface(renderer, loadedSurface);
 		texture.filename = path;
