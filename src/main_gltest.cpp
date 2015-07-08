@@ -19,11 +19,16 @@ struct GLRenderer {
 	GLuint shaderProgramID;
 	GLuint VBO,
 		   IBO;
-	GLint uWindowSizeLoc,
-		  uProjectionMatrixLoc;
-	GLint aPositionLoc;
+	GLint uProjectionMatrixLoc;
+	GLint aPositionLoc,
+		  aColorLoc;
 
 	Matrix4 projectionMatrix;
+};
+
+struct VertexData {
+	V3 pos;
+	V4 color;
 };
 
 bool gRenderQuad = true;
@@ -96,9 +101,12 @@ bool initOpenGL(GLRenderer *glRenderer) {
 		const GLchar* vertexShaderSource[] = {
 			"#version 150\n"
 			"in vec3 aPosition;"
+			"in vec4 aColor;"
+			"out vec4 vColor;"
 			"uniform mat4 uProjectionMatrix;"
 			"void main() {"
 				"gl_Position = uProjectionMatrix * vec4( aPosition.xyz, 1 );"
+				"vColor = aColor;"
 			"}"
 		};
 
@@ -113,6 +121,7 @@ bool initOpenGL(GLRenderer *glRenderer) {
 			return false;
 		}
 		glAttachShader(glRenderer->shaderProgramID, vertexShader);
+		glDeleteShader(vertexShader);
 	}
 
 	// FRAGMENT SHADER
@@ -120,10 +129,10 @@ bool initOpenGL(GLRenderer *glRenderer) {
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 		const GLchar* fragmentShaderSource[] = {
 			"#version 150\n"
-			"out vec4 LFragment;"
-			"uniform vec2 uWindowSize;"
+			"in vec4 vColor;"
+			"out vec4 fragColor;"
 			"void main() {"
-				"LFragment = vec4( 0.0, gl_FragCoord.y/uWindowSize.y, 1.0, 1.0 );"
+				"fragColor = vColor;"
 			"}"
 		};
 		glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
@@ -137,6 +146,7 @@ bool initOpenGL(GLRenderer *glRenderer) {
 			return false;
 		}
 		glAttachShader(glRenderer->shaderProgramID, fragmentShader);
+		glDeleteShader(fragmentShader);
 	}
 
 	// Link shader program
@@ -155,16 +165,13 @@ bool initOpenGL(GLRenderer *glRenderer) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
 		return false;
 	}
-	// gVertextPos2DLocation = glGetAttribLocation(glRenderer->shaderProgramID, "LVertexPos2D");
-	// if (gVertextPos2DLocation == -1) {
-	// 	SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "LVertexPos2D is not a valid glsl program variable!\n");
-	// 	return false;
-	// }
-	glRenderer->uWindowSizeLoc = glGetUniformLocation(glRenderer->shaderProgramID, "uWindowSize");
-	if (glRenderer->uWindowSizeLoc == -1) {
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uWindowSize is not a valid glsl program variable!\n");
+	glRenderer->aColorLoc = glGetAttribLocation(glRenderer->shaderProgramID, "aColor");
+	if (glRenderer->aColorLoc == -1) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
 		return false;
 	}
+
+	// Uniform locations
 	glRenderer->uProjectionMatrixLoc = glGetUniformLocation(glRenderer->shaderProgramID, "uProjectionMatrix");
 	if (glRenderer->uProjectionMatrixLoc == -1) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
@@ -174,15 +181,15 @@ bool initOpenGL(GLRenderer *glRenderer) {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Create VBO
-	GLfloat vertexData[] = {
-		 -0.5f, -0.5f, 0.0f,
-		  0.5f, -0.5f, 1.0f,
-		  0.5f,  0.5f, 2.0f,
-		 -0.5f,  0.5f, 3.0f,
+	VertexData vertexData[] = {
+		{v3( -10.5f, -10.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f)},
+		{v3(  10.5f, -10.5f, 1.0f), v4(1.0f, 0.0f, 0.0f, 1.0f)},
+		{v3(  10.5f,  10.5f, 2.0f), v4(0.0f, 0.0f, 1.0f, 1.0f)},
+		{v3( -10.5f,  10.5f, 3.0f), v4(0.0f, 1.0f, 0.0f, 1.0f)},
 	};
 	glGenBuffers(1, &glRenderer->VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
-	glBufferData(GL_ARRAY_BUFFER, 3 * 4 * sizeof(GLfloat), vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, ArrayCount(vertexData) * sizeof(VertexData), vertexData, GL_STATIC_DRAW);
 
 	// Create IBO
 	GLuint indexData[] = { 0, 1, 2, 3 };
@@ -262,17 +269,19 @@ void render(GLRenderer *glRenderer) {
 		glUseProgram(glRenderer->shaderProgramID);
 
 		glEnableVertexAttribArray(glRenderer->aPositionLoc);
+		glEnableVertexAttribArray(glRenderer->aColorLoc);
 
 		glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
-		glVertexAttribPointer(glRenderer->aPositionLoc, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), NULL);
+		glVertexAttribPointer(glRenderer->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+		glVertexAttribPointer(glRenderer->aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
 
-		glUniform2f(glRenderer->uWindowSizeLoc, (float)WINDOW_W, (float)WINDOW_H);
 		glUniformMatrix4fv(glRenderer->uProjectionMatrixLoc, 1, false, glRenderer->projectionMatrix.flat);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
 		glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 
 		glDisableVertexAttribArray(glRenderer->aPositionLoc);
+		glDisableVertexAttribArray(glRenderer->aColorLoc);
 
 		glUseProgram(NULL);
 	}
@@ -289,7 +298,11 @@ int main(int argc, char *argv[]) {
 	bool quit = false;
 	SDL_Event event;
 
-	glRenderer.projectionMatrix = orthographicMatrix4(-1.0f, 1.0f, -1.0f, 1.0f, -100.0f, 100.0f);
+	const real32 worldScale = 1.0f / 16.0f;
+	real32 halfCamWidth = WINDOW_W * worldScale * 0.5f,
+			halfCamHeight = WINDOW_H * worldScale * 0.5f;
+
+	glRenderer.projectionMatrix = orthographicMatrix4(-halfCamWidth, halfCamWidth, -halfCamHeight, halfCamHeight, -100.0f, 100.0f);
 	real32 seconds = 0.0f;
 	
 	while( !quit )

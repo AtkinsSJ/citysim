@@ -68,6 +68,16 @@ struct V2 {
 struct V3 {
 	real32 x,y,z;
 };
+struct V4 {
+	union {
+		struct {
+			real32 x,y,z,w;
+		};
+		struct {
+			real32 r,g,b,a;
+		};
+	};
+};
 
 struct RealRect {
 	union {
@@ -303,6 +313,16 @@ inline V3 v3(real32 x, real32 y, real32 z) {
 	v.x = x;
 	v.y = y;
 	v.z = z;
+
+	return v;
+}
+
+inline V4 v4(real32 x, real32 y, real32 z, real32 w) {
+	V4 v = {};
+	v.x = x;
+	v.y = y;
+	v.z = z;
+	v.w = w;
 
 	return v;
 }
