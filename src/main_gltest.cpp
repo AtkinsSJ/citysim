@@ -14,6 +14,12 @@ const int WINDOW_W = 800,
 SDL_Window *gWindow = NULL;
 
 
+struct VertexData {
+	V3 pos;
+	V4 color;
+	V2 uv;
+};
+
 struct GLRenderer {
 	SDL_GLContext context;
 
@@ -30,12 +36,12 @@ struct GLRenderer {
 
 	GLuint texture;
 	GLenum textureFormat;
-};
 
-struct VertexData {
-	V3 pos;
-	V4 color;
-	V2 uv;
+	VertexData vertices[1024];
+	int32 vertexCount;
+
+	GLuint indices[1024];
+	int32 indexCount;
 };
 
 bool initOpenGL(GLRenderer *glRenderer);
@@ -219,22 +225,9 @@ bool initOpenGL(GLRenderer *glRenderer) {
 
 	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-	// Create VBO
-	VertexData vertexData[] = {
-		{v3( -5.5f, -5.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)},
-		{v3(  5.5f, -5.5f, 1.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)},
-		{v3(  5.5f,  5.5f, 2.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)},
-		{v3( -5.5f,  5.5f, 3.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)},
-	};
+	// Create vertex and index buffers
 	glGenBuffers(1, &glRenderer->VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
-	glBufferData(GL_ARRAY_BUFFER, ArrayCount(vertexData) * sizeof(VertexData), vertexData, GL_STATIC_DRAW);
-
-	// Create IBO
-	GLuint indexData[] = { 0, 1, 2, 3 };
 	glGenBuffers(1, &glRenderer->IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ArrayCount(indexData) * sizeof(GLuint), indexData, GL_STATIC_DRAW);
 
 	return true;
 }
@@ -323,7 +316,7 @@ void render(GLRenderer *glRenderer) {
 	glUniformMatrix4fv(glRenderer->uProjectionMatrixLoc, 1, false, glRenderer->projectionMatrix.flat);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
-	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
 	glDisableVertexAttribArray(glRenderer->aPositionLoc);
 	glDisableVertexAttribArray(glRenderer->aColorLoc);
@@ -334,9 +327,23 @@ void render(GLRenderer *glRenderer) {
 	SDL_GL_SwapWindow( gWindow );
 }
 
+void pushQuad(GLRenderer *glRenderer) {
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( -5.5f, -5.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3(  5.5f, -5.5f, 1.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3(  5.5f,  5.5f, 2.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( -5.5f,  5.5f, 3.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)};
+
+	glRenderer->indices[glRenderer->indexCount++] = 0;
+	glRenderer->indices[glRenderer->indexCount++] = 1;
+	glRenderer->indices[glRenderer->indexCount++] = 2;
+	glRenderer->indices[glRenderer->indexCount++] = 0;
+	glRenderer->indices[glRenderer->indexCount++] = 2;
+	glRenderer->indices[glRenderer->indexCount++] = 3;
+}
+
 int main(int argc, char *argv[]) {
 
-	GLRenderer glRenderer;
+	GLRenderer glRenderer = {};
 	if (!init(&glRenderer)) {
 		return 1;
 	}
@@ -387,6 +394,19 @@ int main(int argc, char *argv[]) {
 		rotateZ(&glRenderer.projectionMatrix, -seconds);
 		translate(&glRenderer.projectionMatrix, v3(sin(seconds) / 3.0f, cos(seconds) / 3.0f, 0) );
 #endif
+
+		// Fill VBO
+		glRenderer.vertexCount = 0;
+		glRenderer.indexCount = 0;
+
+		pushQuad(&glRenderer);
+		
+		glBindBuffer(GL_ARRAY_BUFFER, glRenderer.VBO);
+		glBufferData(GL_ARRAY_BUFFER, glRenderer.vertexCount * sizeof(VertexData), glRenderer.vertices, GL_STATIC_DRAW);
+
+		// Fill IBO
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer.IBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, glRenderer.indexCount * sizeof(GLuint), glRenderer.indices, GL_STATIC_DRAW);
 
 		//Render quad
 		render(&glRenderer);
