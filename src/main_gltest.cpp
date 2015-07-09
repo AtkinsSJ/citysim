@@ -356,6 +356,32 @@ int main(int argc, char *argv[]) {
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to load png!\n%s", IMG_GetError());
 			return 1;
 		}
+
+		// Premultiply alpha
+		uint32 Rmask = surface->format->Rmask,
+			   Gmask = surface->format->Gmask,
+			   Bmask = surface->format->Bmask,
+			   Amask = surface->format->Amask;
+		real32 rRmask = (real32)Rmask,
+			   rGmask = (real32)Gmask,
+			   rBmask = (real32)Bmask,
+			   rAmask = (real32)Amask;
+
+		for (int i=0; i<surface->w * surface->h; i++) {
+			uint32 pixel = ((uint32*)surface->pixels)[i];
+			real32 rr = (real32)(pixel & Rmask) / rRmask;
+			real32 rg = (real32)(pixel & Gmask) / rGmask;
+			real32 rb = (real32)(pixel & Bmask) / rBmask;
+			real32 ra = (real32)(pixel & Amask) / rAmask;
+
+			uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
+			uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
+			uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
+			uint32 a = (uint32)(ra * rAmask) & Amask;
+
+			((uint32*)surface->pixels)[i] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
+		}
+
 		glGenTextures(1, &glRenderer.texture);
 		glBindTexture(GL_TEXTURE_2D, glRenderer.texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
