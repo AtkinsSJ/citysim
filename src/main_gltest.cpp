@@ -159,7 +159,9 @@ bool initOpenGL(GLRenderer *glRenderer) {
 			"out vec4 fragColor;"
 
 			"void main() {"
-				"fragColor = texture(uTexture, vUV) * vColor;"
+				"vec4 texel = texture(uTexture, vUV);"
+				"if (texel.a < 0.9f) discard;"
+				"fragColor = texel * vColor;"
 			"}"
 		};
 		glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
@@ -219,10 +221,10 @@ bool initOpenGL(GLRenderer *glRenderer) {
 
 	// Create VBO
 	VertexData vertexData[] = {
-		{v3( -3.5f, -3.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)},
-		{v3(  3.5f, -3.5f, 1.0f), v4(1.0f, 0.0f, 0.0f, 1.0f), v2(1.0f, 0.0f)},
-		{v3(  3.5f,  3.5f, 2.0f), v4(0.0f, 0.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)},
-		{v3( -3.5f,  3.5f, 3.0f), v4(0.0f, 1.0f, 0.0f, 1.0f), v2(0.0f, 1.0f)},
+		{v3( -5.5f, -5.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)},
+		{v3(  5.5f, -5.5f, 1.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)},
+		{v3(  5.5f,  5.5f, 2.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)},
+		{v3( -5.5f,  5.5f, 3.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)},
 	};
 	glGenBuffers(1, &glRenderer->VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->VBO);
