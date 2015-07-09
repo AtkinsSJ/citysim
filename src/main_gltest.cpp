@@ -38,10 +38,20 @@ struct GLRenderer {
 	GLenum textureFormat;
 
 	VertexData vertices[1024];
-	int32 vertexCount;
-
+	uint32 vertexCount;
 	GLuint indices[1024];
-	int32 indexCount;
+	uint32 indexCount;
+};
+
+struct Sprite {
+	V2 pos;
+	V2 size;
+	real32 depth; // Positive is forwards from the camera
+};
+
+struct SpriteBuffer {
+	Sprite sprites[1024];
+	uint32 spriteCount;
 };
 
 bool initOpenGL(GLRenderer *glRenderer);
@@ -291,6 +301,24 @@ void printShaderLog( GLuint shader ) {
 	}
 }
 
+void renderSprite(GLRenderer *glRenderer, Sprite *sprite) {
+	int firstVertex = glRenderer->vertexCount;
+
+	V2 halfSize = sprite->size / 2.0f;
+
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( sprite->pos.x - halfSize.x, sprite->pos.y - halfSize.y, sprite->depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( sprite->pos.x + halfSize.x, sprite->pos.y - halfSize.y, sprite->depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( sprite->pos.x + halfSize.x, sprite->pos.y + halfSize.y, sprite->depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( sprite->pos.x - halfSize.x, sprite->pos.y + halfSize.y, sprite->depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)};
+
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 0;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 1;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 2;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 0;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 2;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 3;
+}
+
 void render(GLRenderer *glRenderer) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);
@@ -326,22 +354,8 @@ void render(GLRenderer *glRenderer) {
 	SDL_GL_SwapWindow( gWindow );
 }
 
-void pushQuad(GLRenderer *glRenderer, V2 pos, V2 size, real32 depth) {
-	int firstVertex = glRenderer->vertexCount;
+void sortSpriteBuffer(SpriteBuffer *spriteBuffer) {
 
-	V2 halfSize = size / 2.0f;
-
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x - halfSize.x, pos.y - halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)};
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x + halfSize.x, pos.y - halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)};
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x + halfSize.x, pos.y + halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)};
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x - halfSize.x, pos.y + halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)};
-
-	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 0;
-	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 1;
-	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 2;
-	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 0;
-	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 2;
-	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 3;
 }
 
 int main(int argc, char *argv[]) {
@@ -401,8 +415,10 @@ int main(int argc, char *argv[]) {
 	real32 halfCamWidth = WINDOW_W * worldScale * 0.5f,
 			halfCamHeight = WINDOW_H * worldScale * 0.5f;
 
-	glRenderer.projectionMatrix = orthographicMatrix4(-halfCamWidth, halfCamWidth, -halfCamHeight, halfCamHeight, -100.0f, 100.0f);
+	glRenderer.projectionMatrix = orthographicMatrix4(-halfCamWidth, halfCamWidth, -halfCamHeight, halfCamHeight, -1000.0f, 1000.0f);
 	real32 seconds = 0.0f;
+
+	SpriteBuffer spriteBuffer = {};
 	
 	while( !quit )
 	{
@@ -424,15 +440,23 @@ int main(int argc, char *argv[]) {
 		translate(&glRenderer.projectionMatrix, v3(sin(seconds) / 3.0f, cos(seconds) / 3.0f, 0) );
 #endif
 
+		// Generate sprites
+		spriteBuffer.spriteCount = 0;
+		spriteBuffer.sprites[spriteBuffer.spriteCount++] = {v2(1.0f,1.0f), v2(10.0f, 10.0f), 1.0f};
+		spriteBuffer.sprites[spriteBuffer.spriteCount++] = {v2(2.0f,2.0f), v2( 9.0f,  9.0f), 2.0f};
+		spriteBuffer.sprites[spriteBuffer.spriteCount++] = {v2(3.0f,3.0f), v2( 8.0f,  8.0f), 3.0f};
+		spriteBuffer.sprites[spriteBuffer.spriteCount++] = {v2(4.0f,4.0f), v2( 7.0f,  7.0f), 4.0f};
+		spriteBuffer.sprites[spriteBuffer.spriteCount++] = {v2(5.0f,5.0f), v2( 6.0f,  6.0f), 5.0f};
+
+		// Sort sprites
+		sortSpriteBuffer(&spriteBuffer);
+
 		// Fill VBO
 		glRenderer.vertexCount = 0;
 		glRenderer.indexCount = 0;
-
-		pushQuad(&glRenderer, v2(1.0f,1.0f), v2(10.0f, 10.0f), -1.0f);
-		pushQuad(&glRenderer, v2(2.0f,2.0f), v2( 9.0f,  9.0f), -2.0f);
-		pushQuad(&glRenderer, v2(3.0f,3.0f), v2( 8.0f,  8.0f), -3.0f);
-		pushQuad(&glRenderer, v2(4.0f,4.0f), v2( 7.0f,  7.0f), -4.0f);
-		pushQuad(&glRenderer, v2(5.0f,5.0f), v2( 6.0f,  6.0f), -5.0f);
+		for (uint32 i=0; i < spriteBuffer.spriteCount; i++) {
+			renderSprite(&glRenderer, spriteBuffer.sprites + i);
+		}
 		
 		glBindBuffer(GL_ARRAY_BUFFER, glRenderer.VBO);
 		glBufferData(GL_ARRAY_BUFFER, glRenderer.vertexCount * sizeof(VertexData), glRenderer.vertices, GL_STATIC_DRAW);

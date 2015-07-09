@@ -2,6 +2,13 @@
 TODO:
 ---------------------------------------------
 
+Renderimg 2.0:
+- Sorting!
+- At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
+- Integrate it with the game!
+- Separate world drawing from ui drawing (multiple cameras, however they end up working)
+
+
 Rendering:
 - Draw things with an offset, defined per-texture-region(?)
 - Weird rendering issues with gaps between tiles at non-default zoom levels.
