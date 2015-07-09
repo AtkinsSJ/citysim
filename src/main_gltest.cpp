@@ -315,7 +315,7 @@ void render(GLRenderer *glRenderer) {
 	glUniformMatrix4fv(glRenderer->uProjectionMatrixLoc, 1, false, glRenderer->projectionMatrix.flat);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glRenderer->IBO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, glRenderer->indexCount, GL_UNSIGNED_INT, NULL);
 
 	glDisableVertexAttribArray(glRenderer->aPositionLoc);
 	glDisableVertexAttribArray(glRenderer->aColorLoc);
@@ -326,13 +326,15 @@ void render(GLRenderer *glRenderer) {
 	SDL_GL_SwapWindow( gWindow );
 }
 
-void pushQuad(GLRenderer *glRenderer) {
+void pushQuad(GLRenderer *glRenderer, V2 pos, V2 size, real32 depth) {
 	int firstVertex = glRenderer->vertexCount;
 
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3( -5.5f, -5.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)};
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3(  5.5f, -5.5f, 1.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)};
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3(  5.5f,  5.5f, 2.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)};
-	glRenderer->vertices[glRenderer->vertexCount++] = {v3( -5.5f,  5.5f, 3.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)};
+	V2 halfSize = size / 2.0f;
+
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x - halfSize.x, pos.y - halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x + halfSize.x, pos.y - halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x + halfSize.x, pos.y + halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)};
+	glRenderer->vertices[glRenderer->vertexCount++] = {v3( pos.x - halfSize.x, pos.y + halfSize.y, depth), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)};
 
 	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 0;
 	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 1;
@@ -426,7 +428,11 @@ int main(int argc, char *argv[]) {
 		glRenderer.vertexCount = 0;
 		glRenderer.indexCount = 0;
 
-		pushQuad(&glRenderer);
+		pushQuad(&glRenderer, v2(1.0f,1.0f), v2(10.0f, 10.0f), -1.0f);
+		pushQuad(&glRenderer, v2(2.0f,2.0f), v2( 9.0f,  9.0f), -2.0f);
+		pushQuad(&glRenderer, v2(3.0f,3.0f), v2( 8.0f,  8.0f), -3.0f);
+		pushQuad(&glRenderer, v2(4.0f,4.0f), v2( 7.0f,  7.0f), -4.0f);
+		pushQuad(&glRenderer, v2(5.0f,5.0f), v2( 6.0f,  6.0f), -5.0f);
 		
 		glBindBuffer(GL_ARRAY_BUFFER, glRenderer.VBO);
 		glBufferData(GL_ARRAY_BUFFER, glRenderer.vertexCount * sizeof(VertexData), glRenderer.vertices, GL_STATIC_DRAW);
