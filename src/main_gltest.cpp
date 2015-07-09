@@ -108,8 +108,6 @@ bool init(GLRenderer *glRenderer) {
 	return true;
 }
 
-
-
 bool initOpenGL(GLRenderer *glRenderer) {
 	glRenderer->shaderProgramID = glCreateProgram();
 
@@ -166,7 +164,6 @@ bool initOpenGL(GLRenderer *glRenderer) {
 
 			"void main() {"
 				"vec4 texel = texture(uTexture, vUV);"
-				"if (texel.a < 0.9f) discard;"
 				"fragColor = texel * vColor;"
 			"}"
 		};
@@ -296,6 +293,8 @@ void printShaderLog( GLuint shader ) {
 
 void render(GLRenderer *glRenderer) {
 	glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(glRenderer->shaderProgramID);
 
@@ -328,17 +327,19 @@ void render(GLRenderer *glRenderer) {
 }
 
 void pushQuad(GLRenderer *glRenderer) {
+	int firstVertex = glRenderer->vertexCount;
+
 	glRenderer->vertices[glRenderer->vertexCount++] = {v3( -5.5f, -5.5f, 0.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 0.0f)};
 	glRenderer->vertices[glRenderer->vertexCount++] = {v3(  5.5f, -5.5f, 1.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 0.0f)};
 	glRenderer->vertices[glRenderer->vertexCount++] = {v3(  5.5f,  5.5f, 2.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(1.0f, 1.0f)};
 	glRenderer->vertices[glRenderer->vertexCount++] = {v3( -5.5f,  5.5f, 3.0f), v4(1.0f, 1.0f, 1.0f, 1.0f), v2(0.0f, 1.0f)};
 
-	glRenderer->indices[glRenderer->indexCount++] = 0;
-	glRenderer->indices[glRenderer->indexCount++] = 1;
-	glRenderer->indices[glRenderer->indexCount++] = 2;
-	glRenderer->indices[glRenderer->indexCount++] = 0;
-	glRenderer->indices[glRenderer->indexCount++] = 2;
-	glRenderer->indices[glRenderer->indexCount++] = 3;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 0;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 1;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 2;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 0;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 2;
+	glRenderer->indices[glRenderer->indexCount++] = firstVertex + 3;
 }
 
 int main(int argc, char *argv[]) {
@@ -387,7 +388,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-#if 1
+#if 0
 		seconds = SDL_GetTicks() / 1000.0f;
 		glRenderer.projectionMatrix = orthographicMatrix4(-halfCamWidth, halfCamWidth, -halfCamHeight, halfCamHeight, -100.0f, 100.0f);
 		scale(&glRenderer.projectionMatrix, v3(sin(seconds) * 0.5f + 1.0f, cos(seconds) * 0.5f + 1.0f, 1.0f) );
