@@ -319,7 +319,7 @@ inline void getCityFundsString(City *city, char *buffer) {
 	sprintf(buffer, "£%d", city->funds);
 }
 
-inline void updateFundsLabel(Renderer *renderer, City *city, UiLabel *label) {
+inline void updateFundsLabel(GLRenderer *renderer, City *city, UiLabel *label) {
 	char buffer[20];
 	getCityFundsString(city, buffer);
 	setUiLabelText(renderer, label, buffer);

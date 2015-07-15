@@ -25,7 +25,7 @@ struct UiLabel {
 	char *text;
 	TTF_Font *font;
 	Color color;
-	Texture texture;
+	//Texture texture;
 };
 
 struct UiIntLabel {
@@ -61,7 +61,7 @@ struct UiButtonGroup {
 };
 
 struct UiMessage {
-	Renderer *renderer;
+	GLRenderer *renderer;
 	Rect rect;
 	Color background;
 	UiLabel label;
@@ -74,6 +74,6 @@ struct Tooltip {
 	Coord offsetFromCursor;
 	char buffer[128];
 };
-void showTooltip(Tooltip *tooltip, Renderer *renderer, char *text);
+void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text);
 
 #include "ui.cpp"

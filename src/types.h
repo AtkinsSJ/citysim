@@ -87,6 +87,8 @@ struct RealRect {
 	real32 w,h;
 };
 
+#include "matrix4.h"
+
 inline Coord coord(int32 x, int32 y) {
 	return {x,y};
 }

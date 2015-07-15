@@ -92,7 +92,7 @@ void updateField(FieldData *field) {
 	}
 }
 
-void drawField(Renderer *renderer, Building *building, Color *drawColor) {
+void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
 	drawAtWorldPos(renderer, TextureAtlasItem_Field, v2(building->footprint.pos), drawColor);
 

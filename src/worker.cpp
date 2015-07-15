@@ -263,7 +263,7 @@ void updateWorker(City *city, Worker *worker) {
 	}
 }
 
-void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
+void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 	if (!worker->exists) return;
 
 	// TODO: Replace this animation-choosing code, because it's horrible.

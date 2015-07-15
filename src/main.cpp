@@ -3,13 +3,19 @@
 #include <math.h>
 
 #ifdef __linux__
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#	include <SDL2/SDL.h>
+#	include <SDL2/SDL_image.h>
+#	include <SDL2/SDL_ttf.h>
+#	include <gl/glew.h> // TODO: Check this
+#	include <SDL2/SDL_opengl.h>
+#	include <gl/glu.h> // TODO: Check this
 #else // Windows
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#	include <SDL.h>
+#	include <SDL_image.h>
+#	include <SDL_ttf.h>
+#	include <gl/glew.h>
+#	include <SDL_opengl.h>
+#	include <gl/glu.h>
 #endif
 
 // Really janky assertion macro, yay
@@ -25,7 +31,7 @@ enum GameStatus {
 #include "types.h"
 #include "platform.h"
 #include "maths.h"
-#include "render.h"
+#include "render_gl.h"
 #include "input.h"
 #include "ui.h"
 #include "city.h"
@@ -115,7 +121,7 @@ enum ActionMode {
 const int gameStartFunds = 10000;
 const int gameWinFunds = 30000;
 
-void showCostTooltip(Tooltip *tooltip, Renderer *renderer, int32 cost, int32 cityFunds) {
+void showCostTooltip(Tooltip *tooltip, GLRenderer *renderer, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
 		tooltip->label.color = {255,0,0,255};
 	} else {
@@ -137,7 +143,7 @@ struct MainMenuUI {
 			buttonExit,
 			buttonWebsite;
 };
-void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *cityName) {
+void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 
 	*menu = {};
 	Coord screenCentre = renderer->camera.windowSize / 2;
@@ -163,14 +169,14 @@ void initMainMenuUI(MainMenuUI *menu, Renderer *renderer, char *cityName) {
 	buttonRect.x = renderer->camera.windowWidth - uiPadding - buttonRect.w;
 	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
 }
-void drawMainMenuUI(MainMenuUI *menu, Renderer *renderer) {
+void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawUiRect(renderer, rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight), renderer->theme.overlayColor);
 
-	TextureRegion *logoRegion = renderer->regions + TextureAtlasItem_Menu_Logo;
-	Rect logoRect = logoRegion->rect;
-	logoRect.x = (renderer->camera.windowWidth - logoRect.w) / 2;
-	logoRect.y = 80;
-	drawUiTexture(renderer, logoRegion->texture, logoRect);
+	// TextureRegion *logoRegion = renderer->regions + TextureAtlasItem_Menu_Logo;
+	// Rect logoRect = logoRegion->rect;
+	// logoRect.x = (renderer->camera.windowWidth - logoRect.w) / 2;
+	// logoRect.y = 80;
+	// drawUiTexture(renderer, logoRegion->texture, logoRect);
 
 	drawUiLabel(renderer, &menu->gameSetupLabel);
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
@@ -194,7 +200,7 @@ struct CalendarUI {
 	UiLabel labelDate;
 	char dateStringBuffer[50];
 };
-void initCalendarUI(CalendarUI *ui, Renderer *renderer, Calendar *calendar) {
+void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 
 	*ui = {};
 	ui->calendar = calendar;
@@ -233,7 +239,7 @@ void initCalendarUI(CalendarUI *ui, Renderer *renderer, Calendar *calendar) {
 		} break;
 	}
 }
-bool updateCalendarUI(CalendarUI *ui, Renderer *renderer, Tooltip *tooltip,
+bool updateCalendarUI(CalendarUI *ui, GLRenderer *renderer, Tooltip *tooltip,
 					MouseState *mouseState, KeyboardState *keyboardState,
 					CalendarChange *change) {
 
@@ -309,10 +315,10 @@ int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
-	char gameName[] = "Potato Farming Manager 2000";
+	const char gameName[] = "Potato Farming Manager 2000";
 
 // INIT
-	Renderer renderer;
+	GLRenderer renderer;
 	if (!initializeRenderer(&renderer, gameName)) {
 		return 1;
 	}
@@ -351,7 +357,7 @@ int main(int argc, char *argv[]) {
 	Rect dragRect = rectXYWH(-1,-1,0,0);
 
 	renderer.camera.zoom = 1.0f;
-	SDL_GetWindowSize(renderer.sdl_window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
+	SDL_GetWindowSize(renderer.window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
 	centreCameraOnPosition(&renderer.camera, v2(city.width/2, city.height/2));
 
 	ActionMode actionMode = ActionMode_None;
@@ -857,7 +863,7 @@ int main(int argc, char *argv[]) {
 			drawUiButton(&renderer, &buttonMenu);
 		}
 
-		SDL_RenderPresent(renderer.sdl_renderer);
+		// SDL_RenderPresent(renderer.sdl_renderer);
 
 	// FRAMERATE MONITORING AND CAPPING
 
