@@ -745,23 +745,34 @@ int main(int argc, char *argv[]) {
 
 	// RENDERING
 		real32 worldScale = renderer.camera.zoom / TILE_SIZE;
-		real32 halfCamWidth = renderer.camera.windowWidth * worldScale * 0.5f,
-				halfCamHeight = renderer.camera.windowHeight * worldScale * 0.5f;
+		real32 camWidth = renderer.camera.windowWidth * worldScale,
+				camHeight = renderer.camera.windowHeight * worldScale;
+		real32 halfCamWidth = camWidth * 0.5f,
+				halfCamHeight = camHeight * 0.5f;
+		RealRect cameraBounds = {
+			renderer.camera.pos.x - halfCamWidth,
+			renderer.camera.pos.y - halfCamHeight,
+			camWidth, camHeight
+		};
 		renderer.projectionMatrix = orthographicMatrix4(
 			renderer.camera.pos.x - halfCamWidth, renderer.camera.pos.x + halfCamWidth,
 			renderer.camera.pos.y - halfCamHeight, renderer.camera.pos.y + halfCamHeight,
 			-1000.0f, 1000.0f
 		);
 
-
-		TextureAtlasItem textureAtlasItem = TextureAtlasItem_GroundTile;
-
 		real32 daysPerFrame = getDaysPerFrame(&calendar);
 
 		// Draw terrain
-		for (uint16 y=0; y < city.height; y++) {
-			for (uint16 x=0; x < city.width; x++) {
+		for (uint16 y = (cameraBounds.y < 0) ? 0 : (uint16)cameraBounds.y;
+			(y < city.height) && (y < cameraBounds.y + cameraBounds.h);
+			y++)
+		{
+			for (uint16 x = (cameraBounds.x < 0) ? 0 : (uint16)cameraBounds.x;
+				(x < city.width) && (x < cameraBounds.x + cameraBounds.w);
+				x++)
+			{
 				Terrain t = terrainAt(&city,x,y);
+				TextureAtlasItem textureAtlasItem;
 				switch (t) {
 					case Terrain_Ground: {
 						textureAtlasItem = TextureAtlasItem_GroundTile;

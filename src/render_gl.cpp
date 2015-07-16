@@ -384,13 +384,15 @@ SDL_Cursor *createCursor(char *path)
 void drawSprite(GLRenderer *renderer, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, Color *color)
 {
-	if (renderer->spriteBuffer.count >= ArrayCount(renderer->spriteBuffer.sprites)) {
+	if (renderer->spriteBuffer.count >= ArrayCount(renderer->spriteBuffer.sprites))
+	{
 		printf("Too many sprites!\n");
 		return;
 	}
 
 	V4 drawColor;
-	if (color) {
+	if (color)
+	{
 		drawColor = v4(*color);
 	} else {
 		drawColor = v4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -486,6 +488,7 @@ void render(GLRenderer *renderer)
 	glUseProgram(NULL);
 
 	SDL_GL_SwapWindow( renderer->window );
+	SDL_Log("Drew %d sprites this frame.", renderer->spriteBuffer.count);
 	renderer->spriteBuffer.count = 0;
 }
 
