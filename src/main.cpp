@@ -318,8 +318,8 @@ int main(int argc, char *argv[]) {
 	const char gameName[] = "Potato Farming Manager 2000";
 
 // INIT
-	GLRenderer renderer = {};
-	if (!initializeRenderer(&renderer, gameName)) {
+	GLRenderer *renderer = (GLRenderer *)malloc(sizeof(GLRenderer));
+	if (!initializeRenderer(renderer, gameName)) {
 		return 1;
 	}
 
@@ -356,9 +356,9 @@ int main(int argc, char *argv[]) {
 	V2 mouseDragStartPos = {};
 	Rect dragRect = rectXYWH(-1,-1,0,0);
 
-	renderer.camera.zoom = 1.0f;
-	SDL_GetWindowSize(renderer.window, &renderer.camera.windowWidth, &renderer.camera.windowHeight);
-	centreCameraOnPosition(&renderer.camera, v2(city.width/2, city.height/2));
+	renderer->camera.zoom = 1.0f;
+	SDL_GetWindowSize(renderer->window, &renderer->camera.windowWidth, &renderer->camera.windowHeight);
+	centreCameraOnPosition(&renderer->camera, v2(city.width/2, city.height/2));
 
 	ActionMode actionMode = ActionMode_None;
 	BuildingArchetype selectedBuildingArchetype = BA_None;
@@ -368,75 +368,75 @@ int main(int argc, char *argv[]) {
 	// real32 framesPerSecond = 0;
 
 	// Build UI
-	Coord cameraCentre = renderer.camera.windowSize / 2;
+	Coord cameraCentre = renderer->camera.windowSize / 2;
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
-	initUiLabel(&textCityName, &renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer.theme.font, renderer.theme.labelColor);
+	initUiLabel(&textCityName, renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer->theme.font, renderer->theme.labelColor);
 
 	textPosition.x = 800 / 2 - 100;
 	UiIntLabel labelCityFunds;
-	initUiIntLabel(&labelCityFunds, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer.theme.font, renderer.theme.labelColor, &city.funds, "£%d");
+	initUiIntLabel(&labelCityFunds, renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
+				renderer->theme.font, renderer->theme.labelColor, &city.funds, "£%d");
 
 	textPosition.x = 800 / 2 + 100;
 	UiIntLabel labelMonthlyExpenditure;
-	initUiIntLabel(&labelMonthlyExpenditure, &renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer.theme.font, renderer.theme.labelColor, &city.monthlyExpenditure, "(-£%d/month)");
+	initUiIntLabel(&labelMonthlyExpenditure, renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
+				renderer->theme.font, renderer->theme.labelColor, &city.monthlyExpenditure, "(-£%d/month)");
 
-	initUiMessage(&renderer);
+	initUiMessage(renderer);
 
 	// Tooltip
 	Tooltip tooltip = {};
 	tooltip.offsetFromCursor = coord(16, 20);
-	initUiLabel(&tooltip.label, &renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer.theme.font, renderer.theme.labelColor);
+	initUiLabel(&tooltip.label, renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer->theme.font, renderer->theme.labelColor);
 
 	// CALENDAR
 	CalendarUI calendarUI;
-	initCalendarUI(&calendarUI, &renderer, &calendar);
+	initCalendarUI(&calendarUI, renderer, &calendar);
 
 	// ACTION BUTTONS
 	UiButtonGroup actionButtonGroup = {};
 	Rect buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildHouse, &renderer, buttonRect, "Build HQ", SDL_SCANCODE_Q, "(Q)");
+	initUiButton(buttonBuildHouse, renderer, buttonRect, "Build HQ", SDL_SCANCODE_Q, "(Q)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildField, &renderer, buttonRect, "Build Field", SDL_SCANCODE_F, "(F)");
+	initUiButton(buttonBuildField, renderer, buttonRect, "Build Field", SDL_SCANCODE_F, "(F)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildBarn = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildBarn, &renderer, buttonRect, "Build Barn", SDL_SCANCODE_B, "(B)");
+	initUiButton(buttonBuildBarn, renderer, buttonRect, "Build Barn", SDL_SCANCODE_B, "(B)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonDemolish, &renderer, buttonRect, "Demolish", SDL_SCANCODE_X, "(X)");
+	initUiButton(buttonDemolish, renderer, buttonRect, "Demolish", SDL_SCANCODE_X, "(X)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonPlant = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonPlant, &renderer, buttonRect, "Plant", SDL_SCANCODE_P, "(P)");
+	initUiButton(buttonPlant, renderer, buttonRect, "Plant", SDL_SCANCODE_P, "(P)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonHarvest = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonHarvest, &renderer, buttonRect, "Harvest", SDL_SCANCODE_H, "(H)");
+	initUiButton(buttonHarvest, renderer, buttonRect, "Harvest", SDL_SCANCODE_H, "(H)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonHireWorker = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonHireWorker, &renderer, buttonRect, "Hire worker", SDL_SCANCODE_G, "(G)");
+	initUiButton(buttonHireWorker, renderer, buttonRect, "Hire worker", SDL_SCANCODE_G, "(G)");
 
 	// Game menu
 	MainMenuUI mainMenuUI;
-	initMainMenuUI(&mainMenuUI, &renderer, cityName);
+	initMainMenuUI(&mainMenuUI, renderer, cityName);
 
 	// Game over UI
 	UiLabel gameOverLabel;
-	initUiLabel(&gameOverLabel, &renderer, cameraCentre,
-				ALIGN_CENTER, "You ran out of money! :(", renderer.theme.font, renderer.theme.labelColor);
+	initUiLabel(&gameOverLabel, renderer, cameraCentre,
+				ALIGN_CENTER, "You ran out of money! :(", renderer->theme.font, renderer->theme.labelColor);
 	UiButton buttonMenu;
 	buttonRect.pos = cameraCentre - buttonRect.dim/2;
 	buttonRect.y += gameOverLabel._rect.h + uiPadding;
-	initUiButton(&buttonMenu, &renderer, buttonRect, "Menu");
+	initUiButton(&buttonMenu, renderer, buttonRect, "Menu");
 	
 	// GAME LOOP
 	while (!quit) {
@@ -462,8 +462,8 @@ int main(int argc, char *argv[]) {
 				case SDL_WINDOWEVENT: {
 					switch (event.window.event) {
 						case SDL_WINDOWEVENT_RESIZED: {
-							renderer.camera.windowWidth = event.window.data1;
-							renderer.camera.windowHeight = event.window.data2;
+							renderer->camera.windowWidth = event.window.data1;
+							renderer->camera.windowHeight = event.window.data2;
 						} break;
 					}
 				} break;
@@ -574,14 +574,14 @@ int main(int argc, char *argv[]) {
 			gameStatus = GameStatus_Won;
 			char buffer[256];
 			sprintf(buffer, "You won! You earned £%d in %d days", gameWinFunds, calendar.totalDays);
-			setUiLabelText(&renderer, &gameOverLabel, buffer);
+			setUiLabelText(renderer, &gameOverLabel, buffer);
 		} else if (city.funds < 0) {
 			gameStatus = GameStatus_Lost;
-			setUiLabelText(&renderer, &gameOverLabel, "Game over! You ran out of money! :(");
+			setUiLabelText(renderer, &gameOverLabel, "Game over! You ran out of money! :(");
 		}
 
 	// UiButton/Mouse interaction
-		V2 mouseWorldPos = screenPosToWorldPos(mouseState.pos, &renderer.camera);
+		V2 mouseWorldPos = screenPosToWorldPos(mouseState.pos, &renderer->camera);
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 		if (gameStatus == GameStatus_Playing) {
@@ -594,25 +594,25 @@ int main(int argc, char *argv[]) {
 			}
 
 			bool buttonAteMouseEvent = false;
-			if (updateUiButtonGroup(&renderer, &tooltip, &actionButtonGroup, &mouseState, &keyboardState)) {
+			if (updateUiButtonGroup(renderer, &tooltip, &actionButtonGroup, &mouseState, &keyboardState)) {
 				buttonAteMouseEvent = true;
 			}
-			if (updateCalendarUI(&calendarUI, &renderer, &tooltip, &mouseState, &keyboardState, &calendarChange)) {
+			if (updateCalendarUI(&calendarUI, renderer, &tooltip, &mouseState, &keyboardState, &calendarChange)) {
 				buttonAteMouseEvent = true;
 			}
 
 			// Camera controls
 			// HOME resets the camera and centres on the HQ
 			if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
-				renderer.camera.zoom = 1;
+				renderer->camera.zoom = 1;
 				// Jump to the farmhouse if we have one!
 				if (city.farmhouse) {
-					centreCameraOnPosition(&renderer.camera, centre(&city.farmhouse->footprint));
+					centreCameraOnPosition(&renderer->camera, centre(&city.farmhouse->footprint));
 				} else {
 					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
 				}
 			}
-			updateCamera(&renderer.camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
+			updateCamera(&renderer->camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
 
 			if (!buttonAteMouseEvent) {
@@ -623,7 +623,7 @@ int main(int argc, char *argv[]) {
 						}
 
 						int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
-						showCostTooltip(&tooltip, &renderer, buildCost, city.funds);
+						showCostTooltip(&tooltip, renderer, buildCost, city.funds);
 					} break;
 
 					case ActionMode_Demolish: {
@@ -633,7 +633,7 @@ int main(int argc, char *argv[]) {
 						} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 							dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
-							showCostTooltip(&tooltip, &renderer, demolitionCost, city.funds);
+							showCostTooltip(&tooltip, renderer, demolitionCost, city.funds);
 						}
 
 						if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
@@ -647,7 +647,7 @@ int main(int argc, char *argv[]) {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 							plantField(&city, mouseTilePos);
 						}
-						showCostTooltip(&tooltip, &renderer, fieldPlantCost, city.funds);
+						showCostTooltip(&tooltip, renderer, fieldPlantCost, city.funds);
 					} break;
 
 					case ActionMode_Harvest: {
@@ -663,7 +663,7 @@ int main(int argc, char *argv[]) {
 								city.monthlyExpenditure = city.workerCount * workerMonthlyCost;
 							}
 						}
-						showCostTooltip(&tooltip, &renderer, workerHireCost, city.funds);
+						showCostTooltip(&tooltip, renderer, workerHireCost, city.funds);
 					} break;
 
 					case ActionMode_None: {
@@ -712,9 +712,9 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		} else if (gameStatus == GameStatus_Setup) {
-			updateUiButton(&renderer, &tooltip, &mainMenuUI.buttonExit, &mouseState, &keyboardState);
-			updateUiButton(&renderer, &tooltip, &mainMenuUI.buttonWebsite, &mouseState, &keyboardState);
-			updateUiButton(&renderer, &tooltip, &mainMenuUI.buttonStart, &mouseState, &keyboardState);
+			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonExit, &mouseState, &keyboardState);
+			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonWebsite, &mouseState, &keyboardState);
+			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonStart, &mouseState, &keyboardState);
 
 			if (mainMenuUI.buttonExit.justClicked) {
 				quit = true;
@@ -723,12 +723,12 @@ int main(int argc, char *argv[]) {
 				openUrlUnsafe("http://samatkins.co.uk");
 			} else if (mainMenuUI.buttonStart.justClicked) {
 				gameStatus = GameStatus_Playing;
-				setUiLabelText(&renderer, &textCityName, cityName);
+				setUiLabelText(renderer, &textCityName, cityName);
 			}
 		} else if (gameStatus == GameStatus_Lost
 				|| gameStatus == GameStatus_Won) {
 
-			updateUiButton(&renderer, &tooltip, &buttonMenu, &mouseState, &keyboardState);
+			updateUiButton(renderer, &tooltip, &buttonMenu, &mouseState, &keyboardState);
 			if (buttonMenu.justClicked) {
 
 				freeCity(&city);
@@ -737,26 +737,26 @@ int main(int argc, char *argv[]) {
 				// Reset calendar display. This is a bit hacky.
 				CalendarChange change = {};
 				change.isNewDay = true;
-				updateCalendarUI(&calendarUI, &renderer, &tooltip, &mouseState, &keyboardState,	&change);
+				updateCalendarUI(&calendarUI, renderer, &tooltip, &mouseState, &keyboardState,	&change);
 
 				gameStatus = GameStatus_Setup;
 			}
 		}
 
 	// RENDERING
-		real32 worldScale = renderer.camera.zoom / TILE_SIZE;
-		real32 camWidth = renderer.camera.windowWidth * worldScale,
-				camHeight = renderer.camera.windowHeight * worldScale;
+		real32 worldScale = renderer->camera.zoom / TILE_SIZE;
+		real32 camWidth = renderer->camera.windowWidth * worldScale,
+				camHeight = renderer->camera.windowHeight * worldScale;
 		real32 halfCamWidth = camWidth * 0.5f,
 				halfCamHeight = camHeight * 0.5f;
 		RealRect cameraBounds = {
-			renderer.camera.pos.x - halfCamWidth,
-			renderer.camera.pos.y - halfCamHeight,
+			renderer->camera.pos.x - halfCamWidth,
+			renderer->camera.pos.y - halfCamHeight,
 			camWidth, camHeight
 		};
-		renderer.projectionMatrix = orthographicMatrix4(
-			renderer.camera.pos.x - halfCamWidth, renderer.camera.pos.x + halfCamWidth,
-			renderer.camera.pos.y - halfCamHeight, renderer.camera.pos.y + halfCamHeight,
+		renderer->projectionMatrix = orthographicMatrix4(
+			renderer->camera.pos.x - halfCamWidth, renderer->camera.pos.x + halfCamWidth,
+			renderer->camera.pos.y - halfCamHeight, renderer->camera.pos.y + halfCamHeight,
 			-1000.0f, 1000.0f
 		);
 
@@ -785,7 +785,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawSprite(&renderer, textureAtlasItem, v2(x,y), v2(1.0f, 1.0f));
+				drawSprite(renderer, textureAtlasItem, v2(x,y), v2(1.0f, 1.0f));
 			}
 		}
 
@@ -806,24 +806,24 @@ int main(int argc, char *argv[]) {
 
 			switch (building.archetype) {
 				case BA_Field: {
-					drawField(&renderer, &building, &drawColor);
+					drawField(renderer, &building, &drawColor);
 				} break;
 
 				default: {
-					drawAtWorldPos(&renderer, def->textureAtlasItem, v2(building.footprint.pos), &drawColor);
+					drawAtWorldPos(renderer, def->textureAtlasItem, v2(building.footprint.pos), &drawColor);
 				} break;
 			}
 		}
 
 		// Draw workers!
 		for (int i = 0; i < ArrayCount(city.workers); ++i) {
-			drawWorker(&renderer, city.workers + i, daysPerFrame);
+			drawWorker(renderer, city.workers + i, daysPerFrame);
 		}
 
 		// Draw potatoes!
 		for (int i = 0; i < ArrayCount(city.potatoes); ++i) {
 			if (city.potatoes[i].exists) {
-				drawAtWorldPos(&renderer, TextureAtlasItem_Potato, city.potatoes[i].bounds.pos);
+				drawAtWorldPos(renderer, TextureAtlasItem_Potato, city.potatoes[i].bounds.pos);
 			}
 		}
 
@@ -835,58 +835,58 @@ int main(int argc, char *argv[]) {
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
-			drawAtWorldPos(&renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, v2(mouseTilePos), &ghostColor);
+			drawAtWorldPos(renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, v2(mouseTilePos), &ghostColor);
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
-			drawWorldRect(&renderer, dragRect, {255, 0, 0, 128});
+			drawWorldRect(renderer, dragRect, {255, 0, 0, 128});
 		}
 
 		if (gameStatus == GameStatus_Setup) {
 			if (cityNameTextDirty) {
 				cityNameTextDirty = false;
-				setUiLabelText(&renderer, &mainMenuUI.cityNameEntryLabel, cityName);
+				setUiLabelText(renderer, &mainMenuUI.cityNameEntryLabel, cityName);
 			}
-			drawMainMenuUI(&mainMenuUI, &renderer);
+			drawMainMenuUI(&mainMenuUI, renderer);
 
 		} else {
 			// Draw some UI
-			drawUiRect(&renderer, rectXYWH(0,0, renderer.camera.windowWidth, 64), renderer.theme.overlayColor);
+			drawUiRect(renderer, rectXYWH(0,0, renderer->camera.windowWidth, 64), renderer->theme.overlayColor);
 
-			drawUiLabel(&renderer, &textCityName);
-			drawUiIntLabel(&renderer, &labelCityFunds);
-			drawUiIntLabel(&renderer, &labelMonthlyExpenditure);
-			drawUiLabel(&renderer, &calendarUI.labelDate);
+			drawUiLabel(renderer, &textCityName);
+			drawUiIntLabel(renderer, &labelCityFunds);
+			drawUiIntLabel(renderer, &labelMonthlyExpenditure);
+			drawUiLabel(renderer, &calendarUI.labelDate);
 
-			drawUiMessage(&renderer);
+			drawUiMessage(renderer);
 
-			drawUiButtonGroup(&renderer, &actionButtonGroup);
-			drawUiButtonGroup(&renderer, &calendarUI.buttonGroup);
-			drawUiButton(&renderer, &calendarUI.buttonPause);
+			drawUiButtonGroup(renderer, &actionButtonGroup);
+			drawUiButtonGroup(renderer, &calendarUI.buttonGroup);
+			drawUiButton(renderer, &calendarUI.buttonPause);
 
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
 				setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
-				drawUiRect(&renderer, expandRect(tooltip.label._rect, 4), renderer.theme.overlayColor);
-				drawUiLabel(&renderer, &tooltip.label);
+				drawUiRect(renderer, expandRect(tooltip.label._rect, 4), renderer->theme.overlayColor);
+				drawUiLabel(renderer, &tooltip.label);
 			}
 		}
 
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
-			drawUiRect(&renderer,
-						rectXYWH(0, 0, renderer.camera.windowWidth, renderer.camera.windowHeight),
-						renderer.theme.overlayColor);
-			drawUiLabel(&renderer, &gameOverLabel); 
-			drawUiButton(&renderer, &buttonMenu);
+			drawUiRect(renderer,
+						rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight),
+						renderer->theme.overlayColor);
+			drawUiLabel(renderer, &gameOverLabel); 
+			drawUiButton(renderer, &buttonMenu);
 		}
 
 
 	// Actually draw things!
 		// Fake draw call for testing
-		// renderer.spriteBuffer.sprites[renderer.spriteBuffer.count++] = {v2(1.0f,1.0f), v2(10.0f, 10.0f), 1.0f};
-		render(&renderer);
+		// renderer->spriteBuffer.sprites[renderer->spriteBuffer.count++] = {v2(1.0f,1.0f), v2(10.0f, 10.0f), 1.0f};
+		render(renderer);
 
 	// FRAMERATE MONITORING AND CAPPING
 		currentFrame = SDL_GetTicks(); // Milliseconds
@@ -922,7 +922,7 @@ int main(int argc, char *argv[]) {
 	// freeUiButtonGroup(&actionButtonGroup);
 	// freeUiButtonGroup(&calendarButtonGroup);
 
-	freeRenderer(&renderer);
+	freeRenderer(renderer);
 
 	return 0;
 }

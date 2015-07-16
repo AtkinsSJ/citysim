@@ -104,7 +104,7 @@ struct Sprite {
 };
 
 struct SpriteBuffer {
-	Sprite sprites[512];
+	Sprite sprites[2048];
 	uint32 count;
 };
 
@@ -128,9 +128,9 @@ struct GLRenderer {
 
 	SpriteBuffer spriteBuffer;
 
-	VertexData vertices[4096];
+	VertexData vertices[8192];
 	uint32 vertexCount;
-	GLuint indices[4096];
+	GLuint indices[8192];
 	uint32 indexCount;
 
 	TextureRegion textureRegions[TextureAtlasItemCount];

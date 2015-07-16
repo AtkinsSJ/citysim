@@ -2,6 +2,7 @@
 
 bool initializeRenderer(GLRenderer *renderer, const char *windowTitle)
 {
+	(*renderer) = {};
 
 	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
