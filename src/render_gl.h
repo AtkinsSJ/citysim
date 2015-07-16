@@ -7,6 +7,7 @@ const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
 #if 1
+const float TILE_SIZE = 16.0f;
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
 const int CAMERA_MARGIN = 0;
@@ -47,44 +48,6 @@ struct UiTheme {
 		textboxBackgroundColor;
 };
 
-struct GLRenderer {
-	SDL_Window *window;
-	SDL_GLContext context;
-
-	GLuint shaderProgramID;
-	GLuint VBO,
-		   IBO;
-	GLint uProjectionMatrixLoc,
-		  uTextureLoc;
-	GLint aPositionLoc,
-		  aColorLoc,
-		  aUVLoc;
-
-	Matrix4 projectionMatrix;
-
-	GLuint texture;
-	GLenum textureFormat;
-
-	VertexData vertices[1024];
-	uint32 vertexCount;
-	GLuint indices[1024];
-	uint32 indexCount;
-
-	UiTheme theme;
-	Camera camera; // TODO: Remove! Or fix, whatever.
-};
-
-struct Sprite {
-	V2 pos;
-	V2 size;
-	real32 depth; // Positive is forwards from the camera
-};
-
-struct SpriteBuffer {
-	Sprite sprites[1024];
-	uint32 spriteCount;
-};
-
 enum TextureAtlasItem {
 	TextureAtlasItem_GroundTile = 0,
 	TextureAtlasItem_WaterTile,
@@ -123,15 +86,69 @@ enum TextureAtlasItem {
 
 struct Texture {
 	bool valid;
-	const char* filename;
-	SDL_Texture *sdl_texture;
-	int32 w, h;
+	GLuint id;
+	uint32 w,h;
 };
 
 struct TextureRegion {
-	Texture *texture;
-	Rect rect;
+	GLuint textureID;
+	RealRect bounds;
 };
+
+struct Sprite {
+	TextureAtlasItem textureAtlasItem;
+	V2 pos;
+	V2 size;
+	real32 depth; // Positive is forwards from the camera
+	V4 color;
+};
+
+struct SpriteBuffer {
+	Sprite sprites[512];
+	uint32 count;
+};
+
+struct GLRenderer {
+	SDL_Window *window;
+	SDL_GLContext context;
+
+	GLuint shaderProgramID;
+	GLuint VBO,
+		   IBO;
+	GLint uProjectionMatrixLoc,
+		  uTextureLoc;
+	GLint aPositionLoc,
+		  aColorLoc,
+		  aUVLoc;
+
+	Matrix4 projectionMatrix;
+
+	GLuint texture;
+	GLenum textureFormat;
+
+	SpriteBuffer spriteBuffer;
+
+	VertexData vertices[4096];
+	uint32 vertexCount;
+	GLuint indices[4096];
+	uint32 indexCount;
+
+	TextureRegion textureRegions[TextureAtlasItemCount];
+	UiTheme theme;
+	Camera camera; // TODO: Remove! Or fix, whatever.
+};
+
+// struct Texture {
+// 	bool valid;
+// 	const char* filename;
+// 	SDL_Texture *sdl_texture;
+// 	int32 w, h;
+// };
+
+// struct TextureRegion {
+// 	Texture *texture;
+// 	Rect rect;
+// };
 
 enum AnimationID {
 	Animation_Farmer_Stand,
@@ -156,11 +173,16 @@ struct Animator {
 };
 const real32 animationFramesPerDay = 10.0f;
 
-bool initializeRenderer(GLRenderer *glRenderer, const char *gameName);
-void freeRenderer(GLRenderer *glRenderer);
-bool initOpenGL(GLRenderer *glRenderer);
+bool initializeRenderer(GLRenderer *renderer, const char *gameName);
+void freeRenderer(GLRenderer *renderer);
+bool initOpenGL(GLRenderer *renderer);
+bool loadTextures(GLRenderer *renderer);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
+
+void drawSprite(GLRenderer *renderer, TextureAtlasItem textureAtlasItem,
+				V2 position, V2 size, Color *color=0);
+void render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
 

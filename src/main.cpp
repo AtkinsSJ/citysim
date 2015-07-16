@@ -318,7 +318,7 @@ int main(int argc, char *argv[]) {
 	const char gameName[] = "Potato Farming Manager 2000";
 
 // INIT
-	GLRenderer renderer;
+	GLRenderer renderer = {};
 	if (!initializeRenderer(&renderer, gameName)) {
 		return 1;
 	}
@@ -437,7 +437,7 @@ int main(int argc, char *argv[]) {
 	buttonRect.pos = cameraCentre - buttonRect.dim/2;
 	buttonRect.y += gameOverLabel._rect.h + uiPadding;
 	initUiButton(&buttonMenu, &renderer, buttonRect, "Menu");
-
+	
 	// GAME LOOP
 	while (!quit) {
 
@@ -744,7 +744,15 @@ int main(int argc, char *argv[]) {
 		}
 
 	// RENDERING
-		clearToBlack(&renderer);
+		real32 worldScale = renderer.camera.zoom / TILE_SIZE;
+		real32 halfCamWidth = renderer.camera.windowWidth * worldScale * 0.5f,
+				halfCamHeight = renderer.camera.windowHeight * worldScale * 0.5f;
+		renderer.projectionMatrix = orthographicMatrix4(
+			renderer.camera.pos.x - halfCamWidth, renderer.camera.pos.x + halfCamWidth,
+			renderer.camera.pos.y - halfCamHeight, renderer.camera.pos.y + halfCamHeight,
+			-1000.0f, 1000.0f
+		);
+
 
 		TextureAtlasItem textureAtlasItem = TextureAtlasItem_GroundTile;
 
@@ -766,7 +774,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawAtWorldPos(&renderer, textureAtlasItem, {x,y});
+				drawSprite(&renderer, textureAtlasItem, v2(x,y), v2(1.0f, 1.0f));
 			}
 		}
 
@@ -863,10 +871,13 @@ int main(int argc, char *argv[]) {
 			drawUiButton(&renderer, &buttonMenu);
 		}
 
-		// SDL_RenderPresent(renderer.sdl_renderer);
+
+	// Actually draw things!
+		// Fake draw call for testing
+		// renderer.spriteBuffer.sprites[renderer.spriteBuffer.count++] = {v2(1.0f,1.0f), v2(10.0f, 10.0f), 1.0f};
+		render(&renderer);
 
 	// FRAMERATE MONITORING AND CAPPING
-
 		currentFrame = SDL_GetTicks(); // Milliseconds
 		uint32 msForFrame = currentFrame - lastFrame;
 
