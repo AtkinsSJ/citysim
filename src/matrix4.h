@@ -39,6 +39,136 @@ Matrix4 orthographicMatrix4(GLfloat left, GLfloat right, GLfloat top, GLfloat bo
 	return m;
 }
 
+Matrix4 inverse(Matrix4 *source)
+{
+	// Shamelessly copied from http://stackoverflow.com/a/1148405/1178345
+	// This is complicated! *_*
+	Matrix4 result = {};
+	GLfloat *m = source->flat;
+
+	result.flat[0] = source->flat[5]  * source->flat[10] * source->flat[15] - 
+             source->flat[5]  * source->flat[11] * source->flat[14] - 
+             source->flat[9]  * source->flat[6]  * source->flat[15] + 
+             source->flat[9]  * source->flat[7]  * source->flat[14] +
+             source->flat[13] * source->flat[6]  * source->flat[11] - 
+             source->flat[13] * source->flat[7]  * source->flat[10];
+
+    result.flat[4] = -source->flat[4]  * source->flat[10] * source->flat[15] + 
+              source->flat[4]  * source->flat[11] * source->flat[14] + 
+              source->flat[8]  * source->flat[6]  * source->flat[15] - 
+              source->flat[8]  * source->flat[7]  * source->flat[14] - 
+              source->flat[12] * source->flat[6]  * source->flat[11] + 
+              source->flat[12] * source->flat[7]  * source->flat[10];
+
+    result.flat[8] = source->flat[4]  * source->flat[9] * source->flat[15] - 
+             source->flat[4]  * source->flat[11] * source->flat[13] - 
+             source->flat[8]  * source->flat[5] * source->flat[15] + 
+             source->flat[8]  * source->flat[7] * source->flat[13] + 
+             source->flat[12] * source->flat[5] * source->flat[11] - 
+             source->flat[12] * source->flat[7] * source->flat[9];
+
+    result.flat[12] = -source->flat[4]  * source->flat[9] * source->flat[14] + 
+               source->flat[4]  * source->flat[10] * source->flat[13] +
+               source->flat[8]  * source->flat[5] * source->flat[14] - 
+               source->flat[8]  * source->flat[6] * source->flat[13] - 
+               source->flat[12] * source->flat[5] * source->flat[10] + 
+               source->flat[12] * source->flat[6] * source->flat[9];
+
+    result.flat[1] = -source->flat[1]  * source->flat[10] * source->flat[15] + 
+              source->flat[1]  * source->flat[11] * source->flat[14] + 
+              source->flat[9]  * source->flat[2] * source->flat[15] - 
+              source->flat[9]  * source->flat[3] * source->flat[14] - 
+              source->flat[13] * source->flat[2] * source->flat[11] + 
+              source->flat[13] * source->flat[3] * source->flat[10];
+
+    result.flat[5] = source->flat[0]  * source->flat[10] * source->flat[15] - 
+             source->flat[0]  * source->flat[11] * source->flat[14] - 
+             source->flat[8]  * source->flat[2] * source->flat[15] + 
+             source->flat[8]  * source->flat[3] * source->flat[14] + 
+             source->flat[12] * source->flat[2] * source->flat[11] - 
+             source->flat[12] * source->flat[3] * source->flat[10];
+
+    result.flat[9] = -source->flat[0]  * source->flat[9] * source->flat[15] + 
+              source->flat[0]  * source->flat[11] * source->flat[13] + 
+              source->flat[8]  * source->flat[1] * source->flat[15] - 
+              source->flat[8]  * source->flat[3] * source->flat[13] - 
+              source->flat[12] * source->flat[1] * source->flat[11] + 
+              source->flat[12] * source->flat[3] * source->flat[9];
+
+    result.flat[13] = source->flat[0]  * source->flat[9] * source->flat[14] - 
+              source->flat[0]  * source->flat[10] * source->flat[13] - 
+              source->flat[8]  * source->flat[1] * source->flat[14] + 
+              source->flat[8]  * source->flat[2] * source->flat[13] + 
+              source->flat[12] * source->flat[1] * source->flat[10] - 
+              source->flat[12] * source->flat[2] * source->flat[9];
+
+    result.flat[2] = source->flat[1]  * source->flat[6] * source->flat[15] - 
+             source->flat[1]  * source->flat[7] * source->flat[14] - 
+             source->flat[5]  * source->flat[2] * source->flat[15] + 
+             source->flat[5]  * source->flat[3] * source->flat[14] + 
+             source->flat[13] * source->flat[2] * source->flat[7] - 
+             source->flat[13] * source->flat[3] * source->flat[6];
+
+    result.flat[6] = -source->flat[0]  * source->flat[6] * source->flat[15] + 
+              source->flat[0]  * source->flat[7] * source->flat[14] + 
+              source->flat[4]  * source->flat[2] * source->flat[15] - 
+              source->flat[4]  * source->flat[3] * source->flat[14] - 
+              source->flat[12] * source->flat[2] * source->flat[7] + 
+              source->flat[12] * source->flat[3] * source->flat[6];
+
+    result.flat[10] = source->flat[0]  * source->flat[5] * source->flat[15] - 
+              source->flat[0]  * source->flat[7] * source->flat[13] - 
+              source->flat[4]  * source->flat[1] * source->flat[15] + 
+              source->flat[4]  * source->flat[3] * source->flat[13] + 
+              source->flat[12] * source->flat[1] * source->flat[7] - 
+              source->flat[12] * source->flat[3] * source->flat[5];
+
+    result.flat[14] = -source->flat[0]  * source->flat[5] * source->flat[14] + 
+               source->flat[0]  * source->flat[6] * source->flat[13] + 
+               source->flat[4]  * source->flat[1] * source->flat[14] - 
+               source->flat[4]  * source->flat[2] * source->flat[13] - 
+               source->flat[12] * source->flat[1] * source->flat[6] + 
+               source->flat[12] * source->flat[2] * source->flat[5];
+
+    result.flat[3] = -source->flat[1] * source->flat[6] * source->flat[11] + 
+              source->flat[1] * source->flat[7] * source->flat[10] + 
+              source->flat[5] * source->flat[2] * source->flat[11] - 
+              source->flat[5] * source->flat[3] * source->flat[10] - 
+              source->flat[9] * source->flat[2] * source->flat[7] + 
+              source->flat[9] * source->flat[3] * source->flat[6];
+
+    result.flat[7] = source->flat[0] * source->flat[6] * source->flat[11] - 
+             source->flat[0] * source->flat[7] * source->flat[10] - 
+             source->flat[4] * source->flat[2] * source->flat[11] + 
+             source->flat[4] * source->flat[3] * source->flat[10] + 
+             source->flat[8] * source->flat[2] * source->flat[7] - 
+             source->flat[8] * source->flat[3] * source->flat[6];
+
+    result.flat[11] = -source->flat[0] * source->flat[5] * source->flat[11] + 
+               source->flat[0] * source->flat[7] * source->flat[9] + 
+               source->flat[4] * source->flat[1] * source->flat[11] - 
+               source->flat[4] * source->flat[3] * source->flat[9] - 
+               source->flat[8] * source->flat[1] * source->flat[7] + 
+               source->flat[8] * source->flat[3] * source->flat[5];
+
+    result.flat[15] = source->flat[0] * source->flat[5] * source->flat[10] - 
+              source->flat[0] * source->flat[6] * source->flat[9] - 
+              source->flat[4] * source->flat[1] * source->flat[10] + 
+              source->flat[4] * source->flat[2] * source->flat[9] + 
+              source->flat[8] * source->flat[1] * source->flat[6] - 
+              source->flat[8] * source->flat[2] * source->flat[5];
+
+	GLfloat det = source->flat[0] * result.flat[0] + source->flat[1] * result.flat[4] + source->flat[2] * result.flat[8] + source->flat[3] * result.flat[12];
+	if (det != 0) {
+		det = 1.0f / det;
+		for (int i=0; i<16; i++) {
+			result.flat[i] *= det;
+		}
+	}
+
+	return result;
+}
+
 inline Matrix4 operator+(Matrix4 a, Matrix4 b) {
 	Matrix4 result = {};
 	
@@ -83,6 +213,67 @@ inline Matrix4 operator*(Matrix4 a, Matrix4 b) {
 inline Matrix4 operator*=(Matrix4 &a, Matrix4 b) {
 	a = a * b;
 	return a;
+}
+
+inline V4 operator*(Matrix4 &m, V4 v)
+{
+	V4 result = {};
+
+	result.x = v.x * m.v[0][0]
+			 + v.y * m.v[1][0]
+			 + v.z * m.v[2][0]
+			 + v.w * m.v[3][0];
+
+	result.y = v.x * m.v[0][1]
+			 + v.y * m.v[1][1]
+			 + v.z * m.v[2][1]
+			 + v.w * m.v[3][1];
+
+	result.z = v.x * m.v[0][2]
+			 + v.y * m.v[1][2]
+			 + v.z * m.v[2][2]
+			 + v.w * m.v[3][2];
+
+	result.w = v.x * m.v[0][3]
+			 + v.y * m.v[1][3]
+			 + v.z * m.v[2][3]
+			 + v.w * m.v[3][3];
+
+	return result;
+}
+
+inline V3 operator*(Matrix4 &m, V3 v)
+{
+	// Not sure this is right?
+	V3 result = {};
+
+	result.x = v.x * m.v[0][0]
+			 + v.y * m.v[1][0]
+			 + v.z * m.v[2][0];
+
+	result.y = v.x * m.v[0][1]
+			 + v.y * m.v[1][1]
+			 + v.z * m.v[2][1];
+
+	result.z = v.x * m.v[0][2]
+			 + v.y * m.v[1][2]
+			 + v.z * m.v[2][2];
+
+	return result;
+}
+
+inline V2 operator*(Matrix4 &m, V2 v)
+{
+	// Not sure this is right?
+	V2 result = {};
+
+	result.x = v.x * m.v[0][0]
+			 + v.y * m.v[1][0];
+
+	result.y = v.x * m.v[0][1]
+			 + v.y * m.v[1][1];
+
+	return result;
 }
 
 void translate(Matrix4 *matrix, V3 translation) {

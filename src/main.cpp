@@ -347,7 +347,7 @@ int main(int argc, char *argv[]) {
 
 // GAME LOOP
 	bool quit = false;
-	GameStatus gameStatus = GameStatus_Setup;
+	GameStatus gameStatus = GameStatus_Playing;
 
 	SDL_Event event;
 	MouseState mouseState = {};
@@ -580,10 +580,29 @@ int main(int argc, char *argv[]) {
 			setUiLabelText(renderer, &gameOverLabel, "Game over! You ran out of money! :(");
 		}
 
-	// UiButton/Mouse interaction
-		V2 mouseWorldPos = screenPosToWorldPos(mouseState.pos, &renderer->camera);
+	// CAMERA!
+		updateCamera(&renderer->camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
+
+		real32 worldScale = renderer->camera.zoom / TILE_SIZE;
+		real32 camWidth = renderer->camera.windowWidth * worldScale,
+				camHeight = renderer->camera.windowHeight * worldScale;
+		real32 halfCamWidth = camWidth * 0.5f,
+				halfCamHeight = camHeight * 0.5f;
+		RealRect cameraBounds = {
+			renderer->camera.pos.x - halfCamWidth,
+			renderer->camera.pos.y - halfCamHeight,
+			camWidth, camHeight
+		};
+		renderer->projectionMatrix = orthographicMatrix4(
+			renderer->camera.pos.x - halfCamWidth, renderer->camera.pos.x + halfCamWidth,
+			renderer->camera.pos.y - halfCamHeight, renderer->camera.pos.y + halfCamHeight,
+			-1000.0f, 1000.0f
+		);
+		
+		V2 mouseWorldPos = unproject(renderer, v2(mouseState.pos));
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
+	// UiButton/Mouse interaction
 		if (gameStatus == GameStatus_Playing) {
 			tooltip.show = false;
 
@@ -612,8 +631,8 @@ int main(int argc, char *argv[]) {
 					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
 				}
 			}
-			updateCamera(&renderer->camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
+			SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
 
 			if (!buttonAteMouseEvent) {
 				switch (actionMode) {
@@ -668,9 +687,10 @@ int main(int argc, char *argv[]) {
 
 					case ActionMode_None: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							SDL_Log("Building ID at position (%d,%d) = %d",
-							mouseTilePos.x, mouseTilePos.y,
-							city.tileBuildings[tileIndex(&city, mouseTilePos.x, mouseTilePos.y)]);
+							int tileI = tileIndex(&city, mouseTilePos.x, mouseTilePos.y);
+							int buildingID = city.tileBuildings[tileI];
+
+							SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
 						}
 					} break;
 				}
@@ -744,21 +764,6 @@ int main(int argc, char *argv[]) {
 		}
 
 	// RENDERING
-		real32 worldScale = renderer->camera.zoom / TILE_SIZE;
-		real32 camWidth = renderer->camera.windowWidth * worldScale,
-				camHeight = renderer->camera.windowHeight * worldScale;
-		real32 halfCamWidth = camWidth * 0.5f,
-				halfCamHeight = camHeight * 0.5f;
-		RealRect cameraBounds = {
-			renderer->camera.pos.x - halfCamWidth,
-			renderer->camera.pos.y - halfCamHeight,
-			camWidth, camHeight
-		};
-		renderer->projectionMatrix = orthographicMatrix4(
-			renderer->camera.pos.x - halfCamWidth, renderer->camera.pos.x + halfCamWidth,
-			renderer->camera.pos.y - halfCamHeight, renderer->camera.pos.y + halfCamHeight,
-			-1000.0f, 1000.0f
-		);
 
 		real32 daysPerFrame = getDaysPerFrame(&calendar);
 
@@ -810,6 +815,7 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
+					// drawSprite(renderer, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
 					drawAtWorldPos(renderer, def->textureAtlasItem, v2(building.footprint.pos), &drawColor);
 				} break;
 			}

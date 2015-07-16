@@ -286,11 +286,23 @@ bool loadTextures(GLRenderer *renderer)
 
 	renderer->texture = texCombinedPng.id;
 
-	real32 tw = 16.0f / 128.0f;
+	const real32 w1 = 16.0f / 128.0f,
+				w2 = w1 *2,
+				w3 = w1 *3,
+				w4 = w1 *4;
 	
-	renderer->textureRegions[TextureAtlasItem_GroundTile] = {texCombinedPng.id, {0,0, tw, tw}};
-	renderer->textureRegions[TextureAtlasItem_WaterTile]  = {texCombinedPng.id, {tw,0, tw, tw}};
-	renderer->textureRegions[TextureAtlasItem_ForestTile]  = {texCombinedPng.id, {tw*2,0, tw, tw}};
+	renderer->textureRegions[TextureAtlasItem_GroundTile] 	= {texCombinedPng.id, { 0,  0, w1, w1}};
+	renderer->textureRegions[TextureAtlasItem_WaterTile]  	= {texCombinedPng.id, {w1,  0, w1, w1}};
+	renderer->textureRegions[TextureAtlasItem_ForestTile] 	= {texCombinedPng.id, {w2,  0, w1, w1}};
+
+	renderer->textureRegions[TextureAtlasItem_Field] 		= {texCombinedPng.id, {w4,  0, w4, w4}};
+	renderer->textureRegions[TextureAtlasItem_Crop0_0] 		= {texCombinedPng.id, { 0, w1, w1, w1}};
+	renderer->textureRegions[TextureAtlasItem_Crop0_1] 		= {texCombinedPng.id, {w1, w1, w1, w1}};
+	renderer->textureRegions[TextureAtlasItem_Crop0_2] 		= {texCombinedPng.id, {w2, w1, w1, w1}};
+	renderer->textureRegions[TextureAtlasItem_Crop0_3] 		= {texCombinedPng.id, {w3, w1, w1, w1}};
+	renderer->textureRegions[TextureAtlasItem_Potato] 		= {texCombinedPng.id, { 0, w2, w1, w1}};
+	renderer->textureRegions[TextureAtlasItem_Barn] 		= {texCombinedPng.id, { 0, w4, w4, w4}};
+	renderer->textureRegions[TextureAtlasItem_House] 		= {texCombinedPng.id, {w4, w4, w4, w4}};
 
 	return true;
 }
@@ -493,19 +505,23 @@ void render(GLRenderer *renderer)
 	renderer->spriteBuffer.count = 0;
 }
 
+V2 unproject(GLRenderer *renderer, V2 pos)
+{
+	// This is all wrong. ALL WRONG! D:
+	Matrix4 mat = inverse(&renderer->projectionMatrix);
 
+	V4 pos4 = {pos.x, pos.y, 1.0f, 1.0f};
+
+	V4 unprojected = mat * pos4;
+
+	return v2(unprojected.x, unprojected.y);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // FIXME! ///////////////////////////////////////////////////////////////////////////////////////
 // Below are old functions that I need to keep temporarily so I can just get things compiling! //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Takes x and y in screen space, and returns a position in world-tile space.
- */
-inline V2 screenPosToWorldPos(Coord pos, Camera *camera) {
-	return {0,0};
-}
 void centreCameraOnPosition(Camera *camera, V2 position) {}
 inline Coord tilePosition(V2 worldPixelPos) {
 	return {(int)floor(worldPixelPos.x),
