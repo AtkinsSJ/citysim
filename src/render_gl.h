@@ -6,7 +6,6 @@ const int FRAMES_PER_SECOND = 60;
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-#if 1
 const float TILE_SIZE = 16.0f;
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
@@ -23,7 +22,6 @@ struct Camera {
 };
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 const int CAMERA_EDGE_SCROLL_MARGIN = 8;
-#endif
 
 struct VertexData {
 	V3 pos;
@@ -127,11 +125,9 @@ struct Sprite {
 	V4 color;
 };
 
-const int SPRITE_MAX = 16384;
-struct SpriteBuffer {
-	Sprite sprites[SPRITE_MAX];
-	uint32 count;
-};
+const int WORLD_SPRITE_MAX = 16384;
+const int UI_SPRITE_MAX = 1024;
+const int SPRITE_MAX = WORLD_SPRITE_MAX;
 
 struct GLRenderer {
 	SDL_Window *window;
@@ -146,12 +142,17 @@ struct GLRenderer {
 		  aColorLoc,
 		  aUVLoc;
 
-	Matrix4 projectionMatrix;
-
 	GLuint texture;
 	GLenum textureFormat;
 
-	SpriteBuffer spriteBuffer;
+	Camera worldCamera;
+	Matrix4 worldProjectionMatrix;
+	Sprite spriteBuffer[WORLD_SPRITE_MAX];
+	uint32 spriteCount;
+
+	Matrix4 uiProjectionMatrix;
+	Sprite uiSpriteBuffer[UI_SPRITE_MAX];
+	uint32 uiSpriteCount;
 
 	VertexData vertices[SPRITE_MAX * 4];
 	uint32 vertexCount;
@@ -162,7 +163,6 @@ struct GLRenderer {
 
 	TextureRegion textureRegions[TextureAtlasItemCount];
 	UiTheme theme;
-	Camera camera; // TODO: Remove! Or fix, whatever.
 };
 
 bool initializeRenderer(GLRenderer *renderer, const char *gameName);

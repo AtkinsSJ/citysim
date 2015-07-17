@@ -176,7 +176,7 @@ struct MainMenuUI {
 void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 
 	*menu = {};
-	Coord screenCentre = renderer->camera.windowSize / 2;
+	Coord screenCentre = renderer->worldCamera.windowSize / 2;
 	
 	initUiLabel(&menu->gameSetupLabel, renderer, screenCentre - coord(0, 50),
 				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->theme.font, renderer->theme.labelColor);
@@ -192,19 +192,19 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 	initUiLabel(&menu->gameRulesWorkersLabel, renderer, screenCentre + coord(0, 100),
 				ALIGN_CENTER, tempBuffer, renderer->theme.font, renderer->theme.labelColor);
 
-	Rect buttonRect = rectXYWH(uiPadding, renderer->camera.windowHeight - uiPadding - 24, 80, 24);
+	Rect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
 	buttonRect.x = screenCentre.x - buttonRect.w/2;
 	initUiButton(&menu->buttonWebsite, renderer, buttonRect, "Website");
-	buttonRect.x = renderer->camera.windowWidth - uiPadding - buttonRect.w;
+	buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
 	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
 }
 void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
-	drawUiRect(renderer, rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight), renderer->theme.overlayColor);
+	drawUiRect(renderer, rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight), renderer->theme.overlayColor);
 
 	// TextureRegion *logoRegion = renderer->regions + TextureAtlasItem_Menu_Logo;
 	// Rect logoRect = logoRegion->rect;
-	// logoRect.x = (renderer->camera.windowWidth - logoRect.w) / 2;
+	// logoRect.x = (renderer->worldCamera.windowWidth - logoRect.w) / 2;
 	// logoRect.y = 80;
 	// drawUiTexture(renderer, logoRegion->texture, logoRect);
 
@@ -235,13 +235,13 @@ void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 	*ui = {};
 	ui->calendar = calendar;
 
-	Coord textPosition = coord(renderer->camera.windowWidth - uiPadding, uiPadding);
+	Coord textPosition = coord(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
 	getDateString(calendar, ui->dateStringBuffer);
 	initUiLabel(&ui->labelDate, renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP,
 				ui->dateStringBuffer, renderer->theme.font, renderer->theme.labelColor);
 
 	const int buttonSize = 24;
-	Rect buttonRect = rectXYWH(renderer->camera.windowWidth - uiPadding - buttonSize, 31,
+	Rect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
 								buttonSize, buttonSize);
 	ui->buttonPlayFast = addButtonToGroup(&ui->buttonGroup);
 	initUiButton(ui->buttonPlayFast, renderer, buttonRect, ">>>");
@@ -386,9 +386,14 @@ int main(int argc, char *argv[]) {
 	V2 mouseDragStartPos = {};
 	Rect dragRect = rectXYWH(-1,-1,0,0);
 
-	renderer->camera.zoom = 1.0f;
-	SDL_GetWindowSize(renderer->window, &renderer->camera.windowWidth, &renderer->camera.windowHeight);
-	renderer->camera.pos = v2(city.width/2, city.height/2);
+	renderer->worldCamera.zoom = 1.0f;
+	SDL_GetWindowSize(renderer->window, &renderer->worldCamera.windowWidth, &renderer->worldCamera.windowHeight);
+	renderer->worldCamera.pos = v2(city.width/2, city.height/2);
+	renderer->uiProjectionMatrix = orthographicMatrix4(
+		0, renderer->worldCamera.windowWidth,
+		0, renderer->worldCamera.windowHeight,
+		-1000.0f, 1000.0f
+	);
 
 	ActionMode actionMode = ActionMode_None;
 	BuildingArchetype selectedBuildingArchetype = BA_None;
@@ -398,7 +403,7 @@ int main(int argc, char *argv[]) {
 	// real32 framesPerSecond = 0;
 
 	// Build UI
-	Coord cameraCentre = renderer->camera.windowSize / 2;
+	Coord cameraCentre = renderer->worldCamera.windowSize / 2;
 	Coord textPosition = {8,4};
 	UiLabel textCityName;
 	initUiLabel(&textCityName, renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer->theme.font, renderer->theme.labelColor);
@@ -492,8 +497,8 @@ int main(int argc, char *argv[]) {
 				case SDL_WINDOWEVENT: {
 					switch (event.window.event) {
 						case SDL_WINDOWEVENT_RESIZED: {
-							renderer->camera.windowWidth = event.window.data1;
-							renderer->camera.windowHeight = event.window.data2;
+							renderer->worldCamera.windowWidth = event.window.data1;
+							renderer->worldCamera.windowHeight = event.window.data2;
 						} break;
 					}
 				} break;
@@ -611,21 +616,21 @@ int main(int argc, char *argv[]) {
 		}
 
 	// CAMERA!
-		updateCamera(&renderer->camera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
+		updateCamera(&renderer->worldCamera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
 
-		real32 worldScale = renderer->camera.zoom / TILE_SIZE;
-		real32 camWidth = renderer->camera.windowWidth * worldScale,
-				camHeight = renderer->camera.windowHeight * worldScale;
+		real32 worldScale = renderer->worldCamera.zoom / TILE_SIZE;
+		real32 camWidth = renderer->worldCamera.windowWidth * worldScale,
+				camHeight = renderer->worldCamera.windowHeight * worldScale;
 		real32 halfCamWidth = camWidth * 0.5f,
 				halfCamHeight = camHeight * 0.5f;
 		RealRect cameraBounds = {
-			renderer->camera.pos.x - halfCamWidth,
-			renderer->camera.pos.y - halfCamHeight,
+			renderer->worldCamera.pos.x - halfCamWidth,
+			renderer->worldCamera.pos.y - halfCamHeight,
 			camWidth, camHeight
 		};
-		renderer->projectionMatrix = orthographicMatrix4(
-			renderer->camera.pos.x - halfCamWidth, renderer->camera.pos.x + halfCamWidth,
-			renderer->camera.pos.y - halfCamHeight, renderer->camera.pos.y + halfCamHeight,
+		renderer->worldProjectionMatrix = orthographicMatrix4(
+			renderer->worldCamera.pos.x - halfCamWidth, renderer->worldCamera.pos.x + halfCamWidth,
+			renderer->worldCamera.pos.y - halfCamHeight, renderer->worldCamera.pos.y + halfCamHeight,
 			-1000.0f, 1000.0f
 		);
 		
@@ -653,10 +658,10 @@ int main(int argc, char *argv[]) {
 			// Camera controls
 			// HOME resets the camera and centres on the HQ
 			if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
-				renderer->camera.zoom = 1;
+				renderer->worldCamera.zoom = 1;
 				// Jump to the farmhouse if we have one!
 				if (city.farmhouse) {
-					renderer->camera.pos = centre(&city.farmhouse->footprint);
+					renderer->worldCamera.pos = centre(&city.farmhouse->footprint);
 				} else {
 					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
 				}
@@ -885,9 +890,7 @@ int main(int argc, char *argv[]) {
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
-			Color demolishColor = {255, 0, 0, 128};
-			drawRect(renderer, realRect(dragRect), &demolishColor);
-			// drawWorldRect(renderer, dragRect, );
+			drawRect(renderer, realRect(dragRect), {128, 0, 0, 128});
 		}
 
 		if (gameStatus == GameStatus_Setup) {
@@ -899,7 +902,7 @@ int main(int argc, char *argv[]) {
 
 		} else {
 			// Draw some UI
-			drawUiRect(renderer, rectXYWH(0,0, renderer->camera.windowWidth, 64), renderer->theme.overlayColor);
+			drawUiRect(renderer, rectXYWH(0,0, renderer->worldCamera.windowWidth, 64), renderer->theme.overlayColor);
 
 			drawUiLabel(renderer, &textCityName);
 			drawUiIntLabel(renderer, &labelCityFunds);
@@ -924,7 +927,7 @@ int main(int argc, char *argv[]) {
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
 			drawUiRect(renderer,
-						rectXYWH(0, 0, renderer->camera.windowWidth, renderer->camera.windowHeight),
+						rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight),
 						renderer->theme.overlayColor);
 			drawUiLabel(renderer, &gameOverLabel); 
 			drawUiButton(renderer, &buttonMenu);
