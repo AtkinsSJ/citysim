@@ -348,8 +348,8 @@ int main(int argc, char *argv[]) {
 	const char gameName[] = "Potato Farming Manager 2000";
 
 // INIT
-	GLRenderer *renderer = (GLRenderer *)malloc(sizeof(GLRenderer));
-	if (!initializeRenderer(renderer, gameName)) {
+	GLRenderer *renderer = initializeRenderer(gameName);
+	if (!renderer) {
 		return 1;
 	}
 

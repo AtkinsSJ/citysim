@@ -1,14 +1,14 @@
 // render_gl.cpp
 
-bool initializeRenderer(GLRenderer *renderer, const char *windowTitle)
+GLRenderer *initializeRenderer(const char *windowTitle)
 {
-	(*renderer) = {};
+	GLRenderer *renderer = (GLRenderer *)calloc(1, sizeof(GLRenderer));
 
 	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
-		return false;
+		return null;
 	}
 
 	// SDL_image
@@ -16,7 +16,7 @@ bool initializeRenderer(GLRenderer *renderer, const char *windowTitle)
 	if (!(IMG_Init(imgFlags) & imgFlags))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
-		return false;
+		return null;
 	}
 
 	// Use GL3.1 Core
@@ -32,7 +32,7 @@ bool initializeRenderer(GLRenderer *renderer, const char *windowTitle)
 	if (renderer->window == NULL)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
-		return false;
+		return null;
 	}
 
 	// Create context
@@ -40,7 +40,7 @@ bool initializeRenderer(GLRenderer *renderer, const char *windowTitle)
 	if (renderer->context == NULL)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
-		return false;
+		return null;
 	}
 
 	// GLEW
@@ -49,31 +49,31 @@ bool initializeRenderer(GLRenderer *renderer, const char *windowTitle)
 	if (glewError != GLEW_OK)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
-		return false;
+		return null;
 	}
 
 	// VSync
 	if (SDL_GL_SetSwapInterval(1) < 0)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
-		return false;
+		return null;
 	}
 
 	// Init OpenGL
 	if (!initOpenGL(renderer))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
-		return false;
+		return null;
 	}
 
 	// Load textures &c
 	if (!loadTextures(renderer))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
-		return false;
+		return null;
 	}
 
-	return true;
+	return renderer;
 }
 
 bool initOpenGL(GLRenderer *renderer)
@@ -256,8 +256,8 @@ Texture loadTexture(char* filename)
 		if (textureID != -1)
 		{
 			glBindTexture(GL_TEXTURE_2D, textureID);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 
 			texture.valid = true;
@@ -276,6 +276,29 @@ Texture loadTexture(char* filename)
 	return texture;
 }
 
+void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *texture, real32 x, real32 y, real32 w, real32 h)
+{
+	real32 tw = (real32) texture->w,
+		   th = (real32) texture->h;
+
+	renderer->textureRegions[item] = {
+		texture->id,
+		{
+#if 1
+			x / tw,
+			y / th,
+			w / tw,
+			h / th
+#else
+			(x + 0.5f) / tw,
+			(y + 0.5f) / th,
+			(w - 1.0f) / tw,
+			(h - 1.0f) / th
+#endif
+		}
+	};
+} 
+
 bool loadTextures(GLRenderer *renderer)
 {
 	Texture texCombinedPng = loadTexture("combined.png");
@@ -286,23 +309,22 @@ bool loadTextures(GLRenderer *renderer)
 
 	renderer->texture = texCombinedPng.id;
 
-	const real32 w1 = 16.0f / 128.0f,
+	const real32 w1 = 16.0f,
 				w2 = w1 *2,
 				w3 = w1 *3,
 				w4 = w1 *4;
 	
-	renderer->textureRegions[TextureAtlasItem_GroundTile] 	= {texCombinedPng.id, { 0,  0, w1, w1}};
-	renderer->textureRegions[TextureAtlasItem_WaterTile]  	= {texCombinedPng.id, {w1,  0, w1, w1}};
-	renderer->textureRegions[TextureAtlasItem_ForestTile] 	= {texCombinedPng.id, {w2,  0, w1, w1}};
-
-	renderer->textureRegions[TextureAtlasItem_Field] 		= {texCombinedPng.id, {w4,  0, w4, w4}};
-	renderer->textureRegions[TextureAtlasItem_Crop0_0] 		= {texCombinedPng.id, { 0, w1, w1, w1}};
-	renderer->textureRegions[TextureAtlasItem_Crop0_1] 		= {texCombinedPng.id, {w1, w1, w1, w1}};
-	renderer->textureRegions[TextureAtlasItem_Crop0_2] 		= {texCombinedPng.id, {w2, w1, w1, w1}};
-	renderer->textureRegions[TextureAtlasItem_Crop0_3] 		= {texCombinedPng.id, {w3, w1, w1, w1}};
-	renderer->textureRegions[TextureAtlasItem_Potato] 		= {texCombinedPng.id, { 0, w2, w1, w1}};
-	renderer->textureRegions[TextureAtlasItem_Barn] 		= {texCombinedPng.id, { 0, w4, w4, w4}};
-	renderer->textureRegions[TextureAtlasItem_House] 		= {texCombinedPng.id, {w4, w4, w4, w4}};
+	assignTextureRegion(renderer, TextureAtlasItem_GroundTile, 	&texCombinedPng,  0,  0, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_WaterTile, 	&texCombinedPng, w1,  0, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_ForestTile, 	&texCombinedPng, w2,  0, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_Field, 		&texCombinedPng, w4,  0, w4, w4);
+	assignTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	&texCombinedPng,  0, w1, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	&texCombinedPng, w1, w1, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_Crop0_2, 	&texCombinedPng, w2, w1, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	&texCombinedPng, w3, w1, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_Potato, 		&texCombinedPng,  0, w2, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_Barn, 		&texCombinedPng,  0, w4, w4, w4);
+	assignTextureRegion(renderer, TextureAtlasItem_House, 		&texCombinedPng, w4, w4, w4, w4);
 
 	return true;
 }
@@ -518,7 +540,7 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 
 	// Convert into world space
 	V4 result = inverse(&renderer->projectionMatrix) * normalised;
-	SDL_Log("upproject: %f, %f", result.x, result.y);
+	// SDL_Log("upproject: %f, %f", result.x, result.y);
 
 	return result.v2;// + renderer->camera.pos;
 }

@@ -103,7 +103,7 @@ struct Sprite {
 	V4 color;
 };
 
-const int SPRITE_MAX = 2048;
+const int SPRITE_MAX = 16384;
 struct SpriteBuffer {
 	Sprite sprites[SPRITE_MAX];
 	uint32 count;
