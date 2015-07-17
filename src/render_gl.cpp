@@ -511,13 +511,14 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 	V2 windowSize = v2(renderer->camera.windowSize);
 	V4 normalised = v4(
 		((pos.x * 2.0f) / windowSize.x) - 1.0f,
-		((pos.y * 2.0f) / windowSize.y) - 1.0f,
+		((pos.y * -2.0f) + windowSize.y) / windowSize.y,
 		0.0f,
 		1.0f
 	);
 
 	// Convert into world space
 	V4 result = inverse(&renderer->projectionMatrix) * normalised;
+	SDL_Log("upproject: %f, %f", result.x, result.y);
 
 	return result.v2;// + renderer->camera.pos;
 }
