@@ -28,7 +28,7 @@ const int CAMERA_EDGE_SCROLL_MARGIN = 8;
 struct VertexData {
 	V3 pos;
 	V4 color;
-	V2 uv;
+	V3 uv; // Slightly hacky: we set 'z' to 0 for an untextured rectangle
 };
 
 struct UiTheme {
@@ -49,7 +49,8 @@ struct UiTheme {
 };
 
 enum TextureAtlasItem {
-	TextureAtlasItem_GroundTile = 0,
+	TextureAtlasItem_None = 0,
+	TextureAtlasItem_GroundTile = 1,
 	TextureAtlasItem_WaterTile,
 	TextureAtlasItem_ForestTile,
 	TextureAtlasItem_Field,

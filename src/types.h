@@ -89,10 +89,13 @@ struct V4 {
 
 struct RealRect {
 	union {
-		struct {V2 pos;};
+		V2 pos;
 		struct {real32 x, y;};
 	};
-	real32 w,h;
+	union {
+		V2 size;
+		struct {real32 w,h;};
+	};
 };
 
 #include "matrix4.h"
@@ -388,13 +391,13 @@ inline V4 v4(real32 x, real32 y, real32 z, real32 w)
 	return v;
 }
 
-inline V4 v4(Color color)
+inline V4 v4(Color *color)
 {
 	V4 v = {};
-	v.r = (real32)color.r / 255.0f;
-	v.g = (real32)color.g / 255.0f;
-	v.b = (real32)color.b / 255.0f;
-	v.a = (real32)color.a / 255.0f;
+	v.r = (real32)color->r / 255.0f;
+	v.g = (real32)color->g / 255.0f;
+	v.b = (real32)color->b / 255.0f;
+	v.a = (real32)color->a / 255.0f;
 
 	return v;
 }

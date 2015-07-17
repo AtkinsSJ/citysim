@@ -90,10 +90,10 @@ bool initOpenGL(GLRenderer *renderer)
 
 			"in vec3 aPosition;"
 			"in vec4 aColor;"
-			"in vec2 aUV;"
+			"in vec3 aUV;"
 
 			"out vec4 vColor;"
-			"out vec2 vUV;"
+			"out vec3 vUV;"
 
 			"uniform mat4 uProjectionMatrix;"
 
@@ -128,13 +128,16 @@ bool initOpenGL(GLRenderer *renderer)
 			"uniform sampler2D uTexture;"
 
 			"in vec4 vColor;"
-			"in vec2 vUV;"
+			"in vec3 vUV;"
 
 			"out vec4 fragColor;"
 
 			"void main() {"
-				"vec4 texel = texture(uTexture, vUV);"
-				"fragColor = texel * vColor;"
+				"fragColor = vColor;"
+				"if (vUV.z) {"
+					"vec4 texel = texture(uTexture, vUV.xy);"
+					"fragColor *= texel;"
+				"}"
 			"}"
 		};
 		glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
@@ -474,7 +477,7 @@ void drawSprite(GLRenderer *renderer, TextureAtlasItem textureAtlasItem,
 	V4 drawColor;
 	if (color)
 	{
-		drawColor = v4(*color);
+		drawColor = v4(color);
 	} else {
 		drawColor = v4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
@@ -484,6 +487,18 @@ void drawSprite(GLRenderer *renderer, TextureAtlasItem textureAtlasItem,
 	};
 }
 
+void drawRect(GLRenderer *renderer, RealRect rect, Color *color)
+{
+	if (renderer->spriteBuffer.count >= ArrayCount(renderer->spriteBuffer.sprites))
+	{
+		printf("Too many sprites!\n");
+		return;
+	}
+
+	renderer->spriteBuffer.sprites[renderer->spriteBuffer.count++] = {
+		TextureAtlasItem_None, centre(&rect), rect.size, 0, v4(color)
+	};
+}
 
 void render(GLRenderer *renderer)
 {
@@ -497,29 +512,34 @@ void render(GLRenderer *renderer)
 	{
 		int firstVertex = renderer->vertexCount;
 		Sprite *sprite = renderer->spriteBuffer.sprites + i;
+
+		// Untextured sprites use TextureAtlasItem_None (which is 0)
+
 		TextureRegion *region = renderer->textureRegions + sprite->textureAtlasItem;
+
+		real32 hasTexture = (sprite->textureAtlasItem > 0) ? 1.0f : 0.0f;
 
 		V2 halfSize = sprite->size / 2.0f;
 
 		renderer->vertices[renderer->vertexCount++] = {
 			v3( sprite->pos.x - halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x, region->bounds.y)
+			v3(region->bounds.x, region->bounds.y, hasTexture)
 		};
 		renderer->vertices[renderer->vertexCount++] = {
 			v3( sprite->pos.x + halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x + region->bounds.w, region->bounds.y)
+			v3(region->bounds.x + region->bounds.w, region->bounds.y, hasTexture)
 		};
 		renderer->vertices[renderer->vertexCount++] = {
 			v3( sprite->pos.x + halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x + region->bounds.w, region->bounds.y + region->bounds.h)
+			v3(region->bounds.x + region->bounds.w, region->bounds.y + region->bounds.h, hasTexture)
 		};
 		renderer->vertices[renderer->vertexCount++] = {
 			v3( sprite->pos.x - halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x, region->bounds.y + region->bounds.h)
+			v3(region->bounds.x, region->bounds.y + region->bounds.h, hasTexture)
 		};
 
 		renderer->indices[renderer->indexCount++] = firstVertex + 0;
@@ -555,7 +575,7 @@ void render(GLRenderer *renderer)
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
 	glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
-	glVertexAttribPointer(renderer->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+	glVertexAttribPointer(renderer->aUVLoc, 		3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
 
 	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, renderer->projectionMatrix.flat);
 
@@ -569,7 +589,7 @@ void render(GLRenderer *renderer)
 	glUseProgram(NULL);
 
 	SDL_GL_SwapWindow( renderer->window );
-	// SDL_Log("Drew %d sprites this frame.", renderer->spriteBuffer.count);
+	SDL_Log("Drew %d sprites this frame.", renderer->spriteBuffer.count);
 	renderer->spriteBuffer.count = 0;
 }
 
@@ -591,30 +611,15 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 	return result.v2;// + renderer->camera.pos;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// FIXME! ///////////////////////////////////////////////////////////////////////////////////////
-// Below are old functions that I need to keep temporarily so I can just get things compiling! //
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-inline Coord tilePosition(V2 worldPixelPos) {
-	return {(int)floor(worldPixelPos.x),
-			(int)floor(worldPixelPos.y)};
-}
-
-void drawAtScreenPos(GLRenderer *renderer, TextureAtlasItem textureAtlasItem, Coord position) {}
-
-void drawAtWorldPos(GLRenderer *renderer, TextureAtlasItem textureAtlasItem, V2 worldTilePosition,
-	Color *color=0) {}
-
-void drawWorldRect(GLRenderer *renderer, Rect worldRect, Color color) {}
-
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
 ////////////////////////////////////////////////////////////////////
 void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID, bool restart = false) {
 	Animation *anim = renderer->animations + animationID;
 	// We do nothing if the animation is already playing
-	if (restart || animator->animation != anim) {
+	if (restart
+	 || animator->animation != anim)
+	{
 		animator->animation = anim;
 		animator->currentFrame = 0;
 		animator->frameCounter = 0.0f;
@@ -623,7 +628,8 @@ void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animatio
 
 void drawAnimator(GLRenderer *renderer, Animator *animator, real32 daysPerFrame, V2 worldTilePosition, V2 size, Color *color = 0) {
 	animator->frameCounter += daysPerFrame * animationFramesPerDay;
-	while (animator->frameCounter >= 1) {
+	while (animator->frameCounter >= 1)
+	{
 		int32 framesElapsed = (int)animator->frameCounter;
 		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
 		animator->frameCounter -= framesElapsed;
@@ -636,3 +642,15 @@ void drawAnimator(GLRenderer *renderer, Animator *animator, real32 daysPerFrame,
 		color
 	);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// FIXME! ///////////////////////////////////////////////////////////////////////////////////////
+// Below are old functions that I need to keep temporarily so I can just get things compiling! //
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+inline Coord tilePosition(V2 worldPixelPos) {
+	return {(int)floor(worldPixelPos.x),
+			(int)floor(worldPixelPos.y)};
+}
+
+void drawAtScreenPos(GLRenderer *renderer, TextureAtlasItem textureAtlasItem, Coord position) {}

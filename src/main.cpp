@@ -885,7 +885,9 @@ int main(int argc, char *argv[]) {
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
-			drawWorldRect(renderer, dragRect, {255, 0, 0, 128});
+			Color demolishColor = {255, 0, 0, 128};
+			drawRect(renderer, realRect(dragRect), &demolishColor);
+			// drawWorldRect(renderer, dragRect, );
 		}
 
 		if (gameStatus == GameStatus_Setup) {
