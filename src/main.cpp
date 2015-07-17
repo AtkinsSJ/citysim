@@ -858,7 +858,12 @@ int main(int argc, char *argv[]) {
 		// Draw potatoes!
 		for (int i = 0; i < ArrayCount(city.potatoes); ++i) {
 			if (city.potatoes[i].exists) {
-				drawAtWorldPos(renderer, TextureAtlasItem_Potato, city.potatoes[i].bounds.pos);
+				drawSprite(
+					renderer,
+					TextureAtlasItem_Potato,
+					centre(&city.potatoes[i].bounds),
+					v2(1,1)
+				);
 			}
 		}
 
@@ -870,7 +875,13 @@ int main(int argc, char *argv[]) {
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
-			drawAtWorldPos(renderer, buildingDefinitions[selectedBuildingArchetype].textureAtlasItem, v2(mouseTilePos), &ghostColor);
+			drawSprite(
+				renderer,
+				buildingDefinitions[selectedBuildingArchetype].textureAtlasItem,
+				v2(mouseTilePos),
+				v2(buildingDefinitions[selectedBuildingArchetype].size),
+				&ghostColor
+			);
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline

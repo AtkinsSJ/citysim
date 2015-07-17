@@ -3,6 +3,8 @@ TODO:
 ---------------------------------------------
 
 Renderimg 2.0:
+- Stop passing a size to drawSprite()! Will always draw at a consistent size.
+
 - Sorting!
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
 - Integrate it with the game!

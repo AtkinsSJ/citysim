@@ -161,6 +161,16 @@ inline Rect rectXYWH(int32 x, int32 y, int32 w, int32 h)
 	return rect;
 }
 
+inline Rect rectCentreWH(Coord position, int32 w, int32 h)
+{
+	Rect rect = {};
+	rect.x = position.x - w/2;
+	rect.y = position.y - h/2;
+	rect.w = w;
+	rect.h = h;
+	return rect;
+}
+
 inline Rect rectCovering(V2 a, V2 b)
 {
 	Rect rect = {};

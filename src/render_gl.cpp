@@ -344,6 +344,34 @@ bool loadTextures(GLRenderer *renderer)
 	assignTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	&texCombinedPng, 128 +  0, 0, 32, 32);
 	assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, &texCombinedPng, 128 + 32, 0, 32, 32);
 
+	Animation *animation;
+	
+	animation = renderer->animations + Animation_Farmer_Stand;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Stand;
+
+	animation = renderer->animations + Animation_Farmer_Walk;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk0;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk1;
+	
+	animation = renderer->animations + Animation_Farmer_Hold;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Hold;
+
+	animation = renderer->animations + Animation_Farmer_Carry;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry0;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry1;
+
+	animation = renderer->animations + Animation_Farmer_Harvest;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest0;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest1;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest2;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest3;
+
+	animation = renderer->animations + Animation_Farmer_Plant;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant0;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant1;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant2;
+	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
+
 	return true;
 }
 
@@ -583,6 +611,28 @@ void drawWorldRect(GLRenderer *renderer, Rect worldRect, Color color) {}
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
 ////////////////////////////////////////////////////////////////////
-void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID, bool restart = false) {}
+void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID, bool restart = false) {
+	Animation *anim = renderer->animations + animationID;
+	// We do nothing if the animation is already playing
+	if (restart || animator->animation != anim) {
+		animator->animation = anim;
+		animator->currentFrame = 0;
+		animator->frameCounter = 0.0f;
+	}
+}
 
-void drawAnimator(GLRenderer *renderer, Animator *animator, real32 daysPerFrame, V2 worldTilePosition, Color *color = 0) {}
+void drawAnimator(GLRenderer *renderer, Animator *animator, real32 daysPerFrame, V2 worldTilePosition, V2 size, Color *color = 0) {
+	animator->frameCounter += daysPerFrame * animationFramesPerDay;
+	while (animator->frameCounter >= 1) {
+		int32 framesElapsed = (int)animator->frameCounter;
+		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
+		animator->frameCounter -= framesElapsed;
+	}
+	drawSprite(
+		renderer,
+		animator->animation->frames[animator->currentFrame],
+		worldTilePosition,
+		size,
+		color
+	);
+}

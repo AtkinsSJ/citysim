@@ -95,6 +95,29 @@ struct TextureRegion {
 	RealRect bounds;
 };
 
+enum AnimationID {
+	Animation_Farmer_Stand,
+	Animation_Farmer_Walk,
+	Animation_Farmer_Hold,
+	Animation_Farmer_Carry,
+	Animation_Farmer_Harvest,
+	Animation_Farmer_Plant,
+	
+	Animation_Count,
+};
+
+struct Animation {
+	TextureAtlasItem frames[16];
+	uint32 frameCount;
+};
+
+struct Animator {
+	Animation *animation;
+	uint32 currentFrame;
+	real32 frameCounter; // Sub-frame ticks
+};
+const real32 animationFramesPerDay = 10.0f;
+
 struct Sprite {
 	TextureAtlasItem textureAtlasItem;
 	V2 pos;
@@ -134,45 +157,12 @@ struct GLRenderer {
 	GLuint indices[SPRITE_MAX * 6];
 	uint32 indexCount;
 
+	Animation animations[Animation_Count];
+
 	TextureRegion textureRegions[TextureAtlasItemCount];
 	UiTheme theme;
 	Camera camera; // TODO: Remove! Or fix, whatever.
 };
-
-// struct Texture {
-// 	bool valid;
-// 	const char* filename;
-// 	SDL_Texture *sdl_texture;
-// 	int32 w, h;
-// };
-
-// struct TextureRegion {
-// 	Texture *texture;
-// 	Rect rect;
-// };
-
-enum AnimationID {
-	Animation_Farmer_Stand,
-	Animation_Farmer_Walk,
-	Animation_Farmer_Hold,
-	Animation_Farmer_Carry,
-	Animation_Farmer_Harvest,
-	Animation_Farmer_Plant,
-	
-	Animation_Count,
-};
-
-struct Animation {
-	TextureAtlasItem frames[16];
-	uint32 frameCount;
-};
-
-struct Animator {
-	Animation *animation;
-	uint32 currentFrame;
-	real32 frameCounter; // Sub-frame ticks
-};
-const real32 animationFramesPerDay = 10.0f;
 
 bool initializeRenderer(GLRenderer *renderer, const char *gameName);
 void freeRenderer(GLRenderer *renderer);
