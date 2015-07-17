@@ -241,42 +241,6 @@ inline V4 operator*(Matrix4 &m, V4 v)
 	return result;
 }
 
-#if 0
-inline V3 operator*(Matrix4 &m, V3 v)
-{
-	// Not sure this is right?
-	V3 result = {};
-
-	result.x = v.x * m.v[0][0]
-			 + v.y * m.v[1][0]
-			 + v.z * m.v[2][0];
-
-	result.y = v.x * m.v[0][1]
-			 + v.y * m.v[1][1]
-			 + v.z * m.v[2][1];
-
-	result.z = v.x * m.v[0][2]
-			 + v.y * m.v[1][2]
-			 + v.z * m.v[2][2];
-
-	return result;
-}
-
-inline V2 operator*(Matrix4 &m, V2 v)
-{
-	// Not sure this is right?
-	V2 result = {};
-
-	result.x = v.x * m.v[0][0]
-			 + v.y * m.v[1][0];
-
-	result.y = v.x * m.v[0][1]
-			 + v.y * m.v[1][1];
-
-	return result;
-}
-#endif
-
 void translate(Matrix4 *matrix, V3 translation) {
 	matrix->v[3][0] += translation.x;
 	matrix->v[3][1] += translation.y;
