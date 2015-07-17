@@ -256,8 +256,8 @@ void centreCameraOnPosition(Camera *camera, V2 position) {
 	);
 }
 inline Coord tilePosition(V2 worldPixelPos) {
-	return {(int)floor(worldPixelPos.x),
-			(int)floor(worldPixelPos.y)};
+	return {(int)round(worldPixelPos.x),
+			(int)round(worldPixelPos.y)};
 }
 
 void clearToBlack(Renderer *renderer) {

@@ -71,6 +71,14 @@ struct V3 {
 struct V4 {
 	union {
 		struct {
+			V3 v3;
+			real32 w;
+		};
+		struct {
+			V2 v2;
+			real32 z, w;
+		};
+		struct {
 			real32 x,y,z,w;
 		};
 		struct {

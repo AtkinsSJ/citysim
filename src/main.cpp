@@ -42,6 +42,37 @@ enum GameStatus {
 
 void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState, int32 cityWidth, int32 cityHeight) {
 	// Zooming
+	if (canZoom && mouseState->wheelY) {
+		// round()ing the zoom so it doesn't gradually drift due to float imprecision
+		camera->zoom = clamp(round(10 * camera->zoom - mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
+	}
+
+	// Panning
+	real32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
+	if (keyboardState->down[SDL_SCANCODE_LEFT]
+		|| keyboardState->down[SDL_SCANCODE_A])
+	{
+		camera->pos.x -= scrollSpeed;
+	}
+	else if (keyboardState->down[SDL_SCANCODE_RIGHT]
+		|| keyboardState->down[SDL_SCANCODE_D])
+	{
+		camera->pos.x += scrollSpeed;
+	}
+
+	if (keyboardState->down[SDL_SCANCODE_UP]
+		|| keyboardState->down[SDL_SCANCODE_W])
+	{
+		camera->pos.y -= scrollSpeed;
+	}
+	else if (keyboardState->down[SDL_SCANCODE_DOWN]
+		|| keyboardState->down[SDL_SCANCODE_S])
+	{
+		camera->pos.y += scrollSpeed;
+	}
+
+#if 0
+	// Zooming
 	if (canZoom && mouseState->wheelY != 0) {
 		// round()ing the zoom so it doesn't gradually drift due to float imprecision
 		camera->zoom = clamp(round(10 * camera->zoom + mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
@@ -78,32 +109,31 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 	}
 
 	// Clamp camera
-	int32 cameraWidth = camera->windowWidth,
-			cameraHeight = camera->windowHeight;
 	real32 scaledCityWidth = cityWidth * camera->zoom,
 			scaledCityHeight = cityHeight * camera->zoom;
 
-	if (scaledCityWidth < cameraWidth) {
+	if (scaledCityWidth < camera->windowWidth) {
 		// City smaller than camera, so centre on it
 		camera->pos.x = scaledCityWidth / 2.0f;
 	} else {
 		camera->pos.x = clamp(
 			camera->pos.x,
-			cameraWidth/2.0f - CAMERA_MARGIN,
-			scaledCityWidth - (cameraWidth/2.0f - CAMERA_MARGIN)
+			camera->windowWidth/2.0f - CAMERA_MARGIN,
+			scaledCityWidth - (camera->windowWidth/2.0f - CAMERA_MARGIN)
 		);
 	}
 
-	if (scaledCityHeight < cameraHeight) {
+	if (scaledCityHeight < camera->windowHeight) {
 		// City smaller than camera, so centre on it
 		camera->pos.y = scaledCityHeight / 2.0f;
 	} else {
 		camera->pos.y = clamp(
 			camera->pos.y,
-			cameraHeight/2.0f - CAMERA_MARGIN,
-			scaledCityHeight - (cameraHeight/2.0f - CAMERA_MARGIN)
+			camera->windowHeight/2.0f - CAMERA_MARGIN,
+			scaledCityHeight - (camera->windowHeight/2.0f - CAMERA_MARGIN)
 		);
 	}
+#endif
 }
 
 enum ActionMode {
@@ -358,7 +388,7 @@ int main(int argc, char *argv[]) {
 
 	renderer->camera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer->window, &renderer->camera.windowWidth, &renderer->camera.windowHeight);
-	centreCameraOnPosition(&renderer->camera, v2(city.width/2, city.height/2));
+	renderer->camera.pos = v2(city.width/2, city.height/2);
 
 	ActionMode actionMode = ActionMode_None;
 	BuildingArchetype selectedBuildingArchetype = BA_None;
@@ -626,13 +656,13 @@ int main(int argc, char *argv[]) {
 				renderer->camera.zoom = 1;
 				// Jump to the farmhouse if we have one!
 				if (city.farmhouse) {
-					centreCameraOnPosition(&renderer->camera, centre(&city.farmhouse->footprint));
+					renderer->camera.pos = centre(&city.farmhouse->footprint);
 				} else {
 					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
 				}
 			}
 
-			SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
+			// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
 
 			if (!buttonAteMouseEvent) {
 				switch (actionMode) {
@@ -790,7 +820,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawSprite(renderer, textureAtlasItem, v2(x,y), v2(1.0f, 1.0f));
+				drawSprite(renderer, textureAtlasItem, v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f));
 			}
 		}
 

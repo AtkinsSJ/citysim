@@ -501,7 +501,7 @@ void render(GLRenderer *renderer)
 	glUseProgram(NULL);
 
 	SDL_GL_SwapWindow( renderer->window );
-	SDL_Log("Drew %d sprites this frame.", renderer->spriteBuffer.count);
+	// SDL_Log("Drew %d sprites this frame.", renderer->spriteBuffer.count);
 	renderer->spriteBuffer.count = 0;
 }
 
@@ -509,15 +509,17 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 {
 	// Normalise to (-1 to 1) coordinates as used by opengl
 	V2 windowSize = v2(renderer->camera.windowSize);
-	V2 normalised = v2(
-		(pos.x * 2.0f) / windowSize.x,
-		(pos.y * 2.0f) / windowSize.y
-	) - v2(1.0f, 1.0f);
+	V4 normalised = v4(
+		((pos.x * 2.0f) / windowSize.x) - 1.0f,
+		((pos.y * 2.0f) / windowSize.y) - 1.0f,
+		0.0f,
+		1.0f
+	);
 
 	// Convert into world space
-	V2 result = inverse(&renderer->projectionMatrix) * normalised;
+	V4 result = inverse(&renderer->projectionMatrix) * normalised;
 
-	return result;
+	return result.v2;// + renderer->camera.pos;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -525,7 +527,6 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 // Below are old functions that I need to keep temporarily so I can just get things compiling! //
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void centreCameraOnPosition(Camera *camera, V2 position) {}
 inline Coord tilePosition(V2 worldPixelPos) {
 	return {(int)floor(worldPixelPos.x),
 			(int)floor(worldPixelPos.y)};

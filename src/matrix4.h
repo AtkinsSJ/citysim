@@ -241,6 +241,7 @@ inline V4 operator*(Matrix4 &m, V4 v)
 	return result;
 }
 
+#if 0
 inline V3 operator*(Matrix4 &m, V3 v)
 {
 	// Not sure this is right?
@@ -274,6 +275,7 @@ inline V2 operator*(Matrix4 &m, V2 v)
 
 	return result;
 }
+#endif
 
 void translate(Matrix4 *matrix, V3 translation) {
 	matrix->v[3][0] += translation.x;

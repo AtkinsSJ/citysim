@@ -11,7 +11,7 @@ const float TILE_SIZE = 16.0f;
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
 const int CAMERA_MARGIN = 0;
-const bool canZoom = false;
+const bool canZoom = true;
 
 struct Camera {
 	union {
@@ -21,7 +21,7 @@ struct Camera {
 	V2 pos; // Centre of screen
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 };
-const real32 CAMERA_PAN_SPEED = 0.5f; // Measured in camera-widths per second
+const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 const int CAMERA_EDGE_SCROLL_MARGIN = 8;
 #endif
 
@@ -103,8 +103,9 @@ struct Sprite {
 	V4 color;
 };
 
+const int SPRITE_MAX = 2048;
 struct SpriteBuffer {
-	Sprite sprites[2048];
+	Sprite sprites[SPRITE_MAX];
 	uint32 count;
 };
 
@@ -128,9 +129,9 @@ struct GLRenderer {
 
 	SpriteBuffer spriteBuffer;
 
-	VertexData vertices[8192];
+	VertexData vertices[SPRITE_MAX * 4];
 	uint32 vertexCount;
-	GLuint indices[8192];
+	GLuint indices[SPRITE_MAX * 6];
 	uint32 indexCount;
 
 	TextureRegion textureRegions[TextureAtlasItemCount];
