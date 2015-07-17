@@ -845,8 +845,7 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
-					// drawSprite(renderer, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
-					drawAtWorldPos(renderer, def->textureAtlasItem, v2(building.footprint.pos), &drawColor);
+					drawSprite(renderer, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
 				} break;
 			}
 		}

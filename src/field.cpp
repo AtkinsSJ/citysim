@@ -94,26 +94,28 @@ void updateField(FieldData *field) {
 
 void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
-	drawAtWorldPos(renderer, TextureAtlasItem_Field, v2(building->footprint.pos), drawColor);
+	drawSprite(renderer, TextureAtlasItem_Field, centre(&building->footprint), v2(building->footprint.dim), drawColor);
 
 	FieldData *field = (FieldData*)building->data;
 
 	switch (field->state) {
 		case FieldState_Planting: {
 			for (int32 i=0; i < field->progress; i++) {
-				drawAtWorldPos(renderer,
+				drawSprite(renderer,
 					TextureAtlasItem_Crop0_0,
-					v2(	building->footprint.pos.x + (i%4),
-					 	building->footprint.pos.y + (i/4)),
+					v2(	building->footprint.pos.x + (i%4) + 0.5f,
+					 	building->footprint.pos.y + (i/4) + 0.5f),
+					v2(1,1),
 					drawColor
 				);
 			}
 
 			// 'Planting' indicator
-			drawAtWorldPos(renderer,
+			drawSprite(
+				renderer,
 				TextureAtlasItem_Icon_Planting,
-				v2( building->footprint.pos.x - 1 + building->footprint.w/2,
-					building->footprint.pos.y - 2 + building->footprint.h/2 )
+				centre(&building->footprint),
+				v2(2,2)
 			);
 		} break;
 
@@ -121,10 +123,11 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			int32 baseGrowthStage = field->progress / fieldSize;
 			int32 beyondGrowth = field->progress % fieldSize;
 			for (int32 i=0; i < fieldSize; i++) {
-				drawAtWorldPos(renderer,
+				drawSprite(renderer,
 					(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage + (i < beyondGrowth ? 1 : 0)),
-					v2({building->footprint.pos.x + (i%4),
-					 building->footprint.pos.y + (i/4)}),
+					v2( building->footprint.pos.x + (i%4) + 0.5f,
+						building->footprint.pos.y + (i/4) + 0.5f),
+					v2(1,1),
 					drawColor
 				);
 			}
@@ -132,10 +135,11 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
 		case FieldState_Grown: {
 			for (int32 i=0; i < fieldSize; i++) {
-				drawAtWorldPos(renderer,
+				drawSprite(renderer,
 					TextureAtlasItem_Crop0_3,
-					v2({building->footprint.pos.x + (i%4),
-					 building->footprint.pos.y + (i/4)}),
+					v2( building->footprint.pos.x + (i%4) + 0.5f,
+						building->footprint.pos.y + (i/4) + 0.5f),
+					v2(1,1),
 					drawColor
 				);
 			}
@@ -146,19 +150,21 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			for (int32 i=0; i < fieldSize; i++) {
 				if (i < field->progress) continue;
 
-				drawAtWorldPos(renderer,
+				drawSprite(renderer,
 					TextureAtlasItem_Crop0_3,
-					v2({building->footprint.pos.x + (i%4),
-					 building->footprint.pos.y + (i/4)}),
+					v2( building->footprint.pos.x + (i%4) + 0.5f,
+						building->footprint.pos.y + (i/4) + 0.5f),
+					v2(1,1),
 					drawColor
 				);
 			}
 
 			// 'Harvesting' indicator
-			drawAtWorldPos(renderer,
+			drawSprite(
+				renderer,
 				TextureAtlasItem_Icon_Harvesting,
-				v2( building->footprint.pos.x - 1 + building->footprint.w/2,
-					building->footprint.pos.y - 2 + building->footprint.h/2 )
+				centre(&building->footprint),
+				v2(2,2)
 			);
 		} break;
 	}

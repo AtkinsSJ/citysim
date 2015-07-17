@@ -326,6 +326,24 @@ bool loadTextures(GLRenderer *renderer)
 	assignTextureRegion(renderer, TextureAtlasItem_Barn, 		&texCombinedPng,  0, w4, w4, w4);
 	assignTextureRegion(renderer, TextureAtlasItem_House, 		&texCombinedPng, w4, w4, w4, w4);
 
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  	&texCombinedPng, 128 + 0, 64 +  0,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  	&texCombinedPng, 128 + 8, 64 +  0,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk1,  	&texCombinedPng, 128 +16, 64 +  0,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   	&texCombinedPng, 128 + 0, 64 +  8,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, 	&texCombinedPng, 128 + 8, 64 +  8,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, 	&texCombinedPng, 128 +16, 64 +  8,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest0, &texCombinedPng, 128 + 0, 64 + 16,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest1, &texCombinedPng, 128 + 8, 64 + 16,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest2, &texCombinedPng, 128 +16, 64 + 16,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest3, &texCombinedPng, 128 +24, 64 + 16,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant0, 	&texCombinedPng, 128 + 0, 64 + 24,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant1, 	&texCombinedPng, 128 + 8, 64 + 24,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant2, 	&texCombinedPng, 128 +16, 64 + 24,  8,  8);
+	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant3, 	&texCombinedPng, 128 +24, 64 + 24,  8,  8);
+
+	assignTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	&texCombinedPng, 128 +  0, 0, 32, 32);
+	assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, &texCombinedPng, 128 + 32, 0, 32, 32);
+
 	return true;
 }
 
