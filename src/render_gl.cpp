@@ -507,14 +507,17 @@ void render(GLRenderer *renderer)
 
 V2 unproject(GLRenderer *renderer, V2 pos)
 {
-	// This is all wrong. ALL WRONG! D:
-	Matrix4 mat = inverse(&renderer->projectionMatrix);
+	// Normalise to (-1 to 1) coordinates as used by opengl
+	V2 windowSize = v2(renderer->camera.windowSize);
+	V2 normalised = v2(
+		(pos.x * 2.0f) / windowSize.x,
+		(pos.y * 2.0f) / windowSize.y
+	) - v2(1.0f, 1.0f);
 
-	V4 pos4 = {pos.x, pos.y, 1.0f, 1.0f};
+	// Convert into world space
+	V2 result = inverse(&renderer->projectionMatrix) * normalised;
 
-	V4 unprojected = mat * pos4;
-
-	return v2(unprojected.x, unprojected.y);
+	return result;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

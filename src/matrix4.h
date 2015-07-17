@@ -44,7 +44,6 @@ Matrix4 inverse(Matrix4 *source)
 	// Shamelessly copied from http://stackoverflow.com/a/1148405/1178345
 	// This is complicated! *_*
 	Matrix4 result = {};
-	GLfloat *m = source->flat;
 
 	result.flat[0] = source->flat[5]  * source->flat[10] * source->flat[15] - 
              source->flat[5]  * source->flat[11] * source->flat[14] - 
