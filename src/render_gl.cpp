@@ -4,6 +4,11 @@ GLRenderer *initializeRenderer(const char *windowTitle)
 {
 	GLRenderer *renderer = (GLRenderer *)calloc(1, sizeof(GLRenderer));
 
+	renderer->worldBuffer.sprites = (Sprite *)malloc(WORLD_SPRITE_MAX * sizeof(Sprite));
+	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
+	renderer->uiBuffer.sprites    = (Sprite *)malloc(UI_SPRITE_MAX * sizeof(Sprite));
+	renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
+
 	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -72,6 +77,16 @@ GLRenderer *initializeRenderer(const char *windowTitle)
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
 		return null;
 	}
+
+	// UI Theme!
+	renderer->theme.buttonTextColor = {0,0,0,255};
+	renderer->theme.buttonBackgroundColor = {255,255,255,255};
+	renderer->theme.buttonHoverColor = {192,192,255,255};
+	renderer->theme.buttonPressedColor = {128,128,255,255};
+	renderer->theme.labelColor = {255,255,255,255};
+	renderer->theme.overlayColor = {0,0,0,128};
+	renderer->theme.textboxTextColor = {0,0,0,255};
+	renderer->theme.textboxBackgroundColor = {255,255,255,255};
 
 	return renderer;
 }
@@ -468,6 +483,22 @@ SDL_Cursor *createCursor(char *path)
 void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, Color *color)
 {
+	RenderBuffer *buffer;
+	if (isUI)
+	{
+		buffer = &renderer->uiBuffer;
+	}
+	else
+	{
+		buffer = &renderer->worldBuffer;
+	}
+
+	if (buffer->spriteCount >= buffer->maxSprites)
+	{
+		SDL_Log("Too many %s sprites!", isUI ? "UI" : "world");
+		return;
+	}
+
 	V4 drawColor;
 	if (color)
 	{
@@ -476,35 +507,90 @@ void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasIt
 		drawColor = v4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	if (isUI)
-	{
-		if (renderer->uiSpriteCount >= ArrayCount(renderer->uiSpriteBuffer))
-		{
-			printf("Too many UI sprites!\n");
-			return;
-		}
-
-		renderer->uiSpriteBuffer[renderer->uiSpriteCount++] = {
-			textureAtlasItem, position, size, 0, drawColor
-		};
-	}
-	else
-	{
-		if (renderer->spriteCount >= ArrayCount(renderer->spriteBuffer))
-		{
-			printf("Too many world sprites!\n");
-			return;
-		}
-
-		renderer->spriteBuffer[renderer->spriteCount++] = {
-			textureAtlasItem, position, size, 0, drawColor
-		};
-	}
+	buffer->sprites[buffer->spriteCount++] = {
+		textureAtlasItem, position, size, 0, drawColor
+	};
 }
 
 void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color color)
 {
 	drawSprite(renderer, isUI, TextureAtlasItem_None, centre(&rect), rect.size, &color);
+}
+
+void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
+{
+	// Fill VBO
+	uint32 vertexCount = 0;
+	uint32 indexCount = 0;
+	for (uint32 i=0; i < buffer->spriteCount; i++)
+	{
+		int firstVertex = vertexCount;
+		Sprite *sprite = buffer->sprites + i;
+
+		// Untextured sprites use TextureAtlasItem_None (which is 0)
+
+		TextureRegion *region = renderer->textureRegions + sprite->textureAtlasItem;
+
+		real32 hasTexture = (sprite->textureAtlasItem > 0) ? 1.0f : 0.0f;
+
+		V2 halfSize = sprite->size / 2.0f;
+
+		renderer->vertices[vertexCount++] = {
+			v3( sprite->pos.x - halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
+			sprite->color,
+			v3(region->bounds.x, region->bounds.y, hasTexture)
+		};
+		renderer->vertices[vertexCount++] = {
+			v3( sprite->pos.x + halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
+			sprite->color,
+			v3(region->bounds.x + region->bounds.w, region->bounds.y, hasTexture)
+		};
+		renderer->vertices[vertexCount++] = {
+			v3( sprite->pos.x + halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
+			sprite->color,
+			v3(region->bounds.x + region->bounds.w, region->bounds.y + region->bounds.h, hasTexture)
+		};
+		renderer->vertices[vertexCount++] = {
+			v3( sprite->pos.x - halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
+			sprite->color,
+			v3(region->bounds.x, region->bounds.y + region->bounds.h, hasTexture)
+		};
+
+		renderer->indices[indexCount++] = firstVertex + 0;
+		renderer->indices[indexCount++] = firstVertex + 1;
+		renderer->indices[indexCount++] = firstVertex + 2;
+		renderer->indices[indexCount++] = firstVertex + 0;
+		renderer->indices[indexCount++] = firstVertex + 2;
+		renderer->indices[indexCount++] = firstVertex + 3;
+	}
+	
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
+
+	// Fill IBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(renderer->aPositionLoc);
+	glEnableVertexAttribArray(renderer->aColorLoc);
+	glEnableVertexAttribArray(renderer->aUVLoc);
+
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+	glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	glVertexAttribPointer(renderer->aUVLoc, 		3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+
+	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
+
+	glDisableVertexAttribArray(renderer->aPositionLoc);
+	glDisableVertexAttribArray(renderer->aColorLoc);
+	glDisableVertexAttribArray(renderer->aUVLoc);
+
+	SDL_Log("Drew %d sprites this frame.", buffer->spriteCount);
+	buffer->spriteCount = 0;
 }
 
 void render(GLRenderer *renderer)
@@ -524,158 +610,9 @@ void render(GLRenderer *renderer)
 	glUniform1i(renderer->uTextureLoc, 0);
 
 	// World sprites
-#if 0
-	{
-		// Fill VBO
-		renderer->vertexCount = 0;
-		renderer->indexCount = 0;
-		for (uint32 i=0; i < renderer->spriteCount; i++)
-		{
-			int firstVertex = renderer->vertexCount;
-			Sprite *sprite = renderer->spriteBuffer + i;
-
-			// Untextured sprites use TextureAtlasItem_None (which is 0)
-
-			TextureRegion *region = renderer->textureRegions + sprite->textureAtlasItem;
-
-			real32 hasTexture = (sprite->textureAtlasItem > 0) ? 1.0f : 0.0f;
-
-			V2 halfSize = sprite->size / 2.0f;
-
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x - halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x, region->bounds.y, hasTexture)
-			};
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x + halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x + region->bounds.w, region->bounds.y, hasTexture)
-			};
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x + halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x + region->bounds.w, region->bounds.y + region->bounds.h, hasTexture)
-			};
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x - halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x, region->bounds.y + region->bounds.h, hasTexture)
-			};
-
-			renderer->indices[renderer->indexCount++] = firstVertex + 0;
-			renderer->indices[renderer->indexCount++] = firstVertex + 1;
-			renderer->indices[renderer->indexCount++] = firstVertex + 2;
-			renderer->indices[renderer->indexCount++] = firstVertex + 0;
-			renderer->indices[renderer->indexCount++] = firstVertex + 2;
-			renderer->indices[renderer->indexCount++] = firstVertex + 3;
-		}
-		
-		glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-		glBufferData(GL_ARRAY_BUFFER, renderer->vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
-
-		// Fill IBO
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, renderer->indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(renderer->aPositionLoc);
-		glEnableVertexAttribArray(renderer->aColorLoc);
-		glEnableVertexAttribArray(renderer->aUVLoc);
-
-		glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-		glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
-		glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
-		glVertexAttribPointer(renderer->aUVLoc, 		3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
-
-		glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, renderer->worldProjectionMatrix.flat);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-		glDrawElements(GL_TRIANGLES, renderer->indexCount, GL_UNSIGNED_INT, NULL);
-
-		glDisableVertexAttribArray(renderer->aPositionLoc);
-		glDisableVertexAttribArray(renderer->aColorLoc);
-		glDisableVertexAttribArray(renderer->aUVLoc);
-
-		SDL_Log("Drew %d sprites this frame.", renderer->spriteCount);
-		renderer->spriteCount = 0;
-	}
-#endif
-
-	// UI sprites
-	{
-		// Fill VBO
-		renderer->vertexCount = 0;
-		renderer->indexCount = 0;
-		for (uint32 i=0; i < renderer->uiSpriteCount; i++)
-		{
-			int firstVertex = renderer->vertexCount;
-			Sprite *sprite = renderer->uiSpriteBuffer + i;
-
-			// Untextured sprites use TextureAtlasItem_None (which is 0)
-
-			TextureRegion *region = renderer->textureRegions + sprite->textureAtlasItem;
-
-			real32 hasTexture = (sprite->textureAtlasItem > 0) ? 1.0f : 0.0f;
-
-			V2 halfSize = sprite->size / 2.0f;
-
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x - halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x, region->bounds.y, hasTexture)
-			};
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x + halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x + region->bounds.w, region->bounds.y, hasTexture)
-			};
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x + halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x + region->bounds.w, region->bounds.y + region->bounds.h, hasTexture)
-			};
-			renderer->vertices[renderer->vertexCount++] = {
-				v3( sprite->pos.x - halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
-				sprite->color,
-				v3(region->bounds.x, region->bounds.y + region->bounds.h, hasTexture)
-			};
-
-			renderer->indices[renderer->indexCount++] = firstVertex + 0;
-			renderer->indices[renderer->indexCount++] = firstVertex + 1;
-			renderer->indices[renderer->indexCount++] = firstVertex + 2;
-			renderer->indices[renderer->indexCount++] = firstVertex + 0;
-			renderer->indices[renderer->indexCount++] = firstVertex + 2;
-			renderer->indices[renderer->indexCount++] = firstVertex + 3;
-		}
-		
-		glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-		glBufferData(GL_ARRAY_BUFFER, renderer->vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
-
-		// Fill IBO
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, renderer->indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(renderer->aPositionLoc);
-		glEnableVertexAttribArray(renderer->aColorLoc);
-		glEnableVertexAttribArray(renderer->aUVLoc);
-
-		glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-		glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
-		glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
-		glVertexAttribPointer(renderer->aUVLoc, 		3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
-
-		glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, renderer->uiProjectionMatrix.flat);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-		glDrawElements(GL_TRIANGLES, renderer->indexCount, GL_UNSIGNED_INT, NULL);
-
-		glDisableVertexAttribArray(renderer->aPositionLoc);
-		glDisableVertexAttribArray(renderer->aColorLoc);
-		glDisableVertexAttribArray(renderer->aUVLoc);
-
-		SDL_Log("Drew %d UI sprites this frame.", renderer->uiSpriteCount);
-		renderer->uiSpriteCount = 0;
-	}
+	_renderBuffer(renderer, &renderer->worldBuffer);
+	// renderer->worldBuffer.spriteCount = 0;
+	_renderBuffer(renderer, &renderer->uiBuffer);
 
 	glUseProgram(NULL);
 	SDL_GL_SwapWindow( renderer->window );
@@ -693,7 +630,7 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 	);
 
 	// Convert into world space
-	V4 result = inverse(&renderer->worldProjectionMatrix) * normalised;
+	V4 result = inverse(&renderer->worldBuffer.projectionMatrix) * normalised;
 	// SDL_Log("upproject: %f, %f", result.x, result.y);
 
 	return result.v2;// + renderer->camera.pos;

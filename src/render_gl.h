@@ -12,7 +12,8 @@ const int TILE_WIDTH = 16,
 const int CAMERA_MARGIN = 0;
 const bool canZoom = true;
 
-struct Camera {
+struct Camera
+{
 	union {
 		Coord windowSize;
 		struct{int32 windowWidth, windowHeight;};
@@ -23,13 +24,15 @@ struct Camera {
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 const int CAMERA_EDGE_SCROLL_MARGIN = 8;
 
-struct VertexData {
+struct VertexData
+{
 	V3 pos;
 	V4 color;
 	V3 uv; // Slightly hacky: we set 'z' to 0 for an untextured rectangle
 };
 
-struct UiTheme {
+struct UiTheme
+{
 	TTF_Font *font,
 			*buttonFont;
 
@@ -46,7 +49,8 @@ struct UiTheme {
 		textboxBackgroundColor;
 };
 
-enum TextureAtlasItem {
+enum TextureAtlasItem
+{
 	TextureAtlasItem_None = 0,
 	TextureAtlasItem_GroundTile = 1,
 	TextureAtlasItem_WaterTile,
@@ -83,18 +87,21 @@ enum TextureAtlasItem {
 	TextureAtlasItemCount
 };
 
-struct Texture {
+struct Texture
+{
 	bool valid;
 	GLuint id;
 	uint32 w,h;
 };
 
-struct TextureRegion {
+struct TextureRegion
+{
 	GLuint textureID;
 	RealRect bounds;
 };
 
-enum AnimationID {
+enum AnimationID
+{
 	Animation_Farmer_Stand,
 	Animation_Farmer_Walk,
 	Animation_Farmer_Hold,
@@ -105,19 +112,22 @@ enum AnimationID {
 	Animation_Count,
 };
 
-struct Animation {
+struct Animation
+{
 	TextureAtlasItem frames[16];
 	uint32 frameCount;
 };
 
-struct Animator {
+struct Animator
+{
 	Animation *animation;
 	uint32 currentFrame;
 	real32 frameCounter; // Sub-frame ticks
 };
 const real32 animationFramesPerDay = 10.0f;
 
-struct Sprite {
+struct Sprite
+{
 	TextureAtlasItem textureAtlasItem;
 	V2 pos;
 	V2 size;
@@ -129,7 +139,16 @@ const int WORLD_SPRITE_MAX = 16384;
 const int UI_SPRITE_MAX = 1024;
 const int SPRITE_MAX = WORLD_SPRITE_MAX;
 
-struct GLRenderer {
+struct RenderBuffer
+{
+	Matrix4 projectionMatrix;
+	Sprite *sprites;
+	uint32 spriteCount;
+	uint32 maxSprites;
+};
+
+struct GLRenderer
+{
 	SDL_Window *window;
 	SDL_GLContext context;
 
@@ -146,18 +165,21 @@ struct GLRenderer {
 	GLenum textureFormat;
 
 	Camera worldCamera;
-	Matrix4 worldProjectionMatrix;
-	Sprite spriteBuffer[WORLD_SPRITE_MAX];
-	uint32 spriteCount;
 
-	Matrix4 uiProjectionMatrix;
-	Sprite uiSpriteBuffer[UI_SPRITE_MAX];
-	uint32 uiSpriteCount;
+	RenderBuffer worldBuffer;
+	RenderBuffer uiBuffer;
+	// Matrix4 worldProjectionMatrix;
+	// Sprite spriteBuffer[WORLD_SPRITE_MAX];
+	// uint32 spriteCount;
+
+	// Matrix4 uiProjectionMatrix;
+	// Sprite uiSpriteBuffer[UI_SPRITE_MAX];
+	// uint32 uiSpriteCount;
 
 	VertexData vertices[SPRITE_MAX * 4];
-	uint32 vertexCount;
+	// uint32 vertexCount;
 	GLuint indices[SPRITE_MAX * 6];
-	uint32 indexCount;
+	// uint32 indexCount;
 
 	Animation animations[Animation_Count];
 

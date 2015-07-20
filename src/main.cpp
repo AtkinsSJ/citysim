@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
 	renderer->worldCamera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer->window, &renderer->worldCamera.windowWidth, &renderer->worldCamera.windowHeight);
 	renderer->worldCamera.pos = v2(city.width/2, city.height/2);
-	renderer->uiProjectionMatrix = orthographicMatrix4(
+	renderer->uiBuffer.projectionMatrix = orthographicMatrix4(
 		0, renderer->worldCamera.windowWidth,
 		0, renderer->worldCamera.windowHeight,
 		-1000.0f, 1000.0f
@@ -628,9 +628,14 @@ int main(int argc, char *argv[]) {
 			renderer->worldCamera.pos.y - halfCamHeight,
 			camWidth, camHeight
 		};
-		renderer->worldProjectionMatrix = orthographicMatrix4(
+		renderer->worldBuffer.projectionMatrix = orthographicMatrix4(
 			renderer->worldCamera.pos.x - halfCamWidth, renderer->worldCamera.pos.x + halfCamWidth,
 			renderer->worldCamera.pos.y - halfCamHeight, renderer->worldCamera.pos.y + halfCamHeight,
+			-1000.0f, 1000.0f
+		);
+		renderer->uiBuffer.projectionMatrix = orthographicMatrix4(
+			0, renderer->worldCamera.windowWidth,
+			0, renderer->worldCamera.windowHeight,
 			-1000.0f, 1000.0f
 		);
 		
@@ -814,14 +819,15 @@ int main(int argc, char *argv[]) {
 				Terrain t = terrainAt(&city,x,y);
 				TextureAtlasItem textureAtlasItem;
 				switch (t) {
-					case Terrain_Ground: {
-						textureAtlasItem = TextureAtlasItem_GroundTile;
-					} break;
 					case Terrain_Forest: {
 						textureAtlasItem = TextureAtlasItem_ForestTile;
 					} break;
 					case Terrain_Water: {
 						textureAtlasItem = TextureAtlasItem_WaterTile;
+					} break;
+					case Terrain_Ground:
+					default: {
+						textureAtlasItem = TextureAtlasItem_GroundTile;
 					} break;
 				}
 
