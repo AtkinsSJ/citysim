@@ -28,7 +28,8 @@ struct VertexData
 {
 	V3 pos;
 	V4 color;
-	V3 uv; // Slightly hacky: we set 'z' to 0 for an untextured rectangle
+	V2 uv;
+	GLint textureID;
 };
 
 struct UiTheme
@@ -156,30 +157,22 @@ struct GLRenderer
 	GLuint VBO,
 		   IBO;
 	GLint uProjectionMatrixLoc,
-		  uTextureLoc;
+		  uTexturesLoc;
 	GLint aPositionLoc,
 		  aColorLoc,
-		  aUVLoc;
+		  aUVLoc,
+		  aTextureIDLoc;
 
-	GLuint texture;
+	GLuint textureArrayID;
 	GLenum textureFormat;
 
 	Camera worldCamera;
 
 	RenderBuffer worldBuffer;
 	RenderBuffer uiBuffer;
-	// Matrix4 worldProjectionMatrix;
-	// Sprite spriteBuffer[WORLD_SPRITE_MAX];
-	// uint32 spriteCount;
-
-	// Matrix4 uiProjectionMatrix;
-	// Sprite uiSpriteBuffer[UI_SPRITE_MAX];
-	// uint32 uiSpriteCount;
 
 	VertexData vertices[SPRITE_MAX * 4];
-	// uint32 vertexCount;
 	GLuint indices[SPRITE_MAX * 6];
-	// uint32 indexCount;
 
 	Animation animations[Animation_Count];
 

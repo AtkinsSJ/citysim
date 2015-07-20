@@ -202,11 +202,8 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawRect(renderer, true, rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight), renderer->theme.overlayColor);
 
-	// TextureRegion *logoRegion = renderer->regions + TextureAtlasItem_Menu_Logo;
-	// Rect logoRect = logoRegion->rect;
-	// logoRect.x = (renderer->worldCamera.windowWidth - logoRect.w) / 2;
-	// logoRect.y = 80;
-	// drawUiTexture(renderer, logoRegion->texture, logoRect);
+	drawSprite(renderer, true, TextureAtlasItem_Menu_Logo,
+		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f));
 
 	drawUiLabel(renderer, &menu->gameSetupLabel);
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
@@ -377,7 +374,7 @@ int main(int argc, char *argv[]) {
 
 // GAME LOOP
 	bool quit = false;
-	GameStatus gameStatus = GameStatus_Playing;
+	GameStatus gameStatus = GameStatus_Setup;
 
 	SDL_Event event;
 	MouseState mouseState = {};
