@@ -465,15 +465,9 @@ SDL_Cursor *createCursor(char *path)
 	return cursor;
 }
 
-void drawSprite(GLRenderer *renderer, TextureAtlasItem textureAtlasItem,
+void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, Color *color)
 {
-	if (renderer->spriteCount >= ArrayCount(renderer->spriteBuffer))
-	{
-		printf("Too many sprites!\n");
-		return;
-	}
-
 	V4 drawColor;
 	if (color)
 	{
@@ -482,14 +476,35 @@ void drawSprite(GLRenderer *renderer, TextureAtlasItem textureAtlasItem,
 		drawColor = v4(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	renderer->spriteBuffer[renderer->spriteCount++] = {
-		textureAtlasItem, position, size, 0, drawColor
-	};
+	if (isUI)
+	{
+		if (renderer->uiSpriteCount >= ArrayCount(renderer->uiSpriteBuffer))
+		{
+			printf("Too many UI sprites!\n");
+			return;
+		}
+
+		renderer->uiSpriteBuffer[renderer->uiSpriteCount++] = {
+			textureAtlasItem, position, size, 0, drawColor
+		};
+	}
+	else
+	{
+		if (renderer->spriteCount >= ArrayCount(renderer->spriteBuffer))
+		{
+			printf("Too many world sprites!\n");
+			return;
+		}
+
+		renderer->spriteBuffer[renderer->spriteCount++] = {
+			textureAtlasItem, position, size, 0, drawColor
+		};
+	}
 }
 
-void drawRect(GLRenderer *renderer, RealRect rect, Color color)
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color color)
 {
-	drawSprite(renderer, TextureAtlasItem_None, centre(&rect), rect.size, &color);
+	drawSprite(renderer, isUI, TextureAtlasItem_None, centre(&rect), rect.size, &color);
 }
 
 void render(GLRenderer *renderer)
@@ -509,6 +524,7 @@ void render(GLRenderer *renderer)
 	glUniform1i(renderer->uTextureLoc, 0);
 
 	// World sprites
+#if 0
 	{
 		// Fill VBO
 		renderer->vertexCount = 0;
@@ -583,6 +599,7 @@ void render(GLRenderer *renderer)
 		SDL_Log("Drew %d sprites this frame.", renderer->spriteCount);
 		renderer->spriteCount = 0;
 	}
+#endif
 
 	// UI sprites
 	{
@@ -685,7 +702,9 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
 ////////////////////////////////////////////////////////////////////
-void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID, bool restart = false) {
+void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
+					bool restart)
+{
 	Animation *anim = renderer->animations + animationID;
 	// We do nothing if the animation is already playing
 	if (restart
@@ -697,7 +716,9 @@ void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animatio
 	}
 }
 
-void drawAnimator(GLRenderer *renderer, Animator *animator, real32 daysPerFrame, V2 worldTilePosition, V2 size, Color *color = 0) {
+void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator, real32 daysPerFrame,
+				V2 worldTilePosition, V2 size, Color *color)
+{
 	animator->frameCounter += daysPerFrame * animationFramesPerDay;
 	while (animator->frameCounter >= 1)
 	{
@@ -707,6 +728,7 @@ void drawAnimator(GLRenderer *renderer, Animator *animator, real32 daysPerFrame,
 	}
 	drawSprite(
 		renderer,
+		isUI,
 		animator->animation->frames[animator->currentFrame],
 		worldTilePosition,
 		size,

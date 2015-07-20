@@ -176,23 +176,23 @@ struct MainMenuUI {
 void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 
 	*menu = {};
-	Coord screenCentre = renderer->worldCamera.windowSize / 2;
+	V2 screenCentre = v2(renderer->worldCamera.windowSize) / 2.0f;
 	
-	initUiLabel(&menu->gameSetupLabel, renderer, screenCentre - coord(0, 50),
+	initUiLabel(&menu->gameSetupLabel, renderer, screenCentre - v2(0, 50),
 				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->theme.font, renderer->theme.labelColor);
 	initUiLabel(&menu->cityNameEntryLabel, renderer, screenCentre,
 				ALIGN_CENTER, cityName, renderer->theme.font, renderer->theme.textboxTextColor);
 
 	char tempBuffer[256];
 	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
-	initUiLabel(&menu->gameRulesWinLoseLabel, renderer, screenCentre + coord(0, 50),
+	initUiLabel(&menu->gameRulesWinLoseLabel, renderer, screenCentre + v2(0, 50),
 				ALIGN_CENTER, tempBuffer, renderer->theme.font, renderer->theme.labelColor);
 
 	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
-	initUiLabel(&menu->gameRulesWorkersLabel, renderer, screenCentre + coord(0, 100),
+	initUiLabel(&menu->gameRulesWorkersLabel, renderer, screenCentre + v2(0, 100),
 				ALIGN_CENTER, tempBuffer, renderer->theme.font, renderer->theme.labelColor);
 
-	Rect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
+	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
 	buttonRect.x = screenCentre.x - buttonRect.w/2;
 	initUiButton(&menu->buttonWebsite, renderer, buttonRect, "Website");
@@ -200,7 +200,7 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
 }
 void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
-	drawUiRect(renderer, rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight), renderer->theme.overlayColor);
+	drawRect(renderer, true, rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight), renderer->theme.overlayColor);
 
 	// TextureRegion *logoRegion = renderer->regions + TextureAtlasItem_Menu_Logo;
 	// Rect logoRect = logoRegion->rect;
@@ -212,7 +212,7 @@ void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
 	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
 
-	drawUiRect(renderer, expandRect(menu->cityNameEntryLabel._rect, 4), renderer->theme.textboxBackgroundColor);
+	drawRect(renderer, true, expandRect(menu->cityNameEntryLabel._rect, 4), renderer->theme.textboxBackgroundColor);
 	drawUiLabel(renderer, &menu->cityNameEntryLabel);
 
 	drawUiButton(renderer, &menu->buttonExit);
@@ -235,13 +235,13 @@ void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 	*ui = {};
 	ui->calendar = calendar;
 
-	Coord textPosition = coord(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
+	V2 textPosition = v2(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
 	getDateString(calendar, ui->dateStringBuffer);
 	initUiLabel(&ui->labelDate, renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP,
 				ui->dateStringBuffer, renderer->theme.font, renderer->theme.labelColor);
 
 	const int buttonSize = 24;
-	Rect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
+	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
 								buttonSize, buttonSize);
 	ui->buttonPlayFast = addButtonToGroup(&ui->buttonGroup);
 	initUiButton(ui->buttonPlayFast, renderer, buttonRect, ">>>");
@@ -384,7 +384,7 @@ int main(int argc, char *argv[]) {
 	KeyboardState keyboardState = {};
 
 	V2 mouseDragStartPos = {};
-	Rect dragRect = rectXYWH(-1,-1,0,0);
+	Rect dragRect = irectXYWH(-1,-1,0,0);
 
 	renderer->worldCamera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer->window, &renderer->worldCamera.windowWidth, &renderer->worldCamera.windowHeight);
@@ -403,8 +403,8 @@ int main(int argc, char *argv[]) {
 	// real32 framesPerSecond = 0;
 
 	// Build UI
-	Coord cameraCentre = renderer->worldCamera.windowSize / 2;
-	Coord textPosition = {8,4};
+	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
+	V2 textPosition = v2(8,4);
 	UiLabel textCityName;
 	initUiLabel(&textCityName, renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer->theme.font, renderer->theme.labelColor);
 
@@ -422,7 +422,7 @@ int main(int argc, char *argv[]) {
 
 	// Tooltip
 	Tooltip tooltip = {};
-	tooltip.offsetFromCursor = coord(16, 20);
+	tooltip.offsetFromCursor = v2(16, 20);
 	initUiLabel(&tooltip.label, renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer->theme.font, renderer->theme.labelColor);
 
 	// CALENDAR
@@ -431,7 +431,7 @@ int main(int argc, char *argv[]) {
 
 	// ACTION BUTTONS
 	UiButtonGroup actionButtonGroup = {};
-	Rect buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
+	RealRect buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildHouse, renderer, buttonRect, "Build HQ", SDL_SCANCODE_Q, "(Q)");
@@ -469,7 +469,7 @@ int main(int argc, char *argv[]) {
 	initUiLabel(&gameOverLabel, renderer, cameraCentre,
 				ALIGN_CENTER, "You ran out of money! :(", renderer->theme.font, renderer->theme.labelColor);
 	UiButton buttonMenu;
-	buttonRect.pos = cameraCentre - buttonRect.dim/2;
+	buttonRect.pos = cameraCentre - buttonRect.size/2;
 	buttonRect.y += gameOverLabel._rect.h + uiPadding;
 	initUiButton(&buttonMenu, renderer, buttonRect, "Menu");
 	
@@ -683,9 +683,9 @@ int main(int argc, char *argv[]) {
 					case ActionMode_Demolish: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
 							mouseDragStartPos = mouseWorldPos;
-							dragRect = rectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+							dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 						} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							dragRect = rectCovering(mouseDragStartPos, mouseWorldPos);
+							dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
 							showCostTooltip(&tooltip, renderer, demolitionCost, city.funds);
 						}
@@ -693,7 +693,7 @@ int main(int argc, char *argv[]) {
 						if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
 							demolishRect(&city, dragRect);
-							dragRect = rectXYWH(-1,-1,0,0);
+							dragRect = irectXYWH(-1,-1,0,0);
 						}
 					} break;
 
@@ -825,7 +825,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawSprite(renderer, textureAtlasItem, v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f));
+				drawSprite(renderer, false, textureAtlasItem, v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f));
 			}
 		}
 
@@ -850,7 +850,7 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
-					drawSprite(renderer, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
+					drawSprite(renderer, false, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
 				} break;
 			}
 		}
@@ -865,6 +865,7 @@ int main(int argc, char *argv[]) {
 			if (city.potatoes[i].exists) {
 				drawSprite(
 					renderer,
+					false,
 					TextureAtlasItem_Potato,
 					centre(&city.potatoes[i].bounds),
 					v2(1,1)
@@ -882,6 +883,7 @@ int main(int argc, char *argv[]) {
 			}
 			drawSprite(
 				renderer,
+				false,
 				buildingDefinitions[selectedBuildingArchetype].textureAtlasItem,
 				v2(mouseTilePos),
 				v2(buildingDefinitions[selectedBuildingArchetype].size),
@@ -890,7 +892,7 @@ int main(int argc, char *argv[]) {
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
-			drawRect(renderer, realRect(dragRect), {128, 0, 0, 128});
+			drawRect(renderer, false, realRect(dragRect), {128, 0, 0, 128});
 		}
 
 		if (gameStatus == GameStatus_Setup) {
@@ -902,7 +904,7 @@ int main(int argc, char *argv[]) {
 
 		} else {
 			// Draw some UI
-			drawUiRect(renderer, rectXYWH(0,0, renderer->worldCamera.windowWidth, 64), renderer->theme.overlayColor);
+			drawRect(renderer, true, rectXYWH(0,0, renderer->worldCamera.windowWidth, 64), renderer->theme.overlayColor);
 
 			drawUiLabel(renderer, &textCityName);
 			drawUiIntLabel(renderer, &labelCityFunds);
@@ -917,8 +919,8 @@ int main(int argc, char *argv[]) {
 
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
-				setUiLabelOrigin(&tooltip.label, mouseState.pos + tooltip.offsetFromCursor);
-				drawUiRect(renderer, expandRect(tooltip.label._rect, 4), renderer->theme.overlayColor);
+				setUiLabelOrigin(&tooltip.label, v2(mouseState.pos) + tooltip.offsetFromCursor);
+				drawRect(renderer, true, expandRect(tooltip.label._rect, 4), renderer->theme.overlayColor);
 				drawUiLabel(renderer, &tooltip.label);
 			}
 		}
@@ -926,9 +928,9 @@ int main(int argc, char *argv[]) {
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
-			drawUiRect(renderer,
-						rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight),
-						renderer->theme.overlayColor);
+			drawRect(renderer, true,
+					rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight),
+					renderer->theme.overlayColor);
 			drawUiLabel(renderer, &gameOverLabel); 
 			drawUiButton(renderer, &buttonMenu);
 		}

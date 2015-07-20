@@ -18,10 +18,10 @@ enum Alignment {
 };
 
 struct UiLabel {
-	Coord origin;
+	V2 origin;
 	int32 align; // See Alignment enum
 
-	Rect _rect;
+	RealRect _rect;
 	char *text;
 	TTF_Font *font;
 	Color color;
@@ -37,7 +37,7 @@ struct UiIntLabel {
 };
 
 struct UiButton {
-	Rect rect;
+	RealRect rect;
 
 	UiLabel text;
 
@@ -62,7 +62,7 @@ struct UiButtonGroup {
 
 struct UiMessage {
 	GLRenderer *renderer;
-	Rect rect;
+	RealRect rect;
 	Color background;
 	UiLabel label;
 	int32 messageCountdown; // In milliseconds
@@ -71,7 +71,7 @@ struct UiMessage {
 struct Tooltip {
 	UiLabel label;
 	bool show;
-	Coord offsetFromCursor;
+	V2 offsetFromCursor;
 	char buffer[128];
 };
 void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text);

@@ -1,7 +1,9 @@
 // ui.cpp
 
-void updateUiLabelPosition(UiLabel *label) {
-	switch (label->align & ALIGN_H) {
+void updateUiLabelPosition(UiLabel *label)
+{
+	switch (label->align & ALIGN_H)
+	{
 		case ALIGN_H_CENTER: {
 			label->_rect.x = label->origin.x - label->_rect.w/2;
 		} break;
@@ -13,7 +15,8 @@ void updateUiLabelPosition(UiLabel *label) {
 		} break;
 	}
 
-	switch (label->align & ALIGN_V) {
+	switch (label->align & ALIGN_V)
+	{
 		case ALIGN_V_CENTER: {
 			label->_rect.y = label->origin.y - label->_rect.h/2;
 		} break;
@@ -29,7 +32,8 @@ void updateUiLabelPosition(UiLabel *label) {
 /**
  * Change the text of the given UiLabel, which regenerates the Texture.
  */
-void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText) {
+void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
+{
 	// TODO: If the text is the same, do nothing!
 	// freeTexture(&label->texture);
 	label->text = newText;
@@ -40,8 +44,9 @@ void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText) {
 	updateUiLabelPosition(label);
 }
 
-void initUiLabel(UiLabel *label, GLRenderer *renderer, Coord position, int32 align,
-				char *text, TTF_Font *font, Color color) {
+void initUiLabel(UiLabel *label, GLRenderer *renderer, V2 position, int32 align,
+				char *text, TTF_Font *font, Color color)
+{
 	*label = {};
 
 	label->text = text;
@@ -53,18 +58,21 @@ void initUiLabel(UiLabel *label, GLRenderer *renderer, Coord position, int32 ali
 	setUiLabelText(renderer, label, text);
 }
 
-void setUiLabelOrigin(UiLabel *label, Coord origin) {
+void setUiLabelOrigin(UiLabel *label, V2 origin)
+{
 	label->origin = origin;
 	updateUiLabelPosition(label);
 }
 
-void freeUiLabel(UiLabel *label) {
+void freeUiLabel(UiLabel *label)
+{
 	// freeTexture(&label->texture);
 	*label = {};
 }
 
-void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, Coord position, int32 align,
-				TTF_Font *font, Color color, int32 *watchValue, char *formatString) {
+void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, V2 position, int32 align,
+				TTF_Font *font, Color color, int32 *watchValue, char *formatString)
+{
 	*label = {};
 	label->formatString = formatString;
 	label->value = watchValue;
@@ -74,13 +82,15 @@ void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, Coord position, int
 	initUiLabel(&label->label, renderer, position, align, label->buffer, font, color);
 }
 
-void freeUiIntLabel(UiIntLabel *label) {
+void freeUiIntLabel(UiIntLabel *label)
+{
 	freeUiLabel(&label->label);
 	*label = {};
 }
 
-void initUiButton(UiButton *button, GLRenderer *renderer, Rect rect, char *text,
-					SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0) {
+void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *text,
+					SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+{
 	*button = {};
 
 	button->rect = rect;
@@ -93,17 +103,19 @@ void initUiButton(UiButton *button, GLRenderer *renderer, Rect rect, char *text,
 	button->tooltip = tooltip;
 
 	// Generate the UiLabel, and centre it
-	Coord buttonCenter = {button->rect.x + button->rect.w / 2,
-							button->rect.y + button->rect.h / 2};
+	V2 buttonCenter = v2(button->rect.x + button->rect.w / 2.0f,
+						button->rect.y + button->rect.h / 2.0f);
 	initUiLabel(&button->text, renderer, buttonCenter, ALIGN_CENTER, text,
 				renderer->theme.buttonFont, renderer->theme.buttonTextColor);
 }
 
-void freeUiButton(UiButton *button) {
+void freeUiButton(UiButton *button)
+{
 	freeUiLabel(&button->text);
 	button = {};
 }
 
+#if 0
 /**
  * Draws a rectangle relative to the screen.
  */
@@ -122,12 +134,15 @@ void drawUiTextureAtlasItem(GLRenderer *renderer, TextureAtlasItem item, Rect re
 	// TextureRegion *region = renderer->regions + item;
 	// SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &rect.sdl_rect);
 }
+#endif
 
-void drawUiLabel(GLRenderer *renderer, UiLabel *text) {
+void drawUiLabel(GLRenderer *renderer, UiLabel *text)
+{
 	// drawUiTexture(renderer, &text->texture, text->_rect);
 }
 
-void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label) {
+void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label)
+{
 	// if (*label->value != label->lastValue) {
 	// 	label->lastValue = *label->value;
 	// 	sprintf(label->buffer, label->formatString, *label->value);
@@ -136,69 +151,94 @@ void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label) {
 	// drawUiLabel(renderer, &label->label);
 }
 
-bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState, KeyboardState *keyboardState) {
+bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState,
+					KeyboardState *keyboardState)
+{
 	
 	bool eventEaten = false;
 
 	button->justClicked = false;
 
-	button->mouseOver = inRect(button->rect, mouseState->pos);
-	if (button->mouseOver) {
+	button->mouseOver = inRect(button->rect, v2(mouseState->pos));
+	if (button->mouseOver)
+	{
 		eventEaten = true;
 
-		if (button->tooltip) {
+		if (button->tooltip)
+		{
 			// Display the tooltip!
 			showTooltip(tooltip, renderer, button->tooltip);
 		}
 	}
 
 	if (button->shortcutKey
-		&& keyJustPressed(keyboardState, button->shortcutKey) ) {
+		&& keyJustPressed(keyboardState, button->shortcutKey) )
+	{
 
 		// We triggered the shortcut!
 		button->justClicked = true;
 
-	} else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+	}
+	else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT))
+	{
 		// See if a button is click-started
 		button->clickStarted = button->mouseOver;
-	} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
+	}
+	else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT))
+	{
 		// Did we trigger a button?
-		if (button->clickStarted && button->mouseOver) {
+		if (button->clickStarted && button->mouseOver)
+		{
 			button->justClicked = true;
 		}
-	} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
+	}
+	else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT))
+	{
 		button->clickStarted = false;
 	}
 
 	return eventEaten;
 }
 
-void drawUiButton(GLRenderer *renderer, UiButton *button) {
-	// if (button->active) {
-	// 	drawUiRect(renderer, button->rect, button->backgroundPressedColor);
-	// } else if (button->mouseOver) {
-	// 	if (button->clickStarted) {
-	// 		drawUiRect(renderer, button->rect, button->backgroundPressedColor);
-	// 	} else {
-	// 		drawUiRect(renderer, button->rect, button->backgroundHoverColor);
-	// 	}
-	// } else {
-	// 	drawUiRect(renderer, button->rect, button->backgroundColor);
-	// }
-	// drawUiLabel(renderer, &button->text);
+void drawUiButton(GLRenderer *renderer, UiButton *button)
+{
+	if (button->active)
+	{
+		drawRect(renderer, true, button->rect, button->backgroundPressedColor);
+	}
+	else if (button->mouseOver)
+	{
+		if (button->clickStarted)
+		{
+			drawRect(renderer, true, button->rect, button->backgroundPressedColor);
+		}
+		else
+		{
+			drawRect(renderer, true, button->rect, button->backgroundHoverColor);
+		}
+	}
+	else
+	{
+		drawRect(renderer, true, button->rect, button->backgroundColor);
+	}
+	drawUiLabel(renderer, &button->text);
 }
 
-UiButton *addButtonToGroup(UiButtonGroup *group) {
+UiButton *addButtonToGroup(UiButtonGroup *group)
+{
 	ASSERT(group->buttonCount < ArrayCount(group->buttons), "UiButtonGroup is full!");
 	return &group->buttons[group->buttonCount++];
 }
 
-void setActiveButton(UiButtonGroup *group, UiButton *button) {
-	if (group->activeButton) {
+void setActiveButton(UiButtonGroup *group, UiButton *button)
+{
+	if (group->activeButton)
+	{
 		group->activeButton->active = false;
 	}
 	group->activeButton = button;
-	if (button) {
+	if (button)
+	{
 		button->active = true;
 	}
 }
@@ -206,43 +246,56 @@ void setActiveButton(UiButtonGroup *group, UiButton *button) {
 /**
  * Get the buttongroup to update its buttons' states, and return whether a button "ate" any click events
  */
-bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *group, MouseState *mouseState, KeyboardState *keyboardState) {
+bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *group,
+	MouseState *mouseState, KeyboardState *keyboardState)
+{
 
 	bool eventEaten = false;
 
-	for (int32 i=0; i<group->buttonCount; i++) {
+	for (int32 i=0; i<group->buttonCount; i++)
+	{
 		UiButton *button = group->buttons + i;
 		button->justClicked = false;
 
-		button->mouseOver = inRect(button->rect, mouseState->pos);
-		if (button->mouseOver) {
+		button->mouseOver = inRect(button->rect, v2(mouseState->pos));
+		if (button->mouseOver)
+		{
 			eventEaten = true;
 
-			if (button->tooltip) {
+			if (button->tooltip)
+			{
 				// Display the tooltip!
 				showTooltip(tooltip, renderer, button->tooltip);
 			}
 		}
 
 		if (button->shortcutKey
-			&& keyJustPressed(keyboardState, button->shortcutKey) ) {
+			&& keyJustPressed(keyboardState, button->shortcutKey) )
+		{
 
 			// We triggered the shortcut!
 			button->justClicked = true;
 			setActiveButton(group, button);
 
-		} else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT)) {
+		}
+		else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT))
+		{
 			// See if a button is click-started
 			button->clickStarted = button->mouseOver;
-		} else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT)) {
+		}
+		else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT))
+		{
 			// Did we trigger a button?
-			if (button->clickStarted && button->mouseOver) {
+			if (button->clickStarted && button->mouseOver)
+			{
 				button->justClicked = true;
 
 				// Active button
 				setActiveButton(group, button);
 			}
-		} else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT)) {
+		}
+		else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT))
+		{
 			button->clickStarted = false;
 		}
 	}
@@ -250,14 +303,18 @@ bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *
 	return eventEaten;
 }
 
-void drawUiButtonGroup(GLRenderer *renderer, UiButtonGroup *group) {
-	for (int32 i=0; i<group->buttonCount; i++) {
+void drawUiButtonGroup(GLRenderer *renderer, UiButtonGroup *group)
+{
+	for (int32 i=0; i<group->buttonCount; i++)
+	{
 		drawUiButton(renderer, group->buttons + i);
 	}
 }
 
-void freeUiButtonGroup(UiButtonGroup *group) {
-	for (int32 i=0; i<group->buttonCount; i++) {
+void freeUiButtonGroup(UiButtonGroup *group)
+{
+	for (int32 i=0; i<group->buttonCount; i++)
+	{
 		freeUiButton(group->buttons + i);
 	}
 }
@@ -267,7 +324,8 @@ void freeUiButtonGroup(UiButtonGroup *group) {
 ///////////////////////////////////////////////////////////////////////////////////
 UiMessage __globalUiMessage;
 
-void initUiMessage(GLRenderer *renderer) {
+void initUiMessage(GLRenderer *renderer)
+{
 	__globalUiMessage = {};
 	__globalUiMessage.renderer = renderer;
 
@@ -276,9 +334,11 @@ void initUiMessage(GLRenderer *renderer) {
 	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM, "", renderer->theme.font, {255, 255, 255, 255});
 }
 
-void pushUiMessage(char *message) {
+void pushUiMessage(char *message)
+{
 
-	if (strcmp(message, __globalUiMessage.label.text)) {
+	if (strcmp(message, __globalUiMessage.label.text))
+	{
 		// Message is differenct
 		setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
 
@@ -292,20 +352,24 @@ void pushUiMessage(char *message) {
 	__globalUiMessage.messageCountdown = 2000;
 }
 
-void drawUiMessage(GLRenderer *renderer) {
-	if (__globalUiMessage.messageCountdown > 0) {
+void drawUiMessage(GLRenderer *renderer)
+{
+	if (__globalUiMessage.messageCountdown > 0)
+	{
 		__globalUiMessage.messageCountdown -= MS_PER_FRAME;
 
-		if (__globalUiMessage.messageCountdown > 0) {
+		if (__globalUiMessage.messageCountdown > 0)
+		{
 
-			drawUiRect(renderer, __globalUiMessage.rect, __globalUiMessage.background);
+			drawRect(renderer, true, __globalUiMessage.rect, __globalUiMessage.background);
 
 			drawUiLabel(renderer, &__globalUiMessage.label);
 		}
 	}
 }
 
-void freeUiMessage() {
+void freeUiMessage()
+{
 	freeUiLabel(&__globalUiMessage.label);
 }
 
@@ -313,8 +377,10 @@ void freeUiMessage() {
 //                                 TOOLTIPS                                      //
 ///////////////////////////////////////////////////////////////////////////////////
 
-void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text) {
-	if (strcmp(tooltip->buffer, text)) {
+void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text)
+{
+	if (strcmp(tooltip->buffer, text))
+	{
 		strcpy(tooltip->buffer, text);
 		tooltip->label.color = {255,255,255,255};
 		setUiLabelText(renderer, &tooltip->label, tooltip->buffer);

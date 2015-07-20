@@ -172,8 +172,15 @@ bool loadTextures(GLRenderer *renderer);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 
-void drawSprite(GLRenderer *renderer, TextureAtlasItem textureAtlasItem,
+void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, Color *color=0);
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color color);
+void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator,
+				real32 daysPerFrame, V2 worldTilePosition, V2 size, Color *color = 0);
+
+void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
+				bool restart = false);
+
 void render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);

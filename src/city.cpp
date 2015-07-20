@@ -90,7 +90,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 		return false;
 	}
 
-	Rect footprint = rectCentreWH(position, def.width, def.height);
+	Rect footprint = irectCentreWH(position, def.width, def.height);
 
 	// Are we in bounds?
 	if (!rectInRect({0,0, city->width, city->height}, footprint)) {
@@ -154,7 +154,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	*building = {};
 	building->exists = true;
 	building->archetype = archetype;
-	building->footprint = rectCentreWH(position, def->width, def->height);
+	building->footprint = irectCentreWH(position, def->width, def->height);
 
 	// Building-specific stuff
 	switch (archetype) {

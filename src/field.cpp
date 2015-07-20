@@ -94,14 +94,16 @@ void updateField(FieldData *field) {
 
 void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
-	drawSprite(renderer, TextureAtlasItem_Field, centre(&building->footprint), v2(building->footprint.dim), drawColor);
+	drawSprite(renderer, false, TextureAtlasItem_Field, centre(&building->footprint), v2(building->footprint.dim), drawColor);
 
 	FieldData *field = (FieldData*)building->data;
 
 	switch (field->state) {
 		case FieldState_Planting: {
 			for (int32 i=0; i < field->progress; i++) {
-				drawSprite(renderer,
+				drawSprite(
+					renderer,
+					false,
 					TextureAtlasItem_Crop0_0,
 					v2(	building->footprint.pos.x + (i%4) + 0.5f,
 					 	building->footprint.pos.y + (i/4) + 0.5f),
@@ -113,6 +115,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			// 'Planting' indicator
 			drawSprite(
 				renderer,
+				false,
 				TextureAtlasItem_Icon_Planting,
 				centre(&building->footprint),
 				v2(2,2)
@@ -123,7 +126,9 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			int32 baseGrowthStage = field->progress / fieldSize;
 			int32 beyondGrowth = field->progress % fieldSize;
 			for (int32 i=0; i < fieldSize; i++) {
-				drawSprite(renderer,
+				drawSprite(
+					renderer,
+					false,
 					(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage + (i < beyondGrowth ? 1 : 0)),
 					v2( building->footprint.pos.x + (i%4) + 0.5f,
 						building->footprint.pos.y + (i/4) + 0.5f),
@@ -135,7 +140,9 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
 		case FieldState_Grown: {
 			for (int32 i=0; i < fieldSize; i++) {
-				drawSprite(renderer,
+				drawSprite(
+					renderer,
+					false,
 					TextureAtlasItem_Crop0_3,
 					v2( building->footprint.pos.x + (i%4) + 0.5f,
 						building->footprint.pos.y + (i/4) + 0.5f),
@@ -150,7 +157,9 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			for (int32 i=0; i < fieldSize; i++) {
 				if (i < field->progress) continue;
 
-				drawSprite(renderer,
+				drawSprite(
+					renderer,
+					false,
 					TextureAtlasItem_Crop0_3,
 					v2( building->footprint.pos.x + (i%4) + 0.5f,
 						building->footprint.pos.y + (i/4) + 0.5f),
@@ -162,6 +171,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			// 'Harvesting' indicator
 			drawSprite(
 				renderer,
+				false,
 				TextureAtlasItem_Icon_Harvesting,
 				centre(&building->footprint),
 				v2(2,2)
