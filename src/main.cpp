@@ -31,6 +31,7 @@ enum GameStatus {
 #include "types.h"
 #include "platform.h"
 #include "maths.h"
+#include "bmfont.h"
 #include "render_gl.h"
 #include "input.h"
 #include "ui.h"
@@ -342,9 +343,10 @@ int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
-	const char gameName[] = "Potato Farming Manager 2000";
+	readBMFont("dejavu-16.fnt");
 
 // INIT
+	const char gameName[] = "Potato Farming Manager 2000";
 	GLRenderer *renderer = initializeRenderer(gameName);
 	if (!renderer) {
 		return 1;
