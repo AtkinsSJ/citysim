@@ -234,76 +234,6 @@ bool initOpenGL(GLRenderer *renderer)
 	return true;
 }
 
-/* Loads a file and generates an opengl texture for it, returning its ID.
- * If this fails in any way, returns -1
- */
-Texture loadTexture(char* filename)
-{
-	Texture texture = {};
-
-	SDL_Surface *surface = IMG_Load(filename);
-	if (!surface)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
-			"Failed to load '%s'!\n%s", filename, IMG_GetError());
-		texture.valid = false;
-	}
-	else
-	{
-
-		// Premultiply alpha
-		uint32 Rmask = surface->format->Rmask,
-			   Gmask = surface->format->Gmask,
-			   Bmask = surface->format->Bmask,
-			   Amask = surface->format->Amask;
-		real32 rRmask = (real32)Rmask,
-			   rGmask = (real32)Gmask,
-			   rBmask = (real32)Bmask,
-			   rAmask = (real32)Amask;
-
-		int pixelCount = surface->w * surface->h;
-		for (int i=0; i<pixelCount; i++)
-		{
-			uint32 pixel = ((uint32*)surface->pixels)[i];
-			real32 rr = (real32)(pixel & Rmask) / rRmask;
-			real32 rg = (real32)(pixel & Gmask) / rGmask;
-			real32 rb = (real32)(pixel & Bmask) / rBmask;
-			real32 ra = (real32)(pixel & Amask) / rAmask;
-
-			uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
-			uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
-			uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
-			uint32 a = (uint32)(ra * rAmask) & Amask;
-
-			((uint32*)surface->pixels)[i] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
-		}
-
-		GLuint textureID = 0;
-
-		glGenTextures(1, &textureID);
-		if (textureID != -1)
-		{
-			glBindTexture(GL_TEXTURE_2D, textureID);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-
-			texture.valid = true;
-			texture.id = textureID;
-			texture.w = surface->w;
-			texture.h = surface->h;
-		}
-		else
-		{
-			texture.valid = false;
-		}
-
-		SDL_FreeSurface(surface);
-	}
-
-	return texture;
-}
-
 void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *texture, real32 x, real32 y, real32 w, real32 h)
 {
 	real32 tw = (real32) texture->w,
@@ -325,7 +255,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 #endif
 		}
 	};
-} 
+}
 
 bool loadTextures(GLRenderer *renderer)
 {
@@ -336,13 +266,6 @@ bool loadTextures(GLRenderer *renderer)
 	Texture textures[2] = {};
 	Texture *texCombinedPng = textures + 0;
 	Texture *texMenuLogoPng = textures + 1;
-
-	// Texture texCombinedPng = loadTexture("combined.png");
-	// Texture texMenuLogoPng = loadTexture("farming-logo.png");
-	// if (!texCombinedPng.valid || !texMenuLogoPng.valid)
-	// {
-	// 	return false;
-	// }
 
 	renderer->textureArrayID = 0;
 	glGenTextures(1, &renderer->textureArrayID);

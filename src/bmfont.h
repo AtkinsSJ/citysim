@@ -60,13 +60,13 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-void readBMFont(const char *filename)
+BitmapFont *readBMFont(const char *filename)
 {
 	SDL_RWops *file = SDL_RWFromFile(filename, "rb");
 	if (!file)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to open %s: %s", filename, SDL_GetError());
-		return;
+		return null;
 	}
 
 	// Read whole file in first
@@ -78,7 +78,7 @@ void readBMFont(const char *filename)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to read %s: %s", filename, SDL_GetError());
 		file->close(file);
-		return;
+		return null;
 	}
 
 	int64 pos = 0;
@@ -91,13 +91,13 @@ void readBMFont(const char *filename)
 		|| header->tag[2] != BMFontTag[2])
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Not a valid BMFont file: %s", filename);
-		return;
+		return null;
 	}
 	if (header->version != 3)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "BMFont file version is unsupported: %s, wanted %d and got %d",
 						filename, BMFontSupportedVersion, header->version);
-		return;
+		return null;
 	}
 
 	BMFontBlockHeader *blockHeader;
@@ -142,6 +142,49 @@ void readBMFont(const char *filename)
 		pos += sizeof(BMFontBlockHeader);
 	}
 
+	BitmapFont *font = null;
+
+	if (! (common && chars && charCount && pages) )
+	{
+		// Something didn't load correctly!
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
+			"BMFont file '%s' seems to be lacking crucial data and could not be loaded!", filename);
+	}
+	else
+	{
+		/* TODO:
+			- Load each texture and keep track of its ID
+			- Calculate UV coordinates of each char
+			- HOW do we load textures? Need to queue up the filename, and get the ID, then load it later?
+		*/
+
+		font = (BitmapFont *)calloc(1, sizeof(BitmapFont));
+		font->lineHeight = common->lineHeight;
+		font->baseY = common->base;
+
+		font->charCount = charCount;
+		font->chars = (BitmapFontChar *)calloc(charCount, sizeof(BitmapFontChar));
+
+		for (uint32 charIndex = 0;
+			charIndex < charCount;
+			charIndex++)
+		{
+			BMFont_Char *src = chars + charIndex;
+			BitmapFontChar *dest = font->chars + charIndex;
+
+			dest->id = src->id;
+			dest->size = irectXYWH(src->x, src->y, src->w, src->h);
+			dest->xOffset = src->xOffset;
+			dest->yOffset = src->yOffset;
+			dest->xAdvance = src->xAdvance;
+
+			// TODO: Char textureID
+			// TODO: Char UV
+		}
+	}
+
 	free(fileData);
 	file->close(file);
+
+	return font;
 }
