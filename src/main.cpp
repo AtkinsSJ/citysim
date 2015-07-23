@@ -928,7 +928,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		drawText(renderer, renderer->theme.font, v2(mouseState.pos) + tooltip.offsetFromCursor, "Hello world!");
+		drawText(renderer, renderer->theme.font, v2(mouseState.pos) + tooltip.offsetFromCursor, "Hello world!\x7f");
 
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
