@@ -83,7 +83,7 @@ GLRenderer *initializeRenderer(const char *windowTitle)
 	renderer->theme.textboxBackgroundColor = {255,255,255,255};
 
 	renderer->theme.font = readBMFont("dejavu-20.fnt", texturesToLoad);
-	renderer->theme.buttonFont = readBMFont("dejavu-16.fnt", texturesToLoad);
+	renderer->theme.buttonFont = readBMFont("dejavu-14.fnt", texturesToLoad);
 
 	// Load textures &c
 	if (!loadTextures(renderer, texturesToLoad))

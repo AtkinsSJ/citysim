@@ -2,6 +2,22 @@
 
 // render_gl.h
 
+enum Alignment {
+	ALIGN_LEFT = 1,
+	ALIGN_H_CENTER = 2,
+	ALIGN_RIGHT = 4,
+
+	ALIGN_H = ALIGN_LEFT | ALIGN_H_CENTER | ALIGN_RIGHT,
+
+	ALIGN_TOP = 8,
+	ALIGN_V_CENTER = 16,
+	ALIGN_BOTTOM = 32,
+	
+	ALIGN_V = ALIGN_TOP | ALIGN_V_CENTER | ALIGN_BOTTOM,
+
+	ALIGN_CENTER = ALIGN_H_CENTER | ALIGN_V_CENTER,
+};
+
 const int FRAMES_PER_SECOND = 60;
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second

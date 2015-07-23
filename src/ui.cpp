@@ -1,5 +1,6 @@
 // ui.cpp
 
+#if 0
 void updateUiLabelPosition(UiLabel *label)
 {
 	switch (label->align & ALIGN_H)
@@ -28,6 +29,7 @@ void updateUiLabelPosition(UiLabel *label)
 		} break;
 	}
 }
+#endif
 
 /**
  * Change the text of the given UiLabel, which regenerates the Texture.
@@ -43,8 +45,14 @@ void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
 	label->_rect.h = label->texture.h;
 	updateUiLabelPosition(label);
 #else
-	label->text = newText;
 
+	if (label->cache)
+	{
+		free(label->cache);
+	}
+
+	label->text = newText;
+	label->cache = drawTextToCache(renderer, label->font, label->origin, label->text, &label->color);
 #endif
 }
 
@@ -62,18 +70,6 @@ void initUiLabel(UiLabel *label, GLRenderer *renderer, V2 position, int32 align,
 	setUiLabelText(renderer, label, text);
 }
 
-void setUiLabelOrigin(UiLabel *label, V2 origin)
-{
-	label->origin = origin;
-	updateUiLabelPosition(label);
-}
-
-void freeUiLabel(UiLabel *label)
-{
-	// freeTexture(&label->texture);
-	*label = {};
-}
-
 void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, V2 position, int32 align,
 				BitmapFont *font, Color color, int32 *watchValue, char *formatString)
 {
@@ -84,12 +80,6 @@ void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, V2 position, int32 
 
 	sprintf(label->buffer, label->formatString, *label->value);
 	initUiLabel(&label->label, renderer, position, align, label->buffer, font, color);
-}
-
-void freeUiIntLabel(UiIntLabel *label)
-{
-	freeUiLabel(&label->label);
-	*label = {};
 }
 
 void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *text,
@@ -113,36 +103,10 @@ void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *t
 				renderer->theme.buttonFont, renderer->theme.buttonTextColor);
 }
 
-void freeUiButton(UiButton *button)
+void drawUiLabel(GLRenderer *renderer, UiLabel *label)
 {
-	freeUiLabel(&button->text);
-	button = {};
-}
-
-#if 0
-/**
- * Draws a rectangle relative to the screen.
- */
-void drawUiRect(GLRenderer *renderer, Rect rect, Color color) {
-	// SDL_SetRenderDrawColor(renderer->sdl_renderer, color.r, color.g, color.b, color.a);
-	// SDL_SetRenderDrawBlendMode(renderer->sdl_renderer, SDL_BLENDMODE_BLEND);
-
-	// SDL_RenderFillRect(renderer->sdl_renderer, &rect.sdl_rect);
-}
-
-// void drawUiTexture(GLRenderer *renderer, Texture *texture, Rect rect) {
-// 	SDL_RenderCopy(renderer->sdl_renderer, texture->sdl_texture, null, &rect.sdl_rect);
-// }
-
-void drawUiTextureAtlasItem(GLRenderer *renderer, TextureAtlasItem item, Rect rect) {
-	// TextureRegion *region = renderer->regions + item;
-	// SDL_RenderCopy(renderer->sdl_renderer, region->texture->sdl_texture, &region->rect.sdl_rect, &rect.sdl_rect);
-}
-#endif
-
-void drawUiLabel(GLRenderer *renderer, UiLabel *text)
-{
-	// drawUiTexture(renderer, &text->texture, text->_rect);
+	drawCachedText(renderer, label->cache, label->origin, label->align);
+	// drawText(renderer, label->font, label->origin, label->text, &label->color);
 }
 
 void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label)
@@ -315,14 +279,6 @@ void drawUiButtonGroup(GLRenderer *renderer, UiButtonGroup *group)
 	}
 }
 
-void freeUiButtonGroup(UiButtonGroup *group)
-{
-	for (int32 i=0; i<group->buttonCount; i++)
-	{
-		freeUiButton(group->buttons + i);
-	}
-}
-
 ///////////////////////////////////////////////////////////////////////////////////
 //                                UI MESSAGE                                     //
 ///////////////////////////////////////////////////////////////////////////////////
@@ -346,11 +302,12 @@ void pushUiMessage(char *message)
 	{
 		// Message is differenct
 		setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
-
+#if 0
 		__globalUiMessage.rect.x = __globalUiMessage.label._rect.x - 4;
 		__globalUiMessage.rect.y = __globalUiMessage.label._rect.y - 4;
 		__globalUiMessage.rect.w = __globalUiMessage.label._rect.w + 8;
 		__globalUiMessage.rect.h = __globalUiMessage.label._rect.h + 8;
+#endif
 	}
 
 	// Always refresh the countdown
@@ -359,22 +316,21 @@ void pushUiMessage(char *message)
 
 void drawUiMessage(GLRenderer *renderer)
 {
+#if 0
 	if (__globalUiMessage.messageCountdown > 0)
 	{
 		__globalUiMessage.messageCountdown -= MS_PER_FRAME;
 
 		if (__globalUiMessage.messageCountdown > 0)
 		{
-			drawRect(renderer, true, __globalUiMessage.rect, &__globalUiMessage.background);
+			V2 *textSize = &__globalUiMessage.label.cache->size;
+			RealRect backgroundRect = rectXYWH();
+			drawRect(renderer, true, backgroundRect, &__globalUiMessage.background);
 
 			drawUiLabel(renderer, &__globalUiMessage.label);
 		}
 	}
-}
-
-void freeUiMessage()
-{
-	freeUiLabel(&__globalUiMessage.label);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

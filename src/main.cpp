@@ -209,7 +209,7 @@ void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
 	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
 
-	drawRect(renderer, true, expandRect(menu->cityNameEntryLabel._rect, 4), &renderer->theme.textboxBackgroundColor);
+//	drawRect(renderer, true, expandRect(menu->cityNameEntryLabel._rect, 4), &renderer->theme.textboxBackgroundColor);
 	drawUiLabel(renderer, &menu->cityNameEntryLabel);
 
 	drawUiButton(renderer, &menu->buttonExit);
@@ -396,7 +396,7 @@ int main(int argc, char *argv[]) {
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;
-	// real32 framesPerSecond = 0;
+	real32 framesPerSecond = 0;
 
 	// Build UI
 	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
@@ -427,7 +427,7 @@ int main(int argc, char *argv[]) {
 
 	// ACTION BUTTONS
 	UiButtonGroup actionButtonGroup = {};
-	RealRect buttonRect = rectXYWH(8, textPosition.y + textCityName._rect.h + uiPadding, 80, 24);
+	RealRect buttonRect = rectXYWH(8, textPosition.y + /*textCityName._rect.h*/ 20 + uiPadding, 80, 24);
 
 	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonBuildHouse, renderer, buttonRect, "Build HQ", SDL_SCANCODE_Q, "(Q)");
@@ -466,7 +466,7 @@ int main(int argc, char *argv[]) {
 				ALIGN_CENTER, "You ran out of money! :(", renderer->theme.font, renderer->theme.labelColor);
 	UiButton buttonMenu;
 	buttonRect.pos = cameraCentre - buttonRect.size/2;
-	buttonRect.y += gameOverLabel._rect.h + uiPadding;
+	// buttonRect.y += gameOverLabel._rect.h + uiPadding;
 	initUiButton(&buttonMenu, renderer, buttonRect, "Menu");
 	
 	// GAME LOOP
@@ -922,13 +922,13 @@ int main(int argc, char *argv[]) {
 
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
-				setUiLabelOrigin(&tooltip.label, v2(mouseState.pos) + tooltip.offsetFromCursor);
-				drawRect(renderer, true, expandRect(tooltip.label._rect, 4), &renderer->theme.overlayColor);
+				tooltip.label.origin = v2(mouseState.pos) + tooltip.offsetFromCursor;
+				// drawRect(renderer, true, expandRect(tooltip.label._rect, 4), &renderer->theme.overlayColor);
 				drawUiLabel(renderer, &tooltip.label);
 			}
 		}
 
-		drawText(renderer, renderer->theme.font, v2(mouseState.pos) + tooltip.offsetFromCursor, "Hello world!\x7f");
+		// drawText(renderer, renderer->theme.font, v2(mouseState.pos) + tooltip.offsetFromCursor, "Hello world!");
 
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
@@ -955,8 +955,8 @@ int main(int argc, char *argv[]) {
 			SDL_Delay(MS_PER_FRAME - msForFrame);
 		}
 
-		// framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
-		// SDL_Log("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
+		framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
+		SDL_Log("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
 		lastFrame = SDL_GetTicks();
 	}
 
