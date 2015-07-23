@@ -615,7 +615,7 @@ void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 	glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
 	glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
 	glVertexAttribPointer(renderer->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
-	glVertexAttribPointer(renderer->aTextureIDLoc, 	1, GL_INT,   GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, textureID));
+	glVertexAttribIPointer(renderer->aTextureIDLoc,	1, GL_INT,   		   sizeof(VertexData), (GLvoid*)offsetof(VertexData, textureID));
 
 	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
 
