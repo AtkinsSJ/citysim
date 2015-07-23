@@ -73,7 +73,7 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 	int64 fileLength = file->seek(file, 0, RW_SEEK_END);
 	file->seek(file, 0, RW_SEEK_SET);
 
-	ASSERT(fileLength <= 0xffffffff);
+	ASSERT(fileLength <= INT32_MAX, "File is too big to fit into an int32!");
 	size_t fileLength_t = (size_t)fileLength;
 
 	uint8 *fileData = (uint8 *)malloc(fileLength_t);
@@ -156,7 +156,6 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 	else
 	{
 		/* TODO:
-			- Load each texture and keep track of its ID
 			- Calculate UV coordinates of each char
 			- HOW do we load textures? Need to queue up the filename, and get the ID, then load it later?
 		*/

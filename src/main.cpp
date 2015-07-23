@@ -19,8 +19,7 @@
 #endif
 
 // Really janky assertion macro, yay
-#define ASSERT_MSG(expr, msg) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg); *(int *)0 = 0;}
-#define ASSERT(expr) if(!(expr)) {*(int *)0 = 0;}
+#define ASSERT(expr, msg, ...) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg, ##__VA_ARGS__); *(int *)0 = 0;}
 
 enum GameStatus {
 	GameStatus_Setup,

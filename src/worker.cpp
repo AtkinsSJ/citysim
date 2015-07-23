@@ -24,7 +24,7 @@ bool hireWorker(City *city, V2 position) {
 			return true;
 		}
 	}
-	ASSERT_MSG(false, "No room to allocate a new worker!");
+	ASSERT(false, "No room to allocate a new worker!");
 	return false;
 }
 
@@ -82,7 +82,7 @@ bool doHarvestingWork(City *city, Worker *worker, Building *building) {
 					break;
 				}
 			}
-			ASSERT_MSG(potato, "Failed to find a free potato slot!");
+			ASSERT(potato, "Failed to find a free potato slot!");
 
 			potato->exists = true;
 			potato->bounds = realRect(

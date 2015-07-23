@@ -180,6 +180,9 @@ struct GLRenderer
 	UiTheme theme;
 };
 
+const uint32 TEXTURE_WIDTH = 512,
+			 TEXTURE_HEIGHT = 256;
+
 struct TexturesToLoad
 {
 	char filenamesBuffer[4096];
@@ -190,10 +193,10 @@ struct TexturesToLoad
 };
 GLint pushTextureToLoad(TexturesToLoad *textures, char *filename)
 {
-	ASSERT(textures->filenameCount < ArrayCount(textures->filenames));
+	ASSERT(textures->filenameCount < ArrayCount(textures->filenames), "TexturesToLoad filenames limit reached!");
 
 	uint32 filenameLength = strlen(filename) + 1;
-	ASSERT(textures->bufferPos + filenameLength < ArrayCount(textures->filenamesBuffer));
+	ASSERT(textures->bufferPos + filenameLength < ArrayCount(textures->filenamesBuffer), "No more space for texture filenames in TexturesToLoad!");
 
 	uint32 textureID = textures->filenameCount++;
 
@@ -203,6 +206,12 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename)
 	textures->bufferPos += filenameLength;
 
 	return (GLint)textureID;
+}
+
+inline void checkForGLError()
+{
+	int errorCode = glGetError();
+	ASSERT(errorCode == 0, "GL Error: %d", errorCode);
 }
 
 GLRenderer *initializeRenderer(const char *gameName, TexturesToLoad *texturesToLoad);

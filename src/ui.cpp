@@ -226,7 +226,7 @@ void drawUiButton(GLRenderer *renderer, UiButton *button)
 
 UiButton *addButtonToGroup(UiButtonGroup *group)
 {
-	ASSERT_MSG(group->buttonCount < ArrayCount(group->buttons), "UiButtonGroup is full!");
+	ASSERT(group->buttonCount < ArrayCount(group->buttons), "UiButtonGroup is full!");
 	return &group->buttons[group->buttonCount++];
 }
 

@@ -231,6 +231,8 @@ bool initOpenGL(GLRenderer *renderer)
 	glGenBuffers(1, &renderer->VBO);
 	glGenBuffers(1, &renderer->IBO);
 
+	checkForGLError();
+
 	return true;
 }
 
@@ -259,9 +261,6 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 
 bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 {
-	const uint32 texW = 512,
-				texH = 256;
-
 	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
 	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
 
@@ -274,7 +273,7 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA,
-		texW, texH, // Size
+		TEXTURE_WIDTH, TEXTURE_HEIGHT, // Size
 		texturesToLoad->filenameCount, // Number
 		0, GL_RGBA, GL_UNSIGNED_BYTE, null);
 
@@ -294,14 +293,15 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 		else
 		{
 			// Expand surface to be consistent size
-			ASSERT((surface->w <= texW ) && (surface->h <= texH));
-			if (surface->w < texW || surface->h < texH)
+			ASSERT((surface->w <= TEXTURE_WIDTH ) && (surface->h <= TEXTURE_HEIGHT),
+				"Texture %s is too large! Max size is %d x %d", texturesToLoad->filenames[i], TEXTURE_WIDTH, TEXTURE_HEIGHT);
+			if (surface->w < TEXTURE_WIDTH || surface->h < TEXTURE_HEIGHT)
 			{
 				// Create a new surface that's the right size,
 				// blit the smaller one onto it,
 				// then store it in *surface.
 				SDL_PixelFormat *format = surface->format;
-				SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, texW, texH, 32,
+				SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, TEXTURE_WIDTH, TEXTURE_HEIGHT, 32,
 					format->Rmask, format->Gmask, format->Bmask, format->Amask);
 
 				SDL_BlitSurface(surface, null, tempSurface, null);
@@ -421,7 +421,7 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
 
 	free(textures);
-
+	checkForGLError();
 	return true;
 }
 
@@ -627,9 +627,8 @@ void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 	glDisableVertexAttribArray(renderer->aUVLoc);
 	glDisableVertexAttribArray(renderer->aTextureIDLoc);
 
-	if (glGetError()) {
-		SDL_Log("There was a GL error! :(");
-	}
+	checkForGLError();
+
 	SDL_Log("Drew %d sprites this frame.", buffer->spriteCount);
 	buffer->spriteCount = 0;
 }
