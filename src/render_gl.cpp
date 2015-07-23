@@ -514,8 +514,8 @@ SDL_Cursor *createCursor(char *path)
 	return cursor;
 }
 
-void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
-				V2 position, V2 size, Color *color)
+void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
+				GLint textureID, RealRect uv, Color *color)
 {
 	RenderBuffer *buffer;
 	if (isUI)
@@ -542,13 +542,22 @@ void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasIt
 	}
 
 	buffer->sprites[buffer->spriteCount++] = {
-		textureAtlasItem, position, size, 0, drawColor
+		rect, depth, textureID, uv, drawColor
 	};
 }
 
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color color)
+void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
+				V2 position, V2 size, Color *color)
 {
-	drawSprite(renderer, isUI, TextureAtlasItem_None, centre(&rect), rect.size, &color);
+	TextureRegion *region = renderer->textureRegions + textureAtlasItem;
+	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
+
+	drawQuad(renderer, isUI, rectCentreSize(position, size), 0, textureID, region->uv, color);
+}
+
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color *color)
+{
+	drawQuad(renderer, isUI, rect, 0, TEXTURE_ID_NONE, {}, color);
 }
 
 void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
@@ -561,36 +570,29 @@ void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 		int firstVertex = vertexCount;
 		Sprite *sprite = buffer->sprites + i;
 
-		// Untextured sprites use TextureAtlasItem_None (which is 0)
-
-		TextureRegion *region = renderer->textureRegions + sprite->textureAtlasItem;
-		GLint textureID = (sprite->textureAtlasItem > 0) ? region->textureID : -1;
-
-		V2 halfSize = sprite->size / 2.0f;
-
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->pos.x - halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
+			v3( sprite->rect.x, sprite->rect.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x, region->bounds.y),
-			textureID
+			v2(sprite->uv.x, sprite->uv.y),
+			sprite->textureID
 		};
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->pos.x + halfSize.x, sprite->pos.y - halfSize.y, sprite->depth),
+			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x + region->bounds.w, region->bounds.y),
-			textureID
+			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y),
+			sprite->textureID
 		};
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->pos.x + halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
+			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x + region->bounds.w, region->bounds.y + region->bounds.h),
-			textureID
+			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h),
+			sprite->textureID
 		};
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->pos.x - halfSize.x, sprite->pos.y + halfSize.y, sprite->depth),
+			v3( sprite->rect.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
 			sprite->color,
-			v2(region->bounds.x, region->bounds.y + region->bounds.h),
-			textureID
+			v2(sprite->uv.x, sprite->uv.y + sprite->uv.h),
+			sprite->textureID
 		};
 
 		renderer->indices[indexCount++] = firstVertex + 0;

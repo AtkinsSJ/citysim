@@ -208,22 +208,22 @@ void drawUiButton(GLRenderer *renderer, UiButton *button)
 {
 	if (button->active)
 	{
-		drawRect(renderer, true, button->rect, button->backgroundPressedColor);
+		drawRect(renderer, true, button->rect, &button->backgroundPressedColor);
 	}
 	else if (button->mouseOver)
 	{
 		if (button->clickStarted)
 		{
-			drawRect(renderer, true, button->rect, button->backgroundPressedColor);
+			drawRect(renderer, true, button->rect, &button->backgroundPressedColor);
 		}
 		else
 		{
-			drawRect(renderer, true, button->rect, button->backgroundHoverColor);
+			drawRect(renderer, true, button->rect, &button->backgroundHoverColor);
 		}
 	}
 	else
 	{
-		drawRect(renderer, true, button->rect, button->backgroundColor);
+		drawRect(renderer, true, button->rect, &button->backgroundColor);
 	}
 	drawUiLabel(renderer, &button->text);
 }
@@ -365,8 +365,7 @@ void drawUiMessage(GLRenderer *renderer)
 
 		if (__globalUiMessage.messageCountdown > 0)
 		{
-
-			drawRect(renderer, true, __globalUiMessage.rect, __globalUiMessage.background);
+			drawRect(renderer, true, __globalUiMessage.rect, &__globalUiMessage.background);
 
 			drawUiLabel(renderer, &__globalUiMessage.label);
 		}

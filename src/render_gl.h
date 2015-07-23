@@ -34,8 +34,6 @@ struct VertexData
 
 struct UiTheme
 {
-	// TTF_Font *font,
-	// 		*buttonFont;
 	struct BitmapFont *font,
 					  *buttonFont;
 
@@ -100,7 +98,7 @@ struct Texture
 struct TextureRegion
 {
 	GLuint textureID;
-	RealRect bounds;
+	RealRect uv;
 };
 
 enum AnimationID
@@ -131,10 +129,12 @@ const real32 animationFramesPerDay = 10.0f;
 
 struct Sprite
 {
-	TextureAtlasItem textureAtlasItem;
-	V2 pos;
-	V2 size;
+	RealRect rect;
 	real32 depth; // Positive is forwards from the camera
+
+	GLint textureID;
+	RealRect uv;
+	
 	V4 color;
 };
 
@@ -184,6 +184,7 @@ struct GLRenderer
 
 const uint32 TEXTURE_WIDTH = 512,
 			 TEXTURE_HEIGHT = 256;
+ const GLint TEXTURE_ID_NONE = -1;
 
 struct TexturesToLoad
 {
@@ -223,11 +224,16 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 
+void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
+				GLint textureID, RealRect uv, Color *color=0);
+
 void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, Color *color=0);
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color color);
+
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color *color=0);
+
 void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator,
-				real32 daysPerFrame, V2 worldTilePosition, V2 size, Color *color = 0);
+				real32 daysPerFrame, V2 worldTilePosition, V2 size, Color *color=0);
 
 void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
 				bool restart = false);

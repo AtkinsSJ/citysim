@@ -200,7 +200,7 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
 }
 void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
-	drawRect(renderer, true, rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight), renderer->theme.overlayColor);
+	drawRect(renderer, true, rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight), &renderer->theme.overlayColor);
 
 	drawSprite(renderer, true, TextureAtlasItem_Menu_Logo,
 		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f));
@@ -209,7 +209,7 @@ void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
 	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
 
-	drawRect(renderer, true, expandRect(menu->cityNameEntryLabel._rect, 4), renderer->theme.textboxBackgroundColor);
+	drawRect(renderer, true, expandRect(menu->cityNameEntryLabel._rect, 4), &renderer->theme.textboxBackgroundColor);
 	drawUiLabel(renderer, &menu->cityNameEntryLabel);
 
 	drawUiButton(renderer, &menu->buttonExit);
@@ -341,7 +341,6 @@ void startGame(City *city, Calendar *calendar, char *cityName) {
 int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
-
 
 // INIT
 	const char gameName[] = "Potato Farming Manager 2000";
@@ -895,7 +894,8 @@ int main(int argc, char *argv[]) {
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
-			drawRect(renderer, false, realRect(dragRect), {128, 0, 0, 128});
+			Color color = {128, 0, 0, 128};
+			drawRect(renderer, false, realRect(dragRect), &color);
 		}
 
 		if (gameStatus == GameStatus_Setup) {
@@ -907,7 +907,7 @@ int main(int argc, char *argv[]) {
 
 		} else {
 			// Draw some UI
-			drawRect(renderer, true, rectXYWH(0,0, renderer->worldCamera.windowWidth, 64), renderer->theme.overlayColor);
+			drawRect(renderer, true, rectXYWH(0,0, renderer->worldCamera.windowWidth, 64), &renderer->theme.overlayColor);
 
 			drawUiLabel(renderer, &textCityName);
 			drawUiIntLabel(renderer, &labelCityFunds);
@@ -923,17 +923,19 @@ int main(int argc, char *argv[]) {
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
 				setUiLabelOrigin(&tooltip.label, v2(mouseState.pos) + tooltip.offsetFromCursor);
-				drawRect(renderer, true, expandRect(tooltip.label._rect, 4), renderer->theme.overlayColor);
+				drawRect(renderer, true, expandRect(tooltip.label._rect, 4), &renderer->theme.overlayColor);
 				drawUiLabel(renderer, &tooltip.label);
 			}
 		}
+
+		drawText(renderer, renderer->theme.font, v2(mouseState.pos), "Hello world!");
 
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
 			drawRect(renderer, true,
 					rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight),
-					renderer->theme.overlayColor);
+					&renderer->theme.overlayColor);
 			drawUiLabel(renderer, &gameOverLabel); 
 			drawUiButton(renderer, &buttonMenu);
 		}

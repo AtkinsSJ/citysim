@@ -20,4 +20,6 @@ struct BitmapFont
 	BitmapFontChar *chars;
 };
 
+void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text);
+
 #include "font.cpp"

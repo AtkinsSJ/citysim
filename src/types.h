@@ -265,6 +265,16 @@ inline RealRect rectXYWH(real32 x, real32 y, real32 w, real32 h)
 	return rect;
 }
 
+inline RealRect rectCentreSize(V2 centre, V2 size)
+{
+	RealRect rect = {};
+	rect.x = centre.x - size.x/2.0f;
+	rect.y = centre.y - size.y/2.0f;
+	rect.w = size.x;
+	rect.h = size.y;
+	return rect;
+}
+
 inline RealRect expandRect(RealRect rect, real32 addRadius)
 {
 	return rectXYWH(
