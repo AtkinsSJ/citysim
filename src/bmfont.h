@@ -155,11 +155,6 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 	}
 	else
 	{
-		/* TODO:
-			- Calculate UV coordinates of each char
-			- HOW do we load textures? Need to queue up the filename, and get the ID, then load it later?
-		*/
-
 		// Buffer-up the texture pages
 		GLint *pageToTexture = (GLint *) calloc(common->pageCount, sizeof(GLint));
 		char *pageStart = (char *) pages;
@@ -179,6 +174,9 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 		font->charCount = charCount;
 		font->chars = (BitmapFontChar *) calloc(charCount, sizeof(BitmapFontChar));
 
+		const real32 textureWidth  = (real32) TEXTURE_WIDTH,
+					 textureHeight = (real32) TEXTURE_HEIGHT;
+
 		for (uint32 charIndex = 0;
 			charIndex < charCount;
 			charIndex++)
@@ -193,7 +191,14 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 			dest->xAdvance = src->xAdvance;
 
 			dest->textureID = pageToTexture[src->page];
-			// TODO: Char UV
+			// NB: If we start packing multiple images into a single texture at runtime,
+			// this will be WRONG!!!!
+			dest->uv = rectXYWH(
+				(real32)src->x / textureWidth,
+				(real32)src->y / textureHeight,
+				(real32)src->w / textureWidth,
+				(real32)src->h / textureHeight
+			);
 		}
 	}
 

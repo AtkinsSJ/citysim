@@ -34,8 +34,10 @@ struct VertexData
 
 struct UiTheme
 {
-	TTF_Font *font,
-			*buttonFont;
+	// TTF_Font *font,
+	// 		*buttonFont;
+	struct BitmapFont *font,
+					  *buttonFont;
 
 	Color overlayColor;
 			
@@ -186,10 +188,10 @@ const uint32 TEXTURE_WIDTH = 512,
 struct TexturesToLoad
 {
 	char filenamesBuffer[4096];
-	uint32 bufferPos;
+	int32 bufferPos;
 
 	char *filenames[64];
-	uint32 filenameCount;
+	int32 filenameCount;
 };
 GLint pushTextureToLoad(TexturesToLoad *textures, char *filename)
 {
@@ -210,11 +212,11 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename)
 
 inline void checkForGLError()
 {
-	int errorCode = glGetError();
+	GLenum errorCode = glGetError();
 	ASSERT(errorCode == 0, "GL Error: %d", errorCode);
 }
 
-GLRenderer *initializeRenderer(const char *gameName, TexturesToLoad *texturesToLoad);
+GLRenderer *initializeRenderer(const char *gameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
 bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad);
@@ -233,5 +235,7 @@ void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animatio
 void render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
+
+BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad);
 
 #include "render_gl.cpp"

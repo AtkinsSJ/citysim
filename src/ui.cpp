@@ -34,18 +34,22 @@ void updateUiLabelPosition(UiLabel *label)
  */
 void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
 {
+#if 0
 	// TODO: If the text is the same, do nothing!
-	// freeTexture(&label->texture);
+	freeTexture(&label->texture);
 	label->text = newText;
-	// label->texture = renderText(renderer, label->font, label->text, label->color);
-	//label->_rect.w = label->texture.w;
-	// label->_rect.h = label->texture.h;
-
+	label->texture = renderText(renderer, label->font, label->text, label->color);
+	label->_rect.w = label->texture.w;
+	label->_rect.h = label->texture.h;
 	updateUiLabelPosition(label);
+#else
+	label->text = newText;
+
+#endif
 }
 
 void initUiLabel(UiLabel *label, GLRenderer *renderer, V2 position, int32 align,
-				char *text, TTF_Font *font, Color color)
+				char *text, BitmapFont *font, Color color)
 {
 	*label = {};
 
@@ -71,7 +75,7 @@ void freeUiLabel(UiLabel *label)
 }
 
 void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, V2 position, int32 align,
-				TTF_Font *font, Color color, int32 *watchValue, char *formatString)
+				BitmapFont *font, Color color, int32 *watchValue, char *formatString)
 {
 	*label = {};
 	label->formatString = formatString;
@@ -331,7 +335,8 @@ void initUiMessage(GLRenderer *renderer)
 
 	__globalUiMessage.background = {0,0,0,128};
 
-	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM, "", renderer->theme.font, {255, 255, 255, 255});
+	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM,
+				"", renderer->theme.font, {255, 255, 255, 255});
 }
 
 void pushUiMessage(char *message)

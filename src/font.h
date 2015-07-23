@@ -19,3 +19,5 @@ struct BitmapFont
 	uint32 charCount;
 	BitmapFontChar *chars;
 };
+
+#include "font.cpp"

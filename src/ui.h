@@ -23,9 +23,11 @@ struct UiLabel {
 
 	RealRect _rect;
 	char *text;
-	TTF_Font *font;
+	BitmapFont *font;
 	Color color;
 	//Texture texture;
+
+
 };
 
 struct UiIntLabel {

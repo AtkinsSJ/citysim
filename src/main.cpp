@@ -5,14 +5,12 @@
 #ifdef __linux__
 #	include <SDL2/SDL.h>
 #	include <SDL2/SDL_image.h>
-#	include <SDL2/SDL_ttf.h>
 #	include <gl/glew.h> // TODO: Check this
 #	include <SDL2/SDL_opengl.h>
 #	include <gl/glu.h> // TODO: Check this
 #else // Windows
 #	include <SDL.h>
 #	include <SDL_image.h>
-#	include <SDL_ttf.h>
 #	include <gl/glew.h>
 #	include <SDL_opengl.h>
 #	include <gl/glu.h>
@@ -344,18 +342,13 @@ int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
-	TexturesToLoad *texturesToLoad = (TexturesToLoad *) calloc(1, sizeof(TexturesToLoad));
-
-	readBMFont("dejavu-16.fnt", texturesToLoad);
 
 // INIT
 	const char gameName[] = "Potato Farming Manager 2000";
-	GLRenderer *renderer = initializeRenderer(gameName, texturesToLoad);
+	GLRenderer *renderer = initializeRenderer(gameName);
 	if (!renderer) {
 		return 1;
 	}
-
-	free(texturesToLoad);
 
 	// Make some cursors!
 	SDL_Cursor *cursorMain = createCursor("cursor_main.png");

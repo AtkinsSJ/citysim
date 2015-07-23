@@ -1,7 +1,8 @@
 // render_gl.cpp
 
-GLRenderer *initializeRenderer(const char *windowTitle, TexturesToLoad *texturesToLoad)
+GLRenderer *initializeRenderer(const char *windowTitle)
 {
+	TexturesToLoad *texturesToLoad = (TexturesToLoad *) calloc(1, sizeof(TexturesToLoad));
 	GLRenderer *renderer = (GLRenderer *)calloc(1, sizeof(GLRenderer));
 
 	renderer->worldBuffer.sprites = (Sprite *)malloc(WORLD_SPRITE_MAX * sizeof(Sprite));
@@ -71,13 +72,6 @@ GLRenderer *initializeRenderer(const char *windowTitle, TexturesToLoad *textures
 		return null;
 	}
 
-	// Load textures &c
-	if (!loadTextures(renderer, texturesToLoad))
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
-		return null;
-	}
-
 	// UI Theme!
 	renderer->theme.buttonTextColor = {0,0,0,255};
 	renderer->theme.buttonBackgroundColor = {255,255,255,255};
@@ -87,6 +81,18 @@ GLRenderer *initializeRenderer(const char *windowTitle, TexturesToLoad *textures
 	renderer->theme.overlayColor = {0,0,0,128};
 	renderer->theme.textboxTextColor = {0,0,0,255};
 	renderer->theme.textboxBackgroundColor = {255,255,255,255};
+
+	renderer->theme.font = readBMFont("dejavu-20.fnt", texturesToLoad);
+	renderer->theme.buttonFont = readBMFont("dejavu-16.fnt", texturesToLoad);
+
+	// Load textures &c
+	if (!loadTextures(renderer, texturesToLoad))
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
+		return null;
+	}
+
+	free(texturesToLoad);
 
 	return renderer;
 }
@@ -429,12 +435,8 @@ void freeRenderer(GLRenderer *renderer)
 {
 	glDeleteProgram( renderer->shaderProgramID );
 
-	TTF_CloseFont(renderer->theme.font);
-	TTF_CloseFont(renderer->theme.buttonFont);
-
 	SDL_DestroyWindow( renderer->window );
 
-	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }
