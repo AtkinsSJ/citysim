@@ -180,10 +180,35 @@ struct GLRenderer
 	UiTheme theme;
 };
 
-bool initializeRenderer(GLRenderer *renderer, const char *gameName);
+struct TexturesToLoad
+{
+	char filenamesBuffer[4096];
+	uint32 bufferPos;
+
+	char *filenames[64];
+	uint32 filenameCount;
+};
+GLint pushTextureToLoad(TexturesToLoad *textures, char *filename)
+{
+	ASSERT(textures->filenameCount < ArrayCount(textures->filenames));
+
+	uint32 filenameLength = strlen(filename) + 1;
+	ASSERT(textures->bufferPos + filenameLength < ArrayCount(textures->filenamesBuffer));
+
+	uint32 textureID = textures->filenameCount++;
+
+	textures->filenames[textureID] = textures->filenamesBuffer + textures->bufferPos;
+
+	strcpy(textures->filenames[textureID], filename);
+	textures->bufferPos += filenameLength;
+
+	return (GLint)textureID;
+}
+
+GLRenderer *initializeRenderer(const char *gameName, TexturesToLoad *texturesToLoad);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
-bool loadTextures(GLRenderer *renderer);
+bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 

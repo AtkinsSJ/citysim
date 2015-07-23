@@ -1,6 +1,6 @@
 // render_gl.cpp
 
-GLRenderer *initializeRenderer(const char *windowTitle)
+GLRenderer *initializeRenderer(const char *windowTitle, TexturesToLoad *texturesToLoad)
 {
 	GLRenderer *renderer = (GLRenderer *)calloc(1, sizeof(GLRenderer));
 
@@ -72,7 +72,7 @@ GLRenderer *initializeRenderer(const char *windowTitle)
 	}
 
 	// Load textures &c
-	if (!loadTextures(renderer))
+	if (!loadTextures(renderer, texturesToLoad))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
 		return null;
@@ -257,15 +257,15 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	};
 }
 
-bool loadTextures(GLRenderer *renderer)
+bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 {
-	const char *textureNames[] = {
-		"combined.png",
-		"farming-logo.png",
-	};
-	Texture textures[2] = {};
-	Texture *texCombinedPng = textures + 0;
-	Texture *texMenuLogoPng = textures + 1;
+	const uint32 texW = 512,
+				texH = 256;
+
+	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
+	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
+
+	Texture *textures = (Texture *) calloc(texturesToLoad->filenameCount, sizeof(Texture));
 
 	renderer->textureArrayID = 0;
 	glGenTextures(1, &renderer->textureArrayID);
@@ -274,25 +274,41 @@ bool loadTextures(GLRenderer *renderer)
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA,
-		512, 256, // Size
-		ArrayCount(textureNames), // Number
+		texW, texH, // Size
+		texturesToLoad->filenameCount, // Number
 		0, GL_RGBA, GL_UNSIGNED_BYTE, null);
 
-	for (uint32 i=0;
-		i < ArrayCount(textureNames);
+	for (GLint i=0;
+		i < texturesToLoad->filenameCount;
 		i++)
 	{
 		Texture *texture = textures + i;
 
-		SDL_Surface *surface = IMG_Load(textureNames[i]);
+		SDL_Surface *surface = IMG_Load(texturesToLoad->filenames[i]);
 		if (!surface)
 		{
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
-				"Failed to load '%s'!\n%s", textureNames[i], IMG_GetError());
+				"Failed to load '%s'!\n%s", texturesToLoad->filenames[i], IMG_GetError());
 			texture->valid = false;
 		}
 		else
 		{
+			// Expand surface to be consistent size
+			ASSERT((surface->w <= texW ) && (surface->h <= texH));
+			if (surface->w < texW || surface->h < texH)
+			{
+				// Create a new surface that's the right size,
+				// blit the smaller one onto it,
+				// then store it in *surface.
+				SDL_PixelFormat *format = surface->format;
+				SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, texW, texH, 32,
+					format->Rmask, format->Gmask, format->Bmask, format->Amask);
+
+				SDL_BlitSurface(surface, null, tempSurface, null);
+
+				SDL_FreeSurface(surface);
+				surface = tempSurface;
+			}
 
 			// Premultiply alpha
 			uint32 Rmask = surface->format->Rmask,
@@ -334,6 +350,9 @@ bool loadTextures(GLRenderer *renderer)
 			SDL_FreeSurface(surface);
 		}
 	}
+
+	Texture *texCombinedPng = textures + combinedPngID;
+	Texture *texMenuLogoPng = textures + menuLogoPngID;
 
 	const real32 w1 = 16.0f,
 				w2 = w1 *2,
@@ -400,6 +419,8 @@ bool loadTextures(GLRenderer *renderer)
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant1;
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant2;
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
+
+	free(textures);
 
 	return true;
 }

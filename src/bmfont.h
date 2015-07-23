@@ -60,7 +60,7 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *readBMFont(const char *filename)
+BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 {
 	SDL_RWops *file = SDL_RWFromFile(filename, "rb");
 	if (!file)
@@ -73,8 +73,11 @@ BitmapFont *readBMFont(const char *filename)
 	int64 fileLength = file->seek(file, 0, RW_SEEK_END);
 	file->seek(file, 0, RW_SEEK_SET);
 
-	uint8 *fileData = (uint8 *)malloc(fileLength);
-	if (!file->read(file, fileData, fileLength, 1))
+	ASSERT(fileLength <= 0xffffffff);
+	size_t fileLength_t = (size_t)fileLength;
+
+	uint8 *fileData = (uint8 *)malloc(fileLength_t);
+	if (!file->read(file, fileData, fileLength_t, 1))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to read %s: %s", filename, SDL_GetError());
 		file->close(file);
@@ -158,12 +161,24 @@ BitmapFont *readBMFont(const char *filename)
 			- HOW do we load textures? Need to queue up the filename, and get the ID, then load it later?
 		*/
 
-		font = (BitmapFont *)calloc(1, sizeof(BitmapFont));
+		// Buffer-up the texture pages
+		GLint *pageToTexture = (GLint *) calloc(common->pageCount, sizeof(GLint));
+		char *pageStart = (char *) pages;
+
+		for (uint32 pageIndex = 0;
+			pageIndex < common->pageCount;
+			pageIndex++)
+		{
+			pageToTexture[pageIndex] = pushTextureToLoad(texturesToLoad, pageStart);
+			pageStart += strlen(pageStart) + 1;
+		}
+
+		font = (BitmapFont *) calloc(1, sizeof(BitmapFont));
 		font->lineHeight = common->lineHeight;
 		font->baseY = common->base;
 
 		font->charCount = charCount;
-		font->chars = (BitmapFontChar *)calloc(charCount, sizeof(BitmapFontChar));
+		font->chars = (BitmapFontChar *) calloc(charCount, sizeof(BitmapFontChar));
 
 		for (uint32 charIndex = 0;
 			charIndex < charCount;
@@ -178,7 +193,7 @@ BitmapFont *readBMFont(const char *filename)
 			dest->yOffset = src->yOffset;
 			dest->xAdvance = src->xAdvance;
 
-			// TODO: Char textureID
+			dest->textureID = pageToTexture[src->page];
 			// TODO: Char UV
 		}
 	}

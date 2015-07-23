@@ -131,7 +131,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 		return false;
 	}
 
-	ASSERT(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
+	ASSERT_MSG(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
 
 	// Find first free building
 	uint32 buildingID = 0;
@@ -142,7 +142,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 		}
 	}
 
-	ASSERT(buildingID, "No free building! Means that the buildingCount is wrong!");
+	ASSERT_MSG(buildingID, "No free building! Means that the buildingCount is wrong!");
 
 	city->buildingCount++;
 
@@ -176,7 +176,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 				}
 			}
 
-			ASSERT(building->data != null, "Failed to allocate field data!");
+			ASSERT_MSG(building->data != null, "Failed to allocate field data!");
 
 			FieldData *fieldData = (FieldData*)building->data;
 			
@@ -204,7 +204,7 @@ bool demolishTile(City *city, Coord position) {
 	if (buildingID) {
 
 		Building *building = getBuildingByID(city, buildingID);
-		ASSERT(building, "Tile is storing an invalid building ID!");
+		ASSERT_MSG(building, "Tile is storing an invalid building ID!");
 		BuildingDefinition def = buildingDefinitions[building->archetype];
 
 		// Can we afford to demolish this?

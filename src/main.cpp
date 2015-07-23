@@ -19,7 +19,8 @@
 #endif
 
 // Really janky assertion macro, yay
-#define ASSERT(expr, msg) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg); *(int *)0 = 0;}
+#define ASSERT_MSG(expr, msg) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg); *(int *)0 = 0;}
+#define ASSERT(expr) if(!(expr)) {*(int *)0 = 0;}
 
 enum GameStatus {
 	GameStatus_Setup,
@@ -31,9 +32,9 @@ enum GameStatus {
 #include "types.h"
 #include "platform.h"
 #include "maths.h"
+#include "render_gl.h"
 #include "font.h"
 #include "bmfont.h"
-#include "render_gl.h"
 #include "input.h"
 #include "ui.h"
 #include "city.h"
@@ -344,14 +345,18 @@ int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
-	readBMFont("dejavu-16.fnt");
+	TexturesToLoad *texturesToLoad = (TexturesToLoad *) calloc(1, sizeof(TexturesToLoad));
+
+	readBMFont("dejavu-16.fnt", texturesToLoad);
 
 // INIT
 	const char gameName[] = "Potato Farming Manager 2000";
-	GLRenderer *renderer = initializeRenderer(gameName);
+	GLRenderer *renderer = initializeRenderer(gameName, texturesToLoad);
 	if (!renderer) {
 		return 1;
 	}
+
+	free(texturesToLoad);
 
 	// Make some cursors!
 	SDL_Cursor *cursorMain = createCursor("cursor_main.png");
