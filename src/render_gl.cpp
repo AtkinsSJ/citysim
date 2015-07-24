@@ -582,12 +582,12 @@ void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 }
 
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
-				V2 position, V2 size, Color *color)
+				V2 position, V2 size, real32 depth, Color *color)
 {
 	TextureRegion *region = renderer->textureRegions + textureAtlasItem;
 	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
 
-	drawQuad(renderer, isUI, rectCentreSize(position, size), 0, textureID, region->uv, color);
+	drawQuad(renderer, isUI, rectCentreSize(position, size), depth, textureID, region->uv, color);
 }
 
 void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color *color)
@@ -726,13 +726,8 @@ void render(GLRenderer *renderer)
 	glUniform1i(renderer->uTexturesLoc, 0);
 
 	// World sprites
-#if 1
 	_renderBuffer(renderer, &renderer->worldBuffer);
 	_renderBuffer(renderer, &renderer->uiBuffer);
-#else
-	renderer->worldBuffer.spriteCount = 0;
-	renderer->uiBuffer.spriteCount = 0;
-#endif
 
 	glUseProgram(NULL);
 	SDL_GL_SwapWindow( renderer->window );
@@ -774,7 +769,7 @@ void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animatio
 }
 
 void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator, real32 daysPerFrame,
-				V2 worldTilePosition, V2 size, Color *color)
+				V2 worldTilePosition, V2 size, real32 depth, Color *color)
 {
 	animator->frameCounter += daysPerFrame * animationFramesPerDay;
 	while (animator->frameCounter >= 1)
@@ -789,6 +784,7 @@ void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator, real32 da
 		animator->animation->frames[animator->currentFrame],
 		worldTilePosition,
 		size,
+		depth,
 		color
 	);
 }

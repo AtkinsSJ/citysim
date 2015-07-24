@@ -252,12 +252,12 @@ void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 				GLint textureID, RealRect uv, Color *color=0);
 
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
-				V2 position, V2 size, Color *color=0);
+				V2 position, V2 size, real32 depth, Color *color=0);
 
 void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color *color=0);
 
 void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator,
-				real32 daysPerFrame, V2 worldTilePosition, V2 size, Color *color=0);
+				real32 daysPerFrame, V2 worldTilePosition, V2 size, real32 depth, Color *color=0);
 
 void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
 				bool restart = false);
@@ -267,5 +267,18 @@ void render(GLRenderer *renderer);
 SDL_Cursor *createCursor(char *path);
 
 BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad);
+
+inline real32 depthFromY(real32 y)
+{
+	return (y * -0.1f);
+}
+inline real32 depthFromY(uint32 y)
+{
+	return depthFromY((real32)y);
+}
+inline real32 depthFromY(int32 y)
+{
+	return depthFromY((real32)y);
+}
 
 #include "render_gl.cpp"

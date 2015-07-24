@@ -94,20 +94,25 @@ void updateField(FieldData *field) {
 
 void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
-	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Field, centre(&building->footprint), v2(building->footprint.dim), drawColor);
+	V2 centrePos = centre(&building->footprint);
+
+	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Field,
+		centrePos, v2(building->footprint.dim), depthFromY(building->footprint.y), drawColor);
 
 	FieldData *field = (FieldData*)building->data;
 
 	switch (field->state) {
 		case FieldState_Planting: {
 			for (int32 i=0; i < field->progress; i++) {
+				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
+					 			 building->footprint.pos.y + (i/4) + 0.5f);
 				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Crop0_0,
-					v2(	building->footprint.pos.x + (i%4) + 0.5f,
-					 	building->footprint.pos.y + (i/4) + 0.5f),
+					plantPos,
 					v2(1,1),
+					depthFromY(plantPos.y),
 					drawColor
 				);
 			}
@@ -117,7 +122,8 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 				renderer,
 				false,
 				TextureAtlasItem_Icon_Planting,
-				centre(&building->footprint),
+				centrePos,
+				depthFromY(centrePos.y),
 				v2(2,2)
 			);
 		} break;
@@ -173,7 +179,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 				renderer,
 				false,
 				TextureAtlasItem_Icon_Harvesting,
-				centre(&building->footprint),
+				centrePos,
 				v2(2,2)
 			);
 		} break;
