@@ -108,9 +108,9 @@ BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, ch
 	return result;
 }
 
-void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 origin, uint32 align)
+V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 {
-	V3 offset;
+	V2 offset;
 
 	switch (align & ALIGN_H)
 	{
@@ -142,10 +142,15 @@ void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 origin
 		} break;
 	}
 
+	return offset;
+}
+
+void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 topLeft)
+{
 	for (uint32 spriteIndex=0;
 		spriteIndex < cache->spriteCount;
 		spriteIndex++)
 	{
-		drawSprite(renderer, true, cache->sprites + spriteIndex, offset);
+		drawSprite(renderer, true, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, 0));
 	}
 }

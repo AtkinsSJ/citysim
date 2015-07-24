@@ -34,6 +34,9 @@ BitmapFontCachedText *
 drawTextToCache(GLRenderer *renderer, BitmapFont *font, char *text, Color *color=0);
 
 void
-drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 origin, uint32 align);
+drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 topLeft);
+
+V2
+calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align);
 
 #include "font.cpp"

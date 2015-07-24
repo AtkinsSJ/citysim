@@ -58,12 +58,16 @@ struct UiTheme
 	Color labelColor;
 
 	Color buttonTextColor,
-		buttonBackgroundColor,
-		buttonHoverColor,
-		buttonPressedColor;
+		  buttonBackgroundColor,
+		  buttonHoverColor,
+		  buttonPressedColor;
 
 	Color textboxTextColor,
-		textboxBackgroundColor;
+		  textboxBackgroundColor;
+
+	Color tooltipBackgroundColor,
+		  tooltipColorNormal,
+		  tooltipColorBad;
 };
 
 enum TextureAtlasItem

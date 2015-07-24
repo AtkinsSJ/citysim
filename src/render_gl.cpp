@@ -73,14 +73,20 @@ GLRenderer *initializeRenderer(const char *windowTitle)
 	}
 
 	// UI Theme!
-	renderer->theme.buttonTextColor = {0,0,0,255};
-	renderer->theme.buttonBackgroundColor = {255,255,255,255};
-	renderer->theme.buttonHoverColor = {192,192,255,255};
-	renderer->theme.buttonPressedColor = {128,128,255,255};
-	renderer->theme.labelColor = {255,255,255,255};
-	renderer->theme.overlayColor = {0,0,0,128};
-	renderer->theme.textboxTextColor = {0,0,0,255};
-	renderer->theme.textboxBackgroundColor = {255,255,255,255};
+	renderer->theme.buttonTextColor 		= {   0,   0,   0, 255 };
+	renderer->theme.buttonBackgroundColor 	= { 255, 255, 255, 255 };
+	renderer->theme.buttonHoverColor 		= { 192, 192, 255, 255 };
+	renderer->theme.buttonPressedColor 		= { 128, 128, 255, 255 };
+	
+	renderer->theme.labelColor 				= { 255, 255, 255, 255 };
+	renderer->theme.overlayColor 			= {   0,   0,   0, 128 };
+
+	renderer->theme.textboxBackgroundColor 	= { 255, 255, 255, 255 };
+	renderer->theme.textboxTextColor 		= {   0,   0,   0, 255 };
+	
+	renderer->theme.tooltipBackgroundColor	= {   0,   0,   0, 128 };
+	renderer->theme.tooltipColorNormal 		= { 255, 255, 255, 255 };
+	renderer->theme.tooltipColorBad 		= { 255,   0,   0, 255 };
 
 	renderer->theme.font = readBMFont("dejavu-20.fnt", texturesToLoad);
 	renderer->theme.buttonFont = readBMFont("dejavu-14.fnt", texturesToLoad);

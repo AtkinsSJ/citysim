@@ -5,13 +5,14 @@ struct UiLabel {
 	V2 origin;
 	int32 align; // See Alignment enum
 
-	// RealRect _rect;
-	//Texture texture;
-
 	char *text;
 	BitmapFont *font;
-	Color color;
+	Color *color;
 	BitmapFontCachedText *cache;
+
+	bool hasBackground;
+	Color *backgroundColor;
+	real32 backgroundPadding;
 };
 
 struct UiIntLabel {
@@ -27,9 +28,9 @@ struct UiButton {
 
 	UiLabel text;
 
-	Color backgroundColor;
-	Color backgroundHoverColor;
-	Color backgroundPressedColor;
+	Color *backgroundColor;
+	Color *backgroundHoverColor;
+	Color *backgroundPressedColor;
 
 	SDL_Scancode shortcutKey;
 	char *tooltip;
@@ -46,10 +47,12 @@ struct UiButtonGroup {
 	UiButton *activeButton;
 };
 
+const real32 uiMessageBottomMargin = 4,
+			uiMessageTextPadding = 4;
 struct UiMessage {
 	GLRenderer *renderer;
 	RealRect rect;
-	Color background;
+	Color *background;
 	UiLabel label;
 	int32 messageCountdown; // In milliseconds
 };

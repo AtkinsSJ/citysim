@@ -153,9 +153,9 @@ const int gameWinFunds = 30000;
 
 void showCostTooltip(Tooltip *tooltip, GLRenderer *renderer, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
-		tooltip->label.color = {255,0,0,255};
+		tooltip->label.color = &renderer->theme.tooltipColorBad;
 	} else {
-		tooltip->label.color =  {255,255,255,255};
+		tooltip->label.color = &renderer->theme.tooltipColorNormal;
 	}
 	sprintf(tooltip->buffer, "-£%d", cost);
 	setUiLabelText(renderer, &tooltip->label, tooltip->buffer);
@@ -179,18 +179,19 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 	V2 screenCentre = v2(renderer->worldCamera.windowSize) / 2.0f;
 	
 	initUiLabel(&menu->gameSetupLabel, renderer, screenCentre - v2(0, 50),
-				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->theme.font, renderer->theme.labelColor);
+				ALIGN_CENTER, "Type a name for your farm, then click on 'Play'.", renderer->theme.font, &renderer->theme.labelColor);
 	initUiLabel(&menu->cityNameEntryLabel, renderer, screenCentre,
-				ALIGN_CENTER, cityName, renderer->theme.font, renderer->theme.textboxTextColor);
+				ALIGN_CENTER, cityName, renderer->theme.font, &renderer->theme.textboxTextColor,
+				&renderer->theme.textboxBackgroundColor, 4.0f);
 
 	char tempBuffer[256];
 	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
 	initUiLabel(&menu->gameRulesWinLoseLabel, renderer, screenCentre + v2(0, 50),
-				ALIGN_CENTER, tempBuffer, renderer->theme.font, renderer->theme.labelColor);
+				ALIGN_CENTER, tempBuffer, renderer->theme.font, &renderer->theme.labelColor);
 
 	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
 	initUiLabel(&menu->gameRulesWorkersLabel, renderer, screenCentre + v2(0, 100),
-				ALIGN_CENTER, tempBuffer, renderer->theme.font, renderer->theme.labelColor);
+				ALIGN_CENTER, tempBuffer, renderer->theme.font, &renderer->theme.labelColor);
 
 	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
@@ -209,7 +210,6 @@ void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
 	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
 
-//	drawRect(renderer, true, expandRect(menu->cityNameEntryLabel._rect, 4), &renderer->theme.textboxBackgroundColor);
 	drawUiLabel(renderer, &menu->cityNameEntryLabel);
 
 	drawUiButton(renderer, &menu->buttonExit);
@@ -235,7 +235,7 @@ void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 	V2 textPosition = v2(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
 	getDateString(calendar, ui->dateStringBuffer);
 	initUiLabel(&ui->labelDate, renderer, textPosition, ALIGN_RIGHT | ALIGN_TOP,
-				ui->dateStringBuffer, renderer->theme.font, renderer->theme.labelColor);
+				ui->dateStringBuffer, renderer->theme.font, &renderer->theme.labelColor);
 
 	const int buttonSize = 24;
 	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
@@ -402,24 +402,25 @@ int main(int argc, char *argv[]) {
 	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 	V2 textPosition = v2(8,4);
 	UiLabel textCityName;
-	initUiLabel(&textCityName, renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer->theme.font, renderer->theme.labelColor);
+	initUiLabel(&textCityName, renderer, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name, renderer->theme.font, &renderer->theme.labelColor);
 
 	textPosition.x = 800 / 2 - 100;
 	UiIntLabel labelCityFunds;
 	initUiIntLabel(&labelCityFunds, renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, renderer->theme.labelColor, &city.funds, "£%d");
+				renderer->theme.font, &renderer->theme.labelColor, &city.funds, "£%d");
 
 	textPosition.x = 800 / 2 + 100;
 	UiIntLabel labelMonthlyExpenditure;
 	initUiIntLabel(&labelMonthlyExpenditure, renderer, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, renderer->theme.labelColor, &city.monthlyExpenditure, "(-£%d/month)");
+				renderer->theme.font, &renderer->theme.labelColor, &city.monthlyExpenditure, "(-£%d/month)");
 
 	initUiMessage(renderer);
 
 	// Tooltip
 	Tooltip tooltip = {};
 	tooltip.offsetFromCursor = v2(16, 20);
-	initUiLabel(&tooltip.label, renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer->theme.font, renderer->theme.labelColor);
+	initUiLabel(&tooltip.label, renderer, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer->theme.font,
+				&renderer->theme.labelColor, &renderer->theme.tooltipBackgroundColor, 4);
 
 	// CALENDAR
 	CalendarUI calendarUI;
@@ -463,7 +464,7 @@ int main(int argc, char *argv[]) {
 	// Game over UI
 	UiLabel gameOverLabel;
 	initUiLabel(&gameOverLabel, renderer, cameraCentre,
-				ALIGN_CENTER, "You ran out of money! :(", renderer->theme.font, renderer->theme.labelColor);
+				ALIGN_CENTER, "You ran out of money! :(", renderer->theme.font, &renderer->theme.labelColor);
 	UiButton buttonMenu;
 	buttonRect.pos = cameraCentre - buttonRect.size/2;
 	// buttonRect.y += gameOverLabel._rect.h + uiPadding;
@@ -923,12 +924,9 @@ int main(int argc, char *argv[]) {
 			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
 			if (tooltip.show) {
 				tooltip.label.origin = v2(mouseState.pos) + tooltip.offsetFromCursor;
-				// drawRect(renderer, true, expandRect(tooltip.label._rect, 4), &renderer->theme.overlayColor);
 				drawUiLabel(renderer, &tooltip.label);
 			}
 		}
-
-		// drawText(renderer, renderer->theme.font, v2(mouseState.pos) + tooltip.offsetFromCursor, "Hello world!");
 
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost

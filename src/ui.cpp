@@ -5,15 +5,7 @@
  */
 void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
 {
-#if 0
 	// TODO: If the text is the same, do nothing!
-	freeTexture(&label->texture);
-	label->text = newText;
-	label->texture = renderText(renderer, label->font, label->text, label->color);
-	label->_rect.w = label->texture.w;
-	label->_rect.h = label->texture.h;
-	updateUiLabelPosition(label);
-#else
 
 	if (label->cache)
 	{
@@ -21,12 +13,12 @@ void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
 	}
 
 	label->text = newText;
-	label->cache = drawTextToCache(renderer, label->font, label->text, &label->color);
-#endif
+	label->cache = drawTextToCache(renderer, label->font, label->text, label->color);
 }
 
 void initUiLabel(UiLabel *label, GLRenderer *renderer, V2 position, int32 align,
-				char *text, BitmapFont *font, Color color)
+				char *text, BitmapFont *font, Color *color,
+				Color *backgroundColor=0, real32 backgroundPadding=0)
 {
 	*label = {};
 
@@ -36,11 +28,18 @@ void initUiLabel(UiLabel *label, GLRenderer *renderer, V2 position, int32 align,
 	label->origin = position;
 	label->align = align;
 
+	if (backgroundColor)
+	{
+		label->hasBackground = true;
+		label->backgroundColor = backgroundColor;
+		label->backgroundPadding = backgroundPadding;
+	}
+
 	setUiLabelText(renderer, label, text);
 }
 
 void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, V2 position, int32 align,
-				BitmapFont *font, Color color, int32 *watchValue, char *formatString)
+				BitmapFont *font, Color *color, int32 *watchValue, char *formatString)
 {
 	*label = {};
 	label->formatString = formatString;
@@ -58,9 +57,9 @@ void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *t
 
 	button->rect = rect;
 
-	button->backgroundColor = renderer->theme.buttonBackgroundColor;
-	button->backgroundHoverColor = renderer->theme.buttonHoverColor;
-	button->backgroundPressedColor = renderer->theme.buttonPressedColor;
+	button->backgroundColor = &renderer->theme.buttonBackgroundColor;
+	button->backgroundHoverColor = &renderer->theme.buttonHoverColor;
+	button->backgroundPressedColor = &renderer->theme.buttonPressedColor;
 
 	button->shortcutKey = shortcutKey;
 	button->tooltip = tooltip;
@@ -69,13 +68,23 @@ void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *t
 	V2 buttonCenter = v2(button->rect.x + button->rect.w / 2.0f,
 						button->rect.y + button->rect.h / 2.0f);
 	initUiLabel(&button->text, renderer, buttonCenter, ALIGN_CENTER, text,
-				renderer->theme.buttonFont, renderer->theme.buttonTextColor);
+				renderer->theme.buttonFont, &renderer->theme.buttonTextColor);
 }
 
 void drawUiLabel(GLRenderer *renderer, UiLabel *label)
 {
-	drawCachedText(renderer, label->cache, label->origin, label->align);
-	// drawText(renderer, label->font, label->origin, label->text, &label->color);
+	V2 topLeft = calculateTextPosition(label->cache, label->origin, label->align);
+	if (label->hasBackground)
+	{
+		RealRect background = rectXYWH(
+			topLeft.x - label->backgroundPadding,
+			topLeft.y - label->backgroundPadding,
+			label->cache->size.x + label->backgroundPadding * 2.0f, 
+			label->cache->size.y + label->backgroundPadding * 2.0f
+		);
+		drawRect(renderer, true, background, label->backgroundColor);
+	}
+	drawCachedText(renderer, label->cache, topLeft);
 }
 
 void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label)
@@ -141,22 +150,22 @@ void drawUiButton(GLRenderer *renderer, UiButton *button)
 {
 	if (button->active)
 	{
-		drawRect(renderer, true, button->rect, &button->backgroundPressedColor);
+		drawRect(renderer, true, button->rect, button->backgroundPressedColor);
 	}
 	else if (button->mouseOver)
 	{
 		if (button->clickStarted)
 		{
-			drawRect(renderer, true, button->rect, &button->backgroundPressedColor);
+			drawRect(renderer, true, button->rect, button->backgroundPressedColor);
 		}
 		else
 		{
-			drawRect(renderer, true, button->rect, &button->backgroundHoverColor);
+			drawRect(renderer, true, button->rect, button->backgroundHoverColor);
 		}
 	}
 	else
 	{
-		drawRect(renderer, true, button->rect, &button->backgroundColor);
+		drawRect(renderer, true, button->rect, button->backgroundColor);
 	}
 	drawUiLabel(renderer, &button->text);
 }
@@ -258,10 +267,11 @@ void initUiMessage(GLRenderer *renderer)
 	__globalUiMessage = {};
 	__globalUiMessage.renderer = renderer;
 
-	__globalUiMessage.background = {0,0,0,128};
+	__globalUiMessage.background = &renderer->theme.overlayColor;
 
 	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM,
-				"", renderer->theme.font, {255, 255, 255, 255});
+				"", renderer->theme.font, &renderer->theme.labelColor,
+				&renderer->theme.overlayColor, 4);
 }
 
 void pushUiMessage(char *message)
@@ -271,12 +281,6 @@ void pushUiMessage(char *message)
 	{
 		// Message is differenct
 		setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
-#if 0
-		__globalUiMessage.rect.x = __globalUiMessage.label._rect.x - 4;
-		__globalUiMessage.rect.y = __globalUiMessage.label._rect.y - 4;
-		__globalUiMessage.rect.w = __globalUiMessage.label._rect.w + 8;
-		__globalUiMessage.rect.h = __globalUiMessage.label._rect.h + 8;
-#endif
 	}
 
 	// Always refresh the countdown
@@ -285,21 +289,15 @@ void pushUiMessage(char *message)
 
 void drawUiMessage(GLRenderer *renderer)
 {
-#if 0
 	if (__globalUiMessage.messageCountdown > 0)
 	{
 		__globalUiMessage.messageCountdown -= MS_PER_FRAME;
 
 		if (__globalUiMessage.messageCountdown > 0)
 		{
-			V2 *textSize = &__globalUiMessage.label.cache->size;
-			RealRect backgroundRect = rectXYWH();
-			drawRect(renderer, true, backgroundRect, &__globalUiMessage.background);
-
 			drawUiLabel(renderer, &__globalUiMessage.label);
 		}
 	}
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -311,7 +309,7 @@ void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text)
 	if (strcmp(tooltip->buffer, text))
 	{
 		strcpy(tooltip->buffer, text);
-		tooltip->label.color = {255,255,255,255};
+		tooltip->label.color = &renderer->theme.labelColor;
 		setUiLabelText(renderer, &tooltip->label, tooltip->buffer);
 	}
 	tooltip->show = true;
