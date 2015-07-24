@@ -270,7 +270,7 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
 	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
 
-	Texture *textures = (Texture *) calloc(texturesToLoad->filenameCount, sizeof(Texture));
+	Texture *textures = (Texture *) calloc(texturesToLoad->count, sizeof(Texture));
 
 	renderer->textureArrayID = 0;
 	glGenTextures(1, &renderer->textureArrayID);
@@ -280,11 +280,11 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 
 	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA,
 		TEXTURE_WIDTH, TEXTURE_HEIGHT, // Size
-		texturesToLoad->filenameCount, // Number
+		texturesToLoad->count, // Number
 		0, GL_RGBA, GL_UNSIGNED_BYTE, null);
 
 	for (GLint i=0;
-		i < texturesToLoad->filenameCount;
+		i < texturesToLoad->count;
 		i++)
 	{
 		Texture *texture = textures + i;
@@ -316,33 +316,36 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 				surface = tempSurface;
 			}
 
-			// Premultiply alpha
-			uint32 Rmask = surface->format->Rmask,
-				   Gmask = surface->format->Gmask,
-				   Bmask = surface->format->Bmask,
-				   Amask = surface->format->Amask;
-			real32 rRmask = (real32)Rmask,
-				   rGmask = (real32)Gmask,
-				   rBmask = (real32)Bmask,
-				   rAmask = (real32)Amask;
-
-			int pixelCount = surface->w * surface->h;
-			for (int pixelIndex=0;
-				pixelIndex < pixelCount;
-				pixelIndex++)
+			if (!texturesToLoad->isAlphaPremultiplied[i])
 			{
-				uint32 pixel = ((uint32*)surface->pixels)[pixelIndex];
-				real32 rr = (real32)(pixel & Rmask) / rRmask;
-				real32 rg = (real32)(pixel & Gmask) / rGmask;
-				real32 rb = (real32)(pixel & Bmask) / rBmask;
-				real32 ra = (real32)(pixel & Amask) / rAmask;
+				// Premultiply alpha
+				uint32 Rmask = surface->format->Rmask,
+					   Gmask = surface->format->Gmask,
+					   Bmask = surface->format->Bmask,
+					   Amask = surface->format->Amask;
+				real32 rRmask = (real32)Rmask,
+					   rGmask = (real32)Gmask,
+					   rBmask = (real32)Bmask,
+					   rAmask = (real32)Amask;
 
-				uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
-				uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
-				uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
-				uint32 a = (uint32)(ra * rAmask) & Amask;
+				int pixelCount = surface->w * surface->h;
+				for (int pixelIndex=0;
+					pixelIndex < pixelCount;
+					pixelIndex++)
+				{
+					uint32 pixel = ((uint32*)surface->pixels)[pixelIndex];
+					real32 rr = (real32)(pixel & Rmask) / rRmask;
+					real32 rg = (real32)(pixel & Gmask) / rGmask;
+					real32 rb = (real32)(pixel & Bmask) / rBmask;
+					real32 ra = (real32)(pixel & Amask) / rAmask;
 
-				((uint32*)surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
+					uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
+					uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
+					uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
+					uint32 a = (uint32)(ra * rAmask) & Amask;
+
+					((uint32*)surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
+				}
 			}
 
 			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i,

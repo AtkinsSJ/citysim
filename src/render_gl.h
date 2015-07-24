@@ -207,19 +207,21 @@ struct TexturesToLoad
 	char filenamesBuffer[4096];
 	int32 bufferPos;
 
+	int32 count;
 	char *filenames[64];
-	int32 filenameCount;
+	bool isAlphaPremultiplied[64];
 };
-GLint pushTextureToLoad(TexturesToLoad *textures, char *filename)
+GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPremultiplied=false)
 {
-	ASSERT(textures->filenameCount < ArrayCount(textures->filenames), "TexturesToLoad filenames limit reached!");
+	ASSERT(textures->count < ArrayCount(textures->filenames), "TexturesToLoad filenames limit reached!");
 
 	uint32 filenameLength = strlen(filename) + 1;
 	ASSERT(textures->bufferPos + filenameLength < ArrayCount(textures->filenamesBuffer), "No more space for texture filenames in TexturesToLoad!");
 
-	uint32 textureID = textures->filenameCount++;
+	uint32 textureID = textures->count++;
 
 	textures->filenames[textureID] = textures->filenamesBuffer + textures->bufferPos;
+	textures->isAlphaPremultiplied[textureID] = isAlphaPremultiplied;
 
 	strcpy(textures->filenames[textureID], filename);
 	textures->bufferPos += filenameLength;

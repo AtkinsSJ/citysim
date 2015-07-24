@@ -163,7 +163,7 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 			pageIndex < common->pageCount;
 			pageIndex++)
 		{
-			pageToTexture[pageIndex] = pushTextureToLoad(texturesToLoad, pageStart);
+			pageToTexture[pageIndex] = pushTextureToLoad(texturesToLoad, pageStart, true);
 			pageStart += strlen(pageStart) + 1;
 		}
 
