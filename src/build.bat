@@ -6,5 +6,5 @@ set COMPILER_FLAGS= -EHsc -MD -W4 -wd4201 -wd4127 -wd4996 -Zi -Od -I ..\include
 set LINKER_FLAGS= -SUBSYSTEM:WINDOWS -LIBPATH:..\lib\x86 -debug SDL2_image.lib SDL2main.lib SDL2.lib Shell32.lib opengl32.lib glew32.lib
 
 pushd ..\build
-cl ..\src\main.cpp %COMPILER_FLAGS% -link %LINKER_FLAGS%
+cl ..\src\build_main.cpp %COMPILER_FLAGS% -link %LINKER_FLAGS%
 popd

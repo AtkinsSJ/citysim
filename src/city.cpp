@@ -321,10 +321,10 @@ inline void getCityFundsString(City *city, char *buffer) {
 	sprintf(buffer, "£%d", city->funds);
 }
 
-inline void updateFundsLabel(GLRenderer *renderer, City *city, UiLabel *label) {
+inline void updateFundsLabel(City *city, UiLabel *label) {
 	char buffer[20];
 	getCityFundsString(city, buffer);
-	setUiLabelText(renderer, label, buffer);
+	setUiLabelText(label, buffer);
 }
 
 void sellAPotato(City *city) {

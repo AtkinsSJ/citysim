@@ -56,14 +56,20 @@ void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, C
 		BitmapFontChar *c = findChar(font, uChar);
 		if (c)
 		{
-			drawQuad(renderer, true, rectXYWH(position.x + c->xOffset, position.y + c->yOffset, c->size.w, c->size.h),
-						0, c->textureID, c->uv, color);
-			position.x += c->xAdvance;
+			drawQuad(renderer, true,
+					 rectXYWH(
+					 	position.x + (real32)c->xOffset,
+					 	position.y + (real32)c->yOffset,
+					 	(real32)c->size.w,
+					 	(real32)c->size.h
+					 ),
+					 0, c->textureID, c->uv, color);
+			position.x += (real32)c->xAdvance;
 		}
 	}
 }
 
-BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, char *text, Color *color)
+BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, Color *color)
 {
 	uint32 textLength = strlen(text);
 
@@ -96,11 +102,11 @@ BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, ch
 			if (c)
 			{
 				*(result->sprites + result->spriteCount++) = {
-					rectXYWH(position.x + c->xOffset, position.y + c->yOffset, c->size.w, c->size.h),
+					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset, (real32)c->size.w, (real32)c->size.h),
 					0, c->textureID, c->uv, drawColor
 				};
-				position.x += c->xAdvance;
-				result->size.x += c->xAdvance;
+				position.x += (real32)c->xAdvance;
+				result->size.x += (real32)c->xAdvance;
 			}
 		}
 	}

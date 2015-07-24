@@ -3,7 +3,7 @@
 /**
  * Change the text of the given UiLabel, which regenerates the Texture.
  */
-void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
+void setUiLabelText(UiLabel *label, char *newText)
 {
 	// TODO: If the text is the same, do nothing!
 
@@ -13,10 +13,10 @@ void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
 	}
 
 	label->text = newText;
-	label->cache = drawTextToCache(renderer, label->font, label->text, label->color);
+	label->cache = drawTextToCache(label->font, label->text, label->color);
 }
 
-void initUiLabel(UiLabel *label, GLRenderer *renderer, V2 position, int32 align,
+void initUiLabel(UiLabel *label, V2 position, int32 align,
 				char *text, BitmapFont *font, Color *color,
 				Color *backgroundColor=0, real32 backgroundPadding=0)
 {
@@ -35,10 +35,10 @@ void initUiLabel(UiLabel *label, GLRenderer *renderer, V2 position, int32 align,
 		label->backgroundPadding = backgroundPadding;
 	}
 
-	setUiLabelText(renderer, label, text);
+	setUiLabelText(label, text);
 }
 
-void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, V2 position, int32 align,
+void initUiIntLabel(UiIntLabel *label, V2 position, int32 align,
 				BitmapFont *font, Color *color, int32 *watchValue, char *formatString)
 {
 	*label = {};
@@ -47,7 +47,7 @@ void initUiIntLabel(UiIntLabel *label, GLRenderer *renderer, V2 position, int32 
 	label->lastValue = *watchValue;
 
 	sprintf(label->buffer, label->formatString, *label->value);
-	initUiLabel(&label->label, renderer, position, align, label->buffer, font, color);
+	initUiLabel(&label->label, position, align, label->buffer, font, color);
 }
 
 void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *text,
@@ -67,7 +67,7 @@ void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *t
 	// Generate the UiLabel, and centre it
 	V2 buttonCenter = v2(button->rect.x + button->rect.w / 2.0f,
 						button->rect.y + button->rect.h / 2.0f);
-	initUiLabel(&button->text, renderer, buttonCenter, ALIGN_CENTER, text,
+	initUiLabel(&button->text, buttonCenter, ALIGN_CENTER, text,
 				renderer->theme.buttonFont, &renderer->theme.buttonTextColor);
 }
 
@@ -92,7 +92,7 @@ void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label)
 	if (*label->value != label->lastValue) {
 		label->lastValue = *label->value;
 		sprintf(label->buffer, label->formatString, *label->value);
-		setUiLabelText(renderer, &label->label, label->buffer);
+		setUiLabelText(&label->label, label->buffer);
 	}
 	drawUiLabel(renderer, &label->label);
 }
@@ -269,7 +269,7 @@ void initUiMessage(GLRenderer *renderer)
 
 	__globalUiMessage.background = &renderer->theme.overlayColor;
 
-	initUiLabel(&__globalUiMessage.label, renderer, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM,
+	initUiLabel(&__globalUiMessage.label, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM,
 				"", renderer->theme.font, &renderer->theme.labelColor,
 				&renderer->theme.overlayColor, 4);
 }
@@ -280,7 +280,7 @@ void pushUiMessage(char *message)
 	if (strcmp(message, __globalUiMessage.label.text))
 	{
 		// Message is differenct
-		setUiLabelText(__globalUiMessage.renderer, &__globalUiMessage.label, message);
+		setUiLabelText(&__globalUiMessage.label, message);
 	}
 
 	// Always refresh the countdown
@@ -310,7 +310,7 @@ void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text)
 	{
 		strcpy(tooltip->buffer, text);
 		tooltip->label.color = &renderer->theme.labelColor;
-		setUiLabelText(renderer, &tooltip->label, tooltip->buffer);
+		setUiLabelText(&tooltip->label, tooltip->buffer);
 	}
 	tooltip->show = true;
 }

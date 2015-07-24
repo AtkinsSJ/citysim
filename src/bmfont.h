@@ -103,11 +103,11 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
 		return null;
 	}
 
-	BMFontBlockHeader *blockHeader;
-	BMFontBlock_Common *common;
-	BMFont_Char *chars;
-	uint32 charCount;
-	void *pages;
+	BMFontBlockHeader *blockHeader = 0;
+	BMFontBlock_Common *common = 0;
+	BMFont_Char *chars = 0;
+	uint32 charCount = 0;
+	void *pages = 0;
 		
 	blockHeader = (BMFontBlockHeader *)(fileData + pos);
 	pos += sizeof(BMFontBlockHeader);

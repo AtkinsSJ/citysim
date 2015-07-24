@@ -2,24 +2,22 @@
 TODO:
 ---------------------------------------------
 
-Renderimg 2.0:
+Rendering 2.0:
 - Stop passing a size to drawSprite()! Will always draw at a consistent size.
-
 - Sorting!
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
-- Integrate it with the game!
-- Separate world drawing from ui drawing (multiple cameras, however they end up working)
+- Replace 'isUI' nonsense with something better?
 
+Asset packing:
+- Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them
+	for the bilinear filtering
+- Store TextureRegion information in a little binary file
+- Read data from these rather than hard-coded filenames
 
 Rendering:
 - Draw things with an offset, defined per-texture-region(?)
-- Weird rendering issues with gaps between tiles at non-default zoom levels.
 - Flash funds label when it changes
 - Fade-out the message popup
-
-UI:
-//- A menu!
-//- Name your farm! (Editable text)
 
 Bugs:
 - Closest barn isn't being chosen sometimes? No idea why.

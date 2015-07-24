@@ -77,7 +77,7 @@ GLRenderer *initializeRenderer(const char *windowTitle)
 	renderer->theme.buttonBackgroundColor 	= { 255, 255, 255, 255 };
 	renderer->theme.buttonHoverColor 		= { 192, 192, 255, 255 };
 	renderer->theme.buttonPressedColor 		= { 128, 128, 255, 255 };
-	
+
 	renderer->theme.labelColor 				= { 255, 255, 255, 255 };
 	renderer->theme.overlayColor 			= {   0,   0,   0, 128 };
 
@@ -237,7 +237,9 @@ bool initOpenGL(GLRenderer *renderer)
 		return false;
 	}
 
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
 
 	// Create vertex and index buffers
 	glGenBuffers(1, &renderer->VBO);
@@ -670,10 +672,47 @@ void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 	buffer->spriteCount = 0;
 }
 
+void sortSpriteBuffer(RenderBuffer *buffer)
+{
+	// This is an implementation of the 'comb sort' algorithm
+
+	uint32 gap = buffer->spriteCount;
+	real32 shrink = 1.3f;
+
+	bool swapped = false;
+
+	while (gap > 1 || swapped)
+	{
+		gap = (uint32)((real32)gap / shrink);
+		if (gap < 1)
+		{
+			gap = 1;
+		}
+
+		swapped = false;
+
+		// "comb" over the list
+		for (uint32 i = 0;
+			i + gap <= buffer->spriteCount;
+			i++)
+		{
+			if (buffer->sprites[i].depth > buffer->sprites[i+gap].depth)
+			{
+				Sprite temp = buffer->sprites[i];
+				buffer->sprites[i] = buffer->sprites[i+gap];
+				buffer->sprites[i+gap] = temp;
+
+				swapped = true;
+			}
+		}
+	}
+
+}
+
 void render(GLRenderer *renderer)
 {
 	// Sort sprites
-	// sortSpriteBuffer(&spriteBuffer);
+	sortSpriteBuffer(&renderer->worldBuffer);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);

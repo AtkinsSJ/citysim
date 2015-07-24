@@ -214,7 +214,7 @@ inline Matrix4 operator*=(Matrix4 &a, Matrix4 b) {
 	return a;
 }
 
-inline V4 operator*(Matrix4 &m, V4 v)
+inline V4 operator*(Matrix4 m, V4 v)
 {
 	V4 result = {};
 
