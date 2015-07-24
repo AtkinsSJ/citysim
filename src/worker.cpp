@@ -300,6 +300,6 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 	drawAnimator(renderer, false, &worker->animator, daysPerFrame, drawPos, v2(0.5f, 0.5f));
 
 	if (worker->isCarryingPotato) {
-		drawSprite(renderer, false, TextureAtlasItem_Potato, drawPos + potatoCarryOffset, v2(1,1));
+		drawTextureAtlasItem(renderer, false, TextureAtlasItem_Potato, drawPos + potatoCarryOffset, v2(1,1));
 	}
 }

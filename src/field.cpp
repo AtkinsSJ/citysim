@@ -94,14 +94,14 @@ void updateField(FieldData *field) {
 
 void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
-	drawSprite(renderer, false, TextureAtlasItem_Field, centre(&building->footprint), v2(building->footprint.dim), drawColor);
+	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Field, centre(&building->footprint), v2(building->footprint.dim), drawColor);
 
 	FieldData *field = (FieldData*)building->data;
 
 	switch (field->state) {
 		case FieldState_Planting: {
 			for (int32 i=0; i < field->progress; i++) {
-				drawSprite(
+				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Crop0_0,
@@ -113,7 +113,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			}
 
 			// 'Planting' indicator
-			drawSprite(
+			drawTextureAtlasItem(
 				renderer,
 				false,
 				TextureAtlasItem_Icon_Planting,
@@ -126,7 +126,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			int32 baseGrowthStage = field->progress / fieldSize;
 			int32 beyondGrowth = field->progress % fieldSize;
 			for (int32 i=0; i < fieldSize; i++) {
-				drawSprite(
+				drawTextureAtlasItem(
 					renderer,
 					false,
 					(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage + (i < beyondGrowth ? 1 : 0)),
@@ -140,7 +140,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
 		case FieldState_Grown: {
 			for (int32 i=0; i < fieldSize; i++) {
-				drawSprite(
+				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Crop0_3,
@@ -157,7 +157,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			for (int32 i=0; i < fieldSize; i++) {
 				if (i < field->progress) continue;
 
-				drawSprite(
+				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Crop0_3,
@@ -169,7 +169,7 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			}
 
 			// 'Harvesting' indicator
-			drawSprite(
+			drawTextureAtlasItem(
 				renderer,
 				false,
 				TextureAtlasItem_Icon_Harvesting,

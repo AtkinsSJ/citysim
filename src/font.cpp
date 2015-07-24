@@ -63,7 +63,7 @@ void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, C
 	}
 }
 
-BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, Color *color)
+BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, char *text, Color *color)
 {
 	uint32 textLength = strlen(text);
 
@@ -72,6 +72,10 @@ BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, V2
 	uint8 *data = (uint8 *) calloc(1, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->sprites = (Sprite *)(data + sizeof(BitmapFontCachedText));
+
+	result->size = v2(0, font->lineHeight);
+
+	V2 position = {};
 
 	if (result)
 	{
@@ -96,6 +100,7 @@ BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, V2
 					0, c->textureID, c->uv, drawColor
 				};
 				position.x += c->xAdvance;
+				result->size.x += c->xAdvance;
 			}
 		}
 	}
@@ -103,23 +108,44 @@ BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, V2
 	return result;
 }
 
-void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 position, uint32 align)
+void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 origin, uint32 align)
 {
-	IMPLEMENT THIS NEXT!
-	Note that I haven`t had time to test/check drawTextToCache() above, or that it`s even used anywhere!
-	Actually, I never set the cache`s .size, which is important!
+	V3 offset;
 
-	// for (char *currentChar=text;
-	// 	*currentChar != 0;
-	// 	currentChar++)
-	// {
-	// 	uint32 uChar = (uint32)(*currentChar);
-	// 	BitmapFontChar *c = findChar(font, uChar);
-	// 	if (c)
-	// 	{
-	// 		drawQuad(renderer, true, rectXYWH(position.x + c->xOffset, position.y + c->yOffset, c->size.w, c->size.h),
-	// 					0, c->textureID, c->uv, color);
-	// 		position.x += c->xAdvance;
-	// 	}
-	// }
+	switch (align & ALIGN_H)
+	{
+		case ALIGN_H_CENTER: {
+			offset.x = origin.x - cache->size.x / 2.0f;
+		} break;
+
+		case ALIGN_RIGHT: {
+			offset.x = origin.x - cache->size.x;
+		} break;
+
+		default: { // Left is default
+			offset.x = origin.x;
+		} break;
+	}
+
+	switch (align & ALIGN_V)
+	{
+		case ALIGN_V_CENTER: {
+			offset.y = origin.y - cache->size.y / 2.0f;
+		} break;
+
+		case ALIGN_BOTTOM: {
+			offset.y = origin.y - cache->size.y;
+		} break;
+
+		default: { // Top is default
+			offset.y = origin.y;
+		} break;
+	}
+
+	for (uint32 spriteIndex=0;
+		spriteIndex < cache->spriteCount;
+		spriteIndex++)
+	{
+		drawSprite(renderer, true, cache->sprites + spriteIndex, offset);
+	}
 }

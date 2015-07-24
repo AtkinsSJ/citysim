@@ -202,7 +202,7 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawRect(renderer, true, rectXYWH(0, 0, renderer->worldCamera.windowWidth, renderer->worldCamera.windowHeight), &renderer->theme.overlayColor);
 
-	drawSprite(renderer, true, TextureAtlasItem_Menu_Logo,
+	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo,
 		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f));
 
 	drawUiLabel(renderer, &menu->gameSetupLabel);
@@ -827,7 +827,7 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawSprite(renderer, false, textureAtlasItem, v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f));
+				drawTextureAtlasItem(renderer, false, textureAtlasItem, v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f));
 			}
 		}
 
@@ -852,7 +852,7 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
-					drawSprite(renderer, false, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
+					drawTextureAtlasItem(renderer, false, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
 				} break;
 			}
 		}
@@ -865,7 +865,7 @@ int main(int argc, char *argv[]) {
 		// Draw potatoes!
 		for (int i = 0; i < ArrayCount(city.potatoes); ++i) {
 			if (city.potatoes[i].exists) {
-				drawSprite(
+				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Potato,
@@ -883,7 +883,7 @@ int main(int argc, char *argv[]) {
 			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
-			drawSprite(
+			drawTextureAtlasItem(
 				renderer,
 				false,
 				buildingDefinitions[selectedBuildingArchetype].textureAtlasItem,

@@ -27,11 +27,13 @@ struct BitmapFontCachedText
 	Sprite *sprites;
 };
 
-void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, Color *color=0);
+void
+drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, Color *color=0);
 
-BitmapFontCachedText *drawTextToCache(GLRenderer *renderer, BitmapFont *font, V2 position,
-										char *text, Color *color=0);
+BitmapFontCachedText *
+drawTextToCache(GLRenderer *renderer, BitmapFont *font, char *text, Color *color=0);
 
-void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 position, uint32 align);
+void
+drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 origin, uint32 align);
 
 #include "font.cpp"

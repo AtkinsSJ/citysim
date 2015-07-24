@@ -514,6 +514,30 @@ SDL_Cursor *createCursor(char *path)
 	return cursor;
 }
 
+void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset)
+{
+	RenderBuffer *buffer;
+	if (isUI)
+	{
+		buffer = &renderer->uiBuffer;
+	}
+	else
+	{
+		buffer = &renderer->worldBuffer;
+	}
+
+	if (buffer->spriteCount >= buffer->maxSprites)
+	{
+		SDL_Log("Too many %s sprites!", isUI ? "UI" : "world");
+		return;
+	}
+
+	Sprite *bufferSprite = buffer->sprites + buffer->spriteCount++;
+	*bufferSprite = *sprite;
+	bufferSprite->rect.pos += offset.xy;
+	bufferSprite->depth += offset.z;
+}
+
 void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 				GLint textureID, RealRect uv, Color *color)
 {
@@ -546,7 +570,7 @@ void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 	};
 }
 
-void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
+void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, Color *color)
 {
 	TextureRegion *region = renderer->textureRegions + textureAtlasItem;
@@ -681,7 +705,7 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 	V4 result = inverse(&renderer->worldBuffer.projectionMatrix) * normalised;
 	// SDL_Log("upproject: %f, %f", result.x, result.y);
 
-	return result.v2;// + renderer->camera.pos;
+	return result.xy;// + renderer->camera.pos;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -711,7 +735,7 @@ void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator, real32 da
 		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
 		animator->frameCounter -= framesElapsed;
 	}
-	drawSprite(
+	drawTextureAtlasItem(
 		renderer,
 		isUI,
 		animator->animation->frames[animator->currentFrame],

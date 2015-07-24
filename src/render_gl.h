@@ -240,10 +240,12 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 
+void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset);
+
 void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 				GLint textureID, RealRect uv, Color *color=0);
 
-void drawSprite(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
+void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, Color *color=0);
 
 void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color *color=0);

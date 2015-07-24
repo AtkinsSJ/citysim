@@ -1,36 +1,5 @@
 // ui.cpp
 
-#if 0
-void updateUiLabelPosition(UiLabel *label)
-{
-	switch (label->align & ALIGN_H)
-	{
-		case ALIGN_H_CENTER: {
-			label->_rect.x = label->origin.x - label->_rect.w/2;
-		} break;
-		case ALIGN_RIGHT: {
-			label->_rect.x = label->origin.x - label->_rect.w;
-		} break;
-		default: { // Left is default
-			label->_rect.x = label->origin.x;
-		} break;
-	}
-
-	switch (label->align & ALIGN_V)
-	{
-		case ALIGN_V_CENTER: {
-			label->_rect.y = label->origin.y - label->_rect.h/2;
-		} break;
-		case ALIGN_BOTTOM: {
-			label->_rect.y = label->origin.y - label->_rect.h;
-		} break;
-		default: { // Top is default
-			label->_rect.y = label->origin.y;
-		} break;
-	}
-}
-#endif
-
 /**
  * Change the text of the given UiLabel, which regenerates the Texture.
  */
@@ -52,7 +21,7 @@ void setUiLabelText(GLRenderer *renderer, UiLabel *label, char *newText)
 	}
 
 	label->text = newText;
-	label->cache = drawTextToCache(renderer, label->font, label->origin, label->text, &label->color);
+	label->cache = drawTextToCache(renderer, label->font, label->text, &label->color);
 #endif
 }
 
@@ -111,12 +80,12 @@ void drawUiLabel(GLRenderer *renderer, UiLabel *label)
 
 void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label)
 {
-	// if (*label->value != label->lastValue) {
-	// 	label->lastValue = *label->value;
-	// 	sprintf(label->buffer, label->formatString, *label->value);
-	// 	setUiLabelText(renderer, &label->label, label->buffer);
-	// }
-	// drawUiLabel(renderer, &label->label);
+	if (*label->value != label->lastValue) {
+		label->lastValue = *label->value;
+		sprintf(label->buffer, label->formatString, *label->value);
+		setUiLabelText(renderer, &label->label, label->buffer);
+	}
+	drawUiLabel(renderer, &label->label);
 }
 
 bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState,

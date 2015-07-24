@@ -66,16 +66,24 @@ struct V2 {
 };
 
 struct V3 {
-	real32 x,y,z;
+	union {
+		struct {
+			real32 x,y,z;
+		};
+		struct {
+			V2 xy;
+			real32 z;
+		};
+	};
 };
 struct V4 {
 	union {
 		struct {
-			V3 v3;
+			V3 xyz;
 			real32 w;
 		};
 		struct {
-			V2 v2;
+			V2 xy;
 			real32 z, w;
 		};
 		struct {
