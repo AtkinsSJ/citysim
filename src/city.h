@@ -64,7 +64,6 @@ enum FieldState {
 	FieldState_Harvesting,
 };
 struct FieldData {
-	bool exists;
 	FieldState state;
 	int32 progress;
 	int32 progressCounter;
@@ -89,6 +88,7 @@ const int fieldProgressToHarvest = 1;
 struct Potato {
 	bool exists;
 	RealRect bounds; // In tiles!
+	// NB: bounds rather than position because of workerMoveTo()
 };
 const V2 potatoCarryOffset = v2(-4.0f/16.0f, -14.0f/16.0f);
 

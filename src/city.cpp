@@ -167,7 +167,6 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 		} break;
 
 		case BA_Field: {
-			building->field.exists = true;
 			building->field.state = FieldState_Empty;
 			building->field.progress = 0;
 

@@ -593,11 +593,14 @@ int main(int argc, char *argv[]) {
 			for (int i = 0; i < ArrayCount(city.buildings); i++)
 			{
 				Building *building = city.buildings + i;
-				switch (building->archetype)
+				if (building->exists) 
 				{
-					case BA_Field: {
-						updateField(&building->field);
-					} break;
+					switch (building->archetype)
+					{
+						case BA_Field: {
+							updateField(&building->field);
+						} break;
+					}
 				}
 			}
 

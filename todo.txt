@@ -4,7 +4,6 @@ TODO:
 
 Rendering 2.0:
 - Stop passing a size to drawSprite()! Will always draw at a consistent size.
-- Sorting!
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
 - Replace 'isUI' nonsense with something better?
 
@@ -18,9 +17,6 @@ Rendering:
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
 - Fade-out the message popup
-
-Bugs:
-- Closest barn isn't being chosen sometimes? No idea why.
 
 - Scenarios?
 	- System for loading a level

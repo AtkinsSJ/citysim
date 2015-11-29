@@ -52,26 +52,7 @@ bool harvestField(City *city, Coord tilePosition) {
 }
 
 void updateField(FieldData *field) {
-	if (!field->exists) return;
-
 	switch (field->state) {
-		case FieldState_Planting: {
-			// Planting a seed at each position
-			// We reuse growth/growthCounter because we can
-
-			// field->growthCounter += 1;
-			// if (field->growthCounter >= 2) {
-			// 	field->growthCounter -= 2;
-			// 	field->growth++;
-			// }
-
-			// if (field->growth >= fieldSize) {
-			// 	field->state = FieldState_Growing;
-			// 	field->growth = 0;
-			// 	field->growthCounter = 0;
-			// }
-		} break;
-
 		case FieldState_Growing: {
 			// Growing each plant in turn
 			field->progressCounter += 1;
@@ -82,10 +63,6 @@ void updateField(FieldData *field) {
 			if (field->progress >= fieldMaxGrowth) {
 				field->state = FieldState_Grown;
 			}
-		} break;
-
-		case FieldState_Harvesting: {
-			// Harvesting each plant in turn
 		} break;
 	}
 }
