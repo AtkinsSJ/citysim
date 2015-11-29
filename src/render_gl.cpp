@@ -255,7 +255,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	real32 tw = (real32) texture->w,
 		   th = (real32) texture->h;
 
-	renderer->textureRegions[item] = {
+	renderer->textureAtlas.textureRegions[item] = {
 		texture->id,
 		{
 #if 1
@@ -283,8 +283,15 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 	renderer->textureArrayID = 0;
 	glGenTextures(1, &renderer->textureArrayID);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, renderer->textureArrayID);
+
+	// NB: Here we set the texture filter!!!
+#if 1
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#else
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#endif
 
 	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA,
 		TEXTURE_WIDTH, TEXTURE_HEIGHT, // Size
@@ -584,7 +591,7 @@ void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, real32 depth, Color *color)
 {
-	TextureRegion *region = renderer->textureRegions + textureAtlasItem;
+	TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
 	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
 
 	drawQuad(renderer, isUI, rectCentreSize(position, size), depth, textureID, region->uv, color);

@@ -121,6 +121,11 @@ struct TextureRegion
 	RealRect uv;
 };
 
+struct TextureAtlas
+{
+	TextureRegion textureRegions[TextureAtlasItemCount];
+};
+
 enum AnimationID
 {
 	Animation_Farmer_Stand,
@@ -198,7 +203,7 @@ struct GLRenderer
 
 	Animation animations[Animation_Count];
 
-	TextureRegion textureRegions[TextureAtlasItemCount];
+	TextureAtlas textureAtlas;
 	UiTheme theme;
 };
 

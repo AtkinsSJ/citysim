@@ -6,6 +6,9 @@ Rendering 2.0:
 - Stop passing a size to drawSprite()! Will always draw at a consistent size.
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
 - Replace 'isUI' nonsense with something better?
+- Draw things with an offset, defined per-texture-region(?)
+- Flash funds label when it changes
+- Fade-out the message popup
 
 Asset packing:
 - Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them
@@ -13,10 +16,16 @@ Asset packing:
 - Store TextureRegion information in a little binary file
 - Read data from these rather than hard-coded filenames
 
-Rendering:
-- Draw things with an offset, defined per-texture-region(?)
-- Flash funds label when it changes
-- Fade-out the message popup
+
+- Simulation
+	- Per-tile humidity
+	- Per-tile nutrient value
+	- Grass grows naturally, is destroyed by animals and heavy foot traffic
+
+- Pathfinding!
+	- Whether each tile is pathable
+	- Movement speeds per tile
+	- Rimworld-style 'zones' to establish which areas are inaccessible
 
 - Scenarios?
 	- System for loading a level
