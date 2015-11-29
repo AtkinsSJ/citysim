@@ -150,7 +150,7 @@ const real32 animationFramesPerDay = 10.0f;
 struct Sprite
 {
 	RealRect rect;
-	real32 depth; // Positive is forwards from the camera
+	real32 depth; // Positive is towards the player
 
 	GLint textureID;
 	RealRect uv;

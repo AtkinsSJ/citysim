@@ -828,7 +828,7 @@ int main(int argc, char *argv[]) {
 				}
 
 				drawTextureAtlasItem(renderer, false, textureAtlasItem,
-					v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), 0);
+					v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
 			}
 		}
 
