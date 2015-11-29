@@ -10,7 +10,10 @@ enum Terrain {
 const int forestDemolishCost = 100;
 
 struct BuildingDefinition {
-	int32 width, height;
+	union {
+		Coord size;
+		struct {int32 width, height;};
+	};
 	string name;
 	TextureAtlasItem textureAtlasItem;
 	int32 buildCost;

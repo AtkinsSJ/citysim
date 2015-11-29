@@ -90,8 +90,10 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 		return false;
 	}
 
+	Rect footprint = irectCentreWH(position, def.width, def.height);
+
 	// Are we in bounds?
-	if (!rectInRect({0,0, city->width, city->height}, {position, def.width, def.height})) {
+	if (!rectInRect({0,0, city->width, city->height}, footprint)) {
 		if (isAttemptingToBuild) {
 			pushUiMessage("You cannot build there.");
 		}
@@ -101,7 +103,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	// Check terrain is buildable and empty
 	for (int32 y=0; y<def.height; y++) {
 		for (int32 x=0; x<def.width; x++) {
-			uint32 ti = tileIndex(city, position.x + x, position.y + y);
+			uint32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
 			if (city->terrain[ti] != Terrain_Ground) {
 				if (isAttemptingToBuild) {
 					pushUiMessage("You cannot build there.");
@@ -152,7 +154,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	*building = {};
 	building->exists = true;
 	building->archetype = archetype;
-	building->footprint = {position, def->width, def->height};
+	building->footprint = irectCentreWH(position, def->width, def->height);
 
 	// Building-specific stuff
 	switch (archetype) {
@@ -319,10 +321,10 @@ inline void getCityFundsString(City *city, char *buffer) {
 	sprintf(buffer, "£%d", city->funds);
 }
 
-inline void updateFundsLabel(Renderer *renderer, City *city, UiLabel *label) {
+inline void updateFundsLabel(City *city, UiLabel *label) {
 	char buffer[20];
 	getCityFundsString(city, buffer);
-	setUiLabelText(renderer, label, buffer);
+	setUiLabelText(label, buffer);
 }
 
 void sellAPotato(City *city) {

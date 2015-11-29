@@ -4,7 +4,7 @@
 
 void openUrlUnsafe(char* url) {
 	char buffer[1024];
-	ASSERT(strlen(url) < ArrayCount(buffer) - 16);
+	ASSERT(strlen(url) < ArrayCount(buffer) - 16, "URL is too long!");
 	sprintf(buffer, "xdg-open '%s'", url);
 	system(buffer);
 }

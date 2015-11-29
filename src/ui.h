@@ -1,31 +1,18 @@
 #pragma once
 // ui.h
 
-enum Alignment {
-	ALIGN_LEFT = 1,
-	ALIGN_H_CENTER = 2,
-	ALIGN_RIGHT = 4,
-
-	ALIGN_H = ALIGN_LEFT | ALIGN_H_CENTER | ALIGN_RIGHT,
-
-	ALIGN_TOP = 8,
-	ALIGN_V_CENTER = 16,
-	ALIGN_BOTTOM = 32,
-	
-	ALIGN_V = ALIGN_TOP | ALIGN_V_CENTER | ALIGN_BOTTOM,
-
-	ALIGN_CENTER = ALIGN_H_CENTER | ALIGN_V_CENTER,
-};
-
 struct UiLabel {
-	Coord origin;
+	V2 origin;
 	int32 align; // See Alignment enum
 
-	Rect _rect;
 	char *text;
-	TTF_Font *font;
-	Color color;
-	Texture texture;
+	BitmapFont *font;
+	Color *color;
+	BitmapFontCachedText *cache;
+
+	bool hasBackground;
+	Color *backgroundColor;
+	real32 backgroundPadding;
 };
 
 struct UiIntLabel {
@@ -37,13 +24,13 @@ struct UiIntLabel {
 };
 
 struct UiButton {
-	Rect rect;
+	RealRect rect;
 
 	UiLabel text;
 
-	Color backgroundColor;
-	Color backgroundHoverColor;
-	Color backgroundPressedColor;
+	Color *backgroundColor;
+	Color *backgroundHoverColor;
+	Color *backgroundPressedColor;
 
 	SDL_Scancode shortcutKey;
 	char *tooltip;
@@ -60,10 +47,12 @@ struct UiButtonGroup {
 	UiButton *activeButton;
 };
 
+const real32 uiMessageBottomMargin = 4,
+			uiMessageTextPadding = 4;
 struct UiMessage {
-	Renderer *renderer;
-	Rect rect;
-	Color background;
+	GLRenderer *renderer;
+	RealRect rect;
+	Color *background;
 	UiLabel label;
 	int32 messageCountdown; // In milliseconds
 };
@@ -71,9 +60,9 @@ struct UiMessage {
 struct Tooltip {
 	UiLabel label;
 	bool show;
-	Coord offsetFromCursor;
+	V2 offsetFromCursor;
 	char buffer[128];
 };
-void showTooltip(Tooltip *tooltip, Renderer *renderer, char *text);
+void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text);
 
 #include "ui.cpp"

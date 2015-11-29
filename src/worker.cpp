@@ -263,7 +263,7 @@ void updateWorker(City *city, Worker *worker) {
 	}
 }
 
-void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
+void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 	if (!worker->exists) return;
 
 	// TODO: Replace this animation-choosing code, because it's horrible.
@@ -297,9 +297,11 @@ void drawWorker(Renderer *renderer, Worker *worker, real32 daysPerFrame) {
 		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
 	}
 
-	drawAnimator(renderer, &worker->animator, daysPerFrame, drawPos);
+	drawAnimator(renderer, false, &worker->animator, daysPerFrame,
+				drawPos, v2(0.5f, 0.5f), depthFromY(drawPos.y));
 
 	if (worker->isCarryingPotato) {
-		drawAtWorldPos(renderer, TextureAtlasItem_Potato, drawPos + potatoCarryOffset);
+		drawTextureAtlasItem(renderer, false, TextureAtlasItem_Potato,
+				drawPos + potatoCarryOffset, v2(1,1), depthFromY(drawPos.y));
 	}
 }
