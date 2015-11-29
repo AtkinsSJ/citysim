@@ -42,7 +42,9 @@ enum GameStatus {
 #include "field.cpp"
 #include "worker.cpp"
 
-void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState, int32 cityWidth, int32 cityHeight) {
+void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState,
+					int32 cityWidth, int32 cityHeight) // City size in tiles
+{ 
 	// Zooming
 	if (canZoom && mouseState->wheelY) {
 		// round()ing the zoom so it doesn't gradually drift due to float imprecision
@@ -52,25 +54,50 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 	// Panning
 	real32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
 	if (keyboardState->down[SDL_SCANCODE_LEFT]
-		|| keyboardState->down[SDL_SCANCODE_A])
+		|| keyboardState->down[SDL_SCANCODE_A]
+		|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN))
 	{
 		camera->pos.x -= scrollSpeed;
 	}
 	else if (keyboardState->down[SDL_SCANCODE_RIGHT]
-		|| keyboardState->down[SDL_SCANCODE_D])
+		|| keyboardState->down[SDL_SCANCODE_D]
+		|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
 	{
 		camera->pos.x += scrollSpeed;
 	}
 
 	if (keyboardState->down[SDL_SCANCODE_UP]
-		|| keyboardState->down[SDL_SCANCODE_W])
+		|| keyboardState->down[SDL_SCANCODE_W]
+		|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN))
 	{
 		camera->pos.y -= scrollSpeed;
 	}
 	else if (keyboardState->down[SDL_SCANCODE_DOWN]
-		|| keyboardState->down[SDL_SCANCODE_S])
+		|| keyboardState->down[SDL_SCANCODE_S]
+		|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
 	{
 		camera->pos.y += scrollSpeed;
+	}
+
+	// Clamp camera
+	real32 scale = TILE_SIZE / camera->zoom;
+	real32 cityPixelWidth = cityWidth * scale,
+			cityPixelHeight = cityHeight * scale;
+
+	if (cityPixelWidth < camera->windowWidth) {
+		// City smaller than camera, so centre on it
+		camera->pos.x = cityWidth * 0.5f;
+	} else {
+		real32 minX = ((real32)camera->windowWidth/(2.0f * scale)) - CAMERA_MARGIN;
+		camera->pos.x = clamp( camera->pos.x, minX, cityWidth - minX );
+	}
+
+	if (cityPixelHeight < camera->windowHeight) {
+		// City smaller than camera, so centre on it
+		camera->pos.y = cityHeight * 0.5f;
+	} else {
+		real32 minY = ((real32)camera->windowHeight/(2.0f * scale)) - CAMERA_MARGIN;
+		camera->pos.y = clamp( camera->pos.y, minY, cityHeight - minY );
 	}
 
 #if 0
@@ -626,7 +653,7 @@ int main(int argc, char *argv[]) {
 		}
 
 	// CAMERA!
-		updateCamera(&renderer->worldCamera, &mouseState, &keyboardState, city.width*TILE_WIDTH, city.height*TILE_HEIGHT);
+		updateCamera(&renderer->worldCamera, &mouseState, &keyboardState, city.width, city.height);
 
 		real32 worldScale = renderer->worldCamera.zoom / TILE_SIZE;
 		real32 camWidth = renderer->worldCamera.windowWidth * worldScale,

@@ -25,7 +25,7 @@ const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 const float TILE_SIZE = 16.0f;
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
-const int CAMERA_MARGIN = 0;
+const int CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 const bool canZoom = true;
 
 struct Camera
@@ -34,7 +34,7 @@ struct Camera
 		Coord windowSize;
 		struct{int32 windowWidth, windowHeight;};
 	};
-	V2 pos; // Centre of screen
+	V2 pos; // Centre of screen, in tiles
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 };
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
