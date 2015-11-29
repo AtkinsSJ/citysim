@@ -53,30 +53,40 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 
 	// Panning
 	real32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
-	if (keyboardState->down[SDL_SCANCODE_LEFT]
-		|| keyboardState->down[SDL_SCANCODE_A]
-		|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN))
+	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE))
 	{
-		camera->pos.x -= scrollSpeed;
+		// Click-panning!
+		float scale = scrollSpeed * 0.01f;
+		Coord clickStartPos = mouseState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
+		camera->pos += (v2(mouseState->pos) - v2(clickStartPos)) * scale;
 	}
-	else if (keyboardState->down[SDL_SCANCODE_RIGHT]
-		|| keyboardState->down[SDL_SCANCODE_D]
-		|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
+	else
 	{
-		camera->pos.x += scrollSpeed;
-	}
+		if (keyboardState->down[SDL_SCANCODE_LEFT]
+			|| keyboardState->down[SDL_SCANCODE_A]
+			|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN))
+		{
+			camera->pos.x -= scrollSpeed;
+		}
+		else if (keyboardState->down[SDL_SCANCODE_RIGHT]
+			|| keyboardState->down[SDL_SCANCODE_D]
+			|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
+		{
+			camera->pos.x += scrollSpeed;
+		}
 
-	if (keyboardState->down[SDL_SCANCODE_UP]
-		|| keyboardState->down[SDL_SCANCODE_W]
-		|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN))
-	{
-		camera->pos.y -= scrollSpeed;
-	}
-	else if (keyboardState->down[SDL_SCANCODE_DOWN]
-		|| keyboardState->down[SDL_SCANCODE_S]
-		|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
-	{
-		camera->pos.y += scrollSpeed;
+		if (keyboardState->down[SDL_SCANCODE_UP]
+			|| keyboardState->down[SDL_SCANCODE_W]
+			|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN))
+		{
+			camera->pos.y -= scrollSpeed;
+		}
+		else if (keyboardState->down[SDL_SCANCODE_DOWN]
+			|| keyboardState->down[SDL_SCANCODE_S]
+			|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
+		{
+			camera->pos.y += scrollSpeed;
+		}
 	}
 
 	// Clamp camera
@@ -99,70 +109,6 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 		real32 minY = ((real32)camera->windowHeight/(2.0f * scale)) - CAMERA_MARGIN;
 		camera->pos.y = clamp( camera->pos.y, minY, cityHeight - minY );
 	}
-
-#if 0
-	// Zooming
-	if (canZoom && mouseState->wheelY != 0) {
-		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera->zoom = clamp(round(10 * camera->zoom + mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
-	}
-
-	// Panning
-	real32 scrollSpeed = CAMERA_PAN_SPEED * (camera->windowWidth/sqrt(camera->zoom)) * SECONDS_PER_FRAME;
-	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE)) {
-		// Click-panning!
-		float scale = scrollSpeed * 0.01f;
-		Coord clickStartPos = mouseState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos += (v2(mouseState->pos) - v2(clickStartPos)) * scale;
-	} else {
-		// Keyboard/edge-of-screen panning
-		if (keyboardState->down[SDL_SCANCODE_LEFT]
-			|| keyboardState->down[SDL_SCANCODE_A]
-			|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN)) {
-			camera->pos.x -= scrollSpeed;
-		} else if (keyboardState->down[SDL_SCANCODE_RIGHT]
-			|| keyboardState->down[SDL_SCANCODE_D]
-			|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN))) {
-			camera->pos.x += scrollSpeed;
-		}
-
-		if (keyboardState->down[SDL_SCANCODE_UP]
-			|| keyboardState->down[SDL_SCANCODE_W]
-			|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN)) {
-			camera->pos.y -= scrollSpeed;
-		} else if (keyboardState->down[SDL_SCANCODE_DOWN]
-			|| keyboardState->down[SDL_SCANCODE_S]
-			|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN))) {
-			camera->pos.y += scrollSpeed;
-		}
-	}
-
-	// Clamp camera
-	real32 scaledCityWidth = cityWidth * camera->zoom,
-			scaledCityHeight = cityHeight * camera->zoom;
-
-	if (scaledCityWidth < camera->windowWidth) {
-		// City smaller than camera, so centre on it
-		camera->pos.x = scaledCityWidth / 2.0f;
-	} else {
-		camera->pos.x = clamp(
-			camera->pos.x,
-			camera->windowWidth/2.0f - CAMERA_MARGIN,
-			scaledCityWidth - (camera->windowWidth/2.0f - CAMERA_MARGIN)
-		);
-	}
-
-	if (scaledCityHeight < camera->windowHeight) {
-		// City smaller than camera, so centre on it
-		camera->pos.y = scaledCityHeight / 2.0f;
-	} else {
-		camera->pos.y = clamp(
-			camera->pos.y,
-			camera->windowHeight/2.0f - CAMERA_MARGIN,
-			scaledCityHeight - (camera->windowHeight/2.0f - CAMERA_MARGIN)
-		);
-	}
-#endif
 }
 
 enum ActionMode {
