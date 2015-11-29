@@ -56,13 +56,6 @@ BuildingDefinition buildingDefinitions[] = {
 };
 */
 
-struct Building {
-	bool exists;
-	BuildingArchetype archetype;
-	Rect footprint;
-	void *data;
-};
-
 enum FieldState {
 	FieldState_Empty = 0,
 	FieldState_Planting,
@@ -75,6 +68,15 @@ struct FieldData {
 	FieldState state;
 	int32 progress;
 	int32 progressCounter;
+};
+
+struct Building {
+	bool exists;
+	BuildingArchetype archetype;
+	Rect footprint;
+	union {
+		FieldData field;
+	};
 };
 const int32 fieldPlantCost = 500;
 const int fieldWidth = 4;
@@ -89,24 +91,6 @@ struct Potato {
 	RealRect bounds; // In tiles!
 };
 const V2 potatoCarryOffset = v2(-4.0f/16.0f, -14.0f/16.0f);
-
-enum JobType {
-	JobType_Idle = 0,
-	JobType_Plant = 1,
-	JobType_Harvest,
-	JobType_StoreCrop,
-
-	JobTypeCount
-};
-struct Job {
-	JobType type;
-	Building *building;
-	Potato *potato;
-};
-struct JobBoard {
-	Job jobs[128];
-	int32 jobCount;
-};
 
 struct Worker {
 	bool exists;
@@ -145,8 +129,6 @@ struct City {
 
 	uint32 barnCount;
 	Building *barns[64];
-
-	FieldData fieldData[256]; // TODO: Decide on field limit!
 
 	// Workers!
 	uint32 workerCount;

@@ -34,8 +34,10 @@ enum GameStatus {
 #include "bmfont.h"
 #include "input.h"
 #include "ui.h"
+#include "job.h"
 #include "city.h"
 #include "calendar.h"
+
 #include "job.cpp"
 #include "field.cpp"
 #include "worker.cpp"
@@ -586,11 +588,17 @@ int main(int argc, char *argv[]) {
 	// Game simulation
 		CalendarChange calendarChange = incrementCalendar(&calendar);
 		if (calendarChange.isNewDay) {
-			
-			// Fields
-			for (int i = 0; i < ArrayCount(city.fieldData); i++) {
-				FieldData *field = city.fieldData + i;
-				updateField(field);
+
+			// Buildings
+			for (int i = 0; i < ArrayCount(city.buildings); i++)
+			{
+				Building *building = city.buildings + i;
+				switch (building->archetype)
+				{
+					case BA_Field: {
+						updateField(&building->field);
+					} break;
+				}
 			}
 
 			// Workers!

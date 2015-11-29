@@ -67,13 +67,12 @@ bool doPlantingWork(Worker *worker, FieldData *field) {
 bool doHarvestingWork(City *city, Worker *worker, Building *building) {
 	if (!worker) {} // Here to keep the compiler quiet re: unused parameter
 
-	FieldData *field = (FieldData*) building->data;
-	if (field->state != FieldState_Harvesting) {
+	if (building->field.state != FieldState_Harvesting) {
 		// Not harvesting!
 		return true;
 	} else {
-		field->progressCounter += 1;
-		if (field->progressCounter >= fieldProgressToHarvest) {
+		building->field.progressCounter += 1;
+		if (building->field.progressCounter >= fieldProgressToHarvest) {
 			// Create a crop item!
 			Potato *potato = 0;
 			for (int32 i=0; i<ArrayCount(city->potatoes); i++) {
@@ -87,20 +86,21 @@ bool doHarvestingWork(City *city, Worker *worker, Building *building) {
 			potato->exists = true;
 			potato->bounds = realRect(
 				v2(building->footprint.pos)
-					 + v2(field->progress % fieldWidth, field->progress / fieldWidth),
+					 + v2(building->field.progress % fieldWidth,
+					 		building->field.progress / fieldWidth),
 				1,1
 			);
 
 			addStoreCropJob(&city->jobBoard, potato);
 
-			field->progressCounter -= fieldProgressToHarvest;
-			field->progress++;
+			building->field.progressCounter -= fieldProgressToHarvest;
+			building->field.progress++;
 		}
 
-		if (field->progress >= fieldSize) {
-			field->state = FieldState_Empty;
-			field->progress = 0;
-			field->progressCounter = 0;
+		if (building->field.progress >= fieldSize) {
+			building->field.state = FieldState_Empty;
+			building->field.progress = 0;
+			building->field.progressCounter = 0;
 
 			return true;
 		}
@@ -167,73 +167,70 @@ void updateWorker(City *city, Worker *worker) {
 		} break;
 
 		case JobType_Plant: {
-			Building *building = worker->job.building;
-			FieldData *field = (FieldData*)building->data;
+			JobData_Plant *jobData = &worker->job.data_Plant;
 
 			// Check job is valid
-			if (!worker->job.building->exists
-				|| worker->job.building->archetype != BA_Field
-				|| !field
-				|| field->state != FieldState_Planting) {
+			if (!jobData->field->exists
+				|| jobData->field->archetype != BA_Field
+				|| jobData->field->field.state != FieldState_Planting) {
 
 				endJob(worker);
 			} else { // Job is valid, yay!
 
 				if (worker->isAtDestination) {
-					if (doPlantingWork(worker, field)) {
+					if (doPlantingWork(worker, &jobData->field->field)) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, realRect(building->footprint));
+					workerMoveTo(worker, realRect(jobData->field->footprint));
 				}
 			}
 			
 		} break;
 
 		case JobType_Harvest: {
-			Building *building = worker->job.building;
-			FieldData *field = (FieldData*)building->data;
+			JobData_Harvest *jobData = &worker->job.data_Harvest;
 
 			// Check job is valid
-			if (!worker->job.building->exists
-				|| worker->job.building->archetype != BA_Field
-				|| !field
-				|| field->state != FieldState_Harvesting) {
+			if (!jobData->field->exists
+				|| jobData->field->archetype != BA_Field
+				|| jobData->field->field.state != FieldState_Harvesting) {
 
 				endJob(worker);
 			} else { // Job is valid, yay!
 				if (worker->isAtDestination) {
-					if (doHarvestingWork(city, worker, building)) {
+					if (doHarvestingWork(city, worker, jobData->field)) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, realRect(building->footprint));
+					workerMoveTo(worker, realRect(jobData->field->footprint));
 				}
 			}
 		} break;
 
 		case JobType_StoreCrop: {
+			JobData_StoreCrop *jobData = &worker->job.data_StoreCrop;
+
 			// Find a storage barn!
-			if (!worker->job.building) {
+			if (!jobData->barn) {
 				if (city->barnCount) {
 					Building *closestBarn = 0;
 					real32 closestBarnDistance = real32Max;
 
 					for (uint32 i=0; i<city->barnCount; i++) {
 						Building *barn = city->barns[i];
-						real32 distance = v2Length(worker->pos - centre(&barn->footprint));
+						real32 distance = v2Length(jobData->potato->bounds.pos - centre(&barn->footprint));
 						if (distance < closestBarnDistance) {
 							closestBarnDistance = distance;
 							closestBarn = barn;
 						}
 					}
 
-					worker->job.building = closestBarn;
+					jobData->barn = closestBarn;
 				}
 			}
 
-			if (worker->job.building) {
-				Building *building = worker->job.building;
+			if (jobData->barn) {
 				if (worker->isCarryingPotato) {
 					if (worker->isAtDestination) {
 						// Deposit potato for fun and profit
@@ -242,18 +239,17 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 
 					} else {
-						workerMoveTo(worker, realRect(building->footprint));
+						workerMoveTo(worker, realRect(jobData->barn->footprint));
 					}
 				} else {
-					Potato *potato = worker->job.potato;
 					if (worker->isAtDestination) {
 						// Pick-up potato for fun and profit
-						potato->exists = false;
+						jobData->potato->exists = false;
 						worker->isCarryingPotato = true;
 						worker->isAtDestination = false;
 
 					} else {
-						workerMoveTo(worker, potato->bounds);
+						workerMoveTo(worker, jobData->potato->bounds);
 					}
 				}
 			} else {

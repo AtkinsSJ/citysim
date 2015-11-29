@@ -167,22 +167,9 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 		} break;
 
 		case BA_Field: {
-
-			for (int i = 0; i < ArrayCount(city->fieldData); ++i) {
-				if (!city->fieldData[i].exists) {
-					building->data = city->fieldData + i;
-					SDL_Log("Allocating fieldData #%d for building #%d", i, buildingID);
-					break;
-				}
-			}
-
-			ASSERT(building->data != null, "Failed to allocate field data!");
-
-			FieldData *fieldData = (FieldData*)building->data;
-			
-			fieldData->exists = true;
-			fieldData->state = FieldState_Empty;
-			fieldData->progress = 0;
+			building->field.exists = true;
+			building->field.state = FieldState_Empty;
+			building->field.progress = 0;
 
 		} break;
 	}
@@ -246,11 +233,6 @@ bool demolishTile(City *city, Coord position) {
 						break;
 					}
 				}
-			} break;
-
-			case BA_Field: {
-				FieldData *fieldData = (FieldData*)building->data;
-				fieldData->exists = false;
 			} break;
 		}
 
