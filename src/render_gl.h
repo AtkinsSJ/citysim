@@ -270,7 +270,7 @@ BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad);
 
 inline real32 depthFromY(real32 y)
 {
-	return (y * -0.1f);
+	return (y * 0.1f);
 }
 inline real32 depthFromY(uint32 y)
 {

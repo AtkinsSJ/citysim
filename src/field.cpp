@@ -123,8 +123,8 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 				false,
 				TextureAtlasItem_Icon_Planting,
 				centrePos,
-				depthFromY(centrePos.y),
-				v2(2,2)
+				v2(2,2),
+				depthFromY(centrePos.y) + 10
 			);
 		} break;
 
@@ -132,13 +132,15 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			int32 baseGrowthStage = field->progress / fieldSize;
 			int32 beyondGrowth = field->progress % fieldSize;
 			for (int32 i=0; i < fieldSize; i++) {
+				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
+					 			 building->footprint.pos.y + (i/4) + 0.5f);
 				drawTextureAtlasItem(
 					renderer,
 					false,
 					(TextureAtlasItem)(TextureAtlasItem_Crop0_0 + baseGrowthStage + (i < beyondGrowth ? 1 : 0)),
-					v2( building->footprint.pos.x + (i%4) + 0.5f,
-						building->footprint.pos.y + (i/4) + 0.5f),
+					plantPos,
 					v2(1,1),
+					depthFromY(plantPos.y),
 					drawColor
 				);
 			}
@@ -146,13 +148,15 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
 		case FieldState_Grown: {
 			for (int32 i=0; i < fieldSize; i++) {
+				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
+					 			 building->footprint.pos.y + (i/4) + 0.5f);
 				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Crop0_3,
-					v2( building->footprint.pos.x + (i%4) + 0.5f,
-						building->footprint.pos.y + (i/4) + 0.5f),
+					plantPos,
 					v2(1,1),
+					depthFromY(plantPos.y),
 					drawColor
 				);
 			}
@@ -163,13 +167,15 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 			for (int32 i=0; i < fieldSize; i++) {
 				if (i < field->progress) continue;
 
+				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
+					 			 building->footprint.pos.y + (i/4) + 0.5f);
 				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Crop0_3,
-					v2( building->footprint.pos.x + (i%4) + 0.5f,
-						building->footprint.pos.y + (i/4) + 0.5f),
+					plantPos,
 					v2(1,1),
+					depthFromY(plantPos.y),
 					drawColor
 				);
 			}
@@ -180,7 +186,8 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 				false,
 				TextureAtlasItem_Icon_Harvesting,
 				centrePos,
-				v2(2,2)
+				v2(2,2),
+				depthFromY(centrePos.y) + 10
 			);
 		} break;
 	}

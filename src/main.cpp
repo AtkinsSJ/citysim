@@ -205,7 +205,7 @@ void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight), &renderer->theme.overlayColor);
 
 	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo,
-		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f));
+		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f), 0);
 
 	drawUiLabel(renderer, &menu->gameSetupLabel);
 	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
@@ -827,7 +827,8 @@ int main(int argc, char *argv[]) {
 					} break;
 				}
 
-				drawTextureAtlasItem(renderer, false, textureAtlasItem, v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f));
+				drawTextureAtlasItem(renderer, false, textureAtlasItem,
+					v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), 0);
 			}
 		}
 
@@ -852,7 +853,9 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
-					drawTextureAtlasItem(renderer, false, def->textureAtlasItem, centre(&building.footprint), v2(building.footprint.dim), &drawColor);
+					V2 drawPos = centre(&building.footprint);
+					drawTextureAtlasItem(renderer, false, def->textureAtlasItem,
+					 	drawPos, v2(building.footprint.dim), depthFromY(drawPos.y), &drawColor);
 				} break;
 			}
 		}
@@ -865,12 +868,14 @@ int main(int argc, char *argv[]) {
 		// Draw potatoes!
 		for (int i = 0; i < ArrayCount(city.potatoes); ++i) {
 			if (city.potatoes[i].exists) {
+				V2 drawPos = centre(&city.potatoes[i].bounds);
 				drawTextureAtlasItem(
 					renderer,
 					false,
 					TextureAtlasItem_Potato,
-					centre(&city.potatoes[i].bounds),
-					v2(1,1)
+					drawPos,
+					v2(1,1),
+					depthFromY(drawPos.y)
 				);
 			}
 		}
@@ -889,6 +894,7 @@ int main(int argc, char *argv[]) {
 				buildingDefinitions[selectedBuildingArchetype].textureAtlasItem,
 				v2(mouseTilePos),
 				v2(buildingDefinitions[selectedBuildingArchetype].size),
+				depthFromY(mouseTilePos.y) + 100,
 				&ghostColor
 			);
 		} else if (actionMode == ActionMode_Demolish
