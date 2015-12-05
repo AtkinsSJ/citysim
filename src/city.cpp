@@ -149,10 +149,6 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 		case BA_Farmhouse: {
 			city->farmhouse = building;
 		} break;
-
-		case BA_Barn: {
-			city->barns[city->barnCount++] = building;
-		} break;
 	}
 
 	for (int16 y=0; y<building->footprint.h; y++) {

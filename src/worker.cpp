@@ -217,20 +217,28 @@ void updateWorker(City *city, Worker *worker) {
 
 			// Find a storage barn!
 			Building *barn = getBuildingAtPosition(city, jobData->barnPosition);
-			if (!barn) {
-				if (city->barnCount) {
-					Building *closestBarn = 0;
-					real32 closestBarnDistance = real32Max;
+			if (!barn)
+			{
+				Building *closestBarn = 0;
+				real32 closestBarnDistance = real32Max;
 
-					for (uint32 i=0; i<city->barnCount; i++) {
-						Building *barn = city->barns[i];
-						real32 distance = v2Length(jobData->potato->bounds.pos - centre(&barn->footprint));
+				for (uint32 buildingIndex=1;
+					buildingIndex <= city->buildingCount;
+					buildingIndex++)
+				{
+					Building *building = city->buildings + buildingIndex;
+					if (building->archetype == BA_Barn)
+					{
+						real32 distance = v2Length(jobData->potato->bounds.pos - centre(&building->footprint));
 						if (distance < closestBarnDistance) {
 							closestBarnDistance = distance;
-							closestBarn = barn;
+							closestBarn = building;
 						}
 					}
+				}
 
+				if (closestBarn)
+				{
 					barn = closestBarn;
 					jobData->barnPosition = barn->footprint.pos;
 				}

@@ -126,9 +126,6 @@ struct City {
 
 	Building *farmhouse;
 
-	uint32 barnCount;
-	Building *barns[64];
-
 	// Workers!
 	uint32 workerCount;
 	Worker workers[512]; // TODO: Decide on number of workers!
