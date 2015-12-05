@@ -709,12 +709,12 @@ int main(int argc, char *argv[]) {
 					} break;
 
 					case ActionMode_None: {
-						// if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-						// 	int tileI = tileIndex(&city, mouseTilePos.x, mouseTilePos.y);
-						// 	int buildingID = city.tileBuildings[tileI];
+						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+							int tileI = tileIndex(&city, mouseTilePos.x, mouseTilePos.y);
+							int buildingID = city.tileBuildings[tileI];
 
-						// 	SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
-						// }
+							SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
+						}
 					} break;
 				}
 			}

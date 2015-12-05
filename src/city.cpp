@@ -6,7 +6,7 @@ inline void initCity(City *city, uint32 width, uint32 height, char *name, int32 
 	city->width = width;
 	city->height = height;
 	city->terrain = new Terrain[width*height]();
-	city->tileBuildings = new Building*[width*height];
+	city->tileBuildings = new uint32[width*height]();
 	city->buildingCount = 0;
 	city->buildingCountMax = ArrayCount(city->buildings);
 
@@ -33,8 +33,16 @@ inline Terrain terrainAt(City *city, int32 x, int32 y) {
 	return city->terrain[tileIndex(city, x, y)];
 }
 
+inline Building* getBuildingByID(City *city, uint32 buildingID) {
+	if (buildingID <= 0 || buildingID > city->buildingCountMax) {
+		return null;
+	}
+
+	return &(city->buildings[buildingID - 1]);
+}
+
 inline Building* getBuildingAtPosition(City *city, Coord position) {
-	return city->tileBuildings[tileIndex(city, position.x, position.y)];
+	return getBuildingByID(city, city->tileBuildings[tileIndex(city,position.x,position.y)]);
 }
 
 void generateTerrain(City *city) {
@@ -126,18 +134,19 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	ASSERT(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
 
 	// Find first free building
-	Building *building = null;
+	uint32 buildingID = 0;
 	for (uint32 i = 0; i < city->buildingCountMax; ++i) {
 		if (!city->buildings[i].exists) {
-			building = city->buildings + i;
+			buildingID = i + 1;
 			break;
 		}
 	}
 
-	ASSERT(building, "No free building! Means that the buildingCount is wrong!");
+	ASSERT(buildingID, "No free building! Means that the buildingCount is wrong!");
 
 	city->buildingCount++;
 
+	Building *building = getBuildingByID(city, buildingID);
 	BuildingDefinition *def = buildingDefinitions + archetype;
 
 	spend(city, def->buildCost);
@@ -160,7 +169,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 
 	for (int16 y=0; y<building->footprint.h; y++) {
 		for (int16 x=0; x<building->footprint.w; x++) {
-			city->tileBuildings[tileIndex(city,building->footprint.x+x,building->footprint.y+y)] = building;
+			city->tileBuildings[tileIndex(city,building->footprint.x+x,building->footprint.y+y)] = buildingID;
 		}
 	}
 	return true;
@@ -171,8 +180,11 @@ bool demolishTile(City *city, Coord position) {
 
 	uint32 posTI = tileIndex(city, position.x, position.y);
 
-	Building *building = city->tileBuildings[posTI];
-	if (building) {
+	uint32 buildingID = city->tileBuildings[posTI];
+	if (buildingID) {
+
+		Building *building = getBuildingByID(city, buildingID);
+		ASSERT(building, "Tile is storing an invalid building ID!");
 		BuildingDefinition def = buildingDefinitions[building->archetype];
 
 		// Can we afford to demolish this?
