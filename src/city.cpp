@@ -41,8 +41,8 @@ inline Building* getBuildingByID(City *city, uint32 buildingID) {
 	return &(city->buildings[buildingID - 1]);
 }
 
-inline Building* getBuildingAtPosition(City *city, int32 x, int32 y) {
-	return getBuildingByID(city, city->tileBuildings[tileIndex(city,x,y)]);
+inline Building* getBuildingAtPosition(City *city, Coord position) {
+	return getBuildingByID(city, city->tileBuildings[tileIndex(city,position.x,position.y)]);
 }
 
 void generateTerrain(City *city) {
@@ -164,12 +164,6 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 
 		case BA_Barn: {
 			city->barns[city->barnCount++] = building;
-		} break;
-
-		case BA_Field: {
-			building->field.state = FieldState_Empty;
-			building->field.progress = 0;
-
 		} break;
 	}
 

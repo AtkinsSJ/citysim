@@ -16,16 +16,16 @@ enum JobType
 
 struct JobData_Plant
 {
-	Building *field;
+	Coord fieldPosition;
 };
 struct JobData_Harvest
 {
-	Building *field;
+	Coord fieldPosition;
 };
 struct JobData_StoreCrop
 {
 	Potato *potato;
-	Building *barn;
+	Coord barnPosition;
 };
 
 struct Job

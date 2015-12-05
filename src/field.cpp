@@ -3,7 +3,7 @@
 // field.h
 
 bool plantField(City *city, Coord tilePosition) {
-	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
+	Building *building = getBuildingAtPosition(city, tilePosition);
 	if (building && building->archetype == BA_Field) {
 		if (!canAfford(city, fieldPlantCost)) {
 			pushUiMessage("Not enough money to plant this field.");
@@ -17,7 +17,7 @@ bool plantField(City *city, Coord tilePosition) {
 			building->field.progress = 0;
 			spend(city, fieldPlantCost);
 
-			addPlantJob(&city->jobBoard, building);
+			addPlantJob(&city->jobBoard, tilePosition);
 
 			return true;
 		}
@@ -28,7 +28,7 @@ bool plantField(City *city, Coord tilePosition) {
 }
 
 bool harvestField(City *city, Coord tilePosition) {
-	Building *building = getBuildingAtPosition(city, tilePosition.x, tilePosition.y);
+	Building *building = getBuildingAtPosition(city, tilePosition);
 	if (building && building->archetype == BA_Field) {
 		if (building->field.state == FieldState_Harvesting) {
 			pushUiMessage("This field is already marked for harvesting.");
@@ -41,7 +41,7 @@ bool harvestField(City *city, Coord tilePosition) {
 
 			building->field.state = FieldState_Harvesting;
 			building->field.progress = 0;
-			addHarvestJob(&city->jobBoard, building);
+			addHarvestJob(&city->jobBoard, tilePosition);
 
 			return true;
 		}

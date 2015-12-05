@@ -10,16 +10,16 @@ Job* getFreeJob(JobBoard *board) {
 	return job;
 }
 
-void addPlantJob(JobBoard *board, Building *field) {
+void addPlantJob(JobBoard *board, Coord fieldPosition) {
 	Job *job = getFreeJob(board);
 	job->type = JobType_Plant;
-	job->data_Plant.field = field;
+	job->data_Plant.fieldPosition = fieldPosition;
 }
 
-void addHarvestJob(JobBoard *board, Building *field) {
+void addHarvestJob(JobBoard *board, Coord fieldPosition) {
 	Job *job = getFreeJob(board);
 	job->type = JobType_Harvest;
-	job->data_Harvest.field = field;
+	job->data_Harvest.fieldPosition = fieldPosition;
 }
 
 void addStoreCropJob(JobBoard *board, Potato *potato) {

@@ -161,8 +161,8 @@ void updateWorker(City *city, Worker *worker) {
 	switch (worker->job.type) {
 		case JobType_Idle: {
 			 if (!worker->isAtDestination && city->farmhouse) {
-				// Slowly wander back to the farmhouse
-				workerMoveTo(worker, realRect(city->farmhouse->footprint), 0.5f);
+				// Walk back to the farmhouse
+				workerMoveTo(worker, realRect(city->farmhouse->footprint));
 			}
 		} break;
 
@@ -170,19 +170,21 @@ void updateWorker(City *city, Worker *worker) {
 			JobData_Plant *jobData = &worker->job.data_Plant;
 
 			// Check job is valid
-			if (!jobData->field->exists
-				|| jobData->field->archetype != BA_Field
-				|| jobData->field->field.state != FieldState_Planting) {
+			Building *field = getBuildingAtPosition(city, jobData->fieldPosition);
+			if (!field
+				|| !field->exists
+				|| field->archetype != BA_Field
+				|| field->field.state != FieldState_Planting) {
 
 				endJob(worker);
 			} else { // Job is valid, yay!
 
 				if (worker->isAtDestination) {
-					if (doPlantingWork(worker, &jobData->field->field)) {
+					if (doPlantingWork(worker, &field->field)) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, realRect(jobData->field->footprint));
+					workerMoveTo(worker, realRect(field->footprint));
 				}
 			}
 			
@@ -192,18 +194,20 @@ void updateWorker(City *city, Worker *worker) {
 			JobData_Harvest *jobData = &worker->job.data_Harvest;
 
 			// Check job is valid
-			if (!jobData->field->exists
-				|| jobData->field->archetype != BA_Field
-				|| jobData->field->field.state != FieldState_Harvesting) {
+			Building *field = getBuildingAtPosition(city, jobData->fieldPosition);
+			if (!field
+				|| !field->exists
+				|| field->archetype != BA_Field
+				|| field->field.state != FieldState_Harvesting) {
 
 				endJob(worker);
 			} else { // Job is valid, yay!
 				if (worker->isAtDestination) {
-					if (doHarvestingWork(city, worker, jobData->field)) {
+					if (doHarvestingWork(city, worker, field)) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, realRect(jobData->field->footprint));
+					workerMoveTo(worker, realRect(field->footprint));
 				}
 			}
 		} break;
@@ -212,7 +216,8 @@ void updateWorker(City *city, Worker *worker) {
 			JobData_StoreCrop *jobData = &worker->job.data_StoreCrop;
 
 			// Find a storage barn!
-			if (!jobData->barn) {
+			Building *barn = getBuildingAtPosition(city, jobData->barnPosition);
+			if (!barn) {
 				if (city->barnCount) {
 					Building *closestBarn = 0;
 					real32 closestBarnDistance = real32Max;
@@ -226,11 +231,12 @@ void updateWorker(City *city, Worker *worker) {
 						}
 					}
 
-					jobData->barn = closestBarn;
+					barn = closestBarn;
+					jobData->barnPosition = barn->footprint.pos;
 				}
 			}
 
-			if (jobData->barn) {
+			if (barn) {
 				if (worker->isCarryingPotato) {
 					if (worker->isAtDestination) {
 						// Deposit potato for fun and profit
@@ -239,7 +245,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 
 					} else {
-						workerMoveTo(worker, realRect(jobData->barn->footprint));
+						workerMoveTo(worker, realRect(barn->footprint));
 					}
 				} else {
 					if (worker->isAtDestination) {
@@ -253,6 +259,7 @@ void updateWorker(City *city, Worker *worker) {
 					}
 				}
 			} else {
+				worker->isMoving = false;
 				pushUiMessage("Construct a barn to store harvested crops!");
 			}
 		} break;
@@ -288,6 +295,8 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 	V2 drawPos = worker->pos;
 
 	// Interpolate position!
+	// FIXME: Workers teleport if their destination is changed, because our interpolation is then undone!
+	// We really need a proper system for motion where the workers actually move.
 	if (worker->isMoving) {
 		worker->movementInterpolation += daysPerFrame;
 		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
