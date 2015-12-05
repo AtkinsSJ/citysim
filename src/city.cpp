@@ -140,7 +140,6 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	spend(city, def->buildCost);
 
 	*building = {};
-	building->exists = true;
 	building->archetype = archetype;
 	building->footprint = irectCentreWH(position, def->width, def->height);
 
@@ -214,7 +213,6 @@ bool demolishTile(City *city, Coord position) {
 		if (buildingID != city->buildingCount)
 		{
 			Building *highest = getBuildingByID(city, city->buildingCount);
-			ASSERT(highest->exists, "Highest building doesn't exist! Something is wrong.");
 
 			// Change all references to highest building
 			for (int32 y = highest->footprint.y;
@@ -268,9 +266,8 @@ int32 calculateDemolitionCost(City *city, Rect rect) {
 
 	// We want to only get the cost of each building once.
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
-	for (uint16 i=0; i<city->buildingCountMax; i++) {
+	for (uint32 i=1; i<=city->buildingCount; i++) {
 		Building building = city->buildings[i];
-		if (!building.exists) continue;
 		if (rectsOverlap(building.footprint, rect)) {
 			total += buildingDefinitions[building.archetype].demolishCost;
 		}

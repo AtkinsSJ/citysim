@@ -172,7 +172,6 @@ void updateWorker(City *city, Worker *worker) {
 			// Check job is valid
 			Building *field = getBuildingAtPosition(city, jobData->fieldPosition);
 			if (!field
-				|| !field->exists
 				|| field->archetype != BA_Field
 				|| field->field.state != FieldState_Planting) {
 
@@ -196,7 +195,6 @@ void updateWorker(City *city, Worker *worker) {
 			// Check job is valid
 			Building *field = getBuildingAtPosition(city, jobData->fieldPosition);
 			if (!field
-				|| !field->exists
 				|| field->archetype != BA_Field
 				|| field->field.state != FieldState_Harvesting) {
 

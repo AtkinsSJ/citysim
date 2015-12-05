@@ -70,7 +70,6 @@ struct FieldData {
 };
 
 struct Building {
-	bool exists;
 	BuildingArchetype archetype;
 	Rect footprint;
 	union {

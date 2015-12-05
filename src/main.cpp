@@ -566,7 +566,6 @@ int main(int argc, char *argv[]) {
 			for (uint32 i = 1; i <= city.buildingCount; i++)
 			{
 				Building *building = city.buildings + i;
-				ASSERT(building->exists, "Building array is corrupted!");
 				switch (building->archetype)
 				{
 					case BA_Field: {
@@ -818,7 +817,6 @@ int main(int argc, char *argv[]) {
 		for (uint16 i=1; i<=city.buildingCount; i++)
 		{
 			Building building = city.buildings[i];
-			ASSERT(building.exists, "Building array is corrupted!");
 
 			BuildingDefinition *def = buildingDefinitions + building.archetype;
 
