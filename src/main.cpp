@@ -563,17 +563,15 @@ int main(int argc, char *argv[]) {
 		if (calendarChange.isNewDay) {
 
 			// Buildings
-			for (int i = 0; i < ArrayCount(city.buildings); i++)
+			for (uint32 i = 1; i <= city.buildingCount; i++)
 			{
 				Building *building = city.buildings + i;
-				if (building->exists) 
+				ASSERT(building->exists, "Building array is corrupted!");
+				switch (building->archetype)
 				{
-					switch (building->archetype)
-					{
-						case BA_Field: {
-							updateField(&building->field);
-						} break;
-					}
+					case BA_Field: {
+						updateField(&building->field);
+					} break;
 				}
 			}
 
@@ -817,9 +815,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw buildings
-		for (uint16 i=0; i<city.buildingCountMax; i++) {
+		for (uint16 i=1; i<=city.buildingCount; i++)
+		{
 			Building building = city.buildings[i];
-			if (!building.exists) continue;
+			ASSERT(building.exists, "Building array is corrupted!");
 
 			BuildingDefinition *def = buildingDefinitions + building.archetype;
 

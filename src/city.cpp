@@ -38,7 +38,7 @@ inline Building* getBuildingByID(City *city, uint32 buildingID) {
 		return null;
 	}
 
-	return &(city->buildings[buildingID - 1]);
+	return &(city->buildings[buildingID]);
 }
 
 inline Building* getBuildingAtPosition(City *city, Coord position) {
@@ -133,19 +133,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 
 	ASSERT(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
 
-	// Find first free building
-	uint32 buildingID = 0;
-	for (uint32 i = 0; i < city->buildingCountMax; ++i) {
-		if (!city->buildings[i].exists) {
-			buildingID = i + 1;
-			break;
-		}
-	}
-
-	ASSERT(buildingID, "No free building! Means that the buildingCount is wrong!");
-
-	city->buildingCount++;
-
+	uint32 buildingID = ++city->buildingCount;
 	Building *building = getBuildingByID(city, buildingID);
 	BuildingDefinition *def = buildingDefinitions + archetype;
 
@@ -207,10 +195,6 @@ bool demolishTile(City *city, Coord position) {
 				city->tileBuildings[tileIndex(city, x, y)] = 0;
 			}
 		}
-		// Mark the building as non-existent, then next time we create a new building,
-		// we'll find the first non-existent building to replace!
-		building->exists = false;
-		city->buildingCount--;
 
 		// Clear the building's data
 		switch (building->archetype) {
@@ -218,16 +202,42 @@ bool demolishTile(City *city, Coord position) {
 				city->farmhouse = null;
 			} break;
 
-			case BA_Barn: {
-				for (uint32 i=0; i<city->barnCount; i++) {
-					if (city->barns[i] == building) {
-						// Take the last building and move it to position 'i'
-						city->barns[i] = city->barns[--city->barnCount];
-						break;
-					}
-				}
-			} break;
+			// case BA_Barn: {
+			// 	for (uint32 i=0; i<city->barnCount; i++) {
+			// 		if (city->barns[i] == building) {
+			// 			// Take the last barn and move it to position 'i'
+			// 			city->barns[i] = city->barns[--city->barnCount];
+			// 			break;
+			// 		}
+			// 	}
+			// } break;
 		}
+
+		// Overwrite the building record with the highest one
+		// Unless it *IS* the highest one!
+		if (buildingID != city->buildingCount)
+		{
+			Building *highest = getBuildingByID(city, city->buildingCount);
+			ASSERT(highest->exists, "Highest building doesn't exist! Something is wrong.");
+
+			// Change all references to highest building
+			for (int32 y = highest->footprint.y;
+				y < highest->footprint.y + highest->footprint.h;
+				y++) {
+
+				for (int32 x = highest->footprint.x;
+					x < highest->footprint.x + highest->footprint.w;
+					x++) {
+
+					city->tileBuildings[tileIndex(city, x, y)] = buildingID;
+				}
+			}
+
+			// Move it!
+			*building = *highest;
+			*highest = {};
+		}
+		city->buildingCount--;
 
 		return true;
 

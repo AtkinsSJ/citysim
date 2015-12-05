@@ -122,8 +122,7 @@ struct City {
 	uint32 buildingCountMax;
 	Building buildings[256]; // TODO: Make the number of buildings unlimited!
 	uint32 *tileBuildings; // Map from x,y -> building id at that location.
-	// Building IDs are 1-indexed (0 meaning null), however they're still stored
-	// from position 0!
+	// Building IDs are 1-indexed (0 meaning null).
 
 	Building *farmhouse;
 
