@@ -2,6 +2,9 @@
 TODO:
 ---------------------------------------------
 
+BUGS:
+- When demolishing barns, workers en route sometimes lose their potato?
+
 Rendering 2.0:
 - Stop passing a size to drawSprite()! Will always draw at a consistent size.
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
