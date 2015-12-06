@@ -9,8 +9,6 @@ inline void initCity(City *city, uint32 width, uint32 height, char *name, int32 
 	city->tileBuildings = new uint32[width*height]();
 	city->buildingCount = 0;
 	city->buildingCountMax = ArrayCount(city->buildings);
-
-	city->farmhouse = null;
 }
 
 inline void freeCity(City *city) {
@@ -61,20 +59,26 @@ void generateTerrain(City *city) {
 	}
 }
 
-bool canAfford(City *city, int32 cost) {
+bool canAfford(City *city, int32 cost)
+{
 	return city->funds >= cost;
 }
 
-void spend(City *city, int32 cost) {
+void spend(City *city, int32 cost)
+{
 	city->funds -= cost;
 }
 
 bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
-	bool isAttemptingToBuild = false) {
+	bool isAttemptingToBuild = false)
+{
 
 	// Only allow one farmhouse!
-	if (selectedBuildingArchetype == BA_Farmhouse && city->farmhouse) {
-		if (isAttemptingToBuild) {
+	if (selectedBuildingArchetype == BA_Farmhouse
+		&& city->firstBuildingOfType[BA_Farmhouse])
+	{
+		if (isAttemptingToBuild)
+		{
 			pushUiMessage("You can only have one farmhouse!");
 		}
 		return false;
@@ -83,8 +87,10 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
 	// Can we afford to build this?
-	if (!canAfford(city, def.buildCost)) {
-		if (isAttemptingToBuild) {
+	if (!canAfford(city, def.buildCost))
+	{
+		if (isAttemptingToBuild)
+		{
 			pushUiMessage("Not enough money to build this.");
 		}
 		return false;
@@ -93,26 +99,34 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	Rect footprint = irectCentreWH(position, def.width, def.height);
 
 	// Are we in bounds?
-	if (!rectInRect({0,0, city->width, city->height}, footprint)) {
-		if (isAttemptingToBuild) {
+	if (!rectInRect({0,0, city->width, city->height}, footprint))
+	{
+		if (isAttemptingToBuild)
+		{
 			pushUiMessage("You cannot build there.");
 		}
 		return false;
 	}
 
 	// Check terrain is buildable and empty
-	for (int32 y=0; y<def.height; y++) {
-		for (int32 x=0; x<def.width; x++) {
+	for (int32 y=0; y<def.height; y++)
+	{
+		for (int32 x=0; x<def.width; x++)
+		{
 			uint32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
-			if (city->terrain[ti] != Terrain_Ground) {
-				if (isAttemptingToBuild) {
+			if (city->terrain[ti] != Terrain_Ground)
+			{
+				if (isAttemptingToBuild)
+				{
 					pushUiMessage("You cannot build there.");
 				}
 				return false;
 			}
 
-			if (city->tileBuildings[ti] != 0) {
-				if (isAttemptingToBuild) {
+			if (city->tileBuildings[ti] != 0)
+			{
+				if (isAttemptingToBuild)
+				{
 					pushUiMessage("You cannot overlap buildings.");
 				}
 				return false;
@@ -143,13 +157,22 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	building->archetype = archetype;
 	building->footprint = irectCentreWH(position, def->width, def->height);
 
-	// Building-specific stuff
-	switch (archetype) {
-		case BA_Farmhouse: {
-			city->farmhouse = building;
-		} break;
+	// Update the building-by-type lists
+	Building *firstOfType = city->firstBuildingOfType[archetype];
+	if (firstOfType)
+	{
+		building->nextOfType = firstOfType;
+		building->prevOfType = firstOfType->prevOfType;
+
+		building->prevOfType->nextOfType = building->nextOfType->prevOfType = building;
+	}
+	else
+	{
+		// We are the only building of this type
+		city->firstBuildingOfType[archetype] = building->nextOfType = building->prevOfType = building;
 	}
 
+	// Tiles
 	for (int16 y=0; y<building->footprint.h; y++) {
 		for (int16 x=0; x<building->footprint.w; x++) {
 			city->tileBuildings[tileIndex(city,building->footprint.x+x,building->footprint.y+y)] = buildingID;
@@ -191,21 +214,21 @@ bool demolishTile(City *city, Coord position) {
 			}
 		}
 
-		// Clear the building's data
-		switch (building->archetype) {
-			case BA_Farmhouse: {
-				city->farmhouse = null;
-			} break;
+		// Remove the building from its type list
+		if (building == building->nextOfType)
+		{
+			// Only one of type!
+			city->firstBuildingOfType[building->archetype] = null;
+		}
+		else
+		{
+			if (building == city->firstBuildingOfType[building->archetype])
+			{
+				city->firstBuildingOfType[building->archetype] = building->nextOfType;
+			}
 
-			// case BA_Barn: {
-			// 	for (uint32 i=0; i<city->barnCount; i++) {
-			// 		if (city->barns[i] == building) {
-			// 			// Take the last barn and move it to position 'i'
-			// 			city->barns[i] = city->barns[--city->barnCount];
-			// 			break;
-			// 		}
-			// 	}
-			// } break;
+			building->prevOfType->nextOfType = building->nextOfType;
+			building->nextOfType->prevOfType = building->prevOfType;
 		}
 
 		// Overwrite the building record with the highest one
@@ -229,6 +252,19 @@ bool demolishTile(City *city, Coord position) {
 
 			// Move it!
 			*building = *highest;
+
+			// Update the of-type list
+			if (highest == city->firstBuildingOfType[building->archetype])
+			{
+				city->firstBuildingOfType[building->archetype] = building;
+				building->nextOfType = building->prevOfType = building;
+			}
+			else
+			{
+				building->prevOfType->nextOfType = building;
+				building->nextOfType->prevOfType = building;
+			}
+
 			*highest = {};
 		}
 		city->buildingCount--;

@@ -645,8 +645,8 @@ int main(int argc, char *argv[]) {
 			if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
 				renderer->worldCamera.zoom = 1;
 				// Jump to the farmhouse if we have one!
-				if (city.farmhouse) {
-					renderer->worldCamera.pos = centre(&city.farmhouse->footprint);
+				if (city.firstBuildingOfType[BA_Farmhouse]) {
+					renderer->worldCamera.pos = centre(&city.firstBuildingOfType[BA_Farmhouse]->footprint);
 				} else {
 					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
 				}

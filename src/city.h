@@ -75,6 +75,8 @@ struct Building {
 	union {
 		FieldData field;
 	};
+	Building *prevOfType;
+	Building *nextOfType;
 };
 const int32 fieldPlantCost = 500;
 const int fieldWidth = 4;
@@ -123,7 +125,7 @@ struct City {
 	uint32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
 
-	Building *farmhouse;
+	Building *firstBuildingOfType[BA_Count];
 
 	// Workers!
 	uint32 workerCount;

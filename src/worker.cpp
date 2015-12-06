@@ -3,7 +3,7 @@
 // worker.cpp
 
 bool hireWorker(City *city, V2 position) {
-	if (!city->farmhouse) {
+	if (!city->firstBuildingOfType[BA_Farmhouse]) {
 		pushUiMessage("You need a headquarters to hire workers.");
 		return false;
 	}
@@ -160,9 +160,9 @@ void updateWorker(City *city, Worker *worker) {
 
 	switch (worker->job.type) {
 		case JobType_Idle: {
-			 if (!worker->isAtDestination && city->farmhouse) {
+			 if (!worker->isAtDestination && city->firstBuildingOfType[BA_Farmhouse]) {
 				// Walk back to the farmhouse
-				workerMoveTo(worker, realRect(city->farmhouse->footprint));
+				workerMoveTo(worker, realRect(city->firstBuildingOfType[BA_Farmhouse]->footprint));
 			}
 		} break;
 
@@ -217,21 +217,23 @@ void updateWorker(City *city, Worker *worker) {
 			Building *barn = getBuildingAtPosition(city, jobData->barnPosition);
 			if (!barn)
 			{
-				Building *closestBarn = 0;
+				Building *closestBarn = null;
 				real32 closestBarnDistance = real32Max;
 
-				for (uint32 buildingIndex=1;
-					buildingIndex <= city->buildingCount;
-					buildingIndex++)
+				for (Building *currentBarn = city->firstBuildingOfType[BA_Barn];
+					currentBarn; // Should only be null if no barns exist!
+					currentBarn = currentBarn->nextOfType)
 				{
-					Building *building = city->buildings + buildingIndex;
-					if (building->archetype == BA_Barn)
+					real32 distance = v2Length(jobData->potato->bounds.pos - centre(&currentBarn->footprint));
+					if (distance < closestBarnDistance) {
+						closestBarnDistance = distance;
+						closestBarn = currentBarn;
+					}
+
+					// Stop when we hit the first one again
+					if (currentBarn->nextOfType == city->firstBuildingOfType[BA_Barn])
 					{
-						real32 distance = v2Length(jobData->potato->bounds.pos - centre(&building->footprint));
-						if (distance < closestBarnDistance) {
-							closestBarnDistance = distance;
-							closestBarn = building;
-						}
+						break;
 					}
 				}
 
