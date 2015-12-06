@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
 
 #ifdef __linux__
@@ -27,6 +26,7 @@ enum GameStatus {
 };
 
 #include "types.h"
+#include "memory.h"
 #include "platform.h"
 #include "maths.h"
 #include "render_gl.h"
@@ -319,8 +319,15 @@ int main(int argc, char *argv[]) {
 	if (argc && argv) {}
 
 // INIT
+	memory_arena MemoryArena;
+	if (!InitMemoryArena(&MemoryArena, MB(128)))
+	{
+		printf("Failed to allocate memory!");
+		return 1;
+	}
+
 	const char gameName[] = "Potato Farming Manager 2000";
-	GLRenderer *renderer = initializeRenderer(gameName);
+	GLRenderer *renderer = initializeRenderer(&MemoryArena, gameName);
 	if (!renderer) {
 		return 1;
 	}

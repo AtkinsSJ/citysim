@@ -1,13 +1,15 @@
 // render_gl.cpp
 
-GLRenderer *initializeRenderer(const char *windowTitle)
+GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *WindowTitle)
 {
-	TexturesToLoad *texturesToLoad = (TexturesToLoad *) calloc(1, sizeof(TexturesToLoad));
-	GLRenderer *renderer = (GLRenderer *)calloc(1, sizeof(GLRenderer));
+	GLRenderer *renderer = PushStruct(MemoryArena, GLRenderer);
+	renderer->RenderArena = AllocateSubArena(MemoryArena, MB(64));
 
-	renderer->worldBuffer.sprites = (Sprite *)malloc(WORLD_SPRITE_MAX * sizeof(Sprite));
+	TexturesToLoad *texturesToLoad = PushStruct(&renderer->RenderArena, TexturesToLoad);
+
+	renderer->worldBuffer.sprites = PushArray(&renderer->RenderArena, Sprite, WORLD_SPRITE_MAX);
 	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
-	renderer->uiBuffer.sprites    = (Sprite *)malloc(UI_SPRITE_MAX * sizeof(Sprite));
+	renderer->uiBuffer.sprites    = PushArray(&renderer->RenderArena, Sprite, UI_SPRITE_MAX);
 	renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
 
 	// SDL
@@ -31,7 +33,7 @@ GLRenderer *initializeRenderer(const char *windowTitle)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	// Window
-	renderer->window = SDL_CreateWindow(windowTitle,
+	renderer->window = SDL_CreateWindow(WindowTitle,
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 					800, 600, // Initial screen resolution
 					SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
@@ -278,7 +280,7 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
 	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
 
-	Texture *textures = (Texture *) calloc(texturesToLoad->count, sizeof(Texture));
+	Texture *textures = PushArray(&renderer->RenderArena, Texture, texturesToLoad->count);
 
 	renderer->textureArrayID = 0;
 	glGenTextures(1, &renderer->textureArrayID);

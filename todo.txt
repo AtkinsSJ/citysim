@@ -19,6 +19,8 @@ Asset packing:
 - Store TextureRegion information in a little binary file
 - Read data from these rather than hard-coded filenames
 
+Immediate Mode UI:
+- No more BitmapFontCachedText and its related memory allocation! 
 
 - Simulation
 	- Per-tile humidity

@@ -177,6 +177,8 @@ struct RenderBuffer
 
 struct GLRenderer
 {
+	memory_arena RenderArena;
+	
 	SDL_Window *window;
 	SDL_GLContext context;
 
@@ -244,7 +246,7 @@ inline void checkForGLError()
 	ASSERT(errorCode == 0, "GL Error: %d", errorCode);
 }
 
-GLRenderer *initializeRenderer(const char *gameName);
+GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *GameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
 bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad);
