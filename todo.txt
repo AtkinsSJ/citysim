@@ -20,7 +20,8 @@ Asset packing:
 - Read data from these rather than hard-coded filenames
 
 Immediate Mode UI:
-- No more BitmapFontCachedText and its related memory allocation! 
+- No more BitmapFontCachedText and its related memory allocation!
+- Generally, things will be much simpler.
 
 - Simulation
 	- Per-tile humidity
