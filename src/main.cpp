@@ -42,75 +42,6 @@ enum GameStatus {
 #include "field.cpp"
 #include "worker.cpp"
 
-void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState,
-					int32 cityWidth, int32 cityHeight) // City size in tiles
-{ 
-	// Zooming
-	if (canZoom && mouseState->wheelY) {
-		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera->zoom = clamp(round(10 * camera->zoom - mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
-	}
-
-	// Panning
-	real32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
-	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE))
-	{
-		// Click-panning!
-		float scale = scrollSpeed * 0.01f;
-		Coord clickStartPos = mouseState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos += (v2(mouseState->pos) - v2(clickStartPos)) * scale;
-	}
-	else
-	{
-		if (keyboardState->down[SDL_SCANCODE_LEFT]
-			|| keyboardState->down[SDL_SCANCODE_A]
-			|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN))
-		{
-			camera->pos.x -= scrollSpeed;
-		}
-		else if (keyboardState->down[SDL_SCANCODE_RIGHT]
-			|| keyboardState->down[SDL_SCANCODE_D]
-			|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
-		{
-			camera->pos.x += scrollSpeed;
-		}
-
-		if (keyboardState->down[SDL_SCANCODE_UP]
-			|| keyboardState->down[SDL_SCANCODE_W]
-			|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN))
-		{
-			camera->pos.y -= scrollSpeed;
-		}
-		else if (keyboardState->down[SDL_SCANCODE_DOWN]
-			|| keyboardState->down[SDL_SCANCODE_S]
-			|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
-		{
-			camera->pos.y += scrollSpeed;
-		}
-	}
-
-	// Clamp camera
-	real32 scale = TILE_SIZE / camera->zoom;
-	real32 cityPixelWidth = cityWidth * scale,
-			cityPixelHeight = cityHeight * scale;
-
-	if (cityPixelWidth < camera->windowWidth) {
-		// City smaller than camera, so centre on it
-		camera->pos.x = cityWidth * 0.5f;
-	} else {
-		real32 minX = ((real32)camera->windowWidth/(2.0f * scale)) - CAMERA_MARGIN;
-		camera->pos.x = clamp( camera->pos.x, minX, cityWidth - minX );
-	}
-
-	if (cityPixelHeight < camera->windowHeight) {
-		// City smaller than camera, so centre on it
-		camera->pos.y = cityHeight * 0.5f;
-	} else {
-		real32 minY = ((real32)camera->windowHeight/(2.0f * scale)) - CAMERA_MARGIN;
-		camera->pos.y = clamp( camera->pos.y, minY, cityHeight - minY );
-	}
-}
-
 enum ActionMode {
 	ActionMode_None = 0,
 
@@ -125,193 +56,32 @@ enum ActionMode {
 
 const int gameStartFunds = 10000;
 const int gameWinFunds = 30000;
+#include "game_ui.cpp"
 
-void showCostTooltip(Tooltip *tooltip, GLRenderer *renderer, int32 cost, int32 cityFunds) {
-	if (cost > cityFunds) {
-		tooltip->label.color = &renderer->theme.tooltipColorBad;
-	} else {
-		tooltip->label.color = &renderer->theme.tooltipColorNormal;
-	}
-	sprintf(tooltip->buffer, "-£%d", cost);
-	setUiLabelText(&tooltip->label, tooltip->buffer);
-	tooltip->show = true;
-}
-
-const real32 uiPadding = 4;
-
-struct MainMenuUI {
-	UiLabel cityNameEntryLabel,
-			gameSetupLabel,
-			gameRulesWinLoseLabel,
-			gameRulesWorkersLabel;
-	UiButton buttonStart,
-			buttonExit,
-			buttonWebsite;
+struct GameState
+{
+	City city;
+	Calendar calendar;
 };
-void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
-
-	*menu = {};
-	V2 screenCentre = v2(renderer->worldCamera.windowSize) / 2.0f;
-	
-	initUiLabel(&menu->gameSetupLabel, screenCentre - v2(0, 50), ALIGN_CENTER,
-				"Type a name for your farm, then click on 'Play'.", renderer->theme.font,
-				&renderer->theme.labelColor);
-	initUiLabel(&menu->cityNameEntryLabel, screenCentre, ALIGN_CENTER, cityName,
-				renderer->theme.font, &renderer->theme.textboxTextColor,
-				&renderer->theme.textboxBackgroundColor, 4.0f);
-
-	char tempBuffer[256];
-	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
-	initUiLabel(&menu->gameRulesWinLoseLabel, screenCentre + v2(0, 50), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, &renderer->theme.labelColor);
-
-	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
-	initUiLabel(&menu->gameRulesWorkersLabel, screenCentre + v2(0, 100), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, &renderer->theme.labelColor);
-
-	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
-	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
-	buttonRect.x = screenCentre.x - buttonRect.w/2;
-	initUiButton(&menu->buttonWebsite, renderer, buttonRect, "Website");
-	buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
-	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
-}
-void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
-	drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight), &renderer->theme.overlayColor);
-
-	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo,
-		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f), 0);
-
-	drawUiLabel(renderer, &menu->gameSetupLabel);
-	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
-	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
-
-	drawUiLabel(renderer, &menu->cityNameEntryLabel);
-
-	drawUiButton(renderer, &menu->buttonExit);
-	drawUiButton(renderer, &menu->buttonWebsite);
-	drawUiButton(renderer, &menu->buttonStart);
-}
-
-struct CalendarUI {
-	Calendar *calendar;
-	UiButtonGroup buttonGroup;
-	UiButton buttonPause,
-			*buttonPlaySlow,
-			*buttonPlayMedium,
-			*buttonPlayFast;
-	UiLabel labelDate;
-	char dateStringBuffer[50];
-};
-void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
-
-	*ui = {};
-	ui->calendar = calendar;
-
-	V2 textPosition = v2(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
-	getDateString(calendar, ui->dateStringBuffer);
-	initUiLabel(&ui->labelDate, textPosition, ALIGN_RIGHT | ALIGN_TOP,
-				ui->dateStringBuffer, renderer->theme.font, &renderer->theme.labelColor);
-
-	const real32 buttonSize = 24;
-	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
-								buttonSize, buttonSize);
-	ui->buttonPlayFast = addButtonToGroup(&ui->buttonGroup);
-	initUiButton(ui->buttonPlayFast, renderer, buttonRect, ">>>");
-
-	buttonRect.x -= buttonSize + uiPadding;
-	ui->buttonPlayMedium = addButtonToGroup(&ui->buttonGroup);
-	initUiButton(ui->buttonPlayMedium, renderer, buttonRect, ">>");
-
-	buttonRect.x -= buttonSize + uiPadding;
-	ui->buttonPlaySlow = addButtonToGroup(&ui->buttonGroup);
-	initUiButton(ui->buttonPlaySlow, renderer, buttonRect, ">");
-
-	buttonRect.x -= buttonSize + uiPadding;
-	initUiButton(&ui->buttonPause, renderer, buttonRect, "||", SDL_SCANCODE_SPACE, "(Space)");
-
-	switch (ui->calendar->speed) {
-		case Speed1: {
-			setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
-		} break;
-		case Speed2: {
-			setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
-		} break;
-		case Speed3: {
-			setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
-		} break;
-	}
-}
-bool updateCalendarUI(CalendarUI *ui, GLRenderer *renderer, Tooltip *tooltip,
-					MouseState *mouseState, KeyboardState *keyboardState,
-					CalendarChange *change) {
-
-	bool buttonAteMouseEvent = false;
-
-	if (updateUiButtonGroup(renderer, tooltip, &ui->buttonGroup, mouseState, keyboardState)
-		|| updateUiButton(renderer, tooltip, &ui->buttonPause, mouseState, keyboardState) ) {
-		buttonAteMouseEvent = true;
-	}
-
-	// Speed controls
-#if 0
-	int32 speedChange = 0;
-	if (keyJustPressed(keyboardState, SDL_GetScancodeFromKey(SDLK_MINUS))) {
-		if (ui->calendar->speed > Speed1) {
-			speedChange = -1;
-		}
-	} else if (keyJustPressed(keyboardState, SDL_GetScancodeFromKey(SDLK_PLUS))) {
-		if (ui->calendar->speed < Speed3) {
-			speedChange = 1;
-		}
-	}
-	if (speedChange) {
-		ui->calendar->speed = (CalendarSpeed)(ui->calendar->speed + speedChange);
-		switch (ui->calendar->speed) {
-			case Speed1: {
-				setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
-			} break;
-			case Speed2: {
-				setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
-			} break;
-			case Speed3: {
-				setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
-			} break;
-		}
-	}
-#endif
-	if (ui->buttonPause.justClicked) {
-		ui->calendar->paused = !ui->calendar->paused;
-	} else if (ui->buttonPlaySlow->justClicked) {
-		ui->calendar->paused = false;
-		ui->calendar->speed = Speed1;
-	} else if (ui->buttonPlayMedium->justClicked) {
-		ui->calendar->paused = false;
-		ui->calendar->speed = Speed2;
-	} else if (ui->buttonPlayFast->justClicked) {
-		ui->calendar->paused = false;
-		ui->calendar->speed = Speed3;
-	}
-	ui->buttonPause.active = ui->calendar->paused;
-
-	if (change->isNewDay) {
-		getDateString(ui->calendar, ui->dateStringBuffer);
-		setUiLabelText(&ui->labelDate, ui->dateStringBuffer);
-	}
-
-	return buttonAteMouseEvent;
-}
 
 // This is less 'start game' and more 'reset the map and everything so we can show 
 // an empty map in the background of the menu'. But also does resetting of things for when you
 // click 'Play'. This code is madness, basically.
-void startGame(City *city, Calendar *calendar, char *cityName) {
+GameState *startGame(MemoryArena *gameArena, char *cityName)
+{
+	GameState *result = 0;
+
 	srand(0); // TODO: Seed the random number generator!
+	ResetMemoryArena(gameArena);
 
-	initCity(city, 100,100, cityName, gameStartFunds);
-	generateTerrain(city);
+	result = PushStruct(gameArena, GameState);
 
-	initCalendar(calendar);
+	initCity(gameArena, &result->city, 100,100, cityName, gameStartFunds);
+	generateTerrain(&result->city);
+
+	initCalendar(&result->calendar);
+
+	return result;
 }
 
 int main(int argc, char *argv[]) {
@@ -319,15 +89,15 @@ int main(int argc, char *argv[]) {
 	if (argc && argv) {}
 
 // INIT
-	memory_arena MemoryArena;
-	if (!InitMemoryArena(&MemoryArena, MB(128)))
+	MemoryArena memoryArena;
+	if (!initMemoryArena(&memoryArena, MB(128)))
 	{
 		printf("Failed to allocate memory!");
 		return 1;
 	}
 
 	const char gameName[] = "Potato Farming Manager 2000";
-	GLRenderer *renderer = initializeRenderer(&MemoryArena, gameName);
+	GLRenderer *renderer = initializeRenderer(&memoryArena, gameName);
 	if (!renderer) {
 		return 1;
 	}
@@ -343,6 +113,7 @@ int main(int argc, char *argv[]) {
 	SDL_SetCursor(cursorMain);
 
 // Game setup
+	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));
 
 	char cityName[256] = {};
 	sprintf(cityName, "My Farm");
@@ -350,9 +121,7 @@ int main(int argc, char *argv[]) {
 	int32 cityNameLength = strlen(cityName);
 	bool cityNameTextDirty = true;
 	
-	City city;
-	Calendar calendar;
-	startGame(&city, &calendar, cityName);
+	GameState *gameState = startGame(&gameArena, cityName);
 
 // GAME LOOP
 	bool quit = false;
@@ -367,7 +136,7 @@ int main(int argc, char *argv[]) {
 
 	renderer->worldCamera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer->window, &renderer->worldCamera.windowWidth, &renderer->worldCamera.windowHeight);
-	renderer->worldCamera.pos = v2(city.width/2, city.height/2);
+	renderer->worldCamera.pos = v2(gameState->city.width/2, gameState->city.height/2);
 	renderer->uiBuffer.projectionMatrix = orthographicMatrix4(
 		0, (GLfloat) renderer->worldCamera.windowWidth,
 		0, (GLfloat) renderer->worldCamera.windowHeight,
@@ -385,18 +154,18 @@ int main(int argc, char *argv[]) {
 	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 	V2 textPosition = v2(8,4);
 	UiLabel textCityName;
-	initUiLabel(&textCityName, textPosition, ALIGN_LEFT | ALIGN_TOP, city.name,
+	initUiLabel(&textCityName, textPosition, ALIGN_LEFT | ALIGN_TOP, gameState->city.name,
 				renderer->theme.font, &renderer->theme.labelColor);
 
 	textPosition.x = 800 / 2 - 100;
 	UiIntLabel labelCityFunds;
 	initUiIntLabel(&labelCityFunds, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, &renderer->theme.labelColor, &city.funds, "£%d");
+				renderer->theme.font, &renderer->theme.labelColor, &gameState->city.funds, "£%d");
 
 	textPosition.x = 800 / 2 + 100;
 	UiIntLabel labelMonthlyExpenditure;
 	initUiIntLabel(&labelMonthlyExpenditure, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, &renderer->theme.labelColor, &city.monthlyExpenditure, "(-£%d/month)");
+				renderer->theme.font, &renderer->theme.labelColor, &gameState->city.monthlyExpenditure, "(-£%d/month)");
 
 	initUiMessage(renderer);
 
@@ -408,7 +177,7 @@ int main(int argc, char *argv[]) {
 
 	// CALENDAR
 	CalendarUI calendarUI;
-	initCalendarUI(&calendarUI, renderer, &calendar);
+	initCalendarUI(&calendarUI, renderer, &gameState->calendar);
 
 	// ACTION BUTTONS
 	UiButtonGroup actionButtonGroup = {};
@@ -551,7 +320,7 @@ int main(int argc, char *argv[]) {
 
 		// Janky way of pausing when the game ends.
 		if (gameStatus != GameStatus_Playing) {
-			calendar.paused = true;
+			gameState->calendar.paused = true;
 
 			// Highlight the pause button!
 			calendarUI.buttonPause.active = true;
@@ -566,13 +335,13 @@ int main(int argc, char *argv[]) {
 		}
 
 	// Game simulation
-		CalendarChange calendarChange = incrementCalendar(&calendar);
+		CalendarChange calendarChange = incrementCalendar(&gameState->calendar);
 		if (calendarChange.isNewDay) {
 
 			// Buildings
-			for (uint32 i = 1; i <= city.buildingCount; i++)
+			for (uint32 i = 1; i <= gameState->city.buildingCount; i++)
 			{
-				Building *building = city.buildings + i;
+				Building *building = gameState->city.buildings + i;
 				switch (building->archetype)
 				{
 					case BA_Field: {
@@ -582,28 +351,28 @@ int main(int argc, char *argv[]) {
 			}
 
 			// Workers!
-			for (int i = 0; i < ArrayCount(city.workers); ++i) {
-				updateWorker(&city, city.workers + i);
+			for (int i = 0; i < ArrayCount(gameState->city.workers); ++i) {
+				updateWorker(&gameState->city, gameState->city.workers + i);
 			}
 		}
 		if (calendarChange.isNewMonth) {
 			// Pay workers!
-			spend(&city, city.workerCount * workerMonthlyCost);
+			spend(&gameState->city, gameState->city.workerCount * workerMonthlyCost);
 		}
 
 	// Win and Lose!
-		if (city.funds >= gameWinFunds) {
+		if (gameState->city.funds >= gameWinFunds) {
 			gameStatus = GameStatus_Won;
 			char buffer[256];
-			sprintf(buffer, "You won! You earned £%d in %d days", gameWinFunds, calendar.totalDays);
+			sprintf(buffer, "You won! You earned £%d in %d days", gameWinFunds, gameState->calendar.totalDays);
 			setUiLabelText(&gameOverLabel, buffer);
-		} else if (city.funds < 0) {
+		} else if (gameState->city.funds < 0) {
 			gameStatus = GameStatus_Lost;
 			setUiLabelText(&gameOverLabel, "Game over! You ran out of money! :(");
 		}
 
 	// CAMERA!
-		updateCamera(&renderer->worldCamera, &mouseState, &keyboardState, city.width, city.height);
+		updateCamera(&renderer->worldCamera, &mouseState, &keyboardState, gameState->city.width, gameState->city.height);
 
 		real32 worldScale = renderer->worldCamera.zoom / TILE_SIZE;
 		real32 camWidth = renderer->worldCamera.windowWidth * worldScale,
@@ -634,9 +403,9 @@ int main(int argc, char *argv[]) {
 			tooltip.show = false;
 
 			if (keyJustPressed(&keyboardState, SDL_SCANCODE_INSERT)) {
-				city.funds += 10000;
+				gameState->city.funds += 10000;
 			} else if (keyJustPressed(&keyboardState, SDL_SCANCODE_DELETE)) {
-				city.funds -= 10000;
+				gameState->city.funds -= 10000;
 			}
 
 			bool buttonAteMouseEvent = false;
@@ -652,8 +421,8 @@ int main(int argc, char *argv[]) {
 			if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
 				renderer->worldCamera.zoom = 1;
 				// Jump to the farmhouse if we have one!
-				if (city.firstBuildingOfType[BA_Farmhouse]) {
-					renderer->worldCamera.pos = centre(&city.firstBuildingOfType[BA_Farmhouse]->footprint);
+				if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
+					renderer->worldCamera.pos = centre(&gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
 				} else {
 					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
 				}
@@ -665,11 +434,11 @@ int main(int argc, char *argv[]) {
 				switch (actionMode) {
 					case ActionMode_Build: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							placeBuilding(&city, selectedBuildingArchetype, mouseTilePos);
+							placeBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos);
 						}
 
 						int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
-						showCostTooltip(&tooltip, renderer, buildCost, city.funds);
+						showCostTooltip(&tooltip, renderer, buildCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Demolish: {
@@ -678,44 +447,44 @@ int main(int argc, char *argv[]) {
 							dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 						} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 							dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
-							int32 demolitionCost = calculateDemolitionCost(&city, dragRect);
-							showCostTooltip(&tooltip, renderer, demolitionCost, city.funds);
+							int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
+							showCostTooltip(&tooltip, renderer, demolitionCost, gameState->city.funds);
 						}
 
 						if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
-							demolishRect(&city, dragRect);
+							demolishRect(&gameState->city, dragRect);
 							dragRect = irectXYWH(-1,-1,0,0);
 						}
 					} break;
 
 					case ActionMode_Plant: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							plantField(&city, mouseTilePos);
+							plantField(&gameState->city, mouseTilePos);
 						}
-						showCostTooltip(&tooltip, renderer, fieldPlantCost, city.funds);
+						showCostTooltip(&tooltip, renderer, fieldPlantCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Harvest: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							harvestField(&city, mouseTilePos);
+							harvestField(&gameState->city, mouseTilePos);
 						}
 					} break;
 
 					case ActionMode_Hire: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							if (hireWorker(&city, mouseWorldPos)) {
+							if (hireWorker(&gameState->city, mouseWorldPos)) {
 								// Update the monthly spend display
-								city.monthlyExpenditure = city.workerCount * workerMonthlyCost;
+								gameState->city.monthlyExpenditure = gameState->city.workerCount * workerMonthlyCost;
 							}
 						}
-						showCostTooltip(&tooltip, renderer, workerHireCost, city.funds);
+						showCostTooltip(&tooltip, renderer, workerHireCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_None: {
 						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							int tileI = tileIndex(&city, mouseTilePos.x, mouseTilePos.y);
-							int buildingID = city.tileBuildings[tileI];
+							int tileI = tileIndex(&gameState->city, mouseTilePos.x, mouseTilePos.y);
+							int buildingID = gameState->city.tileBuildings[tileI];
 
 							SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
 						}
@@ -775,8 +544,7 @@ int main(int argc, char *argv[]) {
 			updateUiButton(renderer, &tooltip, &buttonMenu, &mouseState, &keyboardState);
 			if (buttonMenu.justClicked) {
 
-				freeCity(&city);
-				startGame(&city, &calendar, cityName);
+				gameState = startGame(&gameArena, cityName);
 
 				// Reset calendar display. This is a bit hacky.
 				CalendarChange change = {};
@@ -789,18 +557,18 @@ int main(int argc, char *argv[]) {
 
 	// RENDERING
 
-		real32 daysPerFrame = getDaysPerFrame(&calendar);
+		real32 daysPerFrame = getDaysPerFrame(&gameState->calendar);
 
 		// Draw terrain
 		for (uint16 y = (cameraBounds.y < 0) ? 0 : (uint16)cameraBounds.y;
-			(y < city.height) && (y < cameraBounds.y + cameraBounds.h);
+			(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
 			y++)
 		{
 			for (uint16 x = (cameraBounds.x < 0) ? 0 : (uint16)cameraBounds.x;
-				(x < city.width) && (x < cameraBounds.x + cameraBounds.w);
+				(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
 				x++)
 			{
-				Terrain t = terrainAt(&city,x,y);
+				Terrain t = terrainAt(&gameState->city,x,y);
 				TextureAtlasItem textureAtlasItem;
 				switch (t) {
 					case Terrain_Forest: {
@@ -821,9 +589,9 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw buildings
-		for (uint16 i=1; i<=city.buildingCount; i++)
+		for (uint16 i=1; i<=gameState->city.buildingCount; i++)
 		{
-			Building building = city.buildings[i];
+			Building building = gameState->city.buildings[i];
 
 			BuildingDefinition *def = buildingDefinitions + building.archetype;
 
@@ -849,14 +617,14 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw workers!
-		for (int i = 0; i < ArrayCount(city.workers); ++i) {
-			drawWorker(renderer, city.workers + i, daysPerFrame);
+		for (int i = 0; i < ArrayCount(gameState->city.workers); ++i) {
+			drawWorker(renderer, gameState->city.workers + i, daysPerFrame);
 		}
 
 		// Draw potatoes!
-		for (int i = 0; i < ArrayCount(city.potatoes); ++i) {
-			if (city.potatoes[i].exists) {
-				V2 drawPos = centre(&city.potatoes[i].bounds);
+		for (int i = 0; i < ArrayCount(gameState->city.potatoes); ++i) {
+			if (gameState->city.potatoes[i].exists) {
+				V2 drawPos = centre(&gameState->city.potatoes[i].bounds);
 				drawTextureAtlasItem(
 					renderer,
 					false,
@@ -873,7 +641,7 @@ int main(int argc, char *argv[]) {
 			&& selectedBuildingArchetype != BA_None) {
 
 			Color ghostColor = {128,255,128,255};
-			if (!canPlaceBuilding(&city, selectedBuildingArchetype, mouseTilePos)) {
+			if (!canPlaceBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
 			drawTextureAtlasItem(

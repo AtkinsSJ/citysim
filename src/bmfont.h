@@ -60,150 +60,149 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad)
+BitmapFont *readBMFont(MemoryArena *renderArena, MemoryArena *TempArena, const char *filename, TexturesToLoad *texturesToLoad)
 {
+	BitmapFont *Font = 0;
+
 	SDL_RWops *file = SDL_RWFromFile(filename, "rb");
 	if (!file)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to open %s: %s", filename, SDL_GetError());
-		return null;
-	}
-
-	// Read whole file in first
-	int64 fileLength = file->seek(file, 0, RW_SEEK_END);
-	file->seek(file, 0, RW_SEEK_SET);
-
-	ASSERT(fileLength <= INT32_MAX, "File is too big to fit into an int32!");
-	size_t fileLength_t = (size_t)fileLength;
-
-	uint8 *fileData = (uint8 *)malloc(fileLength_t);
-	if (!file->read(file, fileData, fileLength_t, 1))
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to read %s: %s", filename, SDL_GetError());
-		file->close(file);
-		return null;
-	}
-
-	int64 pos = 0;
-	BMFontHeader *header = (BMFontHeader *)(fileData + pos);
-	pos += sizeof(BMFontHeader);
-
-	// Check it's a valid BMF
-	if (header->tag[0] != BMFontTag[0]
-		|| header->tag[1] != BMFontTag[1]
-		|| header->tag[2] != BMFontTag[2])
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Not a valid BMFont file: %s", filename);
-		return null;
-	}
-	if (header->version != 3)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "BMFont file version is unsupported: %s, wanted %d and got %d",
-						filename, BMFontSupportedVersion, header->version);
-		return null;
-	}
-
-	BMFontBlockHeader *blockHeader = 0;
-	BMFontBlock_Common *common = 0;
-	BMFont_Char *chars = 0;
-	uint32 charCount = 0;
-	void *pages = 0;
-		
-	blockHeader = (BMFontBlockHeader *)(fileData + pos);
-	pos += sizeof(BMFontBlockHeader);
-
-	while (pos < fileLength)
-	{
-
-		switch (blockHeader->type)
-		{
-			case BMF_Block_Info: {
-				// Ignored
-			} break;
-
-			case BMF_Block_Common: {
-				common = (BMFontBlock_Common *)(fileData + pos);
-			} break;
-
-			case BMF_Block_Pages: {
-				pages = fileData + pos;
-			} break;
-
-			case BMF_Block_Chars: {
-				chars = (BMFont_Char *)(fileData + pos);
-				charCount = blockHeader->size / sizeof(BMFont_Char);
-			} break;
-
-			case BMF_Block_KerningPairs: {
-				// Ignored for now
-			} break;
-		}
-
-		pos += blockHeader->size;
-
-		blockHeader = (BMFontBlockHeader *)(fileData + pos);
-		pos += sizeof(BMFontBlockHeader);
-	}
-
-	BitmapFont *font = null;
-
-	if (! (common && chars && charCount && pages) )
-	{
-		// Something didn't load correctly!
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
-			"BMFont file '%s' seems to be lacking crucial data and could not be loaded!", filename);
 	}
 	else
 	{
-		// Buffer-up the texture pages
-		GLint *pageToTexture = (GLint *) calloc(common->pageCount, sizeof(GLint));
-		char *pageStart = (char *) pages;
+		// Read whole file in first
+		int64 fileLength = file->seek(file, 0, RW_SEEK_END);
+		file->seek(file, 0, RW_SEEK_SET);
 
-		for (uint32 pageIndex = 0;
-			pageIndex < common->pageCount;
-			pageIndex++)
+		ASSERT(fileLength <= INT32_MAX, "File is too big to fit into an int32!");
+		size_t fileLength_t = (size_t)fileLength;
+
+		uint8 *fileData = (uint8 *)allocate(TempArena, fileLength_t);
+		if (!file->read(file, fileData, fileLength_t, 1))
 		{
-			pageToTexture[pageIndex] = pushTextureToLoad(texturesToLoad, pageStart, true);
-			pageStart += strlen(pageStart) + 1;
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to read %s: %s", filename, SDL_GetError());
+		}
+		else
+		{
+			int64 pos = 0;
+			BMFontHeader *header = (BMFontHeader *)(fileData + pos);
+			pos += sizeof(BMFontHeader);
+
+			// Check it's a valid BMF
+			if (header->tag[0] != BMFontTag[0]
+				|| header->tag[1] != BMFontTag[1]
+				|| header->tag[2] != BMFontTag[2])
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Not a valid BMFont file: %s", filename);
+			}
+			else if (header->version != 3)
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "BMFont file version is unsupported: %s, wanted %d and got %d",
+								filename, BMFontSupportedVersion, header->version);
+			}
+			else
+			{
+				BMFontBlockHeader *blockHeader = 0;
+				BMFontBlock_Common *common = 0;
+				BMFont_Char *chars = 0;
+				uint32 charCount = 0;
+				void *pages = 0;
+					
+				blockHeader = (BMFontBlockHeader *)(fileData + pos);
+				pos += sizeof(BMFontBlockHeader);
+
+				while (pos < fileLength)
+				{
+					switch (blockHeader->type)
+					{
+						case BMF_Block_Info: {
+							// Ignored
+						} break;
+
+						case BMF_Block_Common: {
+							common = (BMFontBlock_Common *)(fileData + pos);
+						} break;
+
+						case BMF_Block_Pages: {
+							pages = fileData + pos;
+						} break;
+
+						case BMF_Block_Chars: {
+							chars = (BMFont_Char *)(fileData + pos);
+							charCount = blockHeader->size / sizeof(BMFont_Char);
+						} break;
+
+						case BMF_Block_KerningPairs: {
+							// Ignored for now
+						} break;
+					}
+
+					pos += blockHeader->size;
+
+					blockHeader = (BMFontBlockHeader *)(fileData + pos);
+					pos += sizeof(BMFontBlockHeader);
+				}
+
+				if (! (common && chars && charCount && pages) )
+				{
+					// Something didn't load correctly!
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
+						"BMFont file '%s' seems to be lacking crucial data and could not be loaded!", filename);
+				}
+				else
+				{
+					// Buffer-up the texture pages
+					GLint *pageToTexture = PushArray(renderArena, GLint, common->pageCount);
+					char *pageStart = (char *) pages;
+
+					for (uint32 pageIndex = 0;
+						pageIndex < common->pageCount;
+						pageIndex++)
+					{
+						pageToTexture[pageIndex] = pushTextureToLoad(texturesToLoad, pageStart, true);
+						pageStart += strlen(pageStart) + 1;
+					}
+
+					Font = PushStruct(renderArena, BitmapFont);
+					Font->lineHeight = common->lineHeight;
+					Font->baseY = common->base;
+
+					Font->charCount = charCount;
+					Font->chars = PushArray(renderArena, BitmapFontChar, charCount);
+
+					const real32 textureWidth  = (real32) TEXTURE_WIDTH,
+								 textureHeight = (real32) TEXTURE_HEIGHT;
+
+					for (uint32 charIndex = 0;
+						charIndex < charCount;
+						charIndex++)
+					{
+						BMFont_Char *src = chars + charIndex;
+						BitmapFontChar *dest = Font->chars + charIndex;
+
+						dest->id = src->id;
+						dest->size = irectXYWH(src->x, src->y, src->w, src->h);
+						dest->xOffset = src->xOffset;
+						dest->yOffset = src->yOffset;
+						dest->xAdvance = src->xAdvance;
+
+						dest->textureID = pageToTexture[src->page];
+						// NB: If we start packing multiple images into a single texture at runtime,
+						// this will be WRONG!!!!
+						dest->uv = rectXYWH(
+							(real32)src->x / textureWidth,
+							(real32)src->y / textureHeight,
+							(real32)src->w / textureWidth,
+							(real32)src->h / textureHeight
+						);
+					}
+				}
+			}
 		}
 
-		font = (BitmapFont *) calloc(1, sizeof(BitmapFont));
-		font->lineHeight = common->lineHeight;
-		font->baseY = common->base;
-
-		font->charCount = charCount;
-		font->chars = (BitmapFontChar *) calloc(charCount, sizeof(BitmapFontChar));
-
-		const real32 textureWidth  = (real32) TEXTURE_WIDTH,
-					 textureHeight = (real32) TEXTURE_HEIGHT;
-
-		for (uint32 charIndex = 0;
-			charIndex < charCount;
-			charIndex++)
-		{
-			BMFont_Char *src = chars + charIndex;
-			BitmapFontChar *dest = font->chars + charIndex;
-
-			dest->id = src->id;
-			dest->size = irectXYWH(src->x, src->y, src->w, src->h);
-			dest->xOffset = src->xOffset;
-			dest->yOffset = src->yOffset;
-			dest->xAdvance = src->xAdvance;
-
-			dest->textureID = pageToTexture[src->page];
-			// NB: If we start packing multiple images into a single texture at runtime,
-			// this will be WRONG!!!!
-			dest->uv = rectXYWH(
-				(real32)src->x / textureWidth,
-				(real32)src->y / textureHeight,
-				(real32)src->w / textureWidth,
-				(real32)src->h / textureHeight
-			);
-		}
+		file->close(file);
 	}
 
-	free(fileData);
-	file->close(file);
-
-	return font;
+	return Font;
 }

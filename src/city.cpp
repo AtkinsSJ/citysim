@@ -1,20 +1,15 @@
 
-inline void initCity(City *city, uint32 width, uint32 height, char *name, int32 funds) {
-	*city = {};
+
+void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, char *name, int32 funds)
+{
 	city->name = name;
 	city->funds = funds;
 	city->width = width;
 	city->height = height;
-	city->terrain = new Terrain[width*height]();
-	city->tileBuildings = new uint32[width*height]();
+	city->terrain = PushArray(gameArena, Terrain, width*height);
+	city->tileBuildings = PushArray(gameArena, uint32, width*height);
 	city->buildingCount = 0;
 	city->buildingCountMax = ArrayCount(city->buildings);
-}
-
-inline void freeCity(City *city) {
-	delete[] city->terrain;
-	delete[] city->tileBuildings;
-	*city = {};
 }
 
 inline uint32 tileIndex(City *city, int32 x, int32 y) {

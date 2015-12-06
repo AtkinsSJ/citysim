@@ -1,22 +1,28 @@
 // render_gl.cpp
 
-GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *WindowTitle)
+GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle)
 {
-	GLRenderer *renderer = PushStruct(MemoryArena, GLRenderer);
-	renderer->RenderArena = AllocateSubArena(MemoryArena, MB(64));
+	GLRenderer *renderer = PushStruct(memoryArena, GLRenderer);
+	GLRenderer *Result = renderer;
+	renderer->renderArena = allocateSubArena(memoryArena, MB(64));
 
-	TexturesToLoad *texturesToLoad = PushStruct(&renderer->RenderArena, TexturesToLoad);
+	MemoryArena tempArena;
+	tempArena.size = MB(1);
+	tempArena.used = 0;
+	tempArena.memory = (uint8 *) tempAllocate(memoryArena, tempArena.size);
 
-	renderer->worldBuffer.sprites = PushArray(&renderer->RenderArena, Sprite, WORLD_SPRITE_MAX);
+	TexturesToLoad *texturesToLoad = PushStruct(&tempArena, TexturesToLoad);
+
+	renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
 	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
-	renderer->uiBuffer.sprites    = PushArray(&renderer->RenderArena, Sprite, UI_SPRITE_MAX);
+	renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
 	renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
 
 	// SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
-		return null;
+		Result = null;
 	}
 
 	// SDL_image
@@ -24,7 +30,7 @@ GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *WindowTitl
 	if (!(IMG_Init(imgFlags) & imgFlags))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
-		return null;
+		Result = null;
 	}
 
 	// Use GL3.1 Core
@@ -40,7 +46,7 @@ GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *WindowTitl
 	if (renderer->window == NULL)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
-		return null;
+		Result = null;
 	}
 
 	// Create context
@@ -48,7 +54,7 @@ GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *WindowTitl
 	if (renderer->context == NULL)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
-		return null;
+		Result = null;
 	}
 
 	// GLEW
@@ -57,21 +63,21 @@ GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *WindowTitl
 	if (glewError != GLEW_OK)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
-		return null;
+		Result = null;
 	}
 
 	// VSync
 	if (SDL_GL_SetSwapInterval(1) < 0)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
-		return null;
+		Result = null;
 	}
 
 	// Init OpenGL
 	if (!initOpenGL(renderer))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
-		return null;
+		Result = null;
 	}
 
 	// UI Theme!
@@ -90,19 +96,17 @@ GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *WindowTitl
 	renderer->theme.tooltipColorNormal 		= { 255, 255, 255, 255 };
 	renderer->theme.tooltipColorBad 		= { 255,   0,   0, 255 };
 
-	renderer->theme.font = readBMFont("dejavu-20.fnt", texturesToLoad);
-	renderer->theme.buttonFont = readBMFont("dejavu-14.fnt", texturesToLoad);
+	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", texturesToLoad);
+	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", texturesToLoad);
 
 	// Load textures &c
-	if (!loadTextures(renderer, texturesToLoad))
+	if (!loadTextures(&tempArena, renderer, texturesToLoad))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
-		return null;
+		Result = null;
 	}
 
-	free(texturesToLoad);
-
-	return renderer;
+	return Result;
 }
 
 bool initOpenGL(GLRenderer *renderer)
@@ -275,12 +279,12 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	};
 }
 
-bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
+bool loadTextures(MemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 {
 	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
 	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
 
-	Texture *textures = PushArray(&renderer->RenderArena, Texture, texturesToLoad->count);
+	Texture *textures = PushArray(tempArena, Texture, texturesToLoad->count);
 
 	renderer->textureArrayID = 0;
 	glGenTextures(1, &renderer->textureArrayID);
@@ -446,7 +450,6 @@ bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant2;
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
 
-	free(textures);
 	checkForGLError();
 	return true;
 }

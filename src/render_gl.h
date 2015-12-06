@@ -177,8 +177,8 @@ struct RenderBuffer
 
 struct GLRenderer
 {
-	memory_arena RenderArena;
-	
+	MemoryArena renderArena;
+
 	SDL_Window *window;
 	SDL_GLContext context;
 
@@ -246,10 +246,10 @@ inline void checkForGLError()
 	ASSERT(errorCode == 0, "GL Error: %d", errorCode);
 }
 
-GLRenderer *initializeRenderer(memory_arena *MemoryArena, const char *GameName);
+GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
-bool loadTextures(GLRenderer *renderer, TexturesToLoad *texturesToLoad);
+bool loadTextures(MemoryArena *TempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 
@@ -273,7 +273,7 @@ void render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
 
-BitmapFont *readBMFont(const char *filename, TexturesToLoad *texturesToLoad);
+BitmapFont *readBMFont(MemoryArena *renderArena, MemoryArena *TempArena, const char *filename, TexturesToLoad *texturesToLoad);
 
 inline real32 depthFromY(real32 y)
 {

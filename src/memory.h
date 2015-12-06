@@ -2,6 +2,7 @@
 #define MEMORY_H
 
 #include <stdlib.h> // For calloc
+#include <string.h>
 
 #define KB(x) ((x) * 1024)
 #define MB(x) ((x) * 1024 * 1024)
@@ -10,57 +11,70 @@
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 #define ArrayCountS(a) ((int)(ArrayCount(a)))
 
-struct memory_arena
+struct MemoryArena
 {
-	size_t Size;
-	size_t Used;
-	uint8 *Memory;
+	size_t size;
+	size_t used;
+	uint8 *memory;
 };
 
-bool InitMemoryArena(memory_arena *Arena, size_t Size)
+bool initMemoryArena(MemoryArena *arena, size_t size)
 {
-	bool Succeeded = false;
-	Arena->Memory = (uint8*)calloc(Size, 1);
-	if (Arena->Memory)
+	bool succeeded = false;
+	arena->memory = (uint8*)calloc(size, 1);
+	if (arena->memory)
 	{
-		Arena->Size = Size;
-		Arena->Used = 0;
-		Succeeded = true;
+		arena->size = size;
+		arena->used = 0;
+		succeeded = true;
 	}
 	
-	return Succeeded;
+	return succeeded;
 }
 
-void * Allocate(memory_arena *Arena, size_t Size)
+void *allocate(MemoryArena *arena, size_t size)
 {
-	ASSERT((Arena->Used + Size) <= Arena->Size, "Arena out of memory!");
+	ASSERT((arena->used + size) <= arena->size, "Arena out of memory!");
 	
-	void *Result = Arena->Memory + Arena->Used;
+	void *result = arena->memory + arena->used;
+	memset(result, 0, size);
 	
-	Arena->Used += Size;
+	arena->used += size;
 	
-	return Result;
+	return result;
 }
 
-void ResetMemoryArena(memory_arena *Arena)
+/**
+ * Allocate from the Arena, but without increasing the used counter. USE WITH CAUTION!
+ */
+void * tempAllocate(MemoryArena *arena, size_t size)
 {
-	Arena->Used = 0;
+	ASSERT((arena->used + size) <= arena->size, "Arena out of memory!");
+	
+	void *result = arena->memory + arena->used;
+	
+	return result;
 }
 
-memory_arena AllocateSubArena(memory_arena *Arena, size_t Size)
+void ResetMemoryArena(MemoryArena *arena)
 {
-	memory_arena SubArena = {};
-
-	SubArena.Memory = (uint8 *)Allocate(Arena, Size);
-	ASSERT(SubArena.Memory, "Failed to allocate sub arena!");
-
-	SubArena.Size = Size;
-	SubArena.Used = 0;
-
-	return SubArena;
+	arena->used = 0;
 }
 
-#define PushStruct(Arena, Struct) ((Struct*)Allocate(Arena, sizeof(Struct)))
-#define PushArray(Arena, Type, Count) ((Type*)Allocate(Arena, sizeof(Type) * Count))
+MemoryArena allocateSubArena(MemoryArena *arena, size_t size)
+{
+	MemoryArena subArena = {};
+
+	subArena.memory = (uint8 *)allocate(arena, size);
+	ASSERT(subArena.memory, "Failed to allocate sub arena!");
+
+	subArena.size = size;
+	subArena.used = 0;
+
+	return subArena;
+}
+
+#define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))
+#define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
 
 #endif
