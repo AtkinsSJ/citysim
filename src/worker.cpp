@@ -117,7 +117,7 @@ void endJob(Worker *worker) {
 /**
  * Returns whether the worker has reached the destination.
  */
-bool workerMoveTo(Worker *worker, RealRect rect, real32 speed = 1.0f) {
+bool workerMoveTo(Worker *worker, RealRect rect) {
 	if (inRect(rect, worker->pos)) {
 		// We've reached the destination
 		if (worker->isMoving) {
@@ -140,7 +140,7 @@ bool workerMoveTo(Worker *worker, RealRect rect, real32 speed = 1.0f) {
 
 	// Set-up movement for this day
 	V2 movement = centre(&rect) - worker->pos;
-	worker->dayEndPos = worker->pos + limit(movement, speed);
+	worker->dayEndPos = worker->pos + limit(movement, 1.0f);
 
 	return inRect(rect, worker->pos);
 }
