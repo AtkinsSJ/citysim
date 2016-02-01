@@ -568,11 +568,11 @@ int main(int argc, char *argv[]) {
 		real32 daysPerFrame = getDaysPerFrame(&gameState->calendar);
 
 		// Draw terrain
-		for (uint16 y = (cameraBounds.y < 0) ? 0 : (uint16)cameraBounds.y;
+		for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
 			(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
 			y++)
 		{
-			for (uint16 x = (cameraBounds.x < 0) ? 0 : (uint16)cameraBounds.x;
+			for (int32 x = (cameraBounds.x < 0) ? 0 : (int32)cameraBounds.x;
 				(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
 				x++)
 			{
@@ -593,11 +593,28 @@ int main(int argc, char *argv[]) {
 
 				drawTextureAtlasItem(renderer, false, textureAtlasItem,
 					v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
+
+				// Data layer
+				int32 pathGroup = gameState->city.pathLayer.data[tileIndex(&gameState->city, x, y)];
+				if (pathGroup > 0)
+				{
+					Color color = {};
+					switch (pathGroup)
+					{
+						case 1: color = {0, 0, 255, 128}; break;
+						case 2: color = {0, 255, 0, 128}; break;
+						case 3: color = {255, 0, 0, 128}; break;
+
+						default: color = {255, 255, 255, 128}; break;
+					}
+
+					drawRect(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100, &color);
+				}
 			}
 		}
 
 		// Draw buildings
-		for (uint16 i=1; i<=gameState->city.buildingCount; i++)
+		for (uint32 i=1; i<=gameState->city.buildingCount; i++)
 		{
 			Building building = gameState->city.buildings[i];
 
@@ -666,7 +683,7 @@ int main(int argc, char *argv[]) {
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
 			Color color = {128, 0, 0, 128};
-			drawRect(renderer, false, realRect(dragRect), &color);
+			drawRect(renderer, false, realRect(dragRect), 0, &color);
 		}
 
 		if (gameStatus == GameStatus_Setup) {
@@ -679,7 +696,7 @@ int main(int argc, char *argv[]) {
 		} else {
 			// Draw some UI
 			drawRect(renderer, true, rectXYWH(0,0, (real32)renderer->worldCamera.windowWidth, 64),
-					 &renderer->theme.overlayColor);
+					 0, &renderer->theme.overlayColor);
 
 			drawUiLabel(renderer, &textCityName);
 			drawUiIntLabel(renderer, &labelCityFunds);
@@ -704,7 +721,7 @@ int main(int argc, char *argv[]) {
 			|| gameStatus == GameStatus_Won) {
 			drawRect(renderer, true,
 					rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-					&renderer->theme.overlayColor);
+					0, &renderer->theme.overlayColor);
 			drawUiLabel(renderer, &gameOverLabel); 
 			drawUiButton(renderer, &buttonMenu);
 		}

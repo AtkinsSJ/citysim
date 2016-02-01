@@ -603,9 +603,9 @@ void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem text
 	drawQuad(renderer, isUI, rectCentreSize(position, size), depth, textureID, region->uv, color);
 }
 
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color *color)
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, Color *color)
 {
-	drawQuad(renderer, isUI, rect, 0, TEXTURE_ID_NONE, {}, color);
+	drawQuad(renderer, isUI, rect, depth, TEXTURE_ID_NONE, {}, color);
 }
 
 void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)

@@ -18,6 +18,7 @@ struct BuildingDefinition {
 	TextureAtlasItem textureAtlasItem;
 	int32 buildCost;
 	int32 demolishCost;
+	bool isPath;
 };
 
 // Farming stuff
@@ -32,10 +33,11 @@ enum BuildingArchetype {
 	BA_Count
 };
 BuildingDefinition buildingDefinitions[] = {
-	{4,4, "Field", TextureAtlasItem_Field, 200, 20},
-	{4,4, "Barn", TextureAtlasItem_Barn, 2000, 1000},
-	{4,4, "Farmhouse", TextureAtlasItem_House, 2000, 1000},
-	{1,1, "Path", TextureAtlasItem_Path, 10, 10},
+	// size, name, 		 image, 				 costs b/d,  isPath
+	{4,4, 	"Field", 	 TextureAtlasItem_Field, 200, 20,	 false},
+	{4,4, 	"Barn", 	 TextureAtlasItem_Barn,  2000, 1000, false},
+	{4,4, 	"Farmhouse", TextureAtlasItem_House, 2000, 1000, false},
+	{1,1, 	"Path", 	 TextureAtlasItem_Path,  10, 10,	 true},
 };
 
 enum FieldState {
@@ -95,6 +97,10 @@ struct Worker
 const int workerHireCost = 100;
 const int workerMonthlyCost = workerHireCost / 2;
 
+struct PathLayer {
+	int32 *data;
+};
+
 struct City {
 	char *name;
 	int32 funds;
@@ -102,10 +108,11 @@ struct City {
 
 	int32 width, height;
 	Terrain *terrain;
+	PathLayer pathLayer;
 
 	uint32 buildingCount;
 	uint32 buildingCountMax;
-	Building buildings[256]; // TODO: Make the number of buildings unlimited!
+	Building buildings[1024]; // TODO: Make the number of buildings unlimited!
 	uint32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
 

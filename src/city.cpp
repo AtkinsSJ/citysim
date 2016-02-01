@@ -7,6 +7,10 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, c
 	city->width = width;
 	city->height = height;
 	city->terrain = PushArray(gameArena, Terrain, width*height);
+
+	city->pathLayer.data = PushArray(gameArena, int32, width*height);
+
+
 	city->tileBuildings = PushArray(gameArena, uint32, width*height);
 	city->buildingCount = 0;
 	city->buildingCountMax = ArrayCount(city->buildings);
@@ -170,9 +174,22 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	// Tiles
 	for (int16 y=0; y<building->footprint.h; y++) {
 		for (int16 x=0; x<building->footprint.w; x++) {
-			city->tileBuildings[tileIndex(city,building->footprint.x+x,building->footprint.y+y)] = buildingID;
+			int32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
+			city->tileBuildings[tile] = buildingID;
+
+			if (def->isPath)
+			{
+				// Add to the pathing layer
+				city->pathLayer.data[tile] = 1;
+			}
 		}
 	}
+
+	if (def->isPath)
+	{
+		// Flood fill the path!
+	}
+
 	return true;
 }
 
@@ -205,8 +222,21 @@ bool demolishTile(City *city, Coord position) {
 				x < building->footprint.x + building->footprint.w;
 				x++) {
 
-				city->tileBuildings[tileIndex(city, x, y)] = 0;
+				int32 tile = tileIndex(city, x, y);
+
+				city->tileBuildings[tile] = 0;
+
+				if (def.isPath)
+				{
+					// Remove from the pathing layer
+					city->pathLayer.data[tile] = 0;
+				}
 			}
+		}
+
+		if (def.isPath)
+		{
+			// Flood fill the pathing!
 		}
 
 		// Remove the building from its type list

@@ -12,6 +12,7 @@ Rendering 2.0:
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
 - Fade-out the message popup
+- Stop using SDL_Color, and instead just use V4?
 
 Asset packing:
 - Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them

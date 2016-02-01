@@ -262,7 +262,7 @@ void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, real32 depth, Color *color=0);
 
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, Color *color=0);
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, Color *color);
 
 void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator,
 				real32 daysPerFrame, V2 worldTilePosition, V2 size, real32 depth, Color *color=0);
