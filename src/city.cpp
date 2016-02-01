@@ -16,15 +16,6 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, c
 	city->buildingCountMax = ArrayCount(city->buildings);
 }
 
-inline uint32 tileIndex(City *city, int32 x, int32 y) {
-	return (y * city->width) + x;
-}
-
-inline bool tileExists(City *city, int32 x, int32 y) {
-	return (x >= 0) && (x < city->width)
-		&& (y >= 0) && (y < city->height);
-}
-
 inline Terrain terrainAt(City *city, int32 x, int32 y) {
 	if (!tileExists(city, x, y)) return Terrain_Invalid;
 	return city->terrain[tileIndex(city, x, y)];
@@ -187,7 +178,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 
 	if (def->isPath)
 	{
-		// Flood fill the path!
+		recalculatePathingConnectivity(city);
 	}
 
 	return true;
@@ -232,11 +223,6 @@ bool demolishTile(City *city, Coord position) {
 					city->pathLayer.data[tile] = 0;
 				}
 			}
-		}
-
-		if (def.isPath)
-		{
-			// Flood fill the pathing!
 		}
 
 		// Remove the building from its type list
@@ -352,6 +338,8 @@ bool demolishRect(City *city, Rect rect) {
 			}
 		}
 	}
+
+	recalculatePathingConnectivity(city);
 
 	return true;
 }

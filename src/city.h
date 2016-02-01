@@ -98,7 +98,7 @@ const int workerHireCost = 100;
 const int workerMonthlyCost = workerHireCost / 2;
 
 struct PathLayer {
-	int32 *data;
+	int32 *data; // Represents the pathing 'group'. 0 = unpathable, >0 = any tile with the same value is connected
 };
 
 struct City {
@@ -126,4 +126,11 @@ struct City {
 	Potato potatoes[2048]; // TODO: We really need to organise proper storage for random junk
 };
 
-#include "city.cpp"
+inline uint32 tileIndex(City *city, int32 x, int32 y) {
+	return (y * city->width) + x;
+}
+
+inline bool tileExists(City *city, int32 x, int32 y) {
+	return (x >= 0) && (x < city->width)
+		&& (y >= 0) && (y < city->height);
+}

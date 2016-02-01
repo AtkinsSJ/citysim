@@ -38,6 +38,8 @@ enum GameStatus {
 #include "city.h"
 #include "calendar.h"
 
+#include "pathing.cpp"
+#include "city.cpp"
 #include "job.cpp"
 #include "field.cpp"
 #include "worker.cpp"
