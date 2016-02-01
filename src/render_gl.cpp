@@ -392,6 +392,7 @@ bool loadTextures(MemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *
 	assignTextureRegion(renderer, TextureAtlasItem_GroundTile, 	texCombinedPng,  0,  0, w1, w1);
 	assignTextureRegion(renderer, TextureAtlasItem_WaterTile, 	texCombinedPng, w1,  0, w1, w1);
 	assignTextureRegion(renderer, TextureAtlasItem_ForestTile, 	texCombinedPng, w2,  0, w1, w1);
+	assignTextureRegion(renderer, TextureAtlasItem_Path, 		texCombinedPng, w3,  0, w1, w1);
 	assignTextureRegion(renderer, TextureAtlasItem_Field, 		texCombinedPng, w4,  0, w4, w4);
 	assignTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	texCombinedPng,  0, w1, w1, w1);
 	assignTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	texCombinedPng, w1, w1, w1, w1);

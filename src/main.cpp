@@ -195,6 +195,10 @@ int main(int argc, char *argv[]) {
 	initUiButton(buttonBuildBarn, renderer, buttonRect, "Build Barn", SDL_SCANCODE_B, "(B)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
+	UiButton *buttonBuildPath = addButtonToGroup(&actionButtonGroup);
+	initUiButton(buttonBuildPath, renderer, buttonRect, "Build Path", SDL_SCANCODE_P, "(P)");
+
+	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
 	initUiButton(buttonDemolish, renderer, buttonRect, "Demolish", SDL_SCANCODE_X, "(X)");
 
@@ -510,6 +514,10 @@ int main(int argc, char *argv[]) {
 					selectedBuildingArchetype = BA_Barn;
 					actionMode = ActionMode_Build;
 					SDL_SetCursor(cursorBuild);
+				} else if (buttonBuildPath->justClicked) {
+					selectedBuildingArchetype = BA_Path;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
 				} else if (buttonDemolish->justClicked) {
 					actionMode = ActionMode_Demolish;
 					SDL_SetCursor(cursorDemolish);
@@ -644,12 +652,13 @@ int main(int argc, char *argv[]) {
 			if (!canPlaceBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = {255,0,0,128};
 			}
+			Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[selectedBuildingArchetype].size);
 			drawTextureAtlasItem(
 				renderer,
 				false,
 				buildingDefinitions[selectedBuildingArchetype].textureAtlasItem,
-				v2(mouseTilePos),
-				v2(buildingDefinitions[selectedBuildingArchetype].size),
+				centre(&footprint),
+				v2(footprint.dim),
 				depthFromY(mouseTilePos.y) + 100,
 				&ghostColor
 			);

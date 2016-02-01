@@ -76,6 +76,7 @@ enum TextureAtlasItem
 	TextureAtlasItem_GroundTile = 1,
 	TextureAtlasItem_WaterTile,
 	TextureAtlasItem_ForestTile,
+	TextureAtlasItem_Path,
 	TextureAtlasItem_Field,
 	TextureAtlasItem_Crop0_0,
 	TextureAtlasItem_Crop0_1,

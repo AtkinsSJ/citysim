@@ -27,6 +27,7 @@ enum BuildingArchetype {
 	BA_Field = 0,
 	BA_Barn = 1,
 	BA_Farmhouse,
+	BA_Path,
 
 	BA_Count
 };
@@ -34,27 +35,8 @@ BuildingDefinition buildingDefinitions[] = {
 	{4,4, "Field", TextureAtlasItem_Field, 200, 20},
 	{4,4, "Barn", TextureAtlasItem_Barn, 2000, 1000},
 	{4,4, "Farmhouse", TextureAtlasItem_House, 2000, 1000},
+	{1,1, "Path", TextureAtlasItem_Path, 10, 10},
 };
-
-// Goblin Fortress stuff
-/* 
-enum BuildingArchetype {
-	BA_None = -1,
-	BA_Hovel = 0,
-	BA_Pit,
-	BA_Paddock,
-	BA_Butcher,
-	BA_Road,
-	BA_Count
-};
-BuildingDefinition buildingDefinitions[] = {
-	{1,1, "Hovel", TextureAtlasItem_Hovel},
-	{5,5, "Pit", TextureAtlasItem_Pit},
-	{3,3, "Paddock", TextureAtlasItem_Paddock},
-	{2,2, "Butcher", TextureAtlasItem_Butcher},
-	{1,1, "Road", TextureAtlasItem_Road},
-};
-*/
 
 enum FieldState {
 	FieldState_Empty = 0,
@@ -86,14 +68,16 @@ const int fieldMaxGrowth = fieldSize*3;
 const int fieldProgressToPlant = 1;
 const int fieldProgressToHarvest = 1;
 
-struct Potato {
+struct Potato
+{
 	bool exists;
 	RealRect bounds; // In tiles!
 	// NB: bounds rather than position because of workerMoveTo()
 };
 const V2 potatoCarryOffset = v2(-4.0f/16.0f, -14.0f/16.0f);
 
-struct Worker {
+struct Worker
+{
 	bool exists;
 	V2 pos; // Position at start of day
 	Animator animator;

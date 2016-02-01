@@ -180,6 +180,15 @@ inline Rect irectCentreWH(Coord position, int32 w, int32 h)
 	return rect;
 }
 
+inline Rect irectCentreDim(Coord position, Coord dim)
+{
+	Rect rect = {};
+	rect.x = position.x - dim.x/2;
+	rect.y = position.y - dim.y/2;
+	rect.dim = dim;
+	return rect;
+}
+
 inline Rect irectCovering(V2 a, V2 b)
 {
 	Rect rect = {};
