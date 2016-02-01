@@ -310,11 +310,13 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
 	}
 
+	real32 depth = depthFromY(drawPos.y) + 1;
+
 	drawAnimator(renderer, false, &worker->animator, daysPerFrame,
-				drawPos, v2(0.5f, 0.5f), depthFromY(drawPos.y));
+				drawPos, v2(0.5f, 0.5f), depth);
 
 	if (worker->isCarryingPotato) {
 		drawTextureAtlasItem(renderer, false, TextureAtlasItem_Potato,
-				drawPos + potatoCarryOffset, v2(1,1), depthFromY(drawPos.y));
+				drawPos + potatoCarryOffset, v2(1,1), depth);
 	}
 }

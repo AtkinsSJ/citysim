@@ -4,6 +4,7 @@ TODO:
 
 BUGS:
 - When demolishing barns, workers en route sometimes lose their potato?
+- Flickering of some things. Not sure if the sorter might be off-by-one?
 
 Rendering 2.0:
 - Stop passing a size to drawSprite()! Will always draw at a consistent size.
