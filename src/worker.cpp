@@ -332,7 +332,6 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 				worker->dayEndPos + v2(0.5f, 0.5f), v2(1,1), depth);
 	}
 
-
 	drawAnimator(renderer, false, &worker->animator, daysPerFrame,
 				drawPos, v2(0.5f, 0.5f), depth);
 

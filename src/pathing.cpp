@@ -215,7 +215,7 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 								while (queuedNode)
 								{
 									if ((queuedNode->length + queuedNode->heuristic)
-										> (node->length + node->heuristic))
+										>= (node->length + node->heuristic))
 									{
 										// Insert before queuedNode
 										if (queuedNode == openQueue)
@@ -225,10 +225,10 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 										else
 										{
 											node->prev = queuedNode->prev;
-											node->next = queuedNode;
-											queuedNode->prev = node;
 											queuedNode->prev->next = node;
 										}
+										node->next = queuedNode;
+										queuedNode->prev = node;
 										break;
 									}
 									else if (queuedNode->next == null)
