@@ -117,7 +117,7 @@ void endJob(Worker *worker) {
 /**
  * Returns whether the worker has reached the destination.
  */
-bool workerMoveTo(Worker *worker, Rect rect) {
+bool workerMoveTo(Worker *worker, Rect rect, City *city) {
 	if (inRect(rect, worker->pos)) {
 		// We've reached the destination
 		if (worker->isMoving) {
@@ -141,16 +141,23 @@ bool workerMoveTo(Worker *worker, Rect rect) {
 	// // Set-up movement for this day
 	// V2 movement = centre(&rect) - worker->pos;
 	// worker->dayEndPos = worker->pos + limit(movement, 1.0f);
-
-	Coord nextPos = pathToRectangle(rect, coord(worker->pos));
-	worker->dayEndPos = v2(nextPos);
+	Coord pos = coord(worker->pos);
+	if (canPathTo(city, rect, pos))
+	{
+		Coord nextPos = pathToRectangle(city, rect, pos);
+		worker->dayEndPos = v2(nextPos);
+	}
+	else
+	{
+		// TODO: Can't path! Need to do something here.
+	}
 
 	return inRect(rect, worker->pos);
 }
 
-bool workerMoveTo(Worker *worker, Coord coord)
+bool workerMoveTo(Worker *worker, Coord coord, City *city)
 {
-	return workerMoveTo(worker, irectXYWH(coord.x, coord.y, 1, 1));
+	return workerMoveTo(worker, irectXYWH(coord.x, coord.y, 1, 1), city);
 }
 
 void updateWorker(City *city, Worker *worker) {
@@ -170,7 +177,7 @@ void updateWorker(City *city, Worker *worker) {
 		case JobType_Idle: {
 			 if (!worker->isAtDestination && city->firstBuildingOfType[BA_Farmhouse]) {
 				// Walk back to the farmhouse
-				workerMoveTo(worker, city->firstBuildingOfType[BA_Farmhouse]->footprint);
+				workerMoveTo(worker, city->firstBuildingOfType[BA_Farmhouse]->footprint, city);
 			}
 		} break;
 
@@ -191,7 +198,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, field->footprint);
+					workerMoveTo(worker, field->footprint, city);
 				}
 			}
 			
@@ -213,7 +220,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, field->footprint);
+					workerMoveTo(worker, field->footprint, city);
 				}
 			}
 		} break;
@@ -261,7 +268,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 
 					} else {
-						workerMoveTo(worker, barn->footprint);
+						workerMoveTo(worker, barn->footprint, city);
 					}
 				} else {
 					if (worker->isAtDestination) {
@@ -271,7 +278,7 @@ void updateWorker(City *city, Worker *worker) {
 						worker->isAtDestination = false;
 
 					} else {
-						workerMoveTo(worker, coord(jobData->potato->bounds.pos));
+						workerMoveTo(worker, coord(jobData->potato->bounds.pos), city);
 					}
 				}
 			} else {
