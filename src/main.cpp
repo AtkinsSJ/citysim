@@ -38,6 +38,13 @@ enum GameStatus {
 #include "city.h"
 #include "calendar.h"
 
+struct GameState
+{
+	MemoryArena *arena;
+	City city;
+	Calendar calendar;
+};
+
 #include "pathing.cpp"
 #include "city.cpp"
 #include "job.cpp"
@@ -60,11 +67,6 @@ const int gameStartFunds = 10000;
 const int gameWinFunds = 30000;
 #include "game_ui.cpp"
 
-struct GameState
-{
-	City city;
-	Calendar calendar;
-};
 
 // This is less 'start game' and more 'reset the map and everything so we can show 
 // an empty map in the background of the menu'. But also does resetting of things for when you
@@ -77,6 +79,7 @@ GameState *startGame(MemoryArena *gameArena, char *cityName)
 	ResetMemoryArena(gameArena);
 
 	result = PushStruct(gameArena, GameState);
+	result->arena = gameArena;
 
 	initCity(gameArena, &result->city, 100,100, cityName, gameStartFunds);
 	generateTerrain(&result->city);
@@ -358,7 +361,7 @@ int main(int argc, char *argv[]) {
 
 			// Workers!
 			for (int i = 0; i < ArrayCount(gameState->city.workers); ++i) {
-				updateWorker(&gameState->city, gameState->city.workers + i);
+				updateWorker(gameState, gameState->city.workers + i);
 			}
 		}
 		if (calendarChange.isNewMonth) {
@@ -596,6 +599,7 @@ int main(int argc, char *argv[]) {
 				drawTextureAtlasItem(renderer, false, textureAtlasItem,
 					v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
 
+#if 0
 				// Data layer
 				int32 pathGroup = gameState->city.pathLayer.data[tileIndex(&gameState->city, x, y)];
 				if (pathGroup > 0)
@@ -603,15 +607,19 @@ int main(int argc, char *argv[]) {
 					Color color = {};
 					switch (pathGroup)
 					{
-						case 1: color = {0, 0, 255, 128}; break;
-						case 2: color = {0, 255, 0, 128}; break;
-						case 3: color = {255, 0, 0, 128}; break;
+						case 1: color = {0, 0, 255, 63}; break;
+						case 2: color = {0, 255, 0, 63}; break;
+						case 3: color = {255, 0, 0, 63}; break;
+						case 4: color = {0, 255, 255, 63}; break;
+						case 5: color = {255, 255, 0, 63}; break;
+						case 6: color = {255, 0, 255, 63}; break;
 
-						default: color = {255, 255, 255, 128}; break;
+						default: color = {255, 255, 255, 63}; break;
 					}
 
-					drawRect(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100, &color);
+					drawRect(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
 				}
+#endif
 			}
 		}
 

@@ -117,7 +117,7 @@ void endJob(Worker *worker) {
 /**
  * Returns whether the worker has reached the destination.
  */
-bool workerMoveTo(Worker *worker, Rect rect, City *city) {
+bool workerMoveTo(Worker *worker, Rect rect, GameState *gameState) {
 	if (inRect(rect, worker->pos)) {
 		// We've reached the destination
 		if (worker->isMoving) {
@@ -142,9 +142,9 @@ bool workerMoveTo(Worker *worker, Rect rect, City *city) {
 	// V2 movement = centre(&rect) - worker->pos;
 	// worker->dayEndPos = worker->pos + limit(movement, 1.0f);
 	Coord pos = coord(worker->pos);
-	if (canPathTo(city, rect, pos))
+	if (canPathTo(&gameState->city, rect, pos))
 	{
-		Coord nextPos = pathToRectangle(city, rect, pos);
+		Coord nextPos = pathToRectangle(&gameState->city, rect, pos, gameState->arena);
 		worker->dayEndPos = v2(nextPos);
 	}
 	else
@@ -155,13 +155,15 @@ bool workerMoveTo(Worker *worker, Rect rect, City *city) {
 	return inRect(rect, worker->pos);
 }
 
-bool workerMoveTo(Worker *worker, Coord coord, City *city)
+bool workerMoveTo(Worker *worker, Coord coord, GameState *gameState)
 {
-	return workerMoveTo(worker, irectXYWH(coord.x, coord.y, 1, 1), city);
+	return workerMoveTo(worker, irectXYWH(coord.x, coord.y, 1, 1), gameState);
 }
 
-void updateWorker(City *city, Worker *worker) {
+void updateWorker(GameState *gameState, Worker *worker) {
 	if (!worker->exists) return;
+
+	City *city = &gameState->city;
 
 	// Find a job!
 	if (worker->job.type == JobType_Idle && workExists(&city->jobBoard)) {
@@ -177,7 +179,7 @@ void updateWorker(City *city, Worker *worker) {
 		case JobType_Idle: {
 			 if (!worker->isAtDestination && city->firstBuildingOfType[BA_Farmhouse]) {
 				// Walk back to the farmhouse
-				workerMoveTo(worker, city->firstBuildingOfType[BA_Farmhouse]->footprint, city);
+				workerMoveTo(worker, city->firstBuildingOfType[BA_Farmhouse]->footprint, gameState);
 			}
 		} break;
 
@@ -198,7 +200,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, field->footprint, city);
+					workerMoveTo(worker, field->footprint, gameState);
 				}
 			}
 			
@@ -220,7 +222,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, field->footprint, city);
+					workerMoveTo(worker, field->footprint, gameState);
 				}
 			}
 		} break;
@@ -268,7 +270,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 
 					} else {
-						workerMoveTo(worker, barn->footprint, city);
+						workerMoveTo(worker, barn->footprint, gameState);
 					}
 				} else {
 					if (worker->isAtDestination) {
@@ -278,7 +280,7 @@ void updateWorker(City *city, Worker *worker) {
 						worker->isAtDestination = false;
 
 					} else {
-						workerMoveTo(worker, coord(jobData->potato->bounds.pos), city);
+						workerMoveTo(worker, coord(jobData->potato->bounds.pos), gameState);
 					}
 				}
 			} else {
@@ -316,6 +318,7 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 	setAnimation(&worker->animator, renderer, targetAnimation);
 
 	V2 drawPos = worker->pos;
+	real32 depth = depthFromY(drawPos.y) + 1;
 
 	// Interpolate position!
 	// FIXME: Workers teleport if their destination is changed, because our interpolation is then undone!
@@ -323,9 +326,12 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 	if (worker->isMoving) {
 		worker->movementInterpolation += daysPerFrame;
 		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
+
+		// DEBUG POTATO!
+		drawTextureAtlasItem(renderer, false, TextureAtlasItem_Potato,
+				worker->dayEndPos + v2(0.5f, 0.5f), v2(1,1), depth);
 	}
 
-	real32 depth = depthFromY(drawPos.y) + 1;
 
 	drawAnimator(renderer, false, &worker->animator, daysPerFrame,
 				drawPos, v2(0.5f, 0.5f), depth);

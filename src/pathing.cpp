@@ -61,6 +61,12 @@ void recalculatePathingConnectivity(City *city)
 	}
 }
 
+inline bool isPathable(City *city, int32 x, int32 y)
+{
+	return tileExists(city, x, y)
+		&& city->pathLayer.data[tileIndex(city, x, y)] > 0;
+}
+
 bool canPathTo(City *city, Rect target, Coord from)
 {
 	bool result = false;
@@ -108,8 +114,9 @@ bool canPathTo(City *city, Rect target, Coord from)
 }
 
 // Returns the next tile to walk to in order to path to 'target'
-Coord pathToRectangle(City *city, Rect target, Coord from)
+Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryArena)
 {
+
 	Coord result = from;
 	int32 distance = manhattanDistance(target, from);
 
@@ -129,12 +136,126 @@ Coord pathToRectangle(City *city, Rect target, Coord from)
 	else
 	{
 		// ACTUAL PATHFINDING!
-		// For now, a beeline
+#if 1
+		struct PathingNode
+		{
+			bool initialised;
+			Coord pos;
+			int32 length;
+			int32 heuristic;
+			PathingNode *towardStart;
 
+			PathingNode *next, *prev;
+		};
+
+		MemoryArena tempArena = beginTemporaryMemory(memoryArena);
+		PathingNode *nodes = PushArray(&tempArena, PathingNode, city->width * city->height);
+		PathingNode *startNode = nodes + tileIndex(city, from.x, from.y);
+		*startNode = {true, from, 0, distance, 0, 0};
+		PathingNode *openQueue = startNode;
+
+		bool done = false;
+
+		while (openQueue && !done)
+		{
+			// Pop best node off the open queue
+			PathingNode *current = openQueue;
+			openQueue = openQueue->next;
+
+			// If we're at the target, exit
+			if (current->heuristic <= 1)
+			{
+				// DONE!
+				done = true;
+
+				// For now we only care about the first step along the path, so
+				// trace the path back to its beginning
+				while (current->towardStart != startNode)
+				{
+					current = current->towardStart;
+				}
+
+				result = current->pos;
+			}
+			else
+			{
+				// Add all valid neighbours to the open queue
+				Coord adjacents[] = {
+					coord(current->pos.x-1, current->pos.y),
+					coord(current->pos.x+1, current->pos.y),
+					coord(current->pos.x, current->pos.y-1),
+					coord(current->pos.x, current->pos.y+1),
+				};
+
+				for (int adjacentIndex=0; adjacentIndex<4; adjacentIndex++)
+				{
+					Coord newPos = adjacents[adjacentIndex];
+					if (isPathable(city, newPos.x, newPos.y))
+					{
+						PathingNode *node = nodes + tileIndex(city, newPos.x, newPos.y);
+						if (!node->initialised)
+						{
+							node->initialised = true;
+							node->pos = newPos;
+							node->length = current->length + 1;
+							node->heuristic = manhattanDistance(target, node->pos);
+							node->towardStart = current;
+							node->next = 0;
+							node->prev = 0;
+
+							// Add to the open queue
+							if (openQueue == null)
+							{
+								openQueue = node;
+							}
+							else
+							{
+								// Insert it before the first thing that's longer
+								PathingNode *queuedNode = openQueue;
+								while (queuedNode)
+								{
+									if ((queuedNode->length + queuedNode->heuristic)
+										> (node->length + node->heuristic))
+									{
+										// Insert before queuedNode
+										if (queuedNode == openQueue)
+										{
+											openQueue = node;
+										}
+										else
+										{
+											node->prev = queuedNode->prev;
+											node->next = queuedNode;
+											queuedNode->prev = node;
+											queuedNode->prev->next = node;
+										}
+										break;
+									}
+									else if (queuedNode->next == null)
+									{
+										queuedNode->next = node;
+										node->prev = queuedNode;
+										break;
+									}
+									else
+									{
+										queuedNode = queuedNode->next;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+#else
+		// For now, a beeline
 		if (from.x < target.x) result.x = from.x + 1;
 		else if (from.x >= (target.x + target.w)) result.x = from.x - 1;
 		else if (from.y < target.y) result.y = from.y + 1;
 		else if (from.y >= (target.y + target.h)) result.y = from.y - 1;
+#endif
 	}
 
 	return result;

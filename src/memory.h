@@ -74,6 +74,16 @@ MemoryArena allocateSubArena(MemoryArena *arena, size_t size)
 	return subArena;
 }
 
+MemoryArena beginTemporaryMemory(MemoryArena *parentArena)
+{
+	MemoryArena subArena = {};
+	subArena.size = (parentArena->size - parentArena->used);
+	subArena.used = 0;
+	subArena.memory = (uint8*) tempAllocate(parentArena, subArena.size);
+
+	return subArena;
+}
+
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))
 #define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
 
