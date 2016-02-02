@@ -60,3 +60,36 @@ void recalculatePathingConnectivity(City *city)
 		}
 	}
 }
+
+// Returns the next tile to walk to in order to path to 'target'
+Coord pathToRectangle(Rect target, Coord position)
+{
+	Coord result = position;
+	int32 distance = manhattanDistance(target, position);
+
+	if (distance == 0)
+	{
+		// Already there
+		result = position;
+	}
+	else if (distance == 1)
+	{
+		// Just walk right in
+		if (position.x < target.x) result.x = position.x + 1;
+		else if (position.x >= (target.x + target.w)) result.x = position.x - 1;
+		else if (position.y < target.y) result.y = position.y + 1;
+		else if (position.y >= (target.y + target.h)) result.y = position.y - 1;
+	}
+	else
+	{
+		// ACTUAL PATHFINDING!
+		// For now, a beeline
+
+		if (position.x < target.x) result.x = position.x + 1;
+		else if (position.x >= (target.x + target.w)) result.x = position.x - 1;
+		else if (position.y < target.y) result.y = position.y + 1;
+		else if (position.y >= (target.y + target.h)) result.y = position.y - 1;
+	}
+
+	return result;
+}

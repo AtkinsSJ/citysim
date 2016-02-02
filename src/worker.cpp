@@ -117,7 +117,7 @@ void endJob(Worker *worker) {
 /**
  * Returns whether the worker has reached the destination.
  */
-bool workerMoveTo(Worker *worker, RealRect rect) {
+bool workerMoveTo(Worker *worker, Rect rect) {
 	if (inRect(rect, worker->pos)) {
 		// We've reached the destination
 		if (worker->isMoving) {
@@ -138,11 +138,19 @@ bool workerMoveTo(Worker *worker, RealRect rect) {
 	worker->pos = worker->dayEndPos;
 	worker->movementInterpolation = 0;
 
-	// Set-up movement for this day
-	V2 movement = centre(&rect) - worker->pos;
-	worker->dayEndPos = worker->pos + limit(movement, 1.0f);
+	// // Set-up movement for this day
+	// V2 movement = centre(&rect) - worker->pos;
+	// worker->dayEndPos = worker->pos + limit(movement, 1.0f);
+
+	Coord nextPos = pathToRectangle(rect, coord(worker->pos));
+	worker->dayEndPos = v2(nextPos);
 
 	return inRect(rect, worker->pos);
+}
+
+bool workerMoveTo(Worker *worker, Coord coord)
+{
+	return workerMoveTo(worker, irectXYWH(coord.x, coord.y, 1, 1));
 }
 
 void updateWorker(City *city, Worker *worker) {
@@ -162,7 +170,7 @@ void updateWorker(City *city, Worker *worker) {
 		case JobType_Idle: {
 			 if (!worker->isAtDestination && city->firstBuildingOfType[BA_Farmhouse]) {
 				// Walk back to the farmhouse
-				workerMoveTo(worker, realRect(city->firstBuildingOfType[BA_Farmhouse]->footprint));
+				workerMoveTo(worker, city->firstBuildingOfType[BA_Farmhouse]->footprint);
 			}
 		} break;
 
@@ -183,7 +191,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, realRect(field->footprint));
+					workerMoveTo(worker, field->footprint);
 				}
 			}
 			
@@ -205,7 +213,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 					}
 				} else {
-					workerMoveTo(worker, realRect(field->footprint));
+					workerMoveTo(worker, field->footprint);
 				}
 			}
 		} break;
@@ -253,7 +261,7 @@ void updateWorker(City *city, Worker *worker) {
 						endJob(worker);
 
 					} else {
-						workerMoveTo(worker, realRect(barn->footprint));
+						workerMoveTo(worker, barn->footprint);
 					}
 				} else {
 					if (worker->isAtDestination) {
@@ -263,7 +271,7 @@ void updateWorker(City *city, Worker *worker) {
 						worker->isAtDestination = false;
 
 					} else {
-						workerMoveTo(worker, jobData->potato->bounds);
+						workerMoveTo(worker, coord(jobData->potato->bounds.pos));
 					}
 				}
 			} else {
