@@ -16,23 +16,6 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, c
 	city->buildingCountMax = ArrayCount(city->buildings);
 }
 
-inline Terrain terrainAt(City *city, int32 x, int32 y) {
-	if (!tileExists(city, x, y)) return Terrain_Invalid;
-	return city->terrain[tileIndex(city, x, y)];
-}
-
-inline Building* getBuildingByID(City *city, uint32 buildingID) {
-	if (buildingID <= 0 || buildingID > city->buildingCountMax) {
-		return null;
-	}
-
-	return &(city->buildings[buildingID]);
-}
-
-inline Building* getBuildingAtPosition(City *city, Coord position) {
-	return getBuildingByID(city, city->tileBuildings[tileIndex(city,position.x,position.y)]);
-}
-
 void generateTerrain(City *city) {
 	for (int32 y = 0; y < city->height; y++) {
 		for (int32 x = 0; x < city->width; x++) {

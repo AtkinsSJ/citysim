@@ -142,7 +142,7 @@ bool workerMoveTo(Worker *worker, Rect rect, GameState *gameState) {
 	// V2 movement = centre(&rect) - worker->pos;
 	// worker->dayEndPos = worker->pos + limit(movement, 1.0f);
 	Coord pos = coord(worker->pos);
-	if (canPathTo(&gameState->city, rect, pos))
+	if (canPathTo(&gameState->city, rect, pos, gameState->arena))
 	{
 		Coord nextPos = pathToRectangle(&gameState->city, rect, pos, gameState->arena);
 		worker->dayEndPos = v2(nextPos.x  + 0.5f, nextPos.y + 0.5f);

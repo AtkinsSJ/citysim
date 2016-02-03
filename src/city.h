@@ -98,6 +98,7 @@ const int workerHireCost = 100;
 const int workerMonthlyCost = workerHireCost / 2;
 
 struct PathLayer {
+	int32 pathGroupCount;
 	int32 *data; // Represents the pathing 'group'. 0 = unpathable, >0 = any tile with the same value is connected
 };
 
@@ -133,4 +134,21 @@ inline uint32 tileIndex(City *city, int32 x, int32 y) {
 inline bool tileExists(City *city, int32 x, int32 y) {
 	return (x >= 0) && (x < city->width)
 		&& (y >= 0) && (y < city->height);
+}
+
+inline Terrain terrainAt(City *city, int32 x, int32 y) {
+	if (!tileExists(city, x, y)) return Terrain_Invalid;
+	return city->terrain[tileIndex(city, x, y)];
+}
+
+inline Building* getBuildingByID(City *city, uint32 buildingID) {
+	if (buildingID <= 0 || buildingID > city->buildingCountMax) {
+		return null;
+	}
+
+	return &(city->buildings[buildingID]);
+}
+
+inline Building* getBuildingAtPosition(City *city, Coord position) {
+	return getBuildingByID(city, city->tileBuildings[tileIndex(city,position.x,position.y)]);
 }

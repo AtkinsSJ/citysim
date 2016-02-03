@@ -320,6 +320,14 @@ inline Rect irectXYWH(int32 x, int32 y, int32 w, int32 h)
 	return rect;
 }
 
+inline Rect irectPosDim(Coord position, Coord dim)
+{
+	Rect rect = {};
+	rect.pos = position;
+	rect.dim = dim;
+	return rect;
+}
+
 inline Rect irectCentreWH(Coord position, int32 w, int32 h)
 {
 	Rect rect = {};
@@ -412,30 +420,9 @@ inline V2 centre(Rect *rect)
 	);
 }
 
-// How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
-inline int32 manhattanDistance(Rect rect, Coord point)
+inline Coord iCentre(Rect rect)
 {
-	int32 result = 0;
-
-	if (point.x < rect.x)
-	{
-		result += rect.x - point.x;
-	}
-	else if (point.x >= (rect.x + rect.w))
-	{
-		result += 1 + point.x - (rect.x + rect.w);
-	}
-
-	if (point.y < rect.y)
-	{
-		result += rect.y - point.y;
-	}
-	else if (point.y >= (rect.y + rect.h))
-	{
-		result += 1 + point.y - (rect.y + rect.h);
-	}
-
-	return result;
+	return coord(rect.x + rect.w/2, rect.y + rect.h/2);
 }
 
 /**********************************************

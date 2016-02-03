@@ -601,7 +601,7 @@ int main(int argc, char *argv[]) {
 
 #if 0
 				// Data layer
-				int32 pathGroup = gameState->city.pathLayer.data[tileIndex(&gameState->city, x, y)];
+				int32 pathGroup = pathGroupAt(&gameState->city, x, y);
 				if (pathGroup > 0)
 				{
 					Color color = {};
