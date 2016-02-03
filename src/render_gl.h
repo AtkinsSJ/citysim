@@ -250,7 +250,7 @@ inline void checkForGLError()
 GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
-bool loadTextures(MemoryArena *TempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad);
+bool loadTextures(TemporaryMemoryArena *TempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 
@@ -274,7 +274,7 @@ void render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
 
-BitmapFont *readBMFont(MemoryArena *renderArena, MemoryArena *TempArena, const char *filename, TexturesToLoad *texturesToLoad);
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *TempArena, const char *filename, TexturesToLoad *texturesToLoad);
 
 inline real32 depthFromY(real32 y)
 {

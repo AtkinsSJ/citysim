@@ -145,7 +145,7 @@ bool workerMoveTo(Worker *worker, Rect rect, GameState *gameState) {
 	if (canPathTo(&gameState->city, rect, pos))
 	{
 		Coord nextPos = pathToRectangle(&gameState->city, rect, pos, gameState->arena);
-		worker->dayEndPos = v2(nextPos);
+		worker->dayEndPos = v2(nextPos.x  + 0.5f, nextPos.y + 0.5f);
 	}
 	else
 	{
@@ -328,8 +328,9 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
 
 		// DEBUG POTATO!
+		Color debugPotatoColor = {0, 0, 255, 255};
 		drawTextureAtlasItem(renderer, false, TextureAtlasItem_Potato,
-				worker->dayEndPos + v2(0.5f, 0.5f), v2(1,1), depth);
+				worker->dayEndPos, v2(1,1), depth, &debugPotatoColor);
 	}
 
 	drawAnimator(renderer, false, &worker->animator, daysPerFrame,

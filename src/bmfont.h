@@ -60,7 +60,7 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *readBMFont(MemoryArena *renderArena, MemoryArena *TempArena, const char *filename, TexturesToLoad *texturesToLoad)
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *TempArena, const char *filename, TexturesToLoad *texturesToLoad)
 {
 	BitmapFont *Font = 0;
 

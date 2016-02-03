@@ -148,7 +148,7 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 			PathingNode *next, *prev;
 		};
 
-		MemoryArena tempArena = beginTemporaryMemory(memoryArena);
+		TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
 		PathingNode *nodes = PushArray(&tempArena, PathingNode, city->width * city->height);
 		PathingNode *startNode = nodes + tileIndex(city, from.x, from.y);
 		*startNode = {true, from, 0, distance, 0, 0};
@@ -193,7 +193,16 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 					if (isPathable(city, newPos.x, newPos.y))
 					{
 						PathingNode *node = nodes + tileIndex(city, newPos.x, newPos.y);
-						if (!node->initialised)
+						if (node->initialised)
+						{
+							// If this new route is faster, replace the old one.
+							if (node->length > (current->length + 1))
+							{
+								node->length = current->length + 1;
+								node->towardStart = current;
+							}
+						}
+						else
 						{
 							node->initialised = true;
 							node->pos = newPos;
@@ -248,6 +257,8 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 				}
 			}
 		}
+
+		endTemporaryMemory(&tempArena);
 
 #else
 		// For now, a beeline

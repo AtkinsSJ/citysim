@@ -16,6 +16,14 @@ struct MemoryArena
 	size_t size;
 	size_t used;
 	uint8 *memory;
+	bool hasTemporaryArenaOpen;
+};
+
+struct TemporaryMemoryArena
+{
+	MemoryArena arena;
+	bool isOpen;
+	MemoryArena *parentArena;
 };
 
 bool initMemoryArena(MemoryArena *arena, size_t size)
@@ -26,6 +34,7 @@ bool initMemoryArena(MemoryArena *arena, size_t size)
 	{
 		arena->size = size;
 		arena->used = 0;
+		arena->hasTemporaryArenaOpen = false;
 		succeeded = true;
 	}
 	
@@ -35,6 +44,7 @@ bool initMemoryArena(MemoryArena *arena, size_t size)
 void *allocate(MemoryArena *arena, size_t size)
 {
 	ASSERT((arena->used + size) <= arena->size, "Arena out of memory!");
+	ASSERT(!arena->hasTemporaryArenaOpen, "Allocating to an arena while temporary subArena is open!");
 	
 	void *result = arena->memory + arena->used;
 	memset(result, 0, size);
@@ -44,16 +54,10 @@ void *allocate(MemoryArena *arena, size_t size)
 	return result;
 }
 
-/**
- * Allocate from the Arena, but without increasing the used counter. USE WITH CAUTION!
- */
-void * tempAllocate(MemoryArena *arena, size_t size)
+void *allocate(TemporaryMemoryArena *tempArena, size_t size)
 {
-	ASSERT((arena->used + size) <= arena->size, "Arena out of memory!");
-	
-	void *result = arena->memory + arena->used;
-	
-	return result;
+	ASSERT(tempArena->isOpen, "TemporaryMemory already ended!");
+	return allocate(&tempArena->arena, size);
 }
 
 void ResetMemoryArena(MemoryArena *arena)
@@ -74,14 +78,28 @@ MemoryArena allocateSubArena(MemoryArena *arena, size_t size)
 	return subArena;
 }
 
-MemoryArena beginTemporaryMemory(MemoryArena *parentArena)
+TemporaryMemoryArena beginTemporaryMemory(MemoryArena *parentArena)
 {
-	MemoryArena subArena = {};
-	subArena.size = (parentArena->size - parentArena->used);
-	subArena.used = 0;
-	subArena.memory = (uint8*) tempAllocate(parentArena, subArena.size);
+	ASSERT(!parentArena->hasTemporaryArenaOpen, "Beginning temporary memory without ending it!");
+
+	TemporaryMemoryArena subArena = {};
+	subArena.arena.size = (parentArena->size - parentArena->used);
+	ASSERT(subArena.arena.size > 0, "No space for temporary memory!");
+	ASSERT((parentArena->used + subArena.arena.size) <= parentArena->size, "Somehow temp memory is bigger than parent arena's free space!");
+	subArena.arena.used = 0;
+	subArena.arena.memory = (uint8*) parentArena->memory + parentArena->used;
+
+	subArena.isOpen = true;
+	subArena.parentArena = parentArena;
+	parentArena->hasTemporaryArenaOpen = true;
 
 	return subArena;
+}
+
+void endTemporaryMemory(TemporaryMemoryArena *tempArena)
+{
+	tempArena->isOpen = false;
+	tempArena->parentArena->hasTemporaryArenaOpen = false;
 }
 
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))

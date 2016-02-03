@@ -6,10 +6,7 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	GLRenderer *Result = renderer;
 	renderer->renderArena = allocateSubArena(memoryArena, MB(64));
 
-	MemoryArena tempArena;
-	tempArena.size = MB(1);
-	tempArena.used = 0;
-	tempArena.memory = (uint8 *) tempAllocate(memoryArena, tempArena.size);
+	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
 
 	TexturesToLoad *texturesToLoad = PushStruct(&tempArena, TexturesToLoad);
 
@@ -105,6 +102,8 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
 		Result = null;
 	}
+
+	endTemporaryMemory(&tempArena);
 
 	return Result;
 }
@@ -279,7 +278,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	};
 }
 
-bool loadTextures(MemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad)
+bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 {
 	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
 	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
