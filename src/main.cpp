@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonBuildPath = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildPath, renderer, buttonRect, "Build Path", SDL_SCANCODE_P, "(P)");
+	initUiButton(buttonBuildPath, renderer, buttonRect, "Build Road", SDL_SCANCODE_R, "(R)");
 
 	buttonRect.x += buttonRect.w + uiPadding;
 	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
