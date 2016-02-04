@@ -442,7 +442,7 @@ int main(int argc, char *argv[]) {
 			if (!buttonAteMouseEvent) {
 				switch (actionMode) {
 					case ActionMode_Build: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 							placeBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos);
 						}
 

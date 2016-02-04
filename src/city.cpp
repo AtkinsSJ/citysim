@@ -98,10 +98,10 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 
 			if (city->tileBuildings[ti] != 0)
 			{
-				if (isAttemptingToBuild)
-				{
-					pushUiMessage("You cannot overlap buildings.");
-				}
+				// if (isAttemptingToBuild)
+				// {
+				// 	pushUiMessage("You cannot overlap buildings.");
+				// }
 				return false;
 			}
 		}
