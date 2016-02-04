@@ -78,20 +78,20 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	}
 
 	// UI Theme!
-	renderer->theme.buttonTextColor 		= {   0,   0,   0, 255 };
-	renderer->theme.buttonBackgroundColor 	= { 255, 255, 255, 255 };
-	renderer->theme.buttonHoverColor 		= { 192, 192, 255, 255 };
-	renderer->theme.buttonPressedColor 		= { 128, 128, 255, 255 };
+	renderer->theme.buttonTextColor 		= color255(   0,   0,   0, 255 );
+	renderer->theme.buttonBackgroundColor 	= color255( 255, 255, 255, 255 );
+	renderer->theme.buttonHoverColor 		= color255( 192, 192, 255, 255 );
+	renderer->theme.buttonPressedColor 		= color255( 128, 128, 255, 255 );
 
-	renderer->theme.labelColor 				= { 255, 255, 255, 255 };
-	renderer->theme.overlayColor 			= {   0,   0,   0, 128 };
+	renderer->theme.labelColor 				= color255( 255, 255, 255, 255 );
+	renderer->theme.overlayColor 			= color255(   0,   0,   0, 128 );
 
-	renderer->theme.textboxBackgroundColor 	= { 255, 255, 255, 255 };
-	renderer->theme.textboxTextColor 		= {   0,   0,   0, 255 };
+	renderer->theme.textboxBackgroundColor 	= color255( 255, 255, 255, 255 );
+	renderer->theme.textboxTextColor 		= color255(   0,   0,   0, 255 );
 	
-	renderer->theme.tooltipBackgroundColor	= {   0,   0,   0, 128 };
-	renderer->theme.tooltipColorNormal 		= { 255, 255, 255, 255 };
-	renderer->theme.tooltipColorBad 		= { 255,   0,   0, 255 };
+	renderer->theme.tooltipBackgroundColor	= color255(   0,   0,   0, 128 );
+	renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
+	renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
 
 	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", texturesToLoad);
 	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", texturesToLoad);
@@ -562,7 +562,7 @@ void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset)
 }
 
 void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
-				GLint textureID, RealRect uv, Color *color)
+				GLint textureID, RealRect uv, V4 color)
 {
 	RenderBuffer *buffer;
 	if (isUI)
@@ -580,21 +580,13 @@ void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 		return;
 	}
 
-	V4 drawColor;
-	if (color)
-	{
-		drawColor = v4(color);
-	} else {
-		drawColor = v4(1.0f, 1.0f, 1.0f, 1.0f);
-	}
-
 	buffer->sprites[buffer->spriteCount++] = {
-		rect, depth, textureID, uv, drawColor
+		rect, depth, textureID, uv, color
 	};
 }
 
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
-				V2 position, V2 size, real32 depth, Color *color)
+				V2 position, V2 size, real32 depth, V4 color)
 {
 	TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
 	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
@@ -602,7 +594,7 @@ void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem text
 	drawQuad(renderer, isUI, rectCentreSize(position, size), depth, textureID, region->uv, color);
 }
 
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, Color *color)
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, V4 color)
 {
 	drawQuad(renderer, isUI, rect, depth, TEXTURE_ID_NONE, {}, color);
 }
@@ -686,7 +678,7 @@ void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 
 void sortSpriteBuffer(RenderBuffer *buffer)
 {
-	// This is an implementation of the 'comb sort' algorithm
+	// This is an implementation of the 'comb sort' algorithm, low to high
 
 	uint32 gap = buffer->spriteCount;
 	real32 shrink = 1.3f;
@@ -725,6 +717,16 @@ void render(GLRenderer *renderer)
 {
 	// Sort sprites
 	sortSpriteBuffer(&renderer->worldBuffer);
+
+	#if 1
+	// Check buffer is sorted
+	real32 lastDepth = real32Min;
+	for (uint32 i=0; i<=renderer->worldBuffer.spriteCount; i++)
+	{
+		ASSERT(lastDepth <= renderer->worldBuffer.sprites[i].depth, "Sprites are out of order!");
+		lastDepth = renderer->worldBuffer.sprites[i].depth;
+	}
+	#endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);
@@ -781,7 +783,7 @@ void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animatio
 }
 
 void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator, real32 daysPerFrame,
-				V2 worldTilePosition, V2 size, real32 depth, Color *color)
+				V2 worldTilePosition, V2 size, real32 depth, V4 color)
 {
 	animator->frameCounter += daysPerFrame * animationFramesPerDay;
 	while (animator->frameCounter >= 1)

@@ -64,7 +64,11 @@ Immediate Mode UI:
 
 - Field maintenance
 	- Fertilizer / Manure
-	- 
+
+- Buildings as zones
+	- Drag a rectangle of 'field' to determine its size
+	- Can erase part of a zoned building
+	- Can add to a zoned building
 
 - Weather!
 	- Wetness and temperature based on time of year

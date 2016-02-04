@@ -30,9 +30,9 @@ const uint64 uint64Max = UINT64_MAX;
 typedef float real32;
 typedef double real64;
 
-const real32 real32Min = FLT_MIN;
+const real32 real32Min = -FLT_MAX;
 const real32 real32Max = FLT_MAX;
-const real64 real64Min = DBL_MIN;
+const real64 real64Min = -DBL_MAX;
 const real64 real64Max = DBL_MAX;
 
 typedef std::string string;
@@ -43,7 +43,7 @@ struct Coord {
 	int32 x,y;
 };
 
-union Rect {
+struct Rect {
 	union {
 		struct {Coord pos;};
 		struct {int32 x, y;};
@@ -88,8 +88,6 @@ struct V4 {
 		};
 	};
 };
-
-typedef V4 Color;
 
 struct RealRect {
 	union {
@@ -292,15 +290,19 @@ inline V4 v4(real32 x, real32 y, real32 z, real32 w)
 	return v;
 }
 
-inline V4 v4(Color *color)
+inline V4 color255(uint8 r, uint8 g, uint8 b, uint8 a)
 {
 	V4 v = {};
-	v.r = (real32)color->r / 255.0f;
-	v.g = (real32)color->g / 255.0f;
-	v.b = (real32)color->b / 255.0f;
-	v.a = (real32)color->a / 255.0f;
+	v.r = (real32)r / 255.0f;
+	v.g = (real32)g / 255.0f;
+	v.b = (real32)b / 255.0f;
+	v.a = (real32)a / 255.0f;
 
 	return v;
+}
+inline V4 makeWhite()
+{
+	return v4(1.0f,1.0f,1.0f,1.0f);
 }
 
 /**********************************************

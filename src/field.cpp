@@ -67,7 +67,7 @@ void updateField(FieldData *field) {
 	}
 }
 
-void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
+void drawField(GLRenderer *renderer, Building *building, V4 drawColor) {
 
 	V2 centrePos = centre(&building->footprint);
 

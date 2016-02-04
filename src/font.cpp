@@ -46,7 +46,7 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 	return result;
 }
 
-void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, Color *color)
+void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, V4 color)
 {
 	for (char *currentChar=text;
 		*currentChar != 0;
@@ -69,7 +69,7 @@ void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, C
 	}
 }
 
-BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, Color *color)
+BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, V4 color)
 {
 	uint32 textLength = strlen(text);
 
@@ -85,14 +85,6 @@ BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, Color *color
 
 	if (result)
 	{
-		V4 drawColor;
-		if (color)
-		{
-			drawColor = v4(color);
-		} else {
-			drawColor = v4(1.0f, 1.0f, 1.0f, 1.0f);
-		}
-
 		for (char *currentChar=text;
 			*currentChar != 0;
 			currentChar++)
@@ -103,7 +95,7 @@ BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, Color *color
 			{
 				*(result->sprites + result->spriteCount++) = {
 					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset, (real32)c->size.w, (real32)c->size.h),
-					0, c->textureID, c->uv, drawColor
+					0, c->textureID, c->uv, color
 				};
 				position.x += (real32)c->xAdvance;
 				result->size.x += (real32)c->xAdvance;

@@ -76,7 +76,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage("You cannot build there.");
+			pushUiMessage("You cannot build off the map edge.");
 		}
 		return false;
 	}

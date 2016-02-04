@@ -17,8 +17,8 @@ void setUiLabelText(UiLabel *label, char *newText)
 }
 
 void initUiLabel(UiLabel *label, V2 position, int32 align,
-				char *text, BitmapFont *font, Color *color,
-				Color *backgroundColor=0, real32 backgroundPadding=0)
+				char *text, BitmapFont *font, V4 color,
+				bool hasBackground=false, V4 backgroundColor=makeWhite(), real32 backgroundPadding=0)
 {
 	*label = {};
 
@@ -28,7 +28,7 @@ void initUiLabel(UiLabel *label, V2 position, int32 align,
 	label->origin = position;
 	label->align = align;
 
-	if (backgroundColor)
+	if (hasBackground)
 	{
 		label->hasBackground = true;
 		label->backgroundColor = backgroundColor;
@@ -39,7 +39,7 @@ void initUiLabel(UiLabel *label, V2 position, int32 align,
 }
 
 void initUiIntLabel(UiIntLabel *label, V2 position, int32 align,
-				BitmapFont *font, Color *color, int32 *watchValue, char *formatString)
+				BitmapFont *font, V4 color, int32 *watchValue, char *formatString)
 {
 	*label = {};
 	label->formatString = formatString;
@@ -57,9 +57,9 @@ void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *t
 
 	button->rect = rect;
 
-	button->backgroundColor = &renderer->theme.buttonBackgroundColor;
-	button->backgroundHoverColor = &renderer->theme.buttonHoverColor;
-	button->backgroundPressedColor = &renderer->theme.buttonPressedColor;
+	button->backgroundColor = renderer->theme.buttonBackgroundColor;
+	button->backgroundHoverColor = renderer->theme.buttonHoverColor;
+	button->backgroundPressedColor = renderer->theme.buttonPressedColor;
 
 	button->shortcutKey = shortcutKey;
 	button->tooltip = tooltip;
@@ -68,7 +68,7 @@ void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *t
 	V2 buttonCenter = v2(button->rect.x + button->rect.w / 2.0f,
 						button->rect.y + button->rect.h / 2.0f);
 	initUiLabel(&button->text, buttonCenter, ALIGN_CENTER, text,
-				renderer->theme.buttonFont, &renderer->theme.buttonTextColor);
+				renderer->theme.buttonFont, renderer->theme.buttonTextColor);
 }
 
 void drawUiLabel(GLRenderer *renderer, UiLabel *label)
@@ -267,11 +267,11 @@ void initUiMessage(GLRenderer *renderer)
 	__globalUiMessage = {};
 	__globalUiMessage.renderer = renderer;
 
-	__globalUiMessage.background = &renderer->theme.overlayColor;
+	__globalUiMessage.background = renderer->theme.overlayColor;
 
 	initUiLabel(&__globalUiMessage.label, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM,
-				"", renderer->theme.font, &renderer->theme.labelColor,
-				&renderer->theme.overlayColor, 4);
+				"", renderer->theme.font, renderer->theme.labelColor,
+				true, renderer->theme.overlayColor, 4);
 }
 
 void pushUiMessage(char *message)
@@ -309,7 +309,7 @@ void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text)
 	if (strcmp(tooltip->buffer, text))
 	{
 		strcpy(tooltip->buffer, text);
-		tooltip->label.color = &renderer->theme.labelColor;
+		tooltip->label.color = renderer->theme.labelColor;
 		setUiLabelText(&tooltip->label, tooltip->buffer);
 	}
 	tooltip->show = true;

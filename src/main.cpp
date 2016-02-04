@@ -160,17 +160,17 @@ int main(int argc, char *argv[]) {
 	V2 textPosition = v2(8,4);
 	UiLabel textCityName;
 	initUiLabel(&textCityName, textPosition, ALIGN_LEFT | ALIGN_TOP, gameState->city.name,
-				renderer->theme.font, &renderer->theme.labelColor);
+				renderer->theme.font, renderer->theme.labelColor);
 
 	textPosition.x = 800 / 2 - 100;
 	UiIntLabel labelCityFunds;
 	initUiIntLabel(&labelCityFunds, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, &renderer->theme.labelColor, &gameState->city.funds, "£%d");
+				renderer->theme.font, renderer->theme.labelColor, &gameState->city.funds, "£%d");
 
 	textPosition.x = 800 / 2 + 100;
 	UiIntLabel labelMonthlyExpenditure;
 	initUiIntLabel(&labelMonthlyExpenditure, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, &renderer->theme.labelColor, &gameState->city.monthlyExpenditure, "(-£%d/month)");
+				renderer->theme.font, renderer->theme.labelColor, &gameState->city.monthlyExpenditure, "(-£%d/month)");
 
 	initUiMessage(renderer);
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 	Tooltip tooltip = {};
 	tooltip.offsetFromCursor = v2(16, 20);
 	initUiLabel(&tooltip.label, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer->theme.font,
-				&renderer->theme.labelColor, &renderer->theme.tooltipBackgroundColor, 4);
+				renderer->theme.labelColor, true, renderer->theme.tooltipBackgroundColor, 4);
 
 	// CALENDAR
 	CalendarUI calendarUI;
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
 	// Game over UI
 	UiLabel gameOverLabel;
 	initUiLabel(&gameOverLabel, cameraCentre, ALIGN_CENTER, "You ran out of money! :(",
-				renderer->theme.font, &renderer->theme.labelColor);
+				renderer->theme.font, renderer->theme.labelColor);
 	UiButton buttonMenu;
 	buttonRect.pos = cameraCentre - buttonRect.size/2;
 	// buttonRect.y += gameOverLabel._rect.h + uiPadding;
@@ -630,23 +630,23 @@ int main(int argc, char *argv[]) {
 
 			BuildingDefinition *def = buildingDefinitions + building.archetype;
 
-			Color drawColor = {255,255,255,255};
+			V4 drawColor = makeWhite();
 
 			if (actionMode == ActionMode_Demolish
 				&& rectsOverlap(building.footprint, dragRect)) {
 				// Draw building red to preview demolition
-				drawColor = {255,128,128,255};
+				drawColor = color255(255,128,128,255);
 			}
 
 			switch (building.archetype) {
 				case BA_Field: {
-					drawField(renderer, &building, &drawColor);
+					drawField(renderer, &building, drawColor);
 				} break;
 
 				default: {
 					V2 drawPos = centre(&building.footprint);
 					drawTextureAtlasItem(renderer, false, def->textureAtlasItem,
-					 	drawPos, v2(building.footprint.dim), depthFromY(drawPos.y), &drawColor);
+					 	drawPos, v2(building.footprint.dim), depthFromY(drawPos.y), drawColor);
 				} break;
 			}
 		}
@@ -660,9 +660,9 @@ int main(int argc, char *argv[]) {
 		if (actionMode == ActionMode_Build
 			&& selectedBuildingArchetype != BA_None) {
 
-			Color ghostColor = {128,255,128,255};
+			V4 ghostColor = color255(128,255,128,255);
 			if (!canPlaceBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos)) {
-				ghostColor = {255,0,0,128};
+				ghostColor = color255(255,0,0,128);
 			}
 			Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[selectedBuildingArchetype].size);
 			drawTextureAtlasItem(
@@ -672,13 +672,12 @@ int main(int argc, char *argv[]) {
 				centre(&footprint),
 				v2(footprint.dim),
 				depthFromY(mouseTilePos.y) + 100,
-				&ghostColor
+				ghostColor
 			);
 		} else if (actionMode == ActionMode_Demolish
 			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
-			Color color = {128, 0, 0, 128};
-			drawRect(renderer, false, realRect(dragRect), 0, &color);
+			drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
 		}
 
 		if (gameStatus == GameStatus_Setup) {
@@ -691,7 +690,7 @@ int main(int argc, char *argv[]) {
 		} else {
 			// Draw some UI
 			drawRect(renderer, true, rectXYWH(0,0, (real32)renderer->worldCamera.windowWidth, 64),
-					 0, &renderer->theme.overlayColor);
+					 0, renderer->theme.overlayColor);
 
 			drawUiLabel(renderer, &textCityName);
 			drawUiIntLabel(renderer, &labelCityFunds);
@@ -716,7 +715,7 @@ int main(int argc, char *argv[]) {
 			|| gameStatus == GameStatus_Won) {
 			drawRect(renderer, true,
 					rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-					0, &renderer->theme.overlayColor);
+					0, renderer->theme.overlayColor);
 			drawUiLabel(renderer, &gameOverLabel); 
 			drawUiButton(renderer, &buttonMenu);
 		}

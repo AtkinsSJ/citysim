@@ -53,21 +53,21 @@ struct UiTheme
 	struct BitmapFont *font,
 					  *buttonFont;
 
-	Color overlayColor;
+	V4 overlayColor;
 			
-	Color labelColor;
+	V4 labelColor;
 
-	Color buttonTextColor,
-		  buttonBackgroundColor,
-		  buttonHoverColor,
-		  buttonPressedColor;
+	V4 buttonTextColor,
+		buttonBackgroundColor,
+		buttonHoverColor,
+		buttonPressedColor;
 
-	Color textboxTextColor,
-		  textboxBackgroundColor;
+	V4 textboxTextColor,
+		textboxBackgroundColor;
 
-	Color tooltipBackgroundColor,
-		  tooltipColorNormal,
-		  tooltipColorBad;
+	V4 tooltipBackgroundColor,
+		tooltipColorNormal,
+		tooltipColorBad;
 };
 
 enum TextureAtlasItem
@@ -257,15 +257,15 @@ void printShaderLog(GLuint shader);
 void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset);
 
 void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
-				GLint textureID, RealRect uv, Color *color=0);
+				GLint textureID, RealRect uv, V4 color=makeWhite());
 
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
-				V2 position, V2 size, real32 depth, Color *color=0);
+				V2 position, V2 size, real32 depth, V4 color=makeWhite());
 
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, Color *color);
+void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, V4 color);
 
 void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator,
-				real32 daysPerFrame, V2 worldTilePosition, V2 size, real32 depth, Color *color=0);
+				real32 daysPerFrame, V2 worldTilePosition, V2 size, real32 depth, V4 color=makeWhite());
 
 void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
 				bool restart = false);

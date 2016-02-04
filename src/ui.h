@@ -7,11 +7,11 @@ struct UiLabel {
 
 	char *text;
 	BitmapFont *font;
-	Color *color;
+	V4 color;
 	BitmapFontCachedText *cache;
 
 	bool hasBackground;
-	Color *backgroundColor;
+	V4 backgroundColor;
 	real32 backgroundPadding;
 };
 
@@ -28,9 +28,9 @@ struct UiButton {
 
 	UiLabel text;
 
-	Color *backgroundColor;
-	Color *backgroundHoverColor;
-	Color *backgroundPressedColor;
+	V4 backgroundColor;
+	V4 backgroundHoverColor;
+	V4 backgroundPressedColor;
 
 	SDL_Scancode shortcutKey;
 	char *tooltip;
@@ -52,7 +52,7 @@ const real32 uiMessageBottomMargin = 4,
 struct UiMessage {
 	GLRenderer *renderer;
 	RealRect rect;
-	Color *background;
+	V4 background;
 	UiLabel label;
 	int32 messageCountdown; // In milliseconds
 };

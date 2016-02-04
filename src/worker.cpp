@@ -324,9 +324,8 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
 
 		// DEBUG POTATO!
-		Color debugPotatoColor = {0, 0, 255, 255};
 		drawTextureAtlasItem(renderer, false, TextureAtlasItem_Potato,
-				worker->dayEndPos, v2(1,1), depth, &debugPotatoColor);
+				worker->dayEndPos, v2(1,1), depth, color255(0, 0, 255, 255));
 	}
 
 	drawAnimator(renderer, false, &worker->animator, daysPerFrame,

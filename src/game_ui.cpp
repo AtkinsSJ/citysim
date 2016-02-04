@@ -71,9 +71,9 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 
 void showCostTooltip(Tooltip *tooltip, GLRenderer *renderer, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
-		tooltip->label.color = &renderer->theme.tooltipColorBad;
+		tooltip->label.color = renderer->theme.tooltipColorBad;
 	} else {
-		tooltip->label.color = &renderer->theme.tooltipColorNormal;
+		tooltip->label.color = renderer->theme.tooltipColorNormal;
 	}
 	sprintf(tooltip->buffer, "-£%d", cost);
 	setUiLabelText(&tooltip->label, tooltip->buffer);
@@ -98,19 +98,19 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 	
 	initUiLabel(&menu->gameSetupLabel, screenCentre - v2(0, 50), ALIGN_CENTER,
 				"Type a name for your farm, then click on 'Play'.", renderer->theme.font,
-				&renderer->theme.labelColor);
+				renderer->theme.labelColor);
 	initUiLabel(&menu->cityNameEntryLabel, screenCentre, ALIGN_CENTER, cityName,
-				renderer->theme.font, &renderer->theme.textboxTextColor,
-				&renderer->theme.textboxBackgroundColor, 4.0f);
+				renderer->theme.font, renderer->theme.textboxTextColor,
+				true, renderer->theme.textboxBackgroundColor, 4.0f);
 
 	char tempBuffer[256];
 	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
 	initUiLabel(&menu->gameRulesWinLoseLabel, screenCentre + v2(0, 50), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, &renderer->theme.labelColor);
+				renderer->theme.font, renderer->theme.labelColor);
 
 	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
 	initUiLabel(&menu->gameRulesWorkersLabel, screenCentre + v2(0, 100), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, &renderer->theme.labelColor);
+				renderer->theme.font, renderer->theme.labelColor);
 
 	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
@@ -121,7 +121,7 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 }
 void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-			0, &renderer->theme.overlayColor);
+			0, renderer->theme.overlayColor);
 
 	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo,
 		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f), 0);
@@ -155,7 +155,7 @@ void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 	V2 textPosition = v2(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
 	getDateString(calendar, ui->dateStringBuffer);
 	initUiLabel(&ui->labelDate, textPosition, ALIGN_RIGHT | ALIGN_TOP,
-				ui->dateStringBuffer, renderer->theme.font, &renderer->theme.labelColor);
+				ui->dateStringBuffer, renderer->theme.font, renderer->theme.labelColor);
 
 	const real32 buttonSize = 24;
 	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,

@@ -28,10 +28,10 @@ struct BitmapFontCachedText
 };
 
 void
-drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, Color *color=0);
+drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, V4 *color=0);
 
 BitmapFontCachedText *
-drawTextToCache(BitmapFont *font, char *text, Color *color=0);
+drawTextToCache(BitmapFont *font, char *text, V4 *color=0);
 
 void
 drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 topLeft);
