@@ -72,7 +72,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	Rect footprint = irectCentreWH(position, def.width, def.height);
 
 	// Are we in bounds?
-	if (!rectInRect({0,0, city->width, city->height}, footprint))
+	if (!rectInRect(irectXYWH(0,0, city->width, city->height), footprint))
 	{
 		if (isAttemptingToBuild)
 		{

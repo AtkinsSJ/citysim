@@ -13,7 +13,6 @@ Rendering 2.0:
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
 - Fade-out the message popup
-- Stop using SDL_Color, and instead just use V4?
 
 Asset packing:
 - Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them
@@ -30,10 +29,13 @@ Immediate Mode UI:
 	- Per-tile nutrient value
 	- Grass grows naturally, is destroyed by animals and heavy foot traffic
 
+-AI
+	- Only take jobs that can be accomplished
+	- Prioritise jobs that are closer/easier
+
 - Pathfinding!
-	- Whether each tile is pathable
-	- Movement speeds per tile
-	- Rimworld-style 'zones' to establish which areas are inaccessible
+	- Movement speeds per tile?
+	- Use a more intelligent flood-fill algorithm? https://en.wikipedia.org/wiki/Connected-component_labeling
 
 - Scenarios?
 	- System for loading a level

@@ -37,8 +37,6 @@ const real64 real64Max = DBL_MAX;
 
 typedef std::string string;
 
-typedef SDL_Color Color;
-
 const int null = 0;
 
 struct Coord {
@@ -46,17 +44,14 @@ struct Coord {
 };
 
 union Rect {
-	struct {
-		union {
-			struct {Coord pos;};
-			struct {int32 x, y;};
-		};
-		union {
-			struct {Coord dim;};
-			struct {int32 w, h;};
-		};
+	union {
+		struct {Coord pos;};
+		struct {int32 x, y;};
 	};
-	SDL_Rect sdl_rect; // TODO: Remove this! Bad bad bad!
+	union {
+		struct {Coord dim;};
+		struct {int32 w, h;};
+	};
 };
 
 struct V2 {
@@ -93,6 +88,8 @@ struct V4 {
 		};
 	};
 };
+
+typedef V4 Color;
 
 struct RealRect {
 	union {
