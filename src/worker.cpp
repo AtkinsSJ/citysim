@@ -67,40 +67,27 @@ bool doPlantingWork(Worker *worker, FieldData *field) {
 bool doHarvestingWork(City *city, Worker *worker, Building *building) {
 	if (!worker) {} // Here to keep the compiler quiet re: unused parameter
 
-	if (building->field.state != FieldState_Harvesting) {
+	FieldData *field = &building->field;
+
+	if (field->state != FieldState_Harvesting) {
 		// Not harvesting!
 		return true;
 	} else {
-		building->field.progressCounter += 1;
-		if (building->field.progressCounter >= fieldProgressToHarvest) {
-			// Create a crop item!
-			Potato *potato = 0;
-			for (int32 i=0; i<ArrayCount(city->potatoes); i++) {
-				if (!city->potatoes[i].exists) {
-					potato = city->potatoes + i;
-					break;
-				}
-			}
-			ASSERT(potato, "Failed to find a free potato slot!");
-
-			potato->exists = true;
-			potato->bounds = realRect(
-				v2(building->footprint.pos)
-					 + v2(building->field.progress % fieldWidth,
-					 		building->field.progress / fieldWidth),
-				1,1
-			);
-
-			addStoreCropJob(&city->jobBoard, potato);
-
-			building->field.progressCounter -= fieldProgressToHarvest;
-			building->field.progress++;
+		field->progressCounter += 1;
+		if (field->progressCounter >= fieldProgressToHarvest) {
+			field->progressCounter -= fieldProgressToHarvest;
+			field->progress++;
 		}
 
-		if (building->field.progress >= fieldSize) {
-			building->field.state = FieldState_Empty;
-			building->field.progress = 0;
-			building->field.progressCounter = 0;
+		if (field->progress >= fieldSize) {
+			field->state = FieldState_Gathering;
+			field->progress = 0;
+			field->progressCounter = 0;
+
+			for (int i=0; i<fieldSize; i++)
+			{
+				addStoreCropJob(&city->jobBoard, building->footprint.pos);
+			}
 
 			return true;
 		}
@@ -138,9 +125,7 @@ bool workerMoveTo(Worker *worker, Rect rect, GameState *gameState) {
 	worker->pos = worker->dayEndPos;
 	worker->movementInterpolation = 0;
 
-	// // Set-up movement for this day
-	// V2 movement = centre(&rect) - worker->pos;
-	// worker->dayEndPos = worker->pos + limit(movement, 1.0f);
+	// Set-up movement for this day
 	Coord pos = coord(worker->pos);
 	if (canPathTo(&gameState->city, rect, pos, gameState->arena))
 	{
@@ -153,11 +138,6 @@ bool workerMoveTo(Worker *worker, Rect rect, GameState *gameState) {
 	}
 
 	return inRect(rect, worker->pos);
-}
-
-bool workerMoveTo(Worker *worker, Coord coord, GameState *gameState)
-{
-	return workerMoveTo(worker, irectXYWH(coord.x, coord.y, 1, 1), gameState);
 }
 
 void updateWorker(GameState *gameState, Worker *worker) {
@@ -230,62 +210,78 @@ void updateWorker(GameState *gameState, Worker *worker) {
 		case JobType_StoreCrop: {
 			JobData_StoreCrop *jobData = &worker->job.data_StoreCrop;
 
-			// Find a storage barn!
-			Building *barn = getBuildingAtPosition(city, jobData->barnPosition);
-			if (!barn)
+			Building *field = getBuildingAtPosition(city, jobData->fieldPosition);
+			if (!worker->isCarryingPotato
+				&& (!field
+					|| field->archetype != BA_Field
+					|| field->field.state != FieldState_Gathering))
 			{
-				Building *closestBarn = null;
-				real32 closestBarnDistance = real32Max;
-
-				for (Building *currentBarn = city->firstBuildingOfType[BA_Barn];
-					currentBarn; // Should only be null if no barns exist!
-					currentBarn = currentBarn->nextOfType)
-				{
-					real32 distance = v2Length(jobData->potato->bounds.pos - centre(&currentBarn->footprint));
-					if (distance < closestBarnDistance) {
-						closestBarnDistance = distance;
-						closestBarn = currentBarn;
-					}
-
-					// Stop when we hit the first one again
-					if (currentBarn->nextOfType == city->firstBuildingOfType[BA_Barn])
-					{
-						break;
-					}
-				}
-
-				if (closestBarn)
-				{
-					barn = closestBarn;
-					jobData->barnPosition = barn->footprint.pos;
-				}
+				// The field we're trying to head to is invalid somehow.
+				endJob(worker);
 			}
+			else
+			{
+				// Find a storage barn!
+				Building *barn = getBuildingAtPosition(city, jobData->barnPosition);
+				if (!barn)
+				{
+					Building *closestBarn = null;
+					int32 closestBarnDistance = int32Max;
 
-			if (barn) {
-				if (worker->isCarryingPotato) {
-					if (worker->isAtDestination) {
-						// Deposit potato for fun and profit
-						sellAPotato(city);
-						worker->isCarryingPotato = false;
-						endJob(worker);
+					for (Building *currentBarn = city->firstBuildingOfType[BA_Barn];
+						currentBarn; // Should only be null if no barns exist!
+						currentBarn = currentBarn->nextOfType)
+					{
+						int32 distance = manhattanDistance(field->footprint, currentBarn->footprint);
+						if (distance < closestBarnDistance) {
+							closestBarnDistance = distance;
+							closestBarn = currentBarn;
+						}
 
+						// Stop when we hit the first one again
+						if (currentBarn->nextOfType == city->firstBuildingOfType[BA_Barn])
+						{
+							break;
+						}
+					}
+
+					if (closestBarn)
+					{
+						barn = closestBarn;
+						jobData->barnPosition = barn->footprint.pos;
+					}
+				}
+
+				if (barn) {
+					if (worker->isCarryingPotato) {
+						if (worker->isAtDestination) {
+							// Deposit potato for fun and profit
+							sellAPotato(city);
+							worker->isCarryingPotato = false;
+							endJob(worker);
+
+						} else {
+							workerMoveTo(worker, barn->footprint, gameState);
+						}
 					} else {
-						workerMoveTo(worker, barn->footprint, gameState);
+						if (worker->isAtDestination) {
+							// Pick-up potato for fun and profit
+							field->field.progress++;
+							if (field->field.progress >= fieldSize)
+							{
+								field->field.state = FieldState_Empty;
+							}
+							worker->isCarryingPotato = true;
+							worker->isAtDestination = false;
+
+						} else {
+							workerMoveTo(worker, field->footprint, gameState);
+						}
 					}
 				} else {
-					if (worker->isAtDestination) {
-						// Pick-up potato for fun and profit
-						jobData->potato->exists = false;
-						worker->isCarryingPotato = true;
-						worker->isAtDestination = false;
-
-					} else {
-						workerMoveTo(worker, coord(jobData->potato->bounds.pos), gameState);
-					}
+					worker->isMoving = false;
+					pushUiMessage("Construct a barn to store harvested crops!");
 				}
-			} else {
-				worker->isMoving = false;
-				pushUiMessage("Construct a barn to store harvested crops!");
 			}
 		} break;
 	}

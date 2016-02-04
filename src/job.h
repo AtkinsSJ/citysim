@@ -24,7 +24,7 @@ struct JobData_Harvest
 };
 struct JobData_StoreCrop
 {
-	Potato *potato;
+	Coord fieldPosition;
 	Coord barnPosition;
 };
 

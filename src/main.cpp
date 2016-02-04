@@ -656,21 +656,6 @@ int main(int argc, char *argv[]) {
 			drawWorker(renderer, gameState->city.workers + i, daysPerFrame);
 		}
 
-		// Draw potatoes!
-		for (int i = 0; i < ArrayCount(gameState->city.potatoes); ++i) {
-			if (gameState->city.potatoes[i].exists) {
-				V2 drawPos = centre(&gameState->city.potatoes[i].bounds);
-				drawTextureAtlasItem(
-					renderer,
-					false,
-					TextureAtlasItem_Potato,
-					drawPos,
-					v2(1,1),
-					depthFromY(drawPos.y)
-				);
-			}
-		}
-
 		// Building preview
 		if (actionMode == ActionMode_Build
 			&& selectedBuildingArchetype != BA_None) {

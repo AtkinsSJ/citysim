@@ -77,36 +77,23 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 	switch (building->field.state) {
 		case FieldState_Planting: {
 			for (int32 i=0; i < building->field.progress; i++) {
-				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
-					 			 building->footprint.pos.y + (i/4) + 0.5f);
-				drawTextureAtlasItem(
-					renderer,
-					false,
-					TextureAtlasItem_Crop0_0,
-					plantPos,
-					v2(1,1),
-					depthFromY(plantPos.y),
-					drawColor
-				);
+				V2 plantPos = v2(building->footprint.pos.x + (i%fieldWidth) + 0.5f,
+					 			 building->footprint.pos.y + (i/fieldWidth) + 0.5f);
+				drawTextureAtlasItem(renderer, false, TextureAtlasItem_Crop0_0, plantPos, v2(1,1),
+									depthFromY(plantPos.y), drawColor);
 			}
 
 			// 'Planting' indicator
-			drawTextureAtlasItem(
-				renderer,
-				false,
-				TextureAtlasItem_Icon_Planting,
-				centrePos,
-				v2(2,2),
-				depthFromY(centrePos.y) + 10
-			);
+			drawTextureAtlasItem(renderer, false, TextureAtlasItem_Icon_Planting, centrePos, v2(2,2),
+								depthFromY(centrePos.y) + 10);
 		} break;
 
 		case FieldState_Growing: {
 			int32 baseGrowthStage = building->field.progress / fieldSize;
 			int32 beyondGrowth = building->field.progress % fieldSize;
 			for (int32 i=0; i < fieldSize; i++) {
-				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
-					 			 building->footprint.pos.y + (i/4) + 0.5f);
+				V2 plantPos = v2(building->footprint.pos.x + (i%fieldWidth) + 0.5f,
+					 			 building->footprint.pos.y + (i/fieldWidth) + 0.5f);
 				drawTextureAtlasItem(
 					renderer,
 					false,
@@ -121,47 +108,43 @@ void drawField(GLRenderer *renderer, Building *building, Color *drawColor) {
 
 		case FieldState_Grown: {
 			for (int32 i=0; i < fieldSize; i++) {
-				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
-					 			 building->footprint.pos.y + (i/4) + 0.5f);
-				drawTextureAtlasItem(
-					renderer,
-					false,
-					TextureAtlasItem_Crop0_3,
-					plantPos,
-					v2(1,1),
-					depthFromY(plantPos.y),
-					drawColor
-				);
+				V2 plantPos = v2(building->footprint.pos.x + (i%fieldWidth) + 0.5f,
+					 			 building->footprint.pos.y + (i/fieldWidth) + 0.5f);
+				drawTextureAtlasItem(renderer, false, TextureAtlasItem_Crop0_3, plantPos, v2(1,1),
+									depthFromY(plantPos.y), drawColor);
 			}
 		} break;
 
 		case FieldState_Harvesting: {
 
 			for (int32 i=0; i < fieldSize; i++) {
-				if (i < building->field.progress) continue;
 
-				V2 plantPos = v2(building->footprint.pos.x + (i%4) + 0.5f,
-					 			 building->footprint.pos.y + (i/4) + 0.5f);
-				drawTextureAtlasItem(
-					renderer,
-					false,
-					TextureAtlasItem_Crop0_3,
-					plantPos,
-					v2(1,1),
-					depthFromY(plantPos.y),
-					drawColor
-				);
+
+				V2 plantPos = v2(building->footprint.pos.x + (i%fieldWidth) + 0.5f,
+					 			 building->footprint.pos.y + (i/fieldWidth) + 0.5f);
+
+				TextureAtlasItem drawItem = TextureAtlasItem_Crop0_3;
+				if (i < building->field.progress)
+				{
+					drawItem = TextureAtlasItem_Potato;
+				}
+				drawTextureAtlasItem(renderer, false, drawItem, plantPos, v2(1,1),
+									depthFromY(plantPos.y), drawColor);
 			}
 
 			// 'Harvesting' indicator
-			drawTextureAtlasItem(
-				renderer,
-				false,
-				TextureAtlasItem_Icon_Harvesting,
-				centrePos,
-				v2(2,2),
-				depthFromY(centrePos.y) + 10
-			);
+			drawTextureAtlasItem(renderer, false, TextureAtlasItem_Icon_Harvesting, centrePos, v2(2,2),
+								depthFromY(centrePos.y) + 10);
+		} break;
+
+		case FieldState_Gathering: {
+			for (int32 i=building->field.progress; i < fieldSize; i++) {
+
+				V2 plantPos = v2(building->footprint.pos.x + (i%fieldWidth) + 0.5f,
+					 			 building->footprint.pos.y + (i/fieldWidth) + 0.5f);
+				drawTextureAtlasItem(renderer, false, TextureAtlasItem_Potato, plantPos, v2(1,1),
+									depthFromY(plantPos.y), drawColor);
+			}
 		} break;
 	}
 }

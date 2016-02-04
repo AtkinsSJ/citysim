@@ -46,6 +46,7 @@ enum FieldState {
 	FieldState_Growing,
 	FieldState_Grown,
 	FieldState_Harvesting,
+	FieldState_Gathering,
 };
 struct FieldData {
 	FieldState state;
@@ -70,12 +71,6 @@ const int fieldMaxGrowth = fieldSize*3;
 const int fieldProgressToPlant = 1;
 const int fieldProgressToHarvest = 1;
 
-struct Potato
-{
-	bool exists;
-	RealRect bounds; // In tiles!
-	// NB: bounds rather than position because of workerMoveTo()
-};
 const V2 potatoCarryOffset = v2(-4.0f/16.0f, -14.0f/16.0f);
 
 struct Worker
@@ -123,8 +118,6 @@ struct City {
 	uint32 workerCount;
 	Worker workers[512]; // TODO: Decide on number of workers!
 	JobBoard jobBoard;
-
-	Potato potatoes[2048]; // TODO: We really need to organise proper storage for random junk
 };
 
 inline uint32 tileIndex(City *city, int32 x, int32 y) {

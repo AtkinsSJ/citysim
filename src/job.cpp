@@ -22,10 +22,10 @@ void addHarvestJob(JobBoard *board, Coord fieldPosition) {
 	job->data_Harvest.fieldPosition = fieldPosition;
 }
 
-void addStoreCropJob(JobBoard *board, Potato *potato) {
+void addStoreCropJob(JobBoard *board, Coord fieldPosition) {
 	Job *job = getFreeJob(board);
 	job->type = JobType_StoreCrop;
-	job->data_StoreCrop.potato = potato;
+	job->data_StoreCrop.fieldPosition = fieldPosition;
 }
 
 bool workExists(JobBoard *board) {
