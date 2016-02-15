@@ -83,10 +83,9 @@ void showCostTooltip(Tooltip *tooltip, GLRenderer *renderer, int32 cost, int32 c
 const real32 uiPadding = 4;
 
 struct MainMenuUI {
-	UiLabel cityNameEntryLabel,
-			gameSetupLabel,
-			gameRulesWinLoseLabel,
-			gameRulesWorkersLabel;
+
+	char *cityName;
+
 	UiButton buttonStart,
 			buttonExit,
 			buttonWebsite;
@@ -95,22 +94,7 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 
 	*menu = {};
 	V2 screenCentre = v2(renderer->worldCamera.windowSize) / 2.0f;
-	
-	initUiLabel(&menu->gameSetupLabel, screenCentre - v2(0, 50), ALIGN_CENTER,
-				"Type a name for your farm, then click on 'Play'.", renderer->theme.font,
-				renderer->theme.labelColor);
-	initUiLabel(&menu->cityNameEntryLabel, screenCentre, ALIGN_CENTER, cityName,
-				renderer->theme.font, renderer->theme.textboxTextColor,
-				true, renderer->theme.textboxBackgroundColor, 4.0f);
-
-	char tempBuffer[256];
-	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
-	initUiLabel(&menu->gameRulesWinLoseLabel, screenCentre + v2(0, 50), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, renderer->theme.labelColor);
-
-	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
-	initUiLabel(&menu->gameRulesWorkersLabel, screenCentre + v2(0, 100), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, renderer->theme.labelColor);
+	menu->cityName = cityName;
 
 	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
@@ -119,18 +103,34 @@ void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
 	buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
 	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
 }
+
 void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
 			0, renderer->theme.overlayColor);
 
-	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo,
-		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f), 0);
+	V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
 
-	drawUiLabel(renderer, &menu->gameSetupLabel);
-	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
-	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
+	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 
-	drawUiLabel(renderer, &menu->cityNameEntryLabel);
+	position.y += 154.0f;
+
+	uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'.",
+			position, ALIGN_CENTER, renderer->theme.labelColor);
+	position.y += 32;
+
+	uiLabel(renderer, renderer->theme.font, menu->cityName,
+			position, ALIGN_CENTER, renderer->theme.labelColor);
+	position.y += 32;
+
+	uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
+			position, ALIGN_CENTER, renderer->theme.labelColor);
+	position.y += 32;
+
+	uiLabel(renderer, renderer->theme.font, "Workers are paid £50 at the start of each month.",
+			position, ALIGN_CENTER, renderer->theme.labelColor);
+	position.y += 32;
+
+	///
 
 	drawUiButton(renderer, &menu->buttonExit);
 	drawUiButton(renderer, &menu->buttonWebsite);

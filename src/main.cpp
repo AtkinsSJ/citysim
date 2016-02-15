@@ -46,6 +46,7 @@ struct GameState
 	Calendar calendar;
 };
 
+#include "immediate-ui.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
 #include "job.cpp"
@@ -682,10 +683,6 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (gameStatus == GameStatus_Setup) {
-			if (cityNameTextDirty) {
-				cityNameTextDirty = false;
-				setUiLabelText(&mainMenuUI.cityNameEntryLabel, cityName);
-			}
 			drawMainMenuUI(&mainMenuUI, renderer);
 
 		} else {
