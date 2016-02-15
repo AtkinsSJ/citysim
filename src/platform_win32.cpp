@@ -2,6 +2,7 @@
 
 // platform_win32.cpp
 
+#include <windows.h>
 #include <shellapi.h>
 
 void openUrlUnsafe(char* url) {
