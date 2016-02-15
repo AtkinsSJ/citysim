@@ -114,38 +114,14 @@ bool initOpenGL(GLRenderer *renderer)
 
 	glEnable(GL_TEXTURE_2D);
 
-	TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 
 	// VERTEX SHADER
 	{
+		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-		void *shaderData = readFile(&tempArena, "general.vert.gl", "r");
-		shaderData = shaderData;
-
-		const GLchar* vertexShaderSource[] = {
-			"#version 150\n"
-
-			"in vec3 aPosition;"
-			"in vec4 aColor;"
-			"in vec2 aUV;"
-			"in int aTextureID;"
-
-			"out vec4 vColor;"
-			"out vec2 vUV;"
-			"out flat int vTextureID;"
-
-			"uniform mat4 uProjectionMatrix;"
-
-			"void main() {"
-				"gl_Position = uProjectionMatrix * vec4( aPosition.xyz, 1 );"
-				"vColor = aColor;"
-				"vUV = aUV;"
-				"vTextureID = aTextureID;"
-			"}"
-		};
-
-		glShaderSource(vertexShader, 1, vertexShaderSource, NULL);
+		GLchar *shaderData[1] = {(GLchar*) readFile(&tempArena, "general.vert.gl", "r")};
+		glShaderSource(vertexShader, 1, shaderData, NULL);
 		glCompileShader(vertexShader);
 
 		GLint vShaderCompiled = GL_FALSE;
@@ -158,31 +134,17 @@ bool initOpenGL(GLRenderer *renderer)
 		}
 		glAttachShader(renderer->shaderProgramID, vertexShader);
 		glDeleteShader(vertexShader);
+
+		endTemporaryMemory(&tempArena);
 	}
 
 	// FRAGMENT SHADER
 	{
+		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		const GLchar* fragmentShaderSource[] = {
-			"#version 150\n"
-
-			"uniform sampler2DArray uTextures;"
-
-			"in vec4 vColor;"
-			"in vec2 vUV;"
-			"in flat int vTextureID;"
-
-			"out vec4 fragColor;"
-
-			"void main() {"
-				"fragColor = vColor;"
-				"if (vTextureID != -1) {"
-					"vec4 texel = texture(uTextures, vec3(vUV, vTextureID));"
-					"fragColor *= texel;"
-				"}"
-			"}"
-		};
-		glShaderSource(fragmentShader, 1, fragmentShaderSource, NULL);
+		GLchar *shaderData[1] = {(GLchar*) readFile(&tempArena, "general.frag.gl", "r")};
+		glShaderSource(fragmentShader, 1, shaderData, NULL);
 		glCompileShader(fragmentShader);
 
 		GLint fShaderCompiled = GL_FALSE;
@@ -195,9 +157,9 @@ bool initOpenGL(GLRenderer *renderer)
 		}
 		glAttachShader(renderer->shaderProgramID, fragmentShader);
 		glDeleteShader(fragmentShader);
-	}
 
-	endTemporaryMemory(&tempArena);
+		endTemporaryMemory(&tempArena);
+	}
 
 	// Link shader program
 	glLinkProgram(renderer->shaderProgramID);

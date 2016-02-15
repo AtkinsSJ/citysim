@@ -10,7 +10,7 @@ void *readFile(TemporaryMemoryArena *tempMemory, char *filename, char *mode)
 		size_t fileLength = (size_t) file->seek(file, 0, RW_SEEK_END);
 		file->seek(file, 0, RW_SEEK_SET);
 
-		fileData = allocate(tempMemory, fileLength);
+		fileData = allocate(tempMemory, fileLength + 1); // 1 longer to ensure a trailing null for strings!
 
 		if (fileData)
 		{
