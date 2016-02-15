@@ -114,9 +114,15 @@ bool initOpenGL(GLRenderer *renderer)
 
 	glEnable(GL_TEXTURE_2D);
 
+	TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
 	// VERTEX SHADER
 	{
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+		void *shaderData = readFile(&tempArena, "general.vert.gl", "r");
+		shaderData = shaderData;
+
 		const GLchar* vertexShaderSource[] = {
 			"#version 150\n"
 
@@ -190,6 +196,8 @@ bool initOpenGL(GLRenderer *renderer)
 		glAttachShader(renderer->shaderProgramID, fragmentShader);
 		glDeleteShader(fragmentShader);
 	}
+
+	endTemporaryMemory(&tempArena);
 
 	// Link shader program
 	glLinkProgram(renderer->shaderProgramID);
@@ -718,7 +726,7 @@ void render(GLRenderer *renderer)
 	// Sort sprites
 	sortSpriteBuffer(&renderer->worldBuffer);
 
-	#if 1
+	#if 0
 	// Check buffer is sorted
 	real32 lastDepth = real32Min;
 	for (uint32 i=0; i<=renderer->worldBuffer.spriteCount; i++)

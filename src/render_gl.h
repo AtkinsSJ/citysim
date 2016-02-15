@@ -164,6 +164,11 @@ struct Sprite
 	V4 color;
 };
 
+inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect uv, V4 color)
+{
+	return {rect, depth, textureID, uv, color};
+}
+
 const int WORLD_SPRITE_MAX = 16384;
 const int UI_SPRITE_MAX = 1024;
 const int SPRITE_MAX = WORLD_SPRITE_MAX;

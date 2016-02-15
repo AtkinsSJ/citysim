@@ -93,10 +93,10 @@ BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, V4 color)
 			BitmapFontChar *c = findChar(font, uChar);
 			if (c)
 			{
-				*(result->sprites + result->spriteCount++) = {
+				*(result->sprites + result->spriteCount++) = makeSprite(
 					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset, (real32)c->size.w, (real32)c->size.h),
 					0, c->textureID, c->uv, color
-				};
+				);
 				position.x += (real32)c->xAdvance;
 				result->size.x += (real32)c->xAdvance;
 			}
