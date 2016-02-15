@@ -279,7 +279,7 @@ void render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
 
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *TempArena, const char *filename, TexturesToLoad *texturesToLoad);
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, TexturesToLoad *texturesToLoad);
 
 inline real32 depthFromY(real32 y)
 {

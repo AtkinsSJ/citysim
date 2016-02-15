@@ -14,7 +14,6 @@ Rendering 2.0:
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
 - Fade-out the message popup
-- Shaders in their own files!
 
 Asset packing:
 - Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them

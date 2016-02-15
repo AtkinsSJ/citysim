@@ -120,7 +120,7 @@ bool initOpenGL(GLRenderer *renderer)
 		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 
 		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		GLchar *shaderData[1] = {(GLchar*) readFile(&tempArena, "general.vert.gl", "r")};
+		GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, "general.vert.gl")};
 		glShaderSource(vertexShader, 1, shaderData, NULL);
 		glCompileShader(vertexShader);
 
@@ -143,7 +143,7 @@ bool initOpenGL(GLRenderer *renderer)
 		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		GLchar *shaderData[1] = {(GLchar*) readFile(&tempArena, "general.frag.gl", "r")};
+		GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, "general.frag.gl")};
 		glShaderSource(fragmentShader, 1, shaderData, NULL);
 		glCompileShader(fragmentShader);
 
