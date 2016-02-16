@@ -2,14 +2,14 @@
 
 // worker.cpp
 
-bool hireWorker(City *city, V2 position) {
+bool hireWorker(GLRenderer *renderer, City *city, V2 position) {
 	if (!city->firstBuildingOfType[BA_Farmhouse]) {
-		pushUiMessage("You need a headquarters to hire workers.");
+		pushUiMessage(renderer, "You need a headquarters to hire workers.");
 		return false;
 	}
 
 	if (!canAfford(city, workerHireCost)) {
-		pushUiMessage("Not enough money to hire a worker.");
+		pushUiMessage(renderer, "Not enough money to hire a worker.");
 		return false;
 	}
 
@@ -140,7 +140,7 @@ bool workerMoveTo(Worker *worker, Rect rect, GameState *gameState) {
 	return inRect(rect, worker->pos);
 }
 
-void updateWorker(GameState *gameState, Worker *worker) {
+void updateWorker(GLRenderer *renderer, GameState *gameState, Worker *worker) {
 	if (!worker->exists) return;
 
 	City *city = &gameState->city;
@@ -280,7 +280,7 @@ void updateWorker(GameState *gameState, Worker *worker) {
 					}
 				} else {
 					worker->isMoving = false;
-					pushUiMessage("Construct a barn to store harvested crops!");
+					pushUiMessage(renderer, "Construct a barn to store harvested crops!");
 				}
 			}
 		} break;

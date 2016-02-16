@@ -1,98 +1,105 @@
 // ui.cpp
 
-/**
- * Change the text of the given UiLabel, which regenerates the Texture.
- */
-void setUiLabelText(UiLabel *label, char *newText)
+void setTooltip(GLRenderer *renderer, char *text, V4 color)
 {
-	// TODO: If the text is the same, do nothing!
-
-	if (label->cache)
-	{
-		free(label->cache);
-	}
-
-	label->text = newText;
-	label->cache = drawTextToCache(label->font, label->text, label->color);
+	strncpy(renderer->tooltip.text, text, sizeof(renderer->tooltip.text));
+	renderer->tooltip.color = color;
+	renderer->tooltip.show = true;
 }
 
-void initUiLabel(UiLabel *label, V2 position, int32 align,
-				char *text, BitmapFont *font, V4 color,
-				bool hasBackground=false, V4 backgroundColor=makeWhite(), real32 backgroundPadding=0)
+void drawTooltip(GLRenderer *renderer, InputState *inputState)
 {
-	*label = {};
-
-	label->text = text;
-	label->font = font;
-	label->color = color;
-	label->origin = position;
-	label->align = align;
-
-	if (hasBackground)
+	if (renderer->tooltip.show)
 	{
-		label->hasBackground = true;
-		label->backgroundColor = backgroundColor;
-		label->backgroundPadding = backgroundPadding;
-	}
+		TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
 
-	setUiLabelText(label, text);
+		BitmapFontCachedText *textCache =
+			drawTextToCache(&memory, renderer->theme.font, renderer->tooltip.text, renderer->tooltip.color);
+		V2 topLeft = v2(inputState->mousePos) + renderer->tooltip.offsetFromCursor;
+		RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x + 8, textCache->size.y + 8);
+
+		drawRect(renderer, true, bounds, 100, renderer->theme.tooltipBackgroundColor);
+		drawCachedText(renderer, textCache, topLeft + v2(4,4), 101);
+
+		endTemporaryMemory(&memory);
+
+		renderer->tooltip.show = false;
+	}
 }
 
-void drawUiLabel(GLRenderer *renderer, UiLabel *label)
+void uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align, real32 depth, V4 color)
 {
-	V2 topLeft = calculateTextPosition(label->cache, label->origin, label->align);
-	if (label->hasBackground)
-	{
-		RealRect background = rectXYWH(
-			topLeft.x - label->backgroundPadding,
-			topLeft.y - label->backgroundPadding,
-			label->cache->size.x + label->backgroundPadding * 2.0f, 
-			label->cache->size.y + label->backgroundPadding * 2.0f
-		);
-		drawRect(renderer, true, background, 0, label->backgroundColor);
-	}
-	drawCachedText(renderer, label->cache, topLeft, 0);
+	TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
+
+	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color);
+	V2 topLeft = calculateTextPosition(textCache, origin, align);
+	drawCachedText(renderer, textCache, topLeft, depth);
+
+	endTemporaryMemory(&memory);
 }
 
-///////////////////////////////////////////////////////////////////////////////////
-//                                UI MESSAGE                                     //
-///////////////////////////////////////////////////////////////////////////////////
-UiMessage __globalUiMessage;
-
-void initUiMessage(GLRenderer *renderer)
+bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,
+			SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
-	__globalUiMessage = {};
-	__globalUiMessage.renderer = renderer;
+	bool buttonClicked = false;
 
-	__globalUiMessage.background = renderer->theme.overlayColor;
+	V4 backColor = renderer->theme.buttonBackgroundColor;
 
-	initUiLabel(&__globalUiMessage.label, {400, 600-8}, ALIGN_H_CENTRE | ALIGN_BOTTOM,
-				"", renderer->theme.font, renderer->theme.labelColor,
-				true, renderer->theme.overlayColor, 4);
-}
-
-void pushUiMessage(char *message)
-{
-
-	if (strcmp(message, __globalUiMessage.label.text))
+	if (inRect(bounds, v2(inputState->mousePos)))
 	{
-		// Message is differenct
-		setUiLabelText(&__globalUiMessage.label, message);
+		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+		{
+			backColor = renderer->theme.buttonPressedColor;
+		}
+		else
+		{
+			backColor = renderer->theme.buttonHoverColor;
+		}
+
+		buttonClicked = mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT);
+
+		// tooltip!
+		if (tooltip)
+		{
+			setTooltip(renderer, tooltip, renderer->theme.tooltipColorNormal);
+		}
 	}
 
-	// Always refresh the countdown
-	__globalUiMessage.messageCountdown = 2000;
+	drawRect(renderer, true, bounds, depth, backColor);
+	uiLabel(renderer, renderer->theme.buttonFont, text, centre(bounds), ALIGN_CENTRE, depth + 1,
+			renderer->theme.buttonTextColor);
+
+	return buttonClicked;
+}
+
+void pushUiMessage(GLRenderer *renderer, char *message)
+{
+	strncpy(renderer->message.text, message, sizeof(renderer->message.text));
+	renderer->message.countdown = 2000;
 }
 
 void drawUiMessage(GLRenderer *renderer)
 {
-	if (__globalUiMessage.messageCountdown > 0)
+	if (renderer->message.countdown > 0)
 	{
-		__globalUiMessage.messageCountdown -= MS_PER_FRAME;
+		renderer->message.countdown -= MS_PER_FRAME;
 
-		if (__globalUiMessage.messageCountdown > 0)
+		if (renderer->message.countdown > 0)
 		{
-			drawUiLabel(renderer, &__globalUiMessage.label);
+			TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
+
+			BitmapFontCachedText *textCache = drawTextToCache(&memory, renderer->theme.font,
+											renderer->message.text, renderer->theme.tooltipColorNormal);
+			V2 topLeft = calculateTextPosition(textCache,
+				v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f),
+				ALIGN_H_CENTRE | ALIGN_BOTTOM );
+			RealRect bounds = rectXYWH(topLeft.x - 4, topLeft.y - 4,
+									   textCache->size.x + 8, textCache->size.y + 8);
+
+			drawRect(renderer, true, bounds, 100, renderer->theme.tooltipBackgroundColor);
+			drawCachedText(renderer, textCache, topLeft, 101);
+
+			endTemporaryMemory(&memory);
 		}
 	}
 }

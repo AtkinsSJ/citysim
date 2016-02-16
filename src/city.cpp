@@ -42,7 +42,7 @@ void spend(City *city, int32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
+bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
 	bool isAttemptingToBuild = false)
 {
 
@@ -52,7 +52,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage("You can only have one farmhouse!");
+			pushUiMessage(renderer, "You can only have one farmhouse!");
 		}
 		return false;
 	}
@@ -64,7 +64,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage("Not enough money to build this.");
+			pushUiMessage(renderer, "Not enough money to build this.");
 		}
 		return false;
 	}
@@ -76,7 +76,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage("You cannot build off the map edge.");
+			pushUiMessage(renderer, "You cannot build off the map edge.");
 		}
 		return false;
 	}
@@ -91,7 +91,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 			{
 				if (isAttemptingToBuild)
 				{
-					pushUiMessage("You cannot build there.");
+					pushUiMessage(renderer, "You cannot build there.");
 				}
 				return false;
 			}
@@ -100,7 +100,7 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 			{
 				// if (isAttemptingToBuild)
 				// {
-				// 	pushUiMessage("You cannot overlap buildings.");
+				// 	pushUiMessage(renderer, "You cannot overlap buildings.");
 				// }
 				return false;
 			}
@@ -112,9 +112,9 @@ bool canPlaceBuilding(City *city, BuildingArchetype selectedBuildingArchetype, C
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
+bool placeBuilding(GLRenderer *renderer, City *city, BuildingArchetype archetype, Coord position) {
 
-	if (!canPlaceBuilding(city, archetype, position, true)) {
+	if (!canPlaceBuilding(renderer, city, archetype, position, true)) {
 		return false;
 	}
 
@@ -167,7 +167,7 @@ bool placeBuilding(City *city, BuildingArchetype archetype, Coord position) {
 	return true;
 }
 
-bool demolishTile(City *city, Coord position) {
+bool demolishTile(GLRenderer *renderer, City *city, Coord position) {
 	if (!tileExists(city, position.x, position.y)) return true;
 
 	uint32 posTI = tileIndex(city, position.x, position.y);
@@ -181,7 +181,7 @@ bool demolishTile(City *city, Coord position) {
 
 		// Can we afford to demolish this?
 		if (!canAfford(city, def.demolishCost)) {
-			pushUiMessage("Not enough money to demolish this.");
+			pushUiMessage(renderer, "Not enough money to demolish this.");
 			return false;
 		}
 
@@ -272,7 +272,7 @@ bool demolishTile(City *city, Coord position) {
 			city->terrain[posTI] = Terrain_Ground;
 			return true;
 		} else {
-			pushUiMessage("Not enough money to destroy these trees.");
+			pushUiMessage(renderer, "Not enough money to destroy these trees.");
 			return false;
 		}
 
@@ -306,17 +306,17 @@ int32 calculateDemolitionCost(City *city, Rect rect) {
 	return total;
 }
 
-bool demolishRect(City *city, Rect rect) {
+bool demolishRect(GLRenderer *renderer, City *city, Rect rect) {
 
 	int32 cost = calculateDemolitionCost(city, rect);
 	if (!canAfford(city, cost)) {
-		pushUiMessage("Not enough money for demolition.");
+		pushUiMessage(renderer, "Not enough money for demolition.");
 		return false;
 	}
 
 	for (int y=0; y<rect.h; y++) {
 		for (int x=0; x<rect.w; x++) {
-			if (!demolishTile(city, {rect.x + x, rect.y + y})) {
+			if (!demolishTile(renderer, city, {rect.x + x, rect.y + y})) {
 				return false;
 			}
 		}

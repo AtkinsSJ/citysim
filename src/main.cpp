@@ -46,7 +46,6 @@ struct GameState
 	Calendar calendar;
 };
 
-#include "immediate-ui.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
 #include "job.cpp"
@@ -158,7 +157,6 @@ int main(int argc, char *argv[]) {
 	// Build UI
 	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 	V2 textPosition = v2(8,4);
-	initUiMessage(renderer);
 	
 	// GAME LOOP
 	while (!quit) {
@@ -289,7 +287,7 @@ int main(int argc, char *argv[]) {
 
 			// Workers!
 			for (int i = 0; i < ArrayCount(gameState->city.workers); ++i) {
-				updateWorker(gameState, gameState->city.workers + i);
+				updateWorker(renderer, gameState, gameState->city.workers + i);
 			}
 		}
 		if (calendarChange.isNewMonth) {
@@ -353,7 +351,7 @@ int main(int argc, char *argv[]) {
 				if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
 					renderer->worldCamera.pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
 				} else {
-					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
+					pushUiMessage(renderer, "Build an HQ, then pressing [Home] will take you there.");
 				}
 			}
 
@@ -363,7 +361,7 @@ int main(int argc, char *argv[]) {
 				switch (actionMode) {
 					case ActionMode_Build: {
 						if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
-							placeBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos);
+							placeBuilding(renderer, &gameState->city, selectedBuildingArchetype, mouseTilePos);
 						}
 
 						int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
@@ -382,27 +380,27 @@ int main(int argc, char *argv[]) {
 
 						if (mouseButtonJustReleased(&inputState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
-							demolishRect(&gameState->city, dragRect);
+							demolishRect(renderer, &gameState->city, dragRect);
 							dragRect = irectXYWH(-1,-1,0,0);
 						}
 					} break;
 
 					case ActionMode_Plant: {
 						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
-							plantField(&gameState->city, mouseTilePos);
+							plantField(renderer, &gameState->city, mouseTilePos);
 						}
 						showCostTooltip(renderer, fieldPlantCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Harvest: {
 						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
-							harvestField(&gameState->city, mouseTilePos);
+							harvestField(renderer, &gameState->city, mouseTilePos);
 						}
 					} break;
 
 					case ActionMode_Hire: {
 						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
-							if (hireWorker(&gameState->city, mouseWorldPos)) {
+							if (hireWorker(renderer, &gameState->city, mouseWorldPos)) {
 								// Update the monthly spend display
 								gameState->city.monthlyExpenditure = gameState->city.workerCount * workerMonthlyCost;
 							}
@@ -567,7 +565,7 @@ int main(int argc, char *argv[]) {
 			&& selectedBuildingArchetype != BA_None) {
 
 			V4 ghostColor = color255(128,255,128,255);
-			if (!canPlaceBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos)) {
+			if (!canPlaceBuilding(renderer, &gameState->city, selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = color255(255,0,0,128);
 			}
 			Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[selectedBuildingArchetype].size);
@@ -686,6 +684,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		drawTooltip(renderer, &inputState);
+		// drawUiMessage(renderer);
 
 	// Actually draw things!
 		render(renderer);

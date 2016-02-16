@@ -117,7 +117,6 @@ bool initOpenGL(GLRenderer *renderer)
 
 	glEnable(GL_TEXTURE_2D);
 
-
 	// VERTEX SHADER
 	{
 		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);

@@ -181,11 +181,19 @@ struct RenderBuffer
 	uint32 maxSprites;
 };
 
-struct Tooltip {
+struct Tooltip
+{
 	bool show;
 	V2 offsetFromCursor;
 	V4 color;
-	char text[128];
+	char text[256];
+};
+const real32 uiMessageBottomMargin = 4,
+			uiMessageTextPadding = 4;
+struct UiMessage
+{
+	char text[256];
+	int32 countdown; // In milliseconds
 };
 
 struct GLRenderer
@@ -211,7 +219,6 @@ struct GLRenderer
 	Camera worldCamera;
 
 	RenderBuffer worldBuffer;
-	RenderBuffer uiBuffer;
 
 	VertexData vertices[SPRITE_MAX * 4];
 	GLuint indices[SPRITE_MAX * 6];
@@ -219,8 +226,12 @@ struct GLRenderer
 	Animation animations[Animation_Count];
 
 	TextureAtlas textureAtlas;
+
+	// UI Stuff!
 	UiTheme theme;
+	RenderBuffer uiBuffer;
 	Tooltip tooltip;
+	UiMessage message;
 };
 
 const uint32 TEXTURE_WIDTH = 512,
@@ -248,7 +259,7 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPr
 	textures->filenames[textureID] = textures->filenamesBuffer + textures->bufferPos;
 	textures->isAlphaPremultiplied[textureID] = isAlphaPremultiplied;
 
-	strcpy(textures->filenames[textureID], filename);
+	strncpy(textures->filenames[textureID], filename, sizeof(textures->filenames[textureID]));
 	textures->bufferPos += filenameLength;
 
 	return (GLint)textureID;
