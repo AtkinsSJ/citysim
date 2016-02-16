@@ -2,10 +2,15 @@
 
 void uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align, real32 depth, V4 color)
 {
-	// TODO: Implement alignment!
-	V2 topLeft = origin; //calculateTextPosition(label->cache, label->origin, label->align);
-	
-	drawText(renderer, font, topLeft, text, depth, color);
+	TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
+
+	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color);
+	V2 topLeft = calculateTextPosition(textCache, origin, align);
+	drawCachedText(renderer, textCache, topLeft, depth);
+
+	// drawText(renderer, font, topLeft, text, depth, color);
+
+	endTemporaryMemory(&memory);
 }
 
 bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,

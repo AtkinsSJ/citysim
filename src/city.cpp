@@ -327,16 +327,6 @@ bool demolishRect(City *city, Rect rect) {
 	return true;
 }
 
-inline void getCityFundsString(City *city, char *buffer) {
-	sprintf(buffer, "£%d", city->funds);
-}
-
-inline void updateFundsLabel(City *city, UiLabel *label) {
-	char buffer[20];
-	getCityFundsString(city, buffer);
-	setUiLabelText(label, buffer);
-}
-
 void sellAPotato(City *city) {
 	city->funds += 100;
 }

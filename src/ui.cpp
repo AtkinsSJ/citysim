@@ -51,7 +51,7 @@ void drawUiLabel(GLRenderer *renderer, UiLabel *label)
 		);
 		drawRect(renderer, true, background, 0, label->backgroundColor);
 	}
-	drawCachedText(renderer, label->cache, topLeft);
+	drawCachedText(renderer, label->cache, topLeft, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
