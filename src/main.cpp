@@ -160,20 +160,6 @@ int main(int argc, char *argv[]) {
 	// Build UI
 	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 	V2 textPosition = v2(8,4);
-	UiLabel textCityName;
-	initUiLabel(&textCityName, textPosition, ALIGN_LEFT | ALIGN_TOP, gameState->city.name,
-				renderer->theme.font, renderer->theme.labelColor);
-
-	textPosition.x = 800 / 2 - 100;
-	UiIntLabel labelCityFunds;
-	initUiIntLabel(&labelCityFunds, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, renderer->theme.labelColor, &gameState->city.funds, "£%d");
-
-	textPosition.x = 800 / 2 + 100;
-	UiIntLabel labelMonthlyExpenditure;
-	initUiIntLabel(&labelMonthlyExpenditure, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, renderer->theme.labelColor, &gameState->city.monthlyExpenditure, "(-£%d/month)");
-
 	initUiMessage(renderer);
 
 	// Tooltip
@@ -226,9 +212,6 @@ int main(int argc, char *argv[]) {
 	initMainMenuUI(&mainMenuUI, renderer, cityName);
 
 	// Game over UI
-	UiLabel gameOverLabel;
-	initUiLabel(&gameOverLabel, cameraCentre, ALIGN_CENTER, "You ran out of money! :(",
-				renderer->theme.font, renderer->theme.labelColor);
 	UiButton buttonMenu;
 	buttonRect.pos = cameraCentre - buttonRect.size/2;
 	// buttonRect.y += gameOverLabel._rect.h + uiPadding;
@@ -374,12 +357,8 @@ int main(int argc, char *argv[]) {
 	// Win and Lose!
 		if (gameState->city.funds >= gameWinFunds) {
 			gameStatus = GameStatus_Won;
-			char buffer[256];
-			sprintf(buffer, "You won! You earned £%d in %d days", gameWinFunds, gameState->calendar.totalDays);
-			setUiLabelText(&gameOverLabel, buffer);
 		} else if (gameState->city.funds < 0) {
 			gameStatus = GameStatus_Lost;
-			setUiLabelText(&gameOverLabel, "Game over! You ran out of money! :(");
 		}
 
 	// CAMERA!
@@ -551,7 +530,6 @@ int main(int argc, char *argv[]) {
 				openUrlUnsafe("http://samatkins.co.uk");
 			} else if (mainMenuUI.buttonStart.justClicked) {
 				gameStatus = GameStatus_Playing;
-				setUiLabelText(&textCityName, cityName);
 			}
 		} else if (gameStatus == GameStatus_Lost
 				|| gameStatus == GameStatus_Won) {
@@ -687,13 +665,22 @@ int main(int argc, char *argv[]) {
 
 		} else {
 			// Draw some UI
-			drawRect(renderer, true, rectXYWH(0,0, (real32)renderer->worldCamera.windowWidth, 64),
-					 0, renderer->theme.overlayColor);
 
-			drawUiLabel(renderer, &textCityName);
-			drawUiIntLabel(renderer, &labelCityFunds);
-			drawUiIntLabel(renderer, &labelMonthlyExpenditure);
-			drawUiLabel(renderer, &calendarUI.labelDate);
+			real32 right = (real32) renderer->worldCamera.windowWidth;
+			real32 left = 0;
+			char stringBuffer[256];
+
+			drawRect(renderer, true, rectXYWH(left,0, right, 64), -1, renderer->theme.overlayColor);
+
+			uiLabel(renderer, renderer->theme.font, cityName, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
+			left += 100;
+			sprintf(stringBuffer, "£%d", gameState->city.funds);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
+			left += 100;
+			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
+			left += 100;
+			uiLabel(renderer, renderer->theme.font, calendarUI.dateStringBuffer, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
 
 			drawUiMessage(renderer);
 
@@ -714,7 +701,17 @@ int main(int argc, char *argv[]) {
 			drawRect(renderer, true,
 					rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
 					0, renderer->theme.overlayColor);
-			drawUiLabel(renderer, &gameOverLabel); 
+
+			char gameOverText[256];
+			if (gameStatus == GameStatus_Won)
+			{
+				sprintf(gameOverText, "You won! You earned £%d in %d days", gameWinFunds, gameState->calendar.totalDays);
+			} else {
+				sprintf(gameOverText, "Game over! You ran out of money! :(");
+			}
+
+			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre, ALIGN_CENTRE, renderer->theme.labelColor);
+
 			drawUiButton(renderer, &buttonMenu);
 		}
 
@@ -737,24 +734,6 @@ int main(int argc, char *argv[]) {
 	}
 
 // CLEAN UP
-	// Is any of this actually necessary???
-	// A bunch of stuff is missing from this anyway.
-	// freeCity(&city);
-
-	// SDL_FreeCursor(cursorMain);
-	// SDL_FreeCursor(cursorBuild);
-	// SDL_FreeCursor(cursorDemolish);
-	// SDL_FreeCursor(cursorPlant);
-	// SDL_FreeCursor(cursorHarvest);
-	// SDL_FreeCursor(cursorHire);
-
-	// freeUiLabel(&textCityName);
-	// freeUiLabel(&tooltip.label);
-	// freeUiIntLabel(&labelCityFunds);
-	// freeUiMessage();
-
-	// freeUiButtonGroup(&actionButtonGroup);
-	// freeUiButtonGroup(&calendarButtonGroup);
 
 	freeRenderer(renderer);
 

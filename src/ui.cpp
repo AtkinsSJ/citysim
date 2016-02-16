@@ -38,18 +38,6 @@ void initUiLabel(UiLabel *label, V2 position, int32 align,
 	setUiLabelText(label, text);
 }
 
-void initUiIntLabel(UiIntLabel *label, V2 position, int32 align,
-				BitmapFont *font, V4 color, int32 *watchValue, char *formatString)
-{
-	*label = {};
-	label->formatString = formatString;
-	label->value = watchValue;
-	label->lastValue = *watchValue;
-
-	sprintf(label->buffer, label->formatString, *label->value);
-	initUiLabel(&label->label, position, align, label->buffer, font, color);
-}
-
 void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *text,
 					SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
@@ -65,9 +53,9 @@ void initUiButton(UiButton *button, GLRenderer *renderer, RealRect rect, char *t
 	button->tooltip = tooltip;
 
 	// Generate the UiLabel, and centre it
-	V2 buttonCenter = v2(button->rect.x + button->rect.w / 2.0f,
+	V2 buttonCENTRE = v2(button->rect.x + button->rect.w / 2.0f,
 						button->rect.y + button->rect.h / 2.0f);
-	initUiLabel(&button->text, buttonCenter, ALIGN_CENTER, text,
+	initUiLabel(&button->text, buttonCENTRE, ALIGN_CENTRE, text,
 				renderer->theme.buttonFont, renderer->theme.buttonTextColor);
 }
 
@@ -85,16 +73,6 @@ void drawUiLabel(GLRenderer *renderer, UiLabel *label)
 		drawRect(renderer, true, background, 0, label->backgroundColor);
 	}
 	drawCachedText(renderer, label->cache, topLeft);
-}
-
-void drawUiIntLabel(GLRenderer *renderer, UiIntLabel *label)
-{
-	if (*label->value != label->lastValue) {
-		label->lastValue = *label->value;
-		sprintf(label->buffer, label->formatString, *label->value);
-		setUiLabelText(&label->label, label->buffer);
-	}
-	drawUiLabel(renderer, &label->label);
 }
 
 bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState,
@@ -269,7 +247,7 @@ void initUiMessage(GLRenderer *renderer)
 
 	__globalUiMessage.background = renderer->theme.overlayColor;
 
-	initUiLabel(&__globalUiMessage.label, {400, 600-8}, ALIGN_H_CENTER | ALIGN_BOTTOM,
+	initUiLabel(&__globalUiMessage.label, {400, 600-8}, ALIGN_H_CENTRE | ALIGN_BOTTOM,
 				"", renderer->theme.font, renderer->theme.labelColor,
 				true, renderer->theme.overlayColor, 4);
 }

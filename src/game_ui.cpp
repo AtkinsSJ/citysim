@@ -115,19 +115,19 @@ void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	position.y += 154.0f;
 
 	uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'.",
-			position, ALIGN_CENTER, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, renderer->theme.labelColor);
 	position.y += 32;
 
 	uiLabel(renderer, renderer->theme.font, menu->cityName,
-			position, ALIGN_CENTER, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, renderer->theme.labelColor);
 	position.y += 32;
 
 	uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
-			position, ALIGN_CENTER, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, renderer->theme.labelColor);
 	position.y += 32;
 
 	uiLabel(renderer, renderer->theme.font, "Workers are paid £50 at the start of each month.",
-			position, ALIGN_CENTER, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, renderer->theme.labelColor);
 	position.y += 32;
 
 	///
@@ -144,8 +144,7 @@ struct CalendarUI {
 			*buttonPlaySlow,
 			*buttonPlayMedium,
 			*buttonPlayFast;
-	UiLabel labelDate;
-	char dateStringBuffer[50];
+	char dateStringBuffer[256];
 };
 void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 
@@ -154,8 +153,6 @@ void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 
 	V2 textPosition = v2(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
 	getDateString(calendar, ui->dateStringBuffer);
-	initUiLabel(&ui->labelDate, textPosition, ALIGN_RIGHT | ALIGN_TOP,
-				ui->dateStringBuffer, renderer->theme.font, renderer->theme.labelColor);
 
 	const real32 buttonSize = 24;
 	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
@@ -240,7 +237,6 @@ bool updateCalendarUI(CalendarUI *ui, GLRenderer *renderer, Tooltip *tooltip,
 
 	if (change->isNewDay) {
 		getDateString(ui->calendar, ui->dateStringBuffer);
-		setUiLabelText(&ui->labelDate, ui->dateStringBuffer);
 	}
 
 	return buttonAteMouseEvent;

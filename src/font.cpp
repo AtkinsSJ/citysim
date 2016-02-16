@@ -112,7 +112,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 
 	switch (align & ALIGN_H)
 	{
-		case ALIGN_H_CENTER: {
+		case ALIGN_H_CENTRE: {
 			offset.x = origin.x - cache->size.x / 2.0f;
 		} break;
 
@@ -127,7 +127,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 
 	switch (align & ALIGN_V)
 	{
-		case ALIGN_V_CENTER: {
+		case ALIGN_V_CENTRE: {
 			offset.y = origin.y - cache->size.y / 2.0f;
 		} break;
 
