@@ -219,6 +219,7 @@ struct GLRenderer
 	Camera worldCamera;
 
 	RenderBuffer worldBuffer;
+	RenderBuffer uiBuffer;
 
 	VertexData vertices[SPRITE_MAX * 4];
 	GLuint indices[SPRITE_MAX * 6];
@@ -229,7 +230,6 @@ struct GLRenderer
 
 	// UI Stuff!
 	UiTheme theme;
-	RenderBuffer uiBuffer;
 	Tooltip tooltip;
 	UiMessage message;
 };
@@ -259,7 +259,7 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPr
 	textures->filenames[textureID] = textures->filenamesBuffer + textures->bufferPos;
 	textures->isAlphaPremultiplied[textureID] = isAlphaPremultiplied;
 
-	strncpy(textures->filenames[textureID], filename, sizeof(textures->filenames[textureID]));
+	strcpy(textures->filenames[textureID], filename); // NB: Don't strncpy; we already check there's room above. strncpy causes Bad Things™
 	textures->bufferPos += filenameLength;
 
 	return (GLint)textureID;

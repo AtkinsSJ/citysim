@@ -214,7 +214,7 @@ bool initOpenGL(GLRenderer *renderer)
 		return false;
 	}
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 	// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
 

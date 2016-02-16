@@ -154,9 +154,6 @@ int main(int argc, char *argv[]) {
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
 
-	// Build UI
-	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
-	V2 textPosition = v2(8,4);
 	
 	// GAME LOOP
 	while (!quit) {
@@ -425,6 +422,9 @@ int main(int argc, char *argv[]) {
 				actionMode = ActionMode_None;
 				SDL_SetCursor(cursorMain);
 			} else {
+				// Build UI
+				V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
+				V2 textPosition = v2(8,4);
 				RealRect buttonRect = rectXYWH(8, textPosition.y + 20 + uiPadding, 80, 24);
 				if (uiButton(renderer, &inputState, "Build HQ", buttonRect, 1, SDL_SCANCODE_Q, "(Q)")) {
 					selectedBuildingArchetype = BA_Farmhouse;
@@ -646,9 +646,8 @@ int main(int argc, char *argv[]) {
 			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
 			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
-			drawUiMessage(renderer);
-
 			drawCalendarUI(renderer, &gameState->calendar, &inputState, &calendarChange);
+			
 			// drawUiButtonGroup(renderer, &actionButtonGroup);
 			// drawUiButtonGroup(renderer, &calendarUI.buttonGroup);
 			// drawUiButton(renderer, &calendarUI.buttonPause);
@@ -657,6 +656,7 @@ int main(int argc, char *argv[]) {
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
+			V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 			drawRect(renderer, true,
 					rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
 					0, renderer->theme.overlayColor);
@@ -684,7 +684,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		drawTooltip(renderer, &inputState);
-		// drawUiMessage(renderer);
+		drawUiMessage(renderer);
 
 	// Actually draw things!
 		render(renderer);
