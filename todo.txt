@@ -28,9 +28,14 @@ Immediate Mode UI:
 - No more BitmapFontCachedText and its related memory allocation!
 - Generally, things will be much simpler.
 - Label
+- Text alignment
+- Tooltip
+- UI Message
 - Button
+- Button group!
 - Text Input
 - Menu (Click, it pops up)
+- Buttons eat mouse input?
 
 - Simulation
 	- Per-tile humidity

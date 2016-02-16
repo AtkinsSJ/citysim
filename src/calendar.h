@@ -28,6 +28,8 @@ struct Calendar {
 	CalendarSpeed speed; // Ticks per frame
 	bool paused;
 	int32 _dayTicksCounter;
+	
+	char dateStringBuffer[256];
 };
 const int32 calendarTicksPerDay = 1000; // How big does Calendar.dayCounter have to be to increment the day?
 const int32 daysInMonth[] = {

@@ -8,8 +8,8 @@ void uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int3
 	drawText(renderer, font, topLeft, text, depth, color);
 }
 
-bool uiButton(GLRenderer *renderer, InputState *inputState, char *text,
-				RealRect bounds, real32 depth)
+bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,
+			SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool buttonClicked = false;
 
