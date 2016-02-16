@@ -411,11 +411,11 @@ inline bool rectsOverlap(Rect a, Rect b)
 		&& (b.y < a.y + a.h);
 }
 
-inline V2 centre(Rect *rect)
+inline V2 centre(Rect rect)
 {
 	return v2(
-		(real32)rect->x + (real32)rect->w / 2.0f,
-		(real32)rect->y + (real32)rect->h / 2.0f
+		(real32)rect.x + (real32)rect.w / 2.0f,
+		(real32)rect.y + (real32)rect.h / 2.0f
 	);
 }
 
@@ -484,10 +484,10 @@ inline bool inRect(RealRect rect, V2 pos)
 		&& pos.y < (rect.y + rect.h);
 }
 
-inline V2 centre(RealRect *rect)
+inline V2 centre(RealRect rect)
 {
 	return v2(
-		rect->x + rect->w / 2.0f,
-		rect->y + rect->h / 2.0f
+		rect.x + rect.w / 2.0f,
+		rect.y + rect.h / 2.0f
 	);
 }

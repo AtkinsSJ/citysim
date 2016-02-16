@@ -135,8 +135,7 @@ int main(int argc, char *argv[]) {
 	GameStatus gameStatus = GameStatus_Setup;
 
 	SDL_Event event;
-	MouseState mouseState = {};
-	KeyboardState keyboardState = {};
+	InputState inputState = {};
 
 	V2 mouseDragStartPos = {};
 	Rect dragRect = irectXYWH(-1,-1,0,0);
@@ -210,26 +209,20 @@ int main(int argc, char *argv[]) {
 	// Game menu
 	MainMenuUI mainMenuUI;
 	initMainMenuUI(&mainMenuUI, renderer, cityName);
-
-	// Game over UI
-	UiButton buttonMenu;
-	buttonRect.pos = cameraCentre - buttonRect.size/2;
-	// buttonRect.y += gameOverLabel._rect.h + uiPadding;
-	initUiButton(&buttonMenu, renderer, buttonRect, "Menu");
 	
 	// GAME LOOP
 	while (!quit) {
 
 		// Clear mouse state
-		mouseState.wheelX = 0;
-		mouseState.wheelY = 0;
+		inputState.wheelX = 0;
+		inputState.wheelY = 0;
 
 		for (int i = 0; i < MOUSE_BUTTON_COUNT; i++) {
-			mouseState.wasDown[i] = mouseState.down[i];
+			inputState.mouseWasDown[i] = inputState.mouseDown[i];
 		}
 
 		for (int i=0; i < KEYBOARD_KEY_COUNT; i++) {
-			keyboardState.wasDown[i] = keyboardState.down[i];
+			inputState.keyWasDown[i] = inputState.keyDown[i];
 		}
 
 		while (SDL_PollEvent(&event)) {
@@ -250,31 +243,31 @@ int main(int argc, char *argv[]) {
 				// MOUSE EVENTS
 				// NB: If we later handle TOUCH events, then we need to discard mouse events where event.X.which = SDL_TOUCH_MOUSEID
 				case SDL_MOUSEMOTION: {
-					mouseState.pos.x = event.motion.x;
-					mouseState.pos.y = event.motion.y;
+					inputState.mousePos.x = event.motion.x;
+					inputState.mousePos.y = event.motion.y;
 				} break;
 				case SDL_MOUSEBUTTONDOWN: {
 					uint8 buttonIndex = event.button.button - 1;
-					mouseState.down[buttonIndex] = true;
+					inputState.mouseDown[buttonIndex] = true;
 				} break;
 				case SDL_MOUSEBUTTONUP: {
 					uint8 buttonIndex = event.button.button - 1;
-					mouseState.down[buttonIndex] = false;
+					inputState.mouseDown[buttonIndex] = false;
 				} break;
 				case SDL_MOUSEWHEEL: {
 					// TODO: Uncomment if we upgrade to SDL 2.0.4+, to handle inverted scroll wheel values.
 					// if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
-					// 	mouseState.wheelX = -event.wheel.x;
-					// 	mouseState.wheelY = -event.wheel.y;
+					// 	inputState.mouse.wheelX = -event.wheel.x;
+					// 	inputState.mouse.wheelY = -event.wheel.y;
 					// } else {
-						mouseState.wheelX = event.wheel.x;
-						mouseState.wheelY = event.wheel.y;
+						inputState.wheelX = event.wheel.x;
+						inputState.wheelY = event.wheel.y;
 					// }
 				} break;
 
 				// KEYBOARD EVENTS
 				case SDL_KEYDOWN: {
-					keyboardState.down[event.key.keysym.scancode] = true;
+					inputState.keyDown[event.key.keysym.scancode] = true;
 
 					if (gameStatus == GameStatus_Setup) {
 						// Enter farm name!
@@ -288,7 +281,7 @@ int main(int argc, char *argv[]) {
 					}
 				} break;
 				case SDL_KEYUP: {
-					keyboardState.down[event.key.keysym.scancode] = false;
+					inputState.keyDown[event.key.keysym.scancode] = false;
 				} break;
 				case SDL_TEXTINPUT: {
 					if (gameStatus == GameStatus_Setup) {
@@ -306,9 +299,9 @@ int main(int argc, char *argv[]) {
 		}
 
 		for (uint8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
-			if (mouseButtonJustPressed(&mouseState, i)) {
+			if (mouseButtonJustPressed(&inputState, i)) {
 				// Store the initial click position
-				mouseState.clickStartPosition[mouseButtonIndex(i)] = mouseState.pos;
+				inputState.clickStartPosition[mouseButtonIndex(i)] = inputState.mousePos;
 			}
 		}
 
@@ -362,7 +355,7 @@ int main(int argc, char *argv[]) {
 		}
 
 	// CAMERA!
-		updateCamera(&renderer->worldCamera, &mouseState, &keyboardState, gameState->city.width, gameState->city.height);
+		updateCamera(&renderer->worldCamera, &inputState, gameState->city.width, gameState->city.height);
 
 		real32 worldScale = renderer->worldCamera.zoom / TILE_SIZE;
 		real32 camWidth = renderer->worldCamera.windowWidth * worldScale,
@@ -385,34 +378,34 @@ int main(int argc, char *argv[]) {
 			-1000.0f, 1000.0f
 		);
 		
-		V2 mouseWorldPos = unproject(renderer, v2(mouseState.pos));
+		V2 mouseWorldPos = unproject(renderer, v2(inputState.mousePos));
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 	// UiButton/Mouse interaction
 		if (gameStatus == GameStatus_Playing) {
 			tooltip.show = false;
 
-			if (keyJustPressed(&keyboardState, SDL_SCANCODE_INSERT)) {
+			if (keyJustPressed(&inputState, SDL_SCANCODE_INSERT)) {
 				gameState->city.funds += 10000;
-			} else if (keyJustPressed(&keyboardState, SDL_SCANCODE_DELETE)) {
+			} else if (keyJustPressed(&inputState, SDL_SCANCODE_DELETE)) {
 				gameState->city.funds -= 10000;
 			}
 
 			bool buttonAteMouseEvent = false;
-			if (updateUiButtonGroup(renderer, &tooltip, &actionButtonGroup, &mouseState, &keyboardState)) {
+			if (updateUiButtonGroup(renderer, &tooltip, &actionButtonGroup, &inputState)) {
 				buttonAteMouseEvent = true;
 			}
-			if (updateCalendarUI(&calendarUI, renderer, &tooltip, &mouseState, &keyboardState, &calendarChange)) {
+			if (updateCalendarUI(&calendarUI, renderer, &tooltip, &inputState, &calendarChange)) {
 				buttonAteMouseEvent = true;
 			}
 
 			// Camera controls
 			// HOME resets the camera and centres on the HQ
-			if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
+			if (keyJustPressed(&inputState, SDL_SCANCODE_HOME)) {
 				renderer->worldCamera.zoom = 1;
 				// Jump to the farmhouse if we have one!
 				if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
-					renderer->worldCamera.pos = centre(&gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
+					renderer->worldCamera.pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
 				} else {
 					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
 				}
@@ -423,7 +416,7 @@ int main(int argc, char *argv[]) {
 			if (!buttonAteMouseEvent) {
 				switch (actionMode) {
 					case ActionMode_Build: {
-						if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
 							placeBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos);
 						}
 
@@ -432,16 +425,16 @@ int main(int argc, char *argv[]) {
 					} break;
 
 					case ActionMode_Demolish: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							mouseDragStartPos = mouseWorldPos;
 							dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
-						} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						} else if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
 							dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
 							showCostTooltip(&tooltip, renderer, demolitionCost, gameState->city.funds);
 						}
 
-						if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustReleased(&inputState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
 							demolishRect(&gameState->city, dragRect);
 							dragRect = irectXYWH(-1,-1,0,0);
@@ -449,20 +442,20 @@ int main(int argc, char *argv[]) {
 					} break;
 
 					case ActionMode_Plant: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							plantField(&gameState->city, mouseTilePos);
 						}
 						showCostTooltip(&tooltip, renderer, fieldPlantCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Harvest: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							harvestField(&gameState->city, mouseTilePos);
 						}
 					} break;
 
 					case ActionMode_Hire: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							if (hireWorker(&gameState->city, mouseWorldPos)) {
 								// Update the monthly spend display
 								gameState->city.monthlyExpenditure = gameState->city.workerCount * workerMonthlyCost;
@@ -472,7 +465,7 @@ int main(int argc, char *argv[]) {
 					} break;
 
 					case ActionMode_None: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							int tileI = tileIndex(&gameState->city, mouseTilePos.x, mouseTilePos.y);
 							int buildingID = gameState->city.tileBuildings[tileI];
 
@@ -482,7 +475,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 
-			if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
+			if (mouseButtonJustPressed(&inputState, SDL_BUTTON_RIGHT)) {
 				// Unselect current thing
 				setActiveButton(&actionButtonGroup, null);
 				actionMode = ActionMode_None;
@@ -519,9 +512,9 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		} else if (gameStatus == GameStatus_Setup) {
-			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonExit, &mouseState, &keyboardState);
-			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonWebsite, &mouseState, &keyboardState);
-			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonStart, &mouseState, &keyboardState);
+			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonExit, &inputState);
+			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonWebsite, &inputState);
+			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonStart, &inputState);
 
 			if (mainMenuUI.buttonExit.justClicked) {
 				quit = true;
@@ -530,21 +523,6 @@ int main(int argc, char *argv[]) {
 				openUrlUnsafe("http://samatkins.co.uk");
 			} else if (mainMenuUI.buttonStart.justClicked) {
 				gameStatus = GameStatus_Playing;
-			}
-		} else if (gameStatus == GameStatus_Lost
-				|| gameStatus == GameStatus_Won) {
-
-			updateUiButton(renderer, &tooltip, &buttonMenu, &mouseState, &keyboardState);
-			if (buttonMenu.justClicked) {
-
-				gameState = startGame(&gameArena, cityName);
-
-				// Reset calendar display. This is a bit hacky.
-				CalendarChange change = {};
-				change.isNewDay = true;
-				updateCalendarUI(&calendarUI, renderer, &tooltip, &mouseState, &keyboardState,	&change);
-
-				gameStatus = GameStatus_Setup;
 			}
 		}
 
@@ -624,7 +602,7 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
-					V2 drawPos = centre(&building.footprint);
+					V2 drawPos = centre(building.footprint);
 					drawTextureAtlasItem(renderer, false, def->textureAtlasItem,
 					 	drawPos, v2(building.footprint.dim), depthFromY(drawPos.y), drawColor);
 				} break;
@@ -649,13 +627,13 @@ int main(int argc, char *argv[]) {
 				renderer,
 				false,
 				buildingDefinitions[selectedBuildingArchetype].textureAtlasItem,
-				centre(&footprint),
+				centre(footprint),
 				v2(footprint.dim),
 				depthFromY(mouseTilePos.y) + 100,
 				ghostColor
 			);
 		} else if (actionMode == ActionMode_Demolish
-			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+			&& mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
 			drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
 		}
@@ -688,9 +666,9 @@ int main(int argc, char *argv[]) {
 			drawUiButtonGroup(renderer, &calendarUI.buttonGroup);
 			drawUiButton(renderer, &calendarUI.buttonPause);
 
-			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
+			// SDL_GetMouseState(&inputState.mouse.pos.x, &inputState.mouse.pos.y);
 			if (tooltip.show) {
-				tooltip.label.origin = v2(mouseState.pos) + tooltip.offsetFromCursor;
+				tooltip.label.origin = v2(inputState.mousePos) + tooltip.offsetFromCursor;
 				drawUiLabel(renderer, &tooltip.label);
 			}
 		}
@@ -712,7 +690,22 @@ int main(int argc, char *argv[]) {
 
 			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre, ALIGN_CENTRE, 1, renderer->theme.labelColor);
 
-			drawUiButton(renderer, &buttonMenu);
+			if (uiButton(renderer, &inputState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 1))
+			{
+				gameState = startGame(&gameArena, cityName);
+
+				// Reset calendar display. This is a bit hacky.
+				CalendarChange change = {};
+				change.isNewDay = true;
+				updateCalendarUI(&calendarUI, renderer, &tooltip, &inputState, &change);
+
+				gameStatus = GameStatus_Setup;
+			}
+
+	// buttonRect.pos = cameraCentre - buttonRect.size/2;
+	// // buttonRect.y += gameOverLabel._rect.h + uiPadding;
+	// initUiButton(&buttonMenu, renderer, buttonRect, "Menu");
+			// drawUiButton(renderer, &buttonMenu);
 		}
 
 

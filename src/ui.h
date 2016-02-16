@@ -15,14 +15,6 @@ struct UiLabel {
 	real32 backgroundPadding;
 };
 
-struct UiIntLabel {
-	UiLabel label;
-	int32 *value;
-	int32 lastValue;
-	char buffer[128];
-	char *formatString;
-};
-
 struct UiButton {
 	RealRect rect;
 

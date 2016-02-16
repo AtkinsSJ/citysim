@@ -75,15 +75,14 @@ void drawUiLabel(GLRenderer *renderer, UiLabel *label)
 	drawCachedText(renderer, label->cache, topLeft);
 }
 
-bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, MouseState *mouseState,
-					KeyboardState *keyboardState)
+bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, InputState *inputState)
 {
 	
 	bool eventEaten = false;
 
 	button->justClicked = false;
 
-	button->mouseOver = inRect(button->rect, v2(mouseState->pos));
+	button->mouseOver = inRect(button->rect, v2(inputState->mousePos));
 	if (button->mouseOver)
 	{
 		eventEaten = true;
@@ -96,19 +95,19 @@ bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, Mo
 	}
 
 	if (button->shortcutKey
-		&& keyJustPressed(keyboardState, button->shortcutKey) )
+		&& keyJustPressed(inputState, button->shortcutKey) )
 	{
 
 		// We triggered the shortcut!
 		button->justClicked = true;
 
 	}
-	else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT))
+	else if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 	{
 		// See if a button is click-started
 		button->clickStarted = button->mouseOver;
 	}
-	else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT))
+	else if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 	{
 		// Did we trigger a button?
 		if (button->clickStarted && button->mouseOver)
@@ -116,7 +115,7 @@ bool updateUiButton(GLRenderer *renderer, Tooltip *tooltip, UiButton *button, Mo
 			button->justClicked = true;
 		}
 	}
-	else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT))
+	else if (!mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 	{
 		button->clickStarted = false;
 	}
@@ -170,8 +169,7 @@ void setActiveButton(UiButtonGroup *group, UiButton *button)
 /**
  * Get the buttongroup to update its buttons' states, and return whether a button "ate" any click events
  */
-bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *group,
-	MouseState *mouseState, KeyboardState *keyboardState)
+bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *group, InputState *inputState)
 {
 
 	bool eventEaten = false;
@@ -181,7 +179,7 @@ bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *
 		UiButton *button = group->buttons + i;
 		button->justClicked = false;
 
-		button->mouseOver = inRect(button->rect, v2(mouseState->pos));
+		button->mouseOver = inRect(button->rect, v2(inputState->mousePos));
 		if (button->mouseOver)
 		{
 			eventEaten = true;
@@ -194,7 +192,7 @@ bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *
 		}
 
 		if (button->shortcutKey
-			&& keyJustPressed(keyboardState, button->shortcutKey) )
+			&& keyJustPressed(inputState, button->shortcutKey) )
 		{
 
 			// We triggered the shortcut!
@@ -202,12 +200,12 @@ bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *
 			setActiveButton(group, button);
 
 		}
-		else if (mouseButtonJustPressed(mouseState, SDL_BUTTON_LEFT))
+		else if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 		{
 			// See if a button is click-started
 			button->clickStarted = button->mouseOver;
 		}
-		else if (mouseButtonJustReleased(mouseState, SDL_BUTTON_LEFT))
+		else if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 		{
 			// Did we trigger a button?
 			if (button->clickStarted && button->mouseOver)
@@ -218,7 +216,7 @@ bool updateUiButtonGroup(GLRenderer *renderer, Tooltip *tooltip, UiButtonGroup *
 				setActiveButton(group, button);
 			}
 		}
-		else if (!mouseButtonPressed(mouseState, SDL_BUTTON_LEFT))
+		else if (!mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 		{
 			button->clickStarted = false;
 		}

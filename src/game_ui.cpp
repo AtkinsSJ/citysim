@@ -1,47 +1,46 @@
 #pragma once
 
-void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState,
-					int32 cityWidth, int32 cityHeight) // City size in tiles
+void updateCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32 cityHeight) // City size in tiles
 { 
 	// Zooming
-	if (canZoom && mouseState->wheelY) {
+	if (canZoom && inputState->wheelY) {
 		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera->zoom = clamp(round(10 * camera->zoom - mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
+		camera->zoom = clamp(round(10 * camera->zoom - inputState->wheelY) * 0.1f, 0.1f, 10.0f);
 	}
 
 	// Panning
 	real32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
-	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE))
+	if (mouseButtonPressed(inputState, SDL_BUTTON_MIDDLE))
 	{
 		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
-		Coord clickStartPos = mouseState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos += (v2(mouseState->pos) - v2(clickStartPos)) * scale;
+		Coord clickStartPos = inputState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
+		camera->pos += (v2(inputState->mousePos) - v2(clickStartPos)) * scale;
 	}
 	else
 	{
-		if (keyboardState->down[SDL_SCANCODE_LEFT]
-			|| keyboardState->down[SDL_SCANCODE_A]
-			|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN))
+		if (inputState->keyDown[SDL_SCANCODE_LEFT]
+			|| inputState->keyDown[SDL_SCANCODE_A]
+			|| (inputState->mousePos.x < CAMERA_EDGE_SCROLL_MARGIN))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
-		else if (keyboardState->down[SDL_SCANCODE_RIGHT]
-			|| keyboardState->down[SDL_SCANCODE_D]
-			|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
+		else if (inputState->keyDown[SDL_SCANCODE_RIGHT]
+			|| inputState->keyDown[SDL_SCANCODE_D]
+			|| (inputState->mousePos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
-		if (keyboardState->down[SDL_SCANCODE_UP]
-			|| keyboardState->down[SDL_SCANCODE_W]
-			|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN))
+		if (inputState->keyDown[SDL_SCANCODE_UP]
+			|| inputState->keyDown[SDL_SCANCODE_W]
+			|| (inputState->mousePos.y < CAMERA_EDGE_SCROLL_MARGIN))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
-		else if (keyboardState->down[SDL_SCANCODE_DOWN]
-			|| keyboardState->down[SDL_SCANCODE_S]
-			|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
+		else if (inputState->keyDown[SDL_SCANCODE_DOWN]
+			|| inputState->keyDown[SDL_SCANCODE_S]
+			|| (inputState->mousePos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y += scrollSpeed;
 		}
@@ -184,13 +183,13 @@ void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
 	}
 }
 bool updateCalendarUI(CalendarUI *ui, GLRenderer *renderer, Tooltip *tooltip,
-					MouseState *mouseState, KeyboardState *keyboardState,
+					InputState *inputState,
 					CalendarChange *change) {
 
 	bool buttonAteMouseEvent = false;
 
-	if (updateUiButtonGroup(renderer, tooltip, &ui->buttonGroup, mouseState, keyboardState)
-		|| updateUiButton(renderer, tooltip, &ui->buttonPause, mouseState, keyboardState) ) {
+	if (updateUiButtonGroup(renderer, tooltip, &ui->buttonGroup, inputState)
+		|| updateUiButton(renderer, tooltip, &ui->buttonPause, inputState) ) {
 		buttonAteMouseEvent = true;
 	}
 

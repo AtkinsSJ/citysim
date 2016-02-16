@@ -69,7 +69,7 @@ void updateField(FieldData *field) {
 
 void drawField(GLRenderer *renderer, Building *building, V4 drawColor) {
 
-	V2 centrePos = centre(&building->footprint);
+	V2 centrePos = centre(building->footprint);
 
 	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Field,
 		centrePos, v2(building->footprint.dim), depthFromY(building->footprint.y), drawColor);
