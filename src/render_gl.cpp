@@ -680,23 +680,35 @@ void sortSpriteBuffer(RenderBuffer *buffer)
 			}
 		}
 	}
+}
 
+bool isBufferSorted(RenderBuffer *buffer)
+{
+	bool isSorted = true;
+	real32 lastDepth = real32Min;
+	for (uint32 i=0; i<=buffer->spriteCount; i++)
+	{
+		if (lastDepth > buffer->sprites[i].depth)
+		{
+			isSorted = false;
+			break;
+		}
+		lastDepth = buffer->sprites[i].depth;
+	}
+	return isSorted;
 }
 
 void render(GLRenderer *renderer)
 {
 	// Sort sprites
 	sortSpriteBuffer(&renderer->worldBuffer);
+	sortSpriteBuffer(&renderer->uiBuffer);
 
-	#if 0
-	// Check buffer is sorted
-	real32 lastDepth = real32Min;
-	for (uint32 i=0; i<=renderer->worldBuffer.spriteCount; i++)
-	{
-		ASSERT(lastDepth <= renderer->worldBuffer.sprites[i].depth, "Sprites are out of order!");
-		lastDepth = renderer->worldBuffer.sprites[i].depth;
-	}
-	#endif
+#if 0
+	// Check buffers are sorted
+	ASSERT(isBufferSorted(&renderer->worldBuffer), "World sprites are out of order!");
+	ASSERT(isBufferSorted(&renderer->uiBuffer), "UI sprites are out of order!");
+#endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);

@@ -46,7 +46,7 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 	return result;
 }
 
-void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, V4 color)
+void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, real32 depth, V4 color)
 {
 	for (char *currentChar=text;
 		*currentChar != 0;
@@ -63,7 +63,7 @@ void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, V
 					 	(real32)c->size.w,
 					 	(real32)c->size.h
 					 ),
-					 0, c->textureID, c->uv, color);
+					 depth, c->textureID, c->uv, color);
 			position.x += (real32)c->xAdvance;
 		}
 	}

@@ -670,17 +670,17 @@ int main(int argc, char *argv[]) {
 			real32 left = 0;
 			char stringBuffer[256];
 
-			drawRect(renderer, true, rectXYWH(left,0, right, 64), -1, renderer->theme.overlayColor);
+			drawRect(renderer, true, rectXYWH(left,0, right, 64), 0, renderer->theme.overlayColor);
 
-			uiLabel(renderer, renderer->theme.font, cityName, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, cityName, v2(left, 0.0f), ALIGN_LEFT, 1, renderer->theme.labelColor);
 			left += 100;
 			sprintf(stringBuffer, "£%d", gameState->city.funds);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, 1, renderer->theme.labelColor);
 			left += 100;
 			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, 1, renderer->theme.labelColor);
 			left += 100;
-			uiLabel(renderer, renderer->theme.font, calendarUI.dateStringBuffer, v2(left, 0.0f), ALIGN_LEFT, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, calendarUI.dateStringBuffer, v2(left, 0.0f), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
 			drawUiMessage(renderer);
 
@@ -710,7 +710,7 @@ int main(int argc, char *argv[]) {
 				sprintf(gameOverText, "Game over! You ran out of money! :(");
 			}
 
-			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre, ALIGN_CENTRE, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre, ALIGN_CENTRE, 1, renderer->theme.labelColor);
 
 			drawUiButton(renderer, &buttonMenu);
 		}

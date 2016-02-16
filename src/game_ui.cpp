@@ -115,19 +115,19 @@ void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
 	position.y += 154.0f;
 
 	uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'.",
-			position, ALIGN_CENTRE, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, 1, renderer->theme.labelColor);
 	position.y += 32;
 
 	uiLabel(renderer, renderer->theme.font, menu->cityName,
-			position, ALIGN_CENTRE, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, 1, renderer->theme.labelColor);
 	position.y += 32;
 
 	uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
-			position, ALIGN_CENTRE, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, 1, renderer->theme.labelColor);
 	position.y += 32;
 
 	uiLabel(renderer, renderer->theme.font, "Workers are paid £50 at the start of each month.",
-			position, ALIGN_CENTRE, renderer->theme.labelColor);
+			position, ALIGN_CENTRE, 1, renderer->theme.labelColor);
 	position.y += 32;
 
 	///
