@@ -159,12 +159,6 @@ int main(int argc, char *argv[]) {
 	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 	V2 textPosition = v2(8,4);
 	initUiMessage(renderer);
-
-	// Tooltip
-	Tooltip tooltip = {};
-	tooltip.offsetFromCursor = v2(16, 20);
-	initUiLabel(&tooltip.label, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer->theme.font,
-				renderer->theme.labelColor, true, renderer->theme.tooltipBackgroundColor, 4);
 	
 	// GAME LOOP
 	while (!quit) {
@@ -339,7 +333,6 @@ int main(int argc, char *argv[]) {
 
 	// UiButton/Mouse interaction
 		if (gameStatus == GameStatus_Playing) {
-			tooltip.show = false;
 
 			if (keyJustPressed(&inputState, SDL_SCANCODE_INSERT)) {
 				gameState->city.funds += 10000;
@@ -374,7 +367,7 @@ int main(int argc, char *argv[]) {
 						}
 
 						int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
-						showCostTooltip(&tooltip, renderer, buildCost, gameState->city.funds);
+						showCostTooltip(renderer, buildCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Demolish: {
@@ -384,7 +377,7 @@ int main(int argc, char *argv[]) {
 						} else if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
 							dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
-							showCostTooltip(&tooltip, renderer, demolitionCost, gameState->city.funds);
+							showCostTooltip(renderer, demolitionCost, gameState->city.funds);
 						}
 
 						if (mouseButtonJustReleased(&inputState, SDL_BUTTON_LEFT)) {
@@ -398,7 +391,7 @@ int main(int argc, char *argv[]) {
 						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							plantField(&gameState->city, mouseTilePos);
 						}
-						showCostTooltip(&tooltip, renderer, fieldPlantCost, gameState->city.funds);
+						showCostTooltip(renderer, fieldPlantCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Harvest: {
@@ -414,7 +407,7 @@ int main(int argc, char *argv[]) {
 								gameState->city.monthlyExpenditure = gameState->city.workerCount * workerMonthlyCost;
 							}
 						}
-						showCostTooltip(&tooltip, renderer, workerHireCost, gameState->city.funds);
+						showCostTooltip(renderer, workerHireCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_None: {
@@ -642,31 +635,25 @@ int main(int argc, char *argv[]) {
 		} else {
 			// Draw some UI
 
-			real32 right = (real32) renderer->worldCamera.windowWidth;
-			real32 left = 0;
+			real32 left = uiPadding;
 			char stringBuffer[256];
 
-			drawRect(renderer, true, rectXYWH(left,0, right, 64), 0, renderer->theme.overlayColor);
+			drawRect(renderer, true, rectXYWH(0,0, (real32) renderer->worldCamera.windowWidth, 64), 0, renderer->theme.overlayColor);
 
-			uiLabel(renderer, renderer->theme.font, cityName, v2(left, 0.0f), ALIGN_LEFT, 1, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, cityName, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 			left += 100;
 			sprintf(stringBuffer, "£%d", gameState->city.funds);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, 1, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 			left += 100;
 			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, 0.0f), ALIGN_LEFT, 1, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
 			drawUiMessage(renderer);
 
-			drawCalendarUI(renderer, &gameState->calendar, &tooltip, &inputState, &calendarChange);
+			drawCalendarUI(renderer, &gameState->calendar, &inputState, &calendarChange);
 			// drawUiButtonGroup(renderer, &actionButtonGroup);
 			// drawUiButtonGroup(renderer, &calendarUI.buttonGroup);
 			// drawUiButton(renderer, &calendarUI.buttonPause);
-
-			if (tooltip.show) {
-				tooltip.label.origin = v2(inputState.mousePos) + tooltip.offsetFromCursor;
-				drawUiLabel(renderer, &tooltip.label);
-			}
 		}
 
 		// GAME OVER
@@ -697,6 +684,8 @@ int main(int argc, char *argv[]) {
 				gameStatus = GameStatus_Setup;
 			}
 		}
+
+		drawTooltip(renderer, &inputState);
 
 	// Actually draw things!
 		render(renderer);

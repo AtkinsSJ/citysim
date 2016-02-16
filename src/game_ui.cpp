@@ -68,20 +68,19 @@ void updateCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32
 	}
 }
 
-void showCostTooltip(Tooltip *tooltip, GLRenderer *renderer, int32 cost, int32 cityFunds) {
+void showCostTooltip(GLRenderer *renderer, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
-		tooltip->label.color = renderer->theme.tooltipColorBad;
+		renderer->tooltip.color = renderer->theme.tooltipColorBad;
 	} else {
-		tooltip->label.color = renderer->theme.tooltipColorNormal;
+		renderer->tooltip.color = renderer->theme.tooltipColorNormal;
 	}
-	sprintf(tooltip->buffer, "-£%d", cost);
-	setUiLabelText(&tooltip->label, tooltip->buffer);
-	tooltip->show = true;
+	sprintf(renderer->tooltip.text, "-£%d", cost);
+	renderer->tooltip.show = true;
 }
 
 const real32 uiPadding = 4;
 
-bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, Tooltip *tooltip, InputState *inputState, CalendarChange *change)
+bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputState, CalendarChange *change)
 {
 	bool buttonAteMouseEvent = false;
 
@@ -90,7 +89,7 @@ bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, Tooltip *tooltip, 
 	}
 
 	uiLabel(renderer, renderer->theme.font, calendar->dateStringBuffer,
-			v2((real32)renderer->worldCamera.windowWidth - 200.0f, 0.0f), ALIGN_RIGHT,
+			v2((real32)renderer->worldCamera.windowWidth - uiPadding, uiPadding), ALIGN_RIGHT,
 			1, renderer->theme.labelColor);
 
 	const real32 buttonSize = 24;

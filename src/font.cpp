@@ -69,6 +69,7 @@ void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, r
 	}
 }
 
+// REMOVE THIS
 BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, V4 color)
 {
 	uint32 textLength = strlen(text);

@@ -181,6 +181,13 @@ struct RenderBuffer
 	uint32 maxSprites;
 };
 
+struct Tooltip {
+	bool show;
+	V2 offsetFromCursor;
+	V4 color;
+	char text[128];
+};
+
 struct GLRenderer
 {
 	MemoryArena renderArena;
@@ -213,6 +220,7 @@ struct GLRenderer
 
 	TextureAtlas textureAtlas;
 	UiTheme theme;
+	Tooltip tooltip;
 };
 
 const uint32 TEXTURE_WIDTH = 512,

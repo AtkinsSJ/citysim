@@ -96,6 +96,9 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", texturesToLoad);
 	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", texturesToLoad);
 
+	renderer->tooltip = {};
+	renderer->tooltip.offsetFromCursor = v2(16, 20);
+
 	// Load textures &c
 	if (!loadTextures(&tempArena, renderer, texturesToLoad))
 	{

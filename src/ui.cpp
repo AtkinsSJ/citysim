@@ -96,18 +96,3 @@ void drawUiMessage(GLRenderer *renderer)
 		}
 	}
 }
-
-///////////////////////////////////////////////////////////////////////////////////
-//                                 TOOLTIPS                                      //
-///////////////////////////////////////////////////////////////////////////////////
-
-void showTooltip(Tooltip *tooltip, GLRenderer *renderer, char *text)
-{
-	if (strcmp(tooltip->buffer, text))
-	{
-		strcpy(tooltip->buffer, text);
-		tooltip->label.color = renderer->theme.labelColor;
-		setUiLabelText(&tooltip->label, tooltip->buffer);
-	}
-	tooltip->show = true;
-}
