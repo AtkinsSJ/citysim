@@ -39,7 +39,7 @@ void uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int3
 }
 
 bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,
-			SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+			bool active=false, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool buttonClicked = false;
 
@@ -63,6 +63,10 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect
 		{
 			setTooltip(renderer, tooltip, renderer->theme.tooltipColorNormal);
 		}
+	}
+	else if (active)
+	{
+		backColor = renderer->theme.buttonHoverColor;
 	}
 
 	drawRect(renderer, true, bounds, depth, backColor);

@@ -36,6 +36,11 @@ Immediate Mode UI:
 - Menu (Click, it pops up)
 - Buttons eat mouse input?
 
+- Audio!
+	- Sound effects
+	- Pitch shifting
+	- Music
+
 - Simulation
 	- Per-tile humidity
 	- Per-tile nutrient value

@@ -258,8 +258,9 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPr
 
 	textures->filenames[textureID] = textures->filenamesBuffer + textures->bufferPos;
 	textures->isAlphaPremultiplied[textureID] = isAlphaPremultiplied;
-
-	strcpy(textures->filenames[textureID], filename); // NB: Don't strncpy; we already check there's room above. strncpy causes Bad Things™
+	
+	// NB: Don't strncpy; we already check there's room above. strncpy causes Bad Things™
+	strcpy(textures->filenames[textureID], filename);
 	textures->bufferPos += filenameLength;
 
 	return (GLint)textureID;

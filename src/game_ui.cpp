@@ -95,28 +95,28 @@ bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputS
 	const real32 buttonSize = 24;
 	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
 								buttonSize, buttonSize);
-	if (uiButton(renderer, inputState, ">>>", buttonRect, 1))
+	if (uiButton(renderer, inputState, ">>>", buttonRect, 1, (calendar->speed == Speed3)))
 	{
 		calendar->paused = false;
 		calendar->speed = Speed3;
 		buttonAteMouseEvent = true;
 	}
 	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, ">>", buttonRect, 1))
+	if (uiButton(renderer, inputState, ">>", buttonRect, 1, (calendar->speed == Speed2)))
 	{
 		calendar->paused = false;
 		calendar->speed = Speed2;
 		buttonAteMouseEvent = true;
 	}
 	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, ">", buttonRect, 1))
+	if (uiButton(renderer, inputState, ">", buttonRect, 1, (calendar->speed == Speed1)))
 	{
 		calendar->paused = false;
 		calendar->speed = Speed1;
 		buttonAteMouseEvent = true;
 	}
 	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, "||", buttonRect, 1, SDL_SCANCODE_SPACE, "(Space)"))
+	if (uiButton(renderer, inputState, "||", buttonRect, 1, calendar->paused, SDL_SCANCODE_SPACE, "(Space)"))
 	{
 		calendar->paused = !calendar->paused;
 		buttonAteMouseEvent = true;
