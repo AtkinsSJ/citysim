@@ -166,7 +166,14 @@ struct Sprite
 
 inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect uv, V4 color)
 {
-	return {rect, depth, textureID, uv, color};
+	Sprite sprite = {};
+	sprite.rect = rect;
+	sprite.depth = depth;
+	sprite.textureID = textureID;
+	sprite.uv = uv;
+	sprite.color = color;
+	
+	return sprite;
 }
 
 const int WORLD_SPRITE_MAX = 16384;
@@ -193,7 +200,7 @@ const real32 uiMessageBottomMargin = 4,
 struct UiMessage
 {
 	char text[256];
-	int32 countdown; // In milliseconds
+	real32 countdown; // In seconds
 };
 
 struct GLRenderer

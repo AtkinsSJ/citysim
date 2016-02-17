@@ -86,28 +86,48 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect
 void pushUiMessage(GLRenderer *renderer, char *message)
 {
 	strncpy(renderer->message.text, message, sizeof(renderer->message.text));
-	renderer->message.countdown = 2000;
+	renderer->message.countdown = messageDisplayTime;
 }
 
 void drawUiMessage(GLRenderer *renderer)
 {
 	if (renderer->message.countdown > 0)
 	{
-		renderer->message.countdown -= MS_PER_FRAME;
+		renderer->message.countdown -= SECONDS_PER_FRAME;
 
 		if (renderer->message.countdown > 0)
 		{
+			real32 t = (real32)renderer->message.countdown / messageDisplayTime;
+
+			V4 backgroundColor = renderer->theme.tooltipBackgroundColor;
+			V4 textColor = renderer->theme.tooltipColorNormal;
+
+			if (t < 0.2f)
+			{
+				// Fade out
+				real32 tt = t / 0.2f;
+				backgroundColor *= lerp(0, backgroundColor.a, tt);
+				textColor *= lerp(0, textColor.a, tt);
+			}
+			else if (t > 0.8f)
+			{
+				// Fade in
+				real32 tt = (t - 0.8f) / 0.2f;
+				backgroundColor.a = lerp(backgroundColor.a, 0, tt);
+				textColor.a = lerp(textColor.a, 0, tt);
+			}
+
 			TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
 
 			BitmapFontCachedText *textCache = drawTextToCache(&memory, renderer->theme.font,
-											renderer->message.text, renderer->theme.tooltipColorNormal);
+											renderer->message.text, textColor);
 			V2 topLeft = calculateTextPosition(textCache,
 				v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f),
 				ALIGN_H_CENTRE | ALIGN_BOTTOM );
 			RealRect bounds = rectXYWH(topLeft.x - 4, topLeft.y - 4,
 									   textCache->size.x + 8, textCache->size.y + 8);
 
-			drawRect(renderer, true, bounds, 100, renderer->theme.tooltipBackgroundColor);
+			drawRect(renderer, true, bounds, 100, backgroundColor);
 			drawCachedText(renderer, textCache, topLeft, 101);
 
 			endTemporaryMemory(&memory);

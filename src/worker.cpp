@@ -321,7 +321,7 @@ void drawWorker(GLRenderer *renderer, Worker *worker, real32 daysPerFrame) {
 	// We really need a proper system for motion where the workers actually move.
 	if (worker->isMoving) {
 		worker->movementInterpolation += daysPerFrame;
-		drawPos = worker->renderPos = interpolate(worker->pos, worker->dayEndPos, worker->movementInterpolation);
+		drawPos = worker->renderPos = lerp(worker->pos, worker->dayEndPos, worker->movementInterpolation);
 
 #if 0
 		// DEBUG POTATO!
