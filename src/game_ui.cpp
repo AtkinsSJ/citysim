@@ -118,7 +118,7 @@ bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputS
 	buttonRect.x -= buttonSize + uiPadding;
 	if (uiButton(renderer, inputState, "||", buttonRect, 1, SDL_SCANCODE_SPACE, "(Space)"))
 	{
-		calendar->paused = true;
+		calendar->paused = !calendar->paused;
 		buttonAteMouseEvent = true;
 	}
 

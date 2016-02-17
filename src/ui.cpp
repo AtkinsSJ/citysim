@@ -69,6 +69,13 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect
 	uiLabel(renderer, renderer->theme.buttonFont, text, centre(bounds), ALIGN_CENTRE, depth + 1,
 			renderer->theme.buttonTextColor);
 
+	// Keyboard shortcut!
+	if ((shortcutKey != SDL_SCANCODE_UNKNOWN)
+	&& keyJustPressed(inputState, shortcutKey))
+	{
+		buttonClicked = true;
+	}
+
 	return buttonClicked;
 }
 

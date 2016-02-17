@@ -69,44 +69,6 @@ void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, r
 	}
 }
 
-// REMOVE THIS
-BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, V4 color)
-{
-	uint32 textLength = strlen(text);
-
-	// Memory management witchcraft
-	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
-	uint8 *data = (uint8 *) calloc(1, memorySize);
-	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
-	result->sprites = (Sprite *)(data + sizeof(BitmapFontCachedText));
-
-	result->size = v2(0, font->lineHeight);
-
-	V2 position = {};
-
-	if (result)
-	{
-		for (char *currentChar=text;
-			*currentChar != 0;
-			currentChar++)
-		{
-			uint32 uChar = (uint32)(*currentChar);
-			BitmapFontChar *c = findChar(font, uChar);
-			if (c)
-			{
-				*(result->sprites + result->spriteCount++) = makeSprite(
-					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset, (real32)c->size.w, (real32)c->size.h),
-					0, c->textureID, c->uv, color
-				);
-				position.x += (real32)c->xAdvance;
-				result->size.x += (real32)c->xAdvance;
-			}
-		}
-	}
-
-	return result;
-}
-
 BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *font, char *text, V4 color)
 {
 	uint32 textLength = strlen(text);
