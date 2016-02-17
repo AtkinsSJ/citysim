@@ -675,7 +675,7 @@ int main(int argc, char *argv[]) {
 			V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 			drawRect(renderer, true,
 					rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-					0, renderer->theme.overlayColor);
+					10, renderer->theme.overlayColor);
 
 			char gameOverText[256];
 			if (gameStatus == GameStatus_Won)
@@ -685,9 +685,9 @@ int main(int argc, char *argv[]) {
 				sprintf(gameOverText, "Game over! You ran out of money! :(");
 			}
 
-			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre, ALIGN_CENTRE, 1, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, renderer->theme.labelColor);
 
-			if (uiButton(renderer, &inputState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 1))
+			if (uiButton(renderer, &inputState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
 			{
 				gameState = startGame(&gameArena, cityName);
 
