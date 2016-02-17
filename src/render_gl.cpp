@@ -252,6 +252,8 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 
 bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 {
+	bool successfullyLoadedAllTextures = true;
+
 	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
 	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
 
@@ -287,6 +289,7 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, Texture
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
 				"Failed to load '%s'!\n%s", texturesToLoad->filenames[i], IMG_GetError());
 			texture->valid = false;
+			successfullyLoadedAllTextures = false;
 		}
 		else
 		{
@@ -423,7 +426,7 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, Texture
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
 
 	checkForGLError();
-	return true;
+	return successfullyLoadedAllTextures;
 }
 
 void freeRenderer(GLRenderer *renderer)
