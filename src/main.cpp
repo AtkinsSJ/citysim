@@ -153,7 +153,6 @@ int main(int argc, char *argv[]) {
 	uint32 lastFrame = 0,
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
-
 	
 	// GAME LOOP
 	while (!quit) {
@@ -200,14 +199,13 @@ int main(int argc, char *argv[]) {
 					inputState.mouseDown[buttonIndex] = false;
 				} break;
 				case SDL_MOUSEWHEEL: {
-					// TODO: Uncomment if we upgrade to SDL 2.0.4+, to handle inverted scroll wheel values.
-					// if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
-					// 	inputState.mouse.wheelX = -event.wheel.x;
-					// 	inputState.mouse.wheelY = -event.wheel.y;
-					// } else {
+					if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+						inputState.wheelX = -event.wheel.x;
+						inputState.wheelY = -event.wheel.y;
+					} else {
 						inputState.wheelX = event.wheel.x;
 						inputState.wheelY = event.wheel.y;
-					// }
+					}
 				} break;
 
 				// KEYBOARD EVENTS
