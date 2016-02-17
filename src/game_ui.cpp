@@ -80,20 +80,18 @@ void showCostTooltip(GLRenderer *renderer, int32 cost, int32 cityFunds) {
 
 const real32 uiPadding = 4;
 
-bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputState, CalendarChange *change)
+bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputState)
 {
 	bool buttonAteMouseEvent = false;
 
-	if (change->isNewDay) {
-		getDateString(calendar, calendar->dateStringBuffer);
-	}
+	getDateString(calendar, calendar->dateStringBuffer);
 
 	uiLabel(renderer, renderer->theme.font, calendar->dateStringBuffer,
 			v2((real32)renderer->worldCamera.windowWidth - uiPadding, uiPadding), ALIGN_RIGHT,
 			1, renderer->theme.labelColor);
 
 	const real32 buttonSize = 24;
-	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
+	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 32,
 								buttonSize, buttonSize);
 	if (uiButton(renderer, inputState, ">>>", buttonRect, 1, (calendar->speed == Speed3)))
 	{

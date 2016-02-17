@@ -325,6 +325,7 @@ int main(int argc, char *argv[]) {
 		
 		V2 mouseWorldPos = unproject(renderer, v2(inputState.mousePos));
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
+		RealRect uiRect = rectXYWH(0,0, (real32) renderer->worldCamera.windowWidth, 64);
 
 	// UiButton/Mouse interaction
 		if (gameStatus == GameStatus_Playing) {
@@ -334,11 +335,6 @@ int main(int argc, char *argv[]) {
 			} else if (keyJustPressed(&inputState, SDL_SCANCODE_DELETE)) {
 				gameState->city.funds -= 10000;
 			}
-
-			bool buttonAteMouseEvent = false;
-			// if (updateUiButtonGroup(renderer, &tooltip, &actionButtonGroup, &inputState)) {
-			// 	buttonAteMouseEvent = true;
-			// }
 
 			// Camera controls
 			// HOME resets the camera and centres on the HQ
@@ -354,7 +350,8 @@ int main(int argc, char *argv[]) {
 
 			// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
 
-			if (!buttonAteMouseEvent) {
+			// This is a very basic check for "is the user clicking on the UI?"
+			if (!inRect(uiRect, v2(inputState.mousePos))) {
 				switch (actionMode) {
 					case ActionMode_Build: {
 						if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
@@ -421,78 +418,6 @@ int main(int argc, char *argv[]) {
 				// setActiveButton(&actionButtonGroup, null);
 				actionMode = ActionMode_None;
 				SDL_SetCursor(cursorMain);
-			}
-
-			// Build UI
-			V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
-			V2 textPosition = v2(8,4);
-			RealRect buttonRect = rectXYWH(8, textPosition.y + 20 + uiPadding, 80, 24);
-			if (uiButton(renderer, &inputState, "Build HQ", buttonRect, 1,
-						(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Farmhouse),
-						SDL_SCANCODE_Q, "(Q)"))
-			{
-				selectedBuildingArchetype = BA_Farmhouse;
-				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorBuild);
-			}
-			buttonRect.x += buttonRect.w + uiPadding;
-			if (uiButton(renderer, &inputState, "Build Field", buttonRect, 1,
-						(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Field),
-						SDL_SCANCODE_F, "(F)"))
-			{
-				selectedBuildingArchetype = BA_Field;
-				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorBuild);
-			}
-			buttonRect.x += buttonRect.w + uiPadding;
-			if (uiButton(renderer, &inputState, "Build Barn", buttonRect, 1,
-						(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Barn),
-						SDL_SCANCODE_B, "(B)"))
-			{
-				selectedBuildingArchetype = BA_Barn;
-				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorBuild);
-			}
-			buttonRect.x += buttonRect.w + uiPadding;
-			if (uiButton(renderer, &inputState, "Build Road", buttonRect, 1,
-						(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Path),
-						SDL_SCANCODE_R, "(R)"))
-			{
-				selectedBuildingArchetype = BA_Path;
-				actionMode = ActionMode_Build;
-				SDL_SetCursor(cursorBuild);
-			}
-			buttonRect.x += buttonRect.w + uiPadding;
-			if (uiButton(renderer, &inputState, "Demolish", buttonRect, 1,
-						(actionMode == ActionMode_Demolish),
-						SDL_SCANCODE_X, "(X)"))
-			{
-				actionMode = ActionMode_Demolish;
-				SDL_SetCursor(cursorDemolish);
-			}
-			buttonRect.x += buttonRect.w + uiPadding;
-			if (uiButton(renderer, &inputState, "Plant", buttonRect, 1,
-						(actionMode == ActionMode_Plant),
-						SDL_SCANCODE_P, "(P)"))
-			{
-				actionMode = ActionMode_Plant;
-				SDL_SetCursor(cursorPlant);
-			}
-			buttonRect.x += buttonRect.w + uiPadding;
-			if (uiButton(renderer, &inputState, "Harvest", buttonRect, 1,
-						(actionMode == ActionMode_Harvest),
-						SDL_SCANCODE_H, "(H)"))
-			{
-				actionMode = ActionMode_Harvest;
-				SDL_SetCursor(cursorHarvest);
-			}
-			buttonRect.x += buttonRect.w + uiPadding;
-			if (uiButton(renderer, &inputState, "Hire Worker", buttonRect, 1,
-						(actionMode == ActionMode_Hire),
-						SDL_SCANCODE_G, "(G)"))
-			{
-				actionMode = ActionMode_Hire;
-				SDL_SetCursor(cursorHire);
 			}
 		}
 
@@ -611,9 +536,7 @@ int main(int argc, char *argv[]) {
 		if (gameStatus == GameStatus_Setup)
 		{
 			// Main menu!
-
-			drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-			0, renderer->theme.overlayColor);
+			drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight), 0, renderer->theme.overlayColor);
 
 			V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
 
@@ -660,7 +583,7 @@ int main(int argc, char *argv[]) {
 			real32 left = uiPadding;
 			char stringBuffer[256];
 
-			drawRect(renderer, true, rectXYWH(0,0, (real32) renderer->worldCamera.windowWidth, 64), 0, renderer->theme.overlayColor);
+			drawRect(renderer, true, uiRect, 0, renderer->theme.overlayColor);
 
 			uiLabel(renderer, renderer->theme.font, cityName, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 			left += 100;
@@ -670,11 +593,80 @@ int main(int argc, char *argv[]) {
 			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
 			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
-			drawCalendarUI(renderer, &gameState->calendar, &inputState, &calendarChange);
-			
-			// drawUiButtonGroup(renderer, &actionButtonGroup);
-			// drawUiButtonGroup(renderer, &calendarUI.buttonGroup);
-			// drawUiButton(renderer, &calendarUI.buttonPause);
+			drawCalendarUI(renderer, &gameState->calendar, &inputState);
+
+			// Build UI
+			{
+				V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
+				RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
+				if (uiButton(renderer, &inputState, "Build HQ", buttonRect, 1,
+							(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Farmhouse),
+							SDL_SCANCODE_Q, "(Q)"))
+				{
+					selectedBuildingArchetype = BA_Farmhouse;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Build Field", buttonRect, 1,
+							(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Field),
+							SDL_SCANCODE_F, "(F)"))
+				{
+					selectedBuildingArchetype = BA_Field;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Build Barn", buttonRect, 1,
+							(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Barn),
+							SDL_SCANCODE_B, "(B)"))
+				{
+					selectedBuildingArchetype = BA_Barn;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Build Road", buttonRect, 1,
+							(actionMode == ActionMode_Build) && (selectedBuildingArchetype == BA_Path),
+							SDL_SCANCODE_R, "(R)"))
+				{
+					selectedBuildingArchetype = BA_Path;
+					actionMode = ActionMode_Build;
+					SDL_SetCursor(cursorBuild);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Demolish", buttonRect, 1,
+							(actionMode == ActionMode_Demolish),
+							SDL_SCANCODE_X, "(X)"))
+				{
+					actionMode = ActionMode_Demolish;
+					SDL_SetCursor(cursorDemolish);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Plant", buttonRect, 1,
+							(actionMode == ActionMode_Plant),
+							SDL_SCANCODE_P, "(P)"))
+				{
+					actionMode = ActionMode_Plant;
+					SDL_SetCursor(cursorPlant);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Harvest", buttonRect, 1,
+							(actionMode == ActionMode_Harvest),
+							SDL_SCANCODE_H, "(H)"))
+				{
+					actionMode = ActionMode_Harvest;
+					SDL_SetCursor(cursorHarvest);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Hire Worker", buttonRect, 1,
+							(actionMode == ActionMode_Hire),
+							SDL_SCANCODE_G, "(G)"))
+				{
+					actionMode = ActionMode_Hire;
+					SDL_SetCursor(cursorHire);
+				}
+			}
 		}
 
 		// GAME OVER

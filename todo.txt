@@ -13,7 +13,6 @@ Rendering 2.0:
 - Replace 'isUI' nonsense with something better?
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
-- Fade-out the message popup
 - Shader-loading function!
 - Show £ signs! Something is borked.
 - Probably replace the binary search for glyphs with something better?
@@ -25,16 +24,17 @@ Asset packing:
 - Read data from these rather than hard-coded filenames
 
 Immediate Mode UI:
-- Generally, things will be much simpler.
-- Label
-- Text alignment
-- Tooltip
-- UI Message
-- Button
-- Button group!
-- Text Input
-- Menu (Click, it pops up)
-- Buttons eat mouse input?
+	TODO
+	- Label
+	- Text alignment
+	- Text Input
+	- Menu (Click, it pops up)
+	DONE
+	- Tooltip
+	- UI Message
+	- Buttons eat mouse input?
+	- Button
+	- Button group!
 
 - Audio!
 	- Sound effects
