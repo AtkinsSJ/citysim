@@ -83,6 +83,34 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect
 	return buttonClicked;
 }
 
+void uiTextInput(GLRenderer *renderer, InputState *inputState, bool active,
+				char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
+{
+	if (active)
+	{
+		int32 textLength = strlen(textBuffer);
+		if (inputState->textEntered[0])
+		{
+			uint32 pos = 0;
+			while (inputState->textEntered[pos]
+				&& textLength < textBufferLength)
+			{
+				textBuffer[textLength++] = inputState->textEntered[pos];
+				pos++;
+			}
+		}
+
+		if (keyJustPressed(inputState, SDL_SCANCODE_BACKSPACE)
+			&& textLength > 0)
+		{
+			textBuffer[textLength-1] = 0;
+			textLength--;
+		}
+	}
+
+	uiLabel(renderer, renderer->theme.font, textBuffer, origin, ALIGN_CENTRE, depth, renderer->theme.labelColor);
+}
+
 void pushUiMessage(GLRenderer *renderer, char *message)
 {
 	strncpy(renderer->message.text, message, sizeof(renderer->message.text));

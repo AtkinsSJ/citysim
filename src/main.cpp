@@ -120,11 +120,9 @@ int main(int argc, char *argv[]) {
 // Game setup
 	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));
 
-	char cityName[256] = {};
+	const int32 cityNameMaxLength = 32;
+	char cityName[cityNameMaxLength + 1] = {};
 	sprintf(cityName, "My Farm");
-	int32 cityNameMaxLength = 128;
-	int32 cityNameLength = strlen(cityName);
-	bool cityNameTextDirty = true;
 	
 	GameState *gameState = startGame(&gameArena, cityName);
 
@@ -169,6 +167,8 @@ int main(int argc, char *argv[]) {
 			inputState.keyWasDown[i] = inputState.keyDown[i];
 		}
 
+		inputState.textEntered[0] = 0;
+
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 				// WINDOW EVENTS
@@ -211,32 +211,12 @@ int main(int argc, char *argv[]) {
 				// KEYBOARD EVENTS
 				case SDL_KEYDOWN: {
 					inputState.keyDown[event.key.keysym.scancode] = true;
-
-					if (gameStatus == GameStatus_Setup) {
-						// Enter farm name!
-						if (event.key.keysym.sym == SDLK_BACKSPACE
-							&& cityNameLength > 0) {
-
-							cityName[cityNameLength-1] = 0;
-							cityNameLength--;
-							cityNameTextDirty = true;
-						}
-					}
 				} break;
 				case SDL_KEYUP: {
 					inputState.keyDown[event.key.keysym.scancode] = false;
 				} break;
 				case SDL_TEXTINPUT: {
-					if (gameStatus == GameStatus_Setup) {
-						// Enter farm name!
-						uint32 pos = 0;
-						while (event.text.text[pos]
-							&& cityNameLength < cityNameMaxLength) {
-							cityNameTextDirty = true;
-							cityName[cityNameLength++] = event.text.text[pos];
-							pos++;
-						}
-					}
+					strncpy(inputState.textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 				} break;
 			}
 		}
@@ -546,8 +526,7 @@ int main(int argc, char *argv[]) {
 					position, ALIGN_CENTRE, 1, renderer->theme.labelColor);
 			position.y += 32;
 
-			uiLabel(renderer, renderer->theme.font, cityName,
-					position, ALIGN_CENTRE, 1, renderer->theme.labelColor);
+			uiTextInput(renderer, &inputState, true, cityName, cityNameMaxLength, position, 1);
 			position.y += 32;
 
 			uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
