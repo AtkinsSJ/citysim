@@ -1,12 +1,12 @@
 // ui.cpp
 
 RealRect uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
-				 real32 depth, V4 color)
+				 real32 depth, V4 color, real32 maxWidth = 0)
 {
 
 	TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
 
-	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color);
+	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, align);
 	drawCachedText(renderer, textCache, topLeft, depth);
 	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
@@ -113,9 +113,10 @@ void uiTextInput(GLRenderer *renderer, InputState *inputState, bool active,
 		}
 	}
 
-	RealRect labelRect = uiLabel(renderer, renderer->theme.font, textBuffer, origin, ALIGN_CENTRE,
-								 depth + 1, renderer->theme.textboxTextColor);
-	labelRect = expandRect(labelRect, 4);
+	const real32 padding = 4;
+	RealRect labelRect = uiLabel(renderer, renderer->theme.font, textBuffer, origin + v2(padding, padding),
+								 ALIGN_CENTRE, depth + 1, renderer->theme.textboxTextColor);
+	labelRect = expandRect(labelRect, padding);
 	drawRect(renderer, true, labelRect, depth, renderer->theme.textboxBackgroundColor);
 }
 

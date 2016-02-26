@@ -46,6 +46,8 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 	return result;
 }
 
+// Not currently used
+#if 0
 void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, real32 depth, V4 color)
 {
 	for (char *currentChar=text;
@@ -68,10 +70,14 @@ void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, r
 		}
 	}
 }
+#endif
 
-BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *font, char *text, V4 color)
+BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *font, char *text,
+									  V4 color, real32 maxWidth=0)
 {
 	uint32 textLength = strlen(text);
+	bool doWrap = (maxWidth > 0);
+	bool lineNumber = 0;
 
 	// Memory management witchcraft
 	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
@@ -93,12 +99,25 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 			BitmapFontChar *c = findChar(font, uChar);
 			if (c)
 			{
+				// Wrap onto a new line
+				if (doWrap && (position.x + c->xAdvance) > maxWidth)
+				{
+					position.x = 0;
+					position.y += font->lineHeight;
+					result->size.y += font->lineHeight;
+					lineNumber++;
+				}
+
 				*(result->sprites + result->spriteCount++) = makeSprite(
-					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset, (real32)c->size.w, (real32)c->size.h),
+					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset,
+							 (real32)c->size.w, (real32)c->size.h),
 					0, c->textureID, c->uv, color
 				);
 				position.x += (real32)c->xAdvance;
-				result->size.x += (real32)c->xAdvance;
+				if (lineNumber == 0)
+				{
+					result->size.x += (real32)c->xAdvance;
+				}
 			}
 		}
 	}
