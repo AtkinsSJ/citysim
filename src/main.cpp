@@ -563,12 +563,12 @@ int main(int argc, char *argv[]) {
 			drawRect(renderer, true, uiRect, 0, renderer->theme.overlayColor);
 
 			uiLabel(renderer, renderer->theme.font, cityName, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
-			left += 100;
+
+			const real32 centre = renderer->worldCamera.windowWidth * 0.5f;
 			sprintf(stringBuffer, "£%d", gameState->city.funds);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
-			left += 100;
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
 			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
 			drawCalendarUI(renderer, &gameState->calendar, &inputState);
 
