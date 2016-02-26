@@ -6,6 +6,8 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 
 	// BINARY SEARCH! :D
 
+	// FIXME: This really needs to be replaced by a better system. And UTF8 support.
+
 	uint32 high = font->charCount;
 	uint32 low = 0;
 	uint32 current = (high + low) / 2;
@@ -46,31 +48,11 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 	return result;
 }
 
-// Not currently used
-#if 0
-void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, real32 depth, V4 color)
+bool isWhitespace(uint32 uChar)
 {
-	for (char *currentChar=text;
-		*currentChar != 0;
-		currentChar++)
-	{
-		uint32 uChar = (uint32)(*currentChar);
-		BitmapFontChar *c = findChar(font, uChar);
-		if (c)
-		{
-			drawQuad(renderer, true,
-					 rectXYWH(
-					 	position.x + (real32)c->xOffset,
-					 	position.y + (real32)c->yOffset,
-					 	(real32)c->size.w,
-					 	(real32)c->size.h
-					 ),
-					 depth, c->textureID, c->uv, color);
-			position.x += (real32)c->xAdvance;
-		}
-	}
+	// TODO: FINISH THIS!
+	return (uChar == 32);
 }
-#endif
 
 BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *font, char *text,
 									  V4 color, real32 maxWidth=0)
@@ -78,20 +60,23 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 	uint32 textLength = strlen(text);
 	bool doWrap = (maxWidth > 0);
 	int32 lineCount = 1;
-	real32 longestLineLength = 0;
+	real32 longestLineWidth = 0;
 
 	// Memory management witchcraft
 	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
 	uint8 *data = (uint8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->sprites = (Sprite *)(data + sizeof(BitmapFontCachedText));
-
 	result->size = v2(0, font->lineHeight);
 
 	V2 position = {};
 
 	if (result)
 	{
+		Sprite *startOfCurrentWord = null;
+		real32 currentWordWidth = 0;
+		real32 currentLineWidth = 0;
+
 		for (char *currentChar=text;
 			*currentChar != 0;
 			currentChar++)
@@ -100,25 +85,73 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 			BitmapFontChar *c = findChar(font, uChar);
 			if (c)
 			{
-				// Wrap onto a new line if need be
-				if (doWrap && (position.x + c->xAdvance) > maxWidth)
-				{
-					position.x = 0;
-					position.y += font->lineHeight;
-					lineCount++;
-				}
-
-				*(result->sprites + result->spriteCount++) = makeSprite(
+				Sprite *sprite = result->sprites + result->spriteCount++;
+				*sprite = makeSprite(
 					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset,
 							 (real32)c->size.w, (real32)c->size.h),
 					0, c->textureID, c->uv, color
 				);
-				position.x += (real32)c->xAdvance;
-				longestLineLength = max(longestLineLength, position.x);
+
+				if (doWrap)
+				{
+					if (isWhitespace(uChar))
+					{
+						if (startOfCurrentWord)
+						{
+							// If our current word is too long for the gap, wrap it
+							if (currentWordWidth > maxWidth)
+							{
+								// Split it
+								ASSERT(false, "Not implemented yet!");
+
+							}
+							else if ((currentWordWidth + currentLineWidth) > maxWidth)
+							{
+								// Wrap it
+								V2 offset = v2(-startOfCurrentWord->rect.x, (real32)font->lineHeight);
+								position.y += font->lineHeight;
+								position.x = currentWordWidth;
+								currentLineWidth = 0;
+								lineCount++;
+
+								// Move all the sprites to their new positions
+								while (startOfCurrentWord != sprite)
+								{
+									startOfCurrentWord->rect.pos += offset;
+									startOfCurrentWord++;
+								}
+							}
+							else
+							{
+								currentLineWidth += currentWordWidth;
+								longestLineWidth = max(longestLineWidth, currentLineWidth);
+							}
+
+							startOfCurrentWord = null;
+						}
+						currentLineWidth += c->xAdvance;
+						position.x += c->xAdvance;
+					}
+					else
+					{
+						if (startOfCurrentWord == null)
+						{
+							startOfCurrentWord = sprite;
+							currentWordWidth = 0;
+						}
+						position.x += (real32)c->xAdvance;
+						currentWordWidth += c->xAdvance;
+					}
+				}
+				else
+				{
+					position.x += (real32)c->xAdvance;
+					longestLineWidth = max(longestLineWidth, position.x);
+				}
 			}
 		}
 
-		result->size.x = longestLineLength;
+		result->size.x = max(longestLineWidth, currentLineWidth);
 		result->size.y = (real32)(font->lineHeight * lineCount);
 	}
 
