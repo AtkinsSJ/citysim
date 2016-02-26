@@ -27,15 +27,15 @@ void drawTooltip(GLRenderer *renderer, InputState *inputState)
 {
 	if (renderer->tooltip.show)
 	{
-		real32 depth = 100;
-		real32 tooltipPadding = 4;
+		const real32 depth = 100;
+		const real32 tooltipPadding = 4;
 
 		V2 topLeft = v2(inputState->mousePos) + renderer->tooltip.offsetFromCursor + v2(tooltipPadding, tooltipPadding);
 
 		RealRect labelRect = uiLabel(renderer, renderer->theme.font, renderer->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1, renderer->tooltip.color);
 
-		labelRect = expandRect(labelRect, 4);
+		labelRect = expandRect(labelRect, tooltipPadding);
 
 		drawRect(renderer, true, labelRect, depth, renderer->theme.tooltipBackgroundColor);
 
@@ -113,7 +113,10 @@ void uiTextInput(GLRenderer *renderer, InputState *inputState, bool active,
 		}
 	}
 
-	uiLabel(renderer, renderer->theme.font, textBuffer, origin, ALIGN_CENTRE, depth, renderer->theme.labelColor);
+	RealRect labelRect = uiLabel(renderer, renderer->theme.font, textBuffer, origin, ALIGN_CENTRE,
+								 depth + 1, renderer->theme.textboxTextColor);
+	labelRect = expandRect(labelRect, 4);
+	drawRect(renderer, true, labelRect, depth, renderer->theme.textboxBackgroundColor);
 }
 
 void pushUiMessage(GLRenderer *renderer, char *message)
@@ -130,6 +133,9 @@ void drawUiMessage(GLRenderer *renderer)
 
 		if (renderer->message.countdown > 0)
 		{
+			const real32 depth = 100;
+			const real32 padding = 4;
+
 			real32 t = (real32)renderer->message.countdown / messageDisplayTime;
 
 			V4 backgroundColor = renderer->theme.tooltipBackgroundColor;
@@ -150,20 +156,13 @@ void drawUiMessage(GLRenderer *renderer)
 				textColor.a = lerp(textColor.a, 0, tt);
 			}
 
-			TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
+			V2 origin = v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f);
+			RealRect labelRect = uiLabel(renderer, renderer->theme.font, renderer->message.text, origin,
+										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1, textColor);
 
-			BitmapFontCachedText *textCache = drawTextToCache(&memory, renderer->theme.font,
-											renderer->message.text, textColor);
-			V2 topLeft = calculateTextPosition(textCache,
-				v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f),
-				ALIGN_H_CENTRE | ALIGN_BOTTOM );
-			RealRect bounds = rectXYWH(topLeft.x - 4, topLeft.y - 4,
-									   textCache->size.x + 8, textCache->size.y + 8);
+			labelRect = expandRect(labelRect, padding);
 
-			drawRect(renderer, true, bounds, 100, backgroundColor);
-			drawCachedText(renderer, textCache, topLeft, 101);
-
-			endTemporaryMemory(&memory);
+			drawRect(renderer, true, labelRect, depth, backgroundColor);
 		}
 	}
 }
