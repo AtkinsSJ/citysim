@@ -517,23 +517,23 @@ int main(int argc, char *argv[]) {
 			drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight), 0, renderer->theme.overlayColor);
 
 			V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
-			real32 maxLabelWidth = renderer->worldCamera.windowWidth - 256;
+			real32 maxLabelWidth = (real32)renderer->worldCamera.windowWidth - 256;
 
 			drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 
 			position.y += 154.0f;
 
-			position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'.",
-					position, ALIGN_CENTRE, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+			position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'. This is some text. As I add it, it moves left? MOOOOVE! I like to move it move it, I like to...\nMOVE IT!",
+					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
 			uiTextInput(renderer, &inputState, true, cityName, cityNameMaxLength, position, 1);
 			position.y += 32;
 
-			position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money. This is some text. As I add it, it moves left? MOOOOVE! I like to move it move it, I like to...\nMOVE IT!",
-					position, ALIGN_CENTRE, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+			position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
+					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
 			position.y += (uiLabel(renderer, renderer->theme.font, "Workers are paid £50 at the start of each month.",
-					position, ALIGN_CENTRE, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
 			RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 			if (uiButton(renderer, &inputState, "Exit", buttonRect, 1))

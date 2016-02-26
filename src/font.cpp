@@ -77,7 +77,8 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 {
 	uint32 textLength = strlen(text);
 	bool doWrap = (maxWidth > 0);
-	bool lineNumber = 0;
+	int32 lineCount = 1;
+	real32 longestLineLength = 0;
 
 	// Memory management witchcraft
 	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
@@ -99,13 +100,12 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 			BitmapFontChar *c = findChar(font, uChar);
 			if (c)
 			{
-				// Wrap onto a new line
+				// Wrap onto a new line if need be
 				if (doWrap && (position.x + c->xAdvance) > maxWidth)
 				{
 					position.x = 0;
 					position.y += font->lineHeight;
-					result->size.y += font->lineHeight;
-					lineNumber++;
+					lineCount++;
 				}
 
 				*(result->sprites + result->spriteCount++) = makeSprite(
@@ -114,12 +114,12 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 					0, c->textureID, c->uv, color
 				);
 				position.x += (real32)c->xAdvance;
-				if (lineNumber == 0)
-				{
-					result->size.x += (real32)c->xAdvance;
-				}
+				longestLineLength = max(longestLineLength, position.x);
 			}
 		}
+
+		result->size.x = longestLineLength;
+		result->size.y = (real32)(font->lineHeight * lineCount);
 	}
 
 	return result;

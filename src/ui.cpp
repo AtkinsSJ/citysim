@@ -115,7 +115,7 @@ void uiTextInput(GLRenderer *renderer, InputState *inputState, bool active,
 
 	const real32 padding = 4;
 	RealRect labelRect = uiLabel(renderer, renderer->theme.font, textBuffer, origin + v2(padding, padding),
-								 ALIGN_CENTRE, depth + 1, renderer->theme.textboxTextColor);
+								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, renderer->theme.textboxTextColor);
 	labelRect = expandRect(labelRect, padding);
 	drawRect(renderer, true, labelRect, depth, renderer->theme.textboxBackgroundColor);
 }
