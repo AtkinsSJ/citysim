@@ -1,5 +1,21 @@
 // ui.cpp
 
+RealRect uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
+				 real32 depth, V4 color)
+{
+
+	TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
+
+	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color);
+	V2 topLeft = calculateTextPosition(textCache, origin, align);
+	drawCachedText(renderer, textCache, topLeft, depth);
+	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+
+	endTemporaryMemory(&memory);
+
+	return bounds;
+}
+
 void setTooltip(GLRenderer *renderer, char *text, V4 color)
 {
 	strncpy(renderer->tooltip.text, text, sizeof(renderer->tooltip.text));
@@ -11,31 +27,20 @@ void drawTooltip(GLRenderer *renderer, InputState *inputState)
 {
 	if (renderer->tooltip.show)
 	{
-		TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
+		real32 depth = 100;
+		real32 tooltipPadding = 4;
 
-		BitmapFontCachedText *textCache =
-			drawTextToCache(&memory, renderer->theme.font, renderer->tooltip.text, renderer->tooltip.color);
-		V2 topLeft = v2(inputState->mousePos) + renderer->tooltip.offsetFromCursor;
-		RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x + 8, textCache->size.y + 8);
+		V2 topLeft = v2(inputState->mousePos) + renderer->tooltip.offsetFromCursor + v2(tooltipPadding, tooltipPadding);
 
-		drawRect(renderer, true, bounds, 100, renderer->theme.tooltipBackgroundColor);
-		drawCachedText(renderer, textCache, topLeft + v2(4,4), 101);
+		RealRect labelRect = uiLabel(renderer, renderer->theme.font, renderer->tooltip.text,
+			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1, renderer->tooltip.color);
 
-		endTemporaryMemory(&memory);
+		labelRect = expandRect(labelRect, 4);
+
+		drawRect(renderer, true, labelRect, depth, renderer->theme.tooltipBackgroundColor);
 
 		renderer->tooltip.show = false;
 	}
-}
-
-void uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align, real32 depth, V4 color)
-{
-	TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
-
-	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color);
-	V2 topLeft = calculateTextPosition(textCache, origin, align);
-	drawCachedText(renderer, textCache, topLeft, depth);
-
-	endTemporaryMemory(&memory);
 }
 
 bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,

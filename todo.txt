@@ -25,13 +25,15 @@ Asset packing:
 
 Immediate Mode UI:
 	TODO
-	- Label
-	- Text alignment
-	- Text Input
+	- Text wrapping
+	- Label returns bounds
 	- Menu (Click, it pops up)
 	DONE
 	- Tooltip
 	- UI Message
+	- Text Input
+	- Text alignment
+	- Label
 	- Buttons eat mouse input?
 	- Button
 	- Button group!
