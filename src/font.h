@@ -16,6 +16,8 @@ struct BitmapFont
 	uint16 lineHeight;
 	uint16 baseY;
 
+	BitmapFontChar nullChar;
+
 	uint32 charCount;
 	BitmapFontChar *chars;
 };

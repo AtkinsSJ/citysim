@@ -51,16 +51,116 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 bool isWhitespace(uint32 uChar)
 {
 	// TODO: FINISH THIS!
-	return (uChar == 32);
+
+	bool result = false;
+
+	switch (uChar)
+	{
+	case 0:
+	case 32:
+		result = true;
+		break;
+
+	default:
+		result = false;
+	}
+
+	return result;
+}
+
+struct DrawTextState
+{
+	bool doWrap;
+	real32 maxWidth;
+	real32 lineHeight;
+	int32 lineCount;
+
+	V2 position;
+
+	Sprite *startOfCurrentWord;
+	Sprite *endOfCurrentWord;
+	real32 currentWordWidth;
+
+	real32 currentLineWidth;
+	real32 longestLineWidth;
+};
+
+void _handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
+{
+	if (state->doWrap)
+	{
+		if (isWhitespace(c->id))
+		{
+			if (state->startOfCurrentWord)
+			{
+				if ((state->currentWordWidth + state->currentLineWidth) > state->maxWidth)
+				{
+					// Wrap it
+					V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
+					state->position.y += state->lineHeight;
+					state->position.x = state->currentWordWidth;
+					state->currentLineWidth = state->currentWordWidth;
+					state->lineCount++;
+
+					// Move all the sprites to their new positions
+					while (state->startOfCurrentWord <= state->endOfCurrentWord)
+					{
+						state->startOfCurrentWord->rect.pos += offset;
+						state->startOfCurrentWord++;
+					}
+
+					if (state->currentWordWidth > state->maxWidth)
+					{
+						// TODO: Split the word across multiple lines?
+						// For now, we just have it overflow, and move onto another new line
+						state->longestLineWidth = state->maxWidth;
+						state->position.y += state->lineHeight;
+						state->position.x = 0;
+						state->currentLineWidth = 0;
+						state->lineCount++;
+					}
+				}
+				else
+				{
+					state->currentLineWidth += state->currentWordWidth;
+					state->longestLineWidth = max(state->longestLineWidth, state->currentLineWidth);
+				}
+
+				state->startOfCurrentWord = null;
+			}
+			state->currentLineWidth += c->xAdvance;
+			state->position.x += c->xAdvance;
+		}
+		else
+		{
+			if (state->startOfCurrentWord == null)
+			{
+				state->startOfCurrentWord = state->endOfCurrentWord;
+				state->currentWordWidth = 0;
+			}
+			state->position.x += (real32)c->xAdvance;
+			state->currentWordWidth += c->xAdvance;
+		}
+	}
+	else
+	{
+		state->position.x += (real32)c->xAdvance;
+		state->longestLineWidth = max(state->longestLineWidth, state->position.x);
+	}
 }
 
 BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *font, char *text,
 									  V4 color, real32 maxWidth=0)
 {
+	DrawTextState state = {};
+
 	uint32 textLength = strlen(text);
-	bool doWrap = (maxWidth > 0);
-	int32 lineCount = 1;
-	real32 longestLineWidth = 0;
+	state.maxWidth = maxWidth;
+	state.doWrap = (maxWidth > 0);
+	state.lineCount = 1;
+	state.longestLineWidth = 0;
+	state.lineHeight = font->lineHeight;
+	state.position = {};
 
 	// Memory management witchcraft
 	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
@@ -69,90 +169,34 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 	result->sprites = (Sprite *)(data + sizeof(BitmapFontCachedText));
 	result->size = v2(0, font->lineHeight);
 
-	V2 position = {};
-
 	if (result)
 	{
-		Sprite *startOfCurrentWord = null;
-		real32 currentWordWidth = 0;
-		real32 currentLineWidth = 0;
+		state.startOfCurrentWord = null;
+		state.currentWordWidth = 0;
+		state.currentLineWidth = 0;
 
 		for (char *currentChar=text;
 			*currentChar != 0;
 			currentChar++)
 		{
-			uint32 uChar = (uint32)(*currentChar);
-			BitmapFontChar *c = findChar(font, uChar);
+			BitmapFontChar *c = findChar(font, (uint32)(*currentChar));
 			if (c)
 			{
-				Sprite *sprite = result->sprites + result->spriteCount++;
-				*sprite = makeSprite(
-					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset,
+				state.endOfCurrentWord = result->sprites + result->spriteCount++;
+				*state.endOfCurrentWord = makeSprite(
+					rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
 							 (real32)c->size.w, (real32)c->size.h),
 					0, c->textureID, c->uv, color
 				);
 
-				if (doWrap)
-				{
-					if (isWhitespace(uChar))
-					{
-						if (startOfCurrentWord)
-						{
-							// If our current word is too long for the gap, wrap it
-							if (currentWordWidth > maxWidth)
-							{
-								// Split it
-								ASSERT(false, "Not implemented yet!");
-
-							}
-							else if ((currentWordWidth + currentLineWidth) > maxWidth)
-							{
-								// Wrap it
-								V2 offset = v2(-startOfCurrentWord->rect.x, (real32)font->lineHeight);
-								position.y += font->lineHeight;
-								position.x = currentWordWidth;
-								currentLineWidth = 0;
-								lineCount++;
-
-								// Move all the sprites to their new positions
-								while (startOfCurrentWord != sprite)
-								{
-									startOfCurrentWord->rect.pos += offset;
-									startOfCurrentWord++;
-								}
-							}
-							else
-							{
-								currentLineWidth += currentWordWidth;
-								longestLineWidth = max(longestLineWidth, currentLineWidth);
-							}
-
-							startOfCurrentWord = null;
-						}
-						currentLineWidth += c->xAdvance;
-						position.x += c->xAdvance;
-					}
-					else
-					{
-						if (startOfCurrentWord == null)
-						{
-							startOfCurrentWord = sprite;
-							currentWordWidth = 0;
-						}
-						position.x += (real32)c->xAdvance;
-						currentWordWidth += c->xAdvance;
-					}
-				}
-				else
-				{
-					position.x += (real32)c->xAdvance;
-					longestLineWidth = max(longestLineWidth, position.x);
-				}
+				_handleEndOfWord(&state, c);
 			}
 		}
+		// Final flush to make sure the last line is correct
+		_handleEndOfWord(&state, &font->nullChar);
 
-		result->size.x = max(longestLineWidth, currentLineWidth);
-		result->size.y = (real32)(font->lineHeight * lineCount);
+		result->size.x = max(state.longestLineWidth, state.currentLineWidth);
+		result->size.y = (real32)(font->lineHeight * state.lineCount);
 	}
 
 	return result;
