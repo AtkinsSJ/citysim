@@ -159,7 +159,6 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 {
 	DrawTextState state = {};
 
-	uint32 textLength = strlen(text);
 	state.maxWidth = maxWidth;
 	state.doWrap = (maxWidth > 0);
 	state.lineCount = 1;
@@ -168,6 +167,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 	state.position = {};
 
 	// Memory management witchcraft
+	uint32 textLength = strlen(text);
 	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
 	uint8 *data = (uint8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
