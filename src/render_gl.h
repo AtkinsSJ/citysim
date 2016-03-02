@@ -48,6 +48,18 @@ struct VertexData
 	GLint textureID;
 };
 
+enum Cursor
+{
+	Cursor_Main,
+	Cursor_Build,
+	Cursor_Demolish,
+	Cursor_Plant,
+	Cursor_Harvest,
+	Cursor_Hire,
+
+	Cursor_Count
+};
+
 struct UiTheme
 {
 	struct BitmapFont *font,
@@ -68,6 +80,8 @@ struct UiTheme
 	V4 tooltipBackgroundColor,
 		tooltipColorNormal,
 		tooltipColorBad;
+
+	SDL_Cursor *cursors[Cursor_Count];
 };
 
 enum TextureAtlasItem
@@ -288,6 +302,7 @@ void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animatio
 void render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
+void setCursor(GLRenderer *renderer, Cursor cursor);
 
 BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, TexturesToLoad *texturesToLoad);
 

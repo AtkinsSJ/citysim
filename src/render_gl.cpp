@@ -96,6 +96,14 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", texturesToLoad);
 	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", texturesToLoad);
 
+	renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
+	renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
+	renderer->theme.cursors[Cursor_Demolish] = createCursor("cursor_demolish.png");
+	renderer->theme.cursors[Cursor_Plant] = createCursor("cursor_plant.png");
+	renderer->theme.cursors[Cursor_Harvest] = createCursor("cursor_harvest.png");
+	renderer->theme.cursors[Cursor_Hire] = createCursor("cursor_hire.png");
+	setCursor(renderer, Cursor_Main);
+
 	// Load textures &c
 	if (!loadTextures(&tempArena, renderer, texturesToLoad))
 	{
@@ -507,6 +515,11 @@ SDL_Cursor *createCursor(char *path)
 	SDL_FreeSurface(cursorSurface);
 
 	return cursor;
+}
+
+void setCursor(GLRenderer *renderer, Cursor cursor)
+{
+	SDL_SetCursor(renderer->theme.cursors[cursor]);
 }
 
 void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset)

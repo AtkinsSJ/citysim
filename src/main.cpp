@@ -96,16 +96,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	// Make some cursors!
-	SDL_Cursor *cursorMain = createCursor("cursor_main.png");
-	SDL_Cursor *cursorBuild = createCursor("cursor_build.png");
-	SDL_Cursor *cursorDemolish = createCursor("cursor_demolish.png");
-	SDL_Cursor *cursorPlant = createCursor("cursor_plant.png");
-	SDL_Cursor *cursorHarvest = createCursor("cursor_harvest.png");
-	SDL_Cursor *cursorHire = createCursor("cursor_hire.png");
-
-	SDL_SetCursor(cursorMain);
-
 // Game setup
 	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));
 
@@ -225,7 +215,7 @@ int main(int argc, char *argv[]) {
 			// calendarUI.buttonPause.active = true;
 
 			// Also set the cursor!
-			SDL_SetCursor(cursorMain);
+			setCursor(renderer, Cursor_Main);
 
 			// Disable action buttons
 			// if (actionButtonGroup.activeButton) {
@@ -337,7 +327,7 @@ int main(int argc, char *argv[]) {
 							dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
 							showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
-						}
+						}	
 
 						if (mouseButtonJustReleased(&inputState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
@@ -384,7 +374,7 @@ int main(int argc, char *argv[]) {
 				// Unselect current thing
 				// setActiveButton(&actionButtonGroup, null);
 				uiState.actionMode = ActionMode_None;
-				SDL_SetCursor(cursorMain);
+				setCursor(renderer, Cursor_Main);
 			}
 		}
 
@@ -544,105 +534,7 @@ int main(int argc, char *argv[]) {
 		} else {
 			// Draw some UI
 
-			real32 left = uiPadding;
-			char stringBuffer[256];
-
-			drawRect(renderer, true, uiRect, 0, renderer->theme.overlayColor);
-
-			uiLabel(renderer, renderer->theme.font, cityName, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
-
-			const real32 centre = renderer->worldCamera.windowWidth * 0.5f;
-			sprintf(stringBuffer, "£%d", gameState->city.funds);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
-			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
-			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
-
-			drawCalendarUI(renderer, &gameState->calendar, &inputState, &uiState);
-
-			// Build UI
-			{
-				V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
-				RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
-
-				if (uiMenuButton(renderer, &inputState, &uiState, "Build...", buttonRect, 1, UIMenu_Build))
-				{
-					RealRect menuButtonRect = buttonRect;
-					menuButtonRect.y += menuButtonRect.h + uiPadding;
-
-					if (uiButton(renderer, &inputState, &uiState, "Build HQ", menuButtonRect, 1,
-							(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Farmhouse),
-							SDL_SCANCODE_Q, "(Q)"))
-					{
-						uiState.openMenu = UIMenu_None;
-						uiState.selectedBuildingArchetype = BA_Farmhouse;
-						uiState.actionMode = ActionMode_Build;
-						SDL_SetCursor(cursorBuild);
-					}
-					menuButtonRect.y += menuButtonRect.h + uiPadding;
-					if (uiButton(renderer, &inputState, &uiState, "Build Field", menuButtonRect, 1,
-								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Field),
-								SDL_SCANCODE_F, "(F)"))
-					{
-						uiState.openMenu = UIMenu_None;
-						uiState.selectedBuildingArchetype = BA_Field;
-						uiState.actionMode = ActionMode_Build;
-						SDL_SetCursor(cursorBuild);
-					}
-					menuButtonRect.y += menuButtonRect.h + uiPadding;
-					if (uiButton(renderer, &inputState, &uiState, "Build Barn", menuButtonRect, 1,
-								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Barn),
-								SDL_SCANCODE_B, "(B)"))
-					{
-						uiState.openMenu = UIMenu_None;
-						uiState.selectedBuildingArchetype = BA_Barn;
-						uiState.actionMode = ActionMode_Build;
-						SDL_SetCursor(cursorBuild);
-					}
-					menuButtonRect.y += menuButtonRect.h + uiPadding;
-					if (uiButton(renderer, &inputState, &uiState, "Build Road", menuButtonRect, 1,
-								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Path),
-								SDL_SCANCODE_R, "(R)"))
-					{
-						uiState.openMenu = UIMenu_None;
-						uiState.selectedBuildingArchetype = BA_Path;
-						uiState.actionMode = ActionMode_Build;
-						SDL_SetCursor(cursorBuild);
-					}
-				}
-
-				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, &uiState, "Demolish", buttonRect, 1,
-							(uiState.actionMode == ActionMode_Demolish),
-							SDL_SCANCODE_X, "(X)"))
-				{
-					uiState.actionMode = ActionMode_Demolish;
-					SDL_SetCursor(cursorDemolish);
-				}
-				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, &uiState, "Plant", buttonRect, 1,
-							(uiState.actionMode == ActionMode_Plant),
-							SDL_SCANCODE_P, "(P)"))
-				{
-					uiState.actionMode = ActionMode_Plant;
-					SDL_SetCursor(cursorPlant);
-				}
-				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, &uiState, "Harvest", buttonRect, 1,
-							(uiState.actionMode == ActionMode_Harvest),
-							SDL_SCANCODE_H, "(H)"))
-				{
-					uiState.actionMode = ActionMode_Harvest;
-					SDL_SetCursor(cursorHarvest);
-				}
-				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, &uiState, "Hire Worker", buttonRect, 1,
-							(uiState.actionMode == ActionMode_Hire),
-							SDL_SCANCODE_G, "(G)"))
-				{
-					uiState.actionMode = ActionMode_Hire;
-					SDL_SetCursor(cursorHire);
-				}
-			}
+			updateAndRenderGameUI(renderer, &uiState, gameState, &inputState, uiRect);
 		}
 
 		// GAME OVER
