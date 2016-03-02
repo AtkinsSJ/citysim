@@ -168,11 +168,14 @@ GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, Inp
 	return result;
 }
 
-void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState, RealRect uiRect)
+void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState)
 {
+	uiState->uiRectCount = 0;
+
 	real32 left = uiPadding;
 	char stringBuffer[256];
 
+	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, (real32) renderer->worldCamera.windowWidth, 64);
 	drawRect(renderer, true, uiRect, 0, renderer->theme.overlayColor);
 
 	uiLabel(renderer, renderer->theme.font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
@@ -195,6 +198,8 @@ void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *ga
 			RealRect menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
+			RealRect menuRect = expandRect(menuButtonRect, uiPadding);
+
 			if (uiButton(renderer, inputState, uiState, "Build HQ", menuButtonRect, 1,
 					(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Farmhouse),
 					SDL_SCANCODE_Q, "(Q)"))
@@ -205,6 +210,8 @@ void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *ga
 				setCursor(renderer, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
+			menuRect.h += menuButtonRect.h + uiPadding;
+
 			if (uiButton(renderer, inputState, uiState, "Build Field", menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Field),
 						SDL_SCANCODE_F, "(F)"))
@@ -215,6 +222,8 @@ void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *ga
 				setCursor(renderer, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
+			menuRect.h += menuButtonRect.h + uiPadding;
+
 			if (uiButton(renderer, inputState, uiState, "Build Barn", menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Barn),
 						SDL_SCANCODE_B, "(B)"))
@@ -225,6 +234,8 @@ void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *ga
 				setCursor(renderer, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
+			menuRect.h += menuButtonRect.h + uiPadding;
+
 			if (uiButton(renderer, inputState, uiState, "Build Road", menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Path),
 						SDL_SCANCODE_R, "(R)"))
@@ -234,6 +245,9 @@ void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *ga
 				uiState->actionMode = ActionMode_Build;
 				setCursor(renderer, Cursor_Build);
 			}
+
+			uiState->uiRects[uiState->uiRectCount++] = menuRect;
+			drawRect(renderer, true, menuRect, 0, renderer->theme.overlayColor);
 		}
 
 		buttonRect.x += buttonRect.w + uiPadding;

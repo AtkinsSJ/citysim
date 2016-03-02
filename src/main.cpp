@@ -281,7 +281,6 @@ int main(int argc, char *argv[]) {
 		
 		V2 mouseWorldPos = unproject(renderer, v2(inputState.mousePos));
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
-		RealRect uiRect = rectXYWH(0,0, (real32) renderer->worldCamera.windowWidth, 64);
 
 	// UiButton/Mouse interaction
 		if (gameStatus == GameStatus_Playing) {
@@ -307,7 +306,7 @@ int main(int argc, char *argv[]) {
 			// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
 
 			// This is a very basic check for "is the user clicking on the UI?"
-			if (!inRect(uiRect, v2(inputState.mousePos))) {
+			if (!inRects(uiState.uiRects, uiState.uiRectCount, v2(inputState.mousePos))) {
 				switch (uiState.actionMode) {
 					case ActionMode_Build: {
 						if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
@@ -489,6 +488,7 @@ int main(int argc, char *argv[]) {
 			drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
 		}
 
+		// Draw the UI!
 		switch (gameStatus)
 		{
 			case GameStatus_Setup:
@@ -499,14 +499,14 @@ int main(int argc, char *argv[]) {
 
 			case GameStatus_Playing:
 			{
-				updateAndRenderGameUI(renderer, &uiState, gameState, &inputState, uiRect);
+				updateAndRenderGameUI(renderer, &uiState, gameState, &inputState);
 			}
 			break;
 
 			case GameStatus_Won:
 			case GameStatus_Lost:
 			{
-				updateAndRenderGameUI(renderer, &uiState, gameState, &inputState, uiRect);
+				updateAndRenderGameUI(renderer, &uiState, gameState, &inputState);
 
 				if (updateAndRenderGameOverUI(renderer, &uiState, gameState, &inputState, gameStatus == GameStatus_Won))
 				{
@@ -518,12 +518,6 @@ int main(int argc, char *argv[]) {
 
 					gameStatus = GameStatus_Setup;
 				}
-			}
-			break;
-
-			case GameStatus_Quit:
-			{
-				// Nothing
 			}
 			break;
 		}

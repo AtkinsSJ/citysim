@@ -601,6 +601,20 @@ inline bool inRect(RealRect rect, V2 pos)
 		&& pos.y < (rect.y + rect.h);
 }
 
+inline bool inRects(RealRect *rects, int32 rectCount, V2 pos)
+{
+	bool result = false;
+	for (int i=0; i < rectCount; i++)
+	{
+		if (inRect(rects[i], pos))
+		{
+			result = true;
+			break;
+		}
+	}
+	return result;
+}
+
 inline V2 centre(RealRect rect)
 {
 	return v2(

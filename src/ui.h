@@ -44,6 +44,9 @@ struct UIState
 
 	Tooltip tooltip;
 	UiMessage message;
+
+	RealRect uiRects[32];
+	int32 uiRectCount;
 };
 
 const real32 messageDisplayTime = 2.0f;
