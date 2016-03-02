@@ -88,6 +88,27 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect
 	return buttonClicked;
 }
 
+bool uiMenuButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,
+			UIState *uiState, UIMenuID menuID, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+{
+	bool currentlyOpen = uiState->openMenu == menuID;
+	if (uiButton(renderer, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
+	{
+		if (currentlyOpen)
+		{
+			uiState->openMenu = UIMenu_None;
+			currentlyOpen = false;
+		}
+		else
+		{
+			uiState->openMenu = menuID;
+			currentlyOpen = true;
+		}
+	}
+
+	return currentlyOpen;
+}
+
 void uiTextInput(GLRenderer *renderer, InputState *inputState, bool active,
 				char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
 {

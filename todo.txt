@@ -25,9 +25,9 @@ Asset packing:
 
 Immediate Mode UI:
 	TODO
-	- Text wrapping
 	- Menu (Click, it pops up)
 	DONE
+	- Text wrapping
 	- Tooltip
 	- UI Message
 	- Text Input
