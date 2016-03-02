@@ -2,14 +2,14 @@
 
 // field.h
 
-bool plantField(City *city, Coord tilePosition) {
+bool plantField(GLRenderer *renderer, City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition);
 	if (building && building->archetype == BA_Field) {
 		if (!canAfford(city, fieldPlantCost)) {
-			pushUiMessage("Not enough money to plant this field.");
+			pushUiMessage(renderer, "Not enough money to plant this field.");
 			return false;
 		} else if (building->field.state != FieldState_Empty) {
-			pushUiMessage("This field has already been planted.");
+			pushUiMessage(renderer, "This field has already been planted.");
 			return false;
 		} else {
 			SDL_Log("Marking field for planting.");
@@ -23,18 +23,18 @@ bool plantField(City *city, Coord tilePosition) {
 		}
 	}
 
-	pushUiMessage("You can only plant fields.");
+	pushUiMessage(renderer, "You can only plant fields.");
 	return false;
 }
 
-bool harvestField(City *city, Coord tilePosition) {
+bool harvestField(GLRenderer *renderer, City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition);
 	if (building && building->archetype == BA_Field) {
 		if (building->field.state == FieldState_Harvesting) {
-			pushUiMessage("This field is already marked for harvesting.");
+			pushUiMessage(renderer, "This field is already marked for harvesting.");
 			return false;
 		} else if (building->field.state != FieldState_Grown) {
-			pushUiMessage("There are no plants here ready for harvesting.");
+			pushUiMessage(renderer, "There are no plants here ready for harvesting.");
 			return false;
 		} else {
 			SDL_Log("Marking field for harvesting.");
@@ -47,7 +47,7 @@ bool harvestField(City *city, Coord tilePosition) {
 		}
 	}
 
-	pushUiMessage("You can only harvest fields.");
+	pushUiMessage(renderer, "You can only harvest fields.");
 	return false;
 }
 
@@ -69,7 +69,7 @@ void updateField(FieldData *field) {
 
 void drawField(GLRenderer *renderer, Building *building, V4 drawColor) {
 
-	V2 centrePos = centre(&building->footprint);
+	V2 centrePos = centre(building->footprint);
 
 	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Field,
 		centrePos, v2(building->footprint.dim), depthFromY(building->footprint.y), drawColor);

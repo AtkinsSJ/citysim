@@ -256,11 +256,6 @@ inline V2 limit(V2 vector, real32 maxLength)
 	return vector;
 }
 
-inline V2 interpolate(V2 a, V2 b, real32 position)
-{
-	return a + (b-a)*position;
-}
-
 /**********************************************
 	V3
  **********************************************/
@@ -272,6 +267,64 @@ inline V3 v3(real32 x, real32 y, real32 z)
 	v.y = y;
 	v.z = z;
 
+	return v;
+}
+
+inline real32 v3Length(V3 v)
+{
+	return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+inline V3 operator+(V3 lhs, V3 rhs)
+{
+	V3 result;
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+	result.z = lhs.z + rhs.z;
+	return result;
+}
+inline V3 operator+=(V3 &lhs, V3 rhs)
+{
+	lhs = lhs + rhs;
+	return lhs;
+}
+inline V3 operator-(V3 lhs, V3 rhs)
+{
+	V3 result;
+	result.x = lhs.x - rhs.x;
+	result.y = lhs.y - rhs.y;
+	result.z = lhs.z - rhs.z;
+	return result;
+}
+inline V3 operator-=(V3 &lhs, V3 rhs)
+{
+	lhs = lhs - rhs;
+	return lhs;
+}
+inline V3 operator*(V3 v, real32 s)
+{
+	V3 result;
+	result.x = v.x * s;
+	result.y = v.y * s;
+	result.z = v.z * s;
+	return result;
+}
+inline V3 operator*=(V3 &v, real32 s)
+{
+	v = v * s;
+	return v;
+}
+inline V3 operator/(V3 v, real32 s)
+{
+	V3 result;
+	result.x = v.x / s;
+	result.y = v.y / s;
+	result.z = v.z / s;
+	return result;
+}
+inline V3 operator/=(V3 &v, real32 s)
+{
+	v = v / s;
 	return v;
 }
 
@@ -293,16 +346,80 @@ inline V4 v4(real32 x, real32 y, real32 z, real32 w)
 inline V4 color255(uint8 r, uint8 g, uint8 b, uint8 a)
 {
 	V4 v = {};
-	v.r = (real32)r / 255.0f;
-	v.g = (real32)g / 255.0f;
-	v.b = (real32)b / 255.0f;
 	v.a = (real32)a / 255.0f;
+
+	// NB: Prremultiplied alpha!
+	v.r = v.a * ((real32)r / 255.0f);
+	v.g = v.a * ((real32)g / 255.0f);
+	v.b = v.a * ((real32)b / 255.0f);
 
 	return v;
 }
 inline V4 makeWhite()
 {
 	return v4(1.0f,1.0f,1.0f,1.0f);
+}
+
+inline real32 v4Length(V4 v)
+{
+	return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+inline V4 operator+(V4 lhs, V4 rhs)
+{
+	V4 result;
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+	result.z = lhs.z + rhs.z;
+	result.w = lhs.w + rhs.w;
+	return result;
+}
+inline V4 operator+=(V4 &lhs, V4 rhs)
+{
+	lhs = lhs + rhs;
+	return lhs;
+}
+inline V4 operator-(V4 lhs, V4 rhs)
+{
+	V4 result;
+	result.x = lhs.x - rhs.x;
+	result.y = lhs.y - rhs.y;
+	result.z = lhs.z - rhs.z;
+	result.w = lhs.w - rhs.w;
+	return result;
+}
+inline V4 operator-=(V4 &lhs, V4 rhs)
+{
+	lhs = lhs - rhs;
+	return lhs;
+}
+inline V4 operator*(V4 v, real32 s)
+{
+	V4 result;
+	result.x = v.x * s;
+	result.y = v.y * s;
+	result.z = v.z * s;
+	result.w = v.w * s;
+	return result;
+}
+inline V4 operator*=(V4 &v, real32 s)
+{
+	v = v * s;
+	return v;
+}
+inline V4 operator/(V4 v, real32 s)
+{
+	V4 result;
+	result.x = v.x / s;
+	result.y = v.y / s;
+	result.z = v.z / s;
+	result.w = v.w / s;
+	return result;
+}
+inline V4 operator/=(V4 &v, real32 s)
+{
+	v = v / s;
+	return v;
 }
 
 /**********************************************
@@ -411,11 +528,11 @@ inline bool rectsOverlap(Rect a, Rect b)
 		&& (b.y < a.y + a.h);
 }
 
-inline V2 centre(Rect *rect)
+inline V2 centre(Rect rect)
 {
 	return v2(
-		(real32)rect->x + (real32)rect->w / 2.0f,
-		(real32)rect->y + (real32)rect->h / 2.0f
+		(real32)rect.x + (real32)rect.w / 2.0f,
+		(real32)rect.y + (real32)rect.h / 2.0f
 	);
 }
 
@@ -484,10 +601,10 @@ inline bool inRect(RealRect rect, V2 pos)
 		&& pos.y < (rect.y + rect.h);
 }
 
-inline V2 centre(RealRect *rect)
+inline V2 centre(RealRect rect)
 {
 	return v2(
-		rect->x + rect->w / 2.0f,
-		rect->y + rect->h / 2.0f
+		rect.x + rect.w / 2.0f,
+		rect.y + rect.h / 2.0f
 	);
 }

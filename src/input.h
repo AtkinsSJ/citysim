@@ -1,42 +1,44 @@
 #pragma once
 
+const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
+const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
+
+struct InputState
+{
+	// Mouse
+	Coord mousePos;
+	bool mouseDown[MOUSE_BUTTON_COUNT];
+	bool mouseWasDown[MOUSE_BUTTON_COUNT];
+	Coord clickStartPosition[MOUSE_BUTTON_COUNT];
+	int32 wheelX, wheelY;
+
+	// Keyboard
+	bool keyWasDown[KEYBOARD_KEY_COUNT];
+	bool keyDown[KEYBOARD_KEY_COUNT];
+	char textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+};
+
 /**
  * MOUSE INPUT
  */
-
-const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
-struct MouseState {
-	Coord pos;
-	bool down[MOUSE_BUTTON_COUNT];
-	bool wasDown[MOUSE_BUTTON_COUNT];
-	Coord clickStartPosition[MOUSE_BUTTON_COUNT];
-	int32 wheelX, wheelY;
-};
 inline uint8 mouseButtonIndex(uint8 sdlMouseButton) {
 	return sdlMouseButton - 1;
 }
-inline bool mouseButtonJustPressed(MouseState *mouseState, uint8 mouseButton) {
+inline bool mouseButtonJustPressed(InputState *input, uint8 mouseButton) {
 	uint8 buttonIndex = mouseButtonIndex(mouseButton);
-	return mouseState->down[buttonIndex] && !mouseState->wasDown[buttonIndex];
+	return input->mouseDown[buttonIndex] && !input->mouseWasDown[buttonIndex];
 }
-inline bool mouseButtonJustReleased(MouseState *mouseState, uint8 mouseButton) {
+inline bool mouseButtonJustReleased(InputState *input, uint8 mouseButton) {
 	uint8 buttonIndex = mouseButtonIndex(mouseButton);
-	return !mouseState->down[buttonIndex] && mouseState->wasDown[buttonIndex];
+	return !input->mouseDown[buttonIndex] && input->mouseWasDown[buttonIndex];
 }
-inline bool mouseButtonPressed(MouseState *mouseState, uint8 mouseButton) {
-	return mouseState->down[mouseButtonIndex(mouseButton)];
+inline bool mouseButtonPressed(InputState *input, uint8 mouseButton) {
+	return input->mouseDown[mouseButtonIndex(mouseButton)];
 }
 
 /**
  * KEYBOARD INPUT
  */
-
-const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
-struct KeyboardState {
-	bool wasDown[KEYBOARD_KEY_COUNT];
-	bool down[KEYBOARD_KEY_COUNT];
-};
-
-inline bool keyJustPressed(KeyboardState *keyboardState, SDL_Keycode key) {
-	return keyboardState->down[key] && !keyboardState->wasDown[key];
+inline bool keyJustPressed(InputState *input, SDL_Keycode key) {
+	return input->keyDown[key] && !input->keyWasDown[key];
 }

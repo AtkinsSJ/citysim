@@ -1,47 +1,46 @@
 #pragma once
 
-void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboardState,
-					int32 cityWidth, int32 cityHeight) // City size in tiles
+void updateCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32 cityHeight) // City size in tiles
 { 
 	// Zooming
-	if (canZoom && mouseState->wheelY) {
+	if (canZoom && inputState->wheelY) {
 		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera->zoom = clamp(round(10 * camera->zoom - mouseState->wheelY) * 0.1f, 0.1f, 10.0f);
+		camera->zoom = clamp(round(10 * camera->zoom - inputState->wheelY) * 0.1f, 0.1f, 10.0f);
 	}
 
 	// Panning
 	real32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
-	if (mouseButtonPressed(mouseState, SDL_BUTTON_MIDDLE))
+	if (mouseButtonPressed(inputState, SDL_BUTTON_MIDDLE))
 	{
 		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
-		Coord clickStartPos = mouseState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos += (v2(mouseState->pos) - v2(clickStartPos)) * scale;
+		Coord clickStartPos = inputState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
+		camera->pos += (v2(inputState->mousePos) - v2(clickStartPos)) * scale;
 	}
 	else
 	{
-		if (keyboardState->down[SDL_SCANCODE_LEFT]
-			|| keyboardState->down[SDL_SCANCODE_A]
-			|| (mouseState->pos.x < CAMERA_EDGE_SCROLL_MARGIN))
+		if (inputState->keyDown[SDL_SCANCODE_LEFT]
+			|| inputState->keyDown[SDL_SCANCODE_A]
+			|| (inputState->mousePos.x < CAMERA_EDGE_SCROLL_MARGIN))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
-		else if (keyboardState->down[SDL_SCANCODE_RIGHT]
-			|| keyboardState->down[SDL_SCANCODE_D]
-			|| (mouseState->pos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
+		else if (inputState->keyDown[SDL_SCANCODE_RIGHT]
+			|| inputState->keyDown[SDL_SCANCODE_D]
+			|| (inputState->mousePos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
-		if (keyboardState->down[SDL_SCANCODE_UP]
-			|| keyboardState->down[SDL_SCANCODE_W]
-			|| (mouseState->pos.y < CAMERA_EDGE_SCROLL_MARGIN))
+		if (inputState->keyDown[SDL_SCANCODE_UP]
+			|| inputState->keyDown[SDL_SCANCODE_W]
+			|| (inputState->mousePos.y < CAMERA_EDGE_SCROLL_MARGIN))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
-		else if (keyboardState->down[SDL_SCANCODE_DOWN]
-			|| keyboardState->down[SDL_SCANCODE_S]
-			|| (mouseState->pos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
+		else if (inputState->keyDown[SDL_SCANCODE_DOWN]
+			|| inputState->keyDown[SDL_SCANCODE_S]
+			|| (inputState->mousePos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y += scrollSpeed;
 		}
@@ -69,178 +68,56 @@ void updateCamera(Camera *camera, MouseState *mouseState, KeyboardState *keyboar
 	}
 }
 
-void showCostTooltip(Tooltip *tooltip, GLRenderer *renderer, int32 cost, int32 cityFunds) {
+void showCostTooltip(GLRenderer *renderer, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
-		tooltip->label.color = renderer->theme.tooltipColorBad;
+		renderer->tooltip.color = renderer->theme.tooltipColorBad;
 	} else {
-		tooltip->label.color = renderer->theme.tooltipColorNormal;
+		renderer->tooltip.color = renderer->theme.tooltipColorNormal;
 	}
-	sprintf(tooltip->buffer, "-£%d", cost);
-	setUiLabelText(&tooltip->label, tooltip->buffer);
-	tooltip->show = true;
+	sprintf(renderer->tooltip.text, "-£%d", cost);
+	renderer->tooltip.show = true;
 }
 
 const real32 uiPadding = 4;
 
-struct MainMenuUI {
-	UiLabel cityNameEntryLabel,
-			gameSetupLabel,
-			gameRulesWinLoseLabel,
-			gameRulesWorkersLabel;
-	UiButton buttonStart,
-			buttonExit,
-			buttonWebsite;
-};
-void initMainMenuUI(MainMenuUI *menu, GLRenderer *renderer, char *cityName) {
-
-	*menu = {};
-	V2 screenCentre = v2(renderer->worldCamera.windowSize) / 2.0f;
-	
-	initUiLabel(&menu->gameSetupLabel, screenCentre - v2(0, 50), ALIGN_CENTER,
-				"Type a name for your farm, then click on 'Play'.", renderer->theme.font,
-				renderer->theme.labelColor);
-	initUiLabel(&menu->cityNameEntryLabel, screenCentre, ALIGN_CENTER, cityName,
-				renderer->theme.font, renderer->theme.textboxTextColor,
-				true, renderer->theme.textboxBackgroundColor, 4.0f);
-
-	char tempBuffer[256];
-	sprintf(tempBuffer, "Win by having £%d on hand, and lose by running out of money.", gameWinFunds);
-	initUiLabel(&menu->gameRulesWinLoseLabel, screenCentre + v2(0, 50), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, renderer->theme.labelColor);
-
-	sprintf(tempBuffer, "Workers are paid £%d at the start of each month.", workerMonthlyCost);
-	initUiLabel(&menu->gameRulesWorkersLabel, screenCentre + v2(0, 100), ALIGN_CENTER, tempBuffer,
-				renderer->theme.font, renderer->theme.labelColor);
-
-	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
-	initUiButton(&menu->buttonExit, renderer, buttonRect, "Exit");
-	buttonRect.x = screenCentre.x - buttonRect.w/2;
-	initUiButton(&menu->buttonWebsite, renderer, buttonRect, "Website");
-	buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
-	initUiButton(&menu->buttonStart, renderer, buttonRect, "Play", SDL_SCANCODE_RETURN);
-}
-void drawMainMenuUI(MainMenuUI *menu, GLRenderer *renderer) {
-	drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-			0, renderer->theme.overlayColor);
-
-	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo,
-		v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f), v2(499.0f, 154.0f), 0);
-
-	drawUiLabel(renderer, &menu->gameSetupLabel);
-	drawUiLabel(renderer, &menu->gameRulesWinLoseLabel);
-	drawUiLabel(renderer, &menu->gameRulesWorkersLabel);
-
-	drawUiLabel(renderer, &menu->cityNameEntryLabel);
-
-	drawUiButton(renderer, &menu->buttonExit);
-	drawUiButton(renderer, &menu->buttonWebsite);
-	drawUiButton(renderer, &menu->buttonStart);
-}
-
-struct CalendarUI {
-	Calendar *calendar;
-	UiButtonGroup buttonGroup;
-	UiButton buttonPause,
-			*buttonPlaySlow,
-			*buttonPlayMedium,
-			*buttonPlayFast;
-	UiLabel labelDate;
-	char dateStringBuffer[50];
-};
-void initCalendarUI(CalendarUI *ui, GLRenderer *renderer, Calendar *calendar) {
-
-	*ui = {};
-	ui->calendar = calendar;
-
-	V2 textPosition = v2(renderer->worldCamera.windowWidth - uiPadding, uiPadding);
-	getDateString(calendar, ui->dateStringBuffer);
-	initUiLabel(&ui->labelDate, textPosition, ALIGN_RIGHT | ALIGN_TOP,
-				ui->dateStringBuffer, renderer->theme.font, renderer->theme.labelColor);
-
-	const real32 buttonSize = 24;
-	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 31,
-								buttonSize, buttonSize);
-	ui->buttonPlayFast = addButtonToGroup(&ui->buttonGroup);
-	initUiButton(ui->buttonPlayFast, renderer, buttonRect, ">>>");
-
-	buttonRect.x -= buttonSize + uiPadding;
-	ui->buttonPlayMedium = addButtonToGroup(&ui->buttonGroup);
-	initUiButton(ui->buttonPlayMedium, renderer, buttonRect, ">>");
-
-	buttonRect.x -= buttonSize + uiPadding;
-	ui->buttonPlaySlow = addButtonToGroup(&ui->buttonGroup);
-	initUiButton(ui->buttonPlaySlow, renderer, buttonRect, ">");
-
-	buttonRect.x -= buttonSize + uiPadding;
-	initUiButton(&ui->buttonPause, renderer, buttonRect, "||", SDL_SCANCODE_SPACE, "(Space)");
-
-	switch (ui->calendar->speed) {
-		case Speed1: {
-			setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
-		} break;
-		case Speed2: {
-			setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
-		} break;
-		case Speed3: {
-			setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
-		} break;
-	}
-}
-bool updateCalendarUI(CalendarUI *ui, GLRenderer *renderer, Tooltip *tooltip,
-					MouseState *mouseState, KeyboardState *keyboardState,
-					CalendarChange *change) {
-
+bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputState)
+{
 	bool buttonAteMouseEvent = false;
 
-	if (updateUiButtonGroup(renderer, tooltip, &ui->buttonGroup, mouseState, keyboardState)
-		|| updateUiButton(renderer, tooltip, &ui->buttonPause, mouseState, keyboardState) ) {
+	getDateString(calendar, calendar->dateStringBuffer);
+
+	uiLabel(renderer, renderer->theme.font, calendar->dateStringBuffer,
+			v2((real32)renderer->worldCamera.windowWidth - uiPadding, uiPadding), ALIGN_RIGHT,
+			1, renderer->theme.labelColor);
+
+	const real32 buttonSize = 24;
+	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 32,
+								buttonSize, buttonSize);
+	if (uiButton(renderer, inputState, ">>>", buttonRect, 1, (calendar->speed == Speed3)))
+	{
+		calendar->paused = false;
+		calendar->speed = Speed3;
 		buttonAteMouseEvent = true;
 	}
-
-	// Speed controls
-#if 0
-	int32 speedChange = 0;
-	if (keyJustPressed(keyboardState, SDL_GetScancodeFromKey(SDLK_MINUS))) {
-		if (ui->calendar->speed > Speed1) {
-			speedChange = -1;
-		}
-	} else if (keyJustPressed(keyboardState, SDL_GetScancodeFromKey(SDLK_PLUS))) {
-		if (ui->calendar->speed < Speed3) {
-			speedChange = 1;
-		}
+	buttonRect.x -= buttonSize + uiPadding;
+	if (uiButton(renderer, inputState, ">>", buttonRect, 1, (calendar->speed == Speed2)))
+	{
+		calendar->paused = false;
+		calendar->speed = Speed2;
+		buttonAteMouseEvent = true;
 	}
-	if (speedChange) {
-		ui->calendar->speed = (CalendarSpeed)(ui->calendar->speed + speedChange);
-		switch (ui->calendar->speed) {
-			case Speed1: {
-				setActiveButton(&ui->buttonGroup, ui->buttonPlaySlow);
-			} break;
-			case Speed2: {
-				setActiveButton(&ui->buttonGroup, ui->buttonPlayMedium);
-			} break;
-			case Speed3: {
-				setActiveButton(&ui->buttonGroup, ui->buttonPlayFast);
-			} break;
-		}
+	buttonRect.x -= buttonSize + uiPadding;
+	if (uiButton(renderer, inputState, ">", buttonRect, 1, (calendar->speed == Speed1)))
+	{
+		calendar->paused = false;
+		calendar->speed = Speed1;
+		buttonAteMouseEvent = true;
 	}
-#endif
-	if (ui->buttonPause.justClicked) {
-		ui->calendar->paused = !ui->calendar->paused;
-	} else if (ui->buttonPlaySlow->justClicked) {
-		ui->calendar->paused = false;
-		ui->calendar->speed = Speed1;
-	} else if (ui->buttonPlayMedium->justClicked) {
-		ui->calendar->paused = false;
-		ui->calendar->speed = Speed2;
-	} else if (ui->buttonPlayFast->justClicked) {
-		ui->calendar->paused = false;
-		ui->calendar->speed = Speed3;
-	}
-	ui->buttonPause.active = ui->calendar->paused;
-
-	if (change->isNewDay) {
-		getDateString(ui->calendar, ui->dateStringBuffer);
-		setUiLabelText(&ui->labelDate, ui->dateStringBuffer);
+	buttonRect.x -= buttonSize + uiPadding;
+	if (uiButton(renderer, inputState, "||", buttonRect, 1, calendar->paused, SDL_SCANCODE_SPACE, "(Space)"))
+	{
+		calendar->paused = !calendar->paused;
+		buttonAteMouseEvent = true;
 	}
 
 	return buttonAteMouseEvent;

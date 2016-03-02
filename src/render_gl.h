@@ -4,18 +4,18 @@
 
 enum Alignment {
 	ALIGN_LEFT = 1,
-	ALIGN_H_CENTER = 2,
+	ALIGN_H_CENTRE = 2,
 	ALIGN_RIGHT = 4,
 
-	ALIGN_H = ALIGN_LEFT | ALIGN_H_CENTER | ALIGN_RIGHT,
+	ALIGN_H = ALIGN_LEFT | ALIGN_H_CENTRE | ALIGN_RIGHT,
 
 	ALIGN_TOP = 8,
-	ALIGN_V_CENTER = 16,
+	ALIGN_V_CENTRE = 16,
 	ALIGN_BOTTOM = 32,
 	
-	ALIGN_V = ALIGN_TOP | ALIGN_V_CENTER | ALIGN_BOTTOM,
+	ALIGN_V = ALIGN_TOP | ALIGN_V_CENTRE | ALIGN_BOTTOM,
 
-	ALIGN_CENTER = ALIGN_H_CENTER | ALIGN_V_CENTER,
+	ALIGN_CENTRE = ALIGN_H_CENTRE | ALIGN_V_CENTRE,
 };
 
 const int FRAMES_PER_SECOND = 60;
@@ -166,7 +166,14 @@ struct Sprite
 
 inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect uv, V4 color)
 {
-	return {rect, depth, textureID, uv, color};
+	Sprite sprite = {};
+	sprite.rect = rect;
+	sprite.depth = depth;
+	sprite.textureID = textureID;
+	sprite.uv = uv;
+	sprite.color = color;
+	
+	return sprite;
 }
 
 const int WORLD_SPRITE_MAX = 16384;
@@ -179,6 +186,21 @@ struct RenderBuffer
 	Sprite *sprites;
 	uint32 spriteCount;
 	uint32 maxSprites;
+};
+
+struct Tooltip
+{
+	bool show;
+	V2 offsetFromCursor;
+	V4 color;
+	char text[256];
+};
+const real32 uiMessageBottomMargin = 4,
+			uiMessageTextPadding = 4;
+struct UiMessage
+{
+	char text[256];
+	real32 countdown; // In seconds
 };
 
 struct GLRenderer
@@ -212,7 +234,11 @@ struct GLRenderer
 	Animation animations[Animation_Count];
 
 	TextureAtlas textureAtlas;
+
+	// UI Stuff!
 	UiTheme theme;
+	Tooltip tooltip;
+	UiMessage message;
 };
 
 const uint32 TEXTURE_WIDTH = 512,
@@ -239,7 +265,8 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPr
 
 	textures->filenames[textureID] = textures->filenamesBuffer + textures->bufferPos;
 	textures->isAlphaPremultiplied[textureID] = isAlphaPremultiplied;
-
+	
+	// NB: Don't strncpy; we already check there's room above. strncpy causes Bad Things™
 	strcpy(textures->filenames[textureID], filename);
 	textures->bufferPos += filenameLength;
 

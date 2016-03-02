@@ -6,6 +6,8 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 
 	// BINARY SEARCH! :D
 
+	// FIXME: This really needs to be replaced by a better system. And UTF8 support.
+
 	uint32 high = font->charCount;
 	uint32 low = 0;
 	uint32 current = (high + low) / 2;
@@ -46,61 +48,167 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 	return result;
 }
 
-void drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, V4 color)
+bool isWhitespace(uint32 uChar)
 {
-	for (char *currentChar=text;
-		*currentChar != 0;
-		currentChar++)
+	// TODO: FINISH THIS!
+
+	bool result = false;
+
+	switch (uChar)
 	{
-		uint32 uChar = (uint32)(*currentChar);
-		BitmapFontChar *c = findChar(font, uChar);
-		if (c)
+	case 0:
+	case 32:
+		result = true;
+		break;
+
+	default:
+		result = false;
+	}
+
+	return result;
+}
+
+struct DrawTextState
+{
+	bool doWrap;
+	real32 maxWidth;
+	real32 lineHeight;
+	int32 lineCount;
+
+	V2 position;
+
+	Sprite *startOfCurrentWord;
+	Sprite *endOfCurrentWord;
+	real32 currentWordWidth;
+
+	real32 currentLineWidth;
+	real32 longestLineWidth;
+};
+
+void font_newLine(DrawTextState *state)
+{
+	state->longestLineWidth = state->maxWidth;
+	state->position.y += state->lineHeight;
+	state->position.x = 0;
+	state->currentLineWidth = 0;
+	state->lineCount++;
+}
+
+void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
+{
+	if (state->doWrap)
+	{
+		if (isWhitespace(c->id))
 		{
-			drawQuad(renderer, true,
-					 rectXYWH(
-					 	position.x + (real32)c->xOffset,
-					 	position.y + (real32)c->yOffset,
-					 	(real32)c->size.w,
-					 	(real32)c->size.h
-					 ),
-					 0, c->textureID, c->uv, color);
-			position.x += (real32)c->xAdvance;
+			if (state->startOfCurrentWord)
+			{
+				if ((state->currentWordWidth + state->currentLineWidth) > state->maxWidth)
+				{
+					// Wrap it
+					V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
+					state->position.y += state->lineHeight;
+					state->position.x = state->currentWordWidth;
+					state->currentLineWidth = state->currentWordWidth;
+					state->lineCount++;
+
+					// Move all the sprites to their new positions
+					while (state->startOfCurrentWord <= state->endOfCurrentWord)
+					{
+						state->startOfCurrentWord->rect.pos += offset;
+						state->startOfCurrentWord++;
+					}
+
+					if (state->currentWordWidth > state->maxWidth)
+					{
+						// TODO: Split the word across multiple lines?
+						// For now, we just have it overflow, and move onto another new line
+						font_newLine(state);
+					}
+				}
+				else
+				{
+					state->currentLineWidth += state->currentWordWidth;
+					state->longestLineWidth = max(state->longestLineWidth, state->currentLineWidth);
+				}
+
+				state->startOfCurrentWord = null;
+			}
+			state->currentLineWidth += c->xAdvance;
+			state->position.x += c->xAdvance;
 		}
+		else
+		{
+			if (state->startOfCurrentWord == null)
+			{
+				state->startOfCurrentWord = state->endOfCurrentWord;
+				state->currentWordWidth = 0;
+			}
+			state->position.x += (real32)c->xAdvance;
+			state->currentWordWidth += c->xAdvance;
+		}
+	}
+	else
+	{
+		state->position.x += (real32)c->xAdvance;
+		state->longestLineWidth = max(state->longestLineWidth, state->position.x);
 	}
 }
 
-BitmapFontCachedText *drawTextToCache(BitmapFont *font, char *text, V4 color)
+BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *font, char *text,
+									  V4 color, real32 maxWidth=0)
 {
+	DrawTextState state = {};
+
 	uint32 textLength = strlen(text);
+	state.maxWidth = maxWidth;
+	state.doWrap = (maxWidth > 0);
+	state.lineCount = 1;
+	state.longestLineWidth = 0;
+	state.lineHeight = font->lineHeight;
+	state.position = {};
 
 	// Memory management witchcraft
 	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
-	uint8 *data = (uint8 *) calloc(1, memorySize);
+	uint8 *data = (uint8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->sprites = (Sprite *)(data + sizeof(BitmapFontCachedText));
-
 	result->size = v2(0, font->lineHeight);
-
-	V2 position = {};
 
 	if (result)
 	{
+		state.startOfCurrentWord = null;
+		state.currentWordWidth = 0;
+		state.currentLineWidth = 0;
+
 		for (char *currentChar=text;
 			*currentChar != 0;
 			currentChar++)
 		{
-			uint32 uChar = (uint32)(*currentChar);
-			BitmapFontChar *c = findChar(font, uChar);
-			if (c)
+			if (*currentChar == '\n')
 			{
-				*(result->sprites + result->spriteCount++) = makeSprite(
-					rectXYWH(position.x + (real32)c->xOffset, position.y + (real32)c->yOffset, (real32)c->size.w, (real32)c->size.h),
-					0, c->textureID, c->uv, color
-				);
-				position.x += (real32)c->xAdvance;
-				result->size.x += (real32)c->xAdvance;
+				font_newLine(&state);
+			}
+			else
+			{
+				BitmapFontChar *c = findChar(font, (uint32)(*currentChar));
+				if (c)
+				{
+					state.endOfCurrentWord = result->sprites + result->spriteCount++;
+					*state.endOfCurrentWord = makeSprite(
+						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
+								 (real32)c->size.w, (real32)c->size.h),
+						0, c->textureID, c->uv, color
+					);
+
+					font_handleEndOfWord(&state, c);
+				}
 			}
 		}
+		// Final flush to make sure the last line is correct
+		font_handleEndOfWord(&state, &font->nullChar);
+
+		result->size.x = max(state.longestLineWidth, state.currentLineWidth);
+		result->size.y = (real32)(font->lineHeight * state.lineCount);
 	}
 
 	return result;
@@ -112,7 +220,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 
 	switch (align & ALIGN_H)
 	{
-		case ALIGN_H_CENTER: {
+		case ALIGN_H_CENTRE: {
 			offset.x = origin.x - cache->size.x / 2.0f;
 		} break;
 
@@ -127,7 +235,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 
 	switch (align & ALIGN_V)
 	{
-		case ALIGN_V_CENTER: {
+		case ALIGN_V_CENTRE: {
 			offset.y = origin.y - cache->size.y / 2.0f;
 		} break;
 
@@ -143,12 +251,12 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 	return offset;
 }
 
-void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 topLeft)
+void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 topLeft, real32 depth)
 {
 	for (uint32 spriteIndex=0;
 		spriteIndex < cache->spriteCount;
 		spriteIndex++)
 	{
-		drawSprite(renderer, true, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, 0));
+		drawSprite(renderer, true, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, depth));
 	}
 }

@@ -13,7 +13,9 @@ Rendering 2.0:
 - Replace 'isUI' nonsense with something better?
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
-- Fade-out the message popup
+- Shader-loading function!
+- Show £ signs! Something is borked.
+- Probably replace the binary search for glyphs with something better?
 
 Asset packing:
 - Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them
@@ -21,13 +23,10 @@ Asset packing:
 - Store TextureRegion information in a little binary file
 - Read data from these rather than hard-coded filenames
 
-Immediate Mode UI:
-- No more BitmapFontCachedText and its related memory allocation!
-- Generally, things will be much simpler.
-- Label
-- Button
-- Text Input
-- Menu (Click, it pops up)
+- Audio!
+	- Sound effects
+	- Pitch shifting
+	- Music
 
 - Simulation
 	- Per-tile humidity

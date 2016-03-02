@@ -154,6 +154,8 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 				Font->lineHeight = common->lineHeight;
 				Font->baseY = common->base;
 
+				Font->nullChar = {};
+
 				Font->charCount = charCount;
 				Font->chars = PushArray(renderArena, BitmapFontChar, charCount);
 

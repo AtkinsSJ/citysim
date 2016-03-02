@@ -96,6 +96,9 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", texturesToLoad);
 	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", texturesToLoad);
 
+	renderer->tooltip = {};
+	renderer->tooltip.offsetFromCursor = v2(16, 20);
+
 	// Load textures &c
 	if (!loadTextures(&tempArena, renderer, texturesToLoad))
 	{
@@ -113,7 +116,6 @@ bool initOpenGL(GLRenderer *renderer)
 	renderer->shaderProgramID = glCreateProgram();
 
 	glEnable(GL_TEXTURE_2D);
-
 
 	// VERTEX SHADER
 	{
@@ -212,7 +214,7 @@ bool initOpenGL(GLRenderer *renderer)
 		return false;
 	}
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 	// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
 
@@ -250,6 +252,8 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 
 bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad)
 {
+	bool successfullyLoadedAllTextures = true;
+
 	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
 	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
 
@@ -285,6 +289,7 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, Texture
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
 				"Failed to load '%s'!\n%s", texturesToLoad->filenames[i], IMG_GetError());
 			texture->valid = false;
+			successfullyLoadedAllTextures = false;
 		}
 		else
 		{
@@ -421,7 +426,7 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, Texture
 	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
 
 	checkForGLError();
-	return true;
+	return successfullyLoadedAllTextures;
 }
 
 void freeRenderer(GLRenderer *renderer)
@@ -680,23 +685,35 @@ void sortSpriteBuffer(RenderBuffer *buffer)
 			}
 		}
 	}
+}
 
+bool isBufferSorted(RenderBuffer *buffer)
+{
+	bool isSorted = true;
+	real32 lastDepth = real32Min;
+	for (uint32 i=0; i<=buffer->spriteCount; i++)
+	{
+		if (lastDepth > buffer->sprites[i].depth)
+		{
+			isSorted = false;
+			break;
+		}
+		lastDepth = buffer->sprites[i].depth;
+	}
+	return isSorted;
 }
 
 void render(GLRenderer *renderer)
 {
 	// Sort sprites
 	sortSpriteBuffer(&renderer->worldBuffer);
+	sortSpriteBuffer(&renderer->uiBuffer);
 
-	#if 0
-	// Check buffer is sorted
-	real32 lastDepth = real32Min;
-	for (uint32 i=0; i<=renderer->worldBuffer.spriteCount; i++)
-	{
-		ASSERT(lastDepth <= renderer->worldBuffer.sprites[i].depth, "Sprites are out of order!");
-		lastDepth = renderer->worldBuffer.sprites[i].depth;
-	}
-	#endif
+#if 0
+	// Check buffers are sorted
+	ASSERT(isBufferSorted(&renderer->worldBuffer), "World sprites are out of order!");
+	ASSERT(isBufferSorted(&renderer->uiBuffer), "UI sprites are out of order!");
+#endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);

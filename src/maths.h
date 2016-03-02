@@ -55,3 +55,13 @@ inline int32 manhattanDistance(Rect a, Rect b)
 	
 	return result;
 }
+
+inline real32 lerp(real32 a, real32 b, real32 position)
+{
+	return a + (b-a)*position;
+}
+
+inline V2 lerp(V2 a, V2 b, real32 position)
+{
+	return a + (b-a)*position;
+}

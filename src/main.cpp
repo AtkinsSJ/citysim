@@ -52,22 +52,9 @@ struct GameState
 #include "field.cpp"
 #include "worker.cpp"
 
-enum ActionMode {
-	ActionMode_None = 0,
-
-	ActionMode_Build,
-	ActionMode_Demolish,
-	ActionMode_Plant,
-	ActionMode_Harvest,
-	ActionMode_Hire,
-
-	ActionMode_Count,
-};
-
 const int gameStartFunds = 10000;
 const int gameWinFunds = 30000;
 #include "game_ui.cpp"
-
 
 // This is less 'start game' and more 'reset the map and everything so we can show 
 // an empty map in the background of the menu'. But also does resetting of things for when you
@@ -121,11 +108,9 @@ int main(int argc, char *argv[]) {
 // Game setup
 	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));
 
-	char cityName[256] = {};
+	const int32 cityNameMaxLength = 32;
+	char cityName[cityNameMaxLength + 1] = {};
 	sprintf(cityName, "My Farm");
-	int32 cityNameMaxLength = 128;
-	int32 cityNameLength = strlen(cityName);
-	bool cityNameTextDirty = true;
 	
 	GameState *gameState = startGame(&gameArena, cityName);
 
@@ -134,8 +119,7 @@ int main(int argc, char *argv[]) {
 	GameStatus gameStatus = GameStatus_Setup;
 
 	SDL_Event event;
-	MouseState mouseState = {};
-	KeyboardState keyboardState = {};
+	InputState inputState = {};
 
 	V2 mouseDragStartPos = {};
 	Rect dragRect = irectXYWH(-1,-1,0,0);
@@ -149,104 +133,30 @@ int main(int argc, char *argv[]) {
 		-1000.0f, 1000.0f
 	);
 
-	ActionMode actionMode = ActionMode_None;
-	BuildingArchetype selectedBuildingArchetype = BA_None;
+	UIState uiState = {};
+	uiState.actionMode = ActionMode_None;
+	uiState.selectedBuildingArchetype = BA_None;
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
-
-	// Build UI
-	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
-	V2 textPosition = v2(8,4);
-	UiLabel textCityName;
-	initUiLabel(&textCityName, textPosition, ALIGN_LEFT | ALIGN_TOP, gameState->city.name,
-				renderer->theme.font, renderer->theme.labelColor);
-
-	textPosition.x = 800 / 2 - 100;
-	UiIntLabel labelCityFunds;
-	initUiIntLabel(&labelCityFunds, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, renderer->theme.labelColor, &gameState->city.funds, "£%d");
-
-	textPosition.x = 800 / 2 + 100;
-	UiIntLabel labelMonthlyExpenditure;
-	initUiIntLabel(&labelMonthlyExpenditure, textPosition, ALIGN_H_CENTER | ALIGN_TOP,
-				renderer->theme.font, renderer->theme.labelColor, &gameState->city.monthlyExpenditure, "(-£%d/month)");
-
-	initUiMessage(renderer);
-
-	// Tooltip
-	Tooltip tooltip = {};
-	tooltip.offsetFromCursor = v2(16, 20);
-	initUiLabel(&tooltip.label, {0,0}, ALIGN_LEFT | ALIGN_TOP, "", renderer->theme.font,
-				renderer->theme.labelColor, true, renderer->theme.tooltipBackgroundColor, 4);
-
-	// CALENDAR
-	CalendarUI calendarUI;
-	initCalendarUI(&calendarUI, renderer, &gameState->calendar);
-
-	// ACTION BUTTONS
-	UiButtonGroup actionButtonGroup = {};
-	RealRect buttonRect = rectXYWH(8, textPosition.y + /*textCityName._rect.h*/ 20 + uiPadding, 80, 24);
-
-	UiButton *buttonBuildHouse = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildHouse, renderer, buttonRect, "Build HQ", SDL_SCANCODE_Q, "(Q)");
-
-	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton *buttonBuildField = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildField, renderer, buttonRect, "Build Field", SDL_SCANCODE_F, "(F)");
-
-	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton *buttonBuildBarn = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildBarn, renderer, buttonRect, "Build Barn", SDL_SCANCODE_B, "(B)");
-
-	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton *buttonBuildPath = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonBuildPath, renderer, buttonRect, "Build Road", SDL_SCANCODE_R, "(R)");
-
-	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton *buttonDemolish = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonDemolish, renderer, buttonRect, "Demolish", SDL_SCANCODE_X, "(X)");
-
-	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton *buttonPlant = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonPlant, renderer, buttonRect, "Plant", SDL_SCANCODE_P, "(P)");
-
-	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton *buttonHarvest = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonHarvest, renderer, buttonRect, "Harvest", SDL_SCANCODE_H, "(H)");
-
-	buttonRect.x += buttonRect.w + uiPadding;
-	UiButton *buttonHireWorker = addButtonToGroup(&actionButtonGroup);
-	initUiButton(buttonHireWorker, renderer, buttonRect, "Hire worker", SDL_SCANCODE_G, "(G)");
-
-	// Game menu
-	MainMenuUI mainMenuUI;
-	initMainMenuUI(&mainMenuUI, renderer, cityName);
-
-	// Game over UI
-	UiLabel gameOverLabel;
-	initUiLabel(&gameOverLabel, cameraCentre, ALIGN_CENTER, "You ran out of money! :(",
-				renderer->theme.font, renderer->theme.labelColor);
-	UiButton buttonMenu;
-	buttonRect.pos = cameraCentre - buttonRect.size/2;
-	// buttonRect.y += gameOverLabel._rect.h + uiPadding;
-	initUiButton(&buttonMenu, renderer, buttonRect, "Menu");
 	
 	// GAME LOOP
 	while (!quit) {
 
 		// Clear mouse state
-		mouseState.wheelX = 0;
-		mouseState.wheelY = 0;
+		inputState.wheelX = 0;
+		inputState.wheelY = 0;
 
 		for (int i = 0; i < MOUSE_BUTTON_COUNT; i++) {
-			mouseState.wasDown[i] = mouseState.down[i];
+			inputState.mouseWasDown[i] = inputState.mouseDown[i];
 		}
 
 		for (int i=0; i < KEYBOARD_KEY_COUNT; i++) {
-			keyboardState.wasDown[i] = keyboardState.down[i];
+			inputState.keyWasDown[i] = inputState.keyDown[i];
 		}
+
+		inputState.textEntered[0] = 0;
 
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
@@ -266,65 +176,44 @@ int main(int argc, char *argv[]) {
 				// MOUSE EVENTS
 				// NB: If we later handle TOUCH events, then we need to discard mouse events where event.X.which = SDL_TOUCH_MOUSEID
 				case SDL_MOUSEMOTION: {
-					mouseState.pos.x = event.motion.x;
-					mouseState.pos.y = event.motion.y;
+					inputState.mousePos.x = event.motion.x;
+					inputState.mousePos.y = event.motion.y;
 				} break;
 				case SDL_MOUSEBUTTONDOWN: {
 					uint8 buttonIndex = event.button.button - 1;
-					mouseState.down[buttonIndex] = true;
+					inputState.mouseDown[buttonIndex] = true;
 				} break;
 				case SDL_MOUSEBUTTONUP: {
 					uint8 buttonIndex = event.button.button - 1;
-					mouseState.down[buttonIndex] = false;
+					inputState.mouseDown[buttonIndex] = false;
 				} break;
 				case SDL_MOUSEWHEEL: {
-					// TODO: Uncomment if we upgrade to SDL 2.0.4+, to handle inverted scroll wheel values.
-					// if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
-					// 	mouseState.wheelX = -event.wheel.x;
-					// 	mouseState.wheelY = -event.wheel.y;
-					// } else {
-						mouseState.wheelX = event.wheel.x;
-						mouseState.wheelY = event.wheel.y;
-					// }
+					if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+						inputState.wheelX = -event.wheel.x;
+						inputState.wheelY = -event.wheel.y;
+					} else {
+						inputState.wheelX = event.wheel.x;
+						inputState.wheelY = event.wheel.y;
+					}
 				} break;
 
 				// KEYBOARD EVENTS
 				case SDL_KEYDOWN: {
-					keyboardState.down[event.key.keysym.scancode] = true;
-
-					if (gameStatus == GameStatus_Setup) {
-						// Enter farm name!
-						if (event.key.keysym.sym == SDLK_BACKSPACE
-							&& cityNameLength > 0) {
-
-							cityName[cityNameLength-1] = 0;
-							cityNameLength--;
-							cityNameTextDirty = true;
-						}
-					}
+					inputState.keyDown[event.key.keysym.scancode] = true;
 				} break;
 				case SDL_KEYUP: {
-					keyboardState.down[event.key.keysym.scancode] = false;
+					inputState.keyDown[event.key.keysym.scancode] = false;
 				} break;
 				case SDL_TEXTINPUT: {
-					if (gameStatus == GameStatus_Setup) {
-						// Enter farm name!
-						uint32 pos = 0;
-						while (event.text.text[pos]
-							&& cityNameLength < cityNameMaxLength) {
-							cityNameTextDirty = true;
-							cityName[cityNameLength++] = event.text.text[pos];
-							pos++;
-						}
-					}
+					strncpy(inputState.textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 				} break;
 			}
 		}
 
 		for (uint8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
-			if (mouseButtonJustPressed(&mouseState, i)) {
+			if (mouseButtonJustPressed(&inputState, i)) {
 				// Store the initial click position
-				mouseState.clickStartPosition[mouseButtonIndex(i)] = mouseState.pos;
+				inputState.clickStartPosition[mouseButtonIndex(i)] = inputState.mousePos;
 			}
 		}
 
@@ -332,16 +221,16 @@ int main(int argc, char *argv[]) {
 		if (gameStatus != GameStatus_Playing) {
 			gameState->calendar.paused = true;
 
-			// Highlight the pause button!
-			calendarUI.buttonPause.active = true;
+			// // Highlight the pause button!
+			// calendarUI.buttonPause.active = true;
 
 			// Also set the cursor!
 			SDL_SetCursor(cursorMain);
 
 			// Disable action buttons
-			if (actionButtonGroup.activeButton) {
-				actionButtonGroup.activeButton->active = false;
-			}
+			// if (actionButtonGroup.activeButton) {
+			// 	actionButtonGroup.activeButton->active = false;
+			// }
 		}
 
 	// Game simulation
@@ -362,7 +251,7 @@ int main(int argc, char *argv[]) {
 
 			// Workers!
 			for (int i = 0; i < ArrayCount(gameState->city.workers); ++i) {
-				updateWorker(gameState, gameState->city.workers + i);
+				updateWorker(renderer, gameState, gameState->city.workers + i);
 			}
 		}
 		if (calendarChange.isNewMonth) {
@@ -373,16 +262,12 @@ int main(int argc, char *argv[]) {
 	// Win and Lose!
 		if (gameState->city.funds >= gameWinFunds) {
 			gameStatus = GameStatus_Won;
-			char buffer[256];
-			sprintf(buffer, "You won! You earned £%d in %d days", gameWinFunds, gameState->calendar.totalDays);
-			setUiLabelText(&gameOverLabel, buffer);
 		} else if (gameState->city.funds < 0) {
 			gameStatus = GameStatus_Lost;
-			setUiLabelText(&gameOverLabel, "Game over! You ran out of money! :(");
 		}
 
 	// CAMERA!
-		updateCamera(&renderer->worldCamera, &mouseState, &keyboardState, gameState->city.width, gameState->city.height);
+		updateCamera(&renderer->worldCamera, &inputState, gameState->city.width, gameState->city.height);
 
 		real32 worldScale = renderer->worldCamera.zoom / TILE_SIZE;
 		real32 camWidth = renderer->worldCamera.windowWidth * worldScale,
@@ -405,94 +290,87 @@ int main(int argc, char *argv[]) {
 			-1000.0f, 1000.0f
 		);
 		
-		V2 mouseWorldPos = unproject(renderer, v2(mouseState.pos));
+		V2 mouseWorldPos = unproject(renderer, v2(inputState.mousePos));
 		Coord mouseTilePos = tilePosition(mouseWorldPos);
+		RealRect uiRect = rectXYWH(0,0, (real32) renderer->worldCamera.windowWidth, 64);
 
 	// UiButton/Mouse interaction
 		if (gameStatus == GameStatus_Playing) {
-			tooltip.show = false;
 
-			if (keyJustPressed(&keyboardState, SDL_SCANCODE_INSERT)) {
+			if (keyJustPressed(&inputState, SDL_SCANCODE_INSERT)) {
 				gameState->city.funds += 10000;
-			} else if (keyJustPressed(&keyboardState, SDL_SCANCODE_DELETE)) {
+			} else if (keyJustPressed(&inputState, SDL_SCANCODE_DELETE)) {
 				gameState->city.funds -= 10000;
-			}
-
-			bool buttonAteMouseEvent = false;
-			if (updateUiButtonGroup(renderer, &tooltip, &actionButtonGroup, &mouseState, &keyboardState)) {
-				buttonAteMouseEvent = true;
-			}
-			if (updateCalendarUI(&calendarUI, renderer, &tooltip, &mouseState, &keyboardState, &calendarChange)) {
-				buttonAteMouseEvent = true;
 			}
 
 			// Camera controls
 			// HOME resets the camera and centres on the HQ
-			if (keyJustPressed(&keyboardState, SDL_SCANCODE_HOME)) {
+			if (keyJustPressed(&inputState, SDL_SCANCODE_HOME)) {
 				renderer->worldCamera.zoom = 1;
 				// Jump to the farmhouse if we have one!
 				if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
-					renderer->worldCamera.pos = centre(&gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
+					renderer->worldCamera.pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
 				} else {
-					pushUiMessage("Build an HQ, then pressing [Home] will take you there.");
+					pushUiMessage(renderer, "Build an HQ, then pressing [Home] will take you there.");
 				}
 			}
 
 			// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
 
-			if (!buttonAteMouseEvent) {
-				switch (actionMode) {
+			// This is a very basic check for "is the user clicking on the UI?"
+			if (!inRect(uiRect, v2(inputState.mousePos))) {
+				switch (uiState.actionMode) {
 					case ActionMode_Build: {
-						if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							placeBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos);
+						if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
+							placeBuilding(renderer, &gameState->city, uiState.selectedBuildingArchetype, mouseTilePos);
 						}
 
-						int32 buildCost = buildingDefinitions[selectedBuildingArchetype].buildCost;
-						showCostTooltip(&tooltip, renderer, buildCost, gameState->city.funds);
+						int32 buildCost = buildingDefinitions[uiState.selectedBuildingArchetype].buildCost;
+						showCostTooltip(renderer, buildCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Demolish: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							mouseDragStartPos = mouseWorldPos;
 							dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
-						} else if (mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						} else if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
 							dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
-							showCostTooltip(&tooltip, renderer, demolitionCost, gameState->city.funds);
+							showCostTooltip(renderer, demolitionCost, gameState->city.funds);
 						}
 
-						if (mouseButtonJustReleased(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustReleased(&inputState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
-							demolishRect(&gameState->city, dragRect);
+							demolishRect(renderer, &gameState->city, dragRect);
 							dragRect = irectXYWH(-1,-1,0,0);
 						}
 					} break;
 
 					case ActionMode_Plant: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							plantField(&gameState->city, mouseTilePos);
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
+							plantField(renderer, &gameState->city, mouseTilePos);
 						}
-						showCostTooltip(&tooltip, renderer, fieldPlantCost, gameState->city.funds);
+						showCostTooltip(renderer, fieldPlantCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Harvest: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							harvestField(&gameState->city, mouseTilePos);
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
+							harvestField(renderer, &gameState->city, mouseTilePos);
 						}
 					} break;
 
 					case ActionMode_Hire: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
-							if (hireWorker(&gameState->city, mouseWorldPos)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
+							if (hireWorker(renderer, &gameState->city, mouseWorldPos)) {
 								// Update the monthly spend display
 								gameState->city.monthlyExpenditure = gameState->city.workerCount * workerMonthlyCost;
 							}
 						}
-						showCostTooltip(&tooltip, renderer, workerHireCost, gameState->city.funds);
+						showCostTooltip(renderer, workerHireCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_None: {
-						if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_LEFT)) {
+						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
 							int tileI = tileIndex(&gameState->city, mouseTilePos.x, mouseTilePos.y);
 							int buildingID = gameState->city.tileBuildings[tileI];
 
@@ -502,70 +380,11 @@ int main(int argc, char *argv[]) {
 				}
 			}
 
-			if (mouseButtonJustPressed(&mouseState, SDL_BUTTON_RIGHT)) {
+			if (mouseButtonJustPressed(&inputState, SDL_BUTTON_RIGHT)) {
 				// Unselect current thing
-				setActiveButton(&actionButtonGroup, null);
-				actionMode = ActionMode_None;
+				// setActiveButton(&actionButtonGroup, null);
+				uiState.actionMode = ActionMode_None;
 				SDL_SetCursor(cursorMain);
-			} else {
-				if (buttonBuildHouse->justClicked) {
-					selectedBuildingArchetype = BA_Farmhouse;
-					actionMode = ActionMode_Build;
-					SDL_SetCursor(cursorBuild);
-				} else if (buttonBuildField->justClicked) {
-					selectedBuildingArchetype = BA_Field;
-					actionMode = ActionMode_Build;
-					SDL_SetCursor(cursorBuild);
-				} else if (buttonBuildBarn->justClicked) {
-					selectedBuildingArchetype = BA_Barn;
-					actionMode = ActionMode_Build;
-					SDL_SetCursor(cursorBuild);
-				} else if (buttonBuildPath->justClicked) {
-					selectedBuildingArchetype = BA_Path;
-					actionMode = ActionMode_Build;
-					SDL_SetCursor(cursorBuild);
-				} else if (buttonDemolish->justClicked) {
-					actionMode = ActionMode_Demolish;
-					SDL_SetCursor(cursorDemolish);
-				} else if (buttonPlant->justClicked) {
-					actionMode = ActionMode_Plant;
-					SDL_SetCursor(cursorPlant);
-				} else if (buttonHarvest->justClicked) {
-					actionMode = ActionMode_Harvest;
-					SDL_SetCursor(cursorHarvest);
-				} else if (buttonHireWorker->justClicked) {
-					actionMode = ActionMode_Hire;
-					SDL_SetCursor(cursorHire);
-				}
-			}
-		} else if (gameStatus == GameStatus_Setup) {
-			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonExit, &mouseState, &keyboardState);
-			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonWebsite, &mouseState, &keyboardState);
-			updateUiButton(renderer, &tooltip, &mainMenuUI.buttonStart, &mouseState, &keyboardState);
-
-			if (mainMenuUI.buttonExit.justClicked) {
-				quit = true;
-				continue;
-			} else if (mainMenuUI.buttonWebsite.justClicked) {
-				openUrlUnsafe("http://samatkins.co.uk");
-			} else if (mainMenuUI.buttonStart.justClicked) {
-				gameStatus = GameStatus_Playing;
-				setUiLabelText(&textCityName, cityName);
-			}
-		} else if (gameStatus == GameStatus_Lost
-				|| gameStatus == GameStatus_Won) {
-
-			updateUiButton(renderer, &tooltip, &buttonMenu, &mouseState, &keyboardState);
-			if (buttonMenu.justClicked) {
-
-				gameState = startGame(&gameArena, cityName);
-
-				// Reset calendar display. This is a bit hacky.
-				CalendarChange change = {};
-				change.isNewDay = true;
-				updateCalendarUI(&calendarUI, renderer, &tooltip, &mouseState, &keyboardState,	&change);
-
-				gameStatus = GameStatus_Setup;
 			}
 		}
 
@@ -633,7 +452,7 @@ int main(int argc, char *argv[]) {
 
 			V4 drawColor = makeWhite();
 
-			if (actionMode == ActionMode_Demolish
+			if (uiState.actionMode == ActionMode_Demolish
 				&& rectsOverlap(building.footprint, dragRect)) {
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);
@@ -645,7 +464,7 @@ int main(int argc, char *argv[]) {
 				} break;
 
 				default: {
-					V2 drawPos = centre(&building.footprint);
+					V2 drawPos = centre(building.footprint);
 					drawTextureAtlasItem(renderer, false, def->textureAtlasItem,
 					 	drawPos, v2(building.footprint.dim), depthFromY(drawPos.y), drawColor);
 				} break;
@@ -658,69 +477,206 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Building preview
-		if (actionMode == ActionMode_Build
-			&& selectedBuildingArchetype != BA_None) {
+		if (uiState.actionMode == ActionMode_Build
+			&& uiState.selectedBuildingArchetype != BA_None) {
 
 			V4 ghostColor = color255(128,255,128,255);
-			if (!canPlaceBuilding(&gameState->city, selectedBuildingArchetype, mouseTilePos)) {
+			if (!canPlaceBuilding(renderer, &gameState->city, uiState.selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = color255(255,0,0,128);
 			}
-			Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[selectedBuildingArchetype].size);
+			Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[uiState.selectedBuildingArchetype].size);
 			drawTextureAtlasItem(
 				renderer,
 				false,
-				buildingDefinitions[selectedBuildingArchetype].textureAtlasItem,
-				centre(&footprint),
+				buildingDefinitions[uiState.selectedBuildingArchetype].textureAtlasItem,
+				centre(footprint),
 				v2(footprint.dim),
 				depthFromY(mouseTilePos.y) + 100,
 				ghostColor
 			);
-		} else if (actionMode == ActionMode_Demolish
-			&& mouseButtonPressed(&mouseState, SDL_BUTTON_LEFT)) {
+		} else if (uiState.actionMode == ActionMode_Demolish
+			&& mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
 			// Demolition outline
 			drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
 		}
 
-		if (gameStatus == GameStatus_Setup) {
-			if (cityNameTextDirty) {
-				cityNameTextDirty = false;
-				setUiLabelText(&mainMenuUI.cityNameEntryLabel, cityName);
+		if (gameStatus == GameStatus_Setup)
+		{
+			// Main menu!
+			drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight), 0, renderer->theme.overlayColor);
+
+			V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
+			real32 maxLabelWidth = (real32)renderer->worldCamera.windowWidth - 256;
+
+			drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
+
+			position.y += 154.0f;
+
+			position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'. This is some text. As I add it, it moves left? MOOOOVE! I like to move it move it, I like to...\n...\n\nMOVE IT! Supercalifragalisticexpialidocioustryingtomakethissolongthatitteststhelinesplittingcodemaybemeybemaybe?",
+					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+
+			uiTextInput(renderer, &inputState, true, cityName, cityNameMaxLength, position, 1);
+			position.y += 32;
+
+			position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
+					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+
+			position.y += (uiLabel(renderer, renderer->theme.font, "Workers are paid £50 at the start of each month.",
+					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+
+			RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
+			if (uiButton(renderer, &inputState, "Exit", buttonRect, 1))
+			{
+				quit = true;
+				continue;
 			}
-			drawMainMenuUI(&mainMenuUI, renderer);
+			buttonRect.x = ((real32)renderer->worldCamera.windowWidth * 0.5f) - buttonRect.w/2;
+			if (uiButton(renderer, &inputState, "Website", buttonRect, 1))
+			{
+				openUrlUnsafe("http://samatkins.co.uk");
+			}
+			buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
+			if (uiButton(renderer, &inputState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
+			{
+				gameStatus = GameStatus_Playing;
+			}
 
 		} else {
 			// Draw some UI
-			drawRect(renderer, true, rectXYWH(0,0, (real32)renderer->worldCamera.windowWidth, 64),
-					 0, renderer->theme.overlayColor);
 
-			drawUiLabel(renderer, &textCityName);
-			drawUiIntLabel(renderer, &labelCityFunds);
-			drawUiIntLabel(renderer, &labelMonthlyExpenditure);
-			drawUiLabel(renderer, &calendarUI.labelDate);
+			real32 left = uiPadding;
+			char stringBuffer[256];
 
-			drawUiMessage(renderer);
+			drawRect(renderer, true, uiRect, 0, renderer->theme.overlayColor);
 
-			drawUiButtonGroup(renderer, &actionButtonGroup);
-			drawUiButtonGroup(renderer, &calendarUI.buttonGroup);
-			drawUiButton(renderer, &calendarUI.buttonPause);
+			uiLabel(renderer, renderer->theme.font, cityName, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
-			// SDL_GetMouseState(&mouseState.pos.x, &mouseState.pos.y);
-			if (tooltip.show) {
-				tooltip.label.origin = v2(mouseState.pos) + tooltip.offsetFromCursor;
-				drawUiLabel(renderer, &tooltip.label);
+			const real32 centre = renderer->worldCamera.windowWidth * 0.5f;
+			sprintf(stringBuffer, "£%d", gameState->city.funds);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
+			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
+			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
+
+			drawCalendarUI(renderer, &gameState->calendar, &inputState);
+
+			// Build UI
+			{
+				V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
+				RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
+
+				if (uiMenuButton(renderer, &inputState, "Build...", buttonRect, 1, &uiState, UIMenu_Build))
+				{
+					RealRect menuButtonRect = buttonRect;
+					menuButtonRect.y += menuButtonRect.h + uiPadding;
+
+					if (uiButton(renderer, &inputState, "Build HQ", menuButtonRect, 1,
+							(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Farmhouse),
+							SDL_SCANCODE_Q, "(Q)"))
+					{
+						uiState.openMenu = UIMenu_None;
+						uiState.selectedBuildingArchetype = BA_Farmhouse;
+						uiState.actionMode = ActionMode_Build;
+						SDL_SetCursor(cursorBuild);
+					}
+					menuButtonRect.y += menuButtonRect.h + uiPadding;
+					if (uiButton(renderer, &inputState, "Build Field", menuButtonRect, 1,
+								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Field),
+								SDL_SCANCODE_F, "(F)"))
+					{
+						uiState.openMenu = UIMenu_None;
+						uiState.selectedBuildingArchetype = BA_Field;
+						uiState.actionMode = ActionMode_Build;
+						SDL_SetCursor(cursorBuild);
+					}
+					menuButtonRect.y += menuButtonRect.h + uiPadding;
+					if (uiButton(renderer, &inputState, "Build Barn", menuButtonRect, 1,
+								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Barn),
+								SDL_SCANCODE_B, "(B)"))
+					{
+						uiState.openMenu = UIMenu_None;
+						uiState.selectedBuildingArchetype = BA_Barn;
+						uiState.actionMode = ActionMode_Build;
+						SDL_SetCursor(cursorBuild);
+					}
+					menuButtonRect.y += menuButtonRect.h + uiPadding;
+					if (uiButton(renderer, &inputState, "Build Road", menuButtonRect, 1,
+								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Path),
+								SDL_SCANCODE_R, "(R)"))
+					{
+						uiState.openMenu = UIMenu_None;
+						uiState.selectedBuildingArchetype = BA_Path;
+						uiState.actionMode = ActionMode_Build;
+						SDL_SetCursor(cursorBuild);
+					}
+				}
+
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Demolish", buttonRect, 1,
+							(uiState.actionMode == ActionMode_Demolish),
+							SDL_SCANCODE_X, "(X)"))
+				{
+					uiState.actionMode = ActionMode_Demolish;
+					SDL_SetCursor(cursorDemolish);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Plant", buttonRect, 1,
+							(uiState.actionMode == ActionMode_Plant),
+							SDL_SCANCODE_P, "(P)"))
+				{
+					uiState.actionMode = ActionMode_Plant;
+					SDL_SetCursor(cursorPlant);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Harvest", buttonRect, 1,
+							(uiState.actionMode == ActionMode_Harvest),
+							SDL_SCANCODE_H, "(H)"))
+				{
+					uiState.actionMode = ActionMode_Harvest;
+					SDL_SetCursor(cursorHarvest);
+				}
+				buttonRect.x += buttonRect.w + uiPadding;
+				if (uiButton(renderer, &inputState, "Hire Worker", buttonRect, 1,
+							(uiState.actionMode == ActionMode_Hire),
+							SDL_SCANCODE_G, "(G)"))
+				{
+					uiState.actionMode = ActionMode_Hire;
+					SDL_SetCursor(cursorHire);
+				}
 			}
 		}
 
 		// GAME OVER
 		if (gameStatus == GameStatus_Lost
 			|| gameStatus == GameStatus_Won) {
+			V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 			drawRect(renderer, true,
 					rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-					0, renderer->theme.overlayColor);
-			drawUiLabel(renderer, &gameOverLabel); 
-			drawUiButton(renderer, &buttonMenu);
+					10, renderer->theme.overlayColor);
+
+			char gameOverText[256];
+			if (gameStatus == GameStatus_Won)
+			{
+				sprintf(gameOverText, "You won! You earned £%d in %d days", gameWinFunds, gameState->calendar.totalDays);
+			} else {
+				sprintf(gameOverText, "Game over! You ran out of money! :(");
+			}
+
+			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, renderer->theme.labelColor);
+
+			if (uiButton(renderer, &inputState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
+			{
+				gameState = startGame(&gameArena, cityName);
+
+				// Reset calendar display. This is a bit hacky.
+				CalendarChange change = {};
+				change.isNewDay = true;
+
+				gameStatus = GameStatus_Setup;
+			}
 		}
 
+		drawTooltip(renderer, &inputState);
+		drawUiMessage(renderer);
 
 	// Actually draw things!
 		render(renderer);
@@ -740,24 +696,6 @@ int main(int argc, char *argv[]) {
 	}
 
 // CLEAN UP
-	// Is any of this actually necessary???
-	// A bunch of stuff is missing from this anyway.
-	// freeCity(&city);
-
-	// SDL_FreeCursor(cursorMain);
-	// SDL_FreeCursor(cursorBuild);
-	// SDL_FreeCursor(cursorDemolish);
-	// SDL_FreeCursor(cursorPlant);
-	// SDL_FreeCursor(cursorHarvest);
-	// SDL_FreeCursor(cursorHire);
-
-	// freeUiLabel(&textCityName);
-	// freeUiLabel(&tooltip.label);
-	// freeUiIntLabel(&labelCityFunds);
-	// freeUiMessage();
-
-	// freeUiButtonGroup(&actionButtonGroup);
-	// freeUiButtonGroup(&calendarButtonGroup);
 
 	freeRenderer(renderer);
 

@@ -16,6 +16,8 @@ struct BitmapFont
 	uint16 lineHeight;
 	uint16 baseY;
 
+	BitmapFontChar nullChar;
+
 	uint32 charCount;
 	BitmapFontChar *chars;
 };
@@ -26,17 +28,5 @@ struct BitmapFontCachedText
 	uint32 spriteCount;
 	Sprite *sprites;
 };
-
-void
-drawText(GLRenderer *renderer, BitmapFont *font, V2 position, char *text, V4 *color=0);
-
-BitmapFontCachedText *
-drawTextToCache(BitmapFont *font, char *text, V4 *color=0);
-
-void
-drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 topLeft);
-
-V2
-calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align);
 
 #include "font.cpp"
