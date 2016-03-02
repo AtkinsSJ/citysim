@@ -50,8 +50,57 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 
 unichar readUnicodeChar(char **nextChar)
 {
-	unichar result = **nextChar;
-	(*nextChar)++;
+	unichar result = 0;
+
+	uint8 b1 = *((*nextChar)++);
+	if ((b1 & 0b10000000) == 0)
+	{
+		// 7-bit ASCII, so just pass through
+		result = (uint32) b1;
+	}
+	else if (b1 & 0b11000000)
+	{
+		// Start of a multibyte codepoint!
+		int32 extraBytes = 1;
+		result = b1 & 0b00011111;
+		if (b1 & 0b00100000) {
+			extraBytes++; // 3 total
+			result = b1 & 0b00001111;
+			if (b1 & 0b00010000) {
+				extraBytes++; // 4 total
+				result = b1 & 0b00000111;
+				if (b1 & 0b00001000) {
+					extraBytes++; // 5 total
+					result = b1 & 0b00000011;
+					if (b1 & 0b00000100) {
+						extraBytes++; // 6 total
+						result = b1 & 0b00000001;
+					}
+				}
+			}
+		}
+
+		while (extraBytes--)
+		{
+			result = result << 6;
+
+			uint8 bn = *((*nextChar)++);
+
+			if (!(bn & 0b10000000)
+				|| (bn & 0b01000000))
+			{
+				ASSERT(false, "Unicode codepoint continuation byte is invalid! D:");
+			}
+
+			result |= (bn & 0b00111111);
+		}
+	}
+	else
+	{
+		// Error! Our first byte is a continuation byte!
+		ASSERT(false, "Unicode codepoint initial byte is invalid! D:");
+	}
+
 	return result;
 }
 
