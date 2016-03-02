@@ -1,5 +1,15 @@
 // ui.cpp
 
+void initUiState(UIState *uiState)
+{
+	*uiState = {};
+	uiState->actionMode = ActionMode_None;
+	uiState->selectedBuildingArchetype = BA_None;
+
+	uiState->tooltip = {};
+	uiState->tooltip.offsetFromCursor = v2(16, 20);
+}
+
 RealRect uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
@@ -16,34 +26,34 @@ RealRect uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, 
 	return bounds;
 }
 
-void setTooltip(GLRenderer *renderer, char *text, V4 color)
+void setTooltip(UIState *uiState, char *text, V4 color)
 {
-	strncpy(renderer->tooltip.text, text, sizeof(renderer->tooltip.text));
-	renderer->tooltip.color = color;
-	renderer->tooltip.show = true;
+	strncpy(uiState->tooltip.text, text, sizeof(uiState->tooltip.text));
+	uiState->tooltip.color = color;
+	uiState->tooltip.show = true;
 }
 
-void drawTooltip(GLRenderer *renderer, InputState *inputState)
+void drawTooltip(GLRenderer *renderer, InputState *inputState, UIState *uiState)
 {
-	if (renderer->tooltip.show)
+	if (uiState->tooltip.show)
 	{
 		const real32 depth = 100;
 		const real32 tooltipPadding = 4;
 
-		V2 topLeft = v2(inputState->mousePos) + renderer->tooltip.offsetFromCursor + v2(tooltipPadding, tooltipPadding);
+		V2 topLeft = v2(inputState->mousePos) + uiState->tooltip.offsetFromCursor + v2(tooltipPadding, tooltipPadding);
 
-		RealRect labelRect = uiLabel(renderer, renderer->theme.font, renderer->tooltip.text,
-			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1, renderer->tooltip.color);
+		RealRect labelRect = uiLabel(renderer, renderer->theme.font, uiState->tooltip.text,
+			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1, uiState->tooltip.color);
 
 		labelRect = expandRect(labelRect, tooltipPadding);
 
 		drawRect(renderer, true, labelRect, depth, renderer->theme.tooltipBackgroundColor);
 
-		renderer->tooltip.show = false;
+		uiState->tooltip.show = false;
 	}
 }
 
-bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,
+bool uiButton(GLRenderer *renderer, InputState *inputState, UIState *uiState, char *text, RealRect bounds, real32 depth,
 			bool active=false, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool buttonClicked = false;
@@ -66,7 +76,7 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect
 		// tooltip!
 		if (tooltip)
 		{
-			setTooltip(renderer, tooltip, renderer->theme.tooltipColorNormal);
+			setTooltip(uiState, tooltip, renderer->theme.tooltipColorNormal);
 		}
 	}
 	else if (active)
@@ -88,11 +98,11 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect
 	return buttonClicked;
 }
 
-bool uiMenuButton(GLRenderer *renderer, InputState *inputState, char *text, RealRect bounds, real32 depth,
-			UIState *uiState, UIMenuID menuID, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+bool uiMenuButton(GLRenderer *renderer, InputState *inputState, UIState *uiState, char *text, RealRect bounds,
+			real32 depth, UIMenuID menuID, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(renderer, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(renderer, inputState, uiState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -141,24 +151,24 @@ void uiTextInput(GLRenderer *renderer, InputState *inputState, bool active,
 	drawRect(renderer, true, labelRect, depth, renderer->theme.textboxBackgroundColor);
 }
 
-void pushUiMessage(GLRenderer *renderer, char *message)
+void pushUiMessage(UIState *uiState, char *message)
 {
-	strncpy(renderer->message.text, message, sizeof(renderer->message.text));
-	renderer->message.countdown = messageDisplayTime;
+	strncpy(uiState->message.text, message, sizeof(uiState->message.text));
+	uiState->message.countdown = messageDisplayTime;
 }
 
-void drawUiMessage(GLRenderer *renderer)
+void drawUiMessage(GLRenderer *renderer, UIState *uiState)
 {
-	if (renderer->message.countdown > 0)
+	if (uiState->message.countdown > 0)
 	{
-		renderer->message.countdown -= SECONDS_PER_FRAME;
+		uiState->message.countdown -= SECONDS_PER_FRAME;
 
-		if (renderer->message.countdown > 0)
+		if (uiState->message.countdown > 0)
 		{
 			const real32 depth = 100;
 			const real32 padding = 4;
 
-			real32 t = (real32)renderer->message.countdown / messageDisplayTime;
+			real32 t = (real32)uiState->message.countdown / messageDisplayTime;
 
 			V4 backgroundColor = renderer->theme.tooltipBackgroundColor;
 			V4 textColor = renderer->theme.tooltipColorNormal;
@@ -179,7 +189,7 @@ void drawUiMessage(GLRenderer *renderer)
 			}
 
 			V2 origin = v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f);
-			RealRect labelRect = uiLabel(renderer, renderer->theme.font, renderer->message.text, origin,
+			RealRect labelRect = uiLabel(renderer, renderer->theme.font, uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1, textColor);
 
 			labelRect = expandRect(labelRect, padding);

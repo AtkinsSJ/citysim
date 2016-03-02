@@ -68,19 +68,19 @@ void updateCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32
 	}
 }
 
-void showCostTooltip(GLRenderer *renderer, int32 cost, int32 cityFunds) {
+void showCostTooltip(GLRenderer *renderer, UIState *uiState, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
-		renderer->tooltip.color = renderer->theme.tooltipColorBad;
+		uiState->tooltip.color = renderer->theme.tooltipColorBad;
 	} else {
-		renderer->tooltip.color = renderer->theme.tooltipColorNormal;
+		uiState->tooltip.color = renderer->theme.tooltipColorNormal;
 	}
-	sprintf(renderer->tooltip.text, "-£%d", cost);
-	renderer->tooltip.show = true;
+	sprintf(uiState->tooltip.text, "-£%d", cost);
+	uiState->tooltip.show = true;
 }
 
 const real32 uiPadding = 4;
 
-bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputState)
+bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputState, UIState *uiState)
 {
 	bool buttonAteMouseEvent = false;
 
@@ -93,28 +93,28 @@ bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputS
 	const real32 buttonSize = 24;
 	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 32,
 								buttonSize, buttonSize);
-	if (uiButton(renderer, inputState, ">>>", buttonRect, 1, (calendar->speed == Speed3)))
+	if (uiButton(renderer, inputState, uiState, ">>>", buttonRect, 1, (calendar->speed == Speed3)))
 	{
 		calendar->paused = false;
 		calendar->speed = Speed3;
 		buttonAteMouseEvent = true;
 	}
 	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, ">>", buttonRect, 1, (calendar->speed == Speed2)))
+	if (uiButton(renderer, inputState, uiState, ">>", buttonRect, 1, (calendar->speed == Speed2)))
 	{
 		calendar->paused = false;
 		calendar->speed = Speed2;
 		buttonAteMouseEvent = true;
 	}
 	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, ">", buttonRect, 1, (calendar->speed == Speed1)))
+	if (uiButton(renderer, inputState, uiState, ">", buttonRect, 1, (calendar->speed == Speed1)))
 	{
 		calendar->paused = false;
 		calendar->speed = Speed1;
 		buttonAteMouseEvent = true;
 	}
 	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, "||", buttonRect, 1, calendar->paused, SDL_SCANCODE_SPACE, "(Space)"))
+	if (uiButton(renderer, inputState, uiState, "||", buttonRect, 1, calendar->paused, SDL_SCANCODE_SPACE, "(Space)"))
 	{
 		calendar->paused = !calendar->paused;
 		buttonAteMouseEvent = true;

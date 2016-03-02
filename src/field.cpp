@@ -2,14 +2,14 @@
 
 // field.h
 
-bool plantField(GLRenderer *renderer, City *city, Coord tilePosition) {
+bool plantField(UIState *uiState, City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition);
 	if (building && building->archetype == BA_Field) {
 		if (!canAfford(city, fieldPlantCost)) {
-			pushUiMessage(renderer, "Not enough money to plant this field.");
+			pushUiMessage(uiState, "Not enough money to plant this field.");
 			return false;
 		} else if (building->field.state != FieldState_Empty) {
-			pushUiMessage(renderer, "This field has already been planted.");
+			pushUiMessage(uiState, "This field has already been planted.");
 			return false;
 		} else {
 			SDL_Log("Marking field for planting.");
@@ -23,18 +23,18 @@ bool plantField(GLRenderer *renderer, City *city, Coord tilePosition) {
 		}
 	}
 
-	pushUiMessage(renderer, "You can only plant fields.");
+	pushUiMessage(uiState, "You can only plant fields.");
 	return false;
 }
 
-bool harvestField(GLRenderer *renderer, City *city, Coord tilePosition) {
+bool harvestField(UIState *uiState, City *city, Coord tilePosition) {
 	Building *building = getBuildingAtPosition(city, tilePosition);
 	if (building && building->archetype == BA_Field) {
 		if (building->field.state == FieldState_Harvesting) {
-			pushUiMessage(renderer, "This field is already marked for harvesting.");
+			pushUiMessage(uiState, "This field is already marked for harvesting.");
 			return false;
 		} else if (building->field.state != FieldState_Grown) {
-			pushUiMessage(renderer, "There are no plants here ready for harvesting.");
+			pushUiMessage(uiState, "There are no plants here ready for harvesting.");
 			return false;
 		} else {
 			SDL_Log("Marking field for harvesting.");
@@ -47,7 +47,7 @@ bool harvestField(GLRenderer *renderer, City *city, Coord tilePosition) {
 		}
 	}
 
-	pushUiMessage(renderer, "You can only harvest fields.");
+	pushUiMessage(uiState, "You can only harvest fields.");
 	return false;
 }
 

@@ -46,6 +46,7 @@ struct GameState
 	Calendar calendar;
 };
 
+#include "ui.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
 #include "job.cpp"
@@ -133,9 +134,8 @@ int main(int argc, char *argv[]) {
 		-1000.0f, 1000.0f
 	);
 
-	UIState uiState = {};
-	uiState.actionMode = ActionMode_None;
-	uiState.selectedBuildingArchetype = BA_None;
+	UIState uiState;
+	initUiState(&uiState);	
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;
@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
 
 			// Workers!
 			for (int i = 0; i < ArrayCount(gameState->city.workers); ++i) {
-				updateWorker(renderer, gameState, gameState->city.workers + i);
+				updateWorker(&uiState, gameState, gameState->city.workers + i);
 			}
 		}
 		if (calendarChange.isNewMonth) {
@@ -311,7 +311,7 @@ int main(int argc, char *argv[]) {
 				if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
 					renderer->worldCamera.pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
 				} else {
-					pushUiMessage(renderer, "Build an HQ, then pressing [Home] will take you there.");
+					pushUiMessage(&uiState, "Build an HQ, then pressing [Home] will take you there.");
 				}
 			}
 
@@ -322,11 +322,11 @@ int main(int argc, char *argv[]) {
 				switch (uiState.actionMode) {
 					case ActionMode_Build: {
 						if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
-							placeBuilding(renderer, &gameState->city, uiState.selectedBuildingArchetype, mouseTilePos);
+							placeBuilding(&uiState, &gameState->city, uiState.selectedBuildingArchetype, mouseTilePos);
 						}
 
 						int32 buildCost = buildingDefinitions[uiState.selectedBuildingArchetype].buildCost;
-						showCostTooltip(renderer, buildCost, gameState->city.funds);
+						showCostTooltip(renderer, &uiState, buildCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Demolish: {
@@ -336,37 +336,37 @@ int main(int argc, char *argv[]) {
 						} else if (mouseButtonPressed(&inputState, SDL_BUTTON_LEFT)) {
 							dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 							int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
-							showCostTooltip(renderer, demolitionCost, gameState->city.funds);
+							showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
 						}
 
 						if (mouseButtonJustReleased(&inputState, SDL_BUTTON_LEFT)) {
 							// Demolish everything within dragRect!
-							demolishRect(renderer, &gameState->city, dragRect);
+							demolishRect(&uiState, &gameState->city, dragRect);
 							dragRect = irectXYWH(-1,-1,0,0);
 						}
 					} break;
 
 					case ActionMode_Plant: {
 						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
-							plantField(renderer, &gameState->city, mouseTilePos);
+							plantField(&uiState, &gameState->city, mouseTilePos);
 						}
-						showCostTooltip(renderer, fieldPlantCost, gameState->city.funds);
+						showCostTooltip(renderer, &uiState, fieldPlantCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_Harvest: {
 						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
-							harvestField(renderer, &gameState->city, mouseTilePos);
+							harvestField(&uiState, &gameState->city, mouseTilePos);
 						}
 					} break;
 
 					case ActionMode_Hire: {
 						if (mouseButtonJustPressed(&inputState, SDL_BUTTON_LEFT)) {
-							if (hireWorker(renderer, &gameState->city, mouseWorldPos)) {
+							if (hireWorker(&uiState, &gameState->city, mouseWorldPos)) {
 								// Update the monthly spend display
 								gameState->city.monthlyExpenditure = gameState->city.workerCount * workerMonthlyCost;
 							}
 						}
-						showCostTooltip(renderer, workerHireCost, gameState->city.funds);
+						showCostTooltip(renderer, &uiState, workerHireCost, gameState->city.funds);
 					} break;
 
 					case ActionMode_None: {
@@ -481,7 +481,7 @@ int main(int argc, char *argv[]) {
 			&& uiState.selectedBuildingArchetype != BA_None) {
 
 			V4 ghostColor = color255(128,255,128,255);
-			if (!canPlaceBuilding(renderer, &gameState->city, uiState.selectedBuildingArchetype, mouseTilePos)) {
+			if (!canPlaceBuilding(&uiState, &gameState->city, uiState.selectedBuildingArchetype, mouseTilePos)) {
 				ghostColor = color255(255,0,0,128);
 			}
 			Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[uiState.selectedBuildingArchetype].size);
@@ -525,18 +525,18 @@ int main(int argc, char *argv[]) {
 					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
 			RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
-			if (uiButton(renderer, &inputState, "Exit", buttonRect, 1))
+			if (uiButton(renderer, &inputState, &uiState, "Exit", buttonRect, 1))
 			{
 				quit = true;
 				continue;
 			}
 			buttonRect.x = ((real32)renderer->worldCamera.windowWidth * 0.5f) - buttonRect.w/2;
-			if (uiButton(renderer, &inputState, "Website", buttonRect, 1))
+			if (uiButton(renderer, &inputState, &uiState, "Website", buttonRect, 1))
 			{
 				openUrlUnsafe("http://samatkins.co.uk");
 			}
 			buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
-			if (uiButton(renderer, &inputState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
+			if (uiButton(renderer, &inputState, &uiState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
 			{
 				gameStatus = GameStatus_Playing;
 			}
@@ -557,19 +557,19 @@ int main(int argc, char *argv[]) {
 			sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
 			uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
-			drawCalendarUI(renderer, &gameState->calendar, &inputState);
+			drawCalendarUI(renderer, &gameState->calendar, &inputState, &uiState);
 
 			// Build UI
 			{
 				V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
 				RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
-				if (uiMenuButton(renderer, &inputState, "Build...", buttonRect, 1, &uiState, UIMenu_Build))
+				if (uiMenuButton(renderer, &inputState, &uiState, "Build...", buttonRect, 1, UIMenu_Build))
 				{
 					RealRect menuButtonRect = buttonRect;
 					menuButtonRect.y += menuButtonRect.h + uiPadding;
 
-					if (uiButton(renderer, &inputState, "Build HQ", menuButtonRect, 1,
+					if (uiButton(renderer, &inputState, &uiState, "Build HQ", menuButtonRect, 1,
 							(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Farmhouse),
 							SDL_SCANCODE_Q, "(Q)"))
 					{
@@ -579,7 +579,7 @@ int main(int argc, char *argv[]) {
 						SDL_SetCursor(cursorBuild);
 					}
 					menuButtonRect.y += menuButtonRect.h + uiPadding;
-					if (uiButton(renderer, &inputState, "Build Field", menuButtonRect, 1,
+					if (uiButton(renderer, &inputState, &uiState, "Build Field", menuButtonRect, 1,
 								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Field),
 								SDL_SCANCODE_F, "(F)"))
 					{
@@ -589,7 +589,7 @@ int main(int argc, char *argv[]) {
 						SDL_SetCursor(cursorBuild);
 					}
 					menuButtonRect.y += menuButtonRect.h + uiPadding;
-					if (uiButton(renderer, &inputState, "Build Barn", menuButtonRect, 1,
+					if (uiButton(renderer, &inputState, &uiState, "Build Barn", menuButtonRect, 1,
 								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Barn),
 								SDL_SCANCODE_B, "(B)"))
 					{
@@ -599,7 +599,7 @@ int main(int argc, char *argv[]) {
 						SDL_SetCursor(cursorBuild);
 					}
 					menuButtonRect.y += menuButtonRect.h + uiPadding;
-					if (uiButton(renderer, &inputState, "Build Road", menuButtonRect, 1,
+					if (uiButton(renderer, &inputState, &uiState, "Build Road", menuButtonRect, 1,
 								(uiState.actionMode == ActionMode_Build) && (uiState.selectedBuildingArchetype == BA_Path),
 								SDL_SCANCODE_R, "(R)"))
 					{
@@ -611,7 +611,7 @@ int main(int argc, char *argv[]) {
 				}
 
 				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, "Demolish", buttonRect, 1,
+				if (uiButton(renderer, &inputState, &uiState, "Demolish", buttonRect, 1,
 							(uiState.actionMode == ActionMode_Demolish),
 							SDL_SCANCODE_X, "(X)"))
 				{
@@ -619,7 +619,7 @@ int main(int argc, char *argv[]) {
 					SDL_SetCursor(cursorDemolish);
 				}
 				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, "Plant", buttonRect, 1,
+				if (uiButton(renderer, &inputState, &uiState, "Plant", buttonRect, 1,
 							(uiState.actionMode == ActionMode_Plant),
 							SDL_SCANCODE_P, "(P)"))
 				{
@@ -627,7 +627,7 @@ int main(int argc, char *argv[]) {
 					SDL_SetCursor(cursorPlant);
 				}
 				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, "Harvest", buttonRect, 1,
+				if (uiButton(renderer, &inputState, &uiState, "Harvest", buttonRect, 1,
 							(uiState.actionMode == ActionMode_Harvest),
 							SDL_SCANCODE_H, "(H)"))
 				{
@@ -635,7 +635,7 @@ int main(int argc, char *argv[]) {
 					SDL_SetCursor(cursorHarvest);
 				}
 				buttonRect.x += buttonRect.w + uiPadding;
-				if (uiButton(renderer, &inputState, "Hire Worker", buttonRect, 1,
+				if (uiButton(renderer, &inputState, &uiState, "Hire Worker", buttonRect, 1,
 							(uiState.actionMode == ActionMode_Hire),
 							SDL_SCANCODE_G, "(G)"))
 				{
@@ -663,7 +663,7 @@ int main(int argc, char *argv[]) {
 
 			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, renderer->theme.labelColor);
 
-			if (uiButton(renderer, &inputState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
+			if (uiButton(renderer, &inputState, &uiState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
 			{
 				gameState = startGame(&gameArena, cityName);
 
@@ -675,8 +675,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		drawTooltip(renderer, &inputState);
-		drawUiMessage(renderer);
+		drawTooltip(renderer, &inputState, &uiState);
+		drawUiMessage(renderer, &uiState);
 
 	// Actually draw things!
 		render(renderer);

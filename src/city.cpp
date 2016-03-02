@@ -42,7 +42,7 @@ void spend(City *city, int32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
+bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
 	bool isAttemptingToBuild = false)
 {
 
@@ -52,7 +52,7 @@ bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype select
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(renderer, "You can only have one farmhouse!");
+			pushUiMessage(uiState, "You can only have one farmhouse!");
 		}
 		return false;
 	}
@@ -64,7 +64,7 @@ bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype select
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(renderer, "Not enough money to build this.");
+			pushUiMessage(uiState, "Not enough money to build this.");
 		}
 		return false;
 	}
@@ -76,7 +76,7 @@ bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype select
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(renderer, "You cannot build off the map edge.");
+			pushUiMessage(uiState, "You cannot build off the map edge.");
 		}
 		return false;
 	}
@@ -91,7 +91,7 @@ bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype select
 			{
 				if (isAttemptingToBuild)
 				{
-					pushUiMessage(renderer, "You cannot build there.");
+					pushUiMessage(uiState, "You cannot build there.");
 				}
 				return false;
 			}
@@ -100,7 +100,7 @@ bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype select
 			{
 				// if (isAttemptingToBuild)
 				// {
-				// 	pushUiMessage(renderer, "You cannot overlap buildings.");
+				// 	pushUiMessage(uiState, "You cannot overlap buildings.");
 				// }
 				return false;
 			}
@@ -112,9 +112,9 @@ bool canPlaceBuilding(GLRenderer *renderer, City *city, BuildingArchetype select
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(GLRenderer *renderer, City *city, BuildingArchetype archetype, Coord position) {
+bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, Coord position) {
 
-	if (!canPlaceBuilding(renderer, city, archetype, position, true)) {
+	if (!canPlaceBuilding(uiState, city, archetype, position, true)) {
 		return false;
 	}
 
@@ -167,7 +167,7 @@ bool placeBuilding(GLRenderer *renderer, City *city, BuildingArchetype archetype
 	return true;
 }
 
-bool demolishTile(GLRenderer *renderer, City *city, Coord position) {
+bool demolishTile(UIState *uiState, City *city, Coord position) {
 	if (!tileExists(city, position.x, position.y)) return true;
 
 	uint32 posTI = tileIndex(city, position.x, position.y);
@@ -181,7 +181,7 @@ bool demolishTile(GLRenderer *renderer, City *city, Coord position) {
 
 		// Can we afford to demolish this?
 		if (!canAfford(city, def.demolishCost)) {
-			pushUiMessage(renderer, "Not enough money to demolish this.");
+			pushUiMessage(uiState, "Not enough money to demolish this.");
 			return false;
 		}
 
@@ -272,7 +272,7 @@ bool demolishTile(GLRenderer *renderer, City *city, Coord position) {
 			city->terrain[posTI] = Terrain_Ground;
 			return true;
 		} else {
-			pushUiMessage(renderer, "Not enough money to destroy these trees.");
+			pushUiMessage(uiState, "Not enough money to destroy these trees.");
 			return false;
 		}
 
@@ -306,17 +306,17 @@ int32 calculateDemolitionCost(City *city, Rect rect) {
 	return total;
 }
 
-bool demolishRect(GLRenderer *renderer, City *city, Rect rect) {
+bool demolishRect(UIState *uiState, City *city, Rect rect) {
 
 	int32 cost = calculateDemolitionCost(city, rect);
 	if (!canAfford(city, cost)) {
-		pushUiMessage(renderer, "Not enough money for demolition.");
+		pushUiMessage(uiState, "Not enough money for demolition.");
 		return false;
 	}
 
 	for (int y=0; y<rect.h; y++) {
 		for (int x=0; x<rect.w; x++) {
-			if (!demolishTile(renderer, city, {rect.x + x, rect.y + y})) {
+			if (!demolishTile(uiState, city, {rect.x + x, rect.y + y})) {
 				return false;
 			}
 		}

@@ -188,21 +188,6 @@ struct RenderBuffer
 	uint32 maxSprites;
 };
 
-struct Tooltip
-{
-	bool show;
-	V2 offsetFromCursor;
-	V4 color;
-	char text[256];
-};
-const real32 uiMessageBottomMargin = 4,
-			uiMessageTextPadding = 4;
-struct UiMessage
-{
-	char text[256];
-	real32 countdown; // In seconds
-};
-
 struct GLRenderer
 {
 	MemoryArena renderArena;
@@ -237,8 +222,6 @@ struct GLRenderer
 
 	// UI Stuff!
 	UiTheme theme;
-	Tooltip tooltip;
-	UiMessage message;
 };
 
 const uint32 TEXTURE_WIDTH = 512,
