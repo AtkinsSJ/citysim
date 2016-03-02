@@ -85,7 +85,16 @@ struct DrawTextState
 	real32 longestLineWidth;
 };
 
-void _handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
+void font_newLine(DrawTextState *state)
+{
+	state->longestLineWidth = state->maxWidth;
+	state->position.y += state->lineHeight;
+	state->position.x = 0;
+	state->currentLineWidth = 0;
+	state->lineCount++;
+}
+
+void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 {
 	if (state->doWrap)
 	{
@@ -113,11 +122,7 @@ void _handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 					{
 						// TODO: Split the word across multiple lines?
 						// For now, we just have it overflow, and move onto another new line
-						state->longestLineWidth = state->maxWidth;
-						state->position.y += state->lineHeight;
-						state->position.x = 0;
-						state->currentLineWidth = 0;
-						state->lineCount++;
+						font_newLine(state);
 					}
 				}
 				else
@@ -181,11 +186,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 		{
 			if (*currentChar == '\n')
 			{
-				state.longestLineWidth = state.maxWidth;
-				state.position.y += state.lineHeight;
-				state.position.x = 0;
-				state.currentLineWidth = 0;
-				state.lineCount++;
+				font_newLine(&state);
 			}
 			else
 			{
@@ -199,12 +200,12 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 						0, c->textureID, c->uv, color
 					);
 
-					_handleEndOfWord(&state, c);
+					font_handleEndOfWord(&state, c);
 				}
 			}
 		}
 		// Final flush to make sure the last line is correct
-		_handleEndOfWord(&state, &font->nullChar);
+		font_handleEndOfWord(&state, &font->nullChar);
 
 		result->size.x = max(state.longestLineWidth, state.currentLineWidth);
 		result->size.y = (real32)(font->lineHeight * state.lineCount);
