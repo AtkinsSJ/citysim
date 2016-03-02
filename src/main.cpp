@@ -523,7 +523,7 @@ int main(int argc, char *argv[]) {
 
 			position.y += 154.0f;
 
-			position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'. This is some text. As I add it, it moves left? MOOOOVE! I like to move it move it, I like to...\nMOVE IT! Supercalifragalisticexpialidocioustryingtomakethissolongthatitteststhelinesplittingcodemaybemeybemaybe?",
+			position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'. This is some text. As I add it, it moves left? MOOOOVE! I like to move it move it, I like to...\n...\n\nMOVE IT! Supercalifragalisticexpialidocioustryingtomakethissolongthatitteststhelinesplittingcodemaybemeybemaybe?",
 					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
 			uiTextInput(renderer, &inputState, true, cityName, cityNameMaxLength, position, 1);

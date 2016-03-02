@@ -179,17 +179,28 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 			*currentChar != 0;
 			currentChar++)
 		{
-			BitmapFontChar *c = findChar(font, (uint32)(*currentChar));
-			if (c)
+			if (*currentChar == '\n')
 			{
-				state.endOfCurrentWord = result->sprites + result->spriteCount++;
-				*state.endOfCurrentWord = makeSprite(
-					rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
-							 (real32)c->size.w, (real32)c->size.h),
-					0, c->textureID, c->uv, color
-				);
+				state.longestLineWidth = state.maxWidth;
+				state.position.y += state.lineHeight;
+				state.position.x = 0;
+				state.currentLineWidth = 0;
+				state.lineCount++;
+			}
+			else
+			{
+				BitmapFontChar *c = findChar(font, (uint32)(*currentChar));
+				if (c)
+				{
+					state.endOfCurrentWord = result->sprites + result->spriteCount++;
+					*state.endOfCurrentWord = makeSprite(
+						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
+								 (real32)c->size.w, (real32)c->size.h),
+						0, c->textureID, c->uv, color
+					);
 
-				_handleEndOfWord(&state, c);
+					_handleEndOfWord(&state, c);
+				}
 			}
 		}
 		// Final flush to make sure the last line is correct
