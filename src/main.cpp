@@ -23,6 +23,7 @@ enum GameStatus {
 	GameStatus_Playing,
 	GameStatus_Won,
 	GameStatus_Lost,
+	GameStatus_Quit,
 };
 
 #include "types.h"
@@ -100,13 +101,11 @@ int main(int argc, char *argv[]) {
 	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));
 
 	const int32 cityNameMaxLength = 32;
-	char cityName[cityNameMaxLength + 1] = {};
-	sprintf(cityName, "My Farm");
+	char cityName[cityNameMaxLength + 1] = "My Farm";
 	
 	GameState *gameState = startGame(&gameArena, cityName);
 
 // GAME LOOP
-	bool quit = false;
 	GameStatus gameStatus = GameStatus_Setup;
 
 	SDL_Event event;
@@ -132,7 +131,7 @@ int main(int argc, char *argv[]) {
 	real32 framesPerSecond = 0;
 	
 	// GAME LOOP
-	while (!quit) {
+	while (gameStatus != GameStatus_Quit) {
 
 		// Clear mouse state
 		inputState.wheelX = 0;
@@ -152,7 +151,7 @@ int main(int argc, char *argv[]) {
 			switch (event.type) {
 				// WINDOW EVENTS
 				case SDL_QUIT: {
-					quit = true;
+					gameStatus = GameStatus_Quit;
 				} break;
 				case SDL_WINDOWEVENT: {
 					switch (event.window.event) {
@@ -490,81 +489,43 @@ int main(int argc, char *argv[]) {
 			drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
 		}
 
-		if (gameStatus == GameStatus_Setup)
+		switch (gameStatus)
 		{
-			// Main menu!
-			drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight), 0, renderer->theme.overlayColor);
-
-			V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
-			real32 maxLabelWidth = (real32)renderer->worldCamera.windowWidth - 256;
-
-			drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
-
-			position.y += 154.0f;
-
-			position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'. This is some text. As I add it, it moves left? MOOOOVE! I like to move it move it, I like to...\n...\n\nMOVE IT! Supercalifragalisticexpialidocioustryingtomakethissolongthatitteststhelinesplittingcodemaybemeybemaybe?",
-					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
-
-			uiTextInput(renderer, &inputState, true, cityName, cityNameMaxLength, position, 1);
-			position.y += 32;
-
-			position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
-					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
-
-			position.y += (uiLabel(renderer, renderer->theme.font, "Workers are paid £50 at the start of each month.",
-					position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
-
-			RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
-			if (uiButton(renderer, &inputState, &uiState, "Exit", buttonRect, 1))
+			case GameStatus_Setup:
 			{
-				quit = true;
-				continue;
+				gameStatus = updateAndRenderMainMenuUI(renderer, &uiState, &inputState, gameStatus, cityName, cityNameMaxLength);
 			}
-			buttonRect.x = ((real32)renderer->worldCamera.windowWidth * 0.5f) - buttonRect.w/2;
-			if (uiButton(renderer, &inputState, &uiState, "Website", buttonRect, 1))
+			break;
+
+			case GameStatus_Playing:
 			{
-				openUrlUnsafe("http://samatkins.co.uk");
+				updateAndRenderGameUI(renderer, &uiState, gameState, &inputState, uiRect);
 			}
-			buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
-			if (uiButton(renderer, &inputState, &uiState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
+			break;
+
+			case GameStatus_Won:
+			case GameStatus_Lost:
 			{
-				gameStatus = GameStatus_Playing;
+				updateAndRenderGameUI(renderer, &uiState, gameState, &inputState, uiRect);
+
+				if (updateAndRenderGameOverUI(renderer, &uiState, gameState, &inputState, gameStatus == GameStatus_Won))
+				{
+					gameState = startGame(&gameArena, cityName);
+
+					// Reset calendar display. This is a bit hacky.
+					CalendarChange change = {};
+					change.isNewDay = true;
+
+					gameStatus = GameStatus_Setup;
+				}
 			}
+			break;
 
-		} else {
-			// Draw some UI
-
-			updateAndRenderGameUI(renderer, &uiState, gameState, &inputState, uiRect);
-		}
-
-		// GAME OVER
-		if (gameStatus == GameStatus_Lost
-			|| gameStatus == GameStatus_Won) {
-			V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
-			drawRect(renderer, true,
-					rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-					10, renderer->theme.overlayColor);
-
-			char gameOverText[256];
-			if (gameStatus == GameStatus_Won)
+			case GameStatus_Quit:
 			{
-				sprintf(gameOverText, "You won! You earned £%d in %d days", gameWinFunds, gameState->calendar.totalDays);
-			} else {
-				sprintf(gameOverText, "Game over! You ran out of money! :(");
+				// Nothing
 			}
-
-			uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, renderer->theme.labelColor);
-
-			if (uiButton(renderer, &inputState, &uiState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
-			{
-				gameState = startGame(&gameArena, cityName);
-
-				// Reset calendar display. This is a bit hacky.
-				CalendarChange change = {};
-				change.isNewDay = true;
-
-				gameStatus = GameStatus_Setup;
-			}
+			break;
 		}
 
 		drawTooltip(renderer, &inputState, &uiState);
