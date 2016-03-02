@@ -1,8 +1,10 @@
 #pragma once
 
+typedef uint32 unichar;
+
 struct BitmapFontChar
 {
-	uint32 id; // Unicode character
+	unichar codepoint;
 	Rect size;
 	int16 xOffset, yOffset; // Offset when rendering to the screen
 	int16 xAdvance; // How far to move after rendering this character

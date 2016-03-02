@@ -169,7 +169,7 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 					BMFont_Char *src = chars + charIndex;
 					BitmapFontChar *dest = Font->chars + charIndex;
 
-					dest->id = src->id;
+					dest->codepoint = src->id;
 					dest->size = irectXYWH(src->x, src->y, src->w, src->h);
 					dest->xOffset = src->xOffset;
 					dest->yOffset = src->yOffset;

@@ -16,13 +16,13 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 
 	while (high >= low)
 	{
-		if (currentChar->id == targetChar)
+		if (currentChar->codepoint == targetChar)
 		{
 			result = currentChar;
 			break;
 		}
 
-		if (currentChar->id < targetChar)
+		if (currentChar->codepoint < targetChar)
 		{
 			low = current + 1;
 		}
@@ -45,6 +45,13 @@ BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
 		SDL_Log("Failed to find char 0x%X in font.", targetChar);
 	}
 
+	return result;
+}
+
+unichar readUnicodeChar(char **nextChar)
+{
+	unichar result = **nextChar;
+	(*nextChar)++;
 	return result;
 }
 
@@ -98,7 +105,7 @@ void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 {
 	if (state->doWrap)
 	{
-		if (isWhitespace(c->id))
+		if (isWhitespace(c->codepoint))
 		{
 			if (state->startOfCurrentWord)
 			{
@@ -180,17 +187,16 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 		state.currentWordWidth = 0;
 		state.currentLineWidth = 0;
 
-		for (char *currentChar=text;
-			*currentChar != 0;
-			currentChar++)
+		unichar currentChar = readUnicodeChar(&text);
+		while (currentChar)
 		{
-			if (*currentChar == '\n')
+			if (currentChar == '\n')
 			{
 				font_newLine(&state);
 			}
 			else
 			{
-				BitmapFontChar *c = findChar(font, (uint32)(*currentChar));
+				BitmapFontChar *c = findChar(font, currentChar);
 				if (c)
 				{
 					state.endOfCurrentWord = result->sprites + result->spriteCount++;
@@ -203,7 +209,33 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 					font_handleEndOfWord(&state, c);
 				}
 			}
+			currentChar = readUnicodeChar(&text);
 		}
+
+		// for (char *currentChar=text;
+		// 	*currentChar != 0;
+		// 	currentChar++)
+		// {
+		// 	if (*currentChar == '\n')
+		// 	{
+		// 		font_newLine(&state);
+		// 	}
+		// 	else
+		// 	{
+		// 		BitmapFontChar *c = findChar(font, (uint32)(*currentChar));
+		// 		if (c)
+		// 		{
+		// 			state.endOfCurrentWord = result->sprites + result->spriteCount++;
+		// 			*state.endOfCurrentWord = makeSprite(
+		// 				rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
+		// 						 (real32)c->size.w, (real32)c->size.h),
+		// 				0, c->textureID, c->uv, color
+		// 			);
+
+		// 			font_handleEndOfWord(&state, c);
+		// 		}
+		// 	}
+		// }
 		// Final flush to make sure the last line is correct
 		font_handleEndOfWord(&state, &font->nullChar);
 
