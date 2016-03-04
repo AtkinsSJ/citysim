@@ -1,12 +1,12 @@
 // font.cpp
 
-BitmapFontChar *findChar(BitmapFont *font, uint32 targetChar)
+BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
 {
 	BitmapFontChar *result = 0;
 
 	// BINARY SEARCH! :D
 
-	// FIXME: This really needs to be replaced by a better system. And UTF8 support.
+	// FIXME: This really needs to be replaced by a better system.
 
 	uint32 high = font->charCount;
 	uint32 low = 0;

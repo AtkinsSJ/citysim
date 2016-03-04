@@ -137,17 +137,25 @@ GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, Inp
 
 	position.y += 154.0f;
 
-	position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'. This is some text. As I add it, it moves left? MOOOOVE! I like to move it move it, I like to...\n...\n\nMOVE IT! Supercalifragalisticexpialidocioustryingtomakethissolongthatitteststhelinesplittingcodemaybemeybemaybe?",
+	position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'.",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
 	uiTextInput(renderer, inputState, true, cityName, cityNameMaxLength, position, 1);
 	position.y += 32;
 
-	position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.",
+	position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.\nWorkers are paid £50 at the start of each month.",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
-	position.y += (uiLabel(renderer, renderer->theme.font, "Workers are paid £50 at the start of each month.",
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+	// Debug translation stuff!
+	position.x = 0;
+	position.y = 0;
+	for (int32 i=0; i<Lang_Count; i++)
+	{
+		position.y += (uiLabel(renderer, renderer->theme.font, languageNames[i],
+			position, ALIGN_LEFT | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+		position.y += (uiLabel(renderer, renderer->theme.font, getHelloOwlUTF8((TestLanguage)i),
+			position, ALIGN_LEFT | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+	}
 
 	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 	if (uiButton(renderer, inputState, uiState, "Exit", buttonRect, 1))

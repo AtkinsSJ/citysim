@@ -29,6 +29,7 @@ enum GameStatus {
 #include "types.h"
 #include "memory.h"
 #include "platform.h"
+#include "localisation.h"
 #include "maths.h"
 #include "file.h"
 #include "render_gl.h"

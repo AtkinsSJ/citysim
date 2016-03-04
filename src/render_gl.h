@@ -238,8 +238,8 @@ struct GLRenderer
 	UiTheme theme;
 };
 
-const uint32 TEXTURE_WIDTH = 512,
-			 TEXTURE_HEIGHT = 256;
+const uint32 TEXTURE_WIDTH = 1024,
+			 TEXTURE_HEIGHT = 1024;
  const GLint TEXTURE_ID_NONE = -1;
 
 struct TexturesToLoad
