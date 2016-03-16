@@ -22,63 +22,63 @@ Asset packing:
 - Store TextureRegion information in a little binary file
 - Read data from these rather than hard-coded filenames
 
+
+ENGINE:
 - Audio!
 	- Sound effects
 	- Pitch shifting
 	- Music
-
-- Simulation
-	- Per-tile humidity
-	- Per-tile nutrient value
-	- Grass grows naturally, is destroyed by animals and heavy foot traffic
-
--AI
-	- Only take jobs that can be accomplished
-	- Prioritise jobs that are closer/easier
-
 - Pathfinding!
 	- Movement speeds per tile?
 	- Use a more intelligent flood-fill algorithm? https://en.wikipedia.org/wiki/Connected-component_labeling
-
 - Scenarios?
 	- System for loading a level
 	- Load a pre-built farm on game start
 	- Have multiple different ones? 
+- Random events system
+- Buildings as zoned
+	- Drag any rectangle for a field
+	- Irregularly shaped fields
+- An actual random number generator!
 
+GAME:
+- Simulation
+	- Per-tile humidity
+	- Per-tile nutrient value
+	- Grass grows naturally, is destroyed by animals and heavy foot traffic
+-AI
+	- Only take jobs that can be accomplished
+	- Prioritise jobs that are closer/easier
 - Different crops!
 	- Worth different amounts
 	- Different growth speed
 	- Grow at different times of year?
 	- Different graphics
-
+- Animals!
+	- Designate a pen
+	- Animals wander
+	- Happiness and health
+	- Overcrowding
+	- Feeding
 - Random events
 	- Frost!
 	- Heatwave!
 	- Bugs!
 	- Disease!
 	- Machinery breaks!
-
 - Farm machinery
 	- Each can only do one task at a time
 	- Machinery speeds-up task time
 	- Several ranks of machinery
 	- Tractor
 	- Combine Harvester
-
 - Field maintenance
 	- Fertilizer / Manure
-
-- Buildings as zones
-	- Drag a rectangle of 'field' to determine its size
-	- Can erase part of a zoned building
-	- Can add to a zoned building
-
 - Weather!
 	- Wetness and temperature based on time of year
 	- Wet/dryness affects plant growth
 	- Can water fields when it's dry
 
-- An actual random number generator!
 
 
 ------------------------------------------

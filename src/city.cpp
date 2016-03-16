@@ -16,7 +16,9 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, c
 	city->buildingCountMax = ArrayCount(city->buildings);
 }
 
-void generateTerrain(City *city) {
+void generateTerrain(City *city, RandomMT *random)
+{
+
 	for (int32 y = 0; y < city->height; y++) {
 		for (int32 x = 0; x < city->width; x++) {
 

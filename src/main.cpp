@@ -28,6 +28,7 @@ enum GameStatus {
 
 #include "types.h"
 #include "memory.h"
+#include "random_mt.h"
 #include "platform.h"
 #include "localisation.h"
 #include "maths.h"
@@ -44,6 +45,7 @@ enum GameStatus {
 struct GameState
 {
 	MemoryArena *arena;
+	RandomMT rng;
 	City city;
 	Calendar calendar;
 };
@@ -66,14 +68,23 @@ GameState *startGame(MemoryArena *gameArena, char *cityName)
 {
 	GameState *result = 0;
 
-	srand(0); // TODO: Seed the random number generator!
 	ResetMemoryArena(gameArena);
-
 	result = PushStruct(gameArena, GameState);
 	result->arena = gameArena;
 
+	random_seed(&result->rng, 0);
+
+#if 0
+	// Test the RNG!
+	int32 randomNumbers[1024];
+	for (int i=0; i<1024; i++)
+	{
+		randomNumbers[i] = random_next(&result->rng);
+	}
+#endif
+
 	initCity(gameArena, &result->city, 100,100, cityName, gameStartFunds);
-	generateTerrain(&result->city);
+	generateTerrain(&result->city, &result->rng);
 
 	initCalendar(&result->calendar);
 
