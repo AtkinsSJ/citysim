@@ -1,17 +1,14 @@
 #version 150
 
-uniform sampler2DArray uTextures;
+uniform sampler2D uTexture;
 
 in vec4 vColor;
 in vec2 vUV;
-in flat int vTextureID;
 
 out vec4 fragColor;
 
 void main() {
 	fragColor = vColor;
-	if (vTextureID != -1) {
-		vec4 texel = texture(uTextures, vec3(vUV, vTextureID));
-		fragColor *= texel;
-	}
+	vec4 texel = texture(uTexture, vUV);
+	fragColor *= texel;
 }

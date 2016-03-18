@@ -45,7 +45,6 @@ struct VertexData
 	V3 pos;
 	V4 color;
 	V2 uv;
-	GLint textureID;
 };
 
 enum Cursor
@@ -126,13 +125,13 @@ enum TextureAtlasItem
 struct Texture
 {
 	bool valid;
-	GLuint id;
+	GLuint glTextureID;
 	uint32 w,h;
 };
 
 struct TextureRegion
 {
-	GLuint textureID;
+	GLuint textureID; // Redundant for Texture.glTextureID!
 	RealRect uv;
 };
 
@@ -213,14 +212,10 @@ struct GLRenderer
 	GLuint VBO,
 		   IBO;
 	GLint uProjectionMatrixLoc,
-		  uTexturesLoc;
+		  uTextureLoc;
 	GLint aPositionLoc,
 		  aColorLoc,
-		  aUVLoc,
-		  aTextureIDLoc;
-
-	GLuint textureArrayID;
-	GLenum textureFormat;
+		  aUVLoc;
 
 	Camera worldCamera;
 
@@ -273,7 +268,7 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPr
 inline void checkForGLError()
 {
 	GLenum errorCode = glGetError();
-	ASSERT(errorCode == 0, "GL Error: %d", errorCode);
+	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
 GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);

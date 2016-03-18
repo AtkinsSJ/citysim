@@ -3,11 +3,9 @@
 in vec3 aPosition;
 in vec4 aColor;
 in vec2 aUV;
-in int aTextureID;
 
 out vec4 vColor;
 out vec2 vUV;
-out flat int vTextureID;
 
 uniform mat4 uProjectionMatrix;
 
@@ -15,5 +13,4 @@ void main() {
 	gl_Position = uProjectionMatrix * vec4( aPosition.xyz, 1 );
 	vColor = aColor;
 	vUV = aUV;
-	vTextureID = aTextureID;
 }

@@ -198,12 +198,6 @@ bool initOpenGL(GLRenderer *renderer)
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
 		return false;
 	}
-	renderer->aTextureIDLoc = glGetAttribLocation(renderer->shaderProgramID, "aTextureID");
-	if (renderer->aTextureIDLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aTextureID is not a valid glsl program variable!\n");
-		return false;
-	}
 
 	// Uniform locations
 	renderer->uProjectionMatrixLoc = glGetUniformLocation(renderer->shaderProgramID, "uProjectionMatrix");
@@ -212,10 +206,10 @@ bool initOpenGL(GLRenderer *renderer)
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
 		return false;
 	}
-	renderer->uTexturesLoc = glGetUniformLocation(renderer->shaderProgramID, "uTextures");
-	if (renderer->uTexturesLoc == -1)
+	renderer->uTextureLoc = glGetUniformLocation(renderer->shaderProgramID, "uTexture");
+	if (renderer->uTextureLoc == -1)
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTextures is not a valid glsl program variable!\n");
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTexture is not a valid glsl program variable!\n");
 		return false;
 	}
 
@@ -238,7 +232,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 		   th = (real32) texture->h;
 
 	renderer->textureAtlas.textureRegions[item] = {
-		texture->id,
+		texture->glTextureID,
 		{
 #if 1
 			x / tw,
@@ -264,25 +258,7 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, Texture
 
 	Texture *textures = PushArray(tempArena, Texture, texturesToLoad->count);
 
-	renderer->textureArrayID = 0;
-	glGenTextures(1, &renderer->textureArrayID);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, renderer->textureArrayID);
-
-	// NB: Here we set the texture filter!!!
-#if 1
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#else
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-#endif
-
-	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA,
-		TEXTURE_WIDTH, TEXTURE_HEIGHT, // Size
-		texturesToLoad->count, // Number
-		0, GL_RGBA, GL_UNSIGNED_BYTE, null);
-
-	for (GLint i=0;
+	for (int32 i=0;
 		i < texturesToLoad->count;
 		i++)
 	{
@@ -298,23 +274,6 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, Texture
 		}
 		else
 		{
-			// Expand surface to be consistent size
-			ASSERT((surface->w <= TEXTURE_WIDTH ) && (surface->h <= TEXTURE_HEIGHT),
-				"Texture %s is too large! Max size is %d x %d", texturesToLoad->filenames[i], TEXTURE_WIDTH, TEXTURE_HEIGHT);
-			if (surface->w < TEXTURE_WIDTH || surface->h < TEXTURE_HEIGHT)
-			{
-				// Create a new surface that's the right size,
-				// blit the smaller one onto it,
-				// then store it in *surface.
-				SDL_PixelFormat *format = surface->format;
-				SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, TEXTURE_WIDTH, TEXTURE_HEIGHT, 32,
-					format->Rmask, format->Gmask, format->Bmask, format->Amask);
-
-				SDL_BlitSurface(surface, null, tempSurface, null);
-
-				SDL_FreeSurface(surface);
-				surface = tempSurface;
-			}
 
 			if (!texturesToLoad->isAlphaPremultiplied[i])
 			{
@@ -348,13 +307,26 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, Texture
 				}
 			}
 
-			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i,
-				surface->w, surface->h, 1, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+			glGenTextures(1, &texture->glTextureID);
+			glBindTexture(GL_TEXTURE_2D, texture->glTextureID);
+
+			// NB: Here we set the texture filter!!!
+		#if 1
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		#else
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		#endif
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
 			texture->valid = true;
-			texture->id = i;
 			texture->w = surface->w;
 			texture->h = surface->h;
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->w, texture->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 
 			SDL_FreeSurface(surface);
 		}
@@ -584,39 +556,105 @@ void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, V4 c
 	drawQuad(renderer, isUI, rect, depth, TEXTURE_ID_NONE, {}, color);
 }
 
-void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
+void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCount)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	checkForGLError();
+	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
+	checkForGLError();
+
+	// Fill IBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	checkForGLError();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
+	checkForGLError();
+
+	glEnableVertexAttribArray(renderer->aPositionLoc);
+	checkForGLError();
+	glEnableVertexAttribArray(renderer->aColorLoc);
+	checkForGLError();
+	glEnableVertexAttribArray(renderer->aUVLoc);
+	checkForGLError();
+
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	checkForGLError();
+	glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+	checkForGLError();
+	glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	checkForGLError();
+	glVertexAttribPointer(renderer->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+	checkForGLError();
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	checkForGLError();
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
+	checkForGLError();
+
+	glDisableVertexAttribArray(renderer->aPositionLoc);
+	checkForGLError();
+	glDisableVertexAttribArray(renderer->aColorLoc);
+	checkForGLError();
+	glDisableVertexAttribArray(renderer->aUVLoc);
+
+	checkForGLError();
+}
+
+void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 {
 	// Fill VBO
 	uint32 vertexCount = 0;
 	uint32 indexCount = 0;
+	GLint boundTextureID = TEXTURE_ID_NONE;
+
+	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
+	checkForGLError();
+
 	for (uint32 i=0; i < buffer->spriteCount; i++)
 	{
-		int firstVertex = vertexCount;
 		Sprite *sprite = buffer->sprites + i;
+
+		if (sprite->textureID != boundTextureID)
+		{
+			// Render existing buffer contents
+			if (vertexCount)
+			{
+				renderPartOfBuffer(renderer, vertexCount, indexCount);
+			}
+
+			// Bind new texture
+			glActiveTexture(GL_TEXTURE0);
+			checkForGLError();
+			glBindTexture(GL_TEXTURE_2D, sprite->textureID);
+			checkForGLError();
+			glUniform1i(renderer->uTextureLoc, 0);
+			checkForGLError();
+
+			vertexCount = 0;
+			indexCount = 0;
+			boundTextureID = sprite->textureID;
+		}
+
+		int firstVertex = vertexCount;
 
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x, sprite->rect.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x, sprite->uv.y),
-			sprite->textureID
+			v2(sprite->uv.x, sprite->uv.y)
 		};
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y),
-			sprite->textureID
+			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y)
 		};
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h),
-			sprite->textureID
+			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h)
 		};
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x, sprite->uv.y + sprite->uv.h),
-			sprite->textureID
+			v2(sprite->uv.x, sprite->uv.y + sprite->uv.h)
 		};
 
 		renderer->indices[indexCount++] = firstVertex + 0;
@@ -626,36 +664,9 @@ void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 		renderer->indices[indexCount++] = firstVertex + 2;
 		renderer->indices[indexCount++] = firstVertex + 3;
 	}
-	
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
 
-	// Fill IBO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(renderer->aPositionLoc);
-	glEnableVertexAttribArray(renderer->aColorLoc);
-	glEnableVertexAttribArray(renderer->aUVLoc);
-	glEnableVertexAttribArray(renderer->aTextureIDLoc);
-
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
-	glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
-	glVertexAttribPointer(renderer->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
-	glVertexAttribIPointer(renderer->aTextureIDLoc,	1, GL_INT,   		   sizeof(VertexData), (GLvoid*)offsetof(VertexData, textureID));
-
-	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
-
-	glDisableVertexAttribArray(renderer->aPositionLoc);
-	glDisableVertexAttribArray(renderer->aColorLoc);
-	glDisableVertexAttribArray(renderer->aUVLoc);
-	glDisableVertexAttribArray(renderer->aTextureIDLoc);
-
-	checkForGLError();
+	// Do one final draw for remaining items
+	renderPartOfBuffer(renderer, vertexCount, indexCount);
 
 	SDL_Log("Drew %d sprites this frame.", buffer->spriteCount);
 	buffer->spriteCount = 0;
@@ -726,21 +737,21 @@ void render(GLRenderer *renderer)
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
+	checkForGLError();
 	glEnable(GL_BLEND);
+	checkForGLError();
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	checkForGLError();
 
 	glUseProgram(renderer->shaderProgramID);
+	checkForGLError();
 
-	// Bind the texture array to TEXTURE0, then set 0 as the uniform
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, renderer->textureArrayID);
-	glUniform1i(renderer->uTexturesLoc, 0);
-
-	// World sprites
-	_renderBuffer(renderer, &renderer->worldBuffer);
-	_renderBuffer(renderer, &renderer->uiBuffer);
+	renderBuffer(renderer, &renderer->worldBuffer);
+	renderBuffer(renderer, &renderer->uiBuffer);
 
 	glUseProgram(NULL);
+	checkForGLError();
+	SDL_Log("End of frame.");
 	SDL_GL_SwapWindow( renderer->window );
 }
 
