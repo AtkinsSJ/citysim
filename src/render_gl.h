@@ -236,6 +236,7 @@ struct GLRenderer
 	UiTheme theme;
 };
 
+const GLint TEXTURE_ID_INVALID = -99999;
 const GLint TEXTURE_ID_NONE = -1;
 
 inline void checkForGLError()

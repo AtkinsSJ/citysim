@@ -621,12 +621,13 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 	// Fill VBO
 	uint32 vertexCount = 0;
 	uint32 indexCount = 0;
-	GLint boundTextureID = TEXTURE_ID_NONE;
+	GLint boundTextureID = TEXTURE_ID_INVALID;
 
 	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
 	checkForGLError();
 	glUniform1i(renderer->uTextureLoc, 0);
 	checkForGLError();
+	uint32 drawCallCount = 0;
 
 	for (uint32 i=0; i < buffer->spriteCount; i++)
 	{
@@ -637,6 +638,7 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 			// Render existing buffer contents
 			if (vertexCount)
 			{
+				drawCallCount++;
 				renderPartOfBuffer(renderer, vertexCount, indexCount);
 			}
 
@@ -683,9 +685,10 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 	}
 
 	// Do one final draw for remaining items
+	drawCallCount++;
 	renderPartOfBuffer(renderer, vertexCount, indexCount);
 
-	SDL_Log("Drew %d sprites this frame.", buffer->spriteCount);
+	SDL_Log("Drew %d sprites this frame, with %d draw calls.", buffer->spriteCount, drawCallCount);
 	buffer->spriteCount = 0;
 }
 
