@@ -126,7 +126,7 @@ struct Texture
 {
 	bool valid;
 	GLuint glTextureID;
-	uint32 w,h;
+	real32 w,h;
 };
 
 struct TextureRegion
@@ -233,10 +233,9 @@ struct GLRenderer
 	UiTheme theme;
 };
 
-const uint32 TEXTURE_WIDTH = 1024,
-			 TEXTURE_HEIGHT = 1024;
- const GLint TEXTURE_ID_NONE = -1;
+const GLint TEXTURE_ID_NONE = -1;
 
+#if 0 // THIS IS AWFUL
 struct TexturesToLoad
 {
 	char filenamesBuffer[4096];
@@ -264,6 +263,7 @@ GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPr
 
 	return (GLint)textureID;
 }
+#endif
 
 inline void checkForGLError()
 {
@@ -274,7 +274,7 @@ inline void checkForGLError()
 GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
-bool loadTextures(TemporaryMemoryArena *TempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad);
+bool loadTextures(TemporaryMemoryArena *TempArena, GLRenderer *renderer);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 
@@ -299,7 +299,7 @@ void render(GLRenderer *renderer);
 SDL_Cursor *createCursor(char *path);
 void setCursor(GLRenderer *renderer, Cursor cursor);
 
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, TexturesToLoad *texturesToLoad);
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GLRenderer *renderer);
 
 inline real32 depthFromY(real32 y)
 {

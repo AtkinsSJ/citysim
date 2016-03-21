@@ -8,8 +8,6 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 
 	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
 
-	TexturesToLoad *texturesToLoad = PushStruct(&tempArena, TexturesToLoad);
-
 	renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
 	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
 	renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
@@ -93,8 +91,8 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
 	renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
 
-	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", texturesToLoad);
-	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", texturesToLoad);
+	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
+	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
 
 	renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
 	renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
@@ -105,7 +103,7 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	setCursor(renderer, Cursor_Main);
 
 	// Load textures &c
-	if (!loadTextures(&tempArena, renderer, texturesToLoad))
+	if (!loadTextures(&tempArena, renderer))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
 		Result = null;
@@ -262,160 +260,164 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	};
 }
 
-bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad)
+Texture loadTexture(char *filename, bool isAlphaPremultiplied)
+{
+	Texture texture = {};
+
+	SDL_Surface *surface = IMG_Load(filename);
+	if (!surface)
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
+			"Failed to load '%s'!\n%s", filename, IMG_GetError());
+		texture.valid = false;
+	}
+	else
+	{
+		if (!isAlphaPremultiplied)
+		{
+			// Premultiply alpha
+			uint32 Rmask = surface->format->Rmask,
+				   Gmask = surface->format->Gmask,
+				   Bmask = surface->format->Bmask,
+				   Amask = surface->format->Amask;
+			real32 rRmask = (real32)Rmask,
+				   rGmask = (real32)Gmask,
+				   rBmask = (real32)Bmask,
+				   rAmask = (real32)Amask;
+
+			int pixelCount = surface->w * surface->h;
+			for (int pixelIndex=0;
+				pixelIndex < pixelCount;
+				pixelIndex++)
+			{
+				uint32 pixel = ((uint32*)surface->pixels)[pixelIndex];
+				real32 rr = (real32)(pixel & Rmask) / rRmask;
+				real32 rg = (real32)(pixel & Gmask) / rGmask;
+				real32 rb = (real32)(pixel & Bmask) / rBmask;
+				real32 ra = (real32)(pixel & Amask) / rAmask;
+
+				uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
+				uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
+				uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
+				uint32 a = (uint32)(ra * rAmask) & Amask;
+
+				((uint32*)surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
+			}
+		}
+
+		glGenTextures(1, &texture.glTextureID);
+		glBindTexture(GL_TEXTURE_2D, texture.glTextureID);
+
+		// NB: Here we set the texture filter!!!
+	#if 1
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	#else
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	#endif
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+		texture.valid = true;
+		texture.w = (real32) surface->w;
+		texture.h = (real32) surface->h;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+
+		SDL_FreeSurface(surface);
+	}
+
+	return texture;
+}
+
+bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer)
 {
 	bool successfullyLoadedAllTextures = true;
 
-	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
-	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
-
-	Texture *textures = PushArray(tempArena, Texture, texturesToLoad->count);
-
-	for (int32 i=0;
-		i < texturesToLoad->count;
-		i++)
+	Texture texCombined = loadTexture("combined.png", false);
+	if (!texCombined.isValid)
 	{
-		Texture *texture = textures + i;
-
-		SDL_Surface *surface = IMG_Load(texturesToLoad->filenames[i]);
-		if (!surface)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
-				"Failed to load '%s'!\n%s", texturesToLoad->filenames[i], IMG_GetError());
-			texture->valid = false;
-			successfullyLoadedAllTextures = false;
-		}
-		else
-		{
-
-			if (!texturesToLoad->isAlphaPremultiplied[i])
-			{
-				// Premultiply alpha
-				uint32 Rmask = surface->format->Rmask,
-					   Gmask = surface->format->Gmask,
-					   Bmask = surface->format->Bmask,
-					   Amask = surface->format->Amask;
-				real32 rRmask = (real32)Rmask,
-					   rGmask = (real32)Gmask,
-					   rBmask = (real32)Bmask,
-					   rAmask = (real32)Amask;
-
-				int pixelCount = surface->w * surface->h;
-				for (int pixelIndex=0;
-					pixelIndex < pixelCount;
-					pixelIndex++)
-				{
-					uint32 pixel = ((uint32*)surface->pixels)[pixelIndex];
-					real32 rr = (real32)(pixel & Rmask) / rRmask;
-					real32 rg = (real32)(pixel & Gmask) / rGmask;
-					real32 rb = (real32)(pixel & Bmask) / rBmask;
-					real32 ra = (real32)(pixel & Amask) / rAmask;
-
-					uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
-					uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
-					uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
-					uint32 a = (uint32)(ra * rAmask) & Amask;
-
-					((uint32*)surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
-				}
-			}
-
-			glGenTextures(1, &texture->glTextureID);
-			glBindTexture(GL_TEXTURE_2D, texture->glTextureID);
-
-			// NB: Here we set the texture filter!!!
-		#if 1
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		#else
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		#endif
-
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-			texture->valid = true;
-			texture->w = surface->w;
-			texture->h = surface->h;
-
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->w, texture->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-
-			SDL_FreeSurface(surface);
-		}
+		successfullyLoadedAllTextures = false;
 	}
 
-	Texture *texCombinedPng = textures + combinedPngID;
-	Texture *texMenuLogoPng = textures + menuLogoPngID;
+	Texture texMenuLogo = loadTexture("farming-logo.png", false);
+	if (!texMenuLogo.isValid)
+	{
+		successfullyLoadedAllTextures = false;
+	}
 
-	const real32 w1 = 16.0f,
-				w2 = w1 *2,
-				w3 = w1 *3,
-				w4 = w1 *4;
-	
-	assignTextureRegion(renderer, TextureAtlasItem_GroundTile, 	texCombinedPng,  0,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_WaterTile, 	texCombinedPng, w1,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_ForestTile, 	texCombinedPng, w2,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Path, 		texCombinedPng, w3,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Field, 		texCombinedPng, w4,  0, w4, w4);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	texCombinedPng,  0, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	texCombinedPng, w1, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_2, 	texCombinedPng, w2, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	texCombinedPng, w3, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Potato, 		texCombinedPng,  0, w2, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Barn, 		texCombinedPng,  0, w4, w4, w4);
-	assignTextureRegion(renderer, TextureAtlasItem_House, 		texCombinedPng, w4, w4, w4, w4);
+	if (successfullyLoadedAllTextures)
+	{
+		const real32 w1 = 16.0f,
+					w2 = w1 *2,
+					w3 = w1 *3,
+					w4 = w1 *4;
+		
+		assignTextureRegion(renderer, TextureAtlasItem_GroundTile, 	texCombined,  0,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_WaterTile, 	texCombined, w1,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_ForestTile, 	texCombined, w2,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Path, 		texCombined, w3,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Field, 		texCombined, w4,  0, w4, w4);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	texCombined,  0, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	texCombined, w1, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_2, 	texCombined, w2, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	texCombined, w3, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Potato, 		texCombined,  0, w2, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Barn, 		texCombined,  0, w4, w4, w4);
+		assignTextureRegion(renderer, TextureAtlasItem_House, 		texCombined, w4, w4, w4, w4);
 
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  	texCombinedPng, 128 + 0, 64 +  0,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  	texCombinedPng, 128 + 8, 64 +  0,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk1,  	texCombinedPng, 128 +16, 64 +  0,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   	texCombinedPng, 128 + 0, 64 +  8,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, 	texCombinedPng, 128 + 8, 64 +  8,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, 	texCombinedPng, 128 +16, 64 +  8,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest0, texCombinedPng, 128 + 0, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest1, texCombinedPng, 128 + 8, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest2, texCombinedPng, 128 +16, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest3, texCombinedPng, 128 +24, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant0, 	texCombinedPng, 128 + 0, 64 + 24,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant1, 	texCombinedPng, 128 + 8, 64 + 24,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant2, 	texCombinedPng, 128 +16, 64 + 24,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant3, 	texCombinedPng, 128 +24, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  	texCombined, 128 + 0, 64 +  0,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  	texCombined, 128 + 8, 64 +  0,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk1,  	texCombined, 128 +16, 64 +  0,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   	texCombined, 128 + 0, 64 +  8,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, 	texCombined, 128 + 8, 64 +  8,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, 	texCombined, 128 +16, 64 +  8,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest0, texCombined, 128 + 0, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest1, texCombined, 128 + 8, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest2, texCombined, 128 +16, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest3, texCombined, 128 +24, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant0, 	texCombined, 128 + 0, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant1, 	texCombined, 128 + 8, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant2, 	texCombined, 128 +16, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant3, 	texCombined, 128 +24, 64 + 24,  8,  8);
 
-	assignTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	texCombinedPng, 128 +  0, 0, 32, 32);
-	assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, texCombinedPng, 128 + 32, 0, 32, 32);
+		assignTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	texCombined, 128 +  0, 0, 32, 32);
+		assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, texCombined, 128 + 32, 0, 32, 32);
 
-	// Logo!
-	assignTextureRegion(renderer, TextureAtlasItem_Menu_Logo, 	texMenuLogoPng, 0, 0, 499, 154);
+		// Logo!
+		assignTextureRegion(renderer, TextureAtlasItem_Menu_Logo, 	texMenuLogo, 0, 0, 499, 154);
 
-	Animation *animation;
-	
-	animation = renderer->animations + Animation_Farmer_Stand;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Stand;
+		Animation *animation;
+		
+		animation = renderer->animations + Animation_Farmer_Stand;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Stand;
 
-	animation = renderer->animations + Animation_Farmer_Walk;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk1;
-	
-	animation = renderer->animations + Animation_Farmer_Hold;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Hold;
+		animation = renderer->animations + Animation_Farmer_Walk;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk1;
+		
+		animation = renderer->animations + Animation_Farmer_Hold;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Hold;
 
-	animation = renderer->animations + Animation_Farmer_Carry;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry1;
+		animation = renderer->animations + Animation_Farmer_Carry;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry1;
 
-	animation = renderer->animations + Animation_Farmer_Harvest;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest1;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest2;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest3;
+		animation = renderer->animations + Animation_Farmer_Harvest;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest1;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest2;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest3;
 
-	animation = renderer->animations + Animation_Farmer_Plant;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant1;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant2;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
+		animation = renderer->animations + Animation_Farmer_Plant;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant1;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant2;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
+	}
 
-	checkForGLError();
 	return successfullyLoadedAllTextures;
 }
 

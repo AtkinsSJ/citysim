@@ -60,7 +60,7 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, TexturesToLoad *texturesToLoad)
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GLRenderer *renderer)
 {
 	BitmapFont *Font = 0;
 
@@ -159,8 +159,8 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 				Font->charCount = charCount;
 				Font->chars = PushArray(renderArena, BitmapFontChar, charCount);
 
-				const real32 textureWidth  = (real32) TEXTURE_WIDTH,
-							 textureHeight = (real32) TEXTURE_HEIGHT;
+				const real32 textureWidth  = (real32) common->scaleW,
+							 textureHeight = (real32) common->scaleH;
 
 				for (uint32 charIndex = 0;
 					charIndex < charCount;
