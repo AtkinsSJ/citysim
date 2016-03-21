@@ -260,16 +260,17 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	};
 }
 
-Texture loadTexture(char *filename, bool isAlphaPremultiplied)
+Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultiplied)
 {
-	Texture texture = {};
+	Texture *texture = renderer->textures + renderer->textureCount++;
+	texture->filename = filename;
 
 	SDL_Surface *surface = IMG_Load(filename);
 	if (!surface)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
 			"Failed to load '%s'!\n%s", filename, IMG_GetError());
-		texture.valid = false;
+		texture->isValid = false;
 	}
 	else
 	{
@@ -305,8 +306,9 @@ Texture loadTexture(char *filename, bool isAlphaPremultiplied)
 			}
 		}
 
-		glGenTextures(1, &texture.glTextureID);
-		glBindTexture(GL_TEXTURE_2D, texture.glTextureID);
+		glActiveTexture(GL_TEXTURE0);
+		glGenTextures(1, &texture->glTextureID);
+		glBindTexture(GL_TEXTURE_2D, texture->glTextureID);
 
 		// NB: Here we set the texture filter!!!
 	#if 1
@@ -320,11 +322,11 @@ Texture loadTexture(char *filename, bool isAlphaPremultiplied)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-		texture.valid = true;
-		texture.w = (real32) surface->w;
-		texture.h = (real32) surface->h;
+		texture->isValid = true;
+		texture->w = surface->w;
+		texture->h = surface->h;
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.w, texture.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->w, texture->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 
 		SDL_FreeSurface(surface);
 	}
@@ -336,14 +338,14 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer)
 {
 	bool successfullyLoadedAllTextures = true;
 
-	Texture texCombined = loadTexture("combined.png", false);
-	if (!texCombined.isValid)
+	Texture *texCombined = loadTexture(renderer, "combined.png", false);
+	if (!texCombined->isValid)
 	{
 		successfullyLoadedAllTextures = false;
 	}
 
-	Texture texMenuLogo = loadTexture("farming-logo.png", false);
-	if (!texMenuLogo.isValid)
+	Texture *texMenuLogo = loadTexture(renderer, "farming-logo.png", false);
+	if (!texMenuLogo->isValid)
 	{
 		successfullyLoadedAllTextures = false;
 	}
