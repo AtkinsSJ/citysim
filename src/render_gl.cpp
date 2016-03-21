@@ -118,11 +118,14 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 
 bool initOpenGL(GLRenderer *renderer)
 {
+	bool succeeded = true;
+
 	renderer->shaderProgramID = glCreateProgram();
 
 	glEnable(GL_TEXTURE_2D);
 
 	// VERTEX SHADER
+	if (succeeded)
 	{
 		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 
@@ -137,15 +140,19 @@ bool initOpenGL(GLRenderer *renderer)
 		{
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d!\n", vertexShader);
 			printShaderLog(vertexShader);
-			return false;
+			succeeded = false;
 		}
-		glAttachShader(renderer->shaderProgramID, vertexShader);
-		glDeleteShader(vertexShader);
+		if (succeeded)
+		{
+			glAttachShader(renderer->shaderProgramID, vertexShader);
+			glDeleteShader(vertexShader);
+		}
 
 		endTemporaryMemory(&tempArena);
 	}
 
 	// FRAGMENT SHADER
+	if (succeeded)
 	{
 		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 
@@ -160,70 +167,76 @@ bool initOpenGL(GLRenderer *renderer)
 		{
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", fragmentShader);
 			printShaderLog(fragmentShader);
-			return false;
+			succeeded = false;
 		}
-		glAttachShader(renderer->shaderProgramID, fragmentShader);
-		glDeleteShader(fragmentShader);
+		if (succeeded)
+		{
+			glAttachShader(renderer->shaderProgramID, fragmentShader);
+			glDeleteShader(fragmentShader);
+		}
 
 		endTemporaryMemory(&tempArena);
 	}
 
 	// Link shader program
-	glLinkProgram(renderer->shaderProgramID);
-	GLint programSuccess = GL_FALSE;
-	glGetProgramiv(renderer->shaderProgramID, GL_LINK_STATUS, &programSuccess);
-	if (programSuccess != GL_TRUE)
+	if (succeeded)
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", renderer->shaderProgramID);
-		printProgramLog(renderer->shaderProgramID);
-		return false;
+		glLinkProgram(renderer->shaderProgramID);
+		GLint programSuccess = GL_FALSE;
+		glGetProgramiv(renderer->shaderProgramID, GL_LINK_STATUS, &programSuccess);
+		if (programSuccess != GL_TRUE)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", renderer->shaderProgramID);
+			printProgramLog(renderer->shaderProgramID);
+			succeeded = false;
+		}
+
+		// Vertex attribute location
+		renderer->aPositionLoc = glGetAttribLocation(renderer->shaderProgramID, "aPosition");
+		if (renderer->aPositionLoc == -1)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
+			succeeded = false;
+		}
+		renderer->aColorLoc = glGetAttribLocation(renderer->shaderProgramID, "aColor");
+		if (renderer->aColorLoc == -1)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
+			succeeded = false;
+		}
+		renderer->aUVLoc = glGetAttribLocation(renderer->shaderProgramID, "aUV");
+		if (renderer->aUVLoc == -1)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
+			succeeded = false;
+		}
+
+		// Uniform locations
+		renderer->uProjectionMatrixLoc = glGetUniformLocation(renderer->shaderProgramID, "uProjectionMatrix");
+		if (renderer->uProjectionMatrixLoc == -1)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
+			succeeded = false;
+		}
+		renderer->uTextureLoc = glGetUniformLocation(renderer->shaderProgramID, "uTexture");
+		if (renderer->uTextureLoc == -1)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTexture is not a valid glsl program variable!\n");
+			return false;
+		}
+
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
+
+		// Create vertex and index buffers
+		glGenBuffers(1, &renderer->VBO);
+		glGenBuffers(1, &renderer->IBO);
+
+		checkForGLError();
 	}
 
-	// Vertex attribute location
-	renderer->aPositionLoc = glGetAttribLocation(renderer->shaderProgramID, "aPosition");
-	if (renderer->aPositionLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
-		return false;
-	}
-	renderer->aColorLoc = glGetAttribLocation(renderer->shaderProgramID, "aColor");
-	if (renderer->aColorLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
-		return false;
-	}
-	renderer->aUVLoc = glGetAttribLocation(renderer->shaderProgramID, "aUV");
-	if (renderer->aUVLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
-		return false;
-	}
-
-	// Uniform locations
-	renderer->uProjectionMatrixLoc = glGetUniformLocation(renderer->shaderProgramID, "uProjectionMatrix");
-	if (renderer->uProjectionMatrixLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
-		return false;
-	}
-	renderer->uTextureLoc = glGetUniformLocation(renderer->shaderProgramID, "uTexture");
-	if (renderer->uTextureLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTexture is not a valid glsl program variable!\n");
-		return false;
-	}
-
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-	// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
-
-	// Create vertex and index buffers
-	glGenBuffers(1, &renderer->VBO);
-	glGenBuffers(1, &renderer->IBO);
-
-	checkForGLError();
-
-	return true;
+	return succeeded;
 }
 
 void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *texture, real32 x, real32 y, real32 w, real32 h)
@@ -608,6 +621,8 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 
 	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
 	checkForGLError();
+	glUniform1i(renderer->uTextureLoc, 0);
+	checkForGLError();
 
 	for (uint32 i=0; i < buffer->spriteCount; i++)
 	{
@@ -625,8 +640,6 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 			glActiveTexture(GL_TEXTURE0);
 			checkForGLError();
 			glBindTexture(GL_TEXTURE_2D, sprite->textureID);
-			checkForGLError();
-			glUniform1i(renderer->uTextureLoc, 0);
 			checkForGLError();
 
 			vertexCount = 0;
