@@ -225,6 +225,15 @@ struct GLShaderProgram
 		  aUVLoc;
 };
 
+enum ShaderPrograms
+{
+	ShaderProgram_Textured,
+	ShaderProgram_Untextured,
+
+	ShaderProgram_Count,
+	ShaderProgram_Invalid = -1
+};
+
 struct GLRenderer
 {
 	MemoryArena renderArena;
@@ -232,7 +241,9 @@ struct GLRenderer
 	SDL_Window *window;
 	SDL_GLContext context;
 
-	GLShaderProgram shaderTextured;
+	GLShaderProgram shaders[ShaderProgram_Count];
+	int32 currentShader;
+
 	GLuint VBO,
 		   IBO;
 

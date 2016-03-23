@@ -199,7 +199,7 @@ GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, cha
 			}
 			else
 			{
-				// Vertex attribute location
+				// Common vertex attributes
 				result.aPositionLoc = glGetAttribLocation(result.shaderProgramID, "aPosition");
 				if (result.aPositionLoc == -1)
 				{
@@ -212,26 +212,20 @@ GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, cha
 					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
 					result.isValid = false;
 				}
-				result.aUVLoc = glGetAttribLocation(result.shaderProgramID, "aUV");
-				if (result.aUVLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
-					result.isValid = false;
-				}
 
-				// Uniform locations
+				// Optional vertex attributes
+				result.aUVLoc = glGetAttribLocation(result.shaderProgramID, "aUV");
+
+				// Common uniforms
 				result.uProjectionMatrixLoc = glGetUniformLocation(result.shaderProgramID, "uProjectionMatrix");
 				if (result.uProjectionMatrixLoc == -1)
 				{
 					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
 					result.isValid = false;
 				}
+
+				// Optional uniforms
 				result.uTextureLoc = glGetUniformLocation(result.shaderProgramID, "uTexture");
-				if (result.uTextureLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTexture is not a valid glsl program variable!\n");
-					result.isValid = false;
-				}
 			}
 		}
 	}
@@ -244,18 +238,27 @@ bool initOpenGL(GLRenderer *renderer)
 	bool succeeded = true;
 	glEnable(GL_TEXTURE_2D);
 
-	renderer->shaderTextured = loadShader(renderer, "general.vert.gl", "general.frag.gl");
-	succeeded = renderer->shaderTextured.isValid;
+	renderer->shaders[ShaderProgram_Textured] = loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
+	succeeded = renderer->shaders[ShaderProgram_Textured].isValid;
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-	// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
+	if (succeeded)
+	{
+		renderer->shaders[ShaderProgram_Untextured] = loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
+		succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
+	}
 
-	// Create vertex and index buffers
-	glGenBuffers(1, &renderer->VBO);
-	glGenBuffers(1, &renderer->IBO);
+	if (succeeded)
+	{
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
 
-	checkForGLError();
+		// Create vertex and index buffers
+		glGenBuffers(1, &renderer->VBO);
+		glGenBuffers(1, &renderer->IBO);
+
+		checkForGLError();
+	}
 
 	return succeeded;
 }
@@ -462,7 +465,7 @@ void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
 	{
 		//Program log length
 		int infoLogLength = 0;
-		int maxLength = infoLogLength;
+		int maxLength = 0;
 		
 		//Get info string length
 		glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
@@ -491,7 +494,7 @@ void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 	{
 		//Shader log length
 		int infoLogLength = 0;
-		int maxLength = infoLogLength;
+		int maxLength = 0;
 		
 		//Get info string length
 		glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &maxLength );
@@ -589,8 +592,19 @@ void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, V4 c
 	drawQuad(renderer, isUI, rect, depth, TEXTURE_ID_NONE, {}, color);
 }
 
+inline GLShaderProgram *getActiveShader(GLRenderer *renderer)
+{
+	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgram_Count, "Invalid shader!");
+	GLShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
+	ASSERT(activeShader->isValid, "Shader not properly loaded!");
+
+	return activeShader;
+}
+
 void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCount)
 {
+	GLShaderProgram *activeShader = getActiveShader(renderer);
+
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	checkForGLError();
 	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
@@ -602,34 +616,43 @@ void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCo
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
 	checkForGLError();
 
-	glEnableVertexAttribArray(renderer->shaderTextured.aPositionLoc);
+	glEnableVertexAttribArray(activeShader->aPositionLoc);
 	checkForGLError();
-	glEnableVertexAttribArray(renderer->shaderTextured.aColorLoc);
+	glEnableVertexAttribArray(activeShader->aColorLoc);
 	checkForGLError();
-	glEnableVertexAttribArray(renderer->shaderTextured.aUVLoc);
-	checkForGLError();
+
+	if (activeShader->aUVLoc != -1)
+	{
+		glEnableVertexAttribArray(activeShader->aUVLoc);
+		checkForGLError();
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	checkForGLError();
-	glVertexAttribPointer(renderer->shaderTextured.aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+	glVertexAttribPointer(activeShader->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
 	checkForGLError();
-	glVertexAttribPointer(renderer->shaderTextured.aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	glVertexAttribPointer(activeShader->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
 	checkForGLError();
-	glVertexAttribPointer(renderer->shaderTextured.aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
-	checkForGLError();
+	if (activeShader->aUVLoc != -1)
+	{
+		glVertexAttribPointer(activeShader->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+		checkForGLError();
+	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
 	checkForGLError();
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
 	checkForGLError();
 
-	glDisableVertexAttribArray(renderer->shaderTextured.aPositionLoc);
+	glDisableVertexAttribArray(activeShader->aPositionLoc);
 	checkForGLError();
-	glDisableVertexAttribArray(renderer->shaderTextured.aColorLoc);
+	glDisableVertexAttribArray(activeShader->aColorLoc);
 	checkForGLError();
-	glDisableVertexAttribArray(renderer->shaderTextured.aUVLoc);
-
-	checkForGLError();
+	if (activeShader->aUVLoc != -1)
+	{
+		glDisableVertexAttribArray(activeShader->aUVLoc);
+		checkForGLError();
+	}
 }
 
 void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
@@ -640,6 +663,7 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 	GLint boundTextureID = TEXTURE_ID_INVALID;
 
 	uint32 drawCallCount = 0;
+
 
 	for (uint32 i=0; i < buffer->spriteCount; i++)
 	{
@@ -654,16 +678,33 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 				renderPartOfBuffer(renderer, vertexCount, indexCount);
 			}
 
-			// Bind new texture
-			glActiveTexture(GL_TEXTURE0);
-			checkForGLError();
-			glBindTexture(GL_TEXTURE_2D, sprite->textureID);
+			if (sprite->textureID == TEXTURE_ID_NONE)
+			{
+				renderer->currentShader = ShaderProgram_Untextured;
+			}
+			else
+			{
+				renderer->currentShader = ShaderProgram_Textured;
+			}
+
+			GLShaderProgram *activeShader = getActiveShader(renderer);
+
+			glUseProgram(activeShader->shaderProgramID);
 			checkForGLError();
 
-			glUniformMatrix4fv(renderer->shaderTextured.uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
+			glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
 			checkForGLError();
-			glUniform1i(renderer->shaderTextured.uTextureLoc, 0);
-			checkForGLError();
+
+			// Bind new texture if this shader uses textures
+			if (activeShader->uTextureLoc != -1)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				checkForGLError();
+				glBindTexture(GL_TEXTURE_2D, sprite->textureID);
+				checkForGLError();
+				glUniform1i(activeShader->uTextureLoc, 0);
+				checkForGLError();
+			}
 
 			vertexCount = 0;
 			indexCount = 0;
@@ -780,8 +821,7 @@ void render(GLRenderer *renderer)
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	checkForGLError();
 
-	glUseProgram(renderer->shaderTextured.shaderProgramID);
-	checkForGLError();
+	renderer->currentShader = ShaderProgram_Invalid;
 
 	renderBuffer(renderer, &renderer->worldBuffer);
 	renderBuffer(renderer, &renderer->uiBuffer);
