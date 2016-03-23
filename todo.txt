@@ -40,6 +40,7 @@ ENGINE:
 	- Drag any rectangle for a field
 	- Irregularly shaped fields
 - An actual random number generator!
+- Temporary memory automatically closes when it leaves scope?
 
 GAME:
 - Simulation

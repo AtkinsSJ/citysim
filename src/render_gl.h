@@ -202,6 +202,29 @@ struct RenderBuffer
 	uint32 maxSprites;
 };
 
+struct GLShaderProgram
+{
+	GLuint shaderProgramID;
+	bool isValid;
+
+	char *vertexShaderFilename;
+	GLuint vertexShader;
+	bool isVertexShaderCompiled;
+
+	char *fragmentShaderFilename;
+	GLuint fragmentShader;
+	bool isFragmentShaderCompiled;
+
+	// Uniforms
+	GLint uProjectionMatrixLoc,
+		  uTextureLoc;
+
+	// Attributes
+	GLint aPositionLoc,
+		  aColorLoc,
+		  aUVLoc;
+};
+
 struct GLRenderer
 {
 	MemoryArena renderArena;
@@ -209,14 +232,9 @@ struct GLRenderer
 	SDL_Window *window;
 	SDL_GLContext context;
 
-	GLuint shaderProgramID;
+	GLShaderProgram shaderTextured;
 	GLuint VBO,
 		   IBO;
-	GLint uProjectionMatrixLoc,
-		  uTextureLoc;
-	GLint aPositionLoc,
-		  aColorLoc,
-		  aUVLoc;
 
 	Camera worldCamera;
 
@@ -248,7 +266,7 @@ inline void checkForGLError()
 GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
-bool loadTextures(TemporaryMemoryArena *TempArena, GLRenderer *renderer);
+bool loadTextures(GLRenderer *renderer);
 void printProgramLog(GLuint program);
 void printShaderLog(GLuint shader);
 

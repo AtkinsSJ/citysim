@@ -103,7 +103,7 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	setCursor(renderer, Cursor_Main);
 
 	// Load textures &c
-	if (!loadTextures(&tempArena, renderer))
+	if (!loadTextures(renderer))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
 		Result = null;
@@ -114,125 +114,146 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	return Result;
 }
 
+GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, char *fragmentShaderFilename)
+{
+	GLShaderProgram result = {};
+
+	result.vertexShaderFilename = vertexShaderFilename;
+	result.fragmentShaderFilename = fragmentShaderFilename;
+
+	result.isVertexShaderCompiled = GL_FALSE;
+	result.isFragmentShaderCompiled = GL_FALSE;
+
+	result.shaderProgramID = glCreateProgram();
+
+	if (result.shaderProgramID)
+	{
+		// VERTEX SHADER
+		{
+			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
+			result.vertexShader = glCreateShader(GL_VERTEX_SHADER);
+			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, vertexShaderFilename)};
+			glShaderSource(result.vertexShader, 1, shaderData, NULL);
+			glCompileShader(result.vertexShader);
+
+			GLint isCompiled = GL_FALSE;
+			glGetShaderiv(result.vertexShader, GL_COMPILE_STATUS, &isCompiled);
+			result.isVertexShaderCompiled = (isCompiled == GL_TRUE);
+
+			if (result.isVertexShaderCompiled)
+			{
+				glAttachShader(result.shaderProgramID, result.vertexShader);
+				glDeleteShader(result.vertexShader);
+			}
+			else
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", result.vertexShader, result.vertexShaderFilename);
+				printShaderLog(result.vertexShader);
+			}
+
+			endTemporaryMemory(&tempArena);
+		}
+
+		// FRAGMENT SHADER
+		{
+			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
+			result.fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, fragmentShaderFilename)};
+			glShaderSource(result.fragmentShader, 1, shaderData, NULL);
+			glCompileShader(result.fragmentShader);
+
+			GLint isCompiled = GL_FALSE;
+			glGetShaderiv(result.fragmentShader, GL_COMPILE_STATUS, &isCompiled);
+			result.isFragmentShaderCompiled = (isCompiled == GL_TRUE);
+
+			if (result.isFragmentShaderCompiled)
+			{
+				glAttachShader(result.shaderProgramID, result.fragmentShader);
+				glDeleteShader(result.fragmentShader);
+			}
+			else
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", result.fragmentShader);
+				printShaderLog(result.fragmentShader);
+			}
+
+			endTemporaryMemory(&tempArena);
+		}
+
+		// Link shader program
+		if (result.isVertexShaderCompiled && result.isFragmentShaderCompiled)
+		{
+			glLinkProgram(result.shaderProgramID);
+			GLint programSuccess = GL_FALSE;
+			glGetProgramiv(result.shaderProgramID, GL_LINK_STATUS, &programSuccess);
+			result.isValid = (programSuccess == GL_TRUE);
+
+			if (!result.isValid)
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", result.shaderProgramID);
+				printProgramLog(result.shaderProgramID);
+			}
+			else
+			{
+				// Vertex attribute location
+				result.aPositionLoc = glGetAttribLocation(result.shaderProgramID, "aPosition");
+				if (result.aPositionLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+				result.aColorLoc = glGetAttribLocation(result.shaderProgramID, "aColor");
+				if (result.aColorLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+				result.aUVLoc = glGetAttribLocation(result.shaderProgramID, "aUV");
+				if (result.aUVLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+
+				// Uniform locations
+				result.uProjectionMatrixLoc = glGetUniformLocation(result.shaderProgramID, "uProjectionMatrix");
+				if (result.uProjectionMatrixLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+				result.uTextureLoc = glGetUniformLocation(result.shaderProgramID, "uTexture");
+				if (result.uTextureLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTexture is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
 bool initOpenGL(GLRenderer *renderer)
 {
 	bool succeeded = true;
-
-	renderer->shaderProgramID = glCreateProgram();
-
 	glEnable(GL_TEXTURE_2D);
 
-	// VERTEX SHADER
-	if (succeeded)
-	{
-		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+	renderer->shaderTextured = loadShader(renderer, "general.vert.gl", "general.frag.gl");
+	succeeded = renderer->shaderTextured.isValid;
 
-		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, "general.vert.gl")};
-		glShaderSource(vertexShader, 1, shaderData, NULL);
-		glCompileShader(vertexShader);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
 
-		GLint vShaderCompiled = GL_FALSE;
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &vShaderCompiled);
-		if (vShaderCompiled != GL_TRUE)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d!\n", vertexShader);
-			printShaderLog(vertexShader);
-			succeeded = false;
-		}
-		if (succeeded)
-		{
-			glAttachShader(renderer->shaderProgramID, vertexShader);
-			glDeleteShader(vertexShader);
-		}
+	// Create vertex and index buffers
+	glGenBuffers(1, &renderer->VBO);
+	glGenBuffers(1, &renderer->IBO);
 
-		endTemporaryMemory(&tempArena);
-	}
-
-	// FRAGMENT SHADER
-	if (succeeded)
-	{
-		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
-
-		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, "general.frag.gl")};
-		glShaderSource(fragmentShader, 1, shaderData, NULL);
-		glCompileShader(fragmentShader);
-
-		GLint fShaderCompiled = GL_FALSE;
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fShaderCompiled);
-		if (fShaderCompiled != GL_TRUE)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", fragmentShader);
-			printShaderLog(fragmentShader);
-			succeeded = false;
-		}
-		if (succeeded)
-		{
-			glAttachShader(renderer->shaderProgramID, fragmentShader);
-			glDeleteShader(fragmentShader);
-		}
-
-		endTemporaryMemory(&tempArena);
-	}
-
-	// Link shader program
-	if (succeeded)
-	{
-		glLinkProgram(renderer->shaderProgramID);
-		GLint programSuccess = GL_FALSE;
-		glGetProgramiv(renderer->shaderProgramID, GL_LINK_STATUS, &programSuccess);
-		if (programSuccess != GL_TRUE)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", renderer->shaderProgramID);
-			printProgramLog(renderer->shaderProgramID);
-			succeeded = false;
-		}
-
-		// Vertex attribute location
-		renderer->aPositionLoc = glGetAttribLocation(renderer->shaderProgramID, "aPosition");
-		if (renderer->aPositionLoc == -1)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
-			succeeded = false;
-		}
-		renderer->aColorLoc = glGetAttribLocation(renderer->shaderProgramID, "aColor");
-		if (renderer->aColorLoc == -1)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
-			succeeded = false;
-		}
-		renderer->aUVLoc = glGetAttribLocation(renderer->shaderProgramID, "aUV");
-		if (renderer->aUVLoc == -1)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
-			succeeded = false;
-		}
-
-		// Uniform locations
-		renderer->uProjectionMatrixLoc = glGetUniformLocation(renderer->shaderProgramID, "uProjectionMatrix");
-		if (renderer->uProjectionMatrixLoc == -1)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
-			succeeded = false;
-		}
-		renderer->uTextureLoc = glGetUniformLocation(renderer->shaderProgramID, "uTexture");
-		if (renderer->uTextureLoc == -1)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTexture is not a valid glsl program variable!\n");
-			return false;
-		}
-
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-		// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
-
-		// Create vertex and index buffers
-		glGenBuffers(1, &renderer->VBO);
-		glGenBuffers(1, &renderer->IBO);
-
-		checkForGLError();
-	}
+	checkForGLError();
 
 	return succeeded;
 }
@@ -334,7 +355,7 @@ Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultip
 	return texture;
 }
 
-bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer)
+bool loadTextures(GLRenderer *renderer)
 {
 	bool successfullyLoadedAllTextures = true;
 
@@ -425,9 +446,8 @@ bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer)
 
 void freeRenderer(GLRenderer *renderer)
 {
-	glDeleteProgram( renderer->shaderProgramID );
-
-	SDL_DestroyWindow( renderer->window );
+	SDL_GL_DeleteContext(renderer->context);
+	SDL_DestroyWindow(renderer->window);
 
 	IMG_Quit();
 	SDL_Quit();
@@ -586,20 +606,20 @@ void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCo
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
 	checkForGLError();
 
-	glEnableVertexAttribArray(renderer->aPositionLoc);
+	glEnableVertexAttribArray(renderer->shaderTextured.aPositionLoc);
 	checkForGLError();
-	glEnableVertexAttribArray(renderer->aColorLoc);
+	glEnableVertexAttribArray(renderer->shaderTextured.aColorLoc);
 	checkForGLError();
-	glEnableVertexAttribArray(renderer->aUVLoc);
+	glEnableVertexAttribArray(renderer->shaderTextured.aUVLoc);
 	checkForGLError();
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	checkForGLError();
-	glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+	glVertexAttribPointer(renderer->shaderTextured.aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
 	checkForGLError();
-	glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	glVertexAttribPointer(renderer->shaderTextured.aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
 	checkForGLError();
-	glVertexAttribPointer(renderer->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+	glVertexAttribPointer(renderer->shaderTextured.aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
 	checkForGLError();
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
@@ -607,11 +627,11 @@ void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCo
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
 	checkForGLError();
 
-	glDisableVertexAttribArray(renderer->aPositionLoc);
+	glDisableVertexAttribArray(renderer->shaderTextured.aPositionLoc);
 	checkForGLError();
-	glDisableVertexAttribArray(renderer->aColorLoc);
+	glDisableVertexAttribArray(renderer->shaderTextured.aColorLoc);
 	checkForGLError();
-	glDisableVertexAttribArray(renderer->aUVLoc);
+	glDisableVertexAttribArray(renderer->shaderTextured.aUVLoc);
 
 	checkForGLError();
 }
@@ -623,10 +643,6 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 	uint32 indexCount = 0;
 	GLint boundTextureID = TEXTURE_ID_INVALID;
 
-	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
-	checkForGLError();
-	glUniform1i(renderer->uTextureLoc, 0);
-	checkForGLError();
 	uint32 drawCallCount = 0;
 
 	for (uint32 i=0; i < buffer->spriteCount; i++)
@@ -646,6 +662,11 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 			glActiveTexture(GL_TEXTURE0);
 			checkForGLError();
 			glBindTexture(GL_TEXTURE_2D, sprite->textureID);
+			checkForGLError();
+
+			glUniformMatrix4fv(renderer->shaderTextured.uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
+			checkForGLError();
+			glUniform1i(renderer->shaderTextured.uTextureLoc, 0);
 			checkForGLError();
 
 			vertexCount = 0;
@@ -763,7 +784,7 @@ void render(GLRenderer *renderer)
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	checkForGLError();
 
-	glUseProgram(renderer->shaderProgramID);
+	glUseProgram(renderer->shaderTextured.shaderProgramID);
 	checkForGLError();
 
 	renderBuffer(renderer, &renderer->worldBuffer);
