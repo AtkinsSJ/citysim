@@ -267,8 +267,8 @@ GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
 bool loadTextures(GLRenderer *renderer);
-void printProgramLog(GLuint program);
-void printShaderLog(GLuint shader);
+void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program);
+void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader);
 
 void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset);
 

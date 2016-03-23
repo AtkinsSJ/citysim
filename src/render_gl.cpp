@@ -149,7 +149,7 @@ GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, cha
 			else
 			{
 				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", result.vertexShader, result.vertexShaderFilename);
-				printShaderLog(result.vertexShader);
+				printShaderLog(&tempArena, result.vertexShader);
 			}
 
 			endTemporaryMemory(&tempArena);
@@ -176,7 +176,7 @@ GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, cha
 			else
 			{
 				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", result.fragmentShader);
-				printShaderLog(result.fragmentShader);
+				printShaderLog(&tempArena, result.fragmentShader);
 			}
 
 			endTemporaryMemory(&tempArena);
@@ -192,8 +192,10 @@ GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, cha
 
 			if (!result.isValid)
 			{
+				TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", result.shaderProgramID);
-				printProgramLog(result.shaderProgramID);
+				printProgramLog(&tempArena, result.shaderProgramID);
+				endTemporaryMemory(&tempArena);
 			}
 			else
 			{
@@ -453,7 +455,7 @@ void freeRenderer(GLRenderer *renderer)
 	SDL_Quit();
 }
 
-void printProgramLog( GLuint program )
+void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
 {
 	//Make sure name is shader
 	if( glIsProgram( program ) )
@@ -466,7 +468,7 @@ void printProgramLog( GLuint program )
 		glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
 		
 		//Allocate string
-		char* infoLog = new char[ maxLength ];
+		char* infoLog = PushArray(tempMemory, char, maxLength);
 		
 		//Get info log
 		glGetProgramInfoLog( program, maxLength, &infoLogLength, infoLog );
@@ -475,9 +477,6 @@ void printProgramLog( GLuint program )
 			//Print Log
 			SDL_Log( "%s\n", infoLog );
 		}
-		
-		//Deallocate string
-		delete[] infoLog;
 	}
 	else
 	{
@@ -485,7 +484,7 @@ void printProgramLog( GLuint program )
 	}
 }
 
-void printShaderLog( GLuint shader )
+void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 {
 	//Make sure name is shader
 	if( glIsShader( shader ) )
@@ -498,7 +497,7 @@ void printShaderLog( GLuint shader )
 		glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &maxLength );
 		
 		//Allocate string
-		char* infoLog = new char[ maxLength ];
+		char* infoLog = PushArray(tempMemory, char, maxLength);
 		
 		//Get info log
 		glGetShaderInfoLog( shader, maxLength, &infoLogLength, infoLog );
@@ -507,9 +506,6 @@ void printShaderLog( GLuint shader )
 			//Print Log
 			SDL_Log( "%s\n", infoLog );
 		}
-
-		//Deallocate string
-		delete[] infoLog;
 	}
 	else
 	{
