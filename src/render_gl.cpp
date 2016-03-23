@@ -8,8 +8,6 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 
 	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
 
-	TexturesToLoad *texturesToLoad = PushStruct(&tempArena, TexturesToLoad);
-
 	renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
 	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
 	renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
@@ -93,8 +91,8 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
 	renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
 
-	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", texturesToLoad);
-	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", texturesToLoad);
+	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
+	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
 
 	renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
 	renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
@@ -105,7 +103,7 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	setCursor(renderer, Cursor_Main);
 
 	// Load textures &c
-	if (!loadTextures(&tempArena, renderer, texturesToLoad))
+	if (!loadTextures(renderer))
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
 		Result = null;
@@ -116,120 +114,153 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	return Result;
 }
 
+GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, char *fragmentShaderFilename)
+{
+	GLShaderProgram result = {};
+
+	result.vertexShaderFilename = vertexShaderFilename;
+	result.fragmentShaderFilename = fragmentShaderFilename;
+
+	result.isVertexShaderCompiled = GL_FALSE;
+	result.isFragmentShaderCompiled = GL_FALSE;
+
+	result.shaderProgramID = glCreateProgram();
+
+	if (result.shaderProgramID)
+	{
+		// VERTEX SHADER
+		{
+			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
+			result.vertexShader = glCreateShader(GL_VERTEX_SHADER);
+			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, vertexShaderFilename)};
+			glShaderSource(result.vertexShader, 1, shaderData, NULL);
+			glCompileShader(result.vertexShader);
+
+			GLint isCompiled = GL_FALSE;
+			glGetShaderiv(result.vertexShader, GL_COMPILE_STATUS, &isCompiled);
+			result.isVertexShaderCompiled = (isCompiled == GL_TRUE);
+
+			if (result.isVertexShaderCompiled)
+			{
+				glAttachShader(result.shaderProgramID, result.vertexShader);
+				glDeleteShader(result.vertexShader);
+			}
+			else
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", result.vertexShader, result.vertexShaderFilename);
+				printShaderLog(&tempArena, result.vertexShader);
+			}
+
+			endTemporaryMemory(&tempArena);
+		}
+
+		// FRAGMENT SHADER
+		{
+			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
+			result.fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, fragmentShaderFilename)};
+			glShaderSource(result.fragmentShader, 1, shaderData, NULL);
+			glCompileShader(result.fragmentShader);
+
+			GLint isCompiled = GL_FALSE;
+			glGetShaderiv(result.fragmentShader, GL_COMPILE_STATUS, &isCompiled);
+			result.isFragmentShaderCompiled = (isCompiled == GL_TRUE);
+
+			if (result.isFragmentShaderCompiled)
+			{
+				glAttachShader(result.shaderProgramID, result.fragmentShader);
+				glDeleteShader(result.fragmentShader);
+			}
+			else
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", result.fragmentShader);
+				printShaderLog(&tempArena, result.fragmentShader);
+			}
+
+			endTemporaryMemory(&tempArena);
+		}
+
+		// Link shader program
+		if (result.isVertexShaderCompiled && result.isFragmentShaderCompiled)
+		{
+			glLinkProgram(result.shaderProgramID);
+			GLint programSuccess = GL_FALSE;
+			glGetProgramiv(result.shaderProgramID, GL_LINK_STATUS, &programSuccess);
+			result.isValid = (programSuccess == GL_TRUE);
+
+			if (!result.isValid)
+			{
+				TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", result.shaderProgramID);
+				printProgramLog(&tempArena, result.shaderProgramID);
+				endTemporaryMemory(&tempArena);
+			}
+			else
+			{
+				// Common vertex attributes
+				result.aPositionLoc = glGetAttribLocation(result.shaderProgramID, "aPosition");
+				if (result.aPositionLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+				result.aColorLoc = glGetAttribLocation(result.shaderProgramID, "aColor");
+				if (result.aColorLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+
+				// Optional vertex attributes
+				result.aUVLoc = glGetAttribLocation(result.shaderProgramID, "aUV");
+
+				// Common uniforms
+				result.uProjectionMatrixLoc = glGetUniformLocation(result.shaderProgramID, "uProjectionMatrix");
+				if (result.uProjectionMatrixLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+
+				// Optional uniforms
+				result.uTextureLoc = glGetUniformLocation(result.shaderProgramID, "uTexture");
+			}
+		}
+	}
+
+	return result;
+}
+
 bool initOpenGL(GLRenderer *renderer)
 {
-	renderer->shaderProgramID = glCreateProgram();
-
+	bool succeeded = true;
 	glEnable(GL_TEXTURE_2D);
 
-	// VERTEX SHADER
+	renderer->shaders[ShaderProgram_Textured] = loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
+	succeeded = renderer->shaders[ShaderProgram_Textured].isValid;
+
+	if (succeeded)
 	{
-		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
-
-		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, "general.vert.gl")};
-		glShaderSource(vertexShader, 1, shaderData, NULL);
-		glCompileShader(vertexShader);
-
-		GLint vShaderCompiled = GL_FALSE;
-		glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &vShaderCompiled);
-		if (vShaderCompiled != GL_TRUE)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d!\n", vertexShader);
-			printShaderLog(vertexShader);
-			return false;
-		}
-		glAttachShader(renderer->shaderProgramID, vertexShader);
-		glDeleteShader(vertexShader);
-
-		endTemporaryMemory(&tempArena);
+		renderer->shaders[ShaderProgram_Untextured] = loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
+		succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
 	}
 
-	// FRAGMENT SHADER
+	if (succeeded)
 	{
-		TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
 
-		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, "general.frag.gl")};
-		glShaderSource(fragmentShader, 1, shaderData, NULL);
-		glCompileShader(fragmentShader);
+		// Create vertex and index buffers
+		glGenBuffers(1, &renderer->VBO);
+		glGenBuffers(1, &renderer->IBO);
 
-		GLint fShaderCompiled = GL_FALSE;
-		glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fShaderCompiled);
-		if (fShaderCompiled != GL_TRUE)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", fragmentShader);
-			printShaderLog(fragmentShader);
-			return false;
-		}
-		glAttachShader(renderer->shaderProgramID, fragmentShader);
-		glDeleteShader(fragmentShader);
-
-		endTemporaryMemory(&tempArena);
+		checkForGLError();
 	}
 
-	// Link shader program
-	glLinkProgram(renderer->shaderProgramID);
-	GLint programSuccess = GL_FALSE;
-	glGetProgramiv(renderer->shaderProgramID, GL_LINK_STATUS, &programSuccess);
-	if (programSuccess != GL_TRUE)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", renderer->shaderProgramID);
-		printProgramLog(renderer->shaderProgramID);
-		return false;
-	}
-
-	// Vertex attribute location
-	renderer->aPositionLoc = glGetAttribLocation(renderer->shaderProgramID, "aPosition");
-	if (renderer->aPositionLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
-		return false;
-	}
-	renderer->aColorLoc = glGetAttribLocation(renderer->shaderProgramID, "aColor");
-	if (renderer->aColorLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
-		return false;
-	}
-	renderer->aUVLoc = glGetAttribLocation(renderer->shaderProgramID, "aUV");
-	if (renderer->aUVLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aUV is not a valid glsl program variable!\n");
-		return false;
-	}
-	renderer->aTextureIDLoc = glGetAttribLocation(renderer->shaderProgramID, "aTextureID");
-	if (renderer->aTextureIDLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aTextureID is not a valid glsl program variable!\n");
-		return false;
-	}
-
-	// Uniform locations
-	renderer->uProjectionMatrixLoc = glGetUniformLocation(renderer->shaderProgramID, "uProjectionMatrix");
-	if (renderer->uProjectionMatrixLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
-		return false;
-	}
-	renderer->uTexturesLoc = glGetUniformLocation(renderer->shaderProgramID, "uTextures");
-	if (renderer->uTexturesLoc == -1)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uTextures is not a valid glsl program variable!\n");
-		return false;
-	}
-
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-	// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
-
-	// Create vertex and index buffers
-	glGenBuffers(1, &renderer->VBO);
-	glGenBuffers(1, &renderer->IBO);
-
-	checkForGLError();
-
-	return true;
+	return succeeded;
 }
 
 void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *texture, real32 x, real32 y, real32 w, real32 h)
@@ -238,7 +269,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 		   th = (real32) texture->h;
 
 	renderer->textureAtlas.textureRegions[item] = {
-		texture->id,
+		texture->glTextureID,
 		{
 #if 1
 			x / tw,
@@ -255,209 +286,192 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	};
 }
 
-bool loadTextures(TemporaryMemoryArena *tempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad)
+Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultiplied)
+{
+	Texture *texture = renderer->textures + renderer->textureCount++;
+	texture->filename = filename;
+
+	SDL_Surface *surface = IMG_Load(filename);
+	if (!surface)
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
+			"Failed to load '%s'!\n%s", filename, IMG_GetError());
+		texture->isValid = false;
+	}
+	else
+	{
+		if (!isAlphaPremultiplied)
+		{
+			// Premultiply alpha
+			uint32 Rmask = surface->format->Rmask,
+				   Gmask = surface->format->Gmask,
+				   Bmask = surface->format->Bmask,
+				   Amask = surface->format->Amask;
+			real32 rRmask = (real32)Rmask,
+				   rGmask = (real32)Gmask,
+				   rBmask = (real32)Bmask,
+				   rAmask = (real32)Amask;
+
+			int pixelCount = surface->w * surface->h;
+			for (int pixelIndex=0;
+				pixelIndex < pixelCount;
+				pixelIndex++)
+			{
+				uint32 pixel = ((uint32*)surface->pixels)[pixelIndex];
+				real32 rr = (real32)(pixel & Rmask) / rRmask;
+				real32 rg = (real32)(pixel & Gmask) / rGmask;
+				real32 rb = (real32)(pixel & Bmask) / rBmask;
+				real32 ra = (real32)(pixel & Amask) / rAmask;
+
+				uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
+				uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
+				uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
+				uint32 a = (uint32)(ra * rAmask) & Amask;
+
+				((uint32*)surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
+			}
+		}
+
+		glActiveTexture(GL_TEXTURE0);
+		glGenTextures(1, &texture->glTextureID);
+		glBindTexture(GL_TEXTURE_2D, texture->glTextureID);
+
+		// NB: Here we set the texture filter!!!
+	#if 1
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	#else
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	#endif
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+		texture->isValid = true;
+		texture->w = surface->w;
+		texture->h = surface->h;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->w, texture->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+
+		SDL_FreeSurface(surface);
+	}
+
+	return texture;
+}
+
+bool loadTextures(GLRenderer *renderer)
 {
 	bool successfullyLoadedAllTextures = true;
 
-	GLint combinedPngID = pushTextureToLoad(texturesToLoad, "combined.png");
-	GLint menuLogoPngID = pushTextureToLoad(texturesToLoad, "farming-logo.png");
-
-	Texture *textures = PushArray(tempArena, Texture, texturesToLoad->count);
-
-	renderer->textureArrayID = 0;
-	glGenTextures(1, &renderer->textureArrayID);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, renderer->textureArrayID);
-
-	// NB: Here we set the texture filter!!!
-#if 1
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#else
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-#endif
-
-	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA,
-		TEXTURE_WIDTH, TEXTURE_HEIGHT, // Size
-		texturesToLoad->count, // Number
-		0, GL_RGBA, GL_UNSIGNED_BYTE, null);
-
-	for (GLint i=0;
-		i < texturesToLoad->count;
-		i++)
+	Texture *texCombined = loadTexture(renderer, "combined.png", false);
+	if (!texCombined->isValid)
 	{
-		Texture *texture = textures + i;
-
-		SDL_Surface *surface = IMG_Load(texturesToLoad->filenames[i]);
-		if (!surface)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
-				"Failed to load '%s'!\n%s", texturesToLoad->filenames[i], IMG_GetError());
-			texture->valid = false;
-			successfullyLoadedAllTextures = false;
-		}
-		else
-		{
-			// Expand surface to be consistent size
-			ASSERT((surface->w <= TEXTURE_WIDTH ) && (surface->h <= TEXTURE_HEIGHT),
-				"Texture %s is too large! Max size is %d x %d", texturesToLoad->filenames[i], TEXTURE_WIDTH, TEXTURE_HEIGHT);
-			if (surface->w < TEXTURE_WIDTH || surface->h < TEXTURE_HEIGHT)
-			{
-				// Create a new surface that's the right size,
-				// blit the smaller one onto it,
-				// then store it in *surface.
-				SDL_PixelFormat *format = surface->format;
-				SDL_Surface *tempSurface = SDL_CreateRGBSurface(0, TEXTURE_WIDTH, TEXTURE_HEIGHT, 32,
-					format->Rmask, format->Gmask, format->Bmask, format->Amask);
-
-				SDL_BlitSurface(surface, null, tempSurface, null);
-
-				SDL_FreeSurface(surface);
-				surface = tempSurface;
-			}
-
-			if (!texturesToLoad->isAlphaPremultiplied[i])
-			{
-				// Premultiply alpha
-				uint32 Rmask = surface->format->Rmask,
-					   Gmask = surface->format->Gmask,
-					   Bmask = surface->format->Bmask,
-					   Amask = surface->format->Amask;
-				real32 rRmask = (real32)Rmask,
-					   rGmask = (real32)Gmask,
-					   rBmask = (real32)Bmask,
-					   rAmask = (real32)Amask;
-
-				int pixelCount = surface->w * surface->h;
-				for (int pixelIndex=0;
-					pixelIndex < pixelCount;
-					pixelIndex++)
-				{
-					uint32 pixel = ((uint32*)surface->pixels)[pixelIndex];
-					real32 rr = (real32)(pixel & Rmask) / rRmask;
-					real32 rg = (real32)(pixel & Gmask) / rGmask;
-					real32 rb = (real32)(pixel & Bmask) / rBmask;
-					real32 ra = (real32)(pixel & Amask) / rAmask;
-
-					uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
-					uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
-					uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
-					uint32 a = (uint32)(ra * rAmask) & Amask;
-
-					((uint32*)surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
-				}
-			}
-
-			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i,
-				surface->w, surface->h, 1, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-
-			texture->valid = true;
-			texture->id = i;
-			texture->w = surface->w;
-			texture->h = surface->h;
-
-			SDL_FreeSurface(surface);
-		}
+		successfullyLoadedAllTextures = false;
 	}
 
-	Texture *texCombinedPng = textures + combinedPngID;
-	Texture *texMenuLogoPng = textures + menuLogoPngID;
+	Texture *texMenuLogo = loadTexture(renderer, "farming-logo.png", false);
+	if (!texMenuLogo->isValid)
+	{
+		successfullyLoadedAllTextures = false;
+	}
 
-	const real32 w1 = 16.0f,
-				w2 = w1 *2,
-				w3 = w1 *3,
-				w4 = w1 *4;
-	
-	assignTextureRegion(renderer, TextureAtlasItem_GroundTile, 	texCombinedPng,  0,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_WaterTile, 	texCombinedPng, w1,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_ForestTile, 	texCombinedPng, w2,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Path, 		texCombinedPng, w3,  0, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Field, 		texCombinedPng, w4,  0, w4, w4);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	texCombinedPng,  0, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	texCombinedPng, w1, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_2, 	texCombinedPng, w2, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	texCombinedPng, w3, w1, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Potato, 		texCombinedPng,  0, w2, w1, w1);
-	assignTextureRegion(renderer, TextureAtlasItem_Barn, 		texCombinedPng,  0, w4, w4, w4);
-	assignTextureRegion(renderer, TextureAtlasItem_House, 		texCombinedPng, w4, w4, w4, w4);
+	if (successfullyLoadedAllTextures)
+	{
+		const real32 w1 = 16.0f,
+					w2 = w1 *2,
+					w3 = w1 *3,
+					w4 = w1 *4;
+		
+		assignTextureRegion(renderer, TextureAtlasItem_GroundTile, 	texCombined,  0,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_WaterTile, 	texCombined, w1,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_ForestTile, 	texCombined, w2,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Path, 		texCombined, w3,  0, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Field, 		texCombined, w4,  0, w4, w4);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	texCombined,  0, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	texCombined, w1, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_2, 	texCombined, w2, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	texCombined, w3, w1, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Potato, 		texCombined,  0, w2, w1, w1);
+		assignTextureRegion(renderer, TextureAtlasItem_Barn, 		texCombined,  0, w4, w4, w4);
+		assignTextureRegion(renderer, TextureAtlasItem_House, 		texCombined, w4, w4, w4, w4);
 
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  	texCombinedPng, 128 + 0, 64 +  0,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  	texCombinedPng, 128 + 8, 64 +  0,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk1,  	texCombinedPng, 128 +16, 64 +  0,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   	texCombinedPng, 128 + 0, 64 +  8,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, 	texCombinedPng, 128 + 8, 64 +  8,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, 	texCombinedPng, 128 +16, 64 +  8,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest0, texCombinedPng, 128 + 0, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest1, texCombinedPng, 128 + 8, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest2, texCombinedPng, 128 +16, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest3, texCombinedPng, 128 +24, 64 + 16,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant0, 	texCombinedPng, 128 + 0, 64 + 24,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant1, 	texCombinedPng, 128 + 8, 64 + 24,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant2, 	texCombinedPng, 128 +16, 64 + 24,  8,  8);
-	assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant3, 	texCombinedPng, 128 +24, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  	texCombined, 128 + 0, 64 +  0,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  	texCombined, 128 + 8, 64 +  0,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk1,  	texCombined, 128 +16, 64 +  0,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   	texCombined, 128 + 0, 64 +  8,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, 	texCombined, 128 + 8, 64 +  8,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, 	texCombined, 128 +16, 64 +  8,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest0, texCombined, 128 + 0, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest1, texCombined, 128 + 8, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest2, texCombined, 128 +16, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest3, texCombined, 128 +24, 64 + 16,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant0, 	texCombined, 128 + 0, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant1, 	texCombined, 128 + 8, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant2, 	texCombined, 128 +16, 64 + 24,  8,  8);
+		assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant3, 	texCombined, 128 +24, 64 + 24,  8,  8);
 
-	assignTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	texCombinedPng, 128 +  0, 0, 32, 32);
-	assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, texCombinedPng, 128 + 32, 0, 32, 32);
+		assignTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	texCombined, 128 +  0, 0, 32, 32);
+		assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, texCombined, 128 + 32, 0, 32, 32);
 
-	// Logo!
-	assignTextureRegion(renderer, TextureAtlasItem_Menu_Logo, 	texMenuLogoPng, 0, 0, 499, 154);
+		// Logo!
+		assignTextureRegion(renderer, TextureAtlasItem_Menu_Logo, 	texMenuLogo, 0, 0, 499, 154);
 
-	Animation *animation;
-	
-	animation = renderer->animations + Animation_Farmer_Stand;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Stand;
+		Animation *animation;
+		
+		animation = renderer->animations + Animation_Farmer_Stand;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Stand;
 
-	animation = renderer->animations + Animation_Farmer_Walk;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk1;
-	
-	animation = renderer->animations + Animation_Farmer_Hold;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Hold;
+		animation = renderer->animations + Animation_Farmer_Walk;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Walk1;
+		
+		animation = renderer->animations + Animation_Farmer_Hold;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Hold;
 
-	animation = renderer->animations + Animation_Farmer_Carry;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry1;
+		animation = renderer->animations + Animation_Farmer_Carry;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Carry1;
 
-	animation = renderer->animations + Animation_Farmer_Harvest;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest1;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest2;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest3;
+		animation = renderer->animations + Animation_Farmer_Harvest;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest1;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest2;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Harvest3;
 
-	animation = renderer->animations + Animation_Farmer_Plant;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant0;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant1;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant2;
-	animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
+		animation = renderer->animations + Animation_Farmer_Plant;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant0;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant1;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant2;
+		animation->frames[animation->frameCount++] = TextureAtlasItem_Farmer_Plant3;
+	}
 
-	checkForGLError();
 	return successfullyLoadedAllTextures;
 }
 
 void freeRenderer(GLRenderer *renderer)
 {
-	glDeleteProgram( renderer->shaderProgramID );
-
-	SDL_DestroyWindow( renderer->window );
+	SDL_GL_DeleteContext(renderer->context);
+	SDL_DestroyWindow(renderer->window);
 
 	IMG_Quit();
 	SDL_Quit();
 }
 
-void printProgramLog( GLuint program )
+void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
 {
 	//Make sure name is shader
 	if( glIsProgram( program ) )
 	{
 		//Program log length
 		int infoLogLength = 0;
-		int maxLength = infoLogLength;
+		int maxLength = 0;
 		
 		//Get info string length
 		glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
 		
 		//Allocate string
-		char* infoLog = new char[ maxLength ];
+		char* infoLog = PushArray(tempMemory, char, maxLength);
 		
 		//Get info log
 		glGetProgramInfoLog( program, maxLength, &infoLogLength, infoLog );
@@ -466,9 +480,6 @@ void printProgramLog( GLuint program )
 			//Print Log
 			SDL_Log( "%s\n", infoLog );
 		}
-		
-		//Deallocate string
-		delete[] infoLog;
 	}
 	else
 	{
@@ -476,20 +487,20 @@ void printProgramLog( GLuint program )
 	}
 }
 
-void printShaderLog( GLuint shader )
+void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 {
 	//Make sure name is shader
 	if( glIsShader( shader ) )
 	{
 		//Shader log length
 		int infoLogLength = 0;
-		int maxLength = infoLogLength;
+		int maxLength = 0;
 		
 		//Get info string length
 		glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &maxLength );
 		
 		//Allocate string
-		char* infoLog = new char[ maxLength ];
+		char* infoLog = PushArray(tempMemory, char, maxLength);
 		
 		//Get info log
 		glGetShaderInfoLog( shader, maxLength, &infoLogLength, infoLog );
@@ -498,9 +509,6 @@ void printShaderLog( GLuint shader )
 			//Print Log
 			SDL_Log( "%s\n", infoLog );
 		}
-
-		//Deallocate string
-		delete[] infoLog;
 	}
 	else
 	{
@@ -584,39 +592,146 @@ void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, V4 c
 	drawQuad(renderer, isUI, rect, depth, TEXTURE_ID_NONE, {}, color);
 }
 
-void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
+inline GLShaderProgram *getActiveShader(GLRenderer *renderer)
+{
+	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgram_Count, "Invalid shader!");
+	GLShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
+	ASSERT(activeShader->isValid, "Shader not properly loaded!");
+
+	return activeShader;
+}
+
+void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCount)
+{
+	GLShaderProgram *activeShader = getActiveShader(renderer);
+
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	checkForGLError();
+	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
+	checkForGLError();
+
+	// Fill IBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	checkForGLError();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
+	checkForGLError();
+
+	glEnableVertexAttribArray(activeShader->aPositionLoc);
+	checkForGLError();
+	glEnableVertexAttribArray(activeShader->aColorLoc);
+	checkForGLError();
+
+	if (activeShader->aUVLoc != -1)
+	{
+		glEnableVertexAttribArray(activeShader->aUVLoc);
+		checkForGLError();
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	checkForGLError();
+	glVertexAttribPointer(activeShader->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+	checkForGLError();
+	glVertexAttribPointer(activeShader->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	checkForGLError();
+	if (activeShader->aUVLoc != -1)
+	{
+		glVertexAttribPointer(activeShader->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+		checkForGLError();
+	}
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	checkForGLError();
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
+	checkForGLError();
+
+	glDisableVertexAttribArray(activeShader->aPositionLoc);
+	checkForGLError();
+	glDisableVertexAttribArray(activeShader->aColorLoc);
+	checkForGLError();
+	if (activeShader->aUVLoc != -1)
+	{
+		glDisableVertexAttribArray(activeShader->aUVLoc);
+		checkForGLError();
+	}
+}
+
+void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 {
 	// Fill VBO
 	uint32 vertexCount = 0;
 	uint32 indexCount = 0;
+	GLint boundTextureID = TEXTURE_ID_INVALID;
+
+	uint32 drawCallCount = 0;
+
+
 	for (uint32 i=0; i < buffer->spriteCount; i++)
 	{
-		int firstVertex = vertexCount;
 		Sprite *sprite = buffer->sprites + i;
+
+		if (sprite->textureID != boundTextureID)
+		{
+			// Render existing buffer contents
+			if (vertexCount)
+			{
+				drawCallCount++;
+				renderPartOfBuffer(renderer, vertexCount, indexCount);
+			}
+
+			if (sprite->textureID == TEXTURE_ID_NONE)
+			{
+				renderer->currentShader = ShaderProgram_Untextured;
+			}
+			else
+			{
+				renderer->currentShader = ShaderProgram_Textured;
+			}
+
+			GLShaderProgram *activeShader = getActiveShader(renderer);
+
+			glUseProgram(activeShader->shaderProgramID);
+			checkForGLError();
+
+			glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
+			checkForGLError();
+
+			// Bind new texture if this shader uses textures
+			if (activeShader->uTextureLoc != -1)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				checkForGLError();
+				glBindTexture(GL_TEXTURE_2D, sprite->textureID);
+				checkForGLError();
+				glUniform1i(activeShader->uTextureLoc, 0);
+				checkForGLError();
+			}
+
+			vertexCount = 0;
+			indexCount = 0;
+			boundTextureID = sprite->textureID;
+		}
+
+		int firstVertex = vertexCount;
 
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x, sprite->rect.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x, sprite->uv.y),
-			sprite->textureID
+			v2(sprite->uv.x, sprite->uv.y)
 		};
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y),
-			sprite->textureID
+			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y)
 		};
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h),
-			sprite->textureID
+			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h)
 		};
 		renderer->vertices[vertexCount++] = {
 			v3( sprite->rect.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
 			sprite->color,
-			v2(sprite->uv.x, sprite->uv.y + sprite->uv.h),
-			sprite->textureID
+			v2(sprite->uv.x, sprite->uv.y + sprite->uv.h)
 		};
 
 		renderer->indices[indexCount++] = firstVertex + 0;
@@ -626,38 +741,12 @@ void _renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 		renderer->indices[indexCount++] = firstVertex + 2;
 		renderer->indices[indexCount++] = firstVertex + 3;
 	}
-	
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
 
-	// Fill IBO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
+	// Do one final draw for remaining items
+	drawCallCount++;
+	renderPartOfBuffer(renderer, vertexCount, indexCount);
 
-	glEnableVertexAttribArray(renderer->aPositionLoc);
-	glEnableVertexAttribArray(renderer->aColorLoc);
-	glEnableVertexAttribArray(renderer->aUVLoc);
-	glEnableVertexAttribArray(renderer->aTextureIDLoc);
-
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	glVertexAttribPointer(renderer->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
-	glVertexAttribPointer(renderer->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
-	glVertexAttribPointer(renderer->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
-	glVertexAttribIPointer(renderer->aTextureIDLoc,	1, GL_INT,   		   sizeof(VertexData), (GLvoid*)offsetof(VertexData, textureID));
-
-	glUniformMatrix4fv(renderer->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
-
-	glDisableVertexAttribArray(renderer->aPositionLoc);
-	glDisableVertexAttribArray(renderer->aColorLoc);
-	glDisableVertexAttribArray(renderer->aUVLoc);
-	glDisableVertexAttribArray(renderer->aTextureIDLoc);
-
-	checkForGLError();
-
-	SDL_Log("Drew %d sprites this frame.", buffer->spriteCount);
+	SDL_Log("Drew %d sprites this frame, with %d draw calls.", buffer->spriteCount, drawCallCount);
 	buffer->spriteCount = 0;
 }
 
@@ -726,21 +815,20 @@ void render(GLRenderer *renderer)
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
+	checkForGLError();
 	glEnable(GL_BLEND);
+	checkForGLError();
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	checkForGLError();
 
-	glUseProgram(renderer->shaderProgramID);
+	renderer->currentShader = ShaderProgram_Invalid;
 
-	// Bind the texture array to TEXTURE0, then set 0 as the uniform
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, renderer->textureArrayID);
-	glUniform1i(renderer->uTexturesLoc, 0);
-
-	// World sprites
-	_renderBuffer(renderer, &renderer->worldBuffer);
-	_renderBuffer(renderer, &renderer->uiBuffer);
+	renderBuffer(renderer, &renderer->worldBuffer);
+	renderBuffer(renderer, &renderer->uiBuffer);
 
 	glUseProgram(NULL);
+	checkForGLError();
+	SDL_Log("End of frame.");
 	SDL_GL_SwapWindow( renderer->window );
 }
 

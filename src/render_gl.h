@@ -45,7 +45,6 @@ struct VertexData
 	V3 pos;
 	V4 color;
 	V2 uv;
-	GLint textureID;
 };
 
 enum Cursor
@@ -125,14 +124,15 @@ enum TextureAtlasItem
 
 struct Texture
 {
-	bool valid;
-	GLuint id;
+	bool isValid;
+	char *filename;
+	GLuint glTextureID;
 	uint32 w,h;
 };
 
 struct TextureRegion
 {
-	GLuint textureID;
+	GLuint textureID; // Redundant for Texture.glTextureID!
 	RealRect uv;
 };
 
@@ -202,6 +202,38 @@ struct RenderBuffer
 	uint32 maxSprites;
 };
 
+struct GLShaderProgram
+{
+	GLuint shaderProgramID;
+	bool isValid;
+
+	char *vertexShaderFilename;
+	GLuint vertexShader;
+	bool isVertexShaderCompiled;
+
+	char *fragmentShaderFilename;
+	GLuint fragmentShader;
+	bool isFragmentShaderCompiled;
+
+	// Uniforms
+	GLint uProjectionMatrixLoc,
+		  uTextureLoc;
+
+	// Attributes
+	GLint aPositionLoc,
+		  aColorLoc,
+		  aUVLoc;
+};
+
+enum ShaderPrograms
+{
+	ShaderProgram_Textured,
+	ShaderProgram_Untextured,
+
+	ShaderProgram_Count,
+	ShaderProgram_Invalid = -1
+};
+
 struct GLRenderer
 {
 	MemoryArena renderArena;
@@ -209,18 +241,11 @@ struct GLRenderer
 	SDL_Window *window;
 	SDL_GLContext context;
 
-	GLuint shaderProgramID;
+	GLShaderProgram shaders[ShaderProgram_Count];
+	int32 currentShader;
+
 	GLuint VBO,
 		   IBO;
-	GLint uProjectionMatrixLoc,
-		  uTexturesLoc;
-	GLint aPositionLoc,
-		  aColorLoc,
-		  aUVLoc,
-		  aTextureIDLoc;
-
-	GLuint textureArrayID;
-	GLenum textureFormat;
 
 	Camera worldCamera;
 
@@ -232,56 +257,29 @@ struct GLRenderer
 
 	Animation animations[Animation_Count];
 
+	uint32 textureCount;
+	Texture textures[64];
 	TextureAtlas textureAtlas;
 
 	// UI Stuff!
 	UiTheme theme;
 };
 
-const uint32 TEXTURE_WIDTH = 1024,
-			 TEXTURE_HEIGHT = 1024;
- const GLint TEXTURE_ID_NONE = -1;
-
-struct TexturesToLoad
-{
-	char filenamesBuffer[4096];
-	int32 bufferPos;
-
-	int32 count;
-	char *filenames[64];
-	bool isAlphaPremultiplied[64];
-};
-GLint pushTextureToLoad(TexturesToLoad *textures, char *filename, bool isAlphaPremultiplied=false)
-{
-	ASSERT(textures->count < ArrayCount(textures->filenames), "TexturesToLoad filenames limit reached!");
-
-	uint32 filenameLength = strlen(filename) + 1;
-	ASSERT(textures->bufferPos + filenameLength < ArrayCount(textures->filenamesBuffer), "No more space for texture filenames in TexturesToLoad!");
-
-	uint32 textureID = textures->count++;
-
-	textures->filenames[textureID] = textures->filenamesBuffer + textures->bufferPos;
-	textures->isAlphaPremultiplied[textureID] = isAlphaPremultiplied;
-	
-	// NB: Don't strncpy; we already check there's room above. strncpy causes Bad Things™
-	strcpy(textures->filenames[textureID], filename);
-	textures->bufferPos += filenameLength;
-
-	return (GLint)textureID;
-}
+const GLint TEXTURE_ID_INVALID = -99999;
+const GLint TEXTURE_ID_NONE = -1;
 
 inline void checkForGLError()
 {
 	GLenum errorCode = glGetError();
-	ASSERT(errorCode == 0, "GL Error: %d", errorCode);
+	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
 GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
 void freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
-bool loadTextures(TemporaryMemoryArena *TempArena, GLRenderer *renderer, TexturesToLoad *texturesToLoad);
-void printProgramLog(GLuint program);
-void printShaderLog(GLuint shader);
+bool loadTextures(GLRenderer *renderer);
+void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program);
+void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader);
 
 void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset);
 
@@ -304,7 +302,7 @@ void render(GLRenderer *renderer);
 SDL_Cursor *createCursor(char *path);
 void setCursor(GLRenderer *renderer, Cursor cursor);
 
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, TexturesToLoad *texturesToLoad);
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GLRenderer *renderer);
 
 inline real32 depthFromY(real32 y)
 {

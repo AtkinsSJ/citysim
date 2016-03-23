@@ -60,7 +60,7 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, TexturesToLoad *texturesToLoad)
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GLRenderer *renderer)
 {
 	BitmapFont *Font = 0;
 
@@ -142,11 +142,18 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 				GLint *pageToTexture = PushArray(renderArena, GLint, common->pageCount);
 				char *pageStart = (char *) pages;
 
+				real32 textureWidth = 0,
+						textureHeight = 0;
+
 				for (uint32 pageIndex = 0;
 					pageIndex < common->pageCount;
 					pageIndex++)
 				{
-					pageToTexture[pageIndex] = pushTextureToLoad(texturesToLoad, pageStart, true);
+					Texture *texture = loadTexture(renderer, pageStart, false);
+					ASSERT(texture->isValid, "Font texture failed to load!");
+					textureWidth = (real32) texture->w;
+					textureHeight = (real32) texture->h;
+					pageToTexture[pageIndex] = texture->glTextureID; //pushTextureToLoad(texturesToLoad, pageStart, true);
 					pageStart += strlen(pageStart) + 1;
 				}
 
@@ -159,8 +166,8 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 				Font->charCount = charCount;
 				Font->chars = PushArray(renderArena, BitmapFontChar, charCount);
 
-				const real32 textureWidth  = (real32) TEXTURE_WIDTH,
-							 textureHeight = (real32) TEXTURE_HEIGHT;
+				textureWidth = max(textureWidth, 1.0f);
+				textureHeight = max(textureHeight, 1.0f);
 
 				for (uint32 charIndex = 0;
 					charIndex < charCount;
