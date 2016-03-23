@@ -13,7 +13,6 @@ Rendering 2.0:
 - Replace 'isUI' nonsense with something better?
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
-- Shader-loading function!
 - Probably replace the binary search for glyphs with something better?
 
 Asset packing:

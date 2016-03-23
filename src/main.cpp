@@ -444,7 +444,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Draw buildings
-		for (uint32 i=1; i<=gameState->city.buildingCount; i++)
+		for (uint32 i=1; i<gameState->city.buildingCount; i++)
 		{
 			Building building = gameState->city.buildings[i];
 

@@ -12,7 +12,7 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, c
 
 
 	city->tileBuildings = PushArray(gameArena, uint32, width*height);
-	city->buildingCount = 0;
+	city->buildingCount = 1; // For the null building
 	city->buildingCountMax = ArrayCount(city->buildings);
 }
 
@@ -122,7 +122,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, Co
 
 	ASSERT(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
 
-	uint32 buildingID = ++city->buildingCount;
+	uint32 buildingID = city->buildingCount++;
 	Building *building = getBuildingByID(city, buildingID);
 	BuildingDefinition *def = buildingDefinitions + archetype;
 
