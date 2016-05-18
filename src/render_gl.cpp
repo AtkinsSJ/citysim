@@ -286,6 +286,15 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 	};
 }
 
+// Assign to whole texture
+void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *texture)
+{
+	renderer->textureAtlas.textureRegions[item] = {
+		texture->glTextureID,
+		{0, 0, 1, 1}
+	};
+}
+
 Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultiplied)
 {
 	Texture *texture = renderer->textures + renderer->textureCount++;
@@ -300,6 +309,7 @@ Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultip
 	}
 	else
 	{
+		ASSERT(surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
 		if (!isAlphaPremultiplied)
 		{
 			// Premultiply alpha
@@ -376,6 +386,12 @@ bool loadTextures(GLRenderer *renderer)
 		successfullyLoadedAllTextures = false;
 	}
 
+	Texture *texMap1 = loadTexture(renderer, "London-Strand-Holbron-Bloomsbury.png", false);
+	if (!texMap1->isValid)
+	{
+		successfullyLoadedAllTextures = false;
+	}
+
 	if (successfullyLoadedAllTextures)
 	{
 		const real32 w1 = 16.0f,
@@ -415,7 +431,9 @@ bool loadTextures(GLRenderer *renderer)
 		assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, texCombined, 128 + 32, 0, 32, 32);
 
 		// Logo!
-		assignTextureRegion(renderer, TextureAtlasItem_Menu_Logo, 	texMenuLogo, 0, 0, 499, 154);
+		assignTextureRegion(renderer, TextureAtlasItem_Menu_Logo, texMenuLogo);
+
+		assignTextureRegion(renderer, TextureAtlasItem_Map1, texMap1);
 
 		Animation *animation;
 		

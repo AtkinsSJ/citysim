@@ -1,9 +1,26 @@
+BUILD:
+
+For future reference, here's the build system config for sublime text 3:
+{
+	"shell_cmd": "build.bat",
+	"working_dir": "${file_path}",
+	"file_regex": "^(...*?)[(]([0-9]*)[)]",
+	"shell": true,
+	"encoding": "gb2312"
+}
+Took me WAY TOO LONG to make that work.
+
 ---------------------------------------------
 TODO:
 ---------------------------------------------
 
+- Remove all junk CitySim code
+- Draw a map
+- Draw a grid over it
+- Create pipes
+- They link
+
 BUGS:
-- When demolishing barns, workers en route sometimes lose their potato?
 - Flickering of some things. Not sure if the sorter might be off-by-one?
 - Unloading Fraps does something funny with our Window reference, causing a crash.
 
@@ -27,63 +44,7 @@ ENGINE:
 	- Sound effects
 	- Pitch shifting
 	- Music
-- Pathfinding!
-	- Movement speeds per tile?
-	- Use a more intelligent flood-fill algorithm? https://en.wikipedia.org/wiki/Connected-component_labeling
-- Scenarios?
-	- System for loading a level
-	- Load a pre-built farm on game start
-	- Have multiple different ones? 
-- Random events system
-- Buildings as zoned
-	- Drag any rectangle for a field
-	- Irregularly shaped fields
 - An actual random number generator!
 - Temporary memory automatically closes when it leaves scope?
-
-GAME:
-- Simulation
-	- Per-tile humidity
-	- Per-tile nutrient value
-	- Grass grows naturally, is destroyed by animals and heavy foot traffic
--AI
-	- Only take jobs that can be accomplished
-	- Prioritise jobs that are closer/easier
-- Different crops!
-	- Worth different amounts
-	- Different growth speed
-	- Grow at different times of year?
-	- Different graphics
-- Animals!
-	- Designate a pen
-	- Animals wander
-	- Happiness and health
-	- Overcrowding
-	- Feeding
-- Random events
-	- Frost!
-	- Heatwave!
-	- Bugs!
-	- Disease!
-	- Machinery breaks!
-- Farm machinery
-	- Each can only do one task at a time
-	- Machinery speeds-up task time
-	- Several ranks of machinery
-	- Tractor
-	- Combine Harvester
-- Field maintenance
-	- Fertilizer / Manure
-- Weather!
-	- Wetness and temperature based on time of year
-	- Wet/dryness affects plant growth
-	- Can water fields when it's dry
-
-
-
-------------------------------------------
-PLANTS:
-------------------------------------------
-Potatoes
-Plant March/April
-Harvest June to September, depending on variety
+- Scenarios
+	- A background image, a size, etc.

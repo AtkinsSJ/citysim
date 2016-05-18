@@ -40,14 +40,12 @@ enum GameStatus {
 #include "ui.h"
 #include "job.h"
 #include "city.h"
-#include "calendar.h"
 
 struct GameState
 {
 	MemoryArena *arena;
 	RandomMT rng;
 	City city;
-	Calendar calendar;
 };
 
 #include "ui.cpp"
@@ -85,8 +83,6 @@ GameState *startGame(MemoryArena *gameArena, char *cityName)
 
 	initCity(gameArena, &result->city, 100,100, cityName, gameStartFunds);
 	generateTerrain(&result->city, &result->rng);
-
-	initCalendar(&result->calendar);
 
 	return result;
 }
@@ -220,10 +216,6 @@ int main(int argc, char *argv[]) {
 
 		// Janky way of pausing when the game ends.
 		if (gameStatus != GameStatus_Playing) {
-			gameState->calendar.paused = true;
-
-			// // Highlight the pause button!
-			// calendarUI.buttonPause.active = true;
 
 			// Also set the cursor!
 			setCursor(renderer, Cursor_Main);
@@ -235,30 +227,6 @@ int main(int argc, char *argv[]) {
 		}
 
 	// Game simulation
-		CalendarChange calendarChange = incrementCalendar(&gameState->calendar);
-		if (calendarChange.isNewDay) {
-
-			// Buildings
-			for (uint32 i = 1; i <= gameState->city.buildingCount; i++)
-			{
-				Building *building = gameState->city.buildings + i;
-				switch (building->archetype)
-				{
-					case BA_Field: {
-						updateField(&building->field);
-					} break;
-				}
-			}
-
-			// Workers!
-			for (int i = 0; i < ArrayCount(gameState->city.workers); ++i) {
-				updateWorker(&uiState, gameState, gameState->city.workers + i);
-			}
-		}
-		if (calendarChange.isNewMonth) {
-			// Pay workers!
-			spend(&gameState->city, gameState->city.workerCount * workerMonthlyCost);
-		}
 
 	// Win and Lose!
 		if (gameState->city.funds >= gameWinFunds) {
@@ -390,7 +358,8 @@ int main(int argc, char *argv[]) {
 
 	// RENDERING
 
-		real32 daysPerFrame = getDaysPerFrame(&gameState->calendar);
+		// TODO: Remove this entirely!
+		real32 daysPerFrame = 0.01f;//getDaysPerFrame(&gameState->calendar);
 
 		// Draw terrain
 		for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
@@ -523,10 +492,6 @@ int main(int argc, char *argv[]) {
 				if (updateAndRenderGameOverUI(renderer, &uiState, gameState, &inputState, gameStatus == GameStatus_Won))
 				{
 					gameState = startGame(&gameArena, cityName);
-
-					// Reset calendar display. This is a bit hacky.
-					CalendarChange change = {};
-					change.isNewDay = true;
 
 					gameStatus = GameStatus_Setup;
 				}

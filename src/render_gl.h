@@ -119,6 +119,8 @@ enum TextureAtlasItem
 
 	TextureAtlasItem_Menu_Logo,
 
+	TextureAtlasItem_Map1,
+
 	TextureAtlasItemCount
 };
 

@@ -80,49 +80,6 @@ void showCostTooltip(GLRenderer *renderer, UIState *uiState, int32 cost, int32 c
 
 const real32 uiPadding = 4;
 
-bool drawCalendarUI(GLRenderer *renderer, Calendar *calendar, InputState *inputState, UIState *uiState)
-{
-	bool buttonAteMouseEvent = false;
-
-	getDateString(calendar, calendar->dateStringBuffer);
-
-	uiLabel(renderer, renderer->theme.font, calendar->dateStringBuffer,
-			v2((real32)renderer->worldCamera.windowWidth - uiPadding, uiPadding), ALIGN_RIGHT,
-			1, renderer->theme.labelColor);
-
-	const real32 buttonSize = 24;
-	RealRect buttonRect = rectXYWH(renderer->worldCamera.windowWidth - uiPadding - buttonSize, 32,
-								buttonSize, buttonSize);
-	if (uiButton(renderer, inputState, uiState, ">>>", buttonRect, 1, (calendar->speed == Speed3)))
-	{
-		calendar->paused = false;
-		calendar->speed = Speed3;
-		buttonAteMouseEvent = true;
-	}
-	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, uiState, ">>", buttonRect, 1, (calendar->speed == Speed2)))
-	{
-		calendar->paused = false;
-		calendar->speed = Speed2;
-		buttonAteMouseEvent = true;
-	}
-	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, uiState, ">", buttonRect, 1, (calendar->speed == Speed1)))
-	{
-		calendar->paused = false;
-		calendar->speed = Speed1;
-		buttonAteMouseEvent = true;
-	}
-	buttonRect.x -= buttonSize + uiPadding;
-	if (uiButton(renderer, inputState, uiState, "||", buttonRect, 1, calendar->paused, SDL_SCANCODE_SPACE, "(Space)"))
-	{
-		calendar->paused = !calendar->paused;
-		buttonAteMouseEvent = true;
-	}
-
-	return buttonAteMouseEvent;
-}
-
 GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, InputState *inputState,
 									GameStatus gameStatus, char *cityName, int32 cityNameMaxLength)
 {
@@ -193,8 +150,6 @@ void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *ga
 	uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
 	sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
 	uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
-
-	drawCalendarUI(renderer, &gameState->calendar, inputState, uiState);
 
 	// Build UI
 	{
@@ -306,7 +261,7 @@ bool updateAndRenderGameOverUI(GLRenderer *renderer, UIState *uiState, GameState
 	char gameOverText[256];
 	if (won)
 	{
-		sprintf(gameOverText, "You won! You earned £%d in %d days", gameWinFunds, gameState->calendar.totalDays);
+		sprintf(gameOverText, "You won! You earned £%d in ??? days", gameWinFunds);
 	} else {
 		sprintf(gameOverText, "Game over! You ran out of money! :(");
 	}
