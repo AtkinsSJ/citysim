@@ -40,57 +40,15 @@ BuildingDefinition buildingDefinitions[] = {
 	{1,1, 	"Path", 	 TextureAtlasItem_Path,  10, 10,	 true},
 };
 
-enum FieldState {
-	FieldState_Empty = 0,
-	FieldState_Planting,
-	FieldState_Growing,
-	FieldState_Grown,
-	FieldState_Harvesting,
-	FieldState_Gathering,
-};
-struct FieldData {
-	FieldState state;
-	int32 progress;
-	int32 progressCounter;
-};
-
 struct Building {
 	BuildingArchetype archetype;
 	Rect footprint;
-	union {
-		FieldData field;
-	};
+	// union {
+	// 	FieldData field;
+	// };
 	Building *prevOfType;
 	Building *nextOfType;
 };
-const int32 fieldPlantCost = 500;
-const int fieldWidth = 4;
-const int fieldHeight = 4;
-const int fieldSize = fieldWidth * fieldHeight;
-const int fieldMaxGrowth = fieldSize*3;
-const int fieldProgressToPlant = 1;
-const int fieldProgressToHarvest = 1;
-
-const V2 potatoCarryOffset = v2(-4.0f/16.0f, -14.0f/16.0f);
-
-struct Worker
-{
-	bool exists;
-	V2 pos; // Position at start of day
-	Animator animator;
-
-	bool isMoving;
-	bool isAtDestination;
-	V2 renderPos;
-	V2 dayEndPos;
-	real32 movementInterpolation;
-
-	bool isCarryingPotato;
-
-	Job job;
-};
-const int workerHireCost = 100;
-const int workerMonthlyCost = workerHireCost / 2;
 
 struct PathLayer {
 	int32 pathGroupCount;
@@ -113,11 +71,6 @@ struct City {
 	// Building IDs are 1-indexed (0 meaning null).
 
 	Building *firstBuildingOfType[BA_Count];
-
-	// Workers!
-	uint32 workerCount;
-	Worker workers[512]; // TODO: Decide on number of workers!
-	JobBoard jobBoard;
 };
 
 inline uint32 tileIndex(City *city, int32 x, int32 y) {

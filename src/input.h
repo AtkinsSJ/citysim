@@ -16,6 +16,11 @@ struct InputState
 	bool keyWasDown[KEYBOARD_KEY_COUNT];
 	bool keyDown[KEYBOARD_KEY_COUNT];
 	char textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+
+	// Extra
+	bool receivedQuitSignal;
+	bool wasWindowResized;
+	int32 newWindowWidth, newWindowHeight;
 };
 
 /**

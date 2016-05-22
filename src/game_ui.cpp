@@ -81,7 +81,7 @@ void showCostTooltip(GLRenderer *renderer, UIState *uiState, int32 cost, int32 c
 const real32 uiPadding = 4;
 
 GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, InputState *inputState,
-									GameStatus gameStatus, char *cityName, int32 cityNameMaxLength)
+									GameStatus gameStatus)
 {
 	GameStatus result = gameStatus;
 
@@ -96,9 +96,6 @@ GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, Inp
 
 	position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'.",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
-
-	uiTextInput(renderer, inputState, true, cityName, cityNameMaxLength, position, 1);
-	position.y += 32;
 
 	position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.\nWorkers are paid £50 at the start of each month.",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
