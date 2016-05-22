@@ -1,1 +1,6 @@
 citysim.sublime-workspace
+build/main.exe
+build/main.ilk
+build/main.pdb
+build/vc140.pdb
+build/main.obj
