@@ -289,9 +289,12 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *t
 // Assign to whole texture
 void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, Texture *texture)
 {
+	real32 borderX = 1.0f / (real32) texture->w,
+		borderY = 1.0f / (real32) texture->h;
+
 	renderer->textureAtlas.textureRegions[item] = {
 		texture->glTextureID,
-		{0, 0, 1, 1}
+		{borderX, borderY, 1.0f - borderX, 1.0f - borderY}
 	};
 }
 
@@ -347,7 +350,7 @@ Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultip
 		glBindTexture(GL_TEXTURE_2D, texture->glTextureID);
 
 		// NB: Here we set the texture filter!!!
-	#if 1
+	#if 0
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	#else

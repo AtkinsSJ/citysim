@@ -141,7 +141,8 @@ void gameUpdateAndRender(GameState *gameState, GLRenderer *renderer, InputState 
 // RENDERING
 
 	// Draw terrain
-	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Map1, v2(0,0), v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE), 0);
+	V2 backgroundSize = v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
+	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Map1, backgroundSize * 0.5f, backgroundSize, 0);
 // 	for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
 // 		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
 // 		y++)
