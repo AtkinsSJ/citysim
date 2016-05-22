@@ -37,7 +37,7 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	renderer->window = SDL_CreateWindow(WindowTitle,
 					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 					800, 600, // Initial screen resolution
-					SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+					SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 	if (renderer->window == NULL)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
@@ -474,6 +474,14 @@ void freeRenderer(GLRenderer *renderer)
 
 	IMG_Quit();
 	SDL_Quit();
+}
+
+void resizeWindow(GLRenderer *renderer, int32 newWidth, int32 newHeight)
+{
+	renderer->worldCamera.windowWidth = newWidth;
+	renderer->worldCamera.windowHeight = newHeight;
+
+	glViewport(0, 0, newWidth, newHeight);
 }
 
 void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)

@@ -196,11 +196,9 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 
-		// TODO: Actual resizing of the window! This code probably doesn't work.
 		if (inputState.wasWindowResized)
 		{
-			renderer->worldCamera.windowWidth = inputState.newWindowWidth;
-			renderer->worldCamera.windowHeight = inputState.newWindowHeight;
+			resizeWindow(renderer, inputState.newWindowWidth, inputState.newWindowHeight);
 		}
 
 		gameUpdateAndRender(gameState, renderer, &inputState);
