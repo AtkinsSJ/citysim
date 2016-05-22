@@ -151,8 +151,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	const char gameName[] = "Potato Farming Manager 2000";
-	GLRenderer *renderer = initializeRenderer(&memoryArena, gameName);
+	GLRenderer *renderer = initializeRenderer(&memoryArena, "Under London");
 	if (!renderer) {
 		return 1;
 	}

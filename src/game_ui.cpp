@@ -90,26 +90,14 @@ GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, Inp
 	V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
 	real32 maxLabelWidth = (real32)renderer->worldCamera.windowWidth - 256;
 
-	drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
+	//drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
+	//position.y += 154.0f;
 
-	position.y += 154.0f;
-
-	position.y += (uiLabel(renderer, renderer->theme.font, "Type a name for your farm, then click on 'Play'.",
+	position.y += (uiLabel(renderer, renderer->theme.font, "Under London",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
-	position.y += (uiLabel(renderer, renderer->theme.font, "Win by having £30,000 on hand, and lose by running out of money.\nWorkers are paid £50 at the start of each month.",
+	position.y += (uiLabel(renderer, renderer->theme.font, "Very much a work in progress!",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
-
-	// Debug translation stuff!
-	position.x = 0;
-	position.y = 0;
-	for (int32 i=0; i<Lang_Count; i++)
-	{
-		position.y += (uiLabel(renderer, renderer->theme.font, languageNames[i],
-			position, ALIGN_LEFT | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
-		position.y += (uiLabel(renderer, renderer->theme.font, getHelloOwlUTF8((TestLanguage)i),
-			position, ALIGN_LEFT | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
-	}
 
 	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
 	if (uiButton(renderer, inputState, uiState, "Exit", buttonRect, 1))
