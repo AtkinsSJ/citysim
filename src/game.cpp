@@ -134,7 +134,7 @@ void gameUpdateAndRender(GameState *gameState, GLRenderer *renderer, InputState 
 			// Unselect current thing
 			// setActiveButton(&actionButtonGroup, null);
 			gameState->uiState.actionMode = ActionMode_None;
-			setCursor(renderer, Cursor_Main);
+			setCursor(&renderer->theme, Cursor_Main);
 		}
 	}
 

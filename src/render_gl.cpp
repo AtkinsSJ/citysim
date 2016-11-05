@@ -397,141 +397,129 @@ GLShaderProgram GL_loadShader(GLRenderer *renderer, char *vertexShaderFilename, 
 	return result;
 }
 
-// TODO: Why is this separate?
-bool initOpenGL(GLRenderer *renderer)
-{
-	bool succeeded = true;
-	glEnable(GL_TEXTURE_2D);
-
-	renderer->shaders[ShaderProgram_GL_Textured] = GL_loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
-	succeeded = renderer->shaders[ShaderProgram_GL_Textured].isValid;
-
-	if (succeeded)
-	{
-		renderer->shaders[ShaderProgram_Untextured] = GL_loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
-		succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
-	}
-
-	if (succeeded)
-	{
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-		// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
-
-		// Create vertex and index buffers
-		glGenBuffers(1, &renderer->VBO);
-		glGenBuffers(1, &renderer->IBO);
-
-		checkForGLError();
-	}
-
-	return succeeded;
-}
-
 GLRenderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 {
 	GLRenderer *renderer = PushStruct(memoryArena, GLRenderer);
-	GLRenderer *Result = renderer;
-	renderer->renderArena = allocateSubArena(memoryArena, MB(64));
+	bool succeeded = (renderer != 0);
 
-	renderer->window = window;
-
-	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
-
-	renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
-	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
-	renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
-	renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
-
-	// Use GL3.1 Core
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-	// Create context
-	renderer->context = SDL_GL_CreateContext(renderer->window);
-	if (renderer->context == NULL)
+	if (succeeded)
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
-		Result = null;
+		renderer->renderArena = allocateSubArena(memoryArena, MB(64));
+		TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
+
+		renderer->window = window;
+		renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
+		renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
+		renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
+		renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
+
+		// Use GL3.1 Core
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+		// Create context
+		renderer->context = SDL_GL_CreateContext(renderer->window);
+		if (renderer->context == NULL)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
+			succeeded = false;
+		}
+
+		// GLEW
+		glewExperimental = GL_TRUE;
+		GLenum glewError = glewInit();
+		if (succeeded && glewError != GLEW_OK)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
+			succeeded = false;
+		}
+
+		// VSync
+		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
+			succeeded = false;
+		}
+
+		// Init OpenGL
+		if (succeeded)
+		{
+			glEnable(GL_TEXTURE_2D);
+
+			renderer->shaders[ShaderProgram_GL_Textured] = GL_loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
+			succeeded = renderer->shaders[ShaderProgram_GL_Textured].isValid;
+
+			if (succeeded)
+			{
+				renderer->shaders[ShaderProgram_Untextured] = GL_loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
+				succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
+			}
+
+			if (succeeded)
+			{
+				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+				// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+				// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
+
+				// Create vertex and index buffers
+				glGenBuffers(1, &renderer->VBO);
+				glGenBuffers(1, &renderer->IBO);
+
+				checkForGLError();
+			}
+
+			if (!succeeded)
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
+			}
+		}
+
+		// UI Theme!
+		// TODO: Move this!
+		renderer->theme.buttonTextColor 		= color255(   0,   0,   0, 255 );
+		renderer->theme.buttonBackgroundColor 	= color255( 255, 255, 255, 255 );
+		renderer->theme.buttonHoverColor 		= color255( 192, 192, 255, 255 );
+		renderer->theme.buttonPressedColor 		= color255( 128, 128, 255, 255 );
+
+		renderer->theme.labelColor 				= color255( 255, 255, 255, 255 );
+		renderer->theme.overlayColor 			= color255(   0,   0,   0, 128 );
+
+		renderer->theme.textboxBackgroundColor 	= color255( 255, 255, 255, 255 );
+		renderer->theme.textboxTextColor 		= color255(   0,   0,   0, 255 );
+		
+		renderer->theme.tooltipBackgroundColor	= color255(   0,   0,   0, 128 );
+		renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
+		renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
+
+		renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
+		renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
+
+		renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
+		renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
+		renderer->theme.cursors[Cursor_Demolish] = createCursor("cursor_demolish.png");
+		renderer->theme.cursors[Cursor_Plant] = createCursor("cursor_plant.png");
+		renderer->theme.cursors[Cursor_Harvest] = createCursor("cursor_harvest.png");
+		renderer->theme.cursors[Cursor_Hire] = createCursor("cursor_hire.png");
+		setCursor(&renderer->theme, Cursor_Main);
+
+		// Load textures &c
+		if (succeeded && !GL_loadTextures(renderer))
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
+			succeeded = false;
+		}
+
+		endTemporaryMemory(&tempArena);
+
+		if (!succeeded)
+		{
+			GL_freeRenderer(renderer);
+			renderer = 0;
+		}
 	}
 
-	// GLEW
-	glewExperimental = GL_TRUE;
-	GLenum glewError = glewInit();
-	if (glewError != GLEW_OK)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
-		Result = null;
-	}
-
-	// VSync
-	if (SDL_GL_SetSwapInterval(1) < 0)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
-		Result = null;
-	}
-
-	// Init OpenGL
-	if (!initOpenGL(renderer))
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
-		Result = null;
-	}
-
-	// UI Theme!
-	renderer->theme.buttonTextColor 		= color255(   0,   0,   0, 255 );
-	renderer->theme.buttonBackgroundColor 	= color255( 255, 255, 255, 255 );
-	renderer->theme.buttonHoverColor 		= color255( 192, 192, 255, 255 );
-	renderer->theme.buttonPressedColor 		= color255( 128, 128, 255, 255 );
-
-	renderer->theme.labelColor 				= color255( 255, 255, 255, 255 );
-	renderer->theme.overlayColor 			= color255(   0,   0,   0, 128 );
-
-	renderer->theme.textboxBackgroundColor 	= color255( 255, 255, 255, 255 );
-	renderer->theme.textboxTextColor 		= color255(   0,   0,   0, 255 );
-	
-	renderer->theme.tooltipBackgroundColor	= color255(   0,   0,   0, 128 );
-	renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
-	renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
-
-	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
-	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
-
-	renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
-	renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
-	renderer->theme.cursors[Cursor_Demolish] = createCursor("cursor_demolish.png");
-	renderer->theme.cursors[Cursor_Plant] = createCursor("cursor_plant.png");
-	renderer->theme.cursors[Cursor_Harvest] = createCursor("cursor_harvest.png");
-	renderer->theme.cursors[Cursor_Hire] = createCursor("cursor_hire.png");
-	setCursor(renderer, Cursor_Main);
-
-	// Load textures &c
-	if (!GL_loadTextures(renderer))
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
-		Result = null;
-	}
-
-	endTemporaryMemory(&tempArena);
-
-	return Result;
-}
-
-
-
-SDL_Cursor *createCursor(char *path)
-{
-	SDL_Surface *cursorSurface = IMG_Load(path);
-	SDL_Cursor *cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
-	SDL_FreeSurface(cursorSurface);
-
-	return cursor;
-}
-
-void setCursor(GLRenderer *renderer, Cursor cursor)
-{
-	SDL_SetCursor(renderer->theme.cursors[cursor]);
+	return renderer;
 }
 
 inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect uv, V4 color)

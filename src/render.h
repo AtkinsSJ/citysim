@@ -53,7 +53,6 @@ struct UiTheme
 		tooltipColorNormal,
 		tooltipColorBad;
 
-	// TODO: Abstract this?
 	SDL_Cursor *cursors[Cursor_Count];
 };
 
@@ -65,7 +64,6 @@ enum ShaderPrograms
 	ShaderProgram_Count,
 	ShaderProgram_Invalid = -1
 };
-
 
 struct Sprite
 {
@@ -112,4 +110,18 @@ inline real32 depthFromY(uint32 y)
 inline real32 depthFromY(int32 y)
 {
 	return depthFromY((real32)y);
+}
+
+SDL_Cursor *createCursor(char *path)
+{
+	SDL_Surface *cursorSurface = IMG_Load(path);
+	SDL_Cursor *cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
+	SDL_FreeSurface(cursorSurface);
+
+	return cursor;
+}
+
+void setCursor(UiTheme *theme, Cursor cursor)
+{
+	SDL_SetCursor(theme->cursors[cursor]);
 }

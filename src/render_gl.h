@@ -110,9 +110,6 @@ inline void checkForGLError()
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color=makeWhite());
 
-SDL_Cursor *createCursor(char *path);
-void setCursor(GLRenderer *renderer, Cursor cursor);
-
 BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GLRenderer *renderer);
 
 #include "render_gl.cpp"
