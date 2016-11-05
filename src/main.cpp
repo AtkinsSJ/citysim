@@ -194,7 +194,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	GLRenderer *renderer = initializeRenderer(&memoryArena, window);
+	GLRenderer *renderer = GL_initializeRenderer(&memoryArena, window);
 	if (!renderer)
 	{
 		return 1;

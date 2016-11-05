@@ -107,30 +107,8 @@ inline void checkForGLError()
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
-GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
-void GL_freeRenderer(GLRenderer *renderer);
-bool initOpenGL(GLRenderer *renderer);
-bool loadTextures(GLRenderer *renderer);
-void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program);
-void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader);
-
-void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset);
-
-void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
-				GLint textureID, RealRect uv, V4 color=makeWhite());
-
 void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color=makeWhite());
-
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, V4 color);
-
-void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator,
-				real32 daysPerFrame, V2 worldTilePosition, V2 size, real32 depth, V4 color=makeWhite());
-
-void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
-				bool restart = false);
-
-void GL_render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
 void setCursor(GLRenderer *renderer, Cursor cursor);

@@ -1,244 +1,5 @@
 // render_gl.cpp
 
-GLRenderer *initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
-{
-	GLRenderer *renderer = PushStruct(memoryArena, GLRenderer);
-	GLRenderer *Result = renderer;
-	renderer->renderArena = allocateSubArena(memoryArena, MB(64));
-
-	renderer->window = window;
-
-	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
-
-	renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
-	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
-	renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
-	renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
-
-	// Use GL3.1 Core
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-	// Create context
-	renderer->context = SDL_GL_CreateContext(renderer->window);
-	if (renderer->context == NULL)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
-		Result = null;
-	}
-
-	// GLEW
-	glewExperimental = GL_TRUE;
-	GLenum glewError = glewInit();
-	if (glewError != GLEW_OK)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
-		Result = null;
-	}
-
-	// VSync
-	if (SDL_GL_SetSwapInterval(1) < 0)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
-		Result = null;
-	}
-
-	// Init OpenGL
-	if (!initOpenGL(renderer))
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
-		Result = null;
-	}
-
-	// UI Theme!
-	renderer->theme.buttonTextColor 		= color255(   0,   0,   0, 255 );
-	renderer->theme.buttonBackgroundColor 	= color255( 255, 255, 255, 255 );
-	renderer->theme.buttonHoverColor 		= color255( 192, 192, 255, 255 );
-	renderer->theme.buttonPressedColor 		= color255( 128, 128, 255, 255 );
-
-	renderer->theme.labelColor 				= color255( 255, 255, 255, 255 );
-	renderer->theme.overlayColor 			= color255(   0,   0,   0, 128 );
-
-	renderer->theme.textboxBackgroundColor 	= color255( 255, 255, 255, 255 );
-	renderer->theme.textboxTextColor 		= color255(   0,   0,   0, 255 );
-	
-	renderer->theme.tooltipBackgroundColor	= color255(   0,   0,   0, 128 );
-	renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
-	renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
-
-	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
-	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
-
-	renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
-	renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
-	renderer->theme.cursors[Cursor_Demolish] = createCursor("cursor_demolish.png");
-	renderer->theme.cursors[Cursor_Plant] = createCursor("cursor_plant.png");
-	renderer->theme.cursors[Cursor_Harvest] = createCursor("cursor_harvest.png");
-	renderer->theme.cursors[Cursor_Hire] = createCursor("cursor_hire.png");
-	setCursor(renderer, Cursor_Main);
-
-	// Load textures &c
-	if (!loadTextures(renderer))
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
-		Result = null;
-	}
-
-	endTemporaryMemory(&tempArena);
-
-	return Result;
-}
-
-GLShaderProgram loadShader(GLRenderer *renderer, char *vertexShaderFilename, char *fragmentShaderFilename)
-{
-	GLShaderProgram result = {};
-
-	result.vertexShaderFilename = vertexShaderFilename;
-	result.fragmentShaderFilename = fragmentShaderFilename;
-
-	result.isVertexShaderCompiled = GL_FALSE;
-	result.isFragmentShaderCompiled = GL_FALSE;
-
-	result.shaderProgramID = glCreateProgram();
-
-	if (result.shaderProgramID)
-	{
-		// VERTEX SHADER
-		{
-			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
-
-			result.vertexShader = glCreateShader(GL_VERTEX_SHADER);
-			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, vertexShaderFilename)};
-			glShaderSource(result.vertexShader, 1, shaderData, NULL);
-			glCompileShader(result.vertexShader);
-
-			GLint isCompiled = GL_FALSE;
-			glGetShaderiv(result.vertexShader, GL_COMPILE_STATUS, &isCompiled);
-			result.isVertexShaderCompiled = (isCompiled == GL_TRUE);
-
-			if (result.isVertexShaderCompiled)
-			{
-				glAttachShader(result.shaderProgramID, result.vertexShader);
-				glDeleteShader(result.vertexShader);
-			}
-			else
-			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", result.vertexShader, result.vertexShaderFilename);
-				printShaderLog(&tempArena, result.vertexShader);
-			}
-
-			endTemporaryMemory(&tempArena);
-		}
-
-		// FRAGMENT SHADER
-		{
-			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
-
-			result.fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, fragmentShaderFilename)};
-			glShaderSource(result.fragmentShader, 1, shaderData, NULL);
-			glCompileShader(result.fragmentShader);
-
-			GLint isCompiled = GL_FALSE;
-			glGetShaderiv(result.fragmentShader, GL_COMPILE_STATUS, &isCompiled);
-			result.isFragmentShaderCompiled = (isCompiled == GL_TRUE);
-
-			if (result.isFragmentShaderCompiled)
-			{
-				glAttachShader(result.shaderProgramID, result.fragmentShader);
-				glDeleteShader(result.fragmentShader);
-			}
-			else
-			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", result.fragmentShader);
-				printShaderLog(&tempArena, result.fragmentShader);
-			}
-
-			endTemporaryMemory(&tempArena);
-		}
-
-		// Link shader program
-		if (result.isVertexShaderCompiled && result.isFragmentShaderCompiled)
-		{
-			glLinkProgram(result.shaderProgramID);
-			GLint programSuccess = GL_FALSE;
-			glGetProgramiv(result.shaderProgramID, GL_LINK_STATUS, &programSuccess);
-			result.isValid = (programSuccess == GL_TRUE);
-
-			if (!result.isValid)
-			{
-				TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", result.shaderProgramID);
-				printProgramLog(&tempArena, result.shaderProgramID);
-				endTemporaryMemory(&tempArena);
-			}
-			else
-			{
-				// Common vertex attributes
-				result.aPositionLoc = glGetAttribLocation(result.shaderProgramID, "aPosition");
-				if (result.aPositionLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
-					result.isValid = false;
-				}
-				result.aColorLoc = glGetAttribLocation(result.shaderProgramID, "aColor");
-				if (result.aColorLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
-					result.isValid = false;
-				}
-
-				// Optional vertex attributes
-				result.aUVLoc = glGetAttribLocation(result.shaderProgramID, "aUV");
-
-				// Common uniforms
-				result.uProjectionMatrixLoc = glGetUniformLocation(result.shaderProgramID, "uProjectionMatrix");
-				if (result.uProjectionMatrixLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
-					result.isValid = false;
-				}
-
-				// Optional uniforms
-				result.uTextureLoc = glGetUniformLocation(result.shaderProgramID, "uGL_Texture");
-			}
-		}
-	}
-
-	return result;
-}
-
-bool initOpenGL(GLRenderer *renderer)
-{
-	bool succeeded = true;
-	glEnable(GL_TEXTURE_2D);
-
-	renderer->shaders[ShaderProgram_GL_Textured] = loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
-	succeeded = renderer->shaders[ShaderProgram_GL_Textured].isValid;
-
-	if (succeeded)
-	{
-		renderer->shaders[ShaderProgram_Untextured] = loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
-		succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
-	}
-
-	if (succeeded)
-	{
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-		// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
-
-		// Create vertex and index buffers
-		glGenBuffers(1, &renderer->VBO);
-		glGenBuffers(1, &renderer->IBO);
-
-		checkForGLError();
-	}
-
-	return succeeded;
-}
-
 void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, GL_Texture *texture, real32 x, real32 y, real32 w, real32 h)
 {
 	real32 tw = (real32) texture->w,
@@ -274,7 +35,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, GL_Texture
 	};
 }
 
-GL_Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultiplied)
+GL_Texture *GL_loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultiplied)
 {
 	GL_Texture *texture = renderer->textures + renderer->textureCount++;
 	texture->filename = filename;
@@ -349,23 +110,23 @@ GL_Texture *loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremul
 	return texture;
 }
 
-bool loadTextures(GLRenderer *renderer)
+bool GL_loadTextures(GLRenderer *renderer)
 {
 	bool successfullyLoadedAllTextures = true;
 
-	GL_Texture *texCombined = loadTexture(renderer, "combined.png", false);
+	GL_Texture *texCombined = GL_loadTexture(renderer, "combined.png", false);
 	if (!texCombined->isValid)
 	{
 		successfullyLoadedAllTextures = false;
 	}
 
-	GL_Texture *texMenuLogo = loadTexture(renderer, "farming-logo.png", false);
+	GL_Texture *texMenuLogo = GL_loadTexture(renderer, "farming-logo.png", false);
 	if (!texMenuLogo->isValid)
 	{
 		successfullyLoadedAllTextures = false;
 	}
 
-	GL_Texture *texMap1 = loadTexture(renderer, "London-Strand-Holbron-Bloomsbury.png", false);
+	GL_Texture *texMap1 = GL_loadTexture(renderer, "London-Strand-Holbron-Bloomsbury.png", false);
 	if (!texMap1->isValid)
 	{
 		successfullyLoadedAllTextures = false;
@@ -459,7 +220,7 @@ void GL_windowResized(GLRenderer *renderer, int32 newWidth, int32 newHeight)
 	glViewport(0, 0, newWidth, newHeight);
 }
 
-void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
+void GL_printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
 {
 	//Make sure name is shader
 	if( glIsProgram( program ) )
@@ -488,7 +249,7 @@ void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
 	}
 }
 
-void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
+void GL_printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 {
 	//Make sure name is shader
 	if( glIsShader( shader ) )
@@ -516,6 +277,248 @@ void printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 		SDL_Log( "Name %d is not a shader\n", shader );
 	}
 }
+
+GLShaderProgram GL_loadShader(GLRenderer *renderer, char *vertexShaderFilename, char *fragmentShaderFilename)
+{
+	GLShaderProgram result = {};
+
+	result.vertexShaderFilename = vertexShaderFilename;
+	result.fragmentShaderFilename = fragmentShaderFilename;
+
+	result.isVertexShaderCompiled = GL_FALSE;
+	result.isFragmentShaderCompiled = GL_FALSE;
+
+	result.shaderProgramID = glCreateProgram();
+
+	if (result.shaderProgramID)
+	{
+		// VERTEX SHADER
+		{
+			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
+			result.vertexShader = glCreateShader(GL_VERTEX_SHADER);
+			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, vertexShaderFilename)};
+			glShaderSource(result.vertexShader, 1, shaderData, NULL);
+			glCompileShader(result.vertexShader);
+
+			GLint isCompiled = GL_FALSE;
+			glGetShaderiv(result.vertexShader, GL_COMPILE_STATUS, &isCompiled);
+			result.isVertexShaderCompiled = (isCompiled == GL_TRUE);
+
+			if (result.isVertexShaderCompiled)
+			{
+				glAttachShader(result.shaderProgramID, result.vertexShader);
+				glDeleteShader(result.vertexShader);
+			}
+			else
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", result.vertexShader, result.vertexShaderFilename);
+				GL_printShaderLog(&tempArena, result.vertexShader);
+			}
+
+			endTemporaryMemory(&tempArena);
+		}
+
+		// FRAGMENT SHADER
+		{
+			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
+			result.fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, fragmentShaderFilename)};
+			glShaderSource(result.fragmentShader, 1, shaderData, NULL);
+			glCompileShader(result.fragmentShader);
+
+			GLint isCompiled = GL_FALSE;
+			glGetShaderiv(result.fragmentShader, GL_COMPILE_STATUS, &isCompiled);
+			result.isFragmentShaderCompiled = (isCompiled == GL_TRUE);
+
+			if (result.isFragmentShaderCompiled)
+			{
+				glAttachShader(result.shaderProgramID, result.fragmentShader);
+				glDeleteShader(result.fragmentShader);
+			}
+			else
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", result.fragmentShader);
+				GL_printShaderLog(&tempArena, result.fragmentShader);
+			}
+
+			endTemporaryMemory(&tempArena);
+		}
+
+		// Link shader program
+		if (result.isVertexShaderCompiled && result.isFragmentShaderCompiled)
+		{
+			glLinkProgram(result.shaderProgramID);
+			GLint programSuccess = GL_FALSE;
+			glGetProgramiv(result.shaderProgramID, GL_LINK_STATUS, &programSuccess);
+			result.isValid = (programSuccess == GL_TRUE);
+
+			if (!result.isValid)
+			{
+				TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", result.shaderProgramID);
+				GL_printProgramLog(&tempArena, result.shaderProgramID);
+				endTemporaryMemory(&tempArena);
+			}
+			else
+			{
+				// Common vertex attributes
+				result.aPositionLoc = glGetAttribLocation(result.shaderProgramID, "aPosition");
+				if (result.aPositionLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+				result.aColorLoc = glGetAttribLocation(result.shaderProgramID, "aColor");
+				if (result.aColorLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+
+				// Optional vertex attributes
+				result.aUVLoc = glGetAttribLocation(result.shaderProgramID, "aUV");
+
+				// Common uniforms
+				result.uProjectionMatrixLoc = glGetUniformLocation(result.shaderProgramID, "uProjectionMatrix");
+				if (result.uProjectionMatrixLoc == -1)
+				{
+					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
+					result.isValid = false;
+				}
+
+				// Optional uniforms
+				result.uTextureLoc = glGetUniformLocation(result.shaderProgramID, "uGL_Texture");
+			}
+		}
+	}
+
+	return result;
+}
+
+// TODO: Why is this separate?
+bool initOpenGL(GLRenderer *renderer)
+{
+	bool succeeded = true;
+	glEnable(GL_TEXTURE_2D);
+
+	renderer->shaders[ShaderProgram_GL_Textured] = GL_loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
+	succeeded = renderer->shaders[ShaderProgram_GL_Textured].isValid;
+
+	if (succeeded)
+	{
+		renderer->shaders[ShaderProgram_Untextured] = GL_loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
+		succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
+	}
+
+	if (succeeded)
+	{
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
+
+		// Create vertex and index buffers
+		glGenBuffers(1, &renderer->VBO);
+		glGenBuffers(1, &renderer->IBO);
+
+		checkForGLError();
+	}
+
+	return succeeded;
+}
+
+GLRenderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
+{
+	GLRenderer *renderer = PushStruct(memoryArena, GLRenderer);
+	GLRenderer *Result = renderer;
+	renderer->renderArena = allocateSubArena(memoryArena, MB(64));
+
+	renderer->window = window;
+
+	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
+
+	renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
+	renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
+	renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
+	renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
+
+	// Use GL3.1 Core
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+	// Create context
+	renderer->context = SDL_GL_CreateContext(renderer->window);
+	if (renderer->context == NULL)
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
+		Result = null;
+	}
+
+	// GLEW
+	glewExperimental = GL_TRUE;
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK)
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
+		Result = null;
+	}
+
+	// VSync
+	if (SDL_GL_SetSwapInterval(1) < 0)
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
+		Result = null;
+	}
+
+	// Init OpenGL
+	if (!initOpenGL(renderer))
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
+		Result = null;
+	}
+
+	// UI Theme!
+	renderer->theme.buttonTextColor 		= color255(   0,   0,   0, 255 );
+	renderer->theme.buttonBackgroundColor 	= color255( 255, 255, 255, 255 );
+	renderer->theme.buttonHoverColor 		= color255( 192, 192, 255, 255 );
+	renderer->theme.buttonPressedColor 		= color255( 128, 128, 255, 255 );
+
+	renderer->theme.labelColor 				= color255( 255, 255, 255, 255 );
+	renderer->theme.overlayColor 			= color255(   0,   0,   0, 128 );
+
+	renderer->theme.textboxBackgroundColor 	= color255( 255, 255, 255, 255 );
+	renderer->theme.textboxTextColor 		= color255(   0,   0,   0, 255 );
+	
+	renderer->theme.tooltipBackgroundColor	= color255(   0,   0,   0, 128 );
+	renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
+	renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
+
+	renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
+	renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
+
+	renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
+	renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
+	renderer->theme.cursors[Cursor_Demolish] = createCursor("cursor_demolish.png");
+	renderer->theme.cursors[Cursor_Plant] = createCursor("cursor_plant.png");
+	renderer->theme.cursors[Cursor_Harvest] = createCursor("cursor_harvest.png");
+	renderer->theme.cursors[Cursor_Hire] = createCursor("cursor_hire.png");
+	setCursor(renderer, Cursor_Main);
+
+	// Load textures &c
+	if (!GL_loadTextures(renderer))
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
+		Result = null;
+	}
+
+	endTemporaryMemory(&tempArena);
+
+	return Result;
+}
+
+
 
 SDL_Cursor *createCursor(char *path)
 {
