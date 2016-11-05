@@ -559,6 +559,18 @@ void setCursor(GLRenderer *renderer, Cursor cursor)
 	SDL_SetCursor(renderer->theme.cursors[cursor]);
 }
 
+inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect uv, V4 color)
+{
+	Sprite sprite = {};
+	sprite.rect = rect;
+	sprite.depth = depth;
+	sprite.textureID = textureID;
+	sprite.uv = uv;
+	sprite.color = color;
+	
+	return sprite;
+}
+
 void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset)
 {
 	RenderBuffer *buffer;

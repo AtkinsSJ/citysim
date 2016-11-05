@@ -39,6 +39,22 @@ typedef std::string string;
 
 const int null = 0;
 
+enum Alignment {
+	ALIGN_LEFT = 1,
+	ALIGN_H_CENTRE = 2,
+	ALIGN_RIGHT = 4,
+
+	ALIGN_H = ALIGN_LEFT | ALIGN_H_CENTRE | ALIGN_RIGHT,
+
+	ALIGN_TOP = 8,
+	ALIGN_V_CENTRE = 16,
+	ALIGN_BOTTOM = 32,
+	
+	ALIGN_V = ALIGN_TOP | ALIGN_V_CENTRE | ALIGN_BOTTOM,
+
+	ALIGN_CENTRE = ALIGN_H_CENTRE | ALIGN_V_CENTRE,
+};
+
 struct Coord {
 	int32 x,y;
 };

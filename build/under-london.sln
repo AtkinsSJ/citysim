@@ -6,9 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "main", "main.exe", "{729126E9-2183-420E-BC27-C5FF430846C9}"
 	ProjectSection(DebuggerProjectSystem) = preProject
 		PortSupplier = 00000000-0000-0000-0000-000000000000
-		Executable = C:\Users\Sam\Documents\under-london\build\main.exe
+		Executable = C:\Users\Sam\Documents\under london\under-london\build\main.exe
 		RemoteMachine = SAM-LAPTOP
-		StartingDirectory = C:\Users\Sam\Documents\under-london\build
+		StartingDirectory = C:\Users\Sam\Documents\under london\under-london\build
 		Environment = Default
 		LaunchingEngine = 00000000-0000-0000-0000-000000000000
 		UseLegacyDebugEngines = No
@@ -21,7 +21,7 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{729126E9-2183-420E-BC27-C5FF430846C9}.Release|x86.ActiveCfg = Release|x86
+		{729126E9-2183-420E-BC27-C5FF430846C9}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
