@@ -14,7 +14,17 @@ Took me WAY TOO LONG to make that work.
 TODO:
 ---------------------------------------------
 
-- Remove all junk CitySim code
+MASSAGING THINGS INTO A WORKABLE STATE:
+- Texture loading separate from OpenGL (assets.cpp)
+	- Probably put things in an Assets struct for access later.
+- UITheme out of renderer
+- Projection matrix in camera, not in the batch
+	- World and UI cameras
+- Game produces list of abstract draw instructions, then passed to the renderer
+- Make fonts actually work
+	- Probably split render instructions into sprites/text
+
+GAME:
 - Draw a map
 - Draw a grid over it
 - Create pipes
