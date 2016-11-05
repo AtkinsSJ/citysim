@@ -152,21 +152,21 @@ void gameUpdateAndRender(GameState *gameState, GLRenderer *renderer, InputState 
 // 			x++)
 // 		{
 // 			Terrain t = terrainAt(&gameState->city,x,y);
-// 			TextureAtlasItem textureAtlasItem;
+// 			GL_TextureAtlasItem textureAtlasItem;
 // 			switch (t) {
 // 				case Terrain_Forest: {
-// 					textureAtlasItem = TextureAtlasItem_ForestTile;
+// 					textureAtlasItem = GL_TextureAtlasItem_ForestTile;
 // 				} break;
 // 				case Terrain_Water: {
-// 					textureAtlasItem = TextureAtlasItem_WaterTile;
+// 					textureAtlasItem = GL_TextureAtlasItem_WaterTile;
 // 				} break;
 // 				case Terrain_Ground:
 // 				default: {
-// 					textureAtlasItem = TextureAtlasItem_GroundTile;
+// 					textureAtlasItem = GL_TextureAtlasItem_GroundTile;
 // 				} break;
 // 			}
 
-// 			drawTextureAtlasItem(renderer, false, textureAtlasItem,
+// 			drawGL_TextureAtlasItem(renderer, false, textureAtlasItem,
 // 				v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
 
 // #if 0
@@ -227,7 +227,7 @@ void gameUpdateAndRender(GameState *gameState, GLRenderer *renderer, InputState 
 	// 		ghostColor = color255(255,0,0,128);
 	// 	}
 	// 	Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[gameState->uiState.selectedBuildingArchetype].size);
-	// 	drawTextureAtlasItem(
+	// 	drawGL_TextureAtlasItem(
 	// 		renderer,
 	// 		false,
 	// 		buildingDefinitions[gameState->uiState.selectedBuildingArchetype].textureAtlasItem,

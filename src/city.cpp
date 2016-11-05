@@ -328,7 +328,3 @@ bool demolishRect(UIState *uiState, City *city, Rect rect) {
 
 	return true;
 }
-
-void sellAPotato(City *city) {
-	city->funds += 100;
-}

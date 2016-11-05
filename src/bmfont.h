@@ -37,7 +37,7 @@ struct BMFontBlock_Common
 {
 	uint16 lineHeight;
 	uint16 base; // Distance from top of line to the character baseline
-	uint16 scaleW, scaleH; // Texture dimensions
+	uint16 scaleW, scaleH; // GL_Texture dimensions
 	uint16 pageCount; // How many texture pages?
 
 	uint8 bitfield; // 1 if 8-bit character data is packed into all channels
@@ -54,7 +54,7 @@ struct BMFont_Char
 	uint16 w, h;
 	int16 xOffset, yOffset; // Offset when rendering to the screen
 	int16 xAdvance; // How far to move after rendering this character
-	uint8 page; // Texture page
+	uint8 page; // GL_Texture page
 	uint8 channel; // Bitfield, 1 = blue, 2 = green, 4 = red, 8 = alpha
 };
 
@@ -139,7 +139,7 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 			else
 			{
 				// Buffer-up the texture pages
-				GLint *pageToTexture = PushArray(renderArena, GLint, common->pageCount);
+				GLint *pageToGL_Texture = PushArray(renderArena, GLint, common->pageCount);
 				char *pageStart = (char *) pages;
 
 				real32 textureWidth = 0,
@@ -149,11 +149,11 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 					pageIndex < common->pageCount;
 					pageIndex++)
 				{
-					Texture *texture = loadTexture(renderer, pageStart, false);
+					GL_Texture *texture = loadTexture(renderer, pageStart, false);
 					ASSERT(texture->isValid, "Font texture failed to load!");
 					textureWidth = (real32) texture->w;
 					textureHeight = (real32) texture->h;
-					pageToTexture[pageIndex] = texture->glTextureID; //pushTextureToLoad(texturesToLoad, pageStart, true);
+					pageToGL_Texture[pageIndex] = texture->glTextureID; //pushTextureToLoad(texturesToLoad, pageStart, true);
 					pageStart += strlen(pageStart) + 1;
 				}
 
@@ -182,7 +182,7 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 					dest->yOffset = src->yOffset;
 					dest->xAdvance = src->xAdvance;
 
-					dest->textureID = pageToTexture[src->page];
+					dest->textureID = pageToGL_Texture[src->page];
 					// NB: If we start packing multiple images into a single texture at runtime,
 					// this will be WRONG!!!!
 					dest->uv = rectXYWH(

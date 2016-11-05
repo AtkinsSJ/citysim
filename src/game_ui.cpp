@@ -90,7 +90,7 @@ GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, Inp
 	V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
 	real32 maxLabelWidth = (real32)renderer->worldCamera.windowWidth - 256;
 
-	//drawTextureAtlasItem(renderer, true, TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
+	//drawGL_TextureAtlasItem(renderer, true, GL_TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 	//position.y += 154.0f;
 
 	position.y += (uiLabel(renderer, renderer->theme.font, "Under London",

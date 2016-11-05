@@ -33,11 +33,12 @@ enum BuildingArchetype {
 	BA_Count
 };
 BuildingDefinition buildingDefinitions[] = {
+	{}
 	// size, name, 		 image, 				 costs b/d,  isPath
-	{4,4, 	"Field", 	 TextureAtlasItem_Field, 200, 20,	 false},
-	{4,4, 	"Barn", 	 TextureAtlasItem_Barn,  2000, 1000, false},
-	{4,4, 	"Farmhouse", TextureAtlasItem_House, 2000, 1000, false},
-	{1,1, 	"Path", 	 TextureAtlasItem_Path,  10, 10,	 true},
+	// {4,4, 	"Field", 	 TextureAtlasItem_Field, 200, 20,	 false},
+	// {4,4, 	"Barn", 	 TextureAtlasItem_Barn,  2000, 1000, false},
+	// {4,4, 	"Farmhouse", TextureAtlasItem_House, 2000, 1000, false},
+	// {1,1, 	"Path", 	 TextureAtlasItem_Path,  10, 10,	 true},
 };
 
 struct Building {

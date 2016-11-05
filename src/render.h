@@ -41,7 +41,7 @@ struct UiTheme
 
 enum ShaderPrograms
 {
-	ShaderProgram_Textured,
+	ShaderProgram_GL_Textured,
 	ShaderProgram_Untextured,
 
 	ShaderProgram_Count,
@@ -51,39 +51,6 @@ enum ShaderPrograms
 enum TextureAtlasItem
 {
 	TextureAtlasItem_None,
-
-	TextureAtlasItem_GroundTile,
-	TextureAtlasItem_WaterTile,
-	TextureAtlasItem_ForestTile,
-	TextureAtlasItem_Path,
-	TextureAtlasItem_Field,
-	TextureAtlasItem_Crop0_0,
-	TextureAtlasItem_Crop0_1,
-	TextureAtlasItem_Crop0_2,
-	TextureAtlasItem_Crop0_3,
-	TextureAtlasItem_Potato,
-	TextureAtlasItem_Barn,
-	TextureAtlasItem_House,
-
-	TextureAtlasItem_Farmer_Stand,
-	TextureAtlasItem_Farmer_Walk0,
-	TextureAtlasItem_Farmer_Walk1,
-	TextureAtlasItem_Farmer_Hold,
-	TextureAtlasItem_Farmer_Carry0,
-	TextureAtlasItem_Farmer_Carry1,
-	TextureAtlasItem_Farmer_Harvest0,
-	TextureAtlasItem_Farmer_Harvest1,
-	TextureAtlasItem_Farmer_Harvest2,
-	TextureAtlasItem_Farmer_Harvest3,
-	TextureAtlasItem_Farmer_Plant0,
-	TextureAtlasItem_Farmer_Plant1,
-	TextureAtlasItem_Farmer_Plant2,
-	TextureAtlasItem_Farmer_Plant3,
-
-	TextureAtlasItem_Icon_Planting,
-	TextureAtlasItem_Icon_Harvesting,
-
-	TextureAtlasItem_Menu_Logo,
 
 	TextureAtlasItem_Map1,
 
@@ -99,20 +66,14 @@ struct Sprite
 	GLint textureID;
 	RealRect uv;
 	
-	// TextureAtlasItem texture;
+	// GL_TextureAtlasItem texture;
 	V4 color;
 };
 
 // Animation code should probably be deleted and redone.
 enum AnimationID
 {
-	Animation_Farmer_Stand,
-	Animation_Farmer_Walk,
-	Animation_Farmer_Hold,
-	Animation_Farmer_Carry,
-	Animation_Farmer_Harvest,
-	Animation_Farmer_Plant,
-	
+	Animation_TempToStopComplaint,
 	Animation_Count,
 };
 

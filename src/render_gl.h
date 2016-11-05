@@ -31,7 +31,7 @@ struct VertexData
 	V2 uv;
 };
 
-struct Texture
+struct GL_Texture
 {
 	bool isValid;
 	char *filename;
@@ -39,15 +39,15 @@ struct Texture
 	uint32 w,h;
 };
 
-struct TextureRegion
+struct GL_TextureRegion
 {
-	GLuint textureID; // Redundant for Texture.glTextureID!
+	GLuint textureID; // Redundant for GL_Texture.glTextureID!
 	RealRect uv;
 };
 
-struct TextureAtlas
+struct GL_TextureAtlas
 {
-	TextureRegion textureRegions[TextureAtlasItemCount];
+	GL_TextureRegion textureRegions[TextureAtlasItemCount];
 };
 
 const int WORLD_SPRITE_MAX = 16384;
@@ -109,8 +109,8 @@ struct GLRenderer
 	Animation animations[Animation_Count];
 
 	uint32 textureCount;
-	Texture textures[64];
-	TextureAtlas textureAtlas;
+	GL_Texture textures[64];
+	GL_TextureAtlas textureAtlas;
 
 	// UI Stuff!
 	UiTheme theme;
