@@ -48,14 +48,6 @@ enum ShaderPrograms
 	ShaderProgram_Invalid = -1
 };
 
-enum TextureAtlasItem
-{
-	TextureAtlasItem_None,
-
-	TextureAtlasItem_Map1,
-
-	TextureAtlasItemCount
-};
 
 struct Sprite
 {

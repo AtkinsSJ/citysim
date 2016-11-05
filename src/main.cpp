@@ -33,6 +33,7 @@ enum GameStatus {
 #include "localisation.h"
 #include "maths.h"
 #include "file.h"
+#include "assets.h"
 #include "render.h"
 #include "render_gl.h"
 #include "font.h"
@@ -140,6 +141,40 @@ void updateInput(InputState *inputState)
 	}
 }
 
+SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *WindowTitle)
+{
+	SDL_Window *window = 0;
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
+	}
+	else
+	{
+		// SDL_image
+		uint8 imgFlags = IMG_INIT_PNG;
+		if (!(IMG_Init(imgFlags) & imgFlags))
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
+		}
+		else
+		{
+
+			// Window
+			window = SDL_CreateWindow(WindowTitle,
+							SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+							winW, winH,	windowFlags);
+
+			if (!window)
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
+			}
+		}
+	}
+
+	return window;
+}
+
 int main(int argc, char *argv[]) {
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
@@ -152,8 +187,16 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	GLRenderer *renderer = initializeRenderer(&memoryArena, "Under London");
-	if (!renderer) {
+	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
+	                             "Under London");
+	if (!window)
+	{
+		return 1;
+	}
+
+	GLRenderer *renderer = initializeRenderer(&memoryArena, window);
+	if (!renderer)
+	{
 		return 1;
 	}
 
@@ -166,9 +209,6 @@ int main(int argc, char *argv[]) {
 	gameState->status = GameStatus_Setup;
 
 	InputState inputState = {};
-
-	V2 mouseDragStartPos = {};
-	Rect dragRect = irectXYWH(-1,-1,0,0);
 
 	renderer->worldCamera.zoom = 1.0f;
 	SDL_GetWindowSize(renderer->window, &renderer->worldCamera.windowWidth, &renderer->worldCamera.windowHeight);
@@ -223,6 +263,10 @@ int main(int argc, char *argv[]) {
 // CLEAN UP
 
 	freeRenderer(renderer);
+
+	SDL_DestroyWindow(renderer->window);
+	IMG_Quit();
+	SDL_Quit();
 
 	return 0;
 }

@@ -1,10 +1,12 @@
 // render_gl.cpp
 
-GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle)
+GLRenderer *initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 {
 	GLRenderer *renderer = PushStruct(memoryArena, GLRenderer);
 	GLRenderer *Result = renderer;
 	renderer->renderArena = allocateSubArena(memoryArena, MB(64));
+
+	renderer->window = window;
 
 	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
 
@@ -13,36 +15,10 @@ GLRenderer *initializeRenderer(MemoryArena *memoryArena, const char *WindowTitle
 	renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
 	renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
 
-	// SDL
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
-		Result = null;
-	}
-
-	// SDL_image
-	uint8 imgFlags = IMG_INIT_PNG;
-	if (!(IMG_Init(imgFlags) & imgFlags))
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
-		Result = null;
-	}
-
 	// Use GL3.1 Core
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-	// Window
-	renderer->window = SDL_CreateWindow(WindowTitle,
-					SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-					800, 600, // Initial screen resolution
-					SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-	if (renderer->window == NULL)
-	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
-		Result = null;
-	}
 
 	// Create context
 	renderer->context = SDL_GL_CreateContext(renderer->window);
@@ -473,10 +449,6 @@ bool loadTextures(GLRenderer *renderer)
 void freeRenderer(GLRenderer *renderer)
 {
 	SDL_GL_DeleteContext(renderer->context);
-	SDL_DestroyWindow(renderer->window);
-
-	IMG_Quit();
-	SDL_Quit();
 }
 
 void resizeWindow(GLRenderer *renderer, int32 newWidth, int32 newHeight)

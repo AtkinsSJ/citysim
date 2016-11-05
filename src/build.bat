@@ -7,7 +7,7 @@ xcopy ..\assets\*.png ..\build /C /D /Y
 xcopy ..\assets\*.fnt ..\build /C /D /Y
 xcopy ..\assets\*.gl ..\build /C /D /Y
 
-set COMPILER_FLAGS= -EHsc -MD -W4 -wd4201 -wd4127 -wd4996 -Zi -Od -I ..\include -FC
+set COMPILER_FLAGS= -EHsc -MD -W4 -wd4201 -wd4996 -Zi -Od -I ..\include -FC
 set LINKER_FLAGS= -SUBSYSTEM:WINDOWS -LIBPATH:..\lib\x86 -debug SDL2_image.lib SDL2main.lib SDL2.lib Shell32.lib opengl32.lib glew32.lib glu32.lib
 
 pushd ..\build
