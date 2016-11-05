@@ -10,8 +10,8 @@
 
 struct Matrix4 {
 	union {
-		GLfloat v[4][4]; // Column-major order, so [COLUMN][ROW]
-		GLfloat flat[4*4];
+		real32 v[4][4]; // Column-major order, so [COLUMN][ROW]
+		real32 flat[4*4];
 	};
 };
 
@@ -25,7 +25,7 @@ Matrix4 identityMatrix4() {
 	return m;
 }
 
-Matrix4 orthographicMatrix4(GLfloat left, GLfloat right, GLfloat top, GLfloat bottom, GLfloat nearClip, GLfloat farClip) {
+Matrix4 orthographicMatrix4(real32 left, real32 right, real32 top, real32 bottom, real32 nearClip, real32 farClip) {
 	Matrix4 m = {};
 	m.v[0][0] = 2.0f / (right-left);
 	m.v[1][1] = 2.0f / (top-bottom);

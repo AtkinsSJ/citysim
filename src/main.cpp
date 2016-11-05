@@ -214,8 +214,8 @@ int main(int argc, char *argv[]) {
 	SDL_GetWindowSize(renderer->window, &renderer->worldCamera.windowWidth, &renderer->worldCamera.windowHeight);
 	renderer->worldCamera.pos = v2(gameState->city.width/2, gameState->city.height/2);
 	renderer->uiBuffer.projectionMatrix = orthographicMatrix4(
-		0, (GLfloat) renderer->worldCamera.windowWidth,
-		0, (GLfloat) renderer->worldCamera.windowHeight,
+		0, (real32) renderer->worldCamera.windowWidth,
+		0, (real32) renderer->worldCamera.windowHeight,
 		-1000.0f, 1000.0f
 	);
 
@@ -238,13 +238,13 @@ int main(int argc, char *argv[]) {
 
 		if (inputState.wasWindowResized)
 		{
-			resizeWindow(renderer, inputState.newWindowWidth, inputState.newWindowHeight);
+			GL_windowResized(renderer, inputState.newWindowWidth, inputState.newWindowHeight);
 		}
 
 		gameUpdateAndRender(gameState, renderer, &inputState);
 
 	// Actually draw things!
-		render(renderer);
+		GL_render(renderer);
 
 	// FRAMERATE MONITORING AND CAPPING
 		currentFrame = SDL_GetTicks(); // Milliseconds
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
 
 // CLEAN UP
 
-	freeRenderer(renderer);
+	GL_freeRenderer(renderer);
 
 	SDL_DestroyWindow(renderer->window);
 	IMG_Quit();

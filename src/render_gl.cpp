@@ -446,12 +446,12 @@ bool loadTextures(GLRenderer *renderer)
 	return successfullyLoadedAllTextures;
 }
 
-void freeRenderer(GLRenderer *renderer)
+void GL_freeRenderer(GLRenderer *renderer)
 {
 	SDL_GL_DeleteContext(renderer->context);
 }
 
-void resizeWindow(GLRenderer *renderer, int32 newWidth, int32 newHeight)
+void GL_windowResized(GLRenderer *renderer, int32 newWidth, int32 newHeight)
 {
 	renderer->worldCamera.windowWidth = newWidth;
 	renderer->worldCamera.windowHeight = newHeight;
@@ -815,7 +815,7 @@ bool isBufferSorted(RenderBuffer *buffer)
 	return isSorted;
 }
 
-void render(GLRenderer *renderer)
+void GL_render(GLRenderer *renderer)
 {
 	// Sort sprites
 	sortSpriteBuffer(&renderer->worldBuffer);

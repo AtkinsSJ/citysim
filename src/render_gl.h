@@ -6,24 +6,6 @@ const int FRAMES_PER_SECOND = 60;
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-const float TILE_SIZE = 16.0f;
-const int TILE_WIDTH = 16,
-			TILE_HEIGHT = 16;
-const int CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
-const bool canZoom = true;
-
-struct Camera
-{
-	union {
-		Coord windowSize;
-		struct{int32 windowWidth, windowHeight;};
-	};
-	V2 pos; // Centre of screen, in tiles
-	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
-};
-const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
-const int CAMERA_EDGE_SCROLL_MARGIN = 8;
-
 struct VertexData
 {
 	V3 pos;
@@ -126,7 +108,7 @@ inline void checkForGLError()
 }
 
 GLRenderer *initializeRenderer(MemoryArena *MemoryArena, const char *GameName);
-void freeRenderer(GLRenderer *renderer);
+void GL_freeRenderer(GLRenderer *renderer);
 bool initOpenGL(GLRenderer *renderer);
 bool loadTextures(GLRenderer *renderer);
 void printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program);
@@ -148,7 +130,7 @@ void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator,
 void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
 				bool restart = false);
 
-void render(GLRenderer *renderer);
+void GL_render(GLRenderer *renderer);
 
 SDL_Cursor *createCursor(char *path);
 void setCursor(GLRenderer *renderer, Cursor cursor);

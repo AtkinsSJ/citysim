@@ -2,6 +2,24 @@
 
 // General rendering code.
 
+const float TILE_SIZE = 16.0f;
+const int TILE_WIDTH = 16,
+			TILE_HEIGHT = 16;
+const int CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
+const bool canZoom = true;
+
+struct Camera
+{
+	union {
+		Coord windowSize;
+		struct{int32 windowWidth, windowHeight;};
+	};
+	V2 pos; // Centre of screen, in tiles
+	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
+};
+const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
+const int CAMERA_EDGE_SCROLL_MARGIN = 8;
+
 enum Cursor
 {
 	Cursor_Main,
