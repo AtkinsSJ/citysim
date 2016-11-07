@@ -332,7 +332,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 	return offset;
 }
 
-void drawCachedText(GLRenderer *renderer, BitmapFontCachedText *cache, V2 topLeft, real32 depth)
+void drawCachedText(GL_Renderer *renderer, BitmapFontCachedText *cache, V2 topLeft, real32 depth)
 {
 	for (uint32 spriteIndex=0;
 		spriteIndex < cache->spriteCount;

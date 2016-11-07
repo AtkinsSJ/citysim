@@ -10,7 +10,7 @@ void initUiState(UIState *uiState)
 	uiState->tooltip.offsetFromCursor = v2(16, 20);
 }
 
-RealRect uiLabel(GLRenderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
+RealRect uiLabel(GL_Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
 
@@ -33,7 +33,7 @@ void setTooltip(UIState *uiState, char *text, V4 color)
 	uiState->tooltip.show = true;
 }
 
-void drawTooltip(GLRenderer *renderer, InputState *inputState, UIState *uiState)
+void drawTooltip(GL_Renderer *renderer, InputState *inputState, UIState *uiState)
 {
 	if (uiState->tooltip.show)
 	{
@@ -53,7 +53,7 @@ void drawTooltip(GLRenderer *renderer, InputState *inputState, UIState *uiState)
 	}
 }
 
-bool uiButton(GLRenderer *renderer, InputState *inputState, UIState *uiState, char *text, RealRect bounds, real32 depth,
+bool uiButton(GL_Renderer *renderer, InputState *inputState, UIState *uiState, char *text, RealRect bounds, real32 depth,
 			bool active=false, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool buttonClicked = false;
@@ -98,7 +98,7 @@ bool uiButton(GLRenderer *renderer, InputState *inputState, UIState *uiState, ch
 	return buttonClicked;
 }
 
-bool uiMenuButton(GLRenderer *renderer, InputState *inputState, UIState *uiState, char *text, RealRect bounds,
+bool uiMenuButton(GL_Renderer *renderer, InputState *inputState, UIState *uiState, char *text, RealRect bounds,
 			real32 depth, UIMenuID menuID, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool currentlyOpen = uiState->openMenu == menuID;
@@ -119,7 +119,7 @@ bool uiMenuButton(GLRenderer *renderer, InputState *inputState, UIState *uiState
 	return currentlyOpen;
 }
 
-void uiTextInput(GLRenderer *renderer, InputState *inputState, bool active,
+void uiTextInput(GL_Renderer *renderer, InputState *inputState, bool active,
 				char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
 {
 	if (active)
@@ -157,7 +157,7 @@ void pushUiMessage(UIState *uiState, char *message)
 	uiState->message.countdown = messageDisplayTime;
 }
 
-void drawUiMessage(GLRenderer *renderer, UIState *uiState)
+void drawUiMessage(GL_Renderer *renderer, UIState *uiState)
 {
 	if (uiState->message.countdown > 0)
 	{

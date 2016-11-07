@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	GLRenderer *renderer = GL_initializeRenderer(&memoryArena, window);
+	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window);
 	if (!renderer)
 	{
 		return 1;

@@ -68,7 +68,7 @@ void updateCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32
 	}
 }
 
-void showCostTooltip(GLRenderer *renderer, UIState *uiState, int32 cost, int32 cityFunds) {
+void showCostTooltip(GL_Renderer *renderer, UIState *uiState, int32 cost, int32 cityFunds) {
 	if (cost > cityFunds) {
 		uiState->tooltip.color = renderer->theme.tooltipColorBad;
 	} else {
@@ -80,7 +80,7 @@ void showCostTooltip(GLRenderer *renderer, UIState *uiState, int32 cost, int32 c
 
 const real32 uiPadding = 4;
 
-GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, InputState *inputState,
+GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, InputState *inputState,
 									GameStatus gameStatus)
 {
 	GameStatus result = gameStatus;
@@ -118,7 +118,7 @@ GameStatus updateAndRenderMainMenuUI(GLRenderer *renderer, UIState *uiState, Inp
 	return result;
 }
 
-void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState)
+void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState)
 {
 	uiState->uiRectCount = 0;
 
@@ -234,7 +234,7 @@ void updateAndRenderGameUI(GLRenderer *renderer, UIState *uiState, GameState *ga
 }
 
 // Returns true if game should restart
-bool updateAndRenderGameOverUI(GLRenderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState, bool won)
+bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState, bool won)
 {
 	bool result = false;
 

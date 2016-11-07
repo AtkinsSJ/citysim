@@ -28,7 +28,7 @@ GameState *startGame(MemoryArena *gameArena)
 	return result;
 }
 
-void gameUpdateAndRender(GameState *gameState, GLRenderer *renderer, InputState *inputState)
+void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState *inputState)
 {
 
 	// Game simulation

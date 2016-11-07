@@ -44,7 +44,7 @@ struct RenderBuffer
 	uint32 maxSprites;
 };
 
-struct GLShaderProgram
+struct GL_ShaderProgram
 {
 	GLuint shaderProgramID;
 	bool isValid;
@@ -67,14 +67,14 @@ struct GLShaderProgram
 		  aUVLoc;
 };
 
-struct GLRenderer
+struct GL_Renderer
 {
 	MemoryArena renderArena;
 
 	SDL_Window *window;
 	SDL_GLContext context;
 
-	GLShaderProgram shaders[ShaderProgram_Count];
+	GL_ShaderProgram shaders[ShaderProgram_Count];
 	int32 currentShader;
 
 	GLuint VBO,
@@ -107,9 +107,9 @@ inline void checkForGLError()
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
-void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
+void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color=makeWhite());
 
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GLRenderer *renderer);
+BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GL_Renderer *renderer);
 
 #include "render_gl.cpp"

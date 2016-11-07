@@ -1,6 +1,6 @@
 // render_gl.cpp
 
-void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, GL_Texture *texture, real32 x, real32 y, real32 w, real32 h)
+void assignTextureRegion(GL_Renderer *renderer, TextureAtlasItem item, GL_Texture *texture, real32 x, real32 y, real32 w, real32 h)
 {
 	real32 tw = (real32) texture->w,
 		   th = (real32) texture->h;
@@ -24,7 +24,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, GL_Texture
 }
 
 // Assign to whole texture
-void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, GL_Texture *texture)
+void assignTextureRegion(GL_Renderer *renderer, TextureAtlasItem item, GL_Texture *texture)
 {
 	real32 borderX = 1.0f / (real32) texture->w,
 		borderY = 1.0f / (real32) texture->h;
@@ -35,7 +35,7 @@ void assignTextureRegion(GLRenderer *renderer, TextureAtlasItem item, GL_Texture
 	};
 }
 
-GL_Texture *GL_loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPremultiplied)
+GL_Texture *GL_loadTexture(GL_Renderer *renderer, char *filename, bool isAlphaPremultiplied)
 {
 	GL_Texture *texture = renderer->textures + renderer->textureCount++;
 	texture->filename = filename;
@@ -110,7 +110,7 @@ GL_Texture *GL_loadTexture(GLRenderer *renderer, char *filename, bool isAlphaPre
 	return texture;
 }
 
-bool GL_loadTextures(GLRenderer *renderer)
+bool GL_loadTextures(GL_Renderer *renderer)
 {
 	bool successfullyLoadedAllTextures = true;
 
@@ -207,12 +207,12 @@ bool GL_loadTextures(GLRenderer *renderer)
 	return successfullyLoadedAllTextures;
 }
 
-void GL_freeRenderer(GLRenderer *renderer)
+void GL_freeRenderer(GL_Renderer *renderer)
 {
 	SDL_GL_DeleteContext(renderer->context);
 }
 
-void GL_windowResized(GLRenderer *renderer, int32 newWidth, int32 newHeight)
+void GL_windowResized(GL_Renderer *renderer, int32 newWidth, int32 newHeight)
 {
 	renderer->worldCamera.windowWidth = newWidth;
 	renderer->worldCamera.windowHeight = newHeight;
@@ -278,9 +278,9 @@ void GL_printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 	}
 }
 
-GLShaderProgram GL_loadShader(GLRenderer *renderer, char *vertexShaderFilename, char *fragmentShaderFilename)
+GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename, char *fragmentShaderFilename)
 {
-	GLShaderProgram result = {};
+	GL_ShaderProgram result = {};
 
 	result.vertexShaderFilename = vertexShaderFilename;
 	result.fragmentShaderFilename = fragmentShaderFilename;
@@ -397,9 +397,9 @@ GLShaderProgram GL_loadShader(GLRenderer *renderer, char *vertexShaderFilename, 
 	return result;
 }
 
-GLRenderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
+GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 {
-	GLRenderer *renderer = PushStruct(memoryArena, GLRenderer);
+	GL_Renderer *renderer = PushStruct(memoryArena, GL_Renderer);
 	bool succeeded = (renderer != 0);
 
 	if (succeeded)
@@ -534,7 +534,7 @@ inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect 
 	return sprite;
 }
 
-void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset)
+void drawSprite(GL_Renderer *renderer, bool isUI, Sprite *sprite, V3 offset)
 {
 	RenderBuffer *buffer;
 	if (isUI)
@@ -558,7 +558,7 @@ void drawSprite(GLRenderer *renderer, bool isUI, Sprite *sprite, V3 offset)
 	bufferSprite->depth += offset.z;
 }
 
-void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
+void drawQuad(GL_Renderer *renderer, bool isUI, RealRect rect, real32 depth,
 				GLint textureID, RealRect uv, V4 color)
 {
 	RenderBuffer *buffer;
@@ -582,7 +582,7 @@ void drawQuad(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth,
 	};
 }
 
-void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
+void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color)
 {
 	GL_TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
@@ -591,23 +591,23 @@ void drawTextureAtlasItem(GLRenderer *renderer, bool isUI, TextureAtlasItem text
 	drawQuad(renderer, isUI, rectCentreSize(position, size), depth, textureID, region->uv, color);
 }
 
-void drawRect(GLRenderer *renderer, bool isUI, RealRect rect, real32 depth, V4 color)
+void drawRect(GL_Renderer *renderer, bool isUI, RealRect rect, real32 depth, V4 color)
 {
 	drawQuad(renderer, isUI, rect, depth, TEXTURE_ID_NONE, {}, color);
 }
 
-inline GLShaderProgram *getActiveShader(GLRenderer *renderer)
+inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 {
 	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgram_Count, "Invalid shader!");
-	GLShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
+	GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 	ASSERT(activeShader->isValid, "Shader not properly loaded!");
 
 	return activeShader;
 }
 
-void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCount)
+void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexCount)
 {
-	GLShaderProgram *activeShader = getActiveShader(renderer);
+	GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	checkForGLError();
@@ -659,7 +659,7 @@ void renderPartOfBuffer(GLRenderer *renderer, uint32 vertexCount, uint32 indexCo
 	}
 }
 
-void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
+void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 {
 	// Fill VBO
 	uint32 vertexCount = 0;
@@ -691,7 +691,7 @@ void renderBuffer(GLRenderer *renderer, RenderBuffer *buffer)
 				renderer->currentShader = ShaderProgram_GL_Textured;
 			}
 
-			GLShaderProgram *activeShader = getActiveShader(renderer);
+			GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 			glUseProgram(activeShader->shaderProgramID);
 			checkForGLError();
@@ -806,7 +806,7 @@ bool isBufferSorted(RenderBuffer *buffer)
 	return isSorted;
 }
 
-void GL_render(GLRenderer *renderer)
+void GL_render(GL_Renderer *renderer)
 {
 	// Sort sprites
 	sortSpriteBuffer(&renderer->worldBuffer);
@@ -836,7 +836,7 @@ void GL_render(GLRenderer *renderer)
 	SDL_GL_SwapWindow( renderer->window );
 }
 
-V2 unproject(GLRenderer *renderer, V2 pos)
+V2 unproject(GL_Renderer *renderer, V2 pos)
 {
 	// Normalise to (-1 to 1) coordinates as used by opengl
 	V2 windowSize = v2(renderer->worldCamera.windowSize);
@@ -857,7 +857,7 @@ V2 unproject(GLRenderer *renderer, V2 pos)
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
 ////////////////////////////////////////////////////////////////////
-void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animationID,
+void setAnimation(Animator *animator, GL_Renderer *renderer, AnimationID animationID,
 					bool restart)
 {
 	Animation *anim = renderer->animations + animationID;
@@ -871,7 +871,7 @@ void setAnimation(Animator *animator, GLRenderer *renderer, AnimationID animatio
 	}
 }
 
-void drawAnimator(GLRenderer *renderer, bool isUI, Animator *animator, real32 daysPerFrame,
+void drawAnimator(GL_Renderer *renderer, bool isUI, Animator *animator, real32 daysPerFrame,
 				V2 worldTilePosition, V2 size, real32 depth, V4 color)
 {
 	animator->frameCounter += daysPerFrame * animationFramesPerDay;
