@@ -114,18 +114,6 @@ bool GL_loadTextures(GL_Renderer *renderer)
 {
 	bool successfullyLoadedAllTextures = true;
 
-	GL_Texture *texCombined = GL_loadTexture(renderer, "combined.png", false);
-	if (!texCombined->isValid)
-	{
-		successfullyLoadedAllTextures = false;
-	}
-
-	GL_Texture *texMenuLogo = GL_loadTexture(renderer, "farming-logo.png", false);
-	if (!texMenuLogo->isValid)
-	{
-		successfullyLoadedAllTextures = false;
-	}
-
 	GL_Texture *texMap1 = GL_loadTexture(renderer, "London-Strand-Holbron-Bloomsbury.png", false);
 	if (!texMap1->isValid)
 	{
@@ -134,74 +122,7 @@ bool GL_loadTextures(GL_Renderer *renderer)
 
 	if (successfullyLoadedAllTextures)
 	{
-		const real32 w1 = 16.0f,
-					w2 = w1 *2,
-					w3 = w1 *3,
-					w4 = w1 *4;
-		
-		// assignTextureRegion(renderer, TextureAtlasItem_GroundTile, 	texCombined,  0,  0, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_WaterTile, 	texCombined, w1,  0, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_ForestTile, 	texCombined, w2,  0, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_Path, 		texCombined, w3,  0, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_Field, 		texCombined, w4,  0, w4, w4);
-		// assignTextureRegion(renderer, TextureAtlasItem_Crop0_0, 	texCombined,  0, w1, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_Crop0_1, 	texCombined, w1, w1, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_Crop0_2, 	texCombined, w2, w1, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_Crop0_3, 	texCombined, w3, w1, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_Potato, 		texCombined,  0, w2, w1, w1);
-		// assignTextureRegion(renderer, TextureAtlasItem_Barn, 		texCombined,  0, w4, w4, w4);
-		// assignTextureRegion(renderer, TextureAtlasItem_House, 		texCombined, w4, w4, w4, w4);
-
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Stand,  	texCombined, 128 + 0, 64 +  0,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk0,  	texCombined, 128 + 8, 64 +  0,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Walk1,  	texCombined, 128 +16, 64 +  0,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Hold,   	texCombined, 128 + 0, 64 +  8,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry0, 	texCombined, 128 + 8, 64 +  8,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Carry1, 	texCombined, 128 +16, 64 +  8,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest0, texCombined, 128 + 0, 64 + 16,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest1, texCombined, 128 + 8, 64 + 16,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest2, texCombined, 128 +16, 64 + 16,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Harvest3, texCombined, 128 +24, 64 + 16,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant0, 	texCombined, 128 + 0, 64 + 24,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant1, 	texCombined, 128 + 8, 64 + 24,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant2, 	texCombined, 128 +16, 64 + 24,  8,  8);
-		// assignTextureRegion(renderer, TextureAtlasItem_Farmer_Plant3, 	texCombined, 128 +24, 64 + 24,  8,  8);
-
-		// assignTextureRegion(renderer, TextureAtlasItem_Icon_Planting, 	texCombined, 128 +  0, 0, 32, 32);
-		// assignTextureRegion(renderer, TextureAtlasItem_Icon_Harvesting, texCombined, 128 + 32, 0, 32, 32);
-
-		// // Logo!
-		// assignTextureRegion(renderer, TextureAtlasItem_Menu_Logo, texMenuLogo);
-
 		assignTextureRegion(renderer, TextureAtlasItem_Map1, texMap1);
-
-		// Animation *animation;
-		
-		// animation = renderer->animations + Animation_Farmer_Stand;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Stand;
-
-		// animation = renderer->animations + Animation_Farmer_Walk;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Walk0;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Walk1;
-		
-		// animation = renderer->animations + Animation_Farmer_Hold;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Hold;
-
-		// animation = renderer->animations + Animation_Farmer_Carry;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Carry0;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Carry1;
-
-		// animation = renderer->animations + Animation_Farmer_Harvest;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Harvest0;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Harvest1;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Harvest2;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Harvest3;
-
-		// animation = renderer->animations + Animation_Farmer_Plant;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Plant0;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Plant1;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Plant2;
-		// animation->frames[animation->frameCount++] = GL_TextureAtlasItem_Farmer_Plant3;
 	}
 
 	return successfullyLoadedAllTextures;
