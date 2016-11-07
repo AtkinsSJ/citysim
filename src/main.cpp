@@ -100,24 +100,18 @@ int main(int argc, char *argv[]) {
 
 // INIT
 	MemoryArena memoryArena;
-	if (!initMemoryArena(&memoryArena, MB(128)))
-	{
-		printf("Failed to allocate memory!");
-		return 1;
-	}
+	ASSERT(initMemoryArena(&memoryArena, MB(128)), "Failed to allocate memory!");
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Under London");
-	if (!window)
-	{
-		return 1;
-	}
+	ASSERT(window, "Failed to create window.");
+
+	AssetManager *assets = createAssetManager();
+	addTexture(assets, "London-Strand-Holbron-Bloomsbury.png", false);
+	loadTextures(assets);
 
 	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window);
-	if (!renderer)
-	{
-		return 1;
-	}
+	ASSERT(renderer, "Failed to initialize renderer.");
 
 // Game setup
 	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));

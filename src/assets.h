@@ -9,19 +9,25 @@ enum TextureAtlasItem
 	TextureAtlasItemCount
 };
 
-enum TextureState
+enum AssetState
 {
-	TextureState_Unloaded,
-	TextureState_Loaded,
+	AssetState_Unloaded,
+	AssetState_Loaded,
 };
 struct Texture
 {
-	TextureState state;
+	AssetState state;
 	char *filename;
+	bool isAlphaPremultiplied;
+	SDL_Surface *surface;
 };
 
-struct TextureAtlas
+struct AssetManager
 {
+	MemoryArena arena;
+
 	uint32 textureCount;
-	Texture textures[1];
+	Texture textures[32];
 };
+
+#include "assets.cpp"
