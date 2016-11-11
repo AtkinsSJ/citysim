@@ -1,6 +1,6 @@
 #pragma once
 
-void updateCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32 cityHeight) // City size in tiles
+void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32 cityHeight) // City size in tiles
 { 
 	// Zooming
 	if (canZoom && inputState->wheelY) {
@@ -234,7 +234,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 }
 
 // Returns true if game should restart
-bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState, bool won)
+bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, InputState *inputState, bool won)
 {
 	bool result = false;
 

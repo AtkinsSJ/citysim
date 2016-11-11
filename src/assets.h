@@ -1,12 +1,12 @@
 #pragma once
 
-enum TextureAtlasItem
+enum TextureAssetType
 {
-	TextureAtlasItem_None,
+	TextureAssetType_None,
 
-	TextureAtlasItem_Map1,
+	TextureAssetType_Map1,
 
-	TextureAtlasItemCount
+	TextureAssetTypeCount
 };
 
 enum AssetState
@@ -22,12 +22,28 @@ struct Texture
 	SDL_Surface *surface;
 };
 
+struct TextureRegion
+{
+	TextureAssetType type;
+	int32 textureID;
+	Rect uv;
+};
+
 struct AssetManager
 {
 	MemoryArena arena;
 
 	uint32 textureCount;
 	Texture textures[32];
+
+	// NB: index 0 is reserved as a null region.
+	uint32 textureRegionCount;
+	TextureRegion textureRegions[256];
+
+	// NOTE: At each index is the first or last position in textureRegions array matching that type.
+	// So, assets with the same type must be contiguous!
+	int32 firstIDForTextureAssetType[TextureAssetTypeCount];
+	int32 lastIDForTextureAssetType[TextureAssetTypeCount];
 };
 
 #include "assets.cpp"

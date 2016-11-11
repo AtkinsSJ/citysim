@@ -23,12 +23,12 @@ GameState *startGame(MemoryArena *gameArena)
 #endif
 
 	initCity(gameArena, &result->city, 100,100, "City Name Here", gameStartFunds);
-	generateTerrain(&result->city, &result->rng);
+	// generateTerrain(&result->city, &result->rng);
 
 	return result;
 }
 
-void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState *inputState)
+void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 
 	// Game simulation
@@ -41,30 +41,22 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 	}
 
 	// CAMERA!
-	updateCamera(&renderer->worldCamera, inputState, gameState->city.width, gameState->city.height);
+	Camera *worldCamera = &gameState->uiState.worldCamera;
+	Camera *uiCamera = &gameState->uiState.uiCamera;
 
-	real32 worldScale = renderer->worldCamera.zoom / TILE_SIZE;
-	real32 camWidth = renderer->worldCamera.windowWidth * worldScale,
-			camHeight = renderer->worldCamera.windowHeight * worldScale;
-	real32 halfCamWidth = camWidth * 0.5f,
-			halfCamHeight = camHeight * 0.5f;
-	RealRect cameraBounds = {
-		renderer->worldCamera.pos.x - halfCamWidth,
-		renderer->worldCamera.pos.y - halfCamHeight,
-		camWidth, camHeight
-	};
-	renderer->worldBuffer.projectionMatrix = orthographicMatrix4(
-		renderer->worldCamera.pos.x - halfCamWidth, renderer->worldCamera.pos.x + halfCamWidth,
-		renderer->worldCamera.pos.y - halfCamHeight, renderer->worldCamera.pos.y + halfCamHeight,
-		-1000.0f, 1000.0f
-	);
-	renderer->uiBuffer.projectionMatrix = orthographicMatrix4(
-		0, (GLfloat) renderer->worldCamera.windowWidth,
-		0, (GLfloat) renderer->worldCamera.windowHeight,
-		-1000.0f, 1000.0f
-	);
+	// real32 worldScale = worldCamera->zoom / TILE_SIZE;
+	// real32 camWidth = worldCamera->windowWidth * worldScale,
+	// 		camHeight = worldCamera->windowHeight * worldScale;
+	// real32 halfCamWidth = camWidth * 0.5f,
+	// 		halfCamHeight = camHeight * 0.5f;
+	// RealRect cameraBounds = {
+	// 	worldCamera->pos.x - halfCamWidth,
+	// 	worldCamera->pos.y - halfCamHeight,
+	// 	camWidth, camHeight
+	// };
 	
-	V2 mouseWorldPos = unproject(renderer, v2(inputState->mousePos));
+	// TODO: Unproject should happen somewhere outside of the game code.
+	V2 mouseWorldPos = unproject(glRenderer, v2(inputState->mousePos));
 	Coord mouseTilePos = tilePosition(mouseWorldPos);
 
 // UiButton/Mouse interaction
@@ -79,10 +71,10 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 		// Camera controls
 		// HOME resets the camera and centres on the HQ
 		if (keyJustPressed(inputState, SDL_SCANCODE_HOME)) {
-			renderer->worldCamera.zoom = 1;
+			worldCamera->zoom = 1;
 			// Jump to the farmhouse if we have one!
 			if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
-				renderer->worldCamera.pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
+				worldCamera->pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
 			} else {
 				pushUiMessage(&gameState->uiState, "Build an HQ, then pressing [Home] will take you there.");
 			}
@@ -99,7 +91,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 				// 	}
 
 				// 	int32 buildCost = buildingDefinitions[gameState->uiState.selectedBuildingArchetype].buildCost;
-				// 	showCostTooltip(renderer, &gameState->uiState, buildCost, gameState->city.funds);
+				// 	showCostTooltip(glRenderer, &gameState->uiState, buildCost, gameState->city.funds);
 				// } break;
 
 				// case ActionMode_Demolish: {
@@ -109,7 +101,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 				// 	} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 				// 		dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 				// 		int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
-				// 		showCostTooltip(renderer, &gameState->uiState, demolitionCost, gameState->city.funds);
+				// 		showCostTooltip(glRenderer, &gameState->uiState, demolitionCost, gameState->city.funds);
 				// 	}	
 
 				// 	if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
@@ -134,7 +126,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 			// Unselect current thing
 			// setActiveButton(&actionButtonGroup, null);
 			gameState->uiState.actionMode = ActionMode_None;
-			setCursor(&renderer->theme, Cursor_Main);
+			setCursor(&glRenderer->theme, Cursor_Main);
 		}
 	}
 
@@ -142,7 +134,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 
 	// Draw terrain
 	V2 backgroundSize = v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
-	drawTextureAtlasItem(renderer, false, TextureAtlasItem_Map1, backgroundSize * 0.5f, backgroundSize, 0);
+	drawTextureAtlasItem(glRenderer, false, TextureAssetType_Map1, backgroundSize * 0.5f, backgroundSize, 0);
 // 	for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
 // 		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
 // 		y++)
@@ -166,7 +158,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 // 				} break;
 // 			}
 
-// 			drawGL_TextureAtlasItem(renderer, false, textureAtlasItem,
+// 			drawGL_TextureAtlasItem(glRenderer, false, textureAtlasItem,
 // 				v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
 
 // #if 0
@@ -187,7 +179,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 // 					default: color = {255, 255, 255, 63}; break;
 // 				}
 
-// 				drawRect(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
+// 				drawRect(glRenderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
 // 			}
 // #endif
 // 		}
@@ -212,7 +204,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 
 			default: {
 				V2 drawPos = centre(building.footprint);
-				drawTextureAtlasItem(renderer, false, def->textureAtlasItem,
+				drawTextureAtlasItem(glRenderer, false, def->textureAtlasItem,
 				 	drawPos, v2(building.footprint.dim), depthFromY(drawPos.y), drawColor);
 			} break;
 		}
@@ -228,7 +220,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 	// 	}
 	// 	Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[gameState->uiState.selectedBuildingArchetype].size);
 	// 	drawGL_TextureAtlasItem(
-	// 		renderer,
+	// 		glRenderer,
 	// 		false,
 	// 		buildingDefinitions[gameState->uiState.selectedBuildingArchetype].textureAtlasItem,
 	// 		centre(footprint),
@@ -239,7 +231,7 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 	// } else if (gameState->uiState.actionMode == ActionMode_Demolish
 	// 	&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 	// 	// Demolition outline
-	// 	drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
+	// 	drawRect(glRenderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
 	// }
 
 	// Draw the UI!
@@ -247,22 +239,22 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 	{
 		case GameStatus_Setup:
 		{
-			gameState->status = updateAndRenderMainMenuUI(renderer, &gameState->uiState, inputState, gameState->status);
+			gameState->status = updateAndRenderMainMenuUI(glRenderer, &gameState->uiState, inputState, gameState->status);
 		}
 		break;
 
 		case GameStatus_Playing:
 		{
-			updateAndRenderGameUI(renderer, &gameState->uiState, gameState, inputState);
+			updateAndRenderGameUI(glRenderer, &gameState->uiState, gameState, inputState);
 		}
 		break;
 
 		case GameStatus_Won:
 		case GameStatus_Lost:
 		{
-			updateAndRenderGameUI(renderer, &gameState->uiState, gameState, inputState);
+			updateAndRenderGameUI(glRenderer, &gameState->uiState, gameState, inputState);
 
-			if (updateAndRenderGameOverUI(renderer, &gameState->uiState, gameState, inputState, gameState->status == GameStatus_Won))
+			if (updateAndRenderGameOverUI(glRenderer, &gameState->uiState, gameState, inputState, gameState->status == GameStatus_Won))
 			{
 				gameState = startGame(gameState->arena);
 
@@ -272,6 +264,8 @@ void gameUpdateAndRender(GameState *gameState, GL_Renderer *renderer, InputState
 		break;
 	}
 
-	drawTooltip(renderer, inputState, &gameState->uiState);
-	drawUiMessage(renderer, &gameState->uiState);
+	drawTooltip(glRenderer, inputState, &gameState->uiState);
+	drawUiMessage(glRenderer, &gameState->uiState);
+
+	inputMoveCamera(&renderer->worldCamera, inputState, gameState->city.width, gameState->city.height);
 }

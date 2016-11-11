@@ -16,23 +16,23 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, c
 	city->buildingCountMax = ArrayCount(city->buildings);
 }
 
-void generateTerrain(City *city, RandomMT *random)
-{
+// void generateTerrain(City *city, RandomMT *random)
+// {
 
-	for (int32 y = 0; y < city->height; y++) {
-		for (int32 x = 0; x < city->width; x++) {
+// 	for (int32 y = 0; y < city->height; y++) {
+// 		for (int32 x = 0; x < city->width; x++) {
 
-			real32 px = (real32)x * 0.1f;
-			real32 py = (real32)y * 0.1f;
+// 			real32 px = (real32)x * 0.1f;
+// 			real32 py = (real32)y * 0.1f;
 
-			real32 perlinValue = stb_perlin_noise3(px, py, 0);
+// 			real32 perlinValue = stb_perlin_noise3(px, py, 0);
 
-			city->terrain[tileIndex(city, x, y)] = (perlinValue > 0.1f)
-				? Terrain_Forest
-				: Terrain_Ground;
-		}
-	}
-}
+// 			city->terrain[tileIndex(city, x, y)] = (perlinValue > 0.1f)
+// 				? Terrain_Forest
+// 				: Terrain_Ground;
+// 		}
+// 	}
+// }
 
 bool canAfford(City *city, int32 cost)
 {

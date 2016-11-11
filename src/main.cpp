@@ -107,7 +107,8 @@ int main(int argc, char *argv[]) {
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
-	addTexture(assets, "London-Strand-Holbron-Bloomsbury.png", false);
+	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
+	                 irectXYWH(0,0,2002,1519), false);
 	loadTextures(assets);
 
 	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window);
@@ -154,7 +155,21 @@ int main(int argc, char *argv[]) {
 			GL_windowResized(renderer, inputState.newWindowWidth, inputState.newWindowHeight);
 		}
 
-		gameUpdateAndRender(gameState, renderer, &inputState);
+		gameUpdateAndRender(gameState, &inputState, assets);
+
+		// Update camera matrices here
+		#if 0
+		renderer->worldBuffer->projectionMatrix = orthographicMatrix4(
+			worldCamera->pos.x - halfCamWidth, worldCamera->pos.x + halfCamWidth,
+			worldCamera->pos.y - halfCamHeight, worldCamera->pos.y + halfCamHeight,
+			-1000.0f, 1000.0f
+		);
+		renderer->uiBuffer->projectionMatrix = orthographicMatrix4(
+			0, (GLfloat) worldCamera->windowWidth,
+			0, (GLfloat) worldCamera->windowHeight,
+			-1000.0f, 1000.0f
+		);
+		#endif
 
 	// Actually draw things!
 		GL_render(renderer);

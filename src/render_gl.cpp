@@ -1,6 +1,6 @@
 // render_gl.cpp
 
-void assignTextureRegion(GL_Renderer *renderer, TextureAtlasItem item, GL_Texture *texture, real32 x, real32 y, real32 w, real32 h)
+void assignTextureRegion(GL_Renderer *renderer, TextureAssetType item, GL_Texture *texture, real32 x, real32 y, real32 w, real32 h)
 {
 	real32 tw = (real32) texture->w,
 		   th = (real32) texture->h;
@@ -24,7 +24,7 @@ void assignTextureRegion(GL_Renderer *renderer, TextureAtlasItem item, GL_Textur
 }
 
 // Assign to whole texture
-void assignTextureRegion(GL_Renderer *renderer, TextureAtlasItem item, GL_Texture *texture)
+void assignTextureRegion(GL_Renderer *renderer, TextureAssetType item, GL_Texture *texture)
 {
 	real32 borderX = 1.0f / (real32) texture->w,
 		borderY = 1.0f / (real32) texture->h;
@@ -122,7 +122,7 @@ bool GL_loadTextures(GL_Renderer *renderer)
 
 	if (successfullyLoadedAllTextures)
 	{
-		assignTextureRegion(renderer, TextureAtlasItem_Map1, texMap1);
+		assignTextureRegion(renderer, TextureAssetType_Map1, texMap1);
 	}
 
 	return successfullyLoadedAllTextures;
@@ -135,9 +135,6 @@ void GL_freeRenderer(GL_Renderer *renderer)
 
 void GL_windowResized(GL_Renderer *renderer, int32 newWidth, int32 newHeight)
 {
-	renderer->worldCamera.windowWidth = newWidth;
-	renderer->worldCamera.windowHeight = newHeight;
-
 	glViewport(0, 0, newWidth, newHeight);
 }
 
@@ -368,8 +365,8 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 		{
 			glEnable(GL_TEXTURE_2D);
 
-			renderer->shaders[ShaderProgram_GL_Textured] = GL_loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
-			succeeded = renderer->shaders[ShaderProgram_GL_Textured].isValid;
+			renderer->shaders[ShaderProgram_Textured] = GL_loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
+			succeeded = renderer->shaders[ShaderProgram_Textured].isValid;
 
 			if (succeeded)
 			{
@@ -503,7 +500,7 @@ void drawQuad(GL_Renderer *renderer, bool isUI, RealRect rect, real32 depth,
 	};
 }
 
-void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
+void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAssetType textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color)
 {
 	GL_TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
@@ -609,7 +606,7 @@ void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			}
 			else
 			{
-				renderer->currentShader = ShaderProgram_GL_Textured;
+				renderer->currentShader = ShaderProgram_Textured;
 			}
 
 			GL_ShaderProgram *activeShader = getActiveShader(renderer);

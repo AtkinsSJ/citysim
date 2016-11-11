@@ -65,3 +65,9 @@ inline V2 lerp(V2 a, V2 b, real32 position)
 {
 	return a + (b-a)*position;
 }
+
+inline int32 clampToRangeWrapping(int32 minInclusive, int32 maxInclusive, int32 offset)
+{
+	int32 t = offset % (maxInclusive - minInclusive + 1);
+	return minInclusive + t;
+}

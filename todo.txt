@@ -17,6 +17,7 @@ TODO:
 MASSAGING THINGS INTO A WORKABLE STATE:
 - Texture loading separate from OpenGL (assets.cpp)
 	- Probably put things in an Assets struct for access later.
+	- Maybe we should loadTextureRegion(), which then loads the texture if it isn't loaded already?
 - UITheme out of renderer
 - Projection matrix in camera, not in the batch
 	- World and UI cameras

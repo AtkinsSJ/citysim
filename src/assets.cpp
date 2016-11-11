@@ -7,16 +7,57 @@ AssetManager *createAssetManager()
 	AssetManager *assets = PushStruct(&bootstrap, AssetManager);
 	assets->arena = bootstrap;
 
+	assets->textureRegions[0].type = TextureAssetType_None;
+	assets->textureRegions[0].textureID = -1;
+
 	return assets;
 }
 
-Texture *addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
+int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
 {
 	ASSERT(assets->textureCount < ArrayCount(assets->textures), "No room for texture");
 
-	Texture *result = assets->textures + assets->textureCount++;
-	result->filename = filename;
-	result->isAlphaPremultiplied = isAlphaPremultiplied;
+	int32 textureID = assets->textureCount++;
+
+	Texture *texture = assets->textures + textureID;
+	texture->filename = filename;
+	texture->isAlphaPremultiplied = isAlphaPremultiplied;
+
+	return textureID;
+}
+
+int32 findTexture(AssetManager *assets, char *filename)
+{
+	int32 index = -1;
+	for (int32 i = 0; i < (int32)assets->textureCount; ++i)
+	{
+		Texture *tex = assets->textures + i;
+		if (strcmp(filename, tex->filename) == 0)
+		{
+			index = i;
+			break;
+		}
+	}
+	return index;
+}
+
+TextureRegion *addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, Rect uv, bool isAlphaPremultiplied=false)
+{
+	ASSERT(assets->textureRegionCount < ArrayCount(assets->textureRegions), "No room for texture region");
+	int32 textureRegionID = assets->textureRegionCount++;
+	TextureRegion *result = assets->textureRegions + textureRegionID;
+
+	int32 textureID = findTexture(assets, filename);
+	if (textureID == -1)
+	{
+		textureID = addTexture(assets, filename, isAlphaPremultiplied);
+	}
+
+	result->type = type;
+	result->textureID = textureID;
+	result->uv = uv;
+
+	assets->firstIDForTextureAssetType[type] = min(textureRegionID, assets->firstIDForTextureAssetType[type]);
 
 	return result;
 }
@@ -29,7 +70,7 @@ void loadTextures(AssetManager *assets)
 		if (tex->state == AssetState_Unloaded)
 		{
 			tex->surface = IMG_Load(tex->filename);
-			ASSERT(tex->surface, "Failed to load image '%s'!\n%s", filename, IMG_GetError());
+			ASSERT(tex->surface, "Failed to load image '%s'!\n%s", tex->filename, IMG_GetError());
 
 			ASSERT(tex->surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
 			if (!tex->isAlphaPremultiplied)
@@ -68,4 +109,15 @@ void loadTextures(AssetManager *assets)
 			tex->state = AssetState_Loaded;
 		}
 	}
+}
+
+int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
+{
+	int32 min = assets->firstIDForTextureAssetType[item],
+		  max = assets->lastIDForTextureAssetType[item];
+
+	int32 id = clampToRangeWrapping(min, max, offset);
+	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
+
+	return id;
 }

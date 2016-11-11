@@ -29,7 +29,7 @@ struct GL_TextureRegion
 
 struct GL_TextureAtlas
 {
-	GL_TextureRegion textureRegions[TextureAtlasItemCount];
+	GL_TextureRegion textureRegions[TextureAssetTypeCount];
 };
 
 const int WORLD_SPRITE_MAX = 16384;
@@ -80,8 +80,6 @@ struct GL_Renderer
 	GLuint VBO,
 		   IBO;
 
-	Camera worldCamera;
-
 	RenderBuffer worldBuffer;
 	RenderBuffer uiBuffer;
 
@@ -107,7 +105,7 @@ inline void checkForGLError()
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
-void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAtlasItem textureAtlasItem,
+void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAssetType textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color=makeWhite());
 
 BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GL_Renderer *renderer);

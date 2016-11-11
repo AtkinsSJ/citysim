@@ -38,6 +38,9 @@ struct UiMessage
 
 struct UIState
 {
+	Camera worldCamera;
+	Camera uiCamera;
+
 	UIMenuID openMenu;
 	ActionMode actionMode;
 	BuildingArchetype selectedBuildingArchetype;

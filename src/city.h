@@ -15,7 +15,7 @@ struct BuildingDefinition {
 		struct {int32 width, height;};
 	};
 	string name;
-	TextureAtlasItem textureAtlasItem;
+	TextureAssetType textureAtlasItem;
 	int32 buildCost;
 	int32 demolishCost;
 	bool isPath;

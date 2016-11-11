@@ -10,6 +10,8 @@ const bool canZoom = true;
 
 struct Camera
 {
+	// TODO: Replace pixel size with a res-independant size which we then convert to pixels.
+	// So worldCamera is in world units, uiCamera in pixels.
 	union {
 		Coord windowSize;
 		struct{int32 windowWidth, windowHeight;};
@@ -58,7 +60,7 @@ struct UiTheme
 
 enum ShaderPrograms
 {
-	ShaderProgram_GL_Textured,
+	ShaderProgram_Textured,
 	ShaderProgram_Untextured,
 
 	ShaderProgram_Count,
@@ -87,7 +89,7 @@ enum AnimationID
 
 struct Animation
 {
-	TextureAtlasItem frames[16];
+	TextureAssetType frames[16];
 	uint32 frameCount;
 };
 
