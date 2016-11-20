@@ -35,6 +35,7 @@ void assignTextureRegion(GL_Renderer *renderer, TextureAssetType item, GL_Textur
 	};
 }
 
+#if 0
 GL_Texture *GL_loadTexture(GL_Renderer *renderer, char *filename, bool isAlphaPremultiplied)
 {
 	GL_Texture *texture = renderer->textures + renderer->textureCount++;
@@ -127,6 +128,7 @@ bool GL_loadTextures(GL_Renderer *renderer)
 
 	return successfullyLoadedAllTextures;
 }
+#endif
 
 void GL_freeRenderer(GL_Renderer *renderer)
 {
@@ -315,7 +317,7 @@ GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename
 	return result;
 }
 
-GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
+GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window, AssetManager *assets)
 {
 	GL_Renderer *renderer = PushStruct(memoryArena, GL_Renderer);
 	bool succeeded = (renderer != 0);
@@ -327,13 +329,8 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 
 		renderer->window = window;
 
-		renderer->worldBuffer.name = "WorldBuffer";
-		renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
-		renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
-
-		renderer->uiBuffer.name = "UIBuffer";
-		renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
-		renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
+		initRenderBuffer(&renderer->renderArena, &renderer->worldBuffer, "WorldBuffer", WORLD_SPRITE_MAX);
+		initRenderBuffer(&renderer->renderArena, &renderer->uiBuffer, "UIBuffer", UI_SPRITE_MAX);
 
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -367,8 +364,6 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 		// Init OpenGL
 		if (succeeded)
 		{
-			glEnable(GL_TEXTURE_2D);
-
 			renderer->shaders[ShaderProgram_Textured] = GL_loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
 			succeeded = renderer->shaders[ShaderProgram_Textured].isValid;
 
@@ -376,6 +371,24 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 			{
 				renderer->shaders[ShaderProgram_Untextured] = GL_loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
 				succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
+			}
+
+			if (succeeded)
+			{
+				// Textures
+				for (uint32 i=0; i<assets->textureCount; i++)
+				{
+					if (i == 0)
+					{
+						renderer->textureInfo[i].glTextureID = TEXTURE_ID_NONE;
+						renderer->textureInfo[i].isLoaded = true;
+					}
+					else
+					{
+						glGenTextures(1, &renderer->textureInfo[i].glTextureID);
+						renderer->textureInfo[i].isLoaded = false;
+					}
+				}
 			}
 
 			if (succeeded)
@@ -425,13 +438,6 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 		renderer->theme.cursors[Cursor_Hire] = createCursor("cursor_hire.png");
 		setCursor(&renderer->theme, Cursor_Main);
 
-		// Load textures &c
-		if (succeeded && !GL_loadTextures(renderer))
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not load textures! :(");
-			succeeded = false;
-		}
-
 		endTemporaryMemory(&tempArena);
 
 		if (!succeeded)
@@ -456,47 +462,14 @@ inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect 
 	return sprite;
 }
 
-void drawSprite(RenderBuffer *buffer, Sprite *sprite, V3 offset)
-{
-	if (buffer->spriteCount >= buffer->maxSprites)
-	{
-		SDL_Log("Too many %s sprites!", buffer->name);
-		return;
-	}
+// void drawTextureAtlasItem(GL_Renderer *renderer, RenderBuffer *buffer, TextureAssetType textureAtlasItem,
+// 				V2 position, V2 size, real32 depth, V4 color)
+// {
+// 	GL_TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
+// 	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
 
-	Sprite *bufferSprite = buffer->sprites + buffer->spriteCount++;
-	*bufferSprite = *sprite;
-	bufferSprite->rect.pos += offset.xy;
-	bufferSprite->depth += offset.z;
-}
-
-void drawQuad(RenderBuffer *buffer, RealRect rect, real32 depth,
-				GLint textureID, RealRect uv, V4 color)
-{
-	if (buffer->spriteCount >= buffer->maxSprites)
-	{
-		SDL_Log("Too many %s sprites!", buffer->name);
-		return;
-	}
-
-	buffer->sprites[buffer->spriteCount++] = {
-		rect, depth, textureID, uv, color
-	};
-}
-
-void drawTextureAtlasItem(GL_Renderer *renderer, RenderBuffer *buffer, TextureAssetType textureAtlasItem,
-				V2 position, V2 size, real32 depth, V4 color)
-{
-	GL_TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
-	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
-
-	drawQuad(buffer, rectCentreSize(position, size), depth, textureID, region->uv, color);
-}
-
-void drawRect(RenderBuffer *buffer, RealRect rect, real32 depth, V4 color)
-{
-	drawQuad(buffer, rect, depth, TEXTURE_ID_NONE, {}, color);
-}
+// 	drawQuad(buffer, rectCentreSize(position, size), depth, textureID, region->uv, color);
+// }
 
 inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 {
@@ -561,21 +534,22 @@ void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexC
 	}
 }
 
-void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
+void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
 {
 	// Fill VBO
 	uint32 vertexCount = 0;
 	uint32 indexCount = 0;
-	GLint boundGL_TextureID = TEXTURE_ID_INVALID;
+	GLint glBoundTextureID = TEXTURE_ID_INVALID;
 
 	uint32 drawCallCount = 0;
 
-
-	for (uint32 i=0; i < buffer->spriteCount; i++)
+	for (uint32 i=0; i < buffer->itemCount; i++)
 	{
-		Sprite *sprite = buffer->sprites + i;
+		RenderItem *item = buffer->items + i;
+		TextureRegion *region = assets->textureRegions + item->textureRegionID;
+		GL_TextureInfo *textureInfo = renderer->textureInfo + region->textureID;
 
-		if (sprite->textureID != boundGL_TextureID)
+		if (textureInfo->glTextureID != glBoundTextureID)
 		{
 			// Render existing buffer contents
 			if (vertexCount)
@@ -584,7 +558,7 @@ void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				renderPartOfBuffer(renderer, vertexCount, indexCount);
 			}
 
-			if (sprite->textureID == TEXTURE_ID_NONE)
+			if (textureInfo->glTextureID == TEXTURE_ID_NONE)
 			{
 				renderer->currentShader = ShaderProgram_Untextured;
 			}
@@ -604,9 +578,29 @@ void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			// Bind new texture if this shader uses textures
 			if (activeShader->uTextureLoc != -1)
 			{
+				glEnable(GL_TEXTURE_2D);
 				glActiveTexture(GL_TEXTURE0);
 				checkForGLError();
-				glBindTexture(GL_TEXTURE_2D, sprite->textureID);
+				glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
+				checkForGLError();
+
+				if (!textureInfo->isLoaded)
+				{
+					// Load texture into GPU
+#if 0
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#else
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#endif
+					// Upload texture
+					Texture *texture = assets->textures + region->textureID;
+					ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
+					textureInfo->isLoaded = true;
+				}
+
 				checkForGLError();
 				glUniform1i(activeShader->uTextureLoc, 0);
 				checkForGLError();
@@ -614,30 +608,30 @@ void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 			vertexCount = 0;
 			indexCount = 0;
-			boundGL_TextureID = sprite->textureID;
+			glBoundTextureID = textureInfo->glTextureID;
 		}
 
 		int firstVertex = vertexCount;
 
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->rect.x, sprite->rect.y, sprite->depth),
-			sprite->color,
-			v2(sprite->uv.x, sprite->uv.y)
+			v3( item->rect.x, item->rect.y, item->depth),
+			item->color,
+			v2(region->uv.x, region->uv.y)
 		};
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y, sprite->depth),
-			sprite->color,
-			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y)
+			v3( item->rect.x + item->rect.size.x, item->rect.y, item->depth),
+			item->color,
+			v2(region->uv.x + region->uv.w, region->uv.y)
 		};
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->rect.x + sprite->rect.size.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
-			sprite->color,
-			v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h)
+			v3( item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
+			item->color,
+			v2(region->uv.x + region->uv.w, region->uv.y + region->uv.h)
 		};
 		renderer->vertices[vertexCount++] = {
-			v3( sprite->rect.x, sprite->rect.y + sprite->rect.size.y, sprite->depth),
-			sprite->color,
-			v2(sprite->uv.x, sprite->uv.y + sprite->uv.h)
+			v3( item->rect.x, item->rect.y + item->rect.size.y, item->depth),
+			item->color,
+			v2(region->uv.x, region->uv.y + region->uv.h)
 		};
 
 		renderer->indices[indexCount++] = firstVertex + 0;
@@ -652,15 +646,15 @@ void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	drawCallCount++;
 	renderPartOfBuffer(renderer, vertexCount, indexCount);
 
-	SDL_Log("Drew %d sprites this frame, with %d draw calls.", buffer->spriteCount, drawCallCount);
-	buffer->spriteCount = 0;
+	SDL_Log("Drew %d items this frame, with %d draw calls.", buffer->itemCount, drawCallCount);
+	buffer->itemCount = 0;
 }
 
-void sortSpriteBuffer(RenderBuffer *buffer)
+void sortRenderBuffer(RenderBuffer *buffer)
 {
 	// This is an implementation of the 'comb sort' algorithm, low to high
 
-	uint32 gap = buffer->spriteCount;
+	uint32 gap = buffer->itemCount;
 	real32 shrink = 1.3f;
 
 	bool swapped = false;
@@ -677,14 +671,14 @@ void sortSpriteBuffer(RenderBuffer *buffer)
 
 		// "comb" over the list
 		for (uint32 i = 0;
-			i + gap <= buffer->spriteCount;
+			i + gap <= buffer->itemCount;
 			i++)
 		{
-			if (buffer->sprites[i].depth > buffer->sprites[i+gap].depth)
+			if (buffer->items[i].depth > buffer->items[i+gap].depth)
 			{
-				Sprite temp = buffer->sprites[i];
-				buffer->sprites[i] = buffer->sprites[i+gap];
-				buffer->sprites[i+gap] = temp;
+				RenderItem temp = buffer->items[i];
+				buffer->items[i] = buffer->items[i+gap];
+				buffer->items[i+gap] = temp;
 
 				swapped = true;
 			}
@@ -696,23 +690,23 @@ bool isBufferSorted(RenderBuffer *buffer)
 {
 	bool isSorted = true;
 	real32 lastDepth = real32Min;
-	for (uint32 i=0; i<=buffer->spriteCount; i++)
+	for (uint32 i=0; i<=buffer->itemCount; i++)
 	{
-		if (lastDepth > buffer->sprites[i].depth)
+		if (lastDepth > buffer->items[i].depth)
 		{
 			isSorted = false;
 			break;
 		}
-		lastDepth = buffer->sprites[i].depth;
+		lastDepth = buffer->items[i].depth;
 	}
 	return isSorted;
 }
 
-void GL_render(GL_Renderer *renderer)
+void GL_render(GL_Renderer *renderer, AssetManager *assets)
 {
 	// Sort sprites
-	sortSpriteBuffer(&renderer->worldBuffer);
-	sortSpriteBuffer(&renderer->uiBuffer);
+	sortRenderBuffer(&renderer->worldBuffer);
+	sortRenderBuffer(&renderer->uiBuffer);
 
 #if 0
 	// Check buffers are sorted
@@ -727,10 +721,13 @@ void GL_render(GL_Renderer *renderer)
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	checkForGLError();
 
+	glEnable(GL_TEXTURE_2D);
+	checkForGLError();
+
 	renderer->currentShader = ShaderProgram_Invalid;
 
-	renderBuffer(renderer, &renderer->worldBuffer);
-	renderBuffer(renderer, &renderer->uiBuffer);
+	renderBuffer(renderer, assets, &renderer->worldBuffer);
+	renderBuffer(renderer, assets, &renderer->uiBuffer);
 
 	glUseProgram(NULL);
 	checkForGLError();

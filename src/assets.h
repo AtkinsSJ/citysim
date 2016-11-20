@@ -26,7 +26,7 @@ struct TextureRegion
 {
 	TextureAssetType type;
 	int32 textureID;
-	Rect uv;
+	RealRect uv; // in (0 to 1) space
 };
 
 struct AssetManager

@@ -27,6 +27,14 @@ void setCursor(UiTheme *theme, Cursor cursor)
 	SDL_SetCursor(theme->cursors[cursor]);
 }
 
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, uint32 maxItems)
+{
+	buffer->name = name;
+	buffer->items = PushArray(arena, RenderItem, maxItems);
+	buffer->itemCount = 0;
+	buffer->maxItems = maxItems;
+}
+
 // Screen -> scene space
 V2 unproject(Camera *camera, V2 screenPos)
 {
@@ -50,4 +58,26 @@ void updateCameraMatrix(Camera *camera)
 		camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,
 		-1000.0f, 1000.0f
 	);
+}
+
+void drawRect(RenderBuffer *buffer, RealRect rect, real32 depth, V4 color)
+{
+	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
+
+	RenderItem *item = buffer->items + buffer->itemCount++;
+	item->rect = rect;
+	item->depth = depth;
+	item->color = color;
+	item->textureRegionID = 0;
+}
+
+void drawTextureRegion(RenderBuffer *buffer, uint32 region, RealRect rect, real32 depth, V4 color=makeWhite())
+{
+	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
+
+	RenderItem *item = buffer->items + buffer->itemCount++;
+	item->rect = rect;
+	item->depth = depth;
+	item->color = color;
+	item->textureRegionID = region;
 }

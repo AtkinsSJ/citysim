@@ -41,7 +41,7 @@ int32 findTexture(AssetManager *assets, char *filename)
 	return index;
 }
 
-TextureRegion *addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, Rect uv, bool isAlphaPremultiplied=false)
+TextureRegion *addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv, bool isAlphaPremultiplied=false)
 {
 	ASSERT(assets->textureRegionCount < ArrayCount(assets->textureRegions), "No room for texture region");
 	int32 textureRegionID = assets->textureRegionCount++;

@@ -108,10 +108,10 @@ int main(int argc, char *argv[]) {
 
 	AssetManager *assets = createAssetManager();
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
-	                 irectXYWH(0,0,2002,1519), false);
+	                 rectXYWH(0,0,1,1), false);
 	loadTextures(assets);
 
-	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window);
+	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window, assets);
 	ASSERT(renderer, "Failed to initialize renderer.");
 
 // Game setup
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
 		updateCameraMatrix(uiCamera);
 
 	// Actually draw things!
-		GL_render(renderer);
+		GL_render(renderer, assets);
 
 	// FRAMERATE MONITORING AND CAPPING
 		currentFrame = SDL_GetTicks(); // Milliseconds

@@ -149,12 +149,14 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 					pageIndex < common->pageCount;
 					pageIndex++)
 				{
+#if 0
 					GL_Texture *texture = GL_loadTexture(renderer, pageStart, false);
 					ASSERT(texture->isValid, "Font texture failed to load!");
 					textureWidth = (real32) texture->w;
 					textureHeight = (real32) texture->h;
 					pageToGL_Texture[pageIndex] = texture->glTextureID; //pushTextureToLoad(texturesToLoad, pageStart, true);
 					pageStart += strlen(pageStart) + 1;
+#endif
 				}
 
 				Font = PushStruct(renderArena, BitmapFont);

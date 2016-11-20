@@ -32,17 +32,10 @@ struct GL_TextureAtlas
 	GL_TextureRegion textureRegions[TextureAssetTypeCount];
 };
 
-const int WORLD_SPRITE_MAX = 16384;
-const int UI_SPRITE_MAX = 1024;
-const int SPRITE_MAX = WORLD_SPRITE_MAX;
-
-struct RenderBuffer
+struct GL_TextureInfo
 {
-	char *name;
-	Camera camera;
-	Sprite *sprites;
-	uint32 spriteCount;
-	uint32 maxSprites;
+	GLuint glTextureID;
+	bool isLoaded;
 };
 
 struct GL_ShaderProgram
@@ -93,6 +86,8 @@ struct GL_Renderer
 	GL_Texture textures[64];
 	GL_TextureAtlas textureAtlas;
 
+	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length
+
 	// UI Stuff!
 	UiTheme theme;
 };
@@ -105,9 +100,6 @@ inline void checkForGLError()
 	GLenum errorCode = glGetError();
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
-
-void drawTextureAtlasItem(GL_Renderer *renderer, RenderBuffer *buffer, TextureAssetType textureAtlasItem,
-				V2 position, V2 size, real32 depth, V4 color=makeWhite());
 
 BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GL_Renderer *renderer);
 

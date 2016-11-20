@@ -136,7 +136,9 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 
 	// Draw terrain
 	V2 backgroundSize = v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
-	drawTextureAtlasItem(glRenderer, &glRenderer->worldBuffer, TextureAssetType_Map1, backgroundSize * 0.5f, backgroundSize, 0);
+	drawTextureRegion(&glRenderer->worldBuffer, getTextureRegion(assets, TextureAssetType_Map1, 0),
+		rectXYWH(0, 0, backgroundSize.x, backgroundSize.y), 0);
+
 // 	for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
 // 		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
 // 		y++)
@@ -188,6 +190,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 // 	}
 
 	// Draw buildings
+#if 0
 	for (uint32 i=1; i<gameState->city.buildingCount; i++)
 	{
 		Building building = gameState->city.buildings[i];
@@ -235,6 +238,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 	// 	// Demolition outline
 	// 	drawRect(glRenderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
 	// }
+#endif
 
 	// Draw the UI!
 	switch (gameState->status)

@@ -74,6 +74,27 @@ enum ShaderPrograms
 	ShaderProgram_Invalid = -1
 };
 
+struct RenderItem
+{
+	RealRect rect;
+	real32 depth; // Positive is towards the player
+	V4 color;
+	uint32 textureRegionID;
+};
+
+const int WORLD_SPRITE_MAX = 16384;
+const int UI_SPRITE_MAX = 1024;
+const int SPRITE_MAX = WORLD_SPRITE_MAX;
+
+struct RenderBuffer
+{
+	char *name;
+	Camera camera;
+	RenderItem *items;
+	uint32 itemCount;
+	uint32 maxItems;
+};
+
 struct Sprite
 {
 	RealRect rect;
