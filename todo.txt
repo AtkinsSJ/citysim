@@ -15,13 +15,10 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
-- Texture loading separate from OpenGL (assets.cpp)
-	- Probably put things in an Assets struct for access later.
-	- Maybe we should loadTextureRegion(), which then loads the texture if it isn't loaded already?
+- Check for the flicker bug while we have so few things being drawn.
 - UITheme out of renderer
-- Projection matrix in camera, not in the batch
-	- World and UI cameras
 - Game produces list of abstract draw instructions, then passed to the renderer
+	- Generic "Renderer" struct, extended by each platform?
 - Make fonts actually work
 	- Probably split render instructions into sprites/text
 

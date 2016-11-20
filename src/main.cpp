@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
-	TextureRegion *mapTR = addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
+	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,1,1), false);
 	loadTextures(assets);
 

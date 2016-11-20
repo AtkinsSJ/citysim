@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"Texture",
+				"TextureAssetType"
+			],
+			[
+				"Ass",
+				"AssetState_Loaded"
+			],
+			[
+				"textureC",
+				"textureRegionCount"
+			],
+			[
 				"back",
 				"backgroundSize"
 			],
@@ -74,10 +86,6 @@
 			[
 				"ini",
 				"initMemoryArena"
-			],
-			[
-				"Texture",
-				"TextureAtlasItemCount"
 			],
 			[
 				"Text",
@@ -506,14 +514,6 @@
 			[
 				"derm",
 				"demolishColor"
-			],
-			[
-				"proj",
-				"projectionMatrix"
-			],
-			[
-				"iden",
-				"identityMatrix4"
 			]
 		]
 	},
@@ -523,52 +523,16 @@
 			"file": "src/render_gl.cpp",
 			"settings":
 			{
-				"buffer_size": 19469,
+				"buffer_size": 19577,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/game.cpp",
+			"file": "todo.txt",
 			"settings":
 			{
-				"buffer_size": 9212,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/assets.h",
-			"settings":
-			{
-				"buffer_size": 882,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/font.cpp",
-			"settings":
-			{
-				"buffer_size": 7458,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/assets.cpp",
-			"settings":
-			{
-				"buffer_size": 3667,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/render.h",
-			"settings":
-			{
-				"buffer_size": 2515,
+				"buffer_size": 1836,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -583,38 +547,27 @@
 			}
 		},
 		{
-			"contents": "Searching 31 files for \"drawQuad\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n  461  }\n  462  \n  463: void drawQuad(RenderBuffer *buffer, RealRect rect, real32 depth,\n  464  \t\t\t\tGLint textureID, RealRect uv, V4 color)\n  465  {\n  ...\n  481  \tGLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;\n  482  \n  483: \tdrawQuad(buffer, rectCentreSize(position, size), depth, textureID, region->uv, color);\n  484  }\n  485  \n  486  void drawRect(RenderBuffer *buffer, RealRect rect, real32 depth, V4 color)\n  487  {\n  488: \tdrawQuad(buffer, rect, depth, TEXTURE_ID_NONE, {}, color);\n  489  }\n  490  \n\n3 matches in 1 file\n\n\nSearching 31 files for \"drawSprite\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\font.cpp:\n  339  \t\tspriteIndex++)\n  340  \t{\n  341: \t\tdrawSprite(&renderer->uiBuffer, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, depth));\n  342  \t}\n  343  }\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n  447  }\n  448  \n  449: void drawSprite(RenderBuffer *buffer, Sprite *sprite, V3 offset)\n  450  {\n  451  \tif (buffer->itemCount >= buffer->maxItems)\n\n2 matches across 2 files\n\n\nSearching 31 files for \"drawSprite\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\font.cpp:\n  339  \t\tspriteIndex++)\n  340  \t{\n  341: \t\t// drawSprite(&renderer->uiBuffer, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, depth));\n  342  \t}\n  343  }\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n  447  }\n  448  \n  449: void drawSprite(RenderBuffer *buffer, Sprite *sprite, V3 offset)\n  450  {\n  451  \tif (buffer->itemCount >= buffer->maxItems)\n\n2 matches across 2 files\n\n\nSearching 31 files for \"makeSprite\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\font.cpp:\n  250  \t\t\t\t{\n  251  \t\t\t\t\tstate.endOfCurrentWord = result->sprites + result->spriteCount++;\n  252: \t\t\t\t\t*state.endOfCurrentWord = makeSprite(\n  253  \t\t\t\t\t\trectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,\n  254  \t\t\t\t\t\t\t\t (real32)c->size.w, (real32)c->size.h),\n  ...\n  276  \t\t// \t\t{\n  277  \t\t// \t\t\tstate.endOfCurrentWord = result->sprites + result->spriteCount++;\n  278: \t\t// \t\t\t*state.endOfCurrentWord = makeSprite(\n  279  \t\t// \t\t\t\trectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,\n  280  \t\t// \t\t\t\t\t\t (real32)c->size.w, (real32)c->size.h),\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n  435  }\n  436  \n  437: inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect uv, V4 color)\n  438  {\n  439  \tSprite sprite = {};\n\n3 matches across 2 files\n\n\nSearching 31 files for \"drawTextureAtlasItem\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\game.cpp:\n  137  \t// Draw terrain\n  138  \tV2 backgroundSize = v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);\n  139: \tdrawTextureAtlasItem(glRenderer, &glRenderer->worldBuffer, TextureAssetType_Map1, backgroundSize * 0.5f, backgroundSize, 0);\n  140  // \tfor (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;\n  141  // \t\t(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);\n  ...\n  207  \t\t\tdefault: {\n  208  \t\t\t\tV2 drawPos = centre(building.footprint);\n  209: \t\t\t\tdrawTextureAtlasItem(glRenderer, &glRenderer->worldBuffer, def->textureAtlasItem,\n  210  \t\t\t\t \tdrawPos, v2(building.footprint.dim), depthFromY(drawPos.y), drawColor);\n  211  \t\t\t} break;\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n  447  }\n  448  \n  449: void drawTextureAtlasItem(GL_Renderer *renderer, RenderBuffer *buffer, TextureAssetType textureAtlasItem,\n  450  \t\t\t\tV2 position, V2 size, real32 depth, V4 color)\n  451  {\n  ...\n  755  \t\tanimator->frameCounter -= framesElapsed;\n  756  \t}\n  757: \tdrawTextureAtlasItem(renderer, buffer, animator->animation->frames[animator->currentFrame],\n  758  \t\t                 worldTilePosition, size, depth, color);\n  759  }\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.h:\n   94  }\n   95  \n   96: void drawTextureAtlasItem(GL_Renderer *renderer, RenderBuffer *buffer, TextureAssetType textureAtlasItem,\n   97  \t\t\t\tV2 position, V2 size, real32 depth, V4 color=makeWhite());\n   98  \n\n5 matches across 3 files\n\n\nSearching 31 files for \"TEXTURE_ID_NONE\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n  381  \t\t\t\t\tif (i == 0)\n  382  \t\t\t\t\t{\n  383: \t\t\t\t\t\trenderer->textureInfo[i].glTextureID = TEXTURE_ID_NONE;\n  384  \t\t\t\t\t}\n  385  \t\t\t\t\telse\n  ...\n  466  // {\n  467  // \tGL_TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;\n  468: // \tGLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;\n  469  \n  470  // \tdrawQuad(buffer, rectCentreSize(position, size), depth, textureID, region->uv, color);\n  ...\n  558  \t\t\t}\n  559  \n  560: \t\t\tif (texture->glTextureID == TEXTURE_ID_NONE)\n  561  \t\t\t{\n  562  \t\t\t\trenderer->currentShader = ShaderProgram_Untextured;\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.h:\n   94  \n   95  const GLint TEXTURE_ID_INVALID = -99999;\n   96: const GLint TEXTURE_ID_NONE = -1;\n   97  \n   98  inline void checkForGLError()\n\n4 matches across 2 files\n\n\nSearching 31 files for \"addTextureRegion\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\assets.cpp:\n   42  }\n   43  \n   44: TextureRegion *addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, Rect pixelUV, bool isAlphaPremultiplied=false)\n   45  {\n   46  \tASSERT(assets->textureRegionCount < ArrayCount(assets->textureRegions), \"No room for texture region\");\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\main.cpp:\n  108  \n  109  \tAssetManager *assets = createAssetManager();\n  110: \taddTextureRegion(assets, TextureAssetType_Map1, \"London-Strand-Holbron-Bloomsbury.png\",\n  111  \t                 irectXYWH(0,0,2002,1519), false);\n  112  \tloadTextures(assets);\n\n2 matches across 2 files\n\n\nSearching 31 files for \"isValid\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\bmfont.h:\n  152  #if 0\n  153  \t\t\t\t\tGL_Texture *texture = GL_loadTexture(renderer, pageStart, false);\n  154: \t\t\t\t\tASSERT(texture->isValid, \"Font texture failed to load!\");\n  155  \t\t\t\t\ttextureWidth = (real32) texture->w;\n  156  \t\t\t\t\ttextureHeight = (real32) texture->h;\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n   47  \t\tSDL_LogCritical(SDL_LOG_CATEGORY_ERROR,\n   48  \t\t\t\"Failed to load '%s'!\\n%s\", filename, IMG_GetError());\n   49: \t\ttexture->isValid = false;\n   50  \t}\n   51  \telse\n   ..\n  100  \t\tglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);\n  101  \n  102: \t\ttexture->isValid = true;\n  103  \t\ttexture->w = surface->w;\n  104  \t\ttexture->h = surface->h;\n  ...\n  117  \n  118  \tGL_Texture *texMap1 = GL_loadTexture(renderer, \"London-Strand-Holbron-Bloomsbury.png\", false);\n  119: \tif (!texMap1->isValid)\n  120  \t{\n  121  \t\tsuccessfullyLoadedAllTextures = false;\n  ...\n  273  \t\t\tGLint programSuccess = GL_FALSE;\n  274  \t\t\tglGetProgramiv(result.shaderProgramID, GL_LINK_STATUS, &programSuccess);\n  275: \t\t\tresult.isValid = (programSuccess == GL_TRUE);\n  276  \n  277: \t\t\tif (!result.isValid)\n  278  \t\t\t{\n  279  \t\t\t\tTemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);\n  ...\n  289  \t\t\t\t{\n  290  \t\t\t\t\tSDL_LogCritical(SDL_LOG_CATEGORY_ERROR, \"aPosition is not a valid glsl program variable!\\n\");\n  291: \t\t\t\t\tresult.isValid = false;\n  292  \t\t\t\t}\n  293  \t\t\t\tresult.aColorLoc = glGetAttribLocation(result.shaderProgramID, \"aColor\");\n  ...\n  295  \t\t\t\t{\n  296  \t\t\t\t\tSDL_LogCritical(SDL_LOG_CATEGORY_ERROR, \"aColor is not a valid glsl program variable!\\n\");\n  297: \t\t\t\t\tresult.isValid = false;\n  298  \t\t\t\t}\n  299  \n  ...\n  306  \t\t\t\t{\n  307  \t\t\t\t\tSDL_LogCritical(SDL_LOG_CATEGORY_ERROR, \"uProjectionMatrix is not a valid glsl program variable!\\n\");\n  308: \t\t\t\t\tresult.isValid = false;\n  309  \t\t\t\t}\n  310  \n  ...\n  366  \t\t{\n  367  \t\t\trenderer->shaders[ShaderProgram_Textured] = GL_loadShader(renderer, \"textured.vert.gl\", \"textured.frag.gl\");\n  368: \t\t\tsucceeded = renderer->shaders[ShaderProgram_Textured].isValid;\n  369  \n  370  \t\t\tif (succeeded)\n  371  \t\t\t{\n  372  \t\t\t\trenderer->shaders[ShaderProgram_Untextured] = GL_loadShader(renderer, \"untextured.vert.gl\", \"untextured.frag.gl\");\n  373: \t\t\t\tsucceeded = renderer->shaders[ShaderProgram_Untextured].isValid;\n  374  \t\t\t}\n  375  \n  ...\n  476  \tASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgram_Count, \"Invalid shader!\");\n  477  \tGL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;\n  478: \tASSERT(activeShader->isValid, \"Shader not properly loaded!\");\n  479  \n  480  \treturn activeShader;\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.h:\n   16  struct GL_Texture\n   17  {\n   18: \tbool isValid;\n   19  \tchar *filename;\n   20  \tGLuint glTextureID;\n   ..\n   42  {\n   43  \tGLuint shaderProgramID;\n   44: \tbool isValid;\n   45  \n   46  \tchar *vertexShaderFilename;\n\n14 matches across 3 files\n\n\nSearching 31 files for \"assignTextureRegion\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\under-london\\src\\render_gl.cpp:\n    1  // render_gl.cpp\n    2  \n    3: void assignTextureRegion(GL_Renderer *renderer, TextureAssetType item, GL_Texture *texture, real32 x, real32 y, real32 w, real32 h)\n    4  {\n    5  \treal32 tw = (real32) texture->w,\n    .\n   25  \n   26  // Assign to whole texture\n   27: void assignTextureRegion(GL_Renderer *renderer, TextureAssetType item, GL_Texture *texture)\n   28  {\n   29  \treal32 borderX = 1.0f / (real32) texture->w,\n   ..\n  124  \tif (successfullyLoadedAllTextures)\n  125  \t{\n  126: \t\tassignTextureRegion(renderer, TextureAssetType_Map1, texMap1);\n  127  \t}\n  128  \n\n3 matches in 1 file\n",
-			"settings":
-			{
-				"buffer_size": 9664,
-				"line_ending": "Windows",
-				"name": "Find Results",
-				"scratch": true
-			}
-		},
-		{
-			"file": "src/types.h",
-			"settings":
-			{
-				"buffer_size": 10677,
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "src/render_gl.h",
 			"settings":
 			{
-				"buffer_size": 1490,
+				"buffer_size": 1414,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/render.cpp",
+			"file": "src/game.cpp",
 			"settings":
 			{
-				"buffer_size": 2092,
-				"encoding": "UTF-8",
+				"buffer_size": 9212,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/render.h",
+			"settings":
+			{
+				"buffer_size": 2515,
 				"line_ending": "Windows"
 			}
 		}
@@ -796,20 +749,25 @@
 	],
 	"file_history":
 	[
-		"/c/users/sam/documents/under-london/src/render_gl.cppc:/users/sam/documents/under-london/src/render_gl.cpp",
 		"/C/Users/Sam/Documents/under-london/src/main.cpp",
+		"/C/Users/Sam/Documents/under-london/src/assets.h",
+		"/C/Users/Sam/Documents/under-london/src/render_gl.cpp",
+		"/C/Users/Sam/Documents/under-london/src/types.h",
+		"/C/Users/Sam/Documents/under-london/src/render_gl.h",
 		"/C/Users/Sam/Documents/under-london/src/render.cpp",
+		"/C/Users/Sam/Documents/under-london/src/game.cpp",
+		"/C/Users/Sam/Documents/under-london/src/font.cpp",
 		"/C/Users/Sam/Documents/under-london/src/render.h",
+		"/C/Users/Sam/Documents/under-london/src/assets.cpp",
+		"/C/Users/Sam/Documents/under-london/src/build.bat",
+		"/c/users/sam/documents/under-london/src/render_gl.cppc:/users/sam/documents/under-london/src/render_gl.cpp",
 		"/c/users/sam/documents/under-london/src/bmfont.h",
 		"/c/users/sam/documents/under-london/src/font.cpp",
 		"/c/users/sam/documents/under-london/src/game_ui.cpp",
 		"/c/users/sam/documents/under-london/src/game.cpp",
-		"/C/Users/Sam/Documents/under-london/src/render_gl.h",
 		"/C/Users/Sam/Documents/under-london/src/ui.h",
 		"/c/users/sam/documents/under-london/src/ui.cpp",
 		"/C/Users/Sam/Documents/under-london/todo.txt",
-		"/C/Users/Sam/Documents/under-london/src/game.cpp",
-		"/C/Users/Sam/Documents/under-london/src/render_gl.cpp",
 		"/c/users/sam/documents/under-london/src/types.h",
 		"/c/users/sam/documents/under-london/src/ui.h",
 		"/c/users/sam/documents/under-london/src/input.h",
@@ -918,12 +876,7 @@
 		"/E/Blender Course/Section 2/l34-periscope.blend",
 		"/C/Users/Sam/AppData/Roaming/Sublime Text 3/Packages/Default/Default (Windows).sublime-keymap",
 		"/C/Users/Sam/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-mousemap",
-		"/C/Users/Sam/Documents/Citysim/src/field.cpp",
-		"/C/Users/Sam/Documents/Citysim/src/job.h",
-		"/C/Users/Sam/Documents/Citysim/src/job.cpp",
-		"/C/Users/Sam/Documents/Citysim/assets/farm/field.xcf",
-		"/C/Users/Sam/Documents/Citysim/src/pathing.cpp",
-		"/c/users/sam/documents/citysim/src/memory.h"
+		"/C/Users/Sam/Documents/Citysim/src/field.cpp"
 	],
 	"find":
 	{
@@ -959,6 +912,13 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"Sprite",
+			"gameUp",
+			"firstIDForTextureAssetType",
+			"TextureAssetType_Map1",
+			"addTextureRegion",
+			"currentShader",
+			"TEXTURE_ID_NONE",
 			"assignTextureRegion",
 			"isValid",
 			"GL_TEXTURE_2D",
@@ -1079,14 +1039,7 @@
 			"_",
 			"?=\n =?utf-8?Q?",
 			"GrowID",
-			"sc",
-			"\\n",
-			"jake459",
-			"birth",
-			" ",
-			"general",
-			"loadShader",
-			"general"
+			"sc"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1153,7 +1106,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -1162,23 +1115,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 19469,
+						"buffer_size": 19577,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								15925,
-								15925
-							],
-							[
-								16927,
-								16927
-							],
-							[
-								16970,
-								16970
+								5438,
+								5438
 							]
 						],
 						"settings":
@@ -1188,7 +1133,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7417.0,
+						"translation.y": 1580.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 5,
@@ -1196,6 +1141,101 @@
 				},
 				{
 					"buffer": 1,
+					"file": "todo.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1836,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								471,
+								471
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/main.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4959,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2511,
+								2511
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2043.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/render_gl.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1414,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1128,
+								1128
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 406.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 4,
 					"file": "src/game.cpp",
 					"semi_transient": false,
 					"settings":
@@ -1207,8 +1247,8 @@
 						"selection":
 						[
 							[
-								8313,
-								8313
+								4107,
+								4107
 							]
 						],
 						"settings":
@@ -1217,97 +1257,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2813.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/assets.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 882,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								385,
-								385
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1178.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "src/font.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7458,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7168,
-								7168
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 4141.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "src/assets.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3667,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1111,
-								1111
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 158.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -1323,8 +1276,8 @@
 						"selection":
 						[
 							[
-								1715,
-								1715
+								1877,
+								1883
 							]
 						],
 						"settings":
@@ -1332,357 +1285,11 @@
 							"syntax": "Packages/C++/C++.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 0.0,
-						"translation.y": 950.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 4,
-			"sheets":
-			[
-				{
-					"buffer": 6,
-					"file": "src/main.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4959,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2633,
-								2633
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1173.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 9664,
-						"regions":
-						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										143,
-										151
-									],
-									[
-										373,
-										381
-									],
-									[
-										576,
-										584
-									],
-									[
-										829,
-										839
-									],
-									[
-										1029,
-										1039
-									],
-									[
-										1334,
-										1344
-									],
-									[
-										1534,
-										1544
-									],
-									[
-										1922,
-										1932
-									],
-									[
-										2233,
-										2243
-									],
-									[
-										2500,
-										2510
-									],
-									[
-										2872,
-										2892
-									],
-									[
-										3246,
-										3266
-									],
-									[
-										3517,
-										3537
-									],
-									[
-										3758,
-										3778
-									],
-									[
-										4008,
-										4028
-									],
-									[
-										4426,
-										4441
-									],
-									[
-										4662,
-										4677
-									],
-									[
-										4849,
-										4864
-									],
-									[
-										5070,
-										5085
-									],
-									[
-										5323,
-										5339
-									],
-									[
-										5688,
-										5704
-									],
-									[
-										6120,
-										6127
-									],
-									[
-										6447,
-										6454
-									],
-									[
-										6599,
-										6606
-									],
-									[
-										6822,
-										6829
-									],
-									[
-										7038,
-										7045
-									],
-									[
-										7107,
-										7114
-									],
-									[
-										7362,
-										7369
-									],
-									[
-										7618,
-										7625
-									],
-									[
-										7808,
-										7815
-									],
-									[
-										8046,
-										8053
-									],
-									[
-										8293,
-										8300
-									],
-									[
-										8557,
-										8564
-									],
-									[
-										8736,
-										8743
-									],
-									[
-										8857,
-										8864
-									],
-									[
-										9108,
-										9127
-									],
-									[
-										9345,
-										9364
-									],
-									[
-										9562,
-										9581
-									]
-								],
-								"scope": ""
-							}
-						},
-						"selection":
-						[
-							[
-								9573,
-								9573
-							]
-						],
-						"settings":
-						{
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 9,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 3601.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 0,
-					"file": "src/render_gl.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 19469,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								10147,
-								10147
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 8530.0,
+						"translation.x": -0.0,
+						"translation.y": 996.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "src/types.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10677,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 7262.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 10,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "src/render_gl.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1490,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								224,
-								224
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 401.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "src/render.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2092,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1840,
-								1840
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 3.0,
-						"translation.y": 76.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 11,
 					"type": "text"
 				}
 			]
@@ -1716,7 +1323,7 @@
 		"cols":
 		[
 			0.0,
-			0.5,
+			0.515337423313,
 			1.0
 		],
 		"rows":
@@ -1748,6 +1355,14 @@
 		"selected_items":
 		[
 			[
+				"render",
+				"src\\render.h"
+			],
+			[
+				"too",
+				"todo.txt"
+			],
+			[
 				"types",
 				"src\\types.h"
 			],
@@ -1756,12 +1371,16 @@
 				"src\\main.cpp"
 			],
 			[
-				"render.h",
-				"src\\render.h"
+				"build",
+				"src\\build.bat"
 			],
 			[
-				"render",
-				"src\\render_gl.cpp"
+				"asset",
+				"src\\assets.cpp"
+			],
+			[
+				"render.h",
+				"src\\render.h"
 			],
 			[
 				"assets",
@@ -1786,10 +1405,6 @@
 			[
 				"math",
 				"src\\maths.h"
-			],
-			[
-				"asset",
-				"src\\assets.h"
 			],
 			[
 				"file",
@@ -1834,10 +1449,6 @@
 			[
 				"bm",
 				"src\\bmfont.h"
-			],
-			[
-				"build",
-				"src\\build.bat"
 			],
 			[
 				"vert",
@@ -2304,7 +1915,7 @@
 		],
 		"width": 496.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 		"last_automatic_layout":
