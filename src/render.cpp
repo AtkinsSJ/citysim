@@ -43,19 +43,11 @@ V2 unproject(Camera *camera, V2 screenPos)
 
 void updateCameraMatrix(Camera *camera)
 {
-	// real32 worldScale = worldCamera->zoom / TILE_SIZE;
-	// real32 camWidth = worldCamera->windowWidth * worldScale,
-	// 		camHeight = worldCamera->windowHeight * worldScale;
-	// real32 halfCamWidth = camWidth * 0.5f,
-	// 		halfCamHeight = camHeight * 0.5f;
-
-	// TODO: Should probably include zoom here? Really we want camera size in world units
-
-	real32 camHalfWidth = camera->windowWidth * 0.5f * (camera->zoom / TILE_SIZE);
-	real32 camHalfHeight = camera->windowHeight * 0.5f * (camera->zoom / TILE_SIZE);
+	real32 camHalfWidth = camera->windowWidth * 0.5f * camera->zoom;
+	real32 camHalfHeight = camera->windowHeight * 0.5f * camera->zoom;
 	camera->projectionMatrix = orthographicMatrix4(
-		camera->pos.x - (camHalfWidth/2.0f), camera->pos.x + (camHalfWidth/2.0f),
-		camera->pos.y - (camHalfHeight/2.0f), camera->pos.y + (camHalfHeight/2.0f),
+		camera->pos.x - camHalfWidth, camera->pos.x + camHalfWidth,
+		camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,
 		-1000.0f, 1000.0f
 	);
 }

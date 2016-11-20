@@ -135,6 +135,8 @@ int main(int argc, char *argv[]) {
 	worldCamera->zoom = 1.0f;
 
 	uiCamera->windowSize = inputState.windowSize;
+	uiCamera->pos = v2(uiCamera->windowSize) * 0.5f;
+	uiCamera->zoom = 1.0f;
 
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
@@ -157,6 +159,8 @@ int main(int argc, char *argv[]) {
 		if (inputState.wasWindowResized)
 		{
 			GL_windowResized(renderer, inputState.windowWidth, inputState.windowHeight);
+			worldCamera->windowSize = uiCamera->windowSize = inputState.windowSize;
+			uiCamera->pos = v2(uiCamera->windowSize) * 0.5f;
 		}
 
 		gameUpdateAndRender(gameState, &inputState, renderer, assets);
