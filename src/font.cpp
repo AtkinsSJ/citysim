@@ -338,6 +338,6 @@ void drawCachedText(GL_Renderer *renderer, BitmapFontCachedText *cache, V2 topLe
 		spriteIndex < cache->spriteCount;
 		spriteIndex++)
 	{
-		drawSprite(renderer, true, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, depth));
+		drawSprite(&renderer->uiBuffer, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, depth));
 	}
 }

@@ -87,7 +87,7 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
 
-	drawRect(renderer, true, rectXYWH(0, 0, windowWidth, windowHeight), 0, renderer->theme.overlayColor);
+	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, renderer->theme.overlayColor);
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	real32 maxLabelWidth = windowWidth - 256;
@@ -131,7 +131,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 	char stringBuffer[256];
 
 	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
-	drawRect(renderer, true, uiRect, 0, renderer->theme.overlayColor);
+	drawRect(&renderer->uiBuffer, uiRect, 0, renderer->theme.overlayColor);
 
 	uiLabel(renderer, renderer->theme.font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
@@ -200,7 +200,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 			}
 
 			uiState->uiRects[uiState->uiRectCount++] = menuRect;
-			drawRect(renderer, true, menuRect, 0, renderer->theme.overlayColor);
+			drawRect(&renderer->uiBuffer, menuRect, 0, renderer->theme.overlayColor);
 		}
 
 		buttonRect.x += buttonRect.w + uiPadding;
@@ -246,7 +246,7 @@ bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, InputSta
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
 
 	V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
-	drawRect(renderer, true, rectXYWH(0, 0, windowWidth, windowHeight), 10, renderer->theme.overlayColor);
+	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 10, renderer->theme.overlayColor);
 
 	char gameOverText[256];
 	if (won)

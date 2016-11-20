@@ -49,7 +49,7 @@ void drawTooltip(GL_Renderer *renderer, InputState *inputState, UIState *uiState
 
 		labelRect = expandRect(labelRect, tooltipPadding);
 
-		drawRect(renderer, true, labelRect, depth, renderer->theme.tooltipBackgroundColor);
+		drawRect(&renderer->uiBuffer, labelRect, depth, renderer->theme.tooltipBackgroundColor);
 
 		uiState->tooltip.show = false;
 	}
@@ -87,7 +87,7 @@ bool uiButton(GL_Renderer *renderer, InputState *inputState, UIState *uiState, c
 		backColor = renderer->theme.buttonHoverColor;
 	}
 
-	drawRect(renderer, true, bounds, depth, backColor);
+	drawRect(&renderer->uiBuffer, bounds, depth, backColor);
 	uiLabel(renderer, renderer->theme.buttonFont, text, centre(bounds), ALIGN_CENTRE, depth + 1,
 			renderer->theme.buttonTextColor);
 
@@ -151,7 +151,7 @@ void uiTextInput(GL_Renderer *renderer, InputState *inputState, bool active,
 	RealRect labelRect = uiLabel(renderer, renderer->theme.font, textBuffer, origin + v2(padding, padding),
 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, renderer->theme.textboxTextColor);
 	labelRect = expandRect(labelRect, padding);
-	drawRect(renderer, true, labelRect, depth, renderer->theme.textboxBackgroundColor);
+	drawRect(&renderer->uiBuffer, labelRect, depth, renderer->theme.textboxBackgroundColor);
 }
 
 void pushUiMessage(UIState *uiState, char *message)
@@ -198,7 +198,7 @@ void drawUiMessage(GL_Renderer *renderer, UIState *uiState)
 
 			labelRect = expandRect(labelRect, padding);
 
-			drawRect(renderer, true, labelRect, depth, backgroundColor);
+			drawRect(&renderer->uiBuffer, labelRect, depth, backgroundColor);
 		}
 	}
 }
