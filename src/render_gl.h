@@ -106,7 +106,7 @@ inline void checkForGLError()
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
-void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAssetType textureAtlasItem,
+void drawTextureAtlasItem(GL_Renderer *renderer, RenderBuffer *buffer, TextureAssetType textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color=makeWhite());
 
 BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GL_Renderer *renderer);

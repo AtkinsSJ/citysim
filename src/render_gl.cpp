@@ -484,21 +484,11 @@ void drawQuad(RenderBuffer *buffer, RealRect rect, real32 depth,
 	};
 }
 
-void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAssetType textureAtlasItem,
+void drawTextureAtlasItem(GL_Renderer *renderer, RenderBuffer *buffer, TextureAssetType textureAtlasItem,
 				V2 position, V2 size, real32 depth, V4 color)
 {
 	GL_TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
 	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
-
-	RenderBuffer *buffer;
-	if (isUI)
-	{
-		buffer = &renderer->uiBuffer;
-	}
-	else
-	{
-		buffer = &renderer->worldBuffer;
-	}
 
 	drawQuad(buffer, rectCentreSize(position, size), depth, textureID, region->uv, color);
 }
@@ -785,7 +775,7 @@ void setAnimation(Animator *animator, GL_Renderer *renderer, AnimationID animati
 	}
 }
 
-void drawAnimator(GL_Renderer *renderer, bool isUI, Animator *animator, real32 daysPerFrame,
+void drawAnimator(GL_Renderer *renderer, RenderBuffer *buffer, Animator *animator, real32 daysPerFrame,
 				V2 worldTilePosition, V2 size, real32 depth, V4 color)
 {
 	animator->frameCounter += daysPerFrame * animationFramesPerDay;
@@ -795,15 +785,8 @@ void drawAnimator(GL_Renderer *renderer, bool isUI, Animator *animator, real32 d
 		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
 		animator->frameCounter -= framesElapsed;
 	}
-	drawTextureAtlasItem(
-		renderer,
-		isUI,
-		animator->animation->frames[animator->currentFrame],
-		worldTilePosition,
-		size,
-		depth,
-		color
-	);
+	drawTextureAtlasItem(renderer, buffer, animator->animation->frames[animator->currentFrame],
+		                 worldTilePosition, size, depth, color);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

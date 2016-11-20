@@ -136,7 +136,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 
 	// Draw terrain
 	V2 backgroundSize = v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
-	drawTextureAtlasItem(glRenderer, false, TextureAssetType_Map1, backgroundSize * 0.5f, backgroundSize, 0);
+	drawTextureAtlasItem(glRenderer, &glRenderer->worldBuffer, TextureAssetType_Map1, backgroundSize * 0.5f, backgroundSize, 0);
 // 	for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
 // 		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
 // 		y++)
@@ -206,7 +206,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 
 			default: {
 				V2 drawPos = centre(building.footprint);
-				drawTextureAtlasItem(glRenderer, false, def->textureAtlasItem,
+				drawTextureAtlasItem(glRenderer, &glRenderer->worldBuffer, def->textureAtlasItem,
 				 	drawPos, v2(building.footprint.dim), depthFromY(drawPos.y), drawColor);
 			} break;
 		}
