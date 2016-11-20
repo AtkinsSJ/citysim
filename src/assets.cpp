@@ -9,6 +9,20 @@ AssetManager *createAssetManager()
 
 	assets->textureRegions[0].type = TextureAssetType_None;
 	assets->textureRegions[0].textureID = -1;
+	assets->textureRegionCount = 1;
+
+	assets->textures[0].state = AssetState_Loaded;
+	assets->textures[0].filename = "";
+	assets->textures[0].isAlphaPremultiplied = true;
+	assets->textures[0].surface = null;
+	assets->textureCount = 1;
+
+	// Have to provide defaults for these or it just breaks.
+	for (int i = 0; i < TextureAssetTypeCount; ++i)
+	{
+		assets->firstIDForTextureAssetType[i] = int32Max;
+		assets->lastIDForTextureAssetType[i] = int32Min;
+	}
 
 	return assets;
 }
@@ -58,13 +72,14 @@ TextureRegion *addTextureRegion(AssetManager *assets, TextureAssetType type, cha
 	result->uv = uv;
 
 	assets->firstIDForTextureAssetType[type] = min(textureRegionID, assets->firstIDForTextureAssetType[type]);
+	assets->lastIDForTextureAssetType[type] = max(textureRegionID, assets->lastIDForTextureAssetType[type]);
 
 	return result;
 }
 
 void loadTextures(AssetManager *assets)
 {
-	for (uint32 i = 0; i < assets->textureCount; ++i)
+	for (uint32 i = 1; i < assets->textureCount; ++i)
 	{
 		Texture *tex = assets->textures + i;
 		if (tex->state == AssetState_Unloaded)

@@ -179,7 +179,7 @@ GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename
 				}
 
 				// Optional uniforms
-				result.uTextureLoc = glGetUniformLocation(result.shaderProgramID, "uGL_Texture");
+				result.uTextureLoc = glGetUniformLocation(result.shaderProgramID, "uTexture");
 			}
 		}
 	}
@@ -250,7 +250,7 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 				{
 					if (i == 0)
 					{
-						renderer->textureInfo[i].glTextureID = TEXTURE_ID_NONE;
+						renderer->textureInfo[i].glTextureID = 0;
 						renderer->textureInfo[i].isLoaded = true;
 					}
 					else
@@ -400,7 +400,7 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 	// Fill VBO
 	uint32 vertexCount = 0;
 	uint32 indexCount = 0;
-	GLint glBoundTextureID = TEXTURE_ID_INVALID;
+	GLint glBoundTextureID = -1;
 
 	uint32 drawCallCount = 0;
 
@@ -419,7 +419,7 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 				renderPartOfBuffer(renderer, vertexCount, indexCount);
 			}
 
-			if (textureInfo->glTextureID == TEXTURE_ID_NONE)
+			if (textureInfo->glTextureID == 0)
 			{
 				renderer->currentShader = ShaderProgram_Untextured;
 			}
@@ -455,14 +455,18 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #endif
+
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
 					// Upload texture
 					Texture *texture = assets->textures + region->textureID;
 					ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
 					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 					textureInfo->isLoaded = true;
+					checkForGLError();
 				}
 
-				checkForGLError();
 				glUniform1i(activeShader->uTextureLoc, 0);
 				checkForGLError();
 			}
