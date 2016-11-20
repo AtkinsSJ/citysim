@@ -165,6 +165,10 @@ int main(int argc, char *argv[]) {
 		updateCameraMatrix(worldCamera);
 		updateCameraMatrix(uiCamera);
 
+		// Copy to the renderer because this is still awkward
+		renderer->worldBuffer.projectionMatrix = worldCamera->projectionMatrix;
+		renderer->uiBuffer.projectionMatrix = uiCamera->projectionMatrix;
+
 	// Actually draw things!
 		GL_render(renderer);
 

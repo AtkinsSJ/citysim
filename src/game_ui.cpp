@@ -34,13 +34,13 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 
 		if (inputState->keyDown[SDL_SCANCODE_UP]
 			|| inputState->keyDown[SDL_SCANCODE_W]
-			|| (inputState->mousePosNormalised.y < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.y > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
 		else if (inputState->keyDown[SDL_SCANCODE_DOWN]
 			|| inputState->keyDown[SDL_SCANCODE_S]
-			|| (inputState->mousePosNormalised.y > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.y < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y += scrollSpeed;
 		}
