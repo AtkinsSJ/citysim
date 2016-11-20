@@ -8,6 +8,11 @@ const int TILE_WIDTH = 16,
 const int CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 const bool canZoom = true;
 
+inline Coord tilePosition(V2 worldPos) {
+	return {(int)floor(worldPos.x),
+			(int)floor(worldPos.y)};
+}
+
 struct Camera
 {
 	// TODO: Replace pixel size with a res-independant size which we then convert to pixels.
@@ -83,6 +88,7 @@ struct Sprite
 };
 
 // Animation code should probably be deleted and redone.
+#if 0
 enum AnimationID
 {
 	Animation_TempToStopComplaint,
@@ -102,5 +108,6 @@ struct Animator
 	real32 frameCounter; // Sub-frame ticks
 };
 const real32 animationFramesPerDay = 10.0f;
+#endif
 
 #include "render.cpp"

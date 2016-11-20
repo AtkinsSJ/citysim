@@ -87,7 +87,7 @@ struct GL_Renderer
 	VertexData vertices[SPRITE_MAX * 4];
 	GLuint indices[SPRITE_MAX * 6];
 
-	Animation animations[Animation_Count];
+	// Animation animations[Animation_Count];
 
 	uint32 textureCount;
 	GL_Texture textures[64];

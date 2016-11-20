@@ -738,7 +738,7 @@ void GL_render(GL_Renderer *renderer)
 	SDL_GL_SwapWindow( renderer->window );
 }
 
-#if 0
+#if 0 // Leaving this here until I'm sure the new unproject works.
 V2 unproject(GL_Renderer *renderer, V2 pos)
 {
 	// Normalise to (-1 to 1) coordinates as used by opengl
@@ -761,6 +761,7 @@ V2 unproject(GL_Renderer *renderer, V2 pos)
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
 ////////////////////////////////////////////////////////////////////
+#if 0
 void setAnimation(Animator *animator, GL_Renderer *renderer, AnimationID animationID,
 					bool restart)
 {
@@ -788,13 +789,4 @@ void drawAnimator(GL_Renderer *renderer, RenderBuffer *buffer, Animator *animato
 	drawTextureAtlasItem(renderer, buffer, animator->animation->frames[animator->currentFrame],
 		                 worldTilePosition, size, depth, color);
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// FIXME! ///////////////////////////////////////////////////////////////////////////////////////
-// Below are old functions that I need to keep temporarily so I can just get things compiling! //
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-inline Coord tilePosition(V2 worldPixelPos) {
-	return {(int)floor(worldPixelPos.x),
-			(int)floor(worldPixelPos.y)};
-}
+#endif
