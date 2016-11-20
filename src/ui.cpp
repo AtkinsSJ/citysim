@@ -40,7 +40,7 @@ void drawTooltip(GL_Renderer *renderer, InputState *inputState, UIState *uiState
 		const real32 depth = 100;
 		const real32 tooltipPadding = 4;
 
-		V2 mousePos = unproject(&uiState->uiCamera, inputState->mousePosNormalised);
+		V2 mousePos = unproject(&renderer->uiBuffer.camera, inputState->mousePosNormalised);
 
 		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(tooltipPadding, tooltipPadding);
 
@@ -59,7 +59,7 @@ bool uiButton(GL_Renderer *renderer, InputState *inputState, UIState *uiState, c
 			bool active=false, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool buttonClicked = false;
-	V2 mousePos = unproject(&uiState->uiCamera, inputState->mousePosNormalised);
+	V2 mousePos = unproject(&renderer->uiBuffer.camera, inputState->mousePosNormalised);
 
 	V4 backColor = renderer->theme.buttonBackgroundColor;
 
@@ -191,7 +191,7 @@ void drawUiMessage(GL_Renderer *renderer, UIState *uiState)
 				textColor.a = lerp(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(uiState->uiCamera.windowWidth * 0.5f, uiState->uiCamera.windowHeight - 8.0f);
+			V2 origin = v2(renderer->uiBuffer.camera.windowWidth * 0.5f, renderer->uiBuffer.camera.windowHeight - 8.0f);
 			// V2 origin = v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f);
 			RealRect labelRect = uiLabel(renderer, renderer->theme.font, uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1, textColor);

@@ -38,7 +38,7 @@ const int SPRITE_MAX = WORLD_SPRITE_MAX;
 
 struct RenderBuffer
 {
-	Matrix4 projectionMatrix;
+	Camera camera;
 	Sprite *sprites;
 	uint32 spriteCount;
 	uint32 maxSprites;

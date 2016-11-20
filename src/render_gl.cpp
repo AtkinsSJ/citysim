@@ -614,7 +614,7 @@ void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			glUseProgram(activeShader->shaderProgramID);
 			checkForGLError();
 
-			glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->projectionMatrix.flat);
+			glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
 			checkForGLError();
 
 			// Bind new texture if this shader uses textures

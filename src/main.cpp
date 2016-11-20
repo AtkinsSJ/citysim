@@ -127,8 +127,8 @@ int main(int argc, char *argv[]) {
 	SDL_GetWindowSize(renderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
 	initUiState(&gameState->uiState);
-	Camera *worldCamera = &gameState->uiState.worldCamera;
-	Camera *uiCamera = &gameState->uiState.uiCamera;
+	Camera *worldCamera = &renderer->worldBuffer.camera;
+	Camera *uiCamera = &renderer->uiBuffer.camera;
 
 	worldCamera->windowSize = inputState.windowSize;
 	worldCamera->pos = v2(gameState->city.width/2, gameState->city.height/2);
@@ -168,10 +168,6 @@ int main(int argc, char *argv[]) {
 		// Update camera matrices here
 		updateCameraMatrix(worldCamera);
 		updateCameraMatrix(uiCamera);
-
-		// Copy to the renderer because this is still awkward
-		renderer->worldBuffer.projectionMatrix = worldCamera->projectionMatrix;
-		renderer->uiBuffer.projectionMatrix = uiCamera->projectionMatrix;
 
 	// Actually draw things!
 		GL_render(renderer);

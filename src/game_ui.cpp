@@ -84,8 +84,8 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 									GameStatus gameStatus)
 {
 	GameStatus result = gameStatus;
-	real32 windowWidth = (real32) uiState->uiCamera.windowWidth;
-	real32 windowHeight = (real32) uiState->uiCamera.windowHeight;
+	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
+	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
 
 	drawRect(renderer, true, rectXYWH(0, 0, windowWidth, windowHeight), 0, renderer->theme.overlayColor);
 
@@ -122,8 +122,8 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 
 void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState)
 {
-	real32 windowWidth = (real32) uiState->uiCamera.windowWidth;
-	real32 windowHeight = (real32) uiState->uiCamera.windowHeight;
+	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
+	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
 
 	uiState->uiRectCount = 0;
 
@@ -242,8 +242,8 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, InputState *inputState, bool won)
 {
 	bool result = false;
-	real32 windowWidth = (real32) uiState->uiCamera.windowWidth;
-	real32 windowHeight = (real32) uiState->uiCamera.windowHeight;
+	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
+	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
 
 	V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
 	drawRect(renderer, true, rectXYWH(0, 0, windowWidth, windowHeight), 10, renderer->theme.overlayColor);

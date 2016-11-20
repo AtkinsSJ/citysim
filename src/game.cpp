@@ -41,8 +41,8 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 	}
 
 	// CAMERA!
-	Camera *worldCamera = &gameState->uiState.worldCamera;
-	Camera *uiCamera = &gameState->uiState.uiCamera;
+	Camera *worldCamera = &glRenderer->worldBuffer.camera;
+	Camera *uiCamera = &glRenderer->uiBuffer.camera;
 
 	// real32 worldScale = worldCamera->zoom / TILE_SIZE;
 	// real32 camWidth = worldCamera->windowWidth * worldScale,
