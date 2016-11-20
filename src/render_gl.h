@@ -13,25 +13,6 @@ struct VertexData
 	V2 uv;
 };
 
-struct GL_Texture
-{
-	bool isValid;
-	char *filename;
-	GLuint glTextureID;
-	uint32 w,h;
-};
-
-struct GL_TextureRegion
-{
-	GLuint textureID; // Redundant for GL_Texture.glTextureID!
-	RealRect uv;
-};
-
-struct GL_TextureAtlas
-{
-	GL_TextureRegion textureRegions[TextureAssetTypeCount];
-};
-
 struct GL_TextureInfo
 {
 	GLuint glTextureID;
@@ -81,10 +62,6 @@ struct GL_Renderer
 	GLuint indices[SPRITE_MAX * 6];
 
 	// Animation animations[Animation_Count];
-
-	uint32 textureCount;
-	GL_Texture textures[64];
-	GL_TextureAtlas textureAtlas;
 
 	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length
 
