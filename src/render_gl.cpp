@@ -754,6 +754,7 @@ void GL_render(GL_Renderer *renderer)
 	SDL_GL_SwapWindow( renderer->window );
 }
 
+#if 0
 V2 unproject(GL_Renderer *renderer, V2 pos)
 {
 	// Normalise to (-1 to 1) coordinates as used by opengl
@@ -771,6 +772,7 @@ V2 unproject(GL_Renderer *renderer, V2 pos)
 
 	return result.xy;// + renderer->camera.pos;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //

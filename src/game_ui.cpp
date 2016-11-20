@@ -14,33 +14,33 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	{
 		// Click-panning!
 		float scale = scrollSpeed * 0.01f;
-		Coord clickStartPos = inputState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos += (v2(inputState->mousePos) - v2(clickStartPos)) * scale;
+		V2 clickStartPos = inputState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
+		camera->pos += (inputState->mousePosNormalised - clickStartPos) * scale;
 	}
 	else
 	{
 		if (inputState->keyDown[SDL_SCANCODE_LEFT]
 			|| inputState->keyDown[SDL_SCANCODE_A]
-			|| (inputState->mousePos.x < CAMERA_EDGE_SCROLL_MARGIN))
+			|| (inputState->mousePosNormalised.x < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
 		else if (inputState->keyDown[SDL_SCANCODE_RIGHT]
 			|| inputState->keyDown[SDL_SCANCODE_D]
-			|| (inputState->mousePos.x > (camera->windowWidth - CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.x > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
 		if (inputState->keyDown[SDL_SCANCODE_UP]
 			|| inputState->keyDown[SDL_SCANCODE_W]
-			|| (inputState->mousePos.y < CAMERA_EDGE_SCROLL_MARGIN))
+			|| (inputState->mousePosNormalised.y < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
 		else if (inputState->keyDown[SDL_SCANCODE_DOWN]
 			|| inputState->keyDown[SDL_SCANCODE_S]
-			|| (inputState->mousePos.y > (camera->windowHeight - CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.y > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y += scrollSpeed;
 		}
@@ -84,11 +84,13 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 									GameStatus gameStatus)
 {
 	GameStatus result = gameStatus;
+	real32 windowWidth = (real32) uiState->uiCamera.windowWidth;
+	real32 windowHeight = (real32) uiState->uiCamera.windowHeight;
 
-	drawRect(renderer, true, rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight), 0, renderer->theme.overlayColor);
+	drawRect(renderer, true, rectXYWH(0, 0, windowWidth, windowHeight), 0, renderer->theme.overlayColor);
 
-	V2 position = v2((real32)renderer->worldCamera.windowWidth * 0.5f, 157.0f);
-	real32 maxLabelWidth = (real32)renderer->worldCamera.windowWidth - 256;
+	V2 position = v2(windowWidth * 0.5f, 157.0f);
+	real32 maxLabelWidth = windowWidth - 256;
 
 	//drawGL_TextureAtlasItem(renderer, true, GL_TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 	//position.y += 154.0f;
@@ -99,17 +101,17 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 	position.y += (uiLabel(renderer, renderer->theme.font, "Very much a work in progress!",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
-	RealRect buttonRect = rectXYWH(uiPadding, renderer->worldCamera.windowHeight - uiPadding - 24, 80, 24);
+	RealRect buttonRect = rectXYWH(uiPadding, windowHeight - uiPadding - 24, 80, 24);
 	if (uiButton(renderer, inputState, uiState, "Exit", buttonRect, 1))
 	{
 		result = GameStatus_Quit;
 	}
-	buttonRect.x = ((real32)renderer->worldCamera.windowWidth * 0.5f) - buttonRect.w/2;
+	buttonRect.x = (windowWidth * 0.5f) - buttonRect.w/2;
 	if (uiButton(renderer, inputState, uiState, "Website", buttonRect, 1))
 	{
 		openUrlUnsafe("http://samatkins.co.uk");
 	}
-	buttonRect.x = renderer->worldCamera.windowWidth - uiPadding - buttonRect.w;
+	buttonRect.x = windowWidth - uiPadding - buttonRect.w;
 	if (uiButton(renderer, inputState, uiState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
 	{
 		result = GameStatus_Playing;
@@ -120,17 +122,20 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 
 void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState)
 {
+	real32 windowWidth = (real32) uiState->uiCamera.windowWidth;
+	real32 windowHeight = (real32) uiState->uiCamera.windowHeight;
+
 	uiState->uiRectCount = 0;
 
 	real32 left = uiPadding;
 	char stringBuffer[256];
 
-	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, (real32) renderer->worldCamera.windowWidth, 64);
+	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
 	drawRect(renderer, true, uiRect, 0, renderer->theme.overlayColor);
 
 	uiLabel(renderer, renderer->theme.font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
-	const real32 centre = renderer->worldCamera.windowWidth * 0.5f;
+	const real32 centre = windowWidth * 0.5f;
 	sprintf(stringBuffer, "£%d", gameState->city.funds);
 	uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
 	sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
@@ -138,7 +143,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 
 	// Build UI
 	{
-		V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
+		V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
 		RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		if (uiMenuButton(renderer, inputState, uiState, "Build...", buttonRect, 1, UIMenu_Build))
@@ -237,11 +242,11 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, InputState *inputState, bool won)
 {
 	bool result = false;
+	real32 windowWidth = (real32) uiState->uiCamera.windowWidth;
+	real32 windowHeight = (real32) uiState->uiCamera.windowHeight;
 
-	V2 cameraCentre = v2(renderer->worldCamera.windowWidth/2.0f, renderer->worldCamera.windowHeight/2.0f);
-	drawRect(renderer, true,
-			rectXYWH(0, 0, (real32)renderer->worldCamera.windowWidth, (real32)renderer->worldCamera.windowHeight),
-			10, renderer->theme.overlayColor);
+	V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
+	drawRect(renderer, true, rectXYWH(0, 0, windowWidth, windowHeight), 10, renderer->theme.overlayColor);
 
 	char gameOverText[256];
 	if (won)

@@ -124,16 +124,20 @@ int main(int argc, char *argv[]) {
 
 	InputState inputState = {};
 
-	renderer->worldCamera.zoom = 1.0f;
-	SDL_GetWindowSize(renderer->window, &renderer->worldCamera.windowWidth, &renderer->worldCamera.windowHeight);
-	renderer->worldCamera.pos = v2(gameState->city.width/2, gameState->city.height/2);
-	renderer->uiBuffer.projectionMatrix = orthographicMatrix4(
-		0, (real32) renderer->worldCamera.windowWidth,
-		0, (real32) renderer->worldCamera.windowHeight,
-		-1000.0f, 1000.0f
-	);
+	SDL_GetWindowSize(renderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
-	initUiState(&gameState->uiState);	
+	initUiState(&gameState->uiState);
+	Camera *worldCamera = &gameState->uiState.worldCamera;
+	Camera *uiCamera = &gameState->uiState.uiCamera;
+
+	worldCamera->windowSize = inputState.windowSize;
+	worldCamera->pos = v2(gameState->city.width/2, gameState->city.height/2);
+	worldCamera->zoom = 1.0f;
+
+	uiCamera->windowSize = inputState.windowSize;
+
+	updateCameraMatrix(worldCamera);
+	updateCameraMatrix(uiCamera);
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;
@@ -152,24 +156,14 @@ int main(int argc, char *argv[]) {
 
 		if (inputState.wasWindowResized)
 		{
-			GL_windowResized(renderer, inputState.newWindowWidth, inputState.newWindowHeight);
+			GL_windowResized(renderer, inputState.windowWidth, inputState.windowHeight);
 		}
 
-		gameUpdateAndRender(gameState, &inputState, assets);
+		gameUpdateAndRender(gameState, &inputState, renderer, assets);
 
 		// Update camera matrices here
-		#if 0
-		renderer->worldBuffer->projectionMatrix = orthographicMatrix4(
-			worldCamera->pos.x - halfCamWidth, worldCamera->pos.x + halfCamWidth,
-			worldCamera->pos.y - halfCamHeight, worldCamera->pos.y + halfCamHeight,
-			-1000.0f, 1000.0f
-		);
-		renderer->uiBuffer->projectionMatrix = orthographicMatrix4(
-			0, (GLfloat) worldCamera->windowWidth,
-			0, (GLfloat) worldCamera->windowHeight,
-			-1000.0f, 1000.0f
-		);
-		#endif
+		updateCameraMatrix(worldCamera);
+		updateCameraMatrix(uiCamera);
 
 	// Actually draw things!
 		GL_render(renderer);

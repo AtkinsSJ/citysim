@@ -6,10 +6,11 @@ const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
 struct InputState
 {
 	// Mouse
-	Coord mousePos;
+	Coord mousePosRaw;
+	V2 mousePosNormalised; // In normalised (-1 to 1) coordinates
 	bool mouseDown[MOUSE_BUTTON_COUNT];
 	bool mouseWasDown[MOUSE_BUTTON_COUNT];
-	Coord clickStartPosition[MOUSE_BUTTON_COUNT];
+	V2 clickStartPosition[MOUSE_BUTTON_COUNT]; // Normalised
 	int32 wheelX, wheelY;
 
 	// Keyboard
@@ -20,7 +21,10 @@ struct InputState
 	// Extra
 	bool receivedQuitSignal;
 	bool wasWindowResized;
-	int32 newWindowWidth, newWindowHeight;
+	union {
+		Coord windowSize;
+		struct{int32 windowWidth, windowHeight;};
+	};
 };
 
 /**
@@ -79,8 +83,8 @@ void updateInput(InputState *inputState)
 				switch (event.window.event) {
 					case SDL_WINDOWEVENT_RESIZED: {
 						inputState->wasWindowResized = true;
-						inputState->newWindowWidth = event.window.data1;
-						inputState->newWindowHeight = event.window.data2;
+						inputState->windowWidth = event.window.data1;
+						inputState->windowHeight = event.window.data2;
 					} break;
 				}
 			} break;
@@ -88,8 +92,9 @@ void updateInput(InputState *inputState)
 			// MOUSE EVENTS
 			// NB: If we later handle TOUCH events, then we need to discard mouse events where event.X.which = SDL_TOUCH_MOUSEID
 			case SDL_MOUSEMOTION: {
-				inputState->mousePos.x = event.motion.x;
-				inputState->mousePos.y = event.motion.y;
+				// Mouse pos in screen coordinates
+				inputState->mousePosRaw.x = event.motion.x;
+				inputState->mousePosRaw.y = event.motion.y;
 			} break;
 			case SDL_MOUSEBUTTONDOWN: {
 				uint8 buttonIndex = event.button.button - 1;
@@ -122,10 +127,13 @@ void updateInput(InputState *inputState)
 		}
 	}
 
+	inputState->mousePosNormalised.x = ((inputState->mousePosRaw.x * 2.0f) / inputState->windowWidth) - 1.0f;
+	inputState->mousePosNormalised.y = ((inputState->mousePosRaw.y * -2.0f) + inputState->windowHeight) / inputState->windowHeight;
+
 	for (uint8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
 		if (mouseButtonJustPressed(inputState, i)) {
 			// Store the initial click position
-			inputState->clickStartPosition[mouseButtonIndex(i)] = inputState->mousePos;
+			inputState->clickStartPosition[mouseButtonIndex(i)] = inputState->mousePosNormalised;
 		}
 	}
 }

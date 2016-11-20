@@ -18,9 +18,11 @@ struct Camera
 	};
 	V2 pos; // Centre of screen, in tiles
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
+
+	Matrix4 projectionMatrix;
 };
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
-const int CAMERA_EDGE_SCROLL_MARGIN = 8;
+const real32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates, so 0.1 is 5% from the edge
 
 enum Cursor
 {
@@ -101,29 +103,4 @@ struct Animator
 };
 const real32 animationFramesPerDay = 10.0f;
 
-inline real32 depthFromY(real32 y)
-{
-	return (y * 0.1f);
-}
-inline real32 depthFromY(uint32 y)
-{
-	return depthFromY((real32)y);
-}
-inline real32 depthFromY(int32 y)
-{
-	return depthFromY((real32)y);
-}
-
-SDL_Cursor *createCursor(char *path)
-{
-	SDL_Surface *cursorSurface = IMG_Load(path);
-	SDL_Cursor *cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
-	SDL_FreeSurface(cursorSurface);
-
-	return cursor;
-}
-
-void setCursor(UiTheme *theme, Cursor cursor)
-{
-	SDL_SetCursor(theme->cursors[cursor]);
-}
+#include "render.cpp"

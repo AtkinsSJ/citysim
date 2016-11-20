@@ -28,7 +28,7 @@ GameState *startGame(MemoryArena *gameArena)
 	return result;
 }
 
-void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Renderer *glRenderer, AssetManager *assets)
 {
 
 	// Game simulation
@@ -56,8 +56,10 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 	// };
 	
 	// TODO: Unproject should happen somewhere outside of the game code.
-	V2 mouseWorldPos = unproject(glRenderer, v2(inputState->mousePos));
+	V2 mouseWorldPos = unproject(worldCamera, inputState->mousePosNormalised);
 	Coord mouseTilePos = tilePosition(mouseWorldPos);
+
+	V2 mouseUIPos = unproject(uiCamera, inputState->mousePosNormalised);
 
 // UiButton/Mouse interaction
 	if (gameState->status == GameStatus_Playing) {
@@ -83,7 +85,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 		// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
 
 		// This is a very basic check for "is the user clicking on the UI?"
-		if (!inRects(gameState->uiState.uiRects, gameState->uiState.uiRectCount, v2(inputState->mousePos))) {
+		if (!inRects(gameState->uiState.uiRects, gameState->uiState.uiRectCount, mouseUIPos)) {
 			switch (gameState->uiState.actionMode) {
 				// case ActionMode_Build: {
 				// 	if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
@@ -254,7 +256,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 		{
 			updateAndRenderGameUI(glRenderer, &gameState->uiState, gameState, inputState);
 
-			if (updateAndRenderGameOverUI(glRenderer, &gameState->uiState, gameState, inputState, gameState->status == GameStatus_Won))
+			if (updateAndRenderGameOverUI(glRenderer, &gameState->uiState, inputState, gameState->status == GameStatus_Won))
 			{
 				gameState = startGame(gameState->arena);
 
@@ -267,5 +269,5 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 	drawTooltip(glRenderer, inputState, &gameState->uiState);
 	drawUiMessage(glRenderer, &gameState->uiState);
 
-	inputMoveCamera(&renderer->worldCamera, inputState, gameState->city.width, gameState->city.height);
+	inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
 }
