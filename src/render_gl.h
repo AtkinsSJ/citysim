@@ -38,6 +38,7 @@ const int SPRITE_MAX = WORLD_SPRITE_MAX;
 
 struct RenderBuffer
 {
+	char *name;
 	Camera camera;
 	Sprite *sprites;
 	uint32 spriteCount;

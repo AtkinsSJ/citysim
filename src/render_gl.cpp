@@ -326,8 +326,12 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window)
 		TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
 
 		renderer->window = window;
+
+		renderer->worldBuffer.name = "WorldBuffer";
 		renderer->worldBuffer.sprites = PushArray(&renderer->renderArena, Sprite, WORLD_SPRITE_MAX);
 		renderer->worldBuffer.maxSprites = WORLD_SPRITE_MAX;
+
+		renderer->uiBuffer.name = "UIBuffer";
 		renderer->uiBuffer.sprites    = PushArray(&renderer->renderArena, Sprite, UI_SPRITE_MAX);
 		renderer->uiBuffer.maxSprites = UI_SPRITE_MAX;
 
@@ -452,21 +456,11 @@ inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect 
 	return sprite;
 }
 
-void drawSprite(GL_Renderer *renderer, bool isUI, Sprite *sprite, V3 offset)
+void drawSprite(RenderBuffer *buffer, Sprite *sprite, V3 offset)
 {
-	RenderBuffer *buffer;
-	if (isUI)
-	{
-		buffer = &renderer->uiBuffer;
-	}
-	else
-	{
-		buffer = &renderer->worldBuffer;
-	}
-
 	if (buffer->spriteCount >= buffer->maxSprites)
 	{
-		SDL_Log("Too many %s sprites!", isUI ? "UI" : "world");
+		SDL_Log("Too many %s sprites!", buffer->name);
 		return;
 	}
 
@@ -476,22 +470,12 @@ void drawSprite(GL_Renderer *renderer, bool isUI, Sprite *sprite, V3 offset)
 	bufferSprite->depth += offset.z;
 }
 
-void drawQuad(GL_Renderer *renderer, bool isUI, RealRect rect, real32 depth,
+void drawQuad(RenderBuffer *buffer, RealRect rect, real32 depth,
 				GLint textureID, RealRect uv, V4 color)
 {
-	RenderBuffer *buffer;
-	if (isUI)
-	{
-		buffer = &renderer->uiBuffer;
-	}
-	else
-	{
-		buffer = &renderer->worldBuffer;
-	}
-
 	if (buffer->spriteCount >= buffer->maxSprites)
 	{
-		SDL_Log("Too many %s sprites!", isUI ? "UI" : "world");
+		SDL_Log("Too many %s sprites!", buffer->name);
 		return;
 	}
 
@@ -506,12 +490,22 @@ void drawTextureAtlasItem(GL_Renderer *renderer, bool isUI, TextureAssetType tex
 	GL_TextureRegion *region = renderer->textureAtlas.textureRegions + textureAtlasItem;
 	GLint textureID = (textureAtlasItem > 0) ? region->textureID : TEXTURE_ID_NONE;
 
-	drawQuad(renderer, isUI, rectCentreSize(position, size), depth, textureID, region->uv, color);
+	RenderBuffer *buffer;
+	if (isUI)
+	{
+		buffer = &renderer->uiBuffer;
+	}
+	else
+	{
+		buffer = &renderer->worldBuffer;
+	}
+
+	drawQuad(buffer, rectCentreSize(position, size), depth, textureID, region->uv, color);
 }
 
-void drawRect(GL_Renderer *renderer, bool isUI, RealRect rect, real32 depth, V4 color)
+void drawRect(RenderBuffer *buffer, RealRect rect, real32 depth, V4 color)
 {
-	drawQuad(renderer, isUI, rect, depth, TEXTURE_ID_NONE, {}, color);
+	drawQuad(buffer, rect, depth, TEXTURE_ID_NONE, {}, color);
 }
 
 inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
