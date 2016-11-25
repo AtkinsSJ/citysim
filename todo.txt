@@ -3,6 +3,12 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
+- Be able to reload assets during runtime! This is important.
+	- BUG: font texture filenames are put in temp memory, which gets thrown away before they
+		are even used! It's a bug that we can actually read the filenames AT ALL.
+		We either need to make the AssetManager forget those textures until the font loads
+		them again, or keep the filenames around. Probably both actually.
+
 - Get rid of BitmapFontCache. It's too restrictive.
 - Load ui theme from a file
 - Load texture region information from a file

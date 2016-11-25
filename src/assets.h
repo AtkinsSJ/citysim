@@ -42,7 +42,7 @@ struct Texture
 {
 	AssetState state;
 	char *filename;
-	bool isAlphaPremultiplied;
+	bool isAlphaPremultiplied; // Is the source file premultiplied?
 	SDL_Surface *surface;
 };
 

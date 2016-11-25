@@ -7,7 +7,7 @@ GameState *startGame(MemoryArena *gameArena)
 {
 	GameState *result = 0;
 
-	ResetMemoryArena(gameArena);
+	resetMemoryArena(gameArena);
 	result = PushStruct(gameArena, GameState);
 	result->arena = gameArena;
 

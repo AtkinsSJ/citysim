@@ -119,7 +119,6 @@ int main(int argc, char *argv[]) {
 	addCursor(assets, Cursor_Harvest, "cursor_harvest.png");
 	addCursor(assets, Cursor_Hire, "cursor_hire.png");
 	endTemporaryMemory(&tempMemory);
-	initTheme(assets);
 	loadAssets(assets);
 
 	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window, assets);
@@ -174,6 +173,11 @@ int main(int argc, char *argv[]) {
 			GL_windowResized(renderer, inputState.windowWidth, inputState.windowHeight);
 			worldCamera->windowSize = uiCamera->windowSize = inputState.windowSize;
 			uiCamera->pos = v2(uiCamera->windowSize) * 0.5f;
+		}
+
+		if (keyJustPressed(&inputState, SDL_SCANCODE_F1))
+		{
+			reloadAssets(assets);
 		}
 
 		gameUpdateAndRender(gameState, &inputState, renderer, assets);

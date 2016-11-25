@@ -10,8 +10,6 @@ struct BitmapFontChar
 	int16 xAdvance; // How far to move after rendering this character
 
 	uint32 textureRegionID;
-	// uint32 textureID;
-	// RealRect uv;
 };
 
 struct BitmapFont

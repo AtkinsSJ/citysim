@@ -60,7 +60,7 @@ void *allocate(TemporaryMemoryArena *tempArena, size_t size)
 	return allocate(&tempArena->arena, size);
 }
 
-void ResetMemoryArena(MemoryArena *arena)
+void resetMemoryArena(MemoryArena *arena)
 {
 	arena->used = 0;
 }

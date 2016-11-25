@@ -144,7 +144,6 @@ void loadAssets(AssetManager *assets)
 
 					((uint32*)tex->surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
 				}
-				tex->isAlphaPremultiplied = true;
 			}
 
 			tex->state = AssetState_Loaded;
@@ -178,6 +177,45 @@ void loadAssets(AssetManager *assets)
 		cursor->sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
 		SDL_FreeSurface(cursorSurface);
 	}
+
+	initTheme(assets);
+}
+
+void reloadAssets(AssetManager *assets)
+{
+	// Clear out textures
+	for (uint32 i = 1; i < assets->textureCount; ++i)
+	{
+		Texture *tex = assets->textures + i;
+		if (tex->state == AssetState_Loaded)
+		{
+			SDL_FreeSurface(tex->surface);
+			tex->surface = 0;
+		}
+		tex->state = AssetState_Unloaded;
+	}
+
+	// Clear fonts
+	// Allocations are from assets arena so they get cleared below.
+	for (int i = 0; i < FontAssetTypeCount; i++)
+	{
+		BitmapFont *font = assets->fonts + i;
+		*font = {};
+	}
+
+
+	// Clear cursors
+	for (uint32 cursorID = 0; cursorID < CursorCount; cursorID++)
+	{
+		Cursor *cursor = assets->cursors + cursorID;
+		SDL_FreeCursor(cursor->sdlCursor);
+		cursor->sdlCursor = 0;
+	}
+
+	// General resetting of Assets system
+	resetMemoryArena(&assets->arena);
+
+	loadAssets(assets);
 }
 
 int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
