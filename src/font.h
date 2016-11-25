@@ -27,8 +27,8 @@ struct BitmapFont
 struct BitmapFontCachedText
 {
 	V2 size;
-	uint32 spriteCount;
-	Sprite *sprites;
+	uint32 charCount;
+	RenderItem *chars;
 };
 
 #include "font.cpp"

@@ -60,24 +60,37 @@ void updateCameraMatrix(Camera *camera)
 	);
 }
 
+inline RenderItem makeRenderItem(RealRect rect, real32 depth, uint32 textureRegionID, V4 color)
+{
+	RenderItem item = {};
+	item.rect = rect;
+	item.depth = depth;
+	item.color = color;
+	item.textureRegionID = textureRegionID;
+	
+	return item;
+}
+
 void drawRect(RenderBuffer *buffer, RealRect rect, real32 depth, V4 color)
 {
 	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
 
-	RenderItem *item = buffer->items + buffer->itemCount++;
-	item->rect = rect;
-	item->depth = depth;
-	item->color = color;
-	item->textureRegionID = 0;
+	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, 0, color);
 }
 
 void drawTextureRegion(RenderBuffer *buffer, uint32 region, RealRect rect, real32 depth, V4 color=makeWhite())
 {
 	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
 
-	RenderItem *item = buffer->items + buffer->itemCount++;
-	item->rect = rect;
-	item->depth = depth;
-	item->color = color;
-	item->textureRegionID = region;
+	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, region, color);
+}
+
+void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, real32 depthOffset)
+{
+	RenderItem *dest = buffer->items + buffer->itemCount++;
+
+	dest->rect = offset(item->rect, offsetP);
+	dest->depth = item->depth + depthOffset;
+	dest->color = item->color;
+	dest->textureRegionID = item->textureRegionID;
 }

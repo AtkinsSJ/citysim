@@ -320,18 +320,6 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 	return renderer;
 }
 
-inline Sprite makeSprite(RealRect rect, real32 depth, GLint textureID, RealRect uv, V4 color)
-{
-	Sprite sprite = {};
-	sprite.rect = rect;
-	sprite.depth = depth;
-	sprite.textureID = textureID;
-	sprite.uv = uv;
-	sprite.color = color;
-	
-	return sprite;
-}
-
 inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 {
 	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgram_Count, "Invalid shader!");
@@ -347,7 +335,7 @@ void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexC
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	checkForGLError();
-	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(VertexData), renderer->vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(GL_VertexData), renderer->vertices, GL_STATIC_DRAW);
 	checkForGLError();
 
 	// Fill IBO
@@ -369,13 +357,13 @@ void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexC
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	checkForGLError();
-	glVertexAttribPointer(activeShader->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+	glVertexAttribPointer(activeShader->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
 	checkForGLError();
-	glVertexAttribPointer(activeShader->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+	glVertexAttribPointer(activeShader->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
 	checkForGLError();
 	if (activeShader->aUVLoc != -1)
 	{
-		glVertexAttribPointer(activeShader->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+		glVertexAttribPointer(activeShader->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
 		checkForGLError();
 	}
 

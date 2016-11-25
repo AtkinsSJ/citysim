@@ -6,7 +6,7 @@ const int FRAMES_PER_SECOND = 60;
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-struct VertexData
+struct GL_VertexData
 {
 	V3 pos;
 	V4 color;
@@ -58,7 +58,7 @@ struct GL_Renderer
 	RenderBuffer worldBuffer;
 	RenderBuffer uiBuffer;
 
-	VertexData vertices[SPRITE_MAX * 4];
+	GL_VertexData vertices[SPRITE_MAX * 4];
 	GLuint indices[SPRITE_MAX * 6];
 
 	// Animation animations[Animation_Count];

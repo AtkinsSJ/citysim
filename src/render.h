@@ -95,19 +95,6 @@ struct RenderBuffer
 	uint32 maxItems;
 };
 
-struct Sprite
-{
-	RealRect rect;
-	real32 depth; // Positive is towards the player
-
-// Turning these off to split from OpenGL. So that's why there are build errors, future me!
-	GLint textureID;
-	RealRect uv;
-	
-	// GL_TextureAtlasItem texture;
-	V4 color;
-};
-
 // Animation code should probably be deleted and redone.
 #if 0
 enum AnimationID

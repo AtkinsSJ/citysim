@@ -133,8 +133,8 @@ struct DrawTextState
 
 	V2 position;
 
-	Sprite *startOfCurrentWord;
-	Sprite *endOfCurrentWord;
+	RenderItem *startOfCurrentWord;
+	RenderItem *endOfCurrentWord;
 	real32 currentWordWidth;
 
 	real32 currentLineWidth;
@@ -167,7 +167,7 @@ void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 					state->currentLineWidth = state->currentWordWidth;
 					state->lineCount++;
 
-					// Move all the sprites to their new positions
+					// Move all the chars to their new positions
 					while (state->startOfCurrentWord <= state->endOfCurrentWord)
 					{
 						state->startOfCurrentWord->rect.pos += offset;
@@ -223,11 +223,13 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 	state.position = {};
 
 	// Memory management witchcraft
+	// This actually overestimates how much memory we need, because it does one item for each
+	// byte of the string, not each codepoint.
 	uint32 textLength = strlen(text);
-	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(Sprite) * textLength);
+	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * textLength);
 	uint8 *data = (uint8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
-	result->sprites = (Sprite *)(data + sizeof(BitmapFontCachedText));
+	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
 	result->size = v2(0, font->lineHeight);
 
 	if (result)
@@ -248,11 +250,13 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 				BitmapFontChar *c = findChar(font, currentChar);
 				if (c)
 				{
-					state.endOfCurrentWord = result->sprites + result->spriteCount++;
-					*state.endOfCurrentWord = makeSprite(
+					state.endOfCurrentWord = result->chars + result->charCount++;
+					*state.endOfCurrentWord = makeRenderItem(
 						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
 								 (real32)c->size.w, (real32)c->size.h),
-						0, c->textureID, c->uv, color
+						0.0f,
+						0, // FIXME: Replace with texture region id. Hmmm.
+						color
 					);
 
 					font_handleEndOfWord(&state, c);
@@ -261,30 +265,32 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 			currentChar = readUnicodeChar(&text);
 		}
 
-		// for (char *currentChar=text;
-		// 	*currentChar != 0;
-		// 	currentChar++)
-		// {
-		// 	if (*currentChar == '\n')
-		// 	{
-		// 		font_newLine(&state);
-		// 	}
-		// 	else
-		// 	{
-		// 		BitmapFontChar *c = findChar(font, (uint32)(*currentChar));
-		// 		if (c)
-		// 		{
-		// 			state.endOfCurrentWord = result->sprites + result->spriteCount++;
-		// 			*state.endOfCurrentWord = makeSprite(
-		// 				rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
-		// 						 (real32)c->size.w, (real32)c->size.h),
-		// 				0, c->textureID, c->uv, color
-		// 			);
+		for (char *currentByte=text;
+			*currentByte != 0;
+			currentByte++)
+		{
+			if (*currentByte == '\n')
+			{
+				font_newLine(&state);
+			}
+			else
+			{
+				BitmapFontChar *c = findChar(font, (uint32)(*currentByte));
+				if (c)
+				{
+					state.endOfCurrentWord = result->chars + result->charCount++;
+					*state.endOfCurrentWord = makeRenderItem(
+						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
+								 (real32)c->size.w, (real32)c->size.h),
+						0.0f,
+						0, // FIXME: Replace with texture region id. Hmmm.
+						color
+					);
 
-		// 			font_handleEndOfWord(&state, c);
-		// 		}
-		// 	}
-		// }
+					font_handleEndOfWord(&state, c);
+				}
+			}
+		}
 		// Final flush to make sure the last line is correct
 		font_handleEndOfWord(&state, &font->nullChar);
 
@@ -335,9 +341,9 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 void drawCachedText(GL_Renderer *renderer, BitmapFontCachedText *cache, V2 topLeft, real32 depth)
 {
 	for (uint32 spriteIndex=0;
-		spriteIndex < cache->spriteCount;
+		spriteIndex < cache->charCount;
 		spriteIndex++)
 	{
-		// drawSprite(&renderer->uiBuffer, cache->sprites + spriteIndex, v3(topLeft.x, topLeft.y, depth));
+		drawRenderItem(&renderer->uiBuffer, cache->chars + spriteIndex, topLeft, depth);
 	}
 }

@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
 	AssetManager *assets = createAssetManager();
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,1,1), false);
+	// addFont(assets, )
 	loadTextures(assets);
 
 	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window, assets);

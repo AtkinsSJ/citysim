@@ -609,6 +609,15 @@ inline RealRect expandRect(RealRect rect, real32 addRadius)
 		rect.h + (addRadius * 2.0f)
 	);
 }
+
+inline RealRect offset(RealRect rect, V2 offset)
+{
+	RealRect result = rect;
+	result.pos += offset;
+
+	return result;
+}
+
 inline bool inRect(RealRect rect, V2 pos)
 {
 	return pos.x >= rect.x
