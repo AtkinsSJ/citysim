@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
 
 	AssetManager *assets = createAssetManager();
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
-	                 rectXYWH(0,0,1,1), false);
+	                 rectXYWH(0,0,2002,1519), false);
 	TemporaryMemoryArena tempMemory = beginTemporaryMemory(&memoryArena);
 	addBMFont(assets, &tempMemory, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, &tempMemory, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");

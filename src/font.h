@@ -9,8 +9,9 @@ struct BitmapFontChar
 	int16 xOffset, yOffset; // Offset when rendering to the screen
 	int16 xAdvance; // How far to move after rendering this character
 
-	uint32 textureID;
-	RealRect uv;
+	uint32 textureRegionID;
+	// uint32 textureID;
+	// RealRect uv;
 };
 
 struct BitmapFont

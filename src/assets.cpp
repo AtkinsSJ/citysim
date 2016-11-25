@@ -125,30 +125,22 @@ void loadTextures(AssetManager *assets)
 		}
 	}
 
-	// Now we can set up font char UVs!
-	for (uint32 i=0; i<FontAssetTypeCount; i++)
+	// Now we can convert UVs from pixel space to 0-1 space.
+	for (uint32 regionIndex = 0; regionIndex < assets->textureRegionCount; regionIndex++)
 	{
-		BitmapFont *font = assets->fonts + i;
+		TextureRegion *tr = assets->textureRegions + regionIndex;
+		// NB: We look up the texture for every char, so fairly inefficient.
+		// Maybe we could cache the current texture?
+		Texture *t = assets->textures + tr->textureID;
+		real32 textureWidth = (real32) t->surface->w;
+		real32 textureHeight = (real32) t->surface->h;
 
-		for (uint32 charIndex = 0;
-			charIndex < font->charCount;
-			charIndex++)
-		{
-			BitmapFontChar *character = font->chars + charIndex;
-
-			// NB: We look up the texture for every char, so fairly inefficient.
-			// Maybe we could cache the current texture?
-			Texture *t = assets->textures + character->textureID;
-			real32 textureWidth = (real32) t->surface->w;
-			real32 textureHeight = (real32) t->surface->h;
-
-			character->uv = rectXYWH(
-				character->uv.x / textureWidth,
-				character->uv.y / textureHeight,
-				character->uv.w / textureWidth,
-				character->uv.h / textureHeight
-			);
-		}
+		tr->uv = rectXYWH(
+			tr->uv.x / textureWidth,
+			tr->uv.y / textureHeight,
+			tr->uv.w / textureWidth,
+			tr->uv.h / textureHeight
+		);
 	}
 }
 
