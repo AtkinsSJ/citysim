@@ -64,9 +64,6 @@ struct GL_Renderer
 	// Animation animations[Animation_Count];
 
 	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length
-
-	// UI Stuff!
-	UiTheme theme;
 };
 
 inline void checkForGLError()

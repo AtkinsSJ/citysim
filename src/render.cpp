@@ -13,20 +13,6 @@ inline real32 depthFromY(int32 y)
 	return depthFromY((real32)y);
 }
 
-SDL_Cursor *createCursor(char *path)
-{
-	SDL_Surface *cursorSurface = IMG_Load(path);
-	SDL_Cursor *cursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
-	SDL_FreeSurface(cursorSurface);
-
-	return cursor;
-}
-
-void setCursor(UiTheme *theme, Cursor cursor)
-{
-	SDL_SetCursor(theme->cursors[cursor]);
-}
-
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, uint32 maxItems)
 {
 	buffer->name = name;

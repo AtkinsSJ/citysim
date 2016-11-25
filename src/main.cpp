@@ -112,8 +112,15 @@ int main(int argc, char *argv[]) {
 	TemporaryMemoryArena tempMemory = beginTemporaryMemory(&memoryArena);
 	addBMFont(assets, &tempMemory, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, &tempMemory, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
+	addCursor(assets, Cursor_Main, "cursor_main.png");
+	addCursor(assets, Cursor_Build, "cursor_build.png");
+	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
+	addCursor(assets, Cursor_Plant, "cursor_plant.png");
+	addCursor(assets, Cursor_Harvest, "cursor_harvest.png");
+	addCursor(assets, Cursor_Hire, "cursor_hire.png");
 	endTemporaryMemory(&tempMemory);
-	loadTextures(assets);
+	initTheme(assets);
+	loadAssets(assets);
 
 	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window, assets);
 	ASSERT(renderer, "Failed to initialize renderer.");
@@ -144,6 +151,8 @@ int main(int argc, char *argv[]) {
 
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
+
+	setCursor(assets, Cursor_Main);
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;

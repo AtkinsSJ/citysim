@@ -29,42 +29,6 @@ struct Camera
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 const real32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates, so 0.1 is 5% from the edge
 
-enum Cursor
-{
-	Cursor_Main,
-	Cursor_Build,
-	Cursor_Demolish,
-	Cursor_Plant,
-	Cursor_Harvest,
-	Cursor_Hire,
-
-	Cursor_Count
-};
-
-struct UiTheme
-{
-	FontAssetType font,
-				  buttonFont;
-
-	V4 overlayColor;
-			
-	V4 labelColor;
-
-	V4 buttonTextColor,
-		buttonBackgroundColor,
-		buttonHoverColor,
-		buttonPressedColor;
-
-	V4 textboxTextColor,
-		textboxBackgroundColor;
-
-	V4 tooltipBackgroundColor,
-		tooltipColorNormal,
-		tooltipColorBad;
-
-	SDL_Cursor *cursors[Cursor_Count];
-};
-
 enum ShaderPrograms
 {
 	ShaderProgram_Textured,

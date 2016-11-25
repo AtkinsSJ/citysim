@@ -68,11 +68,13 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	}
 }
 
-void showCostTooltip(GL_Renderer *renderer, UIState *uiState, int32 cost, int32 cityFunds) {
+void showCostTooltip(GL_Renderer *renderer, AssetManager *assets, UIState *uiState, int32 cost, int32 cityFunds) {
+	UiTheme *theme = &assets->theme;
+
 	if (cost > cityFunds) {
-		uiState->tooltip.color = renderer->theme.tooltipColorBad;
+		uiState->tooltip.color = theme->tooltipColorBad;
 	} else {
-		uiState->tooltip.color = renderer->theme.tooltipColorNormal;
+		uiState->tooltip.color = theme->tooltipColorNormal;
 	}
 	sprintf(uiState->tooltip.text, "-£%d", cost);
 	uiState->tooltip.show = true;
@@ -86,8 +88,9 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, AssetManager *assets
 	GameStatus result = gameStatus;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
+	UiTheme *theme = &assets->theme;
 
-	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, renderer->theme.overlayColor);
+	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, theme->overlayColor);
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	real32 maxLabelWidth = windowWidth - 256;
@@ -98,10 +101,10 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, AssetManager *assets
 	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
 	position.y += (uiLabel(renderer, font, "Under London",
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, theme->labelColor, maxLabelWidth)).h;
 
 	position.y += (uiLabel(renderer, font, "Very much a work in progress!",
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
+			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, theme->labelColor, maxLabelWidth)).h;
 
 	RealRect buttonRect = rectXYWH(uiPadding, windowHeight - uiPadding - 24, 80, 24);
 	if (uiButton(renderer, assets, inputState, uiState, "Exit", buttonRect, 1))
@@ -126,7 +129,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 {
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
-
+	UiTheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
 	uiState->uiRectCount = 0;
@@ -135,15 +138,15 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 	char stringBuffer[256];
 
 	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
-	drawRect(&renderer->uiBuffer, uiRect, 0, renderer->theme.overlayColor);
+	drawRect(&renderer->uiBuffer, uiRect, 0, theme->overlayColor);
 
-	uiLabel(renderer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
+	uiLabel(renderer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelColor);
 
 	const real32 centre = windowWidth * 0.5f;
 	sprintf(stringBuffer, "£%d", gameState->city.funds);
-	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
+	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, theme->labelColor);
 	sprintf(stringBuffer, "(-£%d/month)\0", gameState->city.monthlyExpenditure);
-	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
+	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, theme->labelColor);
 
 	// Build UI
 	{
@@ -164,7 +167,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Farmhouse;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(&renderer->theme, Cursor_Build);
+				setCursor(assets, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -176,7 +179,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Field;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(&renderer->theme, Cursor_Build);
+				setCursor(assets, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -188,7 +191,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Barn;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(&renderer->theme, Cursor_Build);
+				setCursor(assets, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -200,11 +203,11 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Path;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(&renderer->theme, Cursor_Build);
+				setCursor(assets, Cursor_Build);
 			}
 
 			uiState->uiRects[uiState->uiRectCount++] = menuRect;
-			drawRect(&renderer->uiBuffer, menuRect, 0, renderer->theme.overlayColor);
+			drawRect(&renderer->uiBuffer, menuRect, 0, theme->overlayColor);
 		}
 
 		buttonRect.x += buttonRect.w + uiPadding;
@@ -213,7 +216,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 					SDL_SCANCODE_X, "(X)"))
 		{
 			uiState->actionMode = ActionMode_Demolish;
-			setCursor(&renderer->theme, Cursor_Demolish);
+			setCursor(assets, Cursor_Demolish);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(renderer, assets, inputState, uiState, "Plant", buttonRect, 1,
@@ -221,7 +224,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 					SDL_SCANCODE_P, "(P)"))
 		{
 			uiState->actionMode = ActionMode_Plant;
-			setCursor(&renderer->theme, Cursor_Plant);
+			setCursor(assets, Cursor_Plant);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(renderer, assets, inputState, uiState, "Harvest", buttonRect, 1,
@@ -229,7 +232,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 					SDL_SCANCODE_H, "(H)"))
 		{
 			uiState->actionMode = ActionMode_Harvest;
-			setCursor(&renderer->theme, Cursor_Harvest);
+			setCursor(assets, Cursor_Harvest);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(renderer, assets, inputState, uiState, "Hire Worker", buttonRect, 1,
@@ -237,7 +240,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 					SDL_SCANCODE_G, "(G)"))
 		{
 			uiState->actionMode = ActionMode_Hire;
-			setCursor(&renderer->theme, Cursor_Hire);
+			setCursor(assets, Cursor_Hire);
 		}
 	}
 }
@@ -249,10 +252,11 @@ bool updateAndRenderGameOverUI(GL_Renderer *renderer, AssetManager *assets, UISt
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
 
+	UiTheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
 	V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
-	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 10, renderer->theme.overlayColor);
+	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 10, theme->overlayColor);
 
 	char gameOverText[256];
 	if (won)
@@ -262,7 +266,7 @@ bool updateAndRenderGameOverUI(GL_Renderer *renderer, AssetManager *assets, UISt
 		sprintf(gameOverText, "Game over! You ran out of money! :(");
 	}
 
-	uiLabel(renderer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, renderer->theme.labelColor);
+	uiLabel(renderer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, theme->labelColor);
 
 	if (uiButton(renderer, assets, inputState, uiState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
 	{

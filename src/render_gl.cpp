@@ -280,37 +280,6 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 			}
 		}
 
-		// UI Theme!
-		// TODO: Move this!
-		renderer->theme.buttonTextColor 		= color255(   0,   0,   0, 255 );
-		renderer->theme.buttonBackgroundColor 	= color255( 255, 255, 255, 255 );
-		renderer->theme.buttonHoverColor 		= color255( 192, 192, 255, 255 );
-		renderer->theme.buttonPressedColor 		= color255( 128, 128, 255, 255 );
-
-		renderer->theme.labelColor 				= color255( 255, 255, 255, 255 );
-		renderer->theme.overlayColor 			= color255(   0,   0,   0, 128 );
-
-		renderer->theme.textboxBackgroundColor 	= color255( 255, 255, 255, 255 );
-		renderer->theme.textboxTextColor 		= color255(   0,   0,   0, 255 );
-		
-		renderer->theme.tooltipBackgroundColor	= color255(   0,   0,   0, 128 );
-		renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
-		renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
-
-		renderer->theme.font = FontAssetType_Main;
-		renderer->theme.buttonFont = FontAssetType_Buttons;
-		
-		// renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
-		// renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
-
-		renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
-		renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");
-		renderer->theme.cursors[Cursor_Demolish] = createCursor("cursor_demolish.png");
-		renderer->theme.cursors[Cursor_Plant] = createCursor("cursor_plant.png");
-		renderer->theme.cursors[Cursor_Harvest] = createCursor("cursor_harvest.png");
-		renderer->theme.cursors[Cursor_Hire] = createCursor("cursor_hire.png");
-		setCursor(&renderer->theme, Cursor_Main);
-
 		endTemporaryMemory(&tempArena);
 
 		if (!succeeded)

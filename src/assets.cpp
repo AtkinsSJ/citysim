@@ -27,6 +27,27 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
+void initTheme(AssetManager *assets)
+{
+	assets->theme.buttonTextColor        = color255(   0,   0,   0, 255 );
+	assets->theme.buttonBackgroundColor  = color255( 255, 255, 255, 255 );
+	assets->theme.buttonHoverColor 	     = color255( 192, 192, 255, 255 );
+	assets->theme.buttonPressedColor     = color255( 128, 128, 255, 255 );
+
+	assets->theme.labelColor             = color255( 255, 255, 255, 255 );
+	assets->theme.overlayColor           = color255(   0,   0,   0, 128 );
+
+	assets->theme.textboxBackgroundColor = color255( 255, 255, 255, 255 );
+	assets->theme.textboxTextColor       = color255(   0,   0,   0, 255 );
+	
+	assets->theme.tooltipBackgroundColor = color255(   0,   0,   0, 128 );
+	assets->theme.tooltipColorNormal     = color255( 255, 255, 255, 255 );
+	assets->theme.tooltipColorBad        = color255( 255,   0,   0, 255 );
+
+	assets->theme.font       = FontAssetType_Main;
+	assets->theme.buttonFont = FontAssetType_Buttons;
+}
+
 int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
 {
 	ASSERT(assets->textureCount < ArrayCount(assets->textures), "No room for texture");
@@ -82,7 +103,7 @@ int32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filena
 	return addTextureRegion(assets, type, textureID, uv);
 }
 
-void loadTextures(AssetManager *assets)
+void loadAssets(AssetManager *assets)
 {
 	for (uint32 i = 1; i < assets->textureCount; ++i)
 	{
@@ -147,6 +168,16 @@ void loadTextures(AssetManager *assets)
 			tr->uv.h / textureHeight
 		);
 	}
+
+	// Load up our cursors
+	for (uint32 cursorID = 0; cursorID < CursorCount; cursorID++)
+	{
+		Cursor *cursor = assets->cursors + cursorID;
+
+		SDL_Surface *cursorSurface = IMG_Load(cursor->filename);
+		cursor->sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
+		SDL_FreeSurface(cursorSurface);
+	}
 }
 
 int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
@@ -163,4 +194,16 @@ int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset
 BitmapFont *getFont(AssetManager *assets, FontAssetType font)
 {
 	return assets->fonts + font;
+}
+
+void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
+{
+	Cursor *cursor = assets->cursors + cursorID;
+	cursor->filename = filename;
+	cursor->sdlCursor = 0;
+}
+
+void setCursor(AssetManager *assets, CursorType cursorID)
+{
+	SDL_SetCursor(assets->cursors[cursorID].sdlCursor);
 }
