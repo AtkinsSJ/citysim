@@ -174,15 +174,8 @@ BitmapFont *addBMFont(AssetManager *assets, TemporaryMemoryArena *tempArena, Fon
 					dest->yOffset = src->yOffset;
 					dest->xAdvance = src->xAdvance;
 
-					dest->textureID = pageToTextureID[src->page];
-					// NB: We temporarily save the pixel UVs where to 0-1 UVs go.
-					// They get adjusted in loadTextures()
-					dest->uv = rectXYWH(
-						(real32)src->x,
-						(real32)src->y,
-						(real32)src->w,
-						(real32)src->h
-					);
+					dest->textureRegionID = addTextureRegion(assets, textureAssetType, pageToTextureID[src->page],
+						rectXYWH( (real32)src->x, (real32)src->y, (real32)src->w, (real32)src->h));
 				}
 			}
 		}

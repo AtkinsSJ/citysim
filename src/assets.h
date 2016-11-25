@@ -52,7 +52,7 @@ struct AssetManager
 
 	// NB: index 0 is reserved as a null region.
 	uint32 textureRegionCount;
-	TextureRegion textureRegions[256];
+	TextureRegion textureRegions[8192];
 
 	// NOTE: At each index is the first or last position in textureRegions array matching that type.
 	// So, assets with the same type must be contiguous!

@@ -254,9 +254,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 					*state.endOfCurrentWord = makeRenderItem(
 						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
 								 (real32)c->size.w, (real32)c->size.h),
-						0.0f,
-						0, // FIXME: Replace with texture region id. Hmmm.
-						color
+						0.0f, c->textureRegionID, color
 					);
 
 					font_handleEndOfWord(&state, c);
@@ -282,9 +280,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 					*state.endOfCurrentWord = makeRenderItem(
 						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
 								 (real32)c->size.w, (real32)c->size.h),
-						0.0f,
-						0, // FIXME: Replace with texture region id. Hmmm.
-						color
+						0.0f, c->textureRegionID, color
 					);
 
 					font_handleEndOfWord(&state, c);

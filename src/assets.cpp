@@ -55,26 +55,31 @@ int32 findTexture(AssetManager *assets, char *filename)
 	return index;
 }
 
-TextureRegion *addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv, bool isAlphaPremultiplied=false)
+int32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textureID, RealRect uv)
 {
 	ASSERT(assets->textureRegionCount < ArrayCount(assets->textureRegions), "No room for texture region");
 	int32 textureRegionID = assets->textureRegionCount++;
-	TextureRegion *result = assets->textureRegions + textureRegionID;
+	TextureRegion *region = assets->textureRegions + textureRegionID;
 
+	region->type = type;
+	region->textureID = textureID;
+	region->uv = uv;
+
+	assets->firstIDForTextureAssetType[type] = min(textureRegionID, assets->firstIDForTextureAssetType[type]);
+	assets->lastIDForTextureAssetType[type] = max(textureRegionID, assets->lastIDForTextureAssetType[type]);
+
+	return textureRegionID;
+}
+
+int32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv, bool isAlphaPremultiplied=false)
+{
 	int32 textureID = findTexture(assets, filename);
 	if (textureID == -1)
 	{
 		textureID = addTexture(assets, filename, isAlphaPremultiplied);
 	}
 
-	result->type = type;
-	result->textureID = textureID;
-	result->uv = uv;
-
-	assets->firstIDForTextureAssetType[type] = min(textureRegionID, assets->firstIDForTextureAssetType[type]);
-	assets->lastIDForTextureAssetType[type] = max(textureRegionID, assets->lastIDForTextureAssetType[type]);
-
-	return result;
+	return addTextureRegion(assets, type, textureID, uv);
 }
 
 void loadTextures(AssetManager *assets)
@@ -126,7 +131,7 @@ void loadTextures(AssetManager *assets)
 	}
 
 	// Now we can convert UVs from pixel space to 0-1 space.
-	for (uint32 regionIndex = 0; regionIndex < assets->textureRegionCount; regionIndex++)
+	for (uint32 regionIndex = 1; regionIndex < assets->textureRegionCount; regionIndex++)
 	{
 		TextureRegion *tr = assets->textureRegions + regionIndex;
 		// NB: We look up the texture for every char, so fairly inefficient.
