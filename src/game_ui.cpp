@@ -142,7 +142,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState 
 	const real32 centre = windowWidth * 0.5f;
 	sprintf(stringBuffer, "£%d", gameState->city.funds);
 	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
-	sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
+	sprintf(stringBuffer, "(-£%d/month)\0", gameState->city.monthlyExpenditure);
 	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
 	// Build UI

@@ -263,30 +263,6 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *
 			currentChar = readUnicodeChar(&text);
 		}
 
-		for (char *currentByte=text;
-			*currentByte != 0;
-			currentByte++)
-		{
-			if (*currentByte == '\n')
-			{
-				font_newLine(&state);
-			}
-			else
-			{
-				BitmapFontChar *c = findChar(font, (uint32)(*currentByte));
-				if (c)
-				{
-					state.endOfCurrentWord = result->chars + result->charCount++;
-					*state.endOfCurrentWord = makeRenderItem(
-						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
-								 (real32)c->size.w, (real32)c->size.h),
-						0.0f, c->textureRegionID, color
-					);
-
-					font_handleEndOfWord(&state, c);
-				}
-			}
-		}
 		// Final flush to make sure the last line is correct
 		font_handleEndOfWord(&state, &font->nullChar);
 

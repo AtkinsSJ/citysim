@@ -1,26 +1,14 @@
-BUILD:
-
-For future reference, here's the build system config for sublime text 3:
-{
-	"shell_cmd": "build.bat",
-	"working_dir": "${file_path}",
-	"file_regex": "^(...*?)[(]([0-9]*)[)]",
-	"shell": true,
-	"encoding": "gb2312"
-}
-Took me WAY TOO LONG to make that work.
-
 ---------------------------------------------
 TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
-- Move fonts into asset system
 - Move UITheme into asset system
 	- Load ui theme from a file?
 - Check for the flicker bug while we have so few things being drawn.
 - Game produces list of abstract draw instructions, then passed to the renderer
 	- Generic "Renderer" struct, extended by each platform?
+- Asset system dynamic allocations. e.g. So we don't have to predetermine number of texture regions.
 
 GAME:
 - Draw a map
@@ -56,3 +44,19 @@ ENGINE:
 - Temporary memory automatically closes when it leaves scope?
 - Scenarios
 	- A background image, a size, etc.
+
+---------------------------------------------
+NOTES:
+---------------------------------------------
+
+BUILD:
+
+For future reference, here's the build system config for sublime text 3:
+{
+	"shell_cmd": "build.bat",
+	"working_dir": "${file_path}",
+	"file_regex": "^(...*?)[(]([0-9]*)[)]",
+	"shell": true,
+	"encoding": "gb2312"
+}
+Took me WAY TOO LONG to make that work.
