@@ -15,12 +15,12 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
+- Move fonts into asset system
+- Move UITheme into asset system
+	- Load ui theme from a file?
 - Check for the flicker bug while we have so few things being drawn.
-- UITheme out of renderer
 - Game produces list of abstract draw instructions, then passed to the renderer
 	- Generic "Renderer" struct, extended by each platform?
-- Make fonts actually work
-	- Probably split render instructions into sprites/text
 
 GAME:
 - Draw a map

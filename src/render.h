@@ -43,8 +43,8 @@ enum Cursor
 
 struct UiTheme
 {
-	struct BitmapFont *font,
-					  *buttonFont;
+	FontAssetType font,
+				  buttonFont;
 
 	V4 overlayColor;
 			

@@ -4,9 +4,20 @@ enum TextureAssetType
 {
 	TextureAssetType_None,
 
+	TextureAssetType_Font_Main,
+	TextureAssetType_Font_Buttons,
+
 	TextureAssetType_Map1,
 
 	TextureAssetTypeCount
+};
+
+enum FontAssetType
+{
+	FontAssetType_Main,
+	FontAssetType_Buttons,
+
+	FontAssetTypeCount
 };
 
 enum AssetState
@@ -14,6 +25,7 @@ enum AssetState
 	AssetState_Unloaded,
 	AssetState_Loaded,
 };
+
 struct Texture
 {
 	AssetState state;
@@ -28,6 +40,8 @@ struct TextureRegion
 	int32 textureID;
 	RealRect uv; // in (0 to 1) space
 };
+
+#include "font.h"
 
 struct AssetManager
 {
@@ -44,6 +58,8 @@ struct AssetManager
 	// So, assets with the same type must be contiguous!
 	int32 firstIDForTextureAssetType[TextureAssetTypeCount];
 	int32 lastIDForTextureAssetType[TextureAssetTypeCount];
+
+	BitmapFont fonts[FontAssetTypeCount];
 };
 
 #include "assets.cpp"

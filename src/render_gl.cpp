@@ -297,8 +297,11 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 		renderer->theme.tooltipColorNormal 		= color255( 255, 255, 255, 255 );
 		renderer->theme.tooltipColorBad 		= color255( 255,   0,   0, 255 );
 
-		renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
-		renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
+		renderer->theme.font = FontAssetType_Main;
+		renderer->theme.buttonFont = FontAssetType_Buttons;
+		
+		// renderer->theme.font = readBMFont(&renderer->renderArena, &tempArena, "dejavu-20.fnt", renderer);
+		// renderer->theme.buttonFont = readBMFont(&renderer->renderArena, &tempArena, "dejavu-14.fnt", renderer);
 
 		renderer->theme.cursors[Cursor_Main] = createCursor("cursor_main.png");
 		renderer->theme.cursors[Cursor_Build] = createCursor("cursor_build.png");

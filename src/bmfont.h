@@ -60,9 +60,10 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GL_Renderer *renderer)
+BitmapFont *addBMFont(AssetManager *assets, TemporaryMemoryArena *tempArena, FontAssetType fontAssetType,
+	                  TextureAssetType textureAssetType, char *filename)
 {
-	BitmapFont *Font = 0;
+	BitmapFont *font = 0;
 
 	File file = readFile(tempArena, filename);
 	if (!file.data)
@@ -138,45 +139,34 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 			}
 			else
 			{
-				// Buffer-up the texture pages
-				GLint *pageToGL_Texture = PushArray(renderArena, GLint, common->pageCount);
+				int32 *pageToTextureID = PushArray(tempArena, int32, common->pageCount);
 				char *pageStart = (char *) pages;
-
-				real32 textureWidth = 0,
-						textureHeight = 0;
 
 				for (uint32 pageIndex = 0;
 					pageIndex < common->pageCount;
 					pageIndex++)
 				{
-#if 0
-					GL_Texture *texture = GL_loadTexture(renderer, pageStart, false);
-					ASSERT(texture->isValid, "Font texture failed to load!");
-					textureWidth = (real32) texture->w;
-					textureHeight = (real32) texture->h;
-					pageToGL_Texture[pageIndex] = texture->glTextureID; //pushTextureToLoad(texturesToLoad, pageStart, true);
+					int32 textureID = addTexture(assets, pageStart, false);
+					pageToTextureID[pageIndex] = textureID;
 					pageStart += strlen(pageStart) + 1;
-#endif
 				}
 
-				Font = PushStruct(renderArena, BitmapFont);
-				Font->lineHeight = common->lineHeight;
-				Font->baseY = common->base;
+				font = assets->fonts + fontAssetType;
+				font->textureAssetType = textureAssetType;
+				font->lineHeight = common->lineHeight;
+				font->baseY = common->base;
 
-				Font->nullChar = {};
+				font->nullChar = {};
 
-				Font->charCount = charCount;
-				Font->chars = PushArray(renderArena, BitmapFontChar, charCount);
-
-				textureWidth = max(textureWidth, 1.0f);
-				textureHeight = max(textureHeight, 1.0f);
+				font->charCount = charCount;
+				font->chars = PushArray(&assets->arena, BitmapFontChar, charCount);
 
 				for (uint32 charIndex = 0;
 					charIndex < charCount;
 					charIndex++)
 				{
 					BMFont_Char *src = chars + charIndex;
-					BitmapFontChar *dest = Font->chars + charIndex;
+					BitmapFontChar *dest = font->chars + charIndex;
 
 					dest->codepoint = src->id;
 					dest->size = irectXYWH(src->x, src->y, src->w, src->h);
@@ -184,19 +174,19 @@ BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena
 					dest->yOffset = src->yOffset;
 					dest->xAdvance = src->xAdvance;
 
-					dest->textureID = pageToGL_Texture[src->page];
-					// NB: If we start packing multiple images into a single texture at runtime,
-					// this will be WRONG!!!!
+					dest->textureID = pageToTextureID[src->page];
+					// NB: We temporarily save the pixel UVs where to 0-1 UVs go.
+					// They get adjusted in loadTextures()
 					dest->uv = rectXYWH(
-						(real32)src->x / textureWidth,
-						(real32)src->y / textureHeight,
-						(real32)src->w / textureWidth,
-						(real32)src->h / textureHeight
+						(real32)src->x,
+						(real32)src->y,
+						(real32)src->w,
+						(real32)src->h
 					);
 				}
 			}
 		}
 	}
 
-	return Font;
+	return font;
 }

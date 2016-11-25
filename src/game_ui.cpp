@@ -80,7 +80,7 @@ void showCostTooltip(GL_Renderer *renderer, UIState *uiState, int32 cost, int32 
 
 const real32 uiPadding = 4;
 
-GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, InputState *inputState,
+GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, AssetManager *assets, UIState *uiState, InputState *inputState,
 									GameStatus gameStatus)
 {
 	GameStatus result = gameStatus;
@@ -95,24 +95,26 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 	//drawGL_TextureAtlasItem(renderer, true, GL_TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 	//position.y += 154.0f;
 
-	position.y += (uiLabel(renderer, renderer->theme.font, "Under London",
+	BitmapFont *font = getFont(assets, FontAssetType_Main);
+
+	position.y += (uiLabel(renderer, font, "Under London",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
-	position.y += (uiLabel(renderer, renderer->theme.font, "Very much a work in progress!",
+	position.y += (uiLabel(renderer, font, "Very much a work in progress!",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, renderer->theme.labelColor, maxLabelWidth)).h;
 
 	RealRect buttonRect = rectXYWH(uiPadding, windowHeight - uiPadding - 24, 80, 24);
-	if (uiButton(renderer, inputState, uiState, "Exit", buttonRect, 1))
+	if (uiButton(renderer, assets, inputState, uiState, "Exit", buttonRect, 1))
 	{
 		result = GameStatus_Quit;
 	}
 	buttonRect.x = (windowWidth * 0.5f) - buttonRect.w/2;
-	if (uiButton(renderer, inputState, uiState, "Website", buttonRect, 1))
+	if (uiButton(renderer, assets, inputState, uiState, "Website", buttonRect, 1))
 	{
 		openUrlUnsafe("http://samatkins.co.uk");
 	}
 	buttonRect.x = windowWidth - uiPadding - buttonRect.w;
-	if (uiButton(renderer, inputState, uiState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
+	if (uiButton(renderer, assets, inputState, uiState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
 	{
 		result = GameStatus_Playing;
 	}
@@ -120,10 +122,12 @@ GameStatus updateAndRenderMainMenuUI(GL_Renderer *renderer, UIState *uiState, In
 	return result;
 }
 
-void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *gameState, InputState *inputState)
+void updateAndRenderGameUI(GL_Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState, InputState *inputState)
 {
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
+
+	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
 	uiState->uiRectCount = 0;
 
@@ -133,27 +137,27 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
 	drawRect(&renderer->uiBuffer, uiRect, 0, renderer->theme.overlayColor);
 
-	uiLabel(renderer, renderer->theme.font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
+	uiLabel(renderer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
 	const real32 centre = windowWidth * 0.5f;
 	sprintf(stringBuffer, "£%d", gameState->city.funds);
-	uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
+	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, renderer->theme.labelColor);
 	sprintf(stringBuffer, "(-£%d/month)", gameState->city.monthlyExpenditure);
-	uiLabel(renderer, renderer->theme.font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
+	uiLabel(renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, renderer->theme.labelColor);
 
 	// Build UI
 	{
 		V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
 		RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
-		if (uiMenuButton(renderer, inputState, uiState, "Build...", buttonRect, 1, UIMenu_Build))
+		if (uiMenuButton(renderer, assets, inputState, uiState, "Build...", buttonRect, 1, UIMenu_Build))
 		{
 			RealRect menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
 			RealRect menuRect = expandRect(menuButtonRect, uiPadding);
 
-			if (uiButton(renderer, inputState, uiState, "Build HQ", menuButtonRect, 1,
+			if (uiButton(renderer, assets, inputState, uiState, "Build HQ", menuButtonRect, 1,
 					(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Farmhouse),
 					SDL_SCANCODE_Q, "(Q)"))
 			{
@@ -165,7 +169,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(renderer, inputState, uiState, "Build Field", menuButtonRect, 1,
+			if (uiButton(renderer, assets, inputState, uiState, "Build Field", menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Field),
 						SDL_SCANCODE_F, "(F)"))
 			{
@@ -177,7 +181,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(renderer, inputState, uiState, "Build Barn", menuButtonRect, 1,
+			if (uiButton(renderer, assets, inputState, uiState, "Build Barn", menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Barn),
 						SDL_SCANCODE_B, "(B)"))
 			{
@@ -189,7 +193,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(renderer, inputState, uiState, "Build Road", menuButtonRect, 1,
+			if (uiButton(renderer, assets, inputState, uiState, "Build Road", menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Path),
 						SDL_SCANCODE_R, "(R)"))
 			{
@@ -204,7 +208,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 		}
 
 		buttonRect.x += buttonRect.w + uiPadding;
-		if (uiButton(renderer, inputState, uiState, "Demolish", buttonRect, 1,
+		if (uiButton(renderer, assets, inputState, uiState, "Demolish", buttonRect, 1,
 					(uiState->actionMode == ActionMode_Demolish),
 					SDL_SCANCODE_X, "(X)"))
 		{
@@ -212,7 +216,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 			setCursor(&renderer->theme, Cursor_Demolish);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
-		if (uiButton(renderer, inputState, uiState, "Plant", buttonRect, 1,
+		if (uiButton(renderer, assets, inputState, uiState, "Plant", buttonRect, 1,
 					(uiState->actionMode == ActionMode_Plant),
 					SDL_SCANCODE_P, "(P)"))
 		{
@@ -220,7 +224,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 			setCursor(&renderer->theme, Cursor_Plant);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
-		if (uiButton(renderer, inputState, uiState, "Harvest", buttonRect, 1,
+		if (uiButton(renderer, assets, inputState, uiState, "Harvest", buttonRect, 1,
 					(uiState->actionMode == ActionMode_Harvest),
 					SDL_SCANCODE_H, "(H)"))
 		{
@@ -228,7 +232,7 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 			setCursor(&renderer->theme, Cursor_Harvest);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
-		if (uiButton(renderer, inputState, uiState, "Hire Worker", buttonRect, 1,
+		if (uiButton(renderer, assets, inputState, uiState, "Hire Worker", buttonRect, 1,
 					(uiState->actionMode == ActionMode_Hire),
 					SDL_SCANCODE_G, "(G)"))
 		{
@@ -239,11 +243,13 @@ void updateAndRenderGameUI(GL_Renderer *renderer, UIState *uiState, GameState *g
 }
 
 // Returns true if game should restart
-bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, InputState *inputState, bool won)
+bool updateAndRenderGameOverUI(GL_Renderer *renderer, AssetManager *assets, UIState *uiState, InputState *inputState, bool won)
 {
 	bool result = false;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
+
+	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
 	V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
 	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 10, renderer->theme.overlayColor);
@@ -256,9 +262,9 @@ bool updateAndRenderGameOverUI(GL_Renderer *renderer, UIState *uiState, InputSta
 		sprintf(gameOverText, "Game over! You ran out of money! :(");
 	}
 
-	uiLabel(renderer, renderer->theme.font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, renderer->theme.labelColor);
+	uiLabel(renderer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, renderer->theme.labelColor);
 
-	if (uiButton(renderer, inputState, uiState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
+	if (uiButton(renderer, assets, inputState, uiState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
 	{
 		result = true;
 	}

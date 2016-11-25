@@ -36,7 +36,7 @@ enum GameStatus {
 #include "assets.h"
 #include "render.h"
 #include "render_gl.h"
-#include "font.h"
+#include "font.cpp"
 #include "bmfont.h"
 #include "input.h"
 #include "ui.h"
@@ -109,7 +109,10 @@ int main(int argc, char *argv[]) {
 	AssetManager *assets = createAssetManager();
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,1,1), false);
-	// addFont(assets, )
+	TemporaryMemoryArena tempMemory = beginTemporaryMemory(&memoryArena);
+	addBMFont(assets, &tempMemory, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
+	addBMFont(assets, &tempMemory, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
+	endTemporaryMemory(&tempMemory);
 	loadTextures(assets);
 
 	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window, assets);

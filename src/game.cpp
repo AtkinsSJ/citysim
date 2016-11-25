@@ -245,22 +245,22 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 	{
 		case GameStatus_Setup:
 		{
-			gameState->status = updateAndRenderMainMenuUI(glRenderer, &gameState->uiState, inputState, gameState->status);
+			gameState->status = updateAndRenderMainMenuUI(glRenderer, assets, &gameState->uiState, inputState, gameState->status);
 		}
 		break;
 
 		case GameStatus_Playing:
 		{
-			updateAndRenderGameUI(glRenderer, &gameState->uiState, gameState, inputState);
+			updateAndRenderGameUI(glRenderer, assets, &gameState->uiState, gameState, inputState);
 		}
 		break;
 
 		case GameStatus_Won:
 		case GameStatus_Lost:
 		{
-			updateAndRenderGameUI(glRenderer, &gameState->uiState, gameState, inputState);
+			updateAndRenderGameUI(glRenderer, assets, &gameState->uiState, gameState, inputState);
 
-			if (updateAndRenderGameOverUI(glRenderer, &gameState->uiState, inputState, gameState->status == GameStatus_Won))
+			if (updateAndRenderGameOverUI(glRenderer, assets, &gameState->uiState, inputState, gameState->status == GameStatus_Won))
 			{
 				gameState = startGame(gameState->arena);
 
@@ -270,8 +270,8 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, GL_Render
 		break;
 	}
 
-	drawTooltip(glRenderer, inputState, &gameState->uiState);
-	drawUiMessage(glRenderer, &gameState->uiState);
+	drawTooltip(glRenderer, assets, inputState, &gameState->uiState);
+	drawUiMessage(glRenderer, assets, &gameState->uiState);
 
 	inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
 }

@@ -9,12 +9,14 @@ struct BitmapFontChar
 	int16 xOffset, yOffset; // Offset when rendering to the screen
 	int16 xAdvance; // How far to move after rendering this character
 
-	GLint textureID;
+	uint32 textureID;
 	RealRect uv;
 };
 
 struct BitmapFont
 {
+	TextureAssetType textureAssetType;
+
 	uint16 lineHeight;
 	uint16 baseY;
 
@@ -28,7 +30,5 @@ struct BitmapFontCachedText
 {
 	V2 size;
 	uint32 charCount;
-	RenderItem *chars;
+	struct RenderItem *chars;
 };
-
-#include "font.cpp"

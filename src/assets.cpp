@@ -124,6 +124,32 @@ void loadTextures(AssetManager *assets)
 			tex->state = AssetState_Loaded;
 		}
 	}
+
+	// Now we can set up font char UVs!
+	for (uint32 i=0; i<FontAssetTypeCount; i++)
+	{
+		BitmapFont *font = assets->fonts + i;
+
+		for (uint32 charIndex = 0;
+			charIndex < font->charCount;
+			charIndex++)
+		{
+			BitmapFontChar *character = font->chars + charIndex;
+
+			// NB: We look up the texture for every char, so fairly inefficient.
+			// Maybe we could cache the current texture?
+			Texture *t = assets->textures + character->textureID;
+			real32 textureWidth = (real32) t->surface->w;
+			real32 textureHeight = (real32) t->surface->h;
+
+			character->uv = rectXYWH(
+				character->uv.x / textureWidth,
+				character->uv.y / textureHeight,
+				character->uv.w / textureWidth,
+				character->uv.h / textureHeight
+			);
+		}
+	}
 }
 
 int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
@@ -135,4 +161,9 @@ int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset
 	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
 
 	return id;
+}
+
+BitmapFont *getFont(AssetManager *assets, FontAssetType font)
+{
+	return assets->fonts + font;
 }
