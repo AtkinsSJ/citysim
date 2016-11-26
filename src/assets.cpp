@@ -55,7 +55,7 @@ int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied
 	int32 textureID = assets->textureCount++;
 
 	Texture *texture = assets->textures + textureID;
-	texture->filename = filename;
+	texture->filename = pushString(&assets->arena, filename);
 	texture->isAlphaPremultiplied = isAlphaPremultiplied;
 
 	return textureID;
@@ -101,6 +101,38 @@ int32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filena
 	}
 
 	return addTextureRegion(assets, type, textureID, uv);
+}
+
+int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
+{
+	int32 min = assets->firstIDForTextureAssetType[item],
+		  max = assets->lastIDForTextureAssetType[item];
+
+	int32 id = clampToRangeWrapping(min, max, offset);
+	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
+
+	return id;
+}
+
+void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
+{
+	Cursor *cursor = assets->cursors + cursorID;
+	cursor->filename = filename;
+	cursor->sdlCursor = 0;
+}
+
+void setCursor(AssetManager *assets, CursorType cursorID)
+{
+	SDL_SetCursor(assets->cursors[cursorID].sdlCursor);
+}
+
+
+BitmapFont *addBMFont(AssetManager *assets, TemporaryMemoryArena *tempArena, FontAssetType fontAssetType,
+	                  TextureAssetType textureAssetType, char *filename);
+
+BitmapFont *getFont(AssetManager *assets, FontAssetType font)
+{
+	return assets->fonts + font;
 }
 
 void loadAssets(AssetManager *assets)
@@ -181,7 +213,23 @@ void loadAssets(AssetManager *assets)
 	initTheme(assets);
 }
 
-void reloadAssets(AssetManager *assets)
+void addAssets(AssetManager *assets, MemoryArena *memoryArena)
+{
+	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
+	                 rectXYWH(0,0,2002,1519), false);
+	TemporaryMemoryArena tempMemory = beginTemporaryMemory(memoryArena);
+	addBMFont(assets, &tempMemory, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
+	addBMFont(assets, &tempMemory, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
+	addCursor(assets, Cursor_Main, "cursor_main.png");
+	addCursor(assets, Cursor_Build, "cursor_build.png");
+	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
+	addCursor(assets, Cursor_Plant, "cursor_plant.png");
+	addCursor(assets, Cursor_Harvest, "cursor_harvest.png");
+	addCursor(assets, Cursor_Hire, "cursor_hire.png");
+	endTemporaryMemory(&tempMemory);
+}
+
+void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 {
 	// Clear out textures
 	for (uint32 i = 1; i < assets->textureCount; ++i)
@@ -213,35 +261,9 @@ void reloadAssets(AssetManager *assets)
 	}
 
 	// General resetting of Assets system
+	assets->textureCount = 0;
+	assets->textureRegionCount = 0;
 	resetMemoryArena(&assets->arena);
-
+	addAssets(assets, memoryArena);
 	loadAssets(assets);
-}
-
-int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
-{
-	int32 min = assets->firstIDForTextureAssetType[item],
-		  max = assets->lastIDForTextureAssetType[item];
-
-	int32 id = clampToRangeWrapping(min, max, offset);
-	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
-
-	return id;
-}
-
-BitmapFont *getFont(AssetManager *assets, FontAssetType font)
-{
-	return assets->fonts + font;
-}
-
-void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
-{
-	Cursor *cursor = assets->cursors + cursorID;
-	cursor->filename = filename;
-	cursor->sdlCursor = 0;
-}
-
-void setCursor(AssetManager *assets, CursorType cursorID)
-{
-	SDL_SetCursor(assets->cursors[cursorID].sdlCursor);
 }

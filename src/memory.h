@@ -98,11 +98,23 @@ TemporaryMemoryArena beginTemporaryMemory(MemoryArena *parentArena)
 
 void endTemporaryMemory(TemporaryMemoryArena *tempArena)
 {
+#if BUILD_DEBUG
+	// Clear memory so we spot bugs in keeping pointers to temp memory.
+	memset(tempArena->arena.memory, 0, tempArena->arena.used);
+#endif
 	tempArena->isOpen = false;
 	tempArena->parentArena->hasTemporaryArenaOpen = false;
 }
 
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))
 #define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
+
+char *pushString(MemoryArena *arena, char *src)
+{
+	int32 len = strlen(src);
+	char *dest = PushArray(arena, char, len);
+	strcpy(src, dest, len);
+	return dest;
+}
 
 #endif

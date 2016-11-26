@@ -107,18 +107,7 @@ int main(int argc, char *argv[]) {
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
-	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
-	                 rectXYWH(0,0,2002,1519), false);
-	TemporaryMemoryArena tempMemory = beginTemporaryMemory(&memoryArena);
-	addBMFont(assets, &tempMemory, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
-	addBMFont(assets, &tempMemory, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
-	addCursor(assets, Cursor_Main, "cursor_main.png");
-	addCursor(assets, Cursor_Build, "cursor_build.png");
-	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
-	addCursor(assets, Cursor_Plant, "cursor_plant.png");
-	addCursor(assets, Cursor_Harvest, "cursor_harvest.png");
-	addCursor(assets, Cursor_Hire, "cursor_hire.png");
-	endTemporaryMemory(&tempMemory);
+	addAssets(assets, &memoryArena);
 	loadAssets(assets);
 
 	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window, assets);
@@ -177,7 +166,7 @@ int main(int argc, char *argv[]) {
 
 		if (keyJustPressed(&inputState, SDL_SCANCODE_F1))
 		{
-			reloadAssets(assets);
+			reloadAssets(assets, &memoryArena);
 		}
 
 		gameUpdateAndRender(gameState, &inputState, renderer, assets);
