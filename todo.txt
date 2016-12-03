@@ -20,6 +20,9 @@ MASSAGING THINGS INTO A WORKABLE STATE:
 - Is RenderArena used?
 - Is temporary memory in renderer init used?
 
+- Use several arenas, not just all sub-arenas
+- Stretchy arenas
+
 GAME:
 - Draw a map
 - Draw a grid over it

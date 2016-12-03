@@ -62,6 +62,7 @@ void *allocate(TemporaryMemoryArena *tempArena, size_t size)
 
 void resetMemoryArena(MemoryArena *arena)
 {
+	ASSERT(!arena->hasTemporaryArenaOpen, "Can't reset while temp memory open!");
 	arena->used = 0;
 }
 
@@ -112,8 +113,9 @@ void endTemporaryMemory(TemporaryMemoryArena *tempArena)
 char *pushString(MemoryArena *arena, char *src)
 {
 	int32 len = strlen(src);
-	char *dest = PushArray(arena, char, len);
-	strcpy(src, dest, len);
+	char *dest = PushArray(arena, char, len+1);
+	strcpy(dest, src);
+	dest[len] = 0;
 	return dest;
 }
 
