@@ -3,6 +3,9 @@
 void initUiState(UIState *uiState)
 {
 	*uiState = {};
+
+	initMemoryArena(&uiState->arena, MB(1));
+
 	uiState->actionMode = ActionMode_None;
 	uiState->selectedBuildingArchetype = BA_None;
 
@@ -10,11 +13,11 @@ void initUiState(UIState *uiState)
 	uiState->tooltip.offsetFromCursor = v2(16, 20);
 }
 
-RealRect uiLabel(GL_Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
+RealRect uiLabel(UIState *uiState, Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
 
-	TemporaryMemoryArena memory = beginTemporaryMemory(&renderer->renderArena);
+	TemporaryMemoryArena memory = beginTemporaryMemory(&uiState->arena);
 
 	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, align);
@@ -33,7 +36,7 @@ void setTooltip(UIState *uiState, char *text, V4 color)
 	uiState->tooltip.show = true;
 }
 
-void drawTooltip(GL_Renderer *renderer, AssetManager *assets, InputState *inputState, UIState *uiState)
+void drawTooltip(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState)
 {
 	if (uiState->tooltip.show)
 	{
@@ -45,7 +48,7 @@ void drawTooltip(GL_Renderer *renderer, AssetManager *assets, InputState *inputS
 
 		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(tooltipPadding, tooltipPadding);
 
-		RealRect labelRect = uiLabel(renderer, getFont(assets, FontAssetType_Main), uiState->tooltip.text,
+		RealRect labelRect = uiLabel(uiState, renderer, getFont(assets, FontAssetType_Main), uiState->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1, uiState->tooltip.color);
 
 		labelRect = expandRect(labelRect, tooltipPadding);
@@ -56,8 +59,9 @@ void drawTooltip(GL_Renderer *renderer, AssetManager *assets, InputState *inputS
 	}
 }
 
-bool uiButton(GL_Renderer *renderer, AssetManager *assets, InputState *inputState, UIState *uiState, char *text, RealRect bounds, real32 depth,
-			bool active=false, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
+	          char *text, RealRect bounds, real32 depth, bool active=false,
+	          SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool buttonClicked = false;
 	V2 mousePos = unproject(&renderer->uiBuffer.camera, inputState->mousePosNormalised);
@@ -89,7 +93,7 @@ bool uiButton(GL_Renderer *renderer, AssetManager *assets, InputState *inputStat
 	}
 
 	drawRect(&renderer->uiBuffer, bounds, depth, backColor);
-	uiLabel(renderer, getFont(assets, FontAssetType_Buttons), text, centre(bounds), ALIGN_CENTRE, depth + 1,
+	uiLabel(uiState, renderer, getFont(assets, FontAssetType_Buttons), text, centre(bounds), ALIGN_CENTRE, depth + 1,
 			theme->buttonTextColor);
 
 	// Keyboard shortcut!
@@ -102,11 +106,12 @@ bool uiButton(GL_Renderer *renderer, AssetManager *assets, InputState *inputStat
 	return buttonClicked;
 }
 
-bool uiMenuButton(GL_Renderer *renderer, AssetManager *assets, InputState *inputState, UIState *uiState, char *text, RealRect bounds,
-			real32 depth, UIMenuID menuID, SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+bool uiMenuButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
+	              char *text, RealRect bounds, real32 depth, UIMenuID menuID,
+	              SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(renderer, assets, inputState, uiState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, renderer, assets, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -123,8 +128,8 @@ bool uiMenuButton(GL_Renderer *renderer, AssetManager *assets, InputState *input
 	return currentlyOpen;
 }
 
-void uiTextInput(GL_Renderer *renderer, AssetManager *assets, InputState *inputState, bool active,
-				char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
+void uiTextInput(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
+	             bool active, char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
 {
 	UiTheme *theme = &assets->theme;
 
@@ -151,7 +156,7 @@ void uiTextInput(GL_Renderer *renderer, AssetManager *assets, InputState *inputS
 	}
 
 	const real32 padding = 4;
-	RealRect labelRect = uiLabel(renderer, getFont(assets, FontAssetType_Main), textBuffer, origin + v2(padding, padding),
+	RealRect labelRect = uiLabel(uiState, renderer, getFont(assets, FontAssetType_Main), textBuffer, origin + v2(padding, padding),
 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
 	labelRect = expandRect(labelRect, padding);
 	drawRect(&renderer->uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
@@ -163,7 +168,7 @@ void pushUiMessage(UIState *uiState, char *message)
 	uiState->message.countdown = messageDisplayTime;
 }
 
-void drawUiMessage(GL_Renderer *renderer, AssetManager *assets, UIState *uiState)
+void drawUiMessage(UIState *uiState, Renderer *renderer, AssetManager *assets)
 {
 	if (uiState->message.countdown > 0)
 	{
@@ -197,7 +202,7 @@ void drawUiMessage(GL_Renderer *renderer, AssetManager *assets, UIState *uiState
 
 			V2 origin = v2(renderer->uiBuffer.camera.windowWidth * 0.5f, renderer->uiBuffer.camera.windowHeight - 8.0f);
 			// V2 origin = v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f);
-			RealRect labelRect = uiLabel(renderer, getFont(assets, FontAssetType_Main), uiState->message.text, origin,
+			RealRect labelRect = uiLabel(uiState, renderer, getFont(assets, FontAssetType_Main), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1, textColor);
 
 			labelRect = expandRect(labelRect, padding);

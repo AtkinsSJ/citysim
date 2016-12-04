@@ -59,6 +59,12 @@ struct RenderBuffer
 	uint32 maxItems;
 };
 
+struct Renderer
+{
+	RenderBuffer worldBuffer;
+	RenderBuffer uiBuffer;
+};
+
 // Animation code should probably be deleted and redone.
 #if 0
 enum AnimationID

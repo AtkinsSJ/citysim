@@ -110,8 +110,8 @@ int main(int argc, char *argv[]) {
 	addAssets(assets, &memoryArena);
 	loadAssets(assets);
 
-	GL_Renderer *renderer = GL_initializeRenderer(&memoryArena, window, assets);
-	ASSERT(renderer, "Failed to initialize renderer.");
+	GL_Renderer *glRenderer = GL_initializeRenderer(&memoryArena, window, assets);
+	ASSERT(glRenderer, "Failed to initialize renderer.");
 
 // Game setup
 	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));
@@ -123,11 +123,11 @@ int main(int argc, char *argv[]) {
 
 	InputState inputState = {};
 
-	SDL_GetWindowSize(renderer->window, &inputState.windowWidth, &inputState.windowHeight);
+	SDL_GetWindowSize(glRenderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
 	initUiState(&gameState->uiState);
-	Camera *worldCamera = &renderer->worldBuffer.camera;
-	Camera *uiCamera = &renderer->uiBuffer.camera;
+	Camera *worldCamera = &glRenderer->renderer.worldBuffer.camera;
+	Camera *uiCamera = &glRenderer->renderer.uiBuffer.camera;
 
 	worldCamera->windowSize = inputState.windowSize;
 	worldCamera->pos = v2(gameState->city.width/2, gameState->city.height/2);
@@ -159,26 +159,27 @@ int main(int argc, char *argv[]) {
 
 		if (inputState.wasWindowResized)
 		{
-			GL_windowResized(renderer, inputState.windowWidth, inputState.windowHeight);
+			GL_windowResized(glRenderer, inputState.windowWidth, inputState.windowHeight);
 			worldCamera->windowSize = uiCamera->windowSize = inputState.windowSize;
 			uiCamera->pos = v2(uiCamera->windowSize) * 0.5f;
 		}
 
+		// Asset reloading! Whooo!
 		if (keyJustPressed(&inputState, SDL_SCANCODE_F1))
 		{
-			GL_freeTextures(renderer);
+			GL_freeTextures(glRenderer);
 			reloadAssets(assets, &memoryArena);
-			GL_initTextures(renderer, assets->textureCount);
+			GL_initTextures(glRenderer, assets->textureCount);
 		}
 
-		gameUpdateAndRender(gameState, &inputState, renderer, assets);
+		gameUpdateAndRender(gameState, &inputState, &glRenderer->renderer, assets);
 
 		// Update camera matrices here
 		updateCameraMatrix(worldCamera);
 		updateCameraMatrix(uiCamera);
 
 	// Actually draw things!
-		GL_render(renderer, assets);
+		GL_render(glRenderer, assets);
 
 	// FRAMERATE MONITORING AND CAPPING
 		currentFrame = SDL_GetTicks(); // Milliseconds
@@ -197,9 +198,9 @@ int main(int argc, char *argv[]) {
 
 // CLEAN UP
 
-	GL_freeRenderer(renderer);
+	GL_freeRenderer(glRenderer);
 
-	SDL_DestroyWindow(renderer->window);
+	SDL_DestroyWindow(glRenderer->window);
 	IMG_Quit();
 	SDL_Quit();
 

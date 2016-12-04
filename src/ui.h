@@ -38,6 +38,8 @@ struct UiMessage
 
 struct UIState
 {
+	MemoryArena arena;
+
 	UIMenuID openMenu;
 	ActionMode actionMode;
 	BuildingArchetype selectedBuildingArchetype;

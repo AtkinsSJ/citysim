@@ -3,25 +3,18 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
-- Be able to reload assets during runtime! This is important.
-	- BUG: font texture filenames are put in temp memory, which gets thrown away before they
-		are even used! It's a bug that we can actually read the filenames AT ALL.
-		We either need to make the AssetManager forget those textures until the font loads
-		them again, or keep the filenames around. Probably both actually.
-
 - Get rid of BitmapFontCache. It's too restrictive.
 - Load ui theme from a file
 - Load texture region information from a file
 - Handle cursors ourselves? Not sure about latency.
 - Check for the flicker bug while we have so few things being drawn.
-- Game produces list of abstract draw instructions, then passed to the renderer
-	- Generic "Renderer" struct, extended by each platform?
 - Asset system dynamic allocations. e.g. So we don't have to predetermine number of texture regions.
 - Is RenderArena used?
 - Is temporary memory in renderer init used?
-
 - Use several arenas, not just all sub-arenas
 - Stretchy arenas
+- Assets system handles shaders?
+	- GL Renderer can reload shaders. (Expand GL_initTextures() and GL_freeTextures() to other resources.)
 
 GAME:
 - Draw a map

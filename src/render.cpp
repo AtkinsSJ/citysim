@@ -21,6 +21,12 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, uint
 	buffer->maxItems = maxItems;
 }
 
+void initRenderer(Renderer *renderer, MemoryArena *renderArena)
+{
+	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", WORLD_SPRITE_MAX);
+	initRenderBuffer(renderArena, &renderer->uiBuffer, "UIBuffer", UI_SPRITE_MAX);
+}
+
 // Screen -> scene space
 V2 unproject(Camera *camera, V2 screenPos)
 {

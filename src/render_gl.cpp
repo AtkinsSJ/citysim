@@ -223,18 +223,19 @@ void GL_freeTextures(GL_Renderer *renderer)
 
 GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window, AssetManager *assets)
 {
-	GL_Renderer *renderer = PushStruct(memoryArena, GL_Renderer);
+	// GL_Renderer *renderer = PushStruct(memoryArena, GL_Renderer);
+	GL_Renderer *renderer;
+	bootstrapArena(GL_Renderer, renderer, renderArena, MB(64));
 	bool succeeded = (renderer != 0);
 
 	if (succeeded)
 	{
-		renderer->renderArena = allocateSubArena(memoryArena, MB(64));
+		initRenderer(&renderer->renderer, &renderer->renderArena);
+
 		TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
 
 		renderer->window = window;
 
-		initRenderBuffer(&renderer->renderArena, &renderer->worldBuffer, "WorldBuffer", WORLD_SPRITE_MAX);
-		initRenderBuffer(&renderer->renderArena, &renderer->uiBuffer, "UIBuffer", UI_SPRITE_MAX);
 
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -292,7 +293,7 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 				glGenBuffers(1, &renderer->VBO);
 				glGenBuffers(1, &renderer->IBO);
 
-				checkForGLError();
+				GL_checkForError();
 			}
 
 			if (!succeeded)
@@ -327,52 +328,52 @@ void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexC
 	GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	checkForGLError();
+	GL_checkForError();
 	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(GL_VertexData), renderer->vertices, GL_STATIC_DRAW);
-	checkForGLError();
+	GL_checkForError();
 
 	// Fill IBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	checkForGLError();
+	GL_checkForError();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
-	checkForGLError();
+	GL_checkForError();
 
 	glEnableVertexAttribArray(activeShader->aPositionLoc);
-	checkForGLError();
+	GL_checkForError();
 	glEnableVertexAttribArray(activeShader->aColorLoc);
-	checkForGLError();
+	GL_checkForError();
 
 	if (activeShader->aUVLoc != -1)
 	{
 		glEnableVertexAttribArray(activeShader->aUVLoc);
-		checkForGLError();
+		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	checkForGLError();
+	GL_checkForError();
 	glVertexAttribPointer(activeShader->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
-	checkForGLError();
+	GL_checkForError();
 	glVertexAttribPointer(activeShader->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
-	checkForGLError();
+	GL_checkForError();
 	if (activeShader->aUVLoc != -1)
 	{
 		glVertexAttribPointer(activeShader->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
-		checkForGLError();
+		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	checkForGLError();
+	GL_checkForError();
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
-	checkForGLError();
+	GL_checkForError();
 
 	glDisableVertexAttribArray(activeShader->aPositionLoc);
-	checkForGLError();
+	GL_checkForError();
 	glDisableVertexAttribArray(activeShader->aColorLoc);
-	checkForGLError();
+	GL_checkForError();
 	if (activeShader->aUVLoc != -1)
 	{
 		glDisableVertexAttribArray(activeShader->aUVLoc);
-		checkForGLError();
+		GL_checkForError();
 	}
 }
 
@@ -412,19 +413,19 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 			GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 			glUseProgram(activeShader->shaderProgramID);
-			checkForGLError();
+			GL_checkForError();
 
 			glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-			checkForGLError();
+			GL_checkForError();
 
 			// Bind new texture if this shader uses textures
 			if (activeShader->uTextureLoc != -1)
 			{
 				glEnable(GL_TEXTURE_2D);
 				glActiveTexture(GL_TEXTURE0);
-				checkForGLError();
+				GL_checkForError();
 				glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
-				checkForGLError();
+				GL_checkForError();
 
 				if (!textureInfo->isLoaded)
 				{
@@ -445,11 +446,11 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 					ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
 					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 					textureInfo->isLoaded = true;
-					checkForGLError();
+					GL_checkForError();
 				}
 
 				glUniform1i(activeShader->uTextureLoc, 0);
-				checkForGLError();
+				GL_checkForError();
 			}
 
 			vertexCount = 0;
@@ -551,8 +552,8 @@ bool isBufferSorted(RenderBuffer *buffer)
 void GL_render(GL_Renderer *renderer, AssetManager *assets)
 {
 	// Sort sprites
-	sortRenderBuffer(&renderer->worldBuffer);
-	sortRenderBuffer(&renderer->uiBuffer);
+	sortRenderBuffer(&renderer->renderer.worldBuffer);
+	sortRenderBuffer(&renderer->renderer.uiBuffer);
 
 #if 0
 	// Check buffers are sorted
@@ -561,22 +562,22 @@ void GL_render(GL_Renderer *renderer, AssetManager *assets)
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	checkForGLError();
+	GL_checkForError();
 	glEnable(GL_BLEND);
-	checkForGLError();
+	GL_checkForError();
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	checkForGLError();
+	GL_checkForError();
 
 	glEnable(GL_TEXTURE_2D);
-	checkForGLError();
+	GL_checkForError();
 
 	renderer->currentShader = ShaderProgram_Invalid;
 
-	renderBuffer(renderer, assets, &renderer->worldBuffer);
-	renderBuffer(renderer, assets, &renderer->uiBuffer);
+	renderBuffer(renderer, assets, &renderer->renderer.worldBuffer);
+	renderBuffer(renderer, assets, &renderer->renderer.uiBuffer);
 
 	glUseProgram(NULL);
-	checkForGLError();
+	GL_checkForError();
 	SDL_Log("End of frame.");
 	SDL_GL_SwapWindow( renderer->window );
 }

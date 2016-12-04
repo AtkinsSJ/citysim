@@ -44,6 +44,8 @@ struct GL_ShaderProgram
 
 struct GL_Renderer
 {
+	Renderer renderer;
+	
 	MemoryArena renderArena;
 
 	SDL_Window *window;
@@ -55,9 +57,6 @@ struct GL_Renderer
 	GLuint VBO,
 		   IBO;
 
-	RenderBuffer worldBuffer;
-	RenderBuffer uiBuffer;
-
 	GL_VertexData vertices[SPRITE_MAX * 4];
 	GLuint indices[SPRITE_MAX * 6];
 
@@ -67,12 +66,10 @@ struct GL_Renderer
 	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length
 };
 
-inline void checkForGLError()
+inline void GL_checkForError()
 {
 	GLenum errorCode = glGetError();
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
-
-BitmapFont *readBMFont(MemoryArena *renderArena, TemporaryMemoryArena *tempArena, char *filename, GL_Renderer *renderer);
 
 #include "render_gl.cpp"
