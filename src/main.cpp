@@ -125,7 +125,8 @@ int main(int argc, char *argv[]) {
 
 	SDL_GetWindowSize(glRenderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
-	initUiState(&gameState->uiState);
+	UIState *uiState = &gameState->uiState;
+	initUiState(uiState);
 	Camera *worldCamera = &glRenderer->renderer.worldBuffer.camera;
 	Camera *uiCamera = &glRenderer->renderer.uiBuffer.camera;
 
@@ -140,7 +141,8 @@ int main(int argc, char *argv[]) {
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
 
-	setCursor(assets, Cursor_Main);
+	setCursor(uiState, assets, Cursor_Main);
+	setCursorVisible(uiState, true);
 
 	uint32 lastFrame = 0,
 			currentFrame = 0;
@@ -169,6 +171,7 @@ int main(int argc, char *argv[]) {
 		{
 			GL_freeTextures(glRenderer);
 			reloadAssets(assets, &memoryArena);
+			setCursor(uiState, assets, uiState->currentCursor);
 			GL_initTextures(glRenderer, assets->textureCount);
 		}
 

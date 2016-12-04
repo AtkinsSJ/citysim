@@ -32,6 +32,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 {
 
 	// Game simulation
+	UIState *uiState = &gameState->uiState;
 
 	// Win and Lose!
 	if (gameState->city.funds >= gameWinFunds) {
@@ -78,22 +79,22 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 			if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
 				worldCamera->pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
 			} else {
-				pushUiMessage(&gameState->uiState, "Build an HQ, then pressing [Home] will take you there.");
+				pushUiMessage(uiState, "Build an HQ, then pressing [Home] will take you there.");
 			}
 		}
 
 		// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
 
 		// This is a very basic check for "is the user clicking on the UI?"
-		if (!inRects(gameState->uiState.uiRects, gameState->uiState.uiRectCount, mouseUIPos)) {
-			switch (gameState->uiState.actionMode) {
+		if (!inRects(uiState->uiRects, uiState->uiRectCount, mouseUIPos)) {
+			switch (uiState->actionMode) {
 				// case ActionMode_Build: {
 				// 	if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-				// 		placeBuilding(&gameState->uiState, &gameState->city, gameState->uiState.selectedBuildingArchetype, mouseTilePos);
+				// 		placeBuilding(&uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos);
 				// 	}
 
-				// 	int32 buildCost = buildingDefinitions[gameState->uiState.selectedBuildingArchetype].buildCost;
-				// 	showCostTooltip(renderer, &gameState->uiState, buildCost, gameState->city.funds);
+				// 	int32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
+				// 	showCostTooltip(renderer, &uiState, buildCost, gameState->city.funds);
 				// } break;
 
 				// case ActionMode_Demolish: {
@@ -103,12 +104,12 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 				// 	} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 				// 		dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
 				// 		int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
-				// 		showCostTooltip(renderer, &gameState->uiState, demolitionCost, gameState->city.funds);
+				// 		showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
 				// 	}	
 
 				// 	if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
 				// 		// Demolish everything within dragRect!
-				// 		demolishRect(&gameState->uiState, &gameState->city, dragRect);
+				// 		demolishRect(&uiState, &gameState->city, dragRect);
 				// 		dragRect = irectXYWH(-1,-1,0,0);
 				// 	}
 				// } break;
@@ -127,8 +128,8 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 		if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT)) {
 			// Unselect current thing
 			// setActiveButton(&actionButtonGroup, null);
-			gameState->uiState.actionMode = ActionMode_None;
-			setCursor(assets, Cursor_Main);
+			uiState->actionMode = ActionMode_None;
+			setCursor(uiState, assets, Cursor_Main);
 		}
 	}
 

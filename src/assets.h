@@ -22,6 +22,8 @@ enum FontAssetType
 
 enum CursorType
 {
+	Cursor_None,
+
 	Cursor_Main,
 	Cursor_Build,
 	Cursor_Demolish,
@@ -106,5 +108,27 @@ struct AssetManager
 
 	UiTheme theme;
 };
+
+int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
+{
+	int32 min = assets->firstIDForTextureAssetType[item],
+		  max = assets->lastIDForTextureAssetType[item];
+
+	int32 id = clampToRangeWrapping(min, max, offset);
+	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
+
+	return id;
+}
+
+BitmapFont *getFont(AssetManager *assets, FontAssetType font)
+{
+	return assets->fonts + font;
+}
+
+Cursor *getCursor(AssetManager *assets, CursorType cursorID)
+{
+	ASSERT((cursorID > Cursor_None) && (cursorID < CursorCount), "Cursor ID out of range: %d", cursorID);
+	return assets->cursors + cursorID;
+}
 
 #include "assets.cpp"

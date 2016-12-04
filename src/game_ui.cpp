@@ -167,7 +167,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Farmhouse;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(assets, Cursor_Build);
+				setCursor(uiState, assets, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -179,7 +179,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Field;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(assets, Cursor_Build);
+				setCursor(uiState, assets, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -191,7 +191,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Barn;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(assets, Cursor_Build);
+				setCursor(uiState, assets, Cursor_Build);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -203,7 +203,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Path;
 				uiState->actionMode = ActionMode_Build;
-				setCursor(assets, Cursor_Build);
+				setCursor(uiState, assets, Cursor_Build);
 			}
 
 			uiState->uiRects[uiState->uiRectCount++] = menuRect;
@@ -216,7 +216,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 					SDL_SCANCODE_X, "(X)"))
 		{
 			uiState->actionMode = ActionMode_Demolish;
-			setCursor(assets, Cursor_Demolish);
+			setCursor(uiState, assets, Cursor_Demolish);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, renderer, assets, inputState, "Plant", buttonRect, 1,
@@ -224,7 +224,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 					SDL_SCANCODE_P, "(P)"))
 		{
 			uiState->actionMode = ActionMode_Plant;
-			setCursor(assets, Cursor_Plant);
+			setCursor(uiState, assets, Cursor_Plant);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, renderer, assets, inputState, "Harvest", buttonRect, 1,
@@ -232,7 +232,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 					SDL_SCANCODE_H, "(H)"))
 		{
 			uiState->actionMode = ActionMode_Harvest;
-			setCursor(assets, Cursor_Harvest);
+			setCursor(uiState, assets, Cursor_Harvest);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, renderer, assets, inputState, "Hire Worker", buttonRect, 1,
@@ -240,7 +240,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 					SDL_SCANCODE_G, "(G)"))
 		{
 			uiState->actionMode = ActionMode_Hire;
-			setCursor(assets, Cursor_Hire);
+			setCursor(uiState, assets, Cursor_Hire);
 		}
 	}
 }

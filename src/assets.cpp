@@ -101,17 +101,6 @@ int32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filena
 	return addTextureRegion(assets, type, textureID, uv);
 }
 
-int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
-{
-	int32 min = assets->firstIDForTextureAssetType[item],
-		  max = assets->lastIDForTextureAssetType[item];
-
-	int32 id = clampToRangeWrapping(min, max, offset);
-	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
-
-	return id;
-}
-
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 {
 	Cursor *cursor = assets->cursors + cursorID;
@@ -119,20 +108,9 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 	cursor->sdlCursor = 0;
 }
 
-void setCursor(AssetManager *assets, CursorType cursorID)
-{
-	assets->activeCursor = cursorID;
-	SDL_SetCursor(assets->cursors[cursorID].sdlCursor);
-}
-
-
 BitmapFont *addBMFont(AssetManager *assets, TemporaryMemoryArena *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename);
 
-BitmapFont *getFont(AssetManager *assets, FontAssetType font)
-{
-	return assets->fonts + font;
-}
 
 void loadAssets(AssetManager *assets)
 {
@@ -200,7 +178,7 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Load up our cursors
-	for (uint32 cursorID = 0; cursorID < CursorCount; cursorID++)
+	for (uint32 cursorID = 1; cursorID < CursorCount; cursorID++)
 	{
 		Cursor *cursor = assets->cursors + cursorID;
 
@@ -250,7 +228,6 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 		*font = {};
 	}
 
-
 	// Clear cursors
 	for (uint32 cursorID = 0; cursorID < CursorCount; cursorID++)
 	{
@@ -265,5 +242,5 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 	resetMemoryArena(&assets->arena);
 	addAssets(assets, memoryArena);
 	loadAssets(assets);
-	setCursor(assets, assets->activeCursor);
+
 }

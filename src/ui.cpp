@@ -1,5 +1,11 @@
 // ui.cpp
 
+void setCursorVisible(UIState *uiState, bool visible)
+{
+	uiState->cursorIsVisible = visible;
+	SDL_ShowCursor(visible ? 1 : 0);
+}
+
 void initUiState(UIState *uiState)
 {
 	*uiState = {};
@@ -11,6 +17,14 @@ void initUiState(UIState *uiState)
 
 	uiState->tooltip = {};
 	uiState->tooltip.offsetFromCursor = v2(16, 20);
+
+	setCursorVisible(uiState, false);
+}
+
+void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
+{
+	uiState->currentCursor = cursorID;
+	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
 }
 
 RealRect uiLabel(UIState *uiState, Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,

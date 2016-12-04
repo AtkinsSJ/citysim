@@ -49,6 +49,9 @@ struct UIState
 
 	RealRect uiRects[32];
 	int32 uiRectCount;
+
+	CursorType currentCursor;
+	bool cursorIsVisible;
 };
 
 const real32 messageDisplayTime = 2.0f;
