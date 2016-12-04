@@ -2,10 +2,8 @@
 
 AssetManager *createAssetManager()
 {
-	MemoryArena bootstrap;
-	ASSERT(initMemoryArena(&bootstrap, MB(128)),"Failed to allocate asset memory!");
-	AssetManager *assets = PushStruct(&bootstrap, AssetManager);
-	assets->arena = bootstrap;
+	AssetManager *assets;
+	bootstrapArena(AssetManager, assets, arena, MB(128));
 
 	assets->textureRegions[0].type = TextureAssetType_None;
 	assets->textureRegions[0].textureID = -1;

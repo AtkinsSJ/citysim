@@ -15,6 +15,7 @@ struct MemoryArena
 {
 	size_t size;
 	size_t used;
+	size_t usedResetPosition; // When used goes when reset
 	uint8 *memory;
 	bool hasTemporaryArenaOpen;
 };
@@ -29,16 +30,32 @@ struct TemporaryMemoryArena
 bool initMemoryArena(MemoryArena *arena, size_t size)
 {
 	bool succeeded = false;
+
+	*arena = {};
+
 	arena->memory = (uint8*)calloc(size, 1);
 	if (arena->memory)
 	{
 		arena->size = size;
-		arena->used = 0;
-		arena->hasTemporaryArenaOpen = false;
 		succeeded = true;
 	}
 	
 	return succeeded;
+}
+
+void markResetPosition(MemoryArena *arena)
+{
+	arena->usedResetPosition = arena->used;
+}
+
+// Creates an arena , and pushes a struct on it which contains the arena.
+#define bootstrapArena(containerType, containerName, arenaVarName, arenaSize)         \
+{                                                                                     \
+	MemoryArena bootstrap;                                                            \
+	ASSERT(initMemoryArena(&bootstrap, arenaSize),"Failed to allocate asset memory!");\
+	containerName = PushStruct(&bootstrap, containerType);                            \
+	containerName->arenaVarName = bootstrap;                                          \
+	markResetPosition(&containerName->arenaVarName);                                  \
 }
 
 void *allocate(MemoryArena *arena, size_t size)
@@ -63,7 +80,7 @@ void *allocate(TemporaryMemoryArena *tempArena, size_t size)
 void resetMemoryArena(MemoryArena *arena)
 {
 	ASSERT(!arena->hasTemporaryArenaOpen, "Can't reset while temp memory open!");
-	arena->used = 0;
+	arena->used = arena->usedResetPosition;
 }
 
 MemoryArena allocateSubArena(MemoryArena *arena, size_t size)
