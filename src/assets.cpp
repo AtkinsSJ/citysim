@@ -121,6 +121,7 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 
 void setCursor(AssetManager *assets, CursorType cursorID)
 {
+	assets->activeCursor = cursorID;
 	SDL_SetCursor(assets->cursors[cursorID].sdlCursor);
 }
 
@@ -264,4 +265,5 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 	resetMemoryArena(&assets->arena);
 	addAssets(assets, memoryArena);
 	loadAssets(assets);
+	setCursor(assets, assets->activeCursor);
 }

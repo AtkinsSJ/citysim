@@ -102,6 +102,7 @@ struct AssetManager
 	BitmapFont fonts[FontAssetTypeCount];
 
 	Cursor cursors[CursorCount];
+	CursorType activeCursor;
 
 	UiTheme theme;
 };
