@@ -260,8 +260,8 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 	}
 
 	// General resetting of Assets system
-	assets->textureCount = 0;
-	assets->textureRegionCount = 0;
+	assets->textureCount = 1;
+	assets->textureRegionCount = 1;
 	resetMemoryArena(&assets->arena);
 	addAssets(assets, memoryArena);
 	loadAssets(assets);

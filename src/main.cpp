@@ -166,21 +166,9 @@ int main(int argc, char *argv[]) {
 
 		if (keyJustPressed(&inputState, SDL_SCANCODE_F1))
 		{
+			GL_freeTextures(renderer);
 			reloadAssets(assets, &memoryArena);
-			// Mark textures as unloaded in OpenGL.
-			for (uint32 i=0; i<assets->textureCount; i++)
-			{
-				if (i == 0)
-				{
-					renderer->textureInfo[i].glTextureID = 0;
-					renderer->textureInfo[i].isLoaded = true;
-				}
-				else
-				{
-					glGenTextures(1, &renderer->textureInfo[i].glTextureID);
-					renderer->textureInfo[i].isLoaded = false;
-				}
-			}
+			GL_initTextures(renderer, assets->textureCount);
 		}
 
 		gameUpdateAndRender(gameState, &inputState, renderer, assets);

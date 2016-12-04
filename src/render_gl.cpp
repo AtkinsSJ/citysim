@@ -187,6 +187,40 @@ GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename
 	return result;
 }
 
+void GL_initTextures(GL_Renderer *renderer, GLuint textureCount)
+{
+	renderer->textureCount = textureCount;
+	// Textures
+	for (uint32 i=0; i<renderer->textureCount; i++)
+	{
+		if (i == 0)
+		{
+			renderer->textureInfo[i].glTextureID = 0;
+			renderer->textureInfo[i].isLoaded = true;
+		}
+		else
+		{
+			glGenTextures(1, &renderer->textureInfo[i].glTextureID);
+			renderer->textureInfo[i].isLoaded = false;
+		}
+	}
+}
+
+void GL_freeTextures(GL_Renderer *renderer)
+{
+	for (uint32 i=1; i<renderer->textureCount; i++)
+	{
+		GL_TextureInfo *info = renderer->textureInfo + i;
+		if (info->isLoaded)
+		{
+			glDeleteTextures(1, &info->glTextureID);
+			info->glTextureID = 0;
+			info->isLoaded = false;
+		}
+	}
+	renderer->textureCount = 0;
+}
+
 GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window, AssetManager *assets)
 {
 	GL_Renderer *renderer = PushStruct(memoryArena, GL_Renderer);
@@ -245,20 +279,7 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 
 			if (succeeded)
 			{
-				// Textures
-				for (uint32 i=0; i<assets->textureCount; i++)
-				{
-					if (i == 0)
-					{
-						renderer->textureInfo[i].glTextureID = 0;
-						renderer->textureInfo[i].isLoaded = true;
-					}
-					else
-					{
-						glGenTextures(1, &renderer->textureInfo[i].glTextureID);
-						renderer->textureInfo[i].isLoaded = false;
-					}
-				}
+				GL_initTextures(renderer, assets->textureCount);
 			}
 
 			if (succeeded)

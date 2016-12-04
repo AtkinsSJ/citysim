@@ -63,6 +63,7 @@ struct GL_Renderer
 
 	// Animation animations[Animation_Count];
 
+	GLuint textureCount;
 	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length
 };
 
