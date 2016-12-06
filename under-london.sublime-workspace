@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"setCursor",
+				"setCursorVisible"
+			],
+			[
+				"tex",
+				"textureCount"
+			],
+			[
+				"GL",
+				"GLuint"
+			],
+			[
+				"use",
+				"usedResetPosition"
+			],
+			[
 				"world",
 				"worldCamera"
 			],
@@ -14,10 +30,6 @@
 			[
 				"Tex",
 				"TextureAssetType"
-			],
-			[
-				"tex",
-				"textureID"
 			],
 			[
 				"ass",
@@ -502,55 +514,25 @@
 			[
 				"spri",
 				"spriteCount"
-			],
-			[
-				"index",
-				"indexCount"
-			],
-			[
-				"uText",
-				"uTextureLoc"
-			],
-			[
-				"WINDO",
-				"WINDOW_H"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "src/main.cpp",
+			"file": "/c/users/sam/documents/under london/under-london/src/render_gl.cpp",
 			"settings":
 			{
-				"buffer_size": 4993,
+				"buffer_size": 18190,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/ui.h",
+			"file": "src/assets.h",
 			"settings":
 			{
-				"buffer_size": 738,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/game.cpp",
-			"settings":
-			{
-				"buffer_size": 9248,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/c/users/sam/documents/under london/under-london/src/memory.h",
-			"settings":
-			{
-				"buffer_size": 3023,
+				"buffer_size": 2364,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -559,24 +541,43 @@
 			"file": "src/assets.cpp",
 			"settings":
 			{
-				"buffer_size": 8562,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/render_gl.cpp",
-			"settings":
-			{
-				"buffer_size": 17799,
+				"buffer_size": 7888,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/render_gl.h",
+			"file": "src/ui.h",
 			"settings":
 			{
-				"buffer_size": 1389,
+				"buffer_size": 810,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/c/users/sam/documents/under london/under-london/src/game_ui.cpp",
+			"settings":
+			{
+				"buffer_size": 10180,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/game.cpp",
+			"settings":
+			{
+				"buffer_size": 9143,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui.cpp",
+			"settings":
+			{
+				"buffer_size": 6596,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -585,43 +586,42 @@
 			"file": "todo.txt",
 			"settings":
 			{
-				"buffer_size": 2571,
+				"buffer_size": 2471,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "/c/users/sam/documents/under london/under-london/src/render.h",
+			"file": "src/render.h",
 			"settings":
 			{
-				"buffer_size": 1782,
-				"encoding": "UTF-8",
+				"buffer_size": 1855,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"contents": "Searching 31 files for \"pushString\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\assets.cpp:\n   56  \n   57  \tTexture *texture = assets->textures + textureID;\n   58: \ttexture->filename = pushString(&assets->arena, filename);\n   59  \ttexture->isAlphaPremultiplied = isAlphaPremultiplied;\n   60  \n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\memory.h:\n  110  #define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))\n  111  \n  112: char *pushString(MemoryArena *arena, char *src)\n  113  {\n  114  \tint32 len = strlen(src);\n\n2 matches across 2 files\n\n\nSearching 31 files for \"addAssets\" (regex, case sensitive)\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\assets.cpp:\n  214  }\n  215  \n  216: void addAssets(AssetManager *assets, MemoryArena *memoryArena)\n  217  {\n  218  \taddTextureRegion(assets, TextureAssetType_Map1, \"London-Strand-Holbron-Bloomsbury.png\",\n  ...\n  265  \tassets->textureRegionCount = 0;\n  266  \tresetMemoryArena(&assets->arena);\n  267: \taddAssets(assets, memoryArena);\n  268  \tloadAssets(assets);\n  269  }\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\main.cpp:\n  108  \n  109  \tAssetManager *assets = createAssetManager();\n  110: \taddAssets(assets, &memoryArena);\n  111  \tloadAssets(assets);\n  112  \n\n3 matches across 2 files\n",
+			"file": "include/SDL_mouse.h",
 			"settings":
 			{
-				"buffer_size": 1326,
+				"buffer_size": 10834,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "Searching 31 files for \"ShaderProgram_Invalid\" (case sensitive)\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\render.h:\n   36  \n   37  \tShaderProgram_Count,\n   38: \tShaderProgram_Invalid = -1\n   39  };\n   40  \n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\render_gl.cpp:\n  572  \tGL_checkForError();\n  573  \n  574: \trenderer->currentShader = ShaderProgram_Invalid;\n  575  \n  576  \trenderBuffer(renderer, assets, &renderer->renderer.worldBuffer);\n\n2 matches across 2 files\n\n\nSearching 31 files for \"reloadAssets\" (case sensitive)\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\assets.cpp:\n  228  }\n  229  \n  230: void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)\n  231  {\n  232  \t// Clear out textures\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\main.cpp:\n  169  \t\t{\n  170  \t\t\tGL_freeTextures(glRenderer);\n  171: \t\t\treloadAssets(assets, &memoryArena);\n  172  \t\t\tGL_initTextures(glRenderer, assets->textureCount);\n  173  \t\t}\n\n2 matches across 2 files\n\n\nSearching 31 files for \"setCursor\" (case sensitive)\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\game.cpp:\n  129  \t\t\t// setActiveButton(&actionButtonGroup, null);\n  130  \t\t\tgameState->uiState.actionMode = ActionMode_None;\n  131: \t\t\tsetCursor(assets, Cursor_Main);\n  132  \t\t}\n  133  \t}\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\game_ui.cpp:\n  168  \t\t\t\tuiState->selectedBuildingArchetype = BA_Farmhouse;\n  169  \t\t\t\tuiState->actionMode = ActionMode_Build;\n  170: \t\t\t\tsetCursor(assets, Cursor_Build);\n  171  \t\t\t}\n  172  \t\t\tmenuButtonRect.y += menuButtonRect.h + uiPadding;\n  ...\n  180  \t\t\t\tuiState->selectedBuildingArchetype = BA_Field;\n  181  \t\t\t\tuiState->actionMode = ActionMode_Build;\n  182: \t\t\t\tsetCursor(assets, Cursor_Build);\n  183  \t\t\t}\n  184  \t\t\tmenuButtonRect.y += menuButtonRect.h + uiPadding;\n  ...\n  192  \t\t\t\tuiState->selectedBuildingArchetype = BA_Barn;\n  193  \t\t\t\tuiState->actionMode = ActionMode_Build;\n  194: \t\t\t\tsetCursor(assets, Cursor_Build);\n  195  \t\t\t}\n  196  \t\t\tmenuButtonRect.y += menuButtonRect.h + uiPadding;\n  ...\n  204  \t\t\t\tuiState->selectedBuildingArchetype = BA_Path;\n  205  \t\t\t\tuiState->actionMode = ActionMode_Build;\n  206: \t\t\t\tsetCursor(assets, Cursor_Build);\n  207  \t\t\t}\n  208  \n  ...\n  217  \t\t{\n  218  \t\t\tuiState->actionMode = ActionMode_Demolish;\n  219: \t\t\tsetCursor(assets, Cursor_Demolish);\n  220  \t\t}\n  221  \t\tbuttonRect.x += buttonRect.w + uiPadding;\n  ...\n  225  \t\t{\n  226  \t\t\tuiState->actionMode = ActionMode_Plant;\n  227: \t\t\tsetCursor(assets, Cursor_Plant);\n  228  \t\t}\n  229  \t\tbuttonRect.x += buttonRect.w + uiPadding;\n  ...\n  233  \t\t{\n  234  \t\t\tuiState->actionMode = ActionMode_Harvest;\n  235: \t\t\tsetCursor(assets, Cursor_Harvest);\n  236  \t\t}\n  237  \t\tbuttonRect.x += buttonRect.w + uiPadding;\n  ...\n  241  \t\t{\n  242  \t\t\tuiState->actionMode = ActionMode_Hire;\n  243: \t\t\tsetCursor(assets, Cursor_Hire);\n  244  \t\t}\n  245  \t}\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\main.cpp:\n  141  \tupdateCameraMatrix(uiCamera);\n  142  \n  143: \tsetCursor(assets, Cursor_Main);\n  144  \n  145  \tuint32 lastFrame = 0,\n  ...\n  170  \t\t\tGL_freeTextures(glRenderer);\n  171  \t\t\treloadAssets(assets, &memoryArena);\n  172: \t\t\tsetCursor(&gameState->uiState, assets, gameState->uiState.activeCursor);\n  173  \t\t\tGL_initTextures(glRenderer, assets->textureCount);\n  174  \t\t}\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\ui.cpp:\n   17  }\n   18  \n   19: void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)\n   20  {\n   21  \tuiState->activeCursor = cursorID;\n   ..\n   23  }\n   24  \n   25: void setCursorVisible(UIState *uiState, bool visible)\n   26  {\n   27  \tuiState->cursorIsVisible = visible;\n\n13 matches across 4 files\n\n\nSearching 31 files for \"getTextureRegion\" (case sensitive)\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\assets.h:\n  110  };\n  111  \n  112: int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)\n  113  {\n  114  \tint32 min = assets->firstIDForTextureAssetType[item],\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\game.cpp:\n  138  \t// Draw terrain\n  139  \tV2 backgroundSize = v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);\n  140: \tdrawTextureRegion(&renderer->worldBuffer, getTextureRegion(assets, TextureAssetType_Map1, 0),\n  141  \t\trectXYWH(0, 0, backgroundSize.x, backgroundSize.y), 0);\n  142  \n\n2 matches across 2 files\n\n\nSearching 31 files for \"cursorID\" (case sensitive)\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\assets.cpp:\n  102  }\n  103  \n  104: void addCursor(AssetManager *assets, CursorType cursorID, char *filename)\n  105  {\n  106: \tCursor *cursor = assets->cursors + cursorID;\n  107  \tcursor->filename = filename;\n  108  \tcursor->sdlCursor = 0;\n  ...\n  179  \n  180  \t// Load up our cursors\n  181: \tfor (uint32 cursorID = 1; cursorID < CursorCount; cursorID++)\n  182  \t{\n  183: \t\tCursor *cursor = assets->cursors + cursorID;\n  184  \n  185  \t\tSDL_Surface *cursorSurface = IMG_Load(cursor->filename);\n  ...\n  230  \n  231  \t// Clear cursors\n  232: \tfor (uint32 cursorID = 0; cursorID < CursorCount; cursorID++)\n  233  \t{\n  234: \t\tCursor *cursor = assets->cursors + cursorID;\n  235  \t\tSDL_FreeCursor(cursor->sdlCursor);\n  236  \t\tcursor->sdlCursor = 0;\n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\assets.h:\n  126  }\n  127  \n  128: Cursor *getCursor(AssetManager *assets, CursorType cursorID)\n  129  {\n  130: \tASSERT((cursorID > Cursor_None) && (cursorID < CursorCount), \"Cursor ID out of range: %d\", cursorID);\n  131: \treturn assets->cursors + cursorID;\n  132  }\n  133  \n\nC:\\Users\\Sam\\Documents\\Under London\\under-london\\src\\ui.cpp:\n   22  }\n   23  \n   24: void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)\n   25  {\n   26: \tuiState->currentCursor = cursorID;\n   27: \tSDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);\n   28  }\n   29  \n\n18 matches across 3 files\n",
+			"settings":
+			{
+				"buffer_size": 5858,
 				"line_ending": "Unix",
 				"name": "Find Results",
 				"scratch": true
 			}
 		},
 		{
-			"file": "src/input.h",
+			"file": "src/main.cpp",
 			"settings":
 			{
-				"buffer_size": 4037,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/game_ui.cpp",
-			"settings":
-			{
-				"buffer_size": 10086,
+				"buffer_size": 5284,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -807,28 +807,36 @@
 	],
 	"file_history":
 	[
+		"/C/Users/Sam/Documents/Under London/under-london/src/render.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/render.cpp",
+		"/C/Users/Sam/Documents/Under London/under-london/src/assets.cpp",
+		"/C/Users/Sam/Documents/Under London/under-london/src/main.cpp",
+		"/C/Users/Sam/Documents/Under London/under-london/src/game.cpp",
+		"/C/Users/Sam/Documents/Under London/under-london/src/ui.cpp",
+		"/c/users/sam/documents/under london/under-london/src/game_ui.cpp",
+		"/c/users/sam/documents/under london/under-london/src/render_gl.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/memory.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/ui.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/font.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/font.cpp",
+		"/c/users/sam/documents/under london/under-london/src/render_gl.cpp",
+		"/C/Users/Sam/Documents/Under London/under-london/src/game_ui.cpp",
+		"/C/Users/Sam/Documents/Under London/under-london/src/bmfont.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/render_gl.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/render_gl.cpp",
+		"/C/Users/Sam/Documents/Under London/under-london/src/input.h",
+		"/C/Users/Sam/Documents/Under London/under-london/src/assets.h",
+		"/c/users/sam/documents/under london/under-london/src/render.h",
+		"/c/users/sam/documents/under london/under-london/src/memory.h",
 		"/C/Users/Sam/Documents/Under London/under-london/include/SDL_assert.h",
 		"/C/Users/Sam/Documents/My Games/SHENZHEN IO/76561197993146844/custom_puzzles/c048679151352768.lua",
-		"/C/Users/Sam/Documents/Under London/under-london/src/input.h",
-		"/C/Users/Sam/Documents/Under London/under-london/src/main.cpp",
-		"/C/Users/Sam/Documents/Under London/under-london/src/render_gl.h",
 		"/c/users/sam/documents/under london/under-london/src/city.cpp",
-		"/c/users/sam/documents/under london/under-london/src/game_ui.cpp",
-		"/C/Users/Sam/Documents/Under London/under-london/src/render_gl.cpp",
-		"/C/Users/Sam/Documents/Under London/under-london/src/memory.h",
-		"/C/Users/Sam/Documents/Under London/under-london/src/assets.cpp",
 		"/c/users/sam/documents/under london/under-london/src/city.h",
-		"/C/Users/Sam/Documents/Under London/under-london/src/bmfont.h",
 		"/C/Users/Sam/Documents/Under London/under-london/src/maths.h",
 		"/C/Users/Sam/Documents/Under London/under-london/src/types.h",
-		"/C/Users/Sam/Documents/Under London/under-london/src/assets.h",
 		"/C/Users/Sam/AppData/Roaming/GitExtensions/GitExtensions/Recent/under-london.gitext",
-		"/C/Users/Sam/Documents/Under London/under-london/src/render.h",
 		"/c/users/sam/documents/under london/under-london/src/bmfont.h",
-		"/C/Users/Sam/Documents/Under London/under-london/src/font.cpp",
 		"/c/users/sam/documents/under london/under-london/src/game.cpp",
-		"/C/Users/Sam/Documents/Under London/under-london/src/ui.cpp",
-		"/C/Users/Sam/Documents/Under London/under-london/src/ui.h",
 		"/C/Users/Sam/Documents/Under London/under-london/src/file.h",
 		"/C/Users/Sam/Documents/Under London/under-london/todo.txt",
 		"/C/Users/Sam/Documents/Under London/under-london/include/SDL_video.h",
@@ -837,9 +845,6 @@
 		"/C/Users/Sam/Documents/Under London/under-london/src/build.bat",
 		"/C/Users/Sam/Documents/Under London/under-london/src/city.cpp",
 		"/C/Users/Sam/Documents/Under London/under-london/src/city.h",
-		"/C/Users/Sam/Documents/Under London/under-london/src/game.cpp",
-		"/C/Users/Sam/Documents/Under London/under-london/src/game_ui.cpp",
-		"/C/Users/Sam/Documents/Under London/under-london/src/font.h",
 		"/C/Users/Sam/Documents/Citysim/src/bmfont.h",
 		"/C/Users/Sam/Documents/Citysim/src/font.cpp",
 		"/C/Users/Sam/Documents/Citysim/src/render_gl.h",
@@ -929,12 +934,7 @@
 		"/C/Users/Sam/Dropbox/c++/YARL/src/memory.h",
 		"/C/Users/Sam/Documents/Citysim/include/GL/glew.h",
 		"/c/users/sam/documents/citysim/src/main.cpp",
-		"/C/Users/Sam/Documents/Citysim/src/render.h",
-		"/C/Users/Sam/Documents/Java/bacontyping/html/build/dist/html/html.nocache.js",
-		"/C/Users/Sam/Documents/Gaslamp Games/Clockwork Empires/scripts/gameinit.lua",
-		"/C/Users/Sam/Documents/Gaslamp Games/Clockwork Empires/scripts/gamestart.lua",
-		"/C/Users/Sam/Documents/Citysim/src/build_main.cpp",
-		"/C/Users/Sam/Documents/Citysim/src/matrix4.h"
+		"/C/Users/Sam/Documents/Citysim/src/render.h"
 	],
 	"find":
 	{
@@ -968,6 +968,31 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"cursorID",
+			"getTextureRegion",
+			"uiState.",
+			"gameState->uiState",
+			"setCursor(assets,",
+			"setCursor",
+			"reloadAssets",
+			"ShaderProgram_Invalid",
+			"renderArena",
+			"renderer",
+			"glRenderer",
+			"GL_Renderer",
+			"bootstrap",
+			"&renderer->",
+			"renderArena",
+			"uiButton(renderer",
+			"uiState, \"",
+			"uiLabel(renderer",
+			"uiState, \"",
+			"renderer",
+			"uiLabel(renderer",
+			"checkForGLError",
+			"readBMFont",
+			"cursors",
+			"AssetMan",
 			"addAssets",
 			"pushString",
 			"HARDBAN",
@@ -1070,39 +1095,19 @@
 			"texture",
 			"loadTexture",
 			"texture.",
-			"loadText",
-			"Width",
-			"textureW",
-			"texture->",
-			"valid",
-			"isValid",
-			"texCombinedPng",
-			"texture->",
-			"texturesToLoad->filenames[i]",
-			"assignTextureRegion",
-			"TEXTURE_ID_NONE",
-			"TEXTURE_WIDTH",
-			"pushText",
-			"makeSprite",
-			"return false",
-			"initOpen",
-			"uTexture",
-			"checkForGLError()",
-			"check",
-			",\n\t\t\tsprite->textureID",
-			"uTexturesLoc",
-			"textureID",
-			"textureFormat",
-			"assignTextureRegion",
-			"textureAtlas",
-			"loadtextures"
+			"loadText"
 		],
 		"highlight": true,
 		"in_selection": false,
 		"preserve_case": false,
-		"regex": true,
+		"regex": false,
 		"replace_history":
 		[
+			"uiState",
+			"setCursor(uiState, assets,",
+			"Renderer",
+			"uiLabel(uiState, renderer",
+			"GL_checkForError",
 			"GL_Renderer",
 			"GL_ShaderProgram",
 			"\\1GL_Texture",
@@ -1162,140 +1167,83 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/main.cpp",
+					"file": "/c/users/sam/documents/under london/under-london/src/render_gl.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4993,
+						"buffer_size": 18190,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2307,
-								2307
+								11342,
+								11342
 							]
 						],
 						"settings":
 						{
+							"history_list_is_closing": true,
 							"syntax": "Packages/C++/C++.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1825.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/ui.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 738,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 230.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/game.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 9248,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1544,
-								1544
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 450.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/c/users/sam/documents/under london/under-london/src/memory.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3023,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1470,
-								1470
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 675.0,
+						"translation.y": 5668.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 1,
+					"file": "src/assets.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2364,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1580,
+								1580
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1061.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
 					"file": "src/assets.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8562,
+						"buffer_size": 7888,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6822,
-								6831
+								2952,
+								2952
 							]
 						],
 						"settings":
@@ -1304,27 +1252,85 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2980.0,
+						"translation.y": 1170.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/ui.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 810,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								728,
+								728
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 405.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "/c/users/sam/documents/under london/under-london/src/game_ui.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10180,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5805,
+								5805
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2203.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
 					"buffer": 5,
-					"file": "src/render_gl.cpp",
+					"file": "src/game.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 17799,
+						"buffer_size": 9143,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								4676,
+								4676
 							]
 						],
 						"settings":
@@ -1333,27 +1339,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2593.0,
+						"translation.y": 1618.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
 					"buffer": 6,
-					"file": "src/render_gl.h",
+					"file": "src/ui.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1389,
+						"buffer_size": 6596,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								324,
+								324
 							]
 						],
 						"settings":
@@ -1362,10 +1368,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 245.0,
+						"translation.y": 43.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 5,
 					"type": "text"
 				}
 			]
@@ -1380,15 +1386,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2571,
+						"buffer_size": 2471,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1138,
-								1138
+								881,
+								881
 							]
 						],
 						"settings":
@@ -1401,120 +1407,28 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
 					"buffer": 8,
-					"file": "/c/users/sam/documents/under london/under-london/src/render.h",
+					"file": "src/render.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1782,
+						"buffer_size": 1855,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								241,
+								241
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1326,
-						"regions":
-						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										219,
-										229
-									],
-									[
-										504,
-										514
-									],
-									[
-										770,
-										779
-									],
-									[
-										1029,
-										1038
-									],
-									[
-										1231,
-										1240
-									]
-								],
-								"scope": ""
-							}
-						},
-						"selection":
-						[
-							[
-								1235,
-								1235
-							]
-						],
-						"settings":
-						{
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 2,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 270.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "src/input.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4037,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
 							"syntax": "Packages/C++/C++.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
@@ -1526,20 +1440,240 @@
 					"type": "text"
 				},
 				{
-					"buffer": 11,
-					"file": "src/game_ui.cpp",
+					"buffer": 9,
+					"file": "include/SDL_mouse.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10086,
+						"buffer_size": 10834,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								9992,
+								10006
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3465.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5858,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										173,
+										194
+									],
+									[
+										357,
+										378
+									],
+									[
+										639,
+										651
+									],
+									[
+										863,
+										875
+									],
+									[
+										1240,
+										1249
+									],
+									[
+										1484,
+										1493
+									],
+									[
+										1715,
+										1724
+									],
+									[
+										1945,
+										1954
+									],
+									[
+										2175,
+										2184
+									],
+									[
+										2308,
+										2317
+									],
+									[
+										2483,
+										2492
+									],
+									[
+										2657,
+										2666
+									],
+									[
+										2830,
+										2839
+									],
+									[
+										3001,
+										3010
+									],
+									[
+										3172,
+										3181
+									],
+									[
+										3408,
+										3417
+									],
+									[
+										3565,
+										3574
+									],
+									[
+										3850,
+										3866
+									],
+									[
+										4209,
+										4225
+									],
+									[
+										4551,
+										4559
+									],
+									[
+										4629,
+										4637
+									],
+									[
+										4772,
+										4780
+									],
+									[
+										4786,
+										4794
+									],
+									[
+										4810,
+										4818
+									],
+									[
+										4876,
+										4884
+									],
+									[
+										5019,
+										5027
+									],
+									[
+										5033,
+										5041
+									],
+									[
+										5057,
+										5065
+									],
+									[
+										5123,
+										5131
+									],
+									[
+										5348,
+										5356
+									],
+									[
+										5383,
+										5391
+									],
+									[
+										5411,
+										5419
+									],
+									[
+										5466,
+										5474
+									],
+									[
+										5510,
+										5518
+									],
+									[
+										5689,
+										5697
+									],
+									[
+										5741,
+										5749
+									],
+									[
+										5791,
+										5799
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								4362,
+								4362
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 5,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 2145.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "src/main.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5284,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4339,
+								4339
 							]
 						],
 						"settings":
@@ -1548,10 +1682,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 2263.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 7,
 					"type": "text"
 				}
 			]
@@ -1607,7 +1741,7 @@
 	"project": "",
 	"replace":
 	{
-		"height": 42.0
+		"height": 62.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1616,6 +1750,26 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"ui",
+				"src\\ui.h"
+			],
+			[
+				"sdlmo",
+				"include\\SDL_mouse.h"
+			],
+			[
+				"render",
+				"src\\render.h"
+			],
+			[
+				"assets",
+				"src\\assets.h"
+			],
+			[
+				"font",
+				"src\\bmfont.h"
+			],
 			[
 				"sdlass",
 				"include\\SDL_assert.h"
@@ -1627,10 +1781,6 @@
 			[
 				"main",
 				"src\\main.cpp"
-			],
-			[
-				"render",
-				"src\\render_gl.h"
 			],
 			[
 				"math",
@@ -1663,14 +1813,6 @@
 			[
 				"bui",
 				"src\\build.bat"
-			],
-			[
-				"font",
-				"src\\font.h"
-			],
-			[
-				"ui",
-				"src\\ui.cpp"
 			],
 			[
 				"typ",

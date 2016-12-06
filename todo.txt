@@ -11,11 +11,15 @@ MASSAGING THINGS INTO A WORKABLE STATE:
 - Handle cursors ourselves? Not sure about latency.
 - Check for the flicker bug while we have so few things being drawn.
 - Asset system dynamic allocations. e.g. So we don't have to predetermine number of texture regions.
-- Is RenderArena used?
-	- Only for renderer info, and temporarily for loading shaders. So it can go soon!
-- Is temporary memory in renderer init used?
-- Use several arenas, not just all sub-arenas
-- Stretchy arenas
+
+- Arenas:
+	- Is RenderArena used?
+		- Only for renderer info, and temporarily for loading shaders. So it can go soon!
+	- Is temporary memory in renderer init used?
+	- Use several arenas, not just all sub-arenas
+	- Stretchy arenas
+	- Make temporary arenas include a memory arena so we don't need 2 readFileAsString definitions, etc.
+
 - Asset reloading:
 	- Shaders! Probably means making shaders platform-agnostic somehow.
 	- Cursors! Hide the cursor before reload, then show it again after.

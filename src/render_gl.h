@@ -21,14 +21,13 @@ struct GL_TextureInfo
 
 struct GL_ShaderProgram
 {
+	ShaderProgramType assetID;
 	GLuint shaderProgramID;
 	bool isValid;
 
-	char *vertexShaderFilename;
 	GLuint vertexShader;
 	bool isVertexShaderCompiled;
 
-	char *fragmentShaderFilename;
 	GLuint fragmentShader;
 	bool isFragmentShaderCompiled;
 
@@ -51,7 +50,7 @@ struct GL_Renderer
 	SDL_Window *window;
 	SDL_GLContext context;
 
-	GL_ShaderProgram shaders[ShaderProgram_Count];
+	GL_ShaderProgram shaders[ShaderProgramCount];
 	int32 currentShader;
 
 	GLuint VBO,

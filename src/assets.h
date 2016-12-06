@@ -34,6 +34,15 @@ enum CursorType
 	CursorCount
 };
 
+enum ShaderProgramType
+{
+	ShaderProgram_Textured,
+	ShaderProgram_Untextured,
+
+	ShaderProgramCount,
+	ShaderProgram_Invalid = -1
+};
+
 enum AssetState
 {
 	AssetState_Unloaded,
@@ -63,6 +72,16 @@ struct Cursor
 	SDL_Cursor *sdlCursor;
 };
 
+struct ShaderProgram
+{
+	AssetState state;
+	char *fragFilename;
+	char *vertFilename;
+
+	char *fragShader;
+	char *vertShader;
+};
+
 struct UiTheme
 {
 	FontAssetType font,
@@ -89,6 +108,7 @@ struct AssetManager
 {
 	MemoryArena arena;
 
+	// NB: index 0 reserved as a null texture.
 	uint32 textureCount;
 	Texture textures[32];
 
@@ -100,6 +120,8 @@ struct AssetManager
 	// So, assets with the same type must be contiguous!
 	int32 firstIDForTextureAssetType[TextureAssetTypeCount];
 	int32 lastIDForTextureAssetType[TextureAssetTypeCount];
+
+	ShaderProgram shaderPrograms[ShaderProgramCount];
 
 	BitmapFont fonts[FontAssetTypeCount];
 
@@ -129,6 +151,12 @@ Cursor *getCursor(AssetManager *assets, CursorType cursorID)
 {
 	ASSERT((cursorID > Cursor_None) && (cursorID < CursorCount), "Cursor ID out of range: %d", cursorID);
 	return assets->cursors + cursorID;
+}
+
+ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
+{
+	ASSERT((shaderID > -1) && (shaderID < ShaderProgramCount), "Shader ID out of range: %d", shaderID);
+	return assets->shaderPrograms + shaderID;
 }
 
 #include "assets.cpp"

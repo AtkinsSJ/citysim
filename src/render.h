@@ -29,15 +29,6 @@ struct Camera
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 const real32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates, so 0.1 is 5% from the edge
 
-enum ShaderPrograms
-{
-	ShaderProgram_Textured,
-	ShaderProgram_Untextured,
-
-	ShaderProgram_Count,
-	ShaderProgram_Invalid = -1
-};
-
 struct RenderItem
 {
 	RealRect rect;

@@ -111,6 +111,12 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 BitmapFont *addBMFont(AssetManager *assets, TemporaryMemoryArena *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename);
 
+void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename, char *fragFilename)
+{
+	ShaderProgram *shader = assets->shaderPrograms + shaderID;
+	shader->fragFilename = fragFilename;
+	shader->vertFilename = vertFilename;
+}
 
 void loadAssets(AssetManager *assets)
 {
@@ -187,6 +193,23 @@ void loadAssets(AssetManager *assets)
 		SDL_FreeSurface(cursorSurface);
 	}
 
+	// Load shader programs
+	for (uint32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
+	{
+		ShaderProgram *shader = assets->shaderPrograms + shaderID;
+		shader->vertShader = readFileAsString(&assets->arena, shader->vertFilename);
+		shader->fragShader = readFileAsString(&assets->arena, shader->fragFilename);
+
+		if (shader->vertShader && shader->fragShader)
+		{
+			shader->state = AssetState_Loaded;
+		}
+		else
+		{
+			ASSERT(false, "Failed to load shader program %d.", shaderID);
+		}
+	}
+
 	initTheme(assets);
 }
 
@@ -197,13 +220,17 @@ void addAssets(AssetManager *assets, MemoryArena *memoryArena)
 	TemporaryMemoryArena tempMemory = beginTemporaryMemory(memoryArena);
 	addBMFont(assets, &tempMemory, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, &tempMemory, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
+	endTemporaryMemory(&tempMemory);
+
+	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.gl", "textured.frag.gl");
+	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.gl", "untextured.frag.gl");
+
 	addCursor(assets, Cursor_Main, "cursor_main.png");
 	addCursor(assets, Cursor_Build, "cursor_build.png");
 	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
 	addCursor(assets, Cursor_Plant, "cursor_plant.png");
 	addCursor(assets, Cursor_Harvest, "cursor_harvest.png");
 	addCursor(assets, Cursor_Hire, "cursor_hire.png");
-	endTemporaryMemory(&tempMemory);
 }
 
 void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)

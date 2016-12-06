@@ -68,12 +68,13 @@ void GL_printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 	}
 }
 
-GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename, char *fragmentShaderFilename)
+GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramID)
 {
-	GL_ShaderProgram result = {};
+	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramID);
+	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader not loaded!");
 
-	result.vertexShaderFilename = vertexShaderFilename;
-	result.fragmentShaderFilename = fragmentShaderFilename;
+	GL_ShaderProgram result = {};
+	result.assetID = shaderProgramID;
 
 	result.isVertexShaderCompiled = GL_FALSE;
 	result.isFragmentShaderCompiled = GL_FALSE;
@@ -82,13 +83,13 @@ GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename
 
 	if (result.shaderProgramID)
 	{
+
 		// VERTEX SHADER
 		{
 			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 
 			result.vertexShader = glCreateShader(GL_VERTEX_SHADER);
-			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, vertexShaderFilename)};
-			glShaderSource(result.vertexShader, 1, shaderData, NULL);
+			glShaderSource(result.vertexShader, 1, &shaderAsset->vertShader, NULL);
 			glCompileShader(result.vertexShader);
 
 			GLint isCompiled = GL_FALSE;
@@ -102,7 +103,7 @@ GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename
 			}
 			else
 			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", result.vertexShader, result.vertexShaderFilename);
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", result.vertexShader, shaderAsset->vertFilename);
 				GL_printShaderLog(&tempArena, result.vertexShader);
 			}
 
@@ -114,8 +115,7 @@ GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename
 			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
 
 			result.fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-			GLchar *shaderData[1] = {(GLchar*) readFileAsString(&tempArena, fragmentShaderFilename)};
-			glShaderSource(result.fragmentShader, 1, shaderData, NULL);
+			glShaderSource(result.fragmentShader, 1, &shaderAsset->fragShader, NULL);
 			glCompileShader(result.fragmentShader);
 
 			GLint isCompiled = GL_FALSE;
@@ -129,7 +129,7 @@ GL_ShaderProgram GL_loadShader(GL_Renderer *renderer, char *vertexShaderFilename
 			}
 			else
 			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d!\n", result.fragmentShader);
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d, %s!\n", result.fragmentShader, shaderAsset->fragFilename);
 				GL_printShaderLog(&tempArena, result.fragmentShader);
 			}
 
@@ -269,13 +269,10 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 		// Init OpenGL
 		if (succeeded)
 		{
-			renderer->shaders[ShaderProgram_Textured] = GL_loadShader(renderer, "textured.vert.gl", "textured.frag.gl");
-			succeeded = renderer->shaders[ShaderProgram_Textured].isValid;
-
-			if (succeeded)
+			for (uint32 shaderID=0; succeeded && shaderID < ShaderProgramCount; shaderID++)
 			{
-				renderer->shaders[ShaderProgram_Untextured] = GL_loadShader(renderer, "untextured.vert.gl", "untextured.frag.gl");
-				succeeded = renderer->shaders[ShaderProgram_Untextured].isValid;
+				renderer->shaders[shaderID] = GL_loadShader(renderer, assets, (ShaderProgramType)shaderID);
+				succeeded = renderer->shaders[shaderID].isValid;
 			}
 
 			if (succeeded)
@@ -316,7 +313,7 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 
 inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 {
-	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgram_Count, "Invalid shader!");
+	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgramCount, "Invalid shader!");
 	GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 	ASSERT(activeShader->isValid, "Shader not properly loaded!");
 
