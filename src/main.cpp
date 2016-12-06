@@ -169,10 +169,10 @@ int main(int argc, char *argv[]) {
 		// Asset reloading! Whooo!
 		if (keyJustPressed(&inputState, SDL_SCANCODE_F1))
 		{
-			GL_freeTextures(glRenderer);
+			GL_unloadAssets(glRenderer);
 			reloadAssets(assets, &memoryArena);
 			setCursor(uiState, assets, uiState->currentCursor);
-			GL_initTextures(glRenderer, assets->textureCount);
+			GL_loadAssets(glRenderer, assets);
 		}
 
 		gameUpdateAndRender(gameState, &inputState, &glRenderer->renderer, assets);

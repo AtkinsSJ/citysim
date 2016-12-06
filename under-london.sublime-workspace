@@ -523,7 +523,7 @@
 			"file": "/c/users/sam/documents/under london/under-london/src/render_gl.cpp",
 			"settings":
 			{
-				"buffer_size": 18190,
+				"buffer_size": 17979,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -532,7 +532,7 @@
 			"file": "src/assets.h",
 			"settings":
 			{
-				"buffer_size": 2364,
+				"buffer_size": 2949,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -541,7 +541,7 @@
 			"file": "src/assets.cpp",
 			"settings":
 			{
-				"buffer_size": 7888,
+				"buffer_size": 8826,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -586,7 +586,7 @@
 			"file": "todo.txt",
 			"settings":
 			{
-				"buffer_size": 2471,
+				"buffer_size": 2592,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -595,7 +595,7 @@
 			"file": "src/render.h",
 			"settings":
 			{
-				"buffer_size": 1855,
+				"buffer_size": 1726,
 				"line_ending": "Windows"
 			}
 		},
@@ -634,10 +634,14 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 288.0,
-		"last_filter": "insta",
+		"height": 392.0,
+		"last_filter": "pro",
 		"selected_items":
 		[
+			[
+				"pro",
+				"Project: Close"
+			],
 			[
 				"insta",
 				"Package Control: Install Package"
@@ -1176,15 +1180,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 18190,
+						"buffer_size": 17979,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								11342,
-								11342
+								11419,
+								11419
 							]
 						],
 						"settings":
@@ -1206,15 +1210,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2364,
+						"buffer_size": 2949,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1580,
-								1580
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1235,15 +1239,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7888,
+						"buffer_size": 8826,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2952,
-								2952
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1386,15 +1390,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2471,
+						"buffer_size": 2592,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								881,
-								881
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1416,15 +1420,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1855,
+						"buffer_size": 1726,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								241,
-								241
+								0,
+								0
 							]
 						],
 						"settings":
@@ -1458,6 +1462,7 @@
 						],
 						"settings":
 						{
+							"history_list_is_closing": true,
 							"syntax": "Packages/C++/C++.sublime-syntax",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true

@@ -25,9 +25,9 @@ struct GL_ShaderProgram
 	GLuint shaderProgramID;
 	bool isValid;
 
+// I don't actually need these 4 things!
 	GLuint vertexShader;
 	bool isVertexShaderCompiled;
-
 	GLuint fragmentShader;
 	bool isFragmentShaderCompiled;
 
