@@ -3,8 +3,8 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
+- GL_ShaderProgram keeps a lot of information around that's not needed. Trim it!
 - Asset reloading:
-	- Shaders! Probably means making shaders platform-agnostic somehow.
 	- Cursors! Hide the cursor before reload, then show it again after.
 	
 - Cameras and sizes. Cameras shouldn't all know the screen size. They should be sized in their own units.
