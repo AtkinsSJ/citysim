@@ -47,24 +47,21 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	}
 
 	// Clamp camera
-	real32 scale = TILE_SIZE / camera->zoom;
-	real32 cityPixelWidth = cityWidth * scale,
-			cityPixelHeight = cityHeight * scale;
-
-	if (cityPixelWidth < camera->windowWidth) {
+	V2 cameraSize = camera->size / camera->zoom;
+	if (cityWidth < cameraSize.x) {
 		// City smaller than camera, so centre on it
 		camera->pos.x = cityWidth * 0.5f;
 	} else {
-		real32 minX = ((real32)camera->windowWidth/(2.0f * scale)) - CAMERA_MARGIN;
-		camera->pos.x = clamp( camera->pos.x, minX, cityWidth - minX );
+		real32 minX = (cameraSize.x * 0.5f) - CAMERA_MARGIN;
+		camera->pos.x = clamp( camera->pos.x, minX, (real32)cityWidth - minX );
 	}
 
-	if (cityPixelHeight < camera->windowHeight) {
+	if (cityHeight < camera->size.y / camera->zoom) {
 		// City smaller than camera, so centre on it
 		camera->pos.y = cityHeight * 0.5f;
 	} else {
-		real32 minY = ((real32)camera->windowHeight/(2.0f * scale)) - CAMERA_MARGIN;
-		camera->pos.y = clamp( camera->pos.y, minY, cityHeight - minY );
+		real32 minY = (cameraSize.y * 0.5f) - CAMERA_MARGIN;
+		camera->pos.y = clamp( camera->pos.y, minY, (real32)cityHeight - minY );
 	}
 }
 
@@ -86,8 +83,8 @@ GameStatus updateAndRenderMainMenuUI(Renderer *renderer, AssetManager *assets, U
 									GameStatus gameStatus)
 {
 	GameStatus result = gameStatus;
-	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
-	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
+	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
+	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
 	UiTheme *theme = &assets->theme;
 
 	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, theme->overlayColor);
@@ -127,8 +124,8 @@ GameStatus updateAndRenderMainMenuUI(Renderer *renderer, AssetManager *assets, U
 
 void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState, InputState *inputState)
 {
-	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
-	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
+	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
+	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
 	UiTheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
@@ -249,8 +246,8 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState *uiState, InputState *inputState, bool won)
 {
 	bool result = false;
-	real32 windowWidth = (real32) renderer->uiBuffer.camera.windowWidth;
-	real32 windowHeight = (real32) renderer->uiBuffer.camera.windowHeight;
+	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
+	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
 
 	UiTheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, FontAssetType_Main);

@@ -5,7 +5,7 @@
 const float TILE_SIZE = 16.0f;
 const int TILE_WIDTH = 16,
 			TILE_HEIGHT = 16;
-const int CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
+const real32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 const bool canZoom = true;
 
 inline Coord tilePosition(V2 worldPos) {
@@ -15,15 +15,9 @@ inline Coord tilePosition(V2 worldPos) {
 
 struct Camera
 {
-	// TODO: Replace pixel size with a res-independant size which we then convert to pixels.
-	// So worldCamera is in world units, uiCamera in pixels.
-	union {
-		Coord windowSize;
-		struct{int32 windowWidth, windowHeight;};
-	};
-	V2 pos; // Centre of screen, in tiles
+	V2 pos; // Centre of camera, in camera units
+	V2 size; // Size of camera, in camera units
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
-
 	Matrix4 projectionMatrix;
 };
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second

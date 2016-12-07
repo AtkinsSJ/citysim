@@ -597,26 +597,6 @@ void GL_render(GL_Renderer *renderer, AssetManager *assets)
 	SDL_GL_SwapWindow( renderer->window );
 }
 
-#if 0 // Leaving this here until I'm sure the new unproject works.
-V2 unproject(GL_Renderer *renderer, V2 pos)
-{
-	// Normalise to (-1 to 1) coordinates as used by opengl
-	V2 windowSize = v2(renderer->worldCamera.windowSize);
-	V4 normalised = v4(
-		((pos.x * 2.0f) / windowSize.x) - 1.0f,
-		((pos.y * -2.0f) + windowSize.y) / windowSize.y,
-		0.0f,
-		1.0f
-	);
-
-	// Convert into world space
-	V4 result = inverse(&renderer->worldBuffer.projectionMatrix) * normalised;
-	// SDL_Log("upproject: %f, %f", result.x, result.y);
-
-	return result.xy;// + renderer->camera.pos;
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //                          ANIMATIONS!                           //
 ////////////////////////////////////////////////////////////////////

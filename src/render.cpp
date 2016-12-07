@@ -43,8 +43,8 @@ V2 unproject(Camera *camera, V2 screenPos)
 
 void updateCameraMatrix(Camera *camera)
 {
-	real32 camHalfWidth = camera->windowWidth * 0.5f * camera->zoom;
-	real32 camHalfHeight = camera->windowHeight * 0.5f * camera->zoom;
+	real32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;
+	real32 camHalfHeight = camera->size.y * 0.5f / camera->zoom;
 	camera->projectionMatrix = orthographicMatrix4(
 		camera->pos.x - camHalfWidth, camera->pos.x + camHalfWidth,
 		camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,

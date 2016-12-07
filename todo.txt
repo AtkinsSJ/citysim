@@ -3,9 +3,7 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
-	
-- Cameras and sizes. Cameras shouldn't all know the screen size. They should be sized in their own units.
-	- (Which for uiCamera IS the screen size. But worldCamera, not so much.)
+
 - Get rid of BitmapFontCache. It's too restrictive.
 - Load ui theme from a file
 - Load texture region information from a file

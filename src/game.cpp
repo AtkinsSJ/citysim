@@ -22,7 +22,8 @@ GameState *startGame(MemoryArena *gameArena)
 	}
 #endif
 
-	initCity(gameArena, &result->city, 100,100, "City Name Here", gameStartFunds);
+	// Hack to be the size of our image.
+	initCity(gameArena, &result->city, 2000 / TILE_SIZE, 1517 / TILE_SIZE, "City Name Here", gameStartFunds);
 	// generateTerrain(&result->city, &result->rng);
 
 	return result;
@@ -136,7 +137,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 // RENDERING
 
 	// Draw terrain
-	V2 backgroundSize = v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
+	V2 backgroundSize = v2(gameState->city.width, gameState->city.height); //v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
 	drawTextureRegion(&renderer->worldBuffer, getTextureRegion(assets, TextureAssetType_Map1, 0),
 		rectXYWH(0, 0, backgroundSize.x, backgroundSize.y), 0);
 

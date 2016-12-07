@@ -132,12 +132,13 @@ int main(int argc, char *argv[]) {
 	Camera *worldCamera = &glRenderer->renderer.worldBuffer.camera;
 	Camera *uiCamera = &glRenderer->renderer.uiBuffer.camera;
 
-	worldCamera->windowSize = inputState.windowSize;
+	worldCamera->size = v2((real32)inputState.windowSize.x / TILE_SIZE,
+	                       (real32)inputState.windowSize.y / TILE_SIZE);
 	worldCamera->pos = v2(gameState->city.width/2, gameState->city.height/2);
 	worldCamera->zoom = 1.0f;
 
-	uiCamera->windowSize = inputState.windowSize;
-	uiCamera->pos = v2(uiCamera->windowSize) * 0.5f;
+	uiCamera->size = v2(inputState.windowSize);
+	uiCamera->pos = uiCamera->size * 0.5f;
 	uiCamera->zoom = 1.0f;
 
 	updateCameraMatrix(worldCamera);
@@ -164,8 +165,12 @@ int main(int argc, char *argv[]) {
 		if (inputState.wasWindowResized)
 		{
 			GL_windowResized(glRenderer, inputState.windowWidth, inputState.windowHeight);
-			worldCamera->windowSize = uiCamera->windowSize = inputState.windowSize;
-			uiCamera->pos = v2(uiCamera->windowSize) * 0.5f;
+
+			worldCamera->size = v2((real32)inputState.windowSize.x / TILE_SIZE,
+	                               (real32)inputState.windowSize.y / TILE_SIZE);
+
+			uiCamera->size = v2(inputState.windowSize);
+			uiCamera->pos = uiCamera->size * 0.5f;
 		}
 
 		// Asset reloading! Whooo!

@@ -214,7 +214,7 @@ void drawUiMessage(UIState *uiState, Renderer *renderer, AssetManager *assets)
 				textColor.a = lerp(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(renderer->uiBuffer.camera.windowWidth * 0.5f, renderer->uiBuffer.camera.windowHeight - 8.0f);
+			V2 origin = v2(renderer->uiBuffer.camera.size.x * 0.5f, renderer->uiBuffer.camera.size.y - 8.0f);
 			// V2 origin = v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f);
 			RealRect labelRect = uiLabel(uiState, renderer, getFont(assets, FontAssetType_Main), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1, textColor);
