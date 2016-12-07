@@ -68,7 +68,60 @@ void GL_printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
 	}
 }
 
-bool GL_loadShader(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramID)
+bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType,
+	                  ShaderProgram *shaderAsset)
+{
+	bool result = false;
+	char **shaderSource = 0;
+	char *filename = 0;
+
+	switch (shaderType)
+	{
+		case GL_ShaderType_Fragment:
+		{
+			shaderSource = &shaderAsset->fragShader;
+			filename = shaderAsset->fragFilename;
+		} break;
+		case GL_ShaderType_Geometry:
+		{
+			ASSERT(false, "Geometry shaders are not implemented!");
+		} break;
+		case GL_ShaderType_Vertex:
+		{
+			shaderSource = &shaderAsset->vertShader;
+			filename = shaderAsset->vertFilename;
+		} break;
+	}
+
+	ASSERT(shaderSource && filename, "Failed to select a shader!");
+
+	TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+
+	GLuint shaderID = glCreateShader(shaderType);
+	glShaderSource(shaderID, 1, shaderSource, NULL);
+	glCompileShader(shaderID);
+
+	GLint isCompiled = GL_FALSE;
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isCompiled);
+	result = (isCompiled == GL_TRUE);
+
+	if (result)
+	{
+		glAttachShader(shaderProgram->shaderProgramID, shaderID);
+		glDeleteShader(shaderID);
+	}
+	else
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n",
+			            shaderID, filename);
+		GL_printShaderLog(&tempArena, shaderID);
+	}
+
+	endTemporaryMemory(&tempArena);
+	return result;
+}
+
+bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramID)
 {
 	bool result = false;
 
@@ -78,67 +131,19 @@ bool GL_loadShader(GL_Renderer *renderer, AssetManager *assets, ShaderProgramTyp
 	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramID;
 	glShader->assetID = shaderProgramID;
 
-	glShader->isVertexShaderCompiled = GL_FALSE;
-	glShader->isFragmentShaderCompiled = GL_FALSE;
+	bool isVertexShaderCompiled = GL_FALSE;
+	bool isFragmentShaderCompiled = GL_FALSE;
 
 	glShader->shaderProgramID = glCreateProgram();
 
 	if (glShader->shaderProgramID)
 	{
 		// VERTEX SHADER
-		{
-			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
-
-			glShader->vertexShader = glCreateShader(GL_VERTEX_SHADER);
-			glShaderSource(glShader->vertexShader, 1, &shaderAsset->vertShader, NULL);
-			glCompileShader(glShader->vertexShader);
-
-			GLint isCompiled = GL_FALSE;
-			glGetShaderiv(glShader->vertexShader, GL_COMPILE_STATUS, &isCompiled);
-			glShader->isVertexShaderCompiled = (isCompiled == GL_TRUE);
-
-			if (glShader->isVertexShaderCompiled)
-			{
-				glAttachShader(glShader->shaderProgramID, glShader->vertexShader);
-				glDeleteShader(glShader->vertexShader);
-			}
-			else
-			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n", glShader->vertexShader, shaderAsset->vertFilename);
-				GL_printShaderLog(&tempArena, glShader->vertexShader);
-			}
-
-			endTemporaryMemory(&tempArena);
-		}
-
-		// FRAGMENT SHADER
-		{
-			TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
-
-			glShader->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-			glShaderSource(glShader->fragmentShader, 1, &shaderAsset->fragShader, NULL);
-			glCompileShader(glShader->fragmentShader);
-
-			GLint isCompiled = GL_FALSE;
-			glGetShaderiv(glShader->fragmentShader, GL_COMPILE_STATUS, &isCompiled);
-			glShader->isFragmentShaderCompiled = (isCompiled == GL_TRUE);
-
-			if (glShader->isFragmentShaderCompiled)
-			{
-				glAttachShader(glShader->shaderProgramID, glShader->fragmentShader);
-				glDeleteShader(glShader->fragmentShader);
-			}
-			else
-			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile fragment shader %d, %s!\n", glShader->fragmentShader, shaderAsset->fragFilename);
-				GL_printShaderLog(&tempArena, glShader->fragmentShader);
-			}
-
-			endTemporaryMemory(&tempArena);
-		}
+		isVertexShaderCompiled = GL_compileShader(renderer, glShader, GL_ShaderType_Vertex, shaderAsset);
+		isFragmentShaderCompiled = GL_compileShader(renderer, glShader, GL_ShaderType_Fragment, shaderAsset);
 
 		// Link shader program
-		if (glShader->isVertexShaderCompiled && glShader->isFragmentShaderCompiled)
+		if (isVertexShaderCompiled && isFragmentShaderCompiled)
 		{
 			glLinkProgram(glShader->shaderProgramID);
 			GLint programSuccess = GL_FALSE;
@@ -210,7 +215,7 @@ void GL_loadAssets(GL_Renderer *renderer, AssetManager *assets)
 	// Shaders
 	for (uint32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
 	{
-		bool shaderLoaded = GL_loadShader(renderer, assets, (ShaderProgramType)shaderID);
+		bool shaderLoaded = GL_loadShaderProgram(renderer, assets, (ShaderProgramType)shaderID);
 		ASSERT(shaderLoaded, "Failed to load shader %d into OpenGL.", shaderID);
 	}
 }

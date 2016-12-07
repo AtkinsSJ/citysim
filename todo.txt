@@ -3,7 +3,6 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
-- GL_ShaderProgram keeps a lot of information around that's not needed. Trim it!
 - Asset reloading:
 	- Cursors! Hide the cursor before reload, then show it again after.
 	

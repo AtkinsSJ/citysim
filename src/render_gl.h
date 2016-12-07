@@ -19,17 +19,18 @@ struct GL_TextureInfo
 	bool isLoaded;
 };
 
+enum GL_ShaderType
+{
+	GL_ShaderType_Fragment = GL_FRAGMENT_SHADER,
+	GL_ShaderType_Geometry = GL_GEOMETRY_SHADER,
+	GL_ShaderType_Vertex = GL_VERTEX_SHADER,
+};
+
 struct GL_ShaderProgram
 {
 	ShaderProgramType assetID;
 	GLuint shaderProgramID;
 	bool isValid;
-
-// I don't actually need these 4 things!
-	GLuint vertexShader;
-	bool isVertexShaderCompiled;
-	GLuint fragmentShader;
-	bool isFragmentShaderCompiled;
 
 	// Uniforms
 	GLint uProjectionMatrixLoc,
