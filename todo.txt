@@ -3,8 +3,6 @@ TODO:
 ---------------------------------------------
 
 MASSAGING THINGS INTO A WORKABLE STATE:
-- Asset reloading:
-	- Cursors! Hide the cursor before reload, then show it again after.
 	
 - Cameras and sizes. Cameras shouldn't all know the screen size. They should be sized in their own units.
 	- (Which for uiCamera IS the screen size. But worldCamera, not so much.)

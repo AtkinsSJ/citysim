@@ -110,6 +110,8 @@ int main(int argc, char *argv[]) {
 	addAssets(assets, &memoryArena);
 	loadAssets(assets);
 
+	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+
 	GL_Renderer *glRenderer = GL_initializeRenderer(&memoryArena, window, assets);
 	ASSERT(glRenderer, "Failed to initialize renderer.");
 
@@ -170,6 +172,7 @@ int main(int argc, char *argv[]) {
 		if (keyJustPressed(&inputState, SDL_SCANCODE_F1))
 		{
 			GL_unloadAssets(glRenderer);
+			SDL_SetCursor(systemWaitCursor);
 			reloadAssets(assets, &memoryArena);
 			setCursor(uiState, assets, uiState->currentCursor);
 			GL_loadAssets(glRenderer, assets);
