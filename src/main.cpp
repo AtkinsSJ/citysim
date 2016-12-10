@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 
 		if (inputState.wasWindowResized)
 		{
-			GL_windowResized(glRenderer, inputState.windowWidth, inputState.windowHeight);
+			GL_windowResized(inputState.windowWidth, inputState.windowHeight);
 
 			worldCamera->size = v2((real32)inputState.windowSize.x / TILE_SIZE,
 	                               (real32)inputState.windowSize.y / TILE_SIZE);

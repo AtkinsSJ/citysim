@@ -4,23 +4,36 @@ TODO:
 
 MASSAGING THINGS INTO A WORKABLE STATE:
 
-- Get rid of BitmapFontCache. It's too restrictive.
+- Check for the flicker bug while we have so few things being drawn.
+
+- UI Theme: What is it?!?!
+	- All the information about how to draw the UI.
+	- So, font/colour/padding etc for a button, or a menu item.
+	- Do we want styles within this? So you say "this is a 'fancy' button, this is a 'normal' button"?
+	- If we want to go crazy we could define the UI itself in data. But that sounds awkward and unnecessary.
+		- Though I think I want to do that for the fancy text screens, as planned.
+		  (Victiorian typography, lots of different fonts and sizes and styles.)
+
+Asset system:
+- Asset packer of some kind. Maybe just creates an assets table?
 - Load ui theme from a file
 - Load texture region information from a file
-- Handle cursors ourselves? Not sure about latency.
-- Check for the flicker bug while we have so few things being drawn.
 - Asset system dynamic allocations. e.g. So we don't have to predetermine number of texture regions.
 
-- Arenas:
-	- Is RenderArena used?
-		- Only for renderer info, and temporarily for loading shaders. So it can go soon!
-	- Is temporary memory in renderer init used?
-	- Use several arenas, not just all sub-arenas
-	- Stretchy arenas
-	- Make temporary arenas include a memory arena so we don't need 2 readFileAsString definitions, etc.
+Arenas:
+- Is RenderArena used?
+	- Only for renderer info, and temporarily for loading shaders. So it can go soon!
+- Is temporary memory in renderer init used?
+- Use several arenas, not just all sub-arenas
+- Stretchy arenas
+- Make temporary arenas include a memory arena so we don't need 2 readFileAsString definitions, etc.
 
+Debugging:
+- Some kind of profiling system
+- Debug console?
 
 GAME:
+- Menu / Game are separate code.
 - Draw a map
 - Draw a grid over it
 - Create pipes
@@ -36,6 +49,7 @@ Rendering 2.0:
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
 - Probably replace the binary search for glyphs with something better?
+- Handle cursors ourselves? Not sure about latency.
 
 Asset packing:
 - Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them

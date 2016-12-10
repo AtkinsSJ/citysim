@@ -5,7 +5,7 @@ void GL_freeRenderer(GL_Renderer *renderer)
 	SDL_GL_DeleteContext(renderer->context);
 }
 
-void GL_windowResized(GL_Renderer *renderer, int32 newWidth, int32 newHeight)
+void GL_windowResized(int32 newWidth, int32 newHeight)
 {
 	glViewport(0, 0, newWidth, newHeight);
 }
@@ -247,7 +247,6 @@ void GL_unloadAssets(GL_Renderer *renderer)
 
 GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window, AssetManager *assets)
 {
-	// GL_Renderer *renderer = PushStruct(memoryArena, GL_Renderer);
 	GL_Renderer *renderer;
 	bootstrapArena(GL_Renderer, renderer, renderArena, MB(64));
 	bool succeeded = (renderer != 0);
@@ -301,10 +300,7 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 			if (succeeded)
 			{
 				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-				// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-				// glClearColor(0.3176f, 0.6353f, 0.2549f, 1.0f);
 
-				// Create vertex and index buffers
 				glGenBuffers(1, &renderer->VBO);
 				glGenBuffers(1, &renderer->IBO);
 
@@ -366,13 +362,13 @@ void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexC
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	GL_checkForError();
-	glVertexAttribPointer(activeShader->aPositionLoc, 	3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
+	glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
 	GL_checkForError();
-	glVertexAttribPointer(activeShader->aColorLoc,		4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
+	glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
 	GL_checkForError();
 	if (activeShader->aUVLoc != -1)
 	{
-		glVertexAttribPointer(activeShader->aUVLoc, 		2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
+		glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
 		GL_checkForError();
 	}
 
@@ -397,7 +393,7 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 	// Fill VBO
 	uint32 vertexCount = 0;
 	uint32 indexCount = 0;
-	GLint glBoundTextureID = -1;
+	GLuint glBoundTextureID = 0; // 0 = none
 
 	uint32 drawCallCount = 0;
 

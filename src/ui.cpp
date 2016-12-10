@@ -54,7 +54,7 @@ void drawTooltip(UIState *uiState, Renderer *renderer, AssetManager *assets, Inp
 {
 	if (uiState->tooltip.show)
 	{
-		UiTheme *theme = &assets->theme;
+		UITheme *theme = &assets->theme;
 		const real32 depth = 100;
 		const real32 tooltipPadding = 4;
 
@@ -79,23 +79,23 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 {
 	bool buttonClicked = false;
 	V2 mousePos = unproject(&renderer->uiBuffer.camera, inputState->mousePosNormalised);
-	UiTheme *theme = &assets->theme;
-	V4 backColor = theme->buttonBackgroundColor;
+	UITheme *theme = &assets->theme;
+	UIButtonStyle *style = &theme->buttonStyle;
+	V4 backColor = style->backgroundColor;
 
 	if (inRect(bounds, mousePos))
 	{
 		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 		{
-			backColor = theme->buttonPressedColor;
+			backColor = style->pressedColor;
 		}
 		else
 		{
-			backColor = theme->buttonHoverColor;
+			backColor = style->hoverColor;
 		}
 
 		buttonClicked = mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT);
 
-		// tooltip!
 		if (tooltip)
 		{
 			setTooltip(uiState, tooltip, theme->tooltipColorNormal);
@@ -103,12 +103,12 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 	}
 	else if (active)
 	{
-		backColor = theme->buttonHoverColor;
+		backColor = style->hoverColor;
 	}
 
 	drawRect(&renderer->uiBuffer, bounds, depth, backColor);
 	uiLabel(uiState, renderer, getFont(assets, FontAssetType_Buttons), text, centre(bounds), ALIGN_CENTRE, depth + 1,
-			theme->buttonTextColor);
+			style->textColor);
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDL_SCANCODE_UNKNOWN)
@@ -145,7 +145,7 @@ bool uiMenuButton(UIState *uiState, Renderer *renderer, AssetManager *assets, In
 void uiTextInput(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
 	             bool active, char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
 {
-	UiTheme *theme = &assets->theme;
+	UITheme *theme = &assets->theme;
 
 	if (active)
 	{
@@ -190,9 +190,9 @@ void drawUiMessage(UIState *uiState, Renderer *renderer, AssetManager *assets)
 
 		if (uiState->message.countdown > 0)
 		{
-			UiTheme *theme = &assets->theme;
+			UITheme *theme = &assets->theme;
 			const real32 depth = 100;
-			const real32 padding = 4; // @AddToUiTheme
+			const real32 padding = 4; // @AddToUITheme
 
 			real32 t = (real32)uiState->message.countdown / messageDisplayTime;
 

@@ -66,7 +66,7 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 }
 
 void showCostTooltip(UIState *uiState, AssetManager *assets, int32 cost, int32 cityFunds) {
-	UiTheme *theme = &assets->theme;
+	UITheme *theme = &assets->theme;
 
 	if (cost > cityFunds) {
 		uiState->tooltip.color = theme->tooltipColorBad;
@@ -85,7 +85,7 @@ GameStatus updateAndRenderMainMenuUI(Renderer *renderer, AssetManager *assets, U
 	GameStatus result = gameStatus;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
-	UiTheme *theme = &assets->theme;
+	UITheme *theme = &assets->theme;
 
 	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, theme->overlayColor);
 
@@ -126,7 +126,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 {
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
-	UiTheme *theme = &assets->theme;
+	UITheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
 	uiState->uiRectCount = 0;
@@ -249,7 +249,7 @@ bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
 
-	UiTheme *theme = &assets->theme;
+	UITheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
 	V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);

@@ -2,9 +2,8 @@
 
 // General rendering code.
 
-const float TILE_SIZE = 16.0f;
-const int TILE_WIDTH = 16,
-			TILE_HEIGHT = 16;
+const int32 ITILE_SIZE = 16;
+const real32 TILE_SIZE = ITILE_SIZE;
 const real32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 const bool canZoom = true;
 

@@ -82,19 +82,23 @@ struct ShaderProgram
 	char *vertShader;
 };
 
-struct UiTheme
+struct UIButtonStyle
 {
-	FontAssetType font,
-				  buttonFont;
+	FontAssetType font;
+	V4 textColor;
+
+	V4 backgroundColor;
+	V4 hoverColor;
+	V4 pressedColor;
+};
+
+struct UITheme
+{
+	FontAssetType font;
 
 	V4 overlayColor;
 			
 	V4 labelColor;
-
-	V4 buttonTextColor,
-		buttonBackgroundColor,
-		buttonHoverColor,
-		buttonPressedColor;
 
 	V4 textboxTextColor,
 		textboxBackgroundColor;
@@ -102,6 +106,8 @@ struct UiTheme
 	V4 tooltipBackgroundColor,
 		tooltipColorNormal,
 		tooltipColorBad;
+
+	UIButtonStyle buttonStyle;
 };
 
 struct AssetManager
@@ -128,7 +134,7 @@ struct AssetManager
 	Cursor cursors[CursorCount];
 	CursorType activeCursor;
 
-	UiTheme theme;
+	UITheme theme;
 };
 
 int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)

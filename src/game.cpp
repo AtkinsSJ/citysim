@@ -23,7 +23,7 @@ GameState *startGame(MemoryArena *gameArena)
 #endif
 
 	// Hack to be the size of our image.
-	initCity(gameArena, &result->city, 2000 / TILE_SIZE, 1517 / TILE_SIZE, "City Name Here", gameStartFunds);
+	initCity(gameArena, &result->city, 2000 / ITILE_SIZE, 1517 / ITILE_SIZE, "City Name Here", gameStartFunds);
 	// generateTerrain(&result->city, &result->rng);
 
 	return result;
@@ -31,9 +31,7 @@ GameState *startGame(MemoryArena *gameArena)
 
 void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
-
-	// Game simulation
-	UIState *uiState = &gameState->uiState;
+	//UIState *uiState = &gameState->uiState;
 
 	// Win and Lose!
 	if (gameState->city.funds >= gameWinFunds) {
@@ -45,17 +43,6 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera = &renderer->uiBuffer.camera;
-
-	// real32 worldScale = worldCamera->zoom / TILE_SIZE;
-	// real32 camWidth = worldCamera->windowWidth * worldScale,
-	// 		camHeight = worldCamera->windowHeight * worldScale;
-	// real32 halfCamWidth = camWidth * 0.5f,
-	// 		halfCamHeight = camHeight * 0.5f;
-	// RealRect cameraBounds = {
-	// 	worldCamera->pos.x - halfCamWidth,
-	// 	worldCamera->pos.y - halfCamHeight,
-	// 	camWidth, camHeight
-	// };
 	
 	// TODO: Unproject should happen somewhere outside of the game code.
 	V2 mouseWorldPos = unproject(worldCamera, inputState->mousePosNormalised);
@@ -63,7 +50,7 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 
 	V2 mouseUIPos = unproject(uiCamera, inputState->mousePosNormalised);
 
-// UiButton/Mouse interaction
+	#if 0 // UiButton/Mouse interaction
 	if (gameState->status == GameStatus_Playing) {
 
 		if (keyJustPressed(inputState, SDL_SCANCODE_INSERT)) {
@@ -85,44 +72,43 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 		}
 
 		// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
-
 		// This is a very basic check for "is the user clicking on the UI?"
 		if (!inRects(uiState->uiRects, uiState->uiRectCount, mouseUIPos)) {
 			switch (uiState->actionMode) {
-				// case ActionMode_Build: {
-				// 	if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-				// 		placeBuilding(&uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos);
-				// 	}
+				case ActionMode_Build: {
+					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
+						placeBuilding(&uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos);
+					}
 
-				// 	int32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
-				// 	showCostTooltip(renderer, &uiState, buildCost, gameState->city.funds);
-				// } break;
+					int32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
+					showCostTooltip(renderer, &uiState, buildCost, gameState->city.funds);
+				} break;
 
-				// case ActionMode_Demolish: {
-				// 	if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
-				// 		mouseDragStartPos = mouseWorldPos;
-				// 		dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
-				// 	} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-				// 		dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
-				// 		int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
-				// 		showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
-				// 	}	
+				case ActionMode_Demolish: {
+					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
+						mouseDragStartPos = mouseWorldPos;
+						dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
+						dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
+						int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
+						showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
+					}	
 
-				// 	if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
-				// 		// Demolish everything within dragRect!
-				// 		demolishRect(&uiState, &gameState->city, dragRect);
-				// 		dragRect = irectXYWH(-1,-1,0,0);
-				// 	}
-				// } break;
+					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
+						// Demolish everything within dragRect!
+						demolishRect(&uiState, &gameState->city, dragRect);
+						dragRect = irectXYWH(-1,-1,0,0);
+					}
+				} break;
 
-				// case ActionMode_None: {
-				// 	if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
-				// 		int tileI = tileIndex(&gameState->city, mouseTilePos.x, mouseTilePos.y);
-				// 		int buildingID = gameState->city.tileBuildings[tileI];
+				case ActionMode_None: {
+					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
+						int tileI = tileIndex(&gameState->city, mouseTilePos.x, mouseTilePos.y);
+						int buildingID = gameState->city.tileBuildings[tileI];
 
-				// 		SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
-				// 	}
-				// } break;
+						SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
+					}
+				} break;
 			}
 		}
 
@@ -133,66 +119,67 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 			setCursor(uiState, assets, Cursor_Main);
 		}
 	}
+	#endif
 
-// RENDERING
+	// RENDERING
 
 	// Draw terrain
 	V2 backgroundSize = v2(gameState->city.width, gameState->city.height); //v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
 	drawTextureRegion(&renderer->worldBuffer, getTextureRegion(assets, TextureAssetType_Map1, 0),
 		rectXYWH(0, 0, backgroundSize.x, backgroundSize.y), 0);
 
-// 	for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
-// 		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
-// 		y++)
-// 	{
-// 		for (int32 x = (cameraBounds.x < 0) ? 0 : (int32)cameraBounds.x;
-// 			(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
-// 			x++)
-// 		{
-// 			Terrain t = terrainAt(&gameState->city,x,y);
-// 			GL_TextureAtlasItem textureAtlasItem;
-// 			switch (t) {
-// 				case Terrain_Forest: {
-// 					textureAtlasItem = GL_TextureAtlasItem_ForestTile;
-// 				} break;
-// 				case Terrain_Water: {
-// 					textureAtlasItem = GL_TextureAtlasItem_WaterTile;
-// 				} break;
-// 				case Terrain_Ground:
-// 				default: {
-// 					textureAtlasItem = GL_TextureAtlasItem_GroundTile;
-// 				} break;
-// 			}
+	#if 0 // Terrain, which we don't use
+	for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
+		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
+		y++)
+	{
+		for (int32 x = (cameraBounds.x < 0) ? 0 : (int32)cameraBounds.x;
+			(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
+			x++)
+		{
+			Terrain t = terrainAt(&gameState->city,x,y);
+			GL_TextureAtlasItem textureAtlasItem;
+			switch (t) {
+				case Terrain_Forest: {
+					textureAtlasItem = GL_TextureAtlasItem_ForestTile;
+				} break;
+				case Terrain_Water: {
+					textureAtlasItem = GL_TextureAtlasItem_WaterTile;
+				} break;
+				case Terrain_Ground:
+				default: {
+					textureAtlasItem = GL_TextureAtlasItem_GroundTile;
+				} break;
+			}
 
-// 			drawGL_TextureAtlasItem(renderer, false, textureAtlasItem,
-// 				v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
+			drawGL_TextureAtlasItem(renderer, false, textureAtlasItem,
+				v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
 
-// #if 0
-// 			// Data layer
-// 			int32 pathGroup = pathGroupAt(&gameState->city, x, y);
-// 			if (pathGroup > 0)
-// 			{
-// 				Color color = {};
-// 				switch (pathGroup)
-// 				{
-// 					case 1: color = {0, 0, 255, 63}; break;
-// 					case 2: color = {0, 255, 0, 63}; break;
-// 					case 3: color = {255, 0, 0, 63}; break;
-// 					case 4: color = {0, 255, 255, 63}; break;
-// 					case 5: color = {255, 255, 0, 63}; break;
-// 					case 6: color = {255, 0, 255, 63}; break;
+			#if 0 // Data layer rendering
+			int32 pathGroup = pathGroupAt(&gameState->city, x, y);
+			if (pathGroup > 0)
+			{
+				Color color = {};
+				switch (pathGroup)
+				{
+					case 1: color = {0, 0, 255, 63}; break;
+					case 2: color = {0, 255, 0, 63}; break;
+					case 3: color = {255, 0, 0, 63}; break;
+					case 4: color = {0, 255, 255, 63}; break;
+					case 5: color = {255, 255, 0, 63}; break;
+					case 6: color = {255, 0, 255, 63}; break;
 
-// 					default: color = {255, 255, 255, 63}; break;
-// 				}
+					default: color = {255, 255, 255, 63}; break;
+				}
 
-// 				drawRect(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
-// 			}
-// #endif
-// 		}
-// 	}
-
-	// Draw buildings
-#if 0
+				drawRect(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
+			}
+			#endif
+		}
+	}
+	#endif
+	
+	#if 0 // Draw buildings
 	for (uint32 i=1; i<gameState->city.buildingCount; i++)
 	{
 		Building building = gameState->city.buildings[i];
@@ -201,11 +188,11 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 
 		V4 drawColor = makeWhite();
 
-		// if (gameState->uiState.actionMode == ActionMode_Demolish
-		// 	&& rectsOverlap(building.footprint, dragRect)) {
-		// 	// Draw building red to preview demolition
-		// 	drawColor = color255(255,128,128,255);
-		// }
+		if (gameState->uiState.actionMode == ActionMode_Demolish
+			&& rectsOverlap(building.footprint, dragRect)) {
+			// Draw building red to preview demolition
+			drawColor = color255(255,128,128,255);
+		}
 
 		switch (building.archetype) {
 
@@ -218,29 +205,29 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 	}
 
 	// Building preview
-	// if (gameState->uiState.actionMode == ActionMode_Build
-	// 	&& gameState->uiState.selectedBuildingArchetype != BA_None) {
+	if (gameState->uiState.actionMode == ActionMode_Build
+		&& gameState->uiState.selectedBuildingArchetype != BA_None) {
 
-	// 	V4 ghostColor = color255(128,255,128,255);
-	// 	if (!canPlaceBuilding(&gameState->uiState, &gameState->city, gameState->uiState.selectedBuildingArchetype, mouseTilePos)) {
-	// 		ghostColor = color255(255,0,0,128);
-	// 	}
-	// 	Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[gameState->uiState.selectedBuildingArchetype].size);
-	// 	drawGL_TextureAtlasItem(
-	// 		renderer,
-	// 		false,
-	// 		buildingDefinitions[gameState->uiState.selectedBuildingArchetype].textureAtlasItem,
-	// 		centre(footprint),
-	// 		v2(footprint.dim),
-	// 		depthFromY(mouseTilePos.y) + 100,
-	// 		ghostColor
-	// 	);
-	// } else if (gameState->uiState.actionMode == ActionMode_Demolish
-	// 	&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-	// 	// Demolition outline
-	// 	drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
-	// }
-#endif
+		V4 ghostColor = color255(128,255,128,255);
+		if (!canPlaceBuilding(&gameState->uiState, &gameState->city, gameState->uiState.selectedBuildingArchetype, mouseTilePos)) {
+			ghostColor = color255(255,0,0,128);
+		}
+		Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[gameState->uiState.selectedBuildingArchetype].size);
+		drawGL_TextureAtlasItem(
+			renderer,
+			false,
+			buildingDefinitions[gameState->uiState.selectedBuildingArchetype].textureAtlasItem,
+			centre(footprint),
+			v2(footprint.dim),
+			depthFromY(mouseTilePos.y) + 100,
+			ghostColor
+		);
+	} else if (gameState->uiState.actionMode == ActionMode_Demolish
+		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
+		// Demolition outline
+		drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
+	}
+	#endif
 
 	// Draw the UI!
 	switch (gameState->status)
