@@ -27,7 +27,7 @@ void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
 	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
 }
 
-RealRect uiLabel(UIState *uiState, Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
+RealRect uiText(UIState *uiState, Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
 
@@ -62,7 +62,7 @@ void drawTooltip(UIState *uiState, Renderer *renderer, AssetManager *assets, Inp
 
 		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(tooltipPadding, tooltipPadding);
 
-		RealRect labelRect = uiLabel(uiState, renderer, getFont(assets, FontAssetType_Main), uiState->tooltip.text,
+		RealRect labelRect = uiText(uiState, renderer, getFont(assets, theme->labelStyle.font), uiState->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1, uiState->tooltip.color);
 
 		labelRect = expandRect(labelRect, tooltipPadding);
@@ -107,7 +107,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 	}
 
 	drawRect(&renderer->uiBuffer, bounds, depth, backColor);
-	uiLabel(uiState, renderer, getFont(assets, FontAssetType_Buttons), text, centre(bounds), ALIGN_CENTRE, depth + 1,
+	uiText(uiState, renderer, getFont(assets, style->font), text, centre(bounds), ALIGN_CENTRE, depth + 1,
 			style->textColor);
 
 	// Keyboard shortcut!
@@ -170,7 +170,7 @@ void uiTextInput(UIState *uiState, Renderer *renderer, AssetManager *assets, Inp
 	}
 
 	const real32 padding = 4;
-	RealRect labelRect = uiLabel(uiState, renderer, getFont(assets, FontAssetType_Main), textBuffer, origin + v2(padding, padding),
+	RealRect labelRect = uiText(uiState, renderer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
 	labelRect = expandRect(labelRect, padding);
 	drawRect(&renderer->uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
@@ -216,7 +216,7 @@ void drawUiMessage(UIState *uiState, Renderer *renderer, AssetManager *assets)
 
 			V2 origin = v2(renderer->uiBuffer.camera.size.x * 0.5f, renderer->uiBuffer.camera.size.y - 8.0f);
 			// V2 origin = v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f);
-			RealRect labelRect = uiLabel(uiState, renderer, getFont(assets, FontAssetType_Main), uiState->message.text, origin,
+			RealRect labelRect = uiText(uiState, renderer, getFont(assets, theme->labelStyle.font), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1, textColor);
 
 			labelRect = expandRect(labelRect, padding);

@@ -29,10 +29,13 @@ void initTheme(AssetManager *assets)
 {
 	assets->theme.buttonStyle.textColor        = color255(   0,   0,   0, 255 );
 	assets->theme.buttonStyle.backgroundColor  = color255( 255, 255, 255, 255 );
-	assets->theme.buttonStyle.hoverColor 	     = color255( 192, 192, 255, 255 );
+	assets->theme.buttonStyle.hoverColor 	   = color255( 192, 192, 255, 255 );
 	assets->theme.buttonStyle.pressedColor     = color255( 128, 128, 255, 255 );
+	assets->theme.buttonStyle.font = FontAssetType_Buttons;
 
-	assets->theme.labelColor             = color255( 255, 255, 255, 255 );
+	assets->theme.labelStyle.textColor         = color255( 255, 255, 255, 255 );
+	assets->theme.labelStyle.font              = FontAssetType_Main;
+
 	assets->theme.overlayColor           = color255(   0,   0,   0, 128 );
 
 	assets->theme.textboxBackgroundColor = color255( 255, 255, 255, 255 );
@@ -41,9 +44,6 @@ void initTheme(AssetManager *assets)
 	assets->theme.tooltipBackgroundColor = color255(   0,   0,   0, 128 );
 	assets->theme.tooltipColorNormal     = color255( 255, 255, 255, 255 );
 	assets->theme.tooltipColorBad        = color255( 255,   0,   0, 255 );
-
-	assets->theme.font       = FontAssetType_Main;
-	assets->theme.buttonStyle.font = FontAssetType_Buttons;
 }
 
 int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)

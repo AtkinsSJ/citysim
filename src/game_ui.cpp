@@ -95,13 +95,14 @@ GameStatus updateAndRenderMainMenuUI(Renderer *renderer, AssetManager *assets, U
 	//drawGL_TextureAtlasItem(renderer, true, GL_TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 	//position.y += 154.0f;
 
-	BitmapFont *font = getFont(assets, FontAssetType_Main);
+	UILabelStyle *labelStyle = &theme->labelStyle;
+	BitmapFont *font = getFont(assets, labelStyle->font);
 
-	position.y += (uiLabel(uiState, renderer, font, "Under London",
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, theme->labelColor, maxLabelWidth)).h;
+	position.y += (uiText(uiState, renderer, font, "Under London",
+			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiLabel(uiState, renderer, font, "Very much a work in progress!",
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, theme->labelColor, maxLabelWidth)).h;
+	position.y += (uiText(uiState, renderer, font, "Very much a work in progress!",
+			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	RealRect buttonRect = rectXYWH(uiPadding, windowHeight - uiPadding - 24, 80, 24);
 	if (uiButton(uiState, renderer, assets, inputState, "Exit", buttonRect, 1))
@@ -127,7 +128,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
 	UITheme *theme = &assets->theme;
-	BitmapFont *font = getFont(assets, FontAssetType_Main);
+	BitmapFont *font = getFont(assets, theme->labelStyle.font);
 
 	uiState->uiRectCount = 0;
 
@@ -137,13 +138,13 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
 	drawRect(&renderer->uiBuffer, uiRect, 0, theme->overlayColor);
 
-	uiLabel(uiState, renderer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelColor);
+	uiText(uiState, renderer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
 	const real32 centre = windowWidth * 0.5f;
 	sprintf(stringBuffer, "£%d", gameState->city.funds);
-	uiLabel(uiState, renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, theme->labelColor);
+	uiText(uiState, renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
 	sprintf(stringBuffer, "(-£%d/month)\0", gameState->city.monthlyExpenditure);
-	uiLabel(uiState, renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, theme->labelColor);
+	uiText(uiState, renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
 	// Build UI
 	{
@@ -263,7 +264,7 @@ bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState
 		sprintf(gameOverText, "Game over! You ran out of money! :(");
 	}
 
-	uiLabel(uiState, renderer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, theme->labelColor);
+	uiText(uiState, renderer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, theme->labelStyle.textColor);
 
 	if (uiButton(uiState, renderer, assets, inputState, "Menu", rectCentreSize(cameraCentre, v2(80, 24)), 11))
 	{

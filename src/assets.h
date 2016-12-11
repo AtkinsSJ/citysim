@@ -92,13 +92,15 @@ struct UIButtonStyle
 	V4 pressedColor;
 };
 
-struct UITheme
+struct UILabelStyle
 {
 	FontAssetType font;
+	V4 textColor;
+};
 
+struct UITheme
+{
 	V4 overlayColor;
-			
-	V4 labelColor;
 
 	V4 textboxTextColor,
 		textboxBackgroundColor;
@@ -108,6 +110,7 @@ struct UITheme
 		tooltipColorBad;
 
 	UIButtonStyle buttonStyle;
+	UILabelStyle labelStyle;
 };
 
 struct AssetManager
