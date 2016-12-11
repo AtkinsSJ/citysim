@@ -98,6 +98,27 @@ struct UILabelStyle
 	V4 textColor;
 };
 
+struct UITooltipStyle
+{
+	FontAssetType font;
+	V4 textColorNormal;
+	V4 textColorBad;
+
+	V4 backgroundColor;
+	real32 borderPadding;
+	real32 depth;
+};
+
+struct UIMessageStyle
+{
+	FontAssetType font;
+	V4 textColor;
+
+	V4 backgroundColor;
+	real32 borderPadding;
+	real32 depth;
+};
+
 struct UITheme
 {
 	V4 overlayColor;
@@ -105,12 +126,10 @@ struct UITheme
 	V4 textboxTextColor,
 		textboxBackgroundColor;
 
-	V4 tooltipBackgroundColor,
-		tooltipColorNormal,
-		tooltipColorBad;
-
 	UIButtonStyle buttonStyle;
 	UILabelStyle labelStyle;
+	UITooltipStyle tooltipStyle;
+	UIMessageStyle uiMessageStyle;
 };
 
 struct AssetManager

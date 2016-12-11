@@ -69,9 +69,9 @@ void showCostTooltip(UIState *uiState, AssetManager *assets, int32 cost, int32 c
 	UITheme *theme = &assets->theme;
 
 	if (cost > cityFunds) {
-		uiState->tooltip.color = theme->tooltipColorBad;
+		uiState->tooltip.color = theme->tooltipStyle.textColorBad;
 	} else {
-		uiState->tooltip.color = theme->tooltipColorNormal;
+		uiState->tooltip.color = theme->tooltipStyle.textColorNormal;
 	}
 	sprintf(uiState->tooltip.text, "-£%d", cost);
 	uiState->tooltip.show = true;

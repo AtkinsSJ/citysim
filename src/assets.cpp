@@ -27,23 +27,33 @@ AssetManager *createAssetManager()
 
 void initTheme(AssetManager *assets)
 {
-	assets->theme.buttonStyle.textColor        = color255(   0,   0,   0, 255 );
-	assets->theme.buttonStyle.backgroundColor  = color255( 255, 255, 255, 255 );
-	assets->theme.buttonStyle.hoverColor 	   = color255( 192, 192, 255, 255 );
-	assets->theme.buttonStyle.pressedColor     = color255( 128, 128, 255, 255 );
-	assets->theme.buttonStyle.font = FontAssetType_Buttons;
+	assets->theme.buttonStyle.font               = FontAssetType_Buttons;
+	assets->theme.buttonStyle.textColor          = color255(   0,   0,   0, 255 );
+	assets->theme.buttonStyle.backgroundColor    = color255( 255, 255, 255, 255 );
+	assets->theme.buttonStyle.hoverColor 	     = color255( 192, 192, 255, 255 );
+	assets->theme.buttonStyle.pressedColor       = color255( 128, 128, 255, 255 );
 
-	assets->theme.labelStyle.textColor         = color255( 255, 255, 255, 255 );
-	assets->theme.labelStyle.font              = FontAssetType_Main;
+	assets->theme.labelStyle.font                = FontAssetType_Main;
+	assets->theme.labelStyle.textColor           = color255( 255, 255, 255, 255 );
+
+	assets->theme.tooltipStyle.font              = FontAssetType_Main;
+	assets->theme.tooltipStyle.textColorNormal   = color255( 255, 255, 255, 255 );
+	assets->theme.tooltipStyle.textColorBad      = color255( 255,   0,   0, 255 );
+	assets->theme.tooltipStyle.backgroundColor   = color255(   0,   0,   0, 128 );
+	assets->theme.tooltipStyle.borderPadding     = 4;
+	assets->theme.tooltipStyle.depth             = 100;
+
+	assets->theme.uiMessageStyle.font            = FontAssetType_Main;
+	assets->theme.uiMessageStyle.textColor       = color255( 255, 255, 255, 255 );
+	assets->theme.uiMessageStyle.backgroundColor = color255(   0,   0,   0, 128 );
+	assets->theme.uiMessageStyle.borderPadding   = 4;
+	assets->theme.uiMessageStyle.depth           = 100;
 
 	assets->theme.overlayColor           = color255(   0,   0,   0, 128 );
 
 	assets->theme.textboxBackgroundColor = color255( 255, 255, 255, 255 );
 	assets->theme.textboxTextColor       = color255(   0,   0,   0, 255 );
 	
-	assets->theme.tooltipBackgroundColor = color255(   0,   0,   0, 128 );
-	assets->theme.tooltipColorNormal     = color255( 255, 255, 255, 255 );
-	assets->theme.tooltipColorBad        = color255( 255,   0,   0, 255 );
 }
 
 int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
