@@ -125,8 +125,8 @@ GameStatus updateAndRenderMainMenuUI(Renderer *renderer, AssetManager *assets, U
 
 void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState, InputState *inputState)
 {
+	V2 centre = renderer->uiBuffer.camera.pos;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
-	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
 	UITheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, theme->labelStyle.font);
 
@@ -140,15 +140,13 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 	uiText(uiState, renderer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
-	const real32 centre = windowWidth * 0.5f;
 	sprintf(stringBuffer, "£%d", gameState->city.funds);
-	uiText(uiState, renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
+	uiText(uiState, renderer, font, stringBuffer, v2(centre.x, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
 	sprintf(stringBuffer, "(-£%d/month)\0", gameState->city.monthlyExpenditure);
-	uiText(uiState, renderer, font, stringBuffer, v2(centre, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
+	uiText(uiState, renderer, font, stringBuffer, v2(centre.x, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
 	// Build UI
 	{
-		V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
 		RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		if (uiMenuButton(uiState, renderer, assets, inputState, "Build...", buttonRect, 1, UIMenu_Build))
@@ -253,7 +251,7 @@ bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState
 	UITheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, FontAssetType_Main);
 
-	V2 cameraCentre = v2(windowWidth/2.0f, windowHeight/2.0f);
+	V2 cameraCentre = renderer->uiBuffer.camera.pos;
 	drawRect(&renderer->uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 10, theme->overlayColor);
 
 	char gameOverText[256];
