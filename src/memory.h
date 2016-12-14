@@ -5,50 +5,83 @@
 #include <string.h>
 
 #define KB(x) ((x) * 1024)
-#define MB(x) ((x) * 1024 * 1024)
-#define GB(x) ((x) * 1024 * 1024 * 1024)
+#define MB(x) (KB(x) * 1024)
+#define GB(x) (MB(x) * 1024)
 
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 #define ArrayCountS(a) ((int)(ArrayCount(a)))
 
+// NB: MemoryBlock is positioned just before its memory pointer.
+// So when deallocating, we can just free(block)!
 struct MemoryBlock
 {
 	MemoryBlock *prevBlock;
+
 	umm size;
 	umm used;
-	umm usedResetPosition; // When used goes when reset. If >0 block can't be deallocated
 	uint8 *memory;
+};
+
+struct MemoryArenaResetState
+{
+	MemoryBlock *currentBlock;
+	umm used;
 };
 
 struct MemoryArena
 {
-	//MemoryBlock *currentBlock;
+	MemoryBlock *currentBlock;
 
-	umm size;
-	umm used;
-	umm usedResetPosition; // When used goes when reset
+	umm minimumBlockSize;
 	bool hasTemporaryArenaOpen;
-	uint8 *memory;
+
+	MemoryArenaResetState resetState;
 };
 
 struct TemporaryMemory
 {
 	MemoryArena *arena;
-	umm oldUsed;
 	bool isOpen;
+
+	MemoryArenaResetState resetState;
 };
 
-bool initMemoryArena(MemoryArena *arena, umm size)
+MemoryBlock *addMemoryBlock(MemoryArena *arena, umm size)
 {
-	bool succeeded = false;
+	umm totalSize = size + sizeof(MemoryBlock);
+	uint8* memory = (uint8*) calloc(totalSize, 1);
+
+	ASSERT(memory, "Failed to allocate memory block!");
+
+	MemoryBlock *block = (MemoryBlock*) memory;
+	block->memory = memory + sizeof(MemoryBlock);
+	block->used = 0;
+	block->size = size;
+
+	block->prevBlock = arena->currentBlock;
+
+	return block;
+}
+
+void freeCurrentBlock(MemoryArena *arena)
+{
+	MemoryBlock *block = arena->currentBlock;
+	ASSERT(block, "Attempting to free non-existent block");
+	arena->currentBlock = block->prevBlock;
+	free(block);
+}
+
+bool initMemoryArena(MemoryArena *arena, umm size, umm minimumBlockSize=MB(1))
+{
+	bool succeeded = true;
 
 	*arena = {};
+	arena->minimumBlockSize = minimumBlockSize;
 
-	arena->memory = (uint8*)calloc(size, 1);
-	if (arena->memory)
+	if (size)
 	{
-		arena->size = size;
-		succeeded = true;
+		arena->currentBlock = addMemoryBlock(arena, size);
+		succeeded = (arena->currentBlock->memory != 0);
 	}
 	
 	return succeeded;
@@ -56,10 +89,12 @@ bool initMemoryArena(MemoryArena *arena, umm size)
 
 void markResetPosition(MemoryArena *arena)
 {
-	arena->usedResetPosition = arena->used;
+	arena->resetState.currentBlock = arena->currentBlock;
+	arena->resetState.used = arena->currentBlock ? arena->currentBlock->used : 0;
 }
 
 // Creates an arena , and pushes a struct on it which contains the arena.
+// FIXME: This is broken when size is 0.
 #define bootstrapArena(containerType, containerName, arenaVarName, arenaSize)         \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
@@ -71,17 +106,25 @@ void markResetPosition(MemoryArena *arena)
 
 void *allocate(MemoryArena *arena, umm size)
 {
-	ASSERT((arena->used + size) <= arena->size, "Arena out of memory!");
+	if ((arena->currentBlock == 0)
+		|| (arena->currentBlock->used + size > arena->currentBlock->size))
+	{
+		umm newBlockSize = MAX(size, arena->minimumBlockSize);
+		arena->currentBlock = addMemoryBlock(arena, newBlockSize);
+	}
+
+	ASSERT(arena->currentBlock, "No memory in arena!");
+
 	// TODO: Prevent normal allocations while temp mem is open, and vice versa
 	// We tried passing an isTempAllocation bool, but code that just takes a MemoryArena doesn't know
 	// what kind of memory it's allocating from so it fails.
 	// For it to work we'd have to duplicate every function that takes an arena eg readFile()
 	// ASSERT(isTempAllocation == arena->hasTemporaryArenaOpen, "Mixing temporary and regular allocations!");
 	
-	void *result = arena->memory + arena->used;
+	void *result = arena->currentBlock->memory + arena->currentBlock->used;
 	memset(result, 0, size);
 	
-	arena->used += size;
+	arena->currentBlock->used += size;
 	
 	return result;
 }
@@ -92,10 +135,25 @@ void *allocate(TemporaryMemory *tempArena, umm size)
 	return allocate(tempArena->arena, size);
 }
 
-void resetMemoryArena(MemoryArena *arena)
+// Returns the memory arena to a previous state
+void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState)
 {
 	ASSERT(!arena->hasTemporaryArenaOpen, "Can't reset while temp memory open!");
-	arena->used = arena->usedResetPosition;
+
+	while (arena->currentBlock != resetState.currentBlock)
+	{
+		freeCurrentBlock(arena);
+	}
+
+	if (arena->currentBlock)
+	{
+		arena->currentBlock->used = resetState.used;
+	}
+}
+
+void resetMemoryArena(MemoryArena *arena)
+{
+	revertMemoryArena(arena, arena->resetState);
 }
 
 TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)
@@ -107,22 +165,26 @@ TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)
 	tempMemory.isOpen = true;
 	tempMemory.arena = parentArena;
 	parentArena->hasTemporaryArenaOpen = true;
-	tempMemory.oldUsed = parentArena->used;
+	tempMemory.resetState = parentArena->resetState;
 
 	return tempMemory;
 }
 
-void endTemporaryMemory(TemporaryMemory *tempArena)
+void endTemporaryMemory(TemporaryMemory *tempMemory)
 {
-#if BUILD_DEBUG
+#if 0//BUILD_DEBUG
 	// Clear memory so we spot bugs in keeping pointers to temp memory.
-	memset(tempArena->arena->memory + tempArena->oldUsed, 0,
-		   tempArena->arena->used - tempArena->oldUsed);
+	memset(tempMemory->arena->memory + tempMemory->oldUsed, 0,
+		   tempMemory->arena->used - tempMemory->oldUsed);
 #endif
-	tempArena->isOpen = false;
-	tempArena->arena->hasTemporaryArenaOpen = false;
-	tempArena->arena->used = tempArena->oldUsed;
-	tempArena->arena = 0; //null so we get a null pointer if we try to access it after ending.
+
+	MemoryArena *arena = tempMemory->arena;
+	arena->hasTemporaryArenaOpen = false;
+
+	revertMemoryArena(arena, tempMemory->resetState);
+
+	tempMemory->isOpen = false;
+	tempMemory->arena = 0; //null so we get a null pointer if we try to access it after ending.
 }
 
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))

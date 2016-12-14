@@ -125,6 +125,9 @@ struct RealRect {
 	General
  **********************************************/
 
+#define MIN(a,b) ((a) < (b)) ? (a) : (b)
+#define MAX(a,b) ((a) > (b)) ? (a) : (b)
+
 inline real32 clamp(real32 value, real32 min, real32 max)
 {
 	ASSERT(min < max, "min > max in clamp()!");

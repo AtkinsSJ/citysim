@@ -248,7 +248,7 @@ void GL_unloadAssets(GL_Renderer *renderer)
 GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window, AssetManager *assets)
 {
 	GL_Renderer *renderer;
-	bootstrapArena(GL_Renderer, renderer, renderArena, MB(64));
+	bootstrapArena(GL_Renderer, renderer, renderArena, 0);
 	bool succeeded = (renderer != 0);
 
 	if (succeeded)

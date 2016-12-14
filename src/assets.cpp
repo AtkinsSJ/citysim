@@ -3,7 +3,7 @@
 AssetManager *createAssetManager()
 {
 	AssetManager *assets;
-	bootstrapArena(AssetManager, assets, arena, MB(128));
+	bootstrapArena(AssetManager, assets, arena, 0);
 
 	assets->textureRegions[0].type = TextureAssetType_None;
 	assets->textureRegions[0].textureID = -1;
