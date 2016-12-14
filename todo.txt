@@ -5,7 +5,6 @@ I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program!
 
 Arenas:
-- Stretchy arenas don't work with bootstrapping?
 - Is RenderArena used?
 	- Only for renderer info, and temporarily for loading shaders. So it can go soon!
 - Is temporary memory in renderer init used?

@@ -99,8 +99,7 @@ int main(int argc, char *argv[]) {
 	if (argc && argv) {}
 
 // INIT
-	MemoryArena memoryArena;
-	ASSERT(initMemoryArena(&memoryArena, 0), "Failed to allocate memory!");
+	MemoryArena memoryArena = createEmptyMemoryArena();
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Under London");
@@ -112,12 +111,11 @@ int main(int argc, char *argv[]) {
 
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 
-	GL_Renderer *glRenderer = GL_initializeRenderer(&memoryArena, window, assets);
+	GL_Renderer *glRenderer = GL_initializeRenderer(window, assets);
 	ASSERT(glRenderer, "Failed to initialize renderer.");
 
 // Game setup
-	MemoryArena gameArena;
-	ASSERT(initMemoryArena(&gameArena, 0), "Failed to allocate game memory!");
+	MemoryArena gameArena = createEmptyMemoryArena();
 	
 	GameState *gameState = startGame(&gameArena);
 

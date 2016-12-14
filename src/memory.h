@@ -87,6 +87,14 @@ bool initMemoryArena(MemoryArena *arena, umm size, umm minimumBlockSize=MB(1))
 	return succeeded;
 }
 
+MemoryArena createEmptyMemoryArena(umm minimumBlockSize=MB(1))
+{
+	MemoryArena arena = {};
+	arena.minimumBlockSize = minimumBlockSize;
+
+	return arena;
+}
+
 void markResetPosition(MemoryArena *arena)
 {
 	arena->resetState.currentBlock = arena->currentBlock;
@@ -95,10 +103,10 @@ void markResetPosition(MemoryArena *arena)
 
 // Creates an arena , and pushes a struct on it which contains the arena.
 // FIXME: This is broken when size is 0.
-#define bootstrapArena(containerType, containerName, arenaVarName, arenaSize)         \
+#define bootstrapArena(containerType, containerName, arenaVarName)         \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
-	ASSERT(initMemoryArena(&bootstrap, arenaSize),"Failed to allocate memory for %s arena!", #containerType);\
+	ASSERT(initMemoryArena(&bootstrap, sizeof(containerType)),"Failed to allocate memory for %s arena!", #containerType);\
 	containerName = PushStruct(&bootstrap, containerType);                            \
 	containerName->arenaVarName = bootstrap;                                          \
 	markResetPosition(&containerName->arenaVarName);                                  \
@@ -159,13 +167,19 @@ void resetMemoryArena(MemoryArena *arena)
 TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)
 {
 	ASSERT(!parentArena->hasTemporaryArenaOpen, "Beginning temporary memory without ending it!");
+	if (parentArena->currentBlock == 0)
+	{
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Starting temporary memory on an empty arena! Wasteful if this is in frequently used code!");
+	}
 
 	TemporaryMemory tempMemory = {};
 
 	tempMemory.isOpen = true;
 	tempMemory.arena = parentArena;
 	parentArena->hasTemporaryArenaOpen = true;
-	tempMemory.resetState = parentArena->resetState;
+	
+	tempMemory.resetState.currentBlock = parentArena->currentBlock;
+	tempMemory.resetState.used = parentArena->currentBlock ? parentArena->currentBlock->used : 0;
 
 	return tempMemory;
 }
@@ -179,6 +193,7 @@ void endTemporaryMemory(TemporaryMemory *tempMemory)
 #endif
 
 	MemoryArena *arena = tempMemory->arena;
+	ASSERT(arena->hasTemporaryArenaOpen, "Ending temporary memory without beginning it!");
 	arena->hasTemporaryArenaOpen = false;
 
 	revertMemoryArena(arena, tempMemory->resetState);

@@ -95,7 +95,6 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 
 	ASSERT(shaderSource && filename, "Failed to select a shader!");
 
-	TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderArena);
 
 	GLuint shaderID = glCreateShader(shaderType);
 	glShaderSource(shaderID, 1, shaderSource, NULL);
@@ -114,10 +113,11 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n",
 			            shaderID, filename);
+		TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderArena);
 		GL_printShaderLog(&tempArena, shaderID);
+		endTemporaryMemory(&tempArena);
 	}
 
-	endTemporaryMemory(&tempArena);
 	return result;
 }
 
@@ -245,20 +245,17 @@ void GL_unloadAssets(GL_Renderer *renderer)
 	}
 }
 
-GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window, AssetManager *assets)
+GL_Renderer *GL_initializeRenderer(SDL_Window *window, AssetManager *assets)
 {
 	GL_Renderer *renderer;
-	bootstrapArena(GL_Renderer, renderer, renderArena, 0);
+	bootstrapArena(GL_Renderer, renderer, renderArena);
 	bool succeeded = (renderer != 0);
 
 	if (succeeded)
 	{
 		initRenderer(&renderer->renderer, &renderer->renderArena);
 
-		TemporaryMemory tempArena = beginTemporaryMemory(memoryArena);
-
 		renderer->window = window;
-
 
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -312,8 +309,6 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
 			}
 		}
-
-		endTemporaryMemory(&tempArena);
 
 		if (!succeeded)
 		{
