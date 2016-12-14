@@ -11,23 +11,34 @@
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 #define ArrayCountS(a) ((int)(ArrayCount(a)))
 
+struct MemoryBlock
+{
+	MemoryBlock *prevBlock;
+	umm size;
+	umm used;
+	umm usedResetPosition; // When used goes when reset. If >0 block can't be deallocated
+	uint8 *memory;
+};
+
 struct MemoryArena
 {
-	size_t size;
-	size_t used;
-	size_t usedResetPosition; // When used goes when reset
-	uint8 *memory;
+	//MemoryBlock *currentBlock;
+
+	umm size;
+	umm used;
+	umm usedResetPosition; // When used goes when reset
 	bool hasTemporaryArenaOpen;
+	uint8 *memory;
 };
 
-struct TemporaryMemoryArena
+struct TemporaryMemory
 {
-	MemoryArena arena;
+	MemoryArena *arena;
+	umm oldUsed;
 	bool isOpen;
-	MemoryArena *parentArena;
 };
 
-bool initMemoryArena(MemoryArena *arena, size_t size)
+bool initMemoryArena(MemoryArena *arena, umm size)
 {
 	bool succeeded = false;
 
@@ -52,16 +63,20 @@ void markResetPosition(MemoryArena *arena)
 #define bootstrapArena(containerType, containerName, arenaVarName, arenaSize)         \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
-	ASSERT(initMemoryArena(&bootstrap, arenaSize),"Failed to allocate asset memory!");\
+	ASSERT(initMemoryArena(&bootstrap, arenaSize),"Failed to allocate memory for %s arena!", #containerType);\
 	containerName = PushStruct(&bootstrap, containerType);                            \
 	containerName->arenaVarName = bootstrap;                                          \
 	markResetPosition(&containerName->arenaVarName);                                  \
 }
 
-void *allocate(MemoryArena *arena, size_t size)
+void *allocate(MemoryArena *arena, umm size)
 {
 	ASSERT((arena->used + size) <= arena->size, "Arena out of memory!");
-	ASSERT(!arena->hasTemporaryArenaOpen, "Allocating to an arena while temporary subArena is open!");
+	// TODO: Prevent normal allocations while temp mem is open, and vice versa
+	// We tried passing an isTempAllocation bool, but code that just takes a MemoryArena doesn't know
+	// what kind of memory it's allocating from so it fails.
+	// For it to work we'd have to duplicate every function that takes an arena eg readFile()
+	// ASSERT(isTempAllocation == arena->hasTemporaryArenaOpen, "Mixing temporary and regular allocations!");
 	
 	void *result = arena->memory + arena->used;
 	memset(result, 0, size);
@@ -71,10 +86,10 @@ void *allocate(MemoryArena *arena, size_t size)
 	return result;
 }
 
-void *allocate(TemporaryMemoryArena *tempArena, size_t size)
+void *allocate(TemporaryMemory *tempArena, umm size)
 {
 	ASSERT(tempArena->isOpen, "TemporaryMemory already ended!");
-	return allocate(&tempArena->arena, size);
+	return allocate(tempArena->arena, size);
 }
 
 void resetMemoryArena(MemoryArena *arena)
@@ -83,45 +98,31 @@ void resetMemoryArena(MemoryArena *arena)
 	arena->used = arena->usedResetPosition;
 }
 
-MemoryArena allocateSubArena(MemoryArena *arena, size_t size)
-{
-	MemoryArena subArena = {};
-
-	subArena.memory = (uint8 *)allocate(arena, size);
-	ASSERT(subArena.memory, "Failed to allocate sub arena!");
-
-	subArena.size = size;
-	subArena.used = 0;
-
-	return subArena;
-}
-
-TemporaryMemoryArena beginTemporaryMemory(MemoryArena *parentArena)
+TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)
 {
 	ASSERT(!parentArena->hasTemporaryArenaOpen, "Beginning temporary memory without ending it!");
 
-	TemporaryMemoryArena subArena = {};
-	subArena.arena.size = (parentArena->size - parentArena->used);
-	ASSERT(subArena.arena.size > 0, "No space for temporary memory!");
-	ASSERT((parentArena->used + subArena.arena.size) <= parentArena->size, "Somehow temp memory is bigger than parent arena's free space!");
-	subArena.arena.used = 0;
-	subArena.arena.memory = (uint8*) parentArena->memory + parentArena->used;
+	TemporaryMemory tempMemory = {};
 
-	subArena.isOpen = true;
-	subArena.parentArena = parentArena;
+	tempMemory.isOpen = true;
+	tempMemory.arena = parentArena;
 	parentArena->hasTemporaryArenaOpen = true;
+	tempMemory.oldUsed = parentArena->used;
 
-	return subArena;
+	return tempMemory;
 }
 
-void endTemporaryMemory(TemporaryMemoryArena *tempArena)
+void endTemporaryMemory(TemporaryMemory *tempArena)
 {
 #if BUILD_DEBUG
 	// Clear memory so we spot bugs in keeping pointers to temp memory.
-	memset(tempArena->arena.memory, 0, tempArena->arena.used);
+	memset(tempArena->arena->memory + tempArena->oldUsed, 0,
+		   tempArena->arena->used - tempArena->oldUsed);
 #endif
 	tempArena->isOpen = false;
-	tempArena->parentArena->hasTemporaryArenaOpen = false;
+	tempArena->arena->hasTemporaryArenaOpen = false;
+	tempArena->arena->used = tempArena->oldUsed;
+	tempArena->arena = 0; //null so we get a null pointer if we try to access it after ending.
 }
 
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))

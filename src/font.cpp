@@ -210,7 +210,7 @@ void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 	}
 }
 
-BitmapFontCachedText *drawTextToCache(TemporaryMemoryArena *memory, BitmapFont *font, char *text,
+BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, char *text,
 									  V4 color, real32 maxWidth=0)
 {
 	DrawTextState state = {};

@@ -27,6 +27,9 @@ const uint16 uint16Max = UINT16_MAX;
 const uint32 uint32Max = UINT32_MAX;
 const uint64 uint64Max = UINT64_MAX;
 
+typedef intptr_t smm;
+typedef uintptr_t umm;
+
 typedef float real32;
 typedef double real64;
 

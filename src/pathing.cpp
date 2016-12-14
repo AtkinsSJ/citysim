@@ -104,7 +104,7 @@ bool canPathTo(City *city, Rect target, Coord from, MemoryArena *memoryArena)
 {
 	bool result = false;
 
-	TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
+	TemporaryMemory tempArena = beginTemporaryMemory(memoryArena);
 
 	// First, determine all path groups that are adjacent to the buiding 'from' is in, if any.
 	int32 pathGroupCount = 0;
@@ -290,7 +290,7 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 	else
 	{
 		// A-star!
-		TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
+		TemporaryMemory tempArena = beginTemporaryMemory(memoryArena);
 		PathingNode *nodes = PushArray(&tempArena, PathingNode, city->width * city->height);
 		PathingNode *startNode = nodes + tileIndex(city, from.x, from.y);
 		*startNode = {true, from, 0, distance, 0, 0};

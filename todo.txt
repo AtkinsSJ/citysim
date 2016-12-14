@@ -1,8 +1,15 @@
----------------------------------------------
-TODO:
----------------------------------------------
+------------------------------------------------
+TODO: https://trello.com/b/0Z1oVdg9/under-london
+------------------------------------------------
+I don't know whether I prefer keeping the list here or on Trello.
+Trello is nice, but it's ALL THE WAY OVER THERE in a different program!
 
-MASSAGING THINGS INTO A WORKABLE STATE:
+Arenas:
+- Stretchy arenas
+- Is RenderArena used?
+	- Only for renderer info, and temporarily for loading shaders. So it can go soon!
+- Is temporary memory in renderer init used?
+- Figure out how to prevent non-temp allocations happening when temp mem is open.
 
 - Check for the flicker bug while we have so few things being drawn.
 
@@ -21,17 +28,10 @@ Asset system:
 - Asset system dynamic allocations. e.g. So we don't have to predetermine number of texture regions.
 - Strings! Translateable and stored as assets.
 
-Arenas:
-- Is RenderArena used?
-	- Only for renderer info, and temporarily for loading shaders. So it can go soon!
-- Is temporary memory in renderer init used?
-- Use several arenas, not just all sub-arenas
-- Stretchy arenas
-- Make temporary arenas include a memory arena so we don't need 2 readFileAsString definitions, etc.
-
 Debugging:
 - Some kind of profiling system
 - Debug console?
+- Hot swapping code?!?! SDL has a fancy dll loader (SDL_loadso.h)
 
 GAME:
 - Menu / Game are separate code.

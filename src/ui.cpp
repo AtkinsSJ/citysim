@@ -31,7 +31,7 @@ RealRect uiText(UIState *uiState, Renderer *renderer, BitmapFont *font, char *te
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
 
-	TemporaryMemoryArena memory = beginTemporaryMemory(&uiState->arena);
+	TemporaryMemory memory = beginTemporaryMemory(&uiState->arena);
 
 	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, align);

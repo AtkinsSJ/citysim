@@ -116,7 +116,8 @@ int main(int argc, char *argv[]) {
 	ASSERT(glRenderer, "Failed to initialize renderer.");
 
 // Game setup
-	MemoryArena gameArena = allocateSubArena(&memoryArena, MB(32));
+	MemoryArena gameArena;
+	ASSERT(initMemoryArena(&gameArena, MB(32)), "Failed to allocate game memory!");
 	
 	GameState *gameState = startGame(&gameArena);
 

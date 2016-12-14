@@ -60,12 +60,12 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *addBMFont(AssetManager *assets, TemporaryMemoryArena *tempArena, FontAssetType fontAssetType,
+BitmapFont *addBMFont(AssetManager *assets, TemporaryMemory *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename)
 {
 	BitmapFont *font = 0;
 
-	File file = readFile(tempArena, filename);
+	File file = readFile(tempArena->arena, filename);
 	if (!file.data)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to open font file %s: %s", filename, SDL_GetError());

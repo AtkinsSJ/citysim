@@ -10,7 +10,7 @@ void GL_windowResized(int32 newWidth, int32 newHeight)
 	glViewport(0, 0, newWidth, newHeight);
 }
 
-void GL_printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
+void GL_printProgramLog(TemporaryMemory *tempMemory, GLuint program)
 {
 	//Make sure name is shader
 	if( glIsProgram( program ) )
@@ -39,7 +39,7 @@ void GL_printProgramLog(TemporaryMemoryArena *tempMemory, GLuint program)
 	}
 }
 
-void GL_printShaderLog(TemporaryMemoryArena *tempMemory, GLuint shader)
+void GL_printShaderLog(TemporaryMemory *tempMemory, GLuint shader)
 {
 	//Make sure name is shader
 	if( glIsShader( shader ) )
@@ -95,7 +95,7 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 
 	ASSERT(shaderSource && filename, "Failed to select a shader!");
 
-	TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+	TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderArena);
 
 	GLuint shaderID = glCreateShader(shaderType);
 	glShaderSource(shaderID, 1, shaderSource, NULL);
@@ -152,7 +152,7 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 
 			if (!glShader->isValid)
 			{
-				TemporaryMemoryArena tempArena = beginTemporaryMemory(&renderer->renderArena);
+				TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderArena);
 				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", glShader->shaderProgramID);
 				GL_printProgramLog(&tempArena, glShader->shaderProgramID);
 				endTemporaryMemory(&tempArena);
@@ -255,7 +255,7 @@ GL_Renderer *GL_initializeRenderer(MemoryArena *memoryArena, SDL_Window *window,
 	{
 		initRenderer(&renderer->renderer, &renderer->renderArena);
 
-		TemporaryMemoryArena tempArena = beginTemporaryMemory(memoryArena);
+		TemporaryMemory tempArena = beginTemporaryMemory(memoryArena);
 
 		renderer->window = window;
 
