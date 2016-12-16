@@ -1,4 +1,5 @@
 
+#include "game_mainmenu.cpp"
 
 // This is less 'start game' and more 'reset the map and everything so we can show 
 // an empty map in the background of the menu'. But also does resetting of things for when you
@@ -29,7 +30,7 @@ GameState *startGame(MemoryArena *gameArena)
 	return result;
 }
 
-void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderGame(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	//UIState *uiState = &gameState->uiState;
 
@@ -263,4 +264,16 @@ void gameUpdateAndRender(GameState *gameState, InputState *inputState, Renderer 
 	drawUiMessage(&gameState->uiState, renderer, assets);
 
 	inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
+}
+
+void updateAndRender(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+{
+	if (false)
+	{
+		updateAndRenderGame(gameState, inputState, renderer, assets);
+	}
+	else
+	{
+		updateAndRenderMainMenu(gameState, inputState, renderer, assets);
+	}
 }

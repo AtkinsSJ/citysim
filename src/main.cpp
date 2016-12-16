@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
 			GL_loadAssets(glRenderer, assets);
 		}
 
-		gameUpdateAndRender(gameState, &inputState, &glRenderer->renderer, assets);
+		updateAndRender(gameState, &inputState, &glRenderer->renderer, assets);
 
 		// Update camera matrices here
 		updateCameraMatrix(worldCamera);

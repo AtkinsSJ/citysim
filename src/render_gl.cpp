@@ -383,6 +383,17 @@ void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexC
 	}
 }
 
+ShaderProgramType getDesiredShader(RenderItem *item)
+{
+	ShaderProgramType result = ShaderProgram_Untextured;
+	if (item->textureRegionID != 0)
+	{
+		result = ShaderProgram_Textured;
+	}
+
+	return result;
+}
+
 void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
 {
 	// Fill VBO
@@ -392,112 +403,110 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 
 	uint32 drawCallCount = 0;
 
-	for (uint32 i=0; i < buffer->itemCount; i++)
+	if (buffer->itemCount > 0)
 	{
-		RenderItem *item = buffer->items + i;
-		TextureRegion *region = assets->textureRegions + item->textureRegionID;
-		GL_TextureInfo *textureInfo = renderer->textureInfo + region->textureID;
-
-		if (textureInfo->glTextureID != glBoundTextureID)
+		for (uint32 i=0; i < buffer->itemCount; i++)
 		{
-			// Render existing buffer contents
-			if (vertexCount)
+			RenderItem *item = buffer->items + i;
+			ShaderProgramType desiredShader = getDesiredShader(item);
+
+			TextureRegion *region = assets->textureRegions + item->textureRegionID;
+			GL_TextureInfo *textureInfo = renderer->textureInfo + region->textureID;
+
+			if ((textureInfo->glTextureID != glBoundTextureID)
+				|| (desiredShader != renderer->currentShader))
 			{
-				drawCallCount++;
-				renderPartOfBuffer(renderer, vertexCount, indexCount);
-			}
-
-			if (textureInfo->glTextureID == 0)
-			{
-				renderer->currentShader = ShaderProgram_Untextured;
-			}
-			else
-			{
-				renderer->currentShader = ShaderProgram_Textured;
-			}
-
-			GL_ShaderProgram *activeShader = getActiveShader(renderer);
-
-			glUseProgram(activeShader->shaderProgramID);
-			GL_checkForError();
-
-			glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-			GL_checkForError();
-
-			// Bind new texture if this shader uses textures
-			if (activeShader->uTextureLoc != -1)
-			{
-				glEnable(GL_TEXTURE_2D);
-				glActiveTexture(GL_TEXTURE0);
-				GL_checkForError();
-				glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
-				GL_checkForError();
-
-				if (!textureInfo->isLoaded)
+				// Render existing buffer contents
+				if (vertexCount)
 				{
-					// Load texture into GPU
-#if 0
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-#else
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-#endif
+					drawCallCount++;
+					renderPartOfBuffer(renderer, vertexCount, indexCount);
+				}
 
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+				renderer->currentShader = desiredShader;
+				GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
-					// Upload texture
-					Texture *texture = assets->textures + region->textureID;
-					ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
-					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
-					textureInfo->isLoaded = true;
+				glUseProgram(activeShader->shaderProgramID);
+				GL_checkForError();
+
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				GL_checkForError();
+
+				// Bind new texture if this shader uses textures
+				if (activeShader->uTextureLoc != -1)
+				{
+					glEnable(GL_TEXTURE_2D);
+					glActiveTexture(GL_TEXTURE0);
+					GL_checkForError();
+					glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
+					GL_checkForError();
+
+					if (!textureInfo->isLoaded)
+					{
+						// Load texture into GPU
+	#if 0
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	#else
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	#endif
+
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+						// Upload texture
+						Texture *texture = assets->textures + region->textureID;
+						ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
+						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
+						textureInfo->isLoaded = true;
+						GL_checkForError();
+					}
+
+					glUniform1i(activeShader->uTextureLoc, 0);
 					GL_checkForError();
 				}
 
-				glUniform1i(activeShader->uTextureLoc, 0);
-				GL_checkForError();
+				vertexCount = 0;
+				indexCount = 0;
+				glBoundTextureID = textureInfo->glTextureID;
 			}
 
-			vertexCount = 0;
-			indexCount = 0;
-			glBoundTextureID = textureInfo->glTextureID;
+			int firstVertex = vertexCount;
+
+			renderer->vertices[vertexCount++] = {
+				v3( item->rect.x, item->rect.y, item->depth),
+				item->color,
+				v2(region->uv.x, region->uv.y)
+			};
+			renderer->vertices[vertexCount++] = {
+				v3( item->rect.x + item->rect.size.x, item->rect.y, item->depth),
+				item->color,
+				v2(region->uv.x + region->uv.w, region->uv.y)
+			};
+			renderer->vertices[vertexCount++] = {
+				v3( item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
+				item->color,
+				v2(region->uv.x + region->uv.w, region->uv.y + region->uv.h)
+			};
+			renderer->vertices[vertexCount++] = {
+				v3( item->rect.x, item->rect.y + item->rect.size.y, item->depth),
+				item->color,
+				v2(region->uv.x, region->uv.y + region->uv.h)
+			};
+
+			renderer->indices[indexCount++] = firstVertex + 0;
+			renderer->indices[indexCount++] = firstVertex + 1;
+			renderer->indices[indexCount++] = firstVertex + 2;
+			renderer->indices[indexCount++] = firstVertex + 0;
+			renderer->indices[indexCount++] = firstVertex + 2;
+			renderer->indices[indexCount++] = firstVertex + 3;
 		}
 
-		int firstVertex = vertexCount;
-
-		renderer->vertices[vertexCount++] = {
-			v3( item->rect.x, item->rect.y, item->depth),
-			item->color,
-			v2(region->uv.x, region->uv.y)
-		};
-		renderer->vertices[vertexCount++] = {
-			v3( item->rect.x + item->rect.size.x, item->rect.y, item->depth),
-			item->color,
-			v2(region->uv.x + region->uv.w, region->uv.y)
-		};
-		renderer->vertices[vertexCount++] = {
-			v3( item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
-			item->color,
-			v2(region->uv.x + region->uv.w, region->uv.y + region->uv.h)
-		};
-		renderer->vertices[vertexCount++] = {
-			v3( item->rect.x, item->rect.y + item->rect.size.y, item->depth),
-			item->color,
-			v2(region->uv.x, region->uv.y + region->uv.h)
-		};
-
-		renderer->indices[indexCount++] = firstVertex + 0;
-		renderer->indices[indexCount++] = firstVertex + 1;
-		renderer->indices[indexCount++] = firstVertex + 2;
-		renderer->indices[indexCount++] = firstVertex + 0;
-		renderer->indices[indexCount++] = firstVertex + 2;
-		renderer->indices[indexCount++] = firstVertex + 3;
+		// Do one final draw for remaining items
+		drawCallCount++;
+		renderPartOfBuffer(renderer, vertexCount, indexCount);
 	}
-
-	// Do one final draw for remaining items
-	drawCallCount++;
-	renderPartOfBuffer(renderer, vertexCount, indexCount);
 
 	SDL_Log("Drew %d items this frame, with %d draw calls.", buffer->itemCount, drawCallCount);
 	buffer->itemCount = 0;
