@@ -2,13 +2,17 @@
 
 #pragma once
 
+/**
+ *	Don't include this directly, include random.h which wraps this or any other random number generator.
+ */
+
 struct RandomMT
 {
 	int32 mt[624];
 	int32 index;
 };
 
-void random_seed(RandomMT *random, int32 seed)
+void MT_randomSeed(RandomMT *random, int32 seed)
 {
 	random->index = 624;
 	random->mt[0] = seed;
@@ -18,7 +22,7 @@ void random_seed(RandomMT *random, int32 seed)
 	}
 }
 
-void random_twist(RandomMT *random)
+void MT_randomTwist(RandomMT *random)
 {
 	for (int i=0; i<624; i++)
 	{
@@ -35,11 +39,11 @@ void random_twist(RandomMT *random)
 	random->index = 0;
 }
 
-int32 random_next(RandomMT *random)
+int32 MT_randomNext(RandomMT *random)
 {
 	if (random->index >= 624)
 	{
-		random_twist(random);
+		MT_randomTwist(random);
 	}
 
 	int32 y = random->mt[random->index];

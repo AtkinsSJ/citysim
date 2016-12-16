@@ -27,18 +27,9 @@ enum AppStatus
 	AppStatus_Quit,
 };
 
-enum GameStatus
-{
-	GameStatus_Setup,
-	GameStatus_Playing,
-	GameStatus_Won,
-	GameStatus_Lost,
-	GameStatus_Quit,
-};
-
 #include "types.h"
 #include "memory.h"
-#include "random_mt.h"
+#include "random.h"
 #include "platform.h"
 #include "localisation.h"
 #include "maths.h"
