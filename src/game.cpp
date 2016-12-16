@@ -487,9 +487,15 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		{
 			updateAndRenderMainMenu(appState, inputState, renderer, assets);
 		} break;
+
 		case AppStatus_Game:
 		{
 			updateAndRenderGame(appState, inputState, renderer, assets);
+		} break;
+		
+		default:
+		{
+			ASSERT(false, "Not implemented this AppStatus yet!");
 		} break;
 	}
 }
