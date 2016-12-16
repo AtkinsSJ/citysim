@@ -182,6 +182,9 @@ int main(int argc, char *argv[]) {
 			GL_loadAssets(glRenderer, assets);
 		}
 
+		worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
+		uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
+
 		updateAndRender(&appState, &inputState, &glRenderer->renderer, assets);
 
 		// Update camera matrices here

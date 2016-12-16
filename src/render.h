@@ -18,6 +18,8 @@ struct Camera
 	V2 size; // Size of camera, in camera units
 	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 	Matrix4 projectionMatrix;
+
+	V2 mousePos;
 };
 const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 const real32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates, so 0.1 is 5% from the edge

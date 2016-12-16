@@ -50,13 +50,13 @@ void setTooltip(UIState *uiState, char *text, V4 color)
 	uiState->tooltip.show = true;
 }
 
-void drawTooltip(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState)
+void drawTooltip(UIState *uiState, Renderer *renderer, AssetManager *assets)
 {
 	if (uiState->tooltip.show)
 	{
 		UITooltipStyle *style = &assets->theme.tooltipStyle;
 
-		V2 mousePos = unproject(&renderer->uiBuffer.camera, inputState->mousePosNormalised);
+		V2 mousePos = renderer->uiBuffer.camera.mousePos;
 
 		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(style->borderPadding, style->borderPadding);
 
@@ -76,7 +76,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 	          SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
 	bool buttonClicked = false;
-	V2 mousePos = unproject(&renderer->uiBuffer.camera, inputState->mousePosNormalised);
+	V2 mousePos = renderer->uiBuffer.camera.mousePos;
 	UITheme *theme = &assets->theme;
 	UIButtonStyle *style = &theme->buttonStyle;
 	V4 backColor = style->backgroundColor;

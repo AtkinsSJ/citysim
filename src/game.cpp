@@ -2,6 +2,8 @@
 
 #include "game_mainmenu.cpp"
 
+const real32 uiPadding = 4; // TODO: Move this somewhere sensible!
+
 GameState *initialiseGameState()
 {
 	GameState *result;
@@ -261,13 +263,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
-	Camera *uiCamera = &renderer->uiBuffer.camera;
-	
-	// TODO: Unproject should happen somewhere outside of the game code.
-	V2 mouseWorldPos = unproject(worldCamera, inputState->mousePosNormalised);
-	Coord mouseTilePos = tilePosition(mouseWorldPos);
-
-	V2 mouseUIPos = unproject(uiCamera, inputState->mousePosNormalised);
+	Coord mouseTilePos = tilePosition(worldCamera->mousePos);
 
 	#if 0 // UiButton/Mouse interaction
 	if (gameState->status == GameStatus_Playing) {
@@ -290,9 +286,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 		}
 
-		// SDL_Log("Mouse world position: %f, %f", mouseWorldPos.x, mouseWorldPos.y);
+		// SDL_Log("Mouse world position: %f, %f", worldCamera->mousePos.x, worldCamera->mousePos.y);
 		// This is a very basic check for "is the user clicking on the UI?"
-		if (!inRects(uiState->uiRects, uiState->uiRectCount, mouseUIPos)) {
+		if (!inRects(uiState->uiRects, uiState->uiRectCount, uiCamera->mousePos)) {
 			switch (uiState->actionMode) {
 				case ActionMode_Build: {
 					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
@@ -305,10 +301,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				case ActionMode_Demolish: {
 					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
-						mouseDragStartPos = mouseWorldPos;
+						mouseDragStartPos = worldCamera->mousePos;
 						dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-						dragRect = irectCovering(mouseDragStartPos, mouseWorldPos);
+						dragRect = irectCovering(mouseDragStartPos, worldCamera->mousePos);
 						int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
 						showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
 					}	
@@ -476,7 +472,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	if (appState->appStatus == AppStatus_Game)
 	{
-		drawTooltip(&appState->uiState, renderer, assets, inputState);
+		drawTooltip(&appState->uiState, renderer, assets);
 		drawUiMessage(&appState->uiState, renderer, assets);
 
 		inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
