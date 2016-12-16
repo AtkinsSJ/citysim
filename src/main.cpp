@@ -50,14 +50,7 @@ enum GameStatus
 #include "bmfont.h"
 #include "input.h"
 #include "ui.h"
-#include "city.h"
-
-struct GameState
-{
-	MemoryArena gameArena;
-	GameStatus status;
-	City city;
-};
+#include "game.h"
 
 struct AppState
 {
@@ -70,10 +63,6 @@ struct AppState
 #include "ui.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
-
-const int gameStartFunds = 10000;
-const int gameWinFunds = 30000;
-#include "game_ui.cpp"
 #include "game.cpp"
 
 SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *WindowTitle)

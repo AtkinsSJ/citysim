@@ -26,7 +26,8 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	position.y += (uiText(uiState, renderer, font, "Very much a work in progress!",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	RealRect buttonRect = rectXYWH(uiPadding, windowHeight - uiPadding - 24, 80, 24);
+	real32 uiBorderPadding = 4;
+	RealRect buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
 	if (uiButton(uiState, renderer, assets, inputState, "Exit", buttonRect, 1))
 	{
 		result = AppStatus_Quit;
@@ -36,7 +37,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	{
 		openUrlUnsafe("http://samatkins.co.uk");
 	}
-	buttonRect.x = windowWidth - uiPadding - buttonRect.w;
+	buttonRect.x = windowWidth - uiBorderPadding - buttonRect.w;
 	if (uiButton(uiState, renderer, assets, inputState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
 	{
 		result = AppStatus_Game;
