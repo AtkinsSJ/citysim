@@ -1,37 +1,29 @@
+#pragma once
 
 #include "game_mainmenu.cpp"
 
-// This is less 'start game' and more 'reset the map and everything so we can show 
-// an empty map in the background of the menu'. But also does resetting of things for when you
-// click 'Play'. This code is madness, basically.
-GameState *startGame(MemoryArena *gameArena)
+GameState *initialiseGameState()
 {
-	GameState *result = 0;
+	GameState *result;
+	bootstrapArena(GameState, result, gameArena);
 
-	resetMemoryArena(gameArena);
-	result = PushStruct(gameArena, GameState);
-	result->arena = gameArena;
+	initCity(&result->gameArena, &result->city, 2000 / ITILE_SIZE, 1517 / ITILE_SIZE, "City Name Here", gameStartFunds);
 
-	random_seed(&result->rng, 0);
-
-#if 0
-	// Test the RNG!
-	int32 randomNumbers[1024];
-	for (int i=0; i<1024; i++)
-	{
-		randomNumbers[i] = random_next(&result->rng);
-	}
-#endif
-
-	// Hack to be the size of our image.
-	initCity(gameArena, &result->city, 2000 / ITILE_SIZE, 1517 / ITILE_SIZE, "City Name Here", gameStartFunds);
-	// generateTerrain(&result->city, &result->rng);
+	result->status = GameStatus_Playing;
 
 	return result;
 }
 
-void updateAndRenderGame(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
+	if (appState->gameState == 0)
+	{
+		appState->gameState = initialiseGameState();
+		renderer->worldBuffer.camera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
+	}
+
+	GameState *gameState = appState->gameState;
+
 	//UIState *uiState = &gameState->uiState;
 
 	// Win and Lose!
@@ -233,47 +225,49 @@ void updateAndRenderGame(GameState *gameState, InputState *inputState, Renderer 
 	// Draw the UI!
 	switch (gameState->status)
 	{
-		case GameStatus_Setup:
-		{
-			gameState->status = updateAndRenderMainMenuUI(renderer, assets, &gameState->uiState, inputState, gameState->status);
-		}
-		break;
-
 		case GameStatus_Playing:
 		{
-			updateAndRenderGameUI(renderer, assets, &gameState->uiState, gameState, inputState);
+			updateAndRenderGameUI(renderer, assets, &appState->uiState, gameState, inputState);
 		}
 		break;
 
 		case GameStatus_Won:
 		case GameStatus_Lost:
 		{
-			updateAndRenderGameUI(renderer, assets, &gameState->uiState, gameState, inputState);
+			updateAndRenderGameUI(renderer, assets, &appState->uiState, gameState, inputState);
 
-			if (updateAndRenderGameOverUI(renderer, assets, &gameState->uiState, inputState, gameState->status == GameStatus_Won))
+			if (updateAndRenderGameOverUI(renderer, assets, &appState->uiState, inputState, gameState->status == GameStatus_Won))
 			{
-				gameState = startGame(gameState->arena);
+				appState->appStatus = AppStatus_MainMenu;
+				// // End the game. Hmmm.
+				// gameState = startGame(gameState->gameArena);
 
-				gameState->status = GameStatus_Setup;
+				// gameState->status = GameStatus_Setup;
 			}
 		}
 		break;
 	}
 
-	drawTooltip(&gameState->uiState, renderer, assets, inputState);
-	drawUiMessage(&gameState->uiState, renderer, assets);
+	if (appState->appStatus == AppStatus_Game)
+	{
+		drawTooltip(&appState->uiState, renderer, assets, inputState);
+		drawUiMessage(&appState->uiState, renderer, assets);
 
-	inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
+		inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
+	}
 }
 
-void updateAndRender(GameState *gameState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void updateAndRender(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
-	if (false)
+	switch (appState->appStatus)
 	{
-		updateAndRenderGame(gameState, inputState, renderer, assets);
-	}
-	else
-	{
-		updateAndRenderMainMenu(gameState, inputState, renderer, assets);
+		case AppStatus_MainMenu:
+		{
+			updateAndRenderMainMenu(appState, inputState, renderer, assets);
+		} break;
+		case AppStatus_Game:
+		{
+			updateAndRenderGame(appState, inputState, renderer, assets);
+		} break;
 	}
 }

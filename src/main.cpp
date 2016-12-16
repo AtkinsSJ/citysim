@@ -18,7 +18,17 @@
 // Really janky assertion macro, yay
 #define ASSERT(expr, msg, ...) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg, ##__VA_ARGS__); *(int *)0 = 0;}
 
-enum GameStatus {
+enum AppStatus
+{
+	AppStatus_MainMenu,
+	AppStatus_Game,
+	AppStatus_Options,
+	AppStatus_Credits,
+	AppStatus_Quit,
+};
+
+enum GameStatus
+{
 	GameStatus_Setup,
 	GameStatus_Playing,
 	GameStatus_Won,
@@ -44,11 +54,17 @@ enum GameStatus {
 
 struct GameState
 {
+	MemoryArena gameArena;
 	GameStatus status;
-	MemoryArena *arena;
-	RandomMT rng;
 	City city;
+};
+
+struct AppState
+{
+	AppStatus appStatus;
 	UIState uiState;
+
+	GameState *gameState;
 };
 
 #include "ui.cpp"
@@ -114,26 +130,24 @@ int main(int argc, char *argv[]) {
 	GL_Renderer *glRenderer = GL_initializeRenderer(window, assets);
 	ASSERT(glRenderer, "Failed to initialize renderer.");
 
-// Game setup
-	MemoryArena gameArena = createEmptyMemoryArena();
-	
-	GameState *gameState = startGame(&gameArena);
-
-// GAME LOOP
-	gameState->status = GameStatus_Setup;
-
 	InputState inputState = {};
-
 	SDL_GetWindowSize(glRenderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
-	UIState *uiState = &gameState->uiState;
+	AppState appState = {};
+
+// Do we need this here?
+// {
+	UIState *uiState = &appState.uiState;
 	initUiState(uiState);
+	setCursor(uiState, assets, Cursor_Main);
+	setCursorVisible(uiState, true);
+// }
+
 	Camera *worldCamera = &glRenderer->renderer.worldBuffer.camera;
 	Camera *uiCamera = &glRenderer->renderer.uiBuffer.camera;
 
 	worldCamera->size = v2((real32)inputState.windowSize.x / TILE_SIZE,
 	                       (real32)inputState.windowSize.y / TILE_SIZE);
-	worldCamera->pos = v2(gameState->city.width/2, gameState->city.height/2);
 	worldCamera->zoom = 1.0f;
 
 	uiCamera->size = v2(inputState.windowSize);
@@ -143,21 +157,18 @@ int main(int argc, char *argv[]) {
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
 
-	setCursor(uiState, assets, Cursor_Main);
-	setCursorVisible(uiState, true);
-
 	uint32 lastFrame = 0,
 			currentFrame = 0;
 	real32 framesPerSecond = 0;
 	
 	// GAME LOOP
-	while (gameState->status != GameStatus_Quit) {
+	while (appState.appStatus != AppStatus_Quit) {
 
 		updateInput(&inputState);
 
 		if (inputState.receivedQuitSignal)
 		{
-			gameState->status = GameStatus_Quit;
+			appState.appStatus = AppStatus_Quit;
 			break;
 		}
 
@@ -182,7 +193,7 @@ int main(int argc, char *argv[]) {
 			GL_loadAssets(glRenderer, assets);
 		}
 
-		updateAndRender(gameState, &inputState, &glRenderer->renderer, assets);
+		updateAndRender(&appState, &inputState, &glRenderer->renderer, assets);
 
 		// Update camera matrices here
 		updateCameraMatrix(worldCamera);
