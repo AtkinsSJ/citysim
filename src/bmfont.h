@@ -60,12 +60,13 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *addBMFont(AssetManager *assets, TemporaryMemory *tempArena, FontAssetType fontAssetType,
+BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename)
 {
 	BitmapFont *font = 0;
+	TemporaryMemory tempMemory = beginTemporaryMemory(tempArena);
 
-	File file = readFile(tempArena->arena, filename);
+	File file = readFile(tempMemory.arena, filename);
 	if (!file.data)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to open font file %s: %s", filename, SDL_GetError());
@@ -139,7 +140,7 @@ BitmapFont *addBMFont(AssetManager *assets, TemporaryMemory *tempArena, FontAsse
 			}
 			else
 			{
-				int32 *pageToTextureID = PushArray(tempArena, int32, common->pageCount);
+				int32 *pageToTextureID = PushArray(&tempMemory, int32, common->pageCount);
 				char *pageStart = (char *) pages;
 
 				for (uint32 pageIndex = 0;
@@ -180,6 +181,8 @@ BitmapFont *addBMFont(AssetManager *assets, TemporaryMemory *tempArena, FontAsse
 			}
 		}
 	}
+
+	endTemporaryMemory(&tempMemory);
 
 	return font;
 }

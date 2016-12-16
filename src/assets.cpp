@@ -118,7 +118,7 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 	cursor->sdlCursor = 0;
 }
 
-BitmapFont *addBMFont(AssetManager *assets, TemporaryMemory *tempArena, FontAssetType fontAssetType,
+BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename);
 
 void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename, char *fragFilename)
@@ -223,14 +223,12 @@ void loadAssets(AssetManager *assets)
 	initTheme(assets);
 }
 
-void addAssets(AssetManager *assets, MemoryArena *memoryArena)
+void addAssets(AssetManager *assets, MemoryArena *tempArena)
 {
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,2002,1519), false);
-	TemporaryMemory tempMemory = beginTemporaryMemory(memoryArena);
-	addBMFont(assets, &tempMemory, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
-	addBMFont(assets, &tempMemory, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
-	endTemporaryMemory(&tempMemory);
+	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
+	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
 
 	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.gl", "textured.frag.gl");
 	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.gl", "untextured.frag.gl");

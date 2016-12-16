@@ -155,6 +155,11 @@ void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState)
 
 	if (arena->currentBlock)
 	{
+#if BUILD_DEBUG
+		// Clear memory so we spot bugs in keeping pointers to deallocated memory.
+		memset(arena->currentBlock->memory + resetState.used, 0,
+			   arena->currentBlock->used - resetState.used);
+#endif
 		arena->currentBlock->used = resetState.used;
 	}
 }
@@ -186,12 +191,6 @@ TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)
 
 void endTemporaryMemory(TemporaryMemory *tempMemory)
 {
-#if 0//BUILD_DEBUG
-	// Clear memory so we spot bugs in keeping pointers to temp memory.
-	memset(tempMemory->arena->memory + tempMemory->oldUsed, 0,
-		   tempMemory->arena->used - tempMemory->oldUsed);
-#endif
-
 	MemoryArena *arena = tempMemory->arena;
 	ASSERT(arena->hasTemporaryArenaOpen, "Ending temporary memory without beginning it!");
 	arena->hasTemporaryArenaOpen = false;
