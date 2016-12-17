@@ -25,34 +25,34 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
-void initTheme(AssetManager *assets)
+void initTheme(UITheme *theme)
 {
-	assets->theme.buttonStyle.font               = FontAssetType_Buttons;
-	assets->theme.buttonStyle.textColor          = color255(   0,   0,   0, 255 );
-	assets->theme.buttonStyle.backgroundColor    = color255( 255, 255, 255, 255 );
-	assets->theme.buttonStyle.hoverColor 	     = color255( 192, 192, 255, 255 );
-	assets->theme.buttonStyle.pressedColor       = color255( 128, 128, 255, 255 );
+	theme->buttonStyle.font               = FontAssetType_Buttons;
+	theme->buttonStyle.textColor          = color255(   0,   0,   0, 255 );
+	theme->buttonStyle.backgroundColor    = color255( 255, 255, 255, 255 );
+	theme->buttonStyle.hoverColor 	     = color255( 192, 192, 255, 255 );
+	theme->buttonStyle.pressedColor       = color255( 128, 128, 255, 255 );
 
-	assets->theme.labelStyle.font                = FontAssetType_Main;
-	assets->theme.labelStyle.textColor           = color255( 255, 255, 255, 255 );
+	theme->labelStyle.font                = FontAssetType_Main;
+	theme->labelStyle.textColor           = color255( 255, 255, 255, 255 );
 
-	assets->theme.tooltipStyle.font              = FontAssetType_Main;
-	assets->theme.tooltipStyle.textColorNormal   = color255( 255, 255, 255, 255 );
-	assets->theme.tooltipStyle.textColorBad      = color255( 255,   0,   0, 255 );
-	assets->theme.tooltipStyle.backgroundColor   = color255(   0,   0,   0, 128 );
-	assets->theme.tooltipStyle.borderPadding     = 4;
-	assets->theme.tooltipStyle.depth             = 100;
+	theme->tooltipStyle.font              = FontAssetType_Main;
+	theme->tooltipStyle.textColorNormal   = color255( 255, 255, 255, 255 );
+	theme->tooltipStyle.textColorBad      = color255( 255,   0,   0, 255 );
+	theme->tooltipStyle.backgroundColor   = color255(   0,   0,   0, 128 );
+	theme->tooltipStyle.borderPadding     = 4;
+	theme->tooltipStyle.depth             = 100;
 
-	assets->theme.uiMessageStyle.font            = FontAssetType_Main;
-	assets->theme.uiMessageStyle.textColor       = color255( 255, 255, 255, 255 );
-	assets->theme.uiMessageStyle.backgroundColor = color255(   0,   0,   0, 128 );
-	assets->theme.uiMessageStyle.borderPadding   = 4;
-	assets->theme.uiMessageStyle.depth           = 100;
+	theme->uiMessageStyle.font            = FontAssetType_Main;
+	theme->uiMessageStyle.textColor       = color255( 255, 255, 255, 255 );
+	theme->uiMessageStyle.backgroundColor = color255(   0,   0,   0, 128 );
+	theme->uiMessageStyle.borderPadding   = 4;
+	theme->uiMessageStyle.depth           = 100;
 
-	assets->theme.overlayColor           = color255(   0,   0,   0, 128 );
+	theme->overlayColor           = color255(   0,   0,   0, 128 );
 
-	assets->theme.textboxBackgroundColor = color255( 255, 255, 255, 255 );
-	assets->theme.textboxTextColor       = color255(   0,   0,   0, 255 );
+	theme->textboxBackgroundColor = color255( 255, 255, 255, 255 );
+	theme->textboxTextColor       = color255(   0,   0,   0, 255 );
 	
 }
 
@@ -100,7 +100,8 @@ int32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textur
 	return textureRegionID;
 }
 
-int32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv, bool isAlphaPremultiplied=false)
+int32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
+	                   bool isAlphaPremultiplied=false)
 {
 	int32 textureID = findTexture(assets, filename);
 	if (textureID == -1)
@@ -121,7 +122,8 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename);
 
-void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename, char *fragFilename)
+void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename,
+	                  char *fragFilename)
 {
 	ShaderProgram *shader = assets->shaderPrograms + shaderID;
 	shader->fragFilename = fragFilename;
@@ -220,7 +222,7 @@ void loadAssets(AssetManager *assets)
 		}
 	}
 
-	initTheme(assets);
+	initTheme(&assets->theme);
 }
 
 void addAssets(AssetManager *assets, MemoryArena *tempArena)
