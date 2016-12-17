@@ -9,7 +9,12 @@ Arenas:
 
 - Check for the flicker bug while we have so few things being drawn.
 
-- UI Theme: What is it?!?!
+UI Theme:
+- Rather than always doing getFont() etc, maybe cache a font ref from the assets system and then
+  reload it when the assets change.
+- Could move the UITheme into UIState, again getting it from the assets system once then refreshing
+  when it's reloaded. Would save passing the assets system to everywhere in the UI code.
+- What is it?!?!
 	- All the information about how to draw the UI.
 	- So, font/colour/padding etc for a button, or a menu item.
 	- Do we want styles within this? So you say "this is a 'fancy' button, this is a 'normal' button"?

@@ -16,7 +16,7 @@ GameState *initialiseGameState()
 	return result;
 }
 
-void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32 cityHeight) // City size in tiles
+void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32 cityHeight)
 { 
 	// Zooming
 	if (canZoom && inputState->wheelY) {
@@ -93,7 +93,8 @@ void showCostTooltip(UIState *uiState, AssetManager *assets, int32 cost, int32 c
 	uiState->tooltip.show = true;
 }
 
-void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState, InputState *inputState)
+void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState,
+	                       InputState *inputState)
 {
 	V2 centre = renderer->uiBuffer.camera.pos;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
@@ -212,7 +213,8 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 }
 
 // Returns true if game should restart
-bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState *uiState, InputState *inputState, bool won)
+bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState *uiState,
+	                           InputState *inputState, bool won)
 {
 	bool result = false;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;

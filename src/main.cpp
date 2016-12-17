@@ -56,7 +56,7 @@ struct AppState
 #include "city.cpp"
 #include "game.cpp"
 
-SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *WindowTitle)
+SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *windowTitle)
 {
 	SDL_Window *window = 0;
 
@@ -76,7 +76,7 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *Wi
 		{
 
 			// Window
-			window = SDL_CreateWindow(WindowTitle,
+			window = SDL_CreateWindow(windowTitle,
 							SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 							winW, winH,	windowFlags);
 
