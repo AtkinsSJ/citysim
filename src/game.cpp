@@ -210,6 +210,14 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 			uiState->actionMode = ActionMode_Hire;
 			setCursor(uiState, assets, Cursor_Hire);
 		}
+
+		// Main menu button
+		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
+		if (uiButton(uiState, renderer, assets, inputState, "Menu", buttonRect, 1))
+		{
+			// quit game somehow.
+			gameState->status = GameStatus_Quit;
+		}
 	}
 }
 
@@ -459,18 +467,19 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		case GameStatus_Won:
 		case GameStatus_Lost:
 		{
-			updateAndRenderGameUI(renderer, assets, &appState->uiState, gameState, inputState);
-
 			if (updateAndRenderGameOverUI(renderer, assets, &appState->uiState, inputState, gameState->status == GameStatus_Won))
 			{
-				appState->appStatus = AppStatus_MainMenu;
-				// // End the game. Hmmm.
-				// gameState = startGame(gameState->gameArena);
-
-				// gameState->status = GameStatus_Setup;
+				gameState->status = GameStatus_Quit;
 			}
 		}
 		break;
+	}
+
+	if (gameState->status == GameStatus_Quit)
+	{
+		freeMemoryArena(&gameState->gameArena);
+		appState->gameState = 0;
+		appState->appStatus = AppStatus_MainMenu;
 	}
 
 	if (appState->appStatus == AppStatus_Game)

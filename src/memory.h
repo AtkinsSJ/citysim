@@ -63,14 +63,6 @@ MemoryBlock *addMemoryBlock(MemoryArena *arena, umm size)
 	return block;
 }
 
-void freeCurrentBlock(MemoryArena *arena)
-{
-	MemoryBlock *block = arena->currentBlock;
-	ASSERT(block, "Attempting to free non-existent block");
-	arena->currentBlock = block->prevBlock;
-	free(block);
-}
-
 bool initMemoryArena(MemoryArena *arena, umm size, umm minimumBlockSize=MB(1))
 {
 	bool succeeded = true;
@@ -143,6 +135,14 @@ void *allocate(TemporaryMemory *tempArena, umm size)
 	return allocate(tempArena->arena, size);
 }
 
+void freeCurrentBlock(MemoryArena *arena)
+{
+	MemoryBlock *block = arena->currentBlock;
+	ASSERT(block, "Attempting to free non-existent block");
+	arena->currentBlock = block->prevBlock;
+	free(block);
+}
+
 // Returns the memory arena to a previous state
 void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState)
 {
@@ -167,6 +167,20 @@ void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState)
 void resetMemoryArena(MemoryArena *arena)
 {
 	revertMemoryArena(arena, arena->resetState);
+}
+
+void freeMemoryArena(MemoryArena *arena)
+{
+	// Free all but the original block
+	while (arena->currentBlock->prevBlock)
+	{
+		freeCurrentBlock(arena);
+	}
+
+	// Free original block, which may contain the arena so we have to be careful!
+	MemoryBlock *finalBlock = arena->currentBlock;
+	arena->currentBlock = 0;
+	free(finalBlock);
 }
 
 TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)

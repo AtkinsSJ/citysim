@@ -11,6 +11,7 @@ enum GameStatus
 	GameStatus_Playing,
 	GameStatus_Won,
 	GameStatus_Lost,
+	GameStatus_Quit,
 };
 
 struct GameState
