@@ -22,7 +22,7 @@ enum AppStatus
 {
 	AppStatus_MainMenu,
 	AppStatus_Game,
-	AppStatus_Options,
+	AppStatus_SettingsMenu,
 	AppStatus_Credits,
 	AppStatus_Quit,
 };

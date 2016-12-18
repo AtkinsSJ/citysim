@@ -2,6 +2,7 @@
 
 #include "game_mainmenu.cpp"
 #include "credits.cpp"
+#include "settings.cpp"
 
 const real32 uiPadding = 4; // TODO: Move this somewhere sensible!
 
@@ -503,6 +504,11 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		case AppStatus_Credits:
 		{
 			updateAndRenderCredits(appState, inputState, renderer, assets);
+		} break;
+
+		case AppStatus_SettingsMenu:
+		{
+			updateAndRenderSettingsMenu(appState, inputState, renderer, assets);
 		} break;
 
 		case AppStatus_Game:

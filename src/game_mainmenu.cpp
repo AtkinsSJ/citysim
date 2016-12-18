@@ -37,6 +37,11 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 		result = AppStatus_Credits;
 	}
 	buttonRect.y += 32;
+	if (uiButton(uiState, renderer, assets, inputState, "Settings", buttonRect, 1))
+	{
+		result = AppStatus_SettingsMenu;
+	}
+	buttonRect.y += 32;
 	if (uiButton(uiState, renderer, assets, inputState, "Website", buttonRect, 1))
 	{
 		openUrlUnsafe("http://samatkins.co.uk");

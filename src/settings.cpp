@@ -1,7 +1,7 @@
 #pragma once
 
-void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer *renderer,
-	                        AssetManager *assets)
+void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Renderer *renderer,
+	                            AssetManager *assets)
 {
 	AppStatus result = appState->appStatus;
 
@@ -16,12 +16,10 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	UILabelStyle *labelStyle = &theme->labelStyle;
 	BitmapFont *font = getFont(assets, labelStyle->font);
 
-	position.y += (uiText(uiState, renderer, font, "Under London",
+	position.y += (uiText(uiState, renderer, font, "Settings",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, renderer, font, "Everything © Samuel Atkins 2016",
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
-	position.y += (uiText(uiState, renderer, font, "... except for the things that are not.",
+	position.y += (uiText(uiState, renderer, font, "There are no settings yet, soz.",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	real32 uiBorderPadding = 4;
