@@ -26,21 +26,25 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	position.y += (uiText(uiState, renderer, font, "Very much a work in progress!",
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	real32 uiBorderPadding = 4;
-	RealRect buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, renderer, assets, inputState, "Exit", buttonRect, 1))
+	RealRect buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
+	if (uiButton(uiState, renderer, assets, inputState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
 	{
-		result = AppStatus_Quit;
+		result = AppStatus_Game;
 	}
-	buttonRect.x = (windowWidth * 0.5f) - buttonRect.w/2;
+	buttonRect.y += 32;
+	if (uiButton(uiState, renderer, assets, inputState, "Credits", buttonRect, 1))
+	{
+		result = AppStatus_Credits;
+	}
+	buttonRect.y += 32;
 	if (uiButton(uiState, renderer, assets, inputState, "Website", buttonRect, 1))
 	{
 		openUrlUnsafe("http://samatkins.co.uk");
 	}
-	buttonRect.x = windowWidth - uiBorderPadding - buttonRect.w;
-	if (uiButton(uiState, renderer, assets, inputState, "Play", buttonRect, 1)) // , SDL_SCANCODE_RETURN
+	buttonRect.y += 32;
+	if (uiButton(uiState, renderer, assets, inputState, "Exit", buttonRect, 1))
 	{
-		result = AppStatus_Game;
+		result = AppStatus_Quit;
 	}
 
 	appState->appStatus = result;

@@ -4,6 +4,8 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program!
 
+Splitting Game/Menu/Options etc into separate code paths.
+
 Arenas:
 - Figure out how to prevent non-temp allocations happening when temp mem is open.
 
