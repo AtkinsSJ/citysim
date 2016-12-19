@@ -69,7 +69,7 @@ struct TextureRegionList
 	TextureRegionList *prev;
 	TextureRegionList *next;
 	uint32 usedCount;
-	TextureRegion regions[256];
+	TextureRegion regions[512]; // TODO: Tune this for performance!
 };
 
 #include "font.h"
@@ -151,7 +151,6 @@ struct AssetManager
 	// NB: index 0 is reserved as a null region.
 	uint32 textureRegionCount;
 	TextureRegionList firstTextureRegionList;
-	// TextureRegion textureRegions[8192];
 
 	// NOTE: At each index is the first or last position in textureRegions array matching that type.
 	// So, assets with the same type must be contiguous!
@@ -168,7 +167,7 @@ struct AssetManager
 	UITheme theme;
 };
 
-uint32 getTextureRegion(AssetManager *assets, TextureAssetType item, uint32 offset)
+uint32 getTextureRegionID(AssetManager *assets, TextureAssetType item, uint32 offset)
 {
 	uint32 min = assets->firstIDForTextureAssetType[item],
 		  max = assets->lastIDForTextureAssetType[item];

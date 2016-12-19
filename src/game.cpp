@@ -352,7 +352,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// Draw terrain
 	V2 backgroundSize = v2(gameState->city.width, gameState->city.height); //v2(2000.0f / TILE_SIZE, 1517.0f / TILE_SIZE);
-	drawTextureRegion(&renderer->worldBuffer, getTextureRegion(assets, TextureAssetType_Map1, 0),
+	drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, TextureAssetType_Map1, 0),
 		rectXYWH(0, 0, backgroundSize.x, backgroundSize.y), 0);
 
 	#if 0 // Terrain, which we don't use

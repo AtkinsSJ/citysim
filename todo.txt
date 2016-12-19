@@ -10,6 +10,7 @@ Asset system:
 - Load ui theme from a file
 - Load texture region information from a file
 - Strings! Translateable and stored as assets.
+- Audio when we have that!
 
 Arenas:
 - Figure out how to prevent non-temp allocations happening when temp mem is open.
