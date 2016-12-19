@@ -64,6 +64,14 @@ struct TextureRegion
 	RealRect uv; // in (0 to 1) space
 };
 
+struct TextureRegionList
+{
+	TextureRegionList *prev;
+	TextureRegionList *next;
+	uint32 usedCount;
+	TextureRegion regions[256];
+};
+
 #include "font.h"
 
 struct Cursor
@@ -142,12 +150,13 @@ struct AssetManager
 
 	// NB: index 0 is reserved as a null region.
 	uint32 textureRegionCount;
-	TextureRegion textureRegions[8192];
+	TextureRegionList firstTextureRegionList;
+	// TextureRegion textureRegions[8192];
 
 	// NOTE: At each index is the first or last position in textureRegions array matching that type.
 	// So, assets with the same type must be contiguous!
-	int32 firstIDForTextureAssetType[TextureAssetTypeCount];
-	int32 lastIDForTextureAssetType[TextureAssetTypeCount];
+	uint32 firstIDForTextureAssetType[TextureAssetTypeCount];
+	uint32 lastIDForTextureAssetType[TextureAssetTypeCount];
 
 	ShaderProgram shaderPrograms[ShaderProgramCount];
 
@@ -159,15 +168,30 @@ struct AssetManager
 	UITheme theme;
 };
 
-int32 getTextureRegion(AssetManager *assets, TextureAssetType item, int32 offset)
+uint32 getTextureRegion(AssetManager *assets, TextureAssetType item, uint32 offset)
 {
-	int32 min = assets->firstIDForTextureAssetType[item],
+	uint32 min = assets->firstIDForTextureAssetType[item],
 		  max = assets->lastIDForTextureAssetType[item];
 
-	int32 id = clampToRangeWrapping(min, max, offset);
+	uint32 id = clampToRangeWrapping(min, max, offset);
 	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
 
 	return id;
+}
+
+TextureRegion *getTextureRegion(AssetManager *assets, uint32 textureRegionIndex)
+{
+	ASSERT(textureRegionIndex < assets->textureRegionCount, "Selecting unallocated TextureRegion!");
+	TextureRegionList *list = &assets->firstTextureRegionList;
+	const uint32 regionsPerList = ArrayCount(list->regions);
+
+	while (textureRegionIndex >= regionsPerList)
+	{
+		textureRegionIndex -= regionsPerList;
+		list = list->next;
+	}
+
+	return list->regions + textureRegionIndex;
 }
 
 BitmapFont *getFont(AssetManager *assets, FontAssetType font)

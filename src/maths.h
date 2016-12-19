@@ -71,3 +71,8 @@ inline int32 clampToRangeWrapping(int32 minInclusive, int32 maxInclusive, int32 
 	int32 t = offset % (maxInclusive - minInclusive + 1);
 	return minInclusive + t;
 }
+inline uint32 clampToRangeWrapping(uint32 minInclusive, uint32 maxInclusive, uint32 offset)
+{
+	uint32 t = offset % (maxInclusive - minInclusive + 1);
+	return minInclusive + t;
+}

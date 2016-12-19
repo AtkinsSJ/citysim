@@ -410,7 +410,7 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 			RenderItem *item = buffer->items + i;
 			ShaderProgramType desiredShader = getDesiredShader(item);
 
-			TextureRegion *region = assets->textureRegions + item->textureRegionID;
+			TextureRegion *region = getTextureRegion(assets, item->textureRegionID);
 			GL_TextureInfo *textureInfo = renderer->textureInfo + region->textureID;
 
 			if ((textureInfo->glTextureID != glBoundTextureID)

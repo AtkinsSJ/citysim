@@ -1,13 +1,58 @@
 #pragma once
 
+int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
+{
+	ASSERT(assets->textureCount < ArrayCount(assets->textures), "No room for texture");
+
+	int32 textureID = assets->textureCount++;
+
+	Texture *texture = assets->textures + textureID;
+	texture->filename = pushString(&assets->assetArena, filename);
+	texture->isAlphaPremultiplied = isAlphaPremultiplied;
+
+	return textureID;
+}
+
+uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textureID, RealRect uv)
+{
+	TextureRegionList *list = assets->firstTextureRegionList.prev;
+	if (list->usedCount >= ArrayCount(list->regions))
+	{
+		list = PushStruct(&assets->assetArena, TextureRegionList);
+		list->prev = assets->firstTextureRegionList.prev;
+		list->next = &assets->firstTextureRegionList;
+		list->prev->next = list;
+		list->next->prev = list;
+	}
+
+	uint32 idWithinList = list->usedCount++;
+	uint32 textureRegionID = assets->textureRegionCount++;
+	ASSERT(idWithinList == (textureRegionID % ArrayCount(list->regions)), "Region index mismatch!");
+
+	TextureRegion *region = list->regions + idWithinList;
+
+	region->type = type;
+	region->textureID = textureID;
+	region->uv = uv;
+
+	assets->firstIDForTextureAssetType[type] = min(textureRegionID, assets->firstIDForTextureAssetType[type]);
+	assets->lastIDForTextureAssetType[type] = max(textureRegionID, assets->lastIDForTextureAssetType[type]);
+
+	return textureRegionID;
+}
+
 AssetManager *createAssetManager()
 {
 	AssetManager *assets;
 	bootstrapArena(AssetManager, assets, assetArena);
 
-	assets->textureRegions[0].type = TextureAssetType_None;
-	assets->textureRegions[0].textureID = -1;
-	assets->textureRegionCount = 1;
+	assets->firstTextureRegionList.prev = assets->firstTextureRegionList.next
+	                                    = &assets->firstTextureRegionList;
+
+	addTextureRegion(assets, TextureAssetType_None, -1, {});
+	// assets->textureRegions[0].type = TextureAssetType_None;
+	// assets->textureRegions[0].textureID = -1;
+	// assets->textureRegionCount = 1;
 
 	assets->textures[0].state = AssetState_Loaded;
 	assets->textures[0].filename = "";
@@ -16,10 +61,10 @@ AssetManager *createAssetManager()
 	assets->textureCount = 1;
 
 	// Have to provide defaults for these or it just breaks.
-	for (int i = 0; i < TextureAssetTypeCount; ++i)
+	for (uint32 i = 0; i < TextureAssetTypeCount; ++i)
 	{
-		assets->firstIDForTextureAssetType[i] = int32Max;
-		assets->lastIDForTextureAssetType[i] = int32Min;
+		assets->firstIDForTextureAssetType[i] = uint32Max;
+		assets->lastIDForTextureAssetType[i] = 0;
 	}
 
 	return assets;
@@ -56,19 +101,6 @@ void initTheme(UITheme *theme)
 	
 }
 
-int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
-{
-	ASSERT(assets->textureCount < ArrayCount(assets->textures), "No room for texture");
-
-	int32 textureID = assets->textureCount++;
-
-	Texture *texture = assets->textures + textureID;
-	texture->filename = pushString(&assets->assetArena, filename);
-	texture->isAlphaPremultiplied = isAlphaPremultiplied;
-
-	return textureID;
-}
-
 int32 findTexture(AssetManager *assets, char *filename)
 {
 	int32 index = -1;
@@ -84,23 +116,7 @@ int32 findTexture(AssetManager *assets, char *filename)
 	return index;
 }
 
-int32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textureID, RealRect uv)
-{
-	ASSERT(assets->textureRegionCount < ArrayCount(assets->textureRegions), "No room for texture region");
-	int32 textureRegionID = assets->textureRegionCount++;
-	TextureRegion *region = assets->textureRegions + textureRegionID;
-
-	region->type = type;
-	region->textureID = textureID;
-	region->uv = uv;
-
-	assets->firstIDForTextureAssetType[type] = min(textureRegionID, assets->firstIDForTextureAssetType[type]);
-	assets->lastIDForTextureAssetType[type] = max(textureRegionID, assets->lastIDForTextureAssetType[type]);
-
-	return textureRegionID;
-}
-
-int32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
+uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
 	                   bool isAlphaPremultiplied=false)
 {
 	int32 textureID = findTexture(assets, filename);
@@ -180,7 +196,7 @@ void loadAssets(AssetManager *assets)
 	// Now we can convert UVs from pixel space to 0-1 space.
 	for (uint32 regionIndex = 1; regionIndex < assets->textureRegionCount; regionIndex++)
 	{
-		TextureRegion *tr = assets->textureRegions + regionIndex;
+		TextureRegion *tr = getTextureRegion(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
 		// Maybe we could cache the current texture?
 		Texture *t = assets->textures + tr->textureID;
@@ -256,6 +272,12 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 		}
 		tex->state = AssetState_Unloaded;
 	}
+	assets->textureCount = 1;
+
+	// CLear texture regions
+	assets->firstTextureRegionList.prev = assets->firstTextureRegionList.next
+	                                    = &assets->firstTextureRegionList;
+	assets->firstTextureRegionList.usedCount = assets->textureRegionCount = 1;
 
 	// Clear fonts
 	// Allocations are from assets arena so they get cleared below.
@@ -274,8 +296,6 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 	}
 
 	// General resetting of Assets system
-	assets->textureCount = 1;
-	assets->textureRegionCount = 1;
 	resetMemoryArena(&assets->assetArena);
 	addAssets(assets, memoryArena);
 	loadAssets(assets);
