@@ -134,7 +134,7 @@ struct UITheme
 
 struct AssetManager
 {
-	MemoryArena arena;
+	MemoryArena assetArena;
 
 	// NB: index 0 reserved as a null texture.
 	uint32 textureCount;

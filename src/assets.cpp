@@ -3,7 +3,7 @@
 AssetManager *createAssetManager()
 {
 	AssetManager *assets;
-	bootstrapArena(AssetManager, assets, arena);
+	bootstrapArena(AssetManager, assets, assetArena);
 
 	assets->textureRegions[0].type = TextureAssetType_None;
 	assets->textureRegions[0].textureID = -1;
@@ -63,7 +63,7 @@ int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied
 	int32 textureID = assets->textureCount++;
 
 	Texture *texture = assets->textures + textureID;
-	texture->filename = pushString(&assets->arena, filename);
+	texture->filename = pushString(&assets->assetArena, filename);
 	texture->isAlphaPremultiplied = isAlphaPremultiplied;
 
 	return textureID;
@@ -209,8 +209,8 @@ void loadAssets(AssetManager *assets)
 	for (uint32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
-		shader->vertShader = readFileAsString(&assets->arena, shader->vertFilename);
-		shader->fragShader = readFileAsString(&assets->arena, shader->fragFilename);
+		shader->vertShader = readFileAsString(&assets->assetArena, shader->vertFilename);
+		shader->fragShader = readFileAsString(&assets->assetArena, shader->fragFilename);
 
 		if (shader->vertShader && shader->fragShader)
 		{
@@ -276,7 +276,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 	// General resetting of Assets system
 	assets->textureCount = 1;
 	assets->textureRegionCount = 1;
-	resetMemoryArena(&assets->arena);
+	resetMemoryArena(&assets->assetArena);
 	addAssets(assets, memoryArena);
 	loadAssets(assets);
 

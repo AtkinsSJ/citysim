@@ -2,12 +2,17 @@
 TODO: https://trello.com/b/0Z1oVdg9/under-london
 ------------------------------------------------
 I don't know whether I prefer keeping the list here or on Trello.
-Trello is nice, but it's ALL THE WAY OVER THERE in a different program!
+Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
+
+Asset system:
+- Asset system dynamic allocations. e.g. So we don't have to predetermine number of texture regions.
+- Asset packer of some kind. Maybe just creates an assets table?
+- Load ui theme from a file
+- Load texture region information from a file
+- Strings! Translateable and stored as assets.
 
 Arenas:
 - Figure out how to prevent non-temp allocations happening when temp mem is open.
-
-- Check for the flicker bug while we have so few things being drawn.
 
 UI Theme:
 - Rather than always doing getFont() etc, maybe cache a font ref from the assets system and then
@@ -22,12 +27,6 @@ UI Theme:
 		- Though I think I want to do that for the fancy text screens, as planned.
 		  (Victiorian typography, lots of different fonts and sizes and styles.)
 
-Asset system:
-- Asset packer of some kind. Maybe just creates an assets table?
-- Load ui theme from a file
-- Load texture region information from a file
-- Asset system dynamic allocations. e.g. So we don't have to predetermine number of texture regions.
-- Strings! Translateable and stored as assets.
 
 Debugging:
 - Some kind of profiling system

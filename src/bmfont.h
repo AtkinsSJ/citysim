@@ -160,7 +160,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 				font->nullChar = {};
 
 				font->charCount = charCount;
-				font->chars = PushArray(&assets->arena, BitmapFontChar, charCount);
+				font->chars = PushArray(&assets->assetArena, BitmapFontChar, charCount);
 
 				for (uint32 charIndex = 0;
 					charIndex < charCount;
