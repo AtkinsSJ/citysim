@@ -16,15 +16,15 @@ void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Ren
 	UILabelStyle *labelStyle = &theme->labelStyle;
 	BitmapFont *font = getFont(assets, labelStyle->font);
 
-	position.y += (uiText(uiState, renderer, font, "Settings",
+	position.y += (uiText(uiState, renderer, font, LocalString("Settings"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, renderer, font, "There are no settings yet, soz.",
+	position.y += (uiText(uiState, renderer, font, LocalString("There are no settings yet, soz."),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	real32 uiBorderPadding = 4;
 	RealRect buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, renderer, assets, inputState, "Back", buttonRect, 1, false, SDL_SCANCODE_ESCAPE))
+	if (uiButton(uiState, renderer, assets, inputState, LocalString("Back"), buttonRect, 1, false, SDL_SCANCODE_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

@@ -1,4 +1,8 @@
 // localisation
+#pragma once
+
+// This is a placeholder so I can find translatable strings. It will probably get renamed and replaced!
+#define LocalString(str) (str)
 
 enum TestLanguage
 {
@@ -27,6 +31,8 @@ char *getHelloOwlUTF8(TestLanguage language)
 		case LangGreek: return "Αυτό είναι το αγαπημένο μου κουκουβάγια.";
 		case LangJapanese: return "これは私の好きなフクロウです。";
 		
+		case LangEnglish:
 		default: return "This is my favourite owl.";
 	}
 }
+

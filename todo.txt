@@ -4,6 +4,9 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+Strings:
+- Custom format strings with indices. eg "This {0} costs £{1}"
+
 Asset system:
 - Asset packer of some kind. Maybe just creates an assets table?
 - Load ui theme from a file

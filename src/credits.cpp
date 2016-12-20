@@ -16,17 +16,17 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	UILabelStyle *labelStyle = &theme->labelStyle;
 	BitmapFont *font = getFont(assets, labelStyle->font);
 
-	position.y += (uiText(uiState, renderer, font, "Under London",
+	position.y += (uiText(uiState, renderer, font, LocalString("Under London"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, renderer, font, "Everything © Samuel Atkins 2016",
+	position.y += (uiText(uiState, renderer, font, LocalString("Everything © Samuel Atkins 2016"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
-	position.y += (uiText(uiState, renderer, font, "... except for the things that are not.",
+	position.y += (uiText(uiState, renderer, font, LocalString("... except for the things that are not."),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	real32 uiBorderPadding = 4;
 	RealRect buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, renderer, assets, inputState, "Back", buttonRect, 1, false, SDL_SCANCODE_ESCAPE))
+	if (uiButton(uiState, renderer, assets, inputState, LocalString("Back"), buttonRect, 1, false, SDL_SCANCODE_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}
