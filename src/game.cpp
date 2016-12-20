@@ -31,9 +31,10 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	if (mouseButtonPressed(inputState, SDL_BUTTON_MIDDLE))
 	{
 		// Click-panning!
-		float scale = scrollSpeed * 0.01f;
+		float scale = scrollSpeed * 5.0f;
 		V2 clickStartPos = inputState->clickStartPosition[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos += (inputState->mousePosNormalised - clickStartPos) * scale;
+		camera->pos.x += (inputState->mousePosNormalised.x - clickStartPos.x) * scale;
+		camera->pos.y += (inputState->mousePosNormalised.y - clickStartPos.y) * -scale;
 	}
 	else
 	{
