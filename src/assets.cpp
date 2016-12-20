@@ -2,11 +2,19 @@
 
 int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
 {
-	ASSERT(assets->textureCount < ArrayCount(assets->textures), "No room for texture");
+	TextureList *list = assets->firstTextureList.prev;
+	if (list->usedCount >= ArrayCount(list->textures))
+	{
+		list = PushStruct(&assets->assetArena, TextureList);
+		DLinkedListInsertBefore(list, assets->firstTextureList);
+	}
 
-	int32 textureID = assets->textureCount++;
+	uint32 idWithinList = list->usedCount++;
+	uint32 textureID = assets->textureCount++;
+	ASSERT(idWithinList == (textureID % ArrayCount(list->textures)), "Texture index mismatch!");
 
-	Texture *texture = assets->textures + textureID;
+	Texture *texture = list->textures + idWithinList;
+
 	texture->filename = pushString(&assets->assetArena, filename);
 	texture->isAlphaPremultiplied = isAlphaPremultiplied;
 
@@ -19,10 +27,7 @@ uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textu
 	if (list->usedCount >= ArrayCount(list->regions))
 	{
 		list = PushStruct(&assets->assetArena, TextureRegionList);
-		list->prev = assets->firstTextureRegionList.prev;
-		list->next = &assets->firstTextureRegionList;
-		list->prev->next = list;
-		list->next->prev = list;
+		DLinkedListInsertBefore(list, assets->firstTextureRegionList);
 	}
 
 	uint32 idWithinList = list->usedCount++;
@@ -41,24 +46,19 @@ uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textu
 	return textureRegionID;
 }
 
-AssetManager *createAssetManager()
+void initAssetManager(AssetManager *assets)
 {
-	AssetManager *assets;
-	bootstrapArena(AssetManager, assets, assetArena);
+	DLinkedListInit(&assets->firstTextureRegionList);
+	DLinkedListInit(&assets->firstTextureList);
 
-	assets->firstTextureRegionList.prev = assets->firstTextureRegionList.next
-	                                    = &assets->firstTextureRegionList;
+	assets->firstTextureList.usedCount = assets->textureCount = 0;
+	assets->firstTextureRegionList.usedCount = assets->textureRegionCount = 0;
 
 	addTextureRegion(assets, TextureAssetType_None, -1, {});
-	// assets->textureRegions[0].type = TextureAssetType_None;
-	// assets->textureRegions[0].textureID = -1;
-	// assets->textureRegionCount = 1;
 
-	assets->textures[0].state = AssetState_Loaded;
-	assets->textures[0].filename = "";
-	assets->textures[0].isAlphaPremultiplied = true;
-	assets->textures[0].surface = null;
-	assets->textureCount = 1;
+	Texture *nullTexture = getTexture(assets, addTexture(assets, "", true));
+	nullTexture->state = AssetState_Loaded;
+	nullTexture->surface = 0;
 
 	// Have to provide defaults for these or it just breaks.
 	for (uint32 i = 0; i < TextureAssetTypeCount; ++i)
@@ -66,6 +66,14 @@ AssetManager *createAssetManager()
 		assets->firstIDForTextureAssetType[i] = uint32Max;
 		assets->lastIDForTextureAssetType[i] = 0;
 	}
+}
+
+AssetManager *createAssetManager()
+{
+	AssetManager *assets;
+	bootstrapArena(AssetManager, assets, assetArena);
+
+	initAssetManager(assets);
 
 	return assets;
 }
@@ -75,7 +83,7 @@ void initTheme(UITheme *theme)
 	theme->buttonStyle.font               = FontAssetType_Buttons;
 	theme->buttonStyle.textColor          = color255(   0,   0,   0, 255 );
 	theme->buttonStyle.backgroundColor    = color255( 255, 255, 255, 255 );
-	theme->buttonStyle.hoverColor 	     = color255( 192, 192, 255, 255 );
+	theme->buttonStyle.hoverColor 	      = color255( 192, 192, 255, 255 );
 	theme->buttonStyle.pressedColor       = color255( 128, 128, 255, 255 );
 
 	theme->labelStyle.font                = FontAssetType_Main;
@@ -106,7 +114,7 @@ int32 findTexture(AssetManager *assets, char *filename)
 	int32 index = -1;
 	for (int32 i = 0; i < (int32)assets->textureCount; ++i)
 	{
-		Texture *tex = assets->textures + i;
+		Texture *tex = getTexture(assets, i);
 		if (strcmp(filename, tex->filename) == 0)
 		{
 			index = i;
@@ -150,7 +158,7 @@ void loadAssets(AssetManager *assets)
 {
 	for (uint32 i = 1; i < assets->textureCount; ++i)
 	{
-		Texture *tex = assets->textures + i;
+		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Unloaded)
 		{
 			tex->surface = IMG_Load(tex->filename);
@@ -199,7 +207,7 @@ void loadAssets(AssetManager *assets)
 		TextureRegion *tr = getTextureRegion(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
 		// Maybe we could cache the current texture?
-		Texture *t = assets->textures + tr->textureID;
+		Texture *t = getTexture(assets, tr->textureID);
 		real32 textureWidth = (real32) t->surface->w;
 		real32 textureHeight = (real32) t->surface->h;
 
@@ -264,7 +272,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 	// Clear out textures
 	for (uint32 i = 1; i < assets->textureCount; ++i)
 	{
-		Texture *tex = assets->textures + i;
+		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Loaded)
 		{
 			SDL_FreeSurface(tex->surface);
@@ -272,12 +280,6 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 		}
 		tex->state = AssetState_Unloaded;
 	}
-	assets->textureCount = 1;
-
-	// CLear texture regions
-	assets->firstTextureRegionList.prev = assets->firstTextureRegionList.next
-	                                    = &assets->firstTextureRegionList;
-	assets->firstTextureRegionList.usedCount = assets->textureRegionCount = 1;
 
 	// Clear fonts
 	// Allocations are from assets arena so they get cleared below.
@@ -297,6 +299,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 
 	// General resetting of Assets system
 	resetMemoryArena(&assets->assetArena);
+	initAssetManager(assets);
 	addAssets(assets, memoryArena);
 	loadAssets(assets);
 

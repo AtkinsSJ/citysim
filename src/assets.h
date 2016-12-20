@@ -1,6 +1,6 @@
 #pragma once
 
-enum TextureAssetType
+enum TextureAssetType // NB: Actually TextureRegions, unless I change that later.
 {
 	TextureAssetType_None,
 
@@ -57,6 +57,13 @@ struct Texture
 	SDL_Surface *surface;
 };
 
+struct TextureList
+{
+	DLinkedListMembers(TextureList);
+	uint32 usedCount;
+	Texture textures[32]; // TODO: Tune this for performance!
+};
+
 struct TextureRegion
 {
 	TextureAssetType type;
@@ -66,8 +73,7 @@ struct TextureRegion
 
 struct TextureRegionList
 {
-	TextureRegionList *prev;
-	TextureRegionList *next;
+	DLinkedListMembers(TextureRegionList);
 	uint32 usedCount;
 	TextureRegion regions[512]; // TODO: Tune this for performance!
 };
@@ -146,7 +152,8 @@ struct AssetManager
 
 	// NB: index 0 reserved as a null texture.
 	uint32 textureCount;
-	Texture textures[32];
+	TextureList firstTextureList;
+	// Texture textures[32];
 
 	// NB: index 0 is reserved as a null region.
 	uint32 textureRegionCount;
@@ -166,6 +173,21 @@ struct AssetManager
 
 	UITheme theme;
 };
+
+Texture *getTexture(AssetManager *assets, uint32 textureIndex)
+{
+	ASSERT(textureIndex < assets->textureCount, "Selecting unallocated Texture!");
+	TextureList *list = &assets->firstTextureList;
+	const uint32 texturesPerList = ArrayCount(list->textures);
+
+	while (textureIndex >= texturesPerList)
+	{
+		textureIndex -= texturesPerList;
+		list = list->next;
+	}
+
+	return list->textures + textureIndex;
+}
 
 uint32 getTextureRegionID(AssetManager *assets, TextureAssetType item, uint32 offset)
 {

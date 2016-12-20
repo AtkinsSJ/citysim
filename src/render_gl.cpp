@@ -456,7 +456,7 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
 						// Upload texture
-						Texture *texture = assets->textures + region->textureID;
+						Texture *texture = getTexture(assets, region->textureID);
 						ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 						textureInfo->isLoaded = true;

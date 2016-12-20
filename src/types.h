@@ -121,6 +121,14 @@ struct RealRect {
 
 #include "matrix4.h"
 
+#define DLinkedListMembers(type) type *prev; type *next;
+#define DLinkedListInit(sentinel) (sentinel)->prev = (sentinel)->next = (sentinel);
+#define DLinkedListInsertBefore(item, sentinel) \
+	(item)->prev = (sentinel).prev;             \
+	(item)->next = &(sentinel);                 \
+	(item)->prev->next = (item);                \
+	(item)->next->prev = (item);
+
 /**********************************************
 	General
  **********************************************/
