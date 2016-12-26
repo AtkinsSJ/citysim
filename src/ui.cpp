@@ -30,6 +30,7 @@ void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
 RealRect uiText(UIState *uiState, Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
+	DEBUG_FUNCTION();
 
 	TemporaryMemory memory = beginTemporaryMemory(&uiState->arena);
 
@@ -75,6 +76,8 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 	          char *text, RealRect bounds, real32 depth, bool active=false,
 	          SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
+	DEBUG_FUNCTION();
+	
 	bool buttonClicked = false;
 	V2 mousePos = renderer->uiBuffer.camera.mousePos;
 	UITheme *theme = &assets->theme;
@@ -122,6 +125,8 @@ bool uiMenuButton(UIState *uiState, Renderer *renderer, AssetManager *assets, In
 	              char *text, RealRect bounds, real32 depth, UIMenuID menuID,
 	              SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
 {
+	DEBUG_FUNCTION();
+	
 	bool currentlyOpen = uiState->openMenu == menuID;
 	if (uiButton(uiState, renderer, assets, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
 	{
@@ -143,6 +148,8 @@ bool uiMenuButton(UIState *uiState, Renderer *renderer, AssetManager *assets, In
 void uiTextInput(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
 	             bool active, char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
 {
+	DEBUG_FUNCTION();
+	
 	UITheme *theme = &assets->theme;
 
 	if (active)
@@ -182,6 +189,8 @@ void pushUiMessage(UIState *uiState, char *message)
 
 void drawUiMessage(UIState *uiState, Renderer *renderer, AssetManager *assets)
 {
+	DEBUG_FUNCTION();
+	
 	if (uiState->message.countdown > 0)
 	{
 		uiState->message.countdown -= SECONDS_PER_FRAME;

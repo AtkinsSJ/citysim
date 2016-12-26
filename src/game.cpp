@@ -99,6 +99,8 @@ void showCostTooltip(UIState *uiState, AssetManager *assets, int32 cost, int32 c
 void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState,
 	                       InputState *inputState)
 {
+	DEBUG_FUNCTION();
+	
 	V2 centre = renderer->uiBuffer.camera.pos;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
 	UITheme *theme = &assets->theme;
@@ -227,6 +229,8 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState *uiState,
 	                           InputState *inputState, bool won)
 {
+	DEBUG_FUNCTION();
+	
 	bool result = false;
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;
 	real32 windowHeight = (real32) renderer->uiBuffer.camera.size.y;
@@ -257,6 +261,8 @@ bool updateAndRenderGameOverUI(Renderer *renderer, AssetManager *assets, UIState
 
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
+	DEBUG_FUNCTION();
+	
 	if (appState->gameState == 0)
 	{
 		appState->gameState = initialiseGameState();
@@ -495,6 +501,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 void updateAndRender(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
+	DEBUG_FUNCTION();
+	
 	switch (appState->appStatus)
 	{
 		case AppStatus_MainMenu:

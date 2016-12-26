@@ -2,6 +2,8 @@
 
 void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
+	DEBUG_FUNCTION();
+	
 	AppStatus result = appState->appStatus;
 
 	real32 windowWidth = (real32) renderer->uiBuffer.camera.size.x;

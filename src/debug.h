@@ -2,16 +2,20 @@
 
 #ifdef BUILD_DEBUG
 
-#define DEBUG_FUNCTION()
+#define DEBUG_BLOCK(name) DebugBlock debugBlock____##__COUNT__(name)
+#define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
 #define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, name)
 
 #else
 
+#define DEBUG_BLOCK(...) 
 #define DEBUG_FUNCTION(...) 
 #define DEBUG_ARENA(...)
 
 #endif
+
+static struct DebugState *globalDebugState;
 
 #define DEBUG_FRAMES_COUNT 120
 
@@ -26,6 +30,17 @@ struct DebugArenaData
 	DebugArenaData *next;
 };
 
+struct DebugCodeData
+{
+	char *name;
+
+	uint32 callCount[DEBUG_FRAMES_COUNT];
+	uint64 totalCycleCount[DEBUG_FRAMES_COUNT];
+	uint64 averageCycleCount[DEBUG_FRAMES_COUNT];
+
+	DebugCodeData *next;
+};
+
 struct DebugState
 {
 	MemoryArena debugArena;
@@ -34,17 +49,26 @@ struct DebugState
 	uint32 readingFrameIndex;
 	uint32 writingFrameIndex;
 	DebugArenaData *firstArenaData;
+	DebugCodeData *firstCodeData;
 };
 
 void processDebugData(DebugState *debugState)
 {
 	if (debugState)
 	{
-
-
-
 		debugState->readingFrameIndex = debugState->writingFrameIndex;
 		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
+
+		// Zero-out new writing frame.
+		DebugCodeData *codeData = debugState->firstCodeData;
+		uint32 wfi = debugState->writingFrameIndex;
+		while (codeData)
+		{
+			codeData->callCount[wfi] = 0;
+			codeData->totalCycleCount[wfi] = 0;
+			codeData->averageCycleCount[wfi] = 0;
+			codeData = codeData->next;
+		}
 	}
 }
 
@@ -53,13 +77,24 @@ void renderDebugData(DebugState *debugState)
 	if (debugState)
 	{
 		uint32 frameIndex = debugState->readingFrameIndex;
+
 		DebugArenaData *arena = debugState->firstArenaData;
 		while (arena)
 		{
-			// NB: %Iu is Microsoft's non-standard version of %zu, which doesn't work right now
-			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Memory arena %s: %d blocks, %Iu used / %Iu allocated",
+			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Memory arena %s: %d blocks, %" PRIu64 " used / %" PRIu64 " allocated",
 				         arena->name, arena->blockCount[frameIndex], arena->usedSize[frameIndex], arena->totalSize[frameIndex]);
 			arena = arena->next;
+		}
+
+		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
+		SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
+
+		DebugCodeData *code = debugState->firstCodeData;
+		while (code)
+		{
+			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
+				         code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex], code->averageCycleCount[frameIndex]);
+			code = code->next;
 		}
 	}
 }
@@ -70,7 +105,6 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 	{
 		uint32 frameIndex = debugState->writingFrameIndex;
 
-		// find the arena
 		DebugArenaData *arenaData = debugState->firstArenaData;
 		bool found = false;
 		while (arenaData)
@@ -119,4 +153,54 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 	}
 }
 
-static DebugState *globalDebugState;
+void debugTrackCodeCall(DebugState *debugState, char *name, uint64 cycleCount)
+{
+	if (debugState)
+	{
+		uint32 frameIndex = debugState->writingFrameIndex;
+
+		DebugCodeData *codeData = debugState->firstCodeData;
+		bool found = false;
+		while (codeData)
+		{
+			if (strcmp(codeData->name, name) == 0)
+			{
+				found = true;
+				break;
+			}
+			
+			codeData = codeData->next;
+		}
+
+		if (!found)
+		{
+			codeData = PushStruct(&debugState->debugArena, DebugCodeData);
+			codeData->next = debugState->firstCodeData;
+			debugState->firstCodeData = codeData;
+
+			codeData->name = name;
+		}
+
+		codeData->callCount[frameIndex]++;
+		codeData->totalCycleCount[frameIndex] += cycleCount;
+		codeData->averageCycleCount[frameIndex] = codeData->totalCycleCount[frameIndex] / codeData->callCount[frameIndex];
+	}
+}
+
+struct DebugBlock
+{
+	char *name;
+	uint64 startTime;
+
+	DebugBlock(char *name)
+	{
+		this->name = name;
+		this->startTime = SDL_GetPerformanceCounter();
+	}
+
+	~DebugBlock()
+	{
+		uint64 cycleCount = SDL_GetPerformanceCounter() - this->startTime;
+		debugTrackCodeCall(globalDebugState, this->name, cycleCount);
+	}
+};

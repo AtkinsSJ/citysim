@@ -1,5 +1,6 @@
-#include <stdio.h>
+#include <inttypes.h>
 #include <math.h>
+#include <stdio.h>
 
 #ifdef __linux__
 #	include <SDL2/SDL.h>
@@ -120,6 +121,7 @@ int main(int argc, char *argv[]) {
 
 	bootstrapArena(DebugState, globalDebugState, debugArena);
 	globalDebugState->showDebugData = true;
+	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 
 // Do we need this here?
 // {
@@ -148,7 +150,9 @@ int main(int argc, char *argv[]) {
 	real32 framesPerSecond = 0;
 	
 	// GAME LOOP
-	while (appState.appStatus != AppStatus_Quit) {
+	while (appState.appStatus != AppStatus_Quit)
+	{
+		DEBUG_BLOCK("Game loop");
 
 		updateInput(&inputState);
 

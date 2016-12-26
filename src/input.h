@@ -55,6 +55,8 @@ inline bool keyJustPressed(InputState *input, SDL_Keycode key) {
 
 void updateInput(InputState *inputState)
 {
+	DEBUG_FUNCTION();
+	
 	// Clear mouse state
 	inputState->wheelX = 0;
 	inputState->wheelY = 0;

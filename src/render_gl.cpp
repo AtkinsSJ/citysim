@@ -566,6 +566,8 @@ bool isBufferSorted(RenderBuffer *buffer)
 
 void GL_render(GL_Renderer *renderer, AssetManager *assets)
 {
+	DEBUG_FUNCTION();
+	
 	// Sort sprites
 	sortRenderBuffer(&renderer->renderer.worldBuffer);
 	sortRenderBuffer(&renderer->renderer.uiBuffer);
