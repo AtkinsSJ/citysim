@@ -94,7 +94,6 @@ void markResetPosition(MemoryArena *arena)
 }
 
 // Creates an arena , and pushes a struct on it which contains the arena.
-// FIXME: This is broken when size is 0.
 #define bootstrapArena(containerType, containerName, arenaVarName)         \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \

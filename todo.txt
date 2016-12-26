@@ -12,6 +12,7 @@ Asset system:
 - Load ui theme from a file
 - Load texture region information from a file
 - Strings! Translateable and stored as assets.
+	- https://blog.thimbleweedpark.com/text_lock
 - Audio when we have that!
 
 Arenas:

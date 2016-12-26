@@ -29,6 +29,7 @@ enum AppStatus
 
 #include "types.h"
 #include "memory.h"
+#include "debug.h"
 #include "random.h"
 #include "platform.h"
 #include "localisation.h"
@@ -87,6 +88,8 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 		}
 	}
 
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+
 	return window;
 }
 
@@ -114,6 +117,8 @@ int main(int argc, char *argv[]) {
 	SDL_GetWindowSize(glRenderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
 	AppState appState = {};
+
+	bootstrapArena(DebugState, globalDebugState, debugArena);
 
 // Do we need this here?
 // {
@@ -181,6 +186,29 @@ int main(int argc, char *argv[]) {
 		// Update camera matrices here
 		updateCameraMatrix(worldCamera);
 		updateCameraMatrix(uiCamera);
+
+		// Debug stuff
+		if (globalDebugState)
+		{
+			DEBUG_ARENA(&assets->assetArena, "Assets");
+			DEBUG_ARENA(&glRenderer->renderArena, "Renderer");
+			if (appState.gameState)
+			{
+				DEBUG_ARENA(&appState.gameState->gameArena, "GameState");
+			}
+			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
+			processDebugData(globalDebugState);
+
+			if (keyJustPressed(&inputState, SDL_SCANCODE_F2))
+			{
+				globalDebugState->showDebugData = !globalDebugState->showDebugData;
+			}
+
+			if (globalDebugState->showDebugData)
+			{
+				renderDebugData(globalDebugState);
+			}
+		}
 
 	// Actually draw things!
 		GL_render(glRenderer, assets);
