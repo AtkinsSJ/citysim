@@ -119,6 +119,7 @@ int main(int argc, char *argv[]) {
 	AppState appState = {};
 
 	bootstrapArena(DebugState, globalDebugState, debugArena);
+	globalDebugState->showDebugData = true;
 
 // Do we need this here?
 // {
@@ -192,11 +193,9 @@ int main(int argc, char *argv[]) {
 		{
 			DEBUG_ARENA(&assets->assetArena, "Assets");
 			DEBUG_ARENA(&glRenderer->renderArena, "Renderer");
-			if (appState.gameState)
-			{
-				DEBUG_ARENA(&appState.gameState->gameArena, "GameState");
-			}
+			DEBUG_ARENA(appState.gameState ? &appState.gameState->gameArena : 0, "GameState");
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
+
 			processDebugData(globalDebugState);
 
 			if (keyJustPressed(&inputState, SDL_SCANCODE_F2))

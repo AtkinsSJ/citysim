@@ -13,13 +13,15 @@
 
 #endif
 
+#define DEBUG_FRAMES_COUNT 120
+
 struct DebugArenaData
 {
 	char *name;
 
-	uint32 blockCount;
-	umm totalSize;
-	umm usedSize; // How do we count free space in old blocks?
+	uint32 blockCount[DEBUG_FRAMES_COUNT];
+	umm totalSize[DEBUG_FRAMES_COUNT];
+	umm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
 
 	DebugArenaData *next;
 };
@@ -29,6 +31,8 @@ struct DebugState
 	MemoryArena debugArena;
 	bool showDebugData;
 
+	uint32 readingFrameIndex;
+	uint32 writingFrameIndex;
 	DebugArenaData *firstArenaData;
 };
 
@@ -36,7 +40,11 @@ void processDebugData(DebugState *debugState)
 {
 	if (debugState)
 	{
-		
+
+
+
+		debugState->readingFrameIndex = debugState->writingFrameIndex;
+		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
 	}
 }
 
@@ -44,11 +52,13 @@ void renderDebugData(DebugState *debugState)
 {
 	if (debugState)
 	{
+		uint32 frameIndex = debugState->readingFrameIndex;
 		DebugArenaData *arena = debugState->firstArenaData;
 		while (arena)
 		{
+			// NB: %Iu is Microsoft's non-standard version of %zu, which doesn't work right now
 			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Memory arena %s: %d blocks, %Iu used / %Iu allocated",
-				         arena->name, arena->blockCount, arena->usedSize, arena->totalSize);
+				         arena->name, arena->blockCount[frameIndex], arena->usedSize[frameIndex], arena->totalSize[frameIndex]);
 			arena = arena->next;
 		}
 	}
@@ -58,6 +68,8 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 {
 	if (debugState)
 	{
+		uint32 frameIndex = debugState->writingFrameIndex;
+
 		// find the arena
 		DebugArenaData *arenaData = debugState->firstArenaData;
 		bool found = false;
@@ -81,24 +93,27 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 			arenaData->name = arenaName;
 		}
 
-		arenaData->blockCount = 0;
-		arenaData->totalSize = 0;
-		arenaData->usedSize = 0;
+		arenaData->blockCount[frameIndex] = 0;
+		arenaData->totalSize[frameIndex] = 0;
+		arenaData->usedSize[frameIndex] = 0;
 
-		if (arena->currentBlock)
+		if (arena) // So passing null just keeps it zeroed out
 		{
-			arenaData->blockCount = 1;
-			arenaData->totalSize = arena->currentBlock->size;
-			arenaData->usedSize = arena->currentBlock->used;
-
-			MemoryBlock *block = arena->currentBlock->prevBlock;
-			while (block)
+			if (arena->currentBlock)
 			{
-				arenaData->blockCount++;
-				arenaData->totalSize += block->size;
-				arenaData->usedSize += block->size;
+				arenaData->blockCount[frameIndex] = 1;
+				arenaData->totalSize[frameIndex] = arena->currentBlock->size;
+				arenaData->usedSize[frameIndex] = arena->currentBlock->used;
 
-				block = block->prevBlock;
+				MemoryBlock *block = arena->currentBlock->prevBlock;
+				while (block)
+				{
+					arenaData->blockCount[frameIndex]++;
+					arenaData->totalSize[frameIndex] += block->size;
+					arenaData->usedSize[frameIndex] += block->size;
+
+					block = block->prevBlock;
+				}
 			}
 		}
 	}
