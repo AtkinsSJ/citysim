@@ -50,13 +50,16 @@ struct DebugState
 	uint32 writingFrameIndex;
 	DebugArenaData arenaDataSentinel;
 	DebugCodeData codeDataSentinel;
+
+	struct BitmapFont *font;
 };
 
-void debugInit()
+void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
 	globalDebugState->showDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
+	globalDebugState->font = font;
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);
@@ -69,9 +72,6 @@ void processDebugData(DebugState *debugState)
 		debugState->readingFrameIndex = debugState->writingFrameIndex;
 		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
 
-		// Sort the code data
-
-
 		// Zero-out new writing frame.
 		DebugCodeData *codeData = debugState->codeDataSentinel.next;
 		uint32 wfi = debugState->writingFrameIndex;
@@ -81,33 +81,6 @@ void processDebugData(DebugState *debugState)
 			codeData->totalCycleCount[wfi] = 0;
 			codeData->averageCycleCount[wfi] = 0;
 			codeData = codeData->next;
-		}
-	}
-}
-
-void renderDebugData(DebugState *debugState)
-{
-	if (debugState)
-	{
-		uint32 frameIndex = debugState->readingFrameIndex;
-
-		DebugArenaData *arena = debugState->arenaDataSentinel.next;
-		while (arena != &debugState->arenaDataSentinel)
-		{
-			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Memory arena %s: %d blocks, %" PRIu64 " used / %" PRIu64 " allocated",
-				         arena->name, arena->blockCount[frameIndex], arena->usedSize[frameIndex], arena->totalSize[frameIndex]);
-			arena = arena->next;
-		}
-
-		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
-		SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
-
-		DebugCodeData *code = debugState->codeDataSentinel.next;
-		while (code != &debugState->codeDataSentinel)
-		{
-			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
-				         code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex], code->averageCycleCount[frameIndex]);
-			code = code->next;
 		}
 	}
 }

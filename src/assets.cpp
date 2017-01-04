@@ -255,6 +255,7 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	                 rectXYWH(0,0,2002,1519), false);
 	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
+	addBMFont(assets, tempArena, FontAssetType_Debug, TextureAssetType_Font_Debug, "debug.fnt");
 
 	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.gl", "textured.frag.gl");
 	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.gl", "untextured.frag.gl");

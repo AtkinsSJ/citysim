@@ -6,6 +6,7 @@ enum TextureAssetType // NB: Actually TextureRegions, unless I change that later
 
 	TextureAssetType_Font_Main,
 	TextureAssetType_Font_Buttons,
+	TextureAssetType_Font_Debug,
 
 	TextureAssetType_Map1,
 
@@ -16,6 +17,7 @@ enum FontAssetType
 {
 	FontAssetType_Main,
 	FontAssetType_Buttons,
+	FontAssetType_Debug,
 
 	FontAssetTypeCount
 };

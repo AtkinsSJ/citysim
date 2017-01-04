@@ -54,6 +54,7 @@ struct AppState
 };
 
 #include "ui.cpp"
+#include "debug.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
 #include "game.cpp"
@@ -119,7 +120,7 @@ int main(int argc, char *argv[]) {
 
 	AppState appState = {};
 
-	debugInit();
+	debugInit(getFont(assets, FontAssetType_Debug));
 
 // Do we need this here?
 // {
@@ -207,7 +208,7 @@ int main(int argc, char *argv[]) {
 
 			if (globalDebugState->showDebugData)
 			{
-				renderDebugData(globalDebugState);
+				renderDebugData(globalDebugState, uiState, &glRenderer->renderer);
 			}
 		}
 
