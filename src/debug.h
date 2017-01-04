@@ -27,7 +27,7 @@ struct DebugArenaData
 	umm totalSize[DEBUG_FRAMES_COUNT];
 	umm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
 
-	DebugArenaData *next;
+	DLinkedListMembers(DebugArenaData);
 };
 
 struct DebugCodeData
@@ -38,7 +38,7 @@ struct DebugCodeData
 	uint64 totalCycleCount[DEBUG_FRAMES_COUNT];
 	uint64 averageCycleCount[DEBUG_FRAMES_COUNT];
 
-	DebugCodeData *next;
+	DLinkedListMembers(DebugCodeData);
 };
 
 struct DebugState
@@ -48,9 +48,19 @@ struct DebugState
 
 	uint32 readingFrameIndex;
 	uint32 writingFrameIndex;
-	DebugArenaData *firstArenaData;
-	DebugCodeData *firstCodeData;
+	DebugArenaData arenaDataSentinel;
+	DebugCodeData codeDataSentinel;
 };
+
+void debugInit()
+{
+	bootstrapArena(DebugState, globalDebugState, debugArena);
+	globalDebugState->showDebugData = true;
+	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
+
+	DLinkedListInit(&globalDebugState->arenaDataSentinel);
+	DLinkedListInit(&globalDebugState->codeDataSentinel);
+}
 
 void processDebugData(DebugState *debugState)
 {
@@ -59,10 +69,13 @@ void processDebugData(DebugState *debugState)
 		debugState->readingFrameIndex = debugState->writingFrameIndex;
 		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
 
+		// Sort the code data
+
+
 		// Zero-out new writing frame.
-		DebugCodeData *codeData = debugState->firstCodeData;
+		DebugCodeData *codeData = debugState->codeDataSentinel.next;
 		uint32 wfi = debugState->writingFrameIndex;
-		while (codeData)
+		while (codeData != &debugState->codeDataSentinel)
 		{
 			codeData->callCount[wfi] = 0;
 			codeData->totalCycleCount[wfi] = 0;
@@ -78,8 +91,8 @@ void renderDebugData(DebugState *debugState)
 	{
 		uint32 frameIndex = debugState->readingFrameIndex;
 
-		DebugArenaData *arena = debugState->firstArenaData;
-		while (arena)
+		DebugArenaData *arena = debugState->arenaDataSentinel.next;
+		while (arena != &debugState->arenaDataSentinel)
 		{
 			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Memory arena %s: %d blocks, %" PRIu64 " used / %" PRIu64 " allocated",
 				         arena->name, arena->blockCount[frameIndex], arena->usedSize[frameIndex], arena->totalSize[frameIndex]);
@@ -89,8 +102,8 @@ void renderDebugData(DebugState *debugState)
 		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 		SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
 
-		DebugCodeData *code = debugState->firstCodeData;
-		while (code)
+		DebugCodeData *code = debugState->codeDataSentinel.next;
+		while (code != &debugState->codeDataSentinel)
 		{
 			SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
 				         code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex], code->averageCycleCount[frameIndex]);
@@ -105,9 +118,9 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 	{
 		uint32 frameIndex = debugState->writingFrameIndex;
 
-		DebugArenaData *arenaData = debugState->firstArenaData;
+		DebugArenaData *arenaData = debugState->arenaDataSentinel.next;
 		bool found = false;
-		while (arenaData)
+		while (arenaData != &debugState->arenaDataSentinel)
 		{
 			if (strcmp(arenaData->name, arenaName) == 0)
 			{
@@ -121,9 +134,7 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 		if (!found)
 		{
 			arenaData = PushStruct(&debugState->debugArena, DebugArenaData);
-			arenaData->next = debugState->firstArenaData;
-			debugState->firstArenaData = arenaData;
-
+			DLinkedListInsertBefore(arenaData, &debugState->arenaDataSentinel);
 			arenaData->name = arenaName;
 		}
 
@@ -159,9 +170,9 @@ void debugTrackCodeCall(DebugState *debugState, char *name, uint64 cycleCount)
 	{
 		uint32 frameIndex = debugState->writingFrameIndex;
 
-		DebugCodeData *codeData = debugState->firstCodeData;
+		DebugCodeData *codeData = debugState->codeDataSentinel.next;
 		bool found = false;
-		while (codeData)
+		while (codeData != &debugState->codeDataSentinel)
 		{
 			if (strcmp(codeData->name, name) == 0)
 			{
@@ -175,8 +186,7 @@ void debugTrackCodeCall(DebugState *debugState, char *name, uint64 cycleCount)
 		if (!found)
 		{
 			codeData = PushStruct(&debugState->debugArena, DebugCodeData);
-			codeData->next = debugState->firstCodeData;
-			debugState->firstCodeData = codeData;
+			DLinkedListInsertBefore(codeData, &debugState->codeDataSentinel);
 
 			codeData->name = name;
 		}

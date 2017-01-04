@@ -119,9 +119,7 @@ int main(int argc, char *argv[]) {
 
 	AppState appState = {};
 
-	bootstrapArena(DebugState, globalDebugState, debugArena);
-	globalDebugState->showDebugData = true;
-	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
+	debugInit();
 
 // Do we need this here?
 // {

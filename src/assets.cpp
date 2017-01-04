@@ -6,7 +6,7 @@ int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied
 	if (list->usedCount >= ArrayCount(list->textures))
 	{
 		list = PushStruct(&assets->assetArena, TextureList);
-		DLinkedListInsertBefore(list, assets->firstTextureList);
+		DLinkedListInsertBefore(list, &assets->firstTextureList);
 	}
 
 	uint32 idWithinList = list->usedCount++;
@@ -27,7 +27,7 @@ uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textu
 	if (list->usedCount >= ArrayCount(list->regions))
 	{
 		list = PushStruct(&assets->assetArena, TextureRegionList);
-		DLinkedListInsertBefore(list, assets->firstTextureRegionList);
+		DLinkedListInsertBefore(list, &assets->firstTextureRegionList);
 	}
 
 	uint32 idWithinList = list->usedCount++;

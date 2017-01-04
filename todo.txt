@@ -4,6 +4,12 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+Debugging:
+- Key activates debug display, shows graphs and lists
+- Pause profiling
+- Debug console?
+- Hot swapping code?!?! SDL has a fancy dll loader (SDL_loadso.h)
+
 Strings:
 - Custom format strings with indices. eg "This {0} costs £{1}"
 
@@ -30,12 +36,6 @@ UI Theme:
 	- If we want to go crazy we could define the UI itself in data. But that sounds awkward and unnecessary.
 		- Though I think I want to do that for the fancy text screens, as planned.
 		  (Victiorian typography, lots of different fonts and sizes and styles.)
-
-
-Debugging:
-- Some kind of profiling system
-- Debug console?
-- Hot swapping code?!?! SDL has a fancy dll loader (SDL_loadso.h)
 
 GAME:
 - Menu / Game are separate code.
