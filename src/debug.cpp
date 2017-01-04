@@ -1,5 +1,28 @@
 #pragma once
 
+void processDebugData(DebugState *debugState)
+{
+	if (debugState)
+	{
+		debugState->readingFrameIndex = debugState->writingFrameIndex;
+		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
+
+		// Calculate top X code blocks
+		
+
+		// Zero-out new writing frame.
+		DebugCodeData *codeData = debugState->codeDataSentinel.next;
+		uint32 wfi = debugState->writingFrameIndex;
+		while (codeData != &debugState->codeDataSentinel)
+		{
+			codeData->callCount[wfi] = 0;
+			codeData->totalCycleCount[wfi] = 0;
+			codeData->averageCycleCount[wfi] = 0;
+			codeData = codeData->next;
+		}
+	}
+}
+
 void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *renderer)
 {
 	if (debugState)
@@ -12,7 +35,8 @@ void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *rendere
 		V4 textColor = makeWhite();
 		real32 maxWidth = renderer->uiBuffer.camera.size.x - (2*screenEdgePadding);
 
-		drawRect(&renderer->uiBuffer, rectXYWH(0,0,renderer->uiBuffer.camera.size.x, renderer->uiBuffer.camera.size.y), 99, color255(0,0,0,128));
+		drawRect(&renderer->uiBuffer, rectXYWH(0,0,renderer->uiBuffer.camera.size.x, renderer->uiBuffer.camera.size.y),
+			     99, color255(0,0,0,128));
 
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
 		while (arena != &debugState->arenaDataSentinel)
@@ -31,7 +55,8 @@ void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *rendere
 		while (code != &debugState->codeDataSentinel)
 		{
 			sprintf(stringBuffer, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
-				    code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex], code->averageCycleCount[frameIndex]);
+				    code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex],
+				    code->averageCycleCount[frameIndex]);
 			textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 			code = code->next;
 		}

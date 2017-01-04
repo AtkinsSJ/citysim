@@ -18,6 +18,7 @@
 static struct DebugState *globalDebugState;
 
 #define DEBUG_FRAMES_COUNT 120
+#define DEBUG_TOP_CODE_BLOCKS_COUNT 20
 
 struct DebugArenaData
 {
@@ -51,6 +52,9 @@ struct DebugState
 	DebugArenaData arenaDataSentinel;
 	DebugCodeData codeDataSentinel;
 
+	// Processed stuff
+	DebugCodeData *topCodeBlocksByCycles[DEBUG_TOP_CODE_BLOCKS_COUNT];
+
 	struct BitmapFont *font;
 };
 
@@ -63,26 +67,6 @@ void debugInit(BitmapFont *font)
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);
-}
-
-void processDebugData(DebugState *debugState)
-{
-	if (debugState)
-	{
-		debugState->readingFrameIndex = debugState->writingFrameIndex;
-		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
-
-		// Zero-out new writing frame.
-		DebugCodeData *codeData = debugState->codeDataSentinel.next;
-		uint32 wfi = debugState->writingFrameIndex;
-		while (codeData != &debugState->codeDataSentinel)
-		{
-			codeData->callCount[wfi] = 0;
-			codeData->totalCycleCount[wfi] = 0;
-			codeData->averageCycleCount[wfi] = 0;
-			codeData = codeData->next;
-		}
-	}
 }
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName)
