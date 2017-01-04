@@ -42,6 +42,12 @@ struct DebugCodeData
 	DLinkedListMembers(DebugCodeData);
 };
 
+struct DebugCodeDataWrapper
+{
+	DebugCodeData *data;
+	DLinkedListMembers(DebugCodeDataWrapper);
+};
+
 struct DebugState
 {
 	MemoryArena debugArena;
@@ -53,7 +59,8 @@ struct DebugState
 	DebugCodeData codeDataSentinel;
 
 	// Processed stuff
-	DebugCodeData *topCodeBlocksByCycles[DEBUG_TOP_CODE_BLOCKS_COUNT];
+	DebugCodeDataWrapper topCodeBlocksFreeListSentinel;
+	DebugCodeDataWrapper topCodeBlocksSentinel;
 
 	struct BitmapFont *font;
 };
@@ -67,6 +74,14 @@ void debugInit(BitmapFont *font)
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);
+
+	DLinkedListInit(&globalDebugState->topCodeBlocksFreeListSentinel);
+	DLinkedListInit(&globalDebugState->topCodeBlocksSentinel);
+	for (uint32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
+	{
+		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
+		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
+	}
 }
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName)

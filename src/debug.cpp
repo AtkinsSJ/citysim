@@ -7,8 +7,16 @@ void processDebugData(DebugState *debugState)
 		debugState->readingFrameIndex = debugState->writingFrameIndex;
 		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
 
-		// Calculate top X code blocks
-		
+		// Free old top blocks list
+
+		// Calculate new top blocks list
+		DebugCodeData *code = debugState->codeDataSentinel.next;
+		while (code != &debugState->codeDataSentinel)
+		{
+			
+
+			code = code->next;
+		}
 
 		// Zero-out new writing frame.
 		DebugCodeData *codeData = debugState->codeDataSentinel.next;
