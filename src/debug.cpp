@@ -2,18 +2,59 @@
 
 void processDebugData(DebugState *debugState)
 {
+	DEBUG_FUNCTION();
 	if (debugState)
 	{
 		debugState->readingFrameIndex = debugState->writingFrameIndex;
 		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
 
 		// Free old top blocks list
+		DebugCodeDataWrapper *toFree = debugState->topCodeBlocksSentinel.next;
+		while (toFree != &debugState->topCodeBlocksSentinel)
+		{
+			DLinkedListRemove(toFree);
+			DLinkedListInsertBefore(toFree, &debugState->topCodeBlocksFreeListSentinel);
+			toFree = debugState->topCodeBlocksSentinel.next;
+		}
+		ASSERT(DLinkedListIsEmpty(&debugState->topCodeBlocksSentinel), "List we just freed is not empty!");
 
 		// Calculate new top blocks list
 		DebugCodeData *code = debugState->codeDataSentinel.next;
 		while (code != &debugState->codeDataSentinel)
 		{
-			
+			// Find spot on list. If we fail, target is the sentinel so it all still works!
+			DebugCodeDataWrapper *target = debugState->topCodeBlocksSentinel.next;
+			bool foundSmallerItem = false;
+			while (target != &debugState->topCodeBlocksSentinel)
+			{
+				if (target->data->totalCycleCount[debugState->readingFrameIndex]
+				    < code->totalCycleCount[debugState->readingFrameIndex])
+				{
+					foundSmallerItem = true;
+					break;
+				}
+				target = target->next;
+			}
+
+			bool freeListHasItem = !DLinkedListIsEmpty(&debugState->topCodeBlocksFreeListSentinel);
+
+			DebugCodeDataWrapper *item = 0;
+			if (freeListHasItem)
+			{
+				item = debugState->topCodeBlocksFreeListSentinel.next;
+				DLinkedListRemove(item);
+			}
+			else if (foundSmallerItem)
+			{
+				item = debugState->topCodeBlocksSentinel.prev;
+				DLinkedListRemove(item);
+			}
+
+			if (item)
+			{
+				item->data = code;
+				DLinkedListInsertBefore(item, target);
+			}
 
 			code = code->next;
 		}
@@ -59,14 +100,25 @@ void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *rendere
 		sprintf(stringBuffer, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
 		textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 
-		DebugCodeData *code = debugState->codeDataSentinel.next;
-		while (code != &debugState->codeDataSentinel)
+		// DebugCodeData *code = debugState->codeDataSentinel.next;
+		// while (code != &debugState->codeDataSentinel)
+		// {
+		// 	sprintf(stringBuffer, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
+		// 		    code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex],
+		// 		    code->averageCycleCount[frameIndex]);
+		// 	textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+		// 	code = code->next;
+		// }
+
+		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
+		while (topBlock != &debugState->topCodeBlocksSentinel)
 		{
+			DebugCodeData *code = topBlock->data;
 			sprintf(stringBuffer, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
 				    code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex],
 				    code->averageCycleCount[frameIndex]);
 			textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
-			code = code->next;
+			topBlock = topBlock->next;
 		}
 	}
 }

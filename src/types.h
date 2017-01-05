@@ -128,6 +128,10 @@ struct RealRect {
 	(item)->next = (sentinel);                  \
 	(item)->prev->next = (item);                \
 	(item)->next->prev = (item);
+#define DLinkedListRemove(item)                 \
+	(item)->next->prev = item->prev;            \
+	(item)->prev->next = (item)->next;
+#define DLinkedListIsEmpty(sentinel) (((sentinel)->prev == (sentinel)) && ((sentinel)->next == (sentinel)))
 
 /**********************************************
 	General

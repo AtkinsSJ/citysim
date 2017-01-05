@@ -156,6 +156,7 @@ void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *ve
 
 void loadAssets(AssetManager *assets)
 {
+	DEBUG_FUNCTION();
 	for (uint32 i = 1; i < assets->textureCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
