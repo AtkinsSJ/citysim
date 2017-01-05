@@ -121,6 +121,10 @@ struct RealRect {
 
 #include "matrix4.h"
 
+/**********************************************
+	Slightly hacky doubly-linked list stuff
+ **********************************************/
+
 #define DLinkedListMembers(type) type *prev; type *next;
 #define DLinkedListInit(sentinel) (sentinel)->prev = (sentinel)->next = (sentinel);
 #define DLinkedListInsertBefore(item, sentinel) \
@@ -132,6 +136,18 @@ struct RealRect {
 	(item)->next->prev = item->prev;            \
 	(item)->prev->next = (item)->next;
 #define DLinkedListIsEmpty(sentinel) (((sentinel)->prev == (sentinel)) && ((sentinel)->next == (sentinel)))
+// TODO: Could shortcut this by simply changing the first and last list elements to point to the free list.
+// Would be faster but more complicated, so maybe later if it matters.
+#define DLinkedListFreeAll(type, srcSentinel, freeSentinel)   \
+	{                                                         \
+		type *toFree = (srcSentinel)->next;                   \
+		while (toFree != (srcSentinel))                       \
+		{                                                     \
+			DLinkedListRemove(toFree);                        \
+			DLinkedListInsertBefore(toFree, (freeSentinel));  \
+			toFree = (srcSentinel)->next;                     \
+		}                                                     \
+	}
 
 /**********************************************
 	General

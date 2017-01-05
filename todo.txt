@@ -7,6 +7,7 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 Debugging:
 - Key activates debug display, shows graphs and lists
 - Pause profiling
+- Examine past frames
 - Debug console?
 - Hot swapping code?!?! SDL has a fancy dll loader (SDL_loadso.h)
 

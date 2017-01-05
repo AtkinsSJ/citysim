@@ -8,14 +8,8 @@ void processDebugData(DebugState *debugState)
 		debugState->readingFrameIndex = debugState->writingFrameIndex;
 		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
 
-		// Free old top blocks list
-		DebugCodeDataWrapper *toFree = debugState->topCodeBlocksSentinel.next;
-		while (toFree != &debugState->topCodeBlocksSentinel)
-		{
-			DLinkedListRemove(toFree);
-			DLinkedListInsertBefore(toFree, &debugState->topCodeBlocksFreeListSentinel);
-			toFree = debugState->topCodeBlocksSentinel.next;
-		}
+		DLinkedListFreeAll(DebugCodeDataWrapper, &debugState->topCodeBlocksSentinel,
+			               &debugState->topCodeBlocksFreeListSentinel);
 		ASSERT(DLinkedListIsEmpty(&debugState->topCodeBlocksSentinel), "List we just freed is not empty!");
 
 		// Calculate new top blocks list
