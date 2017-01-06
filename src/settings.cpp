@@ -24,7 +24,7 @@ void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Ren
 
 	real32 uiBorderPadding = 4;
 	RealRect buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, renderer, assets, inputState, LocalString("Back"), buttonRect, 1, false, SDL_SCANCODE_ESCAPE))
+	if (uiButton(uiState, renderer, assets, inputState, LocalString("Back"), buttonRect, 1, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

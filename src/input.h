@@ -48,8 +48,20 @@ inline bool mouseButtonPressed(InputState *input, uint8 mouseButton) {
 /**
  * KEYBOARD INPUT
  */
-inline bool keyJustPressed(InputState *input, SDL_Keycode key) {
-	return input->keyDown[key] && !input->keyWasDown[key];
+#define keycodeToIndex(key) ((key) & ~SDLK_SCANCODE_MASK)
+inline bool keyIsPressed(InputState *input, SDL_Keycode key)
+{
+	int32 keycode = keycodeToIndex(key);
+	return input->keyDown[keycode];
+}
+inline bool keyWasPressed(InputState *input, SDL_Keycode key)
+{
+	int32 keycode = keycodeToIndex(key);
+	return input->keyWasDown[keycode];
+}
+inline bool keyJustPressed(InputState *input, SDL_Keycode key)
+{
+	return keyIsPressed(input, key) && !keyWasPressed(input, key);
 }
 
 
@@ -118,10 +130,12 @@ void updateInput(InputState *inputState)
 
 			// KEYBOARD EVENTS
 			case SDL_KEYDOWN: {
-				inputState->keyDown[event.key.keysym.scancode] = true;
+				int32 keycode = keycodeToIndex(event.key.keysym.sym);
+				inputState->keyDown[keycode] = true;
 			} break;
 			case SDL_KEYUP: {
-				inputState->keyDown[event.key.keysym.scancode] = false;
+				int32 keycode = keycodeToIndex(event.key.keysym.sym);
+				inputState->keyDown[keycode] = false;
 			} break;
 			case SDL_TEXTINPUT: {
 				strncpy(inputState->textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);

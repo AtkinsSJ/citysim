@@ -74,7 +74,7 @@ void drawTooltip(UIState *uiState, Renderer *renderer, AssetManager *assets)
 
 bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
 	          char *text, RealRect bounds, real32 depth, bool active=false,
-	          SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, char *tooltip=0)
 {
 	DEBUG_FUNCTION();
 	
@@ -112,7 +112,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 			style->textColor);
 
 	// Keyboard shortcut!
-	if ((shortcutKey != SDL_SCANCODE_UNKNOWN)
+	if ((shortcutKey != SDLK_UNKNOWN)
 	&& keyJustPressed(inputState, shortcutKey))
 	{
 		buttonClicked = true;
@@ -123,7 +123,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 
 bool uiMenuButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
 	              char *text, RealRect bounds, real32 depth, UIMenuID menuID,
-	              SDL_Scancode shortcutKey=SDL_SCANCODE_UNKNOWN, char *tooltip=0)
+	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, char *tooltip=0)
 {
 	DEBUG_FUNCTION();
 	
@@ -166,7 +166,7 @@ void uiTextInput(UIState *uiState, Renderer *renderer, AssetManager *assets, Inp
 			}
 		}
 
-		if (keyJustPressed(inputState, SDL_SCANCODE_BACKSPACE)
+		if (keyJustPressed(inputState, SDLK_BACKSPACE)
 			&& textLength > 0)
 		{
 			textBuffer[textLength-1] = 0;

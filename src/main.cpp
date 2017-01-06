@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// Asset reloading! Whooo!
-		if (keyJustPressed(&inputState, SDL_SCANCODE_F1))
+		if (keyJustPressed(&inputState, SDLK_F1))
 		{
 			GL_unloadAssets(glRenderer);
 			SDL_SetCursor(systemWaitCursor);
@@ -196,13 +196,13 @@ int main(int argc, char *argv[]) {
 		// Debug stuff
 		if (globalDebugState)
 		{
-			if (keyJustPressed(&inputState, SDL_SCANCODE_F2))
+			if (keyJustPressed(&inputState, SDLK_F2))
 			{
 				globalDebugState->showDebugData = !globalDebugState->showDebugData;
 			}
 			
-			if (keyJustPressed(&inputState, SDL_SCANCODE_PAUSE)
-				&& (inputState.keyDown[SDL_SCANCODE_LSHIFT] || inputState.keyDown[SDL_SCANCODE_RSHIFT]))
+			if (keyJustPressed(&inputState, SDLK_PAUSE)
+				&& (keyIsPressed(&inputState, SDLK_LSHIFT) || keyIsPressed(&inputState, SDLK_RSHIFT)))
 			{
 				globalDebugState->captureDebugData = !globalDebugState->captureDebugData;
 			}

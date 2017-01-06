@@ -38,27 +38,27 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	}
 	else
 	{
-		if (inputState->keyDown[SDL_SCANCODE_LEFT]
-			|| inputState->keyDown[SDL_SCANCODE_A]
+		if (inputState->keyDown[SDLK_LEFT]
+			|| inputState->keyDown[SDLK_a]
 			|| (inputState->mousePosNormalised.x < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
-		else if (inputState->keyDown[SDL_SCANCODE_RIGHT]
-			|| inputState->keyDown[SDL_SCANCODE_D]
+		else if (inputState->keyDown[SDLK_RIGHT]
+			|| inputState->keyDown[SDLK_d]
 			|| (inputState->mousePosNormalised.x > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
-		if (inputState->keyDown[SDL_SCANCODE_UP]
-			|| inputState->keyDown[SDL_SCANCODE_W]
+		if (inputState->keyDown[SDLK_UP]
+			|| inputState->keyDown[SDLK_w]
 			|| (inputState->mousePosNormalised.y > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
-		else if (inputState->keyDown[SDL_SCANCODE_DOWN]
-			|| inputState->keyDown[SDL_SCANCODE_S]
+		else if (inputState->keyDown[SDLK_DOWN]
+			|| inputState->keyDown[SDLK_s]
 			|| (inputState->mousePosNormalised.y < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y += scrollSpeed;
@@ -134,7 +134,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 			if (uiButton(uiState, renderer, assets, inputState, LocalString("Build HQ"), menuButtonRect, 1,
 					(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Farmhouse),
-					SDL_SCANCODE_Q, "(Q)"))
+					SDLK_q, "(Q)"))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Farmhouse;
@@ -146,7 +146,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 			if (uiButton(uiState, renderer, assets, inputState, LocalString("Build Field"), menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Field),
-						SDL_SCANCODE_F, "(F)"))
+						SDLK_f, "(F)"))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Field;
@@ -158,7 +158,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 			if (uiButton(uiState, renderer, assets, inputState, LocalString("Build Barn"), menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Barn),
-						SDL_SCANCODE_B, "(B)"))
+						SDLK_b, "(B)"))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Barn;
@@ -170,7 +170,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 			if (uiButton(uiState, renderer, assets, inputState, LocalString("Build Road"), menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Path),
-						SDL_SCANCODE_R, "(R)"))
+						SDLK_r, "(R)"))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Path;
@@ -185,7 +185,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, renderer, assets, inputState, LocalString("Demolish"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Demolish),
-					SDL_SCANCODE_X, "(X)"))
+					SDLK_x, "(X)"))
 		{
 			uiState->actionMode = ActionMode_Demolish;
 			setCursor(uiState, assets, Cursor_Demolish);
@@ -193,7 +193,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, renderer, assets, inputState, LocalString("Plant"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Plant),
-					SDL_SCANCODE_P, "(P)"))
+					SDLK_p, "(P)"))
 		{
 			uiState->actionMode = ActionMode_Plant;
 			setCursor(uiState, assets, Cursor_Plant);
@@ -201,7 +201,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, renderer, assets, inputState, LocalString("Harvest"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Harvest),
-					SDL_SCANCODE_H, "(H)"))
+					SDLK_h, "(H)"))
 		{
 			uiState->actionMode = ActionMode_Harvest;
 			setCursor(uiState, assets, Cursor_Harvest);
@@ -209,7 +209,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, renderer, assets, inputState, LocalString("Hire Worker"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Hire),
-					SDL_SCANCODE_G, "(G)"))
+					SDLK_g, "(G)"))
 		{
 			uiState->actionMode = ActionMode_Hire;
 			setCursor(uiState, assets, Cursor_Hire);
@@ -287,15 +287,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	#if 0 // UiButton/Mouse interaction
 	if (gameState->status == GameStatus_Playing) {
 
-		if (keyJustPressed(inputState, SDL_SCANCODE_INSERT)) {
+		if (keyJustPressed(inputState, SDLK_INSERT)) {
 			gameState->city.funds += 10000;
-		} else if (keyJustPressed(inputState, SDL_SCANCODE_DELETE)) {
+		} else if (keyJustPressed(inputState, SDLK_DELETE)) {
 			gameState->city.funds -= 10000;
 		}
 
 		// Camera controls
 		// HOME resets the camera and centres on the HQ
-		if (keyJustPressed(inputState, SDL_SCANCODE_HOME)) {
+		if (keyJustPressed(inputState, SDLK_HOME)) {
 			worldCamera->zoom = 1;
 			// Jump to the farmhouse if we have one!
 			if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {

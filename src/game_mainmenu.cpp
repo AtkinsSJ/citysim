@@ -29,7 +29,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	RealRect buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
-	if (uiButton(uiState, renderer, assets, inputState, LocalString("Play"), buttonRect, 1)) // , SDL_SCANCODE_RETURN
+	if (uiButton(uiState, renderer, assets, inputState, LocalString("Play"), buttonRect, 1)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;
 	}
