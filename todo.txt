@@ -10,6 +10,7 @@ Debugging:
 - Examine past frames
 - Debug console?
 - Hot swapping code?!?! SDL has a fancy dll loader (SDL_loadso.h)
+- Game still works with BUILD_DEBUG set to false, or not set at all.
 
 Strings:
 - Custom format strings with indices. eg "This {0} costs £{1}"

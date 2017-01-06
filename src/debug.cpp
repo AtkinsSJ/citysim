@@ -93,24 +93,20 @@ void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *rendere
 		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 		sprintf(stringBuffer, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
 		textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+		int32 width = sprintf(stringBuffer, "%30s| %20s| %20s| %20s", "Code", "Total cycles", "Calls", "Avg Cycles");
+		textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 
-		// DebugCodeData *code = debugState->codeDataSentinel.next;
-		// while (code != &debugState->codeDataSentinel)
-		// {
-		// 	sprintf(stringBuffer, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
-		// 		    code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex],
-		// 		    code->averageCycleCount[frameIndex]);
-		// 	textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
-		// 	code = code->next;
-		// }
+		char line[] = "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+		sprintf(stringBuffer, "%.*s", width, line);
+		textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 
 		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
 		while (topBlock != &debugState->topCodeBlocksSentinel)
 		{
 			DebugCodeData *code = topBlock->data;
-			sprintf(stringBuffer, "Code '%s' called %d times, %" PRIu64 " cycles, avg %" PRIu64 " cycles",
-				    code->name, code->callCount[frameIndex], code->totalCycleCount[frameIndex],
-				    code->averageCycleCount[frameIndex]);
+			sprintf(stringBuffer, "%30s| %20" PRIu64 "| %20d| %20" PRIu64 "",
+				    code->name, code->totalCycleCount[frameIndex],
+				    code->callCount[frameIndex], code->averageCycleCount[frameIndex]);
 			textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 			topBlock = topBlock->next;
 		}
