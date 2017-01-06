@@ -119,8 +119,10 @@ int main(int argc, char *argv[]) {
 	SDL_GetWindowSize(glRenderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
 	AppState appState = {};
-
+	
+#if BUILD_DEBUG
 	debugInit(getFont(assets, FontAssetType_Debug));
+#endif
 
 // Do we need this here?
 // {
