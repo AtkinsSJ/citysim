@@ -52,6 +52,7 @@ struct DebugState
 {
 	MemoryArena debugArena;
 	bool showDebugData;
+	bool captureDebugData;
 
 	uint32 readingFrameIndex;
 	uint32 writingFrameIndex;
@@ -69,6 +70,7 @@ void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
 	globalDebugState->showDebugData = true;
+	globalDebugState->captureDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
 

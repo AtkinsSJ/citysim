@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 	SDL_GetWindowSize(glRenderer->window, &inputState.windowWidth, &inputState.windowHeight);
 
 	AppState appState = {};
-	
+
 #if BUILD_DEBUG
 	debugInit(getFont(assets, FontAssetType_Debug));
 #endif
@@ -196,16 +196,25 @@ int main(int argc, char *argv[]) {
 		// Debug stuff
 		if (globalDebugState)
 		{
+			if (keyJustPressed(&inputState, SDL_SCANCODE_F2))
+			{
+				globalDebugState->showDebugData = !globalDebugState->showDebugData;
+			}
+			
+			if (keyJustPressed(&inputState, SDL_SCANCODE_PAUSE)
+				&& (inputState.keyDown[SDL_SCANCODE_LSHIFT] || inputState.keyDown[SDL_SCANCODE_RSHIFT]))
+			{
+				globalDebugState->captureDebugData = !globalDebugState->captureDebugData;
+			}
+
 			DEBUG_ARENA(&assets->assetArena, "Assets");
 			DEBUG_ARENA(&glRenderer->renderArena, "Renderer");
 			DEBUG_ARENA(appState.gameState ? &appState.gameState->gameArena : 0, "GameState");
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-			processDebugData(globalDebugState);
-
-			if (keyJustPressed(&inputState, SDL_SCANCODE_F2))
+			if (globalDebugState->captureDebugData)
 			{
-				globalDebugState->showDebugData = !globalDebugState->showDebugData;
+				processDebugData(globalDebugState);
 			}
 
 			if (globalDebugState->showDebugData)
