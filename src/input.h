@@ -3,6 +3,14 @@
 const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
 const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
 
+enum ModifierKey
+{
+	KeyMod_Alt   = 1 << 0,
+	KeyMod_Ctrl  = 1 << 1,
+	KeyMod_Shift = 1 << 2,
+	KeyMod_Super = 1 << 3,
+};
+
 struct InputState
 {
 	// Mouse
@@ -49,19 +57,65 @@ inline bool mouseButtonPressed(InputState *input, uint8 mouseButton) {
  * KEYBOARD INPUT
  */
 #define keycodeToIndex(key) ((key) & ~SDLK_SCANCODE_MASK)
-inline bool keyIsPressed(InputState *input, SDL_Keycode key)
+inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 {
 	int32 keycode = keycodeToIndex(key);
-	return input->keyDown[keycode];
+
+	bool result = input->keyDown[keycode];
+
+	if (modifiers)
+	{
+		if (modifiers & KeyMod_Alt)
+		{
+			result = result && (keyIsPressed(input, SDLK_LALT) || keyIsPressed(input, SDLK_RALT));
+		}
+		if (modifiers & KeyMod_Ctrl)
+		{
+			result = result && (keyIsPressed(input, SDLK_LCTRL) || keyIsPressed(input, SDLK_RCTRL));
+		}
+		if (modifiers & KeyMod_Shift)
+		{
+			result = result && (keyIsPressed(input, SDLK_LSHIFT) || keyIsPressed(input, SDLK_RSHIFT));
+		}
+		if (modifiers & KeyMod_Super)
+		{
+			result = result && (keyIsPressed(input, SDLK_LGUI) || keyIsPressed(input, SDLK_RGUI));
+		}
+	}
+
+	return result;
 }
-inline bool keyWasPressed(InputState *input, SDL_Keycode key)
+inline bool keyWasPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 {
 	int32 keycode = keycodeToIndex(key);
-	return input->keyWasDown[keycode];
+
+	bool result = input->keyWasDown[keycode];
+
+	if (modifiers)
+	{
+		if (modifiers & KeyMod_Alt)
+		{
+			result = result && (keyWasPressed(input, SDLK_LALT) || keyWasPressed(input, SDLK_RALT));
+		}
+		if (modifiers & KeyMod_Ctrl)
+		{
+			result = result && (keyWasPressed(input, SDLK_LCTRL) || keyWasPressed(input, SDLK_RCTRL));
+		}
+		if (modifiers & KeyMod_Shift)
+		{
+			result = result && (keyWasPressed(input, SDLK_LSHIFT) || keyWasPressed(input, SDLK_RSHIFT));
+		}
+		if (modifiers & KeyMod_Super)
+		{
+			result = result && (keyWasPressed(input, SDLK_LGUI) || keyWasPressed(input, SDLK_RGUI));
+		}
+	}
+
+	return result;
 }
-inline bool keyJustPressed(InputState *input, SDL_Keycode key)
+inline bool keyJustPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 {
-	return keyIsPressed(input, key) && !keyWasPressed(input, key);
+	return keyIsPressed(input, key, modifiers) && !keyWasPressed(input, key);
 }
 
 

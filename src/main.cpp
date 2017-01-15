@@ -201,8 +201,7 @@ int main(int argc, char *argv[]) {
 				globalDebugState->showDebugData = !globalDebugState->showDebugData;
 			}
 			
-			if (keyJustPressed(&inputState, SDLK_PAUSE)
-				&& (keyIsPressed(&inputState, SDLK_LSHIFT) || keyIsPressed(&inputState, SDLK_RSHIFT)))
+			if (keyJustPressed(&inputState, SDLK_PAUSE, KeyMod_Shift))
 			{
 				globalDebugState->captureDebugData = !globalDebugState->captureDebugData;
 			}
