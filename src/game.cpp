@@ -38,27 +38,27 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	}
 	else
 	{
-		if (inputState->keyDown[SDLK_LEFT]
-			|| inputState->keyDown[SDLK_a]
+		if (keyIsPressed(inputState, SDLK_LEFT)
+			|| keyIsPressed(inputState, SDLK_a)
 			|| (inputState->mousePosNormalised.x < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
-		else if (inputState->keyDown[SDLK_RIGHT]
-			|| inputState->keyDown[SDLK_d]
+		else if (keyIsPressed(inputState, SDLK_RIGHT)
+			|| keyIsPressed(inputState, SDLK_d)
 			|| (inputState->mousePosNormalised.x > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
-		if (inputState->keyDown[SDLK_UP]
-			|| inputState->keyDown[SDLK_w]
+		if (keyIsPressed(inputState, SDLK_UP)
+			|| keyIsPressed(inputState, SDLK_w)
 			|| (inputState->mousePosNormalised.y > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
-		else if (inputState->keyDown[SDLK_DOWN]
-			|| inputState->keyDown[SDLK_s]
+		else if (keyIsPressed(inputState, SDLK_DOWN)
+			|| keyIsPressed(inputState, SDLK_s)
 			|| (inputState->mousePosNormalised.y < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
 		{
 			camera->pos.y += scrollSpeed;

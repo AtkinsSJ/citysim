@@ -22,8 +22,8 @@ struct InputState
 	int32 wheelX, wheelY;
 
 	// Keyboard
-	bool keyWasDown[KEYBOARD_KEY_COUNT];
-	bool keyDown[KEYBOARD_KEY_COUNT];
+	bool _keyWasDown[KEYBOARD_KEY_COUNT];
+	bool _keyDown[KEYBOARD_KEY_COUNT];
 	char textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
 
 	// Extra
@@ -61,7 +61,7 @@ inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 {
 	int32 keycode = keycodeToIndex(key);
 
-	bool result = input->keyDown[keycode];
+	bool result = input->_keyDown[keycode];
 
 	if (modifiers)
 	{
@@ -89,7 +89,7 @@ inline bool keyWasPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 {
 	int32 keycode = keycodeToIndex(key);
 
-	bool result = input->keyWasDown[keycode];
+	bool result = input->_keyWasDown[keycode];
 
 	if (modifiers)
 	{
@@ -132,7 +132,7 @@ void updateInput(InputState *inputState)
 	}
 
 	for (int i=0; i < KEYBOARD_KEY_COUNT; i++) {
-		inputState->keyWasDown[i] = inputState->keyDown[i];
+		inputState->_keyWasDown[i] = inputState->_keyDown[i];
 	}
 
 	inputState->textEntered[0] = 0;
@@ -185,11 +185,11 @@ void updateInput(InputState *inputState)
 			// KEYBOARD EVENTS
 			case SDL_KEYDOWN: {
 				int32 keycode = keycodeToIndex(event.key.keysym.sym);
-				inputState->keyDown[keycode] = true;
+				inputState->_keyDown[keycode] = true;
 			} break;
 			case SDL_KEYUP: {
 				int32 keycode = keycodeToIndex(event.key.keysym.sym);
-				inputState->keyDown[keycode] = false;
+				inputState->_keyDown[keycode] = false;
 			} break;
 			case SDL_TEXTINPUT: {
 				strncpy(inputState->textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
