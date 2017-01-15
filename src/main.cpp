@@ -196,29 +196,16 @@ int main(int argc, char *argv[]) {
 		// Debug stuff
 		if (globalDebugState)
 		{
-			if (keyJustPressed(&inputState, SDLK_F2))
-			{
-				globalDebugState->showDebugData = !globalDebugState->showDebugData;
-			}
-			
-			if (keyJustPressed(&inputState, SDLK_PAUSE, KeyMod_Shift))
-			{
-				globalDebugState->captureDebugData = !globalDebugState->captureDebugData;
-			}
-
 			DEBUG_ARENA(&assets->assetArena, "Assets");
 			DEBUG_ARENA(&glRenderer->renderArena, "Renderer");
 			DEBUG_ARENA(appState.gameState ? &appState.gameState->gameArena : 0, "GameState");
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-			if (globalDebugState->captureDebugData)
-			{
-				processDebugData(globalDebugState);
-			}
+			debugUpdate(globalDebugState, &inputState);
 
 			if (globalDebugState->showDebugData)
 			{
-				renderDebugData(globalDebugState, uiState, &glRenderer->renderer);
+				renderDebugData(globalDebugState, uiState, &glRenderer->renderer.uiBuffer);
 			}
 		}
 

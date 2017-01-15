@@ -27,7 +27,7 @@ void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
 	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
 }
 
-RealRect uiText(UIState *uiState, Renderer *renderer, BitmapFont *font, char *text, V2 origin, int32 align,
+RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, char *text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
@@ -36,7 +36,7 @@ RealRect uiText(UIState *uiState, Renderer *renderer, BitmapFont *font, char *te
 
 	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, align);
-	drawCachedText(renderer, textCache, topLeft, depth);
+	drawCachedText(uiBuffer, textCache, topLeft, depth);
 	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
 
 	endTemporaryMemory(&memory);
@@ -51,35 +51,35 @@ void setTooltip(UIState *uiState, char *text, V4 color)
 	uiState->tooltip.show = true;
 }
 
-void drawTooltip(UIState *uiState, Renderer *renderer, AssetManager *assets)
+void drawTooltip(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
 {
 	if (uiState->tooltip.show)
 	{
 		UITooltipStyle *style = &assets->theme.tooltipStyle;
 
-		V2 mousePos = renderer->uiBuffer.camera.mousePos;
+		V2 mousePos = uiBuffer->camera.mousePos;
 
 		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(style->borderPadding, style->borderPadding);
 
-		RealRect labelRect = uiText(uiState, renderer, getFont(assets, style->font), uiState->tooltip.text,
+		RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, style->depth + 1, uiState->tooltip.color);
 
 		labelRect = expandRect(labelRect, style->borderPadding);
 
-		drawRect(&renderer->uiBuffer, labelRect, style->depth, style->backgroundColor);
+		drawRect(uiBuffer, labelRect, style->depth, style->backgroundColor);
 
 		uiState->tooltip.show = false;
 	}
 }
 
-bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
+bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
 	          char *text, RealRect bounds, real32 depth, bool active=false,
 	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, char *tooltip=0)
 {
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	V2 mousePos = renderer->uiBuffer.camera.mousePos;
+	V2 mousePos = uiBuffer->camera.mousePos;
 	UITheme *theme = &assets->theme;
 	UIButtonStyle *style = &theme->buttonStyle;
 	V4 backColor = style->backgroundColor;
@@ -107,8 +107,8 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 		backColor = style->hoverColor;
 	}
 
-	drawRect(&renderer->uiBuffer, bounds, depth, backColor);
-	uiText(uiState, renderer, getFont(assets, style->font), text, centre(bounds), ALIGN_CENTRE, depth + 1,
+	drawRect(uiBuffer, bounds, depth, backColor);
+	uiText(uiState, uiBuffer, getFont(assets, style->font), text, centre(bounds), ALIGN_CENTRE, depth + 1,
 			style->textColor);
 
 	// Keyboard shortcut!
@@ -121,14 +121,14 @@ bool uiButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputS
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
+bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
 	              char *text, RealRect bounds, real32 depth, UIMenuID menuID,
 	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, char *tooltip=0)
 {
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, renderer, assets, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, uiBuffer, assets, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -145,7 +145,7 @@ bool uiMenuButton(UIState *uiState, Renderer *renderer, AssetManager *assets, In
 	return currentlyOpen;
 }
 
-void uiTextInput(UIState *uiState, Renderer *renderer, AssetManager *assets, InputState *inputState,
+void uiTextInput(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
 	             bool active, char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
 {
 	DEBUG_FUNCTION();
@@ -175,10 +175,10 @@ void uiTextInput(UIState *uiState, Renderer *renderer, AssetManager *assets, Inp
 	}
 
 	const real32 padding = 4;
-	RealRect labelRect = uiText(uiState, renderer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
+	RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
 	labelRect = expandRect(labelRect, padding);
-	drawRect(&renderer->uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
+	drawRect(uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
 }
 
 void pushUiMessage(UIState *uiState, char *message)
@@ -187,7 +187,7 @@ void pushUiMessage(UIState *uiState, char *message)
 	uiState->message.countdown = messageDisplayTime;
 }
 
-void drawUiMessage(UIState *uiState, Renderer *renderer, AssetManager *assets)
+void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 	
@@ -219,14 +219,13 @@ void drawUiMessage(UIState *uiState, Renderer *renderer, AssetManager *assets)
 				textColor.a = lerp(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(renderer->uiBuffer.camera.size.x * 0.5f, renderer->uiBuffer.camera.size.y - 8.0f);
-			// V2 origin = v2(renderer->worldCamera.windowWidth * 0.5f, renderer->worldCamera.windowHeight - 8.0f);
-			RealRect labelRect = uiText(uiState, renderer, getFont(assets, style->font), uiState->message.text, origin,
+			V2 origin = v2(uiBuffer->camera.size.x * 0.5f, uiBuffer->camera.size.y - 8.0f);
+			RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, style->depth + 1, textColor);
 
 			labelRect = expandRect(labelRect, style->borderPadding);
 
-			drawRect(&renderer->uiBuffer, labelRect, style->depth, backgroundColor);
+			drawRect(uiBuffer, labelRect, style->depth, backgroundColor);
 		}
 	}
 }

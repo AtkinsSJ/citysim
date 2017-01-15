@@ -310,12 +310,12 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 	return offset;
 }
 
-void drawCachedText(Renderer *renderer, BitmapFontCachedText *cache, V2 topLeft, real32 depth)
+void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, real32 depth)
 {
 	for (uint32 spriteIndex=0;
 		spriteIndex < cache->charCount;
 		spriteIndex++)
 	{
-		drawRenderItem(&renderer->uiBuffer, cache->chars + spriteIndex, topLeft, depth);
+		drawRenderItem(uiBuffer, cache->chars + spriteIndex, topLeft, depth);
 	}
 }

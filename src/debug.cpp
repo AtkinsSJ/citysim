@@ -66,7 +66,7 @@ void processDebugData(DebugState *debugState)
 	}
 }
 
-void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *renderer)
+void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (debugState)
 	{
@@ -76,9 +76,9 @@ void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *rendere
 		char stringBuffer[1024];
 		BitmapFont *font = debugState->font;
 		V4 textColor = makeWhite();
-		real32 maxWidth = renderer->uiBuffer.camera.size.x - (2*screenEdgePadding);
+		real32 maxWidth = uiBuffer->camera.size.x - (2*screenEdgePadding);
 
-		drawRect(&renderer->uiBuffer, rectXYWH(0,0,renderer->uiBuffer.camera.size.x, renderer->uiBuffer.camera.size.y),
+		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			     99, color255(0,0,0,128));
 
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
@@ -86,19 +86,19 @@ void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *rendere
 		{
 			sprintf(stringBuffer, "Memory arena %s: %d blocks, %" PRIuPTR " used / %" PRIuPTR " allocated",
 				    arena->name, arena->blockCount[frameIndex], arena->usedSize[frameIndex], arena->totalSize[frameIndex]);
-			textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+			textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 			arena = arena->next;
 		}
 
 		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 		sprintf(stringBuffer, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
-		textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 		int32 width = sprintf(stringBuffer, "%30s| %20s| %20s| %20s", "Code", "Total cycles", "Calls", "Avg Cycles");
-		textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 
 		char line[] = "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
 		sprintf(stringBuffer, "%.*s", width, line);
-		textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 
 		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
 		while (topBlock != &debugState->topCodeBlocksSentinel)
@@ -107,8 +107,26 @@ void renderDebugData(DebugState *debugState, UIState *uiState, Renderer *rendere
 			sprintf(stringBuffer, "%30s| %20" PRIu64 "| %20d| %20" PRIu64 "",
 				    code->name, code->totalCycleCount[frameIndex],
 				    code->callCount[frameIndex], code->averageCycleCount[frameIndex]);
-			textPos.y += uiText(uiState, renderer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+			textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 			topBlock = topBlock->next;
 		}
+	}
+}
+
+void debugUpdate(DebugState *debugState, InputState *inputState)
+{
+	if (keyJustPressed(inputState, SDLK_F2))
+	{
+		debugState->showDebugData = !debugState->showDebugData;
+	}
+	
+	if (keyJustPressed(inputState, SDLK_PAUSE, KeyMod_Shift))
+	{
+		debugState->captureDebugData = !debugState->captureDebugData;
+	}
+
+	if (debugState->captureDebugData)
+	{
+		processDebugData(debugState);
 	}
 }
