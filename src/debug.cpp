@@ -1,4 +1,5 @@
 #pragma once
+#include <stdarg.h>
 
 void clearDebugFrame(DebugState *debugState, int32 frameIndex)
 {
@@ -70,52 +71,80 @@ void processDebugData(DebugState *debugState)
 	}
 }
 
+struct DebugTextState
+{
+	V2 pos;
+	char buffer[1024];
+	BitmapFont *font;
+	V4 color;
+	real32 maxWidth;
+
+	UIState *uiState;
+	RenderBuffer *uiBuffer;
+
+	int32 charsLastPrinted;
+};
+inline DebugTextState initDebugTextState(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor,
+	                                     real32 screenWidth, real32 screenEdgePadding)
+{
+	DebugTextState textState = {};
+	textState.pos = v2(screenEdgePadding, screenEdgePadding);
+	textState.font = font;
+	textState.color = textColor;
+	textState.maxWidth = screenWidth - (2*screenEdgePadding);
+
+	textState.uiState = uiState;
+	textState.uiBuffer = uiBuffer;
+
+	return textState;
+}
+void debugTextOut(DebugTextState *textState, const char *formatString, ...)
+{
+	va_list args;
+	va_start(args, formatString);
+	textState->charsLastPrinted = vsnprintf(textState->buffer, sizeof(textState->buffer), formatString, args);
+	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, textState->buffer, textState->pos,
+	                             ALIGN_LEFT, 100, textState->color, textState->maxWidth);
+	textState->pos.y += resultRect.h;
+	va_end(args);
+}
+
 void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (debugState)
 	{
 		int32 frameIndex = debugState->readingFrameIndex;
-		real32 screenEdgePadding = 16.0f;
-		V2 textPos = v2(screenEdgePadding, screenEdgePadding);
-		char stringBuffer[1024];
-		BitmapFont *font = debugState->font;
-		V4 textColor = makeWhite();
-		real32 maxWidth = uiBuffer->camera.size.x - (2*screenEdgePadding);
-
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			     99, color255(0,0,0,128));
 
-		sprintf(stringBuffer, "Examing %d frames ago",
+		DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
+			                                          uiBuffer->camera.size.x, 16.0f);
+
+		debugTextOut(&textState, "Examing %d frames ago",
 			    ((debugState->writingFrameIndex - frameIndex) + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT);
-		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
 		while (arena != &debugState->arenaDataSentinel)
 		{
-			sprintf(stringBuffer, "Memory arena %s: %d blocks, %" PRIuPTR " used / %" PRIuPTR " allocated",
+			debugTextOut(&textState, "Memory arena %s: %d blocks, %" PRIuPTR " used / %" PRIuPTR " allocated",
 				    arena->name, arena->blockCount[frameIndex], arena->usedSize[frameIndex], arena->totalSize[frameIndex]);
-			textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 			arena = arena->next;
 		}
 
 		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
-		sprintf(stringBuffer, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
-		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
-		int32 width = sprintf(stringBuffer, "%30s| %20s| %20s| %20s", "Code", "Total cycles", "Calls", "Avg Cycles");
-		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+		debugTextOut(&textState, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
+		debugTextOut(&textState, "%30s| %20s| %20s| %20s", "Code", "Total cycles", "Calls", "Avg Cycles");
 
 		char line[] = "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
-		sprintf(stringBuffer, "%.*s", width, line);
-		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+		debugTextOut(&textState, "%.*s", textState.charsLastPrinted, line);
 
 		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
 		while (topBlock != &debugState->topCodeBlocksSentinel)
 		{
 			DebugCodeData *code = topBlock->data;
-			sprintf(stringBuffer, "%30s| %20" PRIu64 "| %20d| %20" PRIu64 "",
-				    code->name, code->totalCycleCount[frameIndex],
-				    code->callCount[frameIndex], code->averageCycleCount[frameIndex]);
-			textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
+			debugTextOut(&textState, "%30s| %20" PRIu64 "| %20d| %20" PRIu64 "",
+				         code->name, code->totalCycleCount[frameIndex],
+				         code->callCount[frameIndex], code->averageCycleCount[frameIndex]);
 			topBlock = topBlock->next;
 		}
 	}
@@ -148,7 +177,10 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 	}
 	else
 	{
-		// Clear current frame
+		// Clear current frame to prevent all the incoming events building up.
+		// (We still receive and log events when paused, we just don't progress.)
+		// So, we technically lose information here but oh well. When we pause debug info, it's to examine the recent past,
+		// not monitor what's happening *now*.
 		clearDebugFrame(debugState, debugState->writingFrameIndex);
 	}
 
