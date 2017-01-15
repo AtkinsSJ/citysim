@@ -1,5 +1,17 @@
 #pragma once
 
+void clearDebugFrame(DebugState *debugState, int32 frameIndex)
+{
+	DebugCodeData *codeData = debugState->codeDataSentinel.next;
+	while (codeData != &debugState->codeDataSentinel)
+	{
+		codeData->callCount[frameIndex] = 0;
+		codeData->totalCycleCount[frameIndex] = 0;
+		codeData->averageCycleCount[frameIndex] = 0;
+		codeData = codeData->next;
+	}
+}
+
 void processDebugData(DebugState *debugState)
 {
 	DEBUG_FUNCTION();
@@ -54,15 +66,7 @@ void processDebugData(DebugState *debugState)
 		}
 
 		// Zero-out new writing frame.
-		DebugCodeData *codeData = debugState->codeDataSentinel.next;
-		uint32 wfi = debugState->writingFrameIndex;
-		while (codeData != &debugState->codeDataSentinel)
-		{
-			codeData->callCount[wfi] = 0;
-			codeData->totalCycleCount[wfi] = 0;
-			codeData->averageCycleCount[wfi] = 0;
-			codeData = codeData->next;
-		}
+		clearDebugFrame(debugState, debugState->writingFrameIndex);
 	}
 }
 
@@ -141,6 +145,11 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 	if (debugState->captureDebugData)
 	{
 		processDebugData(debugState);
+	}
+	else
+	{
+		// Clear current frame
+		clearDebugFrame(debugState, debugState->writingFrameIndex);
 	}
 
 	if (debugState->showDebugData)
