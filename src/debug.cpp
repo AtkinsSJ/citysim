@@ -136,6 +136,8 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		debugTextOut(&textState, "%30s| %20s| %20s| %20s", "Code", "Total cycles", "Calls", "Avg Cycles");
 
 		char line[] = "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+		ASSERT(strlen(line) >= textState.charsLastPrinted,
+			   "line not long enough! Length is %d, needed %d", strlen(line), textState.charsLastPrinted);
 		debugTextOut(&textState, "%.*s", textState.charsLastPrinted, line);
 
 		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
