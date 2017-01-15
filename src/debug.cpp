@@ -70,7 +70,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 {
 	if (debugState)
 	{
-		uint32 frameIndex = debugState->readingFrameIndex;
+		int32 frameIndex = debugState->readingFrameIndex;
 		real32 screenEdgePadding = 16.0f;
 		V2 textPos = v2(screenEdgePadding, screenEdgePadding);
 		char stringBuffer[1024];
@@ -80,6 +80,10 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			     99, color255(0,0,0,128));
+
+		sprintf(stringBuffer, "Examing %d frames ago",
+			    ((debugState->writingFrameIndex - frameIndex) + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT);
+		textPos.y += uiText(uiState, uiBuffer, font, stringBuffer, textPos, ALIGN_LEFT, 100, textColor, maxWidth).h;
 
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
 		while (arena != &debugState->arenaDataSentinel)
@@ -123,6 +127,15 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 	if (keyJustPressed(inputState, SDLK_PAUSE, KeyMod_Shift))
 	{
 		debugState->captureDebugData = !debugState->captureDebugData;
+	}
+
+	if (keyJustPressed(inputState, SDLK_KP_MINUS, KeyMod_Shift))
+	{
+		debugState->readingFrameIndex = (debugState->readingFrameIndex - 1 + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT;
+	}
+	else if (keyJustPressed(inputState, SDLK_KP_PLUS, KeyMod_Shift))
+	{
+		debugState->readingFrameIndex = (debugState->readingFrameIndex + 1 + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT;
 	}
 
 	if (debugState->captureDebugData)
