@@ -92,7 +92,7 @@ void showCostTooltip(UIState *uiState, AssetManager *assets, int32 cost, int32 c
 	} else {
 		uiState->tooltip.color = theme->tooltipStyle.textColorNormal;
 	}
-	sprintf(uiState->tooltip.text, "-£%d", cost);
+	snprintf(uiState->tooltip.text, sizeof(uiState->tooltip.text), "-£%d", cost);
 	uiState->tooltip.show = true;
 }
 
@@ -116,9 +116,9 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	uiText(uiState, uiBuffer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
-	sprintf(stringBuffer, LocalString("£%d"), gameState->city.funds);
+	snprintf(stringBuffer, sizeof(stringBuffer), LocalString("£%d"), gameState->city.funds);
 	uiText(uiState, uiBuffer, font, stringBuffer, v2(centre.x, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
-	sprintf(stringBuffer, LocalString("(-£%d/month)\0"), gameState->city.monthlyExpenditure);
+	snprintf(stringBuffer, sizeof(stringBuffer), LocalString("(-£%d/month)\0"), gameState->city.monthlyExpenditure);
 	uiText(uiState, uiBuffer, font, stringBuffer, v2(centre.x, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
 	// Build UI
@@ -244,9 +244,9 @@ bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIS
 	char gameOverText[256];
 	if (won)
 	{
-		sprintf(gameOverText, LocalString("You won! You earned £%d in ??? days"), gameWinFunds);
+		snprintf(gameOverText, sizeof(gameOverText), LocalString("You won! You earned £%d in ??? days"), gameWinFunds);
 	} else {
-		sprintf(gameOverText, LocalString("Game over! You ran out of money! :("));
+		snprintf(gameOverText, sizeof(gameOverText), LocalString("Game over! You ran out of money! :("));
 	}
 
 	uiText(uiState, uiBuffer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, theme->labelStyle.textColor);
