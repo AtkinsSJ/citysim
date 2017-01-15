@@ -155,6 +155,7 @@ struct RealRect {
 
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
 #define MAX(a,b) ((a) > (b)) ? (a) : (b)
+#define WRAP(value, max) (((value) + (max)) % (max))
 
 inline real32 clamp(real32 value, real32 min, real32 max)
 {

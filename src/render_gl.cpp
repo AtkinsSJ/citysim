@@ -396,6 +396,7 @@ ShaderProgramType getDesiredShader(RenderItem *item)
 
 void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
 {
+	DEBUG_FUNCTION();
 	// Fill VBO
 	uint32 vertexCount = 0;
 	uint32 indexCount = 0;
@@ -514,6 +515,7 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 
 void sortRenderBuffer(RenderBuffer *buffer)
 {
+	DEBUG_FUNCTION();
 	// This is an implementation of the 'comb sort' algorithm, low to high
 
 	uint32 gap = buffer->itemCount;
@@ -596,7 +598,11 @@ void GL_render(GL_Renderer *renderer, AssetManager *assets)
 	glUseProgram(NULL);
 	GL_checkForError();
 	SDL_Log("End of frame.");
-	SDL_GL_SwapWindow( renderer->window );
+
+	{
+		DEBUG_BLOCK("SDL_GL_SwapWindow");
+		SDL_GL_SwapWindow( renderer->window );
+	}
 }
 
 ////////////////////////////////////////////////////////////////////

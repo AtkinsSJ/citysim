@@ -18,12 +18,13 @@ void processDebugData(DebugState *debugState)
 	DEBUG_FUNCTION();
 	if (debugState)
 	{
-
+		debugState->frameEndCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
 		if (debugState->captureDebugData)
 		{
 			debugState->readingFrameIndex = debugState->writingFrameIndex;
 			debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
 		}
+		debugState->frameStartCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
 
 		DLinkedListFreeAll(DebugCodeDataWrapper, &debugState->topCodeBlocksSentinel,
 			               &debugState->topCodeBlocksFreeListSentinel);
@@ -108,7 +109,7 @@ void debugTextOut(DebugTextState *textState, const char *formatString, ...)
 	va_start(args, formatString);
 	textState->charsLastPrinted = vsnprintf(textState->buffer, sizeof(textState->buffer), formatString, args);
 	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, textState->buffer, textState->pos,
-	                             ALIGN_LEFT, 100, textState->color, textState->maxWidth);
+	                             ALIGN_LEFT, 300, textState->color, textState->maxWidth);
 	textState->pos.y += resultRect.h;
 	va_end(args);
 }
@@ -117,21 +118,20 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 {
 	if (debugState)
 	{
-		int32 frameIndex = debugState->readingFrameIndex;
+		uint32 rfi = debugState->readingFrameIndex;
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
-			     99, color255(0,0,0,128));
+			     100, color255(0,0,0,128));
 
 		DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
 			                                          uiBuffer->camera.size.x, 16.0f);
 
-		debugTextOut(&textState, "Examing %d frames ago",
-			    ((debugState->writingFrameIndex - frameIndex) + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT);
+		debugTextOut(&textState, "Examing %d frames ago", WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT));
 
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
 		while (arena != &debugState->arenaDataSentinel)
 		{
 			debugTextOut(&textState, "Memory arena %s: %d blocks, %" PRIuPTR " used / %" PRIuPTR " allocated",
-				    arena->name, arena->blockCount[frameIndex], arena->usedSize[frameIndex], arena->totalSize[frameIndex]);
+				    arena->name, arena->blockCount[rfi], arena->usedSize[rfi], arena->totalSize[rfi]);
 			arena = arena->next;
 		}
 
@@ -149,9 +149,27 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		{
 			DebugCodeData *code = topBlock->data;
 			debugTextOut(&textState, "%30s| %20" PRIu64 "| %20d| %20" PRIu64 "",
-				         code->name, code->totalCycleCount[frameIndex],
-				         code->callCount[frameIndex], code->averageCycleCount[frameIndex]);
+				         code->name, code->totalCycleCount[rfi],
+				         code->callCount[rfi], code->averageCycleCount[rfi]);
 			topBlock = topBlock->next;
+		}
+
+		// Draw a nice chart!
+		real32 graphHeight = 200.0f;
+		real32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
+		real32 barWidth = uiBuffer->camera.size.x / (real32)DEBUG_FRAMES_COUNT;
+		real32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
+		V4 barColor = color255(255, 0, 0, 128);
+		V4 activeBarColor = color255(255, 255, 0, 128);
+		uint32 barIndex = 0;
+		for (uint32 fi = debugState->writingFrameIndex + 1;
+			 fi != debugState->writingFrameIndex;
+			 fi = WRAP(fi + 1, DEBUG_FRAMES_COUNT))
+		{
+			uint64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
+			real32 barHeight = barHeightPerCycle * (real32)frameCycles;
+			drawRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), 200,
+				     fi == rfi ? activeBarColor : barColor);
 		}
 	}
 }
@@ -170,11 +188,11 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	if (keyJustPressed(inputState, SDLK_KP_MINUS, KeyMod_Shift))
 	{
-		debugState->readingFrameIndex = (debugState->readingFrameIndex - 1 + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT;
+		debugState->readingFrameIndex = WRAP(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
 	}
 	else if (keyJustPressed(inputState, SDLK_KP_PLUS, KeyMod_Shift))
 	{
-		debugState->readingFrameIndex = (debugState->readingFrameIndex + 1 + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT;
+		debugState->readingFrameIndex = WRAP(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
 	}
 
 	processDebugData(debugState);

@@ -2,7 +2,10 @@
 
 #ifdef BUILD_DEBUG
 
-#define DEBUG_BLOCK(name) DebugBlock debugBlock____##__COUNT__(name)
+AARARATAHGAJHAJHAHGAKJGAKJ
+
+#define GLUE(a, b) a ## b
+#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (name)
 #define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
 #define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, name)
@@ -56,6 +59,9 @@ struct DebugState
 
 	uint32 readingFrameIndex;
 	uint32 writingFrameIndex;
+	uint64 frameStartCycle[DEBUG_FRAMES_COUNT];
+	uint64 frameEndCycle[DEBUG_FRAMES_COUNT];
+
 	DebugArenaData arenaDataSentinel;
 	DebugCodeData codeDataSentinel;
 
