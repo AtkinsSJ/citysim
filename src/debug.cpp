@@ -113,7 +113,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 	}
 }
 
-void debugUpdate(DebugState *debugState, InputState *inputState)
+void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (keyJustPressed(inputState, SDLK_F2))
 	{
@@ -128,5 +128,10 @@ void debugUpdate(DebugState *debugState, InputState *inputState)
 	if (debugState->captureDebugData)
 	{
 		processDebugData(debugState);
+	}
+
+	if (debugState->showDebugData)
+	{
+		renderDebugData(debugState, uiState, uiBuffer);
 	}
 }
