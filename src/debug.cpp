@@ -18,8 +18,12 @@ void processDebugData(DebugState *debugState)
 	DEBUG_FUNCTION();
 	if (debugState)
 	{
-		debugState->readingFrameIndex = debugState->writingFrameIndex;
-		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
+
+		if (debugState->captureDebugData)
+		{
+			debugState->readingFrameIndex = debugState->writingFrameIndex;
+			debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
+		}
 
 		DLinkedListFreeAll(DebugCodeDataWrapper, &debugState->topCodeBlocksSentinel,
 			               &debugState->topCodeBlocksFreeListSentinel);
@@ -82,7 +86,7 @@ struct DebugTextState
 	UIState *uiState;
 	RenderBuffer *uiBuffer;
 
-	int32 charsLastPrinted;
+	uint32 charsLastPrinted;
 };
 inline DebugTextState initDebugTextState(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor,
 	                                     real32 screenWidth, real32 screenEdgePadding)
@@ -173,18 +177,7 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 		debugState->readingFrameIndex = (debugState->readingFrameIndex + 1 + DEBUG_FRAMES_COUNT) % DEBUG_FRAMES_COUNT;
 	}
 
-	if (debugState->captureDebugData)
-	{
-		processDebugData(debugState);
-	}
-	else
-	{
-		// Clear current frame to prevent all the incoming events building up.
-		// (We still receive and log events when paused, we just don't progress.)
-		// So, we technically lose information here but oh well. When we pause debug info, it's to examine the recent past,
-		// not monitor what's happening *now*.
-		clearDebugFrame(debugState, debugState->writingFrameIndex);
-	}
+	processDebugData(debugState);
 
 	if (debugState->showDebugData)
 	{
