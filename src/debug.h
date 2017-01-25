@@ -2,9 +2,8 @@
 
 #ifdef BUILD_DEBUG
 
-AARARATAHGAJHAJHAHGAKJGAKJ
-
-#define GLUE(a, b) a ## b
+#define GLUE_(a, b) a ## b
+#define GLUE(a, b) GLUE_(a, b)
 #define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (name)
 #define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
