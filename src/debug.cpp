@@ -155,7 +155,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		}
 
 		// Draw a nice chart!
-		real32 graphHeight = 200.0f;
+		real32 graphHeight = 150.0f;
 		real32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
 		real32 barWidth = uiBuffer->camera.size.x / (real32)DEBUG_FRAMES_COUNT;
 		real32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
@@ -171,6 +171,10 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 			drawRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), 200,
 				     fi == rfi ? activeBarColor : barColor);
 		}
+		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight, uiBuffer->camera.size.x, 1),
+		         201, color255(255, 255, 255, 128));
+		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1),
+		         201, color255(255, 255, 255, 128));
 	}
 }
 
