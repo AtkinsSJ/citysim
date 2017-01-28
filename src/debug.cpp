@@ -178,8 +178,19 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 
 		// Console
 		textState.pos.y = uiBuffer->camera.size.y - 20;
-		debugTextOut(&textState, "> %.*s_", debugState->console.bufferLength, debugState->console.buffer);
+		char caret = '_';
+		if ((rfi % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
+		{
+			caret = ' ';
+		}
+		debugTextOut(&textState, "> %.*s%c", debugState->console.bufferLength, debugState->console.buffer, caret);
 	}
+}
+
+void debugHandleConsoleInput(StringBuffer *console)
+{
+	// TODO: Actual console commands!
+	// Not sure what we would actually want yet, so I don't know how to structure this.
 }
 
 void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
@@ -216,6 +227,12 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 		{
 			backspace(&debugState->console);
 		}
+		else if (keyJustPressed(inputState, SDLK_RETURN))
+		{
+			debugHandleConsoleInput(&debugState->console);
+			clear(&debugState->console);
+		}
+
 		if (inputState->textEntered[0])
 		{
 			int32 inputTextLength = strlen(inputState->textEntered);
