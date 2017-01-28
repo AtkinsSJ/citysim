@@ -9,7 +9,7 @@ X Key activates debug display, shows graphs and lists
 X Pause profiling
 X Examine past frames
 X Charts!
-- Debug console?
+X Debug console?
 - Hot swapping code?!?! SDL has a fancy dll loader (SDL_loadso.h)
 - Game still works with BUILD_DEBUG set to false, or not set at all.
 
