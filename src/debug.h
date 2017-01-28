@@ -50,11 +50,20 @@ struct DebugCodeDataWrapper
 	DLinkedListMembers(DebugCodeDataWrapper);
 };
 
+struct DebugConsole
+{
+	char *inputBuffer;
+	int32 inputBufferLength;
+	int32 inputBufferMaxLength;
+};
+
 struct DebugState
 {
 	MemoryArena debugArena;
 	bool showDebugData;
 	bool captureDebugData;
+
+	StringBuffer console;
 
 	uint32 readingFrameIndex;
 	uint32 writingFrameIndex;
@@ -78,6 +87,10 @@ void debugInit(BitmapFont *font)
 	globalDebugState->captureDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
+
+	globalDebugState->console = newStringBuffer(&globalDebugState->debugArena, 255);
+	char message[] = "Hello world!";
+	appendToBuffer(&globalDebugState->console, message, ArrayCount(message));
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);

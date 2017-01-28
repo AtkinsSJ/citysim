@@ -30,6 +30,7 @@ enum AppStatus
 
 #include "types.h"
 #include "memory.h"
+#include "string.h"
 #include "debug.h"
 #include "random.h"
 #include "platform.h"

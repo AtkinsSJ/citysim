@@ -175,6 +175,10 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		         201, color255(255, 255, 255, 128));
 		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1),
 		         201, color255(255, 255, 255, 128));
+
+		// Console
+		textState.pos.y = uiBuffer->camera.size.y - 20;
+		debugTextOut(&textState, "> %.*s_", debugState->console.bufferLength, debugState->console.buffer);
 	}
 }
 
@@ -201,8 +205,14 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	processDebugData(debugState);
 
+
 	if (debugState->showDebugData)
 	{
+		if (inputState->textEntered[0])
+		{
+			int32 inputTextLength = strlen(inputState->textEntered);
+			appendToBuffer(&debugState->console, inputState->textEntered, inputTextLength);
+		}
 		renderDebugData(debugState, uiState, uiBuffer);
 	}
 }

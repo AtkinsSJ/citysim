@@ -14,7 +14,7 @@ struct BuildingDefinition {
 		Coord size;
 		struct {int32 width, height;};
 	};
-	string name;
+	char *name;
 	TextureAssetType textureAtlasItem;
 	int32 buildCost;
 	int32 demolishCost;
