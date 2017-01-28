@@ -145,41 +145,41 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 	return currentlyOpen;
 }
 
-void uiTextInput(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	             bool active, char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
-{
-	DEBUG_FUNCTION();
+// void uiTextInput(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
+// 	             bool active, char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
+// {
+// 	DEBUG_FUNCTION();
 	
-	UITheme *theme = &assets->theme;
+// 	UITheme *theme = &assets->theme;
 
-	if (active)
-	{
-		int32 textLength = strlen(textBuffer);
-		if (inputState->textEntered[0])
-		{
-			uint32 pos = 0;
-			while (inputState->textEntered[pos]
-				&& textLength < textBufferLength)
-			{
-				textBuffer[textLength++] = inputState->textEntered[pos];
-				pos++;
-			}
-		}
+// 	if (active)
+// 	{
+// 		int32 textLength = strlen(textBuffer);
+// 		if (inputState->textEntered[0])
+// 		{
+// 			uint32 pos = 0;
+// 			while (inputState->textEntered[pos]
+// 				&& textLength < textBufferLength)
+// 			{
+// 				textBuffer[textLength++] = inputState->textEntered[pos];
+// 				pos++;
+// 			}
+// 		}
 
-		if (keyJustPressed(inputState, SDLK_BACKSPACE)
-			&& textLength > 0)
-		{
-			textBuffer[textLength-1] = 0;
-			textLength--;
-		}
-	}
+// 		if (keyJustPressed(inputState, SDLK_BACKSPACE)
+// 			&& textLength > 0)
+// 		{
+// 			textBuffer[textLength-1] = 0;
+// 			textLength--;
+// 		}
+// 	}
 
-	const real32 padding = 4;
-	RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
-								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
-	labelRect = expandRect(labelRect, padding);
-	drawRect(uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
-}
+// 	const real32 padding = 4;
+// 	RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
+// 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
+// 	labelRect = expandRect(labelRect, padding);
+// 	drawRect(uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
+// }
 
 void pushUiMessage(UIState *uiState, char *message)
 {

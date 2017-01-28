@@ -208,6 +208,14 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	if (debugState->showDebugData)
 	{
+		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Shift))
+		{
+			clear(&debugState->console);
+		}
+		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
+		{
+			backspace(&debugState->console);
+		}
 		if (inputState->textEntered[0])
 		{
 			int32 inputTextLength = strlen(inputState->textEntered);

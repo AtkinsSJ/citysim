@@ -29,3 +29,17 @@ void appendToBuffer(StringBuffer *buffer, char *source, int32 length)
 		buffer->buffer[buffer->bufferLength++] = source[i];
 	}
 }
+
+void backspace(StringBuffer *buffer)
+{
+	if (buffer->bufferLength > 0)
+	{
+		buffer->buffer[--buffer->bufferLength] = 0;
+	}
+}
+
+void clear(StringBuffer *buffer)
+{
+	buffer->bufferLength = 0;
+	buffer->buffer[0] = 0;
+}

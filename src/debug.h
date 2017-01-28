@@ -90,7 +90,7 @@ void debugInit(BitmapFont *font)
 
 	globalDebugState->console = newStringBuffer(&globalDebugState->debugArena, 255);
 	char message[] = "Hello world!";
-	appendToBuffer(&globalDebugState->console, message, ArrayCount(message));
+	appendToBuffer(&globalDebugState->console, message, strlen(message));
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);
