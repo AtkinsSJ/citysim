@@ -29,10 +29,20 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 	initRenderBuffer(renderArena, &renderer->uiBuffer, "UIBuffer", UI_SPRITE_MAX);
 }
 
+void onWindowResized(Renderer *renderer, int32 w, int32 h)
+{
+	renderer->windowResized(w, h);
+	renderer->worldBuffer.camera.size = v2((real32)w / TILE_SIZE, (real32)h / TILE_SIZE);
+
+	renderer->uiBuffer.camera.size = v2(w, h);
+	renderer->uiBuffer.camera.pos = renderer->uiBuffer.camera.size * 0.5f;
+}
+
 void resizeWindow(Renderer *renderer, int32 w, int32 h)
 {
 	SDL_RestoreWindow(renderer->window);
 	SDL_SetWindowSize(renderer->window, w, h);
+	onWindowResized(renderer, w, h);
 }
 
 // Screen -> scene space

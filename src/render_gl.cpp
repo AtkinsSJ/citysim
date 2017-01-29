@@ -255,6 +255,8 @@ GL_Renderer *GL_initializeRenderer(SDL_Window *window, AssetManager *assets)
 	{
 		initRenderer(&renderer->renderer, &renderer->renderArena, window);
 
+		renderer->renderer.windowResized = &GL_windowResized;
+
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);

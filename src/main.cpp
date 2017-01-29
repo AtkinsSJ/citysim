@@ -167,13 +167,7 @@ int main(int argc, char *argv[])
 
 		if (inputState.wasWindowResized)
 		{
-			GL_windowResized(inputState.windowWidth, inputState.windowHeight);
-
-			worldCamera->size = v2((real32)inputState.windowSize.x / TILE_SIZE,
-	                               (real32)inputState.windowSize.y / TILE_SIZE);
-
-			uiCamera->size = v2(inputState.windowSize);
-			uiCamera->pos = uiCamera->size * 0.5f;
+			onWindowResized(&glRenderer->renderer, inputState.windowWidth, inputState.windowHeight);
 		}
 
 		// Asset reloading! Whooo!

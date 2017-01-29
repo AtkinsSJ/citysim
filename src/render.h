@@ -50,6 +50,8 @@ struct Renderer
 	SDL_Window *window;
 	RenderBuffer worldBuffer;
 	RenderBuffer uiBuffer;
+
+	void (*windowResized)(int32, int32);
 };
 
 // Animation code should probably be deleted and redone.
