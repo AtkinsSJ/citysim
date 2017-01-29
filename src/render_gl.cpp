@@ -1,8 +1,9 @@
 // render_gl.cpp
 
-void GL_freeRenderer(GL_Renderer *renderer)
+void GL_freeRenderer(Renderer *renderer)
 {
-	SDL_GL_DeleteContext(renderer->context);
+	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
+	SDL_GL_DeleteContext(gl->context);
 }
 
 void GL_windowResized(int32 newWidth, int32 newHeight)
@@ -536,21 +537,23 @@ void GL_render(Renderer *renderer, AssetManager *assets)
 	}
 }
 
-GL_Renderer *GL_initializeRenderer(SDL_Window *window)
+Renderer *GL_initializeRenderer(SDL_Window *window)
 {
 	GL_Renderer *renderer;
 	bootstrapArena(GL_Renderer, renderer, renderArena);
 	bool succeeded = (renderer != 0);
+	Renderer *genRen = &renderer->renderer;
 
 	if (succeeded)
 	{
-		initRenderer(&renderer->renderer, &renderer->renderArena, window);
+		initRenderer(genRen, &renderer->renderArena, window);
 
-		renderer->renderer.platformRenderer = renderer;
-		renderer->renderer.windowResized = &GL_windowResized;
-		renderer->renderer.render = &GL_render;
-		renderer->renderer.loadAssets = &GL_loadAssets;
-		renderer->renderer.unloadAssets = &GL_unloadAssets;
+		genRen->platformRenderer = renderer;
+		genRen->windowResized = &GL_windowResized;
+		genRen->render = &GL_render;
+		genRen->loadAssets = &GL_loadAssets;
+		genRen->unloadAssets = &GL_unloadAssets;
+		genRen->free = &GL_freeRenderer;
 
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -558,7 +561,7 @@ GL_Renderer *GL_initializeRenderer(SDL_Window *window)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 		// Create context
-		renderer->context = SDL_GL_CreateContext(renderer->renderer.window);
+		renderer->context = SDL_GL_CreateContext(genRen->window);
 		if (renderer->context == NULL)
 		{
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
@@ -602,12 +605,12 @@ GL_Renderer *GL_initializeRenderer(SDL_Window *window)
 
 		if (!succeeded)
 		{
-			GL_freeRenderer(renderer);
+			GL_freeRenderer(genRen);
 			renderer = 0;
 		}
 	}
 
-	return renderer;
+	return genRen;
 }
 
 ////////////////////////////////////////////////////////////////////

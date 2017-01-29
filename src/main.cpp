@@ -107,9 +107,8 @@ int main(int argc, char *argv[])
 
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 
-	GL_Renderer *glRenderer = GL_initializeRenderer(window);
-	ASSERT(glRenderer, "Failed to initialize renderer.");
-	Renderer *renderer = &glRenderer->renderer;
+	Renderer *renderer = platform_initializeRenderer(window);
+	ASSERT(renderer->platformRenderer, "Failed to initialize renderer.");
 	renderer->loadAssets(renderer, assets);
 
 	InputState inputState = {};
@@ -188,7 +187,7 @@ int main(int argc, char *argv[])
 		if (globalDebugState)
 		{
 			DEBUG_ARENA(&assets->assetArena, "Assets");
-			DEBUG_ARENA(&glRenderer->renderArena, "Renderer");
+			// DEBUG_ARENA(&glRenderer->renderArena, "Renderer");
 			DEBUG_ARENA(appState.gameState ? &appState.gameState->gameArena : 0, "GameState");
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
@@ -214,8 +213,7 @@ int main(int argc, char *argv[])
 	}
 
 // CLEAN UP
-
-	GL_freeRenderer(glRenderer);
+	freeRenderer(renderer);
 
 	SDL_DestroyWindow(window);
 	IMG_Quit();

@@ -7,6 +7,10 @@ const real32 TILE_SIZE = ITILE_SIZE;
 const real32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 const bool canZoom = true;
 
+const int FRAMES_PER_SECOND = 60;
+const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
+const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
+
 inline Coord tilePosition(V2 worldPos) {
 	return {(int)floor(worldPos.x),
 			(int)floor(worldPos.y)};
@@ -57,6 +61,7 @@ struct Renderer
 	void (*render)(Renderer *, AssetManager *);
 	void (*loadAssets)(Renderer *, AssetManager *);
 	void (*unloadAssets)(Renderer *);
+	void (*free)(Renderer *);
 };
 
 // Animation code should probably be deleted and redone.
@@ -84,4 +89,6 @@ const real32 animationFramesPerDay = 10.0f;
 
 #include "render.cpp"
 
+// TODO: Some kind of switch to determine which renderer we want to load.
 #include "render_gl.h"
+#define platform_initializeRenderer GL_initializeRenderer

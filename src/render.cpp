@@ -29,6 +29,11 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 	initRenderBuffer(renderArena, &renderer->uiBuffer, "UIBuffer", UI_SPRITE_MAX);
 }
 
+void freeRenderer(Renderer *renderer)
+{
+	renderer->free(renderer);
+}
+
 void onWindowResized(Renderer *renderer, int32 w, int32 h)
 {
 	renderer->windowResized(w, h);
