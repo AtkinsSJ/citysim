@@ -47,6 +47,7 @@ struct RenderBuffer
 
 struct Renderer
 {
+	SDL_Window *window;
 	RenderBuffer worldBuffer;
 	RenderBuffer uiBuffer;
 };

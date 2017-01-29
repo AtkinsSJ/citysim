@@ -48,7 +48,6 @@ struct GL_Renderer
 	
 	MemoryArena renderArena;
 
-	SDL_Window *window;
 	SDL_GLContext context;
 
 	GL_ShaderProgram shaders[ShaderProgramCount];

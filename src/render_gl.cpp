@@ -253,9 +253,7 @@ GL_Renderer *GL_initializeRenderer(SDL_Window *window, AssetManager *assets)
 
 	if (succeeded)
 	{
-		initRenderer(&renderer->renderer, &renderer->renderArena);
-
-		renderer->window = window;
+		initRenderer(&renderer->renderer, &renderer->renderArena, window);
 
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -263,7 +261,7 @@ GL_Renderer *GL_initializeRenderer(SDL_Window *window, AssetManager *assets)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 		// Create context
-		renderer->context = SDL_GL_CreateContext(renderer->window);
+		renderer->context = SDL_GL_CreateContext(renderer->renderer.window);
 		if (renderer->context == NULL)
 		{
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
@@ -601,7 +599,7 @@ void GL_render(GL_Renderer *renderer, AssetManager *assets)
 
 	{
 		DEBUG_BLOCK("SDL_GL_SwapWindow");
-		SDL_GL_SwapWindow( renderer->window );
+		SDL_GL_SwapWindow( renderer->renderer.window );
 	}
 }
 

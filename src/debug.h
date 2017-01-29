@@ -79,6 +79,9 @@ struct DebugState
 	DebugCodeDataWrapper topCodeBlocksSentinel;
 
 	struct BitmapFont *font;
+
+	// Misc things we need to access from debug console
+	struct Renderer *renderer;
 };
 
 void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 lineLength, int32 outputLineCount)
@@ -92,7 +95,7 @@ void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 line
 	}
 }
 
-void debugInit(BitmapFont *font)
+void debugInit(BitmapFont *font, Renderer *renderer)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
 	globalDebugState->showDebugData = true;
@@ -112,6 +115,8 @@ void debugInit(BitmapFont *font)
 		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
 		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
 	}
+	
+	globalDebugState->renderer = renderer;
 }
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName)

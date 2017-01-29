@@ -21,10 +21,17 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, uint
 	buffer->maxItems = maxItems;
 }
 
-void initRenderer(Renderer *renderer, MemoryArena *renderArena)
+void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window)
 {
+	renderer->window = window;
+
 	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", WORLD_SPRITE_MAX);
 	initRenderBuffer(renderArena, &renderer->uiBuffer, "UIBuffer", UI_SPRITE_MAX);
+}
+
+void resizeWindow(Renderer *renderer, int32 w, int32 h)
+{
+	SDL_SetWindowSize(renderer->window, w, h);
 }
 
 // Screen -> scene space

@@ -96,7 +96,8 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 	return window;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
@@ -117,12 +118,12 @@ int main(int argc, char *argv[]) {
 	ASSERT(glRenderer, "Failed to initialize renderer.");
 
 	InputState inputState = {};
-	SDL_GetWindowSize(glRenderer->window, &inputState.windowWidth, &inputState.windowHeight);
+	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
 	AppState appState = {};
 
 #if BUILD_DEBUG
-	debugInit(getFont(assets, FontAssetType_Debug));
+	debugInit(getFont(assets, FontAssetType_Debug), &glRenderer->renderer);
 #endif
 
 // Do we need this here?
@@ -227,7 +228,7 @@ int main(int argc, char *argv[]) {
 
 	GL_freeRenderer(glRenderer);
 
-	SDL_DestroyWindow(glRenderer->window);
+	SDL_DestroyWindow(window);
 	IMG_Quit();
 	SDL_Quit();
 

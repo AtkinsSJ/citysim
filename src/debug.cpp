@@ -248,6 +248,11 @@ void debugHandleConsoleInput(DebugConsole *console)
 	{
 		append(debugConsoleNextOutputLine(console), "The only command is 'help'. I admit this is not very useful.");
 	}
+	else if (equals(&console->input, "resize_window"))
+	{
+		append(debugConsoleNextOutputLine(console), "Pretending to resize the window.");
+		resizeWindow(globalDebugState->renderer, 800, 600);
+	}
 	else
 	{
 		StringBuffer *output = debugConsoleNextOutputLine(console);
