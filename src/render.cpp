@@ -45,11 +45,18 @@ void onWindowResized(Renderer *renderer, int32 w, int32 h)
 
 void resizeWindow(Renderer *renderer, int32 w, int32 h)
 {
-	// TODO: Make maximised windows respond correctly. Doing this doesn't update the...
-	// AH! It does update the screen size, but it probably sends a resize event to the Input struct,
-	// so we end up thinking it's the wrong size and setting matrices wrong accordingly.
-	// SDL_RestoreWindow(renderer->window);
+	SDL_RestoreWindow(renderer->window);
 	SDL_SetWindowSize(renderer->window, w, h);
+
+	// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
+	// it simplifies things massively if we generate one ourselves.
+	SDL_Event resizeEvent = {};
+	resizeEvent.type = SDL_WINDOWEVENT;
+	resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
+	resizeEvent.window.data1 = w;
+	resizeEvent.window.data2 = h;
+	SDL_PushEvent(&resizeEvent);
+
 	onWindowResized(renderer, w, h);
 }
 

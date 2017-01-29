@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 	{
 		DEBUG_BLOCK("Game loop");
 
-		updateInput(&inputState, (int32)uiCamera->size.x, (int32)uiCamera->size.y);
+		updateInput(&inputState);
 
 		if (inputState.receivedQuitSignal)
 		{

@@ -4,9 +4,7 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
-Renderer:
-- We probably want to have Renderer contain function pointers, so we can do things like resize the window
-	with just a Renderer pointer. I've never done a function pointer before though.
+Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
 Strings:
 - printf() that only takes indices, and all arguments are strings. You then use formatInt() &c to convert values to strings.
