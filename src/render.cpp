@@ -31,6 +31,7 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 
 void resizeWindow(Renderer *renderer, int32 w, int32 h)
 {
+	SDL_RestoreWindow(renderer->window);
 	SDL_SetWindowSize(renderer->window, w, h);
 }
 
