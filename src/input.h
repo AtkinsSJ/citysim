@@ -24,7 +24,8 @@ struct InputState
 	// Keyboard
 	bool _keyWasDown[KEYBOARD_KEY_COUNT];
 	bool _keyDown[KEYBOARD_KEY_COUNT];
-	char textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+	bool hasUnhandledTextEntered; // Has anyone requested the _textEntered?
+	char _textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
 
 	// Extra
 	bool receivedQuitSignal;
@@ -118,6 +119,15 @@ inline bool keyJustPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0
 	return keyIsPressed(input, key, modifiers) && !keyWasPressed(input, key);
 }
 
+inline bool wasTextEntered(InputState *input)
+{
+	return input->hasUnhandledTextEntered;
+}
+inline char *getEnteredText(InputState *input)
+{
+	input->hasUnhandledTextEntered = false;
+	return input->_textEntered;
+}
 
 void updateInput(InputState *inputState)
 {
@@ -135,7 +145,8 @@ void updateInput(InputState *inputState)
 		inputState->_keyWasDown[i] = inputState->_keyDown[i];
 	}
 
-	inputState->textEntered[0] = 0;
+	inputState->hasUnhandledTextEntered = false;
+	inputState->_textEntered[0] = 0;
 
 	inputState->receivedQuitSignal = false;
 	inputState->wasWindowResized = false;
@@ -192,7 +203,8 @@ void updateInput(InputState *inputState)
 				inputState->_keyDown[keycode] = false;
 			} break;
 			case SDL_TEXTINPUT: {
-				strncpy(inputState->textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
+				inputState->hasUnhandledTextEntered = true;
+				strncpy(inputState->_textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			} break;
 		}
 	}

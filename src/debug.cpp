@@ -301,10 +301,11 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 			debugHandleConsoleInput(console);
 		}
 
-		if (inputState->textEntered[0])
+		if (wasTextEntered(inputState))
 		{
-			int32 inputTextLength = strlen(inputState->textEntered);
-			append(&console->input, inputState->textEntered, inputTextLength);
+			char *enteredText = getEnteredText(inputState);
+			int32 inputTextLength = strlen(enteredText);
+			append(&console->input, enteredText, inputTextLength);
 		}
 		renderDebugData(debugState, uiState, uiBuffer);
 		renderDebugConsole(debugState, &debugState->console, uiState, uiBuffer);
