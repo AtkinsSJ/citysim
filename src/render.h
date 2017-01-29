@@ -51,7 +51,12 @@ struct Renderer
 	RenderBuffer worldBuffer;
 	RenderBuffer uiBuffer;
 
+	void *platformRenderer;
+
 	void (*windowResized)(int32, int32);
+	void (*render)(Renderer *, AssetManager *);
+	void (*loadAssets)(Renderer *, AssetManager *);
+	void (*unloadAssets)(Renderer *);
 };
 
 // Animation code should probably be deleted and redone.

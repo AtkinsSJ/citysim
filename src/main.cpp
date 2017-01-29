@@ -116,6 +116,8 @@ int main(int argc, char *argv[])
 
 	GL_Renderer *glRenderer = GL_initializeRenderer(window, assets);
 	ASSERT(glRenderer, "Failed to initialize renderer.");
+	Renderer *renderer = &glRenderer->renderer;
+	renderer->loadAssets(renderer, assets);
 
 	InputState inputState = {};
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
@@ -123,7 +125,7 @@ int main(int argc, char *argv[])
 	AppState appState = {};
 
 #if BUILD_DEBUG
-	debugInit(getFont(assets, FontAssetType_Debug), &glRenderer->renderer);
+	debugInit(getFont(assets, FontAssetType_Debug), renderer);
 #endif
 
 // Do we need this here?
@@ -134,8 +136,8 @@ int main(int argc, char *argv[])
 	setCursorVisible(uiState, true);
 // }
 
-	Camera *worldCamera = &glRenderer->renderer.worldBuffer.camera;
-	Camera *uiCamera = &glRenderer->renderer.uiBuffer.camera;
+	Camera *worldCamera = &renderer->worldBuffer.camera;
+	Camera *uiCamera = &renderer->uiBuffer.camera;
 
 	worldCamera->size = v2((real32)inputState.windowSize.x / TILE_SIZE,
 	                       (real32)inputState.windowSize.y / TILE_SIZE);
@@ -167,23 +169,23 @@ int main(int argc, char *argv[])
 
 		if (inputState.wasWindowResized)
 		{
-			onWindowResized(&glRenderer->renderer, inputState.windowWidth, inputState.windowHeight);
+			onWindowResized(renderer, inputState.windowWidth, inputState.windowHeight);
 		}
 
 		// Asset reloading! Whooo!
 		if (keyJustPressed(&inputState, SDLK_F1))
 		{
-			GL_unloadAssets(glRenderer);
+			renderer->unloadAssets(renderer);
 			SDL_SetCursor(systemWaitCursor);
 			reloadAssets(assets, &memoryArena);
 			setCursor(uiState, assets, uiState->currentCursor);
-			GL_loadAssets(glRenderer, assets);
+			renderer->loadAssets(renderer, assets);
 		}
 
 		worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 		uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
-		updateAndRender(&appState, &inputState, &glRenderer->renderer, assets);
+		updateAndRender(&appState, &inputState, renderer, assets);
 
 		// Update camera matrices here
 		updateCameraMatrix(worldCamera);
@@ -197,11 +199,11 @@ int main(int argc, char *argv[])
 			DEBUG_ARENA(appState.gameState ? &appState.gameState->gameArena : 0, "GameState");
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-			debugUpdate(globalDebugState, &inputState, uiState, &glRenderer->renderer.uiBuffer);
+			debugUpdate(globalDebugState, &inputState, uiState, &renderer->uiBuffer);
 		}
 
 	// Actually draw things!
-		GL_render(glRenderer, assets);
+		renderer->render(renderer, assets);
 
 	// FRAMERATE MONITORING AND CAPPING
 		currentFrame = SDL_GetTicks(); // Milliseconds

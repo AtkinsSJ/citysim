@@ -194,38 +194,42 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 	return result;
 }
 
-void GL_loadAssets(GL_Renderer *renderer, AssetManager *assets)
+void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 {
+	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
+
 	// Textures
-	renderer->textureCount = assets->textureCount;
-	for (uint32 i=0; i<renderer->textureCount; i++)
+	gl->textureCount = assets->textureCount;
+	for (uint32 i=0; i<gl->textureCount; i++)
 	{
 		if (i == 0)
 		{
-			renderer->textureInfo[i].glTextureID = 0;
-			renderer->textureInfo[i].isLoaded = true;
+			gl->textureInfo[i].glTextureID = 0;
+			gl->textureInfo[i].isLoaded = true;
 		}
 		else
 		{
-			glGenTextures(1, &renderer->textureInfo[i].glTextureID);
-			renderer->textureInfo[i].isLoaded = false;
+			glGenTextures(1, &gl->textureInfo[i].glTextureID);
+			gl->textureInfo[i].isLoaded = false;
 		}
 	}
 
 	// Shaders
 	for (uint32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
 	{
-		bool shaderLoaded = GL_loadShaderProgram(renderer, assets, (ShaderProgramType)shaderID);
+		bool shaderLoaded = GL_loadShaderProgram(gl, assets, (ShaderProgramType)shaderID);
 		ASSERT(shaderLoaded, "Failed to load shader %d into OpenGL.", shaderID);
 	}
 }
 
-void GL_unloadAssets(GL_Renderer *renderer)
+void GL_unloadAssets(Renderer *renderer)
 {
+	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
+
 	// Textures
-	for (uint32 i=1; i<renderer->textureCount; i++)
+	for (uint32 i=1; i<gl->textureCount; i++)
 	{
-		GL_TextureInfo *info = renderer->textureInfo + i;
+		GL_TextureInfo *info = gl->textureInfo + i;
 		if (info->isLoaded)
 		{
 			glDeleteTextures(1, &info->glTextureID);
@@ -233,91 +237,16 @@ void GL_unloadAssets(GL_Renderer *renderer)
 			info->isLoaded = false;
 		}
 	}
-	renderer->textureCount = 0;
+	gl->textureCount = 0;
 
 	// Shaders
-	renderer->currentShader = -1;
+	gl->currentShader = -1;
 	for (uint32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
 	{
-		GL_ShaderProgram *shader = renderer->shaders + shaderID;
+		GL_ShaderProgram *shader = gl->shaders + shaderID;
 		glDeleteProgram(shader->shaderProgramID);
 		*shader = {};
 	}
-}
-
-GL_Renderer *GL_initializeRenderer(SDL_Window *window, AssetManager *assets)
-{
-	GL_Renderer *renderer;
-	bootstrapArena(GL_Renderer, renderer, renderArena);
-	bool succeeded = (renderer != 0);
-
-	if (succeeded)
-	{
-		initRenderer(&renderer->renderer, &renderer->renderArena, window);
-
-		renderer->renderer.windowResized = &GL_windowResized;
-
-		// Use GL3.1 Core
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-		// Create context
-		renderer->context = SDL_GL_CreateContext(renderer->renderer.window);
-		if (renderer->context == NULL)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
-			succeeded = false;
-		}
-
-		// GLEW
-		glewExperimental = GL_TRUE;
-		GLenum glewError = glewInit();
-		if (succeeded && glewError != GLEW_OK)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
-			succeeded = false;
-		}
-
-		// VSync
-		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
-		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
-			succeeded = false;
-		}
-
-		// Init OpenGL
-		if (succeeded)
-		{
-			if (succeeded)
-			{
-				GL_loadAssets(renderer, assets);
-			}
-
-			if (succeeded)
-			{
-				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-				glGenBuffers(1, &renderer->VBO);
-				glGenBuffers(1, &renderer->IBO);
-
-				GL_checkForError();
-			}
-
-			if (!succeeded)
-			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
-			}
-		}
-
-		if (!succeeded)
-		{
-			GL_freeRenderer(renderer);
-			renderer = 0;
-		}
-	}
-
-	return renderer;
 }
 
 inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
@@ -566,13 +495,15 @@ bool isBufferSorted(RenderBuffer *buffer)
 	return isSorted;
 }
 
-void GL_render(GL_Renderer *renderer, AssetManager *assets)
+void GL_render(Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
+
+	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 	
 	// Sort sprites
-	sortRenderBuffer(&renderer->renderer.worldBuffer);
-	sortRenderBuffer(&renderer->renderer.uiBuffer);
+	sortRenderBuffer(&renderer->worldBuffer);
+	sortRenderBuffer(&renderer->uiBuffer);
 
 #if 0
 	// Check buffers are sorted
@@ -590,10 +521,10 @@ void GL_render(GL_Renderer *renderer, AssetManager *assets)
 	glEnable(GL_TEXTURE_2D);
 	GL_checkForError();
 
-	renderer->currentShader = ShaderProgram_Invalid;
+	gl->currentShader = ShaderProgram_Invalid;
 
-	renderBuffer(renderer, assets, &renderer->renderer.worldBuffer);
-	renderBuffer(renderer, assets, &renderer->renderer.uiBuffer);
+	renderBuffer(gl, assets, &renderer->worldBuffer);
+	renderBuffer(gl, assets, &renderer->uiBuffer);
 
 	glUseProgram(NULL);
 	GL_checkForError();
@@ -601,8 +532,82 @@ void GL_render(GL_Renderer *renderer, AssetManager *assets)
 
 	{
 		DEBUG_BLOCK("SDL_GL_SwapWindow");
-		SDL_GL_SwapWindow( renderer->renderer.window );
+		SDL_GL_SwapWindow(renderer->window);
 	}
+}
+
+GL_Renderer *GL_initializeRenderer(SDL_Window *window, AssetManager *assets)
+{
+	GL_Renderer *renderer;
+	bootstrapArena(GL_Renderer, renderer, renderArena);
+	bool succeeded = (renderer != 0);
+
+	if (succeeded)
+	{
+		initRenderer(&renderer->renderer, &renderer->renderArena, window);
+
+		renderer->renderer.platformRenderer = renderer;
+		renderer->renderer.windowResized = &GL_windowResized;
+		renderer->renderer.render = &GL_render;
+		renderer->renderer.loadAssets = &GL_loadAssets;
+		renderer->renderer.unloadAssets = &GL_unloadAssets;
+
+		// Use GL3.1 Core
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+		// Create context
+		renderer->context = SDL_GL_CreateContext(renderer->renderer.window);
+		if (renderer->context == NULL)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
+			succeeded = false;
+		}
+
+		// GLEW
+		glewExperimental = GL_TRUE;
+		GLenum glewError = glewInit();
+		if (succeeded && glewError != GLEW_OK)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
+			succeeded = false;
+		}
+
+		// VSync
+		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
+		{
+			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
+			succeeded = false;
+		}
+
+		// Init OpenGL
+		if (succeeded)
+		{
+			if (succeeded)
+			{
+				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+				glGenBuffers(1, &renderer->VBO);
+				glGenBuffers(1, &renderer->IBO);
+
+				GL_checkForError();
+			}
+
+			if (!succeeded)
+			{
+				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
+			}
+		}
+
+		if (!succeeded)
+		{
+			GL_freeRenderer(renderer);
+			renderer = 0;
+		}
+	}
+
+	return renderer;
 }
 
 ////////////////////////////////////////////////////////////////////
