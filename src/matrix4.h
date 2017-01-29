@@ -157,7 +157,7 @@ Matrix4 inverse(Matrix4 *source)
               source->flat[8] * source->flat[1] * source->flat[6] - 
               source->flat[8] * source->flat[2] * source->flat[5];
 
-	GLfloat det = source->flat[0] * result.flat[0] + source->flat[1] * result.flat[4] + source->flat[2] * result.flat[8] + source->flat[3] * result.flat[12];
+	real32 det = source->flat[0] * result.flat[0] + source->flat[1] * result.flat[4] + source->flat[2] * result.flat[8] + source->flat[3] * result.flat[12];
 	if (det != 0) {
 		det = 1.0f / det;
 		for (int i=0; i<16; i++) {
@@ -183,7 +183,7 @@ inline Matrix4 operator+=(Matrix4 &a, Matrix4 b) {
 }
 
 // Scalar multiplication
-inline Matrix4 operator*(Matrix4 m, GLfloat f) {
+inline Matrix4 operator*(Matrix4 m, real32 f) {
 	Matrix4 result = {};
 
 	for (int i=0; i<16; i++) {

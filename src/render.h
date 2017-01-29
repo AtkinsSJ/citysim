@@ -83,3 +83,5 @@ const real32 animationFramesPerDay = 10.0f;
 #endif
 
 #include "render.cpp"
+
+#include "render_gl.h"

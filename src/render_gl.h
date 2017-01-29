@@ -1,5 +1,15 @@
 #pragma once
 
+#ifdef __linux__
+#	include <gl/glew.h> // TODO: Check this
+#	include <SDL2/SDL_opengl.h>
+#	include <gl/glu.h> // TODO: Check this
+#else // Windows
+#	include <gl/glew.h>
+#	include <SDL_opengl.h>
+#	include <gl/glu.h>
+#endif
+
 // render_gl.h
 
 const int FRAMES_PER_SECOND = 60;

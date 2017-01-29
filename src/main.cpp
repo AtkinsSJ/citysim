@@ -5,15 +5,9 @@
 #ifdef __linux__
 #	include <SDL2/SDL.h>
 #	include <SDL2/SDL_image.h>
-#	include <gl/glew.h> // TODO: Check this
-#	include <SDL2/SDL_opengl.h>
-#	include <gl/glu.h> // TODO: Check this
 #else // Windows
 #	include <SDL.h>
 #	include <SDL_image.h>
-#	include <gl/glew.h>
-#	include <SDL_opengl.h>
-#	include <gl/glu.h>
 #endif
 
 // Really janky assertion macro, yay
@@ -39,7 +33,6 @@ enum AppStatus
 #include "file.h"
 #include "assets.h"
 #include "render.h"
-#include "render_gl.h"
 #include "font.cpp"
 #include "bmfont.h"
 #include "input.h"
@@ -114,7 +107,7 @@ int main(int argc, char *argv[])
 
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 
-	GL_Renderer *glRenderer = GL_initializeRenderer(window, assets);
+	GL_Renderer *glRenderer = GL_initializeRenderer(window);
 	ASSERT(glRenderer, "Failed to initialize renderer.");
 	Renderer *renderer = &glRenderer->renderer;
 	renderer->loadAssets(renderer, assets);

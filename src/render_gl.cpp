@@ -536,7 +536,7 @@ void GL_render(Renderer *renderer, AssetManager *assets)
 	}
 }
 
-GL_Renderer *GL_initializeRenderer(SDL_Window *window, AssetManager *assets)
+GL_Renderer *GL_initializeRenderer(SDL_Window *window)
 {
 	GL_Renderer *renderer;
 	bootstrapArena(GL_Renderer, renderer, renderArena);
