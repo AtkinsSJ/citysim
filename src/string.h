@@ -21,7 +21,7 @@ void appendToBuffer(StringBuffer *buffer, char *source, int32 length)
 	int32 lengthToCopy = length;
 	if ((buffer->bufferLength + length) > buffer->bufferMaxLength)
 	{
-		length = buffer->bufferMaxLength - buffer->bufferLength;
+		lengthToCopy = buffer->bufferMaxLength - buffer->bufferLength;
 	}
 
 	for (int32 i=0; i < lengthToCopy; i++)
@@ -42,4 +42,22 @@ void clear(StringBuffer *buffer)
 {
 	buffer->bufferLength = 0;
 	buffer->buffer[0] = 0;
+}
+
+bool equals(StringBuffer *buffer, char *other)
+{
+	bool result = true;
+	int32 otherLength = strlen(other);
+	if (otherLength != buffer->bufferLength) {
+		result = false;
+	} else {
+		for (int32 i = 0; i<otherLength; i++) {
+			if (buffer->buffer[i] != other[i]) {
+				result = false;
+				break;
+			}
+		}
+	}
+
+	return result;
 }

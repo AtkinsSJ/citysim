@@ -83,6 +83,7 @@ struct DebugTextState
 	BitmapFont *font;
 	V4 color;
 	real32 maxWidth;
+	bool progressUpwards;
 
 	UIState *uiState;
 	RenderBuffer *uiBuffer;
@@ -90,13 +91,21 @@ struct DebugTextState
 	uint32 charsLastPrinted;
 };
 inline DebugTextState initDebugTextState(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor,
-	                                     real32 screenWidth, real32 screenEdgePadding)
+	                                     V2 screenSize, real32 screenEdgePadding, bool upwards)
 {
 	DebugTextState textState = {};
-	textState.pos = v2(screenEdgePadding, screenEdgePadding);
+	textState.progressUpwards = upwards;
+	if (upwards) 
+	{
+		textState.pos = v2(screenEdgePadding, screenSize.y - screenEdgePadding);
+	}
+	else
+	{
+		textState.pos = v2(screenEdgePadding, screenEdgePadding);
+	}
 	textState.font = font;
 	textState.color = textColor;
-	textState.maxWidth = screenWidth - (2*screenEdgePadding);
+	textState.maxWidth = screenSize.x - (2*screenEdgePadding);
 
 	textState.uiState = uiState;
 	textState.uiBuffer = uiBuffer;
@@ -107,11 +116,35 @@ void debugTextOut(DebugTextState *textState, const char *formatString, ...)
 {
 	va_list args;
 	va_start(args, formatString);
+
+	int32 align = ALIGN_LEFT;
+	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
+	else                            align |= ALIGN_TOP;
+
 	textState->charsLastPrinted = vsnprintf(textState->buffer, sizeof(textState->buffer), formatString, args);
 	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, textState->buffer, textState->pos,
-	                             ALIGN_LEFT, 300, textState->color, textState->maxWidth);
-	textState->pos.y += resultRect.h;
+	                             align, 300, textState->color, textState->maxWidth);
+	if (textState->progressUpwards)
+	{
+		textState->pos.y -= resultRect.h;
+	}
+	else
+	{
+		textState->pos.y += resultRect.h;
+	}
 	va_end(args);
+}
+
+void renderDebugConsole(DebugState *debugState, DebugConsole *console, UIState *uiState, RenderBuffer *uiBuffer)
+{
+	DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
+		                                          uiBuffer->camera.size, 16.0f, true);
+	char caret = '_';
+	// if ((rfi % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
+	// {
+	// 	caret = ' ';
+	// }
+	debugTextOut(&textState, "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
 }
 
 void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiBuffer)
@@ -123,7 +156,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 			     100, color255(0,0,0,128));
 
 		DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
-			                                          uiBuffer->camera.size.x, 16.0f);
+			                                          uiBuffer->camera.size, 16.0f, false);
 
 		debugTextOut(&textState, "Examing %d frames ago", WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT));
 
@@ -175,22 +208,16 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		         201, color255(255, 255, 255, 128));
 		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1),
 		         201, color255(255, 255, 255, 128));
-
-		// Console
-		textState.pos.y = uiBuffer->camera.size.y - 20;
-		char caret = '_';
-		if ((rfi % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
-		{
-			caret = ' ';
-		}
-		debugTextOut(&textState, "> %.*s%c", debugState->console.bufferLength, debugState->console.buffer, caret);
 	}
 }
 
-void debugHandleConsoleInput(StringBuffer *console)
-{
+void debugHandleConsoleInput(StringBuffer *console) {
 	// TODO: Actual console commands!
 	// Not sure what we would actually want yet, so I don't know how to structure this.
+
+	if (equals(console, "help")) {
+
+	}
 }
 
 void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
@@ -219,25 +246,28 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	if (debugState->showDebugData)
 	{
+		DebugConsole *console = &debugState->console;
+
 		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Shift))
 		{
-			clear(&debugState->console);
+			clear(&console->input);
 		}
 		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
 		{
-			backspace(&debugState->console);
+			backspace(&console->input);
 		}
 		else if (keyJustPressed(inputState, SDLK_RETURN))
 		{
-			debugHandleConsoleInput(&debugState->console);
-			clear(&debugState->console);
+			debugHandleConsoleInput(&console->input);
+			clear(&console->input);
 		}
 
 		if (inputState->textEntered[0])
 		{
 			int32 inputTextLength = strlen(inputState->textEntered);
-			appendToBuffer(&debugState->console, inputState->textEntered, inputTextLength);
+			appendToBuffer(&console->input, inputState->textEntered, inputTextLength);
 		}
 		renderDebugData(debugState, uiState, uiBuffer);
+		renderDebugConsole(debugState, &debugState->console, uiState, uiBuffer);
 	}
 }
