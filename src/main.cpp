@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 		if (globalDebugState)
 		{
 			DEBUG_ARENA(&assets->assetArena, "Assets");
-			// DEBUG_ARENA(&glRenderer->renderArena, "Renderer");
+			DEBUG_ARENA(&renderer->renderArena, "Renderer");
 			DEBUG_ARENA(appState.gameState ? &appState.gameState->gameArena : 0, "GameState");
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 

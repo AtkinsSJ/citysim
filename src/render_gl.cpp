@@ -114,7 +114,7 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n",
 			            shaderID, filename);
-		TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderArena);
+		TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderer.renderArena);
 		GL_printShaderLog(&tempArena, shaderID);
 		endTemporaryMemory(&tempArena);
 	}
@@ -153,7 +153,7 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 
 			if (!glShader->isValid)
 			{
-				TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderArena);
+				TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderer.renderArena);
 				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", glShader->shaderProgramID);
 				GL_printProgramLog(&tempArena, glShader->shaderProgramID);
 				endTemporaryMemory(&tempArena);
@@ -539,21 +539,21 @@ void GL_render(Renderer *renderer, AssetManager *assets)
 
 Renderer *GL_initializeRenderer(SDL_Window *window)
 {
-	GL_Renderer *renderer;
-	bootstrapArena(GL_Renderer, renderer, renderArena);
-	bool succeeded = (renderer != 0);
-	Renderer *genRen = &renderer->renderer;
+	GL_Renderer *gl;
+	bootstrapArena(GL_Renderer, gl, renderer.renderArena);
+	bool succeeded = (gl != 0);
+	Renderer *renderer = &gl->renderer;
 
 	if (succeeded)
 	{
-		initRenderer(genRen, &renderer->renderArena, window);
+		initRenderer(renderer, &renderer->renderArena, window);
 
-		genRen->platformRenderer = renderer;
-		genRen->windowResized = &GL_windowResized;
-		genRen->render = &GL_render;
-		genRen->loadAssets = &GL_loadAssets;
-		genRen->unloadAssets = &GL_unloadAssets;
-		genRen->free = &GL_freeRenderer;
+		renderer->platformRenderer = gl;
+		renderer->windowResized = &GL_windowResized;
+		renderer->render = &GL_render;
+		renderer->loadAssets = &GL_loadAssets;
+		renderer->unloadAssets = &GL_unloadAssets;
+		renderer->free = &GL_freeRenderer;
 
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -561,8 +561,8 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 		// Create context
-		renderer->context = SDL_GL_CreateContext(genRen->window);
-		if (renderer->context == NULL)
+		gl->context = SDL_GL_CreateContext(renderer->window);
+		if (gl->context == NULL)
 		{
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
 			succeeded = false;
@@ -591,8 +591,8 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			{
 				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-				glGenBuffers(1, &renderer->VBO);
-				glGenBuffers(1, &renderer->IBO);
+				glGenBuffers(1, &gl->VBO);
+				glGenBuffers(1, &gl->IBO);
 
 				GL_checkForError();
 			}
@@ -605,12 +605,12 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 
 		if (!succeeded)
 		{
-			GL_freeRenderer(genRen);
-			renderer = 0;
+			GL_freeRenderer(renderer);
+			gl = 0;
 		}
 	}
 
-	return genRen;
+	return renderer;
 }
 
 ////////////////////////////////////////////////////////////////////

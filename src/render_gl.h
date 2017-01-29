@@ -51,8 +51,6 @@ struct GL_ShaderProgram
 struct GL_Renderer
 {
 	Renderer renderer;
-	
-	MemoryArena renderArena;
 
 	SDL_GLContext context;
 
