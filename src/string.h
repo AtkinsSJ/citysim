@@ -1,5 +1,20 @@
 #pragma once
 
+struct String
+{
+	char *chars;
+	int32 length;
+};
+
+String stringFromChars(char *chars)
+{
+	String result = {};
+	result.chars = chars;
+	result.length = strlen(chars);
+
+	return result;
+}
+
 struct StringBuffer
 {
 	char *buffer;
@@ -14,6 +29,15 @@ StringBuffer newStringBuffer(MemoryArena *arena, int32 length)
 	b.bufferMaxLength = length;
 
 	return b;
+}
+
+String bufferToString(StringBuffer *buffer)
+{
+	String result = {};
+	result.chars = buffer->buffer;
+	result.length = buffer->bufferLength;
+
+	return result;
 }
 
 void append(StringBuffer *buffer, char *source, int32 length)
@@ -33,9 +57,14 @@ void append(StringBuffer *buffer, char *source, int32 length)
 	buffer->buffer[buffer->bufferLength] = 0;
 }
 
+void append(StringBuffer *buffer, String source)
+{
+	append(buffer, source.chars, source.length);
+}
+
 void append(StringBuffer *buffer, char *source)
 {
-	append(buffer, source, strlen(source));
+	append(buffer, stringFromChars(source));
 }
 
 void append(StringBuffer *dest, StringBuffer *src)
@@ -57,19 +86,18 @@ void clear(StringBuffer *buffer)
 	buffer->buffer[0] = 0;
 }
 
-bool equals(StringBuffer *buffer, char *other)
+bool equals(String a, String b)
 {
 	bool result = true;
-	int32 otherLength = strlen(other);
-	if (otherLength != buffer->bufferLength)
+	if (a.length != b.length)
 	{
 		result = false;
 	}
 	else
 	{
-		for (int32 i = 0; i<otherLength; i++)
+		for (int32 i = 0; i<b.length; i++)
 		{
-			if (buffer->buffer[i] != other[i])
+			if (a.chars[i] != b.chars[i])
 			{
 				result = false;
 				break;
@@ -78,4 +106,57 @@ bool equals(StringBuffer *buffer, char *other)
 	}
 
 	return result;
+}
+
+bool equals(String a, char *b)
+{
+	return equals(a, stringFromChars(b));
+}
+
+bool equals(StringBuffer *buffer, char *other)
+{
+	return equals(bufferToString(buffer), stringFromChars(other));
+}
+
+bool asInt(String string, int32 *result)
+{
+	bool succeeded = true;
+
+	int32 value = 0;
+	int32 startPosition = 0;
+	bool isNegative = false;
+	if (string.chars[0] == '-')
+	{
+		isNegative = true;
+		startPosition++;
+	}
+	else if (string.chars[0] == '+')
+	{
+		// allow a leading + in case people want it for some reason.
+		startPosition++;
+	}
+
+	for (int position=startPosition; position<string.length; position++)
+	{
+		value *= 10;
+
+		char c = string.chars[position];
+		if (c >= '0' && c <= '9')
+		{
+			value += c - '0';
+		}
+		else
+		{
+			succeeded = false;
+			break;
+		}
+	}
+
+	if (succeeded)
+	{
+		*result = value;
+		if (isNegative) *result = -*result;
+	}
+
+	return succeeded;
 }

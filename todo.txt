@@ -7,6 +7,7 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 Renderer:
 - We probably want to have Renderer contain function pointers, so we can do things like resize the window
 	with just a Renderer pointer. I've never done a function pointer before though.
+- Also, make >resize_window accept w and h arguments
 
 Strings:
 - printf() that only takes indices, and all arguments are strings. You then use formatInt() &c to convert values to strings.

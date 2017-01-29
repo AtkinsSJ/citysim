@@ -231,6 +231,48 @@ StringBuffer *debugConsoleNextOutputLine(DebugConsole *console)
 	return result;
 }
 
+struct Tokenizer
+{
+	char *firstChar;
+	int32 position;
+	int32 length;
+};
+Tokenizer tokenize(StringBuffer *input)
+{
+	Tokenizer result = {};
+	result.firstChar = input->buffer;
+	result.position = 0;
+	result.length = input->bufferLength;
+
+	return result;
+}
+bool getToken(Tokenizer *t, String *result)
+{
+	bool foundToken = false;
+
+	while ((t->position <= t->length) && isWhitespace(t->firstChar[t->position]))
+	{
+		t->position++;
+	}
+
+	if (t->position <= t->length)
+	{
+		foundToken = true;
+
+		// start
+		result->chars = t->firstChar + t->position;
+		
+		// length
+		while ((t->position <= t->length) && !isWhitespace(t->firstChar[t->position]))
+		{
+			t->position++;
+			result->length++;
+		}
+	}
+
+	return foundToken;
+}
+
 void debugHandleConsoleInput(DebugConsole *console)
 {
 	// copy input to output, for readability
@@ -240,25 +282,57 @@ void debugHandleConsoleInput(DebugConsole *console)
 		append(output, &console->input);
 	}
 
-	if (console->input.bufferLength == 0)
+	if (console->input.bufferLength != 0)
 	{
-		// Ignore blank lines
-	}
-	else if (equals(&console->input, "help"))
-	{
-		append(debugConsoleNextOutputLine(console), "The only command is 'help'. I admit this is not very useful.");
-	}
-	else if (equals(&console->input, "resize_window"))
-	{
-		append(debugConsoleNextOutputLine(console), "Pretending to resize the window.");
-		resizeWindow(globalDebugState->renderer, 800, 600);
-	}
-	else
-	{
-		StringBuffer *output = debugConsoleNextOutputLine(console);
-		append(output, "I don't understand '");
-		append(output, &console->input);
-		append(output, "'. Try 'help' for a list of commands.");
+		Tokenizer t = tokenize(&console->input);
+
+		String firstToken = {};
+		bool gotToken = getToken(&t, &firstToken);
+
+		if (gotToken)
+		{
+			if (equals(firstToken, "help"))
+			{
+				append(debugConsoleNextOutputLine(console), "The only command is 'help'. I admit this is not very useful.");
+			}
+			else if (equals(firstToken, "resize_window"))
+			{
+				bool succeeded = false;
+				String sWidth = {};
+				String sHeight = {};
+				if (getToken(&t, &sWidth) && getToken(&t, &sHeight))
+				{
+					int32 width = 0;
+					int32 height = 0;
+					if (asInt(sWidth, &width)   && (width > 0)
+					 && asInt(sHeight, &height) && (height > 0))
+					{
+						StringBuffer *output = debugConsoleNextOutputLine(console);
+						append(output, "Resizing window to ");
+						append(output, sWidth);
+						append(output, " by ");
+						append(output, sHeight);
+						succeeded = true;
+						resizeWindow(globalDebugState->renderer, width, height);
+					}
+				}
+
+				if (!succeeded)
+				{
+					StringBuffer *output = debugConsoleNextOutputLine(console);
+					append(output, "Usage: ");
+					append(output, firstToken);
+					append(output, " width height");
+				}
+			}
+			else
+			{
+				StringBuffer *output = debugConsoleNextOutputLine(console);
+				append(output, "I don't understand '");
+				append(output, &console->input);
+				append(output, "'. Try 'help' for a list of commands.");
+			}
+		}
 	}
 
 	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
