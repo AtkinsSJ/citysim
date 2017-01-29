@@ -129,9 +129,11 @@ inline char *getEnteredText(InputState *input)
 	return input->_textEntered;
 }
 
-void updateInput(InputState *inputState)
+void updateInput(InputState *inputState, int32 windowWidth, int32 windowHeight)
 {
 	DEBUG_FUNCTION();
+	inputState->windowWidth = windowWidth;
+	inputState->windowHeight = windowHeight;
 	
 	// Clear mouse state
 	inputState->wheelX = 0;
