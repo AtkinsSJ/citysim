@@ -152,7 +152,8 @@ void renderDebugConsole(DebugState *debugState, DebugConsole *console, UIState *
 	// print output lines
 	for (int32 i=console->outputLineCount-1; i>=0; i--)
 	{
-		debugTextOut(&textState, "%s", console->outputLines[i].buffer);
+		StringBuffer *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
+		debugTextOut(&textState, "%s", line->buffer);
 	}
 }
 
@@ -222,8 +223,8 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 
 StringBuffer *debugConsoleNextOutputLine(DebugConsole *console)
 {
-	console->currentOutputLine = WRAP(console->currentOutputLine + 1, console->outputLineCount);
 	StringBuffer *result = console->outputLines + console->currentOutputLine;
+	console->currentOutputLine = WRAP(console->currentOutputLine + 1, console->outputLineCount);
 
 	clear(result);
 
@@ -239,7 +240,11 @@ void debugHandleConsoleInput(DebugConsole *console)
 		append(output, &console->input);
 	}
 
-	if (equals(&console->input, "help"))
+	if (console->input.bufferLength == 0)
+	{
+		// Ignore blank lines
+	}
+	else if (equals(&console->input, "help"))
 	{
 		append(debugConsoleNextOutputLine(console), "The only command is 'help'. I admit this is not very useful.");
 	}
@@ -250,6 +255,9 @@ void debugHandleConsoleInput(DebugConsole *console)
 		append(output, &console->input);
 		append(output, "'. Try 'help' for a list of commands.");
 	}
+
+	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
+	clear(&console->input);
 }
 
 void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
@@ -291,7 +299,6 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 		else if (keyJustPressed(inputState, SDLK_RETURN))
 		{
 			debugHandleConsoleInput(console);
-			clear(&console->input);
 		}
 
 		if (inputState->textEntered[0])

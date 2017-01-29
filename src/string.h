@@ -28,6 +28,9 @@ void append(StringBuffer *buffer, char *source, int32 length)
 	{
 		buffer->buffer[buffer->bufferLength++] = source[i];
 	}
+
+	// Final null, just in case.
+	buffer->buffer[buffer->bufferLength] = 0;
 }
 
 void append(StringBuffer *buffer, char *source)
@@ -58,11 +61,16 @@ bool equals(StringBuffer *buffer, char *other)
 {
 	bool result = true;
 	int32 otherLength = strlen(other);
-	if (otherLength != buffer->bufferLength) {
+	if (otherLength != buffer->bufferLength)
+	{
 		result = false;
-	} else {
-		for (int32 i = 0; i<otherLength; i++) {
-			if (buffer->buffer[i] != other[i]) {
+	}
+	else
+	{
+		for (int32 i = 0; i<otherLength; i++)
+		{
+			if (buffer->buffer[i] != other[i])
+			{
 				result = false;
 				break;
 			}
