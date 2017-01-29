@@ -81,6 +81,17 @@ struct DebugState
 	struct BitmapFont *font;
 };
 
+void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 lineLength, int32 outputLineCount)
+{
+	console->input = newStringBuffer(debugArena, lineLength);
+	console->outputLineCount = outputLineCount;
+	console->outputLines = PushArray(debugArena, StringBuffer, console->outputLineCount);
+	for (int32 i=0; i < console->outputLineCount; i++)
+	{
+		console->outputLines[i] = newStringBuffer(debugArena, lineLength);
+	}
+}
+
 void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
@@ -89,15 +100,7 @@ void debugInit(BitmapFont *font)
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
 
-	DebugConsole *console = &globalDebugState->console;
-
-	console->input = newStringBuffer(&globalDebugState->debugArena, 255);
-	console->outputLineCount = 64;
-	console->outputLines = PushArray(&globalDebugState->debugArena, StringBuffer, console->outputLineCount);
-	for (int32 i=0; i < console->outputLineCount; i++)
-	{
-		console->outputLines[i] = newStringBuffer(&globalDebugState->debugArena, 255);
-	}
+	initDebugConsole(&globalDebugState->debugArena, &globalDebugState->console, 255, 12);
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);

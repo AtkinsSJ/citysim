@@ -139,12 +139,21 @@ void renderDebugConsole(DebugState *debugState, DebugConsole *console, UIState *
 {
 	DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
 		                                          uiBuffer->camera.size, 16.0f, true);
+
+	// Caret stuff is a bit hacky, but oh well.
+	// It especially doesn't play well with pausing the debug capturing...
 	char caret = '_';
-	// if ((rfi % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
-	// {
-	// 	caret = ' ';
-	// }
+	if ((debugState->readingFrameIndex % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
+	{
+		caret = ' ';
+	}
 	debugTextOut(&textState, "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
+
+	// print output lines
+	for (int32 i=console->outputLineCount-1; i>=0; i--)
+	{
+		debugTextOut(&textState, "%s", console->outputLines[i].buffer);
+	}
 }
 
 void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiBuffer)
@@ -211,12 +220,35 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 	}
 }
 
-void debugHandleConsoleInput(StringBuffer *console) {
-	// TODO: Actual console commands!
-	// Not sure what we would actually want yet, so I don't know how to structure this.
+StringBuffer *debugConsoleNextOutputLine(DebugConsole *console)
+{
+	console->currentOutputLine = WRAP(console->currentOutputLine + 1, console->outputLineCount);
+	StringBuffer *result = console->outputLines + console->currentOutputLine;
 
-	if (equals(console, "help")) {
+	clear(result);
 
+	return result;
+}
+
+void debugHandleConsoleInput(DebugConsole *console)
+{
+	// copy input to output, for readability
+	{
+		StringBuffer *output = debugConsoleNextOutputLine(console);
+		append(output, "> ");
+		append(output, &console->input);
+	}
+
+	if (equals(&console->input, "help"))
+	{
+		append(debugConsoleNextOutputLine(console), "The only command is 'help'. I admit this is not very useful.");
+	}
+	else
+	{
+		StringBuffer *output = debugConsoleNextOutputLine(console);
+		append(output, "I don't understand '");
+		append(output, &console->input);
+		append(output, "'. Try 'help' for a list of commands.");
 	}
 }
 
@@ -227,16 +259,16 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 		debugState->showDebugData = !debugState->showDebugData;
 	}
 	
-	if (keyJustPressed(inputState, SDLK_PAUSE, KeyMod_Shift))
+	if (keyJustPressed(inputState, SDLK_PAUSE))
 	{
 		debugState->captureDebugData = !debugState->captureDebugData;
 	}
 
-	if (keyJustPressed(inputState, SDLK_KP_MINUS, KeyMod_Shift))
+	if (keyJustPressed(inputState, SDLK_PAGEDOWN))
 	{
 		debugState->readingFrameIndex = WRAP(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
 	}
-	else if (keyJustPressed(inputState, SDLK_KP_PLUS, KeyMod_Shift))
+	else if (keyJustPressed(inputState, SDLK_PAGEUP))
 	{
 		debugState->readingFrameIndex = WRAP(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
 	}
@@ -258,14 +290,14 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 		}
 		else if (keyJustPressed(inputState, SDLK_RETURN))
 		{
-			debugHandleConsoleInput(&console->input);
+			debugHandleConsoleInput(console);
 			clear(&console->input);
 		}
 
 		if (inputState->textEntered[0])
 		{
 			int32 inputTextLength = strlen(inputState->textEntered);
-			appendToBuffer(&console->input, inputState->textEntered, inputTextLength);
+			append(&console->input, inputState->textEntered, inputTextLength);
 		}
 		renderDebugData(debugState, uiState, uiBuffer);
 		renderDebugConsole(debugState, &debugState->console, uiState, uiBuffer);

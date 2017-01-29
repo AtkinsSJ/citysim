@@ -16,7 +16,7 @@ StringBuffer newStringBuffer(MemoryArena *arena, int32 length)
 	return b;
 }
 
-void appendToBuffer(StringBuffer *buffer, char *source, int32 length)
+void append(StringBuffer *buffer, char *source, int32 length)
 {
 	int32 lengthToCopy = length;
 	if ((buffer->bufferLength + length) > buffer->bufferMaxLength)
@@ -28,6 +28,16 @@ void appendToBuffer(StringBuffer *buffer, char *source, int32 length)
 	{
 		buffer->buffer[buffer->bufferLength++] = source[i];
 	}
+}
+
+void append(StringBuffer *buffer, char *source)
+{
+	append(buffer, source, strlen(source));
+}
+
+void append(StringBuffer *dest, StringBuffer *src)
+{
+	append(dest, src->buffer, src->bufferLength);
 }
 
 void backspace(StringBuffer *buffer)
