@@ -4,17 +4,14 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
-Debugging:
-X Key activates debug display, shows graphs and lists
-X Pause profiling
-X Examine past frames
-X Charts!
-X Debug console?
-- Hot swapping code?!?! SDL has a fancy dll loader (SDL_loadso.h)
-- Game still works with BUILD_DEBUG set to false, or not set at all.
-
 Strings:
-- Custom format strings with indices. eg "This {0} costs £{1}"
+- printf() that only takes indices, and all arguments are strings. You then use formatInt() &c to convert values to strings.
+	- e.g. printf("This {0} costs £{1}", item->name, formatFloat(item->price, <decimal places>));
+- translation! getString("string_id") return the localised string.
+	- Read strings from a compiled file. (.mo? https://www.gnu.org/software/gettext/manual/html_node/MO-Files.html)
+	- Managed by assets system
+	- Reload correctly
+	- Can switch language at runtime
 
 Asset system:
 - Asset packer of some kind. Maybe just creates an assets table?
