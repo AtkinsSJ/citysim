@@ -465,7 +465,7 @@ void sortRenderBuffer(RenderBuffer *buffer)
 
 		// "comb" over the list
 		for (uint32 i = 0;
-			i + gap <= buffer->itemCount;
+			i + gap < buffer->itemCount; // Here lies the remains of the flicker bug. It was <= not <. /fp
 			i++)
 		{
 			if (buffer->items[i].depth > buffer->items[i+gap].depth)
