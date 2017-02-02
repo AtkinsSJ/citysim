@@ -135,18 +135,18 @@ void debugTextOut(DebugTextState *textState, const char *formatString, ...)
 	va_end(args);
 }
 
-void renderDebugConsole(DebugState *debugState, DebugConsole *console, UIState *uiState, RenderBuffer *uiBuffer)
+void renderDebugConsole(DebugConsole *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
-	DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
+	DebugTextState textState = initDebugTextState(uiState, uiBuffer, console->font, makeWhite(),
 		                                          uiBuffer->camera.size, 16.0f, true);
 
 	// Caret stuff is a bit hacky, but oh well.
 	// It especially doesn't play well with pausing the debug capturing...
 	char caret = '_';
-	if ((debugState->readingFrameIndex % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
-	{
-		caret = ' ';
-	}
+	// if ((debugState->readingFrameIndex % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
+	// {
+	// 	caret = ' ';
+	// }
 	debugTextOut(&textState, "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
 
 	// print output lines
@@ -339,6 +339,38 @@ void debugHandleConsoleInput(DebugConsole *console)
 	clear(&console->input);
 }
 
+void updateDebugConsole(DebugConsole *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
+{
+	if (keyJustPressed(inputState, SDLK_TAB))
+	{
+		console->isVisible = !console->isVisible;
+	}
+
+	if (console->isVisible)
+	{
+		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Ctrl))
+		{
+			clear(&console->input);
+		}
+		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
+		{
+			backspace(&console->input);
+		}
+		else if (keyJustPressed(inputState, SDLK_RETURN))
+		{
+			debugHandleConsoleInput(console);
+		}
+
+		if (wasTextEntered(inputState))
+		{
+			char *enteredText = getEnteredText(inputState);
+			int32 inputTextLength = strlen(enteredText);
+			append(&console->input, enteredText, inputTextLength);
+		}
+		renderDebugConsole(console, uiState, uiBuffer);
+	}
+}
+
 void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (keyJustPressed(inputState, SDLK_F2))
@@ -365,28 +397,9 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	if (debugState->showDebugData)
 	{
-		DebugConsole *console = &debugState->console;
-
-		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Shift))
-		{
-			clear(&console->input);
-		}
-		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
-		{
-			backspace(&console->input);
-		}
-		else if (keyJustPressed(inputState, SDLK_RETURN))
-		{
-			debugHandleConsoleInput(console);
-		}
-
-		if (wasTextEntered(inputState))
-		{
-			char *enteredText = getEnteredText(inputState);
-			int32 inputTextLength = strlen(enteredText);
-			append(&console->input, enteredText, inputTextLength);
-		}
 		renderDebugData(debugState, uiState, uiBuffer);
-		renderDebugConsole(debugState, &debugState->console, uiState, uiBuffer);
 	}
+
+	updateDebugConsole(&debugState->console, inputState, uiState, uiBuffer);
+	
 }

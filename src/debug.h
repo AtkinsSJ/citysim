@@ -52,6 +52,9 @@ struct DebugCodeDataWrapper
 
 struct DebugConsole
 {
+	bool isVisible;
+	struct BitmapFont *font;
+
 	StringBuffer input;
 	int32 outputLineCount;
 	StringBuffer *outputLines;
@@ -84,8 +87,12 @@ struct DebugState
 	struct Renderer *renderer;
 };
 
-void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 lineLength, int32 outputLineCount)
+void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 lineLength, int32 outputLineCount,
+	                  BitmapFont *font)
 {
+	console->isVisible = false;
+	console->font = font;
+
 	console->input = newStringBuffer(debugArena, lineLength);
 	console->outputLineCount = outputLineCount;
 	console->outputLines = PushArray(debugArena, StringBuffer, console->outputLineCount);
@@ -103,7 +110,7 @@ void debugInit(BitmapFont *font, Renderer *renderer)
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
 
-	initDebugConsole(&globalDebugState->debugArena, &globalDebugState->console, 255, 12);
+	initDebugConsole(&globalDebugState->debugArena, &globalDebugState->console, 255, 12, font);
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);
