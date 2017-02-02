@@ -135,28 +135,6 @@ void debugTextOut(DebugTextState *textState, const char *formatString, ...)
 	va_end(args);
 }
 
-void renderDebugConsole(DebugConsole *console, UIState *uiState, RenderBuffer *uiBuffer)
-{
-	DebugTextState textState = initDebugTextState(uiState, uiBuffer, console->font, makeWhite(),
-		                                          uiBuffer->camera.size, 16.0f, true);
-
-	// Caret stuff is a bit hacky, but oh well.
-	// It especially doesn't play well with pausing the debug capturing...
-	char caret = '_';
-	// if ((debugState->readingFrameIndex % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
-	// {
-	// 	caret = ' ';
-	// }
-	debugTextOut(&textState, "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
-
-	// print output lines
-	for (int32 i=console->outputLineCount-1; i>=0; i--)
-	{
-		StringBuffer *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
-		debugTextOut(&textState, "%s", line->buffer);
-	}
-}
-
 void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (debugState)
@@ -337,6 +315,31 @@ void debugHandleConsoleInput(DebugConsole *console)
 
 	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
 	clear(&console->input);
+}
+
+void renderDebugConsole(DebugConsole *console, UIState *uiState, RenderBuffer *uiBuffer)
+{
+	DebugTextState textState = initDebugTextState(uiState, uiBuffer, console->font, makeWhite(),
+		                                          uiBuffer->camera.size, 16.0f, true);
+
+	// Caret stuff is a bit hacky, but oh well.
+	// It especially doesn't play well with pausing the debug capturing...
+	char caret = '_';
+	// if ((debugState->readingFrameIndex % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
+	// {
+	// 	caret = ' ';
+	// }
+	debugTextOut(&textState, "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
+
+	// print output lines
+	for (int32 i=console->outputLineCount-1; i>=0; i--)
+	{
+		StringBuffer *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
+		debugTextOut(&textState, "%s", line->buffer);
+	}
+	
+	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
+			 100, color255(0,0,0,128));
 }
 
 void updateDebugConsole(DebugConsole *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)

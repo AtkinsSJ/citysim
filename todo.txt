@@ -4,6 +4,14 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+Console:
+- Stop drawing output lines once we go off screen
+- Maybe use a String-to-function() map for commands?
+	{ "resize_window" => (){setWindowSize(getIntParam(), getIntParam())} } etc
+- Console doesn't take up whole screen, appears at the top
+- Console eats all input events while it is open?
+- Add the caret flash again! Do it properly, involving dt and counting up real time
+
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
 Strings:
