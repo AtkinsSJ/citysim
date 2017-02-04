@@ -1,4 +1,6 @@
 #pragma once
+#pragma warning(push)
+#pragma warning(disable: 4100) // Disable unused-arg warnings for commands, as they all have to take the same args.
 
 struct Command
 {
@@ -102,3 +104,5 @@ void debugHandleConsoleInput(DebugConsole *console)
 	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
 	clear(&console->input);
 }
+
+#pragma warning(pop)
