@@ -104,26 +104,6 @@ unichar readUnicodeChar(char **nextChar)
 	return result;
 }
 
-bool isWhitespace(uint32 uChar)
-{
-	// TODO: FINISH THIS!
-
-	bool result = false;
-
-	switch (uChar)
-	{
-	case 0:
-	case 32:
-		result = true;
-		break;
-
-	default:
-		result = false;
-	}
-
-	return result;
-}
-
 struct DrawTextState
 {
 	bool doWrap;

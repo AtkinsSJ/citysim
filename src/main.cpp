@@ -49,6 +49,7 @@ struct AppState
 
 #include "ui.cpp"
 #include "debug.cpp"
+#include "commands.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
 #include "game.cpp"

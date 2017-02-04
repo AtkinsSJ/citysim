@@ -90,7 +90,7 @@ struct DebugState
 void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 lineLength, int32 outputLineCount,
 	                  BitmapFont *font)
 {
-	console->isVisible = false;
+	console->isVisible = true;
 	console->font = font;
 
 	console->input = newStringBuffer(debugArena, lineLength);
@@ -105,7 +105,7 @@ void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 line
 void debugInit(BitmapFont *font, Renderer *renderer)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
-	globalDebugState->showDebugData = true;
+	globalDebugState->showDebugData = false;
 	globalDebugState->captureDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;

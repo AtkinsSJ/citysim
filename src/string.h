@@ -160,3 +160,60 @@ bool asInt(String string, int32 *result)
 
 	return succeeded;
 }
+
+bool isWhitespace(uint32 uChar)
+{
+	// TODO: FINISH THIS!
+
+	bool result = false;
+
+	switch (uChar)
+	{
+	case 0:
+	case 32:
+		result = true;
+		break;
+
+	default:
+		result = false;
+	}
+
+	return result;
+}
+
+struct TokenList
+{
+	String tokens[64];
+	int32 count;
+	int32 maxTokenCount = 64;
+};
+
+TokenList tokenize(String input)
+{
+	TokenList result = {};
+	int32 position = 0;
+
+	while (position <= input.length)
+	{
+		while ((position <= input.length) && isWhitespace(input.chars[position]))
+		{
+			position++;
+		}
+
+		if (position <= input.length)
+		{
+			ASSERT(result.count < result.maxTokenCount, "No room for more tokens.");
+			String *token = &result.tokens[result.count++];
+			token->chars = input.chars + position;
+			
+			// length
+			while ((position <= input.length) && !isWhitespace(input.chars[position]))
+			{
+				position++;
+				token->length++;
+			}
+		}
+	}
+
+	return result;
+}
