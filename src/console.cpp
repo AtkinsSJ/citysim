@@ -85,7 +85,7 @@ void updateDebugConsole(DebugConsole *console, InputState *inputState, UIState *
 		}
 		else if (keyJustPressed(inputState, SDLK_RETURN))
 		{
-			debugHandleConsoleInput(console);
+			consoleHandleCommand(console);
 		}
 
 		if (wasTextEntered(inputState))
