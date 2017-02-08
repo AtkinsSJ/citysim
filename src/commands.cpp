@@ -9,7 +9,9 @@ struct Command
 };
 Command *getCommand(int i);
 
-void cmd_help(DebugConsole *console, TokenList *tokens)
+#define ConsoleCommand(name) void cmd_##name(DebugConsole *console, TokenList *tokens)
+
+ConsoleCommand(help)
 {
 	append(debugConsoleNextOutputLine(console), "Available commands are:");
 	for (int i=0; getCommand(i); i++)
@@ -21,7 +23,7 @@ void cmd_help(DebugConsole *console, TokenList *tokens)
 	}
 }
 
-void cmd_resize_window(DebugConsole *console, TokenList *tokens)
+ConsoleCommand(resize_window)
 {
 	bool succeeded = false;
 
