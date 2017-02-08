@@ -25,6 +25,7 @@ enum AppStatus
 #include "types.h"
 #include "memory.h"
 #include "string.h"
+#include "console.h"
 #include "debug.h"
 #include "random.h"
 #include "platform.h"
@@ -50,6 +51,7 @@ struct AppState
 #include "ui.cpp"
 #include "debug.cpp"
 #include "commands.cpp"
+#include "console.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
 #include "game.cpp"
@@ -193,6 +195,7 @@ int main(int argc, char *argv[])
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
 			debugUpdate(globalDebugState, &inputState, uiState, &renderer->uiBuffer);
+			updateDebugConsole(&globalDebugState->console, &inputState, uiState, &renderer->uiBuffer);
 		}
 
 	// Actually draw things!

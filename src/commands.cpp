@@ -66,45 +66,4 @@ inline Command *getCommand(int i) {
 	return debugCommands + i;
 }
 
-void debugHandleConsoleInput(DebugConsole *console)
-{
-	// copy input to output, for readability
-	{
-		StringBuffer *output = debugConsoleNextOutputLine(console);
-		append(output, "> ");
-		append(output, &console->input);
-	}
-
-	if (console->input.bufferLength != 0)
-	{
-		TokenList tokens = tokenize(bufferToString(&console->input));
-		if (tokens.count > 0)
-		{
-			bool foundCommand = false;
-			String firstToken = tokens.tokens[0];
-			for (int i=0; i < ArrayCount(debugCommands); i++)
-			{
-				Command *cmd = debugCommands + i;
-				if (equals(cmd->name, firstToken))
-				{
-					foundCommand = true;
-					cmd->function(console, &tokens);
-					break;
-				}
-			}
-
-			if (!foundCommand)
-			{
-				StringBuffer *output = debugConsoleNextOutputLine(console);
-				append(output, "I don't understand '");
-				append(output, firstToken);
-				append(output, "'. Try 'help' for a list of commands.");
-			}
-		}
-	}
-
-	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
-	clear(&console->input);
-}
-
 #pragma warning(pop)
