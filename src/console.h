@@ -8,7 +8,7 @@ enum ConsoleLineStyleID
 	CLS_Error,
 
 	CLS_Input,
-	
+
 	CLS_COUNT
 };
 
@@ -53,3 +53,5 @@ StringBuffer *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=C
 
 	return result;
 }
+
+void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default);

@@ -233,5 +233,3 @@ ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID
 	ASSERT((shaderID > -1) && (shaderID < ShaderProgramCount), "Shader ID out of range: %d", shaderID);
 	return assets->shaderPrograms + shaderID;
 }
-
-#include "assets.cpp"

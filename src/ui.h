@@ -55,3 +55,9 @@ struct UIState
 };
 
 const real32 messageDisplayTime = 2.0f;
+
+void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
+{
+	uiState->currentCursor = cursorID;
+	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
+}

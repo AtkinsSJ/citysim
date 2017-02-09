@@ -35,7 +35,6 @@ enum AppStatus
 #include "assets.h"
 #include "render.h"
 #include "font.cpp"
-#include "bmfont.h"
 #include "input.h"
 #include "ui.h"
 #include "game.h"
@@ -43,11 +42,18 @@ enum AppStatus
 struct AppState
 {
 	AppStatus appStatus;
+	MemoryArena tempArena;
+
 	UIState uiState;
+	AssetManager *assets;
+	Renderer *renderer;
 
 	GameState *gameState;
 };
+AppState globalAppState;
 
+#include "assets.cpp"
+#include "bmfont.h"
 #include "ui.cpp"
 #include "commands.cpp"
 #include "debug.cpp"
@@ -97,27 +103,29 @@ int main(int argc, char *argv[])
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
+
 // INIT
-	MemoryArena memoryArena = createEmptyMemoryArena();
+	globalAppState = {};
+	AppState *appState = &globalAppState;
+	appState->tempArena = createEmptyMemoryArena();
+
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Under London");
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
-	addAssets(assets, &memoryArena);
+	addAssets(assets, &appState->tempArena);
 	loadAssets(assets);
-
-	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+	appState->assets = assets;
 
 	Renderer *renderer = platform_initializeRenderer(window);
 	ASSERT(renderer->platformRenderer, "Failed to initialize renderer.");
 	renderer->loadAssets(renderer, assets);
+	appState->renderer = renderer;
 
 	InputState inputState = {};
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
-
-	AppState appState = {};
 
 #if BUILD_DEBUG
 	debugInit(getFont(assets, FontAssetType_Debug), renderer);
@@ -125,7 +133,7 @@ int main(int argc, char *argv[])
 
 // Do we need this here?
 // {
-	UIState *uiState = &appState.uiState;
+	UIState *uiState = &appState->uiState;
 	initUiState(uiState);
 	setCursor(uiState, assets, Cursor_Main);
 	setCursorVisible(uiState, true);
@@ -150,7 +158,7 @@ int main(int argc, char *argv[])
 	real32 framesPerSecond = 0;
 	
 	// GAME LOOP
-	while (appState.appStatus != AppStatus_Quit)
+	while (appState->appStatus != AppStatus_Quit)
 	{
 		DEBUG_BLOCK("Game loop");
 
@@ -158,7 +166,7 @@ int main(int argc, char *argv[])
 
 		if (inputState.receivedQuitSignal)
 		{
-			appState.appStatus = AppStatus_Quit;
+			appState->appStatus = AppStatus_Quit;
 			break;
 		}
 
@@ -170,19 +178,13 @@ int main(int argc, char *argv[])
 		// Asset reloading! Whooo!
 		if (keyJustPressed(&inputState, SDLK_F1))
 		{
-			consoleWriteLine("Reloading assets...");
-			renderer->unloadAssets(renderer);
-			SDL_SetCursor(systemWaitCursor);
-			reloadAssets(assets, &memoryArena);
-			setCursor(uiState, assets, uiState->currentCursor);
-			renderer->loadAssets(renderer, assets);
-			consoleWriteLine("Assets reloaded successfully!", CLS_Success);
+			reloadAssets(assets, &appState->tempArena, renderer, uiState);
 		}
 
 		worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 		uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
-		updateAndRender(&appState, &inputState, renderer, assets);
+		updateAndRender(appState, &inputState, renderer, assets);
 
 		// Update camera matrices here
 		updateCameraMatrix(worldCamera);
@@ -193,7 +195,7 @@ int main(int argc, char *argv[])
 		{
 			DEBUG_ARENA(&assets->assetArena, "Assets");
 			DEBUG_ARENA(&renderer->renderArena, "Renderer");
-			DEBUG_ARENA(appState.gameState ? &appState.gameState->gameArena : 0, "GameState");
+			DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
 			debugUpdate(globalDebugState, &inputState, uiState, &renderer->uiBuffer);

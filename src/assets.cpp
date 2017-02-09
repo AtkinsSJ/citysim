@@ -272,8 +272,16 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 #endif
 }
 
-void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
+void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *renderer, UIState *uiState)
 {
+	// Preparation
+	consoleWriteLine("Reloading assets...");
+	renderer->unloadAssets(renderer);
+	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+	SDL_SetCursor(systemWaitCursor);
+
+	// Actual reloading
+
 	// Clear out textures
 	for (uint32 i = 1; i < assets->textureCount; ++i)
 	{
@@ -305,7 +313,12 @@ void reloadAssets(AssetManager *assets, MemoryArena *memoryArena)
 	// General resetting of Assets system
 	resetMemoryArena(&assets->assetArena);
 	initAssetManager(assets);
-	addAssets(assets, memoryArena);
+	addAssets(assets, tempArena);
 	loadAssets(assets);
 
+	// After stuff
+	setCursor(uiState, assets, uiState->currentCursor);
+	SDL_FreeCursor(systemWaitCursor);
+	renderer->loadAssets(renderer, assets);
+	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }

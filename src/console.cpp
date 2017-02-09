@@ -1,6 +1,6 @@
 #pragma once
 
-void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
+void consoleWriteLine(char *text, ConsoleLineStyleID style)
 {
 	if (globalDebugState)
 	{

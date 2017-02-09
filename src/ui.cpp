@@ -21,12 +21,6 @@ void initUiState(UIState *uiState)
 	setCursorVisible(uiState, false);
 }
 
-void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
-{
-	uiState->currentCursor = cursorID;
-	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
-}
-
 RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, char *text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {

@@ -61,10 +61,16 @@ ConsoleCommand(resize_window)
 	}
 }
 
+ConsoleCommand(reload_assets)
+{
+	reloadAssets(globalAppState.assets, &globalAppState.tempArena, globalAppState.renderer, &globalAppState.uiState);
+}
+
 void initCommands(Console *console)
 {
 	append(&consoleCommands, Command("help", &cmd_help));
 	append(&consoleCommands, Command("resize_window", &cmd_resize_window));
+	append(&consoleCommands, Command("reload_assets", &cmd_reload_assets));
 
 	char buffer[1024];
 	snprintf(buffer, sizeof(buffer), "Loaded %d commands. Type 'help' to list them.", consoleCommands.count);
