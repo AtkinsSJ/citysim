@@ -5,19 +5,19 @@
 struct Command
 {
 	String name;
-	void (*function)(DebugConsole *console, TokenList *tokens);
+	void (*function)(Console *console, TokenList *tokens);
 };
 Command *getCommand(int i);
 
-#define ConsoleCommand(name) void cmd_##name(DebugConsole *console, TokenList *tokens)
+#define ConsoleCommand(name) void cmd_##name(Console *console, TokenList *tokens)
 
 ConsoleCommand(help)
 {
-	append(debugConsoleNextOutputLine(console), "Available commands are:");
+	append(consoleNextOutputLine(console), "Available commands are:");
 	for (int i=0; getCommand(i); i++)
 	{
 		Command *cmd = getCommand(i);
-		StringBuffer *line = debugConsoleNextOutputLine(console);
+		StringBuffer *line = consoleNextOutputLine(console);
 		append(line, "    ");
 		append(line, cmd->name);
 	}
@@ -37,7 +37,7 @@ ConsoleCommand(resize_window)
 		if (asInt(sWidth, &width)   && (width > 0)
 		 && asInt(sHeight, &height) && (height > 0))
 		{
-			StringBuffer *output = debugConsoleNextOutputLine(console);
+			StringBuffer *output = consoleNextOutputLine(console);
 			append(output, "Resizing window to ");
 			append(output, sWidth);
 			append(output, " by ");
@@ -49,7 +49,7 @@ ConsoleCommand(resize_window)
 
 	if (!succeeded)
 	{
-		StringBuffer *output = debugConsoleNextOutputLine(console);
+		StringBuffer *output = consoleNextOutputLine(console);
 		append(output, "Usage: ");
 		append(output, tokens->tokens[0]);
 		append(output, " width height");

@@ -1,34 +1,66 @@
 #pragma once
 
-struct DebugConsole
+enum ConsoleLineStyleID
+{
+	CLS_Default,
+	CLS_Input,
+	CLS_InputEcho,
+	CLS_Error,
+
+	CLS_COUNT
+};
+
+struct ConsoleLineStyle
+{
+	V4 textColor;
+};
+
+struct ConsoleOutputLine
+{
+	StringBuffer buffer;
+	ConsoleLineStyleID style;
+};
+
+struct Console
 {
 	bool isVisible;
 	struct BitmapFont *font;
+	ConsoleLineStyle styles[CLS_COUNT];
 
 	StringBuffer input;
 	int32 outputLineCount;
-	StringBuffer *outputLines;
+	ConsoleOutputLine *outputLines;
 	int32 currentOutputLine;
+
+	real32 caretFlashCounter;
 };
 
-void initDebugConsole(MemoryArena *debugArena, DebugConsole *console, int32 lineLength, int32 outputLineCount,
-	                  BitmapFont *font)
+const int32 consoleLineLength = 255;
+
+void initConsole(MemoryArena *debugArena, Console *console, int32 outputLineCount, BitmapFont *font)
 {
 	console->isVisible = true;
 	console->font = font;
+	console->styles[CLS_Default].textColor   = color255(255, 255, 255, 192);
+	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
+	console->styles[CLS_InputEcho].textColor = color255(255, 255, 255, 128);
+	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 192);
 
-	console->input = newStringBuffer(debugArena, lineLength);
+	console->input = newStringBuffer(debugArena, consoleLineLength);
 	console->outputLineCount = outputLineCount;
-	console->outputLines = PushArray(debugArena, StringBuffer, console->outputLineCount);
+	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
 	for (int32 i=0; i < console->outputLineCount; i++)
 	{
-		console->outputLines[i] = newStringBuffer(debugArena, lineLength);
+		console->outputLines[i].buffer = newStringBuffer(debugArena, consoleLineLength);
 	}
 }
 
-StringBuffer *debugConsoleNextOutputLine(DebugConsole *console)
+StringBuffer *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=CLS_Default)
 {
-	StringBuffer *result = console->outputLines + console->currentOutputLine;
+	ConsoleOutputLine *line = console->outputLines + console->currentOutputLine;
+	line->style = style;
+
+	StringBuffer *result = &line->buffer;
 	console->currentOutputLine = WRAP(console->currentOutputLine + 1, console->outputLineCount);
 
 	clear(result);

@@ -56,7 +56,7 @@ struct DebugState
 	bool showDebugData;
 	bool captureDebugData;
 
-	struct DebugConsole console;
+	Console console;
 
 	uint32 readingFrameIndex;
 	uint32 writingFrameIndex;
@@ -84,7 +84,7 @@ void debugInit(BitmapFont *font, Renderer *renderer)
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
 
-	initDebugConsole(&globalDebugState->debugArena, &globalDebugState->console, 255, 12, font);
+	initConsole(&globalDebugState->debugArena, &globalDebugState->console, 256, font);
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);

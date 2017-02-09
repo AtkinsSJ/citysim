@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
 			debugUpdate(globalDebugState, &inputState, uiState, &renderer->uiBuffer);
-			updateDebugConsole(&globalDebugState->console, &inputState, uiState, &renderer->uiBuffer);
+			updateConsole(&globalDebugState->console, &inputState, uiState, &renderer->uiBuffer);
 		}
 
 	// Actually draw things!

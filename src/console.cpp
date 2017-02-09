@@ -1,35 +1,90 @@
 #pragma once
 
-void renderDebugConsole(DebugConsole *console, UIState *uiState, RenderBuffer *uiBuffer)
+struct ConsoleTextState
 {
-	DebugTextState textState = initDebugTextState(uiState, uiBuffer, console->font, makeWhite(),
-		                                          uiBuffer->camera.size, 16.0f, true);
+	V2 pos;
+	real32 maxWidth;
+	bool progressUpwards;
+
+	UIState *uiState;
+	RenderBuffer *uiBuffer;
+};
+inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiBuffer, V2 screenSize, real32 screenEdgePadding, bool upwards)
+{
+	ConsoleTextState textState = {};
+	textState.progressUpwards = upwards;
+	if (upwards) 
+	{
+		textState.pos = v2(screenEdgePadding, screenSize.y - screenEdgePadding);
+	}
+	else
+	{
+		textState.pos = v2(screenEdgePadding, screenEdgePadding);
+	}
+	textState.maxWidth = screenSize.x - (2*screenEdgePadding);
+
+	textState.uiState = uiState;
+	textState.uiBuffer = uiBuffer;
+
+	return textState;
+}
+void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, ConsoleLineStyle style)
+{
+	int32 align = ALIGN_LEFT;
+	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
+	else                            align |= ALIGN_TOP;
+
+	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
+	                             align, 300, style.textColor, textState->maxWidth);
+	if (textState->progressUpwards)
+	{
+		textState->pos.y -= resultRect.h;
+	}
+	else
+	{
+		textState->pos.y += resultRect.h;
+	}
+}
+
+void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
+{
+	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 16.0f, true);
 
 	// Caret stuff is a bit hacky, but oh well.
 	// It especially doesn't play well with pausing the debug capturing...
 	char caret = '_';
-	// if ((debugState->readingFrameIndex % FRAMES_PER_SECOND) < (FRAMES_PER_SECOND/2))
-	// {
-	// 	caret = ' ';
-	// }
-	debugTextOut(&textState, "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
+	if (console->caretFlashCounter < 0.5f)
+	{
+		caret = ' ';
+	}
+	char buffer[consoleLineLength + 3];
+	snprintf(buffer, sizeof(buffer), "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
+	consoleTextOut(&textState, buffer, console->font, console->styles[CLS_Input]);
 
 	// print output lines
 	for (int32 i=console->outputLineCount-1; i>=0; i--)
 	{
-		StringBuffer *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
-		debugTextOut(&textState, "%s", line->buffer);
+		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
+		consoleTextOut(&textState, line->buffer.buffer, console->font, console->styles[line->style]);
+
+		// If we've gone off the screen, stop!
+		if ((textState.pos.y < 0) || (textState.pos.y > uiBuffer->camera.size.y))
+		{
+			break;
+		}
 	}
 	
 	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			 100, color255(0,0,0,128));
+
+	console->caretFlashCounter = fmod(console->caretFlashCounter + SECONDS_PER_FRAME, 1.0f);
 }
 
-void consoleHandleCommand(DebugConsole *console)
+void consoleHandleCommand(Console *console)
 {
 	// copy input to output, for readability
 	{
-		StringBuffer *output = debugConsoleNextOutputLine(console);
+		StringBuffer *output = consoleNextOutputLine(console, CLS_InputEcho);
 		append(output, "> ");
 		append(output, &console->input);
 	}
@@ -54,7 +109,7 @@ void consoleHandleCommand(DebugConsole *console)
 
 			if (!foundCommand)
 			{
-				StringBuffer *output = debugConsoleNextOutputLine(console);
+				StringBuffer *output = consoleNextOutputLine(console, CLS_Error);
 				append(output, "I don't understand '");
 				append(output, firstToken);
 				append(output, "'. Try 'help' for a list of commands.");
@@ -66,7 +121,7 @@ void consoleHandleCommand(DebugConsole *console)
 	clear(&console->input);
 }
 
-void updateDebugConsole(DebugConsole *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
+void updateConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{
@@ -94,6 +149,6 @@ void updateDebugConsole(DebugConsole *console, InputState *inputState, UIState *
 			int32 inputTextLength = strlen(enteredText);
 			append(&console->input, enteredText, inputTextLength);
 		}
-		renderDebugConsole(console, uiState, uiBuffer);
+		renderConsole(console, uiState, uiBuffer);
 	}
 }
