@@ -45,7 +45,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	textState.pos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
-	drawRect(uiBuffer, rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, console->height - textState.pos.y), 100, color255(100,100,100,245));
+	drawRect(uiBuffer, rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, console->height - textState.pos.y), 100, color255(64,64,64,245));
 	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y), 100, color255(0,0,0,245));
 
 	textState.pos.y -= 8.0f;

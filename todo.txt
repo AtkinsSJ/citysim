@@ -11,6 +11,10 @@ Console:
 - Scrolling?
 - Automatic parameter checking
 - Animate console open/close?
+- Better input
+	- Hold down backspace
+	- Up to copy previous command
+	- Move caret within the input buffer, to type anywhere?
 
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
