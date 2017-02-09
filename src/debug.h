@@ -76,30 +76,6 @@ struct DebugState
 	struct Renderer *renderer;
 };
 
-void debugInit(BitmapFont *font, Renderer *renderer)
-{
-	bootstrapArena(DebugState, globalDebugState, debugArena);
-	globalDebugState->showDebugData = false;
-	globalDebugState->captureDebugData = true;
-	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
-	globalDebugState->font = font;
-
-	initConsole(&globalDebugState->debugArena, &globalDebugState->console, 256, font, 200.0f);
-
-	DLinkedListInit(&globalDebugState->arenaDataSentinel);
-	DLinkedListInit(&globalDebugState->codeDataSentinel);
-
-	DLinkedListInit(&globalDebugState->topCodeBlocksFreeListSentinel);
-	DLinkedListInit(&globalDebugState->topCodeBlocksSentinel);
-	for (uint32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
-	{
-		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
-		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
-	}
-	
-	globalDebugState->renderer = renderer;
-}
-
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName)
 {
 	if (debugState)

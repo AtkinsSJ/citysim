@@ -120,6 +120,7 @@ struct RealRect {
 };
 
 #include "matrix4.h"
+#include "array.h"
 
 /**********************************************
 	Slightly hacky doubly-linked list stuff

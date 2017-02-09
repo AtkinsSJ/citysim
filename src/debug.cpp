@@ -1,6 +1,28 @@
 #pragma once
 #include <stdarg.h>
 
+void debugInit(BitmapFont *font, Renderer *renderer)
+{
+	bootstrapArena(DebugState, globalDebugState, debugArena);
+	globalDebugState->showDebugData = false;
+	globalDebugState->captureDebugData = true;
+	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
+	globalDebugState->font = font;
+
+	DLinkedListInit(&globalDebugState->arenaDataSentinel);
+	DLinkedListInit(&globalDebugState->codeDataSentinel);
+
+	DLinkedListInit(&globalDebugState->topCodeBlocksFreeListSentinel);
+	DLinkedListInit(&globalDebugState->topCodeBlocksSentinel);
+	for (uint32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
+	{
+		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
+		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
+	}
+	
+	globalDebugState->renderer = renderer;
+}
+
 void clearDebugFrame(DebugState *debugState, int32 frameIndex)
 {
 	DebugCodeData *codeData = debugState->codeDataSentinel.next;

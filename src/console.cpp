@@ -1,5 +1,13 @@
 #pragma once
 
+void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
+{
+	if (globalDebugState)
+	{
+		append(consoleNextOutputLine(&globalDebugState->console, style), text);
+	}
+}
+
 struct ConsoleTextState
 {
 	V2 pos;
@@ -19,6 +27,7 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 
 	return textState;
 }
+
 void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, ConsoleLineStyle style)
 {
 	int32 align = ALIGN_LEFT | ALIGN_BOTTOM;
@@ -26,6 +35,27 @@ void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, C
 	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
 	                             align, 300, style.textColor, textState->maxWidth);
 	textState->pos.y -= resultRect.h;
+}
+
+void initConsole(MemoryArena *debugArena, Console *console, int32 outputLineCount, BitmapFont *font, real32 height)
+{
+	console->isInitialized = true;
+	console->isVisible = true;
+	console->font = font;
+	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
+	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
+	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 255);
+	console->styles[CLS_Success].textColor   = color255(128, 255, 128, 255);
+	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
+	console->height = height;
+
+	console->input = newStringBuffer(debugArena, consoleLineLength);
+	console->outputLineCount = outputLineCount;
+	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
+	for (int32 i=0; i < console->outputLineCount; i++)
+	{
+		console->outputLines[i].buffer = newStringBuffer(debugArena, consoleLineLength);
+	}
 }
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
@@ -82,13 +112,13 @@ void consoleHandleCommand(Console *console)
 		{
 			bool foundCommand = false;
 			String firstToken = tokens.tokens[0];
-			for (int i=0; i < ArrayCount(debugCommands); i++)
+			for (int i=0; i < consoleCommands.count; i++)
 			{
-				Command *cmd = debugCommands + i;
-				if (equals(cmd->name, firstToken))
+				Command cmd = consoleCommands[i];
+				if (equals(cmd.name, firstToken))
 				{
 					foundCommand = true;
-					cmd->function(console, &tokens);
+					cmd.function(console, &tokens);
 					break;
 				}
 			}
@@ -109,6 +139,12 @@ void consoleHandleCommand(Console *console)
 
 void updateConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
+	if (!console->isInitialized)
+	{
+		initConsole(&globalDebugState->debugArena, console, 256, globalDebugState->font, 200.0f);
+		initCommands(console);
+	}
+
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{
 		console->isVisible = !console->isVisible;

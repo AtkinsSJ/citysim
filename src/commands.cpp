@@ -5,21 +5,26 @@
 struct Command
 {
 	String name;
-	void (*function)(Console *console, TokenList *tokens);
-};
-Command *getCommand(int i);
+	void (*function)(Console*, TokenList*);
 
+	Command(char *name, void (*function)(Console*, TokenList*))
+	{
+		this->name = stringFromChars(name);
+		this->function = function;
+	}
+};
 #define ConsoleCommand(name) void cmd_##name(Console *console, TokenList *tokens)
+Array<Command> consoleCommands(8);
 
 ConsoleCommand(help)
 {
 	append(consoleNextOutputLine(console), "Available commands are:");
-	for (int i=0; getCommand(i); i++)
+	for (int i=0; i < consoleCommands.count; i++)
 	{
-		Command *cmd = getCommand(i);
+		Command cmd = consoleCommands[i];
 		StringBuffer *line = consoleNextOutputLine(console);
 		append(line, "    ");
-		append(line, cmd->name);
+		append(line, cmd.name);
 	}
 }
 
@@ -37,8 +42,8 @@ ConsoleCommand(resize_window)
 		if (asInt(sWidth, &width)   && (width > 0)
 		 && asInt(sHeight, &height) && (height > 0))
 		{
-			StringBuffer *output = consoleNextOutputLine(console);
-			append(output, "Resizing window to ");
+			StringBuffer *output = consoleNextOutputLine(console, CLS_Success);
+			append(output, "Window resized to ");
 			append(output, sWidth);
 			append(output, " by ");
 			append(output, sHeight);
@@ -56,14 +61,14 @@ ConsoleCommand(resize_window)
 	}
 }
 
-Command debugCommands[] = {
-	{stringFromChars("help"), &cmd_help},
-	{stringFromChars("resize_window"), &cmd_resize_window},
-};
-inline Command *getCommand(int i) {
-	if ((i < 0) || (i >= ArrayCount(debugCommands))) return null;
+void initCommands(Console *console)
+{
+	append(&consoleCommands, Command("help", &cmd_help));
+	append(&consoleCommands, Command("resize_window", &cmd_resize_window));
 
-	return debugCommands + i;
+	char buffer[1024];
+	snprintf(buffer, sizeof(buffer), "Loaded %d commands. Type 'help' to list them.", consoleCommands.count);
+	append(consoleNextOutputLine(console, CLS_Default), buffer);
 }
 
 #pragma warning(pop)

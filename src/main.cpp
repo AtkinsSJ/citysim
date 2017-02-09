@@ -49,8 +49,8 @@ struct AppState
 };
 
 #include "ui.cpp"
-#include "debug.cpp"
 #include "commands.cpp"
+#include "debug.cpp"
 #include "console.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
@@ -170,11 +170,13 @@ int main(int argc, char *argv[])
 		// Asset reloading! Whooo!
 		if (keyJustPressed(&inputState, SDLK_F1))
 		{
+			consoleWriteLine("Reloading assets...");
 			renderer->unloadAssets(renderer);
 			SDL_SetCursor(systemWaitCursor);
 			reloadAssets(assets, &memoryArena);
 			setCursor(uiState, assets, uiState->currentCursor);
 			renderer->loadAssets(renderer, assets);
+			consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 		}
 
 		worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
