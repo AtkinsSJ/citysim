@@ -66,16 +66,17 @@ ConsoleCommand(reload_assets)
 	reloadAssets(globalAppState.assets, &globalAppState.tempArena, globalAppState.renderer, &globalAppState.uiState);
 }
 
-#define Cmd(name) #name, &cmd_##name
+#define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
-	append(&consoleCommands, Command(Cmd(help), 0, 0));
-	append(&consoleCommands, Command(Cmd(resize_window), 2, 2));
-	append(&consoleCommands, Command(Cmd(reload_assets), 0, 0));
+	append(&consoleCommands, Command(CMD(help), 0, 0));
+	append(&consoleCommands, Command(CMD(resize_window), 2, 2));
+	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
 
 	char buffer[1024];
 	snprintf(buffer, sizeof(buffer), "Loaded %d commands. Type 'help' to list them.", consoleCommands.count);
 	append(consoleNextOutputLine(console, CLS_Default), buffer);
 }
+#undef CMD
 
 #pragma warning(pop)
