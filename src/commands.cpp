@@ -26,7 +26,7 @@ ConsoleCommand(help)
 	{
 		Command cmd = consoleCommands[i];
 		StringBuffer *line = consoleNextOutputLine(console);
-		append(line, "    ");
+		append(line, " - ");
 		append(line, cmd.name);
 	}
 }
@@ -54,10 +54,10 @@ ConsoleCommand(resize_window)
 
 	if (!succeeded)
 	{
-		StringBuffer *output = consoleNextOutputLine(console);
+		StringBuffer *output = consoleNextOutputLine(console, CLS_Error);
 		append(output, "Usage: ");
 		append(output, tokens->tokens[0]);
-		append(output, " width height");
+		append(output, " width height, where both width and height are positive integers");
 	}
 }
 
@@ -66,11 +66,12 @@ ConsoleCommand(reload_assets)
 	reloadAssets(globalAppState.assets, &globalAppState.tempArena, globalAppState.renderer, &globalAppState.uiState);
 }
 
+#define Cmd(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
-	append(&consoleCommands, Command("help", &cmd_help, 0, 0));
-	append(&consoleCommands, Command("resize_window", &cmd_resize_window, 2, 2));
-	append(&consoleCommands, Command("reload_assets", &cmd_reload_assets, 0, 0));
+	append(&consoleCommands, Command(Cmd(help), 0, 0));
+	append(&consoleCommands, Command(Cmd(resize_window), 2, 2));
+	append(&consoleCommands, Command(Cmd(reload_assets), 0, 0));
 
 	char buffer[1024];
 	snprintf(buffer, sizeof(buffer), "Loaded %d commands. Type 'help' to list them.", consoleCommands.count);
