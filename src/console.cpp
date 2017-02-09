@@ -30,7 +30,6 @@ void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, C
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
-	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, console->height), 100, color255(0,0,0,245));
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
 
 	// Caret stuff is a bit hacky, but oh well.
@@ -43,6 +42,13 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	char buffer[consoleLineLength + 3];
 	snprintf(buffer, sizeof(buffer), "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
 	consoleTextOut(&textState, buffer, console->font, console->styles[CLS_Input]);
+	textState.pos.y -= 8.0f;
+
+	// draw backgrounds now we know size of input area
+	drawRect(uiBuffer, rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, console->height - textState.pos.y), 100, color255(100,100,100,245));
+	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y), 100, color255(0,0,0,245));
+
+	textState.pos.y -= 8.0f;
 
 	// print output lines
 	for (int32 i=console->outputLineCount-1; i>=0; i--)
@@ -57,7 +63,6 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 		}
 	}
 	
-
 	console->caretFlashCounter = fmod(console->caretFlashCounter + SECONDS_PER_FRAME, 1.0f);
 }
 
