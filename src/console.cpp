@@ -118,7 +118,20 @@ void consoleHandleCommand(Console *console)
 				if (equals(cmd.name, firstToken))
 				{
 					foundCommand = true;
-					cmd.function(console, &tokens);
+
+					int32 argCount = tokens.count-1;
+					if ((argCount < cmd.minArgs) || (argCount > cmd.maxArgs))
+					{
+						char buffer[1024];
+						snprintf(buffer, sizeof(buffer), "Command '%.*s' accepts between %d and %d arguments, but %d given.",
+							     firstToken.length, firstToken.chars, cmd.minArgs, cmd.maxArgs, argCount);
+						append(consoleNextOutputLine(console, CLS_Error), buffer);
+					}
+					else
+					{
+						cmd.function(console, &tokens);
+					}
+
 					break;
 				}
 			}
