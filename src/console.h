@@ -26,6 +26,7 @@ struct Console
 	bool isVisible;
 	struct BitmapFont *font;
 	ConsoleLineStyle styles[CLS_COUNT];
+	real32 height;
 
 	StringBuffer input;
 	int32 outputLineCount;
@@ -37,14 +38,15 @@ struct Console
 
 const int32 consoleLineLength = 255;
 
-void initConsole(MemoryArena *debugArena, Console *console, int32 outputLineCount, BitmapFont *font)
+void initConsole(MemoryArena *debugArena, Console *console, int32 outputLineCount, BitmapFont *font, real32 height)
 {
 	console->isVisible = true;
 	console->font = font;
-	console->styles[CLS_Default].textColor   = color255(255, 255, 255, 192);
+	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
 	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
-	console->styles[CLS_InputEcho].textColor = color255(255, 255, 255, 128);
-	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 192);
+	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
+	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 255);
+	console->height = height;
 
 	console->input = newStringBuffer(debugArena, consoleLineLength);
 	console->outputLineCount = outputLineCount;

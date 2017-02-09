@@ -84,7 +84,7 @@ void debugInit(BitmapFont *font, Renderer *renderer)
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
 
-	initConsole(&globalDebugState->debugArena, &globalDebugState->console, 256, font);
+	initConsole(&globalDebugState->debugArena, &globalDebugState->console, 256, font, 200.0f);
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);

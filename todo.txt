@@ -7,11 +7,10 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 Console:
 - Maybe use a String-to-function() map for commands?
 	{ "resize_window" => (){setWindowSize(getIntParam(), getIntParam())} } etc
-- Console doesn't take up whole screen, appears at the top
 - Console eats all input events while it is open?
 - Scrolling?
-- Different styles for output lines?
 - Automatic parameter checking
+- Animate console open/close?
 
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 

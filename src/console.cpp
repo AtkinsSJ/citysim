@@ -4,23 +4,14 @@ struct ConsoleTextState
 {
 	V2 pos;
 	real32 maxWidth;
-	bool progressUpwards;
 
 	UIState *uiState;
 	RenderBuffer *uiBuffer;
 };
-inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiBuffer, V2 screenSize, real32 screenEdgePadding, bool upwards)
+inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiBuffer, V2 screenSize, real32 screenEdgePadding, real32 height)
 {
 	ConsoleTextState textState = {};
-	textState.progressUpwards = upwards;
-	if (upwards) 
-	{
-		textState.pos = v2(screenEdgePadding, screenSize.y - screenEdgePadding);
-	}
-	else
-	{
-		textState.pos = v2(screenEdgePadding, screenEdgePadding);
-	}
+	textState.pos = v2(screenEdgePadding, height - screenEdgePadding);
 	textState.maxWidth = screenSize.x - (2*screenEdgePadding);
 
 	textState.uiState = uiState;
@@ -30,25 +21,17 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 }
 void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, ConsoleLineStyle style)
 {
-	int32 align = ALIGN_LEFT;
-	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
-	else                            align |= ALIGN_TOP;
+	int32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
 	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
 	                             align, 300, style.textColor, textState->maxWidth);
-	if (textState->progressUpwards)
-	{
-		textState->pos.y -= resultRect.h;
-	}
-	else
-	{
-		textState->pos.y += resultRect.h;
-	}
+	textState->pos.y -= resultRect.h;
 }
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
-	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 16.0f, true);
+	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, console->height), 100, color255(0,0,0,245));
+	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
 
 	// Caret stuff is a bit hacky, but oh well.
 	// It especially doesn't play well with pausing the debug capturing...
@@ -74,8 +57,6 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 		}
 	}
 	
-	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
-			 100, color255(0,0,0,128));
 
 	console->caretFlashCounter = fmod(console->caretFlashCounter + SECONDS_PER_FRAME, 1.0f);
 }
