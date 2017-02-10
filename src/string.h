@@ -18,8 +18,8 @@ String stringFromChars(char *chars)
 struct StringBuffer
 {
 	char *buffer;
-	int32 bufferLength;
-	int32 bufferMaxLength;
+	int32 length;
+	int32 maxLength;
 
 	int32 caretPos;
 };
@@ -28,7 +28,7 @@ StringBuffer newStringBuffer(MemoryArena *arena, int32 length)
 {
 	StringBuffer b = {};
 	b.buffer = PushArray(arena, char, length + 1);
-	b.bufferMaxLength = length;
+	b.maxLength = length;
 
 	return b;
 }
@@ -37,7 +37,7 @@ String bufferToString(StringBuffer *buffer)
 {
 	String result = {};
 	result.chars = buffer->buffer;
-	result.length = buffer->bufferLength;
+	result.length = buffer->length;
 
 	return result;
 }
@@ -45,18 +45,18 @@ String bufferToString(StringBuffer *buffer)
 void append(StringBuffer *buffer, char *source, int32 length)
 {
 	int32 lengthToCopy = length;
-	if ((buffer->bufferLength + length) > buffer->bufferMaxLength)
+	if ((buffer->length + length) > buffer->maxLength)
 	{
-		lengthToCopy = buffer->bufferMaxLength - buffer->bufferLength;
+		lengthToCopy = buffer->maxLength - buffer->length;
 	}
 
 	for (int32 i=0; i < lengthToCopy; i++)
 	{
-		buffer->buffer[buffer->bufferLength++] = source[i];
+		buffer->buffer[buffer->length++] = source[i];
 	}
 
 	// Final null, just in case.
-	buffer->buffer[buffer->bufferLength] = 0;
+	buffer->buffer[buffer->length] = 0;
 	buffer->caretPos += lengthToCopy;
 }
 
@@ -72,25 +72,25 @@ void append(StringBuffer *buffer, char *source)
 
 void append(StringBuffer *dest, StringBuffer *src)
 {
-	append(dest, src->buffer, src->bufferLength);
+	append(dest, src->buffer, src->length);
 }
 
 void insert(StringBuffer *buffer, char *source, int32 length)
 {
-	if (buffer->caretPos == buffer->bufferLength)
+	if (buffer->caretPos == buffer->length)
 	{
 		append(buffer, source, length);
 		return;
 	}
 
 	int32 lengthToCopy = length;
-	if ((buffer->bufferLength + length) > buffer->bufferMaxLength)
+	if ((buffer->length + length) > buffer->maxLength)
 	{
-		lengthToCopy = buffer->bufferMaxLength - buffer->bufferLength;
+		lengthToCopy = buffer->maxLength - buffer->length;
 	}
 
 	// move the existing chars by lengthToCopy
-	for (int32 i=buffer->bufferLength - buffer->caretPos - 1; i>=0; i--)
+	for (int32 i=buffer->length - buffer->caretPos - 1; i>=0; i--)
 	{
 		buffer->buffer[buffer->caretPos + lengthToCopy + i] = buffer->buffer[buffer->caretPos + i];
 	}
@@ -101,7 +101,7 @@ void insert(StringBuffer *buffer, char *source, int32 length)
 		buffer->buffer[buffer->caretPos + i] = source[i];
 	}
 
-	buffer->bufferLength += lengthToCopy;
+	buffer->length += lengthToCopy;
 	buffer->caretPos += lengthToCopy;
 }
 
@@ -110,34 +110,34 @@ void backspace(StringBuffer *buffer)
 	if (buffer->caretPos > 0) 
 	{
 		buffer->caretPos--;
-		
+
 		// copy everything 1 to the left
-		for (int32 i=buffer->caretPos; i<buffer->bufferLength-1; i++)
+		for (int32 i=buffer->caretPos; i<buffer->length-1; i++)
 		{
 			buffer->buffer[i] = buffer->buffer[i+1];
 		}
 
-		buffer->buffer[--buffer->bufferLength] = 0;
+		buffer->buffer[--buffer->length] = 0;
 	}
 }
 
 void deleteChar(StringBuffer *buffer)
 {
-	if (buffer->caretPos < buffer->bufferLength) 
+	if (buffer->caretPos < buffer->length) 
 	{
 		// copy everything 1 to the left
-		for (int32 i=buffer->caretPos; i<buffer->bufferLength-1; i++)
+		for (int32 i=buffer->caretPos; i<buffer->length-1; i++)
 		{
 			buffer->buffer[i] = buffer->buffer[i+1];
 		}
 
-		buffer->buffer[--buffer->bufferLength] = 0;
+		buffer->buffer[--buffer->length] = 0;
 	}
 }
 
 void clear(StringBuffer *buffer)
 {
-	buffer->bufferLength = 0;
+	buffer->length = 0;
 	buffer->buffer[0] = 0;
 	buffer->caretPos = 0;
 }

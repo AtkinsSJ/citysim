@@ -69,7 +69,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
 
 	char buffer[consoleLineLength+1];
-	snprintf(buffer, sizeof(buffer), "%.*s", console->input.bufferLength, console->input.buffer);
+	snprintf(buffer, sizeof(buffer), "%.*s", console->input.length, console->input.buffer);
 	consoleTextOut(&textState, buffer, console->font, console->styles[CLS_Input]);
 
 	bool showCaret = true; //(console->caretFlashCounter < 0.5f);
@@ -113,7 +113,7 @@ void consoleHandleCommand(Console *console)
 		append(output, &console->input);
 	}
 
-	if (console->input.bufferLength != 0)
+	if (console->input.length != 0)
 	{
 		TokenList tokens = tokenize(bufferToString(&console->input));
 		if (tokens.count > 0)
@@ -192,7 +192,16 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		}
 		else if (keyJustPressed(inputState, SDLK_RIGHT))
 		{
-			if (console->input.caretPos < console->input.bufferLength) console->input.caretPos++;
+			if (console->input.caretPos < console->input.length) console->input.caretPos++;
+		}
+
+		if (keyJustPressed(inputState, SDLK_HOME))
+		{
+			console->input.caretPos = 0;
+		}
+		if (keyJustPressed(inputState, SDLK_END))
+		{
+			console->input.caretPos = console->input.length;
 		}
 
 		if (wasTextEntered(inputState))
