@@ -49,7 +49,7 @@ ConsoleCommand(resize_window)
 		append(output, " by ");
 		append(output, sHeight);
 		succeeded = true;
-		resizeWindow(globalDebugState->renderer, width, height);
+		resizeWindow(globalAppState.renderer, width, height);
 	}
 
 	if (!succeeded)

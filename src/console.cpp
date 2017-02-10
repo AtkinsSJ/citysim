@@ -1,10 +1,12 @@
 #pragma once
 
+static Console theConsole;
+
 void consoleWriteLine(char *text, ConsoleLineStyleID style)
 {
 	if (globalDebugState)
 	{
-		append(consoleNextOutputLine(&globalDebugState->console, style), text);
+		append(consoleNextOutputLine(globalConsole, style), text);
 	}
 }
 
@@ -37,9 +39,9 @@ void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, C
 	textState->pos.y -= resultRect.h;
 }
 
-void initConsole(MemoryArena *debugArena, Console *console, int32 outputLineCount, BitmapFont *font, real32 height)
+void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *font, real32 height)
 {
-	console->isInitialized = true;
+	Console *console = &theConsole;
 	console->isVisible = true;
 	console->font = font;
 	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
@@ -56,6 +58,8 @@ void initConsole(MemoryArena *debugArena, Console *console, int32 outputLineCoun
 	{
 		console->outputLines[i].buffer = newStringBuffer(debugArena, consoleLineLength);
 	}
+
+	globalConsole = console;
 }
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
@@ -152,12 +156,6 @@ void consoleHandleCommand(Console *console)
 
 void updateConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
-	if (!console->isInitialized)
-	{
-		initConsole(&globalDebugState->debugArena, console, 256, globalDebugState->font, 200.0f);
-		initCommands(console);
-	}
-
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{
 		console->isVisible = !console->isVisible;

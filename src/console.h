@@ -25,7 +25,6 @@ struct ConsoleOutputLine
 
 struct Console
 {
-	bool isInitialized;
 	bool isVisible;
 	struct BitmapFont *font;
 	ConsoleLineStyle styles[CLS_COUNT];
@@ -38,6 +37,7 @@ struct Console
 
 	real32 caretFlashCounter;
 };
+Console *globalConsole;
 
 const int32 consoleLineLength = 255;
 

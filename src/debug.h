@@ -56,8 +56,6 @@ struct DebugState
 	bool showDebugData;
 	bool captureDebugData;
 
-	Console console;
-
 	uint32 readingFrameIndex;
 	uint32 writingFrameIndex;
 	uint64 frameStartCycle[DEBUG_FRAMES_COUNT];
@@ -71,9 +69,6 @@ struct DebugState
 	DebugCodeDataWrapper topCodeBlocksSentinel;
 
 	struct BitmapFont *font;
-
-	// Misc things we need to access from debug console
-	struct Renderer *renderer;
 };
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName)

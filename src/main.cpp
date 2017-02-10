@@ -80,7 +80,6 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 		}
 		else
 		{
-
 			// Window
 			window = SDL_CreateWindow(windowTitle,
 							SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -93,8 +92,6 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 		}
 	}
 
-	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
-
 	return window;
 }
 
@@ -103,8 +100,8 @@ int main(int argc, char *argv[])
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
-
 // INIT
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 	globalAppState = {};
 	AppState *appState = &globalAppState;
 	appState->tempArena = createEmptyMemoryArena();
@@ -128,7 +125,9 @@ int main(int argc, char *argv[])
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
 #if BUILD_DEBUG
-	debugInit(getFont(assets, FontAssetType_Debug), renderer);
+	debugInit(getFont(assets, FontAssetType_Debug));
+	initConsole(&globalDebugState->debugArena, 256, globalDebugState->font, 200.0f);
+	initCommands(globalConsole);
 #endif
 
 // Do we need this here?
@@ -175,14 +174,13 @@ int main(int argc, char *argv[])
 			onWindowResized(renderer, inputState.windowWidth, inputState.windowHeight);
 		}
 
-		// Asset reloading! Whooo!
-		if (keyJustPressed(&inputState, SDLK_F1))
-		{
-			reloadAssets(assets, &appState->tempArena, renderer, uiState);
-		}
-
 		worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 		uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
+
+		if (globalConsole)
+		{
+			updateConsole(globalConsole, &inputState, uiState, &renderer->uiBuffer);
+		}
 
 		updateAndRender(appState, &inputState, renderer, assets);
 
@@ -199,7 +197,6 @@ int main(int argc, char *argv[])
 			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
 			debugUpdate(globalDebugState, &inputState, uiState, &renderer->uiBuffer);
-			updateConsole(&globalDebugState->console, &inputState, uiState, &renderer->uiBuffer);
 		}
 
 	// Actually draw things!

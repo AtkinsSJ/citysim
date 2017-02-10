@@ -1,7 +1,7 @@
 #pragma once
 #include <stdarg.h>
 
-void debugInit(BitmapFont *font, Renderer *renderer)
+void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
 	globalDebugState->showDebugData = false;
@@ -19,8 +19,6 @@ void debugInit(BitmapFont *font, Renderer *renderer)
 		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
 		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
 	}
-	
-	globalDebugState->renderer = renderer;
 }
 
 void clearDebugFrame(DebugState *debugState, int32 frameIndex)
