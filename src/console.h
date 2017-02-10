@@ -31,6 +31,9 @@ struct Console
 	real32 height;
 
 	StringBuffer input;
+	int32 caretPos;
+	int32 charWidth;
+
 	int32 outputLineCount;
 	ConsoleOutputLine *outputLines;
 	int32 currentOutputLine;

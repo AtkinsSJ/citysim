@@ -52,6 +52,9 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	console->height = height;
 
 	console->input = newStringBuffer(debugArena, consoleLineLength);
+	console->caretPos = 0;
+	console->charWidth = findChar(console->font, 'M')->xAdvance;
+
 	console->outputLineCount = outputLineCount;
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
 	for (int32 i=0; i < console->outputLineCount; i++)
@@ -66,16 +69,18 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
 
-	// Caret stuff is a bit hacky, but oh well.
-	// It especially doesn't play well with pausing the debug capturing...
-	char caret = '_';
-	if (console->caretFlashCounter < 0.5f)
-	{
-		caret = ' ';
-	}
-	char buffer[consoleLineLength + 3];
-	snprintf(buffer, sizeof(buffer), "> %.*s%c", console->input.bufferLength, console->input.buffer, caret);
+	char buffer[consoleLineLength+1];
+	snprintf(buffer, sizeof(buffer), "%.*s", console->input.bufferLength, console->input.buffer);
 	consoleTextOut(&textState, buffer, console->font, console->styles[CLS_Input]);
+
+	bool showCaret = true; //(console->caretFlashCounter < 0.5f);
+	if (showCaret)
+	{
+		drawRect(uiBuffer,
+			     rectXYWH(textState.pos.x + (console->caretPos * console->charWidth), textState.pos.y, 2, console->font->lineHeight),
+		         310, console->styles[CLS_Input].textColor);
+	}
+
 	textState.pos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
@@ -152,6 +157,7 @@ void consoleHandleCommand(Console *console)
 
 	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
 	clear(&console->input);
+	console->caretPos = 0;
 }
 
 void updateConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
@@ -166,10 +172,12 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Ctrl))
 		{
 			clear(&console->input);
+			console->caretPos = 0;
 		}
 		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
 		{
 			backspace(&console->input);
+			if (console->caretPos > 0) console->caretPos--;
 		}
 		else if (keyJustPressed(inputState, SDLK_RETURN))
 		{
@@ -180,7 +188,14 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		{
 			char *enteredText = getEnteredText(inputState);
 			int32 inputTextLength = strlen(enteredText);
+
+			if ((inputTextLength + console->input.bufferLength) > console->input.bufferMaxLength)
+			{
+				inputTextLength = (console->input.bufferMaxLength - console->input.bufferLength);
+			}
+
 			append(&console->input, enteredText, inputTextLength);
+			console->caretPos += inputTextLength;
 		}
 		renderConsole(console, uiState, uiBuffer);
 	}
