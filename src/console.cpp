@@ -52,7 +52,6 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	console->height = height;
 
 	console->input = newStringBuffer(debugArena, consoleLineLength);
-	console->caretPos = 0;
 	console->charWidth = findChar(console->font, 'M')->xAdvance;
 
 	console->outputLineCount = outputLineCount;
@@ -77,7 +76,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	if (showCaret)
 	{
 		drawRect(uiBuffer,
-			     rectXYWH(textState.pos.x + (console->caretPos * console->charWidth), textState.pos.y, 2, console->font->lineHeight),
+			     rectXYWH(textState.pos.x + (console->input.caretPos * console->charWidth), textState.pos.y, 2, console->font->lineHeight),
 		         310, console->styles[CLS_Input].textColor);
 	}
 
@@ -157,7 +156,6 @@ void consoleHandleCommand(Console *console)
 
 	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
 	clear(&console->input);
-	console->caretPos = 0;
 }
 
 void updateConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
@@ -172,16 +170,29 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Ctrl))
 		{
 			clear(&console->input);
-			console->caretPos = 0;
 		}
 		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
 		{
 			backspace(&console->input);
-			if (console->caretPos > 0) console->caretPos--;
 		}
-		else if (keyJustPressed(inputState, SDLK_RETURN))
+
+		if (keyJustPressed(inputState, SDLK_DELETE))
+		{
+			deleteChar(&console->input);
+		}
+
+		if (keyJustPressed(inputState, SDLK_RETURN))
 		{
 			consoleHandleCommand(console);
+		}
+
+		if (keyJustPressed(inputState, SDLK_LEFT))
+		{
+			if (console->input.caretPos > 0) console->input.caretPos--;
+		}
+		else if (keyJustPressed(inputState, SDLK_RIGHT))
+		{
+			if (console->input.caretPos < console->input.bufferLength) console->input.caretPos++;
 		}
 
 		if (wasTextEntered(inputState))
@@ -189,13 +200,7 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 			char *enteredText = getEnteredText(inputState);
 			int32 inputTextLength = strlen(enteredText);
 
-			if ((inputTextLength + console->input.bufferLength) > console->input.bufferMaxLength)
-			{
-				inputTextLength = (console->input.bufferMaxLength - console->input.bufferLength);
-			}
-
-			append(&console->input, enteredText, inputTextLength);
-			console->caretPos += inputTextLength;
+			insert(&console->input, enteredText, inputTextLength);
 		}
 		renderConsole(console, uiState, uiBuffer);
 	}

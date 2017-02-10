@@ -20,6 +20,8 @@ struct StringBuffer
 	char *buffer;
 	int32 bufferLength;
 	int32 bufferMaxLength;
+
+	int32 caretPos;
 };
 
 StringBuffer newStringBuffer(MemoryArena *arena, int32 length)
@@ -55,6 +57,7 @@ void append(StringBuffer *buffer, char *source, int32 length)
 
 	// Final null, just in case.
 	buffer->buffer[buffer->bufferLength] = 0;
+	buffer->caretPos += lengthToCopy;
 }
 
 void append(StringBuffer *buffer, String source)
@@ -72,10 +75,62 @@ void append(StringBuffer *dest, StringBuffer *src)
 	append(dest, src->buffer, src->bufferLength);
 }
 
+void insert(StringBuffer *buffer, char *source, int32 length)
+{
+	if (buffer->caretPos == buffer->bufferLength)
+	{
+		append(buffer, source, length);
+		return;
+	}
+
+	int32 lengthToCopy = length;
+	if ((buffer->bufferLength + length) > buffer->bufferMaxLength)
+	{
+		lengthToCopy = buffer->bufferMaxLength - buffer->bufferLength;
+	}
+
+	// move the existing chars by lengthToCopy
+	for (int32 i=buffer->bufferLength - buffer->caretPos - 1; i>=0; i--)
+	{
+		buffer->buffer[buffer->caretPos + lengthToCopy + i] = buffer->buffer[buffer->caretPos + i];
+	}
+
+	// write from source
+	for (int32 i=0; i < lengthToCopy; i++)
+	{
+		buffer->buffer[buffer->caretPos + i] = source[i];
+	}
+
+	buffer->bufferLength += lengthToCopy;
+	buffer->caretPos += lengthToCopy;
+}
+
 void backspace(StringBuffer *buffer)
 {
-	if (buffer->bufferLength > 0)
+	if (buffer->caretPos > 0) 
 	{
+		buffer->caretPos--;
+		
+		// copy everything 1 to the left
+		for (int32 i=buffer->caretPos; i<buffer->bufferLength-1; i++)
+		{
+			buffer->buffer[i] = buffer->buffer[i+1];
+		}
+
+		buffer->buffer[--buffer->bufferLength] = 0;
+	}
+}
+
+void deleteChar(StringBuffer *buffer)
+{
+	if (buffer->caretPos < buffer->bufferLength) 
+	{
+		// copy everything 1 to the left
+		for (int32 i=buffer->caretPos; i<buffer->bufferLength-1; i++)
+		{
+			buffer->buffer[i] = buffer->buffer[i+1];
+		}
+
 		buffer->buffer[--buffer->bufferLength] = 0;
 	}
 }
@@ -84,6 +139,7 @@ void clear(StringBuffer *buffer)
 {
 	buffer->bufferLength = 0;
 	buffer->buffer[0] = 0;
+	buffer->caretPos = 0;
 }
 
 bool equals(String a, String b)
