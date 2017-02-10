@@ -17,6 +17,7 @@ Console:
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
 Strings:
+- Use String everywhere, rather than char*.
 - printf() that only takes indices, and all arguments are strings. You then use formatInt() &c to convert values to strings.
 	- e.g. printf("This {0} costs £{1}", item->name, formatFloat(item->price, <decimal places>));
 - translation! getString("string_id") return the localised string.

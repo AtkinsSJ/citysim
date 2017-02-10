@@ -152,13 +152,14 @@ int main(int argc, char *argv[])
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
 
-	uint32 lastFrame = 0,
-			currentFrame = 0;
 	real32 framesPerSecond = 0;
+	uint32 frameStartTime = 0,
+	       frameEndTime = 0;
 	
 	// GAME LOOP
 	while (appState->appStatus != AppStatus_Quit)
 	{
+		frameStartTime = SDL_GetTicks();
 		DEBUG_BLOCK("Game loop");
 
 		updateInput(&inputState);
@@ -203,18 +204,22 @@ int main(int argc, char *argv[])
 		renderer->render(renderer, assets);
 
 	// FRAMERATE MONITORING AND CAPPING
-		currentFrame = SDL_GetTicks(); // Milliseconds
-		uint32 msForFrame = currentFrame - lastFrame;
+		frameEndTime = SDL_GetTicks();
 
 		// Cap the framerate!
+		uint32 msForFrame = frameEndTime - frameStartTime;
 		// TODO: I think this is actually unnecessary when SDL_GL_SetSwapInterval(1) is used.
 		if (msForFrame < MS_PER_FRAME) {
 			SDL_Delay(MS_PER_FRAME - msForFrame);
 		}
+		
+		{
+			DEBUG_BLOCK("SDL_GL_SwapWindow");
+			SDL_GL_SwapWindow(renderer->window);
+		}
 
-		framesPerSecond = 1000.0f / fmax((real32)(currentFrame - lastFrame), 1.0f);
-		SDL_Log("FPS: %f, took %d ticks\n", framesPerSecond, currentFrame-lastFrame);
-		lastFrame = SDL_GetTicks();
+		framesPerSecond = 1000.0f / (real32)fmax(msForFrame, 1.0f);
+		SDL_Log("FPS: %f, took %dms\n", framesPerSecond, msForFrame);
 	}
 
 // CLEAN UP

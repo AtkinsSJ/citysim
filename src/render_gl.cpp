@@ -530,11 +530,6 @@ void GL_render(Renderer *renderer, AssetManager *assets)
 	glUseProgram(NULL);
 	GL_checkForError();
 	SDL_Log("End of frame.");
-
-	{
-		DEBUG_BLOCK("SDL_GL_SwapWindow");
-		SDL_GL_SwapWindow(renderer->window);
-	}
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)
