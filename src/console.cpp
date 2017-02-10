@@ -175,7 +175,6 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		{
 			backspace(&console->input);
 		}
-
 		if (keyJustPressed(inputState, SDLK_DELETE))
 		{
 			deleteChar(&console->input);
@@ -194,7 +193,6 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		{
 			if (console->input.caretPos < console->input.length) console->input.caretPos++;
 		}
-
 		if (keyJustPressed(inputState, SDLK_HOME))
 		{
 			console->input.caretPos = 0;
@@ -211,6 +209,22 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 
 			insert(&console->input, enteredText, inputTextLength);
 		}
+
+		if (keyJustPressed(inputState, SDLK_v, KeyMod_Ctrl))
+		{
+			if (SDL_HasClipboardText())
+			{
+				char *clipboard = SDL_GetClipboardText();
+				if (clipboard)
+				{
+					int32 clipboardLength = strlen(clipboard);
+					insert(&console->input, clipboard, clipboardLength);
+
+					SDL_free(clipboard);
+				}
+			}
+		}
+
 		renderConsole(console, uiState, uiBuffer);
 	}
 }
