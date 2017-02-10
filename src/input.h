@@ -197,6 +197,12 @@ void updateInput(InputState *inputState)
 			case SDL_KEYDOWN: {
 				int32 keycode = keycodeToIndex(event.key.keysym.sym);
 				inputState->_keyDown[keycode] = true;
+				if (event.key.repeat)
+				{
+					// This is a hack! Well, our whole concept of input handling is weird, so not really.
+					// We pretend that we had released the key so that we notice the repeat.
+					inputState->_keyWasDown[keycode] = false;
+				}
 			} break;
 			case SDL_KEYUP: {
 				int32 keycode = keycodeToIndex(event.key.keysym.sym);

@@ -10,7 +10,6 @@ Console:
 - Automatic parameter type checking? That might be crazy though.
 - Animate console open/close?
 - Better input
-	- Hold down backspace
 	- Up to copy previous command
 	- Move caret within the input buffer, to type anywhere?
 
