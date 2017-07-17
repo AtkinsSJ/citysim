@@ -70,6 +70,29 @@ String myprintf(String format, std::initializer_list<String> args)
 
 inline String myprintf(char *format, std::initializer_list<String> args) { return myprintf(stringFromChars(format), args); }
 
+String formatInt(uint64 value)
+{
+	char temp[20]; // Largest 64 bit unsigned value is 20 characters long.
+	uint32 count = 0;
+
+	uint64 v = value;
+
+	do
+	{
+		temp[count++] = '0' + (v % 10);
+		v = v / 10;
+	}
+	while (v != 0);
+
+	// reverse it
+	reverseString(temp, count);
+
+	return makeString(temp, count);
+}
+inline String formatInt(uint32 value) {return formatInt((uint64)value);}
+inline String formatInt(uint16 value) {return formatInt((uint64)value);}
+inline String formatInt(uint8  value) {return formatInt((uint64)value);}
+
 String formatInt(int64 value)
 {
 	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit signed value is 19 characters long, plus a '-', so 20 again. Yay!
@@ -98,6 +121,10 @@ String formatInt(int64 value)
 	// reverse it
 	reverseString(temp, count);
 
-	// append the chars
 	return makeString(temp, count);
 }
+inline String formatInt(int32 value) {return formatInt((int64)value);}
+inline String formatInt(int16 value) {return formatInt((int64)value);}
+inline String formatInt(int8  value) {return formatInt((int64)value);}
+
+// TODO: formatFloat()

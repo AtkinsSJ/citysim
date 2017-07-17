@@ -96,65 +96,6 @@ void append(StringBuffer *buffer, StringBuffer *source)
 	append(buffer, source->buffer, source->length);
 }
 
-void append(StringBuffer *buffer, uint64 source)
-{
-	char temp[20]; // Largest 64 bit unsigned value is 20 characters long.
-	uint32 count = 0;
-
-	uint64 v = source;
-
-	do
-	{
-		temp[count++] = '0' + (v % 10);
-		v = v / 10;
-	}
-	while (v != 0);
-
-	// reverse it
-	reverseString(temp, count);
-
-	// append the chars
-	append(buffer, temp, count);
-}
-inline void append(StringBuffer *buffer, uint32 source) { append(buffer, (uint64)source); }
-inline void append(StringBuffer *buffer, uint16 source) { append(buffer, (uint64)source); }
-inline void append(StringBuffer *buffer, uint8  source) { append(buffer, (uint64)source); }
-
-void append(StringBuffer *buffer, int64 source)
-{
-	char temp[20]; // Largest 64 bit signed value is 19 characters long, plus a '-', so 20 again. Yay!
-	uint32 count = 0;
-	bool isNegative = (source < 0);
-
-	// One complication here: If we're passed INT64_MIN, then -source is 1 larger than can be help in an INT64!
-	// So, rather than flipping it and treating it like a positive number with an '-' appended,
-	// we have to make each digit positive as we get it.
-
-	// int64 v = isNegative ? -source : source;
-	int64 v = source;
-
-	do
-	{
-		temp[count++] = '0' + ((isNegative ? -1 : 1) * (v % 10));
-		v = v / 10;
-	}
-	while (v != 0);
-
-	if (isNegative)
-	{
-		temp[count++] = '-';
-	}
-
-	// reverse it
-	reverseString(temp, count);
-
-	// append the chars
-	append(buffer, temp, count);
-}
-inline void append(StringBuffer *buffer, int32 source) { append(buffer, (int64)source); }
-inline void append(StringBuffer *buffer, int16 source) { append(buffer, (int64)source); }
-inline void append(StringBuffer *buffer, int8  source) { append(buffer, (int64)source); }
-
 void insert(StringBuffer *buffer, char *source, int32 length)
 {
 	if (buffer->caretPos == buffer->length)
