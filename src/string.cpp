@@ -127,4 +127,14 @@ inline String formatInt(int32 value) {return formatInt((int64)value);}
 inline String formatInt(int16 value) {return formatInt((int64)value);}
 inline String formatInt(int8  value) {return formatInt((int64)value);}
 
-// TODO: formatFloat()
+// TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
+String formatFloat(real64 value, int32 decimalPlaces)
+{
+	String formatString = myprintf("%.{0}f\0", {formatInt(decimalPlaces)});
+
+	int32 length = 100; // TODO: is 100 enough?
+	char *buffer = PushArray(globalFrameTempArena, char, length);
+	int32 written = snprintf(buffer, length, formatString.chars, value);
+
+	return makeString(buffer, MIN(written, length));
+}

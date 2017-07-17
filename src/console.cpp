@@ -71,19 +71,8 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	globalConsole = console;
 
 	// temp test stuff goes here
-	consoleWriteLine(myprintf("}{-1} {5} {{}{pineapple}!", {stringFromChars("Hello"), stringFromChars("World")}));
-
-	// StringBuffer *output = consoleNextOutputLine(console, CLS_Default);
-	// append(output, 0); append(output, " ");
-	// append(output, 128); append(output, " ");
-	// append(output, -32); append(output, " ");
-	// append(output, 9999999999); append(output, " ");
-	// append(output, -9999999999); append(output, " ");
-	// append(output, 123456789012345678); append(output, " ");
-	// append(output, -123456789012345678); append(output, " ");
-	// append(output, INT64_MAX); append(output, " ");
-	// append(output, INT64_MIN); append(output, " ");
-	// append(output, UINT64_MAX); append(output, " ");
+	// consoleWriteLine(myprintf("}{-1} {5} {{}{pineapple}!", {stringFromChars("Hello"), stringFromChars("World")}));
+	consoleWriteLine(myprintf("My favourite number is {0}!", {formatFloat(12345.6789, 3)}));
 }
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
