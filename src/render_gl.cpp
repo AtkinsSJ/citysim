@@ -122,6 +122,16 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 	return result;
 }
 
+void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribLocation)
+{
+	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
+	if (*attribLocation == -1)
+	{
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Shader does not contain requested variable %s!\n", attribName);
+		// glShader->isValid = false;
+	}
+}
+
 bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramID)
 {
 	bool result = false;
@@ -160,22 +170,29 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 			}
 			else
 			{
+				// TODO: don't crash if we can't find a uniform/attrib, just leave a note in console.
+				// We want to know if this happens, but the program will run fine even with unfound variables.
+				// (passing -1 to setUniform etc just does nothing)
+
 				// Common vertex attributes
-				glShader->aPositionLoc = glGetAttribLocation(glShader->shaderProgramID, "aPosition");
-				if (glShader->aPositionLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
-					glShader->isValid = false;
-				}
-				glShader->aColorLoc = glGetAttribLocation(glShader->shaderProgramID, "aColor");
-				if (glShader->aColorLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
-					glShader->isValid = false;
-				}
+				loadShaderAttrib(glShader, "aPosition", &glShader->aPositionLoc);
+				// glShader->aPositionLoc = glGetAttribLocation(glShader->shaderProgramID, "aPosition");
+				// if (glShader->aPositionLoc == -1)
+				// {
+				// 	SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
+				// 	glShader->isValid = false;
+				// }
+				loadShaderAttrib(glShader, "aColor", &glShader->aColorLoc);
+				// glShader->aColorLoc = glGetAttribLocation(glShader->shaderProgramID, "aColor");
+				// if (glShader->aColorLoc == -1)
+				// {
+				// 	SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
+				// 	glShader->isValid = false;
+				// }
 
 				// Optional vertex attributes
-				glShader->aUVLoc = glGetAttribLocation(glShader->shaderProgramID, "aUV");
+				loadShaderAttrib(glShader, "aUV", &glShader->aUVLoc);
+				// glShader->aUVLoc = glGetAttribLocation(glShader->shaderProgramID, "aUV");
 
 				// Common uniforms
 				glShader->uProjectionMatrixLoc = glGetUniformLocation(glShader->shaderProgramID, "uProjectionMatrix");
@@ -383,8 +400,8 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	#endif
 
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 						// Upload texture
 						Texture *texture = getTexture(assets, region->textureID);

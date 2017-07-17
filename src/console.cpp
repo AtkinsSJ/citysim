@@ -62,6 +62,20 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	}
 
 	globalConsole = console;
+
+	// temp test stuff goes here
+
+	// StringBuffer *output = consoleNextOutputLine(console, CLS_Default);
+	// append(output, 0); append(output, " ");
+	// append(output, 128); append(output, " ");
+	// append(output, -32); append(output, " ");
+	// append(output, 9999999999); append(output, " ");
+	// append(output, -9999999999); append(output, " ");
+	// append(output, 123456789012345678); append(output, " ");
+	// append(output, -123456789012345678); append(output, " ");
+	// append(output, INT64_MAX); append(output, " ");
+	// append(output, INT64_MIN); append(output, " ");
+	// append(output, UINT64_MAX); append(output, " ");
 }
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
@@ -137,7 +151,14 @@ void consoleHandleCommand(Console *console)
 					}
 					else
 					{
+						uint32 commandStartTime = SDL_GetTicks();
 						cmd.function(console, &tokens);
+						uint32 commandEndTime = SDL_GetTicks();
+
+						StringBuffer *output = consoleNextOutputLine(console, CLS_Default);
+						append(output, "Command executed in ");
+						append(output, commandEndTime - commandStartTime);
+						append(output, "ms");
 					}
 
 					break;
