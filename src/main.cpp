@@ -24,6 +24,7 @@ enum AppStatus
 
 #include "types.h"
 #include "memory.h"
+MemoryArena *globalFrameTempArena;
 #include "string.h"
 #include "console.h"
 #include "debug.h"
@@ -42,7 +43,7 @@ enum AppStatus
 struct AppState
 {
 	AppStatus appStatus;
-	MemoryArena tempArena;
+	MemoryArena globalTempArena;
 
 	UIState uiState;
 	AssetManager *assets;
@@ -104,15 +105,15 @@ int main(int argc, char *argv[])
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 	globalAppState = {};
 	AppState *appState = &globalAppState;
-	appState->tempArena = createEmptyMemoryArena();
-
+	globalFrameTempArena = &globalAppState.globalTempArena;
+	initMemoryArena(&appState->globalTempArena, MB(1));
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Under London");
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
-	addAssets(assets, &appState->tempArena);
+	addAssets(assets, &appState->globalTempArena);
 	loadAssets(assets);
 	appState->assets = assets;
 
@@ -192,6 +193,7 @@ int main(int argc, char *argv[])
 		// Debug stuff
 		if (globalDebugState)
 		{
+			DEBUG_ARENA(&appState->globalTempArena, "Global Temp Arena");
 			DEBUG_ARENA(&assets->assetArena, "Assets");
 			DEBUG_ARENA(&renderer->renderArena, "Renderer");
 			DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
@@ -202,6 +204,8 @@ int main(int argc, char *argv[])
 
 	// Actually draw things!
 		renderer->render(renderer, assets);
+
+		// resetMemoryArena(&appState->globalTempArena);
 
 	// FRAMERATE MONITORING AND CAPPING
 		frameEndTime = SDL_GetTicks();

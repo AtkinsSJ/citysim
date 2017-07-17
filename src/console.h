@@ -56,4 +56,5 @@ StringBuffer *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=C
 	return result;
 }
 
+void consoleWriteLine(String text, ConsoleLineStyleID style=CLS_Default);
 void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default);

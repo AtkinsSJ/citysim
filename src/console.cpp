@@ -2,12 +2,19 @@
 
 static Console theConsole;
 
-void consoleWriteLine(char *text, ConsoleLineStyleID style)
+
+
+void consoleWriteLine(String text, ConsoleLineStyleID style)
 {
 	if (globalDebugState)
 	{
 		append(consoleNextOutputLine(globalConsole, style), text);
 	}
+}
+
+inline void consoleWriteLine(char *text, ConsoleLineStyleID style)
+{
+	consoleWriteLine(stringFromChars(text), style);
 }
 
 struct ConsoleTextState
@@ -64,6 +71,7 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	globalConsole = console;
 
 	// temp test stuff goes here
+	consoleWriteLine(myprintf("}{-1} {5} {{}{pineapple}!", {stringFromChars("Hello"), stringFromChars("World")}));
 
 	// StringBuffer *output = consoleNextOutputLine(console, CLS_Default);
 	// append(output, 0); append(output, " ");

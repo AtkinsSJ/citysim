@@ -63,6 +63,12 @@ MemoryBlock *addMemoryBlock(MemoryArena *arena, umm size)
 	return block;
 }
 
+void markResetPosition(MemoryArena *arena)
+{
+	arena->resetState.currentBlock = arena->currentBlock;
+	arena->resetState.used = arena->currentBlock ? arena->currentBlock->used : 0;
+}
+
 bool initMemoryArena(MemoryArena *arena, umm size, umm minimumBlockSize=MB(1))
 {
 	bool succeeded = true;
@@ -75,22 +81,10 @@ bool initMemoryArena(MemoryArena *arena, umm size, umm minimumBlockSize=MB(1))
 		arena->currentBlock = addMemoryBlock(arena, size);
 		succeeded = (arena->currentBlock->memory != 0);
 	}
+
+	markResetPosition(arena);
 	
 	return succeeded;
-}
-
-MemoryArena createEmptyMemoryArena(umm minimumBlockSize=MB(1))
-{
-	MemoryArena arena = {};
-	arena.minimumBlockSize = minimumBlockSize;
-
-	return arena;
-}
-
-void markResetPosition(MemoryArena *arena)
-{
-	arena->resetState.currentBlock = arena->currentBlock;
-	arena->resetState.used = arena->currentBlock ? arena->currentBlock->used : 0;
 }
 
 // Creates an arena , and pushes a struct on it which contains the arena.

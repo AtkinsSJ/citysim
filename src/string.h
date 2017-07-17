@@ -6,6 +6,15 @@ struct String
 	int32 length;
 };
 
+inline String makeString(char *chars, int32 length)
+{
+	String result = {};
+	result.chars = chars;
+	result.length = length;
+
+	return result;
+}
+
 String stringFromChars(char *chars)
 {
 	String result = {};
@@ -245,11 +254,11 @@ bool equals(StringBuffer *buffer, char *other)
 	return equals(bufferToString(buffer), stringFromChars(other));
 }
 
-bool asInt(String string, int32 *result)
+bool asInt(String string, int64 *result)
 {
 	bool succeeded = true;
 
-	int32 value = 0;
+	int64 value = 0;
 	int32 startPosition = 0;
 	bool isNegative = false;
 	if (string.chars[0] == '-')
@@ -344,3 +353,5 @@ TokenList tokenize(String input)
 
 	return result;
 }
+
+#include "string.cpp"

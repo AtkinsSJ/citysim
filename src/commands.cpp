@@ -38,8 +38,8 @@ ConsoleCommand(resize_window)
 	String sWidth = tokens->tokens[1];
 	String sHeight = tokens->tokens[2];
 	
-	int32 width = 0;
-	int32 height = 0;
+	int64 width = 0;
+	int64 height = 0;
 	if (asInt(sWidth, &width)   && (width > 0)
 	 && asInt(sHeight, &height) && (height > 0))
 	{
@@ -49,21 +49,22 @@ ConsoleCommand(resize_window)
 		append(output, " by ");
 		append(output, sHeight);
 		succeeded = true;
-		resizeWindow(globalAppState.renderer, width, height);
+		resizeWindow(globalAppState.renderer, (int32)width, (int32)height);
 	}
 
 	if (!succeeded)
 	{
-		StringBuffer *output = consoleNextOutputLine(console, CLS_Error);
-		append(output, "Usage: ");
-		append(output, tokens->tokens[0]);
-		append(output, " width height, where both width and height are positive integers");
+		consoleWriteLine(myprintf("Usage: {0} width height, where both width and height are positive integers", {tokens->tokens[0]}), CLS_Error);
+		// StringBuffer *output = consoleNextOutputLine(console, CLS_Error);
+		// append(output, "Usage: ");
+		// append(output, tokens->tokens[0]);
+		// append(output, " width height, where both width and height are positive integers");
 	}
 }
 
 ConsoleCommand(reload_assets)
 {
-	reloadAssets(globalAppState.assets, &globalAppState.tempArena, globalAppState.renderer, &globalAppState.uiState);
+	reloadAssets(globalAppState.assets, &globalAppState.globalTempArena, globalAppState.renderer, &globalAppState.uiState);
 }
 
 #define CMD(name) #name, &cmd_##name
