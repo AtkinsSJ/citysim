@@ -129,15 +129,12 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 void consoleHandleCommand(Console *console)
 {
 	// copy input to output, for readability
-	{
-		StringBuffer *output = consoleNextOutputLine(console, CLS_InputEcho);
-		append(output, "> ");
-		append(output, &console->input);
-	}
+	String inputS = bufferToString(&console->input);
+	consoleWriteLine(myprintf("> {0}", {inputS}), CLS_InputEcho);
 
 	if (console->input.length != 0)
 	{
-		TokenList tokens = tokenize(bufferToString(&console->input));
+		TokenList tokens = tokenize(inputS);
 		if (tokens.count > 0)
 		{
 			bool foundCommand = false;
@@ -152,10 +149,16 @@ void consoleHandleCommand(Console *console)
 					int32 argCount = tokens.count-1;
 					if ((argCount < cmd.minArgs) || (argCount > cmd.maxArgs))
 					{
-						char buffer[1024];
-						snprintf(buffer, sizeof(buffer), "Command '%.*s' accepts between %d and %d arguments, but %d given.",
-							     firstToken.length, firstToken.chars, cmd.minArgs, cmd.maxArgs, argCount);
-						append(consoleNextOutputLine(console, CLS_Error), buffer);
+						if (cmd.minArgs == cmd.maxArgs)
+						{
+							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given.",
+								{firstToken, formatInt(cmd.minArgs), formatInt(argCount)}), CLS_Error);
+						}
+						else
+						{
+							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given.",
+								{firstToken, formatInt(cmd.minArgs), formatInt(cmd.maxArgs), formatInt(argCount)}), CLS_Error);
+						}
 					}
 					else
 					{
@@ -163,10 +166,7 @@ void consoleHandleCommand(Console *console)
 						cmd.function(console, &tokens);
 						uint32 commandEndTime = SDL_GetTicks();
 
-						StringBuffer *output = consoleNextOutputLine(console, CLS_Default);
-						append(output, "Command executed in ");
-						append(output, commandEndTime - commandStartTime);
-						append(output, "ms");
+						consoleWriteLine(myprintf("Command executed in {0}ms", {formatInt(commandEndTime - commandStartTime)}));
 					}
 
 					break;
@@ -175,10 +175,7 @@ void consoleHandleCommand(Console *console)
 
 			if (!foundCommand)
 			{
-				StringBuffer *output = consoleNextOutputLine(console, CLS_Error);
-				append(output, "I don't understand '");
-				append(output, firstToken);
-				append(output, "'. Try 'help' for a list of commands.");
+				consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands.", {firstToken}), CLS_Error);
 			}
 		}
 	}

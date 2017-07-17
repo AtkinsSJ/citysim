@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	// Actually draw things!
 		renderer->render(renderer, assets);
 
-		// resetMemoryArena(&appState->globalTempArena);
+		resetMemoryArena(&appState->globalTempArena);
 
 	// FRAMERATE MONITORING AND CAPPING
 		frameEndTime = SDL_GetTicks();

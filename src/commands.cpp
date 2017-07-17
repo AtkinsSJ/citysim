@@ -21,13 +21,10 @@ Array<Command> consoleCommands(8);
 
 ConsoleCommand(help)
 {
-	append(consoleNextOutputLine(console), "Available commands are:");
+	consoleWriteLine("Available commands are:");
 	for (int i=0; i < consoleCommands.count; i++)
 	{
-		Command cmd = consoleCommands[i];
-		StringBuffer *line = consoleNextOutputLine(console);
-		append(line, " - ");
-		append(line, cmd.name);
+		consoleWriteLine(myprintf(" - {0}", {consoleCommands[i].name}));
 	}
 }
 
@@ -43,22 +40,16 @@ ConsoleCommand(resize_window)
 	if (asInt(sWidth, &width)   && (width > 0)
 	 && asInt(sHeight, &height) && (height > 0))
 	{
-		StringBuffer *output = consoleNextOutputLine(console, CLS_Success);
-		append(output, "Window resized to ");
-		append(output, sWidth);
-		append(output, " by ");
-		append(output, sHeight);
+		consoleWriteLine(myprintf("Window resizes to {0} by {1}", {sWidth, sHeight}), CLS_Success);
+
 		succeeded = true;
 		resizeWindow(globalAppState.renderer, (int32)width, (int32)height);
 	}
 
 	if (!succeeded)
 	{
-		consoleWriteLine(myprintf("Usage: {0} width height, where both width and height are positive integers", {tokens->tokens[0]}), CLS_Error);
-		// StringBuffer *output = consoleNextOutputLine(console, CLS_Error);
-		// append(output, "Usage: ");
-		// append(output, tokens->tokens[0]);
-		// append(output, " width height, where both width and height are positive integers");
+		consoleWriteLine(myprintf("Usage: {0} width height, where both width and height are positive integers",
+								{tokens->tokens[0]}), CLS_Error);
 	}
 }
 
@@ -74,9 +65,7 @@ void initCommands(Console *console)
 	append(&consoleCommands, Command(CMD(resize_window), 2, 2));
 	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
 
-	char buffer[1024];
-	snprintf(buffer, sizeof(buffer), "Loaded %d commands. Type 'help' to list them.", consoleCommands.count);
-	append(consoleNextOutputLine(console, CLS_Default), buffer);
+	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(consoleCommands.count)}), CLS_Default);
 }
 #undef CMD
 

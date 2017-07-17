@@ -10,7 +10,7 @@ String myprintf(String format, std::initializer_list<String> args)
 {
 	String result;
 
-	StringBuffer stb = newStringBuffer(globalFrameTempArena, format.length * 2); // TODO: more reasonable assumption for length?
+	StringBuffer stb = newStringBuffer(globalFrameTempArena, format.length * 4);
 
 	int32 startOfNumber = INT32_MAX;
 	bool isReadingNumber = false;
@@ -68,5 +68,36 @@ String myprintf(String format, std::initializer_list<String> args)
 	return result;
 }
 
-
 inline String myprintf(char *format, std::initializer_list<String> args) { return myprintf(stringFromChars(format), args); }
+
+String formatInt(int64 value)
+{
+	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit signed value is 19 characters long, plus a '-', so 20 again. Yay!
+	uint32 count = 0;
+	bool isNegative = (value < 0);
+
+	// One complication here: If we're passed INT64_MIN, then -value is 1 larger than can be help in an INT64!
+	// So, rather than flipping it and treating it like a positive number with an '-' appended,
+	// we have to make each digit positive as we get it.
+
+	// int64 v = isNegative ? -value : value;
+	int64 v = value;
+
+	do
+	{
+		temp[count++] = '0' + ((isNegative ? -1 : 1) * (v % 10));
+		v = v / 10;
+	}
+	while (v != 0);
+
+	if (isNegative)
+	{
+		temp[count++] = '-';
+	}
+
+	// reverse it
+	reverseString(temp, count);
+
+	// append the chars
+	return makeString(temp, count);
+}
