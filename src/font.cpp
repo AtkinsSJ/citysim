@@ -48,6 +48,7 @@ BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
+// FIXME: Our String is not 0-terminated so this will overrun if you let it! Needs to be fixed.
 unichar readUnicodeChar(char **nextChar)
 {
 	unichar result = 0;
@@ -190,7 +191,7 @@ void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 	}
 }
 
-BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, char *text,
+BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, String text,
 									  V4 color, real32 maxWidth=0)
 {
 	DrawTextState state = {};
@@ -203,10 +204,9 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 	state.position = {};
 
 	// Memory management witchcraft
-	// This actually overestimates how much memory we need, because it does one item for each
+	// FIXME: This actually overestimates how much memory we need, because it does one item for each
 	// byte of the string, not each codepoint.
-	uint32 textLength = strlen(text);
-	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * textLength);
+	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * text.length);
 	uint8 *data = (uint8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
@@ -218,8 +218,11 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 		state.currentWordWidth = 0;
 		state.currentLineWidth = 0;
 
-		unichar currentChar = readUnicodeChar(&text);
-		while (currentChar)
+		char *nextChar = text.chars;
+		char *oneAfterLastChar = text.chars + text.length + 1;
+
+		unichar currentChar = readUnicodeChar(&nextChar);
+		while ((nextChar != oneAfterLastChar) && currentChar)
 		{
 			if (currentChar == '\n')
 			{
@@ -240,7 +243,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 					font_handleEndOfWord(&state, c);
 				}
 			}
-			currentChar = readUnicodeChar(&text);
+			currentChar = readUnicodeChar(&nextChar);
 		}
 
 		// Final flush to make sure the last line is correct
@@ -251,6 +254,12 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 	}
 
 	return result;
+}
+BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, char *text,
+									  V4 color, real32 maxWidth=0)
+{
+	String string = stringFromChars(text);
+	return drawTextToCache(memory, font, string, color, maxWidth);
 }
 
 V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)

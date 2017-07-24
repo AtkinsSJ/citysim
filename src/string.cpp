@@ -72,7 +72,7 @@ inline String myprintf(char *format, std::initializer_list<String> args) { retur
 
 String formatInt(uint64 value)
 {
-	char temp[20]; // Largest 64 bit unsigned value is 20 characters long.
+	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit unsigned value is 20 characters long.
 	uint32 count = 0;
 
 	uint64 v = value;

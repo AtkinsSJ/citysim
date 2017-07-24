@@ -6,6 +6,20 @@ struct String
 	int32 length;
 };
 
+// inline String copyString(char *chars, int32 length)
+// {
+// 	String result = {};
+// 	result.chars = PushArray(globalFrameTempArena, char, length);
+// 	result.length = length;
+
+// 	for (int32 i=0; i<length; i++)
+// 	{
+// 		result.chars[i] = chars[i];
+// 	}
+
+// 	return result;
+// }
+
 inline String makeString(char *chars, int32 length)
 {
 	String result = {};

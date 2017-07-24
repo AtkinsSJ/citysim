@@ -38,6 +38,23 @@ RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, char
 	return bounds;
 }
 
+RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, int32 align,
+				 real32 depth, V4 color, real32 maxWidth = 0)
+{
+	DEBUG_FUNCTION();
+
+	TemporaryMemory memory = beginTemporaryMemory(&uiState->arena);
+
+	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color, maxWidth);
+	V2 topLeft = calculateTextPosition(textCache, origin, align);
+	drawCachedText(uiBuffer, textCache, topLeft, depth);
+	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+
+	endTemporaryMemory(&memory);
+
+	return bounds;
+}
+
 void setTooltip(UIState *uiState, char *text, V4 color)
 {
 	strncpy(uiState->tooltip.text, text, sizeof(uiState->tooltip.text));

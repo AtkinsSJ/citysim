@@ -132,6 +132,27 @@ inline DebugTextState initDebugTextState(UIState *uiState, RenderBuffer *uiBuffe
 
 	return textState;
 }
+
+void debugTextOut(DebugTextState *textState, String text)
+{
+	int32 align = ALIGN_LEFT;
+	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
+	else                            align |= ALIGN_TOP;
+
+	textState->charsLastPrinted = text.length;
+	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, text, textState->pos,
+	                             align, 300, textState->color, textState->maxWidth);
+
+	if (textState->progressUpwards)
+	{
+		textState->pos.y -= resultRect.h;
+	}
+	else
+	{
+		textState->pos.y += resultRect.h;
+	}
+}
+
 void debugTextOut(DebugTextState *textState, const char *formatString, ...)
 {
 	va_list args;
@@ -166,7 +187,8 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
 			                                          uiBuffer->camera.size, 16.0f, false);
 
-		debugTextOut(&textState, "Examing %d frames ago", WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT));
+		uint32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
+		debugTextOut(&textState, myprintf("Examing {0} frames ago", {formatInt(framesAgo)}));
 
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
 		while (arena != &debugState->arenaDataSentinel)
