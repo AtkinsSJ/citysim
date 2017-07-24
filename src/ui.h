@@ -26,7 +26,7 @@ struct Tooltip
 	bool show;
 	V2 offsetFromCursor;
 	V4 color;
-	char text[256];
+	String text;
 };
 const real32 uiMessageBottomMargin = 4,
 			uiMessageTextPadding = 4;

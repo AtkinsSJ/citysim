@@ -17,6 +17,7 @@ void initUiState(UIState *uiState)
 
 	uiState->tooltip = {};
 	uiState->tooltip.offsetFromCursor = v2(16, 20);
+	uiState->tooltip.text = newString(&uiState->arena, 256);
 
 	setCursorVisible(uiState, false);
 }
@@ -55,9 +56,9 @@ RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, Stri
 	return bounds;
 }
 
-void setTooltip(UIState *uiState, char *text, V4 color)
+void setTooltip(UIState *uiState, String text, V4 color)
 {
-	strncpy(uiState->tooltip.text, text, sizeof(uiState->tooltip.text));
+	copyString(text, &uiState->tooltip.text);
 	uiState->tooltip.color = color;
 	uiState->tooltip.show = true;
 }
@@ -110,7 +111,7 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 
 		if (tooltip)
 		{
-			setTooltip(uiState, tooltip, theme->tooltipStyle.textColorNormal);
+			setTooltip(uiState, stringFromChars(tooltip), theme->tooltipStyle.textColorNormal);
 		}
 	}
 	else if (active)

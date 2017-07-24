@@ -153,29 +153,6 @@ void debugTextOut(DebugTextState *textState, String text)
 	}
 }
 
-void debugTextOut(DebugTextState *textState, const char *formatString, ...)
-{
-	va_list args;
-	va_start(args, formatString);
-
-	int32 align = ALIGN_LEFT;
-	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
-	else                            align |= ALIGN_TOP;
-
-	textState->charsLastPrinted = vsnprintf(textState->buffer, sizeof(textState->buffer), formatString, args);
-	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, textState->buffer, textState->pos,
-	                             align, 300, textState->color, textState->maxWidth);
-	if (textState->progressUpwards)
-	{
-		textState->pos.y -= resultRect.h;
-	}
-	else
-	{
-		textState->pos.y += resultRect.h;
-	}
-	va_end(args);
-}
-
 void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (debugState)

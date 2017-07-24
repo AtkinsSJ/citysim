@@ -37,6 +37,16 @@ String stringFromChars(char *chars)
 	return result;
 }
 
+void copyString(String source, String *dest)
+{
+	int32 copyLength = MIN(source.length, dest->maxLength);
+	for (int32 i=0; i<copyLength; i++)
+	{
+		dest->chars[i] = source.chars[i];
+	}
+	dest->length = copyLength;
+}
+
 void reverseString(char* first, uint32 length)
 {
 	uint32 flips = length / 2;

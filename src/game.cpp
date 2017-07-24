@@ -84,18 +84,6 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	}
 }
 
-void showCostTooltip(UIState *uiState, AssetManager *assets, int32 cost, int32 cityFunds) {
-	UITheme *theme = &assets->theme;
-
-	if (cost > cityFunds) {
-		uiState->tooltip.color = theme->tooltipStyle.textColorBad;
-	} else {
-		uiState->tooltip.color = theme->tooltipStyle.textColorNormal;
-	}
-	snprintf(uiState->tooltip.text, sizeof(uiState->tooltip.text), "-£%d", cost);
-	uiState->tooltip.show = true;
-}
-
 void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState, GameState *gameState,
 	                       InputState *inputState)
 {
@@ -109,17 +97,18 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	uiState->uiRectCount = 0;
 
 	real32 left = uiPadding;
-	char stringBuffer[256];
 
 	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
 
-	uiText(uiState, uiBuffer, font, gameState->city.name, v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
+	uiText(uiState, uiBuffer, font, gameState->city.name,
+	       v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
-	snprintf(stringBuffer, sizeof(stringBuffer), LocalString("£%d"), gameState->city.funds);
-	uiText(uiState, uiBuffer, font, stringBuffer, v2(centre.x, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
-	snprintf(stringBuffer, sizeof(stringBuffer), LocalString("(-£%d/month)\0"), gameState->city.monthlyExpenditure);
-	uiText(uiState, uiBuffer, font, stringBuffer, v2(centre.x, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
+	uiText(uiState, uiBuffer, font, myprintf("£{0}", {formatInt(gameState->city.funds)}),
+	       v2(centre.x, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
+
+	uiText(uiState, uiBuffer, font, myprintf("(-£{0}/month)", {formatInt(gameState->city.monthlyExpenditure)}),
+	       v2(centre.x, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
 	// Build UI
 	{
@@ -241,12 +230,12 @@ bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIS
 
 	drawRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 10, theme->overlayColor);
 
-	char gameOverText[256];
+	String gameOverText;
 	if (won)
 	{
-		snprintf(gameOverText, sizeof(gameOverText), LocalString("You won! You earned £%d in ??? days"), gameWinFunds);
+		gameOverText = myprintf(LocalString("You won! You earned £{0} in ??? days"), {formatInt(gameWinFunds)});
 	} else {
-		snprintf(gameOverText, sizeof(gameOverText), LocalString("Game over! You ran out of money! :("));
+		gameOverText = stringFromChars(LocalString("Game over! You ran out of money! :("));
 	}
 
 	uiText(uiState, uiBuffer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, theme->labelStyle.textColor);
