@@ -26,6 +26,7 @@ enum AppStatus
 #include "memory.h"
 MemoryArena *globalFrameTempArena;
 #include "string.h"
+#include "textinput.h"
 #include "console.h"
 #include "debug.h"
 #include "random.h"

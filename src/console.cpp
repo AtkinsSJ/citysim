@@ -58,14 +58,14 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
 	console->height = height;
 
-	console->input = newStringBuffer(debugArena, consoleLineLength);
+	console->input = newTextInput(debugArena, consoleLineLength);
 	console->charWidth = findChar(console->font, 'M')->xAdvance;
 
 	console->outputLineCount = outputLineCount;
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
 	for (int32 i=0; i < console->outputLineCount; i++)
 	{
-		console->outputLines[i].buffer = newStringBuffer(debugArena, consoleLineLength);
+		console->outputLines[i].buffer = newTextInput(debugArena, consoleLineLength);
 	}
 
 	globalConsole = console;
@@ -118,7 +118,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 void consoleHandleCommand(Console *console)
 {
 	// copy input to output, for readability
-	String inputS = bufferToString(&console->input);
+	String inputS = textInputToString(&console->input);
 	consoleWriteLine(myprintf("> {0}", {inputS}), CLS_InputEcho);
 
 	if (console->input.length != 0)

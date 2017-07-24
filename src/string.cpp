@@ -10,7 +10,7 @@ String myprintf(String format, std::initializer_list<String> args)
 {
 	String result;
 
-	StringBuffer stb = newStringBuffer(globalFrameTempArena, format.length * 4);
+	StringBuilder stb = newStringBuilder(format.length * 2);
 
 	int32 startOfNumber = INT32_MAX;
 	bool isReadingNumber = false;
@@ -63,7 +63,7 @@ String myprintf(String format, std::initializer_list<String> args)
 		}
 	}
 
-	result = bufferToString(&stb);
+	result = getString(&stb);
 
 	return result;
 }
