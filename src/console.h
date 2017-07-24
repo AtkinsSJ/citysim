@@ -19,7 +19,7 @@ struct ConsoleLineStyle
 
 struct ConsoleOutputLine
 {
-	TextInput buffer;
+	String text;
 	ConsoleLineStyleID style;
 };
 
@@ -43,15 +43,13 @@ Console *globalConsole;
 
 const int32 consoleLineLength = 255;
 
-TextInput *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=CLS_Default)
+String *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=CLS_Default)
 {
 	ConsoleOutputLine *line = console->outputLines + console->currentOutputLine;
 	line->style = style;
 
-	TextInput *result = &line->buffer;
+	String *result = &line->text;
 	console->currentOutputLine = WRAP(console->currentOutputLine + 1, console->outputLineCount);
-
-	clear(result);
 
 	return result;
 }

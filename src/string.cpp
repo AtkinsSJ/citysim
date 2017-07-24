@@ -151,6 +151,7 @@ String formatString(String value, int32 length=-1, bool alignLeft = true, char p
 	else
 	{
 		String result = newString(globalFrameTempArena, length);
+		result.length = length;
 
 		if (alignLeft)
 		{
@@ -188,6 +189,7 @@ String formatString(char *value, int32 length=-1, bool alignLeft = true, char pa
 String repeatChar(char c, int32 length)
 {
 	String result = newString(globalFrameTempArena, length);
+	result.length = length;
 
 	for (int32 i=0; i<length; i++)
 	{

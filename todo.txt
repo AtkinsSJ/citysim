@@ -24,7 +24,6 @@ Strings:
 	- Managed by assets system
 	- Reload correctly
 	- Can switch language at runtime
-- StringBuilder struct that auto-expands like the Array struct does, so we don't run out of room when doing printf stuff.
 
 Asset system:
 - Asset packer of some kind. Maybe just creates an assets table?

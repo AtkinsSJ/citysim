@@ -4,36 +4,25 @@ struct String
 {
 	char *chars;
 	int32 length;
+	int32 maxLength;
 };
 
 String newString(MemoryArena *arena, int32 length)
 {
 	String s = {};
 	s.chars = PushArray(arena, char, length);
-	s.length = length;
+	s.length = 0;
+	s.maxLength = length;
 
 	return s;
 }
-
-// inline String copyString(char *chars, int32 length)
-// {
-// 	String result = {};
-// 	result.chars = PushArray(globalFrameTempArena, char, length);
-// 	result.length = length;
-
-// 	for (int32 i=0; i<length; i++)
-// 	{
-// 		result.chars[i] = chars[i];
-// 	}
-
-// 	return result;
-// }
 
 inline String makeString(char *chars, int32 length)
 {
 	String result = {};
 	result.chars = chars;
 	result.length = length;
+	result.maxLength = result.length;
 
 	return result;
 }
@@ -43,6 +32,7 @@ String stringFromChars(char *chars)
 	String result = {};
 	result.chars = chars;
 	result.length = strlen(chars);
+	result.maxLength = result.length;
 
 	return result;
 }

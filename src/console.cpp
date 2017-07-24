@@ -2,13 +2,16 @@
 
 static Console theConsole;
 
-
-
 void consoleWriteLine(String text, ConsoleLineStyleID style)
 {
 	if (globalDebugState)
 	{
-		append(consoleNextOutputLine(globalConsole, style), text);
+		String *line = consoleNextOutputLine(globalConsole, style);
+		line->length = MIN(text.length, line->maxLength);
+		for (int32 i=0; i<line->length; i++)
+		{
+			line->chars[i] = text.chars[i];
+		}
 	}
 }
 
@@ -37,7 +40,7 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 	return textState;
 }
 
-void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, ConsoleLineStyle style)
+void consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
 {
 	int32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
@@ -65,7 +68,8 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
 	for (int32 i=0; i < console->outputLineCount; i++)
 	{
-		console->outputLines[i].buffer = newTextInput(debugArena, consoleLineLength);
+		console->outputLines[i].text = newString(debugArena, consoleLineLength);
+		console->outputLines[i].style = CLS_Default;
 	}
 
 	globalConsole = console;
@@ -79,9 +83,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
 
-	char buffer[consoleLineLength+1];
-	snprintf(buffer, sizeof(buffer), "%.*s", console->input.length, console->input.buffer);
-	consoleTextOut(&textState, buffer, console->font, console->styles[CLS_Input]);
+	consoleTextOut(&textState, makeString(console->input.buffer, console->input.length), console->font, console->styles[CLS_Input]);
 
 	bool showCaret = true; //(console->caretFlashCounter < 0.5f);
 	if (showCaret)
@@ -103,7 +105,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	for (int32 i=console->outputLineCount-1; i>=0; i--)
 	{
 		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
-		consoleTextOut(&textState, line->buffer.buffer, console->font, console->styles[line->style]);
+		consoleTextOut(&textState, line->text, console->font, console->styles[line->style]);
 
 		// If we've gone off the screen, stop!
 		if ((textState.pos.y < 0) || (textState.pos.y > uiBuffer->camera.size.y))
