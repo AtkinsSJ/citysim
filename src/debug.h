@@ -4,10 +4,10 @@
 
 #define GLUE_(a, b) a ## b
 #define GLUE(a, b) GLUE_(a, b)
-#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (name)
+#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (stringFromChars(name))
 #define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
-#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, name)
+#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, stringFromChars(name))
 
 #else
 
@@ -24,7 +24,7 @@ static struct DebugState *globalDebugState = 0;
 
 struct DebugArenaData
 {
-	char *name;
+	String name;
 
 	uint32 blockCount[DEBUG_FRAMES_COUNT];
 	umm totalSize[DEBUG_FRAMES_COUNT];
@@ -35,7 +35,7 @@ struct DebugArenaData
 
 struct DebugCodeData
 {
-	char *name;
+	String name;
 
 	uint32 callCount[DEBUG_FRAMES_COUNT];
 	uint64 totalCycleCount[DEBUG_FRAMES_COUNT];
@@ -71,7 +71,7 @@ struct DebugState
 	struct BitmapFont *font;
 };
 
-void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName)
+void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName)
 {
 	if (debugState)
 	{
@@ -81,7 +81,7 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 		bool found = false;
 		while (arenaData != &debugState->arenaDataSentinel)
 		{
-			if (strcmp(arenaData->name, arenaName) == 0)
+			if (equals(arenaData->name, arenaName))
 			{
 				found = true;
 				break;
@@ -123,7 +123,7 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, char *arenaName
 	}
 }
 
-void debugTrackCodeCall(DebugState *debugState, char *name, uint64 cycleCount)
+void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
 {
 	if (debugState)
 	{
@@ -133,7 +133,7 @@ void debugTrackCodeCall(DebugState *debugState, char *name, uint64 cycleCount)
 		bool found = false;
 		while (codeData != &debugState->codeDataSentinel)
 		{
-			if (strcmp(codeData->name, name) == 0)
+			if (equals(codeData->name, name))
 			{
 				found = true;
 				break;
@@ -158,10 +158,10 @@ void debugTrackCodeCall(DebugState *debugState, char *name, uint64 cycleCount)
 
 struct DebugBlock
 {
-	char *name;
+	String name;
 	uint64 startTime;
 
-	DebugBlock(char *name)
+	DebugBlock(String name)
 	{
 		this->name = name;
 		this->startTime = SDL_GetPerformanceCounter();

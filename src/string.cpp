@@ -138,3 +138,61 @@ String formatFloat(real64 value, int32 decimalPlaces)
 
 	return makeString(buffer, MIN(written, length));
 }
+
+String formatString(String value, int32 length=-1, bool alignLeft = true, char paddingChar = ' ')
+{
+	if ((value.length == length) || (length == -1)) return value;
+
+	if (length < value.length)
+	{
+		String result = makeString(value.chars, length);
+		return result;
+	}
+	else
+	{
+		String result = newString(globalFrameTempArena, length);
+
+		if (alignLeft)
+		{
+			for (int32 i=0; i<value.length; i++)
+			{
+				result.chars[i] = value.chars[i];
+			}
+			for (int32 i=value.length; i<length; i++)
+			{
+				result.chars[i] = paddingChar;
+			}
+		}
+		else // alignRight
+		{
+			int32 startPos = length - value.length;
+			for (int32 i=0; i<value.length; i++)
+			{
+				result.chars[i + startPos] = value.chars[i];
+			}
+			for (int32 i=0; i<startPos; i++)
+			{
+				result.chars[i] = paddingChar;
+			}
+		}
+
+		return result;
+	}
+}
+String formatString(char *value, int32 length=-1, bool alignLeft = true, char paddingChar = ' ')
+{
+	return formatString(stringFromChars(value), length, alignLeft, paddingChar);
+}
+
+
+String repeatChar(char c, int32 length)
+{
+	String result = newString(globalFrameTempArena, length);
+
+	for (int32 i=0; i<length; i++)
+	{
+		result.chars[i] = c;
+	}
+
+	return result;
+}

@@ -6,6 +6,15 @@ struct String
 	int32 length;
 };
 
+String newString(MemoryArena *arena, int32 length)
+{
+	String s = {};
+	s.chars = PushArray(arena, char, length);
+	s.length = length;
+
+	return s;
+}
+
 // inline String copyString(char *chars, int32 length)
 // {
 // 	String result = {};

@@ -4,7 +4,7 @@
 void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
-	globalDebugState->showDebugData = false;
+	globalDebugState->showDebugData = true;
 	globalDebugState->captureDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
@@ -193,27 +193,28 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
 		while (arena != &debugState->arenaDataSentinel)
 		{
-			debugTextOut(&textState, "Memory arena %s: %d blocks, %" PRIuPTR " used / %" PRIuPTR " allocated",
-				    arena->name, arena->blockCount[rfi], arena->usedSize[rfi], arena->totalSize[rfi]);
+			debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated",
+				{arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi])}));
 			arena = arena->next;
 		}
 
 		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
-		debugTextOut(&textState, "There are %" PRIu64 " cycles in a second", cyclesPerSecond);
-		debugTextOut(&textState, "%30s| %20s| %20s| %20s", "Code", "Total cycles", "Calls", "Avg Cycles");
+		debugTextOut(&textState, myprintf("There are {0} cycles in a second", {formatInt(cyclesPerSecond)}));
+		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
+			{formatString("Code", 30), formatString("Total cycles", 20, false),
+			 formatString("Calls", 20, false), formatString("Avg Cycles", 20, false)}));
 
-		char line[] = "----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
-		ASSERT(strlen(line) >= textState.charsLastPrinted,
-			   "line not long enough! Length is %d, needed %d", strlen(line), textState.charsLastPrinted);
-		debugTextOut(&textState, "%.*s", textState.charsLastPrinted, line);
+		debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
 
 		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
 		while (topBlock != &debugState->topCodeBlocksSentinel)
 		{
 			DebugCodeData *code = topBlock->data;
-			debugTextOut(&textState, "%30s| %20" PRIu64 "| %20d| %20" PRIu64 "",
-				         code->name, code->totalCycleCount[rfi],
-				         code->callCount[rfi], code->averageCycleCount[rfi]);
+			debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
+				{formatString(code->name, 30),
+				 formatString(formatInt(code->totalCycleCount[rfi]), 20, false),
+				 formatString(formatInt(code->callCount[rfi]), 20, false),
+				 formatString(formatInt(code->averageCycleCount[rfi]), 20, false)}));
 			topBlock = topBlock->next;
 		}
 

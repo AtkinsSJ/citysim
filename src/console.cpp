@@ -49,7 +49,7 @@ void consoleTextOut(ConsoleTextState *textState, char *text, BitmapFont *font, C
 void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *font, real32 height)
 {
 	Console *console = &theConsole;
-	console->isVisible = true;
+	console->isVisible = false;
 	console->font = font;
 	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
 	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
