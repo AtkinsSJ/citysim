@@ -32,7 +32,7 @@ const real32 uiMessageBottomMargin = 4,
 			uiMessageTextPadding = 4;
 struct UiMessage
 {
-	char text[256];
+	String text;
 	real32 countdown; // In seconds
 };
 

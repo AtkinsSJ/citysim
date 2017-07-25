@@ -54,7 +54,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(uiState, "You can only have one farmhouse!");
+			pushUiMessage(uiState, stringFromChars("You can only have one farmhouse!"));
 		}
 		return false;
 	}
@@ -66,7 +66,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(uiState, "Not enough money to build this.");
+			pushUiMessage(uiState, stringFromChars("Not enough money to build this."));
 		}
 		return false;
 	}
@@ -78,7 +78,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(uiState, "You cannot build off the map edge.");
+			pushUiMessage(uiState, stringFromChars("You cannot build off the map edge."));
 		}
 		return false;
 	}
@@ -93,7 +93,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 			{
 				if (isAttemptingToBuild)
 				{
-					pushUiMessage(uiState, "You cannot build there.");
+					pushUiMessage(uiState, stringFromChars("You cannot build there."));
 				}
 				return false;
 			}
@@ -183,7 +183,7 @@ bool demolishTile(UIState *uiState, City *city, Coord position) {
 
 		// Can we afford to demolish this?
 		if (!canAfford(city, def.demolishCost)) {
-			pushUiMessage(uiState, "Not enough money to demolish this.");
+			pushUiMessage(uiState, stringFromChars("Not enough money to demolish this."));
 			return false;
 		}
 
@@ -274,7 +274,7 @@ bool demolishTile(UIState *uiState, City *city, Coord position) {
 			city->terrain[posTI] = Terrain_Ground;
 			return true;
 		} else {
-			pushUiMessage(uiState, "Not enough money to destroy these trees.");
+			pushUiMessage(uiState, stringFromChars("Not enough money to destroy these trees."));
 			return false;
 		}
 
@@ -312,7 +312,7 @@ bool demolishRect(UIState *uiState, City *city, Rect rect) {
 
 	int32 cost = calculateDemolitionCost(city, rect);
 	if (!canAfford(city, cost)) {
-		pushUiMessage(uiState, "Not enough money for demolition.");
+		pushUiMessage(uiState, stringFromChars("Not enough money for demolition."));
 		return false;
 	}
 

@@ -193,9 +193,9 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 // 	drawRect(uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
 // }
 
-void pushUiMessage(UIState *uiState, char *message)
+void pushUiMessage(UIState *uiState, String message)
 {
-	strncpy(uiState->message.text, message, sizeof(uiState->message.text));
+	copyString(message, &uiState->message.text);
 	uiState->message.countdown = messageDisplayTime;
 }
 
