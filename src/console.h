@@ -55,4 +55,7 @@ String *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=CLS_Def
 }
 
 void consoleWriteLine(String text, ConsoleLineStyleID style=CLS_Default);
-void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default);
+inline void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
+{
+	consoleWriteLine(stringFromChars(text), style);
+}

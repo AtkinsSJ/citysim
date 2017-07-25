@@ -15,11 +15,6 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 	}
 }
 
-inline void consoleWriteLine(char *text, ConsoleLineStyleID style)
-{
-	consoleWriteLine(stringFromChars(text), style);
-}
-
 struct ConsoleTextState
 {
 	V2 pos;

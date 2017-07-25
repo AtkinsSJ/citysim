@@ -19,7 +19,7 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	position.y += (uiText(uiState, uiBuffer, font, LocalString("Under London"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, uiBuffer, font, LocalString("Everything © Samuel Atkins 2016"),
+	position.y += (uiText(uiState, uiBuffer, font, LocalString("Everything © Samuel Atkins 2017"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 	position.y += (uiText(uiState, uiBuffer, font, LocalString("... except for the things that are not."),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;

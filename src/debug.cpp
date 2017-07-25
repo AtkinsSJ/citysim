@@ -4,7 +4,7 @@
 void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
-	globalDebugState->showDebugData = true;
+	globalDebugState->showDebugData = false;
 	globalDebugState->captureDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = font;
