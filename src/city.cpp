@@ -1,6 +1,6 @@
 
 
-void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, char *name, int32 funds)
+void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, String name, int32 funds)
 {
 	city->name = name;
 	city->funds = funds;

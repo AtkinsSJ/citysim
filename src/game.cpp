@@ -123,7 +123,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build HQ"), menuButtonRect, 1,
 					(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Farmhouse),
-					SDLK_q, "(Q)"))
+					SDLK_q, LocalString("(Q)")))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Farmhouse;
@@ -135,7 +135,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Field"), menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Field),
-						SDLK_f, "(F)"))
+						SDLK_f, LocalString("(F)")))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Field;
@@ -147,7 +147,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Barn"), menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Barn),
-						SDLK_b, "(B)"))
+						SDLK_b, LocalString("(B)")))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Barn;
@@ -159,7 +159,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Road"), menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Path),
-						SDLK_r, "(R)"))
+						SDLK_r, LocalString("(R)")))
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_Path;
@@ -174,7 +174,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Demolish"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Demolish),
-					SDLK_x, "(X)"))
+					SDLK_x, LocalString("(X)")))
 		{
 			uiState->actionMode = ActionMode_Demolish;
 			setCursor(uiState, assets, Cursor_Demolish);
@@ -182,7 +182,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Plant"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Plant),
-					SDLK_p, "(P)"))
+					SDLK_p, LocalString("(P)")))
 		{
 			uiState->actionMode = ActionMode_Plant;
 			setCursor(uiState, assets, Cursor_Plant);
@@ -190,7 +190,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Harvest"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Harvest),
-					SDLK_h, "(H)"))
+					SDLK_h, LocalString("(H)")))
 		{
 			uiState->actionMode = ActionMode_Harvest;
 			setCursor(uiState, assets, Cursor_Harvest);
@@ -198,7 +198,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Hire Worker"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Hire),
-					SDLK_g, "(G)"))
+					SDLK_g, LocalString("(G)")))
 		{
 			uiState->actionMode = ActionMode_Hire;
 			setCursor(uiState, assets, Cursor_Hire);
@@ -235,7 +235,7 @@ bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIS
 	{
 		gameOverText = myprintf(LocalString("You won! You earned £{0} in ??? days"), {formatInt(gameWinFunds)});
 	} else {
-		gameOverText = stringFromChars(LocalString("Game over! You ran out of money! :("));
+		gameOverText = LocalString("Game over! You ran out of money! :(");
 	}
 
 	uiText(uiState, uiBuffer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, theme->labelStyle.textColor);

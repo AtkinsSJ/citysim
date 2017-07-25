@@ -22,23 +22,6 @@ void initUiState(UIState *uiState)
 	setCursorVisible(uiState, false);
 }
 
-RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, char *text, V2 origin, int32 align,
-				 real32 depth, V4 color, real32 maxWidth = 0)
-{
-	DEBUG_FUNCTION();
-
-	TemporaryMemory memory = beginTemporaryMemory(&uiState->arena);
-
-	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color, maxWidth);
-	V2 topLeft = calculateTextPosition(textCache, origin, align);
-	drawCachedText(uiBuffer, textCache, topLeft, depth);
-	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
-
-	endTemporaryMemory(&memory);
-
-	return bounds;
-}
-
 RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, int32 align,
 				 real32 depth, V4 color, real32 maxWidth = 0)
 {
@@ -85,8 +68,8 @@ void drawTooltip(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
 }
 
 bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	          char *text, RealRect bounds, real32 depth, bool active=false,
-	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, char *tooltip=0)
+	          String text, RealRect bounds, real32 depth, bool active=false,
+	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
 	
@@ -109,9 +92,9 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 
 		buttonClicked = mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT);
 
-		if (tooltip)
+		if (tooltip.length)
 		{
-			setTooltip(uiState, stringFromChars(tooltip), theme->tooltipStyle.textColorNormal);
+			setTooltip(uiState, tooltip, theme->tooltipStyle.textColorNormal);
 		}
 	}
 	else if (active)
@@ -134,8 +117,8 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 }
 
 bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	              char *text, RealRect bounds, real32 depth, UIMenuID menuID,
-	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, char *tooltip=0)
+	              String text, RealRect bounds, real32 depth, UIMenuID menuID,
+	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
 	

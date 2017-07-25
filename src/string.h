@@ -7,6 +7,8 @@ struct String
 	int32 maxLength;
 };
 
+const String nullString = {};
+
 String newString(MemoryArena *arena, int32 length)
 {
 	String s = {};

@@ -57,7 +57,7 @@ struct PathLayer {
 };
 
 struct City {
-	char *name;
+	String name;
 	int32 funds;
 	int32 monthlyExpenditure;
 
