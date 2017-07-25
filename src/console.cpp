@@ -35,13 +35,15 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 	return textState;
 }
 
-void consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
+RealRect consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
 {
 	int32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
 	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
 	                             align, 300, style.textColor, textState->maxWidth);
 	textState->pos.y -= resultRect.h;
+
+	return resultRect;
 }
 
 void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *font, real32 height)

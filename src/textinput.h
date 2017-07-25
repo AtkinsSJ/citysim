@@ -126,8 +126,3 @@ void clear(TextInput *textInput)
 	textInput->buffer[0] = 0;
 	textInput->caretPos = 0;
 }
-
-bool equals(TextInput *textInput, char *other)
-{
-	return equals(textInputToString(textInput), stringFromChars(other));
-}

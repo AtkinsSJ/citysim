@@ -5,6 +5,11 @@ I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
 Console:
+- The console is actually completely busted with regard to unicode multibyte characters!
+	- backspace
+	- delete
+	- cursor position (left/right)
+	- MAYBE what we should do is convert all internal string stuff to UTF32? Or maybe just some of it? I think I'm generally way too tired to make a judgement call on this right now.
 - Console eats all input events while it is open?
 - Scrolling?
 - Automatic parameter type checking? That might be crazy though.
@@ -12,6 +17,7 @@ Console:
 - Better input
 	- Up to copy previous command
 	- Draw caret at correct position when text is on multiple lines???
+		- It's also wrong if we have multi-byte characters! So, it's amateur hour all over.
 
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
@@ -57,6 +63,7 @@ GAME:
 
 BUGS:
 - Unloading Fraps does something funny with our Window reference, causing a crash.
+- We get random hitching about once per second. Seems to be SDL_GL_SwapWindow() causing it?
 
 Rendering 2.0:
 - Stop passing a size to drawSprite()! Will always draw at a consistent size.

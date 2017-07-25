@@ -209,18 +209,17 @@ int main(int argc, char *argv[])
 		resetMemoryArena(&appState->globalTempArena);
 
 	// FRAMERATE MONITORING AND CAPPING
-		frameEndTime = SDL_GetTicks();
 
-		// Cap the framerate!
-		uint32 msForFrame = frameEndTime - frameStartTime;
-		// TODO: I think this is actually unnecessary when SDL_GL_SetSwapInterval(1) is used.
-		if (msForFrame < MS_PER_FRAME) {
-			SDL_Delay(MS_PER_FRAME - msForFrame);
-		}
-		
 		{
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
 			SDL_GL_SwapWindow(renderer->window);
+		}
+		frameEndTime = SDL_GetTicks();
+		uint32 msForFrame = frameEndTime - frameStartTime;
+
+		if (msForFrame > 20)
+		{
+			int i = 100;
 		}
 
 		framesPerSecond = 1000.0f / (real32)fmax(msForFrame, 1.0f);
