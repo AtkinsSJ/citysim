@@ -188,6 +188,8 @@ TokenList tokenize(String input)
 	return result;
 }
 
+#include "unicode.h"
+
 #include "stringbuilder.h"
 
 #include "string.cpp"

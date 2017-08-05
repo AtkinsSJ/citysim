@@ -80,13 +80,13 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
 
-	consoleTextOut(&textState, makeString(console->input.buffer, console->input.length), console->font, console->styles[CLS_Input]);
+	consoleTextOut(&textState, makeString(console->input.buffer, console->input.byteLength), console->font, console->styles[CLS_Input]);
 
 	bool showCaret = true; //(console->caretFlashCounter < 0.5f);
 	if (showCaret)
 	{
 		drawRect(uiBuffer,
-			     rectXYWH(textState.pos.x + (console->input.caretPos * console->charWidth), textState.pos.y, 2, console->font->lineHeight),
+			     rectXYWH(textState.pos.x + (console->input.caretGlyphPos * console->charWidth), textState.pos.y, 2, console->font->lineHeight),
 		         310, console->styles[CLS_Input].textColor);
 	}
 
@@ -120,7 +120,7 @@ void consoleHandleCommand(Console *console)
 	String inputS = textInputToString(&console->input);
 	consoleWriteLine(myprintf("> {0}", {inputS}), CLS_InputEcho);
 
-	if (console->input.length != 0)
+	if (console->input.glyphLength != 0)
 	{
 		TokenList tokens = tokenize(inputS);
 		if (tokens.count > 0)
@@ -201,19 +201,21 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 
 		if (keyJustPressed(inputState, SDLK_LEFT))
 		{
-			if (console->input.caretPos > 0) console->input.caretPos--;
+			moveCaretLeft(&console->input, 1);
 		}
 		else if (keyJustPressed(inputState, SDLK_RIGHT))
 		{
-			if (console->input.caretPos < console->input.length) console->input.caretPos++;
+			moveCaretRight(&console->input, 1);
 		}
 		if (keyJustPressed(inputState, SDLK_HOME))
 		{
-			console->input.caretPos = 0;
+			console->input.caretBytePos = 0;
+			console->input.caretGlyphPos = 0;
 		}
 		if (keyJustPressed(inputState, SDLK_END))
 		{
-			console->input.caretPos = console->input.length;
+			console->input.caretBytePos = console->input.byteLength;
+			console->input.caretGlyphPos = console->input.glyphLength;
 		}
 
 		if (wasTextEntered(inputState))
