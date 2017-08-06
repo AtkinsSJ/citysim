@@ -148,12 +148,12 @@ void backspace(TextInput *textInput)
 
 		int32 bytesToRemove = oldBytePos - textInput->caretBytePos;
 
-		// copy everything 1 to the left
+		// copy everything bytesToRemove to the left
 		for (int32 i = textInput->caretBytePos;
 		     i < textInput->byteLength - bytesToRemove;
 		     i++)
 		{
-			textInput->buffer[i] = textInput->buffer[i+1];
+			textInput->buffer[i] = textInput->buffer[i+bytesToRemove];
 		}
 
 		textInput->byteLength -= bytesToRemove;
@@ -167,12 +167,12 @@ void deleteChar(TextInput *textInput)
 	{
 		int32 bytesToRemove = findStartOfNextGlyph(textInput->buffer, textInput->caretBytePos, textInput->maxByteLength) - textInput->caretBytePos;
 
-		// copy everything 1 to the left
+		// copy everything bytesToRemove to the left
 		for (int32 i = textInput->caretBytePos;
 		     i < textInput->byteLength - bytesToRemove;
 		     i++)
 		{
-			textInput->buffer[i] = textInput->buffer[i+1];
+			textInput->buffer[i] = textInput->buffer[i+bytesToRemove];
 		}
 
 		textInput->byteLength -= bytesToRemove;

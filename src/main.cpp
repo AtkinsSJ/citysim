@@ -217,11 +217,6 @@ int main(int argc, char *argv[])
 		frameEndTime = SDL_GetTicks();
 		uint32 msForFrame = frameEndTime - frameStartTime;
 
-		if (msForFrame > 20)
-		{
-			int i = 100;
-		}
-
 		framesPerSecond = 1000.0f / (real32)fmax(msForFrame, 1.0f);
 		SDL_Log("FPS: %f, took %dms\n", framesPerSecond, msForFrame);
 	}
