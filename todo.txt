@@ -5,11 +5,6 @@ I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
 Console:
-- The console is actually completely busted with regard to unicode multibyte characters!
-	- backspace
-	- delete
-	- cursor position (left/right)
-	- MAYBE what we should do is convert all internal string stuff to UTF32? Or maybe just some of it? I think I'm generally way too tired to make a judgement call on this right now.
 - Console eats all input events while it is open?
 - Scrolling?
 - Automatic parameter type checking? That might be crazy though.
