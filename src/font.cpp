@@ -48,63 +48,6 @@ BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
-// FIXME: Our String is not 0-terminated so this will overrun if you let it! Needs to be fixed.
-unichar readUnicodeChar(char **nextChar)
-{
-	unichar result = 0;
-
-	uint8 b1 = *((*nextChar)++);
-	if ((b1 & 0b10000000) == 0)
-	{
-		// 7-bit ASCII, so just pass through
-		result = (uint32) b1;
-	}
-	else if (b1 & 0b11000000)
-	{
-		// Start of a multibyte codepoint!
-		int32 extraBytes = 1;
-		result = b1 & 0b00011111;
-		if (b1 & 0b00100000) {
-			extraBytes++; // 3 total
-			result = b1 & 0b00001111;
-			if (b1 & 0b00010000) {
-				extraBytes++; // 4 total
-				result = b1 & 0b00000111;
-				if (b1 & 0b00001000) {
-					extraBytes++; // 5 total
-					result = b1 & 0b00000011;
-					if (b1 & 0b00000100) {
-						extraBytes++; // 6 total
-						result = b1 & 0b00000001;
-					}
-				}
-			}
-		}
-
-		while (extraBytes--)
-		{
-			result = result << 6;
-
-			uint8 bn = *((*nextChar)++);
-
-			if (!(bn & 0b10000000)
-				|| (bn & 0b01000000))
-			{
-				ASSERT(false, "Unicode codepoint continuation byte is invalid! D:");
-			}
-
-			result |= (bn & 0b00111111);
-		}
-	}
-	else
-	{
-		// Error! Our first byte is a continuation byte!
-		ASSERT(false, "Unicode codepoint initial byte is invalid! D:");
-	}
-
-	return result;
-}
-
 struct DrawTextState
 {
 	bool doWrap;
@@ -203,10 +146,10 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 	state.lineHeight = font->lineHeight;
 	state.position = {};
 
+	int32 glyphsToOutput = countGlyphs(text.chars, text.length);
+
 	// Memory management witchcraft
-	// FIXME: This actually overestimates how much memory we need, because it does one item for each
-	// byte of the string, not each codepoint.
-	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * text.length);
+	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * glyphsToOutput);
 	uint8 *data = (uint8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
@@ -218,19 +161,18 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 		state.currentWordWidth = 0;
 		state.currentLineWidth = 0;
 
-		char *nextChar = text.chars;
-		char *oneAfterLastChar = text.chars + text.length + 1;
-
-		unichar currentChar = readUnicodeChar(&nextChar);
-		while ((nextChar != oneAfterLastChar) && currentChar)
+		int32 bytePos = 0;
+		for (int32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
 		{
-			if (currentChar == '\n')
+			unichar glyph = readUnicodeChar(text.chars + bytePos);
+
+			if (glyph == '\n')
 			{
 				font_newLine(&state);
 			}
 			else
 			{
-				BitmapFontChar *c = findChar(font, currentChar);
+				BitmapFontChar *c = findChar(font, glyph);
 				if (c)
 				{
 					state.endOfCurrentWord = result->chars + result->charCount++;
@@ -243,7 +185,8 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 					font_handleEndOfWord(&state, c);
 				}
 			}
-			currentChar = readUnicodeChar(&nextChar);
+
+			bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 		}
 
 		// Final flush to make sure the last line is correct

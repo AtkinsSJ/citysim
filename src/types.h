@@ -38,7 +38,7 @@ const real32 real32Max = FLT_MAX;
 const real64 real64Min = -DBL_MAX;
 const real64 real64Max = DBL_MAX;
 
-// typedef std::string string;
+typedef uint32 unichar;
 
 const int null = 0;
 

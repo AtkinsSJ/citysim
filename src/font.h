@@ -1,7 +1,5 @@
 #pragma once
 
-typedef uint32 unichar;
-
 struct BitmapFontChar
 {
 	unichar codepoint;

@@ -24,7 +24,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	UILabelStyle *labelStyle = &theme->labelStyle;
 	BitmapFont *font = getFont(assets, labelStyle->font);
 
-	position.y += (uiText(uiState, uiBuffer, font, LocalString("Under London"),
+	position.y += (uiText(uiState, uiBuffer, font, LocalString("£Under London"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	position.y += (uiText(uiState, uiBuffer, font, LocalString("Very much a work in progress!"),
