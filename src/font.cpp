@@ -65,7 +65,7 @@ struct DrawTextState
 	real32 longestLineWidth;
 };
 
-void font_newLine(DrawTextState *state)
+void nextLine(DrawTextState *state)
 {
 	state->longestLineWidth = state->maxWidth;
 	state->position.y += state->lineHeight;
@@ -74,8 +74,57 @@ void font_newLine(DrawTextState *state)
 	state->lineCount++;
 }
 
-void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
+void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 {
+#if 1
+	if (state->startOfCurrentWord == null)
+	{
+		state->startOfCurrentWord = state->endOfCurrentWord;
+		state->currentWordWidth = 0;
+	}
+
+	if (state->doWrap)
+	{
+		// check possible reasons for wrapping.
+		// actually, that's always because we're too wide
+		real32 newWordWidth = state->currentWordWidth + c->xAdvance;
+
+		if ((state->currentLineWidth + newWordWidth) > state->maxWidth)
+		{
+			if (newWordWidth > state->maxWidth)
+			{
+				// The current word is longer than will fit on an entire line!
+				// So, split it at the maximum line length.
+
+				// This should mean just wrapping the final character
+				nextLine(state);
+
+				state->startOfCurrentWord = state->endOfCurrentWord;
+				state->currentWordWidth = 0;
+
+				state->startOfCurrentWord->rect.pos = state->position;
+			}
+			else
+			{
+				// Wrap the whole word onto a new line
+				nextLine(state);
+
+				V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
+				while (state->startOfCurrentWord <= state->endOfCurrentWord)
+				{
+					state->startOfCurrentWord->rect.pos += offset;
+					state->startOfCurrentWord++;
+				}
+			}
+		}
+	}
+
+	state->position.x += c->xAdvance;
+	state->currentWordWidth += c->xAdvance;
+	state->currentLineWidth += c->xAdvance;
+	state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
+
+#else
 	if (state->doWrap)
 	{
 		if (isWhitespace(c->codepoint))
@@ -91,24 +140,38 @@ void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 					state->currentLineWidth = state->currentWordWidth;
 					state->lineCount++;
 
-					// Move all the chars to their new positions
-					while (state->startOfCurrentWord <= state->endOfCurrentWord)
-					{
-						state->startOfCurrentWord->rect.pos += offset;
-						state->startOfCurrentWord++;
-					}
-
 					if (state->currentWordWidth > state->maxWidth)
 					{
-						// TODO: Split the word across multiple lines?
-						// For now, we just have it overflow, and move onto another new line
-						font_newLine(state);
+						// The current word is longer than will fit on an entire line!
+						// So, split it at the maximum line length.
+
+						// Move all the chars to their new positions
+						while (state->startOfCurrentWord < state->endOfCurrentWord)
+						{
+							state->startOfCurrentWord->rect.pos += offset;
+							state->startOfCurrentWord++;
+						}
+
+						nextLine(state);
+
+						state->startOfCurrentWord->rect.pos = state->position;
+						state->position.x += c->xAdvance;
+						state->currentWordWidth += c->xAdvance;
+					}
+					else
+					{
+						// Move all the chars to their new positions
+						while (state->startOfCurrentWord <= state->endOfCurrentWord)
+						{
+							state->startOfCurrentWord->rect.pos += offset;
+							state->startOfCurrentWord++;
+						}
 					}
 				}
 				else
 				{
 					state->currentLineWidth += state->currentWordWidth;
-					state->longestLineWidth = max(state->longestLineWidth, state->currentLineWidth);
+					state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
 				}
 
 				state->startOfCurrentWord = null;
@@ -130,8 +193,9 @@ void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 	else
 	{
 		state->position.x += (real32)c->xAdvance;
-		state->longestLineWidth = max(state->longestLineWidth, state->position.x);
+		state->longestLineWidth = MAX(state->longestLineWidth, state->position.x);
 	}
+#endif
 }
 
 BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, String text,
@@ -145,6 +209,9 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 	state.longestLineWidth = 0;
 	state.lineHeight = font->lineHeight;
 	state.position = {};
+	state.startOfCurrentWord = null;
+	state.currentWordWidth = 0;
+	state.currentLineWidth = 0;
 
 	int32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
@@ -157,10 +224,6 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 
 	if (result)
 	{
-		state.startOfCurrentWord = null;
-		state.currentWordWidth = 0;
-		state.currentLineWidth = 0;
-
 		int32 bytePos = 0;
 		for (int32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
 		{
@@ -168,7 +231,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 
 			if (glyph == '\n')
 			{
-				font_newLine(&state);
+				nextLine(&state);
 			}
 			else
 			{
@@ -182,7 +245,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 						0.0f, c->textureRegionID, color
 					);
 
-					font_handleEndOfWord(&state, c);
+					checkAndHandleWrapping(&state, c);
 				}
 			}
 
@@ -190,9 +253,10 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 		}
 
 		// Final flush to make sure the last line is correct
-		font_handleEndOfWord(&state, &font->nullChar);
+		// TODO: I think this isn't necessary now?
+		checkAndHandleWrapping(&state, &font->nullChar);
 
-		result->size.x = max(state.longestLineWidth, state.currentLineWidth);
+		result->size.x = MAX(state.longestLineWidth, state.currentLineWidth);
 		result->size.y = (real32)(font->lineHeight * state.lineCount);
 	}
 

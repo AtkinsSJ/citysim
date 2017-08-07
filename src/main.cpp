@@ -130,6 +130,9 @@ int main(int argc, char *argv[])
 	debugInit(getFont(assets, FontAssetType_Debug));
 	initConsole(&globalDebugState->debugArena, 256, globalDebugState->font, 200.0f);
 	initCommands(globalConsole);
+
+	globalDebugState->showDebugData = false;
+	globalConsole->isVisible = true;
 #endif
 
 // Do we need this here?
