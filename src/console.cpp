@@ -82,11 +82,17 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 
 	consoleTextOut(&textState, makeString(console->input.buffer, console->input.byteLength), console->font, console->styles[CLS_Input]);
 
-	bool showCaret = true; //(console->caretFlashCounter < 0.5f);
+	bool showCaret = (console->caretFlashCounter < 0.5f);
 	if (showCaret)
 	{
+		// Not quite correct. It assumes all lines are full, whereas our line-wrapping happens at
+		// word boundaries so the line can be shorter than charsPerLine.
+		int32 charsPerLine = (int32) (textState.maxWidth / console->charWidth);
+		int32 caretX = console->input.caretGlyphPos % charsPerLine;
+		int32 caretY = console->input.caretGlyphPos / charsPerLine;
+
 		drawRect(uiBuffer,
-			     rectXYWH(textState.pos.x + (console->input.caretGlyphPos * console->charWidth), textState.pos.y, 2, console->font->lineHeight),
+			     rectXYWH(textState.pos.x + (caretX * console->charWidth), textState.pos.y + (caretY * console->font->lineHeight), 2, console->font->lineHeight),
 		         310, console->styles[CLS_Input].textColor);
 	}
 
@@ -184,38 +190,46 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Ctrl))
 		{
 			clear(&console->input);
+			console->caretFlashCounter = 0;
 		}
 		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
 		{
 			backspace(&console->input);
+			console->caretFlashCounter = 0;
 		}
 		if (keyJustPressed(inputState, SDLK_DELETE))
 		{
 			deleteChar(&console->input);
+			console->caretFlashCounter = 0;
 		}
 
 		if (keyJustPressed(inputState, SDLK_RETURN))
 		{
 			consoleHandleCommand(console);
+			console->caretFlashCounter = 0;
 		}
 
 		if (keyJustPressed(inputState, SDLK_LEFT))
 		{
 			moveCaretLeft(&console->input, 1);
+			console->caretFlashCounter = 0;
 		}
 		else if (keyJustPressed(inputState, SDLK_RIGHT))
 		{
 			moveCaretRight(&console->input, 1);
+			console->caretFlashCounter = 0;
 		}
 		if (keyJustPressed(inputState, SDLK_HOME))
 		{
 			console->input.caretBytePos = 0;
 			console->input.caretGlyphPos = 0;
+			console->caretFlashCounter = 0;
 		}
 		if (keyJustPressed(inputState, SDLK_END))
 		{
 			console->input.caretBytePos = console->input.byteLength;
 			console->input.caretGlyphPos = console->input.glyphLength;
+			console->caretFlashCounter = 0;
 		}
 
 		if (wasTextEntered(inputState))
@@ -224,6 +238,7 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 			int32 inputTextLength = strlen(enteredText);
 
 			insert(&console->input, enteredText, inputTextLength);
+			console->caretFlashCounter = 0;
 		}
 
 		if (keyJustPressed(inputState, SDLK_v, KeyMod_Ctrl))
@@ -235,6 +250,7 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 				{
 					int32 clipboardLength = strlen(clipboard);
 					insert(&console->input, clipboard, clipboardLength);
+					console->caretFlashCounter = 0;
 
 					SDL_free(clipboard);
 				}
