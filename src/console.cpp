@@ -73,6 +73,7 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 
 	// temp test stuff goes here
 	// consoleWriteLine(myprintf("}{-1} {5} {{}{pineapple}!", {stringFromChars("Hello"), stringFromChars("World")}));
+	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?");
 	consoleWriteLine(myprintf("My favourite number is {0}!", {formatFloat(12345.6789, 3)}));
 }
 
