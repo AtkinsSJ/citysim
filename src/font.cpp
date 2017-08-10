@@ -76,7 +76,6 @@ void nextLine(DrawTextState *state)
 
 void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 {
-#if 1
 	if (state->startOfCurrentWord == null)
 	{
 		state->startOfCurrentWord = state->endOfCurrentWord;
@@ -117,12 +116,12 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 				V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
 				while (state->startOfCurrentWord <= state->endOfCurrentWord)
 				{
-					state->currentLineWidth += state->startOfCurrentWord->rect.w;
 					state->startOfCurrentWord->rect.pos += offset;
 					state->startOfCurrentWord++;
 				}
 
-				// = state->currentWordWidth;
+				state->position.x = state->currentWordWidth;
+				state->currentLineWidth = state->currentWordWidth;
 			}
 		}
 	}
@@ -131,79 +130,6 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 	state->currentWordWidth += c->xAdvance;
 	state->currentLineWidth += c->xAdvance;
 	state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
-
-#else
-	if (state->doWrap)
-	{
-		if (isWhitespace(c->codepoint))
-		{
-			if (state->startOfCurrentWord)
-			{
-				if ((state->currentWordWidth + state->currentLineWidth) > state->maxWidth)
-				{
-					// Wrap it
-					V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
-					state->position.y += state->lineHeight;
-					state->position.x = state->currentWordWidth;
-					state->currentLineWidth = state->currentWordWidth;
-					state->lineCount++;
-
-					if (state->currentWordWidth > state->maxWidth)
-					{
-						// The current word is longer than will fit on an entire line!
-						// So, split it at the maximum line length.
-
-						// Move all the chars to their new positions
-						while (state->startOfCurrentWord < state->endOfCurrentWord)
-						{
-							state->startOfCurrentWord->rect.pos += offset;
-							state->startOfCurrentWord++;
-						}
-
-						nextLine(state);
-
-						state->startOfCurrentWord->rect.pos = state->position;
-						state->position.x += c->xAdvance;
-						state->currentWordWidth += c->xAdvance;
-					}
-					else
-					{
-						// Move all the chars to their new positions
-						while (state->startOfCurrentWord <= state->endOfCurrentWord)
-						{
-							state->startOfCurrentWord->rect.pos += offset;
-							state->startOfCurrentWord++;
-						}
-					}
-				}
-				else
-				{
-					state->currentLineWidth += state->currentWordWidth;
-					state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
-				}
-
-				state->startOfCurrentWord = null;
-			}
-			state->currentLineWidth += c->xAdvance;
-			state->position.x += c->xAdvance;
-		}
-		else
-		{
-			if (state->startOfCurrentWord == null)
-			{
-				state->startOfCurrentWord = state->endOfCurrentWord;
-				state->currentWordWidth = 0;
-			}
-			state->position.x += (real32)c->xAdvance;
-			state->currentWordWidth += c->xAdvance;
-		}
-	}
-	else
-	{
-		state->position.x += (real32)c->xAdvance;
-		state->longestLineWidth = MAX(state->longestLineWidth, state->position.x);
-	}
-#endif
 }
 
 BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, String text,

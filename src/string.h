@@ -158,6 +158,9 @@ struct TokenList
 	int32 maxTokenCount = 64;
 };
 
+// TODO: This probably just wants to be "getToken()" which splits the string into two parts.
+// That way, no need to worry in advance how many tokens to make room for.
+// It also means we can use the rest of the string, including spaces, if we want!
 TokenList tokenize(String input)
 {
 	TokenList result = {};

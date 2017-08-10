@@ -49,7 +49,7 @@ ConsoleCommand(resize_window)
 	if (asInt(sWidth, &width)   && (width > 0)
 	 && asInt(sHeight, &height) && (height > 0))
 	{
-		consoleWriteLine(myprintf("Window resizes to {0} by {1}", {sWidth, sHeight}), CLS_Success);
+		consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
 
 		succeeded = true;
 		resizeWindow(globalAppState.renderer, (int32)width, (int32)height);
