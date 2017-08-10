@@ -131,7 +131,7 @@ bool asInt(String string, int64 *result)
 	return succeeded;
 }
 
-bool isWhitespace(uint32 uChar)
+bool isWhitespace(unichar uChar)
 {
 	// TODO: FINISH THIS!
 
@@ -163,21 +163,21 @@ TokenList tokenize(String input)
 	TokenList result = {};
 	int32 position = 0;
 
-	while (position <= input.length)
+	while (position < input.length)
 	{
 		while ((position <= input.length) && isWhitespace(input.chars[position]))
 		{
 			position++;
 		}
 
-		if (position <= input.length)
+		if (position < input.length)
 		{
 			ASSERT(result.count < result.maxTokenCount, "No room for more tokens.");
 			String *token = &result.tokens[result.count++];
 			token->chars = input.chars + position;
 			
 			// length
-			while ((position <= input.length) && !isWhitespace(input.chars[position]))
+			while ((position < input.length) && !isWhitespace(input.chars[position]))
 			{
 				position++;
 				token->length++;

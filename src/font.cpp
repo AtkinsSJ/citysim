@@ -83,14 +83,18 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 		state->currentWordWidth = 0;
 	}
 
-	if (state->doWrap)
+	if (isWhitespace(c->codepoint))
+	{
+		state->startOfCurrentWord = null;
+	}
+	else if (state->doWrap)
 	{
 		// check possible reasons for wrapping.
 		// actually, that's always because we're too wide
-		real32 newWordWidth = state->currentWordWidth + c->xAdvance;
 
-		if ((state->currentLineWidth + newWordWidth) > state->maxWidth)
+		if ((state->currentLineWidth + c->xAdvance) > state->maxWidth)
 		{
+			real32 newWordWidth = state->currentWordWidth + c->xAdvance;
 			if (newWordWidth > state->maxWidth)
 			{
 				// The current word is longer than will fit on an entire line!
@@ -102,7 +106,8 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 				state->startOfCurrentWord = state->endOfCurrentWord;
 				state->currentWordWidth = 0;
 
-				state->startOfCurrentWord->rect.pos = state->position;
+				state->startOfCurrentWord->rect.pos.x = state->position.x;
+				state->startOfCurrentWord->rect.pos.y = state->position.y + (real32)c->yOffset;
 			}
 			else
 			{
@@ -112,9 +117,12 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 				V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
 				while (state->startOfCurrentWord <= state->endOfCurrentWord)
 				{
+					state->currentLineWidth += state->startOfCurrentWord->rect.w;
 					state->startOfCurrentWord->rect.pos += offset;
 					state->startOfCurrentWord++;
 				}
+
+				// = state->currentWordWidth;
 			}
 		}
 	}
@@ -235,6 +243,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 			}
 			else
 			{
+
 				BitmapFontChar *c = findChar(font, glyph);
 				if (c)
 				{

@@ -28,6 +28,15 @@ ConsoleCommand(help)
 	}
 }
 
+ConsoleCommand(window_size)
+{
+	// The only place we can access the window size is via the renderer's UI camera!
+	// UGH this is so hacky. But I guess that's how the debug console should be?
+	V2 screenSize = globalAppState.renderer->uiBuffer.camera.size;
+
+	consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((int32)screenSize.x), formatInt((int32)screenSize.y)}), CLS_Success);
+}
+
 ConsoleCommand(resize_window)
 {
 	bool succeeded = false;
@@ -62,6 +71,7 @@ ConsoleCommand(reload_assets)
 void initCommands(Console *console)
 {
 	append(&consoleCommands, Command(CMD(help), 0, 0));
+	append(&consoleCommands, Command(CMD(window_size), 0, 0));
 	append(&consoleCommands, Command(CMD(resize_window), 2, 2));
 	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
 
