@@ -39,6 +39,52 @@ RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, Stri
 	return bounds;
 }
 
+RealRect drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, TextInput *textInput, bool showCaret, V2 origin, int32 align, real32 depth, V4 color, real32 maxWidth = 0)
+{
+	DEBUG_FUNCTION();
+
+	TemporaryMemory memory = beginTemporaryMemory(&uiState->arena);
+
+	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, makeString(textInput->buffer, textInput->byteLength), color, maxWidth);
+	V2 topLeft = calculateTextPosition(textCache, origin, align);
+	drawCachedText(uiBuffer, textCache, topLeft, depth);
+	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+
+	if (showCaret)
+	{
+		RealRect caretRect = rectXYWH(0, 0, 2, font->lineHeight);
+
+		if ((uint32) textInput->caretGlyphPos < textCache->charCount)
+		{
+			RenderItem charCaretIsBefore = textCache->chars[textInput->caretGlyphPos];
+			caretRect.x += charCaretIsBefore.rect.x;
+			caretRect.y += charCaretIsBefore.rect.y;
+		}
+		else if (textCache->charCount > 0)
+		{
+			// we've overrun. Could mean we're just after the last char.
+			// So, we grab the last char and then add its width.
+			RenderItem charCaretIsAfter = textCache->chars[textCache->charCount - 1];
+			caretRect.x += charCaretIsAfter.rect.x + (1 + textInput->caretGlyphPos - textCache->charCount) * charCaretIsAfter.rect.w;
+			caretRect.y += charCaretIsAfter.rect.y;
+		}
+
+		// Trouble is the y. Once we get here, we don't know what the per-character vertical offset is!
+		// We don't even know what the character was.
+		// So, a hack! We'll round the y to the closest multiple of the line height.
+
+		caretRect.y = floor(caretRect.y / (real32)font->lineHeight) * font->lineHeight;
+
+		caretRect.pos += topLeft;
+		caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
+		drawRect(uiBuffer, caretRect, depth + 10, color);
+	}
+
+	endTemporaryMemory(&memory);
+
+	return bounds;
+}
+
 void setTooltip(UIState *uiState, String text, V4 color)
 {
 	copyString(text, &uiState->tooltip.text);

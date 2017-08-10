@@ -82,21 +82,24 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
 
-	consoleTextOut(&textState, makeString(console->input.buffer, console->input.byteLength), console->font, console->styles[CLS_Input]);
-
 	bool showCaret = (console->caretFlashCounter < 0.5f);
-	if (showCaret)
-	{
-		// Not quite correct. It assumes all lines are full, whereas our line-wrapping happens at
-		// word boundaries so the line can be shorter than charsPerLine.
-		int32 charsPerLine = (int32) (textState.maxWidth / console->charWidth);
-		int32 caretX = console->input.caretGlyphPos % charsPerLine;
-		int32 caretY = console->input.caretGlyphPos / charsPerLine;
+	RealRect textInputRect = drawTextInput(uiState, uiBuffer, console->font, &console->input, showCaret, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
+	textState.pos.y -= textInputRect.h;
 
-		drawRect(uiBuffer,
-			     rectXYWH(textState.pos.x + (caretX * console->charWidth), textState.pos.y + (caretY * console->font->lineHeight), 2, console->font->lineHeight),
-		         310, console->styles[CLS_Input].textColor);
-	}
+	// consoleTextOut(&textState, makeString(console->input.buffer, console->input.byteLength), console->font, console->styles[CLS_Input]);
+
+	// if (showCaret)
+	// {
+	// 	// Not quite correct. It assumes all lines are full, whereas our line-wrapping happens at
+	// 	// word boundaries so the line can be shorter than charsPerLine.
+	// 	int32 charsPerLine = (int32) (textState.maxWidth / console->charWidth);
+	// 	int32 caretX = console->input.caretGlyphPos % charsPerLine;
+	// 	int32 caretY = console->input.caretGlyphPos / charsPerLine;
+
+	// 	drawRect(uiBuffer,
+	// 		     rectXYWH(textState.pos.x + (caretX * console->charWidth), textState.pos.y + (caretY * console->font->lineHeight), 2, console->font->lineHeight),
+	// 	         310, console->styles[CLS_Input].textColor);
+	// }
 
 	textState.pos.y -= 8.0f;
 

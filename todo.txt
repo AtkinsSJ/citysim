@@ -5,14 +5,13 @@ I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
 Console:
+- Ctrl-left/right to jump by whole words
 - Console eats all input events while it is open?
 - Scrolling?
 - Automatic parameter type checking? That might be crazy though.
 - Animate console open/close?
 - Better input
 	- Up to copy previous command
-	- Draw caret at correct position when text is on multiple lines???
-		- It's also wrong if we have multi-byte characters! So, it's amateur hour all over.
 
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
