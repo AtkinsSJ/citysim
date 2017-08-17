@@ -89,8 +89,14 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	textState.pos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
-	drawRect(uiBuffer, rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, console->height - textState.pos.y), 100, color255(64,64,64,245));
-	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y), 100, color255(0,0,0,245));
+	RealRect inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, console->height - textState.pos.y);
+	drawRect(uiBuffer, inputBackRect, 100, color255(64,64,64,245));
+	RealRect consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
+	drawRect(uiBuffer, consoleBackRect, 100, color255(0,0,0,245));
+
+	V2 knobSize = v2(12.0f, 64.0f);
+	real32 scrollPercent = 1.0f - ((real32)console->scrollPos / (real32)consoleMaxScrollPos(console));
+	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, 200, color255(48, 48, 48, 245));
 
 	textState.pos.y -= 8.0f;
 
@@ -184,8 +190,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 		// scrolling!
 		if (inputState->wheelY != 0)
 		{
-			int32 max = MIN(console->currentOutputLine-1, console->outputLineCount)-1;
-			console->scrollPos = clamp(console->scrollPos + inputState->wheelY, 0, max);
+			console->scrollPos = clamp(console->scrollPos + inputState->wheelY, 0, consoleMaxScrollPos(console));
 		}
 
 		renderConsole(console, uiState, uiBuffer);

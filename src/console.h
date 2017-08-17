@@ -58,3 +58,9 @@ inline void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
 {
 	consoleWriteLine(stringFromChars(text), style);
 }
+
+inline int32 consoleMaxScrollPos(Console *console)
+{
+	int32 result = MIN(console->currentOutputLine-1, console->outputLineCount)-1;
+	return result;
+}
