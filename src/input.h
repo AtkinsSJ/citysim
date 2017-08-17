@@ -58,6 +58,33 @@ inline bool mouseButtonPressed(InputState *input, uint8 mouseButton) {
  * KEYBOARD INPUT
  */
 #define keycodeToIndex(key) ((key) & ~SDLK_SCANCODE_MASK)
+inline bool modifierKeysArePressed(InputState *input, uint8 modifiers)
+{
+	bool result = true;
+
+	if (modifiers)
+	{
+		if (modifiers & KeyMod_Alt)
+		{
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LALT)] || input->_keyDown[keycodeToIndex(SDLK_RALT)]);
+		}
+		if (modifiers & KeyMod_Ctrl)
+		{
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LCTRL)] || input->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
+		}
+		if (modifiers & KeyMod_Shift)
+		{
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || input->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
+		}
+		if (modifiers & KeyMod_Super)
+		{
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LGUI)] || input->_keyDown[keycodeToIndex(SDLK_RGUI)]);
+		}
+	}
+
+	return result;
+}
+
 inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 {
 	int32 keycode = keycodeToIndex(key);
@@ -66,22 +93,7 @@ inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 
 	if (modifiers)
 	{
-		if (modifiers & KeyMod_Alt)
-		{
-			result = result && (keyIsPressed(input, SDLK_LALT) || keyIsPressed(input, SDLK_RALT));
-		}
-		if (modifiers & KeyMod_Ctrl)
-		{
-			result = result && (keyIsPressed(input, SDLK_LCTRL) || keyIsPressed(input, SDLK_RCTRL));
-		}
-		if (modifiers & KeyMod_Shift)
-		{
-			result = result && (keyIsPressed(input, SDLK_LSHIFT) || keyIsPressed(input, SDLK_RSHIFT));
-		}
-		if (modifiers & KeyMod_Super)
-		{
-			result = result && (keyIsPressed(input, SDLK_LGUI) || keyIsPressed(input, SDLK_RGUI));
-		}
+		result = result && modifierKeysArePressed(input, modifiers);
 	}
 
 	return result;

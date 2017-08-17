@@ -126,6 +126,42 @@ void moveCaretRight(TextInput *textInput, int32 count = 1)
 	}
 }
 
+void moveCaretLeftWholeWord(TextInput *textInput)
+{
+	bool done = false;
+	while (!done)
+	{
+		moveCaretLeft(textInput, 1);
+		unichar glyph = readUnicodeChar(textInput->buffer + textInput->caretBytePos);
+		if (isWhitespace(glyph))
+		{
+			done = true;
+		}
+		else if (textInput->caretBytePos == 0)
+		{
+			done = true;
+		}
+	}
+}
+
+void moveCaretRightWholeWord(TextInput *textInput)
+{
+	bool done = false;
+	while (!done)
+	{
+		moveCaretRight(textInput, 1);
+		unichar glyph = readUnicodeChar(textInput->buffer + textInput->caretBytePos);
+		if (isWhitespace(glyph))
+		{
+			done = true;
+		}
+		else if (textInput->caretGlyphPos >= (textInput->glyphLength - 1))
+		{
+			done = true;
+		}
+	}
+}
+
 void backspace(TextInput *textInput)
 {
 	if (textInput->caretGlyphPos > 0) 
@@ -205,11 +241,26 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 
 	if (keyJustPressed(inputState, SDLK_LEFT))
 	{
-		moveCaretLeft(textInput, 1);
+		if (modifierKeysArePressed(inputState, KeyMod_Ctrl))
+		{
+			moveCaretLeftWholeWord(textInput);
+		}
+		else
+		{
+			moveCaretLeft(textInput, 1);
+		}
 		textInput->caretFlashCounter = 0;
 	}
 	else if (keyJustPressed(inputState, SDLK_RIGHT))
 	{
+		if (modifierKeysArePressed(inputState, KeyMod_Ctrl))
+		{
+			moveCaretRightWholeWord(textInput);
+		}
+		else
+		{
+			moveCaretRight(textInput, 1);
+		}
 		moveCaretRight(textInput, 1);
 		textInput->caretFlashCounter = 0;
 	}

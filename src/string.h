@@ -133,14 +133,18 @@ bool asInt(String string, int64 *result)
 
 bool isWhitespace(unichar uChar)
 {
-	// TODO: FINISH THIS!
+	// TODO: There's probably more whitespace characters somewhere.
 
 	bool result = false;
 
+	// Feels like I'm misusing a switch, but I can't think of any better ways of writing this!
 	switch (uChar)
 	{
 	case 0:
-	case 32:
+	case ' ':
+	case '\n':
+	case '\r':
+	case '\t':
 		result = true;
 		break;
 
