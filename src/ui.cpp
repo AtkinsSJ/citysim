@@ -39,7 +39,7 @@ RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, Stri
 	return bounds;
 }
 
-RealRect drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, TextInput *textInput, bool showCaret, V2 origin, int32 align, real32 depth, V4 color, real32 maxWidth = 0)
+RealRect drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, TextInput *textInput, V2 origin, int32 align, real32 depth, V4 color, real32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
 
@@ -49,6 +49,9 @@ RealRect drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *fon
 	V2 topLeft = calculateTextPosition(textCache, origin, align);
 	drawCachedText(uiBuffer, textCache, topLeft, depth);
 	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+
+	textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
+	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
 
 	if (showCaret)
 	{

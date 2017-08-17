@@ -59,6 +59,7 @@ AppState globalAppState;
 #include "ui.cpp"
 #include "commands.cpp"
 #include "debug.cpp"
+#include "textinput.cpp"
 #include "console.cpp"
 #include "pathing.cpp"
 #include "city.cpp"

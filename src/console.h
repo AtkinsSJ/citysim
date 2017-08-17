@@ -36,8 +36,6 @@ struct Console
 	int32 outputLineCount;
 	ConsoleOutputLine *outputLines;
 	int32 currentOutputLine;
-
-	real32 caretFlashCounter;
 };
 Console *globalConsole;
 
