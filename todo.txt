@@ -5,8 +5,8 @@ I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
 Console:
+- scrollbar!
 - Console eats all input events while it is open?
-- Scrolling?
 - Automatic parameter type checking? That might be crazy though.
 - Animate console open/close?
 - Better input

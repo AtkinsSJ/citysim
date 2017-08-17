@@ -36,6 +36,7 @@ struct Console
 	int32 outputLineCount;
 	ConsoleOutputLine *outputLines;
 	int32 currentOutputLine;
+	int32 scrollPos; // first line to draw, just above the console input
 };
 Console *globalConsole;
 

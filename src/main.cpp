@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
 		if (globalConsole)
 		{
-			updateConsole(globalConsole, &inputState, uiState, &renderer->uiBuffer);
+			updateAndRenderConsole(globalConsole, &inputState, uiState, &renderer->uiBuffer);
 		}
 
 		updateAndRender(appState, &inputState, renderer, assets);

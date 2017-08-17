@@ -68,6 +68,7 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 		console->outputLines[i].text = newString(debugArena, consoleLineLength);
 		console->outputLines[i].style = CLS_Default;
 	}
+	console->scrollPos = 0;
 
 	globalConsole = console;
 
@@ -94,7 +95,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	textState.pos.y -= 8.0f;
 
 	// print output lines
-	for (int32 i=console->outputLineCount-1; i>=0; i--)
+	for (int32 i=console->outputLineCount-console->scrollPos-1; i>=0; i--)
 	{
 		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
 		consoleTextOut(&textState, line->text, console->font, console->styles[line->style]);
@@ -165,7 +166,7 @@ void consoleHandleCommand(Console *console)
 	clear(&console->input);
 }
 
-void updateConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
+void updateAndRenderConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{
@@ -177,6 +178,14 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		if (updateTextInput(&console->input, inputState))
 		{
 			consoleHandleCommand(console);
+			console->scrollPos = 0;
+		}
+
+		// scrolling!
+		if (inputState->wheelY != 0)
+		{
+			int32 max = MIN(console->currentOutputLine-1, console->outputLineCount)-1;
+			console->scrollPos = clamp(console->scrollPos + inputState->wheelY, 0, max);
 		}
 
 		renderConsole(console, uiState, uiBuffer);
