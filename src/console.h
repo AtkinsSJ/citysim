@@ -25,10 +25,13 @@ struct ConsoleOutputLine
 
 struct Console
 {
-	bool isVisible;
 	struct BitmapFont *font;
 	ConsoleLineStyle styles[CLS_COUNT];
-	real32 height;
+
+	real32 currentHeight;
+	real32 targetHeight;
+	real32 expandedHeight; // config!
+	real32 openSpeed; // % per second
 
 	TextInput input;
 	int32 charWidth;

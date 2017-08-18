@@ -103,6 +103,9 @@ int32 findStartOfNextGlyph(char *buffer, int32 byteOffset, int32 bufferByteLengt
 // returns 0 if we start mid-way through a glyph
 int32 floorToWholeGlyphs(char *startByte, int32 byteLength)
 {
+	// @Speed: Should be able to start at the end, find the start of that glyph, then see how many bytes it
+	// is - that's all we need to know to floor it!
+
 	int32 flooredByteCount = 0;
 
 	// Only count if we start at the beginning of a glyph.

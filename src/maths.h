@@ -76,3 +76,19 @@ inline uint32 clampToRangeWrapping(uint32 minInclusive, uint32 maxInclusive, uin
 	uint32 t = offset % (maxInclusive - minInclusive + 1);
 	return minInclusive + t;
 }
+
+inline real32 moveTowards(real32 currentValue, real32 targetValue, real32 distance)
+{
+	real32 result = currentValue;
+
+	if (targetValue < currentValue)
+	{
+		result = MAX(currentValue - distance, targetValue);
+	}
+	else
+	{
+		result = MIN(currentValue + distance, targetValue);
+	}
+
+	return result;
+}
