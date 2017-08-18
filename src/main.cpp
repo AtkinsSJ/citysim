@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 
 #if BUILD_DEBUG
 	debugInit(getFont(assets, FontAssetType_Debug));
-	initConsole(&globalDebugState->debugArena, 256, globalDebugState->font, 200.0f, 10.0f);
+	initConsole(&globalDebugState->debugArena, 256, globalDebugState->font, 0.2f, 0.9f, 6.0f);
 	initCommands(globalConsole);
 
 	globalDebugState->showDebugData = false;

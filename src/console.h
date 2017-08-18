@@ -30,7 +30,8 @@ struct Console
 
 	real32 currentHeight;
 	real32 targetHeight;
-	real32 expandedHeight; // config!
+	real32 openHeight; // % of screen height
+	real32 maximisedHeight; // % of screen height
 	real32 openSpeed; // % per second
 
 	TextInput input;

@@ -46,7 +46,7 @@ RealRect consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *fo
 	return resultRect;
 }
 
-void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *font, real32 height, real32 openSpeed=10.0f)
+void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *font, real32 openHeight, real32 maximisedHeight, real32 openSpeed)
 {
 	Console *console = &theConsole;
 	console->currentHeight = 0;
@@ -57,7 +57,8 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	console->styles[CLS_Success].textColor   = color255(128, 255, 128, 255);
 	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
 
-	console->expandedHeight = height;
+	console->openHeight = openHeight;
+	console->maximisedHeight = maximisedHeight;
 	console->openSpeed = openSpeed;
 
 	console->input = newTextInput(debugArena, consoleLineLength);
@@ -83,7 +84,9 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
-	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->currentHeight);
+	real32 actualConsoleHeight = console->currentHeight * uiBuffer->camera.size.y;
+
+	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
 	RealRect textInputRect = drawTextInput(uiState, uiBuffer, console->font, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
 	textState.pos.y -= textInputRect.h;
@@ -91,7 +94,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	textState.pos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
-	RealRect inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, console->currentHeight - textState.pos.y);
+	RealRect inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
 	drawRect(uiBuffer, inputBackRect, 100, color255(64,64,64,245));
 	RealRect consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
 	drawRect(uiBuffer, consoleBackRect, 100, color255(0,0,0,245));
@@ -178,20 +181,35 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 {
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{
-		if (console->targetHeight > 0)
+		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
 		{
-			console->targetHeight = 0;
+			if (console->targetHeight == console->maximisedHeight)
+			{
+				console->targetHeight = console->openHeight;
+			}
+			else
+			{
+				console->targetHeight = console->maximisedHeight;
+			}
+			console->scrollPos = 0;
 		}
 		else
 		{
-			console->targetHeight = console->expandedHeight;
-			console->scrollPos = 0;
+			if (console->targetHeight > 0)
+			{
+				console->targetHeight = 0;
+			}
+			else
+			{
+				console->targetHeight = console->openHeight;
+				console->scrollPos = 0;
+			}
 		}
 	}
 
 	if (console->currentHeight != console->targetHeight)
 	{
-		console->currentHeight = moveTowards(console->currentHeight, console->targetHeight, console->openSpeed * SECONDS_PER_FRAME * console->expandedHeight);
+		console->currentHeight = moveTowards(console->currentHeight, console->targetHeight, console->openSpeed * SECONDS_PER_FRAME);
 	}
 
 	if (console->currentHeight > 0)

@@ -58,6 +58,30 @@ inline bool mouseButtonPressed(InputState *input, uint8 mouseButton) {
  * KEYBOARD INPUT
  */
 #define keycodeToIndex(key) ((key) & ~SDLK_SCANCODE_MASK)
+
+inline bool modifierKeyIsPressed(InputState *input, ModifierKey modifier)
+{
+	bool result = false;
+
+	switch (modifier)
+	{
+	case KeyMod_Alt:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LALT)] || input->_keyDown[keycodeToIndex(SDLK_RALT)]);
+		break;
+	case KeyMod_Ctrl:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LCTRL)] || input->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
+		break;
+	case KeyMod_Shift:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || input->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
+		break;
+	case KeyMod_Super:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LGUI)] || input->_keyDown[keycodeToIndex(SDLK_RGUI)]);
+		break;
+	}
+
+	return result;
+}
+
 inline bool modifierKeysArePressed(InputState *input, uint8 modifiers)
 {
 	bool result = true;

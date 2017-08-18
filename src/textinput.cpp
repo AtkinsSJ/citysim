@@ -241,7 +241,7 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 
 	if (keyJustPressed(inputState, SDLK_LEFT))
 	{
-		if (modifierKeysArePressed(inputState, KeyMod_Ctrl))
+		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
 		{
 			moveCaretLeftWholeWord(textInput);
 		}
@@ -253,7 +253,7 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 	}
 	else if (keyJustPressed(inputState, SDLK_RIGHT))
 	{
-		if (modifierKeysArePressed(inputState, KeyMod_Ctrl))
+		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
 		{
 			moveCaretRightWholeWord(textInput);
 		}
