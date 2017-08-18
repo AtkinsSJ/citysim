@@ -6,7 +6,7 @@
  * Extra { and } characters may be stripped. We try to print out any invalid {n} indices but there is not a ton
  * of error-reporting. Try to pass valid input!
  */
-String myprintf(String format, std::initializer_list<String> args)
+String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate=false)
 {
 	String result;
 
@@ -63,12 +63,17 @@ String myprintf(String format, std::initializer_list<String> args)
 		}
 	}
 
+	if (zeroTerminate)
+	{
+		append(&stb, '\0');
+	}
+
 	result = getString(&stb);
 
 	return result;
 }
 
-inline String myprintf(char *format, std::initializer_list<String> args) { return myprintf(stringFromChars(format), args); }
+inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(stringFromChars(format), args, zeroTerminate); }
 
 String formatInt(uint64 value)
 {

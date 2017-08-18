@@ -211,13 +211,4 @@ void endTemporaryMemory(TemporaryMemory *tempMemory)
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))
 #define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
 
-char *pushString(MemoryArena *arena, char *src)
-{
-	int32 len = strlen(src);
-	char *dest = PushArray(arena, char, len+1);
-	strcpy(dest, src);
-	dest[len] = 0;
-	return dest;
-}
-
 #endif

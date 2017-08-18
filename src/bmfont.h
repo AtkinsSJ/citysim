@@ -66,7 +66,8 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 	BitmapFont *font = 0;
 	TemporaryMemory tempMemory = beginTemporaryMemory(tempArena);
 
-	File file = readFile(tempMemory.arena, filename);
+	String sFilename = pushString(&assets->assetArena, filename);
+	File file = readFile(tempMemory.arena, getAssetPath(assets, AssetType_Font, sFilename).chars);
 	if (!file.data)
 	{
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to open font file %s: %s", filename, SDL_GetError());
@@ -147,7 +148,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 					pageIndex < common->pageCount;
 					pageIndex++)
 				{
-					int32 textureID = addTexture(assets, pageStart, false);
+					int32 textureID = addTexture(assets, pushString(&assets->assetArena, pageStart), false);
 					pageToTextureID[pageIndex] = textureID;
 					pageStart += strlen(pageStart) + 1;
 				}

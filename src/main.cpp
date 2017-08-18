@@ -12,6 +12,7 @@
 
 // Really janky assertion macro, yay
 #define ASSERT(expr, msg, ...) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg, ##__VA_ARGS__); *(int *)0 = 0;}
+#define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
 
 enum AppStatus
 {

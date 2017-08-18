@@ -1,5 +1,13 @@
 #pragma once
 
+enum AssetType
+{
+	AssetType_Cursor,
+	AssetType_Font,
+	AssetType_Shader,
+	AssetType_Texture,
+};
+
 enum TextureAssetType // NB: Actually TextureRegions, unless I change that later.
 {
 	TextureAssetType_None,
@@ -54,7 +62,7 @@ enum AssetState
 struct Texture
 {
 	AssetState state;
-	char *filename;
+	String filename;
 	bool isAlphaPremultiplied; // Is the source file premultiplied?
 	SDL_Surface *surface;
 };
@@ -84,15 +92,15 @@ struct TextureRegionList
 
 struct Cursor
 {
-	char *filename;
+	String filename;
 	SDL_Cursor *sdlCursor;
 };
 
 struct ShaderProgram
 {
 	AssetState state;
-	char *fragFilename;
-	char *vertFilename;
+	String fragFilename;
+	String vertFilename;
 
 	char *fragShader;
 	char *vertShader;
@@ -151,6 +159,8 @@ struct UITheme
 struct AssetManager
 {
 	MemoryArena assetArena;
+
+	String assetsPath;
 
 	// NB: index 0 reserved as a null texture.
 	uint32 textureCount;
@@ -232,4 +242,28 @@ ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID
 {
 	ASSERT((shaderID > -1) && (shaderID < ShaderProgramCount), "Shader ID out of range: %d", shaderID);
 	return assets->shaderPrograms + shaderID;
+}
+
+String getAssetPath(AssetManager *assets, AssetType type, String shortName)
+{
+	String result = shortName;
+
+	switch (type)
+	{
+	case AssetType_Cursor:
+		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	case AssetType_Font:
+		result = myprintf("{0}/fonts/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	case AssetType_Shader:
+		result = myprintf("{0}/shaders/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	case AssetType_Texture:
+		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	INVALID_DEFAULT_CASE;
+	}
+
+	return result;
 }

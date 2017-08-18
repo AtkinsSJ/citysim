@@ -74,7 +74,7 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 {
 	bool result = false;
 	char **shaderSource = 0;
-	char *filename = 0;
+	String filename = {};
 
 	switch (shaderType)
 	{
@@ -83,18 +83,16 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 			shaderSource = &shaderAsset->fragShader;
 			filename = shaderAsset->fragFilename;
 		} break;
-		case GL_ShaderType_Geometry:
-		{
-			ASSERT(false, "Geometry shaders are not implemented!");
-		} break;
 		case GL_ShaderType_Vertex:
 		{
 			shaderSource = &shaderAsset->vertShader;
 			filename = shaderAsset->vertFilename;
 		} break;
+
+		INVALID_DEFAULT_CASE;
 	}
 
-	ASSERT(shaderSource && filename, "Failed to select a shader!");
+	ASSERT(shaderSource && filename.length, "Failed to select a shader!");
 
 
 	GLuint shaderID = glCreateShader(shaderType);
@@ -112,8 +110,8 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 	}
 	else
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n",
-			            shaderID, filename);
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %*s!\n",
+			            shaderID, filename.length, filename.chars);
 		TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderer.renderArena);
 		GL_printShaderLog(&tempArena, shaderID);
 		endTemporaryMemory(&tempArena);

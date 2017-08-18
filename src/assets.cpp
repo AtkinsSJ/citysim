@@ -1,6 +1,6 @@
 #pragma once
 
-int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
+int32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
 	TextureList *list = assets->firstTextureList.prev;
 	if (list->usedCount >= ArrayCount(list->textures))
@@ -48,6 +48,8 @@ uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textu
 
 void initAssetManager(AssetManager *assets)
 {
+	assets->assetsPath = pushString(&assets->assetArena, "assets");
+
 	DLinkedListInit(&assets->firstTextureRegionList);
 	DLinkedListInit(&assets->firstTextureList);
 
@@ -56,7 +58,7 @@ void initAssetManager(AssetManager *assets)
 
 	addTextureRegion(assets, TextureAssetType_None, -1, {});
 
-	Texture *nullTexture = getTexture(assets, addTexture(assets, "", true));
+	Texture *nullTexture = getTexture(assets, addTexture(assets, {}, true));
 	nullTexture->state = AssetState_Loaded;
 	nullTexture->surface = 0;
 
@@ -109,13 +111,13 @@ void initTheme(UITheme *theme)
 	
 }
 
-int32 findTexture(AssetManager *assets, char *filename)
+int32 findTexture(AssetManager *assets, String filename)
 {
 	int32 index = -1;
 	for (int32 i = 0; i < (int32)assets->textureCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
-		if (strcmp(filename, tex->filename) == 0)
+		if (equals(filename, tex->filename))
 		{
 			index = i;
 			break;
@@ -127,10 +129,11 @@ int32 findTexture(AssetManager *assets, char *filename)
 uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
 	                   bool isAlphaPremultiplied=false)
 {
-	int32 textureID = findTexture(assets, filename);
+	String sFilename = pushString(&assets->assetArena, filename);
+	int32 textureID = findTexture(assets, sFilename);
 	if (textureID == -1)
 	{
-		textureID = addTexture(assets, filename, isAlphaPremultiplied);
+		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
 	}
 
 	return addTextureRegion(assets, type, textureID, uv);
@@ -139,7 +142,7 @@ uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filen
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 {
 	Cursor *cursor = assets->cursors + cursorID;
-	cursor->filename = filename;
+	cursor->filename = pushString(&assets->assetArena, filename);
 	cursor->sdlCursor = 0;
 }
 
@@ -150,8 +153,8 @@ void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *ve
 	                  char *fragFilename)
 {
 	ShaderProgram *shader = assets->shaderPrograms + shaderID;
-	shader->fragFilename = fragFilename;
-	shader->vertFilename = vertFilename;
+	shader->fragFilename = pushString(&assets->assetArena, fragFilename);
+	shader->vertFilename = pushString(&assets->assetArena, vertFilename);
 }
 
 void loadAssets(AssetManager *assets)
@@ -162,8 +165,8 @@ void loadAssets(AssetManager *assets)
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Unloaded)
 		{
-			tex->surface = IMG_Load(tex->filename);
-			ASSERT(tex->surface, "Failed to load image '%s'!\n%s", tex->filename, IMG_GetError());
+			tex->surface = IMG_Load(getAssetPath(assets, AssetType_Texture, tex->filename).chars);
+			ASSERT(tex->surface, "Failed to load image '%*s'!\n%s", tex->filename.length, tex->filename.chars, IMG_GetError());
 
 			ASSERT(tex->surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
 			if (!tex->isAlphaPremultiplied)
@@ -225,7 +228,7 @@ void loadAssets(AssetManager *assets)
 	{
 		Cursor *cursor = assets->cursors + cursorID;
 
-		SDL_Surface *cursorSurface = IMG_Load(cursor->filename);
+		SDL_Surface *cursorSurface = IMG_Load(getAssetPath(assets, AssetType_Cursor, cursor->filename).chars);
 		cursor->sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
 		SDL_FreeSurface(cursorSurface);
 	}
@@ -234,8 +237,8 @@ void loadAssets(AssetManager *assets)
 	for (uint32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
-		shader->vertShader = readFileAsString(&assets->assetArena, shader->vertFilename);
-		shader->fragShader = readFileAsString(&assets->assetArena, shader->fragFilename);
+		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename).chars);
+		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename).chars);
 
 		if (shader->vertShader && shader->fragShader)
 		{
