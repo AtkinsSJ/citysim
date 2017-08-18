@@ -41,11 +41,12 @@ String stringFromChars(char *chars)
 
 void copyChars(char *src, String *dest, int32 length)
 {
-	for (int32 i=0; i<length; i++)
+	int32 copyLength = MIN(length, dest->maxLength);
+	for (int32 i=0; i<copyLength; i++)
 	{
 		dest->chars[i] = src[i];
 	}
-	dest->length = length;
+	dest->length = copyLength;
 }
 
 String pushString(MemoryArena *arena, char *src)
