@@ -4,8 +4,6 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
-- extract the "find or create a debug data block named X" code into a function or macro somehow
-
 Console:
 - Console eats all input events while it is open?
 - Automatic parameter type checking? That might be crazy though.

@@ -1,29 +1,33 @@
 #pragma once
 #include <stdarg.h>
 
-void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName)
+#define FIND_OR_CREATE_DEBUG_DATA(TYPE, NAME, SENTINEL, RESULT) { \
+	TYPE *data = debugState->SENTINEL.next; \
+	bool found = false; \
+	while (data != &debugState->SENTINEL) \
+	{ \
+		if (equals(data->name, NAME)) \
+		{ \
+			found = true; \
+			break; \
+		} \
+		data = data->next; \
+	} \
+	if (!found) \
+	{ \
+		data = PushStruct(&debugState->debugArena, TYPE); \
+		DLinkedListInsertBefore(data, &debugState->SENTINEL); \
+		data->name = NAME; \
+	} \
+	RESULT = data; \
+}
+
+void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 {
 	if (debugState)
 	{
-		DebugArenaData *arenaData = debugState->arenaDataSentinel.next;
-		bool found = false;
-		while (arenaData != &debugState->arenaDataSentinel)
-		{
-			if (equals(arenaData->name, arenaName))
-			{
-				found = true;
-				break;
-			}
-			
-			arenaData = arenaData->next;
-		}
-
-		if (!found)
-		{
-			arenaData = PushStruct(&debugState->debugArena, DebugArenaData);
-			DLinkedListInsertBefore(arenaData, &debugState->arenaDataSentinel);
-			arenaData->name = arenaName;
-		}
+		DebugArenaData *arenaData;
+		FIND_OR_CREATE_DEBUG_DATA(DebugArenaData, name, arenaDataSentinel, arenaData);
 
 		uint32 frameIndex = debugState->writingFrameIndex;
 
@@ -57,26 +61,8 @@ void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
 {
 	if (debugState)
 	{
-		DebugCodeData *codeData = debugState->codeDataSentinel.next;
-		bool found = false;
-		while (codeData != &debugState->codeDataSentinel)
-		{
-			if (equals(codeData->name, name))
-			{
-				found = true;
-				break;
-			}
-			
-			codeData = codeData->next;
-		}
-
-		if (!found)
-		{
-			codeData = PushStruct(&debugState->debugArena, DebugCodeData);
-			DLinkedListInsertBefore(codeData, &debugState->codeDataSentinel);
-
-			codeData->name = name;
-		}
+		DebugCodeData *codeData;
+		FIND_OR_CREATE_DEBUG_DATA(DebugCodeData, name, codeDataSentinel, codeData);
 
 		uint32 frameIndex = debugState->writingFrameIndex;
 
@@ -90,26 +76,8 @@ void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, 
 {
 	if (debugState)
 	{
-		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.next;
-		bool found = false;
-		while (renderBufferData != &debugState->renderBufferDataSentinel)
-		{
-			if (equals(renderBufferData->name, renderBuffer->name))
-			{
-				found = true;
-				break;
-			}
-			
-			renderBufferData = renderBufferData->next;
-		}
-
-		if (!found)
-		{
-			renderBufferData = PushStruct(&debugState->debugArena, DebugRenderBufferData);
-			DLinkedListInsertBefore(renderBufferData, &debugState->renderBufferDataSentinel);
-
-			renderBufferData->name = renderBuffer->name;
-		}
+		DebugRenderBufferData *renderBufferData;
+		FIND_OR_CREATE_DEBUG_DATA(DebugRenderBufferData, renderBuffer->name, renderBufferDataSentinel, renderBufferData);
 
 		uint32 frameIndex = debugState->writingFrameIndex;
 
