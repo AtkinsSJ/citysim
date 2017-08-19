@@ -42,7 +42,7 @@ const int SPRITE_MAX = WORLD_SPRITE_MAX;
 
 struct RenderBuffer
 {
-	char *name;
+	String name;
 	Camera camera;
 	RenderItem *items;
 	uint32 itemCount;

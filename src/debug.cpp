@@ -1,6 +1,123 @@
 #pragma once
 #include <stdarg.h>
 
+void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName)
+{
+	if (debugState)
+	{
+		DebugArenaData *arenaData = debugState->arenaDataSentinel.next;
+		bool found = false;
+		while (arenaData != &debugState->arenaDataSentinel)
+		{
+			if (equals(arenaData->name, arenaName))
+			{
+				found = true;
+				break;
+			}
+			
+			arenaData = arenaData->next;
+		}
+
+		if (!found)
+		{
+			arenaData = PushStruct(&debugState->debugArena, DebugArenaData);
+			DLinkedListInsertBefore(arenaData, &debugState->arenaDataSentinel);
+			arenaData->name = arenaName;
+		}
+
+		uint32 frameIndex = debugState->writingFrameIndex;
+
+		arenaData->blockCount[frameIndex] = 0;
+		arenaData->totalSize[frameIndex] = 0;
+		arenaData->usedSize[frameIndex] = 0;
+
+		if (arena) // So passing null just keeps it zeroed out
+		{
+			if (arena->currentBlock)
+			{
+				arenaData->blockCount[frameIndex] = 1;
+				arenaData->totalSize[frameIndex] = arena->currentBlock->size;
+				arenaData->usedSize[frameIndex] = arena->currentBlock->used;
+
+				MemoryBlock *block = arena->currentBlock->prevBlock;
+				while (block)
+				{
+					arenaData->blockCount[frameIndex]++;
+					arenaData->totalSize[frameIndex] += block->size;
+					arenaData->usedSize[frameIndex] += block->size;
+
+					block = block->prevBlock;
+				}
+			}
+		}
+	}
+}
+
+void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
+{
+	if (debugState)
+	{
+		DebugCodeData *codeData = debugState->codeDataSentinel.next;
+		bool found = false;
+		while (codeData != &debugState->codeDataSentinel)
+		{
+			if (equals(codeData->name, name))
+			{
+				found = true;
+				break;
+			}
+			
+			codeData = codeData->next;
+		}
+
+		if (!found)
+		{
+			codeData = PushStruct(&debugState->debugArena, DebugCodeData);
+			DLinkedListInsertBefore(codeData, &debugState->codeDataSentinel);
+
+			codeData->name = name;
+		}
+
+		uint32 frameIndex = debugState->writingFrameIndex;
+
+		codeData->callCount[frameIndex]++;
+		codeData->totalCycleCount[frameIndex] += cycleCount;
+		codeData->averageCycleCount[frameIndex] = codeData->totalCycleCount[frameIndex] / codeData->callCount[frameIndex];
+	}
+}
+
+void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, uint32 drawCallCount)
+{
+	if (debugState)
+	{
+		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.next;
+		bool found = false;
+		while (renderBufferData != &debugState->renderBufferDataSentinel)
+		{
+			if (equals(renderBufferData->name, renderBuffer->name))
+			{
+				found = true;
+				break;
+			}
+			
+			renderBufferData = renderBufferData->next;
+		}
+
+		if (!found)
+		{
+			renderBufferData = PushStruct(&debugState->debugArena, DebugRenderBufferData);
+			DLinkedListInsertBefore(renderBufferData, &debugState->renderBufferDataSentinel);
+
+			renderBufferData->name = renderBuffer->name;
+		}
+
+		uint32 frameIndex = debugState->writingFrameIndex;
+
+		renderBufferData->itemCount[frameIndex] = renderBuffer->itemCount;
+		renderBufferData->drawCallCount[frameIndex] = drawCallCount;
+	}
+}
+
 void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
@@ -11,6 +128,7 @@ void debugInit(BitmapFont *font)
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);
+	DLinkedListInit(&globalDebugState->renderBufferDataSentinel);
 
 	DLinkedListInit(&globalDebugState->topCodeBlocksFreeListSentinel);
 	DLinkedListInit(&globalDebugState->topCodeBlocksSentinel);
@@ -99,6 +217,7 @@ void processDebugData(DebugState *debugState)
 struct DebugTextState
 {
 	V2 pos;
+	Alignment hAlign;
 	char buffer[1024];
 	BitmapFont *font;
 	V4 color;
@@ -110,32 +229,41 @@ struct DebugTextState
 
 	uint32 charsLastPrinted;
 };
-inline DebugTextState initDebugTextState(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor,
-	                                     V2 screenSize, real32 screenEdgePadding, bool upwards)
+void initDebugTextState(DebugTextState *textState, UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor, V2 screenSize, real32 screenEdgePadding, bool upwards, bool alignLeft)
 {
-	DebugTextState textState = {};
-	textState.progressUpwards = upwards;
-	if (upwards) 
+	*textState = {};
+
+	textState->progressUpwards = upwards;
+	if (alignLeft)
 	{
-		textState.pos = v2(screenEdgePadding, screenSize.y - screenEdgePadding);
+		textState->hAlign = ALIGN_LEFT;
+		textState->pos.x = screenEdgePadding;
 	}
 	else
 	{
-		textState.pos = v2(screenEdgePadding, screenEdgePadding);
+		textState->hAlign = ALIGN_RIGHT;
+		textState->pos.x = screenSize.x - screenEdgePadding;
 	}
-	textState.font = font;
-	textState.color = textColor;
-	textState.maxWidth = screenSize.x - (2*screenEdgePadding);
 
-	textState.uiState = uiState;
-	textState.uiBuffer = uiBuffer;
+	if (upwards) 
+	{
+		textState->pos.y = screenSize.y - screenEdgePadding;
+	}
+	else
+	{
+		textState->pos.y = screenEdgePadding;
+	}
+	textState->font = font;
+	textState->color = textColor;
+	textState->maxWidth = screenSize.x - (2*screenEdgePadding);
 
-	return textState;
+	textState->uiState = uiState;
+	textState->uiBuffer = uiBuffer;
 }
 
 void debugTextOut(DebugTextState *textState, String text)
 {
-	int32 align = ALIGN_LEFT;
+	int32 align = textState->hAlign;
 	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
 	else                            align |= ALIGN_TOP;
 
@@ -157,65 +285,98 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 {
 	if (debugState)
 	{
+		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 		uint32 rfi = debugState->readingFrameIndex;
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			     100, color255(0,0,0,128));
 
-		DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
-			                                          uiBuffer->camera.size, 16.0f, false);
+		DebugTextState textState;
+		initDebugTextState(&textState, uiState, uiBuffer, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
 
 		uint32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 		debugTextOut(&textState, myprintf("Examing {0} frames ago", {formatInt(framesAgo)}));
 
-		DebugArenaData *arena = debugState->arenaDataSentinel.next;
-		while (arena != &debugState->arenaDataSentinel)
+		// Memory arenas
 		{
-			debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated",
-				{arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi])}));
-			arena = arena->next;
+			DebugArenaData *arena = debugState->arenaDataSentinel.next;
+			while (arena != &debugState->arenaDataSentinel)
+			{
+				debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated",
+					{arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi])}));
+				arena = arena->next;
+			}
 		}
 
-		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
+		// Render buffers
+		{
+			DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.next;
+			while (renderBuffer != &debugState->renderBufferDataSentinel)
+			{
+				debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches",
+					{renderBuffer->name, formatInt(renderBuffer->itemCount[rfi]), formatInt(renderBuffer->drawCallCount[rfi])}));
+				renderBuffer = renderBuffer->next;
+			}
+		}
+
 		debugTextOut(&textState, myprintf("There are {0} cycles in a second", {formatInt(cyclesPerSecond)}));
-		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
-			{formatString("Code", 30), formatString("Total cycles", 20, false),
-			 formatString("Calls", 20, false), formatString("Avg Cycles", 20, false)}));
 
-		debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
-
-		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
-		while (topBlock != &debugState->topCodeBlocksSentinel)
+		// Top code blocks
 		{
-			DebugCodeData *code = topBlock->data;
 			debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
-				{formatString(code->name, 30),
-				 formatString(formatInt(code->totalCycleCount[rfi]), 20, false),
-				 formatString(formatInt(code->callCount[rfi]), 20, false),
-				 formatString(formatInt(code->averageCycleCount[rfi]), 20, false)}));
-			topBlock = topBlock->next;
+				{formatString("Code", 30), formatString("Total cycles", 20, false),
+				 formatString("Calls", 20, false), formatString("Avg Cycles", 20, false)}));
+
+			debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
+			DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
+			while (topBlock != &debugState->topCodeBlocksSentinel)
+			{
+				DebugCodeData *code = topBlock->data;
+				debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
+					{formatString(code->name, 30),
+					 formatString(formatInt(code->totalCycleCount[rfi]), 20, false),
+					 formatString(formatInt(code->callCount[rfi]), 20, false),
+					 formatString(formatInt(code->averageCycleCount[rfi]), 20, false)}));
+				topBlock = topBlock->next;
+			}
 		}
 
-		// Draw a nice chart!
-		real32 graphHeight = 150.0f;
-		real32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-		real32 barWidth = uiBuffer->camera.size.x / (real32)DEBUG_FRAMES_COUNT;
-		real32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
-		V4 barColor = color255(255, 0, 0, 128);
-		V4 activeBarColor = color255(255, 255, 0, 128);
-		uint32 barIndex = 0;
-		for (uint32 fi = debugState->writingFrameIndex + 1;
-			 fi != debugState->writingFrameIndex;
-			 fi = WRAP(fi + 1, DEBUG_FRAMES_COUNT))
+		// Draw a "nice" chart!
 		{
-			uint64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
-			real32 barHeight = barHeightPerCycle * (real32)frameCycles;
-			drawRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), 200,
-				     fi == rfi ? activeBarColor : barColor);
+			real32 graphHeight = 150.0f;
+			real32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
+			real32 barWidth = uiBuffer->camera.size.x / (real32)DEBUG_FRAMES_COUNT;
+			real32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
+			V4 barColor = color255(255, 0, 0, 128);
+			V4 activeBarColor = color255(255, 255, 0, 128);
+			uint32 barIndex = 0;
+			for (uint32 fi = debugState->writingFrameIndex + 1;
+				 fi != debugState->writingFrameIndex;
+				 fi = WRAP(fi + 1, DEBUG_FRAMES_COUNT))
+			{
+				uint64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
+				real32 barHeight = barHeightPerCycle * (real32)frameCycles;
+				drawRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), 200,
+					     fi == rfi ? activeBarColor : barColor);
+			}
+			drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight, uiBuffer->camera.size.x, 1),
+			         201, color255(255, 255, 255, 128));
+			drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1),
+			         201, color255(255, 255, 255, 128));
 		}
-		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight, uiBuffer->camera.size.x, 1),
-		         201, color255(255, 255, 255, 128));
-		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1),
-		         201, color255(255, 255, 255, 128));
+
+		// Put FPS in top right
+		initDebugTextState(&textState, uiState, uiBuffer, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, false);
+		{
+			String smsForFrame = stringFromChars("???");
+			String sfps = stringFromChars("???");
+			if (rfi != debugState->writingFrameIndex)
+			{
+				real32 msForFrame = (real32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (real32)(cyclesPerSecond/1000);
+				smsForFrame = formatFloat(msForFrame, 2);
+				sfps = formatFloat(1000.0f / msForFrame, 2);
+			}
+			debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)", {sfps, smsForFrame}));
+		}
 	}
 }
 

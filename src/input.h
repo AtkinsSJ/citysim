@@ -246,8 +246,8 @@ void updateInput(InputState *inputState)
 			} break;
 			case SDL_TEXTINPUT: {
 				inputState->hasUnhandledTextEntered = true;
-				copyChars(event.text.text, inputState->_textEntered, SDL_TEXTINPUTEVENT_TEXT_SIZE);
-				// strncpy(inputState->_textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
+				// copyChars(event.text.text, inputState->_textEntered, SDL_TEXTINPUTEVENT_TEXT_SIZE);
+				strncpy(inputState->_textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			} break;
 		}
 	}

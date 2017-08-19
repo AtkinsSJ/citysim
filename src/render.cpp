@@ -15,7 +15,7 @@ inline real32 depthFromY(int32 y)
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, uint32 maxItems)
 {
-	buffer->name = name;
+	buffer->name = pushString(arena, name);
 	buffer->items = PushArray(arena, RenderItem, maxItems);
 	buffer->itemCount = 0;
 	buffer->maxItems = maxItems;

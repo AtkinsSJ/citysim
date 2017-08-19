@@ -4,6 +4,8 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+- extract the "find or create a debug data block named X" code into a function or macro somehow
+
 Console:
 - Console eats all input events while it is open?
 - Automatic parameter type checking? That might be crazy though.
@@ -22,6 +24,14 @@ Strings:
 	- Can switch language at runtime
 
 Asset system:
+- Memory management:
+	- Do a malloc/free for each asset that's loaded
+	- reload asset, just free() then malloc() again!
+		- Optimisation: Don't reallocate if it's the exact same size.
+	- Keep a memory limit, track the current size of all loaded assets.
+	- If we cross the limit, evict the least-recently-used asset.
+	- At the end of a level, we can also evict all level-specific assets if we want?
+	- Track evictions so we can monitor it and see if it's misbehaving.
 - Automatic file-reloading. https://msdn.microsoft.com/en-us/library/windows/desktop/aa365465(v=vs.85).aspx
 - Asset packer of some kind. Maybe just creates an assets table?
 - Load ui theme from a file

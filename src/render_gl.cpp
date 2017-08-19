@@ -454,7 +454,8 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 		renderPartOfBuffer(renderer, vertexCount, indexCount);
 	}
 
-	SDL_Log("Drew %d items this frame, with %d draw calls.", buffer->itemCount, drawCallCount);
+	DEBUG_RENDER_BUFFER(buffer, drawCallCount);
+
 	buffer->itemCount = 0;
 }
 
