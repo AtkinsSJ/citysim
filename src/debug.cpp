@@ -1,91 +1,6 @@
 #pragma once
 #include <stdarg.h>
 
-#define FIND_OR_CREATE_DEBUG_DATA(TYPE, NAME, SENTINEL, RESULT) { \
-	TYPE *data = debugState->SENTINEL.next; \
-	bool found = false; \
-	while (data != &debugState->SENTINEL) \
-	{ \
-		if (equals(data->name, NAME)) \
-		{ \
-			found = true; \
-			break; \
-		} \
-		data = data->next; \
-	} \
-	if (!found) \
-	{ \
-		data = PushStruct(&debugState->debugArena, TYPE); \
-		DLinkedListInsertBefore(data, &debugState->SENTINEL); \
-		data->name = NAME; \
-	} \
-	RESULT = data; \
-}
-
-void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
-{
-	if (debugState)
-	{
-		DebugArenaData *arenaData;
-		FIND_OR_CREATE_DEBUG_DATA(DebugArenaData, name, arenaDataSentinel, arenaData);
-
-		uint32 frameIndex = debugState->writingFrameIndex;
-
-		arenaData->blockCount[frameIndex] = 0;
-		arenaData->totalSize[frameIndex] = 0;
-		arenaData->usedSize[frameIndex] = 0;
-
-		if (arena) // So passing null just keeps it zeroed out
-		{
-			if (arena->currentBlock)
-			{
-				arenaData->blockCount[frameIndex] = 1;
-				arenaData->totalSize[frameIndex] = arena->currentBlock->size;
-				arenaData->usedSize[frameIndex] = arena->currentBlock->used;
-
-				MemoryBlock *block = arena->currentBlock->prevBlock;
-				while (block)
-				{
-					arenaData->blockCount[frameIndex]++;
-					arenaData->totalSize[frameIndex] += block->size;
-					arenaData->usedSize[frameIndex] += block->size;
-
-					block = block->prevBlock;
-				}
-			}
-		}
-	}
-}
-
-void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
-{
-	if (debugState)
-	{
-		DebugCodeData *codeData;
-		FIND_OR_CREATE_DEBUG_DATA(DebugCodeData, name, codeDataSentinel, codeData);
-
-		uint32 frameIndex = debugState->writingFrameIndex;
-
-		codeData->callCount[frameIndex]++;
-		codeData->totalCycleCount[frameIndex] += cycleCount;
-		codeData->averageCycleCount[frameIndex] = codeData->totalCycleCount[frameIndex] / codeData->callCount[frameIndex];
-	}
-}
-
-void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, uint32 drawCallCount)
-{
-	if (debugState)
-	{
-		DebugRenderBufferData *renderBufferData;
-		FIND_OR_CREATE_DEBUG_DATA(DebugRenderBufferData, renderBuffer->name, renderBufferDataSentinel, renderBufferData);
-
-		uint32 frameIndex = debugState->writingFrameIndex;
-
-		renderBufferData->itemCount[frameIndex] = renderBuffer->itemCount;
-		renderBufferData->drawCallCount[frameIndex] = drawCallCount;
-	}
-}
-
 void debugInit(BitmapFont *font)
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
@@ -348,7 +263,6 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 	}
 }
 
-
 void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (keyJustPressed(inputState, SDLK_F2))
@@ -377,3 +291,90 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 		renderDebugData(debugState, uiState, uiBuffer);
 	}
 }
+
+
+#define FIND_OR_CREATE_DEBUG_DATA(TYPE, NAME, SENTINEL, RESULT) { \
+	TYPE *data = debugState->SENTINEL.next; \
+	bool found = false; \
+	while (data != &debugState->SENTINEL) \
+	{ \
+		if (equals(data->name, NAME)) \
+		{ \
+			found = true; \
+			break; \
+		} \
+		data = data->next; \
+	} \
+	if (!found) \
+	{ \
+		data = PushStruct(&debugState->debugArena, TYPE); \
+		DLinkedListInsertBefore(data, &debugState->SENTINEL); \
+		data->name = NAME; \
+	} \
+	RESULT = data; \
+}
+
+void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
+{
+	if (debugState)
+	{
+		DebugArenaData *arenaData;
+		FIND_OR_CREATE_DEBUG_DATA(DebugArenaData, name, arenaDataSentinel, arenaData);
+
+		uint32 frameIndex = debugState->writingFrameIndex;
+
+		arenaData->blockCount[frameIndex] = 0;
+		arenaData->totalSize[frameIndex] = 0;
+		arenaData->usedSize[frameIndex] = 0;
+
+		if (arena) // So passing null just keeps it zeroed out
+		{
+			if (arena->currentBlock)
+			{
+				arenaData->blockCount[frameIndex] = 1;
+				arenaData->totalSize[frameIndex] = arena->currentBlock->size;
+				arenaData->usedSize[frameIndex] = arena->currentBlock->used;
+
+				MemoryBlock *block = arena->currentBlock->prevBlock;
+				while (block)
+				{
+					arenaData->blockCount[frameIndex]++;
+					arenaData->totalSize[frameIndex] += block->size;
+					arenaData->usedSize[frameIndex] += block->size;
+
+					block = block->prevBlock;
+				}
+			}
+		}
+	}
+}
+
+void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
+{
+	if (debugState)
+	{
+		DebugCodeData *codeData;
+		FIND_OR_CREATE_DEBUG_DATA(DebugCodeData, name, codeDataSentinel, codeData);
+
+		uint32 frameIndex = debugState->writingFrameIndex;
+
+		codeData->callCount[frameIndex]++;
+		codeData->totalCycleCount[frameIndex] += cycleCount;
+		codeData->averageCycleCount[frameIndex] = codeData->totalCycleCount[frameIndex] / codeData->callCount[frameIndex];
+	}
+}
+
+void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, uint32 drawCallCount)
+{
+	if (debugState)
+	{
+		DebugRenderBufferData *renderBufferData;
+		FIND_OR_CREATE_DEBUG_DATA(DebugRenderBufferData, renderBuffer->name, renderBufferDataSentinel, renderBufferData);
+
+		uint32 frameIndex = debugState->writingFrameIndex;
+
+		renderBufferData->itemCount[frameIndex] = renderBuffer->itemCount;
+		renderBufferData->drawCallCount[frameIndex] = drawCallCount;
+	}
+}
+#undef FIND_OR_CREATE_DEBUG_DATA
