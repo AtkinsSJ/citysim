@@ -19,6 +19,7 @@
 
 #endif
 
+
 static struct DebugState *globalDebugState = 0;
 
 #define DEBUG_FRAMES_COUNT 120

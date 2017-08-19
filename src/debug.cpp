@@ -256,7 +256,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 			{
 				real32 msForFrame = (real32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (real32)(cyclesPerSecond/1000);
 				smsForFrame = formatFloat(msForFrame, 2);
-				sfps = formatFloat(1000.0f / msForFrame, 2);
+				sfps = formatFloat(1000.0f / MAX(msForFrame, 1), 2);
 			}
 			debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)", {sfps, smsForFrame}));
 		}
@@ -294,24 +294,24 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 
 #define FIND_OR_CREATE_DEBUG_DATA(TYPE, NAME, SENTINEL, RESULT) { \
-	TYPE *data = debugState->SENTINEL.next; \
-	bool found = false; \
-	while (data != &debugState->SENTINEL) \
-	{ \
-		if (equals(data->name, NAME)) \
-		{ \
-			found = true; \
-			break; \
-		} \
-		data = data->next; \
-	} \
-	if (!found) \
-	{ \
-		data = PushStruct(&debugState->debugArena, TYPE); \
-		DLinkedListInsertBefore(data, &debugState->SENTINEL); \
-		data->name = NAME; \
-	} \
-	RESULT = data; \
+	TYPE *data = debugState->SENTINEL.next;                       \
+	bool found = false;                                           \
+	while (data != &debugState->SENTINEL)                         \
+	{                                                             \
+		if (equals(data->name, NAME))                             \
+		{                                                         \
+			found = true;                                         \
+			break;                                                \
+		}                                                         \
+		data = data->next;                                        \
+	}                                                             \
+	if (!found)                                                   \
+	{                                                             \
+		data = PushStruct(&debugState->debugArena, TYPE);         \
+		DLinkedListInsertBefore(data, &debugState->SENTINEL);     \
+		data->name = NAME;                                        \
+	}                                                             \
+	RESULT = data;                                                \
 }
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)

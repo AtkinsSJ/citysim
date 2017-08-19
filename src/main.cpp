@@ -10,10 +10,6 @@
 #	include <SDL_image.h>
 #endif
 
-// Really janky assertion macro, yay
-#define ASSERT(expr, msg, ...) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg, ##__VA_ARGS__); *(int *)0 = 0;}
-#define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
-
 enum AppStatus
 {
 	AppStatus_MainMenu,
@@ -27,9 +23,10 @@ enum AppStatus
 #include "memory.h"
 MemoryArena *globalFrameTempArena;
 #include "string.h"
+#include "debug.h"
+#include "types.cpp"
 #include "textinput.h"
 #include "console.h"
-#include "debug.h"
 #include "random.h"
 #include "platform.h"
 #include "localisation.h"
@@ -157,15 +154,10 @@ int main(int argc, char *argv[])
 
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
-
-	real32 framesPerSecond = 0;
-	uint32 frameStartTime = 0,
-	       frameEndTime = 0;
 	
 	// GAME LOOP
 	while (appState->appStatus != AppStatus_Quit)
 	{
-		frameStartTime = SDL_GetTicks();
 		DEBUG_BLOCK("Game loop");
 
 		updateInput(&inputState);
@@ -218,11 +210,6 @@ int main(int argc, char *argv[])
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
 			SDL_GL_SwapWindow(renderer->window);
 		}
-		frameEndTime = SDL_GetTicks();
-		uint32 msForFrame = frameEndTime - frameStartTime;
-
-		framesPerSecond = 1000.0f / (real32)fmax(msForFrame, 1.0f);
-		SDL_Log("FPS: %f, took %dms\n", framesPerSecond, msForFrame);
 	}
 
 // CLEAN UP
