@@ -1,0 +1,50 @@
+# UI style definitions
+#
+# This is basically just a test for parsing text data files and getting them through the assets system.
+#
+# Probably not final syntax, but we'll give it a go!
+# colours probably want to be 0 to 1, not 0 to 255.
+# probably want to name each style, like ":TYPE NAME"
+# may not want font indirection?
+# may want variables we can define
+# may want to extend previously defined styles
+
+:font smallFont   dejavu-14.fnt
+:font normalFont  dejavu-20.fnt
+
+# This isn't a thing, what do we call this? A panel? A menu?
+# Probably call it a panel, and define styles for each one (pop-up menu, menu bar, etc)
+:general
+overlayColor        0   0   0 128
+
+:button
+font              smallFont
+textColor           0   0   0 255
+backgroundColor   255 255 255 255
+hoverColor        192 192 255 255
+pressedColor      128 128 255 255
+
+:label
+font              normalFont
+textColor         255 255 255 255
+
+:tooltip
+font              normalFont
+textColorNormal   255 255 255 255
+textColorBad      255   0   0 255
+backgroundColor     0   0   0 128
+borderPadding     4
+depth             100
+
+# ui message and tooltip seem a little redundant with other things
+:uiMessage
+font              normalFont
+textColor         255 255 255 255
+backgroundColor     0   0   0 128
+borderPadding     4
+depth             100
+
+:textBox
+font              normalFont
+textColor           0   0   0 255
+backgroundColor   255 255 255 255

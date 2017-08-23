@@ -4,6 +4,26 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+Asset system:
+- UI styles loaded from a file
+- Memory management:
+	- Do a malloc/free for each asset that's loaded
+	- reload asset, just free() then malloc() again!
+		- Optimisation: Don't reallocate if it's the exact same size.
+	- Keep a memory limit, track the current size of all loaded assets.
+	- If we cross the limit, evict the least-recently-used asset.
+	- At the end of a level, we can also evict all level-specific assets if we want?
+	- Track evictions so we can monitor it and see if it's misbehaving.
+- Automatic file-reloading. https://msdn.microsoft.com/en-us/library/windows/desktop/aa365465(v=vs.85).aspx
+- Asset packer of some kind. Maybe just creates an assets table?
+- Load ui theme from a file
+- Load texture region information from a file
+- Strings! Translateable and stored as assets.
+	- https://blog.thimbleweedpark.com/text_lock
+- Audio when we have that!
+
+String HashTable!
+
 Console:
 - Console eats all input events while it is open?
 - Automatic parameter type checking? That might be crazy though.
@@ -20,23 +40,6 @@ Strings:
 	- Managed by assets system
 	- Reload correctly
 	- Can switch language at runtime
-
-Asset system:
-- Memory management:
-	- Do a malloc/free for each asset that's loaded
-	- reload asset, just free() then malloc() again!
-		- Optimisation: Don't reallocate if it's the exact same size.
-	- Keep a memory limit, track the current size of all loaded assets.
-	- If we cross the limit, evict the least-recently-used asset.
-	- At the end of a level, we can also evict all level-specific assets if we want?
-	- Track evictions so we can monitor it and see if it's misbehaving.
-- Automatic file-reloading. https://msdn.microsoft.com/en-us/library/windows/desktop/aa365465(v=vs.85).aspx
-- Asset packer of some kind. Maybe just creates an assets table?
-- Load ui theme from a file
-- Load texture region information from a file
-- Strings! Translateable and stored as assets.
-	- https://blog.thimbleweedpark.com/text_lock
-- Audio when we have that!
 
 Arenas:
 - Figure out how to prevent non-temp allocations happening when temp mem is open.

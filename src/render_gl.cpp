@@ -545,7 +545,7 @@ void GL_render(Renderer *renderer, AssetManager *assets)
 
 	glUseProgram(NULL);
 	GL_checkForError();
-	SDL_Log("End of frame.");
+	// SDL_Log("End of frame.");
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)
