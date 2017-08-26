@@ -157,7 +157,7 @@ bool asInt(String string, int64 *result)
 	return succeeded;
 }
 
-bool isWhitespace(unichar uChar)
+bool isWhitespace(unichar uChar, bool countNewlines=true)
 {
 	// TODO: There's probably more whitespace characters somewhere.
 
@@ -168,16 +168,25 @@ bool isWhitespace(unichar uChar)
 	{
 	case 0:
 	case ' ':
-	case '\n':
-	case '\r':
 	case '\t':
 		result = true;
+		break;
+
+	case '\n':
+	case '\r':
+		result = countNewlines;
 		break;
 
 	default:
 		result = false;
 	}
 
+	return result;
+}
+
+bool isNewline(char c)
+{
+	bool result = (c == '\n') || (c == '\r');
 	return result;
 }
 

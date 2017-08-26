@@ -4,8 +4,12 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+UI styles loaded from a file
+- Reading text files!
+- Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
+- We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtof if I'm lazy.
+
 Asset system:
-- UI styles loaded from a file
 - Memory management:
 	- Do a malloc/free for each asset that's loaded
 	- reload asset, just free() then malloc() again!

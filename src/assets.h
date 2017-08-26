@@ -2,6 +2,7 @@
 
 enum AssetType
 {
+	AssetType_Misc,
 	AssetType_Cursor,
 	AssetType_Font,
 	AssetType_Shader,
@@ -106,55 +107,7 @@ struct ShaderProgram
 	char *vertShader;
 };
 
-struct UIButtonStyle
-{
-	FontAssetType font;
-	V4 textColor;
-
-	V4 backgroundColor;
-	V4 hoverColor;
-	V4 pressedColor;
-};
-
-struct UILabelStyle
-{
-	FontAssetType font;
-	V4 textColor;
-};
-
-struct UITooltipStyle
-{
-	FontAssetType font;
-	V4 textColorNormal;
-	V4 textColorBad;
-
-	V4 backgroundColor;
-	real32 borderPadding;
-	real32 depth;
-};
-
-struct UIMessageStyle
-{
-	FontAssetType font;
-	V4 textColor;
-
-	V4 backgroundColor;
-	real32 borderPadding;
-	real32 depth;
-};
-
-struct UITheme
-{
-	V4 overlayColor;
-
-	V4 textboxTextColor,
-		textboxBackgroundColor;
-
-	UIButtonStyle buttonStyle;
-	UILabelStyle labelStyle;
-	UITooltipStyle tooltipStyle;
-	UIMessageStyle uiMessageStyle;
-};
+#include "uitheme.cpp"
 
 struct AssetManager
 {
@@ -262,7 +215,9 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	case AssetType_Texture:
 		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
 		break;
-	INVALID_DEFAULT_CASE;
+	default:
+		result = myprintf("{0}/{1}", {assets->assetsPath, shortName}, true);
+		break;
 	}
 
 	return result;

@@ -80,37 +80,6 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
-void initTheme(UITheme *theme)
-{
-	theme->buttonStyle.font               = FontAssetType_Buttons;
-	theme->buttonStyle.textColor          = color255(   0,   0,   0, 255 );
-	theme->buttonStyle.backgroundColor    = color255( 255, 255, 255, 255 );
-	theme->buttonStyle.hoverColor 	      = color255( 192, 192, 255, 255 );
-	theme->buttonStyle.pressedColor       = color255( 128, 128, 255, 255 );
-
-	theme->labelStyle.font                = FontAssetType_Main;
-	theme->labelStyle.textColor           = color255( 255, 255, 255, 255 );
-
-	theme->tooltipStyle.font              = FontAssetType_Main;
-	theme->tooltipStyle.textColorNormal   = color255( 255, 255, 255, 255 );
-	theme->tooltipStyle.textColorBad      = color255( 255,   0,   0, 255 );
-	theme->tooltipStyle.backgroundColor   = color255(   0,   0,   0, 128 );
-	theme->tooltipStyle.borderPadding     = 4;
-	theme->tooltipStyle.depth             = 100;
-
-	theme->uiMessageStyle.font            = FontAssetType_Main;
-	theme->uiMessageStyle.textColor       = color255( 255, 255, 255, 255 );
-	theme->uiMessageStyle.backgroundColor = color255(   0,   0,   0, 128 );
-	theme->uiMessageStyle.borderPadding   = 4;
-	theme->uiMessageStyle.depth           = 100;
-
-	theme->overlayColor           = color255(   0,   0,   0, 128 );
-
-	theme->textboxBackgroundColor = color255( 255, 255, 255, 255 );
-	theme->textboxTextColor       = color255(   0,   0,   0, 255 );
-	
-}
-
 int32 findTexture(AssetManager *assets, String filename)
 {
 	int32 index = -1;
@@ -237,8 +206,8 @@ void loadAssets(AssetManager *assets)
 	for (uint32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
-		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename).chars);
-		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename).chars);
+		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename)).chars;
+		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename)).chars;
 
 		if (shader->vertShader && shader->fragShader)
 		{
@@ -250,7 +219,8 @@ void loadAssets(AssetManager *assets)
 		}
 	}
 
-	initTheme(&assets->theme);
+	loadUITheme(&assets->theme, readFileAsString(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
+	// initTheme(&assets->theme);
 }
 
 void addAssets(AssetManager *assets, MemoryArena *tempArena)

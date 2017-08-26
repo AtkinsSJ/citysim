@@ -1,27 +1,35 @@
 #pragma once
 
-char *readFileAsString(MemoryArena *memory, char *filename)
+String readFileAsString(MemoryArena *memory, String filename)
 {
-	void *fileData = 0;
+	String result = {};
 
-	SDL_RWops *file = SDL_RWFromFile(filename, "r");
+	SDL_RWops *file = SDL_RWFromFile(filename.chars, "r");
 	if (file)
 	{
 		umm fileLength = (umm) file->seek(file, 0, RW_SEEK_END);
 		file->seek(file, 0, RW_SEEK_SET);
 
-		fileData = allocate(memory, fileLength + 1); // 1 longer to ensure a trailing null for strings!
+ 		// 1 longer to ensure a trailing null for strings!
+		result = newString(memory, fileLength + 1);
+		result.chars[fileLength] = 0;
 
-		if (fileData)
+		if (result.chars)
 		{
-			file->read(file, fileData, fileLength, 1);
+			file->read(file, result.chars, fileLength, 1);
+			result.length = fileLength;
 		}
 
 		file->close(file);
+
 	}
 	
-	return (char *)fileData;
+	return result;
 }
+
+/*
+ * @Deprecated This File struct can probably vanish now, because it's identical to a String.
+ */
 
 struct File
 {
