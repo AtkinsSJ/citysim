@@ -233,7 +233,7 @@ TokenList tokenize(String input)
 String trimStart(String input)
 {
 	String result = input;
-	while (isWhitespace(result.chars[0], false))
+	while ((input.length > 0) && isWhitespace(result.chars[0], false))
 	{
 		++result.chars;
 		--result.length;
@@ -245,7 +245,7 @@ String trimStart(String input)
 String trimEnd(String input)
 {
 	String result = input;
-	while (isWhitespace(result.chars[result.length-1], false))
+	while ((input.length > 0) && isWhitespace(result.chars[result.length-1], false))
 	{
 		--result.length;
 	}

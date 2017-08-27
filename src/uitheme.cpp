@@ -16,6 +16,13 @@ struct UILabelStyle
 	V4 textColor;
 };
 
+struct UITextBoxStyle
+{
+	FontAssetType font;
+	V4 textColor;
+	V4 backgroundColor;
+};
+
 struct UITooltipStyle
 {
 	FontAssetType font;
@@ -41,46 +48,12 @@ struct UITheme
 {
 	V4 overlayColor;
 
-	V4 textboxTextColor,
-		textboxBackgroundColor;
-
 	UIButtonStyle buttonStyle;
 	UILabelStyle labelStyle;
 	UITooltipStyle tooltipStyle;
 	UIMessageStyle uiMessageStyle;
+	UITextBoxStyle textBoxStyle;
 };
-
-// @Deprecated Old code for hard-coded theme.
-void initTheme(UITheme *theme)
-{
-	theme->buttonStyle.font               = FontAssetType_Buttons;
-	theme->buttonStyle.textColor          = color255(   0,   0,   0, 255 );
-	theme->buttonStyle.backgroundColor    = color255( 255, 255, 255, 255 );
-	theme->buttonStyle.hoverColor 	      = color255( 192, 192, 255, 255 );
-	theme->buttonStyle.pressedColor       = color255( 128, 128, 255, 255 );
-
-	theme->labelStyle.font                = FontAssetType_Main;
-	theme->labelStyle.textColor           = color255( 255, 255, 255, 255 );
-
-	theme->tooltipStyle.font              = FontAssetType_Main;
-	theme->tooltipStyle.textColorNormal   = color255( 255, 255, 255, 255 );
-	theme->tooltipStyle.textColorBad      = color255( 255,   0,   0, 255 );
-	theme->tooltipStyle.backgroundColor   = color255(   0,   0,   0, 128 );
-	theme->tooltipStyle.borderPadding     = 4;
-	theme->tooltipStyle.depth             = 100;
-
-	theme->uiMessageStyle.font            = FontAssetType_Main;
-	theme->uiMessageStyle.textColor       = color255( 255, 255, 255, 255 );
-	theme->uiMessageStyle.backgroundColor = color255(   0,   0,   0, 128 );
-	theme->uiMessageStyle.borderPadding   = 4;
-	theme->uiMessageStyle.depth           = 100;
-
-	theme->overlayColor           = color255(   0,   0,   0, 128 );
-
-	theme->textboxBackgroundColor = color255( 255, 255, 255, 255 );
-	theme->textboxTextColor       = color255(   0,   0,   0, 255 );
-	
-}
 
 struct LineReader
 {
@@ -157,16 +130,20 @@ String nextToken(String input, String *remainder)
 	{
 		++firstWord.length;
 	}
-	remainder->chars = firstWord.chars + firstWord.length;
-	remainder->length = input.length - firstWord.length;
-	*remainder = trimStart(*remainder);
+
+	if (remainder)
+	{
+		remainder->chars = firstWord.chars + firstWord.length;
+		remainder->length = input.length - firstWord.length;
+		*remainder = trimStart(*remainder);
+	}
 
 	return firstWord;
 }
 
 V4 readColor255(String input)
 {
-	int64 r, g, b, a = 255;
+	int64 r = 0, g = 0, b = 0, a = 255;
 	String token, rest;
 	bool succeeded;
 
@@ -195,13 +172,34 @@ V4 readColor255(String input)
 		succeeded = asInt(token, &a);
 	}
 
-	return color255(r,g,b,a);
+	return color255((uint8)r, (uint8)g, (uint8)b, (uint8)a);
+}
+
+static void invalidPropertyError(LineReader *reader, String property, String section)
+{
+	consoleWriteLine(myprintf("Error in UITheme file, line {0}: property '{1}' in an invalid section: '{2}'", {formatInt(reader->lineNumber), property, section}), CLS_Error);
+}
+
+FontAssetType findFontByName(LineReader *reader, String fontName)
+{
+	FontAssetType result = FontAssetType_Main;
+	if (equals(fontName, "smallFont"))
+	{
+		result = FontAssetType_Buttons;
+	}
+	else if (equals(fontName, "normalFont"))
+	{
+		result = FontAssetType_Main;
+	}
+	else
+	{
+		consoleWriteLine(myprintf("Error in UITheme file, line {0}: unrecognized font name '{1}'", {formatInt(reader->lineNumber), fontName}), CLS_Error);
+	}
+	return result;
 }
 
 void loadUITheme(UITheme *theme, String file)
 {
-	initTheme(theme);
-
 	LineReader reader = startFile(file, '#');
 	// Scoped enums are a thing, apparently! WOOHOO!
 	enum TargetType {
@@ -214,6 +212,7 @@ void loadUITheme(UITheme *theme, String file)
 		Section_TextBox,
 	};
 	TargetType currentTarget = Section_None;
+	String sectionName = {};
 
 	while (reader.pos < reader.file.length)
 	{
@@ -229,6 +228,7 @@ void loadUITheme(UITheme *theme, String file)
 			// define an item
 			++firstWord.chars;
 			--firstWord.length;
+			sectionName = firstWord;
 
 			if (equals(firstWord, "Font"))
 			{
@@ -282,12 +282,175 @@ void loadUITheme(UITheme *theme, String file)
 				if (currentTarget == Section_General)
 				{
 					theme->overlayColor = readColor255(remainder);
-					consoleWriteLine(myprintf("Read color in UITheme file, line {0}: '{1}' as ({2},{3},{4},{5})", {formatInt(reader.lineNumber), remainder,
-						formatFloat(theme->overlayColor.r, 2), formatFloat(theme->overlayColor.g, 2), formatFloat(theme->overlayColor.b, 2), formatFloat(theme->overlayColor.a, 2)}), CLS_Success);
 				}
 				else
 				{
-					consoleWriteLine(myprintf("Error in UITheme file, line {0}: property '{1}' in an invalid section", {formatInt(reader.lineNumber), firstWord}), CLS_Error);
+					invalidPropertyError(&reader, firstWord, sectionName);
+				}
+			}
+			else if (equals(firstWord, "textColor"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Button: {
+						theme->buttonStyle.textColor = readColor255(remainder);
+					} break;
+					case Section_Label: {
+						theme->labelStyle.textColor = readColor255(remainder);
+					} break;
+					case Section_TextBox: {
+						theme->textBoxStyle.textColor = readColor255(remainder);
+					} break;
+					case Section_UIMessage: {
+						theme->uiMessageStyle.textColor = readColor255(remainder);
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "backgroundColor"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Button: {
+						theme->buttonStyle.backgroundColor = readColor255(remainder);
+					} break;
+					case Section_TextBox: {
+						theme->textBoxStyle.backgroundColor = readColor255(remainder);
+					} break;
+					case Section_Tooltip: {
+						theme->tooltipStyle.backgroundColor = readColor255(remainder);
+					} break;
+					case Section_UIMessage: {
+						theme->uiMessageStyle.backgroundColor = readColor255(remainder);
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "hoverColor"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Button: {
+						theme->buttonStyle.hoverColor = readColor255(remainder);
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "pressedColor"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Button: {
+						theme->buttonStyle.pressedColor = readColor255(remainder);
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "textColorNormal"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Tooltip: {
+						theme->tooltipStyle.textColorNormal = readColor255(remainder);
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "textColorBad"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Tooltip: {
+						theme->tooltipStyle.textColorBad = readColor255(remainder);
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "depth"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Tooltip: {
+						int64 intValue;
+						if (asInt(remainder, &intValue))
+						{
+							theme->tooltipStyle.depth = (real32) intValue;
+						}
+					} break;
+					case Section_UIMessage: {
+						int64 intValue;
+						if (asInt(remainder, &intValue))
+						{
+							theme->uiMessageStyle.depth = (real32) intValue;
+						}
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "borderPadding"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Tooltip: {
+						int64 intValue;
+						if (asInt(remainder, &intValue))
+						{
+							theme->tooltipStyle.borderPadding = (real32)intValue;
+						}
+					} break;
+					case Section_UIMessage: {
+						int64 intValue;
+						if (asInt(remainder, &intValue))
+						{
+							theme->uiMessageStyle.borderPadding = (real32)intValue;
+						}
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
+				}
+			}
+			else if (equals(firstWord, "font"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Button: {
+						String fontName = nextToken(remainder, null);
+						theme->buttonStyle.font = findFontByName(&reader, fontName);
+					} break;
+					case Section_Label: {
+						String fontName = nextToken(remainder, null);
+						theme->labelStyle.font = findFontByName(&reader, fontName);
+					} break;
+					case Section_Tooltip: {
+						String fontName = nextToken(remainder, null);
+						theme->tooltipStyle.font = findFontByName(&reader, fontName);
+					} break;
+					case Section_TextBox: {
+						String fontName = nextToken(remainder, null);
+						theme->textBoxStyle.font = findFontByName(&reader, fontName);
+					} break;
+					case Section_UIMessage: {
+						String fontName = nextToken(remainder, null);
+						theme->uiMessageStyle.font = findFontByName(&reader, fontName);
+					} break;
+					default:
+						invalidPropertyError(&reader, firstWord, sectionName);
+						break;
 				}
 			}
 			else 
