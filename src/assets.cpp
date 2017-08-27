@@ -220,7 +220,6 @@ void loadAssets(AssetManager *assets)
 	}
 
 	loadUITheme(&assets->theme, readFileAsString(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
-	// initTheme(&assets->theme);
 }
 
 void addAssets(AssetManager *assets, MemoryArena *tempArena)

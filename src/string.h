@@ -230,6 +230,29 @@ TokenList tokenize(String input)
 	return result;
 }
 
+String trimStart(String input)
+{
+	String result = input;
+	while (isWhitespace(result.chars[0], false))
+	{
+		++result.chars;
+		--result.length;
+	}
+
+	return result;
+}
+
+String trimEnd(String input)
+{
+	String result = input;
+	while (isWhitespace(result.chars[result.length-1], false))
+	{
+		--result.length;
+	}
+
+	return result;
+}
+
 #include "unicode.h"
 
 #include "stringbuilder.h"

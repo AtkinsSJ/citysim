@@ -136,35 +136,164 @@ String nextLine(LineReader *reader)
 		}
 
 		// trim front whitespace
-		while (isWhitespace(line.chars[0], false))
-		{
-			++line.chars;
-			--line.length;
-		}
-
+		line = trimStart(line);
 		// trim back whitespace
-		while (isWhitespace(line.chars[line.length-1], false))
-		{
-			--line.length;
-		}
+		line = trimEnd(line);
 	}
 	while ((line.length <= 0));
 
-	consoleWriteLine(myprintf("LINE {1}: \"{0}\"", {line, formatInt(reader->lineNumber)}));
+	// consoleWriteLine(myprintf("LINE {1}: \"{0}\"", {line, formatInt(reader->lineNumber)}));
 
 	return line;
 }
 
-void loadUITheme(UITheme *target, String file)
+String nextToken(String input, String *remainder)
 {
-	initTheme(target);
+	String firstWord = input;
+	firstWord.length = 0;
+
+	while (!isWhitespace(firstWord.chars[firstWord.length], true)
+		&& (firstWord.length < input.length))
+	{
+		++firstWord.length;
+	}
+	remainder->chars = firstWord.chars + firstWord.length;
+	remainder->length = input.length - firstWord.length;
+	*remainder = trimStart(*remainder);
+
+	return firstWord;
+}
+
+V4 readColor255(String input)
+{
+	int64 r, g, b, a = 255;
+	String token, rest;
+	bool succeeded;
+
+	token = nextToken(input, &rest);
+	succeeded = asInt(token, &r);
+
+	if (succeeded)
+	{
+		token = nextToken(rest, &rest);
+		succeeded = asInt(token, &g);
+	}
+
+	if (succeeded)
+	{
+		token = nextToken(rest, &rest);
+		succeeded = asInt(token, &b);
+	}
+
+	if (succeeded)
+	{
+		token = nextToken(rest, &rest);
+	}
+
+	if (token.length)
+	{
+		succeeded = asInt(token, &a);
+	}
+
+	return color255(r,g,b,a);
+}
+
+void loadUITheme(UITheme *theme, String file)
+{
+	initTheme(theme);
 
 	LineReader reader = startFile(file, '#');
+	// Scoped enums are a thing, apparently! WOOHOO!
+	enum TargetType {
+		Section_None = 0,
+		Section_General = 1,
+		Section_Button,
+		Section_Label,
+		Section_Tooltip,
+		Section_UIMessage,
+		Section_TextBox,
+	};
+	TargetType currentTarget = Section_None;
 
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);
 
-		// TODO: actually parse the lines!
+		String firstWord, remainder;
+		firstWord = nextToken(line, &remainder);
+
+		// consoleWriteLine(myprintf("First word: '{0}', remainder: '{1}'", {firstWord, remainder}));
+
+		if (firstWord.chars[0] == ':')
+		{
+			// define an item
+			++firstWord.chars;
+			--firstWord.length;
+
+			if (equals(firstWord, "Font"))
+			{
+				currentTarget = Section_None;
+				String fontName, fontFilename;
+				fontName = nextToken(remainder, &fontFilename);
+
+				if (fontName.length && fontFilename.length)
+				{
+					// TODO: Decide how this works. I'm not sure the font declaration even wants to work this way!
+				}
+				else
+				{
+					consoleWriteLine(myprintf("Invalid font declaration, line {0}: '{1}'", {formatInt(reader.lineNumber), line}), CLS_Error);
+				}
+			}
+			else if (equals(firstWord, "General"))
+			{
+				currentTarget = Section_General;
+			}
+			else if (equals(firstWord, "Button"))
+			{
+				currentTarget = Section_Button;
+			}
+			else if (equals(firstWord, "Label"))
+			{
+				currentTarget = Section_Label;
+			}
+			else if (equals(firstWord, "Tooltip"))
+			{
+				currentTarget = Section_Tooltip;
+			}
+			else if (equals(firstWord, "UIMessage"))
+			{
+				currentTarget = Section_UIMessage;
+			}
+			else if (equals(firstWord, "TextBox"))
+			{
+				currentTarget = Section_TextBox;
+			}
+			else
+			{
+				consoleWriteLine(myprintf("Unrecognized command in UITheme file, line {0}: '{1}'", {formatInt(reader.lineNumber), firstWord}), CLS_Error);
+			}
+		}
+		else
+		{
+			// properties of the item
+			if (equals(firstWord, "overlayColor"))
+			{
+				if (currentTarget == Section_General)
+				{
+					theme->overlayColor = readColor255(remainder);
+					consoleWriteLine(myprintf("Read color in UITheme file, line {0}: '{1}' as ({2},{3},{4},{5})", {formatInt(reader.lineNumber), remainder,
+						formatFloat(theme->overlayColor.r, 2), formatFloat(theme->overlayColor.g, 2), formatFloat(theme->overlayColor.b, 2), formatFloat(theme->overlayColor.a, 2)}), CLS_Success);
+				}
+				else
+				{
+					consoleWriteLine(myprintf("Error in UITheme file, line {0}: property '{1}' in an invalid section", {formatInt(reader.lineNumber), firstWord}), CLS_Error);
+				}
+			}
+			else 
+			{
+				consoleWriteLine(myprintf("Error in UITheme file, line {0}: unrecognized property '{1}'", {formatInt(reader.lineNumber), firstWord}), CLS_Error);
+			}
+		}
 	}
 }
