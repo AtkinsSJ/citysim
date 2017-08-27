@@ -137,6 +137,7 @@ struct AssetManager
 	CursorType activeCursor;
 
 	UITheme theme;
+	String creditsText;
 };
 
 Texture *getTexture(AssetManager *assets, uint32 textureIndex)

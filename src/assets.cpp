@@ -219,7 +219,9 @@ void loadAssets(AssetManager *assets)
 		}
 	}
 
+	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
 	loadUITheme(&assets->theme, readFileAsString(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
+	assets->creditsText = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
 }
 
 void addAssets(AssetManager *assets, MemoryArena *tempArena)

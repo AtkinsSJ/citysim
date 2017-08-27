@@ -55,92 +55,6 @@ struct UITheme
 	UITextBoxStyle textBoxStyle;
 };
 
-struct LineReader
-{
-	String file;
-
-	int32 pos;
-	int32 lineNumber;
-
-	char commentChar;
-};
-
-LineReader startFile(String file, char commentChar = '#')
-{
-	LineReader result = {};
-	result.file = file;
-	result.pos = 0;
-	result.lineNumber = 0;
-	result.commentChar = commentChar;
-
-	return result;
-}
-
-String nextLine(LineReader *reader)
-{
-	String line = {};
-
-	do
-	{
-		// get next line
-		++reader->lineNumber;
-		line.chars = reader->file.chars + reader->pos;
-		line.length = 0;
-		while (!isNewline(reader->file.chars[reader->pos]) && (reader->pos < reader->file.length))
-		{
-			++reader->pos;
-			++line.length;
-		}
-		++reader->pos;
-		// fix for windows' stupid double-newline.
-		if (isNewline(reader->file.chars[reader->pos]) && (reader->file.chars[reader->pos] != reader->file.chars[reader->pos-1]))
-		{
-			++reader->pos;
-		}
-
-		// trim the comment
-		for (int32 p=0; p<line.length; p++)
-		{
-			if (line.chars[p] == reader->commentChar)
-			{
-				line.length = p;
-				break;
-			}
-		}
-
-		// trim front whitespace
-		line = trimStart(line);
-		// trim back whitespace
-		line = trimEnd(line);
-	}
-	while ((line.length <= 0));
-
-	// consoleWriteLine(myprintf("LINE {1}: \"{0}\"", {line, formatInt(reader->lineNumber)}));
-
-	return line;
-}
-
-String nextToken(String input, String *remainder)
-{
-	String firstWord = input;
-	firstWord.length = 0;
-
-	while (!isWhitespace(firstWord.chars[firstWord.length], true)
-		&& (firstWord.length < input.length))
-	{
-		++firstWord.length;
-	}
-
-	if (remainder)
-	{
-		remainder->chars = firstWord.chars + firstWord.length;
-		remainder->length = input.length - firstWord.length;
-		*remainder = trimStart(*remainder);
-	}
-
-	return firstWord;
-}
-
 V4 readColor255(String input)
 {
 	int64 r = 0, g = 0, b = 0, a = 255;
@@ -180,6 +94,10 @@ static void invalidPropertyError(LineReader *reader, String property, String sec
 	consoleWriteLine(myprintf("Error in UITheme file, line {0}: property '{1}' in an invalid section: '{2}'", {formatInt(reader->lineNumber), property, section}), CLS_Error);
 }
 
+/*
+	@Hack: So far, this is a MASSIVE hack! We simply hard-code what name links to what font asset ID.
+	But, I don't exactly know how we want to handle fonts so I'll leave it as is for now.
+ */
 FontAssetType findFontByName(LineReader *reader, String fontName)
 {
 	FontAssetType result = FontAssetType_Main;
@@ -200,7 +118,7 @@ FontAssetType findFontByName(LineReader *reader, String fontName)
 
 void loadUITheme(UITheme *theme, String file)
 {
-	LineReader reader = startFile(file, '#');
+	LineReader reader = startFile(file, true, true, '#');
 	// Scoped enums are a thing, apparently! WOOHOO!
 	enum TargetType {
 		Section_None = 0,
@@ -239,6 +157,7 @@ void loadUITheme(UITheme *theme, String file)
 				if (fontName.length && fontFilename.length)
 				{
 					// TODO: Decide how this works. I'm not sure the font declaration even wants to work this way!
+					consoleWriteLine(myprintf("Valid font declaration, line {0}: '{1}' but we don't actually handle this yet so it doesn't do anything!", {formatInt(reader.lineNumber), line}));
 				}
 				else
 				{

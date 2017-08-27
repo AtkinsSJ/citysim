@@ -253,6 +253,27 @@ String trimEnd(String input)
 	return result;
 }
 
+String nextToken(String input, String *remainder)
+{
+	String firstWord = input;
+	firstWord.length = 0;
+
+	while (!isWhitespace(firstWord.chars[firstWord.length], true)
+		&& (firstWord.length < input.length))
+	{
+		++firstWord.length;
+	}
+
+	if (remainder)
+	{
+		remainder->chars = firstWord.chars + firstWord.length;
+		remainder->length = input.length - firstWord.length;
+		*remainder = trimStart(*remainder);
+	}
+
+	return firstWord;
+}
+
 #include "unicode.h"
 
 #include "stringbuilder.h"
