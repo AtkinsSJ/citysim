@@ -14,7 +14,7 @@ enum ModifierKey
 struct InputState
 {
 	// Mouse
-	Coord mousePosRaw;
+	V2I mousePosRaw;
 	V2 mousePosNormalised; // In normalised (-1 to 1) coordinates
 	bool mouseDown[MOUSE_BUTTON_COUNT];
 	bool mouseWasDown[MOUSE_BUTTON_COUNT];
@@ -31,7 +31,7 @@ struct InputState
 	bool receivedQuitSignal;
 	bool wasWindowResized;
 	union {
-		Coord windowSize;
+		V2I windowSize;
 		struct{int32 windowWidth, windowHeight;};
 	};
 };

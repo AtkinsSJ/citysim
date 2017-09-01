@@ -79,7 +79,7 @@ struct TextureRegion
 {
 	TextureAssetType type;
 	int32 textureID;
-	RealRect uv; // in (0 to 1) space
+	Rect2 uv; // in (0 to 1) space
 };
 
 struct TextureRegionList

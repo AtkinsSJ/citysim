@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
 #if BUILD_DEBUG
+	
 	debugInit(getFont(assets, FontAssetType_Debug));
 	initConsole(&globalDebugState->debugArena, 256, globalDebugState->font, 0.2f, 0.9f, 6.0f);
 	initCommands(globalConsole);

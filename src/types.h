@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
+#include <float.h>
+#include <string> // For some reason if we comment this out we get complaints about the matrix4 trig functions??? wat.
 
 typedef int8_t int8;
 typedef int16_t int16;
@@ -58,17 +59,17 @@ enum Alignment {
 	ALIGN_CENTRE = ALIGN_H_CENTRE | ALIGN_V_CENTRE,
 };
 
-struct Coord {
+struct V2I {
 	int32 x,y;
 };
 
-struct Rect {
+struct Rect2I {
 	union {
-		struct {Coord pos;};
+		struct {V2I pos;};
 		struct {int32 x, y;};
 	};
 	union {
-		struct {Coord dim;};
+		struct {V2I dim;};
 		struct {int32 w, h;};
 	};
 };
@@ -108,7 +109,7 @@ struct V4 {
 	};
 };
 
-struct RealRect {
+struct Rect2 {
 	union {
 		V2 pos;
 		struct {real32 x, y;};

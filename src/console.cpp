@@ -35,11 +35,11 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 	return textState;
 }
 
-RealRect consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
+Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
 {
 	int32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
-	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
+	Rect2 resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
 	                             align, 300, style.textColor, textState->maxWidth);
 	textState->pos.y -= resultRect.h;
 
@@ -88,15 +88,15 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
-	RealRect textInputRect = drawTextInput(uiState, uiBuffer, console->font, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
+	Rect2 textInputRect = drawTextInput(uiState, uiBuffer, console->font, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
 	textState.pos.y -= textInputRect.h;
 
 	textState.pos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
-	RealRect inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
+	Rect2 inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
 	drawRect(uiBuffer, inputBackRect, 100, color255(64,64,64,245));
-	RealRect consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
+	Rect2 consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
 	drawRect(uiBuffer, consoleBackRect, 100, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);

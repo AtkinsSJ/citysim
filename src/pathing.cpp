@@ -100,7 +100,7 @@ inline void _addPathGroup(int32 *pathGroupCount, int32 **pathGroups, int32 pathG
 	}
 }
 
-bool canPathTo(City *city, Rect target, Coord from, MemoryArena *memoryArena)
+bool canPathTo(City *city, Rect2I target, V2I from, MemoryArena *memoryArena)
 {
 	bool result = false;
 
@@ -114,7 +114,7 @@ bool canPathTo(City *city, Rect target, Coord from, MemoryArena *memoryArena)
 		&& !buildingDefinitions[building->archetype].isPath)
 	{
 		// Find all adjacent path groups
-		Rect fromRect = building->footprint;
+		Rect2I fromRect = building->footprint;
 
 		// Horizontals
 		for (int x=fromRect.x; x<fromRect.x + fromRect.w; x++)
@@ -180,7 +180,7 @@ bool canPathTo(City *city, Rect target, Coord from, MemoryArena *memoryArena)
 struct PathingNode
 {
 	bool initialised;
-	Coord pos;
+	V2I pos;
 	int32 length;
 	int32 heuristic;
 	PathingNode *towardStart;
@@ -188,7 +188,7 @@ struct PathingNode
 	PathingNode *next, *prev;
 };
 
-void _addPathNodeToQueue(City *city, PathingNode *nodes, Coord pos, PathingNode *parentNode, PathingNode **openQueue, Rect target)
+void _addPathNodeToQueue(City *city, PathingNode *nodes, V2I pos, PathingNode *parentNode, PathingNode **openQueue, Rect2I target)
 {
 	if (isPathable(city, pos.x, pos.y))
 	{
@@ -258,9 +258,9 @@ void _addPathNodeToQueue(City *city, PathingNode *nodes, Coord pos, PathingNode 
 }
 
 // Returns the next tile to walk to in order to path to 'target'
-Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryArena)
+V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryArena)
 {
-	Coord result = from;
+	V2I result = from;
 
 	int32 distance;
 	Building *fromBuilding = getBuildingAtPosition(city, from);
@@ -344,7 +344,7 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 			else
 			{
 				// Add all valid neighbours to the open queue
-				Coord adjacents[] = {
+				V2I adjacents[] = {
 					coord(current->pos.x-1, current->pos.y),
 					coord(current->pos.x+1, current->pos.y),
 					coord(current->pos.x, current->pos.y-1),

@@ -151,7 +151,7 @@ void debugTextOut(DebugTextState *textState, String text)
 	else                            align |= ALIGN_TOP;
 
 	textState->charsLastPrinted = text.length;
-	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, text, textState->pos,
+	Rect2 resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, text, textState->pos,
 	                             align, 300, textState->color, textState->maxWidth);
 
 	if (textState->progressUpwards)

@@ -4,7 +4,19 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+Technique to look into: X macros https://github.com/HandmadeHero/cpp/issues/42
+Why doesn't the asset system loading stuff appear in the console initially?
+
 Use new token code for console commands too
+
+Go through shader handling code
+- Use proper Strings in shader loading.
+- May want to copy HMH in loading shaders as multiple strings, with one being a set of definitions and helper functions.
+- print temporary gl logs to the global temp arena rather than creating temporarymemory.
+- general cleanup, I see a bunch of commented out code and some apparently now-invalid comments.
+
+Custom log function, that wraps the sdl one and also sends things to the in-game console
+- Serach for SDL_Log in code
 
 UI styles loaded from a file
 - Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
@@ -30,6 +42,7 @@ Asset system:
 String HashTable!
 
 Console:
+- Why does typing a space not move the caret far enough? I must be measuring the wrong thing.
 - Console eats all input events while it is open?
 - Automatic parameter type checking? That might be crazy though.
 - Better input

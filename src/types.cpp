@@ -19,59 +19,59 @@ inline real32 clamp(real32 value, real32 min, real32 max)
 	COORD
  **********************************************/
 
-inline Coord coord(int32 x, int32 y)
+inline V2I coord(int32 x, int32 y)
 {
 	return {x,y};
 }
-inline Coord coord(V2 v2)
+inline V2I coord(V2 v2)
 {
 	return {(int32)v2.x, (int32)v2.y};
 }
 
-inline Coord operator+(Coord lhs, Coord rhs)
+inline V2I operator+(V2I lhs, V2I rhs)
 {
-	Coord result;
+	V2I result;
 	result.x = lhs.x + rhs.x;
 	result.y = lhs.y + rhs.y;
 	return result;
 }
-inline Coord operator+=(Coord &lhs, Coord rhs)
+inline V2I operator+=(V2I &lhs, V2I rhs)
 {
 	lhs = lhs + rhs;
 	return lhs;
 }
-inline Coord operator-(Coord lhs, Coord rhs)
+inline V2I operator-(V2I lhs, V2I rhs)
 {
-	Coord result;
+	V2I result;
 	result.x = lhs.x - rhs.x;
 	result.y = lhs.y - rhs.y;
 	return result;
 }
-inline Coord operator-=(Coord &lhs, Coord rhs)
+inline V2I operator-=(V2I &lhs, V2I rhs)
 {
 	lhs = lhs - rhs;
 	return lhs;
 }
-inline Coord operator*(Coord v, int32 s)
+inline V2I operator*(V2I v, int32 s)
 {
-	Coord result;
+	V2I result;
 	result.x = v.x * s;
 	result.y = v.y * s;
 	return result;
 }
-inline Coord operator*=(Coord &v, int32 s)
+inline V2I operator*=(V2I &v, int32 s)
 {
 	v = v * s;
 	return v;
 }
-inline Coord operator/(Coord v, int32 s)
+inline V2I operator/(V2I v, int32 s)
 {
-	Coord result;
+	V2I result;
 	result.x = v.x / s;
 	result.y = v.y / s;
 	return result;
 }
-inline Coord operator/=(Coord &v, int32 s)
+inline V2I operator/=(V2I &v, int32 s)
 {
 	v = v / s;
 	return v;
@@ -81,7 +81,7 @@ inline Coord operator/=(Coord &v, int32 s)
 	V2
  **********************************************/
 
-inline V2 v2(Coord coord)
+inline V2 v2(V2I coord)
 {
 	return {(real32)coord.x, (real32)coord.y};
 }
@@ -328,9 +328,9 @@ inline V4 operator/=(V4 &v, real32 s)
 	Rectangle (int)
  **********************************************/
 
-inline Rect irectXYWH(int32 x, int32 y, int32 w, int32 h)
+inline Rect2I irectXYWH(int32 x, int32 y, int32 w, int32 h)
 {
-	Rect rect = {};
+	Rect2I rect = {};
 	rect.x = x;
 	rect.y = y;
 	rect.w = w;
@@ -338,17 +338,17 @@ inline Rect irectXYWH(int32 x, int32 y, int32 w, int32 h)
 	return rect;
 }
 
-inline Rect irectPosDim(Coord position, Coord dim)
+inline Rect2I irectPosDim(V2I position, V2I dim)
 {
-	Rect rect = {};
+	Rect2I rect = {};
 	rect.pos = position;
 	rect.dim = dim;
 	return rect;
 }
 
-inline Rect irectCentreWH(Coord position, int32 w, int32 h)
+inline Rect2I irectCentreWH(V2I position, int32 w, int32 h)
 {
-	Rect rect = {};
+	Rect2I rect = {};
 	rect.x = position.x - w/2;
 	rect.y = position.y - h/2;
 	rect.w = w;
@@ -356,18 +356,18 @@ inline Rect irectCentreWH(Coord position, int32 w, int32 h)
 	return rect;
 }
 
-inline Rect irectCentreDim(Coord position, Coord dim)
+inline Rect2I irectCentreDim(V2I position, V2I dim)
 {
-	Rect rect = {};
+	Rect2I rect = {};
 	rect.x = position.x - dim.x/2;
 	rect.y = position.y - dim.y/2;
 	rect.dim = dim;
 	return rect;
 }
 
-inline Rect irectCovering(V2 a, V2 b)
+inline Rect2I irectCovering(V2 a, V2 b)
 {
-	Rect rect = {};
+	Rect2I rect = {};
 	if (a.x < b.x)
 	{
 		rect.x = (int32)(a.x);
@@ -388,7 +388,7 @@ inline Rect irectCovering(V2 a, V2 b)
 	return rect;
 }
 
-inline bool inRect(Rect rect, Coord coord)
+inline bool inRect2I(Rect2I rect, V2I coord)
 {
 	return coord.x >= rect.x
 		&& coord.x < (rect.x + rect.w)
@@ -396,7 +396,7 @@ inline bool inRect(Rect rect, Coord coord)
 		&& coord.y < (rect.y + rect.h);
 }
 
-inline bool inRect(Rect rect, V2 pos)
+inline bool inRect2I(Rect2I rect, V2 pos)
 {
 	return pos.x >= rect.x
 		&& pos.x < (rect.x + rect.w)
@@ -404,7 +404,7 @@ inline bool inRect(Rect rect, V2 pos)
 		&& pos.y < (rect.y + rect.h);
 }
 
-inline bool rectInRect(Rect outer, Rect inner)
+inline bool rectInRect2I(Rect2I outer, Rect2I inner)
 {
 	return inner.x >= outer.x
 		&& (inner.x + inner.w) <= (outer.x + outer.w)
@@ -412,7 +412,7 @@ inline bool rectInRect(Rect outer, Rect inner)
 		&& (inner.y + inner.h) <= (outer.y + outer.h);
 }
 
-inline Rect expandiRect(Rect rect, int32 addRadius)
+inline Rect2I expand(Rect2I rect, int32 addRadius)
 {
 	return irectXYWH(
 		rect.x - addRadius,
@@ -422,7 +422,7 @@ inline Rect expandiRect(Rect rect, int32 addRadius)
 	);
 }
 
-inline bool rectsOverlap(Rect a, Rect b)
+inline bool rectsOverlap(Rect2I a, Rect2I b)
 {
 	return (a.x < b.x + b.w)
 		&& (b.x < a.x + a.w)
@@ -430,7 +430,7 @@ inline bool rectsOverlap(Rect a, Rect b)
 		&& (b.y < a.y + a.h);
 }
 
-inline V2 centre(Rect rect)
+inline V2 centre(Rect2I rect)
 {
 	return v2(
 		(real32)rect.x + (real32)rect.w / 2.0f,
@@ -438,37 +438,37 @@ inline V2 centre(Rect rect)
 	);
 }
 
-inline Coord iCentre(Rect rect)
+inline V2I iCentre(Rect2I rect)
 {
 	return coord(rect.x + rect.w/2, rect.y + rect.h/2);
 }
 
 /**********************************************
-	RealRect
+	Rect2
  **********************************************/
 
-inline RealRect realRect(V2 pos, real32 w, real32 h)
+inline Rect2 rect2(V2 pos, real32 w, real32 h)
 {
-	RealRect rect = {};
+	Rect2 rect = {};
 	rect.pos = pos;
 	rect.w = w;
 	rect.h = h;
 	return rect;
 }
 
-inline RealRect realRect(Rect intRect)
+inline Rect2 rect2(Rect2I intRect2I)
 {
-	RealRect rect = {};
-	rect.x = (real32) intRect.x;
-	rect.y = (real32) intRect.y;
-	rect.w = (real32) intRect.w;
-	rect.h = (real32) intRect.h;
+	Rect2 rect = {};
+	rect.x = (real32) intRect2I.x;
+	rect.y = (real32) intRect2I.y;
+	rect.w = (real32) intRect2I.w;
+	rect.h = (real32) intRect2I.h;
 	return rect;
 }
 
-inline RealRect rectXYWH(real32 x, real32 y, real32 w, real32 h)
+inline Rect2 rectXYWH(real32 x, real32 y, real32 w, real32 h)
 {
-	RealRect rect = {};
+	Rect2 rect = {};
 	rect.x = x;
 	rect.y = y;
 	rect.w = w;
@@ -476,9 +476,9 @@ inline RealRect rectXYWH(real32 x, real32 y, real32 w, real32 h)
 	return rect;
 }
 
-inline RealRect rectCentreSize(V2 centre, V2 size)
+inline Rect2 rectCentreSize(V2 centre, V2 size)
 {
-	RealRect rect = {};
+	Rect2 rect = {};
 	rect.x = centre.x - size.x/2.0f;
 	rect.y = centre.y - size.y/2.0f;
 	rect.w = size.x;
@@ -486,7 +486,7 @@ inline RealRect rectCentreSize(V2 centre, V2 size)
 	return rect;
 }
 
-inline RealRect expandRect(RealRect rect, real32 addRadius)
+inline Rect2 expand(Rect2 rect, real32 addRadius)
 {
 	return rectXYWH(
 		rect.x - addRadius,
@@ -496,15 +496,15 @@ inline RealRect expandRect(RealRect rect, real32 addRadius)
 	);
 }
 
-inline RealRect offset(RealRect rect, V2 offset)
+inline Rect2 offset(Rect2 rect, V2 offset)
 {
-	RealRect result = rect;
+	Rect2 result = rect;
 	result.pos += offset;
 
 	return result;
 }
 
-inline bool inRect(RealRect rect, V2 pos)
+inline bool inRect(Rect2 rect, V2 pos)
 {
 	return pos.x >= rect.x
 		&& pos.x < (rect.x + rect.w)
@@ -512,7 +512,7 @@ inline bool inRect(RealRect rect, V2 pos)
 		&& pos.y < (rect.y + rect.h);
 }
 
-inline bool inRects(RealRect *rects, int32 rectCount, V2 pos)
+inline bool inRects(Rect2 *rects, int32 rectCount, V2 pos)
 {
 	bool result = false;
 	for (int i=0; i < rectCount; i++)
@@ -526,7 +526,7 @@ inline bool inRects(RealRect *rects, int32 rectCount, V2 pos)
 	return result;
 }
 
-inline V2 centre(RealRect rect)
+inline V2 centre(Rect2 rect)
 {
 	return v2(
 		rect.x + rect.w / 2.0f,

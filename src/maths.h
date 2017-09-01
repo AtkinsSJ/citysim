@@ -6,7 +6,7 @@
 #include "stb_perlin.h"
 
 // How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
-inline int32 manhattanDistance(Rect rect, Coord point)
+inline int32 manhattanDistance(Rect2I rect, V2I point)
 {
 	int32 result = 0;
 
@@ -31,7 +31,7 @@ inline int32 manhattanDistance(Rect rect, Coord point)
 	return result;
 }
 
-inline int32 manhattanDistance(Rect a, Rect b)
+inline int32 manhattanDistance(Rect2I a, Rect2I b)
 {
 	int32 result = 0;
 

@@ -3,7 +3,7 @@
 struct BitmapFontChar
 {
 	unichar codepoint;
-	Rect size;
+	Rect2I size;
 	int16 xOffset, yOffset; // Offset when rendering to the screen
 	int16 xAdvance; // How far to move after rendering this character
 

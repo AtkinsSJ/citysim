@@ -11,7 +11,7 @@ const int FRAMES_PER_SECOND = 60;
 const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-inline Coord tilePosition(V2 worldPos) {
+inline V2I tilePosition(V2 worldPos) {
 	return {(int)floor(worldPos.x),
 			(int)floor(worldPos.y)};
 }
@@ -30,7 +30,7 @@ const real32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinat
 
 struct RenderItem
 {
-	RealRect rect;
+	Rect2 rect;
 	real32 depth; // Positive is towards the player
 	V4 color;
 	uint32 textureRegionID;

@@ -21,7 +21,7 @@ int32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplie
 	return textureID;
 }
 
-uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textureID, RealRect uv)
+uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textureID, Rect2 uv)
 {
 	TextureRegionList *list = assets->firstTextureRegionList.prev;
 	if (list->usedCount >= ArrayCount(list->regions))
@@ -95,7 +95,7 @@ int32 findTexture(AssetManager *assets, String filename)
 	return index;
 }
 
-uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
+uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, Rect2 uv,
 	                   bool isAlphaPremultiplied=false)
 {
 	String sFilename = pushString(&assets->assetArena, filename);
