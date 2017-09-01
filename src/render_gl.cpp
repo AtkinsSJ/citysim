@@ -73,7 +73,7 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 	                  ShaderProgram *shaderAsset)
 {
 	bool result = false;
-	char **shaderSource = 0;
+	String *shaderSource = null;
 	String filename = {};
 
 	switch (shaderType)
@@ -96,7 +96,7 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 
 
 	GLuint shaderID = glCreateShader(shaderType);
-	glShaderSource(shaderID, 1, shaderSource, NULL);
+	glShaderSource(shaderID, 1, &shaderSource->chars, &shaderSource->length);
 	glCompileShader(shaderID);
 
 	GLint isCompiled = GL_FALSE;

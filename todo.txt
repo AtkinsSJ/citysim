@@ -7,7 +7,8 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 Technique to look into: X macros https://github.com/HandmadeHero/cpp/issues/42
 Why doesn't the asset system loading stuff appear in the console initially?
 
-Use new token code for console commands too
+Console:
+- Use new token code for console commands too? Can't do this easily because we rely on splitting the string to get the arg count!
 
 Go through shader handling code
 - Use proper Strings in shader loading.
@@ -43,6 +44,7 @@ String HashTable!
 
 Console:
 - Why does typing a space not move the caret far enough? I must be measuring the wrong thing.
+	- OK, it's because we want the xAdvance but don't have it by that point. yay
 - Console eats all input events while it is open?
 - Automatic parameter type checking? That might be crazy though.
 - Better input

@@ -103,8 +103,8 @@ struct ShaderProgram
 	String fragFilename;
 	String vertFilename;
 
-	char *fragShader;
-	char *vertShader;
+	String fragShader;
+	String vertShader;
 };
 
 #include "uitheme.cpp"

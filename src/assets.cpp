@@ -206,10 +206,10 @@ void loadAssets(AssetManager *assets)
 	for (uint32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
-		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename)).chars;
-		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename)).chars;
+		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename));
+		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename));
 
-		if (shader->vertShader && shader->fragShader)
+		if (shader->vertShader.length && shader->fragShader.length)
 		{
 			shader->state = AssetState_Loaded;
 		}
