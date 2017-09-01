@@ -67,6 +67,8 @@ Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, 
 		{
 			// we've overrun. Could mean we're just after the last char.
 			// So, we grab the last char and then add its width.
+
+			// @FixMe: we really want o move forward by the glyph's xAdvance, but we don't know it once we're here! Sad times.
 			RenderItem charCaretIsAfter = textCache->chars[textCache->charCount - 1];
 			caretRect.x += charCaretIsAfter.rect.x + (1 + textInput->caretGlyphPos - textCache->charCount) * charCaretIsAfter.rect.w;
 			caretRect.y += charCaretIsAfter.rect.y;

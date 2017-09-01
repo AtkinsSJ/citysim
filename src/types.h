@@ -1,4 +1,35 @@
 #pragma once
+/*
+Meaningless waffling about code typing style:
+
+I guess ideally the types would all be short and convenient:
+u8, u16, u32, u64
+s8, s16, s32, s64 (or would that be i-whatever? Maybe s is better to avoid confusion with vars named i)
+f32, f64
+v2, v3, v4
+v2i, v3i, v4i
+rect2, rect3
+rect2i, rect3i
+
+Capitalisation would then be: lowercase for types, MixedCaseForEverythingElse.
+But, I'm kind of used to ThisCase for types, from Java.
+And ThisCaseForFunctions() looks wrong to me.
+
+JB does This_Stuff for structs,
+this_stuff for vars and functions.
+I kind of like that, but I'm not sure I like the mix of cases for basic and struct types?
+Part of this is that he uses auto-typing a lot so longer type names isn't a problem.
+
+Personally I don't mind CamelCaseStuff, I don't find it hard to read.
+
+I guess my style is:
+blah for basic types
+BactrianCamelCase for struct types
+dromedaryCamelCase for variables and functions
+
+I will create shorter versions of the basic types though.
+
+*/
 
 #include <stdint.h>
 #include <float.h>
@@ -28,9 +59,6 @@ const uint16 uint16Max = UINT16_MAX;
 const uint32 uint32Max = UINT32_MAX;
 const uint64 uint64Max = UINT64_MAX;
 
-typedef intptr_t smm;
-typedef uintptr_t umm;
-
 typedef float real32;
 typedef double real64;
 
@@ -38,6 +66,20 @@ const real32 real32Min = -FLT_MAX;
 const real32 real32Max = FLT_MAX;
 const real64 real64Min = -DBL_MAX;
 const real64 real64Max = DBL_MAX;
+
+typedef intptr_t smm;
+typedef uintptr_t umm;
+
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef float f32;
+typedef double f64;
 
 typedef uint32 unichar;
 
