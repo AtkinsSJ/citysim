@@ -253,11 +253,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	renderer->unloadAssets(renderer);
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	SDL_SetCursor(systemWaitCursor);
-	// DEFER(SDL_FreeCursor(systemWaitCursor));
-
-	DEFER(consoleWriteLine("After reload assets, testing defer 1!", CLS_Success));
-	DEFER(consoleWriteLine("After reload assets, testing defer 2!", CLS_Success));
-	DEFER(consoleWriteLine("After reload assets, testing defer 3!", CLS_Success));
+	DEFER(SDL_FreeCursor(systemWaitCursor));
 
 	// Actual reloading
 
@@ -297,7 +293,6 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 
 	// After stuff
 	setCursor(uiState, assets, uiState->currentCursor);
-	// SDL_FreeCursor(systemWaitCursor);
 	renderer->loadAssets(renderer, assets);
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }

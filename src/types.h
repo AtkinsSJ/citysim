@@ -33,10 +33,29 @@ I will create shorter versions of the basic types though.
 
 #define GLUE_(a, b) a ## b
 #define GLUE(a, b) GLUE_(a, b)
-#define STRVAL(a) #a
+#define STRVAL_(a) #a
+#define STRVAL(a) STRVAL_(a)
 
+/*
+This macro lets you run a block of code at the end of the current scope. Just do:
+	DEFER(code_goes_here(foo, 123, true, whatever));
+and it will work! Can be any number of statements. If you defer multiple blocks within the
+same scope, they will execute in LIFO order, just like destructors do (because it uses
+destructors!
+*/
+#include <functional>
 #define DEFER_STRUCT_NAME GLUE(defer_, __LINE__)
-#define DEFER(the_code) struct DEFER_STRUCT_NAME { DEFER_STRUCT_NAME(){consoleWriteLine("Initialised " STRVAL(DEFER_STRUCT_NAME));} ~DEFER_STRUCT_NAME(){ the_code; }}; DEFER_STRUCT_NAME GLUE(_, DEFER_STRUCT_NAME);
+#define DEFER(the_code)                                                     \
+	struct DEFER_STRUCT_NAME {                                              \
+		std::function<void ()> deferredCode;                                \
+		DEFER_STRUCT_NAME(std::function<void ()> deferredCode){             \
+			this->deferredCode = deferredCode;                              \
+		}                                                                   \
+		~DEFER_STRUCT_NAME(){                                               \
+			this->deferredCode();                                           \
+		}                                                                   \
+	};                                                                      \
+	DEFER_STRUCT_NAME GLUE(_, DEFER_STRUCT_NAME)( [&](){the_code;} );
 
 #include <stdint.h>
 #include <float.h>
