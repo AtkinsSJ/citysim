@@ -11,7 +11,7 @@ void GL_windowResized(int32 newWidth, int32 newHeight)
 	glViewport(0, 0, newWidth, newHeight);
 }
 
-void GL_printProgramLog(TemporaryMemory *tempMemory, GLuint program)
+void GL_printProgramLog(GLuint program)
 {
 	//Make sure name is shader
 	if( glIsProgram( program ) )
@@ -24,7 +24,7 @@ void GL_printProgramLog(TemporaryMemory *tempMemory, GLuint program)
 		glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
 		
 		//Allocate string
-		char* infoLog = PushArray(tempMemory, char, maxLength);
+		char* infoLog = PushArray(globalFrameTempArena, char, maxLength);
 		
 		//Get info log
 		glGetProgramInfoLog( program, maxLength, &infoLogLength, infoLog );
@@ -40,27 +40,23 @@ void GL_printProgramLog(TemporaryMemory *tempMemory, GLuint program)
 	}
 }
 
-void GL_printShaderLog(TemporaryMemory *tempMemory, GLuint shader)
+void GL_printShaderLog(GLuint shader)
 {
 	//Make sure name is shader
 	if( glIsShader( shader ) )
 	{
 		//Shader log length
-		int infoLogLength = 0;
 		int maxLength = 0;
 		
 		//Get info string length
 		glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &maxLength );
-		
-		//Allocate string
-		char* infoLog = PushArray(tempMemory, char, maxLength);
-		
-		//Get info log
-		glGetShaderInfoLog( shader, maxLength, &infoLogLength, infoLog );
-		if( infoLogLength > 0 )
+		String infoLog = newString(globalFrameTempArena, maxLength);
+		glGetShaderInfoLog( shader, maxLength, &infoLog.length, infoLog.chars );
+
+		if( infoLog.length > 0 )
 		{
 			//Print Log
-			SDL_Log( "%s\n", infoLog );
+			SDL_Log( "%s\n", infoLog.chars );
 		}
 	}
 	else
@@ -69,8 +65,7 @@ void GL_printShaderLog(TemporaryMemory *tempMemory, GLuint shader)
 	}
 }
 
-bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType,
-	                  ShaderProgram *shaderAsset)
+bool GL_compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset)
 {
 	bool result = false;
 	String *shaderSource = null;
@@ -94,8 +89,9 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 
 	ASSERT(shaderSource && filename.length, "Failed to select a shader!");
 
-
 	GLuint shaderID = glCreateShader(shaderType);
+	DEFER(glDeleteShader(shaderID));
+
 	glShaderSource(shaderID, 1, &shaderSource->chars, &shaderSource->length);
 	glCompileShader(shaderID);
 
@@ -106,15 +102,13 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 	if (result)
 	{
 		glAttachShader(shaderProgram->shaderProgramID, shaderID);
-		glDeleteShader(shaderID);
 	}
 	else
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %*s!\n",
-			            shaderID, filename.length, filename.chars);
-		TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderer.renderArena);
-		GL_printShaderLog(&tempArena, shaderID);
-		endTemporaryMemory(&tempArena);
+
+		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n",
+			            shaderID, filename.chars);
+		GL_printShaderLog(shaderID);
 	}
 
 	return result;
@@ -148,8 +142,8 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 	if (glShader->shaderProgramID)
 	{
 		// VERTEX SHADER
-		isVertexShaderCompiled = GL_compileShader(renderer, glShader, GL_ShaderType_Vertex, shaderAsset);
-		isFragmentShaderCompiled = GL_compileShader(renderer, glShader, GL_ShaderType_Fragment, shaderAsset);
+		isVertexShaderCompiled = GL_compileShader(glShader, GL_ShaderType_Vertex, shaderAsset);
+		isFragmentShaderCompiled = GL_compileShader(glShader, GL_ShaderType_Fragment, shaderAsset);
 
 		// Link shader program
 		if (isVertexShaderCompiled && isFragmentShaderCompiled)
@@ -161,10 +155,8 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 
 			if (!glShader->isValid)
 			{
-				TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderer.renderArena);
 				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", glShader->shaderProgramID);
-				GL_printProgramLog(&tempArena, glShader->shaderProgramID);
-				endTemporaryMemory(&tempArena);
+				GL_printProgramLog(glShader->shaderProgramID);
 			}
 			else
 			{
