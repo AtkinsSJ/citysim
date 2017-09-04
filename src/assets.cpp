@@ -254,6 +254,16 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	SDL_SetCursor(systemWaitCursor);
 
+	// DEFER(consoleWriteLine("After reload assets, testing defer!", CLS_Success));
+
+	int testinator = 17;
+	#define deferStructName CAT(defer_, __LINE__)
+	#define DEFER(the_code) struct deferStructName { deferStructName(){} ~deferStructName(){ the_code; }} CAT(_, deferStructName)();
+
+	DEFER(consoleWriteLine("After reload assets, testing defer!", CLS_Success));
+
+	// int deferStructName = 13;
+
 	// Actual reloading
 
 	// Clear out textures

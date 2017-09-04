@@ -6,12 +6,14 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 
 Technique to look into: X macros https://github.com/HandmadeHero/cpp/issues/42
 Why doesn't the asset system loading stuff appear in the console initially?
+Create some kind of DEFER macro for specifying code to run at the end of the scope. Probably define an anonymous struct with the specified code in its destructor.
 
 Console:
 - Use new token code for console commands too? Can't do this easily because we rely on splitting the string to get the arg count!
 
 Go through shader handling code
 - Use proper Strings in shader loading.
+- more helpful shader error messages
 - May want to copy HMH in loading shaders as multiple strings, with one being a set of definitions and helper functions.
 - print temporary gl logs to the global temp arena rather than creating temporarymemory.
 - general cleanup, I see a bunch of commented out code and some apparently now-invalid comments.

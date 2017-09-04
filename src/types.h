@@ -31,6 +31,9 @@ I will create shorter versions of the basic types though.
 
 */
 
+#define CAT(a, b) CAT_(a, b)
+#define CAT_(a, b) a ## b
+
 #include <stdint.h>
 #include <float.h>
 #include <string> // For some reason if we comment this out we get complaints about the matrix4 trig functions??? wat.
