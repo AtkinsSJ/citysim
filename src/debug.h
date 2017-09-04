@@ -2,8 +2,6 @@
 
 #ifdef BUILD_DEBUG
 
-#define GLUE_(a, b) a ## b
-#define GLUE(a, b) GLUE_(a, b)
 #define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (stringFromChars(name))
 #define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 

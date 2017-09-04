@@ -31,8 +31,12 @@ I will create shorter versions of the basic types though.
 
 */
 
-#define CAT(a, b) CAT_(a, b)
-#define CAT_(a, b) a ## b
+#define GLUE_(a, b) a ## b
+#define GLUE(a, b) GLUE_(a, b)
+#define STRVAL(a) #a
+
+#define DEFER_STRUCT_NAME GLUE(defer_, __LINE__)
+#define DEFER(the_code) struct DEFER_STRUCT_NAME { DEFER_STRUCT_NAME(){consoleWriteLine("Initialised " STRVAL(DEFER_STRUCT_NAME));} ~DEFER_STRUCT_NAME(){ the_code; }}; DEFER_STRUCT_NAME GLUE(_, DEFER_STRUCT_NAME);
 
 #include <stdint.h>
 #include <float.h>
