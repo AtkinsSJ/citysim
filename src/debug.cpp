@@ -1,13 +1,13 @@
 #pragma once
 #include <stdarg.h>
 
-void debugInit(BitmapFont *font)
+void debugInit()
 {
 	bootstrapArena(DebugState, globalDebugState, debugArena);
 	globalDebugState->showDebugData = false;
 	globalDebugState->captureDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
-	globalDebugState->font = font;
+	globalDebugState->font = 0;
 
 	DLinkedListInit(&globalDebugState->arenaDataSentinel);
 	DLinkedListInit(&globalDebugState->codeDataSentinel);
@@ -20,6 +20,13 @@ void debugInit(BitmapFont *font)
 		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
 		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
 	}
+}
+
+void setDebugFont(BitmapFont *font)
+{
+	globalDebugState->font = font;
+	globalConsole->font = font;
+	globalConsole->charWidth = findChar(font, 'M')->xAdvance;
 }
 
 void clearDebugFrame(DebugState *debugState, int32 frameIndex)

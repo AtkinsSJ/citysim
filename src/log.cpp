@@ -30,7 +30,32 @@ static void *defaultLoggerUserData;
 void customLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
 	defaultLogger(defaultLoggerUserData, category, priority, message);
-	consoleWriteLine((char*)message, CLS_Default);
+
+	ConsoleLineStyleID style = CLS_Default;
+	// {
+	// 	CLS_Default,
+	// 	CLS_InputEcho,
+	// 	CLS_Success,
+	// 	CLS_Error,
+
+	// 	CLS_Input,
+
+	// 	CLS_COUNT
+	// };
+
+	switch (priority)
+	{
+		case SDL_LOG_PRIORITY_WARN:
+			style = CLS_Warning;
+			break;
+
+		case SDL_LOG_PRIORITY_ERROR:
+		case SDL_LOG_PRIORITY_CRITICAL:
+			style = CLS_Error;
+			break;
+	}
+
+	consoleWriteLine((char*)message, style);
 }
 
 void enableCustomLogger()

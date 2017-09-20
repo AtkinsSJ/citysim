@@ -4,7 +4,7 @@ static Console theConsole;
 
 void consoleWriteLine(String text, ConsoleLineStyleID style)
 {
-	if (globalDebugState)
+	if (globalConsole)
 	{
 		String *line = consoleNextOutputLine(globalConsole, style);
 		line->length = MIN(text.length, line->maxLength);
@@ -46,14 +46,15 @@ Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font,
 	return resultRect;
 }
 
-void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *font, real32 openHeight, real32 maximisedHeight, real32 openSpeed)
+void initConsole(MemoryArena *debugArena, int32 outputLineCount, real32 openHeight, real32 maximisedHeight, real32 openSpeed)
 {
 	Console *console = &theConsole;
 	console->currentHeight = 0;
-	console->font = font;
+	console->font = 0;
 	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
 	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
 	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 255);
+	console->styles[CLS_Warning].textColor   = color255(255, 255, 128, 255);
 	console->styles[CLS_Success].textColor   = color255(128, 255, 128, 255);
 	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
 
@@ -62,7 +63,7 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 	console->openSpeed = openSpeed;
 
 	console->input = newTextInput(debugArena, consoleLineLength);
-	console->charWidth = findChar(console->font, 'M')->xAdvance;
+	console->charWidth = 0;
 
 	console->outputLineCount = outputLineCount;
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);

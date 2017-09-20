@@ -5,6 +5,7 @@ enum ConsoleLineStyleID
 	CLS_Default,
 	CLS_InputEcho,
 	CLS_Success,
+	CLS_Warning,
 	CLS_Error,
 
 	CLS_Input,

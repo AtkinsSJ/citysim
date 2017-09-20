@@ -107,11 +107,19 @@ int main(int argc, char *argv[])
 // INIT
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 	enableCustomLogger();
-	
+
 	globalAppState = {};
 	AppState *appState = &globalAppState;
 	globalFrameTempArena = &globalAppState.globalTempArena;
 	initMemoryArena(&appState->globalTempArena, MB(1));
+
+#if BUILD_DEBUG
+	debugInit();
+	initConsole(&globalDebugState->debugArena, 256, 0.2f, 0.9f, 6.0f);
+	initCommands(globalConsole);
+
+	globalDebugState->showDebugData = false;
+#endif
 
 	log("This is a test!", {});
 
@@ -124,6 +132,11 @@ int main(int argc, char *argv[])
 	loadAssets(assets);
 	appState->assets = assets;
 
+#if BUILD_DEBUG
+	// Now we assign the debug fonts, because the assets system is initialised
+	setDebugFont(getFont(assets, FontAssetType_Debug));
+#endif
+
 	Renderer *renderer = platform_initializeRenderer(window);
 	ASSERT(renderer->platformRenderer, "Failed to initialize renderer.");
 	renderer->loadAssets(renderer, assets);
@@ -132,14 +145,6 @@ int main(int argc, char *argv[])
 	InputState inputState = {};
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
-#if BUILD_DEBUG
-	
-	debugInit(getFont(assets, FontAssetType_Debug));
-	initConsole(&globalDebugState->debugArena, 256, globalDebugState->font, 0.2f, 0.9f, 6.0f);
-	initCommands(globalConsole);
-
-	globalDebugState->showDebugData = false;
-#endif
 
 // Do we need this here?
 // {
