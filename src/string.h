@@ -38,6 +38,11 @@ String stringFromChars(char *chars)
 
 	return result;
 }
+// const is a huge pain in the bum
+String stringFromChars(const char *chars)
+{
+	return stringFromChars((char*)chars);
+}
 
 void copyChars(char *src, String *dest, int32 length)
 {

@@ -4,6 +4,9 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+Custom log function, that wraps the sdl one and also sends things to the in-game console
+- Serach for SDL_Log in code
+
 Go through shader handling code
 - FIXME: SDL_Log and related functions don't accept %.*s format strings that provide a string length!
 	Replace them with myprintf() in a wrapper.
@@ -18,9 +21,6 @@ Why doesn't the asset system loading stuff appear in the console initially?
 
 Console:
 - Use new token code for console commands too? Can't do this easily because we rely on splitting the string to get the arg count!
-
-Custom log function, that wraps the sdl one and also sends things to the in-game console
-- Serach for SDL_Log in code
 
 UI styles loaded from a file
 - Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
@@ -44,6 +44,8 @@ Asset system:
 - Audio when we have that!
 
 String HashTable!
+- Maybe MurmurHash? https://en.wikipedia.org/wiki/MurmurHash
+- Other hashes: http://www.cse.yorku.ca/~oz/hash.html
 
 Console:
 - Why does typing a space not move the caret far enough? I must be measuring the wrong thing.

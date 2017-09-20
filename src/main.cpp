@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
 	AppState *appState = &globalAppState;
 	globalFrameTempArena = &globalAppState.globalTempArena;
 	initMemoryArena(&appState->globalTempArena, MB(1));
+	log("This is a test!", {});
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Under London");
