@@ -66,29 +66,6 @@ struct Renderer
 	void (*free)(Renderer *);
 };
 
-// Animation code should probably be deleted and redone.
-#if 0
-enum AnimationID
-{
-	Animation_TempToStopComplaint,
-	Animation_Count,
-};
-
-struct Animation
-{
-	TextureAssetType frames[16];
-	uint32 frameCount;
-};
-
-struct Animator
-{
-	Animation *animation;
-	uint32 currentFrame;
-	real32 frameCounter; // Sub-frame ticks
-};
-const real32 animationFramesPerDay = 10.0f;
-#endif
-
 #include "render.cpp"
 
 // TODO: Some kind of switch to determine which renderer we want to load.
