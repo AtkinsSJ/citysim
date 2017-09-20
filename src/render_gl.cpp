@@ -25,7 +25,7 @@ static void checkForError()
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
-static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset)
+static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset, ShaderHeader *header)
 {
 	bool result = false;
 	String *shaderSource = null;
@@ -52,7 +52,9 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 	GLuint shaderID = glCreateShader(shaderType);
 	DEFER(glDeleteShader(shaderID));
 
-	glShaderSource(shaderID, 1, &shaderSource->chars, &shaderSource->length);
+	char *datas[] = {header->contents.chars, shaderSource->chars};
+	int32 lengths[] = {header->contents.length, shaderSource->length};
+	glShaderSource(shaderID, 2, datas, lengths);
 	glCompileShader(shaderID);
 
 	GLint isCompiled = GL_FALSE;
@@ -108,6 +110,9 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramID);
 	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset %d not loaded!", shaderProgramID);
 
+	ShaderHeader *header = &assets->shaderHeader;
+	ASSERT(header->state == AssetState_Loaded, "Shader header not loaded!");
+
 	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramID;
 	glShader->assetID = shaderProgramID;
 
@@ -119,8 +124,8 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 	if (glShader->shaderProgramID)
 	{
 		// VERTEX SHADER
-		isVertexShaderCompiled = compileShader(glShader, GL_ShaderType_Vertex, shaderAsset);
-		isFragmentShaderCompiled = compileShader(glShader, GL_ShaderType_Fragment, shaderAsset);
+		isVertexShaderCompiled = compileShader(glShader, GL_ShaderType_Vertex, shaderAsset, header);
+		isFragmentShaderCompiled = compileShader(glShader, GL_ShaderType_Fragment, shaderAsset, header);
 
 		// Link shader program
 		if (isVertexShaderCompiled && isFragmentShaderCompiled)

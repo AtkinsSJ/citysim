@@ -4,8 +4,6 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
-*** RIGHT NOW: adding in loading header.glsl to all shaders!
-
 Technique to look into: X macros https://github.com/HandmadeHero/cpp/issues/42
 Why doesn't the asset system loading stuff appear in the console initially?
 
