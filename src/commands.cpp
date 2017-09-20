@@ -73,6 +73,12 @@ ConsoleCommand(reload_assets)
 	reloadAssets(globalAppState.assets, &globalAppState.globalTempArena, globalAppState.renderer, &globalAppState.uiState);
 }
 
+ConsoleCommand(exit)
+{
+	consoleWriteLine("Quitting game...", CLS_Success);
+	globalAppState.appStatus = AppStatus_Quit;
+}
+
 #define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
@@ -81,6 +87,7 @@ void initCommands(Console *console)
 	append(&consoleCommands, Command(CMD(window_size), 0, 0));
 	append(&consoleCommands, Command(CMD(resize_window), 2, 2));
 	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
+	append(&consoleCommands, Command(CMD(exit), 0, 0));
 
 	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(consoleCommands.count)}), CLS_Default);
 }

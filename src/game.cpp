@@ -513,6 +513,8 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		{
 			updateAndRenderGame(appState, inputState, renderer, assets);
 		} break;
+
+		case AppStatus_Quit: break;
 		
 		default:
 		{
