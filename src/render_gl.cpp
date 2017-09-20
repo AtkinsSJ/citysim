@@ -52,9 +52,18 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 	GLuint shaderID = glCreateShader(shaderType);
 	DEFER(glDeleteShader(shaderID));
 
-	char *datas[] = {header->contents.chars, shaderSource->chars};
-	int32 lengths[] = {header->contents.length, shaderSource->length};
-	glShaderSource(shaderID, 2, datas, lengths);
+	if (header && (header->state == AssetState_Loaded))
+	{
+		char *datas[] = {header->contents.chars, shaderSource->chars};
+		int32 lengths[] = {header->contents.length, shaderSource->length};
+		glShaderSource(shaderID, 2, datas, lengths);
+	}
+	else
+	{
+		// no header, so compile without it
+		glShaderSource(shaderID, 1, &shaderSource->chars, &shaderSource->length);
+	}
+
 	glCompileShader(shaderID);
 
 	GLint isCompiled = GL_FALSE;
@@ -111,7 +120,10 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset %d not loaded!", shaderProgramID);
 
 	ShaderHeader *header = &assets->shaderHeader;
-	ASSERT(header->state == AssetState_Loaded, "Shader header not loaded!");
+	if(header->state != AssetState_Loaded)
+	{
+		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->filename});
+	}
 
 	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramID;
 	glShader->assetID = shaderProgramID;
