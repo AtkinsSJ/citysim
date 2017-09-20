@@ -1,5 +1,3 @@
-#version 150
-
 uniform sampler2D uTexture;
 
 in vec4 vColor;

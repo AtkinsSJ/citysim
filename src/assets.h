@@ -107,6 +107,13 @@ struct ShaderProgram
 	String vertShader;
 };
 
+struct ShaderHeader
+{
+	AssetState state;
+	String filename;
+	String contents;
+};
+
 #include "uitheme.cpp"
 
 struct AssetManager
@@ -129,6 +136,7 @@ struct AssetManager
 	uint32 firstIDForTextureAssetType[TextureAssetTypeCount];
 	uint32 lastIDForTextureAssetType[TextureAssetTypeCount];
 
+	ShaderHeader shaderHeader; // This is a bit hacky right now.
 	ShaderProgram shaderPrograms[ShaderProgramCount];
 
 	BitmapFont fonts[FontAssetTypeCount];

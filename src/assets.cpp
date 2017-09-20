@@ -15,6 +15,7 @@ int32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplie
 
 	Texture *texture = list->textures + idWithinList;
 
+	texture->state = AssetState_Unloaded;
 	texture->filename = pushString(&assets->assetArena, filename);
 	texture->isAlphaPremultiplied = isAlphaPremultiplied;
 
@@ -118,10 +119,18 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename);
 
+void addShaderHeader(AssetManager *assets, char *filename)
+{
+	ShaderHeader *shaderHeader = &assets->shaderHeader;
+	shaderHeader->state = AssetState_Unloaded;
+	shaderHeader->filename = pushString(&assets->assetArena, filename);
+}
+
 void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename,
 	                  char *fragFilename)
 {
 	ShaderProgram *shader = assets->shaderPrograms + shaderID;
+	shader->state = AssetState_Unloaded;
 	shader->fragFilename = pushString(&assets->assetArena, fragFilename);
 	shader->vertFilename = pushString(&assets->assetArena, vertFilename);
 }
@@ -203,6 +212,17 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Load shader programs
+	ShaderHeader *shaderHeader = &assets->shaderHeader;
+	shaderHeader->contents = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shaderHeader->filename));
+	if (shaderHeader->contents.length)
+	{
+		shaderHeader->state = AssetState_Loaded;
+	}
+	else
+	{
+		logError("Failed to load shader header file {0}", {shaderHeader->filename});
+	}
+
 	for (uint32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
@@ -215,7 +235,7 @@ void loadAssets(AssetManager *assets)
 		}
 		else
 		{
-			ASSERT(false, "Failed to load shader program %d.", shaderID);
+			logError("Failed to load shader program {0}", {formatInt(shaderID)});
 		}
 	}
 
@@ -231,8 +251,9 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
 
-	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.gl", "textured.frag.gl");
-	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.gl", "untextured.frag.gl");
+	addShaderHeader(assets, "header.glsl");
+	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.glsl", "textured.frag.glsl");
+	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
 
 	addCursor(assets, Cursor_Main, "cursor_main.png");
 	addCursor(assets, Cursor_Build, "cursor_build.png");
