@@ -4,10 +4,10 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
-Make logging functions send stuff to the game console as well as stdout!
-
-Technique to look into: X macros https://github.com/HandmadeHero/cpp/issues/42
-Why doesn't the asset system loading stuff appear in the console initially?
+Split the game code from the platform code
+- Compile win32_main.cpp rather than main.cpp
+- platform handles the renderer, input and memory.
+- game has a single entry point function that's run once per frame.
 
 UI styles loaded from a file
 - Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
