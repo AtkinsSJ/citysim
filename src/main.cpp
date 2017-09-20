@@ -26,7 +26,6 @@ enum AppStatus
 MemoryArena *globalFrameTempArena;
 #include "string.h"
 #include "debug.h"
-#include "log.cpp"
 #include "types.cpp"
 #include "textinput.h"
 #include "console.h"
@@ -65,6 +64,7 @@ AppState globalAppState;
 #include "pathing.cpp"
 #include "city.cpp"
 #include "game.cpp"
+#include "log.cpp"
 
 SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *windowTitle)
 {
@@ -106,10 +106,13 @@ int main(int argc, char *argv[])
 
 // INIT
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+	enableCustomLogger();
+	
 	globalAppState = {};
 	AppState *appState = &globalAppState;
 	globalFrameTempArena = &globalAppState.globalTempArena;
 	initMemoryArena(&appState->globalTempArena, MB(1));
+
 	log("This is a test!", {});
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,

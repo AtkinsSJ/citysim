@@ -112,12 +112,12 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	}
 }
 
-static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramID)
+static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramAssetID)
 {
 	bool result = false;
 
-	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramID);
-	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset %d not loaded!", shaderProgramID);
+	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramAssetID);
+	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset %d not loaded!", shaderProgramAssetID);
 
 	ShaderHeader *header = &assets->shaderHeader;
 	if(header->state != AssetState_Loaded)
@@ -125,8 +125,8 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->filename});
 	}
 
-	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramID;
-	glShader->assetID = shaderProgramID;
+	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramAssetID;
+	glShader->assetID = shaderProgramAssetID;
 
 	bool isVertexShaderCompiled = GL_FALSE;
 	bool isFragmentShaderCompiled = GL_FALSE;
