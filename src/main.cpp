@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
+#include <initializer_list>
 
 #ifdef __linux__
 #	include <SDL2/SDL.h>
@@ -20,11 +21,12 @@ enum AppStatus
 };
 
 #include "types.h"
+#include "log.h"
 #include "memory.h"
 MemoryArena *globalFrameTempArena;
 #include "string.h"
-#include "log.h"
 #include "debug.h"
+#include "log.cpp"
 #include "types.cpp"
 #include "textinput.h"
 #include "console.h"
@@ -70,7 +72,7 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
+		logCritical("SDL could not be initialised! :(\n {0}\n", {stringFromChars(SDL_GetError())});
 	}
 	else
 	{
@@ -78,7 +80,7 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 		uint8 imgFlags = IMG_INIT_PNG;
 		if (!(IMG_Init(imgFlags) & imgFlags))
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
+			logCritical("SDL_image could not be initialised! :(\n {0}\n", {stringFromChars(IMG_GetError())});
 		}
 		else
 		{
@@ -89,7 +91,7 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 
 			if (!window)
 			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
+				logCritical("Window could not be created! :(\n {0}", {stringFromChars(SDL_GetError())});
 			}
 		}
 	}

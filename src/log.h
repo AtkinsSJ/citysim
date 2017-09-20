@@ -1,20 +1,14 @@
 #pragma once
 
-void log(char *format, std::initializer_list<String> args = {})
-{
-	String text = myprintf(stringFromChars(format), args, true);
-	SDL_Log("%s", text);
-}
+struct String;
 
-#define LOGFUNC(TYPE) void log##TYPE(char *format, std::initializer_list<String> args = {}) \
-{ \
-	String text = myprintf(stringFromChars(format), args, true); \
-	SDL_Log##TYPE(SDL_LOG_CATEGORY_CUSTOM, "%s", text); \
-}
+void log(char *format, std::initializer_list<String> args = {});
 
-LOGFUNC(Verbose);
-LOGFUNC(Debug);
-LOGFUNC(Info);
-LOGFUNC(Warn);
-LOGFUNC(Error);
-LOGFUNC(Critical);
+#define LOGFUNCDEF(TYPE) void log##TYPE(char *format, std::initializer_list<String> args = {});
+
+LOGFUNCDEF(Verbose);
+LOGFUNCDEF(Debug);
+LOGFUNCDEF(Info);
+LOGFUNCDEF(Warn);
+LOGFUNCDEF(Error);
+LOGFUNCDEF(Critical);

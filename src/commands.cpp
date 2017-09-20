@@ -28,6 +28,12 @@ ConsoleCommand(help)
 	}
 }
 
+ConsoleCommand(hello)
+{
+	consoleWriteLine("Hello human!");
+	consoleWriteLine(myprintf("Testing formatInt bases: 10:{0}, 16:{1}, 36:{2}, 8:{3}, 2:{4}", {formatInt(123456, 10), formatInt(123456, 16), formatInt(123456, 36), formatInt(123456, 8), formatInt(123456, 2)}));
+}
+
 ConsoleCommand(window_size)
 {
 	// The only place we can access the window size is via the renderer's UI camera!
@@ -71,6 +77,7 @@ ConsoleCommand(reload_assets)
 void initCommands(Console *console)
 {
 	append(&consoleCommands, Command(CMD(help), 0, 0));
+	append(&consoleCommands, Command(CMD(hello), 0, 1));
 	append(&consoleCommands, Command(CMD(window_size), 0, 0));
 	append(&consoleCommands, Command(CMD(resize_window), 2, 2));
 	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));

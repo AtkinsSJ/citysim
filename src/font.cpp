@@ -42,7 +42,7 @@ BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
 
 	if (!result)
 	{
-		SDL_Log("Failed to find char 0x%X in font.", targetChar);
+		log("Failed to find char 0x{0} in font.", {formatInt(targetChar, 16)});
 	}
 
 	return result;

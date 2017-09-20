@@ -180,7 +180,7 @@ TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)
 	ASSERT(!parentArena->hasTemporaryArenaOpen, "Beginning temporary memory without ending it!");
 	if (parentArena->currentBlock == 0)
 	{
-		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Starting temporary memory on an empty arena! Wasteful if this is in frequently used code!");
+		logWarn("Starting temporary memory on an empty arena! Wasteful if this is in frequently used code!");
 	}
 
 	TemporaryMemory tempMemory = {};

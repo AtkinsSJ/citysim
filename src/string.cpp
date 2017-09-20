@@ -1,5 +1,4 @@
 #pragma once
-#include <initializer_list>
 
 /**
  * A printf() that takes a string like "Hello {0}!" where each {n} is replaced by the arg at that index.
@@ -75,17 +74,19 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 
 inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(stringFromChars(format), args, zeroTerminate); }
 
-String formatInt(uint64 value)
+const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+String formatInt(uint64 value, uint8 base=10)
 {
-	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit unsigned value is 20 characters long.
+	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
+	char *temp = PushArray(globalFrameTempArena, char, 64); // Worst case is base 1, which is 64 characters!
 	uint32 count = 0;
 
 	uint64 v = value;
 
 	do
 	{
-		temp[count++] = '0' + (v % 10);
-		v = v / 10;
+		temp[count++] = intBaseChars[v % base];
+		v = v / base;
 	}
 	while (v != 0);
 
@@ -94,13 +95,14 @@ String formatInt(uint64 value)
 
 	return makeString(temp, count);
 }
-inline String formatInt(uint32 value) {return formatInt((uint64)value);}
-inline String formatInt(uint16 value) {return formatInt((uint64)value);}
-inline String formatInt(uint8  value) {return formatInt((uint64)value);}
+inline String formatInt(uint32 value, uint8 base=10) {return formatInt((uint64)value, base);}
+inline String formatInt(uint16 value, uint8 base=10) {return formatInt((uint64)value, base);}
+inline String formatInt(uint8  value, uint8 base=10) {return formatInt((uint64)value, base);}
 
-String formatInt(int64 value)
+String formatInt(int64 value, uint8 base=10)
 {
-	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit signed value is 19 characters long, plus a '-', so 20 again. Yay!
+	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
+	char *temp = PushArray(globalFrameTempArena, char, 65); // Worst case is base 1, which is 64 characters! Plus 1 for sign
 	uint32 count = 0;
 	bool isNegative = (value < 0);
 
@@ -113,8 +115,8 @@ String formatInt(int64 value)
 
 	do
 	{
-		temp[count++] = '0' + ((isNegative ? -1 : 1) * (v % 10));
-		v = v / 10;
+		temp[count++] = intBaseChars[ ((isNegative ? -1 : 1) * (v % base)) ];
+		v = v / base;
 	}
 	while (v != 0);
 
@@ -128,9 +130,9 @@ String formatInt(int64 value)
 
 	return makeString(temp, count);
 }
-inline String formatInt(int32 value) {return formatInt((int64)value);}
-inline String formatInt(int16 value) {return formatInt((int64)value);}
-inline String formatInt(int8  value) {return formatInt((int64)value);}
+inline String formatInt(int32 value, uint8 base=10) {return formatInt((int64)value, base);}
+inline String formatInt(int16 value, uint8 base=10) {return formatInt((int64)value, base);}
+inline String formatInt(int8  value, uint8 base=10) {return formatInt((int64)value, base);}
 
 // TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
 String formatFloat(real64 value, int32 decimalPlaces)
