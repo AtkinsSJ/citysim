@@ -32,16 +32,6 @@ void customLogOutputFunction(void *userdata, int category, SDL_LogPriority prior
 	defaultLogger(defaultLoggerUserData, category, priority, message);
 
 	ConsoleLineStyleID style = CLS_Default;
-	// {
-	// 	CLS_Default,
-	// 	CLS_InputEcho,
-	// 	CLS_Success,
-	// 	CLS_Error,
-
-	// 	CLS_Input,
-
-	// 	CLS_COUNT
-	// };
 
 	switch (priority)
 	{
