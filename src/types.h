@@ -59,7 +59,6 @@ destructors!
 
 #include <stdint.h>
 #include <float.h>
-#include <string> // For some reason if we comment this out we get complaints about the matrix4 trig functions??? wat.
 
 typedef int8_t int8;
 typedef int16_t int16;
@@ -233,6 +232,3 @@ struct Rect2 {
 // Really janky assertion macro, yay
 #define ASSERT(expr, msg, ...) if(!(expr)) {*(int *)0 = 0;}
 #define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
-
-#include "matrix4.h"
-#include "array.h"

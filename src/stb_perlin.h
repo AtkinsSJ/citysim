@@ -36,7 +36,7 @@ extern float stb_perlin_noise3(float x, float y, float z, int x_wrap, int y_wrap
 
 #ifdef STB_PERLIN_IMPLEMENTATION
 
-#include <math.h> // floor()
+// #include <math.h> // floor()
 
 // not same permutation table as Perlin's reference to avoid copyright issues;
 // Perlin's table can be found at http://mrl.nyu.edu/~perlin/noise/

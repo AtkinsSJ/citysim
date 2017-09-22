@@ -1,6 +1,5 @@
 #include <inttypes.h>
 #include <math.h>
-#include <stdio.h>
 #include <initializer_list>
 
 #ifdef __linux__
@@ -21,10 +20,15 @@ enum AppStatus
 };
 
 #include "types.h"
+#include "matrix4.h"
+#include "array.h"
 #include "log.h"
 #include "memory.h"
 MemoryArena *globalFrameTempArena;
 #include "string.h"
+#include "unicode.h"
+#include "stringbuilder.h"
+#include "string.cpp"
 #include "debug.h"
 #include "types.cpp"
 #include "textinput.h"

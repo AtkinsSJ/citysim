@@ -278,9 +278,3 @@ String nextToken(String input, String *remainder)
 
 	return firstWord;
 }
-
-#include "unicode.h"
-
-#include "stringbuilder.h"
-
-#include "string.cpp"
