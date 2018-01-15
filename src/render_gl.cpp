@@ -535,7 +535,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		gl->context = SDL_GL_CreateContext(renderer->window);
 		if (gl->context == NULL)
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
+			logCritical("OpenGL context could not be created! :(\n %s", {stringFromChars(SDL_GetError())});
 			succeeded = false;
 		}
 
@@ -544,14 +544,14 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		GLenum glewError = glewInit();
 		if (succeeded && glewError != GLEW_OK)
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
+			logCritical("Could not initialise GLEW! :(\n %s", {stringFromChars((char*)glewGetErrorString(glewError))});
 			succeeded = false;
 		}
 
 		// VSync
 		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
+			logCritical("Could not set vsync! :(\n %s", {stringFromChars(SDL_GetError())});
 			succeeded = false;
 		}
 
@@ -570,7 +570,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 
 			if (!succeeded)
 			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
+				logCritical("Could not initialise OpenGL! :(");
 			}
 		}
 

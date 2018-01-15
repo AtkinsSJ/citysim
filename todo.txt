@@ -4,6 +4,25 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+------------------------------------------------
+
+2018-01-15: New plan!
+
+This project has become really unfocused. There's no game to it any more, it's just a vague "engine"
+which has no real direction. I don't want to make 'Under London' - I'm not confident what game it even
+is, and that's demotivating.
+
+So, instead the new game design is a simplified SimCity 1 type game about building space stations. Name pending.
+
+2D, simple pixel art, very basic simulation. Aiming for this to be a "quick" game to make, even though
+that will probably still be a long time coming. SimCity is a decent enough target, but this is different
+enough from that to still be worthwhile on its own. Cloning is less fun.
+
+Most of the engine tasks listed below are still desirable, but at least now I have a target to focus on,
+not just a list of work that might never come to anything.
+
+------------------------------------------------
+
 Split the game code from the platform code
 - Compile win32_main.cpp rather than main.cpp
 - platform handles the renderer, input and memory.

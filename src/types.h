@@ -31,6 +31,8 @@ I will create shorter versions of the basic types though.
 
 */
 
+// Note for later: variadic macros `#define(foo, ...)` expand the ... with `__VA_ARGS__`
+
 #define GLUE_(a, b) a ## b
 #define GLUE(a, b) GLUE_(a, b)
 #define STRVAL_(a) #a
@@ -42,6 +44,10 @@ This macro lets you run a block of code at the end of the current scope. Just do
 and it will work! Can be any number of statements. If you defer multiple blocks within the
 same scope, they will execute in LIFO order, just like destructors do (because it uses
 destructors!
+
+NB: Might want to replace this with the version at https://stackoverflow.com/a/42060129/1178345,
+	which has nicer syntax and no #includes.
+	defer { do_some_stuff_later(); };
 */
 #include <functional>
 #define DEFER_STRUCT_NAME GLUE(defer_, __LINE__)

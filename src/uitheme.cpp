@@ -153,11 +153,14 @@ void loadUITheme(UITheme *theme, String file)
 				currentTarget = Section_None;
 				String fontName, fontFilename;
 				fontName = nextToken(remainder, &fontFilename);
+				fontFilename = trimStart(fontFilename);
 
 				if (fontName.length && fontFilename.length)
 				{
 					// TODO: Decide how this works. I'm not sure the font declaration even wants to work this way!
 					consoleWriteLine(myprintf("Valid font declaration, line {0}: '{1}' but we don't actually handle this yet so it doesn't do anything!", {formatInt(reader.lineNumber), line}));
+
+					
 				}
 				else
 				{
