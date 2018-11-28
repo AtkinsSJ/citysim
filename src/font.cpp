@@ -8,9 +8,9 @@ BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
 
 	// FIXME: This really needs to be replaced by a better system.
 
-	uint32 high = font->charCount;
-	uint32 low = 0;
-	uint32 current = (high + low) / 2;
+	u32 high = font->charCount;
+	u32 low = 0;
+	u32 current = (high + low) / 2;
 
 	BitmapFontChar *currentChar = font->chars + current;
 
@@ -53,16 +53,16 @@ unichar readUnicodeChar(char **nextChar)
 {
 	unichar result = 0;
 
-	uint8 b1 = *((*nextChar)++);
+	u8 b1 = *((*nextChar)++);
 	if ((b1 & 0b10000000) == 0)
 	{
 		// 7-bit ASCII, so just pass through
-		result = (uint32) b1;
+		result = (u32) b1;
 	}
 	else if (b1 & 0b11000000)
 	{
 		// Start of a multibyte codepoint!
-		int32 extraBytes = 1;
+		s32 extraBytes = 1;
 		result = b1 & 0b00011111;
 		if (b1 & 0b00100000) {
 			extraBytes++; // 3 total
@@ -85,7 +85,7 @@ unichar readUnicodeChar(char **nextChar)
 		{
 			result = result << 6;
 
-			uint8 bn = *((*nextChar)++);
+			u8 bn = *((*nextChar)++);
 
 			if (!(bn & 0b10000000)
 				|| (bn & 0b01000000))
@@ -108,18 +108,18 @@ unichar readUnicodeChar(char **nextChar)
 struct DrawTextState
 {
 	bool doWrap;
-	real32 maxWidth;
-	real32 lineHeight;
-	int32 lineCount;
+	f32 maxWidth;
+	f32 lineHeight;
+	s32 lineCount;
 
 	V2 position;
 
 	RenderItem *startOfCurrentWord;
 	RenderItem *endOfCurrentWord;
-	real32 currentWordWidth;
+	f32 currentWordWidth;
 
-	real32 currentLineWidth;
-	real32 longestLineWidth;
+	f32 currentLineWidth;
+	f32 longestLineWidth;
 };
 
 void font_newLine(DrawTextState *state)
@@ -180,19 +180,19 @@ void font_handleEndOfWord(DrawTextState *state, BitmapFontChar *c)
 				state->startOfCurrentWord = state->endOfCurrentWord;
 				state->currentWordWidth = 0;
 			}
-			state->position.x += (real32)c->xAdvance;
+			state->position.x += (f32)c->xAdvance;
 			state->currentWordWidth += c->xAdvance;
 		}
 	}
 	else
 	{
-		state->position.x += (real32)c->xAdvance;
+		state->position.x += (f32)c->xAdvance;
 		state->longestLineWidth = max(state->longestLineWidth, state->position.x);
 	}
 }
 
 BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, String text,
-									  V4 color, real32 maxWidth=0)
+									  V4 color, f32 maxWidth=0)
 {
 	DrawTextState state = {};
 
@@ -206,8 +206,8 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 	// Memory management witchcraft
 	// FIXME: This actually overestimates how much memory we need, because it does one item for each
 	// byte of the string, not each codepoint.
-	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * text.length);
-	uint8 *data = (uint8 *) allocate(memory, memorySize);
+	u32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * text.length);
+	u8 *data = (u8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
 	result->size = v2(0, font->lineHeight);
@@ -235,8 +235,8 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 				{
 					state.endOfCurrentWord = result->chars + result->charCount++;
 					*state.endOfCurrentWord = makeRenderItem(
-						rectXYWH(state.position.x + (real32)c->xOffset, state.position.y + (real32)c->yOffset,
-								 (real32)c->size.w, (real32)c->size.h),
+						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
+								 (f32)c->size.w, (f32)c->size.h),
 						0.0f, c->textureRegionID, color
 					);
 
@@ -250,19 +250,19 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 		font_handleEndOfWord(&state, &font->nullChar);
 
 		result->size.x = max(state.longestLineWidth, state.currentLineWidth);
-		result->size.y = (real32)(font->lineHeight * state.lineCount);
+		result->size.y = (f32)(font->lineHeight * state.lineCount);
 	}
 
 	return result;
 }
 BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, char *text,
-									  V4 color, real32 maxWidth=0)
+									  V4 color, f32 maxWidth=0)
 {
 	String string = stringFromChars(text);
 	return drawTextToCache(memory, font, string, color, maxWidth);
 }
 
-V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
+V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 {
 	V2 offset;
 
@@ -299,9 +299,9 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, uint32 align)
 	return offset;
 }
 
-void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, real32 depth)
+void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth)
 {
-	for (uint32 spriteIndex=0;
+	for (u32 spriteIndex=0;
 		spriteIndex < cache->charCount;
 		spriteIndex++)
 	{

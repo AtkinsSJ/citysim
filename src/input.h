@@ -19,7 +19,7 @@ struct InputState
 	bool mouseDown[MOUSE_BUTTON_COUNT];
 	bool mouseWasDown[MOUSE_BUTTON_COUNT];
 	V2 clickStartPosition[MOUSE_BUTTON_COUNT]; // Normalised
-	int32 wheelX, wheelY;
+	s32 wheelX, wheelY;
 
 	// Keyboard
 	bool _keyWasDown[KEYBOARD_KEY_COUNT];
@@ -32,25 +32,25 @@ struct InputState
 	bool wasWindowResized;
 	union {
 		Coord windowSize;
-		struct{int32 windowWidth, windowHeight;};
+		struct{s32 windowWidth, windowHeight;};
 	};
 };
 
 /**
  * MOUSE INPUT
  */
-inline uint8 mouseButtonIndex(uint8 sdlMouseButton) {
+inline u8 mouseButtonIndex(u8 sdlMouseButton) {
 	return sdlMouseButton - 1;
 }
-inline bool mouseButtonJustPressed(InputState *input, uint8 mouseButton) {
-	uint8 buttonIndex = mouseButtonIndex(mouseButton);
+inline bool mouseButtonJustPressed(InputState *input, u8 mouseButton) {
+	u8 buttonIndex = mouseButtonIndex(mouseButton);
 	return input->mouseDown[buttonIndex] && !input->mouseWasDown[buttonIndex];
 }
-inline bool mouseButtonJustReleased(InputState *input, uint8 mouseButton) {
-	uint8 buttonIndex = mouseButtonIndex(mouseButton);
+inline bool mouseButtonJustReleased(InputState *input, u8 mouseButton) {
+	u8 buttonIndex = mouseButtonIndex(mouseButton);
 	return !input->mouseDown[buttonIndex] && input->mouseWasDown[buttonIndex];
 }
-inline bool mouseButtonPressed(InputState *input, uint8 mouseButton) {
+inline bool mouseButtonPressed(InputState *input, u8 mouseButton) {
 	return input->mouseDown[mouseButtonIndex(mouseButton)];
 }
 
@@ -58,9 +58,9 @@ inline bool mouseButtonPressed(InputState *input, uint8 mouseButton) {
  * KEYBOARD INPUT
  */
 #define keycodeToIndex(key) ((key) & ~SDLK_SCANCODE_MASK)
-inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
+inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
-	int32 keycode = keycodeToIndex(key);
+	s32 keycode = keycodeToIndex(key);
 
 	bool result = input->_keyDown[keycode];
 
@@ -86,9 +86,9 @@ inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 
 	return result;
 }
-inline bool keyWasPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
+inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
-	int32 keycode = keycodeToIndex(key);
+	s32 keycode = keycodeToIndex(key);
 
 	bool result = input->_keyWasDown[keycode];
 
@@ -114,7 +114,7 @@ inline bool keyWasPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 
 	return result;
 }
-inline bool keyJustPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
+inline bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
 	return keyIsPressed(input, key, modifiers) && !keyWasPressed(input, key);
 }
@@ -176,11 +176,11 @@ void updateInput(InputState *inputState)
 				inputState->mousePosRaw.y = event.motion.y;
 			} break;
 			case SDL_MOUSEBUTTONDOWN: {
-				uint8 buttonIndex = event.button.button - 1;
+				u8 buttonIndex = event.button.button - 1;
 				inputState->mouseDown[buttonIndex] = true;
 			} break;
 			case SDL_MOUSEBUTTONUP: {
-				uint8 buttonIndex = event.button.button - 1;
+				u8 buttonIndex = event.button.button - 1;
 				inputState->mouseDown[buttonIndex] = false;
 			} break;
 			case SDL_MOUSEWHEEL: {
@@ -195,7 +195,7 @@ void updateInput(InputState *inputState)
 
 			// KEYBOARD EVENTS
 			case SDL_KEYDOWN: {
-				int32 keycode = keycodeToIndex(event.key.keysym.sym);
+				s32 keycode = keycodeToIndex(event.key.keysym.sym);
 				inputState->_keyDown[keycode] = true;
 				if (event.key.repeat)
 				{
@@ -205,7 +205,7 @@ void updateInput(InputState *inputState)
 				}
 			} break;
 			case SDL_KEYUP: {
-				int32 keycode = keycodeToIndex(event.key.keysym.sym);
+				s32 keycode = keycodeToIndex(event.key.keysym.sym);
 				inputState->_keyDown[keycode] = false;
 			} break;
 			case SDL_TEXTINPUT: {
@@ -218,7 +218,7 @@ void updateInput(InputState *inputState)
 	inputState->mousePosNormalised.x = ((inputState->mousePosRaw.x * 2.0f) / inputState->windowWidth) - 1.0f;
 	inputState->mousePosNormalised.y = ((inputState->mousePosRaw.y * -2.0f) + inputState->windowHeight) / inputState->windowHeight;
 
-	for (uint8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
+	for (u8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
 		if (mouseButtonJustPressed(inputState, i)) {
 			// Store the initial click position
 			inputState->clickStartPosition[mouseButtonIndex(i)] = inputState->mousePosNormalised;

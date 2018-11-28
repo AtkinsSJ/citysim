@@ -26,7 +26,7 @@ struct DebugArenaData
 {
 	String name;
 
-	uint32 blockCount[DEBUG_FRAMES_COUNT];
+	u32 blockCount[DEBUG_FRAMES_COUNT];
 	umm totalSize[DEBUG_FRAMES_COUNT];
 	umm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
 
@@ -37,9 +37,9 @@ struct DebugCodeData
 {
 	String name;
 
-	uint32 callCount[DEBUG_FRAMES_COUNT];
-	uint64 totalCycleCount[DEBUG_FRAMES_COUNT];
-	uint64 averageCycleCount[DEBUG_FRAMES_COUNT];
+	u32 callCount[DEBUG_FRAMES_COUNT];
+	u64 totalCycleCount[DEBUG_FRAMES_COUNT];
+	u64 averageCycleCount[DEBUG_FRAMES_COUNT];
 
 	DLinkedListMembers(DebugCodeData);
 };
@@ -56,10 +56,10 @@ struct DebugState
 	bool showDebugData;
 	bool captureDebugData;
 
-	uint32 readingFrameIndex;
-	uint32 writingFrameIndex;
-	uint64 frameStartCycle[DEBUG_FRAMES_COUNT];
-	uint64 frameEndCycle[DEBUG_FRAMES_COUNT];
+	u32 readingFrameIndex;
+	u32 writingFrameIndex;
+	u64 frameStartCycle[DEBUG_FRAMES_COUNT];
+	u64 frameEndCycle[DEBUG_FRAMES_COUNT];
 
 	DebugArenaData arenaDataSentinel;
 	DebugCodeData codeDataSentinel;
@@ -75,7 +75,7 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaNam
 {
 	if (debugState)
 	{
-		uint32 frameIndex = debugState->writingFrameIndex;
+		u32 frameIndex = debugState->writingFrameIndex;
 
 		DebugArenaData *arenaData = debugState->arenaDataSentinel.next;
 		bool found = false;
@@ -123,11 +123,11 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaNam
 	}
 }
 
-void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
+void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
 {
 	if (debugState)
 	{
-		uint32 frameIndex = debugState->writingFrameIndex;
+		u32 frameIndex = debugState->writingFrameIndex;
 
 		DebugCodeData *codeData = debugState->codeDataSentinel.next;
 		bool found = false;
@@ -159,7 +159,7 @@ void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
 struct DebugBlock
 {
 	String name;
-	uint64 startTime;
+	u64 startTime;
 
 	DebugBlock(String name)
 	{
@@ -169,7 +169,7 @@ struct DebugBlock
 
 	~DebugBlock()
 	{
-		uint64 cycleCount = SDL_GetPerformanceCounter() - this->startTime;
+		u64 cycleCount = SDL_GetPerformanceCounter() - this->startTime;
 		debugTrackCodeCall(globalDebugState, this->name, cycleCount);
 	}
 };

@@ -1,33 +1,33 @@
 #pragma once
 
-typedef uint32 unichar;
+typedef u32 unichar;
 
 struct BitmapFontChar
 {
 	unichar codepoint;
 	Rect size;
-	int16 xOffset, yOffset; // Offset when rendering to the screen
-	int16 xAdvance; // How far to move after rendering this character
+	s16 xOffset, yOffset; // Offset when rendering to the screen
+	s16 xAdvance; // How far to move after rendering this character
 
-	uint32 textureRegionID;
+	u32 textureRegionID;
 };
 
 struct BitmapFont
 {
 	TextureAssetType textureAssetType;
 
-	uint16 lineHeight;
-	uint16 baseY;
+	u16 lineHeight;
+	u16 baseY;
 
 	BitmapFontChar nullChar;
 
-	uint32 charCount;
+	u32 charCount;
 	BitmapFontChar *chars;
 };
 
 struct BitmapFontCachedText
 {
 	V2 size;
-	uint32 charCount;
+	u32 charCount;
 	struct RenderItem *chars;
 };

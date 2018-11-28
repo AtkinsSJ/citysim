@@ -28,12 +28,12 @@ struct Tooltip
 	V4 color;
 	String text;
 };
-const real32 uiMessageBottomMargin = 4,
+const f32 uiMessageBottomMargin = 4,
 			uiMessageTextPadding = 4;
 struct UiMessage
 {
 	String text;
-	real32 countdown; // In seconds
+	f32 countdown; // In seconds
 };
 
 struct UIState
@@ -48,13 +48,13 @@ struct UIState
 	UiMessage message;
 
 	RealRect uiRects[32];
-	int32 uiRectCount;
+	s32 uiRectCount;
 
 	CursorType currentCursor;
 	bool cursorIsVisible;
 };
 
-const real32 messageDisplayTime = 2.0f;
+const f32 messageDisplayTime = 2.0f;
 
 void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
 {

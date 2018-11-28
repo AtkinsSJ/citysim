@@ -26,7 +26,7 @@ char *readFileAsString(MemoryArena *memory, char *filename)
 struct File
 {
 	umm length;
-	uint8 *data;
+	u8 *data;
 };
 
 File readFile(MemoryArena *arena, char *filename)
@@ -36,13 +36,13 @@ File readFile(MemoryArena *arena, char *filename)
 	SDL_RWops *file = SDL_RWFromFile(filename, "rb");
 	if (file)
 	{
-		int64 length = file->seek(file, 0, RW_SEEK_END);
+		s64 length = file->seek(file, 0, RW_SEEK_END);
 		file->seek(file, 0, RW_SEEK_SET);
 
-		ASSERT(result.length <= INT32_MAX, "File is too big to fit into an int32!");
+		ASSERT(result.length <= s32Max, "File is too big to fit into an s32!");
 
 		result.length = (umm) length;
-		result.data = PushArray(arena, uint8, result.length);
+		result.data = PushArray(arena, u8, result.length);
 
 		if (result.data)
 		{

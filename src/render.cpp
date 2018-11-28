@@ -1,19 +1,19 @@
 #pragma once
 
-inline real32 depthFromY(real32 y)
+inline f32 depthFromY(f32 y)
 {
 	return (y * 0.1f);
 }
-inline real32 depthFromY(uint32 y)
+inline f32 depthFromY(u32 y)
 {
-	return depthFromY((real32)y);
+	return depthFromY((f32)y);
 }
-inline real32 depthFromY(int32 y)
+inline f32 depthFromY(s32 y)
 {
-	return depthFromY((real32)y);
+	return depthFromY((f32)y);
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, uint32 maxItems)
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 maxItems)
 {
 	buffer->name = name;
 	buffer->items = PushArray(arena, RenderItem, maxItems);
@@ -34,16 +34,16 @@ void freeRenderer(Renderer *renderer)
 	renderer->free(renderer);
 }
 
-void onWindowResized(Renderer *renderer, int32 w, int32 h)
+void onWindowResized(Renderer *renderer, s32 w, s32 h)
 {
 	renderer->windowResized(w, h);
-	renderer->worldBuffer.camera.size = v2((real32)w / TILE_SIZE, (real32)h / TILE_SIZE);
+	renderer->worldBuffer.camera.size = v2((f32)w / TILE_SIZE, (f32)h / TILE_SIZE);
 
 	renderer->uiBuffer.camera.size = v2(w, h);
 	renderer->uiBuffer.camera.pos = renderer->uiBuffer.camera.size * 0.5f;
 }
 
-void resizeWindow(Renderer *renderer, int32 w, int32 h)
+void resizeWindow(Renderer *renderer, s32 w, s32 h)
 {
 	SDL_RestoreWindow(renderer->window);
 	SDL_SetWindowSize(renderer->window, w, h);
@@ -76,8 +76,8 @@ V2 unproject(Camera *camera, V2 screenPos)
 
 void updateCameraMatrix(Camera *camera)
 {
-	real32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;
-	real32 camHalfHeight = camera->size.y * 0.5f / camera->zoom;
+	f32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;
+	f32 camHalfHeight = camera->size.y * 0.5f / camera->zoom;
 	camera->projectionMatrix = orthographicMatrix4(
 		camera->pos.x - camHalfWidth, camera->pos.x + camHalfWidth,
 		camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,
@@ -85,7 +85,7 @@ void updateCameraMatrix(Camera *camera)
 	);
 }
 
-inline RenderItem makeRenderItem(RealRect rect, real32 depth, uint32 textureRegionID, V4 color)
+inline RenderItem makeRenderItem(RealRect rect, f32 depth, u32 textureRegionID, V4 color)
 {
 	RenderItem item = {};
 	item.rect = rect;
@@ -96,21 +96,21 @@ inline RenderItem makeRenderItem(RealRect rect, real32 depth, uint32 textureRegi
 	return item;
 }
 
-void drawRect(RenderBuffer *buffer, RealRect rect, real32 depth, V4 color)
+void drawRect(RenderBuffer *buffer, RealRect rect, f32 depth, V4 color)
 {
 	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
 
 	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, 0, color);
 }
 
-void drawTextureRegion(RenderBuffer *buffer, uint32 region, RealRect rect, real32 depth, V4 color=makeWhite())
+void drawTextureRegion(RenderBuffer *buffer, u32 region, RealRect rect, f32 depth, V4 color=makeWhite())
 {
 	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
 
 	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, region, color);
 }
 
-void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, real32 depthOffset)
+void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset)
 {
 	RenderItem *dest = buffer->items + buffer->itemCount++;
 

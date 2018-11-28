@@ -64,7 +64,7 @@ AppState globalAppState;
 #include "city.cpp"
 #include "game.cpp"
 
-SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *windowTitle)
+SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle)
 {
 	SDL_Window *window = 0;
 
@@ -75,7 +75,7 @@ SDL_Window *initSDL(uint32 winW, uint32 winH, uint32 windowFlags, const char *wi
 	else
 	{
 		// SDL_image
-		uint8 imgFlags = IMG_INIT_PNG;
+		u8 imgFlags = IMG_INIT_PNG;
 		if (!(IMG_Init(imgFlags) & imgFlags))
 		{
 			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
@@ -143,8 +143,8 @@ int main(int argc, char *argv[])
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera = &renderer->uiBuffer.camera;
 
-	worldCamera->size = v2((real32)inputState.windowSize.x / TILE_SIZE,
-	                       (real32)inputState.windowSize.y / TILE_SIZE);
+	worldCamera->size = v2((f32)inputState.windowSize.x / TILE_SIZE,
+	                       (f32)inputState.windowSize.y / TILE_SIZE);
 	worldCamera->zoom = 1.0f;
 
 	uiCamera->size = v2(inputState.windowSize);
@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
 
-	real32 framesPerSecond = 0;
-	uint32 frameStartTime = 0,
+	f32 framesPerSecond = 0;
+	u32 frameStartTime = 0,
 	       frameEndTime = 0;
 	
 	// GAME LOOP
@@ -215,14 +215,14 @@ int main(int argc, char *argv[])
 			SDL_GL_SwapWindow(renderer->window);
 		}
 		frameEndTime = SDL_GetTicks();
-		uint32 msForFrame = frameEndTime - frameStartTime;
+		u32 msForFrame = frameEndTime - frameStartTime;
 
 		if (msForFrame > 20)
 		{
 			int i = 100;
 		}
 
-		framesPerSecond = 1000.0f / (real32)fmax(msForFrame, 1.0f);
+		framesPerSecond = 1000.0f / (f32)fmax(msForFrame, 1.0f);
 		SDL_Log("FPS: %f, took %dms\n", framesPerSecond, msForFrame);
 	}
 

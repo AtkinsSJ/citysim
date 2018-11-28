@@ -1,7 +1,7 @@
 
-inline int32 pathGroupAt(City *city, int32 x, int32 y)
+inline s32 pathGroupAt(City *city, s32 x, s32 y)
 {
-	int32 result = 0;
+	s32 result = 0;
 
 	if (tileExists(city, x, y))
 	{
@@ -11,12 +11,12 @@ inline int32 pathGroupAt(City *city, int32 x, int32 y)
 	return result;
 }
 
-inline bool isPathable(City *city, int32 x, int32 y)
+inline bool isPathable(City *city, s32 x, s32 y)
 {
 	return pathGroupAt(city, x, y) > 0;
 }
 
-void floodFillPathingConnectivity(City *city, int32 x, int32 y, int32 fillValue)
+void floodFillPathingConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 {
 	city->pathLayer.data[tileIndex(city, x, y)] = fillValue;
 
@@ -48,8 +48,8 @@ void recalculatePathingConnectivity(City *city)
 	// Then, iterate over the tiles and flood fill from each -1 value.
 
 	// Reset things to 0/-1
-	int32 maxTileIndex = city->width * city->height;
-	for (int32 tileIndex = 0; tileIndex < maxTileIndex; ++tileIndex)
+	s32 maxTileIndex = city->width * city->height;
+	for (s32 tileIndex = 0; tileIndex < maxTileIndex; ++tileIndex)
 	{
 		if (city->pathLayer.data[tileIndex] > 0)
 		{
@@ -60,9 +60,9 @@ void recalculatePathingConnectivity(City *city)
 	city->pathLayer.pathGroupCount = 0;
 
 	// Find -1 tiles
-	for (int32 y=0, tileIndex = 0; y<city->height; y++)
+	for (s32 y=0, tileIndex = 0; y<city->height; y++)
 	{
-		for (int32 x=0; x<city->width; x++, tileIndex++)
+		for (s32 x=0; x<city->width; x++, tileIndex++)
 		{
 			if (city->pathLayer.data[tileIndex] == -1)
 			{
@@ -73,7 +73,7 @@ void recalculatePathingConnectivity(City *city)
 	}
 }
 
-inline bool _findPathGroup(int32 *pathGroupCount, int32 **pathGroups, int32 pathGroup)
+inline bool _findPathGroup(s32 *pathGroupCount, s32 **pathGroups, s32 pathGroup)
 {
 	bool found = false;
 	for (int i=0; i< (*pathGroupCount); i++)
@@ -87,7 +87,7 @@ inline bool _findPathGroup(int32 *pathGroupCount, int32 **pathGroups, int32 path
 	return found;
 }
 
-inline void _addPathGroup(int32 *pathGroupCount, int32 **pathGroups, int32 pathGroup)
+inline void _addPathGroup(s32 *pathGroupCount, s32 **pathGroups, s32 pathGroup)
 {
 	if (pathGroup)
 	{
@@ -107,8 +107,8 @@ bool canPathTo(City *city, Rect target, Coord from, MemoryArena *memoryArena)
 	TemporaryMemory tempArena = beginTemporaryMemory(memoryArena);
 
 	// First, determine all path groups that are adjacent to the buiding 'from' is in, if any.
-	int32 pathGroupCount = 0;
-	int32 *pathGroups = PushArray(&tempArena, int32, city->pathLayer.pathGroupCount);
+	s32 pathGroupCount = 0;
+	s32 *pathGroups = PushArray(&tempArena, s32, city->pathLayer.pathGroupCount);
 	Building *building = getBuildingAtPosition(city, from);
 	if (building
 		&& !buildingDefinitions[building->archetype].isPath)
@@ -133,7 +133,7 @@ bool canPathTo(City *city, Rect target, Coord from, MemoryArena *memoryArena)
 	{
 		// Right now, paths are only created by buildings, but we might as well
 		// handle non-buildings too.
-		int32 pathGroup = pathGroupAt(city, from.x, from.y);
+		s32 pathGroup = pathGroupAt(city, from.x, from.y);
 		if (pathGroup)
 		{
 			pathGroupCount = 1;
@@ -181,8 +181,8 @@ struct PathingNode
 {
 	bool initialised;
 	Coord pos;
-	int32 length;
-	int32 heuristic;
+	s32 length;
+	s32 heuristic;
 	PathingNode *towardStart;
 
 	PathingNode *next, *prev;
@@ -262,7 +262,7 @@ Coord pathToRectangle(City *city, Rect target, Coord from, MemoryArena *memoryAr
 {
 	Coord result = from;
 
-	int32 distance;
+	s32 distance;
 	Building *fromBuilding = getBuildingAtPosition(city, from);
 	if (fromBuilding)
 	{

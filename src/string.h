@@ -3,13 +3,13 @@
 struct String
 {
 	char *chars;
-	int32 length;
-	int32 maxLength;
+	s32 length;
+	s32 maxLength;
 };
 
 const String nullString = {};
 
-String newString(MemoryArena *arena, int32 length)
+String newString(MemoryArena *arena, s32 length)
 {
 	String s = {};
 	s.chars = PushArray(arena, char, length);
@@ -19,7 +19,7 @@ String newString(MemoryArena *arena, int32 length)
 	return s;
 }
 
-inline String makeString(char *chars, int32 length)
+inline String makeString(char *chars, s32 length)
 {
 	String result = {};
 	result.chars = chars;
@@ -41,19 +41,19 @@ String stringFromChars(char *chars)
 
 void copyString(String source, String *dest)
 {
-	int32 copyLength = MIN(source.length, dest->maxLength);
-	for (int32 i=0; i<copyLength; i++)
+	s32 copyLength = MIN(source.length, dest->maxLength);
+	for (s32 i=0; i<copyLength; i++)
 	{
 		dest->chars[i] = source.chars[i];
 	}
 	dest->length = copyLength;
 }
 
-void reverseString(char* first, uint32 length)
+void reverseString(char* first, u32 length)
 {
-	uint32 flips = length / 2;
+	u32 flips = length / 2;
 	char temp;
-	for (uint32 n=0; n < flips; n++)
+	for (u32 n=0; n < flips; n++)
 	{
 		temp = first[n];
 		first[n] = first[length-1-n];
@@ -70,7 +70,7 @@ bool equals(String a, String b)
 	}
 	else
 	{
-		for (int32 i = 0; i<b.length; i++)
+		for (s32 i = 0; i<b.length; i++)
 		{
 			if (a.chars[i] != b.chars[i])
 			{
@@ -88,12 +88,12 @@ bool equals(String a, char *b)
 	return equals(a, stringFromChars(b));
 }
 
-bool asInt(String string, int64 *result)
+bool asInt(String string, s64 *result)
 {
 	bool succeeded = true;
 
-	int64 value = 0;
-	int32 startPosition = 0;
+	s64 value = 0;
+	s32 startPosition = 0;
 	bool isNegative = false;
 	if (string.chars[0] == '-')
 	{
@@ -131,7 +131,7 @@ bool asInt(String string, int64 *result)
 	return succeeded;
 }
 
-bool isWhitespace(uint32 uChar)
+bool isWhitespace(u32 uChar)
 {
 	// TODO: FINISH THIS!
 
@@ -154,14 +154,14 @@ bool isWhitespace(uint32 uChar)
 struct TokenList
 {
 	String tokens[64];
-	int32 count;
-	int32 maxTokenCount = 64;
+	s32 count;
+	s32 maxTokenCount = 64;
 };
 
 TokenList tokenize(String input)
 {
 	TokenList result = {};
-	int32 position = 0;
+	s32 position = 0;
 
 	while (position <= input.length)
 	{

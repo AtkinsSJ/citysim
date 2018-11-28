@@ -19,7 +19,7 @@ struct MemoryBlock
 
 	umm size;
 	umm used;
-	uint8 *memory;
+	u8 *memory;
 };
 
 struct MemoryArenaResetState
@@ -49,7 +49,7 @@ struct TemporaryMemory
 MemoryBlock *addMemoryBlock(MemoryArena *arena, umm size)
 {
 	umm totalSize = size + sizeof(MemoryBlock);
-	uint8* memory = (uint8*) calloc(totalSize, 1);
+	u8* memory = (u8*) calloc(totalSize, 1);
 
 	ASSERT(memory, "Failed to allocate memory block!");
 
@@ -213,7 +213,7 @@ void endTemporaryMemory(TemporaryMemory *tempMemory)
 
 char *pushString(MemoryArena *arena, char *src)
 {
-	int32 len = strlen(src);
+	s32 len = strlen(src);
 	char *dest = PushArray(arena, char, len+1);
 	strcpy(dest, src);
 	dest[len] = 0;

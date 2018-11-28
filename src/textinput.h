@@ -3,13 +3,13 @@
 struct TextInput
 {
 	char *buffer;
-	int32 length;
-	int32 maxLength;
+	s32 length;
+	s32 maxLength;
 
-	int32 caretPos;
+	s32 caretPos;
 };
 
-TextInput newTextInput(MemoryArena *arena, int32 length)
+TextInput newTextInput(MemoryArena *arena, s32 length)
 {
 	TextInput b = {};
 	b.buffer = PushArray(arena, char, length + 1);
@@ -27,15 +27,15 @@ String textInputToString(TextInput *textInput)
 	return result;
 }
 
-void append(TextInput *textInput, char *source, int32 length)
+void append(TextInput *textInput, char *source, s32 length)
 {
-	int32 lengthToCopy = length;
+	s32 lengthToCopy = length;
 	if ((textInput->length + length) > textInput->maxLength)
 	{
 		lengthToCopy = textInput->maxLength - textInput->length;
 	}
 
-	for (int32 i=0; i < lengthToCopy; i++)
+	for (s32 i=0; i < lengthToCopy; i++)
 	{
 		textInput->buffer[textInput->length++] = source[i];
 	}
@@ -60,7 +60,7 @@ void append(TextInput *textInput, TextInput *source)
 	append(textInput, source->buffer, source->length);
 }
 
-void insert(TextInput *textInput, char *source, int32 length)
+void insert(TextInput *textInput, char *source, s32 length)
 {
 	if (textInput->caretPos == textInput->length)
 	{
@@ -68,20 +68,20 @@ void insert(TextInput *textInput, char *source, int32 length)
 		return;
 	}
 
-	int32 lengthToCopy = length;
+	s32 lengthToCopy = length;
 	if ((textInput->length + length) > textInput->maxLength)
 	{
 		lengthToCopy = textInput->maxLength - textInput->length;
 	}
 
 	// move the existing chars by lengthToCopy
-	for (int32 i=textInput->length - textInput->caretPos - 1; i>=0; i--)
+	for (s32 i=textInput->length - textInput->caretPos - 1; i>=0; i--)
 	{
 		textInput->buffer[textInput->caretPos + lengthToCopy + i] = textInput->buffer[textInput->caretPos + i];
 	}
 
 	// write from source
-	for (int32 i=0; i < lengthToCopy; i++)
+	for (s32 i=0; i < lengthToCopy; i++)
 	{
 		textInput->buffer[textInput->caretPos + i] = source[i];
 	}
@@ -97,7 +97,7 @@ void backspace(TextInput *textInput)
 		textInput->caretPos--;
 
 		// copy everything 1 to the left
-		for (int32 i=textInput->caretPos; i<textInput->length-1; i++)
+		for (s32 i=textInput->caretPos; i<textInput->length-1; i++)
 		{
 			textInput->buffer[i] = textInput->buffer[i+1];
 		}
@@ -111,7 +111,7 @@ void deleteChar(TextInput *textInput)
 	if (textInput->caretPos < textInput->length) 
 	{
 		// copy everything 1 to the left
-		for (int32 i=textInput->caretPos; i<textInput->length-1; i++)
+		for (s32 i=textInput->caretPos; i<textInput->length-1; i++)
 		{
 			textInput->buffer[i] = textInput->buffer[i+1];
 		}

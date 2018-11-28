@@ -5,16 +5,16 @@
 #pragma pack(push, 1)
 struct BMFontHeader
 {
-	uint8 tag[3];
-	uint8 version;
+	u8 tag[3];
+	u8 version;
 };
-const uint8 BMFontTag[3] = {'B', 'M', 'F'};
-const uint8 BMFontSupportedVersion = 3;
+const u8 BMFontTag[3] = {'B', 'M', 'F'};
+const u8 BMFontSupportedVersion = 3;
 
 struct BMFontBlockHeader
 {
-	uint8 type;
-	uint32 size;
+	u8 type;
+	u32 size;
 };
 enum BMFontBlockTypes
 {
@@ -35,27 +35,27 @@ enum BMFont_ColorChannelType
 };
 struct BMFontBlock_Common
 {
-	uint16 lineHeight;
-	uint16 base; // Distance from top of line to the character baseline
-	uint16 scaleW, scaleH; // GL_Texture dimensions
-	uint16 pageCount; // How many texture pages?
+	u16 lineHeight;
+	u16 base; // Distance from top of line to the character baseline
+	u16 scaleW, scaleH; // GL_Texture dimensions
+	u16 pageCount; // How many texture pages?
 
-	uint8 bitfield; // 1 if 8-bit character data is packed into all channels
-	uint8 alphaChannel;
-	uint8 redChannel;
-	uint8 greenChannel;
-	uint8 blueChannel;
+	u8 bitfield; // 1 if 8-bit character data is packed into all channels
+	u8 alphaChannel;
+	u8 redChannel;
+	u8 greenChannel;
+	u8 blueChannel;
 };
 
 struct BMFont_Char
 {
-	uint32 id;
-	uint16 x, y;
-	uint16 w, h;
-	int16 xOffset, yOffset; // Offset when rendering to the screen
-	int16 xAdvance; // How far to move after rendering this character
-	uint8 page; // GL_Texture page
-	uint8 channel; // Bitfield, 1 = blue, 2 = green, 4 = red, 8 = alpha
+	u32 id;
+	u16 x, y;
+	u16 w, h;
+	s16 xOffset, yOffset; // Offset when rendering to the screen
+	s16 xAdvance; // How far to move after rendering this character
+	u8 page; // GL_Texture page
+	u8 channel; // Bitfield, 1 = blue, 2 = green, 4 = red, 8 = alpha
 };
 
 #pragma pack(pop)
@@ -73,7 +73,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 	}
 	else
 	{
-		int64 pos = 0;
+		s64 pos = 0;
 		BMFontHeader *header = (BMFontHeader *)(file.data + pos);
 		pos += sizeof(BMFontHeader);
 
@@ -94,7 +94,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 			BMFontBlockHeader *blockHeader = 0;
 			BMFontBlock_Common *common = 0;
 			BMFont_Char *chars = 0;
-			uint32 charCount = 0;
+			u32 charCount = 0;
 			void *pages = 0;
 				
 			blockHeader = (BMFontBlockHeader *)(file.data + pos);
@@ -140,14 +140,14 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 			}
 			else
 			{
-				int32 *pageToTextureID = PushArray(&tempMemory, int32, common->pageCount);
+				s32 *pageToTextureID = PushArray(&tempMemory, s32, common->pageCount);
 				char *pageStart = (char *) pages;
 
-				for (uint32 pageIndex = 0;
+				for (u32 pageIndex = 0;
 					pageIndex < common->pageCount;
 					pageIndex++)
 				{
-					int32 textureID = addTexture(assets, pageStart, false);
+					s32 textureID = addTexture(assets, pageStart, false);
 					pageToTextureID[pageIndex] = textureID;
 					pageStart += strlen(pageStart) + 1;
 				}
@@ -162,7 +162,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 				font->charCount = charCount;
 				font->chars = PushArray(&assets->assetArena, BitmapFontChar, charCount);
 
-				for (uint32 charIndex = 0;
+				for (u32 charIndex = 0;
 					charIndex < charCount;
 					charIndex++)
 				{
@@ -176,7 +176,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 					dest->xAdvance = src->xAdvance;
 
 					dest->textureRegionID = addTextureRegion(assets, textureAssetType, pageToTextureID[src->page],
-						rectXYWH( (real32)src->x, (real32)src->y, (real32)src->w, (real32)src->h));
+						rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h));
 				}
 			}
 		}

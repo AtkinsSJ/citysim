@@ -16,11 +16,11 @@ struct StringBuilder
 {
 	MemoryArena *arena;
 	char *buffer;
-	int32 length;
-	int32 currentMaxLength;
+	s32 length;
+	s32 currentMaxLength;
 };
 
-StringBuilder newStringBuilder(int32 initialSize, MemoryArena *arena=globalFrameTempArena)
+StringBuilder newStringBuilder(s32 initialSize, MemoryArena *arena=globalFrameTempArena)
 {
 	StringBuilder b = {};
 	b.arena = arena;
@@ -32,15 +32,15 @@ StringBuilder newStringBuilder(int32 initialSize, MemoryArena *arena=globalFrame
 }
 
 // NB: As mentioned above, the old buffer is NOT deallocated!
-void expand(StringBuilder *stb, int32 newSize=-1)
+void expand(StringBuilder *stb, s32 newSize=-1)
 {
-	int32 targetSize = newSize;
+	s32 targetSize = newSize;
 	if (targetSize == -1) targetSize = stb->currentMaxLength * 2;
 
 	ASSERT(targetSize > stb->currentMaxLength, "OOPS");
 
 	char *newBuffer = PushArray(stb->arena, char, targetSize);
-	for (int32 i=0; i<stb->currentMaxLength; i++)
+	for (s32 i=0; i<stb->currentMaxLength; i++)
 	{
 		newBuffer[i] = stb->buffer[i];
 	}
@@ -49,16 +49,16 @@ void expand(StringBuilder *stb, int32 newSize=-1)
 	stb->currentMaxLength = targetSize;
 }
 
-void append(StringBuilder *stb, char *source, int32 length)
+void append(StringBuilder *stb, char *source, s32 length)
 {
-	int32 lengthToCopy = length;
+	s32 lengthToCopy = length;
 	if ((stb->length + length) > stb->currentMaxLength)
 	{
-		int32 newMaxLength = MAX(stb->length + length, stb->currentMaxLength * 2);
+		s32 newMaxLength = MAX(stb->length + length, stb->currentMaxLength * 2);
 		expand(stb, newMaxLength);
 	}
 
-	for (int32 i=0; i < lengthToCopy; i++)
+	for (s32 i=0; i < lengthToCopy; i++)
 	{
 		stb->buffer[stb->length++] = source[i];
 	}

@@ -2,13 +2,13 @@
 
 // General rendering code.
 
-const int32 ITILE_SIZE = 16;
-const real32 TILE_SIZE = ITILE_SIZE;
-const real32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
+const s32 ITILE_SIZE = 16;
+const f32 TILE_SIZE = ITILE_SIZE;
+const f32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 const bool canZoom = true;
 
 const int FRAMES_PER_SECOND = 60;
-const real32 SECONDS_PER_FRAME = 1.0f / 60.0f;
+const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
 inline Coord tilePosition(V2 worldPos) {
@@ -20,20 +20,20 @@ struct Camera
 {
 	V2 pos; // Centre of camera, in camera units
 	V2 size; // Size of camera, in camera units
-	real32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
+	f32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 	Matrix4 projectionMatrix;
 
 	V2 mousePos;
 };
-const real32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
-const real32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates, so 0.1 is 5% from the edge
+const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
+const f32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates, so 0.1 is 5% from the edge
 
 struct RenderItem
 {
 	RealRect rect;
-	real32 depth; // Positive is towards the player
+	f32 depth; // Positive is towards the player
 	V4 color;
-	uint32 textureRegionID;
+	u32 textureRegionID;
 };
 
 const int WORLD_SPRITE_MAX = 16384;
@@ -45,8 +45,8 @@ struct RenderBuffer
 	char *name;
 	Camera camera;
 	RenderItem *items;
-	uint32 itemCount;
-	uint32 maxItems;
+	u32 itemCount;
+	u32 maxItems;
 };
 
 struct Renderer
@@ -59,7 +59,7 @@ struct Renderer
 
 	void *platformRenderer;
 
-	void (*windowResized)(int32, int32);
+	void (*windowResized)(s32, s32);
 	void (*render)(Renderer *, AssetManager *);
 	void (*loadAssets)(Renderer *, AssetManager *);
 	void (*unloadAssets)(Renderer *);
@@ -77,16 +77,16 @@ enum AnimationID
 struct Animation
 {
 	TextureAssetType frames[16];
-	uint32 frameCount;
+	u32 frameCount;
 };
 
 struct Animator
 {
 	Animation *animation;
-	uint32 currentFrame;
-	real32 frameCounter; // Sub-frame ticks
+	u32 currentFrame;
+	f32 frameCounter; // Sub-frame ticks
 };
-const real32 animationFramesPerDay = 10.0f;
+const f32 animationFramesPerDay = 10.0f;
 #endif
 
 #include "render.cpp"

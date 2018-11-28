@@ -62,21 +62,21 @@ struct Texture
 struct TextureList
 {
 	DLinkedListMembers(TextureList);
-	uint32 usedCount;
+	u32 usedCount;
 	Texture textures[32]; // TODO: Tune this for performance!
 };
 
 struct TextureRegion
 {
 	TextureAssetType type;
-	int32 textureID;
+	s32 textureID;
 	RealRect uv; // in (0 to 1) space
 };
 
 struct TextureRegionList
 {
 	DLinkedListMembers(TextureRegionList);
-	uint32 usedCount;
+	u32 usedCount;
 	TextureRegion regions[512]; // TODO: Tune this for performance!
 };
 
@@ -121,8 +121,8 @@ struct UITooltipStyle
 	V4 textColorBad;
 
 	V4 backgroundColor;
-	real32 borderPadding;
-	real32 depth;
+	f32 borderPadding;
+	f32 depth;
 };
 
 struct UIMessageStyle
@@ -131,8 +131,8 @@ struct UIMessageStyle
 	V4 textColor;
 
 	V4 backgroundColor;
-	real32 borderPadding;
-	real32 depth;
+	f32 borderPadding;
+	f32 depth;
 };
 
 struct UITheme
@@ -153,18 +153,18 @@ struct AssetManager
 	MemoryArena assetArena;
 
 	// NB: index 0 reserved as a null texture.
-	uint32 textureCount;
+	u32 textureCount;
 	TextureList firstTextureList;
 	// Texture textures[32];
 
 	// NB: index 0 is reserved as a null region.
-	uint32 textureRegionCount;
+	u32 textureRegionCount;
 	TextureRegionList firstTextureRegionList;
 
 	// NOTE: At each index is the first or last position in textureRegions array matching that type.
 	// So, assets with the same type must be contiguous!
-	uint32 firstIDForTextureAssetType[TextureAssetTypeCount];
-	uint32 lastIDForTextureAssetType[TextureAssetTypeCount];
+	u32 firstIDForTextureAssetType[TextureAssetTypeCount];
+	u32 lastIDForTextureAssetType[TextureAssetTypeCount];
 
 	ShaderProgram shaderPrograms[ShaderProgramCount];
 
@@ -176,11 +176,11 @@ struct AssetManager
 	UITheme theme;
 };
 
-Texture *getTexture(AssetManager *assets, uint32 textureIndex)
+Texture *getTexture(AssetManager *assets, u32 textureIndex)
 {
 	ASSERT(textureIndex < assets->textureCount, "Selecting unallocated Texture!");
 	TextureList *list = &assets->firstTextureList;
-	const uint32 texturesPerList = ArrayCount(list->textures);
+	const u32 texturesPerList = ArrayCount(list->textures);
 
 	while (textureIndex >= texturesPerList)
 	{
@@ -191,22 +191,22 @@ Texture *getTexture(AssetManager *assets, uint32 textureIndex)
 	return list->textures + textureIndex;
 }
 
-uint32 getTextureRegionID(AssetManager *assets, TextureAssetType item, uint32 offset)
+u32 getTextureRegionID(AssetManager *assets, TextureAssetType item, u32 offset)
 {
-	uint32 min = assets->firstIDForTextureAssetType[item],
+	u32 min = assets->firstIDForTextureAssetType[item],
 		  max = assets->lastIDForTextureAssetType[item];
 
-	uint32 id = clampToRangeWrapping(min, max, offset);
+	u32 id = clampToRangeWrapping(min, max, offset);
 	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
 
 	return id;
 }
 
-TextureRegion *getTextureRegion(AssetManager *assets, uint32 textureRegionIndex)
+TextureRegion *getTextureRegion(AssetManager *assets, u32 textureRegionIndex)
 {
 	ASSERT(textureRegionIndex < assets->textureRegionCount, "Selecting unallocated TextureRegion!");
 	TextureRegionList *list = &assets->firstTextureRegionList;
-	const uint32 regionsPerList = ArrayCount(list->regions);
+	const u32 regionsPerList = ArrayCount(list->regions);
 
 	while (textureRegionIndex >= regionsPerList)
 	{

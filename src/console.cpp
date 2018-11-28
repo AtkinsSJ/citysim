@@ -8,7 +8,7 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 	{
 		String *line = consoleNextOutputLine(globalConsole, style);
 		line->length = MIN(text.length, line->maxLength);
-		for (int32 i=0; i<line->length; i++)
+		for (s32 i=0; i<line->length; i++)
 		{
 			line->chars[i] = text.chars[i];
 		}
@@ -18,12 +18,12 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 struct ConsoleTextState
 {
 	V2 pos;
-	real32 maxWidth;
+	f32 maxWidth;
 
 	UIState *uiState;
 	RenderBuffer *uiBuffer;
 };
-inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiBuffer, V2 screenSize, real32 screenEdgePadding, real32 height)
+inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiBuffer, V2 screenSize, f32 screenEdgePadding, f32 height)
 {
 	ConsoleTextState textState = {};
 	textState.pos = v2(screenEdgePadding, height - screenEdgePadding);
@@ -37,7 +37,7 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 
 RealRect consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
 {
-	int32 align = ALIGN_LEFT | ALIGN_BOTTOM;
+	s32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
 	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
 	                             align, 300, style.textColor, textState->maxWidth);
@@ -46,7 +46,7 @@ RealRect consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *fo
 	return resultRect;
 }
 
-void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *font, real32 height)
+void initConsole(MemoryArena *debugArena, s32 outputLineCount, BitmapFont *font, f32 height)
 {
 	Console *console = &theConsole;
 	console->isVisible = false;
@@ -63,7 +63,7 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, BitmapFont *fon
 
 	console->outputLineCount = outputLineCount;
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
-	for (int32 i=0; i < console->outputLineCount; i++)
+	for (s32 i=0; i < console->outputLineCount; i++)
 	{
 		console->outputLines[i].text = newString(debugArena, consoleLineLength);
 		console->outputLines[i].style = CLS_Default;
@@ -99,7 +99,7 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	textState.pos.y -= 8.0f;
 
 	// print output lines
-	for (int32 i=console->outputLineCount-1; i>=0; i--)
+	for (s32 i=console->outputLineCount-1; i>=0; i--)
 	{
 		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
 		consoleTextOut(&textState, line->text, console->font, console->styles[line->style]);
@@ -134,7 +134,7 @@ void consoleHandleCommand(Console *console)
 				{
 					foundCommand = true;
 
-					int32 argCount = tokens.count-1;
+					s32 argCount = tokens.count-1;
 					if ((argCount < cmd.minArgs) || (argCount > cmd.maxArgs))
 					{
 						if (cmd.minArgs == cmd.maxArgs)
@@ -150,9 +150,9 @@ void consoleHandleCommand(Console *console)
 					}
 					else
 					{
-						uint32 commandStartTime = SDL_GetTicks();
+						u32 commandStartTime = SDL_GetTicks();
 						cmd.function(console, &tokens);
-						uint32 commandEndTime = SDL_GetTicks();
+						u32 commandEndTime = SDL_GetTicks();
 
 						consoleWriteLine(myprintf("Command executed in {0}ms", {formatInt(commandEndTime - commandStartTime)}));
 					}
@@ -219,7 +219,7 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 		if (wasTextEntered(inputState))
 		{
 			char *enteredText = getEnteredText(inputState);
-			int32 inputTextLength = strlen(enteredText);
+			s32 inputTextLength = strlen(enteredText);
 
 			insert(&console->input, enteredText, inputTextLength);
 		}
@@ -231,7 +231,7 @@ void updateConsole(Console *console, InputState *inputState, UIState *uiState, R
 				char *clipboard = SDL_GetClipboardText();
 				if (clipboard)
 				{
-					int32 clipboardLength = strlen(clipboard);
+					s32 clipboardLength = strlen(clipboard);
 					insert(&console->input, clipboard, clipboardLength);
 
 					SDL_free(clipboard);

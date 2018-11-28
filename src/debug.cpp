@@ -14,14 +14,14 @@ void debugInit(BitmapFont *font)
 
 	DLinkedListInit(&globalDebugState->topCodeBlocksFreeListSentinel);
 	DLinkedListInit(&globalDebugState->topCodeBlocksSentinel);
-	for (uint32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
+	for (u32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
 	{
 		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
 		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
 	}
 }
 
-void clearDebugFrame(DebugState *debugState, int32 frameIndex)
+void clearDebugFrame(DebugState *debugState, s32 frameIndex)
 {
 	DebugCodeData *codeData = debugState->codeDataSentinel.next;
 	while (codeData != &debugState->codeDataSentinel)
@@ -102,16 +102,16 @@ struct DebugTextState
 	char buffer[1024];
 	BitmapFont *font;
 	V4 color;
-	real32 maxWidth;
+	f32 maxWidth;
 	bool progressUpwards;
 
 	UIState *uiState;
 	RenderBuffer *uiBuffer;
 
-	uint32 charsLastPrinted;
+	u32 charsLastPrinted;
 };
 inline DebugTextState initDebugTextState(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor,
-	                                     V2 screenSize, real32 screenEdgePadding, bool upwards)
+	                                     V2 screenSize, f32 screenEdgePadding, bool upwards)
 {
 	DebugTextState textState = {};
 	textState.progressUpwards = upwards;
@@ -135,7 +135,7 @@ inline DebugTextState initDebugTextState(UIState *uiState, RenderBuffer *uiBuffe
 
 void debugTextOut(DebugTextState *textState, String text)
 {
-	int32 align = ALIGN_LEFT;
+	s32 align = ALIGN_LEFT;
 	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
 	else                            align |= ALIGN_TOP;
 
@@ -157,14 +157,14 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 {
 	if (debugState)
 	{
-		uint32 rfi = debugState->readingFrameIndex;
+		u32 rfi = debugState->readingFrameIndex;
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			     100, color255(0,0,0,128));
 
 		DebugTextState textState = initDebugTextState(uiState, uiBuffer, debugState->font, makeWhite(),
 			                                          uiBuffer->camera.size, 16.0f, false);
 
-		uint32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
+		u32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 		debugTextOut(&textState, myprintf("Examing {0} frames ago", {formatInt(framesAgo)}));
 
 		DebugArenaData *arena = debugState->arenaDataSentinel.next;
@@ -175,7 +175,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 			arena = arena->next;
 		}
 
-		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
+		u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 		debugTextOut(&textState, myprintf("There are {0} cycles in a second", {formatInt(cyclesPerSecond)}));
 		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
 			{formatString("Code", 30), formatString("Total cycles", 20, false),
@@ -196,19 +196,19 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		}
 
 		// Draw a nice chart!
-		real32 graphHeight = 150.0f;
-		real32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-		real32 barWidth = uiBuffer->camera.size.x / (real32)DEBUG_FRAMES_COUNT;
-		real32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
+		f32 graphHeight = 150.0f;
+		f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
+		f32 barWidth = uiBuffer->camera.size.x / (f32)DEBUG_FRAMES_COUNT;
+		f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
 		V4 barColor = color255(255, 0, 0, 128);
 		V4 activeBarColor = color255(255, 255, 0, 128);
-		uint32 barIndex = 0;
-		for (uint32 fi = debugState->writingFrameIndex + 1;
+		u32 barIndex = 0;
+		for (u32 fi = debugState->writingFrameIndex + 1;
 			 fi != debugState->writingFrameIndex;
 			 fi = WRAP(fi + 1, DEBUG_FRAMES_COUNT))
 		{
-			uint64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
-			real32 barHeight = barHeightPerCycle * (real32)frameCycles;
+			u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
+			f32 barHeight = barHeightPerCycle * (f32)frameCycles;
 			drawRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), 200,
 				     fi == rfi ? activeBarColor : barColor);
 		}

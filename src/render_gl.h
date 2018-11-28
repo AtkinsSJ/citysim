@@ -55,7 +55,7 @@ struct GL_Renderer
 	SDL_GLContext context;
 
 	GL_ShaderProgram shaders[ShaderProgramCount];
-	int32 currentShader;
+	s32 currentShader;
 
 	GLuint VBO,
 		   IBO;

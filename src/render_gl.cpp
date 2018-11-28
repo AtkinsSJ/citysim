@@ -6,7 +6,7 @@ void GL_freeRenderer(Renderer *renderer)
 	SDL_GL_DeleteContext(gl->context);
 }
 
-void GL_windowResized(int32 newWidth, int32 newHeight)
+void GL_windowResized(s32 newWidth, s32 newHeight)
 {
 	glViewport(0, 0, newWidth, newHeight);
 }
@@ -218,7 +218,7 @@ void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Textures
 	gl->textureCount = assets->textureCount;
-	for (uint32 i=0; i<gl->textureCount; i++)
+	for (u32 i=0; i<gl->textureCount; i++)
 	{
 		if (i == 0)
 		{
@@ -233,7 +233,7 @@ void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	}
 
 	// Shaders
-	for (uint32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
+	for (u32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		bool shaderLoaded = GL_loadShaderProgram(gl, assets, (ShaderProgramType)shaderID);
 		ASSERT(shaderLoaded, "Failed to load shader %d into OpenGL.", shaderID);
@@ -245,7 +245,7 @@ void GL_unloadAssets(Renderer *renderer)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	for (uint32 i=1; i<gl->textureCount; i++)
+	for (u32 i=1; i<gl->textureCount; i++)
 	{
 		GL_TextureInfo *info = gl->textureInfo + i;
 		if (info->isLoaded)
@@ -259,7 +259,7 @@ void GL_unloadAssets(Renderer *renderer)
 
 	// Shaders
 	gl->currentShader = -1;
-	for (uint32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
+	for (u32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		GL_ShaderProgram *shader = gl->shaders + shaderID;
 		glDeleteProgram(shader->shaderProgramID);
@@ -276,7 +276,7 @@ inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 	return activeShader;
 }
 
-void renderPartOfBuffer(GL_Renderer *renderer, uint32 vertexCount, uint32 indexCount)
+void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
 	GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
@@ -345,15 +345,15 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 {
 	DEBUG_FUNCTION();
 	// Fill VBO
-	uint32 vertexCount = 0;
-	uint32 indexCount = 0;
+	u32 vertexCount = 0;
+	u32 indexCount = 0;
 	GLuint glBoundTextureID = 0; // 0 = none
 
-	uint32 drawCallCount = 0;
+	u32 drawCallCount = 0;
 
 	if (buffer->itemCount > 0)
 	{
-		for (uint32 i=0; i < buffer->itemCount; i++)
+		for (u32 i=0; i < buffer->itemCount; i++)
 		{
 			RenderItem *item = buffer->items + i;
 			ShaderProgramType desiredShader = getDesiredShader(item);
@@ -465,14 +465,14 @@ void sortRenderBuffer(RenderBuffer *buffer)
 	DEBUG_FUNCTION();
 	// This is an implementation of the 'comb sort' algorithm, low to high
 
-	uint32 gap = buffer->itemCount;
-	real32 shrink = 1.3f;
+	u32 gap = buffer->itemCount;
+	f32 shrink = 1.3f;
 
 	bool swapped = false;
 
 	while (gap > 1 || swapped)
 	{
-		gap = (uint32)((real32)gap / shrink);
+		gap = (u32)((f32)gap / shrink);
 		if (gap < 1)
 		{
 			gap = 1;
@@ -481,7 +481,7 @@ void sortRenderBuffer(RenderBuffer *buffer)
 		swapped = false;
 
 		// "comb" over the list
-		for (uint32 i = 0;
+		for (u32 i = 0;
 			i + gap < buffer->itemCount; // Here lies the remains of the flicker bug. It was <= not <. /fp
 			i++)
 		{
@@ -500,8 +500,8 @@ void sortRenderBuffer(RenderBuffer *buffer)
 bool isBufferSorted(RenderBuffer *buffer)
 {
 	bool isSorted = true;
-	real32 lastDepth = real32Min;
-	for (uint32 i=0; i<=buffer->itemCount; i++)
+	f32 lastDepth = f32Min;
+	for (u32 i=0; i<=buffer->itemCount; i++)
 	{
 		if (lastDepth > buffer->items[i].depth)
 		{
@@ -643,13 +643,13 @@ void setAnimation(Animator *animator, GL_Renderer *renderer, AnimationID animati
 	}
 }
 
-void drawAnimator(GL_Renderer *renderer, RenderBuffer *buffer, Animator *animator, real32 daysPerFrame,
-				V2 worldTilePosition, V2 size, real32 depth, V4 color)
+void drawAnimator(GL_Renderer *renderer, RenderBuffer *buffer, Animator *animator, f32 daysPerFrame,
+				V2 worldTilePosition, V2 size, f32 depth, V4 color)
 {
 	animator->frameCounter += daysPerFrame * animationFramesPerDay;
 	while (animator->frameCounter >= 1)
 	{
-		int32 framesElapsed = (int)animator->frameCounter;
+		s32 framesElapsed = (int)animator->frameCounter;
 		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
 		animator->frameCounter -= framesElapsed;
 	}

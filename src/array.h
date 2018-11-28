@@ -1,11 +1,11 @@
 #pragma once
 
 template<class T> struct Array {
-	int32 count;
-	int32 maxCount;
+	s32 count;
+	s32 maxCount;
 	T *items;
 
-	Array(int32 initialSize)
+	Array(s32 initialSize)
 	{
 		items = (T*) calloc(initialSize, sizeof(T));
 		count = 0;
@@ -25,7 +25,7 @@ template<class T> struct Array {
 };
 
 template<class T>
-bool resize(Array<T> *a, int32 newSize)
+bool resize(Array<T> *a, s32 newSize)
 {
 	ASSERT(newSize > a->count, "Shrinking an Array is not supported!");
 

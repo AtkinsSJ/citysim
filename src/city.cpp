@@ -1,6 +1,6 @@
 
 
-void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, String name, int32 funds)
+void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String name, s32 funds)
 {
 	city->name = name;
 	city->funds = funds;
@@ -8,10 +8,10 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, S
 	city->height = height;
 	city->terrain = PushArray(gameArena, Terrain, width*height);
 
-	city->pathLayer.data = PushArray(gameArena, int32, width*height);
+	city->pathLayer.data = PushArray(gameArena, s32, width*height);
 
 
-	city->tileBuildings = PushArray(gameArena, uint32, width*height);
+	city->tileBuildings = PushArray(gameArena, u32, width*height);
 	city->buildingCount = 1; // For the null building
 	city->buildingCountMax = ArrayCount(city->buildings);
 }
@@ -19,13 +19,13 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, S
 // void generateTerrain(City *city, RandomMT *random)
 // {
 
-// 	for (int32 y = 0; y < city->height; y++) {
-// 		for (int32 x = 0; x < city->width; x++) {
+// 	for (s32 y = 0; y < city->height; y++) {
+// 		for (s32 x = 0; x < city->width; x++) {
 
-// 			real32 px = (real32)x * 0.1f;
-// 			real32 py = (real32)y * 0.1f;
+// 			f32 px = (f32)x * 0.1f;
+// 			f32 py = (f32)y * 0.1f;
 
-// 			real32 perlinValue = stb_perlin_noise3(px, py, 0);
+// 			f32 perlinValue = stb_perlin_noise3(px, py, 0);
 
 // 			city->terrain[tileIndex(city, x, y)] = (perlinValue > 0.1f)
 // 				? Terrain_Forest
@@ -34,12 +34,12 @@ void initCity(MemoryArena *gameArena, City *city, uint32 width, uint32 height, S
 // 	}
 // }
 
-bool canAfford(City *city, int32 cost)
+bool canAfford(City *city, s32 cost)
 {
 	return city->funds >= cost;
 }
 
-void spend(City *city, int32 cost)
+void spend(City *city, s32 cost)
 {
 	city->funds -= cost;
 }
@@ -84,11 +84,11 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 	}
 
 	// Check terrain is buildable and empty
-	for (int32 y=0; y<def.height; y++)
+	for (s32 y=0; y<def.height; y++)
 	{
-		for (int32 x=0; x<def.width; x++)
+		for (s32 x=0; x<def.width; x++)
 		{
-			uint32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
+			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
 			if (city->terrain[ti] != Terrain_Ground)
 			{
 				if (isAttemptingToBuild)
@@ -122,7 +122,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, Co
 
 	ASSERT(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
 
-	uint32 buildingID = city->buildingCount++;
+	u32 buildingID = city->buildingCount++;
 	Building *building = getBuildingByID(city, buildingID);
 	BuildingDefinition *def = buildingDefinitions + archetype;
 
@@ -148,9 +148,9 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, Co
 	}
 
 	// Tiles
-	for (int16 y=0; y<building->footprint.h; y++) {
-		for (int16 x=0; x<building->footprint.w; x++) {
-			int32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
+	for (s16 y=0; y<building->footprint.h; y++) {
+		for (s16 x=0; x<building->footprint.w; x++) {
+			s32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
 			city->tileBuildings[tile] = buildingID;
 
 			if (def->isPath)
@@ -172,9 +172,9 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, Co
 bool demolishTile(UIState *uiState, City *city, Coord position) {
 	if (!tileExists(city, position.x, position.y)) return true;
 
-	uint32 posTI = tileIndex(city, position.x, position.y);
+	u32 posTI = tileIndex(city, position.x, position.y);
 
-	uint32 buildingID = city->tileBuildings[posTI];
+	u32 buildingID = city->tileBuildings[posTI];
 	if (buildingID) {
 
 		Building *building = getBuildingByID(city, buildingID);
@@ -190,15 +190,15 @@ bool demolishTile(UIState *uiState, City *city, Coord position) {
 		spend(city, def.demolishCost);
 
 		// Clear all references to this building
-		for (int32 y = building->footprint.y;
+		for (s32 y = building->footprint.y;
 			y < building->footprint.y + building->footprint.h;
 			y++) {
 
-			for (int32 x = building->footprint.x;
+			for (s32 x = building->footprint.x;
 				x < building->footprint.x + building->footprint.w;
 				x++) {
 
-				int32 tile = tileIndex(city, x, y);
+				s32 tile = tileIndex(city, x, y);
 
 				city->tileBuildings[tile] = 0;
 
@@ -234,11 +234,11 @@ bool demolishTile(UIState *uiState, City *city, Coord position) {
 			Building *highest = getBuildingByID(city, city->buildingCount);
 
 			// Change all references to highest building
-			for (int32 y = highest->footprint.y;
+			for (s32 y = highest->footprint.y;
 				y < highest->footprint.y + highest->footprint.h;
 				y++) {
 
-				for (int32 x = highest->footprint.x;
+				for (s32 x = highest->footprint.x;
 					x < highest->footprint.x + highest->footprint.w;
 					x++) {
 
@@ -284,8 +284,8 @@ bool demolishTile(UIState *uiState, City *city, Coord position) {
 	
 }
 
-int32 calculateDemolitionCost(City *city, Rect rect) {
-	int32 total = 0;
+s32 calculateDemolitionCost(City *city, Rect rect) {
+	s32 total = 0;
 
 	// Terrain clearing cost
 	for (int y=0; y<rect.h; y++) {
@@ -298,7 +298,7 @@ int32 calculateDemolitionCost(City *city, Rect rect) {
 
 	// We want to only get the cost of each building once.
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
-	for (uint32 i=1; i<=city->buildingCount; i++) {
+	for (u32 i=1; i<=city->buildingCount; i++) {
 		Building building = city->buildings[i];
 		if (rectsOverlap(building.footprint, rect)) {
 			total += buildingDefinitions[building.archetype].demolishCost;
@@ -310,7 +310,7 @@ int32 calculateDemolitionCost(City *city, Rect rect) {
 
 bool demolishRect(UIState *uiState, City *city, Rect rect) {
 
-	int32 cost = calculateDemolitionCost(city, rect);
+	s32 cost = calculateDemolitionCost(city, rect);
 	if (!canAfford(city, cost)) {
 		pushUiMessage(uiState, stringFromChars("Not enough money for demolition."));
 		return false;

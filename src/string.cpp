@@ -12,9 +12,9 @@ String myprintf(String format, std::initializer_list<String> args)
 
 	StringBuilder stb = newStringBuilder(format.length * 2);
 
-	int32 startOfNumber = INT32_MAX;
+	s32 startOfNumber = s32Max;
 	bool isReadingNumber = false;
-	for (int32 i=0; i<format.length; i++)
+	for (s32 i=0; i<format.length; i++)
 	{
 		switch (format.chars[i])
 		{
@@ -24,12 +24,12 @@ String myprintf(String format, std::initializer_list<String> args)
 			} break;
 
 			case '}': {
-				int32 endOfNumber = i;
+				s32 endOfNumber = i;
 				bool succeeded = false;
 				if (isReadingNumber && endOfNumber > startOfNumber)
 				{
 					String indexString = makeString(format.chars + startOfNumber, (endOfNumber - startOfNumber));
-					int64 parsedIndex = 0;
+					s64 parsedIndex = 0;
 					if (asInt(indexString, &parsedIndex))
 					{
 						// now we try and see if it's valid
@@ -51,7 +51,7 @@ String myprintf(String format, std::initializer_list<String> args)
 				}
 
 				isReadingNumber = false;
-				startOfNumber = INT32_MAX;
+				startOfNumber = s32Max;
 			} break;
 
 			default: {
@@ -70,12 +70,12 @@ String myprintf(String format, std::initializer_list<String> args)
 
 inline String myprintf(char *format, std::initializer_list<String> args) { return myprintf(stringFromChars(format), args); }
 
-String formatInt(uint64 value)
+String formatInt(u64 value)
 {
 	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit unsigned value is 20 characters long.
-	uint32 count = 0;
+	u32 count = 0;
 
-	uint64 v = value;
+	u64 v = value;
 
 	do
 	{
@@ -89,22 +89,22 @@ String formatInt(uint64 value)
 
 	return makeString(temp, count);
 }
-inline String formatInt(uint32 value) {return formatInt((uint64)value);}
-inline String formatInt(uint16 value) {return formatInt((uint64)value);}
-inline String formatInt(uint8  value) {return formatInt((uint64)value);}
+inline String formatInt(u32 value) {return formatInt((u64)value);}
+inline String formatInt(u16 value) {return formatInt((u64)value);}
+inline String formatInt(u8  value) {return formatInt((u64)value);}
 
-String formatInt(int64 value)
+String formatInt(s64 value)
 {
 	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit signed value is 19 characters long, plus a '-', so 20 again. Yay!
-	uint32 count = 0;
+	u32 count = 0;
 	bool isNegative = (value < 0);
 
-	// One complication here: If we're passed INT64_MIN, then -value is 1 larger than can be help in an INT64!
+	// One complication here: If we're passed s64_MIN, then -value is 1 larger than can be help in an s64!
 	// So, rather than flipping it and treating it like a positive number with an '-' appended,
 	// we have to make each digit positive as we get it.
 
-	// int64 v = isNegative ? -value : value;
-	int64 v = value;
+	// s64 v = isNegative ? -value : value;
+	s64 v = value;
 
 	do
 	{
@@ -123,23 +123,23 @@ String formatInt(int64 value)
 
 	return makeString(temp, count);
 }
-inline String formatInt(int32 value) {return formatInt((int64)value);}
-inline String formatInt(int16 value) {return formatInt((int64)value);}
-inline String formatInt(int8  value) {return formatInt((int64)value);}
+inline String formatInt(s32 value) {return formatInt((s64)value);}
+inline String formatInt(s16 value) {return formatInt((s64)value);}
+inline String formatInt(s8  value) {return formatInt((s64)value);}
 
 // TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
-String formatFloat(real64 value, int32 decimalPlaces)
+String formatFloat(f64 value, s32 decimalPlaces)
 {
 	String formatString = myprintf("%.{0}f\0", {formatInt(decimalPlaces)});
 
-	int32 length = 100; // TODO: is 100 enough?
+	s32 length = 100; // TODO: is 100 enough?
 	char *buffer = PushArray(globalFrameTempArena, char, length);
-	int32 written = snprintf(buffer, length, formatString.chars, value);
+	s32 written = snprintf(buffer, length, formatString.chars, value);
 
 	return makeString(buffer, MIN(written, length));
 }
 
-String formatString(String value, int32 length=-1, bool alignLeft = true, char paddingChar = ' ')
+String formatString(String value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
 {
 	if ((value.length == length) || (length == -1)) return value;
 
@@ -155,23 +155,23 @@ String formatString(String value, int32 length=-1, bool alignLeft = true, char p
 
 		if (alignLeft)
 		{
-			for (int32 i=0; i<value.length; i++)
+			for (s32 i=0; i<value.length; i++)
 			{
 				result.chars[i] = value.chars[i];
 			}
-			for (int32 i=value.length; i<length; i++)
+			for (s32 i=value.length; i<length; i++)
 			{
 				result.chars[i] = paddingChar;
 			}
 		}
 		else // alignRight
 		{
-			int32 startPos = length - value.length;
-			for (int32 i=0; i<value.length; i++)
+			s32 startPos = length - value.length;
+			for (s32 i=0; i<value.length; i++)
 			{
 				result.chars[i + startPos] = value.chars[i];
 			}
-			for (int32 i=0; i<startPos; i++)
+			for (s32 i=0; i<startPos; i++)
 			{
 				result.chars[i] = paddingChar;
 			}
@@ -180,18 +180,18 @@ String formatString(String value, int32 length=-1, bool alignLeft = true, char p
 		return result;
 	}
 }
-String formatString(char *value, int32 length=-1, bool alignLeft = true, char paddingChar = ' ')
+String formatString(char *value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
 {
 	return formatString(stringFromChars(value), length, alignLeft, paddingChar);
 }
 
 
-String repeatChar(char c, int32 length)
+String repeatChar(char c, s32 length)
 {
 	String result = newString(globalFrameTempArena, length);
 	result.length = length;
 
-	for (int32 i=0; i<length; i++)
+	for (s32 i=0; i<length; i++)
 	{
 		result.chars[i] = c;
 	}

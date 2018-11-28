@@ -6,9 +6,9 @@
 #include "stb_perlin.h"
 
 // How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
-inline int32 manhattanDistance(Rect rect, Coord point)
+inline s32 manhattanDistance(Rect rect, Coord point)
 {
-	int32 result = 0;
+	s32 result = 0;
 
 	if (point.x < rect.x)
 	{
@@ -31,9 +31,9 @@ inline int32 manhattanDistance(Rect rect, Coord point)
 	return result;
 }
 
-inline int32 manhattanDistance(Rect a, Rect b)
+inline s32 manhattanDistance(Rect a, Rect b)
 {
-	int32 result = 0;
+	s32 result = 0;
 
 	if (a.x + a.w <= b.x)
 	{
@@ -56,23 +56,23 @@ inline int32 manhattanDistance(Rect a, Rect b)
 	return result;
 }
 
-inline real32 lerp(real32 a, real32 b, real32 position)
+inline f32 lerp(f32 a, f32 b, f32 position)
 {
 	return a + (b-a)*position;
 }
 
-inline V2 lerp(V2 a, V2 b, real32 position)
+inline V2 lerp(V2 a, V2 b, f32 position)
 {
 	return a + (b-a)*position;
 }
 
-inline int32 clampToRangeWrapping(int32 minInclusive, int32 maxInclusive, int32 offset)
+inline s32 clampToRangeWrapping(s32 minInclusive, s32 maxInclusive, s32 offset)
 {
-	int32 t = offset % (maxInclusive - minInclusive + 1);
+	s32 t = offset % (maxInclusive - minInclusive + 1);
 	return minInclusive + t;
 }
-inline uint32 clampToRangeWrapping(uint32 minInclusive, uint32 maxInclusive, uint32 offset)
+inline u32 clampToRangeWrapping(u32 minInclusive, u32 maxInclusive, u32 offset)
 {
-	uint32 t = offset % (maxInclusive - minInclusive + 1);
+	u32 t = offset % (maxInclusive - minInclusive + 1);
 	return minInclusive + t;
 }

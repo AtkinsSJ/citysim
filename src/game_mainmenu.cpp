@@ -8,15 +8,15 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 
-	real32 windowWidth = (real32) uiBuffer->camera.size.x;
-	real32 windowHeight = (real32) uiBuffer->camera.size.y;
+	f32 windowWidth = (f32) uiBuffer->camera.size.x;
+	f32 windowHeight = (f32) uiBuffer->camera.size.y;
 	UITheme *theme = &assets->theme;
 	UIState *uiState = &appState->uiState;
 
 	drawRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, theme->overlayColor);
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
-	real32 maxLabelWidth = windowWidth - 256;
+	f32 maxLabelWidth = windowWidth - 256;
 
 	//drawGL_TextureAtlasItem(renderer, true, GL_TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 	//position.y += 154.0f;

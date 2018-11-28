@@ -10,8 +10,8 @@
 
 struct Matrix4 {
 	union {
-		real32 v[4][4]; // Column-major order, so [COLUMN][ROW]
-		real32 flat[4*4];
+		f32 v[4][4]; // Column-major order, so [COLUMN][ROW]
+		f32 flat[4*4];
 	};
 };
 
@@ -25,7 +25,7 @@ Matrix4 identityMatrix4() {
 	return m;
 }
 
-Matrix4 orthographicMatrix4(real32 left, real32 right, real32 top, real32 bottom, real32 nearClip, real32 farClip) {
+Matrix4 orthographicMatrix4(f32 left, f32 right, f32 top, f32 bottom, f32 nearClip, f32 farClip) {
 	Matrix4 m = {};
 	m.v[0][0] = 2.0f / (right-left);
 	m.v[1][1] = 2.0f / (top-bottom);
@@ -157,7 +157,7 @@ Matrix4 inverse(Matrix4 *source)
               source->flat[8] * source->flat[1] * source->flat[6] - 
               source->flat[8] * source->flat[2] * source->flat[5];
 
-	real32 det = source->flat[0] * result.flat[0] + source->flat[1] * result.flat[4] + source->flat[2] * result.flat[8] + source->flat[3] * result.flat[12];
+	f32 det = source->flat[0] * result.flat[0] + source->flat[1] * result.flat[4] + source->flat[2] * result.flat[8] + source->flat[3] * result.flat[12];
 	if (det != 0) {
 		det = 1.0f / det;
 		for (int i=0; i<16; i++) {
@@ -183,7 +183,7 @@ inline Matrix4 operator+=(Matrix4 &a, Matrix4 b) {
 }
 
 // Scalar multiplication
-inline Matrix4 operator*(Matrix4 m, real32 f) {
+inline Matrix4 operator*(Matrix4 m, f32 f) {
 	Matrix4 result = {};
 
 	for (int i=0; i<16; i++) {
@@ -253,9 +253,9 @@ void scale(Matrix4 *matrix, V3 scale) {
 	matrix->v[2][2] *= scale.z;
 }
 
-void rotateZ(Matrix4 *matrix, real32 radians) {
+void rotateZ(Matrix4 *matrix, f32 radians) {
 	Matrix4 rotation = identityMatrix4();
-	real32 c = cos(radians),
+	f32 c = cos(radians),
 		   s = sin(radians);
 	rotation.v[0][0] = c;
 	rotation.v[0][1] = s;

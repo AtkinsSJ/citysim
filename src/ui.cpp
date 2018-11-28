@@ -22,8 +22,8 @@ void initUiState(UIState *uiState)
 	setCursorVisible(uiState, false);
 }
 
-RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, int32 align,
-				 real32 depth, V4 color, real32 maxWidth = 0)
+RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, s32 align,
+				 f32 depth, V4 color, f32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
 
@@ -68,7 +68,7 @@ void drawTooltip(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
 }
 
 bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	          String text, RealRect bounds, real32 depth, bool active=false,
+	          String text, RealRect bounds, f32 depth, bool active=false,
 	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
@@ -117,7 +117,7 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 }
 
 bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	              String text, RealRect bounds, real32 depth, UIMenuID menuID,
+	              String text, RealRect bounds, f32 depth, UIMenuID menuID,
 	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
@@ -141,7 +141,7 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 }
 
 // void uiTextInput(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-// 	             bool active, char *textBuffer, int32 textBufferLength, V2 origin, real32 depth)
+// 	             bool active, char *textBuffer, s32 textBufferLength, V2 origin, f32 depth)
 // {
 // 	DEBUG_FUNCTION();
 	
@@ -149,10 +149,10 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 
 // 	if (active)
 // 	{
-// 		int32 textLength = strlen(textBuffer);
+// 		s32 textLength = strlen(textBuffer);
 // 		if (inputState->textEntered[0])
 // 		{
-// 			uint32 pos = 0;
+// 			u32 pos = 0;
 // 			while (inputState->textEntered[pos]
 // 				&& textLength < textBufferLength)
 // 			{
@@ -169,7 +169,7 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 // 		}
 // 	}
 
-// 	const real32 padding = 4;
+// 	const f32 padding = 4;
 // 	RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
 // 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
 // 	labelRect = expandRect(labelRect, padding);
@@ -194,7 +194,7 @@ void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *asset
 		{
 			UIMessageStyle *style = &assets->theme.uiMessageStyle;
 
-			real32 t = (real32)uiState->message.countdown / messageDisplayTime;
+			f32 t = (f32)uiState->message.countdown / messageDisplayTime;
 
 			V4 backgroundColor = style->backgroundColor;
 			V4 textColor = style->textColor;
@@ -202,14 +202,14 @@ void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *asset
 			if (t < 0.2f)
 			{
 				// Fade out
-				real32 tt = t / 0.2f;
+				f32 tt = t / 0.2f;
 				backgroundColor *= lerp(0, backgroundColor.a, tt);
 				textColor *= lerp(0, textColor.a, tt);
 			}
 			else if (t > 0.8f)
 			{
 				// Fade in
-				real32 tt = (t - 0.8f) / 0.2f;
+				f32 tt = (t - 0.8f) / 0.2f;
 				backgroundColor.a = lerp(backgroundColor.a, 0, tt);
 				textColor.a = lerp(textColor.a, 0, tt);
 			}

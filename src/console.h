@@ -28,20 +28,20 @@ struct Console
 	bool isVisible;
 	struct BitmapFont *font;
 	ConsoleLineStyle styles[CLS_COUNT];
-	real32 height;
+	f32 height;
 
 	TextInput input;
-	int32 charWidth;
+	s32 charWidth;
 
-	int32 outputLineCount;
+	s32 outputLineCount;
 	ConsoleOutputLine *outputLines;
-	int32 currentOutputLine;
+	s32 currentOutputLine;
 
-	real32 caretFlashCounter;
+	f32 caretFlashCounter;
 };
 Console *globalConsole;
 
-const int32 consoleLineLength = 255;
+const s32 consoleLineLength = 255;
 
 String *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=CLS_Default)
 {

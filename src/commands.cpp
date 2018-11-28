@@ -6,9 +6,9 @@ struct Command
 {
 	String name;
 	void (*function)(Console*, TokenList*);
-	int32 minArgs, maxArgs;
+	s32 minArgs, maxArgs;
 
-	Command(char *name, void (*function)(Console*, TokenList*), int32 minArgs, int32 maxArgs)
+	Command(char *name, void (*function)(Console*, TokenList*), s32 minArgs, s32 maxArgs)
 	{
 		this->name = stringFromChars(name);
 		this->function = function;
@@ -35,15 +35,15 @@ ConsoleCommand(resize_window)
 	String sWidth = tokens->tokens[1];
 	String sHeight = tokens->tokens[2];
 	
-	int64 width = 0;
-	int64 height = 0;
+	s64 width = 0;
+	s64 height = 0;
 	if (asInt(sWidth, &width)   && (width > 0)
 	 && asInt(sHeight, &height) && (height > 0))
 	{
 		consoleWriteLine(myprintf("Window resizes to {0} by {1}", {sWidth, sHeight}), CLS_Success);
 
 		succeeded = true;
-		resizeWindow(globalAppState.renderer, (int32)width, (int32)height);
+		resizeWindow(globalAppState.renderer, (s32)width, (s32)height);
 	}
 
 	if (!succeeded)

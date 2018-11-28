@@ -1,6 +1,6 @@
 #pragma once
 
-int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
+s32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
 {
 	TextureList *list = assets->firstTextureList.prev;
 	if (list->usedCount >= ArrayCount(list->textures))
@@ -9,8 +9,8 @@ int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied
 		DLinkedListInsertBefore(list, &assets->firstTextureList);
 	}
 
-	uint32 idWithinList = list->usedCount++;
-	uint32 textureID = assets->textureCount++;
+	u32 idWithinList = list->usedCount++;
+	u32 textureID = assets->textureCount++;
 	ASSERT(idWithinList == (textureID % ArrayCount(list->textures)), "Texture index mismatch!");
 
 	Texture *texture = list->textures + idWithinList;
@@ -21,7 +21,7 @@ int32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied
 	return textureID;
 }
 
-uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textureID, RealRect uv)
+u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID, RealRect uv)
 {
 	TextureRegionList *list = assets->firstTextureRegionList.prev;
 	if (list->usedCount >= ArrayCount(list->regions))
@@ -30,8 +30,8 @@ uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, int32 textu
 		DLinkedListInsertBefore(list, &assets->firstTextureRegionList);
 	}
 
-	uint32 idWithinList = list->usedCount++;
-	uint32 textureRegionID = assets->textureRegionCount++;
+	u32 idWithinList = list->usedCount++;
+	u32 textureRegionID = assets->textureRegionCount++;
 	ASSERT(idWithinList == (textureRegionID % ArrayCount(list->regions)), "Region index mismatch!");
 
 	TextureRegion *region = list->regions + idWithinList;
@@ -61,9 +61,9 @@ void initAssetManager(AssetManager *assets)
 	nullTexture->surface = 0;
 
 	// Have to provide defaults for these or it just breaks.
-	for (uint32 i = 0; i < TextureAssetTypeCount; ++i)
+	for (u32 i = 0; i < TextureAssetTypeCount; ++i)
 	{
-		assets->firstIDForTextureAssetType[i] = uint32Max;
+		assets->firstIDForTextureAssetType[i] = u32Max;
 		assets->lastIDForTextureAssetType[i] = 0;
 	}
 }
@@ -109,10 +109,10 @@ void initTheme(UITheme *theme)
 	
 }
 
-int32 findTexture(AssetManager *assets, char *filename)
+s32 findTexture(AssetManager *assets, char *filename)
 {
-	int32 index = -1;
-	for (int32 i = 0; i < (int32)assets->textureCount; ++i)
+	s32 index = -1;
+	for (s32 i = 0; i < (s32)assets->textureCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (strcmp(filename, tex->filename) == 0)
@@ -124,10 +124,10 @@ int32 findTexture(AssetManager *assets, char *filename)
 	return index;
 }
 
-uint32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
+u32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
 	                   bool isAlphaPremultiplied=false)
 {
-	int32 textureID = findTexture(assets, filename);
+	s32 textureID = findTexture(assets, filename);
 	if (textureID == -1)
 	{
 		textureID = addTexture(assets, filename, isAlphaPremultiplied);
@@ -157,7 +157,7 @@ void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *ve
 void loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
-	for (uint32 i = 1; i < assets->textureCount; ++i)
+	for (u32 i = 1; i < assets->textureCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Unloaded)
@@ -169,32 +169,32 @@ void loadAssets(AssetManager *assets)
 			if (!tex->isAlphaPremultiplied)
 			{
 				// Premultiply alpha
-				uint32 Rmask = tex->surface->format->Rmask,
+				u32 Rmask = tex->surface->format->Rmask,
 					   Gmask = tex->surface->format->Gmask,
 					   Bmask = tex->surface->format->Bmask,
 					   Amask = tex->surface->format->Amask;
-				real32 rRmask = (real32)Rmask,
-					   rGmask = (real32)Gmask,
-					   rBmask = (real32)Bmask,
-					   rAmask = (real32)Amask;
+				f32 rRmask = (f32)Rmask,
+					   rGmask = (f32)Gmask,
+					   rBmask = (f32)Bmask,
+					   rAmask = (f32)Amask;
 
-				uint32 pixelCount = tex->surface->w * tex->surface->h;
-				for (uint32 pixelIndex=0;
+				u32 pixelCount = tex->surface->w * tex->surface->h;
+				for (u32 pixelIndex=0;
 					pixelIndex < pixelCount;
 					pixelIndex++)
 				{
-					uint32 pixel = ((uint32*)tex->surface->pixels)[pixelIndex];
-					real32 rr = (real32)(pixel & Rmask) / rRmask;
-					real32 rg = (real32)(pixel & Gmask) / rGmask;
-					real32 rb = (real32)(pixel & Bmask) / rBmask;
-					real32 ra = (real32)(pixel & Amask) / rAmask;
+					u32 pixel = ((u32*)tex->surface->pixels)[pixelIndex];
+					f32 rr = (f32)(pixel & Rmask) / rRmask;
+					f32 rg = (f32)(pixel & Gmask) / rGmask;
+					f32 rb = (f32)(pixel & Bmask) / rBmask;
+					f32 ra = (f32)(pixel & Amask) / rAmask;
 
-					uint32 r = (uint32)(rr * ra * rRmask) & Rmask;
-					uint32 g = (uint32)(rg * ra * rGmask) & Gmask;
-					uint32 b = (uint32)(rb * ra * rBmask) & Bmask;
-					uint32 a = (uint32)(ra * rAmask) & Amask;
+					u32 r = (u32)(rr * ra * rRmask) & Rmask;
+					u32 g = (u32)(rg * ra * rGmask) & Gmask;
+					u32 b = (u32)(rb * ra * rBmask) & Bmask;
+					u32 a = (u32)(ra * rAmask) & Amask;
 
-					((uint32*)tex->surface->pixels)[pixelIndex] = (uint32)r | (uint32)g | (uint32)b | (uint32)a;
+					((u32*)tex->surface->pixels)[pixelIndex] = (u32)r | (u32)g | (u32)b | (u32)a;
 				}
 			}
 
@@ -203,14 +203,14 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Now we can convert UVs from pixel space to 0-1 space.
-	for (uint32 regionIndex = 1; regionIndex < assets->textureRegionCount; regionIndex++)
+	for (u32 regionIndex = 1; regionIndex < assets->textureRegionCount; regionIndex++)
 	{
 		TextureRegion *tr = getTextureRegion(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
 		// Maybe we could cache the current texture?
 		Texture *t = getTexture(assets, tr->textureID);
-		real32 textureWidth = (real32) t->surface->w;
-		real32 textureHeight = (real32) t->surface->h;
+		f32 textureWidth = (f32) t->surface->w;
+		f32 textureHeight = (f32) t->surface->h;
 
 		tr->uv = rectXYWH(
 			tr->uv.x / textureWidth,
@@ -221,7 +221,7 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Load up our cursors
-	for (uint32 cursorID = 1; cursorID < CursorCount; cursorID++)
+	for (u32 cursorID = 1; cursorID < CursorCount; cursorID++)
 	{
 		Cursor *cursor = assets->cursors + cursorID;
 
@@ -231,7 +231,7 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Load shader programs
-	for (uint32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
+	for (u32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
 		shader->vertShader = readFileAsString(&assets->assetArena, shader->vertFilename);
@@ -283,7 +283,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	// Actual reloading
 
 	// Clear out textures
-	for (uint32 i = 1; i < assets->textureCount; ++i)
+	for (u32 i = 1; i < assets->textureCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Loaded)
@@ -303,7 +303,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	}
 
 	// Clear cursors
-	for (uint32 cursorID = 0; cursorID < CursorCount; cursorID++)
+	for (u32 cursorID = 0; cursorID < CursorCount; cursorID++)
 	{
 		Cursor *cursor = assets->cursors + cursorID;
 		SDL_FreeCursor(cursor->sdlCursor);

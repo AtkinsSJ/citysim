@@ -4,7 +4,7 @@
 #include "credits.cpp"
 #include "settings.cpp"
 
-const real32 uiPadding = 4; // TODO: Move this somewhere sensible!
+const f32 uiPadding = 4; // TODO: Move this somewhere sensible!
 
 GameState *initialiseGameState()
 {
@@ -18,7 +18,7 @@ GameState *initialiseGameState()
 	return result;
 }
 
-void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, int32 cityHeight)
+void inputMoveCamera(Camera *camera, InputState *inputState, s32 cityWidth, s32 cityHeight)
 { 
 	// Zooming
 	if (canZoom && inputState->wheelY) {
@@ -27,7 +27,7 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 	}
 
 	// Panning
-	real32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
+	f32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
 	if (mouseButtonPressed(inputState, SDL_BUTTON_MIDDLE))
 	{
 		// Click-panning!
@@ -71,16 +71,16 @@ void inputMoveCamera(Camera *camera, InputState *inputState, int32 cityWidth, in
 		// City smaller than camera, so centre on it
 		camera->pos.x = cityWidth * 0.5f;
 	} else {
-		real32 minX = (cameraSize.x * 0.5f) - CAMERA_MARGIN;
-		camera->pos.x = clamp( camera->pos.x, minX, (real32)cityWidth - minX );
+		f32 minX = (cameraSize.x * 0.5f) - CAMERA_MARGIN;
+		camera->pos.x = clamp( camera->pos.x, minX, (f32)cityWidth - minX );
 	}
 
 	if (cityHeight < camera->size.y / camera->zoom) {
 		// City smaller than camera, so centre on it
 		camera->pos.y = cityHeight * 0.5f;
 	} else {
-		real32 minY = (cameraSize.y * 0.5f) - CAMERA_MARGIN;
-		camera->pos.y = clamp( camera->pos.y, minY, (real32)cityHeight - minY );
+		f32 minY = (cameraSize.y * 0.5f) - CAMERA_MARGIN;
+		camera->pos.y = clamp( camera->pos.y, minY, (f32)cityHeight - minY );
 	}
 }
 
@@ -89,14 +89,14 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 {
 	DEBUG_FUNCTION();
 	
-	real32 windowWidth = (real32) uiBuffer->camera.size.x;
+	f32 windowWidth = (f32) uiBuffer->camera.size.x;
 	V2 centre = uiBuffer->camera.pos;
 	UITheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, theme->labelStyle.font);
 
 	uiState->uiRectCount = 0;
 
-	real32 left = uiPadding;
+	f32 left = uiPadding;
 
 	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
@@ -221,8 +221,8 @@ bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIS
 	DEBUG_FUNCTION();
 	
 	bool result = false;
-	real32 windowWidth = (real32) uiBuffer->camera.size.x;
-	real32 windowHeight = (real32) uiBuffer->camera.size.y;
+	f32 windowWidth = (f32) uiBuffer->camera.size.x;
+	f32 windowHeight = (f32) uiBuffer->camera.size.y;
 	V2 cameraCentre = uiBuffer->camera.pos;
 
 	UITheme *theme = &assets->theme;
@@ -303,7 +303,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						placeBuilding(&uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos);
 					}
 
-					int32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
+					s32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
 					showCostTooltip(renderer, &uiState, buildCost, gameState->city.funds);
 				} break;
 
@@ -313,7 +313,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 						dragRect = irectCovering(mouseDragStartPos, worldCamera->mousePos);
-						int32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
+						s32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
 						showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
 					}	
 
@@ -352,11 +352,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		rectXYWH(0, 0, backgroundSize.x, backgroundSize.y), 0);
 
 	#if 0 // Terrain, which we don't use
-	for (int32 y = (cameraBounds.y < 0) ? 0 : (int32)cameraBounds.y;
+	for (s32 y = (cameraBounds.y < 0) ? 0 : (s32)cameraBounds.y;
 		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
 		y++)
 	{
-		for (int32 x = (cameraBounds.x < 0) ? 0 : (int32)cameraBounds.x;
+		for (s32 x = (cameraBounds.x < 0) ? 0 : (s32)cameraBounds.x;
 			(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
 			x++)
 		{
@@ -379,7 +379,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				v2(x+0.5f,y+0.5f), v2(1.0f, 1.0f), -1000);
 
 			#if 0 // Data layer rendering
-			int32 pathGroup = pathGroupAt(&gameState->city, x, y);
+			s32 pathGroup = pathGroupAt(&gameState->city, x, y);
 			if (pathGroup > 0)
 			{
 				Color color = {};
@@ -403,7 +403,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	#endif
 	
 	#if 0 // Draw buildings
-	for (uint32 i=1; i<gameState->city.buildingCount; i++)
+	for (u32 i=1; i<gameState->city.buildingCount; i++)
 	{
 		Building building = gameState->city.buildings[i];
 

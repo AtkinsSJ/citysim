@@ -12,12 +12,12 @@ const int forestDemolishCost = 100;
 struct BuildingDefinition {
 	union {
 		Coord size;
-		struct {int32 width, height;};
+		struct {s32 width, height;};
 	};
 	char *name;
 	TextureAssetType textureAtlasItem;
-	int32 buildCost;
-	int32 demolishCost;
+	s32 buildCost;
+	s32 demolishCost;
 	bool isPath;
 };
 
@@ -52,43 +52,43 @@ struct Building {
 };
 
 struct PathLayer {
-	int32 pathGroupCount;
-	int32 *data; // Represents the pathing 'group'. 0 = unpathable, >0 = any tile with the same value is connected
+	s32 pathGroupCount;
+	s32 *data; // Represents the pathing 'group'. 0 = unpathable, >0 = any tile with the same value is connected
 };
 
 struct City {
 	String name;
-	int32 funds;
-	int32 monthlyExpenditure;
+	s32 funds;
+	s32 monthlyExpenditure;
 
-	int32 width, height;
+	s32 width, height;
 	Terrain *terrain;
 	PathLayer pathLayer;
 
-	uint32 buildingCount;
-	uint32 buildingCountMax;
+	u32 buildingCount;
+	u32 buildingCountMax;
 	Building buildings[1024]; // TODO: Make the number of buildings unlimited!
-	uint32 *tileBuildings; // Map from x,y -> building id at that location.
+	u32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
 
 	Building *firstBuildingOfType[BA_Count];
 };
 
-inline uint32 tileIndex(City *city, int32 x, int32 y) {
+inline u32 tileIndex(City *city, s32 x, s32 y) {
 	return (y * city->width) + x;
 }
 
-inline bool tileExists(City *city, int32 x, int32 y) {
+inline bool tileExists(City *city, s32 x, s32 y) {
 	return (x >= 0) && (x < city->width)
 		&& (y >= 0) && (y < city->height);
 }
 
-inline Terrain terrainAt(City *city, int32 x, int32 y) {
+inline Terrain terrainAt(City *city, s32 x, s32 y) {
 	if (!tileExists(city, x, y)) return Terrain_Invalid;
 	return city->terrain[tileIndex(city, x, y)];
 }
 
-inline Building* getBuildingByID(City *city, uint32 buildingID) {
+inline Building* getBuildingByID(City *city, u32 buildingID) {
 	if (buildingID <= 0 || buildingID > city->buildingCountMax) {
 		return null;
 	}
