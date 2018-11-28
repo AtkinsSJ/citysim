@@ -12,6 +12,10 @@ GameState *initialiseGameState()
 	bootstrapArena(GameState, result, gameArena);
 
 	initCity(&result->gameArena, &result->city, 2000 / ITILE_SIZE, 1517 / ITILE_SIZE, LocalString("City Name Here"), gameStartFunds);
+	
+	Random random;
+	randomSeed(&random, 12345);
+	generateTerrain(&result->city, &random);
 
 	result->status = GameStatus_Playing;
 
@@ -354,13 +358,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	Rect2 cameraBounds = rectCentreSize(worldCamera->pos, worldCamera->size);
 
 	// Terrain, which we don't use
-	for (s32 y = (cameraBounds.y < 0) ? 0 : (s32)cameraBounds.y;
-		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
-		y++)
+	// for (s32 y = (cameraBounds.y < 0) ? 0 : (s32)cameraBounds.y;
+	// 	(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
+	// 	y++)
+	for (s32 y = 0; y < gameState->city.height; y++)
 	{
-		for (s32 x = (cameraBounds.x < 0) ? 0 : (s32)cameraBounds.x;
-			(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
-			x++)
+		// for (s32 x = (cameraBounds.x < 0) ? 0 : (s32)cameraBounds.x;
+		// 	(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
+		// 	x++)
+		for (s32 x = 0; x < gameState->city.width; x++)
 		{
 			Terrain t = terrainAt(&gameState->city,x,y);
 			TextureAssetType textureAtlasItem;
@@ -377,13 +383,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				} break;
 			}
 
-			drawTextureRegion(&renderer->worldBuffer, textureAtlasItem, rectXYWH(x, y, 1.0f, 1.0f), -1000.0f);
+			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, 0);
 
-			#if 0 // Data layer rendering
+			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH(x, y, 1.0f, 1.0f), -1000.0f);
+
+			#if 1 // Data layer rendering
 			s32 pathGroup = pathGroupAt(&gameState->city, x, y);
 			if (pathGroup > 0)
 			{
-				Color color = {};
+				V4 color = {};
 				switch (pathGroup)
 				{
 					case 1: color = {0, 0, 255, 63}; break;
@@ -396,7 +404,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					default: color = {255, 255, 255, 63}; break;
 				}
 
-				drawRect2I(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
+				drawRect(&renderer->worldBuffer, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, color);
 			}
 			#endif
 		}

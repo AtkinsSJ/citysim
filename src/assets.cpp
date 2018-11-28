@@ -180,6 +180,7 @@ void loadAssets(AssetManager *assets)
 			}
 
 			tex->state = AssetState_Loaded;
+			logInfo("Loaded texture: \"{0}\"", {tex->filename});
 		}
 	}
 
@@ -199,6 +200,9 @@ void loadAssets(AssetManager *assets)
 			tr->uv.w / textureWidth,
 			tr->uv.h / textureHeight
 		);
+		if (tr->type > TextureAssetType_Font_Debug) {
+			logInfo("Loaded texture region #{0}, texture: \"{1}\"", {formatInt(tr->type), t->filename});
+		}
 	}
 
 	// Load up our cursors
@@ -248,6 +252,11 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 {
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,2002,1519), false);
+
+	addTextureRegion(assets, TextureAssetType_GroundTile, "combined.png", rectXYWH(0,  0, 16, 16), false);
+	addTextureRegion(assets, TextureAssetType_ForestTile, "combined.png", rectXYWH(32, 0, 16, 16), false);
+	addTextureRegion(assets, TextureAssetType_WaterTile,  "combined.png", rectXYWH(16, 0, 16, 16), false);
+
 	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
 
