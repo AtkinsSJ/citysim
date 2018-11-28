@@ -147,7 +147,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 					pageIndex < common->pageCount;
 					pageIndex++)
 				{
-					s32 textureID = addTexture(assets, pageStart, false);
+					s32 textureID = addTexture(assets, pushString(&assets->assetArena, pageStart), false);
 					pageToTextureID[pageIndex] = textureID;
 					pageStart += strlen(pageStart) + 1;
 				}

@@ -55,7 +55,7 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 	if (header && (header->state == AssetState_Loaded))
 	{
 		char *datas[] = {header->contents.chars, shaderSource->chars};
-		int32 lengths[] = {header->contents.length, shaderSource->length};
+		s32 lengths[] = {header->contents.length, shaderSource->length};
 		glShaderSource(shaderID, 2, datas, lengths);
 	}
 	else
@@ -583,6 +583,3 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 
 	return renderer;
 }
-void drawAnimator(GL_Renderer *renderer, RenderBuffer *buffer, Animator *animator, f32 daysPerFrame,
-				V2 worldTilePosition, V2 size, f32 depth, V4 color)
-		s32 framesElapsed = (int)animator->frameCounter;

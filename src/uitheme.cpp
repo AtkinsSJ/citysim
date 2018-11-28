@@ -30,8 +30,8 @@ struct UITooltipStyle
 	V4 textColorBad;
 
 	V4 backgroundColor;
-	real32 borderPadding;
-	real32 depth;
+	f32 borderPadding;
+	f32 depth;
 };
 
 struct UIMessageStyle
@@ -40,8 +40,8 @@ struct UIMessageStyle
 	V4 textColor;
 
 	V4 backgroundColor;
-	real32 borderPadding;
-	real32 depth;
+	f32 borderPadding;
+	f32 depth;
 };
 
 struct UITheme
@@ -57,7 +57,7 @@ struct UITheme
 
 V4 readColor255(String input)
 {
-	int64 r = 0, g = 0, b = 0, a = 255;
+	s64 r = 0, g = 0, b = 0, a = 255;
 	String token, rest;
 	bool succeeded;
 
@@ -86,7 +86,7 @@ V4 readColor255(String input)
 		succeeded = asInt(token, &a);
 	}
 
-	return color255((uint8)r, (uint8)g, (uint8)b, (uint8)a);
+	return color255((u8)r, (u8)g, (u8)b, (u8)a);
 }
 
 static void invalidPropertyError(LineReader *reader, String property, String section)
@@ -305,17 +305,17 @@ void loadUITheme(UITheme *theme, String file)
 				switch (currentTarget)
 				{
 					case Section_Tooltip: {
-						int64 intValue;
+						s64 intValue;
 						if (asInt(remainder, &intValue))
 						{
-							theme->tooltipStyle.depth = (real32) intValue;
+							theme->tooltipStyle.depth = (f32) intValue;
 						}
 					} break;
 					case Section_UIMessage: {
-						int64 intValue;
+						s64 intValue;
 						if (asInt(remainder, &intValue))
 						{
-							theme->uiMessageStyle.depth = (real32) intValue;
+							theme->uiMessageStyle.depth = (f32) intValue;
 						}
 					} break;
 					default:
@@ -328,17 +328,17 @@ void loadUITheme(UITheme *theme, String file)
 				switch (currentTarget)
 				{
 					case Section_Tooltip: {
-						int64 intValue;
+						s64 intValue;
 						if (asInt(remainder, &intValue))
 						{
-							theme->tooltipStyle.borderPadding = (real32)intValue;
+							theme->tooltipStyle.borderPadding = (f32)intValue;
 						}
 					} break;
 					case Section_UIMessage: {
-						int64 intValue;
+						s64 intValue;
 						if (asInt(remainder, &intValue))
 						{
-							theme->uiMessageStyle.borderPadding = (real32)intValue;
+							theme->uiMessageStyle.borderPadding = (f32)intValue;
 						}
 					} break;
 					default:

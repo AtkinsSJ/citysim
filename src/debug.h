@@ -55,8 +55,8 @@ struct DebugRenderBufferData
 {
 	String name;
 
-	uint32 itemCount[DEBUG_FRAMES_COUNT];
-	uint32 drawCallCount[DEBUG_FRAMES_COUNT];
+	u32 itemCount[DEBUG_FRAMES_COUNT];
+	u32 drawCallCount[DEBUG_FRAMES_COUNT];
 
 	DLinkedListMembers(DebugRenderBufferData);
 };
@@ -84,8 +84,8 @@ struct DebugState
 };
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
-void debugTrackRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer, uint32 drawCallCount);
-void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount);
+void debugTrackRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer, u32 drawCallCount);
+void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount);
 
 struct DebugBlock
 {

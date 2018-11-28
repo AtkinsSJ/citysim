@@ -82,7 +82,7 @@ inline bool modifierKeyIsPressed(InputState *input, ModifierKey modifier)
 	return result;
 }
 
-inline bool modifierKeysArePressed(InputState *input, uint8 modifiers)
+inline bool modifierKeysArePressed(InputState *input, u8 modifiers)
 {
 	bool result = true;
 
@@ -109,9 +109,9 @@ inline bool modifierKeysArePressed(InputState *input, uint8 modifiers)
 	return result;
 }
 
-inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
+inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
-	int32 keycode = keycodeToIndex(key);
+	s32 keycode = keycodeToIndex(key);
 
 	bool result = input->_keyDown[keycode];
 
@@ -122,6 +122,8 @@ inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 
 	return result;
 }
+
+inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
 	s32 keycode = keycodeToIndex(key);
 
@@ -149,6 +151,7 @@ inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
 
 	return result;
 }
+
 inline bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
 	return keyIsPressed(input, key, modifiers) && !keyWasPressed(input, key);

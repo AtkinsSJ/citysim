@@ -17,7 +17,7 @@ template<class T> struct Array {
 		free(items);
 	}
 
-	T operator[](int index)
+	T operator[](s32 index)
 	{
 		ASSERT(index >=0 && index < count, "Index out of range!");
 		return items[index];

@@ -48,10 +48,6 @@ BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
-	u8 b1 = *((*nextChar)++);
-		result = (u32) b1;
-		s32 extraBytes = 1;
-			u8 bn = *((*nextChar)++);
 struct DrawTextState
 {
 	bool doWrap;
@@ -97,7 +93,7 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 
 		if ((state->currentLineWidth + c->xAdvance) > state->maxWidth)
 		{
-			real32 newWordWidth = state->currentWordWidth + c->xAdvance;
+			f32 newWordWidth = state->currentWordWidth + c->xAdvance;
 			if (newWordWidth > state->maxWidth)
 			{
 				// The current word is longer than will fit on an entire line!
@@ -110,7 +106,7 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 				state->currentWordWidth = 0;
 
 				state->startOfCurrentWord->rect.pos.x = state->position.x;
-				state->startOfCurrentWord->rect.pos.y = state->position.y + (real32)c->yOffset;
+				state->startOfCurrentWord->rect.pos.y = state->position.y + (f32)c->yOffset;
 			}
 			else
 			{
@@ -151,10 +147,10 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 	state.currentWordWidth = 0;
 	state.currentLineWidth = 0;
 
-	int32 glyphsToOutput = countGlyphs(text.chars, text.length);
+	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
 	// Memory management witchcraft
-	uint32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * glyphsToOutput);
+	u32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * glyphsToOutput);
 	u8 *data = (u8 *) allocate(memory, memorySize);
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
@@ -162,8 +158,8 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 
 	if (result)
 	{
-		int32 bytePos = 0;
-		for (int32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
+		s32 bytePos = 0;
+		for (s32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
 		{
 			unichar glyph = readUnicodeChar(text.chars + bytePos);
 

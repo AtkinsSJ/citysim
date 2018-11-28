@@ -46,7 +46,7 @@ Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font,
 	return resultRect;
 }
 
-void initConsole(MemoryArena *debugArena, int32 outputLineCount, real32 openHeight, real32 maximisedHeight, real32 openSpeed)
+void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f32 maximisedHeight, f32 openSpeed)
 {
 	Console *console = &theConsole;
 	console->currentHeight = 0;
@@ -85,7 +85,7 @@ void initConsole(MemoryArena *debugArena, int32 outputLineCount, real32 openHeig
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
-	real32 actualConsoleHeight = console->currentHeight * uiBuffer->camera.size.y;
+	f32 actualConsoleHeight = console->currentHeight * uiBuffer->camera.size.y;
 
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
@@ -101,13 +101,13 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 	drawRect(uiBuffer, consoleBackRect, 100, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
-	real32 scrollPercent = 1.0f - ((real32)console->scrollPos / (real32)consoleMaxScrollPos(console));
+	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
 	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, 200, color255(48, 48, 48, 245));
 
 	textState.pos.y -= 8.0f;
 
 	// print output lines
-	for (int32 i=console->outputLineCount-console->scrollPos-1; i>=0; i--)
+	for (s32 i=console->outputLineCount-console->scrollPos-1; i>=0; i--)
 	{
 		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
 		consoleTextOut(&textState, line->text, console->font, console->styles[line->style]);

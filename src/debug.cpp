@@ -28,6 +28,7 @@ void setDebugFont(BitmapFont *font)
 	globalConsole->charWidth = findChar(font, 'M')->xAdvance;
 }
 
+void clearDebugFrame(DebugState *debugState, s32 frameIndex)
 {
 	DebugCodeData *codeData = debugState->codeDataSentinel.next;
 	while (codeData != &debugState->codeDataSentinel)
@@ -117,7 +118,8 @@ struct DebugTextState
 
 	u32 charsLastPrinted;
 };
-void initDebugTextState(DebugTextState *textState, UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor, V2 screenSize, real32 screenEdgePadding, bool upwards, bool alignLeft)
+
+void initDebugTextState(DebugTextState *textState, UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor, V2 screenSize, f32 screenEdgePadding, bool upwards, bool alignLeft)
 {
 	*textState = {};
 
@@ -151,7 +153,7 @@ void initDebugTextState(DebugTextState *textState, UIState *uiState, RenderBuffe
 
 void debugTextOut(DebugTextState *textState, String text)
 {
-	int32 align = textState->hAlign;
+	s32 align = textState->hAlign;
 	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
 	else                            align |= ALIGN_TOP;
 
@@ -173,7 +175,8 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 {
 	if (debugState)
 	{
-		uint64 cyclesPerSecond = SDL_GetPerformanceFrequency();
+		u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
+		u32 rfi = debugState->readingFrameIndex;
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			     100, color255(0,0,0,128));
 
@@ -229,10 +232,10 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 
 		// Draw a "nice" chart!
 		{
-			real32 graphHeight = 150.0f;
-			real32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-			real32 barWidth = uiBuffer->camera.size.x / (real32)DEBUG_FRAMES_COUNT;
-			real32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
+			f32 graphHeight = 150.0f;
+			f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
+			f32 barWidth = uiBuffer->camera.size.x / (f32)DEBUG_FRAMES_COUNT;
+			f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
 			V4 barColor = color255(255, 0, 0, 128);
 			V4 activeBarColor = color255(255, 255, 0, 128);
 		u32 barIndex = 0;
@@ -258,7 +261,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 			String sfps = stringFromChars("???");
 			if (rfi != debugState->writingFrameIndex)
 			{
-				real32 msForFrame = (real32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (real32)(cyclesPerSecond/1000);
+				f32 msForFrame = (f32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond/1000);
 				smsForFrame = formatFloat(msForFrame, 2);
 				sfps = formatFloat(1000.0f / MAX(msForFrame, 1), 2);
 			}
@@ -325,7 +328,7 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 		DebugArenaData *arenaData;
 		FIND_OR_CREATE_DEBUG_DATA(DebugArenaData, name, arenaDataSentinel, arenaData);
 
-		uint32 frameIndex = debugState->writingFrameIndex;
+		u32 frameIndex = debugState->writingFrameIndex;
 
 		arenaData->blockCount[frameIndex] = 0;
 		arenaData->totalSize[frameIndex] = 0;
@@ -353,14 +356,14 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 	}
 }
 
-void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
+void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
 {
 	if (debugState)
 	{
 		DebugCodeData *codeData;
 		FIND_OR_CREATE_DEBUG_DATA(DebugCodeData, name, codeDataSentinel, codeData);
 
-		uint32 frameIndex = debugState->writingFrameIndex;
+		u32 frameIndex = debugState->writingFrameIndex;
 
 		codeData->callCount[frameIndex]++;
 		codeData->totalCycleCount[frameIndex] += cycleCount;
@@ -368,14 +371,14 @@ void debugTrackCodeCall(DebugState *debugState, String name, uint64 cycleCount)
 	}
 }
 
-void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, uint32 drawCallCount)
+void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, u32 drawCallCount)
 {
 	if (debugState)
 	{
 		DebugRenderBufferData *renderBufferData;
 		FIND_OR_CREATE_DEBUG_DATA(DebugRenderBufferData, renderBuffer->name, renderBufferDataSentinel, renderBufferData);
 
-		uint32 frameIndex = debugState->writingFrameIndex;
+		u32 frameIndex = debugState->writingFrameIndex;
 
 		renderBufferData->itemCount[frameIndex] = renderBuffer->itemCount;
 		renderBufferData->drawCallCount[frameIndex] = drawCallCount;

@@ -68,8 +68,8 @@ struct LineReader
 	String file;
 	bool skipBlankLines;
 
-	int32 pos;
-	int32 lineNumber;
+	s32 pos;
+	s32 lineNumber;
 
 	bool removeComments;
 	char commentChar;
@@ -113,7 +113,7 @@ String nextLine(LineReader *reader)
 		// trim the comment
 		if (reader->removeComments)
 		{
-			for (int32 p=0; p<line.length; p++)
+			for (s32 p=0; p<line.length; p++)
 			{
 				if (line.chars[p] == reader->commentChar)
 				{

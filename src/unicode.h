@@ -12,9 +12,9 @@ bool byteIsStartOfGlyph(char b)
 // Decodes the byte to see how long it claims to be.
 // There is no guarantee that the bytes that follow it are valid within the string, we don't check!
 // returns 0 for an invalid start byte
-int32 lengthOfGlyph(char startByte)
+s32 lengthOfGlyph(char startByte)
 {
-	int32 result = 0;
+	s32 result = 0;
 
 	if ((startByte & 0b10000000) == 0)
 	{
@@ -47,13 +47,13 @@ int32 lengthOfGlyph(char startByte)
 	return result;
 }
 
-bool isFullGlyph(char *buffer, int32 glyphStartPos, int32 bufferByteLength)
+bool isFullGlyph(char *buffer, s32 glyphStartPos, s32 bufferByteLength)
 {
 	bool result = false;
 
 	if (byteIsStartOfGlyph(buffer[glyphStartPos]))
 	{
-		int32 glyphLength = lengthOfGlyph(buffer[glyphStartPos]);
+		s32 glyphLength = lengthOfGlyph(buffer[glyphStartPos]);
 
 		if (glyphLength == 0)
 		{
@@ -69,9 +69,9 @@ bool isFullGlyph(char *buffer, int32 glyphStartPos, int32 bufferByteLength)
 }
 
 // returns 0 (start of the buffer) if can't find the start of the glyph
-int32 findStartOfGlyph(char *buffer, int32 byteOffset)
+s32 findStartOfGlyph(char *buffer, s32 byteOffset)
 {
-	int32 pos = byteOffset;
+	s32 pos = byteOffset;
 	while ((pos > 0) && !byteIsStartOfGlyph(buffer[pos]) )
 	{
 		pos--;
@@ -81,16 +81,16 @@ int32 findStartOfGlyph(char *buffer, int32 byteOffset)
 }
 
 // returns -1 if no next glyph exists
-int32 findStartOfNextGlyph(char *buffer, int32 byteOffset, int32 bufferByteLength)
+s32 findStartOfNextGlyph(char *buffer, s32 byteOffset, s32 bufferByteLength)
 {
-	int32 pos = byteOffset + 1;
+	s32 pos = byteOffset + 1;
 
 	while ((pos < bufferByteLength) && !byteIsStartOfGlyph(buffer[pos]))
 	{
 		pos++;
 	}
 
-	int32 result = -1;
+	s32 result = -1;
 
 	if (byteIsStartOfGlyph(buffer[pos]))
 	{
@@ -101,19 +101,19 @@ int32 findStartOfNextGlyph(char *buffer, int32 byteOffset, int32 bufferByteLengt
 }
 
 // returns 0 if we start mid-way through a glyph
-int32 floorToWholeGlyphs(char *startByte, int32 byteLength)
+s32 floorToWholeGlyphs(char *startByte, s32 byteLength)
 {
 	// @Speed: Should be able to start at the end, find the start of that glyph, then see how many bytes it
 	// is - that's all we need to know to floor it!
 
-	int32 flooredByteCount = 0;
+	s32 flooredByteCount = 0;
 
 	// Only count if we start at the beginning of a glyph.
 	// Otherwise, we return 0.
 	if (byteIsStartOfGlyph(*startByte))
 	{
-		int32 pos = 0;
-		int32 glyphLength = lengthOfGlyph(startByte[pos]);
+		s32 pos = 0;
+		s32 glyphLength = lengthOfGlyph(startByte[pos]);
 		while (pos + glyphLength <= byteLength)
 		{
 			pos += glyphLength;
@@ -126,15 +126,15 @@ int32 floorToWholeGlyphs(char *startByte, int32 byteLength)
 }
 
 // Counts how many full glyphs are in the buffer
-int32 countGlyphs(char *startByte, int32 byteLength)
+s32 countGlyphs(char *startByte, s32 byteLength)
 {
-	int32 glyphCount = 0;
+	s32 glyphCount = 0;
 
 	// Check that the byte we start on is actually a glyph start byte!
 	// Otherwise our result will be meaningless.
 	ASSERT(byteIsStartOfGlyph(*startByte), "Can't count glyphs starting part-way through a glyph!");
 
-	int32 pos = 0;
+	s32 pos = 0;
 	while (pos != -1)
 	{
 		if (!isFullGlyph(startByte, pos, byteLength))
@@ -156,16 +156,16 @@ unichar readUnicodeChar(char *firstChar)
 
 	if (byteIsStartOfGlyph(*firstChar))
 	{
-		uint8 b1 = *firstChar;
+		u8 b1 = *firstChar;
 		if ((b1 & 0b10000000) == 0)
 		{
 			// 7-bit ASCII, so just pass through
-			result = (uint32) b1;
+			result = (u32) b1;
 		}
 		else if (b1 & 0b11000000)
 		{
 			// Start of a multibyte codepoint!
-			int32 extraBytes = 1;
+			s32 extraBytes = 1;
 			result = b1 & 0b00011111;
 			if (b1 & 0b00100000) {
 				extraBytes++; // 3 total
@@ -184,11 +184,11 @@ unichar readUnicodeChar(char *firstChar)
 				}
 			}
 
-			for (int32 pos = 0; pos < extraBytes; pos++)
+			for (s32 pos = 0; pos < extraBytes; pos++)
 			{
 				result = result << 6;
 
-				uint8 bn = firstChar[pos+1];
+				u8 bn = firstChar[pos+1];
 
 				if (!(bn & 0b10000000)
 					|| (bn & 0b01000000))

@@ -113,7 +113,7 @@ typedef uint64_t u64;
 typedef float f32;
 typedef double f64;
 
-typedef uint32 unichar;
+typedef u32 unichar;
 
 const int null = 0;
 
@@ -230,66 +230,11 @@ struct Rect2 {
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define WRAP(value, max) (((value) + (max)) % (max))
 
-inline f32 clamp(f32 value, f32 min, f32 max)
-inline Coord coord(s32 x, s32 y)
-	return {(s32)v2.x, (s32)v2.y};
-inline Coord operator*(Coord v, s32 s)
-inline Coord operator*=(Coord &v, s32 s)
-inline Coord operator/(Coord v, s32 s)
-inline Coord operator/=(Coord &v, s32 s)
-	return {(f32)coord.x, (f32)coord.y};
-inline V2 v2(f32 x, f32 y)
-	return {(f32)x, (f32)y};
-inline f32 v2Length(V2 v)
-inline V2 operator*(V2 v, f32 s)
-inline V2 operator*=(V2 &v, f32 s)
-inline V2 operator/(V2 v, f32 s)
-inline V2 operator/=(V2 &v, f32 s)
-inline V2 limit(V2 vector, f32 maxLength)
-	f32 length = v2Length(vector);
-inline V3 v3(f32 x, f32 y, f32 z)
-inline f32 v3Length(V3 v)
-inline V3 operator*(V3 v, f32 s)
-inline V3 operator*=(V3 &v, f32 s)
-inline V3 operator/(V3 v, f32 s)
-inline V3 operator/=(V3 &v, f32 s)
-inline V4 v4(f32 x, f32 y, f32 z, f32 w)
-inline V4 color255(u8 r, u8 g, u8 b, u8 a)
-	v.a = (f32)a / 255.0f;
-	v.r = v.a * ((f32)r / 255.0f);
-	v.g = v.a * ((f32)g / 255.0f);
-	v.b = v.a * ((f32)b / 255.0f);
-inline f32 v4Length(V4 v)
-inline V4 operator*(V4 v, f32 s)
-inline V4 operator*=(V4 &v, f32 s)
-inline V4 operator/(V4 v, f32 s)
-inline V4 operator/=(V4 &v, f32 s)
 /**********************************************
 	Asserts
  **********************************************/
 
-inline Rect irectXYWH(s32 x, s32 y, s32 w, s32 h)
 // Not sure if I want them to print to the log, or just disappear entirely.
 // Really janky assertion macro, yay
 #define ASSERT(expr, msg, ...) if(!(expr)) {*(int *)0 = 0;}
 #define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
-inline Rect irectCentreWH(Coord position, s32 w, s32 h)
-		rect.x = (s32)(a.x);
-		rect.w = (s32)(b.x) - (s32)(a.x) + 1;
-		rect.x = (s32)(b.x);
-		rect.w = (s32)(a.x+0.5f) - (s32)(b.x);
-		rect.y = (s32)(a.y);
-		rect.h = (s32)(b.y) - (s32)(a.y) + 1;
-		rect.y = (s32)(b.y);
-		rect.h = (s32)(a.y+0.5f) - (s32)(b.y);
-inline Rect expandiRect(Rect rect, s32 addRadius)
-		(f32)rect.x + (f32)rect.w / 2.0f,
-		(f32)rect.y + (f32)rect.h / 2.0f
-inline RealRect realRect(V2 pos, f32 w, f32 h)
-	rect.x = (f32) intRect.x;
-	rect.y = (f32) intRect.y;
-	rect.w = (f32) intRect.w;
-	rect.h = (f32) intRect.h;
-inline RealRect rectXYWH(f32 x, f32 y, f32 w, f32 h)
-inline RealRect expandRect(RealRect rect, f32 addRadius)
-inline bool inRects(RealRect *rects, s32 rectCount, V2 pos)

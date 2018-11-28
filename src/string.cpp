@@ -75,11 +75,11 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(stringFromChars(format), args, zeroTerminate); }
 
 const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-String formatInt(uint64 value, uint8 base=10)
+String formatInt(u64 value, u8 base=10)
 {
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	char *temp = PushArray(globalFrameTempArena, char, 64); // Worst case is base 1, which is 64 characters!
-	uint32 count = 0;
+	u32 count = 0;
 
 	u64 v = value;
 
@@ -95,15 +95,16 @@ String formatInt(uint64 value, uint8 base=10)
 
 	return makeString(temp, count);
 }
-inline String formatInt(uint32 value, uint8 base=10) {return formatInt((uint64)value, base);}
-inline String formatInt(uint16 value, uint8 base=10) {return formatInt((uint64)value, base);}
-inline String formatInt(uint8  value, uint8 base=10) {return formatInt((uint64)value, base);}
+inline String formatInt(u32 value, u8 base=10) {return formatInt((u64)value, base);}
+inline String formatInt(u16 value, u8 base=10) {return formatInt((u64)value, base);}
+inline String formatInt(u8  value, u8 base=10) {return formatInt((u64)value, base);}
 
-String formatInt(int64 value, uint8 base=10)
+String formatInt(s64 value, u8 base=10)
 {
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	char *temp = PushArray(globalFrameTempArena, char, 65); // Worst case is base 1, which is 64 characters! Plus 1 for sign
 	bool isNegative = (value < 0);
+	u32 count = 0;
 
 	// One complication here: If we're passed s64_MIN, then -value is 1 larger than can be help in an s64!
 	// So, rather than flipping it and treating it like a positive number with an '-' appended,
@@ -129,9 +130,9 @@ String formatInt(int64 value, uint8 base=10)
 
 	return makeString(temp, count);
 }
-inline String formatInt(int32 value, uint8 base=10) {return formatInt((int64)value, base);}
-inline String formatInt(int16 value, uint8 base=10) {return formatInt((int64)value, base);}
-inline String formatInt(int8  value, uint8 base=10) {return formatInt((int64)value, base);}
+inline String formatInt(s32 value, u8 base=10) {return formatInt((s64)value, base);}
+inline String formatInt(s16 value, u8 base=10) {return formatInt((s64)value, base);}
+inline String formatInt(s8  value, u8 base=10) {return formatInt((s64)value, base);}
 
 // TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
 String formatFloat(f64 value, s32 decimalPlaces)

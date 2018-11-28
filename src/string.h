@@ -44,10 +44,10 @@ String stringFromChars(const char *chars)
 	return stringFromChars((char*)chars);
 }
 
-void copyChars(char *src, String *dest, int32 length)
+void copyChars(char *src, String *dest, s32 length)
 {
-	int32 copyLength = MIN(length, dest->maxLength);
-	for (int32 i=0; i<copyLength; i++)
+	s32 copyLength = MIN(length, dest->maxLength);
+	for (s32 i=0; i<copyLength; i++)
 	{
 		dest->chars[i] = src[i];
 	}
@@ -56,7 +56,7 @@ void copyChars(char *src, String *dest, int32 length)
 
 String pushString(MemoryArena *arena, char *src)
 {
-	int32 len = strlen(src);
+	s32 len = strlen(src);
 
 	String s = newString(arena, len);
 	copyChars(src, &s, len);
@@ -73,13 +73,14 @@ void copyString(String source, String *dest)
 	dest->length = copyLength;
 }
 
-void reverseString(char* first, u32 length)
+String pushString(MemoryArena *arena, String src)
 {
 	String s = newString(arena, src.length);
 	copyString(src, &s);
 	return s;
 }
 
+void reverseString(char* first, u32 length)
 {
 	u32 flips = length / 2;
 	char temp;

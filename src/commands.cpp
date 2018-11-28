@@ -40,7 +40,7 @@ ConsoleCommand(window_size)
 	// UGH this is so hacky. But I guess that's how the debug console should be?
 	V2 screenSize = globalAppState.renderer->uiBuffer.camera.size;
 
-	consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((int32)screenSize.x), formatInt((int32)screenSize.y)}), CLS_Success);
+	consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
 }
 
 ConsoleCommand(resize_window)

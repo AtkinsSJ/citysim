@@ -227,8 +227,6 @@ int main(int argc, char *argv[])
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
 			SDL_GL_SwapWindow(renderer->window);
 		}
-		u32 msForFrame = frameEndTime - frameStartTime;
-		framesPerSecond = 1000.0f / (f32)fmax(msForFrame, 1.0f);
 	}
 
 // CLEAN UP

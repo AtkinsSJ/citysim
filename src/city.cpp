@@ -284,7 +284,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 	
 }
 
-s32 calculateDemolitionCost(City *city, Rect rect) {
+s32 calculateDemolitionCost(City *city, Rect2I rect) {
 	s32 total = 0;
 
 	// Terrain clearing cost

@@ -1,13 +1,13 @@
 #pragma once
 
-inline int32 clamp(int32 value, int32 min, int32 max)
+inline s32 clamp(s32 value, s32 min, s32 max)
 {
 	ASSERT(min < max, "min > max in clamp()!");
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;
 }
-inline real32 clamp(real32 value, real32 min, real32 max)
+inline f32 clamp(f32 value, f32 min, f32 max)
 {
 	ASSERT(min < max, "min > max in clamp()!");
 	if (value < min) return min;
@@ -19,13 +19,13 @@ inline real32 clamp(real32 value, real32 min, real32 max)
 	COORD
  **********************************************/
 
-inline V2I coord(int32 x, int32 y)
+inline V2I coord(s32 x, s32 y)
 {
 	return {x,y};
 }
 inline V2I coord(V2 v2)
 {
-	return {(int32)v2.x, (int32)v2.y};
+	return {(s32)v2.x, (s32)v2.y};
 }
 
 inline V2I operator+(V2I lhs, V2I rhs)
@@ -52,26 +52,26 @@ inline V2I operator-=(V2I &lhs, V2I rhs)
 	lhs = lhs - rhs;
 	return lhs;
 }
-inline V2I operator*(V2I v, int32 s)
+inline V2I operator*(V2I v, s32 s)
 {
 	V2I result;
 	result.x = v.x * s;
 	result.y = v.y * s;
 	return result;
 }
-inline V2I operator*=(V2I &v, int32 s)
+inline V2I operator*=(V2I &v, s32 s)
 {
 	v = v * s;
 	return v;
 }
-inline V2I operator/(V2I v, int32 s)
+inline V2I operator/(V2I v, s32 s)
 {
 	V2I result;
 	result.x = v.x / s;
 	result.y = v.y / s;
 	return result;
 }
-inline V2I operator/=(V2I &v, int32 s)
+inline V2I operator/=(V2I &v, s32 s)
 {
 	v = v / s;
 	return v;
@@ -83,18 +83,18 @@ inline V2I operator/=(V2I &v, int32 s)
 
 inline V2 v2(V2I coord)
 {
-	return {(real32)coord.x, (real32)coord.y};
+	return {(f32)coord.x, (f32)coord.y};
 }
-inline V2 v2(real32 x, real32 y)
+inline V2 v2(f32 x, f32 y)
 {
 	return {x,y};
 }
 inline V2 v2(int x, int y)
 {
-	return {(real32)x, (real32)y};
+	return {(f32)x, (f32)y};
 }
 
-inline real32 v2Length(V2 v)
+inline f32 v2Length(V2 v)
 {
 	return sqrt(v.x*v.x + v.y*v.y);
 }
@@ -123,34 +123,34 @@ inline V2 operator-=(V2 &lhs, V2 rhs)
 	lhs = lhs - rhs;
 	return lhs;
 }
-inline V2 operator*(V2 v, real32 s)
+inline V2 operator*(V2 v, f32 s)
 {
 	V2 result;
 	result.x = v.x * s;
 	result.y = v.y * s;
 	return result;
 }
-inline V2 operator*=(V2 &v, real32 s)
+inline V2 operator*=(V2 &v, f32 s)
 {
 	v = v * s;
 	return v;
 }
-inline V2 operator/(V2 v, real32 s)
+inline V2 operator/(V2 v, f32 s)
 {
 	V2 result;
 	result.x = v.x / s;
 	result.y = v.y / s;
 	return result;
 }
-inline V2 operator/=(V2 &v, real32 s)
+inline V2 operator/=(V2 &v, f32 s)
 {
 	v = v / s;
 	return v;
 }
 
-inline V2 limit(V2 vector, real32 maxLength)
+inline V2 limit(V2 vector, f32 maxLength)
 {
-	real32 length = v2Length(vector);
+	f32 length = v2Length(vector);
 	if (length > maxLength)
 	{
 		vector *= maxLength / length;
@@ -162,7 +162,7 @@ inline V2 limit(V2 vector, real32 maxLength)
 	V3
  **********************************************/
 
-inline V3 v3(real32 x, real32 y, real32 z)
+inline V3 v3(f32 x, f32 y, f32 z)
 {
 	V3 v = {};
 	v.x = x;
@@ -172,7 +172,7 @@ inline V3 v3(real32 x, real32 y, real32 z)
 	return v;
 }
 
-inline real32 v3Length(V3 v)
+inline f32 v3Length(V3 v)
 {
 	return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
@@ -203,7 +203,7 @@ inline V3 operator-=(V3 &lhs, V3 rhs)
 	lhs = lhs - rhs;
 	return lhs;
 }
-inline V3 operator*(V3 v, real32 s)
+inline V3 operator*(V3 v, f32 s)
 {
 	V3 result;
 	result.x = v.x * s;
@@ -211,12 +211,12 @@ inline V3 operator*(V3 v, real32 s)
 	result.z = v.z * s;
 	return result;
 }
-inline V3 operator*=(V3 &v, real32 s)
+inline V3 operator*=(V3 &v, f32 s)
 {
 	v = v * s;
 	return v;
 }
-inline V3 operator/(V3 v, real32 s)
+inline V3 operator/(V3 v, f32 s)
 {
 	V3 result;
 	result.x = v.x / s;
@@ -224,7 +224,7 @@ inline V3 operator/(V3 v, real32 s)
 	result.z = v.z / s;
 	return result;
 }
-inline V3 operator/=(V3 &v, real32 s)
+inline V3 operator/=(V3 &v, f32 s)
 {
 	v = v / s;
 	return v;
@@ -234,7 +234,7 @@ inline V3 operator/=(V3 &v, real32 s)
 	V4
  **********************************************/
 
-inline V4 v4(real32 x, real32 y, real32 z, real32 w)
+inline V4 v4(f32 x, f32 y, f32 z, f32 w)
 {
 	V4 v = {};
 	v.x = x;
@@ -245,15 +245,15 @@ inline V4 v4(real32 x, real32 y, real32 z, real32 w)
 	return v;
 }
 
-inline V4 color255(uint8 r, uint8 g, uint8 b, uint8 a)
+inline V4 color255(u8 r, u8 g, u8 b, u8 a)
 {
 	V4 v = {};
-	v.a = (real32)a / 255.0f;
+	v.a = (f32)a / 255.0f;
 
 	// NB: Prremultiplied alpha!
-	v.r = v.a * ((real32)r / 255.0f);
-	v.g = v.a * ((real32)g / 255.0f);
-	v.b = v.a * ((real32)b / 255.0f);
+	v.r = v.a * ((f32)r / 255.0f);
+	v.g = v.a * ((f32)g / 255.0f);
+	v.b = v.a * ((f32)b / 255.0f);
 
 	return v;
 }
@@ -262,7 +262,7 @@ inline V4 makeWhite()
 	return v4(1.0f,1.0f,1.0f,1.0f);
 }
 
-inline real32 v4Length(V4 v)
+inline f32 v4Length(V4 v)
 {
 	return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
@@ -295,7 +295,7 @@ inline V4 operator-=(V4 &lhs, V4 rhs)
 	lhs = lhs - rhs;
 	return lhs;
 }
-inline V4 operator*(V4 v, real32 s)
+inline V4 operator*(V4 v, f32 s)
 {
 	V4 result;
 	result.x = v.x * s;
@@ -304,12 +304,12 @@ inline V4 operator*(V4 v, real32 s)
 	result.w = v.w * s;
 	return result;
 }
-inline V4 operator*=(V4 &v, real32 s)
+inline V4 operator*=(V4 &v, f32 s)
 {
 	v = v * s;
 	return v;
 }
-inline V4 operator/(V4 v, real32 s)
+inline V4 operator/(V4 v, f32 s)
 {
 	V4 result;
 	result.x = v.x / s;
@@ -318,7 +318,7 @@ inline V4 operator/(V4 v, real32 s)
 	result.w = v.w / s;
 	return result;
 }
-inline V4 operator/=(V4 &v, real32 s)
+inline V4 operator/=(V4 &v, f32 s)
 {
 	v = v / s;
 	return v;
@@ -328,7 +328,7 @@ inline V4 operator/=(V4 &v, real32 s)
 	Rectangle (int)
  **********************************************/
 
-inline Rect2I irectXYWH(int32 x, int32 y, int32 w, int32 h)
+inline Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h)
 {
 	Rect2I rect = {};
 	rect.x = x;
@@ -346,7 +346,7 @@ inline Rect2I irectPosDim(V2I position, V2I dim)
 	return rect;
 }
 
-inline Rect2I irectCentreWH(V2I position, int32 w, int32 h)
+inline Rect2I irectCentreWH(V2I position, s32 w, s32 h)
 {
 	Rect2I rect = {};
 	rect.x = position.x - w/2;
@@ -370,20 +370,20 @@ inline Rect2I irectCovering(V2 a, V2 b)
 	Rect2I rect = {};
 	if (a.x < b.x)
 	{
-		rect.x = (int32)(a.x);
-		rect.w = (int32)(b.x) - (int32)(a.x) + 1;
+		rect.x = (s32)(a.x);
+		rect.w = (s32)(b.x) - (s32)(a.x) + 1;
 	} else {
-		rect.x = (int32)(b.x);
-		rect.w = (int32)(a.x+0.5f) - (int32)(b.x);
+		rect.x = (s32)(b.x);
+		rect.w = (s32)(a.x+0.5f) - (s32)(b.x);
 	}
 
 	if (a.y < b.y)
 	{
-		rect.y = (int32)(a.y);
-		rect.h = (int32)(b.y) - (int32)(a.y) + 1;
+		rect.y = (s32)(a.y);
+		rect.h = (s32)(b.y) - (s32)(a.y) + 1;
 	} else {
-		rect.y = (int32)(b.y);
-		rect.h = (int32)(a.y+0.5f) - (int32)(b.y);
+		rect.y = (s32)(b.y);
+		rect.h = (s32)(a.y+0.5f) - (s32)(b.y);
 	}
 	return rect;
 }
@@ -412,7 +412,7 @@ inline bool rectInRect2I(Rect2I outer, Rect2I inner)
 		&& (inner.y + inner.h) <= (outer.y + outer.h);
 }
 
-inline Rect2I expand(Rect2I rect, int32 addRadius)
+inline Rect2I expand(Rect2I rect, s32 addRadius)
 {
 	return irectXYWH(
 		rect.x - addRadius,
@@ -433,8 +433,8 @@ inline bool rectsOverlap(Rect2I a, Rect2I b)
 inline V2 centre(Rect2I rect)
 {
 	return v2(
-		(real32)rect.x + (real32)rect.w / 2.0f,
-		(real32)rect.y + (real32)rect.h / 2.0f
+		(f32)rect.x + (f32)rect.w / 2.0f,
+		(f32)rect.y + (f32)rect.h / 2.0f
 	);
 }
 
@@ -447,7 +447,7 @@ inline V2I iCentre(Rect2I rect)
 	Rect2
  **********************************************/
 
-inline Rect2 rect2(V2 pos, real32 w, real32 h)
+inline Rect2 rect2(V2 pos, f32 w, f32 h)
 {
 	Rect2 rect = {};
 	rect.pos = pos;
@@ -459,14 +459,14 @@ inline Rect2 rect2(V2 pos, real32 w, real32 h)
 inline Rect2 rect2(Rect2I intRect2I)
 {
 	Rect2 rect = {};
-	rect.x = (real32) intRect2I.x;
-	rect.y = (real32) intRect2I.y;
-	rect.w = (real32) intRect2I.w;
-	rect.h = (real32) intRect2I.h;
+	rect.x = (f32) intRect2I.x;
+	rect.y = (f32) intRect2I.y;
+	rect.w = (f32) intRect2I.w;
+	rect.h = (f32) intRect2I.h;
 	return rect;
 }
 
-inline Rect2 rectXYWH(real32 x, real32 y, real32 w, real32 h)
+inline Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h)
 {
 	Rect2 rect = {};
 	rect.x = x;
@@ -486,7 +486,7 @@ inline Rect2 rectCentreSize(V2 centre, V2 size)
 	return rect;
 }
 
-inline Rect2 expand(Rect2 rect, real32 addRadius)
+inline Rect2 expand(Rect2 rect, f32 addRadius)
 {
 	return rectXYWH(
 		rect.x - addRadius,
@@ -512,7 +512,7 @@ inline bool inRect(Rect2 rect, V2 pos)
 		&& pos.y < (rect.y + rect.h);
 }
 
-inline bool inRects(Rect2 *rects, int32 rectCount, V2 pos)
+inline bool inRects(Rect2 *rects, s32 rectCount, V2 pos)
 {
 	bool result = false;
 	for (int i=0; i < rectCount; i++)

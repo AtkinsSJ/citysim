@@ -6,7 +6,7 @@
 #include "stb_perlin.h"
 
 // How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
-inline int32 manhattanDistance(Rect2I rect, V2I point)
+inline s32 manhattanDistance(Rect2I rect, V2I point)
 {
 	s32 result = 0;
 
@@ -31,7 +31,7 @@ inline int32 manhattanDistance(Rect2I rect, V2I point)
 	return result;
 }
 
-inline int32 manhattanDistance(Rect2I a, Rect2I b)
+inline s32 manhattanDistance(Rect2I a, Rect2I b)
 {
 	s32 result = 0;
 
@@ -77,9 +77,9 @@ inline u32 clampToRangeWrapping(u32 minInclusive, u32 maxInclusive, u32 offset)
 	return minInclusive + t;
 }
 
-inline real32 moveTowards(real32 currentValue, real32 targetValue, real32 distance)
+inline f32 moveTowards(f32 currentValue, f32 targetValue, f32 distance)
 {
-	real32 result = currentValue;
+	f32 result = currentValue;
 
 	if (targetValue < currentValue)
 	{

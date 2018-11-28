@@ -29,11 +29,11 @@ struct Console
 	struct BitmapFont *font;
 	ConsoleLineStyle styles[CLS_COUNT];
 
-	real32 currentHeight;
-	real32 targetHeight;
-	real32 openHeight; // % of screen height
-	real32 maximisedHeight; // % of screen height
-	real32 openSpeed; // % per second
+	f32 currentHeight;
+	f32 targetHeight;
+	f32 openHeight; // % of screen height
+	f32 maximisedHeight; // % of screen height
+	f32 openSpeed; // % per second
 
 	TextInput input;
 	s32 charWidth;
@@ -41,7 +41,7 @@ struct Console
 	s32 outputLineCount;
 	ConsoleOutputLine *outputLines;
 	s32 currentOutputLine;
-	int32 scrollPos; // first line to draw, just above the console input
+	s32 scrollPos; // first line to draw, just above the console input
 };
 Console *globalConsole;
 
@@ -64,8 +64,8 @@ inline void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
 	consoleWriteLine(stringFromChars(text), style);
 }
 
-inline int32 consoleMaxScrollPos(Console *console)
+inline s32 consoleMaxScrollPos(Console *console)
 {
-	int32 result = MIN(console->currentOutputLine-1, console->outputLineCount)-1;
+	s32 result = MIN(console->currentOutputLine-1, console->outputLineCount)-1;
 	return result;
 }

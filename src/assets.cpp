@@ -1,6 +1,6 @@
 #pragma once
 
-s32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
+s32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
 	TextureList *list = assets->firstTextureList.prev;
 	if (list->usedCount >= ArrayCount(list->textures))
@@ -22,7 +22,7 @@ s32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
 	return textureID;
 }
 
-u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID, RealRect uv)
+u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID, Rect2 uv)
 {
 	TextureRegionList *list = assets->firstTextureRegionList.prev;
 	if (list->usedCount >= ArrayCount(list->regions))
@@ -81,9 +81,8 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
-int32 findTexture(AssetManager *assets, String filename)
+s32 findTexture(AssetManager *assets, String filename)
 {
-s32 findTexture(AssetManager *assets, char *filename)
 	s32 index = -1;
 	for (s32 i = 0; i < (s32)assets->textureCount; ++i)
 	{
@@ -97,11 +96,11 @@ s32 findTexture(AssetManager *assets, char *filename)
 	return index;
 }
 
-u32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
+s32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, Rect2 uv,
 	                   bool isAlphaPremultiplied=false)
 {
 	String sFilename = pushString(&assets->assetArena, filename);
-	int32 textureID = findTexture(assets, sFilename);
+	s32 textureID = findTexture(assets, sFilename);
 	if (textureID == -1)
 	{
 		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
@@ -224,6 +223,7 @@ void loadAssets(AssetManager *assets)
 		logError("Failed to load shader header file {0}", {shaderHeader->filename});
 	}
 
+	for (u32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
 		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename));

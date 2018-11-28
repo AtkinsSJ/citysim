@@ -22,7 +22,7 @@ void initUiState(UIState *uiState)
 	setCursorVisible(uiState, false);
 }
 
-Rect2 uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, int32 align,
+Rect2 uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, s32 align,
 				 f32 depth, V4 color, f32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
@@ -39,7 +39,7 @@ Rect2 uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String 
 	return bounds;
 }
 
-Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, TextInput *textInput, V2 origin, int32 align, real32 depth, V4 color, real32 maxWidth = 0)
+Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
 
@@ -57,7 +57,7 @@ Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, 
 	{
 		Rect2 caretRect = rectXYWH(0, 0, 2, font->lineHeight);
 
-		if ((uint32) textInput->caretGlyphPos < textCache->charCount)
+		if ((u32) textInput->caretGlyphPos < textCache->charCount)
 		{
 			RenderItem charCaretIsBefore = textCache->chars[textInput->caretGlyphPos];
 			caretRect.x += charCaretIsBefore.rect.x;
@@ -78,7 +78,7 @@ Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, 
 		// We don't even know what the character was.
 		// So, a hack! We'll round the y to the closest multiple of the line height.
 
-		caretRect.y = floor(caretRect.y / (real32)font->lineHeight) * font->lineHeight;
+		caretRect.y = floor(caretRect.y / (f32)font->lineHeight) * font->lineHeight;
 
 		caretRect.pos += topLeft;
 		caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
@@ -119,7 +119,7 @@ void drawTooltip(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
 }
 
 bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	          String text, Rect2 bounds, real32 depth, bool active=false,
+	          String text, Rect2 bounds, f32 depth, bool active=false,
 	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
@@ -168,7 +168,7 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 }
 
 bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	              String text, Rect2 bounds, real32 depth, UIMenuID menuID,
+	              String text, Rect2 bounds, f32 depth, UIMenuID menuID,
 	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
@@ -276,11 +276,11 @@ void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *asset
 	}
 }
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, real32 height, real32 scrollPercent, V2 knobSize, real32 depth, V4 knobColor)
+void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, f32 depth, V4 knobColor)
 {
 	knobSize.y = MIN(knobSize.y, height); // force knob to fit
-	real32 knobTravelableH = height - knobSize.y;
-	real32 scrollY = scrollPercent * knobTravelableH;
+	f32 knobTravelableH = height - knobSize.y;
+	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
 	drawRect(uiBuffer, knobRect, depth, knobColor);
 }
