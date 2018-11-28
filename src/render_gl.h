@@ -3,14 +3,14 @@
 #ifdef __linux__
 #	include <gl/glew.h> // TODO: Check this
 #	include <SDL2/SDL_opengl.h>
-#	include <gl/glu.h> // TODO: Check this
 #else // Windows
 #	include <gl/glew.h>
 #	include <SDL_opengl.h>
-#	include <gl/glu.h>
 #endif
 
 // render_gl.h
+
+#define CHECK_BUFFERS_SORTED 0
 
 struct GL_VertexData
 {
@@ -68,11 +68,5 @@ struct GL_Renderer
 	GLuint textureCount;
 	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length
 };
-
-inline void GL_checkForError()
-{
-	GLenum errorCode = glGetError();
-	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
-}
 
 #include "render_gl.cpp"

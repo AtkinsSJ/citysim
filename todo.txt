@@ -4,20 +4,63 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
+------------------------------------------------
+
+2018-01-15: New plan!
+
+This project has become really unfocused. There's no game to it any more, it's just a vague "engine"
+which has no real direction. I don't want to make 'Under London' - I'm not confident what game it even
+is, and that's demotivating.
+
+So, instead the new game design is a simplified SimCity 1 type game about building space stations. Name pending.
+
+2D, simple pixel art, very basic simulation. Aiming for this to be a "quick" game to make, even though
+that will probably still be a long time coming. SimCity is a decent enough target, but this is different
+enough from that to still be worthwhile on its own. Cloning is less fun.
+
+Most of the engine tasks listed below are still desirable, but at least now I have a target to focus on,
+not just a list of work that might never come to anything.
+
+------------------------------------------------
+
+Split the game code from the platform code
+- Compile win32_main.cpp rather than main.cpp
+- platform handles the renderer, input and memory.
+- game has a single entry point function that's run once per frame.
+
+UI styles loaded from a file
+- Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
+- We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtof if I'm lazy.
+
+Asset system:
+- Memory management:
+	- Do a malloc/free for each asset that's loaded
+	- reload asset, just free() then malloc() again!
+		- Optimisation: Don't reallocate if it's the exact same size.
+	- Keep a memory limit, track the current size of all loaded assets.
+	- If we cross the limit, evict the least-recently-used asset.
+	- At the end of a level, we can also evict all level-specific assets if we want?
+	- Track evictions so we can monitor it and see if it's misbehaving.
+- Automatic file-reloading. https://msdn.microsoft.com/en-us/library/windows/desktop/aa365465(v=vs.85).aspx
+- Asset packer of some kind. Maybe just creates an assets table?
+- Load ui theme from a file
+- Load texture region information from a file
+- Strings! Translateable and stored as assets.
+	- https://blog.thimbleweedpark.com/text_lock
+- Audio when we have that!
+
+String HashTable!
+- Maybe MurmurHash? https://en.wikipedia.org/wiki/MurmurHash
+- Other hashes: http://www.cse.yorku.ca/~oz/hash.html
+
 Console:
-- The console is actually completely busted with regard to unicode multibyte characters!
-	- backspace
-	- delete
-	- cursor position (left/right)
-	- MAYBE what we should do is convert all internal string stuff to UTF32? Or maybe just some of it? I think I'm generally way too tired to make a judgement call on this right now.
+- Could replace all use of ConsoleWriteLine with logBLAH() now that we route log data to the console.
+- Why does typing a space not move the caret far enough? I must be measuring the wrong thing.
+	- OK, it's because we want the xAdvance but don't have it by that point. yay
 - Console eats all input events while it is open?
-- Scrolling?
 - Automatic parameter type checking? That might be crazy though.
-- Animate console open/close?
 - Better input
 	- Up to copy previous command
-	- Draw caret at correct position when text is on multiple lines???
-		- It's also wrong if we have multi-byte characters! So, it's amateur hour all over.
 
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
@@ -29,14 +72,6 @@ Strings:
 	- Managed by assets system
 	- Reload correctly
 	- Can switch language at runtime
-
-Asset system:
-- Asset packer of some kind. Maybe just creates an assets table?
-- Load ui theme from a file
-- Load texture region information from a file
-- Strings! Translateable and stored as assets.
-	- https://blog.thimbleweedpark.com/text_lock
-- Audio when we have that!
 
 Arenas:
 - Figure out how to prevent non-temp allocations happening when temp mem is open.

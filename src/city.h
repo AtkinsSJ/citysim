@@ -11,7 +11,7 @@ const int forestDemolishCost = 100;
 
 struct BuildingDefinition {
 	union {
-		Coord size;
+		V2I size;
 		struct {s32 width, height;};
 	};
 	char *name;
@@ -43,7 +43,7 @@ BuildingDefinition buildingDefinitions[] = {
 
 struct Building {
 	BuildingArchetype archetype;
-	Rect footprint;
+	Rect2I footprint;
 	// union {
 	// 	FieldData field;
 	// };
@@ -96,6 +96,6 @@ inline Building* getBuildingByID(City *city, u32 buildingID) {
 	return &(city->buildings[buildingID]);
 }
 
-inline Building* getBuildingAtPosition(City *city, Coord position) {
+inline Building* getBuildingAtPosition(City *city, V2I position) {
 	return getBuildingByID(city, city->tileBuildings[tileIndex(city,position.x,position.y)]);
 }

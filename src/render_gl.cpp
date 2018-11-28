@@ -11,70 +11,25 @@ void GL_windowResized(s32 newWidth, s32 newHeight)
 	glViewport(0, 0, newWidth, newHeight);
 }
 
-void GL_printProgramLog(TemporaryMemory *tempMemory, GLuint program)
+static void logGLError(GLenum errorCode)
 {
-	//Make sure name is shader
-	if( glIsProgram( program ) )
+	if (errorCode != GL_NO_ERROR)
 	{
-		//Program log length
-		int infoLogLength = 0;
-		int maxLength = 0;
-		
-		//Get info string length
-		glGetProgramiv( program, GL_INFO_LOG_LENGTH, &maxLength );
-		
-		//Allocate string
-		char* infoLog = PushArray(tempMemory, char, maxLength);
-		
-		//Get info log
-		glGetProgramInfoLog( program, maxLength, &infoLogLength, infoLog );
-		if( infoLogLength > 0 )
-		{
-			//Print Log
-			SDL_Log( "%s\n", infoLog );
-		}
-	}
-	else
-	{
-		SDL_Log( "Name %d is not a program\n", program );
+		logError("{0}", {stringFromChars((char*)gluErrorString(errorCode))});
 	}
 }
 
-void GL_printShaderLog(TemporaryMemory *tempMemory, GLuint shader)
+static void checkForError()
 {
-	//Make sure name is shader
-	if( glIsShader( shader ) )
-	{
-		//Shader log length
-		int infoLogLength = 0;
-		int maxLength = 0;
-		
-		//Get info string length
-		glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &maxLength );
-		
-		//Allocate string
-		char* infoLog = PushArray(tempMemory, char, maxLength);
-		
-		//Get info log
-		glGetShaderInfoLog( shader, maxLength, &infoLogLength, infoLog );
-		if( infoLogLength > 0 )
-		{
-			//Print Log
-			SDL_Log( "%s\n", infoLog );
-		}
-	}
-	else
-	{
-		SDL_Log( "Name %d is not a shader\n", shader );
-	}
+	GLenum errorCode = glGetError();
+	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
 
-bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType,
-	                  ShaderProgram *shaderAsset)
+static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset, ShaderHeader *header)
 {
 	bool result = false;
-	char **shaderSource = 0;
-	char *filename = 0;
+	String *shaderSource = null;
+	String filename = {};
 
 	switch (shaderType)
 	{
@@ -83,22 +38,32 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 			shaderSource = &shaderAsset->fragShader;
 			filename = shaderAsset->fragFilename;
 		} break;
-		case GL_ShaderType_Geometry:
-		{
-			ASSERT(false, "Geometry shaders are not implemented!");
-		} break;
 		case GL_ShaderType_Vertex:
 		{
 			shaderSource = &shaderAsset->vertShader;
 			filename = shaderAsset->vertFilename;
 		} break;
+
+		INVALID_DEFAULT_CASE;
 	}
 
-	ASSERT(shaderSource && filename, "Failed to select a shader!");
-
+	ASSERT(shaderSource && filename.length, "Failed to select a shader!");
 
 	GLuint shaderID = glCreateShader(shaderType);
-	glShaderSource(shaderID, 1, shaderSource, NULL);
+	DEFER(glDeleteShader(shaderID));
+
+	if (header && (header->state == AssetState_Loaded))
+	{
+		char *datas[] = {header->contents.chars, shaderSource->chars};
+		int32 lengths[] = {header->contents.length, shaderSource->length};
+		glShaderSource(shaderID, 2, datas, lengths);
+	}
+	else
+	{
+		// no header, so compile without it
+		glShaderSource(shaderID, 1, &shaderSource->chars, &shaderSource->length);
+	}
+
 	glCompileShader(shaderID);
 
 	GLint isCompiled = GL_FALSE;
@@ -108,39 +73,60 @@ bool GL_compileShader(GL_Renderer *renderer, GL_ShaderProgram *shaderProgram, GL
 	if (result)
 	{
 		glAttachShader(shaderProgram->shaderProgramID, shaderID);
-		glDeleteShader(shaderID);
 	}
 	else
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to compile vertex shader %d, %s!\n",
-			            shaderID, filename);
-		TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderer.renderArena);
-		GL_printShaderLog(&tempArena, shaderID);
-		endTemporaryMemory(&tempArena);
+		// Print a big error message about this!
+		int logMaxLength = 0;
+		
+		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logMaxLength);
+		String infoLog = newString(globalFrameTempArena, logMaxLength);
+		glGetShaderInfoLog(shaderID, logMaxLength, &infoLog.length, infoLog.chars);
+
+		if (infoLog.length == 0)
+		{
+			infoLog = stringFromChars("No error log provided by OpenGL. Sad panda.");
+		}
+
+		logError("Unable to compile shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), filename, infoLog});
 	}
 
 	return result;
 }
 
-void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribLocation)
+static void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribLocation)
 {
 	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
 	if (*attribLocation == -1)
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Shader does not contain requested variable %s!\n", attribName);
-		// glShader->isValid = false;
+		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->shaderProgramID), stringFromChars(attribName)});
 	}
 }
 
-bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramID)
+static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation)
+{
+	*uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
+	if (*uniformLocation == -1)
+	{
+		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->shaderProgramID), stringFromChars(uniformName)});
+	}
+}
+
+static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramAssetID)
 {
 	bool result = false;
 
-	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramID);
-	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset %d not loaded!", shaderProgramID);
+	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramAssetID);
+	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset %d not loaded!", shaderProgramAssetID);
 
-	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramID;
-	glShader->assetID = shaderProgramID;
+	ShaderHeader *header = &assets->shaderHeader;
+	if(header->state != AssetState_Loaded)
+	{
+		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->filename});
+	}
+
+	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramAssetID;
+	glShader->assetID = shaderProgramAssetID;
 
 	bool isVertexShaderCompiled = GL_FALSE;
 	bool isFragmentShaderCompiled = GL_FALSE;
@@ -150,8 +136,8 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 	if (glShader->shaderProgramID)
 	{
 		// VERTEX SHADER
-		isVertexShaderCompiled = GL_compileShader(renderer, glShader, GL_ShaderType_Vertex, shaderAsset);
-		isFragmentShaderCompiled = GL_compileShader(renderer, glShader, GL_ShaderType_Fragment, shaderAsset);
+		isVertexShaderCompiled = compileShader(glShader, GL_ShaderType_Vertex, shaderAsset, header);
+		isFragmentShaderCompiled = compileShader(glShader, GL_ShaderType_Fragment, shaderAsset, header);
 
 		// Link shader program
 		if (isVertexShaderCompiled && isFragmentShaderCompiled)
@@ -163,56 +149,43 @@ bool GL_loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderPro
 
 			if (!glShader->isValid)
 			{
-				TemporaryMemory tempArena = beginTemporaryMemory(&renderer->renderer.renderArena);
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Unable to link shader program %d!\n", glShader->shaderProgramID);
-				GL_printProgramLog(&tempArena, glShader->shaderProgramID);
-				endTemporaryMemory(&tempArena);
+				// Print a big error message about this!
+				int logMaxLength = 0;
+				
+				glGetProgramiv(glShader->shaderProgramID, GL_INFO_LOG_LENGTH, &logMaxLength);
+				String infoLog = newString(globalFrameTempArena, logMaxLength);
+				glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLog.length, infoLog.chars);
+
+				if (infoLog.length == 0)
+				{
+					infoLog = stringFromChars("No error log provided by OpenGL. Sad panda.");
+				}
+
+				logError("Unable to link shader program {0}! ({1})", {formatInt(glShader->shaderProgramID), infoLog});
 			}
 			else
 			{
-				// TODO: don't crash if we can't find a uniform/attrib, just leave a note in console.
-				// We want to know if this happens, but the program will run fine even with unfound variables.
-				// (passing -1 to setUniform etc just does nothing)
-
-				// Common vertex attributes
+				// Vertex attributes
 				loadShaderAttrib(glShader, "aPosition", &glShader->aPositionLoc);
-				// glShader->aPositionLoc = glGetAttribLocation(glShader->shaderProgramID, "aPosition");
-				// if (glShader->aPositionLoc == -1)
-				// {
-				// 	SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aPosition is not a valid glsl program variable!\n");
-				// 	glShader->isValid = false;
-				// }
 				loadShaderAttrib(glShader, "aColor", &glShader->aColorLoc);
-				// glShader->aColorLoc = glGetAttribLocation(glShader->shaderProgramID, "aColor");
-				// if (glShader->aColorLoc == -1)
-				// {
-				// 	SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "aColor is not a valid glsl program variable!\n");
-				// 	glShader->isValid = false;
-				// }
-
-				// Optional vertex attributes
 				loadShaderAttrib(glShader, "aUV", &glShader->aUVLoc);
-				// glShader->aUVLoc = glGetAttribLocation(glShader->shaderProgramID, "aUV");
 
-				// Common uniforms
-				glShader->uProjectionMatrixLoc = glGetUniformLocation(glShader->shaderProgramID, "uProjectionMatrix");
-				if (glShader->uProjectionMatrixLoc == -1)
-				{
-					SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "uProjectionMatrix is not a valid glsl program variable!\n");
-					glShader->isValid = false;
-				}
-
-				// Optional uniforms
-				glShader->uTextureLoc = glGetUniformLocation(glShader->shaderProgramID, "uTexture");
+				// Uniforms
+				loadShaderUniform(glShader, "uProjectionMatrix", &glShader->uProjectionMatrixLoc);
+				loadShaderUniform(glShader, "uTexture", &glShader->uTextureLoc);
 			}
 		}
 		result = glShader->isValid;
+	}
+	else
+	{
+		logGLError(glGetError());
 	}
 
 	return result;
 }
 
-void GL_loadAssets(Renderer *renderer, AssetManager *assets)
+static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 {
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
@@ -235,12 +208,12 @@ void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	// Shaders
 	for (u32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
 	{
-		bool shaderLoaded = GL_loadShaderProgram(gl, assets, (ShaderProgramType)shaderID);
+		bool shaderLoaded = loadShaderProgram(gl, assets, (ShaderProgramType)shaderID);
 		ASSERT(shaderLoaded, "Failed to load shader %d into OpenGL.", shaderID);
 	}
 }
 
-void GL_unloadAssets(Renderer *renderer)
+static void GL_unloadAssets(Renderer *renderer)
 {
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
@@ -267,7 +240,7 @@ void GL_unloadAssets(Renderer *renderer)
 	}
 }
 
-inline GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
+static GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 {
 	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgramCount, "Invalid shader!");
 	GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
@@ -281,56 +254,40 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	GL_checkForError();
 	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(GL_VertexData), renderer->vertices, GL_STATIC_DRAW);
-	GL_checkForError();
 
 	// Fill IBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	GL_checkForError();
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
-	GL_checkForError();
 
 	glEnableVertexAttribArray(activeShader->aPositionLoc);
-	GL_checkForError();
 	glEnableVertexAttribArray(activeShader->aColorLoc);
-	GL_checkForError();
 
 	if (activeShader->aUVLoc != -1)
 	{
 		glEnableVertexAttribArray(activeShader->aUVLoc);
-		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	GL_checkForError();
 	glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
-	GL_checkForError();
 	glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
-	GL_checkForError();
 	if (activeShader->aUVLoc != -1)
 	{
 		glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
-		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	GL_checkForError();
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
-	GL_checkForError();
 
 	glDisableVertexAttribArray(activeShader->aPositionLoc);
-	GL_checkForError();
 	glDisableVertexAttribArray(activeShader->aColorLoc);
-	GL_checkForError();
 	if (activeShader->aUVLoc != -1)
 	{
 		glDisableVertexAttribArray(activeShader->aUVLoc);
-		GL_checkForError();
 	}
 }
 
-ShaderProgramType getDesiredShader(RenderItem *item)
+static ShaderProgramType getDesiredShader(RenderItem *item)
 {
 	ShaderProgramType result = ShaderProgram_Untextured;
 	if (item->textureRegionID != 0)
@@ -341,7 +298,7 @@ ShaderProgramType getDesiredShader(RenderItem *item)
 	return result;
 }
 
-void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
+static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION();
 	// Fill VBO
@@ -375,19 +332,19 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 				GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 				glUseProgram(activeShader->shaderProgramID);
-				GL_checkForError();
+				checkForError();
 
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-				GL_checkForError();
+				checkForError();
 
 				// Bind new texture if this shader uses textures
 				if (activeShader->uTextureLoc != -1)
 				{
 					glEnable(GL_TEXTURE_2D);
 					glActiveTexture(GL_TEXTURE0);
-					GL_checkForError();
+					checkForError();
 					glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
-					GL_checkForError();
+					checkForError();
 
 					if (!textureInfo->isLoaded)
 					{
@@ -408,11 +365,11 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 						ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 						textureInfo->isLoaded = true;
-						GL_checkForError();
+						checkForError();
 					}
 
 					glUniform1i(activeShader->uTextureLoc, 0);
-					GL_checkForError();
+					checkForError();
 				}
 
 				vertexCount = 0;
@@ -456,11 +413,12 @@ void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buf
 		renderPartOfBuffer(renderer, vertexCount, indexCount);
 	}
 
-	SDL_Log("Drew %d items this frame, with %d draw calls.", buffer->itemCount, drawCallCount);
+	DEBUG_RENDER_BUFFER(buffer, drawCallCount);
+
 	buffer->itemCount = 0;
 }
 
-void sortRenderBuffer(RenderBuffer *buffer)
+static void sortRenderBuffer(RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION();
 	// This is an implementation of the 'comb sort' algorithm, low to high
@@ -497,7 +455,8 @@ void sortRenderBuffer(RenderBuffer *buffer)
 	}
 }
 
-bool isBufferSorted(RenderBuffer *buffer)
+#if CHECK_BUFFERS_SORTED
+static bool isBufferSorted(RenderBuffer *buffer)
 {
 	bool isSorted = true;
 	f32 lastDepth = f32Min;
@@ -512,8 +471,9 @@ bool isBufferSorted(RenderBuffer *buffer)
 	}
 	return isSorted;
 }
+#endif
 
-void GL_render(Renderer *renderer, AssetManager *assets)
+static void GL_render(Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 
@@ -523,21 +483,21 @@ void GL_render(Renderer *renderer, AssetManager *assets)
 	sortRenderBuffer(&renderer->worldBuffer);
 	sortRenderBuffer(&renderer->uiBuffer);
 
-#if 0
+#if CHECK_BUFFERS_SORTED
 	// Check buffers are sorted
 	ASSERT(isBufferSorted(&renderer->worldBuffer), "World sprites are out of order!");
 	ASSERT(isBufferSorted(&renderer->uiBuffer), "UI sprites are out of order!");
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	GL_checkForError();
+	checkForError();
 	glEnable(GL_BLEND);
-	GL_checkForError();
+	checkForError();
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	GL_checkForError();
+	checkForError();
 
 	glEnable(GL_TEXTURE_2D);
-	GL_checkForError();
+	checkForError();
 
 	gl->currentShader = ShaderProgram_Invalid;
 
@@ -545,8 +505,7 @@ void GL_render(Renderer *renderer, AssetManager *assets)
 	renderBuffer(gl, assets, &renderer->uiBuffer);
 
 	glUseProgram(NULL);
-	GL_checkForError();
-	SDL_Log("End of frame.");
+	checkForError();
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)
@@ -576,7 +535,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		gl->context = SDL_GL_CreateContext(renderer->window);
 		if (gl->context == NULL)
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "OpenGL context could not be created! :(\n %s", SDL_GetError());
+			logCritical("OpenGL context could not be created! :(\n %s", {stringFromChars(SDL_GetError())});
 			succeeded = false;
 		}
 
@@ -585,14 +544,14 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		GLenum glewError = glewInit();
 		if (succeeded && glewError != GLEW_OK)
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise GLEW! :(\n %s", glewGetErrorString(glewError));
+			logCritical("Could not initialise GLEW! :(\n %s", {stringFromChars((char*)glewGetErrorString(glewError))});
 			succeeded = false;
 		}
 
 		// VSync
 		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not set vsync! :(\n %s", SDL_GetError());
+			logCritical("Could not set vsync! :(\n %s", {stringFromChars(SDL_GetError())});
 			succeeded = false;
 		}
 
@@ -606,12 +565,12 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 				glGenBuffers(1, &gl->VBO);
 				glGenBuffers(1, &gl->IBO);
 
-				GL_checkForError();
+				checkForError();
 			}
 
 			if (!succeeded)
 			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Could not initialise OpenGL! :(");
+				logCritical("Could not initialise OpenGL! :(");
 			}
 		}
 
@@ -624,36 +583,6 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 
 	return renderer;
 }
-
-////////////////////////////////////////////////////////////////////
-//                          ANIMATIONS!                           //
-////////////////////////////////////////////////////////////////////
-#if 0
-void setAnimation(Animator *animator, GL_Renderer *renderer, AnimationID animationID,
-					bool restart)
-{
-	Animation *anim = renderer->animations + animationID;
-	// We do nothing if the animation is already playing
-	if (restart
-	 || animator->animation != anim)
-	{
-		animator->animation = anim;
-		animator->currentFrame = 0;
-		animator->frameCounter = 0.0f;
-	}
-}
-
 void drawAnimator(GL_Renderer *renderer, RenderBuffer *buffer, Animator *animator, f32 daysPerFrame,
 				V2 worldTilePosition, V2 size, f32 depth, V4 color)
-{
-	animator->frameCounter += daysPerFrame * animationFramesPerDay;
-	while (animator->frameCounter >= 1)
-	{
 		s32 framesElapsed = (int)animator->frameCounter;
-		animator->currentFrame = (animator->currentFrame + framesElapsed) % animator->animation->frameCount;
-		animator->frameCounter -= framesElapsed;
-	}
-	drawTextureAtlasItem(renderer, buffer, animator->animation->frames[animator->currentFrame],
-		                 worldTilePosition, size, depth, color);
-}
-#endif

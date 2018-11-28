@@ -15,7 +15,7 @@ inline f32 depthFromY(s32 y)
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 maxItems)
 {
-	buffer->name = name;
+	buffer->name = pushString(arena, name);
 	buffer->items = PushArray(arena, RenderItem, maxItems);
 	buffer->itemCount = 0;
 	buffer->maxItems = maxItems;
@@ -85,7 +85,7 @@ void updateCameraMatrix(Camera *camera)
 	);
 }
 
-inline RenderItem makeRenderItem(RealRect rect, f32 depth, u32 textureRegionID, V4 color)
+inline RenderItem makeRenderItem(Rect2 rect, real32 depth, uint32 textureRegionID, V4 color)
 {
 	RenderItem item = {};
 	item.rect = rect;
@@ -96,14 +96,14 @@ inline RenderItem makeRenderItem(RealRect rect, f32 depth, u32 textureRegionID, 
 	return item;
 }
 
-void drawRect(RenderBuffer *buffer, RealRect rect, f32 depth, V4 color)
+void drawRect(RenderBuffer *buffer, Rect2 rect, real32 depth, V4 color)
 {
 	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
 
 	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, 0, color);
 }
 
-void drawTextureRegion(RenderBuffer *buffer, u32 region, RealRect rect, f32 depth, V4 color=makeWhite())
+void drawTextureRegion(RenderBuffer *buffer, uint32 region, Rect2 rect, real32 depth, V4 color=makeWhite())
 {
 	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
 

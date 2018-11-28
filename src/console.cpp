@@ -4,7 +4,7 @@ static Console theConsole;
 
 void consoleWriteLine(String text, ConsoleLineStyleID style)
 {
-	if (globalDebugState)
+	if (globalConsole)
 	{
 		String *line = consoleNextOutputLine(globalConsole, style);
 		line->length = MIN(text.length, line->maxLength);
@@ -35,31 +35,35 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 	return textState;
 }
 
-RealRect consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
+Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
 {
 	s32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
-	RealRect resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
+	Rect2 resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
 	                             align, 300, style.textColor, textState->maxWidth);
 	textState->pos.y -= resultRect.h;
 
 	return resultRect;
 }
 
-void initConsole(MemoryArena *debugArena, s32 outputLineCount, BitmapFont *font, f32 height)
+void initConsole(MemoryArena *debugArena, int32 outputLineCount, real32 openHeight, real32 maximisedHeight, real32 openSpeed)
 {
 	Console *console = &theConsole;
-	console->isVisible = false;
-	console->font = font;
+	console->currentHeight = 0;
+	console->font = 0;
 	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
 	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
 	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 255);
+	console->styles[CLS_Warning].textColor   = color255(255, 255, 128, 255);
 	console->styles[CLS_Success].textColor   = color255(128, 255, 128, 255);
 	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
-	console->height = height;
+
+	console->openHeight = openHeight;
+	console->maximisedHeight = maximisedHeight;
+	console->openSpeed = openSpeed;
 
 	console->input = newTextInput(debugArena, consoleLineLength);
-	console->charWidth = findChar(console->font, 'M')->xAdvance;
+	console->charWidth = 0;
 
 	console->outputLineCount = outputLineCount;
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
@@ -68,38 +72,42 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, BitmapFont *font,
 		console->outputLines[i].text = newString(debugArena, consoleLineLength);
 		console->outputLines[i].style = CLS_Default;
 	}
+	console->scrollPos = 0;
 
 	globalConsole = console;
 
 	// temp test stuff goes here
 	// consoleWriteLine(myprintf("}{-1} {5} {{}{pineapple}!", {stringFromChars("Hello"), stringFromChars("World")}));
+	consoleWriteLine("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?");
 	consoleWriteLine(myprintf("My favourite number is {0}!", {formatFloat(12345.6789, 3)}));
 }
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
-	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, console->height);
+	real32 actualConsoleHeight = console->currentHeight * uiBuffer->camera.size.y;
 
-	consoleTextOut(&textState, makeString(console->input.buffer, console->input.length), console->font, console->styles[CLS_Input]);
+	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
-	bool showCaret = true; //(console->caretFlashCounter < 0.5f);
-	if (showCaret)
-	{
-		drawRect(uiBuffer,
-			     rectXYWH(textState.pos.x + (console->input.caretPos * console->charWidth), textState.pos.y, 2, console->font->lineHeight),
-		         310, console->styles[CLS_Input].textColor);
-	}
+	Rect2 textInputRect = drawTextInput(uiState, uiBuffer, console->font, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
+	textState.pos.y -= textInputRect.h;
 
 	textState.pos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
-	drawRect(uiBuffer, rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, console->height - textState.pos.y), 100, color255(64,64,64,245));
-	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y), 100, color255(0,0,0,245));
+	Rect2 inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
+	drawRect(uiBuffer, inputBackRect, 100, color255(64,64,64,245));
+	Rect2 consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
+	drawRect(uiBuffer, consoleBackRect, 100, color255(0,0,0,245));
+
+	V2 knobSize = v2(12.0f, 64.0f);
+	real32 scrollPercent = 1.0f - ((real32)console->scrollPos / (real32)consoleMaxScrollPos(console));
+	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, 200, color255(48, 48, 48, 245));
 
 	textState.pos.y -= 8.0f;
 
 	// print output lines
-	for (s32 i=console->outputLineCount-1; i>=0; i--)
+	for (int32 i=console->outputLineCount-console->scrollPos-1; i>=0; i--)
 	{
 		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
 		consoleTextOut(&textState, line->text, console->font, console->styles[line->style]);
@@ -110,8 +118,6 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 			break;
 		}
 	}
-	
-	console->caretFlashCounter = fmod(console->caretFlashCounter + SECONDS_PER_FRAME, 1.0f);
 }
 
 void consoleHandleCommand(Console *console)
@@ -120,7 +126,7 @@ void consoleHandleCommand(Console *console)
 	String inputS = textInputToString(&console->input);
 	consoleWriteLine(myprintf("> {0}", {inputS}), CLS_InputEcho);
 
-	if (console->input.length != 0)
+	if (console->input.glyphLength != 0)
 	{
 		TokenList tokens = tokenize(inputS);
 		if (tokens.count > 0)
@@ -172,71 +178,53 @@ void consoleHandleCommand(Console *console)
 	clear(&console->input);
 }
 
-void updateConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
+void updateAndRenderConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
 {
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{
-		console->isVisible = !console->isVisible;
+		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
+		{
+			if (console->targetHeight == console->maximisedHeight)
+			{
+				console->targetHeight = console->openHeight;
+			}
+			else
+			{
+				console->targetHeight = console->maximisedHeight;
+			}
+			console->scrollPos = 0;
+		}
+		else
+		{
+			if (console->targetHeight > 0)
+			{
+				console->targetHeight = 0;
+			}
+			else
+			{
+				console->targetHeight = console->openHeight;
+				console->scrollPos = 0;
+			}
+		}
 	}
 
-	if (console->isVisible)
+	if (console->currentHeight != console->targetHeight)
 	{
-		if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Ctrl))
-		{
-			clear(&console->input);
-		}
-		else if (keyJustPressed(inputState, SDLK_BACKSPACE))
-		{
-			backspace(&console->input);
-		}
-		if (keyJustPressed(inputState, SDLK_DELETE))
-		{
-			deleteChar(&console->input);
-		}
+		console->currentHeight = moveTowards(console->currentHeight, console->targetHeight, console->openSpeed * SECONDS_PER_FRAME);
+	}
 
-		if (keyJustPressed(inputState, SDLK_RETURN))
+	if (console->currentHeight > 0)
+	{
+		if (updateTextInput(&console->input, inputState))
 		{
 			consoleHandleCommand(console);
+			console->scrollPos = 0;
 		}
 
-		if (keyJustPressed(inputState, SDLK_LEFT))
+		// scrolling!
+		if (inputState->wheelY != 0)
 		{
-			if (console->input.caretPos > 0) console->input.caretPos--;
-		}
-		else if (keyJustPressed(inputState, SDLK_RIGHT))
-		{
-			if (console->input.caretPos < console->input.length) console->input.caretPos++;
-		}
-		if (keyJustPressed(inputState, SDLK_HOME))
-		{
-			console->input.caretPos = 0;
-		}
-		if (keyJustPressed(inputState, SDLK_END))
-		{
-			console->input.caretPos = console->input.length;
-		}
-
-		if (wasTextEntered(inputState))
-		{
-			char *enteredText = getEnteredText(inputState);
-			s32 inputTextLength = strlen(enteredText);
-
-			insert(&console->input, enteredText, inputTextLength);
-		}
-
-		if (keyJustPressed(inputState, SDLK_v, KeyMod_Ctrl))
-		{
-			if (SDL_HasClipboardText())
-			{
-				char *clipboard = SDL_GetClipboardText();
-				if (clipboard)
-				{
-					s32 clipboardLength = strlen(clipboard);
-					insert(&console->input, clipboard, clipboardLength);
-
-					SDL_free(clipboard);
-				}
-			}
+			console->scrollPos = clamp(console->scrollPos + inputState->wheelY, 0, consoleMaxScrollPos(console));
 		}
 
 		renderConsole(console, uiState, uiBuffer);

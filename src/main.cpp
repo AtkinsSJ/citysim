@@ -1,6 +1,6 @@
 #include <inttypes.h>
 #include <math.h>
-#include <stdio.h>
+#include <initializer_list>
 
 #ifdef __linux__
 #	include <SDL2/SDL.h>
@@ -9,9 +9,6 @@
 #	include <SDL.h>
 #	include <SDL_image.h>
 #endif
-
-// Really janky assertion macro, yay
-#define ASSERT(expr, msg, ...) if(!(expr)) {SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, msg, ##__VA_ARGS__); *(int *)0 = 0;}
 
 enum AppStatus
 {
@@ -23,12 +20,19 @@ enum AppStatus
 };
 
 #include "types.h"
+#include "matrix4.h"
+#include "array.h"
+#include "log.h"
 #include "memory.h"
 MemoryArena *globalFrameTempArena;
 #include "string.h"
+#include "unicode.h"
+#include "stringbuilder.h"
+#include "string.cpp"
+#include "debug.h"
+#include "types.cpp"
 #include "textinput.h"
 #include "console.h"
-#include "debug.h"
 #include "random.h"
 #include "platform.h"
 #include "localisation.h"
@@ -59,10 +63,12 @@ AppState globalAppState;
 #include "ui.cpp"
 #include "commands.cpp"
 #include "debug.cpp"
+#include "textinput.cpp"
 #include "console.cpp"
 #include "pathing.cpp"
 #include "city.cpp"
 #include "game.cpp"
+#include "log.cpp"
 
 SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle)
 {
@@ -70,7 +76,7 @@ SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL could not be initialised! :(\n %s\n", SDL_GetError());
+		logCritical("SDL could not be initialised! :(\n {0}\n", {stringFromChars(SDL_GetError())});
 	}
 	else
 	{
@@ -78,7 +84,7 @@ SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle
 		u8 imgFlags = IMG_INIT_PNG;
 		if (!(IMG_Init(imgFlags) & imgFlags))
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "SDL_image could not be initialised! :(\n %s\n", IMG_GetError());
+			logCritical("SDL_image could not be initialised! :(\n {0}\n", {stringFromChars(IMG_GetError())});
 		}
 		else
 		{
@@ -89,7 +95,7 @@ SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle
 
 			if (!window)
 			{
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Window could not be created! :(\n %s", SDL_GetError());
+				logCritical("Window could not be created! :(\n {0}", {stringFromChars(SDL_GetError())});
 			}
 		}
 	}
@@ -104,10 +110,22 @@ int main(int argc, char *argv[])
 
 // INIT
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+	enableCustomLogger();
+
 	globalAppState = {};
 	AppState *appState = &globalAppState;
 	globalFrameTempArena = &globalAppState.globalTempArena;
 	initMemoryArena(&appState->globalTempArena, MB(1));
+
+#if BUILD_DEBUG
+	debugInit();
+	initConsole(&globalDebugState->debugArena, 256, 0.2f, 0.9f, 6.0f);
+	initCommands(globalConsole);
+
+	globalDebugState->showDebugData = false;
+#endif
+
+	log("This is a test!", {});
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Under London");
@@ -118,6 +136,11 @@ int main(int argc, char *argv[])
 	loadAssets(assets);
 	appState->assets = assets;
 
+#if BUILD_DEBUG
+	// Now we assign the debug fonts, because the assets system is initialised
+	setDebugFont(getFont(assets, FontAssetType_Debug));
+#endif
+
 	Renderer *renderer = platform_initializeRenderer(window);
 	ASSERT(renderer->platformRenderer, "Failed to initialize renderer.");
 	renderer->loadAssets(renderer, assets);
@@ -126,11 +149,6 @@ int main(int argc, char *argv[])
 	InputState inputState = {};
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
-#if BUILD_DEBUG
-	debugInit(getFont(assets, FontAssetType_Debug));
-	initConsole(&globalDebugState->debugArena, 256, globalDebugState->font, 200.0f);
-	initCommands(globalConsole);
-#endif
 
 // Do we need this here?
 // {
@@ -153,15 +171,10 @@ int main(int argc, char *argv[])
 
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
-
-	f32 framesPerSecond = 0;
-	u32 frameStartTime = 0,
-	       frameEndTime = 0;
 	
 	// GAME LOOP
 	while (appState->appStatus != AppStatus_Quit)
 	{
-		frameStartTime = SDL_GetTicks();
 		DEBUG_BLOCK("Game loop");
 
 		updateInput(&inputState);
@@ -182,7 +195,7 @@ int main(int argc, char *argv[])
 
 		if (globalConsole)
 		{
-			updateConsole(globalConsole, &inputState, uiState, &renderer->uiBuffer);
+			updateAndRenderConsole(globalConsole, &inputState, uiState, &renderer->uiBuffer);
 		}
 
 		updateAndRender(appState, &inputState, renderer, assets);
@@ -214,16 +227,8 @@ int main(int argc, char *argv[])
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
 			SDL_GL_SwapWindow(renderer->window);
 		}
-		frameEndTime = SDL_GetTicks();
 		u32 msForFrame = frameEndTime - frameStartTime;
-
-		if (msForFrame > 20)
-		{
-			int i = 100;
-		}
-
 		framesPerSecond = 1000.0f / (f32)fmax(msForFrame, 1.0f);
-		SDL_Log("FPS: %f, took %dms\n", framesPerSecond, msForFrame);
 	}
 
 // CLEAN UP

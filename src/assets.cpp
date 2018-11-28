@@ -15,6 +15,7 @@ s32 addTexture(AssetManager *assets, char *filename, bool isAlphaPremultiplied)
 
 	Texture *texture = list->textures + idWithinList;
 
+	texture->state = AssetState_Unloaded;
 	texture->filename = pushString(&assets->assetArena, filename);
 	texture->isAlphaPremultiplied = isAlphaPremultiplied;
 
@@ -48,6 +49,8 @@ u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID,
 
 void initAssetManager(AssetManager *assets)
 {
+	assets->assetsPath = pushString(&assets->assetArena, "assets");
+
 	DLinkedListInit(&assets->firstTextureRegionList);
 	DLinkedListInit(&assets->firstTextureList);
 
@@ -56,7 +59,7 @@ void initAssetManager(AssetManager *assets)
 
 	addTextureRegion(assets, TextureAssetType_None, -1, {});
 
-	Texture *nullTexture = getTexture(assets, addTexture(assets, "", true));
+	Texture *nullTexture = getTexture(assets, addTexture(assets, {}, true));
 	nullTexture->state = AssetState_Loaded;
 	nullTexture->surface = 0;
 
@@ -78,44 +81,14 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
-void initTheme(UITheme *theme)
+int32 findTexture(AssetManager *assets, String filename)
 {
-	theme->buttonStyle.font               = FontAssetType_Buttons;
-	theme->buttonStyle.textColor          = color255(   0,   0,   0, 255 );
-	theme->buttonStyle.backgroundColor    = color255( 255, 255, 255, 255 );
-	theme->buttonStyle.hoverColor 	      = color255( 192, 192, 255, 255 );
-	theme->buttonStyle.pressedColor       = color255( 128, 128, 255, 255 );
-
-	theme->labelStyle.font                = FontAssetType_Main;
-	theme->labelStyle.textColor           = color255( 255, 255, 255, 255 );
-
-	theme->tooltipStyle.font              = FontAssetType_Main;
-	theme->tooltipStyle.textColorNormal   = color255( 255, 255, 255, 255 );
-	theme->tooltipStyle.textColorBad      = color255( 255,   0,   0, 255 );
-	theme->tooltipStyle.backgroundColor   = color255(   0,   0,   0, 128 );
-	theme->tooltipStyle.borderPadding     = 4;
-	theme->tooltipStyle.depth             = 100;
-
-	theme->uiMessageStyle.font            = FontAssetType_Main;
-	theme->uiMessageStyle.textColor       = color255( 255, 255, 255, 255 );
-	theme->uiMessageStyle.backgroundColor = color255(   0,   0,   0, 128 );
-	theme->uiMessageStyle.borderPadding   = 4;
-	theme->uiMessageStyle.depth           = 100;
-
-	theme->overlayColor           = color255(   0,   0,   0, 128 );
-
-	theme->textboxBackgroundColor = color255( 255, 255, 255, 255 );
-	theme->textboxTextColor       = color255(   0,   0,   0, 255 );
-	
-}
-
 s32 findTexture(AssetManager *assets, char *filename)
-{
 	s32 index = -1;
 	for (s32 i = 0; i < (s32)assets->textureCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
-		if (strcmp(filename, tex->filename) == 0)
+		if (equals(filename, tex->filename))
 		{
 			index = i;
 			break;
@@ -127,10 +100,11 @@ s32 findTexture(AssetManager *assets, char *filename)
 u32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, RealRect uv,
 	                   bool isAlphaPremultiplied=false)
 {
-	s32 textureID = findTexture(assets, filename);
+	String sFilename = pushString(&assets->assetArena, filename);
+	int32 textureID = findTexture(assets, sFilename);
 	if (textureID == -1)
 	{
-		textureID = addTexture(assets, filename, isAlphaPremultiplied);
+		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
 	}
 
 	return addTextureRegion(assets, type, textureID, uv);
@@ -139,19 +113,27 @@ u32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 {
 	Cursor *cursor = assets->cursors + cursorID;
-	cursor->filename = filename;
+	cursor->filename = pushString(&assets->assetArena, filename);
 	cursor->sdlCursor = 0;
 }
 
 BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType,
 	                  TextureAssetType textureAssetType, char *filename);
 
+void addShaderHeader(AssetManager *assets, char *filename)
+{
+	ShaderHeader *shaderHeader = &assets->shaderHeader;
+	shaderHeader->state = AssetState_Unloaded;
+	shaderHeader->filename = pushString(&assets->assetArena, filename);
+}
+
 void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename,
 	                  char *fragFilename)
 {
 	ShaderProgram *shader = assets->shaderPrograms + shaderID;
-	shader->fragFilename = fragFilename;
-	shader->vertFilename = vertFilename;
+	shader->state = AssetState_Unloaded;
+	shader->fragFilename = pushString(&assets->assetArena, fragFilename);
+	shader->vertFilename = pushString(&assets->assetArena, vertFilename);
 }
 
 void loadAssets(AssetManager *assets)
@@ -162,8 +144,8 @@ void loadAssets(AssetManager *assets)
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Unloaded)
 		{
-			tex->surface = IMG_Load(tex->filename);
-			ASSERT(tex->surface, "Failed to load image '%s'!\n%s", tex->filename, IMG_GetError());
+			tex->surface = IMG_Load(getAssetPath(assets, AssetType_Texture, tex->filename).chars);
+			ASSERT(tex->surface, "Failed to load image '%*s'!\n%s", tex->filename.length, tex->filename.chars, IMG_GetError());
 
 			ASSERT(tex->surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
 			if (!tex->isAlphaPremultiplied)
@@ -225,29 +207,41 @@ void loadAssets(AssetManager *assets)
 	{
 		Cursor *cursor = assets->cursors + cursorID;
 
-		SDL_Surface *cursorSurface = IMG_Load(cursor->filename);
+		SDL_Surface *cursorSurface = IMG_Load(getAssetPath(assets, AssetType_Cursor, cursor->filename).chars);
 		cursor->sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
 		SDL_FreeSurface(cursorSurface);
 	}
 
 	// Load shader programs
-	for (u32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
+	ShaderHeader *shaderHeader = &assets->shaderHeader;
+	shaderHeader->contents = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shaderHeader->filename));
+	if (shaderHeader->contents.length)
+	{
+		shaderHeader->state = AssetState_Loaded;
+	}
+	else
+	{
+		logError("Failed to load shader header file {0}", {shaderHeader->filename});
+	}
+
 	{
 		ShaderProgram *shader = assets->shaderPrograms + shaderID;
-		shader->vertShader = readFileAsString(&assets->assetArena, shader->vertFilename);
-		shader->fragShader = readFileAsString(&assets->assetArena, shader->fragFilename);
+		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename));
+		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename));
 
-		if (shader->vertShader && shader->fragShader)
+		if (shader->vertShader.length && shader->fragShader.length)
 		{
 			shader->state = AssetState_Loaded;
 		}
 		else
 		{
-			ASSERT(false, "Failed to load shader program %d.", shaderID);
+			logError("Failed to load shader program {0}", {formatInt(shaderID)});
 		}
 	}
 
-	initTheme(&assets->theme);
+	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
+	loadUITheme(&assets->theme, readFileAsString(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
+	assets->creditsText = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
 }
 
 void addAssets(AssetManager *assets, MemoryArena *tempArena)
@@ -257,8 +251,9 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
 
-	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.gl", "textured.frag.gl");
-	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.gl", "untextured.frag.gl");
+	addShaderHeader(assets, "header.glsl");
+	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.glsl", "textured.frag.glsl");
+	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
 
 	addCursor(assets, Cursor_Main, "cursor_main.png");
 	addCursor(assets, Cursor_Build, "cursor_build.png");
@@ -279,6 +274,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	renderer->unloadAssets(renderer);
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	SDL_SetCursor(systemWaitCursor);
+	DEFER(SDL_FreeCursor(systemWaitCursor));
 
 	// Actual reloading
 
@@ -318,7 +314,6 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 
 	// After stuff
 	setCursor(uiState, assets, uiState->currentCursor);
-	SDL_FreeCursor(systemWaitCursor);
 	renderer->loadAssets(renderer, assets);
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }

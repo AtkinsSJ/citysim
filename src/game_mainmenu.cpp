@@ -30,7 +30,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	position.y += (uiText(uiState, uiBuffer, font, LocalString("Very much a work in progress!"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	RealRect buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
+	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
 	if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Play"), buttonRect, 1)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;

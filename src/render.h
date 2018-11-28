@@ -11,7 +11,7 @@ const int FRAMES_PER_SECOND = 60;
 const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
-inline Coord tilePosition(V2 worldPos) {
+inline V2I tilePosition(V2 worldPos) {
 	return {(int)floor(worldPos.x),
 			(int)floor(worldPos.y)};
 }
@@ -30,7 +30,7 @@ const f32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates,
 
 struct RenderItem
 {
-	RealRect rect;
+	Rect2 rect;
 	f32 depth; // Positive is towards the player
 	V4 color;
 	u32 textureRegionID;
@@ -42,7 +42,7 @@ const int SPRITE_MAX = WORLD_SPRITE_MAX;
 
 struct RenderBuffer
 {
-	char *name;
+	String name;
 	Camera camera;
 	RenderItem *items;
 	u32 itemCount;
@@ -65,29 +65,6 @@ struct Renderer
 	void (*unloadAssets)(Renderer *);
 	void (*free)(Renderer *);
 };
-
-// Animation code should probably be deleted and redone.
-#if 0
-enum AnimationID
-{
-	Animation_TempToStopComplaint,
-	Animation_Count,
-};
-
-struct Animation
-{
-	TextureAssetType frames[16];
-	u32 frameCount;
-};
-
-struct Animator
-{
-	Animation *animation;
-	u32 currentFrame;
-	f32 frameCounter; // Sub-frame ticks
-};
-const f32 animationFramesPerDay = 10.0f;
-#endif
 
 #include "render.cpp"
 

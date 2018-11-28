@@ -1,12 +1,11 @@
 #pragma once
-#include <initializer_list>
 
 /**
  * A printf() that takes a string like "Hello {0}!" where each {n} is replaced by the arg at that index.
  * Extra { and } characters may be stripped. We try to print out any invalid {n} indices but there is not a ton
  * of error-reporting. Try to pass valid input!
  */
-String myprintf(String format, std::initializer_list<String> args)
+String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate=false)
 {
 	String result;
 
@@ -63,24 +62,31 @@ String myprintf(String format, std::initializer_list<String> args)
 		}
 	}
 
+	if (zeroTerminate)
+	{
+		append(&stb, '\0');
+	}
+
 	result = getString(&stb);
 
 	return result;
 }
 
-inline String myprintf(char *format, std::initializer_list<String> args) { return myprintf(stringFromChars(format), args); }
+inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(stringFromChars(format), args, zeroTerminate); }
 
-String formatInt(u64 value)
+const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+String formatInt(uint64 value, uint8 base=10)
 {
-	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit unsigned value is 20 characters long.
-	u32 count = 0;
+	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
+	char *temp = PushArray(globalFrameTempArena, char, 64); // Worst case is base 1, which is 64 characters!
+	uint32 count = 0;
 
 	u64 v = value;
 
 	do
 	{
-		temp[count++] = '0' + (v % 10);
-		v = v / 10;
+		temp[count++] = intBaseChars[v % base];
+		v = v / base;
 	}
 	while (v != 0);
 
@@ -89,14 +95,14 @@ String formatInt(u64 value)
 
 	return makeString(temp, count);
 }
-inline String formatInt(u32 value) {return formatInt((u64)value);}
-inline String formatInt(u16 value) {return formatInt((u64)value);}
-inline String formatInt(u8  value) {return formatInt((u64)value);}
+inline String formatInt(uint32 value, uint8 base=10) {return formatInt((uint64)value, base);}
+inline String formatInt(uint16 value, uint8 base=10) {return formatInt((uint64)value, base);}
+inline String formatInt(uint8  value, uint8 base=10) {return formatInt((uint64)value, base);}
 
-String formatInt(s64 value)
+String formatInt(int64 value, uint8 base=10)
 {
-	char *temp = PushArray(globalFrameTempArena, char, 20); // Largest 64 bit signed value is 19 characters long, plus a '-', so 20 again. Yay!
-	u32 count = 0;
+	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
+	char *temp = PushArray(globalFrameTempArena, char, 65); // Worst case is base 1, which is 64 characters! Plus 1 for sign
 	bool isNegative = (value < 0);
 
 	// One complication here: If we're passed s64_MIN, then -value is 1 larger than can be help in an s64!
@@ -108,8 +114,8 @@ String formatInt(s64 value)
 
 	do
 	{
-		temp[count++] = '0' + ((isNegative ? -1 : 1) * (v % 10));
-		v = v / 10;
+		temp[count++] = intBaseChars[ ((isNegative ? -1 : 1) * (v % base)) ];
+		v = v / base;
 	}
 	while (v != 0);
 
@@ -123,9 +129,9 @@ String formatInt(s64 value)
 
 	return makeString(temp, count);
 }
-inline String formatInt(s32 value) {return formatInt((s64)value);}
-inline String formatInt(s16 value) {return formatInt((s64)value);}
-inline String formatInt(s8  value) {return formatInt((s64)value);}
+inline String formatInt(int32 value, uint8 base=10) {return formatInt((int64)value, base);}
+inline String formatInt(int16 value, uint8 base=10) {return formatInt((int64)value, base);}
+inline String formatInt(int8  value, uint8 base=10) {return formatInt((int64)value, base);}
 
 // TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
 String formatFloat(f64 value, s32 decimalPlaces)

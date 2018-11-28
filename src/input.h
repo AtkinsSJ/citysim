@@ -14,7 +14,7 @@ enum ModifierKey
 struct InputState
 {
 	// Mouse
-	Coord mousePosRaw;
+	V2I mousePosRaw;
 	V2 mousePosNormalised; // In normalised (-1 to 1) coordinates
 	bool mouseDown[MOUSE_BUTTON_COUNT];
 	bool mouseWasDown[MOUSE_BUTTON_COUNT];
@@ -31,7 +31,7 @@ struct InputState
 	bool receivedQuitSignal;
 	bool wasWindowResized;
 	union {
-		Coord windowSize;
+		V2I windowSize;
 		struct{s32 windowWidth, windowHeight;};
 	};
 };
@@ -58,35 +58,70 @@ inline bool mouseButtonPressed(InputState *input, u8 mouseButton) {
  * KEYBOARD INPUT
  */
 #define keycodeToIndex(key) ((key) & ~SDLK_SCANCODE_MASK)
-inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
-{
-	s32 keycode = keycodeToIndex(key);
 
-	bool result = input->_keyDown[keycode];
+inline bool modifierKeyIsPressed(InputState *input, ModifierKey modifier)
+{
+	bool result = false;
+
+	switch (modifier)
+	{
+	case KeyMod_Alt:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LALT)] || input->_keyDown[keycodeToIndex(SDLK_RALT)]);
+		break;
+	case KeyMod_Ctrl:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LCTRL)] || input->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
+		break;
+	case KeyMod_Shift:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || input->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
+		break;
+	case KeyMod_Super:
+		result = (input->_keyDown[keycodeToIndex(SDLK_LGUI)] || input->_keyDown[keycodeToIndex(SDLK_RGUI)]);
+		break;
+	}
+
+	return result;
+}
+
+inline bool modifierKeysArePressed(InputState *input, uint8 modifiers)
+{
+	bool result = true;
 
 	if (modifiers)
 	{
 		if (modifiers & KeyMod_Alt)
 		{
-			result = result && (keyIsPressed(input, SDLK_LALT) || keyIsPressed(input, SDLK_RALT));
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LALT)] || input->_keyDown[keycodeToIndex(SDLK_RALT)]);
 		}
 		if (modifiers & KeyMod_Ctrl)
 		{
-			result = result && (keyIsPressed(input, SDLK_LCTRL) || keyIsPressed(input, SDLK_RCTRL));
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LCTRL)] || input->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
 		}
 		if (modifiers & KeyMod_Shift)
 		{
-			result = result && (keyIsPressed(input, SDLK_LSHIFT) || keyIsPressed(input, SDLK_RSHIFT));
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || input->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
 		}
 		if (modifiers & KeyMod_Super)
 		{
-			result = result && (keyIsPressed(input, SDLK_LGUI) || keyIsPressed(input, SDLK_RGUI));
+			result = result && (input->_keyDown[keycodeToIndex(SDLK_LGUI)] || input->_keyDown[keycodeToIndex(SDLK_RGUI)]);
 		}
 	}
 
 	return result;
 }
-inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
+
+inline bool keyIsPressed(InputState *input, SDL_Keycode key, uint8 modifiers=0)
+{
+	int32 keycode = keycodeToIndex(key);
+
+	bool result = input->_keyDown[keycode];
+
+	if (modifiers)
+	{
+		result = result && modifierKeysArePressed(input, modifiers);
+	}
+
+	return result;
+}
 {
 	s32 keycode = keycodeToIndex(key);
 
@@ -210,6 +245,7 @@ void updateInput(InputState *inputState)
 			} break;
 			case SDL_TEXTINPUT: {
 				inputState->hasUnhandledTextEntered = true;
+				// copyChars(event.text.text, inputState->_textEntered, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 				strncpy(inputState->_textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			} break;
 		}

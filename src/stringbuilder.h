@@ -74,6 +74,11 @@ void append(StringBuilder *stringBuilder, char *source)
 	append(stringBuilder, stringFromChars(source));
 }
 
+void append(StringBuilder *stringBuilder, char source)
+{
+	append(stringBuilder, &source, 1);
+}
+
 void append(StringBuilder *stringBuilder, StringBuilder *source)
 {
 	append(stringBuilder, source->buffer, source->length);

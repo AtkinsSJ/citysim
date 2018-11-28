@@ -22,7 +22,7 @@ void initUiState(UIState *uiState)
 	setCursorVisible(uiState, false);
 }
 
-RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, s32 align,
+Rect2 uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, int32 align,
 				 f32 depth, V4 color, f32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
@@ -32,7 +32,58 @@ RealRect uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, Stri
 	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, text, color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, align);
 	drawCachedText(uiBuffer, textCache, topLeft, depth);
-	RealRect bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+	Rect2 bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+
+	endTemporaryMemory(&memory);
+
+	return bounds;
+}
+
+Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, TextInput *textInput, V2 origin, int32 align, real32 depth, V4 color, real32 maxWidth = 0)
+{
+	DEBUG_FUNCTION();
+
+	TemporaryMemory memory = beginTemporaryMemory(&uiState->arena);
+
+	BitmapFontCachedText *textCache = drawTextToCache(&memory, font, makeString(textInput->buffer, textInput->byteLength), color, maxWidth);
+	V2 topLeft = calculateTextPosition(textCache, origin, align);
+	drawCachedText(uiBuffer, textCache, topLeft, depth);
+	Rect2 bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+
+	textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
+	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
+
+	if (showCaret)
+	{
+		Rect2 caretRect = rectXYWH(0, 0, 2, font->lineHeight);
+
+		if ((uint32) textInput->caretGlyphPos < textCache->charCount)
+		{
+			RenderItem charCaretIsBefore = textCache->chars[textInput->caretGlyphPos];
+			caretRect.x += charCaretIsBefore.rect.x;
+			caretRect.y += charCaretIsBefore.rect.y;
+		}
+		else if (textCache->charCount > 0)
+		{
+			// we've overrun. Could mean we're just after the last char.
+			// So, we grab the last char and then add its width.
+
+			// @FixMe: we really want o move forward by the glyph's xAdvance, but we don't know it once we're here! Sad times.
+			RenderItem charCaretIsAfter = textCache->chars[textCache->charCount - 1];
+			caretRect.x += charCaretIsAfter.rect.x + (1 + textInput->caretGlyphPos - textCache->charCount) * charCaretIsAfter.rect.w;
+			caretRect.y += charCaretIsAfter.rect.y;
+		}
+
+		// Trouble is the y. Once we get here, we don't know what the per-character vertical offset is!
+		// We don't even know what the character was.
+		// So, a hack! We'll round the y to the closest multiple of the line height.
+
+		caretRect.y = floor(caretRect.y / (real32)font->lineHeight) * font->lineHeight;
+
+		caretRect.pos += topLeft;
+		caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
+		drawRect(uiBuffer, caretRect, depth + 10, color);
+	}
 
 	endTemporaryMemory(&memory);
 
@@ -56,10 +107,10 @@ void drawTooltip(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
 
 		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(style->borderPadding, style->borderPadding);
 
-		RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->tooltip.text,
+		Rect2 labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, style->depth + 1, uiState->tooltip.color);
 
-		labelRect = expandRect(labelRect, style->borderPadding);
+		labelRect = expand(labelRect, style->borderPadding);
 
 		drawRect(uiBuffer, labelRect, style->depth, style->backgroundColor);
 
@@ -68,7 +119,7 @@ void drawTooltip(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
 }
 
 bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	          String text, RealRect bounds, f32 depth, bool active=false,
+	          String text, Rect2 bounds, real32 depth, bool active=false,
 	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
@@ -117,7 +168,7 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 }
 
 bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-	              String text, RealRect bounds, f32 depth, UIMenuID menuID,
+	              String text, Rect2 bounds, real32 depth, UIMenuID menuID,
 	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
@@ -170,10 +221,10 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 // 	}
 
 // 	const f32 padding = 4;
-// 	RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
+// 	Rect2 labelRect = uiText(uiState, uiBuffer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
 // 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
-// 	labelRect = expandRect(labelRect, padding);
-// 	drawRect(uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
+// 	labelRect = expandRect2I(labelRect, padding);
+// 	drawRect2I(uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
 // }
 
 void pushUiMessage(UIState *uiState, String message)
@@ -215,12 +266,21 @@ void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *asset
 			}
 
 			V2 origin = v2(uiBuffer->camera.size.x * 0.5f, uiBuffer->camera.size.y - 8.0f);
-			RealRect labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->message.text, origin,
+			Rect2 labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, style->depth + 1, textColor);
 
-			labelRect = expandRect(labelRect, style->borderPadding);
+			labelRect = expand(labelRect, style->borderPadding);
 
 			drawRect(uiBuffer, labelRect, style->depth, backgroundColor);
 		}
 	}
+}
+
+void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, real32 height, real32 scrollPercent, V2 knobSize, real32 depth, V4 knobColor)
+{
+	knobSize.y = MIN(knobSize.y, height); // force knob to fit
+	real32 knobTravelableH = height - knobSize.y;
+	real32 scrollY = scrollPercent * knobTravelableH;
+	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
+	drawRect(uiBuffer, knobRect, depth, knobColor);
 }

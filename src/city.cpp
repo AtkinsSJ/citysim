@@ -44,7 +44,7 @@ void spend(City *city, s32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBuildingArchetype, Coord position,
+bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBuildingArchetype, V2I position,
 	bool isAttemptingToBuild = false)
 {
 
@@ -71,10 +71,10 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 		return false;
 	}
 
-	Rect footprint = irectCentreWH(position, def.width, def.height);
+	Rect2I footprint = irectCentreWH(position, def.width, def.height);
 
 	// Are we in bounds?
-	if (!rectInRect(irectXYWH(0,0, city->width, city->height), footprint))
+	if (!rectInRect2I(irectXYWH(0,0, city->width, city->height), footprint))
 	{
 		if (isAttemptingToBuild)
 		{
@@ -114,7 +114,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, Coord position) {
+bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2I position) {
 
 	if (!canPlaceBuilding(uiState, city, archetype, position, true)) {
 		return false;
@@ -169,7 +169,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, Co
 	return true;
 }
 
-bool demolishTile(UIState *uiState, City *city, Coord position) {
+bool demolishTile(UIState *uiState, City *city, V2I position) {
 	if (!tileExists(city, position.x, position.y)) return true;
 
 	u32 posTI = tileIndex(city, position.x, position.y);
@@ -308,7 +308,7 @@ s32 calculateDemolitionCost(City *city, Rect rect) {
 	return total;
 }
 
-bool demolishRect(UIState *uiState, City *city, Rect rect) {
+bool demolishRect(UIState *uiState, City *city, Rect2I rect) {
 
 	s32 cost = calculateDemolitionCost(city, rect);
 	if (!canAfford(city, cost)) {

@@ -98,7 +98,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	f32 left = uiPadding;
 
-	RealRect uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
+	Rect2 uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
 
 	uiText(uiState, uiBuffer, font, gameState->city.name,
@@ -112,14 +112,14 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	// Build UI
 	{
-		RealRect buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
+		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		if (uiMenuButton(uiState, uiBuffer, assets, inputState, LocalString("Build..."), buttonRect, 1, UIMenu_Build))
 		{
-			RealRect menuButtonRect = buttonRect;
+			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
-			RealRect menuRect = expandRect(menuButtonRect, uiPadding);
+			Rect2 menuRect = expand(menuButtonRect, uiPadding);
 
 			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build HQ"), menuButtonRect, 1,
 					(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Farmhouse),
@@ -271,7 +271,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
-	Coord mouseTilePos = tilePosition(worldCamera->mousePos);
+	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
 
 	#if 0 // UiButton/Mouse interaction
 	if (gameState->status == GameStatus_Playing) {
@@ -296,7 +296,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		// SDL_Log("Mouse world position: %f, %f", worldCamera->mousePos.x, worldCamera->mousePos.y);
 		// This is a very basic check for "is the user clicking on the UI?"
-		if (!inRects(uiState->uiRects, uiState->uiRectCount, uiCamera->mousePos)) {
+		if (!inRect2Is(uiState->uiRect2Is, uiState->uiRectCount, uiCamera->mousePos)) {
 			switch (uiState->actionMode) {
 				case ActionMode_Build: {
 					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
@@ -310,17 +310,17 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				case ActionMode_Demolish: {
 					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
 						mouseDragStartPos = worldCamera->mousePos;
-						dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+						dragRect2I = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-						dragRect = irectCovering(mouseDragStartPos, worldCamera->mousePos);
+						dragRect2I = irectCovering(mouseDragStartPos, worldCamera->mousePos);
 						s32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
 						showCostTooltip(renderer, &uiState, demolitionCost, gameState->city.funds);
 					}	
 
 					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
-						// Demolish everything within dragRect!
-						demolishRect(&uiState, &gameState->city, dragRect);
-						dragRect = irectXYWH(-1,-1,0,0);
+						// Demolish everything within dragRect2I!
+						demolishRect2I(&uiState, &gameState->city, dragRect2I);
+						dragRect2I = irectXYWH(-1,-1,0,0);
 					}
 				} break;
 
@@ -395,7 +395,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					default: color = {255, 255, 255, 63}; break;
 				}
 
-				drawRect(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
+				drawRect2I(renderer, false, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, &color);
 			}
 			#endif
 		}
@@ -412,7 +412,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		V4 drawColor = makeWhite();
 
 		if (gameState->uiState.actionMode == ActionMode_Demolish
-			&& rectsOverlap(building.footprint, dragRect)) {
+			&& rectsOverlap(building.footprint, dragRect2I)) {
 			// Draw building red to preview demolition
 			drawColor = color255(255,128,128,255);
 		}
@@ -435,7 +435,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		if (!canPlaceBuilding(&gameState->uiState, &gameState->city, gameState->uiState.selectedBuildingArchetype, mouseTilePos)) {
 			ghostColor = color255(255,0,0,128);
 		}
-		Rect footprint = irectCentreDim(mouseTilePos, buildingDefinitions[gameState->uiState.selectedBuildingArchetype].size);
+		Rect2I footprint = irectCentreDim(mouseTilePos, buildingDefinitions[gameState->uiState.selectedBuildingArchetype].size);
 		drawGL_TextureAtlasItem(
 			renderer,
 			false,
@@ -448,7 +448,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	} else if (gameState->uiState.actionMode == ActionMode_Demolish
 		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 		// Demolition outline
-		drawRect(renderer, false, realRect(dragRect), 0, color255(128, 0, 0, 128));
+		drawRect2I(renderer, false, realRect2I(dragRect2I), 0, color255(128, 0, 0, 128));
 	}
 	#endif
 
@@ -513,6 +513,8 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		{
 			updateAndRenderGame(appState, inputState, renderer, assets);
 		} break;
+
+		case AppStatus_Quit: break;
 		
 		default:
 		{

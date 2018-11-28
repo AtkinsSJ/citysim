@@ -16,16 +16,17 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	UILabelStyle *labelStyle = &theme->labelStyle;
 	BitmapFont *font = getFont(assets, labelStyle->font);
 
-	position.y += (uiText(uiState, uiBuffer, font, LocalString("Under London"),
+	String creditsText = assets->creditsText;
+	LineReader reader = startFile(creditsText, false, false);
+	while (reader.pos < reader.file.length)
+	{
+		String line = nextLine(&reader);
+		position.y += (uiText(uiState, uiBuffer, font, line,
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
-
-	position.y += (uiText(uiState, uiBuffer, font, LocalString("Everything © Samuel Atkins 2017"),
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
-	position.y += (uiText(uiState, uiBuffer, font, LocalString("... except for the things that are not."),
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
+	}
 
 	f32 uiBorderPadding = 4;
-	RealRect buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
+	Rect2 buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
 	if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Back"), buttonRect, 1, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;

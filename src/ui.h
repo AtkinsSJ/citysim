@@ -47,7 +47,7 @@ struct UIState
 	Tooltip tooltip;
 	UiMessage message;
 
-	RealRect uiRects[32];
+	Rect2 uiRects[32];
 	s32 uiRectCount;
 
 	CursorType currentCursor;

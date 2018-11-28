@@ -38,6 +38,30 @@ String stringFromChars(char *chars)
 
 	return result;
 }
+// const is a huge pain in the bum
+String stringFromChars(const char *chars)
+{
+	return stringFromChars((char*)chars);
+}
+
+void copyChars(char *src, String *dest, int32 length)
+{
+	int32 copyLength = MIN(length, dest->maxLength);
+	for (int32 i=0; i<copyLength; i++)
+	{
+		dest->chars[i] = src[i];
+	}
+	dest->length = copyLength;
+}
+
+String pushString(MemoryArena *arena, char *src)
+{
+	int32 len = strlen(src);
+
+	String s = newString(arena, len);
+	copyChars(src, &s, len);
+	return s;
+}
 
 void copyString(String source, String *dest)
 {
@@ -50,6 +74,12 @@ void copyString(String source, String *dest)
 }
 
 void reverseString(char* first, u32 length)
+{
+	String s = newString(arena, src.length);
+	copyString(src, &s);
+	return s;
+}
+
 {
 	u32 flips = length / 2;
 	char temp;
@@ -131,23 +161,36 @@ bool asInt(String string, s64 *result)
 	return succeeded;
 }
 
-bool isWhitespace(u32 uChar)
+bool isWhitespace(unichar uChar, bool countNewlines=true)
 {
-	// TODO: FINISH THIS!
+	// TODO: There's probably more whitespace characters somewhere.
 
 	bool result = false;
 
+	// Feels like I'm misusing a switch, but I can't think of any better ways of writing this!
 	switch (uChar)
 	{
 	case 0:
-	case 32:
+	case ' ':
+	case '\t':
 		result = true;
+		break;
+
+	case '\n':
+	case '\r':
+		result = countNewlines;
 		break;
 
 	default:
 		result = false;
 	}
 
+	return result;
+}
+
+bool isNewline(char c)
+{
+	bool result = (c == '\n') || (c == '\r');
 	return result;
 }
 
@@ -158,26 +201,29 @@ struct TokenList
 	s32 maxTokenCount = 64;
 };
 
+// TODO: This probably just wants to be "getToken()" which splits the string into two parts.
+// That way, no need to worry in advance how many tokens to make room for.
+// It also means we can use the rest of the string, including spaces, if we want!
 TokenList tokenize(String input)
 {
 	TokenList result = {};
 	s32 position = 0;
 
-	while (position <= input.length)
+	while (position < input.length)
 	{
 		while ((position <= input.length) && isWhitespace(input.chars[position]))
 		{
 			position++;
 		}
 
-		if (position <= input.length)
+		if (position < input.length)
 		{
 			ASSERT(result.count < result.maxTokenCount, "No room for more tokens.");
 			String *token = &result.tokens[result.count++];
 			token->chars = input.chars + position;
 			
 			// length
-			while ((position <= input.length) && !isWhitespace(input.chars[position]))
+			while ((position < input.length) && !isWhitespace(input.chars[position]))
 			{
 				position++;
 				token->length++;
@@ -188,6 +234,46 @@ TokenList tokenize(String input)
 	return result;
 }
 
-#include "stringbuilder.h"
+String trimStart(String input)
+{
+	String result = input;
+	while ((input.length > 0) && isWhitespace(result.chars[0], false))
+	{
+		++result.chars;
+		--result.length;
+	}
 
-#include "string.cpp"
+	return result;
+}
+
+String trimEnd(String input)
+{
+	String result = input;
+	while ((input.length > 0) && isWhitespace(result.chars[result.length-1], false))
+	{
+		--result.length;
+	}
+
+	return result;
+}
+
+String nextToken(String input, String *remainder)
+{
+	String firstWord = input;
+	firstWord.length = 0;
+
+	while (!isWhitespace(firstWord.chars[firstWord.length], true)
+		&& (firstWord.length < input.length))
+	{
+		++firstWord.length;
+	}
+
+	if (remainder)
+	{
+		remainder->chars = firstWord.chars + firstWord.length;
+		remainder->length = input.length - firstWord.length;
+		*remainder = trimStart(*remainder);
+	}
+
+	return firstWord;
+}

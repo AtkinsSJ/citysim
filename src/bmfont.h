@@ -66,10 +66,11 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 	BitmapFont *font = 0;
 	TemporaryMemory tempMemory = beginTemporaryMemory(tempArena);
 
-	File file = readFile(tempMemory.arena, filename);
+	String sFilename = pushString(&assets->assetArena, filename);
+	File file = readFile(tempMemory.arena, getAssetPath(assets, AssetType_Font, sFilename).chars);
 	if (!file.data)
 	{
-		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to open font file %s: %s", filename, SDL_GetError());
+		logError("Failed to open font file {0}: {1}", {sFilename, stringFromChars(SDL_GetError())});
 	}
 	else
 	{
@@ -82,12 +83,12 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 			|| header->tag[1] != BMFontTag[1]
 			|| header->tag[2] != BMFontTag[2])
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Not a valid BMFont file: %s", filename);
+			logError("Not a valid BMFont file: {0}", {sFilename});
 		}
 		else if (header->version != 3)
 		{
-			SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "BMFont file version is unsupported: %s, wanted %d and got %d",
-							filename, BMFontSupportedVersion, header->version);
+			logError("BMFont file version is unsupported: {0}, wanted {1} and got {2}",
+							{sFilename, formatInt(BMFontSupportedVersion), formatInt(header->version)});
 		}
 		else
 		{
@@ -135,8 +136,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 			if (! (common && chars && charCount && pages) )
 			{
 				// Something didn't load correctly!
-				SDL_LogCritical(SDL_LOG_CATEGORY_ERROR,
-					"BMFont file '%s' seems to be lacking crucial data and could not be loaded!", filename);
+				logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!", {sFilename});
 			}
 			else
 			{
