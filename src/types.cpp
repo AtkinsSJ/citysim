@@ -338,6 +338,16 @@ inline Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h)
 	return rect;
 }
 
+// Rectangle that is guaranteed to not contain anything, because it's inside-out
+inline Rect2I irectNegativeInfinity() {
+	Rect2I rect = {};
+	rect.x = s32Max;
+	rect.y = s32Max;
+	rect.w = s32Min;
+	rect.h = s32Min;
+	return rect;
+}
+
 inline Rect2I irectPosDim(V2I position, V2I dim)
 {
 	Rect2I rect = {};

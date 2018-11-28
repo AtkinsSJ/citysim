@@ -19,6 +19,10 @@ enum TextureAssetType // NB: Actually TextureRegions, unless I change that later
 
 	TextureAssetType_Map1,
 
+	TextureAssetType_GroundTile,
+	TextureAssetType_ForestTile,
+	TextureAssetType_WaterTile,
+
 	TextureAssetTypeCount
 };
 
