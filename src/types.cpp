@@ -486,6 +486,14 @@ inline Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h)
 	return rect;
 }
 
+inline Rect2 rectPosSize(V2 pos, V2 size)
+{
+	Rect2 rect = {};
+	rect.pos  = pos;
+	rect.size = size;
+	return rect;
+}
+
 inline Rect2 rectCentreSize(V2 centre, V2 size)
 {
 	Rect2 rect = {};

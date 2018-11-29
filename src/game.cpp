@@ -416,7 +416,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos)) {
 			ghostColor = color255(255,0,0,128);
 		}
-		Rect2 footprint = rectCentreSize(v2(mouseTilePos), v2(buildingDefinitions[uiState->selectedBuildingArchetype].size));
+		Rect2 footprint = rectPosSize(v2(mouseTilePos), v2(buildingDefinitions[uiState->selectedBuildingArchetype].size));
 		drawTextureRegion(&renderer->worldBuffer,
 						  buildingDefinitions[uiState->selectedBuildingArchetype].textureAtlasItem,
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
