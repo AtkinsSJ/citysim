@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <math.h>
 #include <initializer_list>
+#include <time.h> // For seeding RNGs
 
 #ifdef __linux__
 #	include <SDL2/SDL.h>
@@ -55,6 +56,7 @@ struct AppState
 	Renderer *renderer;
 
 	GameState *gameState;
+	Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
 };
 AppState globalAppState;
 
@@ -124,6 +126,8 @@ int main(int argc, char *argv[])
 
 	globalDebugState->showDebugData = false;
 #endif
+
+	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
 
 	log("This is a test!", {});
 

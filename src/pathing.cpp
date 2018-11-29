@@ -303,14 +303,14 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryAren
 
 			for (int x=fromBuilding->footprint.x; x<fromBuilding->footprint.x + fromBuilding->footprint.w; x++)
 			{
-				_addPathNodeToQueue(city, nodes, coord(x, fromBuilding->footprint.y-1), startNode, &openQueue, target);
-				_addPathNodeToQueue(city, nodes, coord(x, fromBuilding->footprint.y + fromBuilding->footprint.h), startNode, &openQueue, target);
+				_addPathNodeToQueue(city, nodes, v2i(x, fromBuilding->footprint.y-1), startNode, &openQueue, target);
+				_addPathNodeToQueue(city, nodes, v2i(x, fromBuilding->footprint.y + fromBuilding->footprint.h), startNode, &openQueue, target);
 			}
 
 			for (int y=fromBuilding->footprint.y; y<fromBuilding->footprint.y + fromBuilding->footprint.h; y++)
 			{
-				_addPathNodeToQueue(city, nodes, coord(fromBuilding->footprint.x-1, y), startNode, &openQueue, target);
-				_addPathNodeToQueue(city, nodes, coord(fromBuilding->footprint.x + fromBuilding->footprint.w, y), startNode, &openQueue, target);
+				_addPathNodeToQueue(city, nodes, v2i(fromBuilding->footprint.x-1, y), startNode, &openQueue, target);
+				_addPathNodeToQueue(city, nodes, v2i(fromBuilding->footprint.x + fromBuilding->footprint.w, y), startNode, &openQueue, target);
 			}
 		}
 		else
@@ -345,10 +345,10 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryAren
 			{
 				// Add all valid neighbours to the open queue
 				V2I adjacents[] = {
-					coord(current->pos.x-1, current->pos.y),
-					coord(current->pos.x+1, current->pos.y),
-					coord(current->pos.x, current->pos.y-1),
-					coord(current->pos.x, current->pos.y+1),
+					v2i(current->pos.x-1, current->pos.y),
+					v2i(current->pos.x+1, current->pos.y),
+					v2i(current->pos.x, current->pos.y-1),
+					v2i(current->pos.x, current->pos.y+1),
 				};
 
 				for (int adjacentIndex=0; adjacentIndex<4; adjacentIndex++)

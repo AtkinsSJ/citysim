@@ -19,11 +19,11 @@ inline f32 clamp(f32 value, f32 min, f32 max)
 	COORD
  **********************************************/
 
-inline V2I coord(s32 x, s32 y)
+inline V2I v2i(s32 x, s32 y)
 {
 	return {x,y};
 }
-inline V2I coord(V2 v2)
+inline V2I v2i(V2 v2)
 {
 	return {(s32)v2.x, (s32)v2.y};
 }
@@ -450,7 +450,7 @@ inline V2 centre(Rect2I rect)
 
 inline V2I iCentre(Rect2I rect)
 {
-	return coord(rect.x + rect.w/2, rect.y + rect.h/2);
+	return v2i(rect.x + rect.w/2, rect.y + rect.h/2);
 }
 
 /**********************************************

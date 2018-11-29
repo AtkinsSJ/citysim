@@ -40,18 +40,14 @@ struct BuildingDefinition
 // Farming stuff
 enum BuildingArchetype
 {
-	BA_None = -1,
+	BA_Road,
 
-	BA_Field = 0,
-	BA_Barn = 1,
-	BA_Farmhouse,
-	BA_Path,
-
-	BA_Count
+	BA_Count,
+	BA_None = -1
 };
 BuildingDefinition buildingDefinitions[] = {
-	{}
 	// size, name, 		 image, 				 costs b/d,  isPath
+	{1,1, "Road", TextureAssetType_Road, 10, 10, true}
 	// {4,4, 	"Field", 	 TextureAtlasItem_Field, 200, 20,	 false},
 	// {4,4, 	"Barn", 	 TextureAtlasItem_Barn,  2000, 1000, false},
 	// {4,4, 	"Farmhouse", TextureAtlasItem_House, 2000, 1000, false},
@@ -62,6 +58,7 @@ struct Building
 {
 	BuildingArchetype archetype;
 	Rect2I footprint;
+	u32 textureRegionOffset; // used as the offset for getTextureRegionID
 	// union {
 	// 	FieldData field;
 	// };

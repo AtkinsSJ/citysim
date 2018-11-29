@@ -248,18 +248,43 @@ void loadAssets(AssetManager *assets)
 	assets->creditsText = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
 }
 
+void addTiledTextureRegions(AssetManager *assets, TextureAssetType type, char *filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
+{
+	String sFilename = pushString(&assets->assetArena, filename);
+	s32 textureID = findTexture(assets, sFilename);
+	if (textureID == -1)
+	{
+		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
+	}
+
+	Rect2 uv = rectXYWH(0, 0, (f32)tileWidth, (f32)tileHeight);
+
+	u32 index = 0;
+	for (u32 y = 0; y < tilesDown; y++)
+	{
+		uv.y = (f32)(y * tileHeight);
+
+		for (u32 x = 0; x < tilesAcross; x++)
+		{
+			uv.x = (f32)(x * tileWidth);
+
+			addTextureRegion(assets, type, textureID, uv);
+			index++;
+		}
+	}
+}
+
 void addAssets(AssetManager *assets, MemoryArena *tempArena)
 {
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,2002,1519), false);
 
-	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH( 0,  0, 16, 16), false);
-	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH( 0, 16, 16, 16), false);
-	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH(16,  0, 16, 16), false);
-	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH(16, 16, 16, 16), false);
+	addTiledTextureRegions(assets, TextureAssetType_GroundTile, "grass.png", 16, 16, 2, 2, false);
 
 	addTextureRegion(assets, TextureAssetType_ForestTile, "combined.png", rectXYWH(32, 0, 16, 16), false);
 	addTextureRegion(assets, TextureAssetType_WaterTile,  "combined.png", rectXYWH(16, 0, 16, 16), false);
+
+	addTiledTextureRegions(assets, TextureAssetType_Road, "road.png", 16, 16, 4, 4, false);
 
 	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");

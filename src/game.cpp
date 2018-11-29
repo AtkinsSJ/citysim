@@ -126,48 +126,12 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			Rect2 menuRect = expand(menuButtonRect, uiPadding);
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build HQ"), menuButtonRect, 1,
-					(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Farmhouse),
-					SDLK_q, LocalString("(Q)")))
-			{
-				uiState->openMenu = UIMenu_None;
-				uiState->selectedBuildingArchetype = BA_Farmhouse;
-				uiState->actionMode = ActionMode_Build;
-				setCursor(uiState, assets, Cursor_Build);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Field"), menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Field),
-						SDLK_f, LocalString("(F)")))
-			{
-				uiState->openMenu = UIMenu_None;
-				uiState->selectedBuildingArchetype = BA_Field;
-				uiState->actionMode = ActionMode_Build;
-				setCursor(uiState, assets, Cursor_Build);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Barn"), menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Barn),
-						SDLK_b, LocalString("(B)")))
-			{
-				uiState->openMenu = UIMenu_None;
-				uiState->selectedBuildingArchetype = BA_Barn;
-				uiState->actionMode = ActionMode_Build;
-				setCursor(uiState, assets, Cursor_Build);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
 			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Road"), menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Path),
+						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Road),
 						SDLK_r, LocalString("(R)")))
 			{
 				uiState->openMenu = UIMenu_None;
-				uiState->selectedBuildingArchetype = BA_Path;
+				uiState->selectedBuildingArchetype = BA_Road;
 				uiState->actionMode = ActionMode_Build;
 				setCursor(uiState, assets, Cursor_Build);
 			}
@@ -305,15 +269,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		// Camera controls
 		// HOME resets the camera and centres on the HQ
-		if (keyJustPressed(inputState, SDLK_HOME)) {
-			worldCamera->zoom = 1;
-			// Jump to the farmhouse if we have one!
-			if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
-				worldCamera->pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
-			} else {
-				pushUiMessage(uiState, LocalString("Build an HQ, then pressing [Home] will take you there."));
-			}
-		}
+		// if (keyJustPressed(inputState, SDLK_HOME)) {
+		// 	worldCamera->zoom = 1;
+		// 	// Jump to the farmhouse if we have one!
+		// 	if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
+		// 		worldCamera->pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
+		// 	} else {
+		// 		pushUiMessage(uiState, LocalString("Build an HQ, then pressing [Home] will take you there."));
+		// 	}
+		// }
 
 		// SDL_Log("Mouse world position: %f, %f", worldCamera->mousePos.x, worldCamera->mousePos.y);
 		// This is a very basic check for "is the user clicking on the UI?"
@@ -395,21 +359,21 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 
-			#if 0 // Data layer rendering
+			#if 1 // Data layer rendering
 			s32 pathGroup = pathGroupAt(&gameState->city, x, y);
 			if (pathGroup > 0)
 			{
 				V4 color = {};
 				switch (pathGroup)
 				{
-					case 1: color = {0, 0, 255, 63}; break;
-					case 2: color = {0, 255, 0, 63}; break;
-					case 3: color = {255, 0, 0, 63}; break;
-					case 4: color = {0, 255, 255, 63}; break;
-					case 5: color = {255, 255, 0, 63}; break;
-					case 6: color = {255, 0, 255, 63}; break;
+					case 1: color = color255(0, 0, 255, 63); break;
+					case 2: color = color255(0, 255, 0, 63); break;
+					case 3: color = color255(255, 0, 0, 63); break;
+					case 4: color = color255(0, 255, 255, 63); break;
+					case 5: color = color255(255, 255, 0, 63); break;
+					case 6: color = color255(255, 0, 255, 63); break;
 
-					default: color = {255, 255, 255, 63}; break;
+					default: color = color255(255, 255, 255, 63); break;
 				}
 
 				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, color);
@@ -436,7 +400,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			default: {
 				V2 drawPos = centre(building.footprint);
-				drawTextureRegion(&renderer->worldBuffer, def->textureAtlasItem,
+				drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAtlasItem, building.textureRegionOffset),
 								  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
 			} break;
 		}

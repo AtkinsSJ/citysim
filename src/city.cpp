@@ -30,7 +30,7 @@ void generateTerrain(City *city, Random *random)
 			terrain->type = (perlinValue > 0.1f)
 				? Terrain_Forest
 				: Terrain_Ground;
-			terrain->textureRegionOffset = (s32) randomNext(random);
+			terrain->textureRegionOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
 		}
 	}
 }
@@ -49,16 +49,16 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 	bool isAttemptingToBuild = false)
 {
 
-	// Only allow one farmhouse!
-	if (selectedBuildingArchetype == BA_Farmhouse
-		&& city->firstBuildingOfType[BA_Farmhouse])
-	{
-		if (isAttemptingToBuild)
-		{
-			pushUiMessage(uiState, stringFromChars("You can only have one farmhouse!"));
-		}
-		return false;
-	}
+	// // Only allow one farmhouse!
+	// if (selectedBuildingArchetype == BA_Farmhouse
+	// 	&& city->firstBuildingOfType[BA_Farmhouse])
+	// {
+	// 	if (isAttemptingToBuild)
+	// 	{
+	// 		pushUiMessage(uiState, stringFromChars("You can only have one farmhouse!"));
+	// 	}
+	// 	return false;
+	// }
 
 	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
 
@@ -112,12 +112,28 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 	return true;
 }
 
+void updatePathTexture(City *city, s32 x, s32 y)
+{
+	Building *building = getBuildingAtPosition(city, v2i(x, y));
+	if (building)
+	{
+		bool pathU = pathGroupAt(city, x,   y-1) > 0;
+		bool pathD = pathGroupAt(city, x,   y+1) > 0;
+		bool pathL = pathGroupAt(city, x-1, y  ) > 0;
+		bool pathR = pathGroupAt(city, x+1, y  ) > 0;
+
+		building->textureRegionOffset = (pathU ? 1 : 0) | (pathR ? 2 : 0) | (pathD ? 4 : 0) | (pathL ? 8 : 0);
+	}
+}
+
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2I position) {
+bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2I position)
+{
 
-	if (!canPlaceBuilding(uiState, city, archetype, position, true)) {
+	if (!canPlaceBuilding(uiState, city, archetype, position, true))
+	{
 		return false;
 	}
 
@@ -164,7 +180,22 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 
 	if (def->isPath)
 	{
+		// Sprite id is 0 to 15, depending on connecting neighbours.
+		// 1 = up, 2 = right, 4 = down, 8 = left
+		// For now, we'll decide that off-the-map does NOT connect
 		recalculatePathingConnectivity(city);
+
+		// Update sprites for the tile, and the 4 neighbours.
+		updatePathTexture(city, position.x,   position.y);
+		updatePathTexture(city, position.x+1, position.y);
+		updatePathTexture(city, position.x-1, position.y);
+		updatePathTexture(city, position.x,   position.y+1);
+		updatePathTexture(city, position.x,   position.y-1);
+	}
+	else
+	{
+		// Random sprite!
+		building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
 	}
 
 	return true;

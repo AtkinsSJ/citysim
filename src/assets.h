@@ -23,6 +23,8 @@ enum TextureAssetType // NB: Actually TextureRegions, unless I change that later
 	TextureAssetType_ForestTile,
 	TextureAssetType_WaterTile,
 
+	TextureAssetType_Road,
+
 	TextureAssetTypeCount
 };
 
