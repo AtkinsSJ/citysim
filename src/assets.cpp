@@ -253,7 +253,11 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,2002,1519), false);
 
-	addTextureRegion(assets, TextureAssetType_GroundTile, "combined.png", rectXYWH(0,  0, 16, 16), false);
+	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH( 0,  0, 16, 16), false);
+	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH( 0, 16, 16, 16), false);
+	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH(16,  0, 16, 16), false);
+	addTextureRegion(assets, TextureAssetType_GroundTile, "grass.png", rectXYWH(16, 16, 16, 16), false);
+
 	addTextureRegion(assets, TextureAssetType_ForestTile, "combined.png", rectXYWH(32, 0, 16, 16), false);
 	addTextureRegion(assets, TextureAssetType_WaterTile,  "combined.png", rectXYWH(16, 0, 16, 16), false);
 

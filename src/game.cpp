@@ -277,6 +277,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera    = &renderer->uiBuffer.camera;
+	if (gameState->status == GameStatus_Playing) {
+		inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
+	}
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
 
 	// UiButton/Mouse interaction
@@ -352,23 +355,19 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// RENDERING
 
 	// Draw terrain
-
-	Rect2 cameraBounds = rectCentreSize(worldCamera->pos, worldCamera->size);
-
-	// Terrain, which we don't use
-	// for (s32 y = (cameraBounds.y < 0) ? 0 : (s32)cameraBounds.y;
-	// 	(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h);
-	// 	y++)
-	for (s32 y = 0; y < gameState->city.height; y++)
+	Rect2 cameraBounds = rectCentreSize(worldCamera->pos, worldCamera->size * (1.0f/worldCamera->zoom));
+	// logDebug("WorldCamera size: {0} x {1}", {formatFloat(worldCamera->size.x, 3),formatFloat(worldCamera->size.y, 3)});
+	for (s32 y = MAX((s32)cameraBounds.y, 0);
+		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h + 1);
+		y++)
 	{
-		// for (s32 x = (cameraBounds.x < 0) ? 0 : (s32)cameraBounds.x;
-		// 	(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w);
-		// 	x++)
-		for (s32 x = 0; x < gameState->city.width; x++)
+		for (s32 x = MAX((s32)cameraBounds.x - 1, 0);
+			(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w + 1);
+			x++)
 		{
-			Terrain t = terrainAt(&gameState->city,x,y);
+			Terrain *t = terrainAt(&gameState->city,x,y);
 			TextureAssetType textureAtlasItem;
-			switch (t) {
+			switch (t->type) {
 				case Terrain_Forest: {
 					textureAtlasItem = TextureAssetType_ForestTile;
 				} break;
@@ -381,7 +380,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				} break;
 			}
 
-			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, 0);
+			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, t->textureRegionOffset);
 
 			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 
@@ -481,8 +480,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		drawTooltip(uiState, &renderer->uiBuffer, assets);
 		drawUiMessage(uiState, &renderer->uiBuffer, assets);
-
-		inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
 	}
 }
 

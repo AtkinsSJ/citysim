@@ -26,9 +26,11 @@ void generateTerrain(City *city, Random *random)
 
 			f32 perlinValue = stb_perlin_noise3(px, py, 0);
 
-			city->terrain[tileIndex(city, x, y)] = (perlinValue > 0.1f)
+			Terrain *terrain = &city->terrain[tileIndex(city, x, y)];
+			terrain->type = (perlinValue > 0.1f)
 				? Terrain_Forest
 				: Terrain_Ground;
+			terrain->textureRegionOffset = (s32) randomNext(random);
 		}
 	}
 }
@@ -88,7 +90,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 		for (s32 x=0; x<def.width; x++)
 		{
 			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
-			if (city->terrain[ti] != Terrain_Ground)
+			if (city->terrain[ti].type != Terrain_Ground)
 			{
 				if (isAttemptingToBuild)
 				{
@@ -266,11 +268,11 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 		return true;
 
-	} else if (city->terrain[posTI] == Terrain_Forest) {
+	} else if (city->terrain[posTI].type == Terrain_Forest) {
 		// Tear down all the trees!
 		if (canAfford(city, forestDemolishCost)) {
 			spend(city, forestDemolishCost);
-			city->terrain[posTI] = Terrain_Ground;
+			city->terrain[posTI].type = Terrain_Ground;
 			return true;
 		} else {
 			pushUiMessage(uiState, stringFromChars("Not enough money to destroy these trees."));
@@ -289,7 +291,7 @@ s32 calculateDemolitionCost(City *city, Rect2I rect) {
 	// Terrain clearing cost
 	for (int y=0; y<rect.h; y++) {
 		for (int x=0; x<rect.w; x++) {
-			if (terrainAt(city, rect.x + x, rect.y + y) == Terrain_Forest) {
+			if (terrainAt(city, rect.x + x, rect.y + y)->type == Terrain_Forest) {
 				total += forestDemolishCost;
 			}
 		}
