@@ -1,5 +1,7 @@
 @echo off
 
+REM vcvarsall.bat is incredibly slow, like 30 seconds slow, so we avoid it if we can.
+REM In reality, we run it inside a shell, then just build from there, but it's here just in case.
 where /q cl.exe || call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86
 
 REM to send preprocessor output to a file, add this to the compiler flags:  -P -Fipreprocessed.output 
