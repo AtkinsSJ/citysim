@@ -102,7 +102,8 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	f32 left = uiPadding;
 
-	Rect2 uiRect = uiState->uiRects[uiState->uiRectCount++] = rectXYWH(0,0, windowWidth, 64);
+	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
+	uiState->uiRects[uiState->uiRectCount++] = uiRect;
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
 
 	uiText(uiState, uiBuffer, font, gameState->city.name,
@@ -384,7 +385,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 
-			#if 1 // Data layer rendering
+			#if 0 // Data layer rendering
 			s32 pathGroup = pathGroupAt(&gameState->city, x, y);
 			if (pathGroup > 0)
 			{

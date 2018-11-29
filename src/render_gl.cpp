@@ -304,7 +304,12 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 	// Fill VBO
 	u32 vertexCount = 0;
 	u32 indexCount = 0;
-	GLuint glBoundTextureID = 0; // 0 = none
+
+	// 0 means no texture, so we can't start with this = 0, otherwise, if the buffer starts with
+	// some textureless RenderItems, they'll be drawn using the projection matrix and other settings
+	// from the previous call to renderBuffer!!!
+	// This was a bug that confused me for so long.
+	GLuint glBoundTextureID = -1;
 
 	u32 drawCallCount = 0;
 
@@ -318,6 +323,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			TextureRegion *region = getTextureRegion(assets, item->textureRegionID);
 			GL_TextureInfo *textureInfo = renderer->textureInfo + region->textureID;
 
+			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
 			if ((textureInfo->glTextureID != glBoundTextureID)
 				|| (desiredShader != renderer->currentShader))
 			{
@@ -460,7 +466,7 @@ static bool isBufferSorted(RenderBuffer *buffer)
 {
 	bool isSorted = true;
 	f32 lastDepth = f32Min;
-	for (u32 i=0; i<=buffer->itemCount; i++)
+	for (u32 i=0; i < buffer->itemCount; i++)
 	{
 		if (lastDepth > buffer->items[i].depth)
 		{
@@ -502,7 +508,9 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 	gl->currentShader = ShaderProgram_Invalid;
 
 	renderBuffer(gl, assets, &renderer->worldBuffer);
+		// renderer->worldBuffer.itemCount = 0;
 	renderBuffer(gl, assets, &renderer->uiBuffer);
+		// renderer->uiBuffer.itemCount = 0;
 
 	glUseProgram(NULL);
 	checkForError();

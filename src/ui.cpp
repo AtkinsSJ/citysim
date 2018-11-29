@@ -265,8 +265,8 @@ void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *asset
 			{
 				// Fade in
 				f32 tt = (t - 0.8f) / 0.2f;
-				backgroundColor.a = lerp(backgroundColor.a, 0, tt);
-				textColor.a = lerp(textColor.a, 0, tt);
+				backgroundColor *= lerp(backgroundColor.a, 0, tt);
+				textColor *= lerp(textColor.a, 0, tt);
 			}
 
 			V2 origin = v2(uiBuffer->camera.size.x * 0.5f, uiBuffer->camera.size.y - 8.0f);
