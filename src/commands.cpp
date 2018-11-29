@@ -79,6 +79,29 @@ ConsoleCommand(exit)
 	globalAppState.appStatus = AppStatus_Quit;
 }
 
+ConsoleCommand(funds)
+{
+	String sAmount = tokens->tokens[1];
+	s64 amount = 0;
+	if (asInt(sAmount, &amount))
+	{
+		if (globalAppState.gameState != nullptr)
+		{
+			consoleWriteLine(myprintf("Set funds to {0}", {sAmount}), CLS_Success);
+			globalAppState.gameState->city.funds = (s32) amount;
+		}
+		else
+		{
+			consoleWriteLine("Can't set funds when a game is not loaded.", CLS_Error);
+		}
+	}
+	else
+	{
+		consoleWriteLine(myprintf("Usage: {0} amount, where amount is an integer",
+								{tokens->tokens[0]}), CLS_Error);
+	}
+}
+
 #define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
@@ -88,6 +111,7 @@ void initCommands(Console *console)
 	append(&consoleCommands, Command(CMD(resize_window), 2, 2));
 	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
 	append(&consoleCommands, Command(CMD(exit), 0, 0));
+	append(&consoleCommands, Command(CMD(funds), 1, 1));
 
 	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(consoleCommands.count)}), CLS_Default);
 }
