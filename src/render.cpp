@@ -85,7 +85,7 @@ void updateCameraMatrix(Camera *camera)
 	);
 }
 
-inline RenderItem makeRenderItem(Rect2 rect, f32 depth, s32 textureRegionID, V4 color)
+inline RenderItem makeRenderItem(Rect2 rect, f32 depth, TextureRegionID textureRegionID, V4 color)
 {
 	RenderItem item = {};
 	item.rect = rect;
@@ -103,7 +103,7 @@ void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color)
 	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, 0, color);
 }
 
-void drawTextureRegion(RenderBuffer *buffer, s32 region, Rect2 rect, f32 depth, V4 color=makeWhite())
+void drawTextureRegion(RenderBuffer *buffer, TextureRegionID region, Rect2 rect, f32 depth, V4 color=makeWhite())
 {
 	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
 

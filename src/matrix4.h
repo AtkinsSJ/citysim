@@ -255,8 +255,8 @@ void scale(Matrix4 *matrix, V3 scale) {
 
 void rotateZ(Matrix4 *matrix, f32 radians) {
 	Matrix4 rotation = identityMatrix4();
-	f32 c = cos(radians),
-		   s = sin(radians);
+	f32 c = (f32) cos(radians);
+	f32 s = (f32) sin(radians);
 	rotation.v[0][0] = c;
 	rotation.v[0][1] = s;
 	rotation.v[1][0] = -s;

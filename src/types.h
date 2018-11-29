@@ -80,7 +80,7 @@ template <class F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
 #include <stdint.h>
 #include <float.h>
 
-typedef int8_t s8;
+typedef int8_t  s8;
 typedef int16_t s16;
 typedef int32_t s32;
 typedef int64_t s64;
@@ -94,7 +94,7 @@ const s32 s32Max = INT32_MAX;
 const s64 s64Min = INT64_MIN;
 const s64 s64Max = INT64_MAX;
 
-typedef uint8_t u8;
+typedef uint8_t  u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
@@ -108,11 +108,11 @@ typedef float  f32;
 typedef double f64;
 
 const f32 f32Min = -FLT_MAX;
-const f32 f32Max = FLT_MAX;
+const f32 f32Max =  FLT_MAX;
 const f64 f64Min = -DBL_MAX;
-const f64 f64Max = DBL_MAX;
+const f64 f64Max =  DBL_MAX;
 
-typedef intptr_t smm;
+typedef intptr_t  smm;
 typedef uintptr_t umm;
 
 typedef u32 unichar;

@@ -96,7 +96,7 @@ inline V2 v2(int x, int y)
 
 inline f32 v2Length(V2 v)
 {
-	return sqrt(v.x*v.x + v.y*v.y);
+	return (f32) sqrt(v.x*v.x + v.y*v.y);
 }
 
 inline V2 operator+(V2 lhs, V2 rhs)
@@ -174,7 +174,7 @@ inline V3 v3(f32 x, f32 y, f32 z)
 
 inline f32 v3Length(V3 v)
 {
-	return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+	return (f32) sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
 
 inline V3 operator+(V3 lhs, V3 rhs)
@@ -264,7 +264,7 @@ inline V4 makeWhite()
 
 inline f32 v4Length(V4 v)
 {
-	return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+	return (f32) sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
 
 inline V4 operator+(V4 lhs, V4 rhs)

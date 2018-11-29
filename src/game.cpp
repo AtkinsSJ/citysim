@@ -27,11 +27,11 @@ void inputMoveCamera(Camera *camera, InputState *inputState, s32 cityWidth, s32 
 	// Zooming
 	if (canZoom && inputState->wheelY) {
 		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera->zoom = clamp(round(10 * camera->zoom - inputState->wheelY) * 0.1f, 0.1f, 10.0f);
+		camera->zoom = (f32) clamp((f32) round(10 * camera->zoom - inputState->wheelY) * 0.1f, 0.1f, 10.0f);
 	}
 
 	// Panning
-	f32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom)) * SECONDS_PER_FRAME;
+	f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32) sqrt(camera->zoom)) * SECONDS_PER_FRAME;
 	if (mouseButtonPressed(inputState, SDL_BUTTON_MIDDLE))
 	{
 		// Click-panning!
@@ -385,7 +385,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, 0);
 
-			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH(x, y, 1.0f, 1.0f), -1000.0f);
+			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 
 			#if 1 // Data layer rendering
 			s32 pathGroup = pathGroupAt(&gameState->city, x, y);
@@ -404,7 +404,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					default: color = {255, 255, 255, 63}; break;
 				}
 
-				drawRect(&renderer->worldBuffer, rectXYWH(x, y, 1, 1), depthFromY(y) + 100.0f, color);
+				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, color);
 			}
 			#endif
 		}

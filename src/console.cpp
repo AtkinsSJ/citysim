@@ -26,8 +26,8 @@ struct ConsoleTextState
 inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiBuffer, V2 screenSize, f32 screenEdgePadding, f32 height)
 {
 	// Prevent weird artifacts from fractional sizes
-	screenEdgePadding = round(screenEdgePadding);
-	height = round(height);
+	screenEdgePadding = (f32) round(screenEdgePadding);
+	height = (f32) round(height);
 
 	ConsoleTextState textState = {};
 	textState.pos = v2(screenEdgePadding, height - screenEdgePadding);

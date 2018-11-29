@@ -93,6 +93,8 @@ struct TextureRegionList
 	TextureRegion regions[512]; // TODO: Tune this for performance!
 };
 
+typedef u32 TextureRegionID;
+
 #include "font.h"
 
 struct Cursor
@@ -167,7 +169,7 @@ Texture *getTexture(AssetManager *assets, u32 textureIndex)
 	return list->textures + textureIndex;
 }
 
-u32 getTextureRegionID(AssetManager *assets, TextureAssetType item, u32 offset)
+TextureRegionID getTextureRegionID(AssetManager *assets, TextureAssetType item, u32 offset)
 {
 	u32 min = assets->firstIDForTextureAssetType[item],
 		  max = assets->lastIDForTextureAssetType[item];
@@ -178,7 +180,7 @@ u32 getTextureRegionID(AssetManager *assets, TextureAssetType item, u32 offset)
 	return id;
 }
 
-TextureRegion *getTextureRegion(AssetManager *assets, u32 textureRegionIndex)
+TextureRegion *getTextureRegion(AssetManager *assets, TextureRegionID textureRegionIndex)
 {
 	ASSERT(textureRegionIndex < assets->textureRegionCount, "Selecting unallocated TextureRegion!");
 	TextureRegionList *list = &assets->firstTextureRegionList;

@@ -50,7 +50,7 @@ Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, 
 	drawCachedText(uiBuffer, textCache, topLeft, depth);
 	Rect2 bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
 
-	textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
+	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
 	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
 
 	if (showCaret)
@@ -78,7 +78,7 @@ Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, 
 		// We don't even know what the character was.
 		// So, a hack! We'll round the y to the closest multiple of the line height.
 
-		caretRect.y = floor(caretRect.y / (f32)font->lineHeight) * font->lineHeight;
+		caretRect.y = (f32) floor(caretRect.y / (f32)font->lineHeight) * font->lineHeight;
 
 		caretRect.pos += topLeft;
 		caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
