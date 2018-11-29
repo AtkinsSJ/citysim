@@ -329,13 +329,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// RENDERING
-
-	// Draw terrain
+	// Pre-calculate the tile area that's visible to the player.
+	// We err on the side of drawing too much, rather than risking having holes in the world.
 	Rect2I visibleTileBounds = irectCentreWH(
 		v2i(MAX((s32)worldCamera->pos.x - 1, 0), MAX((s32)worldCamera->pos.y - 1, 0)),
 		MIN(gameState->city.width,  worldCamera->size.x * (1.0f/worldCamera->zoom)) + 4,
 		MIN(gameState->city.height, worldCamera->size.y * (1.0f/worldCamera->zoom)) + 4
 	);
+
+	// Draw terrain
 	for (s32 y = visibleTileBounds.y;
 		y < visibleTileBounds.y + visibleTileBounds.h;
 		y++)
@@ -409,12 +411,12 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					V4 color = {};
 					switch (pathGroup)
 					{
-						case 1: color = color255(0, 0, 255, 63); break;
-						case 2: color = color255(0, 255, 0, 63); break;
-						case 3: color = color255(255, 0, 0, 63); break;
-						case 4: color = color255(0, 255, 255, 63); break;
-						case 5: color = color255(255, 255, 0, 63); break;
-						case 6: color = color255(255, 0, 255, 63); break;
+						case 1:  color = color255(  0,   0, 255, 63); break;
+						case 2:  color = color255(  0, 255,   0, 63); break;
+						case 3:  color = color255(255,   0,   0, 63); break;
+						case 4:  color = color255(  0, 255, 255, 63); break;
+						case 5:  color = color255(255, 255,   0, 63); break;
+						case 6:  color = color255(255,   0, 255, 63); break;
 
 						default: color = color255(255, 255, 255, 63); break;
 					}
