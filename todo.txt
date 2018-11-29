@@ -73,6 +73,9 @@ Strings:
 	- Reload correctly
 	- Can switch language at runtime
 
+Unicode stuff:
+- 2-stage table for properties, will save space! Not sure if I need that, but thought it was sensible to put the link here in case I do. https://www.strchr.com/multi-stage_tables
+
 Arenas:
 - Figure out how to prevent non-temp allocations happening when temp mem is open.
 
