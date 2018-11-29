@@ -45,23 +45,37 @@ and it will work! Can be any number of statements. If you defer multiple blocks 
 same scope, they will execute in LIFO order, just like destructors do (because it uses
 destructors!
 
-NB: Might want to replace this with the version at https://stackoverflow.com/a/42060129/1178345,
-	which has nicer syntax and no #includes.
-	defer { do_some_stuff_later(); };
 */
-#include <functional>
-#define DEFER_STRUCT_NAME GLUE(defer_, __LINE__)
-#define DEFER(the_code)                                                     \
-	struct DEFER_STRUCT_NAME {                                              \
-		std::function<void ()> deferredCode;                                \
-		DEFER_STRUCT_NAME(std::function<void ()> deferredCode){             \
-			this->deferredCode = deferredCode;                              \
-		}                                                                   \
-		~DEFER_STRUCT_NAME(){                                               \
-			this->deferredCode();                                           \
-		}                                                                   \
-	};                                                                      \
-	DEFER_STRUCT_NAME GLUE(_, DEFER_STRUCT_NAME)( [&](){the_code;} );
+// #include <functional>
+// #define DEFER_STRUCT_NAME GLUE(defer_, __LINE__)
+// #define DEFER(the_code)                                                     \
+// 	struct DEFER_STRUCT_NAME {                                              \
+// 		std::function<void ()> deferredCode;                                \
+// 		DEFER_STRUCT_NAME(std::function<void ()> deferredCode){             \
+// 			this->deferredCode = deferredCode;                              \
+// 		}                                                                   \
+// 		~DEFER_STRUCT_NAME(){                                               \
+// 		~DEFER_STRUCT_NAME(){                                               \
+// 			this->deferredCode();                                           \
+// 		}                                                                   \
+// 	};                                                                      \
+// 	DEFER_STRUCT_NAME GLUE(_, DEFER_STRUCT_NAME)( [&](){the_code;} );
+
+/*
+	Defer macro, to run code at the end of a scope.
+
+	USAGE: defer { do_some_stuff_later(); };
+
+	From https://stackoverflow.com/a/42060129/1178345
+*/
+#ifndef defer
+struct defer_dummy {};
+template <class F> struct deferrer { F f; ~deferrer() { f(); } };
+template <class F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
+#define DEFER_(LINE) zz_defer##LINE
+#define DEFER(LINE) DEFER_(LINE)
+#define defer auto DEFER(__LINE__) = defer_dummy{} *[&]()
+#endif // defer
 
 #include <stdint.h>
 #include <float.h>

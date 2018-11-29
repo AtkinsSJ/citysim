@@ -2,6 +2,7 @@
 #define MEMORY_H
 
 #include <stdlib.h> // For calloc
+#include <string.h> // For memset
 
 #define KB(x) ((x) * 1024)
 #define MB(x) (KB(x) * 1024)

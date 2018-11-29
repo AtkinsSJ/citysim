@@ -283,7 +283,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	renderer->unloadAssets(renderer);
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	SDL_SetCursor(systemWaitCursor);
-	DEFER(SDL_FreeCursor(systemWaitCursor));
+	defer { SDL_FreeCursor(systemWaitCursor); };
 
 	// Actual reloading
 

@@ -50,7 +50,7 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 	ASSERT(shaderSource && filename.length, "Failed to select a shader!");
 
 	GLuint shaderID = glCreateShader(shaderType);
-	DEFER(glDeleteShader(shaderID));
+	defer { glDeleteShader(shaderID); };
 
 	if (header && (header->state == AssetState_Loaded))
 	{

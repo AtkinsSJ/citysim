@@ -1,4 +1,5 @@
 #pragma once
+#include <stdio.h> // For snprintf
 
 /**
  * A printf() that takes a string like "Hello {0}!" where each {n} is replaced by the arg at that index.
