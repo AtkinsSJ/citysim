@@ -331,13 +331,17 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// RENDERING
 
 	// Draw terrain
-	Rect2 cameraBounds = rectCentreSize(worldCamera->pos, worldCamera->size * (1.0f/worldCamera->zoom));
-	for (s32 y = MAX((s32)cameraBounds.y, 0);
-		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h + 1);
+	Rect2I visibleTileBounds = irectCentreWH(
+		v2i(MAX((s32)worldCamera->pos.x - 1, 0), MAX((s32)worldCamera->pos.y - 1, 0)),
+		MIN(gameState->city.width,  worldCamera->size.x * (1.0f/worldCamera->zoom)) + 4,
+		MIN(gameState->city.height, worldCamera->size.y * (1.0f/worldCamera->zoom)) + 4
+	);
+	for (s32 y = visibleTileBounds.y;
+		y < visibleTileBounds.y + visibleTileBounds.h;
 		y++)
 	{
-		for (s32 x = MAX((s32)cameraBounds.x - 1, 0);
-			(x < gameState->city.width) && (x < cameraBounds.x + cameraBounds.w + 1);
+		for (s32 x = visibleTileBounds.x;
+			x < visibleTileBounds.x + visibleTileBounds.w;
 			x++)
 		{
 			Terrain *t = terrainAt(&gameState->city,x,y);
@@ -358,9 +362,46 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, t->textureRegionOffset);
 
 			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
+		}
+	}
+	
+	for (u32 i=1; i<gameState->city.buildingCount; i++)
+	{
+		Building building = gameState->city.buildings[i];
 
-			// Data layer rendering
-			if (gameState->drawPathLayer)
+		if (rectsOverlap(building.footprint, visibleTileBounds))
+		{
+			BuildingDefinition *def = buildingDefinitions + building.archetype;
+
+			V4 drawColor = makeWhite();
+
+			if (uiState->actionMode == ActionMode_Demolish
+				&& rectsOverlap(building.footprint, uiState->dragRect)) {
+				// Draw building red to preview demolition
+				drawColor = color255(255,128,128,255);
+			}
+
+			switch (building.archetype) {
+
+				default: {
+					V2 drawPos = centre(building.footprint);
+					drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAtlasItem, building.textureRegionOffset),
+									  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
+				} break;
+			}
+		}
+	}
+
+	// Data layer rendering
+	if (gameState->drawPathLayer)
+	{
+		for (s32 y = visibleTileBounds.y;
+			y < visibleTileBounds.y + visibleTileBounds.h;
+			y++)
+		{
+			for (s32 x = visibleTileBounds.x;
+				x < visibleTileBounds.x + visibleTileBounds.w;
+				x++)
 			{
 				s32 pathGroup = pathGroupAt(&gameState->city, x, y);
 				if (pathGroup > 0)
@@ -381,30 +422,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, color);
 				}
 			}
-		}
-	}
-	
-	for (u32 i=1; i<gameState->city.buildingCount; i++)
-	{
-		Building building = gameState->city.buildings[i];
-
-		BuildingDefinition *def = buildingDefinitions + building.archetype;
-
-		V4 drawColor = makeWhite();
-
-		if (uiState->actionMode == ActionMode_Demolish
-			&& rectsOverlap(building.footprint, uiState->dragRect)) {
-			// Draw building red to preview demolition
-			drawColor = color255(255,128,128,255);
-		}
-
-		switch (building.archetype) {
-
-			default: {
-				V2 drawPos = centre(building.footprint);
-				drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAtlasItem, building.textureRegionOffset),
-								  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
-			} break;
 		}
 	}
 

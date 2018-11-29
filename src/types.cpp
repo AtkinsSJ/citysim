@@ -375,6 +375,11 @@ inline Rect2I irectCentreDim(V2I position, V2I dim)
 	return rect;
 }
 
+inline Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax)
+{
+	return irectXYWH(xMin, yMin, (1+xMax-xMin), (1+yMax-yMin));
+}
+
 inline Rect2I irectCovering(V2 a, V2 b)
 {
 	Rect2I rect = {};
