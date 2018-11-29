@@ -40,6 +40,8 @@ struct UIState
 {
 	MemoryArena arena;
 
+	UITheme *theme;
+
 	UIMenuID openMenu;
 	ActionMode actionMode;
 	BuildingArchetype selectedBuildingArchetype;

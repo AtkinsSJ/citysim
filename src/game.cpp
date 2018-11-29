@@ -253,6 +253,17 @@ bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIS
 	return result;
 }
 
+void showCostTooltip(Renderer *renderer, UIState *uiState, s32 buildCost, s32 cityFunds)
+{
+	V4 color = buildCost <= cityFunds
+				? uiState->theme->tooltipStyle.textColorNormal
+				: uiState->theme->tooltipStyle.textColorBad;
+
+	String text = myprintf("£{0}", {formatInt(buildCost)});
+
+	setTooltip(uiState, text, color);
+}
+
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
@@ -266,6 +277,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	GameState *gameState = appState->gameState;
 
 	UIState *uiState = &globalAppState.uiState;
+	uiState->theme = &assets->theme;
 
 	// // Win and Lose!
 	// if (gameState->city.funds >= gameWinFunds) {
@@ -313,7 +325,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 
 					s32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
-					// showCostTooltip(renderer, uiState, buildCost, gameState->city.funds);
+					showCostTooltip(renderer, uiState, buildCost, gameState->city.funds);
 				} break;
 
 				case ActionMode_Demolish: {
@@ -323,7 +335,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
 						s32 demolitionCost = calculateDemolitionCost(&gameState->city, uiState->dragRect);
-						// showCostTooltip(renderer, uiState, demolitionCost, gameState->city.funds);
+						showCostTooltip(renderer, uiState, demolitionCost, gameState->city.funds);
 					}	
 
 					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
@@ -356,7 +368,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// Draw terrain
 	Rect2 cameraBounds = rectCentreSize(worldCamera->pos, worldCamera->size * (1.0f/worldCamera->zoom));
-	// logDebug("WorldCamera size: {0} x {1}", {formatFloat(worldCamera->size.x, 3),formatFloat(worldCamera->size.y, 3)});
 	for (s32 y = MAX((s32)cameraBounds.y, 0);
 		(y < gameState->city.height) && (y < cameraBounds.y + cameraBounds.h + 1);
 		y++)
