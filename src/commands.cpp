@@ -92,7 +92,7 @@ ConsoleCommand(funds)
 		}
 		else
 		{
-			consoleWriteLine("Can't set funds when a game is not loaded.", CLS_Error);
+			consoleWriteLine("You can only do that when a game is in progress!", CLS_Error);
 		}
 	}
 	else
@@ -100,6 +100,23 @@ ConsoleCommand(funds)
 		consoleWriteLine(myprintf("Usage: {0} amount, where amount is an integer",
 								{tokens->tokens[0]}), CLS_Error);
 	}
+}
+
+ConsoleCommand(show_paths)
+{
+	// For now this is a toggle, but it'd be nice if we could say "show_paths true" or "show_paths 1" maybe
+	if (globalAppState.gameState != nullptr)
+	{
+		bool newState = !globalAppState.gameState->drawPathLayer;
+		globalAppState.gameState->drawPathLayer = newState;
+
+		consoleWriteLine(myprintf("Pathing displayed: {0}", {formatBool(newState)}), CLS_Success);
+	}
+	else
+	{
+		consoleWriteLine("You can only do that when a game is in progress!", CLS_Error);
+	}
+
 }
 
 #define CMD(name) #name, &cmd_##name
@@ -112,6 +129,7 @@ void initCommands(Console *console)
 	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
 	append(&consoleCommands, Command(CMD(exit), 0, 0));
 	append(&consoleCommands, Command(CMD(funds), 1, 1));
+	append(&consoleCommands, Command(CMD(show_paths), 0, 0));
 
 	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(consoleCommands.count)}), CLS_Default);
 }

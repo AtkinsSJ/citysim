@@ -359,26 +359,28 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 
-			#if 1 // Data layer rendering
-			s32 pathGroup = pathGroupAt(&gameState->city, x, y);
-			if (pathGroup > 0)
+			// Data layer rendering
+			if (gameState->drawPathLayer)
 			{
-				V4 color = {};
-				switch (pathGroup)
+				s32 pathGroup = pathGroupAt(&gameState->city, x, y);
+				if (pathGroup > 0)
 				{
-					case 1: color = color255(0, 0, 255, 63); break;
-					case 2: color = color255(0, 255, 0, 63); break;
-					case 3: color = color255(255, 0, 0, 63); break;
-					case 4: color = color255(0, 255, 255, 63); break;
-					case 5: color = color255(255, 255, 0, 63); break;
-					case 6: color = color255(255, 0, 255, 63); break;
+					V4 color = {};
+					switch (pathGroup)
+					{
+						case 1: color = color255(0, 0, 255, 63); break;
+						case 2: color = color255(0, 255, 0, 63); break;
+						case 3: color = color255(255, 0, 0, 63); break;
+						case 4: color = color255(0, 255, 255, 63); break;
+						case 5: color = color255(255, 255, 0, 63); break;
+						case 6: color = color255(255, 0, 255, 63); break;
 
-					default: color = color255(255, 255, 255, 63); break;
+						default: color = color255(255, 255, 255, 63); break;
+					}
+
+					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, color);
 				}
-
-				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, color);
 			}
-			#endif
 		}
 	}
 	

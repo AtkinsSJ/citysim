@@ -19,4 +19,6 @@ struct GameState
 	MemoryArena gameArena;
 	GameStatus status;
 	City city;
+
+	bool drawPathLayer = false;
 };

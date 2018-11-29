@@ -193,6 +193,12 @@ String formatString(char *value, s32 length=-1, bool alignLeft = true, char padd
 	return formatString(stringFromChars(value), length, alignLeft, paddingChar);
 }
 
+String formatBool(bool value)
+{
+	if (value) return stringFromChars("true");
+	else       return stringFromChars("false");
+}
+
 
 String repeatChar(char c, s32 length)
 {
