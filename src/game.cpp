@@ -266,20 +266,17 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	UIState *uiState = &globalAppState.uiState;
 
-	// Win and Lose!
-	if (gameState->city.funds >= gameWinFunds) {
-		gameState->status = GameStatus_Won;
-	} else if (gameState->city.funds < 0) {
-		gameState->status = GameStatus_Lost;
-	}
+	// // Win and Lose!
+	// if (gameState->city.funds >= gameWinFunds) {
+	// 	gameState->status = GameStatus_Won;
+	// } else if (gameState->city.funds < 0) {
+	// 	gameState->status = GameStatus_Lost;
+	// }
 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera    = &renderer->uiBuffer.camera;
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
-
-	Rect2I dragRect = irectNegativeInfinity();
-	V2 mouseDragStartPos = v2(-1,-1);
 
 	// UiButton/Mouse interaction
 	if (gameState->status == GameStatus_Playing) {
@@ -317,18 +314,18 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				case ActionMode_Demolish: {
 					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
-						mouseDragStartPos = worldCamera->mousePos;
-						dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+						uiState->mouseDragStartPos = worldCamera->mousePos;
+						uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-						dragRect = irectCovering(mouseDragStartPos, worldCamera->mousePos);
-						s32 demolitionCost = calculateDemolitionCost(&gameState->city, dragRect);
+						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
+						s32 demolitionCost = calculateDemolitionCost(&gameState->city, uiState->dragRect);
 						// showCostTooltip(renderer, uiState, demolitionCost, gameState->city.funds);
 					}	
 
 					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
 						// Demolish everything within dragRect!
-						demolishRect(uiState, &gameState->city, dragRect);
-						dragRect = irectXYWH(-1,-1,0,0);
+						demolishRect(uiState, &gameState->city, uiState->dragRect);
+						uiState->dragRect = irectXYWH(-1,-1,0,0);
 					}
 				} break;
 
@@ -419,7 +416,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		V4 drawColor = makeWhite();
 
 		if (uiState->actionMode == ActionMode_Demolish
-			&& rectsOverlap(building.footprint, dragRect)) {
+			&& rectsOverlap(building.footprint, uiState->dragRect)) {
 			// Draw building red to preview demolition
 			drawColor = color255(255,128,128,255);
 		}
@@ -449,7 +446,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	} else if (uiState->actionMode == ActionMode_Demolish
 		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 		// Demolition outline
-		drawRect(&renderer->worldBuffer, rect2(dragRect), 0, color255(128, 0, 0, 128));
+		drawRect(&renderer->worldBuffer, rect2(uiState->dragRect), 0, color255(128, 0, 0, 128));
 	}
 
 	// Draw the UI!

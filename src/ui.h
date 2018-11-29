@@ -52,6 +52,9 @@ struct UIState
 
 	CursorType currentCursor;
 	bool cursorIsVisible;
+
+	V2 mouseDragStartPos;
+	Rect2I dragRect;
 };
 
 const f32 messageDisplayTime = 2.0f;

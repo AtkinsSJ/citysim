@@ -115,9 +115,10 @@ const f64 f64Max =  DBL_MAX;
 typedef intptr_t  smm;
 typedef uintptr_t umm;
 
-typedef u32 unichar;
+#include <uchar.h>
+typedef char32_t unichar;
 
-const int null = 0;
+#define null nullptr
 
 enum Alignment {
 	ALIGN_LEFT = 1,

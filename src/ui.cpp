@@ -19,6 +19,10 @@ void initUiState(UIState *uiState)
 	uiState->tooltip.offsetFromCursor = v2(16, 20);
 	uiState->tooltip.text = newString(&uiState->arena, 256);
 
+	uiState->message = {};
+	uiState->message.text = newString(&uiState->arena, 256);
+	uiState->message.countdown = -1;
+
 	setCursorVisible(uiState, false);
 }
 
