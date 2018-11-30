@@ -135,6 +135,8 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				uiState->actionMode = ActionMode_Build;
 				setCursor(uiState, assets, Cursor_Build);
 			}
+			menuButtonRect.y += menuButtonRect.h + uiPadding;
+			menuRect.h += menuButtonRect.h + uiPadding;
 
 			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build House"), menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_House_2x2),
@@ -439,18 +441,23 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// Building preview
 	if (uiState->actionMode == ActionMode_Build
-		&& uiState->selectedBuildingArchetype != BA_None) {
+		&& uiState->selectedBuildingArchetype != BA_None)
+	{
 
 		V4 ghostColor = color255(128,255,128,255);
-		if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos)) {
+		if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos))
+		{
 			ghostColor = color255(255,0,0,128);
 		}
-		Rect2 footprint = rectPosSize(v2(mouseTilePos), v2(buildingDefinitions[uiState->selectedBuildingArchetype].size));
+		auto def = buildingDefinitions[uiState->selectedBuildingArchetype];
+		Rect2 footprint = rect2(irectCentreWH(mouseTilePos, def.width, def.height));
 		drawTextureRegion(&renderer->worldBuffer,
-						  buildingDefinitions[uiState->selectedBuildingArchetype].textureAtlasItem,
+						  getTextureRegionID(assets, buildingDefinitions[uiState->selectedBuildingArchetype].textureAtlasItem, 0),
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
-	} else if (uiState->actionMode == ActionMode_Demolish
-		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
+	}
+	else if (uiState->actionMode == ActionMode_Demolish
+		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+	{
 		// Demolition outline
 		drawRect(&renderer->worldBuffer, rect2(uiState->dragRect), 0, color255(128, 0, 0, 128));
 	}
