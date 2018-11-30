@@ -367,28 +367,28 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 	}
 	
-	for (u32 i=1; i<gameState->city.buildingCount; i++)
+	for (s32 i=1; i<gameState->city.buildings.count; i++)
 	{
-		Building building = gameState->city.buildings[i];
+		Building *building = gameState->city.buildings[i];
 
-		if (rectsOverlap(building.footprint, visibleTileBounds))
+		if (rectsOverlap(building->footprint, visibleTileBounds))
 		{
-			BuildingDefinition *def = buildingDefinitions + building.archetype;
+			BuildingDefinition *def = buildingDefinitions + building->archetype;
 
 			V4 drawColor = makeWhite();
 
 			if (uiState->actionMode == ActionMode_Demolish
-				&& rectsOverlap(building.footprint, uiState->dragRect)) {
+				&& rectsOverlap(building->footprint, uiState->dragRect)) {
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);
 			}
 
-			switch (building.archetype) {
+			switch (building->archetype) {
 
 				default: {
-					V2 drawPos = centre(building.footprint);
-					drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAtlasItem, building.textureRegionOffset),
-									  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
+					V2 drawPos = centre(building->footprint);
+					drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAtlasItem, building->textureRegionOffset),
+									  rect2(building->footprint), depthFromY(drawPos.y), drawColor);
 				} break;
 			}
 		}

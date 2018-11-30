@@ -17,10 +17,10 @@ template<class T> struct Array {
 		free(items);
 	}
 
-	T operator[](s32 index)
+	T *operator[](s32 index)
 	{
 		ASSERT(index >=0 && index < count, "Index out of range!");
-		return items[index];
+		return items + index;
 	}
 };
 
@@ -52,6 +52,20 @@ T *append(Array<T> *a, T item)
 	T *result = a->items + a->count++;
 
 	*result = item;
+
+	return result;
+}
+
+
+template<class T>
+T *appendBlank(Array<T> *a)
+{
+	if (a->count >= a->maxCount)
+	{
+		ASSERT(resize(a, a->maxCount * 2), "Failed to make room in array!");
+	}
+
+	T *result = a->items + a->count++;
 
 	return result;
 }

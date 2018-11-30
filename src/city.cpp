@@ -11,9 +11,12 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	city->pathLayer.data = PushArray(gameArena, s32, width*height);
 
 
+	city->buildings = Array<Building>(1024);
+	Building *nullBuilding = appendBlank(&city->buildings);
+	*nullBuilding = {};
+	nullBuilding->archetype = BA_None;
+
 	city->tileBuildings = PushArray(gameArena, u32, width*height);
-	city->buildingCount = 1; // For the null building
-	city->buildingCountMax = ArrayCount(city->buildings);
 }
 
 void generateTerrain(City *city, Random *random)
@@ -138,11 +141,10 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 		return false;
 	}
 
-	ASSERT(city->buildingCount < city->buildingCountMax, "City.buildings is full!");
-
-	u32 buildingID = city->buildingCount++;
-	Building *building = getBuildingByID(city, buildingID);
 	BuildingDefinition *def = buildingDefinitions + archetype;
+
+	Building *building = appendBlank(&city->buildings);
+	u32 buildingID = city->buildings.count;
 
 	spend(city, def->buildCost);
 
@@ -250,9 +252,9 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 		// Overwrite the building record with the highest one
 		// Unless it *IS* the highest one!
-		if (buildingID != (city->buildingCount-1))
+		if (buildingID != (city->buildings.count-1))
 		{
-			Building *highest = getBuildingByID(city, city->buildingCount - 1);
+			Building *highest = getBuildingByID(city, city->buildings.count - 1);
 
 			// Change all references to highest building
 			for (s32 y = highest->footprint.y;
@@ -272,7 +274,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 			*highest = {};
 		}
-		city->buildingCount--;
+		city->buildings.count--;
 
 		return true;
 
@@ -307,10 +309,11 @@ s32 calculateDemolitionCost(City *city, Rect2I rect) {
 
 	// We want to only get the cost of each building once.
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
-	for (u32 i=1; i<=city->buildingCount; i++) {
-		Building building = city->buildings[i];
-		if (rectsOverlap(building.footprint, rect)) {
-			total += buildingDefinitions[building.archetype].demolishCost;
+	// TODO: Make this instead do a position-based query, keeping track of checked buildings
+	for (u32 i=1; i<city->buildings.count; i++) {
+		Building *building = city->buildings[i];
+		if (rectsOverlap(building->footprint, rect)) {
+			total += buildingDefinitions[building->archetype].demolishCost;
 		}
 	}
 

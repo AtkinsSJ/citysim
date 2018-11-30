@@ -80,9 +80,7 @@ struct City
 	Terrain *terrain;
 	PathLayer pathLayer;
 
-	u32 buildingCount;
-	u32 buildingCountMax;
-	Building buildings[1024]; // TODO: Make the number of buildings unlimited!
+	Array<Building> buildings;
 	u32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
 };
@@ -106,12 +104,12 @@ inline Terrain* terrainAt(City *city, s32 x, s32 y)
 
 inline Building* getBuildingByID(City *city, u32 buildingID)
 {
-	if (buildingID <= 0 || buildingID > city->buildingCountMax)
+	if (buildingID <= 0 || buildingID > city->buildings.count)
 	{
 		return null;
 	}
 
-	return &(city->buildings[buildingID]);
+	return city->buildings[buildingID];
 }
 
 inline Building* getBuildingAtPosition(City *city, V2I position)
