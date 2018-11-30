@@ -19,11 +19,14 @@ static void logGLError(GLenum errorCode)
 	}
 }
 
-static void checkForError()
+static inline void GL_checkForError()
 {
 	GLenum errorCode = glGetError();
 	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
 }
+
+// Disable GL error checking for release version.
+// #define GL_checkForError() 
 
 static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset, ShaderHeader *header)
 {
@@ -253,31 +256,70 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
 	GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(GL_VertexData), renderer->vertices, GL_STATIC_DRAW);
 
-	// Fill IBO
+	// Make sure the buffer is big enough
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	GL_checkForError();
+	GLint vBufferSizeNeeded = vertexCount * sizeof(renderer->vertices[0]);
+	GLint vBufferSize = 0;
+	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &vBufferSize);
+	if (vBufferSize < vBufferSizeNeeded)
+	{
+		logWarn("Resizing VBO from {0} to {1} ({2} bytes per item)", {formatInt(vBufferSize), formatInt(vBufferSizeNeeded), formatInt(sizeof(renderer->vertices[0])) });
+		glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_STATIC_DRAW);
+		GL_checkForError();
+	}
+	// Fill VBO
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, renderer->vertices);
+	GL_checkForError();
+
+
+
+	// Make sure IBO is big enough
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * sizeof(GLuint), renderer->indices, GL_STATIC_DRAW);
+	GL_checkForError();
+	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
+	GLint iBufferSize = 0;
+	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &iBufferSize);
+	if (iBufferSize < iBufferSizeNeeded)
+	{
+		logWarn("Resizing IBO from {0} to {1} ({2} bytes per item)", {formatInt(iBufferSize), formatInt(iBufferSizeNeeded), formatInt(sizeof(renderer->indices[0])) });
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, null, GL_STATIC_DRAW);
+		GL_checkForError();
+	}
+	// Fill IBO
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
+	GL_checkForError();
+
+
 
 	glEnableVertexAttribArray(activeShader->aPositionLoc);
 	glEnableVertexAttribArray(activeShader->aColorLoc);
+	GL_checkForError();
 
 	if (activeShader->aUVLoc != -1)
 	{
 		glEnableVertexAttribArray(activeShader->aUVLoc);
+		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	GL_checkForError();
 	glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
+	GL_checkForError();
 	glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
+	GL_checkForError();
+
 	if (activeShader->aUVLoc != -1)
 	{
 		glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
+		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	GL_checkForError();
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
+	GL_checkForError();
 
 	glDisableVertexAttribArray(activeShader->aPositionLoc);
 	glDisableVertexAttribArray(activeShader->aColorLoc);
@@ -285,6 +327,7 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	{
 		glDisableVertexAttribArray(activeShader->aUVLoc);
 	}
+	GL_checkForError();
 }
 
 static ShaderProgramType getDesiredShader(RenderItem *item)
@@ -309,8 +352,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 	// some textureless RenderItems, they'll be drawn using the projection matrix and other settings
 	// from the previous call to renderBuffer!!!
 	// This was a bug that confused me for so long.
-	GLuint glBoundTextureID = -1;
-
+	GLuint glBoundTextureID = 0;
 	u32 drawCallCount = 0;
 
 	if (buffer->itemCount > 0)
@@ -324,7 +366,8 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			GL_TextureInfo *textureInfo = renderer->textureInfo + region->textureID;
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
-			if ((textureInfo->glTextureID != glBoundTextureID)
+			if ((vertexCount == 0)
+				|| (textureInfo->glTextureID != glBoundTextureID)
 				|| (desiredShader != renderer->currentShader))
 			{
 				// Render existing buffer contents
@@ -338,19 +381,19 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 				GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 				glUseProgram(activeShader->shaderProgramID);
-				checkForError();
+				GL_checkForError();
 
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-				checkForError();
+				GL_checkForError();
 
 				// Bind new texture if this shader uses textures
 				if (activeShader->uTextureLoc != -1)
 				{
 					glEnable(GL_TEXTURE_2D);
 					glActiveTexture(GL_TEXTURE0);
-					checkForError();
+					GL_checkForError();
 					glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
-					checkForError();
+					GL_checkForError();
 
 					if (!textureInfo->isLoaded)
 					{
@@ -371,11 +414,11 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 						ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 						textureInfo->isLoaded = true;
-						checkForError();
+						GL_checkForError();
 					}
 
 					glUniform1i(activeShader->uTextureLoc, 0);
-					checkForError();
+					GL_checkForError();
 				}
 
 				vertexCount = 0;
@@ -496,14 +539,14 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	checkForError();
+	GL_checkForError();
 	glEnable(GL_BLEND);
-	checkForError();
+	GL_checkForError();
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	checkForError();
+	GL_checkForError();
 
 	glEnable(GL_TEXTURE_2D);
-	checkForError();
+	GL_checkForError();
 
 	gl->currentShader = ShaderProgram_Invalid;
 
@@ -513,7 +556,7 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 		// renderer->uiBuffer.itemCount = 0;
 
 	glUseProgram(NULL);
-	checkForError();
+	GL_checkForError();
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)
@@ -573,7 +616,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 				glGenBuffers(1, &gl->VBO);
 				glGenBuffers(1, &gl->IBO);
 
-				checkForError();
+				GL_checkForError();
 			}
 
 			if (!succeeded)

@@ -57,13 +57,11 @@ struct GL_Renderer
 	GL_ShaderProgram shaders[ShaderProgramCount];
 	s32 currentShader;
 
-	GLuint VBO,
-		   IBO;
+	GLuint VBO;
+	GLuint IBO;
 
 	GL_VertexData vertices[SPRITE_MAX * 4];
 	GLuint indices[SPRITE_MAX * 6];
-
-	// Animation animations[Animation_Count];
 
 	GLuint textureCount;
 	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length

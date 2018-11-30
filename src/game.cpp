@@ -217,7 +217,7 @@ bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIS
 	return result;
 }
 
-void showCostTooltip(Renderer *renderer, UIState *uiState, s32 buildCost, s32 cityFunds)
+void showCostTooltip(UIState *uiState, s32 buildCost, s32 cityFunds)
 {
 	V4 color = buildCost <= cityFunds
 				? uiState->theme->tooltipStyle.textColorNormal
@@ -289,7 +289,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 
 					s32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
-					showCostTooltip(renderer, uiState, buildCost, gameState->city.funds);
+					showCostTooltip(uiState, buildCost, gameState->city.funds);
 				} break;
 
 				case ActionMode_Demolish: {
@@ -299,7 +299,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
 						s32 demolitionCost = calculateDemolitionCost(&gameState->city, uiState->dragRect);
-						showCostTooltip(renderer, uiState, demolitionCost, gameState->city.funds);
+						showCostTooltip(uiState, demolitionCost, gameState->city.funds);
 					}	
 
 					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
@@ -367,7 +367,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 	}
 	
-	for (s32 i=1; i<gameState->city.buildings.count; i++)
+	for (u32 i=1; i<gameState->city.buildings.count; i++)
 	{
 		Building *building = gameState->city.buildings[i];
 

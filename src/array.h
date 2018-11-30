@@ -1,11 +1,11 @@
 #pragma once
 
 template<class T> struct Array {
-	s32 count;
-	s32 maxCount;
+	u32 count;
+	u32 maxCount;
 	T *items;
 
-	Array(s32 initialSize)
+	Array(u32 initialSize)
 	{
 		items = (T*) calloc(initialSize, sizeof(T));
 		count = 0;
@@ -17,7 +17,7 @@ template<class T> struct Array {
 		free(items);
 	}
 
-	T *operator[](s32 index)
+	T *operator[](u32 index)
 	{
 		ASSERT(index >=0 && index < count, "Index out of range!");
 		return items + index;
@@ -25,9 +25,10 @@ template<class T> struct Array {
 };
 
 template<class T>
-bool resize(Array<T> *a, s32 newSize)
+bool resize(Array<T> *a, u32 newSize)
 {
 	ASSERT(newSize > a->count, "Shrinking an Array is not supported!");
+	logInfo("Resizing an array.");
 
 	T *newItems = (T*) realloc(a->items, newSize * sizeof(T));
 	if (newItems)

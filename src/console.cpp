@@ -137,7 +137,7 @@ void consoleHandleCommand(Console *console)
 		{
 			bool foundCommand = false;
 			String firstToken = tokens.tokens[0];
-			for (int i=0; i < consoleCommands.count; i++)
+			for (u32 i=0; i < consoleCommands.count; i++)
 			{
 				Command *cmd = consoleCommands[i];
 				if (equals(cmd->name, firstToken))
