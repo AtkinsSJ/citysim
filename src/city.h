@@ -62,8 +62,6 @@ struct Building
 	// union {
 	// 	FieldData field;
 	// };
-	Building *prevOfType;
-	Building *nextOfType;
 };
 
 struct PathLayer
@@ -87,8 +85,6 @@ struct City
 	Building buildings[1024]; // TODO: Make the number of buildings unlimited!
 	u32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
-
-	Building *firstBuildingOfType[BA_Count];
 };
 
 inline u32 tileIndex(City *city, s32 x, s32 y)

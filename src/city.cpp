@@ -114,6 +114,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 
 void updatePathTexture(City *city, s32 x, s32 y)
 {
+	// logInfo("updatePathTexture({0}, {1})", {formatInt(x), formatInt(y)});
 	Building *building = getBuildingAtPosition(city, v2i(x, y));
 	if (building)
 	{
@@ -148,21 +149,6 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 	*building = {};
 	building->archetype = archetype;
 	building->footprint = irectCentreWH(position, def->width, def->height);
-
-	// Update the building-by-type lists
-	Building *firstOfType = city->firstBuildingOfType[archetype];
-	if (firstOfType)
-	{
-		building->nextOfType = firstOfType;
-		building->prevOfType = firstOfType->prevOfType;
-
-		building->prevOfType->nextOfType = building->nextOfType->prevOfType = building;
-	}
-	else
-	{
-		// We are the only building of this type
-		city->firstBuildingOfType[archetype] = building->nextOfType = building->prevOfType = building;
-	}
 
 	// Tiles
 	for (s16 y=0; y<building->footprint.h; y++) {
@@ -242,28 +228,31 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 			}
 		}
 
-		// Remove the building from its type list
-		if (building == building->nextOfType)
+		if (def.isPath)
 		{
-			// Only one of type!
-			city->firstBuildingOfType[building->archetype] = null;
-		}
-		else
-		{
-			if (building == city->firstBuildingOfType[building->archetype])
+			// Update sprites for the tile's neighbours.
+			for (s32 y = building->footprint.y;
+				y < building->footprint.y + building->footprint.h;
+				y++)
 			{
-				city->firstBuildingOfType[building->archetype] = building->nextOfType;
+				updatePathTexture(city, building->footprint.x - 1,                     y);
+				updatePathTexture(city, building->footprint.x + building->footprint.w, y);
 			}
 
-			building->prevOfType->nextOfType = building->nextOfType;
-			building->nextOfType->prevOfType = building->prevOfType;
+			for (s32 x = building->footprint.x;
+				x < building->footprint.x + building->footprint.w;
+				x++)
+			{
+				updatePathTexture(city, x, building->footprint.y - 1);
+				updatePathTexture(city, x, building->footprint.y + building->footprint.h);
+			}
 		}
 
 		// Overwrite the building record with the highest one
 		// Unless it *IS* the highest one!
-		if (buildingID != city->buildingCount)
+		if (buildingID != (city->buildingCount-1))
 		{
-			Building *highest = getBuildingByID(city, city->buildingCount);
+			Building *highest = getBuildingByID(city, city->buildingCount - 1);
 
 			// Change all references to highest building
 			for (s32 y = highest->footprint.y;
@@ -280,18 +269,6 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 			// Move it!
 			*building = *highest;
-
-			// Update the of-type list
-			if (highest == city->firstBuildingOfType[building->archetype])
-			{
-				city->firstBuildingOfType[building->archetype] = building;
-				building->nextOfType = building->prevOfType = building;
-			}
-			else
-			{
-				building->prevOfType->nextOfType = building;
-				building->nextOfType->prevOfType = building;
-			}
 
 			*highest = {};
 		}
