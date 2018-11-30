@@ -42,6 +42,7 @@ enum BuildingArchetype
 {
 	BA_Road,
 	BA_House_2x2,
+	BA_Factory_3x3,
 
 	BA_Count,
 	BA_None = -1
@@ -50,6 +51,7 @@ BuildingDefinition buildingDefinitions[] = {
 	// size, name, 		 image, 				 costs b/d,  isPath
 	{1,1, "Road", TextureAssetType_Road, 10, 10, true},
 	{2,2, "House", TextureAssetType_House_2x2, 20, 50, false},
+	{3,3, "Factory", TextureAssetType_Factory_3x3, 40, 100, false},
 	// {4,4, 	"Field", 	 TextureAtlasItem_Field, 200, 20,	 false},
 	// {4,4, 	"Barn", 	 TextureAtlasItem_Barn,  2000, 1000, false},
 	// {4,4, 	"Farmhouse", TextureAtlasItem_House, 2000, 1000, false},

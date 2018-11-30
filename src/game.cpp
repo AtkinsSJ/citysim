@@ -135,6 +135,8 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				uiState->actionMode = ActionMode_Build;
 				setCursor(uiState, assets, Cursor_Build);
 			}
+			
+			// next row
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
@@ -144,6 +146,20 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			{
 				uiState->openMenu = UIMenu_None;
 				uiState->selectedBuildingArchetype = BA_House_2x2;
+				uiState->actionMode = ActionMode_Build;
+				setCursor(uiState, assets, Cursor_Build);
+			}
+
+			// next row
+			menuButtonRect.y += menuButtonRect.h + uiPadding;
+			menuRect.h += menuButtonRect.h + uiPadding;
+
+			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Factory"), menuButtonRect, 1,
+						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Factory_3x3),
+						SDLK_h, LocalString("(F)")))
+			{
+				uiState->openMenu = UIMenu_None;
+				uiState->selectedBuildingArchetype = BA_Factory_3x3;
 				uiState->actionMode = ActionMode_Build;
 				setCursor(uiState, assets, Cursor_Build);
 			}

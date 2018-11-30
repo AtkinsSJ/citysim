@@ -286,6 +286,7 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 
 	addTiledTextureRegions(assets, TextureAssetType_Road, "road.png", 16, 16, 4, 4, false);
 	addTiledTextureRegions(assets, TextureAssetType_House_2x2, "house-2x2.png", 32, 32, 2, 2, false);
+	addTiledTextureRegions(assets, TextureAssetType_Factory_3x3, "factory-3x3.png", 48, 48, 1, 1, false);
 
 	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
