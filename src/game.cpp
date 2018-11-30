@@ -98,12 +98,12 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	UITheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, theme->labelStyle.font);
 
-	uiState->uiRectCount = 0;
+	uiState->uiRects.count = 0;
 
 	f32 left = uiPadding;
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
-	uiState->uiRects[uiState->uiRectCount++] = uiRect;
+	append(&uiState->uiRects, uiRect);
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
 
 	uiText(uiState, uiBuffer, font, gameState->city.name,
@@ -136,7 +136,17 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				setCursor(uiState, assets, Cursor_Build);
 			}
 
-			uiState->uiRects[uiState->uiRectCount++] = menuRect;
+			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build House"), menuButtonRect, 1,
+						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_House_2x2),
+						SDLK_h, LocalString("(H)")))
+			{
+				uiState->openMenu = UIMenu_None;
+				uiState->selectedBuildingArchetype = BA_House_2x2;
+				uiState->actionMode = ActionMode_Build;
+				setCursor(uiState, assets, Cursor_Build);
+			}
+
+			append(&uiState->uiRects, menuRect);
 			drawRect(uiBuffer, menuRect, 0, theme->overlayColor);
 		}
 
@@ -281,7 +291,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		// SDL_Log("Mouse world position: %f, %f", worldCamera->mousePos.x, worldCamera->mousePos.y);
 		// This is a very basic check for "is the user clicking on the UI?"
-		if (!inRects(uiState->uiRects, uiState->uiRectCount, uiCamera->mousePos)) {
+		if (!inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos)) {
 			switch (uiState->actionMode) {
 				case ActionMode_Build: {
 					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {

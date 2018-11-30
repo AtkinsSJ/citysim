@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+ * TODO: Better control over where the data comes from.
+ * Not sure how to do that with allowing resizing though. Maybe we don't?
+ * Could have a fixed-size option too, that allocates from a certain arena.
+ */
+
 template<class T>
 struct Array
 {

@@ -131,6 +131,7 @@ struct AssetManager
 	String assetsPath;
 
 	// NB: index 0 reserved as a null texture.
+	// TODO: Switch this over to Array<>? IDK.
 	u32 textureCount;
 	TextureList firstTextureList;
 	// Texture textures[32];

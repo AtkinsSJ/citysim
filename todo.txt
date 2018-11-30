@@ -23,7 +23,7 @@ not just a list of work that might never come to anything.
 
 ------------------------------------------------
 
-Switch more array things to our Array<> type! Especially in places where we need things to be resizeable.
+Dragging a rect (eg demolish) from a UIRect into the world causes it to stretch from tile 0,0
 
 Split the game code from the platform code
 - Compile win32_main.cpp rather than main.cpp

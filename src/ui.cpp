@@ -23,6 +23,8 @@ void initUiState(UIState *uiState)
 	uiState->message.text = newString(&uiState->arena, 256);
 	uiState->message.countdown = -1;
 
+	initialiseArray(&uiState->uiRects, 16);
+
 	setCursorVisible(uiState, false);
 }
 
