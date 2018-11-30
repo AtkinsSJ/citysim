@@ -17,7 +17,7 @@ struct Command
 	}
 };
 #define ConsoleCommand(name) void cmd_##name(Console *console, TokenList *tokens)
-Array<Command> consoleCommands(8);
+Array<Command> consoleCommands;
 
 ConsoleCommand(help)
 {
@@ -122,6 +122,8 @@ ConsoleCommand(show_paths)
 #define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
+	initialiseArray(&consoleCommands, 64);
+
 	append(&consoleCommands, Command(CMD(help), 0, 0));
 	append(&consoleCommands, Command(CMD(hello), 0, 1));
 	append(&consoleCommands, Command(CMD(window_size), 0, 0));

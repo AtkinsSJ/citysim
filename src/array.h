@@ -1,21 +1,11 @@
 #pragma once
 
-template<class T> struct Array {
+template<class T>
+struct Array
+{
 	u32 count;
 	u32 maxCount;
 	T *items;
-
-	Array(u32 initialSize)
-	{
-		items = (T*) calloc(initialSize, sizeof(T));
-		count = 0;
-		maxCount = initialSize;
-	}
-
-	~Array()
-	{
-		free(items);
-	}
 
 	T *operator[](u32 index)
 	{
@@ -23,6 +13,20 @@ template<class T> struct Array {
 		return items + index;
 	}
 };
+
+template<class T>
+void initialiseArray(Array<T> *a, u32 initialSize)
+{
+	a->items = (T*) calloc(initialSize, sizeof(T));
+	a->count = 0;
+	a->maxCount = initialSize;
+}
+
+template<class T>
+void free(Array<T> *a)
+{
+	free(a->items);
+}
 
 template<class T>
 bool resize(Array<T> *a, u32 newSize)

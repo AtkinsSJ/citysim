@@ -11,7 +11,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	city->pathLayer.data = PushArray(gameArena, s32, width*height);
 
 
-	city->buildings = Array<Building>(1024);
+	initialiseArray(&city->buildings, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
 	*nullBuilding = {};
 	nullBuilding->archetype = BA_None;
@@ -143,8 +143,8 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 
 	BuildingDefinition *def = buildingDefinitions + archetype;
 
-	Building *building = appendBlank(&city->buildings);
 	u32 buildingID = city->buildings.count;
+	Building *building = appendBlank(&city->buildings);
 
 	spend(city, def->buildCost);
 
