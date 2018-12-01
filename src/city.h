@@ -52,10 +52,10 @@ inline bool tileExists(City *city, s32 x, s32 y)
 		&& (y >= 0) && (y < city->height);
 }
 
-inline Terrain* terrainAt(City *city, s32 x, s32 y)
+inline Terrain terrainAt(City *city, s32 x, s32 y)
 {
-	if (!tileExists(city, x, y)) return &invalidTerrain;
-	return &city->terrain[tileIndex(city, x, y)];
+	if (!tileExists(city, x, y)) return invalidTerrain;
+	return city->terrain[tileIndex(city, x, y)];
 }
 
 inline Building* getBuildingByID(City *city, u32 buildingID)

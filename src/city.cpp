@@ -301,7 +301,7 @@ s32 calculateDemolitionCost(City *city, Rect2I rect) {
 	// Terrain clearing cost
 	for (int y=0; y<rect.h; y++) {
 		for (int x=0; x<rect.w; x++) {
-			if (terrainAt(city, rect.x + x, rect.y + y)->type == Terrain_Forest) {
+			if (terrainAt(city, rect.x + x, rect.y + y).type == Terrain_Forest) {
 				total += forestDemolishCost;
 			}
 		}

@@ -334,9 +334,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			x < visibleTileBounds.x + visibleTileBounds.w;
 			x++)
 		{
-			Terrain *t = terrainAt(&gameState->city,x,y);
+			Terrain t = terrainAt(&gameState->city,x,y);
 			TextureAssetType textureAtlasItem;
-			switch (t->type) {
+			switch (t.type) {
 				case Terrain_Forest: {
 					textureAtlasItem = TextureAssetType_ForestTile;
 				} break;
@@ -349,7 +349,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				} break;
 			}
 
-			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, t->textureRegionOffset);
+			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, t.textureRegionOffset);
 
 			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 		}
