@@ -1,6 +1,6 @@
 #pragma once
 
-void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, File file)
+void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *memory, File file)
 {
 	LineReader reader = startFile(file);
 
@@ -37,7 +37,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, File file)
 			{
 				def = appendBlank(buildings);
 				*def = {};
-				def->name = trimEnd(remainder);
+				def->name = pushString(memory, trimEnd(remainder));
 			}
 		}
 		else // Properties!
@@ -123,4 +123,6 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, File file)
 			}
 		}
 	}
+
+	return;
 }

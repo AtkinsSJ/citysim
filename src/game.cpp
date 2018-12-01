@@ -119,6 +119,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	{
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
+		// The "BUILD" menu
 		if (uiMenuButton(uiState, uiBuffer, assets, inputState, LocalString("Build..."), buttonRect, 1, UIMenu_Build))
 		{
 			Rect2 menuButtonRect = buttonRect;
@@ -126,42 +127,24 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			Rect2 menuRect = expand(menuButtonRect, uiPadding);
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Road"), menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Road),
-						SDLK_r, LocalString("(R)")))
+			for (u32 i=0; i < buildingDefinitions.count; i++)
 			{
-				uiState->openMenu = UIMenu_None;
-				uiState->selectedBuildingArchetype = BA_Road;
-				uiState->actionMode = ActionMode_Build;
-				setCursor(uiState, assets, Cursor_Build);
-			}
-			
-			// next row
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
+				if (i > 0)
+				{
+					menuButtonRect.y += menuButtonRect.h + uiPadding;
+					menuRect.h += menuButtonRect.h + uiPadding;
+				}
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build House"), menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_House_2x2),
-						SDLK_h, LocalString("(H)")))
-			{
-				uiState->openMenu = UIMenu_None;
-				uiState->selectedBuildingArchetype = BA_House_2x2;
-				uiState->actionMode = ActionMode_Build;
-				setCursor(uiState, assets, Cursor_Build);
-			}
+				auto buildingDef = buildingDefinitions[i];
 
-			// next row
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Build Factory"), menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == BA_Factory_3x3),
-						SDLK_h, LocalString("(F)")))
-			{
-				uiState->openMenu = UIMenu_None;
-				uiState->selectedBuildingArchetype = BA_Factory_3x3;
-				uiState->actionMode = ActionMode_Build;
-				setCursor(uiState, assets, Cursor_Build);
+				if (uiButton(uiState, uiBuffer, assets, inputState, buildingDef.name, menuButtonRect, 1,
+						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == i)))
+				{
+					uiState->openMenu = UIMenu_None;
+					uiState->selectedBuildingArchetype = (BuildingArchetype) i;
+					uiState->actionMode = ActionMode_Build;
+					setCursor(uiState, assets, Cursor_Build);
+				}
 			}
 
 			append(&uiState->uiRects, menuRect);
@@ -177,29 +160,6 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			setCursor(uiState, assets, Cursor_Demolish);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
-		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Plant"), buttonRect, 1,
-					(uiState->actionMode == ActionMode_Plant),
-					SDLK_p, LocalString("(P)")))
-		{
-			uiState->actionMode = ActionMode_Plant;
-			setCursor(uiState, assets, Cursor_Plant);
-		}
-		buttonRect.x += buttonRect.w + uiPadding;
-		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Harvest"), buttonRect, 1,
-					(uiState->actionMode == ActionMode_Harvest),
-					SDLK_h, LocalString("(H)")))
-		{
-			uiState->actionMode = ActionMode_Harvest;
-			setCursor(uiState, assets, Cursor_Harvest);
-		}
-		buttonRect.x += buttonRect.w + uiPadding;
-		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Hire Worker"), buttonRect, 1,
-					(uiState->actionMode == ActionMode_Hire),
-					SDLK_g, LocalString("(G)")))
-		{
-			uiState->actionMode = ActionMode_Hire;
-			setCursor(uiState, assets, Cursor_Hire);
-		}
 
 		// Main menu button
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
