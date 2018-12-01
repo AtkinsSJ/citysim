@@ -70,6 +70,18 @@ LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=tr
 	return result;
 }
 
+void warn(LineReader *reader, char *message, std::initializer_list<String> args = {})
+{
+	String text = myprintf(message, args);
+	logWarn("{0}:{1} - {2}", {reader->file.name, formatInt(reader->lineNumber), text});
+}
+
+void error(LineReader *reader, char *message, std::initializer_list<String> args = {})
+{
+	String text = myprintf(message, args);
+	logError("{0}:{1} - {2}", {reader->file.name, formatInt(reader->lineNumber), text});
+}
+
 String nextLine(LineReader *reader)
 {
 	String line = {};

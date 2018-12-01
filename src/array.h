@@ -13,10 +13,10 @@ struct Array
 	u32 maxCount;
 	T *items;
 
-	T *operator[](u32 index)
+	T operator[](u32 index)
 	{
 		ASSERT(index >=0 && index < count, "Index out of range!");
-		return items + index;
+		return items[index];
 	}
 };
 
@@ -32,6 +32,13 @@ template<class T>
 void free(Array<T> *a)
 {
 	free(a->items);
+}
+
+// Doesn't free the memory, just marks it as empty.
+template<class T>
+void clear(Array<T> *a)
+{
+	a->count = 0;
 }
 
 template<class T>
@@ -79,4 +86,11 @@ T *appendBlank(Array<T> *a)
 	T *result = a->items + a->count++;
 
 	return result;
+}
+
+template<class T>
+T * pointerTo(Array<T> *a, u32 index)
+{
+	ASSERT(index >=0 && index < a->count, "Index out of range!");
+	return a->items + index;
 }

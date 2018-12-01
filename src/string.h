@@ -168,6 +168,26 @@ bool asInt(String string, s64 *result)
 	return succeeded;
 }
 
+bool asBool(String string, bool *result)
+{
+	bool succeeded = true;
+
+	if (equals(string, "true"))
+	{
+		*result = true;
+	}
+	else if (equals(string, "false"))
+	{
+		*result = false;
+	}
+	else
+	{
+		succeeded = false;
+	}
+
+	return succeeded;
+}
+
 bool isWhitespace(unichar uChar, bool countNewlines=true)
 {
 	// TODO: There's probably more whitespace characters somewhere.

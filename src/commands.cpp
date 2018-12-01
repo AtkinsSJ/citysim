@@ -24,7 +24,7 @@ ConsoleCommand(help)
 	consoleWriteLine("Available commands are:");
 	for (u32 i=0; i < consoleCommands.count; i++)
 	{
-		consoleWriteLine(myprintf(" - {0}", {consoleCommands[i]->name}));
+		consoleWriteLine(myprintf(" - {0}", {consoleCommands[i].name}));
 	}
 }
 

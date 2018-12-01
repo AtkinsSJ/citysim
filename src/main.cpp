@@ -44,6 +44,8 @@ MemoryArena *globalFrameTempArena;
 #include "font.cpp"
 #include "input.h"
 #include "ui.h"
+#include "building.h"
+#include "city.h"
 #include "game.h"
 
 struct AppState
@@ -60,6 +62,7 @@ struct AppState
 };
 AppState globalAppState;
 
+#include "building.cpp"
 #include "assets.cpp"
 #include "bmfont.h"
 #include "ui.cpp"

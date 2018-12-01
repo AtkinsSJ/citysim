@@ -139,29 +139,29 @@ void consoleHandleCommand(Console *console)
 			String firstToken = tokens.tokens[0];
 			for (u32 i=0; i < consoleCommands.count; i++)
 			{
-				Command *cmd = consoleCommands[i];
-				if (equals(cmd->name, firstToken))
+				Command cmd = consoleCommands[i];
+				if (equals(cmd.name, firstToken))
 				{
 					foundCommand = true;
 
 					s32 argCount = tokens.count-1;
-					if ((argCount < cmd->minArgs) || (argCount > cmd->maxArgs))
+					if ((argCount < cmd.minArgs) || (argCount > cmd.maxArgs))
 					{
-						if (cmd->minArgs == cmd->maxArgs)
+						if (cmd.minArgs == cmd.maxArgs)
 						{
 							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given.",
-								{firstToken, formatInt(cmd->minArgs), formatInt(argCount)}), CLS_Error);
+								{firstToken, formatInt(cmd.minArgs), formatInt(argCount)}), CLS_Error);
 						}
 						else
 						{
 							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given.",
-								{firstToken, formatInt(cmd->minArgs), formatInt(cmd->maxArgs), formatInt(argCount)}), CLS_Error);
+								{firstToken, formatInt(cmd.minArgs), formatInt(cmd.maxArgs), formatInt(argCount)}), CLS_Error);
 						}
 					}
 					else
 					{
 						u32 commandStartTime = SDL_GetTicks();
-						cmd->function(console, &tokens);
+						cmd.function(console, &tokens);
 						u32 commandEndTime = SDL_GetTicks();
 
 						consoleWriteLine(myprintf("Command executed in {0}ms", {formatInt(commandEndTime - commandStartTime)}));

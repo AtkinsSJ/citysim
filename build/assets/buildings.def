@@ -1,0 +1,22 @@
+# Building definitions
+
+:Building Road
+size 1 1
+texture 8 # Hard-coded value of TextureAssetType_Road
+build_cost 10
+demolish_cost 10
+is_path true
+
+:Building House
+size 2 2
+texture 9 # Hard-coded value of TextureAssetType_House_2x2
+build_cost 20
+demolish_cost 50
+is_path false
+
+:Building Factory
+size 3 3
+texture 10 # Hard-coded value of TextureAssetType_Factory_3x3
+build_cost 40
+demolish_cost 100
+is_path false

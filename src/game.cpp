@@ -361,8 +361,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// We err on the side of drawing too much, rather than risking having holes in the world.
 	Rect2I visibleTileBounds = irectCentreWH(
 		v2i(MAX((s32)worldCamera->pos.x - 1, 0), MAX((s32)worldCamera->pos.y - 1, 0)),
-		MIN(gameState->city.width,  worldCamera->size.x * (1.0f/worldCamera->zoom)) + 4,
-		MIN(gameState->city.height, worldCamera->size.y * (1.0f/worldCamera->zoom)) + 4
+		MIN(gameState->city.width,  worldCamera->size.x / worldCamera->zoom) + 5,
+		MIN(gameState->city.height, worldCamera->size.y / worldCamera->zoom) + 5
 	);
 
 	// Draw terrain
@@ -397,26 +397,26 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	
 	for (u32 i=1; i<gameState->city.buildings.count; i++)
 	{
-		Building *building = gameState->city.buildings[i];
+		Building building = gameState->city.buildings[i];
 
-		if (rectsOverlap(building->footprint, visibleTileBounds))
+		if (rectsOverlap(building.footprint, visibleTileBounds))
 		{
-			BuildingDefinition *def = buildingDefinitions + building->archetype;
+			BuildingDefinition def = buildingDefinitions[building.archetype];
 
 			V4 drawColor = makeWhite();
 
 			if (uiState->actionMode == ActionMode_Demolish
-				&& rectsOverlap(building->footprint, uiState->dragRect)) {
+				&& rectsOverlap(building.footprint, uiState->dragRect)) {
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);
 			}
 
-			switch (building->archetype) {
+			switch (building.archetype) {
 
 				default: {
-					V2 drawPos = centre(building->footprint);
-					drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAtlasItem, building->textureRegionOffset),
-									  rect2(building->footprint), depthFromY(drawPos.y), drawColor);
+					V2 drawPos = centre(building.footprint);
+					drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def.textureAssetType, building.textureRegionOffset),
+									  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
 				} break;
 			}
 		}
@@ -468,7 +468,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		auto def = buildingDefinitions[uiState->selectedBuildingArchetype];
 		Rect2 footprint = rect2(irectCentreWH(mouseTilePos, def.width, def.height));
 		drawTextureRegion(&renderer->worldBuffer,
-						  getTextureRegionID(assets, buildingDefinitions[uiState->selectedBuildingArchetype].textureAtlasItem, 0),
+						  getTextureRegionID(assets, buildingDefinitions[uiState->selectedBuildingArchetype].textureAssetType, 0),
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
 	}
 	else if (uiState->actionMode == ActionMode_Demolish

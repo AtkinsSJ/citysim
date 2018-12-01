@@ -141,16 +141,16 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 		return false;
 	}
 
-	BuildingDefinition *def = buildingDefinitions + archetype;
+	BuildingDefinition def = buildingDefinitions[archetype];
 
 	u32 buildingID = city->buildings.count;
 	Building *building = appendBlank(&city->buildings);
 
-	spend(city, def->buildCost);
+	spend(city, def.buildCost);
 
 	*building = {};
 	building->archetype = archetype;
-	building->footprint = irectCentreWH(position, def->width, def->height);
+	building->footprint = irectCentreWH(position, def.width, def.height);
 
 	// Tiles
 	for (s16 y=0; y<building->footprint.h; y++) {
@@ -158,7 +158,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 			s32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
 			city->tileBuildings[tile] = buildingID;
 
-			if (def->isPath)
+			if (def.isPath)
 			{
 				// Add to the pathing layer
 				city->pathLayer.data[tile] = 1;
@@ -166,7 +166,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 		}
 	}
 
-	if (def->isPath)
+	if (def.isPath)
 	{
 		// Sprite id is 0 to 15, depending on connecting neighbours.
 		// 1 = up, 2 = right, 4 = down, 8 = left
@@ -311,9 +311,9 @@ s32 calculateDemolitionCost(City *city, Rect2I rect) {
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
 	// TODO: Make this instead do a position-based query, keeping track of checked buildings
 	for (u32 i=1; i<city->buildings.count; i++) {
-		Building *building = city->buildings[i];
-		if (rectsOverlap(building->footprint, rect)) {
-			total += buildingDefinitions[building->archetype].demolishCost;
+		Building building = city->buildings[i];
+		if (rectsOverlap(building.footprint, rect)) {
+			total += buildingDefinitions[building.archetype].demolishCost;
 		}
 	}
 
