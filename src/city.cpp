@@ -93,7 +93,11 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 		for (s32 x=0; x<def.width; x++)
 		{
 			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
-			if (city->terrain[ti].type != Terrain_Ground)
+
+			Terrain terrain = city->terrain[ti];
+			auto terrainDef = terrainDefinitions[terrain.type];
+
+			if (!terrainDef.canBuildOn)
 			{
 				if (isAttemptingToBuild)
 				{
@@ -194,7 +198,9 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 	u32 posTI = tileIndex(city, position.x, position.y);
 
-	u32 buildingID = city->tileBuildings[posTI];
+	u32 buildingID  = city->tileBuildings[posTI];
+	Terrain terrain = city->terrain[posTI];
+
 	if (buildingID) {
 
 		Building *building = getBuildingByID(city, buildingID);
@@ -277,32 +283,43 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 		city->buildings.count--;
 
 		return true;
-
-	} else if (city->terrain[posTI].type == Terrain_Forest) {
-		// Tear down all the trees!
-		if (canAfford(city, forestDemolishCost)) {
-			spend(city, forestDemolishCost);
-			city->terrain[posTI].type = Terrain_Ground;
-			return true;
-		} else {
-			pushUiMessage(uiState, stringFromChars("Not enough money to destroy these trees."));
-			return false;
-		}
-
-	} else {
-		return true;
 	}
-	
+	else
+	{
+		TerrainDef def = terrainDefinitions[terrain.type];
+		if (def.canDemolish)
+		{
+			// Tear down all the trees!
+			if (canAfford(city, def.demolishCost)) {
+				spend(city, def.demolishCost);
+				city->terrain[posTI].type = Terrain_Ground;
+				return true;
+			} else {
+				pushUiMessage(uiState, stringFromChars("Not enough money to clear this terrain."));
+				return false;
+			}
+		}
+		else
+		{
+			return true;
+		}
+	}
 }
 
-s32 calculateDemolitionCost(City *city, Rect2I rect) {
+s32 calculateDemolitionCost(City *city, Rect2I rect)
+{
 	s32 total = 0;
 
 	// Terrain clearing cost
-	for (int y=0; y<rect.h; y++) {
-		for (int x=0; x<rect.w; x++) {
-			if (terrainAt(city, rect.x + x, rect.y + y).type == Terrain_Forest) {
-				total += forestDemolishCost;
+	for (int y=0; y<rect.h; y++)
+	{
+		for (int x=0; x<rect.w; x++)
+		{
+			TerrainDef tDef = terrainDefinitions[terrainAt(city, rect.x + x, rect.y + y).type];
+
+			if (tDef.canDemolish)
+			{
+				total += tDef.demolishCost;
 			}
 		}
 	}
@@ -310,9 +327,11 @@ s32 calculateDemolitionCost(City *city, Rect2I rect) {
 	// We want to only get the cost of each building once.
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
 	// TODO: Make this instead do a position-based query, keeping track of checked buildings
-	for (u32 i=1; i<city->buildings.count; i++) {
+	for (u32 i=1; i<city->buildings.count; i++)
+	{
 		Building building = city->buildings[i];
-		if (rectsOverlap(building.footprint, rect)) {
+		if (rectsOverlap(building.footprint, rect))
+		{
 			total += buildingDefinitions[building.archetype].demolishCost;
 		}
 	}

@@ -335,11 +335,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			x++)
 		{
 			Terrain t = terrainAt(&gameState->city,x,y);
-			TerrainDef tDef = terrainDefinitions[t.type];
+			if (t.type != Terrain_Invalid)
+			{
+				TerrainDef tDef = terrainDefinitions[t.type];
 
-			u32 textureRegionID = getTextureRegionID(assets, tDef.textureAssetType, t.textureRegionOffset);
+				u32 textureRegionID = getTextureRegionID(assets, tDef.textureAssetType, t.textureRegionOffset);
 
-			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
+				drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
+			}
 		}
 	}
 	

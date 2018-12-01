@@ -1,7 +1,5 @@
 #pragma once
 
-const int forestDemolishCost = 100;
-
 struct PathLayer
 {
 	s32 pathGroupCount;
