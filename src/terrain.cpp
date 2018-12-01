@@ -7,7 +7,7 @@ void loadTerrainDefinitions(Array<TerrainDef> *terrains, File file)
 	// Initialise the defs array if it hasn't been already
 	if (terrains->maxCount == 0)
 	{
-		initialiseArray(terrains, Terrain_Size);
+		initialiseArray(terrains, 16);
 	}
 
 	clear(terrains);
@@ -103,7 +103,7 @@ void loadTerrainDefinitions(Array<TerrainDef> *terrains, File file)
 							s64 demolishCost;
 							if (asInt(nextToken(remainder, &remainder), &demolishCost))
 							{
-								def->demolishCost = demolishCost;
+								def->demolishCost = (s32) demolishCost;
 							}
 							else
 							{
@@ -120,5 +120,11 @@ void loadTerrainDefinitions(Array<TerrainDef> *terrains, File file)
 				}
 			}
 		}
+	}
+
+	// Make sure things match up, because they have to.
+	for (s32 i = 0; i < Terrain_Size; i++)
+	{
+		ASSERT(i == (*terrains)[i].type, "Terrain data file must match the TerrainType enum for now!");
 	}
 }

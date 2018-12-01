@@ -67,7 +67,6 @@ Console:
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
 
 Strings:
-- Use String everywhere, rather than char*.
 - get rid of strncpy()
 - translation! getString("string_id") return the localised string.
 	- Read strings from a compiled file. (.mo? https://www.gnu.org/software/gettext/manual/html_node/MO-Files.html)
@@ -96,17 +95,11 @@ UI Theme:
 
 GAME:
 - Menu / Game are separate code.
-- Draw a map
-- Draw a grid over it
-- Create pipes
-- They link
 
 BUGS:
 - Unloading Fraps does something funny with our Window reference, causing a crash.
-- We get random hitching about once per second. Seems to be SDL_GL_SwapWindow() causing it?
 
 Rendering 2.0:
-- Stop passing a size to drawSprite()! Will always draw at a consistent size.
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
 - Draw things with an offset, defined per-texture-region(?)
 - Flash funds label when it changes
