@@ -3,9 +3,10 @@
 enum TerrainType
 {
 	Terrain_Invalid = 0,
-	Terrain_Ground,
-	Terrain_Water,
-	Terrain_Forest,
+	Terrain_Ground = 1,
+	Terrain_Water = 2,
+	Terrain_Forest = 3,
+
 	Terrain_Size
 };
 
@@ -19,12 +20,7 @@ struct TerrainDef
 	s32 demolishCost;
 };
 
-TerrainDef terrainDefinitions[Terrain_Size] = {
-	{Terrain_Invalid, TextureAssetType_None,       false, false,   0},
-	{Terrain_Ground,  TextureAssetType_GroundTile, true,  false,   0},
-	{Terrain_Water,   TextureAssetType_WaterTile,  false, false,   0},
-	{Terrain_Forest,  TextureAssetType_ForestTile, false, true,  100},
-};
+Array<TerrainDef> terrainDefinitions = {};
 
 struct Terrain
 {

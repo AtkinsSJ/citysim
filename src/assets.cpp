@@ -246,7 +246,8 @@ void loadAssets(AssetManager *assets)
 	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
 	loadUITheme(&assets->theme, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
 	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
-	loadBuildingDefinitions(&buildingDefinitions, &assets->assetArena,readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
+	loadBuildingDefinitions(&buildingDefinitions, &assets->assetArena, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
+	loadTerrainDefinitions(&terrainDefinitions, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
 }
 
 void addTiledTextureRegions(AssetManager *assets, TextureAssetType type, char *filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)

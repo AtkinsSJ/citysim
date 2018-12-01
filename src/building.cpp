@@ -45,6 +45,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 			if (def == null)
 			{
 				error(&reader, "Found a property before starting a :Building!");
+				return;
 			}
 			else
 			{
@@ -62,6 +63,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 					else
 					{
 						error(&reader, "Couldn't parse size. Expected 2 ints (w,h).");
+						return;
 					}
 				}
 				else if (equals(firstWord, "texture"))
@@ -79,6 +81,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 					else
 					{
 						error(&reader, "Couldn't parse texture. Expected 1 int.");
+						return;
 					}
 				}
 				else if (equals(firstWord, "build_cost"))
@@ -92,6 +95,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 					else
 					{
 						error(&reader, "Couldn't parse build_cost. Expected 1 int.");
+						return;
 					}
 				}
 				else if (equals(firstWord, "demolish_cost"))
@@ -105,6 +109,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 					else
 					{
 						error(&reader, "Couldn't parse demolish_cost. Expected 1 int.");
+						return;
 					}
 				}
 				else if (equals(firstWord, "is_path"))
@@ -118,6 +123,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 					else
 					{
 						error(&reader, "Couldn't parse is_path. Expected 1 boolean (true/false).");
+						return;
 					}
 				}
 			}
