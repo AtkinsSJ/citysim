@@ -205,9 +205,9 @@ bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIS
 	return result;
 }
 
-void showCostTooltip(UIState *uiState, s32 buildCost, s32 cityFunds)
+void showCostTooltip(UIState *uiState, City *city, s32 buildCost)
 {
-	V4 color = buildCost <= cityFunds
+	V4 color = canAfford(city, buildCost)
 				? uiState->theme->tooltipStyle.textColorNormal
 				: uiState->theme->tooltipStyle.textColorBad;
 
@@ -277,7 +277,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 
 					s32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
-					showCostTooltip(uiState, buildCost, gameState->city.funds);
+					showCostTooltip(uiState, &gameState->city, buildCost);
 				} break;
 
 				case ActionMode_Demolish: {
@@ -287,7 +287,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
 						s32 demolitionCost = calculateDemolitionCost(&gameState->city, uiState->dragRect);
-						showCostTooltip(uiState, demolitionCost, gameState->city.funds);
+						showCostTooltip(uiState, &gameState->city, demolitionCost);
 					}	
 
 					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
@@ -335,21 +335,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			x++)
 		{
 			Terrain t = terrainAt(&gameState->city,x,y);
-			TextureAssetType textureAtlasItem;
-			switch (t.type) {
-				case Terrain_Forest: {
-					textureAtlasItem = TextureAssetType_ForestTile;
-				} break;
-				case Terrain_Water: {
-					textureAtlasItem = TextureAssetType_WaterTile;
-				} break;
-				case Terrain_Ground:
-				default: {
-					textureAtlasItem = TextureAssetType_GroundTile;
-				} break;
-			}
+			TerrainDef tDef = terrainDefinitions[t.type];
 
-			u32 textureRegionID = getTextureRegionID(assets, textureAtlasItem, t.textureRegionOffset);
+			u32 textureRegionID = getTextureRegionID(assets, tDef.textureAssetType, t.textureRegionOffset);
 
 			drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 		}

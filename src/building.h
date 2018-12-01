@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO: This currently has to match the order of the buildingDefinitions array (and in turn, the buildings.def file)
+// So, we want to get rid of this!
 enum BuildingArchetype
 {
 	BA_Road,

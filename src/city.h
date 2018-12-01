@@ -1,22 +1,5 @@
 #pragma once
 
-enum TerrainType
-{
-	Terrain_Invalid = 0,
-	Terrain_Ground,
-	Terrain_Water,
-	Terrain_Forest,
-	Terrain_Size
-};
-
-struct Terrain
-{
-	TerrainType type;
-	u32 textureRegionOffset; // used as the offset for getTextureRegionID
-};
-
-Terrain invalidTerrain = {Terrain_Invalid, 0};
-
 const int forestDemolishCost = 100;
 
 struct PathLayer

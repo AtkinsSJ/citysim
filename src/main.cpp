@@ -45,6 +45,7 @@ MemoryArena *globalFrameTempArena;
 #include "input.h"
 #include "ui.h"
 #include "building.h"
+#include "terrain.h"
 #include "city.h"
 #include "game.h"
 
