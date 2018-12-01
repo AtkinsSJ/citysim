@@ -1,23 +1,33 @@
 #pragma once
 
-String readFileAsString(MemoryArena *memory, String filename)
+struct File
 {
-	String result = {};
+	String name;
+	bool isLoaded;
+	
+	umm length;
+	u8* data;
+};
 
-	SDL_RWops *file = SDL_RWFromFile(filename.chars, "r");
+File readFile(MemoryArena *memory, String filename)
+{
+	File result = {};
+	result.name = filename;
+	result.isLoaded = false;
+
+	SDL_RWops *file = SDL_RWFromFile(filename.chars, "rb");
 	if (file)
 	{
 		umm fileLength = (umm) file->seek(file, 0, RW_SEEK_END);
 		file->seek(file, 0, RW_SEEK_SET);
 
- 		// 1 longer to ensure a trailing null for strings!
-		result = newString(memory, fileLength + 1);
-		result.chars[fileLength] = 0;
+		result.data = PushArray(memory, u8, fileLength);
 
-		if (result.chars)
+		if (result.data)
 		{
-			file->read(file, result.chars, fileLength, 1);
+			file->read(file, result.data, fileLength, 1);
 			result.length = fileLength;
+			result.isLoaded = true;
 		}
 
 		file->close(file);
@@ -27,55 +37,27 @@ String readFileAsString(MemoryArena *memory, String filename)
 	return result;
 }
 
-/*
- * @Deprecated This File struct can probably vanish now, because it's identical to a String.
- */
-
-struct File
+String readFileAsString(MemoryArena *memory, String filename)
 {
-	umm length;
-	u8 *data;
-};
+	File file = readFile(memory, filename);
+	String result = makeString((char*)file.data, file.length);
 
-File readFile(MemoryArena *arena, char *filename)
-{
-	File result = {};
-
-	SDL_RWops *file = SDL_RWFromFile(filename, "rb");
-	if (file)
-	{
-		s64 length = file->seek(file, 0, RW_SEEK_END);
-		file->seek(file, 0, RW_SEEK_SET);
-
-		ASSERT(result.length <= s32Max, "File is too big to fit into an s32!");
-
-		result.length = (umm) length;
-		result.data = PushArray(arena, u8, result.length);
-
-		if (result.data)
-		{
-			file->read(file, result.data, result.length, 1);
-		}
-
-		file->close(file);
-	}
-	
 	return result;
 }
 
 struct LineReader
 {
-	String file;
+	File file;
 	bool skipBlankLines;
 
-	s32 pos;
-	s32 lineNumber;
+	umm pos;
+	umm lineNumber;
 
 	bool removeComments;
 	char commentChar;
 };
 
-LineReader startFile(String file, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
 {
 	LineReader result = {};
 	result.file = file;
@@ -96,16 +78,16 @@ String nextLine(LineReader *reader)
 	{
 		// get next line
 		++reader->lineNumber;
-		line.chars = reader->file.chars + reader->pos;
+		line.chars = (char *)(reader->file.data + reader->pos);
 		line.length = 0;
-		while (!isNewline(reader->file.chars[reader->pos]) && (reader->pos < reader->file.length))
+		while (!isNewline(reader->file.data[reader->pos]) && (reader->pos < reader->file.length))
 		{
 			++reader->pos;
 			++line.length;
 		}
 		++reader->pos;
 		// fix for windows' stupid double-newline.
-		if (isNewline(reader->file.chars[reader->pos]) && (reader->file.chars[reader->pos] != reader->file.chars[reader->pos-1]))
+		if (isNewline(reader->file.data[reader->pos]) && (reader->file.data[reader->pos] != reader->file.data[reader->pos-1]))
 		{
 			++reader->pos;
 		}

@@ -5,6 +5,12 @@ struct String
 	char *chars;
 	s32 length;
 	s32 maxLength;
+
+	char operator[](s32 index)
+	{
+		ASSERT(index >=0 && index < length, "String index out of range!");
+		return chars[index];
+	}
 };
 
 const String nullString = {};

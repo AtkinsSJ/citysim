@@ -16,8 +16,7 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	UILabelStyle *labelStyle = &theme->labelStyle;
 	BitmapFont *font = getFont(assets, labelStyle->font);
 
-	String creditsText = assets->creditsText;
-	LineReader reader = startFile(creditsText, false, false);
+	LineReader reader = startFile(assets->creditsText, false, false);
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);

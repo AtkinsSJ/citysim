@@ -116,7 +116,7 @@ FontAssetType findFontByName(LineReader *reader, String fontName)
 	return result;
 }
 
-void loadUITheme(UITheme *theme, String file)
+void loadUITheme(UITheme *theme, File file)
 {
 	LineReader reader = startFile(file, true, true, '#');
 	// Scoped enums are a thing, apparently! WOOHOO!
