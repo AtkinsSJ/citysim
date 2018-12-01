@@ -13,7 +13,7 @@ void initUiState(UIState *uiState)
 	initMemoryArena(&uiState->arena, MB(1));
 
 	uiState->actionMode = ActionMode_None;
-	uiState->selectedBuildingArchetype = BA_None;
+	uiState->selectedBuildingTypeID = -1;
 
 	uiState->tooltip = {};
 	uiState->tooltip.offsetFromCursor = v2(16, 20);

@@ -1,17 +1,5 @@
 #pragma once
 
-// TODO: This currently has to match the order of the buildingDefinitions array (and in turn, the buildings.def file)
-// So, we want to get rid of this!
-enum BuildingArchetype
-{
-	BA_Road,
-	BA_House_2x2,
-	BA_Factory_3x3,
-
-	BA_Count,
-	BA_None = -1
-};
-
 struct BuildingDefinition
 {
 	union
@@ -34,7 +22,7 @@ Array<BuildingDefinition> buildingDefinitions = {};
 
 struct Building
 {
-	BuildingArchetype archetype;
+	u32 typeID;
 	Rect2I footprint;
 	u32 textureRegionOffset; // used as the offset for getTextureRegionID
 	// union {

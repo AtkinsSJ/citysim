@@ -111,7 +111,7 @@ bool canPathTo(City *city, Rect2I target, V2I from, MemoryArena *memoryArena)
 	s32 *pathGroups = PushArray(&tempArena, s32, city->pathLayer.pathGroupCount);
 	Building *building = getBuildingAtPosition(city, from);
 	if (building
-		&& !buildingDefinitions[building->archetype].isPath)
+		&& !buildingDefinitions[building->typeID].isPath)
 	{
 		// Find all adjacent path groups
 		Rect2I fromRect = building->footprint;
@@ -297,7 +297,7 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryAren
 		PathingNode *openQueue = null;
 
 		if (fromBuilding
-		&& !buildingDefinitions[fromBuilding->archetype].isPath)
+		&& !buildingDefinitions[fromBuilding->typeID].isPath)
 		{
 			// Add all adjacent path nodes to the openQueue
 

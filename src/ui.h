@@ -1,8 +1,6 @@
 #pragma once
 // ui.h
 
-enum BuildingArchetype; // Defined in city.h
-
 enum ActionMode {
 	ActionMode_None = 0,
 
@@ -44,7 +42,7 @@ struct UIState
 
 	UIMenuID openMenu;
 	ActionMode actionMode;
-	BuildingArchetype selectedBuildingArchetype;
+	s32 selectedBuildingTypeID;
 
 	Tooltip tooltip;
 	UiMessage message;

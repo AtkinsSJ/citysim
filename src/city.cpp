@@ -14,7 +14,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	initialiseArray(&city->buildings, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
 	*nullBuilding = {};
-	nullBuilding->archetype = BA_None;
+	nullBuilding->typeID = -1;
 
 	city->tileBuildings = PushArray(gameArena, u32, width*height);
 }
@@ -48,12 +48,12 @@ void spend(City *city, s32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBuildingArchetype, V2I position,
+bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, V2I position,
 	bool isAttemptingToBuild = false)
 {
 
 	// // Only allow one farmhouse!
-	// if (selectedBuildingArchetype == BA_Farmhouse
+	// if (selectedBuildingTypeID == BA_Farmhouse
 	// 	&& city->firstBuildingOfType[BA_Farmhouse])
 	// {
 	// 	if (isAttemptingToBuild)
@@ -63,7 +63,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 	// 	return false;
 	// }
 
-	BuildingDefinition def = buildingDefinitions[selectedBuildingArchetype];
+	BuildingDefinition def = buildingDefinitions[selectedBuildingTypeID];
 
 	// Can we afford to build this?
 	if (!canAfford(city, def.buildCost))
@@ -95,7 +95,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingArchetype selectedBu
 			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
 
 			Terrain terrain = city->terrain[ti];
-			auto terrainDef = terrainDefinitions[terrain.type];
+			TerrainDef terrainDef = terrainDefinitions[terrain.type];
 
 			if (!terrainDef.canBuildOn)
 			{
@@ -137,15 +137,15 @@ void updatePathTexture(City *city, s32 x, s32 y)
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2I position)
+bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I position)
 {
 
-	if (!canPlaceBuilding(uiState, city, archetype, position, true))
+	if (!canPlaceBuilding(uiState, city, buildingTypeID, position, true))
 	{
 		return false;
 	}
 
-	BuildingDefinition def = buildingDefinitions[archetype];
+	BuildingDefinition def = buildingDefinitions[buildingTypeID];
 
 	u32 buildingID = city->buildings.count;
 	Building *building = appendBlank(&city->buildings);
@@ -153,7 +153,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingArchetype archetype, V2
 	spend(city, def.buildCost);
 
 	*building = {};
-	building->archetype = archetype;
+	building->typeID = buildingTypeID;
 	building->footprint = irectCentreWH(position, def.width, def.height);
 
 	// Tiles
@@ -205,7 +205,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 		Building *building = getBuildingByID(city, buildingID);
 		ASSERT(building, "Tile is storing an invalid building ID!");
-		BuildingDefinition def = buildingDefinitions[building->archetype];
+		BuildingDefinition def = buildingDefinitions[building->typeID];
 
 		// Can we afford to demolish this?
 		if (!canAfford(city, def.demolishCost)) {
@@ -332,7 +332,7 @@ s32 calculateDemolitionCost(City *city, Rect2I rect)
 		Building building = city->buildings[i];
 		if (rectsOverlap(building.footprint, rect))
 		{
-			total += buildingDefinitions[building.archetype].demolishCost;
+			total += buildingDefinitions[building.typeID].demolishCost;
 		}
 	}
 

@@ -138,10 +138,10 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				auto buildingDef = buildingDefinitions[i];
 
 				if (uiButton(uiState, uiBuffer, assets, inputState, buildingDef.name, menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingArchetype == i)))
+						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingTypeID == i)))
 				{
 					uiState->openMenu = UIMenu_None;
-					uiState->selectedBuildingArchetype = (BuildingArchetype) i;
+					uiState->selectedBuildingTypeID = i;
 					uiState->actionMode = ActionMode_Build;
 					setCursor(uiState, assets, Cursor_Build);
 				}
@@ -273,10 +273,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			switch (uiState->actionMode) {
 				case ActionMode_Build: {
 					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-						placeBuilding(uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos);
+						placeBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, mouseTilePos);
 					}
 
-					s32 buildCost = buildingDefinitions[uiState->selectedBuildingArchetype].buildCost;
+					s32 buildCost = buildingDefinitions[uiState->selectedBuildingTypeID].buildCost;
 					showCostTooltip(uiState, &gameState->city, buildCost);
 				} break;
 
@@ -352,7 +352,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		if (rectsOverlap(building.footprint, visibleTileBounds))
 		{
-			BuildingDefinition def = buildingDefinitions[building.archetype];
+			BuildingDefinition def = buildingDefinitions[building.typeID];
 
 			V4 drawColor = makeWhite();
 
@@ -362,7 +362,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				drawColor = color255(255,128,128,255);
 			}
 
-			switch (building.archetype) {
+			switch (building.typeID) {
 
 				default: {
 					V2 drawPos = centre(building.footprint);
@@ -408,18 +408,18 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// Building preview
 	if (uiState->actionMode == ActionMode_Build
-		&& uiState->selectedBuildingArchetype != BA_None)
+		&& uiState->selectedBuildingTypeID != -1)
 	{
 
 		V4 ghostColor = color255(128,255,128,255);
-		if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingArchetype, mouseTilePos))
+		if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, mouseTilePos))
 		{
 			ghostColor = color255(255,0,0,128);
 		}
-		auto def = buildingDefinitions[uiState->selectedBuildingArchetype];
+		auto def = buildingDefinitions[uiState->selectedBuildingTypeID];
 		Rect2 footprint = rect2(irectCentreWH(mouseTilePos, def.width, def.height));
 		drawTextureRegion(&renderer->worldBuffer,
-						  getTextureRegionID(assets, buildingDefinitions[uiState->selectedBuildingArchetype].textureAssetType, 0),
+						  getTextureRegionID(assets, buildingDefinitions[uiState->selectedBuildingTypeID].textureAssetType, 0),
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
 	}
 	else if (uiState->actionMode == ActionMode_Demolish
