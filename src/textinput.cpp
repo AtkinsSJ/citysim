@@ -261,7 +261,6 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 		{
 			moveCaretRight(textInput, 1);
 		}
-		moveCaretRight(textInput, 1);
 		textInput->caretFlashCounter = 0;
 	}
 	if (keyJustPressed(inputState, SDLK_HOME))
