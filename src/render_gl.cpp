@@ -254,13 +254,15 @@ static GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 
 void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
+	DEBUG_FUNCTION();
 	GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 
 	// Make sure the buffer is big enough
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	GL_checkForError();
-	GLint vBufferSizeNeeded = vertexCount * sizeof(renderer->vertices[0]);
+	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT, "Tried to render too many vertices at once!");
+	GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(renderer->vertices[0]);
 	GLint vBufferSize = 0;
 	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &vBufferSize);
 	if (vBufferSize < vBufferSizeNeeded)
@@ -278,7 +280,8 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	// Make sure IBO is big enough
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
 	GL_checkForError();
-	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
+	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT, "Tried to render too many indices at once!");
+	GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(renderer->indices[0]);
 	GLint iBufferSize = 0;
 	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &iBufferSize);
 	if (iBufferSize < iBufferSizeNeeded)
@@ -344,6 +347,7 @@ static ShaderProgramType getDesiredShader(RenderItem *item)
 static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION();
+	
 	// Fill VBO
 	u32 vertexCount = 0;
 	u32 indexCount = 0;
@@ -352,6 +356,8 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 	// some textureless RenderItems, they'll be drawn using the projection matrix and other settings
 	// from the previous call to renderBuffer!!!
 	// This was a bug that confused me for so long.
+	// It can't be -1 though! So... we're checking for vertexCount being 0 below, to make sure that
+	// we ALWAYS start a new batch at the start of each buffer.
 	GLuint glBoundTextureID = 0;
 	u32 drawCallCount = 0;
 
@@ -367,6 +373,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
 			if ((vertexCount == 0)
+				|| (vertexCount == RENDER_BATCH_VERTEX_COUNT)
 				|| (textureInfo->glTextureID != glBoundTextureID)
 				|| (desiredShader != renderer->currentShader))
 			{
