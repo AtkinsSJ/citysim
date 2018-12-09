@@ -31,6 +31,41 @@ not just a list of work that might never come to anything.
 
 ------------------------------------------------
 
+Simcity Classic features:
+(Can play it online at http://micropolis.mostka.com/ )
+	Code at https://github.com/simhacker/micropolis
+	A decent guide to how it works at https://github.com/SimHacker/micropolis/blob/wiki/InsideTheSimulator.md
+R/C/I
+	Zones! You plop a square down, but then it can be built in sections.
+		I think I'll do drag-rect zones instead
+	Demand! Formula is probably very simple
+Demolish
+Forest
+Water
+Roads
+Rails
+Fire/Police department buildings and coverage
+	(seems to affect a plus-shap covering 5 8x8 tile chunks.)
+Power stations and power lines
+Water, bridges
+Fires
+Flooding
+Budget (control tax rate, transport/fire/police funding)
+Query tool
+Data views:
+	Land value
+	Crime
+	Fire
+	Pollution
+	Traffic density
+	Power connectivity
+	Fire coverage
+	Police coverage
+Pause/resume/speed controls
+Map generator
+
+-------------------------------------------------
+
 Dragging a rect (eg demolish) from a UIRect into the world causes it to stretch from tile 0,0
 
 Split the game code from the platform code
