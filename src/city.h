@@ -16,7 +16,6 @@ struct City
 	Terrain *terrain;
 	PathLayer pathLayer;
 
-	Building fooo[1024];
 	Array<Building> buildings;
 	u32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).

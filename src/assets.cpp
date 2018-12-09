@@ -200,9 +200,9 @@ void loadAssets(AssetManager *assets)
 			tr->uv.w / textureWidth,
 			tr->uv.h / textureHeight
 		);
-		if (tr->type > TextureAssetType_Font_Debug) {
-			logInfo("Loaded texture region #{0}, texture: \"{1}\"", {formatInt(tr->type), t->filename});
-		}
+		// if (tr->type > TextureAssetType_Font_Debug) {
+		// 	logInfo("Loaded texture region #{0}, texture: \"{1}\"", {formatInt(tr->type), t->filename});
+		// }
 	}
 
 	// Load up our cursors

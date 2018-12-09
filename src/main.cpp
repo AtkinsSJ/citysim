@@ -115,7 +115,8 @@ int main(int argc, char *argv[])
 	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
 	if (argc && argv) {}
 
-// INIT
+	// INIT
+	u32 initStartTicks = SDL_GetTicks();
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 	enableCustomLogger();
 
@@ -133,8 +134,6 @@ int main(int argc, char *argv[])
 #endif
 
 	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
-
-	log("This is a test!", {});
 
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Under London");
@@ -180,6 +179,9 @@ int main(int argc, char *argv[])
 
 	updateCameraMatrix(worldCamera);
 	updateCameraMatrix(uiCamera);
+
+	u32 initFinishedTicks = SDL_GetTicks();
+	logInfo("Game initialised in {0} milliseconds.", {formatInt(initFinishedTicks - initStartTicks)});
 	
 	// GAME LOOP
 	while (appState->appStatus != AppStatus_Quit)
@@ -225,20 +227,19 @@ int main(int argc, char *argv[])
 			debugUpdate(globalDebugState, &inputState, uiState, &renderer->uiBuffer);
 		}
 
-	// Actually draw things!
+		// Actually draw things!
 		renderer->render(renderer, assets);
 
 		resetMemoryArena(&appState->globalTempArena);
 
-	// FRAMERATE MONITORING AND CAPPING
-
+		// FRAMERATE MONITORING AND CAPPING
 		{
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
 			SDL_GL_SwapWindow(renderer->window);
 		}
 	}
 
-// CLEAN UP
+	// CLEAN UP
 	freeRenderer(renderer);
 
 	SDL_DestroyWindow(window);

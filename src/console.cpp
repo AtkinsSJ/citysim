@@ -80,11 +80,7 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 
 	globalConsole = console;
 
-	// temp test stuff goes here
-	// consoleWriteLine(myprintf("}{-1} {5} {{}{pineapple}!", {stringFromChars("Hello"), stringFromChars("World")}));
-	consoleWriteLine("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?");
-	consoleWriteLine(myprintf("My favourite number is {0}!", {formatFloat(12345.6789, 3)}));
 }
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
