@@ -127,15 +127,10 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			Rect2 menuRect = expand(menuButtonRect, uiPadding);
 
-			for (u32 i=0; i < buildingDefinitions.count; i++)
+			for (u32 i=0; i < buildingDefs.count; i++)
 			{
-				if (i > 0)
-				{
-					menuButtonRect.y += menuButtonRect.h + uiPadding;
-					menuRect.h += menuButtonRect.h + uiPadding;
-				}
-
-				auto buildingDef = buildingDefinitions[i];
+				BuildingDef buildingDef = buildingDefs[i];
+				if (!buildingDef.isPloppable) continue;
 
 				if (uiButton(uiState, uiBuffer, assets, inputState, buildingDef.name, menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingTypeID == i)))
@@ -145,6 +140,9 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 					uiState->actionMode = ActionMode_Build;
 					setCursor(uiState, assets, Cursor_Build);
 				}
+
+				menuButtonRect.y += menuButtonRect.h + uiPadding;
+				menuRect.h += menuButtonRect.h + uiPadding;
 			}
 
 			append(&uiState->uiRects, menuRect);
@@ -276,7 +274,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						placeBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, mouseTilePos);
 					}
 
-					s32 buildCost = buildingDefinitions[uiState->selectedBuildingTypeID].buildCost;
+					s32 buildCost = buildingDefs[uiState->selectedBuildingTypeID].buildCost;
 					showCostTooltip(uiState, &gameState->city, buildCost);
 				} break;
 
@@ -337,7 +335,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			Terrain t = terrainAt(&gameState->city,x,y);
 			if (t.type != Terrain_Invalid)
 			{
-				TerrainDef tDef = terrainDefinitions[t.type];
+				TerrainDef tDef = terrainDefs[t.type];
 
 				u32 textureRegionID = getTextureRegionID(assets, tDef.textureAssetType, t.textureRegionOffset);
 
@@ -352,7 +350,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		if (rectsOverlap(building.footprint, visibleTileBounds))
 		{
-			BuildingDefinition def = buildingDefinitions[building.typeID];
+			BuildingDef def = buildingDefs[building.typeID];
 
 			V4 drawColor = makeWhite();
 
@@ -416,10 +414,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		{
 			ghostColor = color255(255,0,0,128);
 		}
-		auto def = buildingDefinitions[uiState->selectedBuildingTypeID];
+		auto def = buildingDefs[uiState->selectedBuildingTypeID];
 		Rect2 footprint = rect2(irectCentreWH(mouseTilePos, def.width, def.height));
 		drawTextureRegion(&renderer->worldBuffer,
-						  getTextureRegionID(assets, buildingDefinitions[uiState->selectedBuildingTypeID].textureAssetType, 0),
+						  getTextureRegionID(assets, buildingDefs[uiState->selectedBuildingTypeID].textureAssetType, 0),
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
 	}
 	else if (uiState->actionMode == ActionMode_Demolish

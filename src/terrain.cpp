@@ -39,7 +39,6 @@ void loadTerrainDefinitions(Array<TerrainDef> *terrains, File file)
 			else
 			{
 				def = appendBlank(terrains);
-				*def = {};
 
 				s64 terrainType;
 				if (asInt(nextToken(remainder, &remainder), &terrainType))

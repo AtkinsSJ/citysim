@@ -20,7 +20,7 @@ struct TerrainDef
 	s32 demolishCost;
 };
 
-Array<TerrainDef> terrainDefinitions = {};
+Array<TerrainDef> terrainDefs = {};
 
 struct Terrain
 {
