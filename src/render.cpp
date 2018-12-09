@@ -119,3 +119,69 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 dept
 	dest->color = item->color;
 	dest->textureRegionID = item->textureRegionID;
 }
+
+void sortRenderBuffer(RenderBuffer *buffer)
+{
+	DEBUG_FUNCTION();
+	// This is an implementation of the 'comb sort' algorithm, low to high
+
+	u32 gap = buffer->itemCount;
+	f32 shrink = 1.3f;
+
+	bool swapped = false;
+
+	while (gap > 1 || swapped)
+	{
+		gap = (u32)((f32)gap / shrink);
+		if (gap < 1)
+	{
+			gap = 1;
+		}
+
+		swapped = false;
+
+		// "comb" over the list
+		for (u32 i = 0;
+			i + gap < buffer->itemCount; // Here lies the remains of the flicker bug. It was <= not <. /fp
+			i++)
+		{
+			if (buffer->items[i].depth > buffer->items[i+gap].depth)
+			{
+				RenderItem temp = buffer->items[i];
+				buffer->items[i] = buffer->items[i+gap];
+				buffer->items[i+gap] = temp;
+
+				swapped = true;
+			}
+		}
+	}
+}
+
+#if CHECK_BUFFERS_SORTED
+bool isBufferSorted(RenderBuffer *buffer)
+{
+	bool isSorted = true;
+	f32 lastDepth = f32Min;
+	for (u32 i=0; i < buffer->itemCount; i++)
+	{
+		if (lastDepth > buffer->items[i].depth)
+		{
+			isSorted = false;
+			break;
+		}
+		lastDepth = buffer->items[i].depth;
+	}
+	return isSorted;
+}
+#endif
+
+ShaderProgramType getDesiredShader(RenderItem *item)
+{
+	ShaderProgramType result = ShaderProgram_Untextured;
+	if (item->textureRegionID != 0)
+	{
+		result = ShaderProgram_Textured;
+	}
+
+	return result;
+}
