@@ -1,6 +1,6 @@
 #pragma once
 
-void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *memory, File file)
+void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File file)
 {
 	LineReader reader = startFile(file);
 
@@ -12,7 +12,7 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 
 	clear(buildings);
 
-	BuildingDefinition *def = null;
+	BuildingDef *def = null;
 
 	while (reader.pos < reader.file.length)
 	{
@@ -36,7 +36,6 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 			else
 			{
 				def = appendBlank(buildings);
-				*def = {};
 				def->name = pushString(memory, trimEnd(remainder));
 			}
 		}
@@ -123,6 +122,20 @@ void loadBuildingDefinitions(Array<BuildingDefinition> *buildings, MemoryArena *
 					else
 					{
 						error(&reader, "Couldn't parse is_path. Expected 1 boolean (true/false).");
+						return;
+					}
+				}
+				else if (equals(firstWord, "is_ploppable"))
+				{
+					bool isPloppable;
+
+					if (asBool(nextToken(remainder, &remainder), &isPloppable))
+					{
+						def->isPloppable = isPloppable;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse is_ploppable. Expected 1 boolean (true/false).");
 						return;
 					}
 				}

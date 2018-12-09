@@ -74,7 +74,6 @@ T *append(Array<T> *a, T item)
 	return result;
 }
 
-
 template<class T>
 T *appendBlank(Array<T> *a)
 {
@@ -84,6 +83,8 @@ T *appendBlank(Array<T> *a)
 	}
 
 	T *result = a->items + a->count++;
+	
+	*result = {};
 
 	return result;
 }

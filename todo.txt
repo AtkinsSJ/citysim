@@ -6,6 +6,13 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 
 ------------------------------------------------
 
+Things to work on next maybe:
+- Drag to zone things
+- Power stations and connectivity and consumption?
+- Make trees a "building"?
+
+------------------------------------------------
+
 2018-12-07: NEW new plan!
 
 Similar, but I'm not going with that space-city theme. I'm undecided whether to go Simcity-like or Caesar-like. It's important that I really feel enthusiastic about whatever game I decide to make, given this is a hobby side-project!

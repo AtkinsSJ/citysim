@@ -1,6 +1,6 @@
 #pragma once
 
-struct BuildingDefinition
+struct BuildingDef
 {
 	union
 	{
@@ -16,9 +16,10 @@ struct BuildingDefinition
 	s32 buildCost;
 	s32 demolishCost;
 	bool isPath;
+	bool isPloppable;
 };
 
-Array<BuildingDefinition> buildingDefinitions = {};
+Array<BuildingDef> buildingDefs = {};
 
 struct Building
 {

@@ -13,7 +13,6 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	initialiseArray(&city->buildings, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
-	*nullBuilding = {};
 	nullBuilding->typeID = -1;
 
 	city->tileBuildings = PushArray(gameArena, u32, width*height);
@@ -63,7 +62,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, 
 	// 	return false;
 	// }
 
-	BuildingDefinition def = buildingDefinitions[selectedBuildingTypeID];
+	BuildingDef def = buildingDefs[selectedBuildingTypeID];
 
 	// Can we afford to build this?
 	if (!canAfford(city, def.buildCost))
@@ -95,7 +94,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, 
 			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
 
 			Terrain terrain = city->terrain[ti];
-			TerrainDef terrainDef = terrainDefinitions[terrain.type];
+			TerrainDef terrainDef = terrainDefs[terrain.type];
 
 			if (!terrainDef.canBuildOn)
 			{
@@ -145,7 +144,7 @@ bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I positio
 		return false;
 	}
 
-	BuildingDefinition def = buildingDefinitions[buildingTypeID];
+	BuildingDef def = buildingDefs[buildingTypeID];
 
 	u32 buildingID = city->buildings.count;
 	Building *building = appendBlank(&city->buildings);
@@ -205,7 +204,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 		Building *building = getBuildingByID(city, buildingID);
 		ASSERT(building, "Tile is storing an invalid building ID!");
-		BuildingDefinition def = buildingDefinitions[building->typeID];
+		BuildingDef def = buildingDefs[building->typeID];
 
 		// Can we afford to demolish this?
 		if (!canAfford(city, def.demolishCost)) {
@@ -286,7 +285,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 	}
 	else
 	{
-		TerrainDef def = terrainDefinitions[terrain.type];
+		TerrainDef def = terrainDefs[terrain.type];
 		if (def.canDemolish)
 		{
 			// Tear down all the trees!
@@ -315,7 +314,7 @@ s32 calculateDemolitionCost(City *city, Rect2I rect)
 	{
 		for (int x=0; x<rect.w; x++)
 		{
-			TerrainDef tDef = terrainDefinitions[terrainAt(city, rect.x + x, rect.y + y).type];
+			TerrainDef tDef = terrainDefs[terrainAt(city, rect.x + x, rect.y + y).type];
 
 			if (tDef.canDemolish)
 			{
@@ -332,7 +331,7 @@ s32 calculateDemolitionCost(City *city, Rect2I rect)
 		Building building = city->buildings[i];
 		if (rectsOverlap(building.footprint, rect))
 		{
-			total += buildingDefinitions[building.typeID].demolishCost;
+			total += buildingDefs[building.typeID].demolishCost;
 		}
 	}
 
