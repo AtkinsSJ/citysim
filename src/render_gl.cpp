@@ -481,7 +481,7 @@ static void sortRenderBuffer(RenderBuffer *buffer)
 	{
 		gap = (u32)((f32)gap / shrink);
 		if (gap < 1)
-		{
+	{
 			gap = 1;
 		}
 

@@ -6,6 +6,14 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 
 ------------------------------------------------
 
+2018-12-07: NEW new plan!
+
+Similar, but I'm not going with that space-city theme. I'm undecided whether to go Simcity-like or Caesar-like. It's important that I really feel enthusiastic about whatever game I decide to make, given this is a hobby side-project!
+
+I do think Simcity is a more straightforward target to aim at. Just, maybe skip the space-ness and just make a game about building cities.
+
+------------------------------------------------
+
 2018-01-15: New plan!
 
 This project has become really unfocused. There's no game to it any more, it's just a vague "engine"

@@ -125,6 +125,30 @@ bool equals(String a, char *b)
 	return equals(a, stringFromChars(b));
 }
 
+// Like strcmp()
+s32 compare(String a, String b)
+{
+	bool foundDifference = false;
+	s32 result = 0;
+	for (s32 i = 0; i<b.length; i++)
+	{
+		s32 diff = a.chars[i] - b.chars[i];
+		if (diff != 0)
+		{
+			result = diff;
+			foundDifference = true;
+			break;
+		}
+	}
+
+	if (!foundDifference && a.length != b.length)
+	{
+		result = a.length - b.length;
+	}
+
+	return result;
+}
+
 bool asInt(String string, s64 *result)
 {
 	bool succeeded = true;

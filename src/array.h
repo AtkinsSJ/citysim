@@ -94,3 +94,43 @@ T * pointerTo(Array<T> *a, u32 index)
 	ASSERT(index >=0 && index < a->count, "Index out of range!");
 	return a->items + index;
 }
+
+// NB: compare() should act like strcmp(): <0 if A comes before B, 0 if equal, >0 if B comes before A
+template<class T>
+void sortInPlace(Array<T> *a, int (*compare)(T*, T*))
+{
+	// This is an implementation of the 'comb sort' algorithm, low to high
+
+	u32 gap = a->count;
+	f32 shrink = 1.3f;
+
+	bool swapped = false;
+
+	while (gap > 1 || swapped)
+	{
+		gap = (u32)((f32)gap / shrink);
+		if (gap < 1)
+		{
+			gap = 1;
+		}
+
+		swapped = false;
+
+		// "comb" over the list
+		for (u32 i = 0;
+			i + gap < a->count; // Here lies the remains of the flicker bug. It was <= not <. /fp
+			i++)
+		{
+			T *first  = pointerTo(a, i);
+			T *second = pointerTo(a, i+gap);
+			if (compare(first, second) > 0)
+			{
+				T temp = *first;
+				*first = *second;
+				*second = temp;
+
+				swapped = true;
+			}
+		}
+	}
+}

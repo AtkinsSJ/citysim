@@ -119,6 +119,11 @@ ConsoleCommand(show_paths)
 
 }
 
+s32 compareCommands(Command *a, Command *b)
+{
+	return compare(a->name, b->name);
+}
+
 #define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
@@ -132,6 +137,8 @@ void initCommands(Console *console)
 	append(&consoleCommands, Command(CMD(exit), 0, 0));
 	append(&consoleCommands, Command(CMD(funds), 1, 1));
 	append(&consoleCommands, Command(CMD(show_paths), 0, 0));
+
+	sortInPlace(&consoleCommands, compareCommands);
 
 	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(consoleCommands.count)}), CLS_Default);
 }
