@@ -39,29 +39,6 @@ I will create shorter versions of the basic types though.
 #define STRVAL(a) STRVAL_(a)
 
 /*
-This macro lets you run a block of code at the end of the current scope. Just do:
-	DEFER(code_goes_here(foo, 123, true, whatever));
-and it will work! Can be any number of statements. If you defer multiple blocks within the
-same scope, they will execute in LIFO order, just like destructors do (because it uses
-destructors!
-
-*/
-// #include <functional>
-// #define DEFER_STRUCT_NAME GLUE(defer_, __LINE__)
-// #define DEFER(the_code)                                                     \
-// 	struct DEFER_STRUCT_NAME {                                              \
-// 		std::function<void ()> deferredCode;                                \
-// 		DEFER_STRUCT_NAME(std::function<void ()> deferredCode){             \
-// 			this->deferredCode = deferredCode;                              \
-// 		}                                                                   \
-// 		~DEFER_STRUCT_NAME(){                                               \
-// 		~DEFER_STRUCT_NAME(){                                               \
-// 			this->deferredCode();                                           \
-// 		}                                                                   \
-// 	};                                                                      \
-// 	DEFER_STRUCT_NAME GLUE(_, DEFER_STRUCT_NAME)( [&](){the_code;} );
-
-/*
 	Defer macro, to run code at the end of a scope.
 
 	USAGE: defer { do_some_stuff_later(); };
