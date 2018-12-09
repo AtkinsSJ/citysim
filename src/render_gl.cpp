@@ -257,44 +257,19 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	DEBUG_FUNCTION();
 	GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
-
-	// Make sure the buffer is big enough
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	GL_checkForError();
-	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT, "Tried to render too many vertices at once!");
-	GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(renderer->vertices[0]);
-	GLint vBufferSize = 0;
-	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &vBufferSize);
-	if (vBufferSize < vBufferSizeNeeded)
-	{
-		logWarn("Resizing VBO from {0} to {1} ({2} bytes per item)", {formatInt(vBufferSize), formatInt(vBufferSizeNeeded), formatInt(sizeof(renderer->vertices[0])) });
-		glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_STATIC_DRAW);
-		GL_checkForError();
-	}
 	// Fill VBO
+	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
+	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT, "Tried to render too many vertices at once!");
+	GLint vBufferSizeNeeded = vertexCount * sizeof(renderer->vertices[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, renderer->vertices);
 	GL_checkForError();
 
-
-
-	// Make sure IBO is big enough
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	GL_checkForError();
-	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT, "Tried to render too many indices at once!");
-	GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(renderer->indices[0]);
-	GLint iBufferSize = 0;
-	glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &iBufferSize);
-	if (iBufferSize < iBufferSizeNeeded)
-	{
-		logWarn("Resizing IBO from {0} to {1} ({2} bytes per item)", {formatInt(iBufferSize), formatInt(iBufferSizeNeeded), formatInt(sizeof(renderer->indices[0])) });
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, null, GL_STATIC_DRAW);
-		GL_checkForError();
-	}
 	// Fill IBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
+	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT, "Tried to render too many indices at once!");
+	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
 	GL_checkForError();
-
-
 
 	glEnableVertexAttribArray(activeShader->aPositionLoc);
 	glEnableVertexAttribArray(activeShader->aColorLoc);
@@ -347,7 +322,7 @@ static ShaderProgramType getDesiredShader(RenderItem *item)
 static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION();
-	
+
 	// Fill VBO
 	u32 vertexCount = 0;
 	u32 indexCount = 0;
@@ -621,7 +596,14 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 				glGenBuffers(1, &gl->VBO);
+				glBindBuffer(GL_ARRAY_BUFFER, gl->VBO);
+				GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->vertices[0]);
+				glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_STATIC_DRAW);
+
 				glGenBuffers(1, &gl->IBO);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->IBO);
+				GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->indices[0]);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, null, GL_STATIC_DRAW);
 
 				GL_checkForError();
 			}
