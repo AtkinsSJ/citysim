@@ -130,7 +130,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			for (u32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
 				if (uiButton(uiState, uiBuffer, assets, inputState, zoneNames[zoneIndex], menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Zone) && (uiState->selectedBuildingTypeID == zoneIndex)))
+						(uiState->actionMode == ActionMode_Zone) && (uiState->selectedZoneID == zoneIndex)))
 				{
 					uiState->openMenu = UIMenu_None;
 					uiState->selectedZoneID = zoneIndex;
