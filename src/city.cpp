@@ -11,7 +11,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	city->terrain         = PushArray(gameArena, Terrain, tileCount);
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
-	city->powerLayer.data = PushArray(gameArena, s32, tileCount);
+	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
 	city->tileBuildings   = PushArray(gameArena, u32, tileCount);
 
 	initialiseArray(&city->buildings, 1024);

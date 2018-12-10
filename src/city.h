@@ -29,9 +29,15 @@ struct PathLayer
 	s32 *data; // Represents the pathing 'group'. 0 = unpathable, >0 = any tile with the same value is connected
 };
 
+struct PowerGroup
+{
+	s32 production;
+	s32 consumption;
+};
+
 struct PowerLayer
 {
-	s32 groupCount;
+	Array<PowerGroup> groups;
 	s32 *data; // Represents the power grid "group". 0 = none, >0 = any tile with the same value is connected
 };
 
