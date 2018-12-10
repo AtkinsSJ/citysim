@@ -272,13 +272,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
 
+	City *city = &gameState->city;
+
 	// UiButton/Mouse interaction
 	if (gameState->status == GameStatus_Playing) {
 
 		if (keyJustPressed(inputState, SDLK_INSERT)) {
-			gameState->city.funds += 10000;
+			city->funds += 10000;
 		} else if (keyJustPressed(inputState, SDLK_DELETE)) {
-			gameState->city.funds -= 10000;
+			city->funds -= 10000;
 		}
 
 		// Camera controls
@@ -286,8 +288,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		// if (keyJustPressed(inputState, SDLK_HOME)) {
 		// 	worldCamera->zoom = 1;
 		// 	// Jump to the farmhouse if we have one!
-		// 	if (gameState->city.firstBuildingOfType[BA_Farmhouse]) {
-		// 		worldCamera->pos = centre(gameState->city.firstBuildingOfType[BA_Farmhouse]->footprint);
+		// 	if (city.firstBuildingOfType[BA_Farmhouse]) {
+		// 		worldCamera->pos = centre(city.firstBuildingOfType[BA_Farmhouse]->footprint);
 		// 	} else {
 		// 		pushUiMessage(uiState, LocalString("Build an HQ, then pressing [Home] will take you there."));
 		// 	}
@@ -299,11 +301,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			switch (uiState->actionMode) {
 				case ActionMode_Build: {
 					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
-						placeBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, mouseTilePos);
+						placeBuilding(uiState, city, uiState->selectedBuildingTypeID, mouseTilePos);
 					}
 
 					s32 buildCost = buildingDefs[uiState->selectedBuildingTypeID].buildCost;
-					showCostTooltip(uiState, &gameState->city, buildCost);
+					showCostTooltip(uiState, city, buildCost);
 				} break;
 
 				case ActionMode_Demolish: {
@@ -312,21 +314,21 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
 						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
-						s32 demolitionCost = calculateDemolitionCost(&gameState->city, uiState->dragRect);
-						showCostTooltip(uiState, &gameState->city, demolitionCost);
+						s32 demolitionCost = calculateDemolitionCost(city, uiState->dragRect);
+						showCostTooltip(uiState, city, demolitionCost);
 					}	
 
 					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
 						// Demolish everything within dragRect!
-						demolishRect(uiState, &gameState->city, uiState->dragRect);
+						demolishRect(uiState, city, uiState->dragRect);
 						uiState->dragRect = irectXYWH(-1,-1,0,0);
 					}
 				} break;
 
 				case ActionMode_None: {
 					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
-						int tileI = tileIndex(&gameState->city, mouseTilePos.x, mouseTilePos.y);
-						int buildingID = gameState->city.tileBuildings[tileI];
+						int tileI = tileIndex(city, mouseTilePos.x, mouseTilePos.y);
+						int buildingID = city->tileBuildings[tileI];
 
 						SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
 					}
@@ -360,7 +362,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			x < visibleTileBounds.x + visibleTileBounds.w;
 			x++)
 		{
-			Terrain t = terrainAt(&gameState->city,x,y);
+			Terrain t = terrainAt(city,x,y);
 			if (t.type != Terrain_Invalid)
 			{
 				TerrainDef tDef = terrainDefs[t.type];
@@ -395,7 +397,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// Data layer rendering
-	if (gameState->drawPathLayer)
+	if (gameState->dataLayerToDraw)
 	{
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
@@ -405,22 +407,51 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				x < visibleTileBounds.x + visibleTileBounds.w;
 				x++)
 			{
-				s32 pathGroup = pathGroupAt(&gameState->city, x, y);
-				if (pathGroup > 0)
+				if (!tileExists(city, x, y)) continue;
+
+				V4 color = {};
+
+				switch (gameState->dataLayerToDraw)
 				{
-					V4 color = {};
-					switch (pathGroup)
-					{
-						case 1:  color = color255(  0,   0, 255, 63); break;
-						case 2:  color = color255(  0, 255,   0, 63); break;
-						case 3:  color = color255(255,   0,   0, 63); break;
-						case 4:  color = color255(  0, 255, 255, 63); break;
-						case 5:  color = color255(255, 255,   0, 63); break;
-						case 6:  color = color255(255,   0, 255, 63); break;
+					case DataLayer_Paths: {
+						s32 pathGroup = pathGroupAt(city, x, y);
+						if (pathGroup > 0)
+						{
+							switch (pathGroup)
+							{
+								case 1:  color = color255(  0,   0, 255, 63); break;
+								case 2:  color = color255(  0, 255,   0, 63); break;
+								case 3:  color = color255(255,   0,   0, 63); break;
+								case 4:  color = color255(  0, 255, 255, 63); break;
+								case 5:  color = color255(255, 255,   0, 63); break;
+								case 6:  color = color255(255,   0, 255, 63); break;
 
-						default: color = color255(255, 255, 255, 63); break;
-					}
+								default: color = color255(255, 255, 255, 63); break;
+							}
+						}
+					} break;
 
+					case DataLayer_Power: {
+						s32 powerGroup = powerGroupAt(city, x, y);
+						if (powerGroup > 0)
+						{
+							switch (powerGroup)
+							{
+								case 1:  color = color255(  0,   0, 255, 63); break;
+								case 2:  color = color255(  0, 255,   0, 63); break;
+								case 3:  color = color255(255,   0,   0, 63); break;
+								case 4:  color = color255(  0, 255, 255, 63); break;
+								case 5:  color = color255(255, 255,   0, 63); break;
+								case 6:  color = color255(255,   0, 255, 63); break;
+
+								default: color = color255(255, 255, 255, 63); break;
+							}
+						}
+					} break;
+				}
+
+				if (color.a > 0.01f)
+				{
 					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, color);
 				}
 			}

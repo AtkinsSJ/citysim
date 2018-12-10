@@ -20,5 +20,5 @@ struct GameState
 	GameStatus status;
 	City city;
 
-	bool drawPathLayer = false;
+	u32 dataLayerToDraw;
 };

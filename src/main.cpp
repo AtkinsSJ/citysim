@@ -73,6 +73,7 @@ AppState globalAppState;
 #include "textinput.cpp"
 #include "console.cpp"
 #include "pathing.cpp"
+#include "power.cpp"
 #include "city.cpp"
 #include "game.cpp"
 #include "log.cpp"
