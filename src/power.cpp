@@ -51,6 +51,11 @@ bool floodFillPowerConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 	return didCreateNewGroup;
 }
 
+/*
+ * @Performance This is a really naive approach to recalculating power. Every time ANYTHING
+ * changes, we start over and calculate the whole city's power grid and production/comsumption
+ * from scratch!!! There should be lots of shortcuts we can take.
+ */
 void recalculatePowerConnectivity(City *city)
 {
 	// This is a flood fill.
