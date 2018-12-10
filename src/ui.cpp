@@ -13,7 +13,6 @@ void initUiState(UIState *uiState)
 	initMemoryArena(&uiState->arena, MB(1));
 
 	uiState->actionMode = ActionMode_None;
-	uiState->selectedBuildingTypeID = -1;
 
 	uiState->tooltip = {};
 	uiState->tooltip.offsetFromCursor = v2(16, 20);
@@ -196,42 +195,6 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 
 	return currentlyOpen;
 }
-
-// void uiTextInput(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
-// 	             bool active, char *textBuffer, s32 textBufferLength, V2 origin, f32 depth)
-// {
-// 	DEBUG_FUNCTION();
-	
-// 	UITheme *theme = &assets->theme;
-
-// 	if (active)
-// 	{
-// 		s32 textLength = strlen(textBuffer);
-// 		if (inputState->textEntered[0])
-// 		{
-// 			u32 pos = 0;
-// 			while (inputState->textEntered[pos]
-// 				&& textLength < textBufferLength)
-// 			{
-// 				textBuffer[textLength++] = inputState->textEntered[pos];
-// 				pos++;
-// 			}
-// 		}
-
-// 		if (keyJustPressed(inputState, SDLK_BACKSPACE)
-// 			&& textLength > 0)
-// 		{
-// 			textBuffer[textLength-1] = 0;
-// 			textLength--;
-// 		}
-// 	}
-
-// 	const f32 padding = 4;
-// 	Rect2 labelRect = uiText(uiState, uiBuffer, getFont(assets, theme->labelStyle.font), textBuffer, origin + v2(padding, padding),
-// 								 ALIGN_H_CENTRE | ALIGN_TOP, depth + 1, theme->textboxTextColor);
-// 	labelRect = expandRect2I(labelRect, padding);
-// 	drawRect2I(uiBuffer, labelRect, depth, theme->textboxBackgroundColor);
-// }
 
 void pushUiMessage(UIState *uiState, String message)
 {

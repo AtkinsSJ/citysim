@@ -26,3 +26,10 @@ is_ploppable true
 
 :Building Imaginary
 size 1 1
+
+:Building Power Station
+size 4 4
+texture 11
+build_cost 1000
+demolish_cost 200
+is_ploppable true
