@@ -50,12 +50,14 @@ Demolish
 Forest
 Water
 Roads
-Rails
+	Roads are placed by dragging a line, then release to place it all.
 Fire/Police department buildings and coverage
 	(seems to affect a plus-shap covering 5 8x8 tile chunks.)
 Power stations and power lines
+	Power lines need to exist "on top" of roads. How do we handle this? Maybe a building that's both, and we special-case place it when the player tries to place one on top of the other.
 Water, bridges
 Fires
+Rails
 Flooding
 Budget (control tax rate, transport/fire/police funding)
 Query tool

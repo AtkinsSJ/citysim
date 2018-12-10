@@ -119,6 +119,34 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	{
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
+		// The "ZONE" menu
+		if (uiMenuButton(uiState, uiBuffer, assets, inputState, LocalString("Zone..."), buttonRect, 1, UIMenu_Zone))
+		{
+			Rect2 menuButtonRect = buttonRect;
+			menuButtonRect.y += menuButtonRect.h + uiPadding;
+			
+			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
+
+			for (u32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
+			{
+				if (uiButton(uiState, uiBuffer, assets, inputState, zoneNames[zoneIndex], menuButtonRect, 1,
+						(uiState->actionMode == ActionMode_Zone) && (uiState->selectedBuildingTypeID == zoneIndex)))
+				{
+					uiState->openMenu = UIMenu_None;
+					uiState->selectedZoneID = zoneIndex;
+					uiState->actionMode = ActionMode_Zone;
+					setCursor(uiState, assets, Cursor_Build);
+				}
+
+				menuButtonRect.y += menuButtonRect.h + uiPadding;
+				menuRect.h += menuButtonRect.h + uiPadding;
+			}
+
+			append(&uiState->uiRects, menuRect);
+			drawRect(uiBuffer, menuRect, 0, theme->overlayColor);
+		}
+		buttonRect.x += buttonRect.w + uiPadding;
+
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, uiBuffer, assets, inputState, LocalString("Build..."), buttonRect, 1, UIMenu_Build))
 		{
@@ -148,8 +176,8 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			append(&uiState->uiRects, menuRect);
 			drawRect(uiBuffer, menuRect, 0, theme->overlayColor);
 		}
-
 		buttonRect.x += buttonRect.w + uiPadding;
+
 		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Demolish"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Demolish),
 					SDLK_x, LocalString("(X)")))
@@ -319,8 +347,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// We err on the side of drawing too much, rather than risking having holes in the world.
 	Rect2I visibleTileBounds = irectCentreWH(
 		v2i(MAX((s32)worldCamera->pos.x - 1, 0), MAX((s32)worldCamera->pos.y - 1, 0)),
-		MIN(gameState->city.width,  worldCamera->size.x / worldCamera->zoom) + 5,
-		MIN(gameState->city.height, worldCamera->size.y / worldCamera->zoom) + 5
+		(s32) MIN(gameState->city.width,  worldCamera->size.x / worldCamera->zoom) + 5,
+		(s32) MIN(gameState->city.height, worldCamera->size.y / worldCamera->zoom) + 5
 	);
 
 	// Draw terrain
@@ -360,14 +388,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				drawColor = color255(255,128,128,255);
 			}
 
-			switch (building.typeID) {
-
-				default: {
-					V2 drawPos = centre(building.footprint);
-					drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def.textureAssetType, building.textureRegionOffset),
-									  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
-				} break;
-			}
+			V2 drawPos = centre(building.footprint);
+			drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def.textureAssetType, building.textureRegionOffset),
+							  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
 		}
 	}
 

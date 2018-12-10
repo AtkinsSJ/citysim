@@ -1,5 +1,20 @@
 #pragma once
 
+enum ZoneType
+{
+	Zone_Residential,
+	Zone_Commercial,
+	Zone_Industrial,
+
+	ZoneCount
+};
+
+String zoneNames[ZoneCount] = {
+	stringFromChars("Residential"),
+	stringFromChars("Commercial"),
+	stringFromChars("Industrial"),
+};
+
 struct PathLayer
 {
 	s32 pathGroupCount;

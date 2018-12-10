@@ -6,9 +6,7 @@ enum ActionMode {
 
 	ActionMode_Build,
 	ActionMode_Demolish,
-	ActionMode_Plant,
-	ActionMode_Harvest,
-	ActionMode_Hire,
+	ActionMode_Zone,
 
 	ActionMode_Count,
 };
@@ -17,6 +15,7 @@ enum UIMenuID
 {
 	UIMenu_None,
 	UIMenu_Build,
+	UIMenu_Zone,
 };
 
 struct Tooltip
@@ -42,7 +41,11 @@ struct UIState
 
 	UIMenuID openMenu;
 	ActionMode actionMode;
-	s32 selectedBuildingTypeID;
+	union
+	{
+		u32 selectedBuildingTypeID;
+		u32 selectedZoneID;
+	};
 
 	Tooltip tooltip;
 	UiMessage message;

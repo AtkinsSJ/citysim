@@ -13,7 +13,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	initialiseArray(&city->buildings, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
-	nullBuilding->typeID = -1;
+	nullBuilding->typeID = 0;
 
 	city->tileBuildings = PushArray(gameArena, u32, width*height);
 }
