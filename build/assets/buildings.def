@@ -18,9 +18,11 @@ is_ploppable true
 carries_power true
 
 :Building Power Line Over Road
-size 1 1
 combination_of Road | Power Line
+size 1 1
+texture 8 # Hard-coded value of TextureAssetType_Road
 demolish_cost 10
+is_path true
 carries_power true
 
 :Building House

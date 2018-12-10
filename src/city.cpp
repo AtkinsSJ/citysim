@@ -48,7 +48,7 @@ void spend(City *city, s32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, V2I position,
+bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, V2I position,
 	bool isAttemptingToBuild = false)
 {
 
@@ -108,11 +108,16 @@ bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, 
 
 			if (city->tileBuildings[ti] != 0)
 			{
-				// if (isAttemptingToBuild)
-				// {
-				// 	pushUiMessage(uiState, "You cannot overlap buildings.");
-				// }
-				return false;
+				// Check if we can combine this with the building that's already there
+				Building buildingAtPos = city->buildings[city->tileBuildings[ti]];
+				if (buildingDefs[buildingAtPos.typeID].canBeBuiltOnID == selectedBuildingTypeID)
+				{
+					// We can!
+				}
+				else
+				{
+					return false;
+				}
 			}
 		}
 	}
@@ -137,7 +142,7 @@ void updatePathTexture(City *city, s32 x, s32 y)
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I position)
+bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I position)
 {
 
 	if (!canPlaceBuilding(uiState, city, buildingTypeID, position, true))
@@ -146,32 +151,44 @@ bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I positio
 	}
 
 	BuildingDef def = buildingDefs[buildingTypeID];
-
-	u32 buildingID = city->buildings.count;
-	Building *building = appendBlank(&city->buildings);
-
 	spend(city, def.buildCost);
 
-	*building = {};
-	building->typeID = buildingTypeID;
-	building->footprint = irectCentreWH(position, def.width, def.height);
+	bool needToRecalcPaths = def.isPath;
+	bool needToRecalcPower = def.carriesPower;
+
+	Building *building = null;
+	u32 buildingID = city->tileBuildings[tileIndex(city,position.x,position.y)];
+
+	if (buildingID)
+	{
+		// Do a quick replace! We already established in canPlaceBuilding() that we match.
+		building = getBuildingByID(city, buildingID);
+		ASSERT(building, "Somehow this building doesn't exist even though it should!");
+		BuildingDef oldDef = buildingDefs[building->typeID];
+
+		building->typeID = def.buildOverResult;
+		def = buildingDefs[def.buildOverResult];
+
+		needToRecalcPaths = (oldDef.isPath != def.isPath);
+		needToRecalcPower = (oldDef.carriesPower != def.carriesPower);
+	}
+	else
+	{
+		buildingID = city->buildings.count;
+		building = appendBlank(&city->buildings);
+		building->typeID = buildingTypeID;
+		building->footprint = irectCentreWH(position, def.width, def.height);
+	}
 
 	// Tiles
-	for (s16 y=0; y<building->footprint.h; y++) {
-		for (s16 x=0; x<building->footprint.w; x++) {
+	for (s32 y=0; y<building->footprint.h; y++) {
+		for (s32 x=0; x<building->footprint.w; x++) {
 			s32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
 			city->tileBuildings[tile] = buildingID;
 
-			if (def.isPath)
-			{
-				// Add to the pathing layer
-				city->pathLayer.data[tile] = 1;
-			}
-
-			if (def.carriesPower)
-			{
-				city->powerLayer.data[tile] = 1;
-			}
+			// Data layer updates
+			city->pathLayer.data[tile]  = def.isPath       ? 1 : 0;
+			city->powerLayer.data[tile] = def.carriesPower ? 1 : 0;
 		}
 	}
 
@@ -180,7 +197,6 @@ bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I positio
 		// Sprite id is 0 to 15, depending on connecting neighbours.
 		// 1 = up, 2 = right, 4 = down, 8 = left
 		// For now, we'll decide that off-the-map does NOT connect
-		recalculatePathingConnectivity(city);
 
 		// Update sprites for the tile, and the 4 neighbours.
 		updatePathTexture(city, position.x,   position.y);
@@ -195,7 +211,12 @@ bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I positio
 		building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
 	}
 
-	if (def.carriesPower)
+	if (needToRecalcPaths)
+	{
+		recalculatePathingConnectivity(city);
+	}
+
+	if (needToRecalcPower)
 	{
 		recalculatePowerConnectivity(city);
 	}
