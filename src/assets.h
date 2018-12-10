@@ -27,6 +27,7 @@ enum TextureAssetType // NB: Actually TextureRegions, unless I change that later
 	TextureAssetType_House_2x2 = 9,
 	TextureAssetType_Factory_3x3 = 10,
 	TextureAssetType_PowerStation = 11,
+	TextureAssetType_PowerLine = 12,
 
 	TextureAssetTypeCount
 };
