@@ -37,6 +37,7 @@ struct PowerGroup
 
 struct PowerLayer
 {
+	PowerGroup combined;
 	Array<PowerGroup> groups;
 	s32 *data; // Represents the power grid "group". 0 = none, >0 = any tile with the same value is connected
 };

@@ -153,6 +153,34 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File f
 						return;
 					}
 				}
+				else if (equals(firstWord, "power_gen"))
+				{
+					s64 power;
+
+					if (asInt(nextToken(remainder, &remainder), &power))
+					{
+						def->power = (s32) power;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse power_gen. Expected 1 int.");
+						return;
+					}
+				}
+				else if (equals(firstWord, "power_use"))
+				{
+					s64 power;
+
+					if (asInt(nextToken(remainder, &remainder), &power))
+					{
+						def->power = (s32) -power;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse power_use. Expected 1 int.");
+						return;
+					}
+				}
 				else
 				{
 					error(&reader, "Unrecognized token: {0}", {firstWord});

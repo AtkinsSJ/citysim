@@ -97,23 +97,28 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	V2 centre = uiBuffer->camera.pos;
 	UITheme *theme = &assets->theme;
 	BitmapFont *font = getFont(assets, theme->labelStyle.font);
+	City *city = &gameState->city;
 
 	uiState->uiRects.count = 0;
 
 	f32 left = uiPadding;
+	f32 right = uiBuffer->camera.size.x - uiPadding;
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
 
-	uiText(uiState, uiBuffer, font, gameState->city.name,
+	uiText(uiState, uiBuffer, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("£{0}", {formatInt(gameState->city.funds)}),
+	uiText(uiState, uiBuffer, font, myprintf("£{0}", {formatInt(city->funds)}),
 	       v2(centre.x, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("(-£{0}/month)", {formatInt(gameState->city.monthlyExpenditure)}),
+	uiText(uiState, uiBuffer, font, myprintf("(-£{0}/month)", {formatInt(city->monthlyExpenditure)}),
 	       v2(centre.x, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
+
+	uiText(uiState, uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.combined.consumption), formatInt(city->powerLayer.combined.production)}),
+	       v2(right, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
 
 	// Build UI
 	{

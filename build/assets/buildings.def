@@ -17,6 +17,7 @@ demolish_cost 50
 is_path false
 is_ploppable true
 carries_power true
+power_use 20
 
 :Building Factory
 size 3 3
@@ -26,6 +27,7 @@ demolish_cost 100
 is_path false
 is_ploppable true
 carries_power true
+power_use 200
 
 :Building Imaginary
 size 1 1
@@ -37,3 +39,4 @@ build_cost 1000
 demolish_cost 200
 is_ploppable true
 carries_power true
+power_gen 4000

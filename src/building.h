@@ -18,6 +18,7 @@ struct BuildingDef
 	bool isPath;
 	bool isPloppable;
 	bool carriesPower;
+	s32 power; // Positive for production, negative for consumption
 };
 
 Array<BuildingDef> buildingDefs = {};
