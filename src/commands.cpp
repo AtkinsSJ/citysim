@@ -102,15 +102,36 @@ ConsoleCommand(funds)
 	}
 }
 
-ConsoleCommand(show_paths)
+ConsoleCommand(show_layer)
 {
 	// For now this is a toggle, but it'd be nice if we could say "show_paths true" or "show_paths 1" maybe
 	if (globalAppState.gameState != nullptr)
 	{
-		bool newState = !globalAppState.gameState->drawPathLayer;
-		globalAppState.gameState->drawPathLayer = newState;
-
-		consoleWriteLine(myprintf("Pathing displayed: {0}", {formatBool(newState)}), CLS_Success);
+		if (tokens->count == 1)
+		{
+			// Hide layers
+			globalAppState.gameState->dataLayerToDraw = DataLayer_None;
+			consoleWriteLine("Hiding data layers", CLS_Success);
+		}
+		else if (tokens->count == 2)
+		{
+			String layerName = tokens->tokens[1];
+			if (equals(layerName, "paths"))
+			{
+				globalAppState.gameState->dataLayerToDraw = DataLayer_Paths;
+				consoleWriteLine("Showing paths layer", CLS_Success);
+			}
+			else if (equals(layerName, "power"))
+			{
+				globalAppState.gameState->dataLayerToDraw = DataLayer_Power;
+				consoleWriteLine("Showing power layer", CLS_Success);
+			}
+		}
+		else
+		{
+			consoleWriteLine(myprintf("Usage: {0} (paths|power), or with no argument to hide the data layer",
+								{tokens->tokens[0]}), CLS_Error);
+		}
 	}
 	else
 	{
@@ -136,7 +157,7 @@ void initCommands(Console *console)
 	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
 	append(&consoleCommands, Command(CMD(exit), 0, 0));
 	append(&consoleCommands, Command(CMD(funds), 1, 1));
-	append(&consoleCommands, Command(CMD(show_paths), 0, 0));
+	append(&consoleCommands, Command(CMD(show_layer), 0, 1));
 
 	sortInPlace(&consoleCommands, compareCommands);
 

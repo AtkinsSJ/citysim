@@ -6,16 +6,17 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	city->funds = funds;
 	city->width = width;
 	city->height = height;
-	city->terrain = PushArray(gameArena, Terrain, width*height);
 
-	city->pathLayer.data = PushArray(gameArena, s32, width*height);
+	s32 tileCount = width*height;
 
+	city->terrain         = PushArray(gameArena, Terrain, tileCount);
+	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
+	city->powerLayer.data = PushArray(gameArena, s32, tileCount);
+	city->tileBuildings   = PushArray(gameArena, u32, tileCount);
 
 	initialiseArray(&city->buildings, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
 	nullBuilding->typeID = 0;
-
-	city->tileBuildings = PushArray(gameArena, u32, width*height);
 }
 
 void generateTerrain(City *city, Random *random)
@@ -166,6 +167,11 @@ bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I positio
 				// Add to the pathing layer
 				city->pathLayer.data[tile] = 1;
 			}
+
+			if (def.carriesPower)
+			{
+				city->powerLayer.data[tile] = 1;
+			}
 		}
 	}
 
@@ -189,9 +195,15 @@ bool placeBuilding(UIState *uiState, City *city, s32 buildingTypeID, V2I positio
 		building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
 	}
 
+	if (def.carriesPower)
+	{
+		recalculatePowerConnectivity(city);
+	}
+
 	return true;
 }
 
+// NB: Only for use withing demolishRect()!
 bool demolishTile(UIState *uiState, City *city, V2I position) {
 	if (!tileExists(city, position.x, position.y)) return true;
 
@@ -231,6 +243,12 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 				{
 					// Remove from the pathing layer
 					city->pathLayer.data[tile] = 0;
+				}
+				
+				if (def.carriesPower)
+				{
+					// Remove from the pathing layer
+					city->powerLayer.data[tile] = 0;
 				}
 			}
 		}
@@ -355,6 +373,7 @@ bool demolishRect(UIState *uiState, City *city, Rect2I rect) {
 	}
 
 	recalculatePathingConnectivity(city);
+	recalculatePowerConnectivity(city);
 
 	return true;
 }

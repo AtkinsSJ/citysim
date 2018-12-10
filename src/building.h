@@ -17,6 +17,7 @@ struct BuildingDef
 	s32 demolishCost;
 	bool isPath;
 	bool isPloppable;
+	bool carriesPower;
 };
 
 Array<BuildingDef> buildingDefs = {};

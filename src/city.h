@@ -15,10 +15,24 @@ String zoneNames[ZoneCount] = {
 	stringFromChars("Industrial"),
 };
 
+enum DataLayer
+{
+	DataLayer_None,
+	DataLayer_Paths,
+	DataLayer_Power,
+	DataLayerCount
+};
+
 struct PathLayer
 {
 	s32 pathGroupCount;
 	s32 *data; // Represents the pathing 'group'. 0 = unpathable, >0 = any tile with the same value is connected
+};
+
+struct PowerLayer
+{
+	s32 groupCount;
+	s32 *data; // Represents the power grid "group". 0 = none, >0 = any tile with the same value is connected
 };
 
 struct City
@@ -30,6 +44,7 @@ struct City
 	s32 width, height;
 	Terrain *terrain;
 	PathLayer pathLayer;
+	PowerLayer powerLayer;
 
 	Array<Building> buildings;
 	u32 *tileBuildings; // Map from x,y -> building id at that location.

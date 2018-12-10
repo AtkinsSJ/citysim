@@ -139,6 +139,24 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File f
 						return;
 					}
 				}
+				else if (equals(firstWord, "carries_power"))
+				{
+					bool carriesPower;
+
+					if (asBool(nextToken(remainder, &remainder), &carriesPower))
+					{
+						def->carriesPower = carriesPower;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse carries_power. Expected 1 boolean (true/false).");
+						return;
+					}
+				}
+				else
+				{
+					error(&reader, "Unrecognized token: {0}", {firstWord});
+				}
 			}
 		}
 	}
