@@ -72,13 +72,13 @@ LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=tr
 
 void warn(LineReader *reader, char *message, std::initializer_list<String> args = {})
 {
-	String text = myprintf(message, args);
+	String text = myprintf(message, args, false);
 	logWarn("{0}:{1} - {2}", {reader->file.name, formatInt(reader->lineNumber), text});
 }
 
 void error(LineReader *reader, char *message, std::initializer_list<String> args = {})
 {
-	String text = myprintf(message, args);
+	String text = myprintf(message, args, false);
 	logError("{0}:{1} - {2}", {reader->file.name, formatInt(reader->lineNumber), text});
 }
 

@@ -71,7 +71,7 @@ void append(StringBuilder *stringBuilder, String source)
 
 void append(StringBuilder *stringBuilder, char *source)
 {
-	append(stringBuilder, stringFromChars(source));
+	append(stringBuilder, source, strlen(source));
 }
 
 void append(StringBuilder *stringBuilder, char source)

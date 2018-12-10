@@ -308,6 +308,11 @@ String trimEnd(String input)
 	return result;
 }
 
+String trim(String input)
+{
+	return trimStart(trimEnd(input));
+}
+
 String nextToken(String input, String *remainder)
 {
 	String firstWord = input;
@@ -327,4 +332,26 @@ String nextToken(String input, String *remainder)
 	}
 
 	return firstWord;
+}
+
+bool splitInTwo(String input, char divider, String *leftResult, String *rightResult)
+{
+	bool foundDivider = false;
+
+	for (s32 i=0; i < input.length; i++)
+	{
+		if (input[i] == divider)
+		{
+			leftResult->chars = input.chars;
+			leftResult->length = i;
+
+			rightResult->chars = input.chars + i + 1;
+			rightResult->length = input.length - i - 1;
+
+			foundDivider = true;
+			break;
+		}
+	}
+
+	return foundDivider;
 }

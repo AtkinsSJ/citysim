@@ -66,6 +66,10 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 	if (zeroTerminate)
 	{
 		append(&stb, '\0');
+		// We don't want the null termination byte to be included in the length, or else we get problems if
+		// we myprintf() the result! Yes, this has happened. It was confusing.
+		// - Sam, 10/12/2018
+		stb.length--;
 	}
 
 	result = getString(&stb);

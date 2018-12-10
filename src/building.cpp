@@ -11,7 +11,9 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File f
 	}
 
 	clear(buildings);
+	appendBlank(buildings);
 
+	u32 defID = 0;
 	BuildingDef *def = null;
 
 	while (reader.pos < reader.file.length)
@@ -35,6 +37,7 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File f
 			}
 			else
 			{
+				defID = buildings->count;
 				def = appendBlank(buildings);
 				def->name = pushString(memory, trimEnd(remainder));
 			}
@@ -178,6 +181,71 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File f
 					else
 					{
 						error(&reader, "Couldn't parse power_use. Expected 1 int.");
+						return;
+					}
+				}
+				else if (equals(firstWord, "combination_of"))
+				{
+					String ingredient1;
+					String ingredient2;
+
+					if (splitInTwo(remainder, '|', &ingredient1, &ingredient2))
+					{
+						ingredient1 = trim(ingredient1);
+						ingredient2 = trim(ingredient2);
+
+						// Now, find the buildings so we can link it up!
+						u32 ingredient1type = 0;
+						u32 ingredient2type = 0;
+
+						for (u32 typeID = 0; typeID < buildings->count; typeID++)
+						{
+							BuildingDef b = (*buildings)[typeID];
+							if (ingredient1type == 0 && equals(b.name, ingredient1))
+							{
+								ingredient1type = typeID;
+							}
+							else if (ingredient2type == 0 && equals(b.name, ingredient2))
+							{
+								ingredient2type = typeID;
+							}
+
+							if (ingredient1type && ingredient2type) break;
+						}
+
+						if (ingredient1type == 0)
+						{
+							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!", {ingredient1});
+							return;
+						}
+						else if (ingredient2type == 0)
+						{
+							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!", {ingredient2});
+							return;
+						}
+						else
+						{
+							// We found them, yay!
+							BuildingDef *b1 = pointerTo(buildings, ingredient1type);
+							BuildingDef *b2 = pointerTo(buildings, ingredient2type);
+							if (b1->canBeBuiltOnID)
+							{
+								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one.", {ingredient1});
+								return;
+							}
+							if (b2->canBeBuiltOnID)
+							{
+								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one.", {ingredient2});
+								return;
+							}
+							b1->canBeBuiltOnID = ingredient2type;
+							b2->canBeBuiltOnID = ingredient1type;
+							b1->buildOverResult = b2->buildOverResult = defID;
+						}
+					}
+					else
+					{
+						error(&reader, "Couldn't parse combination_of. Expected \"combination_of First Building Name | Second Building Name\".");
 						return;
 					}
 				}
