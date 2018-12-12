@@ -138,7 +138,7 @@ struct AssetManager
 	ChunkedArray<IndexRange> rangesByTextureAssetType;
 
 	ShaderHeader shaderHeader; // This is a bit hacky right now.
-	ShaderProgram shaderPrograms[ShaderProgramCount];
+	ChunkedArray<ShaderProgram> shaderPrograms;
 
 	ChunkedArray<BitmapFont> fonts;
 
@@ -182,8 +182,7 @@ Cursor *getCursor(AssetManager *assets, u32 cursorID)
 
 ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
 {
-	ASSERT((shaderID > -1) && (shaderID < ShaderProgramCount), "Shader ID out of range: %d", shaderID);
-	return assets->shaderPrograms + shaderID;
+	return get(&assets->shaderPrograms, shaderID);
 }
 
 String getAssetPath(AssetManager *assets, AssetType type, String shortName)

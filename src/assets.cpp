@@ -58,6 +58,7 @@ void initAssetManager(AssetManager *assets)
 
 	initChunkedArray(&assets->fonts, &assets->assetArena, 16, true);
 	initChunkedArray(&assets->cursors, &assets->assetArena, 16, true);
+	initChunkedArray(&assets->shaderPrograms, &assets->assetArena, 16, true);
 }
 
 AssetManager *createAssetManager()
@@ -119,7 +120,7 @@ void addShaderHeader(AssetManager *assets, char *filename)
 void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename,
 	                  char *fragFilename)
 {
-	ShaderProgram *shader = assets->shaderPrograms + shaderID;
+	ShaderProgram *shader = get(&assets->shaderPrograms, shaderID);
 	shader->state = AssetState_Unloaded;
 	shader->fragFilename = pushString(&assets->assetArena, fragFilename);
 	shader->vertFilename = pushString(&assets->assetArena, vertFilename);
@@ -225,7 +226,7 @@ void loadAssets(AssetManager *assets)
 
 	for (u32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
-		ShaderProgram *shader = assets->shaderPrograms + shaderID;
+		ShaderProgram *shader = get(&assets->shaderPrograms, shaderID);
 		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename));
 		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename));
 
