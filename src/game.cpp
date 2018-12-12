@@ -160,12 +160,12 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
 
-			for (u32 i=0; i < buildingDefs.count; i++)
+			for (u32 i=0; i < buildingDefs.itemCount; i++)
 			{
-				BuildingDef buildingDef = buildingDefs[i];
-				if (!buildingDef.isPloppable) continue;
+				BuildingDef *buildingDef = get(&buildingDefs, i);
+				if (!buildingDef->isPloppable) continue;
 
-				if (uiButton(uiState, uiBuffer, assets, inputState, buildingDef.name, menuButtonRect, 1,
+				if (uiButton(uiState, uiBuffer, assets, inputState, buildingDef->name, menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingTypeID == i)))
 				{
 					uiState->openMenu = UIMenu_None;
@@ -309,7 +309,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						placeBuilding(uiState, city, uiState->selectedBuildingTypeID, mouseTilePos);
 					}
 
-					s32 buildCost = buildingDefs[uiState->selectedBuildingTypeID].buildCost;
+					s32 buildCost = get(&buildingDefs, uiState->selectedBuildingTypeID)->buildCost;
 					showCostTooltip(uiState, city, buildCost);
 				} break;
 
@@ -370,9 +370,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			Terrain t = terrainAt(city,x,y);
 			if (t.type != Terrain_Invalid)
 			{
-				TerrainDef tDef = terrainDefs[t.type];
+				TerrainDef *tDef = get(&terrainDefs, t.type);
 
-				u32 textureRegionID = getTextureRegionID(assets, tDef.textureAssetType, t.textureRegionOffset);
+				u32 textureRegionID = getTextureRegionID(assets, tDef->textureAssetType, t.textureRegionOffset);
 
 				drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
 			}
@@ -385,7 +385,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		if (rectsOverlap(building.footprint, visibleTileBounds))
 		{
-			BuildingDef def = buildingDefs[building.typeID];
+			BuildingDef *def = get(&buildingDefs, building.typeID);
 
 			V4 drawColor = makeWhite();
 
@@ -396,7 +396,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 
 			V2 drawPos = centre(building.footprint);
-			drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def.textureAssetType, building.textureRegionOffset),
+			drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAssetType, building.textureRegionOffset),
 							  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
 		}
 	}
@@ -473,10 +473,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		{
 			ghostColor = color255(255,0,0,128);
 		}
-		auto def = buildingDefs[uiState->selectedBuildingTypeID];
-		Rect2 footprint = rect2(irectCentreWH(mouseTilePos, def.width, def.height));
+		BuildingDef *def = get(&buildingDefs, uiState->selectedBuildingTypeID);
+		Rect2 footprint = rect2(irectCentreWH(mouseTilePos, def->width, def->height));
 		drawTextureRegion(&renderer->worldBuffer,
-						  getTextureRegionID(assets, buildingDefs[uiState->selectedBuildingTypeID].textureAssetType, 0),
+						  getTextureRegionID(assets, get(&buildingDefs, uiState->selectedBuildingTypeID)->textureAssetType, 0),
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
 	}
 	else if (uiState->actionMode == ActionMode_Demolish

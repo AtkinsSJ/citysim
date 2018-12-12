@@ -63,10 +63,10 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 	// 	return false;
 	// }
 
-	BuildingDef def = buildingDefs[selectedBuildingTypeID];
+	BuildingDef *def = get(&buildingDefs, selectedBuildingTypeID);
 
 	// Can we afford to build this?
-	if (!canAfford(city, def.buildCost))
+	if (!canAfford(city, def->buildCost))
 	{
 		if (isAttemptingToBuild)
 		{
@@ -75,7 +75,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 		return false;
 	}
 
-	Rect2I footprint = irectCentreWH(position, def.width, def.height);
+	Rect2I footprint = irectCentreWH(position, def->width, def->height);
 
 	// Are we in bounds?
 	if (!rectInRect2I(irectXYWH(0,0, city->width, city->height), footprint))
@@ -88,16 +88,16 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 	}
 
 	// Check terrain is buildable and empty
-	for (s32 y=0; y<def.height; y++)
+	for (s32 y=0; y<def->height; y++)
 	{
-		for (s32 x=0; x<def.width; x++)
+		for (s32 x=0; x<def->width; x++)
 		{
 			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
 
 			Terrain terrain = city->terrain[ti];
-			TerrainDef terrainDef = terrainDefs[terrain.type];
+			TerrainDef *terrainDef = get(&terrainDefs, terrain.type);
 
-			if (!terrainDef.canBuildOn)
+			if (!terrainDef->canBuildOn)
 			{
 				if (isAttemptingToBuild)
 				{
@@ -110,7 +110,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 			{
 				// Check if we can combine this with the building that's already there
 				Building buildingAtPos = city->buildings[city->tileBuildings[ti]];
-				if (buildingDefs[buildingAtPos.typeID].canBeBuiltOnID == selectedBuildingTypeID)
+				if (get(&buildingDefs, buildingAtPos.typeID)->canBeBuiltOnID == selectedBuildingTypeID)
 				{
 					// We can!
 				}
@@ -150,11 +150,11 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 		return false;
 	}
 
-	BuildingDef def = buildingDefs[buildingTypeID];
-	spend(city, def.buildCost);
+	BuildingDef *def = get(&buildingDefs, buildingTypeID);
+	spend(city, def->buildCost);
 
-	bool needToRecalcPaths = def.isPath;
-	bool needToRecalcPower = def.carriesPower;
+	bool needToRecalcPaths = def->isPath;
+	bool needToRecalcPower = def->carriesPower;
 
 	Building *building = null;
 	u32 buildingID = city->tileBuildings[tileIndex(city,position.x,position.y)];
@@ -164,20 +164,20 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 		// Do a quick replace! We already established in canPlaceBuilding() that we match.
 		building = getBuildingByID(city, buildingID);
 		ASSERT(building, "Somehow this building doesn't exist even though it should!");
-		BuildingDef oldDef = buildingDefs[building->typeID];
+		BuildingDef *oldDef = get(&buildingDefs, building->typeID);
 
-		building->typeID = def.buildOverResult;
-		def = buildingDefs[def.buildOverResult];
+		building->typeID = def->buildOverResult;
+		def = get(&buildingDefs, def->buildOverResult);
 
-		needToRecalcPaths = (oldDef.isPath != def.isPath);
-		needToRecalcPower = (oldDef.carriesPower != def.carriesPower);
+		needToRecalcPaths = (oldDef->isPath != def->isPath);
+		needToRecalcPower = (oldDef->carriesPower != def->carriesPower);
 	}
 	else
 	{
 		buildingID = city->buildings.count;
 		building = appendBlank(&city->buildings);
 		building->typeID = buildingTypeID;
-		building->footprint = irectCentreWH(position, def.width, def.height);
+		building->footprint = irectCentreWH(position, def->width, def->height);
 	}
 
 	// Tiles
@@ -187,12 +187,12 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 			city->tileBuildings[tile] = buildingID;
 
 			// Data layer updates
-			city->pathLayer.data[tile]  = def.isPath       ? 1 : 0;
-			city->powerLayer.data[tile] = def.carriesPower ? 1 : 0;
+			city->pathLayer.data[tile]  = def->isPath       ? 1 : 0;
+			city->powerLayer.data[tile] = def->carriesPower ? 1 : 0;
 		}
 	}
 
-	if (def.isPath)
+	if (def->isPath)
 	{
 		// Sprite id is 0 to 15, depending on connecting neighbours.
 		// 1 = up, 2 = right, 4 = down, 8 = left
@@ -237,15 +237,15 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 		Building *building = getBuildingByID(city, buildingID);
 		ASSERT(building, "Tile is storing an invalid building ID!");
-		BuildingDef def = buildingDefs[building->typeID];
+		BuildingDef *def = get(&buildingDefs, building->typeID);
 
 		// Can we afford to demolish this?
-		if (!canAfford(city, def.demolishCost)) {
+		if (!canAfford(city, def->demolishCost)) {
 			pushUiMessage(uiState, stringFromChars("Not enough money to demolish this."));
 			return false;
 		}
 
-		spend(city, def.demolishCost);
+		spend(city, def->demolishCost);
 
 		// Clear all references to this building
 		for (s32 y = building->footprint.y;
@@ -260,13 +260,13 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 
 				city->tileBuildings[tile] = 0;
 
-				if (def.isPath)
+				if (def->isPath)
 				{
 					// Remove from the pathing layer
 					city->pathLayer.data[tile] = 0;
 				}
 				
-				if (def.carriesPower)
+				if (def->carriesPower)
 				{
 					// Remove from the pathing layer
 					city->powerLayer.data[tile] = 0;
@@ -274,7 +274,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 			}
 		}
 
-		if (def.isPath)
+		if (def->isPath)
 		{
 			// Update sprites for the tile's neighbours.
 			for (s32 y = building->footprint.y;
@@ -324,12 +324,12 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 	}
 	else
 	{
-		TerrainDef def = terrainDefs[terrain.type];
-		if (def.canDemolish)
+		TerrainDef *def = get(&terrainDefs, terrain.type);
+		if (def->canDemolish)
 		{
 			// Tear down all the trees!
-			if (canAfford(city, def.demolishCost)) {
-				spend(city, def.demolishCost);
+			if (canAfford(city, def->demolishCost)) {
+				spend(city, def->demolishCost);
 				city->terrain[posTI].type = Terrain_Ground;
 				return true;
 			} else {
@@ -353,11 +353,11 @@ s32 calculateDemolitionCost(City *city, Rect2I rect)
 	{
 		for (int x=0; x<rect.w; x++)
 		{
-			TerrainDef tDef = terrainDefs[terrainAt(city, rect.x + x, rect.y + y).type];
+			TerrainDef *tDef = get(&terrainDefs, terrainAt(city, rect.x + x, rect.y + y).type);
 
-			if (tDef.canDemolish)
+			if (tDef->canDemolish)
 			{
-				total += tDef.demolishCost;
+				total += tDef->demolishCost;
 			}
 		}
 	}
@@ -370,7 +370,7 @@ s32 calculateDemolitionCost(City *city, Rect2I rect)
 		Building building = city->buildings[i];
 		if (rectsOverlap(building.footprint, rect))
 		{
-			total += buildingDefs[building.typeID].demolishCost;
+			total += get(&buildingDefs, building.typeID)->demolishCost;
 		}
 	}
 

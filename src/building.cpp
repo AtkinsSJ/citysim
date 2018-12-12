@@ -1,16 +1,10 @@
 #pragma once
 
-void loadBuildingDefs(Array<BuildingDef> *buildings, AssetManager *assets, File file)
+void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, File file)
 {
 	LineReader reader = startFile(file);
 
-	// Initialise the defs array if it hasn't been already
-	if (buildings->maxCount == 0)
-	{
-		initialiseArray(buildings, 64);
-	}
-
-	clear(buildings);
+	initChunkedArray(buildings, &assets->assetArena, 64);
 	appendBlank(buildings);
 
 	u32 defID = 0;
@@ -37,7 +31,7 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, AssetManager *assets, File 
 			}
 			else
 			{
-				defID = buildings->count;
+				defID = buildings->itemCount;
 				def = appendBlank(buildings);
 				def->name = pushString(&assets->assetArena, trimEnd(remainder));
 			}
@@ -202,14 +196,14 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, AssetManager *assets, File 
 						u32 ingredient1type = 0;
 						u32 ingredient2type = 0;
 
-						for (u32 typeID = 0; typeID < buildings->count; typeID++)
+						for (u32 typeID = 0; typeID < buildings->itemCount; typeID++)
 						{
-							BuildingDef b = (*buildings)[typeID];
-							if (ingredient1type == 0 && equals(b.name, ingredient1))
+							BuildingDef *b = get(buildings, typeID);
+							if (ingredient1type == 0 && equals(b->name, ingredient1))
 							{
 								ingredient1type = typeID;
 							}
-							else if (ingredient2type == 0 && equals(b.name, ingredient2))
+							else if (ingredient2type == 0 && equals(b->name, ingredient2))
 							{
 								ingredient2type = typeID;
 							}
@@ -230,8 +224,8 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, AssetManager *assets, File 
 						else
 						{
 							// We found them, yay!
-							BuildingDef *b1 = pointerTo(buildings, ingredient1type);
-							BuildingDef *b2 = pointerTo(buildings, ingredient2type);
+							BuildingDef *b1 = get(buildings, ingredient1type);
+							BuildingDef *b2 = get(buildings, ingredient2type);
 							if (b1->canBeBuiltOnID)
 							{
 								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one.", {ingredient1});

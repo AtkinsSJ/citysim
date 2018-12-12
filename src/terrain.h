@@ -20,7 +20,7 @@ struct TerrainDef
 	s32 demolishCost;
 };
 
-Array<TerrainDef> terrainDefs = {};
+ChunkedArray<TerrainDef> terrainDefs = {};
 
 struct Terrain
 {
@@ -31,4 +31,4 @@ struct Terrain
 Terrain invalidTerrain = {Terrain_Invalid, 0};
 
 
-void loadTerrainDefinitions(Array<TerrainDef> *terrains, AssetManager *assets, File file);
+void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, File file);

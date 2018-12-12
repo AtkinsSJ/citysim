@@ -32,7 +32,7 @@ struct BuildingDef
 	u32 buildOverResult;
 };
 
-Array<BuildingDef> buildingDefs = {};
+ChunkedArray<BuildingDef> buildingDefs = {};
 
 struct Building
 {
@@ -44,4 +44,4 @@ struct Building
 	// };
 };
 
-void loadBuildingDefs(Array<BuildingDef> *buildings, AssetManager *assets, File file);
+void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, File file);

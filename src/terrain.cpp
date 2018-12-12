@@ -1,16 +1,10 @@
 #pragma once
 
-void loadTerrainDefinitions(Array<TerrainDef> *terrains, AssetManager *assets, File file)
+void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, File file)
 {
 	LineReader reader = startFile(file);
 
-	// Initialise the defs array if it hasn't been already
-	if (terrains->maxCount == 0)
-	{
-		initialiseArray(terrains, 16);
-	}
-
-	clear(terrains);
+	initChunkedArray(terrains, &assets->assetArena, 16);
 	appendBlank(terrains);
 
 	TerrainDef *def = null;
@@ -127,6 +121,6 @@ void loadTerrainDefinitions(Array<TerrainDef> *terrains, AssetManager *assets, F
 	// Make sure things match up, because they have to.
 	for (s32 i = 0; i < Terrain_Size; i++)
 	{
-		ASSERT(i == (*terrains)[i].type, "Terrain data file must match the TerrainType enum for now!");
+		ASSERT(i == get(terrains, i)->type, "Terrain data file must match the TerrainType enum for now!");
 	}
 }

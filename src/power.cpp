@@ -97,19 +97,19 @@ void recalculatePowerConnectivity(City *city)
 	for (u32 buildingIndex = 0; buildingIndex < city->buildings.count; buildingIndex++)
 	{
 		Building building = city->buildings[buildingIndex];
-		BuildingDef def = buildingDefs[building.typeID];
+		BuildingDef *def = get(&buildingDefs, building.typeID);
 
-		if (def.power != 0)
+		if (def->power != 0)
 		{
 			PowerGroup *powerGroup = pointerTo(&city->powerLayer.groups, powerGroupAt(city, building.footprint.x, building.footprint.y));
 
-			if (def.power > 0)
+			if (def->power > 0)
 			{
-				powerGroup->production += def.power;
+				powerGroup->production += def->power;
 			}
 			else
 			{
-				powerGroup->consumption -= def.power;
+				powerGroup->consumption -= def->power;
 			}
 		}
 	}
