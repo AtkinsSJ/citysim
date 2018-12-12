@@ -10,6 +10,7 @@ Things to work on next maybe:
 - Drag to zone things
 - Power stations and connectivity and consumption?
 - Make trees a "building"?
+- Make assets reload automatically?
 
 ------------------------------------------------
 

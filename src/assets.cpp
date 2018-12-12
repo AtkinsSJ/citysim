@@ -41,8 +41,9 @@ u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID,
 	region->textureID = textureID;
 	region->uv = uv;
 
-	assets->firstIDForTextureAssetType[type] = min(textureRegionID, assets->firstIDForTextureAssetType[type]);
-	assets->lastIDForTextureAssetType[type] = max(textureRegionID, assets->lastIDForTextureAssetType[type]);
+	IndexRange *range = pointerTo(&assets->rangesByTextureAssetType, type);
+	range->firstIndex = min(textureRegionID, range->firstIndex);
+	range->lastIndex  = max(textureRegionID, range->lastIndex);
 
 	return textureRegionID;
 }
@@ -57,18 +58,22 @@ void initAssetManager(AssetManager *assets)
 	assets->firstTextureList.usedCount = assets->textureCount = 0;
 	assets->firstTextureRegionList.usedCount = assets->textureRegionCount = 0;
 
+	// Have to provide defaults for these or it just breaks.
+	initialiseArray(&assets->rangesByTextureAssetType, TextureAssetTypeCount);
+	for (u32 i = 0; i < TextureAssetTypeCount; ++i)
+	{
+		IndexRange range;
+		range.firstIndex = u32Max;
+		range.lastIndex  = 0;
+
+		append(&assets->rangesByTextureAssetType, range);
+	}
+
 	addTextureRegion(assets, TextureAssetType_None, -1, {});
 
 	Texture *nullTexture = getTexture(assets, addTexture(assets, {}, true));
 	nullTexture->state = AssetState_Loaded;
 	nullTexture->surface = 0;
-
-	// Have to provide defaults for these or it just breaks.
-	for (u32 i = 0; i < TextureAssetTypeCount; ++i)
-	{
-		assets->firstIDForTextureAssetType[i] = u32Max;
-		assets->lastIDForTextureAssetType[i] = 0;
-	}
 }
 
 AssetManager *createAssetManager()
@@ -138,6 +143,13 @@ void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *ve
 void loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
+
+	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
+	loadUITheme(&assets->theme, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
+	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
+	loadBuildingDefs(&buildingDefs, &assets->assetArena, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
+	loadTerrainDefinitions(&terrainDefs, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
+
 	for (u32 i = 1; i < assets->textureCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
@@ -242,12 +254,6 @@ void loadAssets(AssetManager *assets)
 			logError("Failed to load shader program {0}", {formatInt(shaderID)});
 		}
 	}
-
-	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
-	loadUITheme(&assets->theme, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
-	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
-	loadBuildingDefs(&buildingDefs, &assets->assetArena, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
-	loadTerrainDefinitions(&terrainDefs, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
 }
 
 void addTiledTextureRegions(AssetManager *assets, TextureAssetType type, char *filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
