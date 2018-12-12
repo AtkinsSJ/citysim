@@ -1,6 +1,6 @@
 #pragma once
 
-void loadTerrainDefinitions(Array<TerrainDef> *terrains, File file, AssetManager *assets)
+void loadTerrainDefinitions(Array<TerrainDef> *terrains, AssetManager *assets, File file)
 {
 	LineReader reader = startFile(file);
 

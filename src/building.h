@@ -12,7 +12,7 @@ struct BuildingDef
 		};
 	};
 	String name;
-	TextureAssetType textureAssetType;
+	u32 textureAssetType;
 	s32 buildCost;
 	s32 demolishCost;
 	bool isPath;
@@ -44,4 +44,4 @@ struct Building
 	// };
 };
 
-void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File file);
+void loadBuildingDefs(Array<BuildingDef> *buildings, AssetManager *assets, File file);

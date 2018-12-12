@@ -31,4 +31,4 @@ struct Terrain
 Terrain invalidTerrain = {Terrain_Invalid, 0};
 
 
-void loadTerrainDefinitions(Array<TerrainDef> *terrains, File file, AssetManager *assets);
+void loadTerrainDefinitions(Array<TerrainDef> *terrains, AssetManager *assets, File file);

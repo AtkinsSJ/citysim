@@ -1,6 +1,6 @@
 #pragma once
 
-void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File file)
+void loadBuildingDefs(Array<BuildingDef> *buildings, AssetManager *assets, File file)
 {
 	LineReader reader = startFile(file);
 
@@ -39,7 +39,7 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File f
 			{
 				defID = buildings->count;
 				def = appendBlank(buildings);
-				def->name = pushString(memory, trimEnd(remainder));
+				def->name = pushString(&assets->assetArena, trimEnd(remainder));
 			}
 		}
 		else // Properties!
@@ -70,19 +70,23 @@ void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File f
 				}
 				else if (equals(firstWord, "texture"))
 				{
-					s64 textureAssetType;
+					String textureName = nextToken(remainder, &remainder);
+					s64 regionW;
+					s64 regionH;
+					s64 regionsAcross;
+					s64 regionsDown;
 
-					if (asInt(nextToken(remainder, &remainder), &textureAssetType))
+					if (asInt(nextToken(remainder, &remainder), &regionW)
+						&& asInt(nextToken(remainder, &remainder), &regionH)
+						&& asInt(nextToken(remainder, &remainder), &regionsAcross)
+						&& asInt(nextToken(remainder, &remainder), &regionsDown))
 					{
-						/*
-						 * TODO: Really need to be smarter with this, but right now we only have
-						 * these defined as an enum in code, so we can't grab them by name.
-						 */
-						def->textureAssetType = (TextureAssetType) textureAssetType;
+						def->textureAssetType = addNewTextureAssetType(assets);
+						addTiledTextureRegions(assets, def->textureAssetType, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
 					}
 					else
 					{
-						error(&reader, "Couldn't parse texture. Expected 1 int.");
+						error(&reader, "Couldn't parse texture. Expected use: \"texture filename.png width height tilesAcross tilesDown\"");
 						return;
 					}
 				}
