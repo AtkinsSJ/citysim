@@ -23,7 +23,7 @@ u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID,
 	region->textureID = textureID;
 	region->uv = uv;
 
-	IndexRange *range = pointerTo(&assets->rangesByTextureAssetType, type);
+	IndexRange *range = get(&assets->rangesByTextureAssetType, type);
 	range->firstIndex = MIN(textureRegionID, range->firstIndex);
 	range->lastIndex  = MAX(textureRegionID, range->lastIndex);
 
@@ -34,10 +34,10 @@ void initAssetManager(AssetManager *assets)
 {
 	assets->assetsPath = pushString(&assets->assetArena, "assets");
 
-	// Have to provide defaults for these or it just breaks.
-	initialiseArray(&assets->rangesByTextureAssetType, TextureAssetTypeCount);
+	initChunkedArray(&assets->rangesByTextureAssetType, &assets->assetArena, 32);
 	for (u32 i = 0; i < TextureAssetTypeCount; ++i)
 	{
+		// Have to provide defaults for these or it just breaks.
 		IndexRange range;
 		range.firstIndex = u32Max;
 		range.lastIndex  = 0;
@@ -173,7 +173,6 @@ void loadAssets(AssetManager *assets)
 			}
 
 			tex->state = AssetState_Loaded;
-			logInfo("Loaded texture: \"{0}\"", {tex->filename});
 		}
 	}
 

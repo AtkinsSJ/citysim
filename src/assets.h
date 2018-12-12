@@ -141,7 +141,7 @@ struct AssetManager
 
 	// NOTE: At each index is the first or last position in textureRegions array matching that type.
 	// So, assets with the same type must be contiguous!
-	Array<IndexRange> rangesByTextureAssetType;
+	ChunkedArray<IndexRange> rangesByTextureAssetType;
 
 	ShaderHeader shaderHeader; // This is a bit hacky right now.
 	ShaderProgram shaderPrograms[ShaderProgramCount];
@@ -162,9 +162,9 @@ Texture *getTexture(AssetManager *assets, u32 textureIndex)
 
 TextureRegionID getTextureRegionID(AssetManager *assets, TextureAssetType item, u32 offset)
 {
-	IndexRange range = assets->rangesByTextureAssetType[item];
-	u32 min = range.firstIndex;
-	u32 max = range.lastIndex;
+	IndexRange *range = get(&assets->rangesByTextureAssetType, item);
+	u32 min = range->firstIndex;
+	u32 max = range->lastIndex;
 
 	u32 id = clampToRangeWrapping(min, max, offset);
 	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
