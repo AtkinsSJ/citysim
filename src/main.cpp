@@ -146,11 +146,6 @@ int main(int argc, char *argv[])
 	loadAssets(assets);
 	appState->assets = assets;
 
-#if BUILD_DEBUG
-	// Now we assign the debug fonts, because the assets system is initialised
-	setDebugFont(getFont(assets, FontAssetType_Debug));
-#endif
-
 	Renderer *renderer = platform_initializeRenderer(window);
 	ASSERT(renderer->platformRenderer, "Failed to initialize renderer.");
 	renderer->loadAssets(renderer, assets);

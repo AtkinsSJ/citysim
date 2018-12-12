@@ -52,7 +52,7 @@ struct UIState
 
 	Array<Rect2> uiRects;
 
-	CursorType currentCursor;
+	u32 currentCursor;
 	bool cursorIsVisible;
 
 	V2 mouseDragStartPos;
@@ -61,7 +61,7 @@ struct UIState
 
 const f32 messageDisplayTime = 2.0f;
 
-void setCursor(UIState *uiState, AssetManager *assets, CursorType cursorID)
+void setCursor(UIState *uiState, AssetManager *assets, u32 cursorID)
 {
 	uiState->currentCursor = cursorID;
 	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);

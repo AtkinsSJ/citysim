@@ -91,6 +91,7 @@ typedef u32 TextureRegionID;
 
 struct Cursor
 {
+	u32 assetID;
 	String filename;
 	SDL_Cursor *sdlCursor;
 };
@@ -139,10 +140,9 @@ struct AssetManager
 	ShaderHeader shaderHeader; // This is a bit hacky right now.
 	ShaderProgram shaderPrograms[ShaderProgramCount];
 
-	BitmapFont fonts[FontAssetTypeCount];
+	ChunkedArray<BitmapFont> fonts;
 
 	ChunkedArray<Cursor> cursors;
-	CursorType activeCursor;
 
 	UITheme theme;
 	File creditsText;
@@ -172,10 +172,10 @@ TextureRegion *getTextureRegion(AssetManager *assets, TextureRegionID textureReg
 
 BitmapFont *getFont(AssetManager *assets, FontAssetType font)
 {
-	return assets->fonts + font;
+	return get(&assets->fonts, font);
 }
 
-Cursor *getCursor(AssetManager *assets, CursorType cursorID)
+Cursor *getCursor(AssetManager *assets, u32 cursorID)
 {
 	return get(&assets->cursors, cursorID);
 }

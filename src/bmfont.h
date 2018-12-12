@@ -152,7 +152,8 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 					pageStart += strlen(pageStart) + 1;
 				}
 
-				font = assets->fonts + fontAssetType;
+				font = get(&assets->fonts, fontAssetType);
+				font->assetID = fontAssetType;
 				font->textureAssetType = textureAssetType;
 				font->lineHeight = common->lineHeight;
 				font->baseY = common->base;

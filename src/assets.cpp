@@ -56,8 +56,8 @@ void initAssetManager(AssetManager *assets)
 	nullRegion->type = TextureAssetType_None;
 	nullRegion->textureID = -1;
 
-	initChunkedArray(&assets->cursors, &assets->assetArena, 16);
-	appendBlank(&assets->cursors);
+	initChunkedArray(&assets->fonts, &assets->assetArena, 16, true);
+	initChunkedArray(&assets->cursors, &assets->assetArena, 16, true);
 }
 
 AssetManager *createAssetManager()
@@ -100,7 +100,8 @@ s32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename
 
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 {
-	Cursor *cursor = appendBlank(&assets->cursors);
+	Cursor *cursor = get(&assets->cursors, cursorID);
+	cursor->assetID = cursorID;
 	cursor->filename = pushString(&assets->assetArena, filename);
 	cursor->sdlCursor = 0;
 }
@@ -312,6 +313,9 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	SDL_SetCursor(systemWaitCursor);
 	defer { SDL_FreeCursor(systemWaitCursor); };
 
+	globalDebugState->font = null;
+	globalConsole->font = null;
+
 	// Actual reloading
 
 	// Clear out textures
@@ -326,14 +330,6 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 		tex->state = AssetState_Unloaded;
 	}
 
-	// Clear fonts
-	// Allocations are from assets arena so they get cleared below.
-	for (int i = 0; i < FontAssetTypeCount; i++)
-	{
-		BitmapFont *font = assets->fonts + i;
-		*font = {};
-	}
-
 	// Clear cursors
 	for (u32 cursorID = 0; cursorID < CursorCount; cursorID++)
 	{
@@ -343,6 +339,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	}
 
 	// General resetting of Assets system
+	// The "throw everything away and start over" method of reloading. It's dumb but effective!
 	resetMemoryArena(&assets->assetArena);
 	initAssetManager(assets);
 	addAssets(assets, tempArena);

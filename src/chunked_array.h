@@ -29,8 +29,10 @@ struct ChunkedArray
 	Chunk<T> *lastChunk;
 };
 
+// markFirstChunkAsFull is a little hacky. It sets the itemCount to be chunkSize, so that
+// we can immediately get() those elements by index instead of having to append() to add them.
 template<class T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, umm chunkSize)
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, umm chunkSize, bool markFirstChunkAsFull = false)
 {
 	array->memoryArena = arena;
 	array->chunkSize = chunkSize;
@@ -43,6 +45,12 @@ void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, umm chunkSize)
 	array->firstChunk.nextChunk = null;
 
 	array->lastChunk = &array->firstChunk;
+
+	if (markFirstChunkAsFull)
+	{
+		array->itemCount = chunkSize;
+		array->firstChunk.count = chunkSize;
+	}
 }
 
 // Doesn't free any memory, just marks all the chunks as empty.
@@ -96,7 +104,7 @@ T *append(ChunkedArray<T> *array, T item)
 			indexWithinChunk -= array->chunkSize;
 		}
 	}
-	
+
 	array->itemCount++;
 
 	T *result = chunk->items + chunk->count++;

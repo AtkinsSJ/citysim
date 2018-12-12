@@ -21,13 +21,6 @@ void debugInit()
 	}
 }
 
-void setDebugFont(BitmapFont *font)
-{
-	globalDebugState->font = font;
-	globalConsole->font = font;
-	globalConsole->charWidth = findChar(font, 'M')->xAdvance;
-}
-
 void clearDebugFrame(DebugState *debugState, s32 frameIndex)
 {
 	DebugCodeData *codeData = debugState->codeDataSentinel.next;
@@ -175,6 +168,11 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 {
 	if (debugState)
 	{
+		if (debugState->font == null)
+		{
+			debugState->font = getFont(globalAppState.assets, FontAssetType_Debug);
+		}
+
 		u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 		u32 rfi = debugState->readingFrameIndex;
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),

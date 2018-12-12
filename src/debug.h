@@ -18,7 +18,7 @@
 #endif
 
 
-static struct DebugState *globalDebugState = 0;
+struct DebugState *globalDebugState = 0;
 
 #define DEBUG_FRAMES_COUNT 120
 #define DEBUG_TOP_CODE_BLOCKS_COUNT 20

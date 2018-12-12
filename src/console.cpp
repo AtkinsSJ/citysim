@@ -85,6 +85,12 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 
 void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 {
+	if (console->font == null)
+	{
+		console->font = getFont(globalAppState.assets, FontAssetType_Debug);
+		console->charWidth = findChar(console->font, 'M')->xAdvance;
+	}
+
 	f32 actualConsoleHeight = console->currentHeight * uiBuffer->camera.size.y;
 
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
