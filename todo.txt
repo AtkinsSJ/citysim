@@ -88,7 +88,12 @@ UI styles loaded from a file
 - We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtof if I'm lazy.
 
 Asset system:
-- Memory management:
+- Replace sdl_image with our own loader so we can control where the memory comes from!
+	- see https://github.com/spurious/SDL-mirror/blob/HEAD/src/stdlib/SDL_malloc.c
+	- Looks like I need to update my version of SDL. Actually, worse than that, it was added AFTER 2.0.9 which is the current release version.
+- Fancier memory management, if needed:
+	- (We only need to worry about this if our asset memory usage gets high.
+		If not, keep the current "load everything" system!)
 	- Do a malloc/free for each asset that's loaded
 	- reload asset, just free() then malloc() again!
 		- Optimisation: Don't reallocate if it's the exact same size.
@@ -97,9 +102,8 @@ Asset system:
 	- At the end of a level, we can also evict all level-specific assets if we want?
 	- Track evictions so we can monitor it and see if it's misbehaving.
 - Automatic file-reloading. https://msdn.microsoft.com/en-us/library/windows/desktop/aa365465(v=vs.85).aspx
+	- For now, we can trigger reloadAssets() completely when we detect this.
 - Asset packer of some kind. Maybe just creates an assets table?
-- Load ui theme from a file
-- Load texture region information from a file
 - Strings! Translateable and stored as assets.
 	- https://blog.thimbleweedpark.com/text_lock
 - Audio when we have that!

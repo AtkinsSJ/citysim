@@ -9,6 +9,12 @@ enum AssetType
 	AssetType_Texture,
 };
 
+enum AssetState
+{
+	AssetState_Unloaded,
+	AssetState_Loaded,
+};
+
 enum FontAssetType
 {
 	FontAssetType_Main,
@@ -41,12 +47,6 @@ enum ShaderProgramType
 	ShaderProgram_Invalid = -1
 };
 
-enum AssetState
-{
-	AssetState_Unloaded,
-	AssetState_Loaded,
-};
-
 struct Texture
 {
 	AssetState state;
@@ -68,7 +68,6 @@ typedef u32 TextureRegionID;
 
 struct Cursor
 {
-	u32 assetID;
 	String filename;
 	SDL_Cursor *sdlCursor;
 };

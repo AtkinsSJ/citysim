@@ -93,7 +93,6 @@ s32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, char *fil
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 {
 	Cursor *cursor = get(&assets->cursors, cursorID);
-	cursor->assetID = cursorID;
 	cursor->filename = pushString(&assets->assetArena, filename);
 	cursor->sdlCursor = 0;
 }
