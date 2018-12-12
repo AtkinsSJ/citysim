@@ -1,6 +1,6 @@
 #pragma once
 
-s32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
+u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
 	u32 textureID = assets->textures.itemCount;
 
@@ -15,26 +15,17 @@ s32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 
 u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID, Rect2 uv)
 {
-	TextureRegionList *list = assets->firstTextureRegionList.prev;
-	if (list->usedCount >= ArrayCount(list->regions))
-	{
-		list = PushStruct(&assets->assetArena, TextureRegionList);
-		DLinkedListInsertBefore(list, &assets->firstTextureRegionList);
-	}
+	u32 textureRegionID = assets->textureRegions.itemCount;
 
-	u32 idWithinList = list->usedCount++;
-	u32 textureRegionID = assets->textureRegionCount++;
-	ASSERT(idWithinList == (textureRegionID % ArrayCount(list->regions)), "Region index mismatch!");
-
-	TextureRegion *region = list->regions + idWithinList;
+	TextureRegion *region = appendBlank(&assets->textureRegions);
 
 	region->type = type;
 	region->textureID = textureID;
 	region->uv = uv;
 
 	IndexRange *range = pointerTo(&assets->rangesByTextureAssetType, type);
-	range->firstIndex = min(textureRegionID, range->firstIndex);
-	range->lastIndex  = max(textureRegionID, range->lastIndex);
+	range->firstIndex = MIN(textureRegionID, range->firstIndex);
+	range->lastIndex  = MAX(textureRegionID, range->lastIndex);
 
 	return textureRegionID;
 }
@@ -42,10 +33,6 @@ u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID,
 void initAssetManager(AssetManager *assets)
 {
 	assets->assetsPath = pushString(&assets->assetArena, "assets");
-
-	DLinkedListInit(&assets->firstTextureRegionList);
-
-	assets->firstTextureRegionList.usedCount = assets->textureRegionCount = 0;
 
 	// Have to provide defaults for these or it just breaks.
 	initialiseArray(&assets->rangesByTextureAssetType, TextureAssetTypeCount);
@@ -64,7 +51,10 @@ void initAssetManager(AssetManager *assets)
 	nullTexture->surface = null;
 	nullTexture->isAlphaPremultiplied = true;
 
-	addTextureRegion(assets, TextureAssetType_None, -1, {});
+	initChunkedArray(&assets->textureRegions, &assets->assetArena, 512);
+	TextureRegion *nullRegion = appendBlank(&assets->textureRegions);
+	nullRegion->type = TextureAssetType_None;
+	nullRegion->textureID = -1;
 }
 
 AssetManager *createAssetManager()
@@ -188,7 +178,7 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Now we can convert UVs from pixel space to 0-1 space.
-	for (u32 regionIndex = 1; regionIndex < assets->textureRegionCount; regionIndex++)
+	for (u32 regionIndex = 1; regionIndex < assets->textureRegions.itemCount; regionIndex++)
 	{
 		TextureRegion *tr = getTextureRegion(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
@@ -245,6 +235,8 @@ void loadAssets(AssetManager *assets)
 			logError("Failed to load shader program {0}", {formatInt(shaderID)});
 		}
 	}
+
+	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->textureRegions.itemCount), formatInt(assets->textures.itemCount)});
 }
 
 void addTiledTextureRegions(AssetManager *assets, TextureAssetType type, char *filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)

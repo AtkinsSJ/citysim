@@ -78,13 +78,6 @@ struct Texture
 	SDL_Surface *surface;
 };
 
-struct TextureList
-{
-	DLinkedListMembers(TextureList);
-	u32 usedCount;
-	Texture textures[32]; // TODO: Tune this for performance!
-};
-
 struct TextureRegion
 {
 	TextureAssetType type;
@@ -92,12 +85,12 @@ struct TextureRegion
 	Rect2 uv; // in (0 to 1) space
 };
 
-struct TextureRegionList
-{
-	DLinkedListMembers(TextureRegionList);
-	u32 usedCount;
-	TextureRegion regions[512]; // TODO: Tune this for performance!
-};
+// struct TextureRegionList
+// {
+// 	DLinkedListMembers(TextureRegionList);
+// 	u32 usedCount;
+// 	TextureRegion regions[512]; // TODO: Tune this for performance!
+// };
 
 typedef u32 TextureRegionID;
 
@@ -144,8 +137,7 @@ struct AssetManager
 	ChunkedArray<Texture> textures;
 
 	// NB: index 0 is reserved as a null region.
-	u32 textureRegionCount;
-	TextureRegionList firstTextureRegionList;
+	ChunkedArray<TextureRegion> textureRegions;
 
 	// NOTE: At each index is the first or last position in textureRegions array matching that type.
 	// So, assets with the same type must be contiguous!
@@ -182,17 +174,7 @@ TextureRegionID getTextureRegionID(AssetManager *assets, TextureAssetType item, 
 
 TextureRegion *getTextureRegion(AssetManager *assets, TextureRegionID textureRegionIndex)
 {
-	ASSERT(textureRegionIndex < assets->textureRegionCount, "Selecting unallocated TextureRegion!");
-	TextureRegionList *list = &assets->firstTextureRegionList;
-	const u32 regionsPerList = ArrayCount(list->regions);
-
-	while (textureRegionIndex >= regionsPerList)
-	{
-		textureRegionIndex -= regionsPerList;
-		list = list->next;
-	}
-
-	return list->regions + textureRegionIndex;
+	return get(&assets->textureRegions, textureRegionIndex);
 }
 
 BitmapFont *getFont(AssetManager *assets, FontAssetType font)
