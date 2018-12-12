@@ -1,16 +1,16 @@
 # Terrain!
 
 :Terrain 1 # Terrain_Ground
-texture 5 # TextureAssetType_GroundTile
+texture grass.png 16 16 2 2
 can_build_on true
 can_demolish false
 
 :Terrain 2 # Terrain_Water
-texture 7 # TextureAssetType_WaterTile
+texture water.png 16 16 1 1
 can_build_on false
 can_demolish false
 
 :Terrain 3 # Terrain_Forest
-texture 6 # TextureAssetType_ForestTile
+texture forest.png 16 16 1 1
 can_build_on false
 can_demolish true 100

@@ -13,7 +13,7 @@ enum TerrainType
 struct TerrainDef
 {
 	TerrainType type;
-	TextureAssetType textureAssetType;
+	u32 textureAssetType;
 
 	bool canBuildOn;
 	bool canDemolish;
@@ -29,3 +29,6 @@ struct Terrain
 };
 
 Terrain invalidTerrain = {Terrain_Invalid, 0};
+
+
+void loadTerrainDefinitions(Array<TerrainDef> *terrains, File file, AssetManager *assets);

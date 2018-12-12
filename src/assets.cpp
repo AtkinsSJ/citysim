@@ -13,17 +13,17 @@ u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 	return textureID;
 }
 
-u32 addTextureRegion(AssetManager *assets, TextureAssetType type, s32 textureID, Rect2 uv)
+u32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, s32 textureID, Rect2 uv)
 {
 	u32 textureRegionID = assets->textureRegions.itemCount;
 
 	TextureRegion *region = appendBlank(&assets->textureRegions);
 
-	region->type = type;
+	region->textureRegionAssetType = textureRegionAssetType;
 	region->textureID = textureID;
 	region->uv = uv;
 
-	IndexRange *range = get(&assets->rangesByTextureAssetType, type);
+	IndexRange *range = get(&assets->rangesByTextureAssetType, textureRegionAssetType);
 	range->firstIndex = MIN(textureRegionID, range->firstIndex);
 	range->lastIndex  = MAX(textureRegionID, range->lastIndex);
 
@@ -53,7 +53,7 @@ void initAssetManager(AssetManager *assets)
 
 	initChunkedArray(&assets->textureRegions, &assets->assetArena, 512);
 	TextureRegion *nullRegion = appendBlank(&assets->textureRegions);
-	nullRegion->type = TextureAssetType_None;
+	nullRegion->textureRegionAssetType = TextureAssetType_None;
 	nullRegion->textureID = -1;
 
 	initChunkedArray(&assets->fonts, &assets->assetArena, 16, true);
@@ -86,7 +86,7 @@ s32 findTexture(AssetManager *assets, String filename)
 	return index;
 }
 
-s32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename, Rect2 uv,
+s32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, char *filename, Rect2 uv,
 	                   bool isAlphaPremultiplied=false)
 {
 	String sFilename = pushString(&assets->assetArena, filename);
@@ -96,7 +96,7 @@ s32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename
 		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
 	}
 
-	return addTextureRegion(assets, type, textureID, uv);
+	return addTextureRegion(assets, textureRegionAssetType, textureID, uv);
 }
 
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
@@ -134,7 +134,7 @@ void loadAssets(AssetManager *assets)
 	loadUITheme(&assets->theme, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
 	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
 	loadBuildingDefs(&buildingDefs, &assets->assetArena, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
-	loadTerrainDefinitions(&terrainDefs, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
+	loadTerrainDefinitions(&terrainDefs, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))), assets);
 
 	for (u32 i = 1; i < assets->textures.itemCount; ++i)
 	{
@@ -197,9 +197,6 @@ void loadAssets(AssetManager *assets)
 			tr->uv.w / textureWidth,
 			tr->uv.h / textureHeight
 		);
-		// if (tr->type > TextureAssetType_Font_Debug) {
-		// 	logInfo("Loaded texture region #{0}, texture: \"{1}\"", {formatInt(tr->type), t->filename});
-		// }
 	}
 
 	// Load up our cursors
@@ -243,7 +240,19 @@ void loadAssets(AssetManager *assets)
 	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->textureRegions.itemCount), formatInt(assets->textures.itemCount)});
 }
 
-void addTiledTextureRegions(AssetManager *assets, TextureAssetType type, char *filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
+u32 addNewTextureAssetType(AssetManager *assets)
+{
+	u32 newTypeID = assets->rangesByTextureAssetType.itemCount;
+
+	IndexRange range;
+	range.firstIndex = u32Max;
+	range.lastIndex  = 0;
+	append(&assets->rangesByTextureAssetType, range);
+
+	return newTypeID;
+}
+
+void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
 {
 	String sFilename = pushString(&assets->assetArena, filename);
 	s32 textureID = findTexture(assets, sFilename);
@@ -263,7 +272,7 @@ void addTiledTextureRegions(AssetManager *assets, TextureAssetType type, char *f
 		{
 			uv.x = (f32)(x * tileWidth);
 
-			addTextureRegion(assets, type, textureID, uv);
+			addTextureRegion(assets, textureAssetType, textureID, uv);
 			index++;
 		}
 	}
@@ -274,16 +283,11 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	addTextureRegion(assets, TextureAssetType_Map1, "London-Strand-Holbron-Bloomsbury.png",
 	                 rectXYWH(0,0,2002,1519), false);
 
-	addTiledTextureRegions(assets, TextureAssetType_GroundTile, "grass.png", 16, 16, 2, 2, false);
-
-	addTextureRegion(assets, TextureAssetType_ForestTile, "combined.png", rectXYWH(32, 0, 16, 16), false);
-	addTextureRegion(assets, TextureAssetType_WaterTile,  "combined.png", rectXYWH(16, 0, 16, 16), false);
-
-	addTiledTextureRegions(assets, TextureAssetType_Road, "road.png", 16, 16, 4, 4, false);
-	addTiledTextureRegions(assets, TextureAssetType_House_2x2, "house-2x2.png", 32, 32, 2, 2, false);
-	addTiledTextureRegions(assets, TextureAssetType_Factory_3x3, "factory-3x3.png", 48, 48, 1, 1, false);
-	addTiledTextureRegions(assets, TextureAssetType_PowerStation, "power-plant.png", 64, 64, 1, 1, false);
-	addTiledTextureRegions(assets, TextureAssetType_PowerLine, "power-line.png", 16, 16, 1, 1, false);
+	addTiledTextureRegions(assets, TextureAssetType_Road, stringFromChars("road.png"), 16, 16, 4, 4, false);
+	addTiledTextureRegions(assets, TextureAssetType_House_2x2, stringFromChars("house-2x2.png"), 32, 32, 2, 2, false);
+	addTiledTextureRegions(assets, TextureAssetType_Factory_3x3, stringFromChars("factory-3x3.png"), 48, 48, 1, 1, false);
+	addTiledTextureRegions(assets, TextureAssetType_PowerStation, stringFromChars("power-plant.png"), 64, 64, 1, 1, false);
+	addTiledTextureRegions(assets, TextureAssetType_PowerLine, stringFromChars("power-line.png"), 16, 16, 1, 1, false);
 
 	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
 	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");

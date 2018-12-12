@@ -80,7 +80,7 @@ struct Texture
 
 struct TextureRegion
 {
-	TextureAssetType type;
+	u32 textureRegionAssetType;
 	s32 textureID;
 	Rect2 uv; // in (0 to 1) space
 };
@@ -153,9 +153,9 @@ Texture *getTexture(AssetManager *assets, u32 textureIndex)
 	return get(&assets->textures, textureIndex);
 }
 
-TextureRegionID getTextureRegionID(AssetManager *assets, TextureAssetType item, u32 offset)
+TextureRegionID getTextureRegionID(AssetManager *assets, u32 textureAssetType, u32 offset)
 {
-	IndexRange *range = get(&assets->rangesByTextureAssetType, item);
+	IndexRange *range = get(&assets->rangesByTextureAssetType, textureAssetType);
 	u32 min = range->firstIndex;
 	u32 max = range->lastIndex;
 

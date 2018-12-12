@@ -44,3 +44,4 @@ struct Building
 	// };
 };
 
+void loadBuildingDefs(Array<BuildingDef> *buildings, MemoryArena *memory, File file);
