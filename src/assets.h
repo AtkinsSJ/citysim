@@ -85,13 +85,6 @@ struct TextureRegion
 	Rect2 uv; // in (0 to 1) space
 };
 
-// struct TextureRegionList
-// {
-// 	DLinkedListMembers(TextureRegionList);
-// 	u32 usedCount;
-// 	TextureRegion regions[512]; // TODO: Tune this for performance!
-// };
-
 typedef u32 TextureRegionID;
 
 #include "font.h"
@@ -148,7 +141,7 @@ struct AssetManager
 
 	BitmapFont fonts[FontAssetTypeCount];
 
-	Cursor cursors[CursorCount];
+	ChunkedArray<Cursor> cursors;
 	CursorType activeCursor;
 
 	UITheme theme;
@@ -184,8 +177,7 @@ BitmapFont *getFont(AssetManager *assets, FontAssetType font)
 
 Cursor *getCursor(AssetManager *assets, CursorType cursorID)
 {
-	ASSERT((cursorID > Cursor_None) && (cursorID < CursorCount), "Cursor ID out of range: %d", cursorID);
-	return assets->cursors + cursorID;
+	return get(&assets->cursors, cursorID);
 }
 
 ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)

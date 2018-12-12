@@ -55,6 +55,9 @@ void initAssetManager(AssetManager *assets)
 	TextureRegion *nullRegion = appendBlank(&assets->textureRegions);
 	nullRegion->type = TextureAssetType_None;
 	nullRegion->textureID = -1;
+
+	initChunkedArray(&assets->cursors, &assets->assetArena, 16);
+	appendBlank(&assets->cursors);
 }
 
 AssetManager *createAssetManager()
@@ -97,7 +100,7 @@ s32 addTextureRegion(AssetManager *assets, TextureAssetType type, char *filename
 
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 {
-	Cursor *cursor = assets->cursors + cursorID;
+	Cursor *cursor = appendBlank(&assets->cursors);
 	cursor->filename = pushString(&assets->assetArena, filename);
 	cursor->sdlCursor = 0;
 }
@@ -200,7 +203,7 @@ void loadAssets(AssetManager *assets)
 	// Load up our cursors
 	for (u32 cursorID = 1; cursorID < CursorCount; cursorID++)
 	{
-		Cursor *cursor = assets->cursors + cursorID;
+		Cursor *cursor = get(&assets->cursors, cursorID);
 
 		SDL_Surface *cursorSurface = IMG_Load(getAssetPath(assets, AssetType_Cursor, cursor->filename).chars);
 		cursor->sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
@@ -287,6 +290,7 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.glsl", "textured.frag.glsl");
 	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
 
+	// NB: These have to be in the same order as the CursorType right now!
 	addCursor(assets, Cursor_Main, "cursor_main.png");
 	addCursor(assets, Cursor_Build, "cursor_build.png");
 	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
@@ -333,7 +337,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	// Clear cursors
 	for (u32 cursorID = 0; cursorID < CursorCount; cursorID++)
 	{
-		Cursor *cursor = assets->cursors + cursorID;
+		Cursor *cursor = get(&assets->cursors, cursorID);
 		SDL_FreeCursor(cursor->sdlCursor);
 		cursor->sdlCursor = 0;
 	}
