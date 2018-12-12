@@ -141,10 +141,7 @@ struct AssetManager
 	String assetsPath;
 
 	// NB: index 0 reserved as a null texture.
-	// TODO: Switch this over to Array<>? IDK.
-	u32 textureCount;
-	TextureList firstTextureList;
-	// Texture textures[32];
+	ChunkedArray<Texture> textures;
 
 	// NB: index 0 is reserved as a null region.
 	u32 textureRegionCount;
@@ -168,17 +165,7 @@ struct AssetManager
 
 Texture *getTexture(AssetManager *assets, u32 textureIndex)
 {
-	ASSERT(textureIndex < assets->textureCount, "Selecting unallocated Texture!");
-	TextureList *list = &assets->firstTextureList;
-	const u32 texturesPerList = ArrayCount(list->textures);
-
-	while (textureIndex >= texturesPerList)
-	{
-		textureIndex -= texturesPerList;
-		list = list->next;
-	}
-
-	return list->textures + textureIndex;
+	return get(&assets->textures, textureIndex);
 }
 
 TextureRegionID getTextureRegionID(AssetManager *assets, TextureAssetType item, u32 offset)

@@ -25,6 +25,7 @@ enum AppStatus
 #include "array.h"
 #include "log.h"
 #include "memory.h"
+#include "chunked_array.h"
 MemoryArena *globalFrameTempArena;
 #include "string.h"
 #include "unicode.h"

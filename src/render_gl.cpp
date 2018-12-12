@@ -193,7 +193,7 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	gl->textureCount = assets->textureCount;
+	gl->textureCount = assets->textures.itemCount;
 	for (u32 i=0; i<gl->textureCount; i++)
 	{
 		if (i == 0)

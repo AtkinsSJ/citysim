@@ -2,18 +2,9 @@
 
 s32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
-	TextureList *list = assets->firstTextureList.prev;
-	if (list->usedCount >= ArrayCount(list->textures))
-	{
-		list = PushStruct(&assets->assetArena, TextureList);
-		DLinkedListInsertBefore(list, &assets->firstTextureList);
-	}
+	u32 textureID = assets->textures.itemCount;
 
-	u32 idWithinList = list->usedCount++;
-	u32 textureID = assets->textureCount++;
-	ASSERT(idWithinList == (textureID % ArrayCount(list->textures)), "Texture index mismatch!");
-
-	Texture *texture = list->textures + idWithinList;
+	Texture *texture = appendBlank(&assets->textures);
 
 	texture->state = AssetState_Unloaded;
 	texture->filename = pushString(&assets->assetArena, filename);
@@ -53,9 +44,7 @@ void initAssetManager(AssetManager *assets)
 	assets->assetsPath = pushString(&assets->assetArena, "assets");
 
 	DLinkedListInit(&assets->firstTextureRegionList);
-	DLinkedListInit(&assets->firstTextureList);
 
-	assets->firstTextureList.usedCount = assets->textureCount = 0;
 	assets->firstTextureRegionList.usedCount = assets->textureRegionCount = 0;
 
 	// Have to provide defaults for these or it just breaks.
@@ -69,11 +58,13 @@ void initAssetManager(AssetManager *assets)
 		append(&assets->rangesByTextureAssetType, range);
 	}
 
-	addTextureRegion(assets, TextureAssetType_None, -1, {});
-
-	Texture *nullTexture = getTexture(assets, addTexture(assets, {}, true));
+	initChunkedArray(&assets->textures, &assets->assetArena, 32);
+	Texture *nullTexture = appendBlank(&assets->textures);
 	nullTexture->state = AssetState_Loaded;
-	nullTexture->surface = 0;
+	nullTexture->surface = null;
+	nullTexture->isAlphaPremultiplied = true;
+
+	addTextureRegion(assets, TextureAssetType_None, -1, {});
 }
 
 AssetManager *createAssetManager()
@@ -89,7 +80,7 @@ AssetManager *createAssetManager()
 s32 findTexture(AssetManager *assets, String filename)
 {
 	s32 index = -1;
-	for (s32 i = 0; i < (s32)assets->textureCount; ++i)
+	for (s32 i = 0; i < (s32)assets->textures.itemCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (equals(filename, tex->filename))
@@ -150,7 +141,7 @@ void loadAssets(AssetManager *assets)
 	loadBuildingDefs(&buildingDefs, &assets->assetArena, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
 	loadTerrainDefinitions(&terrainDefs, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
 
-	for (u32 i = 1; i < assets->textureCount; ++i)
+	for (u32 i = 1; i < assets->textures.itemCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Unloaded)
@@ -329,7 +320,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	// Actual reloading
 
 	// Clear out textures
-	for (u32 i = 1; i < assets->textureCount; ++i)
+	for (u32 i = 1; i < assets->textures.itemCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Loaded)

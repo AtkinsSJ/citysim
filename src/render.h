@@ -37,8 +37,8 @@ struct RenderItem
 };
 
 const int WORLD_SPRITE_MAX = 16384;
-const int UI_SPRITE_MAX = 4096;
-const int SPRITE_MAX = WORLD_SPRITE_MAX;
+const int UI_SPRITE_MAX    = 16384;
+const int SPRITE_MAX = MAX(WORLD_SPRITE_MAX, UI_SPRITE_MAX);
 
 struct RenderBuffer
 {
