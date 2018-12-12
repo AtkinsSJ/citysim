@@ -60,8 +60,7 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType,
-	                  TextureAssetType textureAssetType, char *filename)
+BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType, char *filename)
 {
 	BitmapFont *font = 0;
 	TemporaryMemory tempMemory = beginTemporaryMemory(tempArena);
@@ -154,7 +153,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 
 				font = get(&assets->fonts, fontAssetType);
 				font->assetID = fontAssetType;
-				font->textureAssetType = textureAssetType;
+				font->textureAssetType = addNewTextureAssetType(assets);
 				font->lineHeight = common->lineHeight;
 				font->baseY = common->base;
 
@@ -176,7 +175,7 @@ BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetTyp
 					dest->yOffset = src->yOffset;
 					dest->xAdvance = src->xAdvance;
 
-					dest->textureRegionID = addTextureRegion(assets, textureAssetType, pageToTextureID[src->page],
+					dest->textureRegionID = addTextureRegion(assets, font->textureAssetType, pageToTextureID[src->page],
 						rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h));
 				}
 			}

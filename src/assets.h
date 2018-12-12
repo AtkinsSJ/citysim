@@ -9,17 +9,6 @@ enum AssetType
 	AssetType_Texture,
 };
 
-enum TextureAssetType // NB: Actually TextureRegions, unless I change that later.
-{
-	TextureAssetType_None = 0,
-
-	TextureAssetType_Font_Main = 1,
-	TextureAssetType_Font_Buttons = 2,
-	TextureAssetType_Font_Debug = 3,
-
-	TextureAssetTypeCount
-};
-
 enum FontAssetType
 {
 	FontAssetType_Main,

@@ -13,7 +13,7 @@ struct BitmapFontChar
 struct BitmapFont
 {
 	u32 assetID;
-	TextureAssetType textureAssetType;
+	u32 textureAssetType;
 
 	u16 lineHeight;
 	u16 baseY;

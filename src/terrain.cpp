@@ -11,9 +11,7 @@ void loadTerrainDefinitions(Array<TerrainDef> *terrains, AssetManager *assets, F
 	}
 
 	clear(terrains);
-
-	TerrainDef nullTerrain = {Terrain_Invalid, TextureAssetType_None, false, false, 0};
-	append(terrains, nullTerrain);
+	appendBlank(terrains);
 
 	TerrainDef *def = null;
 

@@ -35,15 +35,7 @@ void initAssetManager(AssetManager *assets)
 	assets->assetsPath = pushString(&assets->assetArena, "assets");
 
 	initChunkedArray(&assets->rangesByTextureAssetType, &assets->assetArena, 32);
-	for (u32 i = 0; i < TextureAssetTypeCount; ++i)
-	{
-		// Have to provide defaults for these or it just breaks.
-		IndexRange range;
-		range.firstIndex = u32Max;
-		range.lastIndex  = 0;
-
-		append(&assets->rangesByTextureAssetType, range);
-	}
+	appendBlank(&assets->rangesByTextureAssetType);
 
 	initChunkedArray(&assets->textures, &assets->assetArena, 32);
 	Texture *nullTexture = appendBlank(&assets->textures);
@@ -53,7 +45,6 @@ void initAssetManager(AssetManager *assets)
 
 	initChunkedArray(&assets->textureRegions, &assets->assetArena, 512);
 	TextureRegion *nullRegion = appendBlank(&assets->textureRegions);
-	nullRegion->textureRegionAssetType = TextureAssetType_None;
 	nullRegion->textureID = -1;
 
 	initChunkedArray(&assets->fonts, &assets->assetArena, 16, true);
@@ -107,8 +98,7 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 	cursor->sdlCursor = 0;
 }
 
-BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType,
-	                  TextureAssetType textureAssetType, char *filename);
+BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType, char *filename);
 
 void addShaderHeader(AssetManager *assets, char *filename)
 {
@@ -280,8 +270,8 @@ void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String f
 
 void addAssets(AssetManager *assets, MemoryArena *tempArena)
 {
-	addBMFont(assets, tempArena, FontAssetType_Buttons, TextureAssetType_Font_Buttons, "dejavu-14.fnt");
-	addBMFont(assets, tempArena, FontAssetType_Main, TextureAssetType_Font_Main, "dejavu-20.fnt");
+	addBMFont(assets, tempArena, FontAssetType_Buttons, "dejavu-14.fnt");
+	addBMFont(assets, tempArena, FontAssetType_Main, "dejavu-20.fnt");
 
 	addShaderHeader(assets, "header.glsl");
 	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.glsl", "textured.frag.glsl");
@@ -296,7 +286,7 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	addCursor(assets, Cursor_Hire, "cursor_hire.png");
 
 #if BUILD_DEBUG
-	addBMFont(assets, tempArena, FontAssetType_Debug, TextureAssetType_Font_Debug, "debug.fnt");
+	addBMFont(assets, tempArena, FontAssetType_Debug, "debug.fnt");
 #endif
 }
 
