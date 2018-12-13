@@ -26,7 +26,6 @@ struct Camera
 	V2 mousePos;
 };
 const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
-const f32 CAMERA_EDGE_SCROLL_MARGIN = 0.1f; // In normalised screen coordinates, so 0.1 is 5% from the edge
 
 struct RenderItem
 {

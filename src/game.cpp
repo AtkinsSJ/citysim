@@ -22,7 +22,7 @@ GameState *initialiseGameState()
 	return result;
 }
 
-void inputMoveCamera(Camera *camera, InputState *inputState, s32 cityWidth, s32 cityHeight)
+void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 cityWidth, s32 cityHeight)
 { 
 	// Zooming
 	if (canZoom && inputState->wheelY) {
@@ -32,6 +32,10 @@ void inputMoveCamera(Camera *camera, InputState *inputState, s32 cityWidth, s32 
 
 	// Panning
 	f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32) sqrt(camera->zoom)) * SECONDS_PER_FRAME;
+	f32 cameraEdgeScrollPixelMargin = 8.0f;
+	f32 cameraEdgeScrollMarginX = cameraEdgeScrollPixelMargin / windowSize.x;
+	f32 cameraEdgeScrollMarginY = cameraEdgeScrollPixelMargin / windowSize.y;
+
 	if (mouseButtonPressed(inputState, SDL_BUTTON_MIDDLE))
 	{
 		// Click-panning!
@@ -44,26 +48,26 @@ void inputMoveCamera(Camera *camera, InputState *inputState, s32 cityWidth, s32 
 	{
 		if (keyIsPressed(inputState, SDLK_LEFT)
 			|| keyIsPressed(inputState, SDLK_a)
-			|| (inputState->mousePosNormalised.x < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.x < (-1.0f + cameraEdgeScrollMarginX)))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
 		else if (keyIsPressed(inputState, SDLK_RIGHT)
 			|| keyIsPressed(inputState, SDLK_d)
-			|| (inputState->mousePosNormalised.x > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.x > (1.0f - cameraEdgeScrollMarginX)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
 		if (keyIsPressed(inputState, SDLK_UP)
 			|| keyIsPressed(inputState, SDLK_w)
-			|| (inputState->mousePosNormalised.y > (1.0f - CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.y > (1.0f - cameraEdgeScrollMarginY)))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
 		else if (keyIsPressed(inputState, SDLK_DOWN)
 			|| keyIsPressed(inputState, SDLK_s)
-			|| (inputState->mousePosNormalised.y < (-1.0f + CAMERA_EDGE_SCROLL_MARGIN)))
+			|| (inputState->mousePosNormalised.y < (-1.0f + cameraEdgeScrollMarginY)))
 		{
 			camera->pos.y += scrollSpeed;
 		}
@@ -273,7 +277,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera    = &renderer->uiBuffer.camera;
 	if (gameState->status == GameStatus_Playing) {
-		inputMoveCamera(worldCamera, inputState, gameState->city.width, gameState->city.height);
+		inputMoveCamera(worldCamera, inputState, uiCamera->size, gameState->city.width, gameState->city.height);
 	}
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
 

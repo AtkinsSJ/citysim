@@ -137,8 +137,8 @@ int main(int argc, char *argv[])
 
 	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
 
-	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
-	                             "Under London");
+	SDL_Window *window = initSDL(1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
+	                             "Some kind of city builder");
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
