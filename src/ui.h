@@ -55,7 +55,8 @@ struct UIState
 	u32 currentCursor;
 	bool cursorIsVisible;
 
-	V2 mouseDragStartPos;
+	bool isDragging;
+	V2I mouseDragStartPos;
 	Rect2I dragRect;
 };
 
@@ -65,4 +66,24 @@ void setCursor(UIState *uiState, AssetManager *assets, u32 cursorID)
 {
 	uiState->currentCursor = cursorID;
 	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
+}
+
+void updateDragging(UIState *uiState, V2I mouseTilePos)
+{
+	// Start drag if it isn't already started
+	if (!uiState->isDragging)
+	{
+		uiState->isDragging = true;
+		uiState->mouseDragStartPos = mouseTilePos;
+		uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+	}
+	else
+	{
+		uiState->dragRect = irectCovering(uiState->mouseDragStartPos, mouseTilePos);
+	}
+}
+
+void cancelDragging(UIState *uiState)
+{
+	uiState->isDragging = false;
 }

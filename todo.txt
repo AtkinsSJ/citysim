@@ -77,8 +77,6 @@ Map generator
 
 -------------------------------------------------
 
-Dragging a rect (eg demolish) from a UIRect into the world causes it to stretch from tile 0,0
-
 Split the game code from the platform code
 - Compile win32_main.cpp rather than main.cpp
 - platform handles the renderer, input and memory.

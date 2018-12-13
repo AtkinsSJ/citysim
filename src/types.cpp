@@ -380,25 +380,29 @@ inline Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax)
 	return irectXYWH(xMin, yMin, (1+xMax-xMin), (1+yMax-yMin));
 }
 
-inline Rect2I irectCovering(V2 a, V2 b)
+inline Rect2I irectCovering(V2I a, V2I b)
 {
 	Rect2I rect = {};
 	if (a.x < b.x)
 	{
-		rect.x = (s32)(a.x);
-		rect.w = (s32)(b.x) - (s32)(a.x) + 1;
-	} else {
-		rect.x = (s32)(b.x);
-		rect.w = (s32)(a.x+0.5f) - (s32)(b.x);
+		rect.x = a.x;
+		rect.w = b.x - a.x + 1;
+	}
+	else
+	{
+		rect.x = b.x;
+		rect.w = a.x - b.x + 1;
 	}
 
 	if (a.y < b.y)
 	{
-		rect.y = (s32)(a.y);
-		rect.h = (s32)(b.y) - (s32)(a.y) + 1;
-	} else {
-		rect.y = (s32)(b.y);
-		rect.h = (s32)(a.y+0.5f) - (s32)(b.y);
+		rect.y = a.y;
+		rect.h = b.y - a.y + 1;
+	}
+	else
+	{
+		rect.y = b.y;
+		rect.h = a.y - b.y + 1;
 	}
 	return rect;
 }

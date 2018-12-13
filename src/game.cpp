@@ -264,14 +264,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				case ActionMode_Demolish:
 				{
-					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 					{
-						uiState->mouseDragStartPos = worldCamera->mousePos;
-						uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
-					}
-					else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
-					{
-						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
+						updateDragging(uiState, mouseTilePos);
 						s32 demolitionCost = calculateDemolitionCost(city, uiState->dragRect);
 						showCostTooltip(uiState, city, demolitionCost);
 					}	
@@ -280,20 +275,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					{
 						// Demolish everything within dragRect!
 						demolishRect(uiState, city, uiState->dragRect);
-						uiState->dragRect = irectXYWH(-1,-1,0,0);
+						cancelDragging(uiState);
 					}
 				} break;
 
 				case ActionMode_Zone:
 				{
-					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 					{
-						uiState->mouseDragStartPos = worldCamera->mousePos;
-						uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
-					}
-					else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
-					{
-						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
+						updateDragging(uiState, mouseTilePos);
 						s32 zoneCost = calculateZoneCost(city, uiState->selectedZoneID, uiState->dragRect);
 						showCostTooltip(uiState, city, zoneCost);
 					}
@@ -302,7 +292,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					{
 						// Zone everything within dragRect!
 						zoneRect(uiState, city, uiState->selectedZoneID, uiState->dragRect);
-						uiState->dragRect = irectXYWH(-1,-1,0,0);
+						cancelDragging(uiState);
 					}
 				} break;
 
@@ -344,6 +334,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 				} break;
 			}
+		}
+		else if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+		{
+			// Not sure if this is the best idea, but it's the best I can come up with.
+			cancelDragging(uiState);
 		}
 
 		if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
@@ -412,6 +407,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			V4 drawColor = makeWhite();
 
 			if (uiState->actionMode == ActionMode_Demolish
+				&& uiState->isDragging
 				&& rectsOverlap(building.footprint, uiState->dragRect)) {
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);
@@ -502,13 +498,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
 	}
 	else if (uiState->actionMode == ActionMode_Zone
-		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+		&& uiState->isDragging)
 	{
 		// Zone preview
 		drawRect(&renderer->worldBuffer, rect2(uiState->dragRect), 0, zoneDefs[uiState->selectedZoneID].color);
 	}
 	else if (uiState->actionMode == ActionMode_Demolish
-		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+		&& uiState->isDragging)
 	{
 		// Demolition outline
 		drawRect(&renderer->worldBuffer, rect2(uiState->dragRect), 0, color255(128, 0, 0, 128));
