@@ -43,6 +43,7 @@ Simcity Classic features:
 (Can play it online at http://micropolis.mostka.com/ )
 	Code at https://github.com/simhacker/micropolis
 	A decent guide to how it works at https://github.com/SimHacker/micropolis/blob/wiki/InsideTheSimulator.md
+	If we want to rip sprites from it, a good folder of PNGs is https://github.com/jason17055/micropolis-java/tree/master/graphics
 R/C/I
 	Zones! You plop a square down, but then it can be built in sections.
 		I think I'll do drag-rect zones instead
@@ -76,6 +77,13 @@ Pause/resume/speed controls
 Map generator
 
 -------------------------------------------------
+
+Zoning
+- We need some kind of "RCI demand" source/calculation. Probably a simple one for now because we don't have anything to simulate really, but we need *something*.
+	- A reasonable one would include: available jobs or workers, tax rate, average land value.
+- Every so often, pump the "spawn buildings" function that places a number of zoned buildings within zones, to approximately match what is demanded.
+- Spawning buildings looks for empty zones that match criteria like distance to roads, and prioritises highly-desirable places.
+	- Eventually we'd probably want a more efficient way to find those zones. Maybe keep a list of empty zone coordinates and their land value, or something like that.
 
 Split the game code from the platform code
 - Compile win32_main.cpp rather than main.cpp
