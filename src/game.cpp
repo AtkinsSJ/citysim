@@ -434,7 +434,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			ZoneType zoneType = city->tileZones[tileIndex(city, x, y)];
 			if (zoneType != Zone_None)
 			{
-				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, zoneDefs[zoneType].color);
+				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, zoneDefs[zoneType].color);
 			}
 		}
 	}

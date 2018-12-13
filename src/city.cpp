@@ -189,6 +189,17 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 
 			// Data layer updates
 			city->pathLayer.data[tile] = def->isPath ? 1 : 0;
+
+			// Remove zones
+			ZoneType oldZone = city->tileZones[tile];
+			if (oldZone)
+			{
+				city->tileZones[tile] = Zone_None;
+
+				// We may need to recalculate power!
+				bool zoneCarriedPower = zoneDefs[oldZone].carriesPower;
+				needToRecalcPower = zoneCarriedPower != def->carriesPower;
+			}
 		}
 	}
 
