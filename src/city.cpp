@@ -146,7 +146,6 @@ void updatePathTexture(City *city, s32 x, s32 y)
  */
 bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I position)
 {
-
 	if (!canPlaceBuilding(uiState, city, buildingTypeID, position, true))
 	{
 		return false;
@@ -189,8 +188,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 			city->tileBuildings[tile] = buildingID;
 
 			// Data layer updates
-			city->pathLayer.data[tile]  = def->isPath       ? 1 : 0;
-			city->powerLayer.data[tile] = def->carriesPower ? 1 : 0;
+			city->pathLayer.data[tile] = def->isPath ? 1 : 0;
 		}
 	}
 
@@ -266,12 +264,6 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 				{
 					// Remove from the pathing layer
 					city->pathLayer.data[tile] = 0;
-				}
-				
-				if (def->carriesPower)
-				{
-					// Remove from the pathing layer
-					city->powerLayer.data[tile] = 0;
 				}
 			}
 		}
@@ -460,7 +452,8 @@ void zoneRect(UIState *uiState, City *city, ZoneType zoneType, Rect2I area)
 			for (int x=0; x<area.w; x++) {
 				if (canZoneTile(city, zoneType, area.x + x, area.y + y))
 				{
-					city->tileZones[tileIndex(city, area.x + x, area.y + y)] = zoneType;
+					s32 tile = tileIndex(city, area.x + x, area.y + y);
+					city->tileZones[tile] = zoneType;
 				}
 			}
 		}

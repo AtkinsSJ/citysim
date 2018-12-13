@@ -66,10 +66,24 @@ void recalculatePowerConnectivity(City *city)
 	s32 maxTileIndex = city->width * city->height;
 	for (s32 tileIndex = 0; tileIndex < maxTileIndex; ++tileIndex)
 	{
-		if (city->powerLayer.data[tileIndex] != 0)
+		bool tileCarriesPower = false;
+		if (zoneDefs[city->tileZones[tileIndex]].carriesPower)
 		{
-			city->powerLayer.data[tileIndex] = -1;
+			tileCarriesPower = true;
 		}
+		else
+		{
+			u32 buildingID = city->tileBuildings[tileIndex];
+			if (buildingID)
+			{
+				if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
+				{
+					tileCarriesPower = true;
+				}
+			}
+		}
+
+		city->powerLayer.data[tileIndex] = tileCarriesPower ? -1 : 0;
 	}
 
 	clear(&city->powerLayer.groups);

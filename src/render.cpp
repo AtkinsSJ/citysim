@@ -81,7 +81,7 @@ void updateCameraMatrix(Camera *camera)
 	camera->projectionMatrix = orthographicMatrix4(
 		camera->pos.x - camHalfWidth, camera->pos.x + camHalfWidth,
 		camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,
-		-1000.0f, 1000.0f
+		-10000.0f, 10000.0f
 	);
 }
 
