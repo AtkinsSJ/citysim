@@ -16,6 +16,7 @@ enum UIMenuID
 	UIMenu_None,
 	UIMenu_Build,
 	UIMenu_Zone,
+	UIMenu_System,
 };
 
 struct Tooltip
