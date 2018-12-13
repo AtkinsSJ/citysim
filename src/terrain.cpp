@@ -36,10 +36,11 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 				if (asInt(nextToken(remainder, &remainder), &terrainType))
 				{
 					def->type = (TerrainType) terrainType;
+					def->name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				}
 				else
 				{
-					error(&reader, "Couldn't parse TerrainType. Expected: ':Terrain type(int)'");
+					error(&reader, "Couldn't parse TerrainType. Expected: ':Terrain type(int) name'");
 					return;
 				}
 			}

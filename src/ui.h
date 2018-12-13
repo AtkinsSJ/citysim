@@ -44,7 +44,7 @@ struct UIState
 	union
 	{
 		u32 selectedBuildingTypeID;
-		u32 selectedZoneID;
+		enum ZoneType selectedZoneID;
 	};
 
 	Tooltip tooltip;

@@ -15,6 +15,8 @@ struct TerrainDef
 	TerrainType type;
 	u32 textureAssetType;
 
+	String name;
+
 	bool canBuildOn;
 	bool canDemolish;
 	s32 demolishCost;

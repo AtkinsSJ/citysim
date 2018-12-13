@@ -1,16 +1,16 @@
 # Terrain!
 
-:Terrain 1 # Terrain_Ground
+:Terrain 1 Ground
 texture grass.png 16 16 2 2
 can_build_on true
 can_demolish false
 
-:Terrain 2 # Terrain_Water
+:Terrain 2 Water
 texture water.png 16 16 1 1
 can_build_on false
 can_demolish false
 
-:Terrain 3 # Terrain_Forest
+:Terrain 3 Forest
 texture forest.png 16 16 1 1
 can_build_on false
 can_demolish true 100

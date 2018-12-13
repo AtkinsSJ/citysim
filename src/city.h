@@ -2,6 +2,8 @@
 
 enum ZoneType
 {
+	Zone_None,
+
 	Zone_Residential,
 	Zone_Commercial,
 	Zone_Industrial,
@@ -9,17 +11,28 @@ enum ZoneType
 	ZoneCount
 };
 
-String zoneNames[ZoneCount] = {
-	stringFromChars("Residential"),
-	stringFromChars("Commercial"),
-	stringFromChars("Industrial"),
+struct ZoneDef
+{
+	ZoneType typeID;
+	String name;
+	V4 color;
+	s32 costPerTile;
+};
+
+ZoneDef zoneDefs[] = {
+	{Zone_None,        stringFromChars("Dezone"),      color255(255, 255, 255, 128), 10},
+	{Zone_Residential, stringFromChars("Residential"), color255(  0, 255,   0, 128), 10},
+	{Zone_Commercial,  stringFromChars("Commercial"),  color255(  0,   0, 255, 128), 10},
+	{Zone_Industrial,  stringFromChars("Industrial"),  color255(255, 255,   0, 128), 20},
 };
 
 enum DataLayer
 {
 	DataLayer_None,
+
 	DataLayer_Paths,
 	DataLayer_Power,
+
 	DataLayerCount
 };
 
@@ -56,6 +69,8 @@ struct City
 	Array<Building> buildings;
 	u32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
+
+	ZoneType *tileZones; // x,y -> ZoneType
 };
 
 inline u32 tileIndex(City *city, s32 x, s32 y)

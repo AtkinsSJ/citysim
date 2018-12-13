@@ -57,7 +57,9 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 			default: {
 				if (!isReadingNumber)
 				{
-					append(&stb, format.chars + i, 1);
+					char c = format.chars[i];
+					// We keep getting bugs where I accidentally include null bytes, so remove them!
+					if (c) append(&stb, c);
 				}
 			}
 		}

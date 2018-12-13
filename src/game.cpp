@@ -132,13 +132,13 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			
 			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
 
-			for (u32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
+			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (uiButton(uiState, uiBuffer, assets, inputState, zoneNames[zoneIndex], menuButtonRect, 1,
+				if (uiButton(uiState, uiBuffer, assets, inputState, zoneDefs[zoneIndex].name, menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Zone) && (uiState->selectedZoneID == zoneIndex)))
 				{
 					uiState->openMenu = UIMenu_None;
-					uiState->selectedZoneID = zoneIndex;
+					uiState->selectedZoneID = (ZoneType) zoneIndex;
 					uiState->actionMode = ActionMode_Zone;
 					setCursor(uiState, assets, Cursor_Build);
 				}
@@ -288,24 +288,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			city->funds -= 10000;
 		}
 
-		// Camera controls
-		// HOME resets the camera and centres on the HQ
-		// if (keyJustPressed(inputState, SDLK_HOME)) {
-		// 	worldCamera->zoom = 1;
-		// 	// Jump to the farmhouse if we have one!
-		// 	if (city.firstBuildingOfType[BA_Farmhouse]) {
-		// 		worldCamera->pos = centre(city.firstBuildingOfType[BA_Farmhouse]->footprint);
-		// 	} else {
-		// 		pushUiMessage(uiState, LocalString("Build an HQ, then pressing [Home] will take you there."));
-		// 	}
-		// }
-
-		// SDL_Log("Mouse world position: %f, %f", worldCamera->mousePos.x, worldCamera->mousePos.y);
 		// This is a very basic check for "is the user clicking on the UI?"
-		if (!inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos)) {
+		if (!inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos))
+		{
 			switch (uiState->actionMode) {
 				case ActionMode_Build: {
-					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
+					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+					{
 						placeBuilding(uiState, city, uiState->selectedBuildingTypeID, mouseTilePos);
 					}
 
@@ -314,34 +303,88 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				} break;
 
 				case ActionMode_Demolish: {
-					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
+					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+					{
 						uiState->mouseDragStartPos = worldCamera->mousePos;
 						uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
-					} else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT)) {
+					}
+					else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+					{
 						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
 						s32 demolitionCost = calculateDemolitionCost(city, uiState->dragRect);
 						showCostTooltip(uiState, city, demolitionCost);
 					}	
 
-					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT)) {
+					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+					{
 						// Demolish everything within dragRect!
 						demolishRect(uiState, city, uiState->dragRect);
 						uiState->dragRect = irectXYWH(-1,-1,0,0);
 					}
 				} break;
 
-				case ActionMode_None: {
-					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT)) {
-						int tileI = tileIndex(city, mouseTilePos.x, mouseTilePos.y);
-						int buildingID = city->tileBuildings[tileI];
+				case ActionMode_Zone: {
+					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+					{
+						uiState->mouseDragStartPos = worldCamera->mousePos;
+						uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+					}
+					else if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+					{
+						uiState->dragRect = irectCovering(uiState->mouseDragStartPos, worldCamera->mousePos);
+						s32 zoneCost = calculateZoneCost(city, uiState->selectedZoneID, uiState->dragRect);
+						showCostTooltip(uiState, city, zoneCost);
+					}
 
-						SDL_Log("Building ID at position (%d,%d) = %d", mouseTilePos.x, mouseTilePos.y, buildingID);
+					if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+					{
+						// Zone everything within dragRect!
+						zoneRect(uiState, city, uiState->selectedZoneID, uiState->dragRect);
+						uiState->dragRect = irectXYWH(-1,-1,0,0);
+					}
+				} break;
+
+				case ActionMode_None: {
+					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+					{
+						if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
+						{
+							int tileI = tileIndex(city, mouseTilePos.x, mouseTilePos.y);
+
+							String buildingName;
+							int buildingID = city->tileBuildings[tileI];
+							if (buildingID != 0)
+							{
+								buildingName = get(&buildingDefs, city->buildings[buildingID].typeID)->name;
+							}
+							else
+							{
+								buildingName = stringFromChars("None");
+							}
+
+							String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
+
+							String zoneName;
+							ZoneType zone = city->tileZones[tileI];
+							if (zone)
+							{
+								zoneName = zoneDefs[zone].name;
+							}
+							else
+							{
+								zoneName = stringFromChars("None");
+							}
+
+							logInfo("Clicked at ({0},{1}), terrain: {2}, building: {3}, zone: {4}", 
+								{formatInt(mouseTilePos.x), formatInt(mouseTilePos.y), terrainName, buildingName, zoneName});
+						}
 					}
 				} break;
 			}
 		}
 
-		if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT)) {
+		if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
+		{
 			// Unselect current thing
 			// setActiveButton(&actionButtonGroup, null);
 			uiState->actionMode = ActionMode_None;
@@ -354,8 +397,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// We err on the side of drawing too much, rather than risking having holes in the world.
 	Rect2I visibleTileBounds = irectCentreWH(
 		v2i(MAX((s32)worldCamera->pos.x - 1, 0), MAX((s32)worldCamera->pos.y - 1, 0)),
-		(s32) MIN(gameState->city.width,  worldCamera->size.x / worldCamera->zoom) + 5,
-		(s32) MIN(gameState->city.height, worldCamera->size.y / worldCamera->zoom) + 5
+		(s32) MIN(gameState->city.width,  worldCamera->size.x / worldCamera->zoom + 5),
+		(s32) MIN(gameState->city.height, worldCamera->size.y / worldCamera->zoom + 5)
 	);
 
 	// Draw terrain
@@ -375,6 +418,23 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				u32 textureRegionID = getTextureRegionID(assets, tDef->textureAssetType, t.textureRegionOffset);
 
 				drawTextureRegion(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f);
+			}
+		}
+	}
+
+	// Draw zones
+	for (s32 y = visibleTileBounds.y;
+		y < visibleTileBounds.y + visibleTileBounds.h;
+		y++)
+	{
+		for (s32 x = visibleTileBounds.x;
+			x < visibleTileBounds.x + visibleTileBounds.w;
+			x++)
+		{
+			ZoneType zoneType = city->tileZones[tileIndex(city, x, y)];
+			if (zoneType != Zone_None)
+			{
+				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, zoneDefs[zoneType].color);
 			}
 		}
 	}
@@ -412,8 +472,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				x < visibleTileBounds.x + visibleTileBounds.w;
 				x++)
 			{
-				if (!tileExists(city, x, y)) continue;
-
 				V4 color = {};
 
 				switch (gameState->dataLayerToDraw)
@@ -457,7 +515,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				if (color.a > 0.01f)
 				{
-					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) + 100.0f, color);
+					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 999999.0f, color);
 				}
 			}
 		}
@@ -478,6 +536,12 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		drawTextureRegion(&renderer->worldBuffer,
 						  getTextureRegionID(assets, get(&buildingDefs, uiState->selectedBuildingTypeID)->textureAssetType, 0),
 						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
+	}
+	else if (uiState->actionMode == ActionMode_Zone
+		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+	{
+		// Zone preview
+		drawRect(&renderer->worldBuffer, rect2(uiState->dragRect), 0, zoneDefs[uiState->selectedZoneID].color);
 	}
 	else if (uiState->actionMode == ActionMode_Demolish
 		&& mouseButtonPressed(inputState, SDL_BUTTON_LEFT))

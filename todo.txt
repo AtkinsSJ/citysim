@@ -59,7 +59,8 @@ Power stations and power lines
 Water, bridges
 Fires
 Rails
-Flooding
+Disasters?
+	Flooding
 Budget (control tax rate, transport/fire/police funding)
 Query tool
 Data views:
@@ -86,6 +87,9 @@ Split the game code from the platform code
 UI styles loaded from a file
 - Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
 - We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtof if I'm lazy.
+
+Audio!
+- Probably use SoLoud, rather than SDL_mixer: http://sol.gfxile.net/soloud/
 
 Asset system:
 - Replace sdl_image with our own loader so we can control where the memory comes from!
@@ -168,17 +172,6 @@ Asset packing:
 	for the bilinear filtering
 - Store TextureRegion information in a little binary file
 - Read data from these rather than hard-coded filenames
-
-
-ENGINE:
-- Audio!
-	- Sound effects
-	- Pitch shifting
-	- Music
-- An actual random number generator!
-- Temporary memory automatically closes when it leaves scope?
-- Scenarios
-	- A background image, a size, etc.
 
 ---------------------------------------------
 NOTES:
