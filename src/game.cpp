@@ -206,40 +206,6 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	}
 }
 
-// Returns true if game should restart
-bool updateAndRenderGameOverUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState,
-	                           InputState *inputState, bool won)
-{
-	DEBUG_FUNCTION();
-	
-	bool result = false;
-	f32 windowWidth = (f32) uiBuffer->camera.size.x;
-	f32 windowHeight = (f32) uiBuffer->camera.size.y;
-	V2 cameraCentre = uiBuffer->camera.pos;
-
-	UITheme *theme = &assets->theme;
-	BitmapFont *font = getFont(assets, FontAssetType_Main);
-
-	drawRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 10, theme->overlayColor);
-
-	String gameOverText;
-	if (won)
-	{
-		gameOverText = myprintf(LocalString("You won! You earned £{0} in ??? days"), {formatInt(gameWinFunds)});
-	} else {
-		gameOverText = LocalString("Game over! You ran out of money! :(");
-	}
-
-	uiText(uiState, uiBuffer, font, gameOverText, cameraCentre - v2(0, 32), ALIGN_CENTRE, 11, theme->labelStyle.textColor);
-
-	if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Menu"), rectCentreSize(cameraCentre, v2(80, 24)), 11))
-	{
-		result = true;
-	}
-
-	return result;
-}
-
 void showCostTooltip(UIState *uiState, City *city, s32 buildCost)
 {
 	V4 color = canAfford(city, buildCost)
@@ -255,7 +221,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 {
 	DEBUG_FUNCTION();
 	
-	if (appState->gameState == 0)
+	if (appState->gameState == null)
 	{
 		appState->gameState = initialiseGameState();
 		renderer->worldBuffer.camera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
@@ -266,17 +232,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	UIState *uiState = &globalAppState.uiState;
 	uiState->theme = &assets->theme;
 
-	// // Win and Lose!
-	// if (gameState->city.funds >= gameWinFunds) {
-	// 	gameState->status = GameStatus_Won;
-	// } else if (gameState->city.funds < 0) {
-	// 	gameState->status = GameStatus_Lost;
-	// }
-
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera    = &renderer->uiBuffer.camera;
-	if (gameState->status == GameStatus_Playing) {
+	if (gameState->status == GameStatus_Playing)
+	{
 		inputMoveCamera(worldCamera, inputState, uiCamera->size, gameState->city.width, gameState->city.height);
 	}
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
@@ -284,19 +244,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	City *city = &gameState->city;
 
 	// UiButton/Mouse interaction
-	if (gameState->status == GameStatus_Playing) {
-
-		if (keyJustPressed(inputState, SDLK_INSERT)) {
-			city->funds += 10000;
-		} else if (keyJustPressed(inputState, SDLK_DELETE)) {
-			city->funds -= 10000;
-		}
-
+	if (gameState->status == GameStatus_Playing)
+	{
 		// This is a very basic check for "is the user clicking on the UI?"
 		if (!inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos))
 		{
-			switch (uiState->actionMode) {
-				case ActionMode_Build: {
+			switch (uiState->actionMode)
+			{
+				case ActionMode_Build:
+				{
 					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 					{
 						placeBuilding(uiState, city, uiState->selectedBuildingTypeID, mouseTilePos);
@@ -306,7 +262,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					showCostTooltip(uiState, city, buildCost);
 				} break;
 
-				case ActionMode_Demolish: {
+				case ActionMode_Demolish:
+				{
 					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 					{
 						uiState->mouseDragStartPos = worldCamera->mousePos;
@@ -327,7 +284,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 				} break;
 
-				case ActionMode_Zone: {
+				case ActionMode_Zone:
+				{
 					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 					{
 						uiState->mouseDragStartPos = worldCamera->mousePos;
@@ -348,7 +306,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 				} break;
 
-				case ActionMode_None: {
+				case ActionMode_None:
+				{
 					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 					{
 						if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
@@ -390,7 +349,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
 		{
 			// Unselect current thing
-			// setActiveButton(&actionButtonGroup, null);
 			uiState->actionMode = ActionMode_None;
 			setCursor(uiState, assets, Cursor_Main);
 		}
@@ -480,7 +438,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				switch (gameState->dataLayerToDraw)
 				{
-					case DataLayer_Paths: {
+					case DataLayer_Paths:
+					{
 						s32 pathGroup = pathGroupAt(city, x, y);
 						if (pathGroup > 0)
 						{
@@ -498,7 +457,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						}
 					} break;
 
-					case DataLayer_Power: {
+					case DataLayer_Power:
+					{
 						s32 powerGroup = powerGroupAt(city, x, y);
 						if (powerGroup > 0)
 						{
@@ -555,24 +515,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// Draw the UI!
-	switch (gameState->status)
-	{
-		case GameStatus_Playing:
-		{
-			updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState, inputState);
-		}
-		break;
-
-		case GameStatus_Won:
-		case GameStatus_Lost:
-		{
-			if (updateAndRenderGameOverUI(&renderer->uiBuffer, assets, uiState, inputState, gameState->status == GameStatus_Won))
-			{
-				gameState->status = GameStatus_Quit;
-			}
-		}
-		break;
-	}
+	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState, inputState);
 
 	if (gameState->status == GameStatus_Quit)
 	{
