@@ -58,7 +58,7 @@ struct UIState
 
 	bool isDragging;
 	V2I mouseDragStartPos;
-	Rect2I dragRect;
+	V2I mouseDragEndPos;
 };
 
 const f32 messageDisplayTime = 2.0f;
@@ -76,12 +76,20 @@ void updateDragging(UIState *uiState, V2I mouseTilePos)
 	{
 		uiState->isDragging = true;
 		uiState->mouseDragStartPos = mouseTilePos;
-		uiState->dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
 	}
-	else
+
+	uiState->mouseDragEndPos = mouseTilePos;
+}
+
+Rect2I getDragRect(UIState *uiState)
+{
+	Rect2I dragRect = irectXYWH(0, 0, 0, 0);
+	if (uiState->isDragging)
 	{
-		uiState->dragRect = irectCovering(uiState->mouseDragStartPos, mouseTilePos);
+		dragRect = irectCovering(uiState->mouseDragStartPos, uiState->mouseDragEndPos);
 	}
+
+	return dragRect;
 }
 
 void cancelDragging(UIState *uiState)
