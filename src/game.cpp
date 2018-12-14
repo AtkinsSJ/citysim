@@ -400,10 +400,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							for (s32 x = zoneRect.x; x < zoneRect.x+zoneRect.w; x++)
 							{
-								V4 color = canZoneTile(city, uiState->selectedZoneID, x, y)
-										? zoneDefs[uiState->selectedZoneID].color
-										: color255(255, 255, 255, 32);
-								drawRect(&renderer->worldBuffer, rectXYWHi(x, y, 1, 1), 0, color);
+								if (canZoneTile(city, uiState->selectedZoneID, x, y))
+								{
+									drawRect(&renderer->worldBuffer, rectXYWHi(x, y, 1, 1), 0, zoneDefs[uiState->selectedZoneID].color);
+								}
 							}
 						}
 					}
@@ -418,17 +418,56 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		case ActionMode_Demolish:
 		{
-			if (!mouseIsOverUI && mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+			if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 			{
-				updateDragging(uiState, mouseTilePos);
-				s32 demolitionCost = calculateDemolitionCost(city, getDragRect(uiState));
-				showCostTooltip(uiState, city, demolitionCost);
-			}	
-			else if (!mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-			{
-				// Demolish everything within dragRect!
-				demolishRect(uiState, city, getDragRect(uiState));
+				if (!mouseIsOverUI)
+				{
+					// Demolish everything within dragRect!
+					demolishRect(uiState, city, getDragRect(uiState));
+				}
+
 				cancelDragging(uiState);
+			}
+			else
+			{
+				// Update the dragging state
+				Rect2I demolishRect;
+
+				if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+				{
+					startDragging(uiState, mouseTilePos);
+				}
+
+				if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+				{
+					updateDragging(uiState, mouseTilePos);
+					demolishRect = getDragRect(uiState);
+				}
+				else
+				{
+					demolishRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+				}
+
+				// Zoning preview
+				if (!mouseIsOverUI || uiState->isDragging)
+				{
+					s32 demolishCost = calculateDemolitionCost(city, demolishRect);
+
+					if (!mouseIsOverUI)
+					{
+						showCostTooltip(uiState, city, demolishCost);
+					}
+
+					if (canAfford(city, demolishCost))
+					{
+						// Demolition outline
+						drawRect(&renderer->worldBuffer, rect2(demolishRect), 0, color255(128, 0, 0, 128));
+					}
+					else
+					{
+						drawRect(&renderer->worldBuffer, rect2(demolishRect), 0, color255(255, 64, 64, 128));
+					}
+				}
 			}
 		} break;
 
@@ -671,12 +710,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				}
 			} break;
 		}
-	}
-	else if (uiState->actionMode == ActionMode_Demolish
-		&& uiState->isDragging)
-	{
-		// Demolition outline
-		drawRect(&renderer->worldBuffer, rect2(getDragRect(uiState)), 0, color255(128, 0, 0, 128));
 	}
 
 	// Draw the UI!
