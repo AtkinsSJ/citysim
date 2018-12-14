@@ -84,17 +84,38 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 						return;
 					}
 				}
-				else if (equals(firstWord, "build_cost"))
+				else if (equals(firstWord, "build"))
 				{
+					String buildMethodString;
 					s64 cost;
+
+					buildMethodString = nextToken(remainder, &remainder);
 
 					if (asInt(nextToken(remainder, &remainder), &cost))
 					{
+						if (equals(buildMethodString, "plop"))
+						{
+							def->buildMethod = BuildMethod_Plop;
+						}
+						else if (equals(buildMethodString, "line"))
+						{
+							def->buildMethod = BuildMethod_DragLine;
+						}
+						else if (equals(buildMethodString, "rect"))
+						{
+							def->buildMethod = BuildMethod_DragRect;
+						}
+						else
+						{
+							warn(&reader, "Couldn't parse the build method, assuming NONE.");
+							def->buildMethod = BuildMethod_None;
+						}
+
 						def->buildCost = (s32) cost;
 					}
 					else
 					{
-						error(&reader, "Couldn't parse build_cost. Expected 1 int.");
+						error(&reader, "Couldn't parse build. Expected use:\"build method cost\", where method is (plop/line/rect). If it's not buildable, just don't have a \"build\" line at all.");
 						return;
 					}
 				}
@@ -123,20 +144,6 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 					else
 					{
 						error(&reader, "Couldn't parse is_path. Expected 1 boolean (true/false).");
-						return;
-					}
-				}
-				else if (equals(firstWord, "is_ploppable"))
-				{
-					bool isPloppable;
-
-					if (asBool(nextToken(remainder, &remainder), &isPloppable))
-					{
-						def->isPloppable = isPloppable;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse is_ploppable. Expected 1 boolean (true/false).");
 						return;
 					}
 				}

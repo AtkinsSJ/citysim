@@ -1,5 +1,13 @@
 #pragma once
 
+enum BuildMethod
+{
+	BuildMethod_None,
+	BuildMethod_Plop,
+	BuildMethod_DragRect,
+	BuildMethod_DragLine,
+};
+
 struct BuildingDef
 {
 	union
@@ -13,10 +21,12 @@ struct BuildingDef
 	};
 	String name;
 	u32 textureAssetType;
+
+	BuildMethod buildMethod;
 	s32 buildCost;
 	s32 demolishCost;
+	
 	bool isPath;
-	bool isPloppable;
 	bool carriesPower;
 	s32 power; // Positive for production, negative for consumption
 

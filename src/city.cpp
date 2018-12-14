@@ -50,8 +50,7 @@ void spend(City *city, s32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, V2I position,
-	bool isAttemptingToBuild = false)
+bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, s32 left, s32 top, bool isAttemptingToBuild = false)
 {
 
 	// // Only allow one farmhouse!
@@ -77,7 +76,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 		return false;
 	}
 
-	Rect2I footprint = irectCentreWH(position, def->width, def->height);
+	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
 	// Are we in bounds?
 	if (!rectInRect2I(irectXYWH(0,0, city->width, city->height), footprint))
@@ -144,9 +143,9 @@ void updatePathTexture(City *city, s32 x, s32 y)
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I position)
+bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s32 top, bool showBuildErrors)
 {
-	if (!canPlaceBuilding(uiState, city, buildingTypeID, position, true))
+	if (!canPlaceBuilding(uiState, city, buildingTypeID, left, top, showBuildErrors))
 	{
 		return false;
 	}
@@ -158,7 +157,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 	bool needToRecalcPower = def->carriesPower;
 
 	Building *building = null;
-	u32 buildingID = city->tileBuildings[tileIndex(city,position.x,position.y)];
+	u32 buildingID = city->tileBuildings[tileIndex(city, left, top)];
 
 	if (buildingID)
 	{
@@ -178,7 +177,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 		buildingID = city->buildings.count;
 		building = appendBlank(&city->buildings);
 		building->typeID = buildingTypeID;
-		building->footprint = irectCentreWH(position, def->width, def->height);
+		building->footprint = irectXYWH(left, top, def->width, def->height);
 	}
 
 	// Tiles
@@ -208,13 +207,14 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 		// Sprite id is 0 to 15, depending on connecting neighbours.
 		// 1 = up, 2 = right, 4 = down, 8 = left
 		// For now, we'll decide that off-the-map does NOT connect
+		ASSERT(def->width == 1 && def->height == 1, "We only support 1x1 path buildings right now!");
 
 		// Update sprites for the tile, and the 4 neighbours.
-		updatePathTexture(city, position.x,   position.y);
-		updatePathTexture(city, position.x+1, position.y);
-		updatePathTexture(city, position.x-1, position.y);
-		updatePathTexture(city, position.x,   position.y+1);
-		updatePathTexture(city, position.x,   position.y-1);
+		updatePathTexture(city, left,   top);
+		updatePathTexture(city, left+1, top);
+		updatePathTexture(city, left-1, top);
+		updatePathTexture(city, left,   top+1);
+		updatePathTexture(city, left,   top-1);
 	}
 	else
 	{
@@ -233,6 +233,47 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, V2I positio
 	}
 
 	return true;
+}
+
+s32 calculateBuildCost(City *city, u32 buildingTypeID, Rect2I area)
+{
+	BuildingDef *def = get(&buildingDefs, buildingTypeID);
+	s32 totalCost = 0;
+
+	for (s32 y=0; y + def->height <= area.h; y += def->height)
+	{
+		for (s32 x=0; x + def->width <= area.w; x += def->width)
+		{
+			if (canPlaceBuilding(null, city, buildingTypeID, area.x + x, area.y + y))
+			{
+				totalCost += def->buildCost;
+			}
+		}
+	}
+
+	return totalCost;
+}
+
+void placeBuildingRect(UIState *uiState, City *city, u32 buildingTypeID, Rect2I area)
+{
+	BuildingDef *def = get(&buildingDefs, buildingTypeID);
+
+	s32 cost = calculateBuildCost(city, buildingTypeID, area);
+	if (!canAfford(city, cost))
+	{
+		pushUiMessage(uiState, stringFromChars("Not enough money for construction."));
+	}
+
+	for (s32 y=0; y + def->height <= area.h; y += def->height)
+	{
+		for (s32 x=0; x + def->width <= area.w; x += def->width)
+		{
+			placeBuilding(uiState, city, buildingTypeID, area.x + x, area.y + y, false);
+		}
+	}
+
+	recalculatePathingConnectivity(city);
+	recalculatePowerConnectivity(city);
 }
 
 // NB: Only for use withing demolishRect()!

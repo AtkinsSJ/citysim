@@ -167,7 +167,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			for (u32 i=0; i < buildingDefs.itemCount; i++)
 			{
 				BuildingDef *buildingDef = get(&buildingDefs, i);
-				if (!buildingDef->isPloppable) continue;
+				if (!buildingDef->buildMethod) continue;
 
 				if (uiButton(uiState, uiBuffer, assets, inputState, buildingDef->name, menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingTypeID == i)))
@@ -308,13 +308,39 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				case ActionMode_Build:
 				{
-					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+					BuildingDef *buildingDef = get(&buildingDefs, uiState->selectedBuildingTypeID);
+
+					switch (buildingDef->buildMethod)
 					{
-						placeBuilding(uiState, city, uiState->selectedBuildingTypeID, mouseTilePos);
+						case BuildMethod_Plop:
+						{
+							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+							{
+								V2I buildingPos = irectCentreDim(mouseTilePos, buildingDef->size).pos;
+								placeBuilding(uiState, city, uiState->selectedBuildingTypeID, buildingPos.x, buildingPos.y, true);
+							}
+
+							s32 buildCost = buildingDef->buildCost;
+							showCostTooltip(uiState, city, buildCost);
+						} break;
+
+						case BuildMethod_DragRect:
+						{
+							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+							{
+								updateDragging(uiState, mouseTilePos);
+								s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, getDragRect(uiState));
+								showCostTooltip(uiState, city, buildCost);
+							}	
+							else if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+							{
+								// Build everything within dragRect!
+								placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, getDragRect(uiState));
+								cancelDragging(uiState);
+							}
+						} break;
 					}
 
-					s32 buildCost = get(&buildingDefs, uiState->selectedBuildingTypeID)->buildCost;
-					showCostTooltip(uiState, city, buildCost);
 				} break;
 
 				case ActionMode_Demolish:
@@ -538,17 +564,41 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	if (uiState->actionMode == ActionMode_Build
 		&& uiState->selectedBuildingTypeID != -1)
 	{
+		BuildingDef *buildingDef = get(&buildingDefs, uiState->selectedBuildingTypeID);
 
-		V4 ghostColor = color255(128,255,128,255);
-		if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, mouseTilePos))
+		switch (buildingDef->buildMethod)
 		{
-			ghostColor = color255(255,0,0,128);
+			case BuildMethod_Plop:
+			{
+				V4 ghostColor = color255(128,255,128,255);
+
+				Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
+				if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, footprint.x, footprint.y))
+				{
+					ghostColor = color255(255,0,0,128);
+				}
+				drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
+								  rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor);
+			} break;
+
+			case BuildMethod_DragRect:
+			{
+				Rect2I dragRect = getDragRect(uiState);
+				for (s32 y=0; y + buildingDef->height <= dragRect.h; y += buildingDef->height)
+				{
+					for (s32 x=0; x + buildingDef->width <= dragRect.w; x += buildingDef->width)
+					{
+						V4 ghostColor = color255(128,255,128,255);
+						if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, dragRect.x + x, dragRect.y + y))
+						{
+							ghostColor = color255(255,0,0,128);
+						}
+						drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
+						                  rectXYWHi(dragRect.x + x, dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragRect.y + y) + 100, ghostColor);
+					}
+				}
+			} break;
 		}
-		BuildingDef *def = get(&buildingDefs, uiState->selectedBuildingTypeID);
-		Rect2 footprint = rect2(irectCentreWH(mouseTilePos, def->width, def->height));
-		drawTextureRegion(&renderer->worldBuffer,
-						  getTextureRegionID(assets, get(&buildingDefs, uiState->selectedBuildingTypeID)->textureAssetType, 0),
-						  footprint, depthFromY(mouseTilePos.y) + 100, ghostColor);
 	}
 	else if (uiState->actionMode == ActionMode_Zone
 		&& uiState->isDragging)
