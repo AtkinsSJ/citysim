@@ -294,150 +294,194 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		inputMoveCamera(worldCamera, inputState, uiCamera->size, gameState->city.width, gameState->city.height);
 	}
+
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
+	bool mouseIsOverUI = inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos);
 
 	City *city = &gameState->city;
-
-	// UiButton/Mouse interaction
-	if (gameState->status == GameStatus_Playing)
+	switch (uiState->actionMode)
 	{
-		// This is a very basic check for "is the user clicking on the UI?"
-		if (!inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos))
+		case ActionMode_Build:
 		{
-			switch (uiState->actionMode)
+			BuildingDef *buildingDef = get(&buildingDefs, uiState->selectedBuildingTypeID);
+
+			if (!mouseIsOverUI)
 			{
-				case ActionMode_Build:
+				switch (buildingDef->buildMethod)
 				{
-					BuildingDef *buildingDef = get(&buildingDefs, uiState->selectedBuildingTypeID);
-
-					switch (buildingDef->buildMethod)
+					case BuildMethod_Paint:
 					{
-						case BuildMethod_Paint:
+						if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 						{
-							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
-							{
-								V2I buildingPos = irectCentreDim(mouseTilePos, buildingDef->size).pos;
-								placeBuilding(uiState, city, uiState->selectedBuildingTypeID, buildingPos.x, buildingPos.y, true);
-							}
+							V2I buildingPos = irectCentreDim(mouseTilePos, buildingDef->size).pos;
+							placeBuilding(uiState, city, uiState->selectedBuildingTypeID, buildingPos.x, buildingPos.y, true);
+						}
 
-							s32 buildCost = buildingDef->buildCost;
+						s32 buildCost = buildingDef->buildCost;
+						showCostTooltip(uiState, city, buildCost);
+					} break;
+
+					case BuildMethod_Plop:
+					{
+						if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+						{
+							V2I buildingPos = irectCentreDim(mouseTilePos, buildingDef->size).pos;
+							placeBuilding(uiState, city, uiState->selectedBuildingTypeID, buildingPos.x, buildingPos.y, true);
+						}
+
+						s32 buildCost = buildingDef->buildCost;
+						showCostTooltip(uiState, city, buildCost);
+					} break;
+
+					case BuildMethod_DragRect:
+					{
+						if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+						{
+							updateDragging(uiState, mouseTilePos);
+							s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, getDragRect(uiState));
 							showCostTooltip(uiState, city, buildCost);
-						} break;
-
-						case BuildMethod_Plop:
+						}	
+						else if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 						{
-							if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-							{
-								V2I buildingPos = irectCentreDim(mouseTilePos, buildingDef->size).pos;
-								placeBuilding(uiState, city, uiState->selectedBuildingTypeID, buildingPos.x, buildingPos.y, true);
-							}
+							// Build everything within dragRect!
+							placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, getDragRect(uiState));
+							cancelDragging(uiState);
+						}
+					} break;
+				}
+			}
+		} break;
 
-							s32 buildCost = buildingDef->buildCost;
-							showCostTooltip(uiState, city, buildCost);
-						} break;
-
-						case BuildMethod_DragRect:
-						{
-							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
-							{
-								updateDragging(uiState, mouseTilePos);
-								s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, getDragRect(uiState));
-								showCostTooltip(uiState, city, buildCost);
-							}	
-							else if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-							{
-								// Build everything within dragRect!
-								placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, getDragRect(uiState));
-								cancelDragging(uiState);
-							}
-						} break;
-					}
-
-				} break;
-
-				case ActionMode_Demolish:
+		case ActionMode_Zone:
+		{
+			if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+			{
+				if (!mouseIsOverUI)
 				{
-					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
-					{
-						updateDragging(uiState, mouseTilePos);
-						s32 demolitionCost = calculateDemolitionCost(city, getDragRect(uiState));
-						showCostTooltip(uiState, city, demolitionCost);
-					}	
-					else if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-					{
-						// Demolish everything within dragRect!
-						demolishRect(uiState, city, getDragRect(uiState));
-						cancelDragging(uiState);
-					}
-				} break;
+					// Zone everything within dragRect!
+					zoneTiles(uiState, city, uiState->selectedZoneID, getDragRect(uiState));
+				}
 
-				case ActionMode_Zone:
+				cancelDragging(uiState);
+			}
+			else
+			{
+				// Update the dragging state
+				Rect2I zoneRect;
+
+				if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 				{
-					if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+					startDragging(uiState, mouseTilePos);
+				}
+
+				if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+				{
+					updateDragging(uiState, mouseTilePos);
+					zoneRect = getDragRect(uiState);
+				}
+				else
+				{
+					zoneRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+				}
+
+				// Zoning preview
+				if (!mouseIsOverUI || uiState->isDragging)
+				{
+					s32 zoneCost = calculateZoneCost(city, uiState->selectedZoneID, zoneRect);
+
+					if (!mouseIsOverUI)
 					{
-						updateDragging(uiState, mouseTilePos);
-						s32 zoneCost = calculateZoneCost(city, uiState->selectedZoneID, getDragRect(uiState));
 						showCostTooltip(uiState, city, zoneCost);
 					}
-					else if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-					{
-						// Zone everything within dragRect!
-						zoneRect(uiState, city, uiState->selectedZoneID, getDragRect(uiState));
-						cancelDragging(uiState);
-					}
-				} break;
 
-				case ActionMode_None:
-				{
-					if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+					if (canAfford(city, zoneCost))
 					{
-						if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
+						for (s32 y = zoneRect.y; y < zoneRect.y+zoneRect.h; y++)
 						{
-							int tileI = tileIndex(city, mouseTilePos.x, mouseTilePos.y);
-
-							String buildingName;
-							int buildingID = city->tileBuildings[tileI];
-							if (buildingID != 0)
+							for (s32 x = zoneRect.x; x < zoneRect.x+zoneRect.w; x++)
 							{
-								buildingName = get(&buildingDefs, city->buildings[buildingID].typeID)->name;
+								V4 color = canZoneTile(city, uiState->selectedZoneID, x, y)
+										? zoneDefs[uiState->selectedZoneID].color
+										: color255(255, 255, 255, 32);
+								drawRect(&renderer->worldBuffer, rectXYWHi(x, y, 1, 1), 0, color);
 							}
-							else
-							{
-								buildingName = stringFromChars("None");
-							}
-
-							String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
-
-							String zoneName;
-							ZoneType zone = city->tileZones[tileI];
-							if (zone)
-							{
-								zoneName = zoneDefs[zone].name;
-							}
-							else
-							{
-								zoneName = stringFromChars("None");
-							}
-
-							logInfo("Clicked at ({0},{1}), terrain: {2}, building: {3}, zone: {4}", 
-								{formatInt(mouseTilePos.x), formatInt(mouseTilePos.y), terrainName, buildingName, zoneName});
 						}
 					}
-				} break;
+					else
+					{
+						drawRect(&renderer->worldBuffer, rect2(zoneRect), 0, color255(255, 64, 64, 128));
+					}
+				}
 			}
-		}
-		else if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-		{
-			// Not sure if this is the best idea, but it's the best I can come up with.
-			cancelDragging(uiState);
-		}
 
-		if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
+		} break;
+
+		case ActionMode_Demolish:
 		{
-			// Unselect current thing
-			uiState->actionMode = ActionMode_None;
-			setCursor(uiState, assets, Cursor_Main);
-		}
+			if (!mouseIsOverUI && mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+			{
+				updateDragging(uiState, mouseTilePos);
+				s32 demolitionCost = calculateDemolitionCost(city, getDragRect(uiState));
+				showCostTooltip(uiState, city, demolitionCost);
+			}	
+			else if (!mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+			{
+				// Demolish everything within dragRect!
+				demolishRect(uiState, city, getDragRect(uiState));
+				cancelDragging(uiState);
+			}
+		} break;
+
+		case ActionMode_None:
+		{
+			if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+			{
+				if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
+				{
+					int tileI = tileIndex(city, mouseTilePos.x, mouseTilePos.y);
+
+					String buildingName;
+					int buildingID = city->tileBuildings[tileI];
+					if (buildingID != 0)
+					{
+						buildingName = get(&buildingDefs, city->buildings[buildingID].typeID)->name;
+					}
+					else
+					{
+						buildingName = stringFromChars("None");
+					}
+
+					String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
+
+					String zoneName;
+					ZoneType zone = city->tileZones[tileI];
+					if (zone)
+					{
+						zoneName = zoneDefs[zone].name;
+					}
+					else
+					{
+						zoneName = stringFromChars("None");
+					}
+
+					logInfo("Clicked at ({0},{1}), terrain: {2}, building: {3}, zone: {4}", 
+						{formatInt(mouseTilePos.x), formatInt(mouseTilePos.y), terrainName, buildingName, zoneName});
+				}
+			}
+		} break;
+	}
+
+	if (uiState->isDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	{
+		// Not sure if this is the best idea, but it's the best I can come up with.
+		cancelDragging(uiState);
+	}
+
+	if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
+	{
+		// Unselect current thing
+		uiState->actionMode = ActionMode_None;
+		setCursor(uiState, assets, Cursor_Main);
 	}
 
 	// RENDERING
@@ -596,28 +640,37 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			case BuildMethod_DragRect:
 			{
-				Rect2I dragRect = getDragRect(uiState);
-				for (s32 y=0; y + buildingDef->height <= dragRect.h; y += buildingDef->height)
+				if (uiState->isDragging)
 				{
-					for (s32 x=0; x + buildingDef->width <= dragRect.w; x += buildingDef->width)
+					Rect2I dragRect = getDragRect(uiState);
+					for (s32 y=0; y + buildingDef->height <= dragRect.h; y += buildingDef->height)
 					{
-						V4 ghostColor = color255(128,255,128,255);
-						if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, dragRect.x + x, dragRect.y + y))
+						for (s32 x=0; x + buildingDef->width <= dragRect.w; x += buildingDef->width)
 						{
-							ghostColor = color255(255,0,0,128);
+							V4 ghostColor = color255(128,255,128,255);
+							if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, dragRect.x + x, dragRect.y + y))
+							{
+								ghostColor = color255(255,0,0,128);
+							}
+							drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
+							                  rectXYWHi(dragRect.x + x, dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragRect.y + y) + 100, ghostColor);
 						}
-						drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
-						                  rectXYWHi(dragRect.x + x, dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragRect.y + y) + 100, ghostColor);
 					}
+				}
+				else
+				{
+					V4 ghostColor = color255(128,255,128,255);
+
+					Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
+					if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, footprint.x, footprint.y))
+					{
+						ghostColor = color255(255,0,0,128);
+					}
+					drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
+									  rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor);
 				}
 			} break;
 		}
-	}
-	else if (uiState->actionMode == ActionMode_Zone
-		&& uiState->isDragging)
-	{
-		// Zone preview
-		drawRect(&renderer->worldBuffer, rect2(getDragRect(uiState)), 0, zoneDefs[uiState->selectedZoneID].color);
 	}
 	else if (uiState->actionMode == ActionMode_Demolish
 		&& uiState->isDragging)

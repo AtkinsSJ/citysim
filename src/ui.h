@@ -69,16 +69,18 @@ void setCursor(UIState *uiState, AssetManager *assets, u32 cursorID)
 	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
 }
 
+void startDragging(UIState *uiState, V2I mouseTilePos)
+{
+	uiState->isDragging = true;
+	uiState->mouseDragStartPos = uiState->mouseDragEndPos = mouseTilePos;
+}
+
 void updateDragging(UIState *uiState, V2I mouseTilePos)
 {
-	// Start drag if it isn't already started
-	if (!uiState->isDragging)
+	if (uiState->isDragging)
 	{
-		uiState->isDragging = true;
-		uiState->mouseDragStartPos = mouseTilePos;
+		uiState->mouseDragEndPos = mouseTilePos;
 	}
-
-	uiState->mouseDragEndPos = mouseTilePos;
 }
 
 Rect2I getDragRect(UIState *uiState)

@@ -47,6 +47,7 @@ MemoryArena *globalFrameTempArena;
 #include "ui.h"
 #include "building.h"
 #include "terrain.h"
+#include "zone.h"
 #include "city.h"
 #include "game.h"
 
@@ -76,6 +77,7 @@ AppState globalAppState;
 #include "pathing.cpp"
 #include "power.cpp"
 #include "city.cpp"
+#include "zone.cpp"
 #include "game.cpp"
 #include "log.cpp"
 
