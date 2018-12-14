@@ -353,6 +353,73 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 				} break;
 
+				case BuildMethod_DragLine:
+				{
+					// NB: @Copypasta from ActionMode_Zone!
+					if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+					{
+						if (!mouseIsOverUI)
+						{
+							// Build everything within dragRect!
+							placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, getDragLine(uiState));
+						}
+
+						cancelDragging(uiState);
+					}
+					else
+					{
+						// Update the dragging state
+						Rect2I buildRect;
+
+						if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+						{
+							startDragging(uiState, mouseTilePos);
+						}
+
+						if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+						{
+							updateDragging(uiState, mouseTilePos);
+							buildRect = getDragLine(uiState);
+						}
+						else
+						{
+							buildRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+						}
+
+						// Preview
+						if (!mouseIsOverUI || uiState->isDragging)
+						{
+							s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, buildRect);
+
+							if (!mouseIsOverUI)
+							{
+								showCostTooltip(uiState, city, buildCost);
+							}
+
+							if (canAfford(city, buildCost))
+							{
+								for (s32 y=0; y + buildingDef->height <= buildRect.h; y += buildingDef->height)
+								{
+									for (s32 x=0; x + buildingDef->width <= buildRect.w; x += buildingDef->width)
+									{
+										V4 ghostColor = color255(128,255,128,255);
+										if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, buildRect.x + x, buildRect.y + y))
+										{
+											ghostColor = color255(255,0,0,128);
+										}
+										drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
+										                  rectXYWHi(buildRect.x + x, buildRect.y + y, buildingDef->width, buildingDef->height), depthFromY(buildRect.y + y) + 100, ghostColor);
+									}
+								}
+							}
+							else
+							{
+								drawRect(&renderer->worldBuffer, rect2(buildRect), 0, color255(255, 64, 64, 128));
+							}
+						}
+					}
+				} break;
+
 				case BuildMethod_DragRect:
 				{
 					// NB: @Copypasta from ActionMode_Zone!

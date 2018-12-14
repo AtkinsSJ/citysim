@@ -285,6 +285,40 @@ Rect2I getDragRect(UIState *uiState)
 	return dragRect;
 }
 
+Rect2I getDragLine(UIState *uiState)
+{
+	// Axis-aligned straight line, in one dimension.
+	// So, if you drag a diagonal line, it picks which direction has greater length and uses that.
+
+	Rect2I result = irectXYWH(0, 0, 0, 0);
+	if (uiState->isDragging)
+	{
+		// determine orientation
+		s32 xDiff = abs(uiState->mouseDragStartPos.x - uiState->mouseDragEndPos.x);
+		s32 yDiff = abs(uiState->mouseDragStartPos.y - uiState->mouseDragEndPos.y);
+		if (xDiff > yDiff)
+		{
+			// X
+			result.w = xDiff + 1;
+			result.h = 1;
+
+			result.x = MIN(uiState->mouseDragStartPos.x, uiState->mouseDragEndPos.x);
+			result.y = uiState->mouseDragStartPos.y;
+		}
+		else
+		{
+			// Y
+			result.w = 1;
+			result.h = yDiff + 1;
+
+			result.x = uiState->mouseDragStartPos.x;
+			result.y = MIN(uiState->mouseDragStartPos.y, uiState->mouseDragEndPos.y);
+		} 
+	}
+
+	return result;
+}
+
 void cancelDragging(UIState *uiState)
 {
 	uiState->isDragging = false;

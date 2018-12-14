@@ -3,7 +3,7 @@
 :Building Road
 size 1 1
 texture road.png 16 16 4 4
-build rect 10
+build line 10
 demolish_cost 10
 is_path true
 carries_power false
@@ -11,7 +11,7 @@ carries_power false
 :Building Power Line
 size 1 1
 texture power-line.png 16 16 1 1
-build rect 2
+build line 2
 demolish_cost 2
 carries_power true
 
