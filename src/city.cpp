@@ -52,18 +52,6 @@ void spend(City *city, s32 cost)
 
 bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, s32 left, s32 top, bool isAttemptingToBuild = false)
 {
-
-	// // Only allow one farmhouse!
-	// if (selectedBuildingTypeID == BA_Farmhouse
-	// 	&& city->firstBuildingOfType[BA_Farmhouse])
-	// {
-	// 	if (isAttemptingToBuild)
-	// 	{
-	// 		pushUiMessage(uiState, stringFromChars("You can only have one farmhouse!"));
-	// 	}
-	// 	return false;
-	// }
-
 	BuildingDef *def = get(&buildingDefs, selectedBuildingTypeID);
 
 	// Can we afford to build this?
