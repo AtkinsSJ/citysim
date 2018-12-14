@@ -93,7 +93,11 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 
 					if (asInt(nextToken(remainder, &remainder), &cost))
 					{
-						if (equals(buildMethodString, "plop"))
+						if (equals(buildMethodString, "paint"))
+						{
+							def->buildMethod = BuildMethod_Paint;
+						}
+						else if (equals(buildMethodString, "plop"))
 						{
 							def->buildMethod = BuildMethod_Plop;
 						}

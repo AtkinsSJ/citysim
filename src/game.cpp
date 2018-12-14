@@ -312,9 +312,21 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 					switch (buildingDef->buildMethod)
 					{
-						case BuildMethod_Plop:
+						case BuildMethod_Paint:
 						{
 							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+							{
+								V2I buildingPos = irectCentreDim(mouseTilePos, buildingDef->size).pos;
+								placeBuilding(uiState, city, uiState->selectedBuildingTypeID, buildingPos.x, buildingPos.y, true);
+							}
+
+							s32 buildCost = buildingDef->buildCost;
+							showCostTooltip(uiState, city, buildCost);
+						} break;
+
+						case BuildMethod_Plop:
+						{
+							if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 							{
 								V2I buildingPos = irectCentreDim(mouseTilePos, buildingDef->size).pos;
 								placeBuilding(uiState, city, uiState->selectedBuildingTypeID, buildingPos.x, buildingPos.y, true);
@@ -569,6 +581,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		switch (buildingDef->buildMethod)
 		{
 			case BuildMethod_Plop:
+			case BuildMethod_Paint:
 			{
 				V4 ghostColor = color255(128,255,128,255);
 

@@ -3,6 +3,7 @@
 enum BuildMethod
 {
 	BuildMethod_None,
+	BuildMethod_Paint,
 	BuildMethod_Plop,
 	BuildMethod_DragRect,
 	BuildMethod_DragLine,

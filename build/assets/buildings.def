@@ -35,7 +35,7 @@ power_use 20
 :Building Factory
 size 3 3
 texture factory-3x3.png 48 48 1 1
-build plop 40
+build paint 40
 demolish_cost 100
 is_path false
 carries_power true
