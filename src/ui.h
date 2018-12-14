@@ -26,14 +26,25 @@ struct Tooltip
 	V4 color;
 	String text;
 };
-const f32 uiMessageBottomMargin = 4,
-			uiMessageTextPadding = 4;
+
+const f32 uiMessageDisplayTime = 2.0f;
+const f32 uiMessageBottomMargin = 4;
+const f32 uiMessageTextPadding = 4;
 struct UiMessage
 {
 	String text;
 	f32 countdown; // In seconds
 };
 
+/* 
+ * So... Really, we have two different things here:
+ * - Global UI state, such as the theme and current cursor
+ * - Game-specific stuff, like what the action mode is, drag state, etc.
+ * Probably they should be separated out. UI element code in one place, and game-ui logic elsewhere.
+ * BUT, I don't know exactly what should go where, and I don't want to fiddle with it right now.
+ *
+ * - Sam, 14/12/2018
+ */
 struct UIState
 {
 	MemoryArena arena;
@@ -61,40 +72,3 @@ struct UIState
 	V2I mouseDragEndPos;
 };
 
-const f32 messageDisplayTime = 2.0f;
-
-void setCursor(UIState *uiState, AssetManager *assets, u32 cursorID)
-{
-	uiState->currentCursor = cursorID;
-	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
-}
-
-void startDragging(UIState *uiState, V2I mouseTilePos)
-{
-	uiState->isDragging = true;
-	uiState->mouseDragStartPos = uiState->mouseDragEndPos = mouseTilePos;
-}
-
-void updateDragging(UIState *uiState, V2I mouseTilePos)
-{
-	if (uiState->isDragging)
-	{
-		uiState->mouseDragEndPos = mouseTilePos;
-	}
-}
-
-Rect2I getDragRect(UIState *uiState)
-{
-	Rect2I dragRect = irectXYWH(0, 0, 0, 0);
-	if (uiState->isDragging)
-	{
-		dragRect = irectCovering(uiState->mouseDragStartPos, uiState->mouseDragEndPos);
-	}
-
-	return dragRect;
-}
-
-void cancelDragging(UIState *uiState)
-{
-	uiState->isDragging = false;
-}

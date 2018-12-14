@@ -1,5 +1,11 @@
 // ui.cpp
 
+void setCursor(UIState *uiState, AssetManager *assets, u32 cursorID)
+{
+	uiState->currentCursor = cursorID;
+	SDL_SetCursor(getCursor(assets, cursorID)->sdlCursor);
+}
+
 void setCursorVisible(UIState *uiState, bool visible)
 {
 	uiState->cursorIsVisible = visible;
@@ -199,7 +205,7 @@ bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets
 void pushUiMessage(UIState *uiState, String message)
 {
 	copyString(message, &uiState->message.text);
-	uiState->message.countdown = messageDisplayTime;
+	uiState->message.countdown = uiMessageDisplayTime;
 }
 
 void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
@@ -214,7 +220,7 @@ void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *asset
 		{
 			UIMessageStyle *style = &assets->theme.uiMessageStyle;
 
-			f32 t = (f32)uiState->message.countdown / messageDisplayTime;
+			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 
 			V4 backgroundColor = style->backgroundColor;
 			V4 textColor = style->textColor;
@@ -252,4 +258,34 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
 	drawRect(uiBuffer, knobRect, depth, knobColor);
+}
+
+void startDragging(UIState *uiState, V2I mouseTilePos)
+{
+	uiState->isDragging = true;
+	uiState->mouseDragStartPos = uiState->mouseDragEndPos = mouseTilePos;
+}
+
+void updateDragging(UIState *uiState, V2I mouseTilePos)
+{
+	if (uiState->isDragging)
+	{
+		uiState->mouseDragEndPos = mouseTilePos;
+	}
+}
+
+Rect2I getDragRect(UIState *uiState)
+{
+	Rect2I dragRect = irectXYWH(0, 0, 0, 0);
+	if (uiState->isDragging)
+	{
+		dragRect = irectCovering(uiState->mouseDragStartPos, uiState->mouseDragEndPos);
+	}
+
+	return dragRect;
+}
+
+void cancelDragging(UIState *uiState)
+{
+	uiState->isDragging = false;
 }
