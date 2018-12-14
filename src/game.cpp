@@ -92,6 +92,74 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 	}
 }
 
+enum DragType
+{
+	DragLine,
+	DragRect
+};
+
+struct DragResult
+{
+	Rect2I dragRect;
+	bool didDragComplete;
+	bool shouldShowPreview;
+};
+DragResult updateDragState(UIState *uiState, InputState *inputState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType)
+{
+	DragResult result = {};
+
+	if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	{
+		if (!mouseIsOverUI)
+		{
+			result.didDragComplete = true;
+
+			switch(dragType)
+			{
+				case DragLine: result.dragRect = getDragLine(uiState); break;
+				case DragRect: result.dragRect = getDragRect(uiState); break;
+
+				INVALID_DEFAULT_CASE;
+			}
+		}
+
+		cancelDragging(uiState);
+	}
+	else
+	{
+		// Update the dragging state
+		if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+		{
+			startDragging(uiState, mouseTilePos);
+		}
+
+		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+		{
+			updateDragging(uiState, mouseTilePos);
+
+			switch(dragType)
+			{
+				case DragLine: result.dragRect = getDragLine(uiState); break;
+				case DragRect: result.dragRect = getDragRect(uiState); break;
+
+				INVALID_DEFAULT_CASE;
+			}
+		}
+		else
+		{
+			result.dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+		}
+
+		// Preview
+		if (!mouseIsOverUI || uiState->isDragging)
+		{
+			result.shouldShowPreview = true;
+		}
+	}
+
+	return result;
+}
+
 void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState, GameState *gameState,
 	                       InputState *inputState)
 {
@@ -355,67 +423,42 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				case BuildMethod_DragLine:
 				{
-					// NB: @Copypasta from ActionMode_Zone!
-					if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+					DragResult dragResult = updateDragState(uiState, inputState, mouseTilePos, mouseIsOverUI, DragLine);
+					s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, dragResult.dragRect);
+
+					if (dragResult.didDragComplete)
+					{
+						if (canAfford(city, buildCost))
+						{
+							placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, dragResult.dragRect);
+						}
+					}
+					else if (dragResult.shouldShowPreview)
 					{
 						if (!mouseIsOverUI)
 						{
-							// Build everything within dragRect!
-							placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, getDragLine(uiState));
+							showCostTooltip(uiState, city, buildCost);
 						}
 
-						cancelDragging(uiState);
-					}
-					else
-					{
-						// Update the dragging state
-						Rect2I buildRect;
-
-						if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+						if (canAfford(city, buildCost))
 						{
-							startDragging(uiState, mouseTilePos);
-						}
-
-						if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
-						{
-							updateDragging(uiState, mouseTilePos);
-							buildRect = getDragLine(uiState);
+							for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
+							{
+								for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
+								{
+									V4 ghostColor = color255(128,255,128,255);
+									if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
+									{
+										ghostColor = color255(255,0,0,128);
+									}
+									drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
+									                  rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragResult.dragRect.y + y) + 100, ghostColor);
+								}
+							}
 						}
 						else
 						{
-							buildRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
-						}
-
-						// Preview
-						if (!mouseIsOverUI || uiState->isDragging)
-						{
-							s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, buildRect);
-
-							if (!mouseIsOverUI)
-							{
-								showCostTooltip(uiState, city, buildCost);
-							}
-
-							if (canAfford(city, buildCost))
-							{
-								for (s32 y=0; y + buildingDef->height <= buildRect.h; y += buildingDef->height)
-								{
-									for (s32 x=0; x + buildingDef->width <= buildRect.w; x += buildingDef->width)
-									{
-										V4 ghostColor = color255(128,255,128,255);
-										if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, buildRect.x + x, buildRect.y + y))
-										{
-											ghostColor = color255(255,0,0,128);
-										}
-										drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
-										                  rectXYWHi(buildRect.x + x, buildRect.y + y, buildingDef->width, buildingDef->height), depthFromY(buildRect.y + y) + 100, ghostColor);
-									}
-								}
-							}
-							else
-							{
-								drawRect(&renderer->worldBuffer, rect2(buildRect), 0, color255(255, 64, 64, 128));
-							}
+							drawRect(&renderer->worldBuffer, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128));
 						}
 					}
 				} break;
