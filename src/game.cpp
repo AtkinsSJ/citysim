@@ -681,10 +681,28 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// Pre-calculate the tile area that's visible to the player.
 	// We err on the side of drawing too much, rather than risking having holes in the world.
 	Rect2I visibleTileBounds = irectCentreWH(
-		v2i(MAX((s32)worldCamera->pos.x - 1, 0), MAX((s32)worldCamera->pos.y - 1, 0)),
-		(s32) MIN(gameState->city.width,  worldCamera->size.x / worldCamera->zoom + 5),
-		(s32) MIN(gameState->city.height, worldCamera->size.y / worldCamera->zoom + 5)
+		v2i((s32)worldCamera->pos.x - 1, (s32)worldCamera->pos.y - 1),
+		(s32) (worldCamera->size.x / worldCamera->zoom + 5),
+		(s32) (worldCamera->size.y / worldCamera->zoom + 5)
 	);
+	if (visibleTileBounds.x < 0)
+	{
+		visibleTileBounds.w += visibleTileBounds.x;
+		visibleTileBounds.x = 0;
+	}
+	if (visibleTileBounds.y < 0)
+	{
+		visibleTileBounds.h += visibleTileBounds.y;
+		visibleTileBounds.y = 0;
+	}
+	if (visibleTileBounds.w > gameState->city.width)
+	{
+		visibleTileBounds.w = gameState->city.width;
+	}
+	if (visibleTileBounds.h > gameState->city.height)
+	{
+		visibleTileBounds.h = gameState->city.height;
+	}
 
 	// Draw terrain
 	for (s32 y = visibleTileBounds.y;
