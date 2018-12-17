@@ -12,6 +12,7 @@ enum BuildMethod
 struct BuildingDef
 {
 	String name;
+	u32 typeID;
 
 	union
 	{

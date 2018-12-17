@@ -21,24 +21,55 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	nullBuilding->typeID = 0;
 }
 
+void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 top)
+{
+	u32 buildingID = city->buildings.count;
+	Building *building = appendBlank(&city->buildings);
+	building->typeID = buildingDef->typeID;
+	building->footprint = irectXYWH(left, top, buildingDef->width, buildingDef->height);
+	building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
+
+	for (s32 y=0; y<building->footprint.h; y++)
+	{
+		for (s32 x=0; x<building->footprint.w; x++)
+		{
+			s32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
+			city->tileBuildings[tile] = buildingID;
+		}
+	}
+}
+
 void generateTerrain(City *city, Random *random)
 {
-	u32 idGround = findTerrainTypeByName(stringFromChars("Ground"));
-	u32 idWater  = findTerrainTypeByName(stringFromChars("Water"));
-	u32 idForest = findTerrainTypeByName(stringFromChars("Forest"));
+	u32 tGround = findTerrainTypeByName(stringFromChars("Ground"));
+	u32 tWater  = findTerrainTypeByName(stringFromChars("Water"));
+
+	BuildingDef *bTree = get(&buildingDefs, findBuildingTypeByName(stringFromChars("Tree")));
 
 	for (s32 y = 0; y < city->height; y++) {
 		for (s32 x = 0; x < city->width; x++) {
 
-			f32 px = (f32)x * 0.1f;
-			f32 py = (f32)y * 0.1f;
+			f32 px = (f32)x * 0.05f;
+			f32 py = (f32)y * 0.05f;
 
 			f32 perlinValue = stb_perlin_noise3(px, py, 0);
 
 			Terrain *terrain = &city->terrain[tileIndex(city, x, y)];
-			terrain->type = (perlinValue > 0.1f)
-				? idForest
-				: idGround;
+			bool isGround = (perlinValue > 0.1f);
+			if (isGround)
+			{
+				terrain->type = tWater;
+			}
+			else
+			{
+				terrain->type = tGround;
+
+				if (stb_perlin_noise3(px, py, 1) > 0.2f)
+				{
+					generatorPlaceBuilding(city, bTree, x, y);
+				}
+			}
+
 			terrain->textureRegionOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
 		}
 	}

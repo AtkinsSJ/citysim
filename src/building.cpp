@@ -7,7 +7,6 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 	initChunkedArray(buildings, &assets->assetArena, 64);
 	appendBlank(buildings);
 
-	u32 defID = 0;
 	BuildingDef *def = null;
 
 	while (reader.pos < reader.file.length)
@@ -31,9 +30,9 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 			}
 			else
 			{
-				defID = buildings->itemCount;
 				def = appendBlank(buildings);
 				def->name = pushString(&assets->assetArena, trimEnd(remainder));
+				def->typeID = buildings->itemCount - 1;
 			}
 		}
 		else // Properties!
@@ -239,7 +238,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 							}
 							b1->canBeBuiltOnID = ingredient2type;
 							b2->canBeBuiltOnID = ingredient1type;
-							b1->buildOverResult = b2->buildOverResult = defID;
+							b1->buildOverResult = b2->buildOverResult = def->typeID;
 						}
 					}
 					else
