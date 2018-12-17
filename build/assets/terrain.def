@@ -6,11 +6,11 @@ can_build_on true
 can_demolish false
 
 :Terrain 2 Water
-texture water.png 16 16 1 1
+texture water.png 16 16
 can_build_on false
 can_demolish false
 
 :Terrain 3 Forest
-texture forest.png 16 16 1 1
+texture forest.png 16 16
 can_build_on false
 can_demolish true 100

@@ -151,7 +151,7 @@ s32 compare(String a, String b)
 
 bool asInt(String string, s64 *result)
 {
-	bool succeeded = true;
+	bool succeeded = string.length > 0;
 
 	s64 value = 0;
 	s32 startPosition = 0;
@@ -194,7 +194,7 @@ bool asInt(String string, s64 *result)
 
 bool asBool(String string, bool *result)
 {
-	bool succeeded = true;
+	bool succeeded = string.length > 0;
 
 	if (equals(string, "true"))
 	{

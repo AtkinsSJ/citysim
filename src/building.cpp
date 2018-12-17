@@ -71,16 +71,21 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 					s64 regionsDown;
 
 					if (asInt(nextToken(remainder, &remainder), &regionW)
-						&& asInt(nextToken(remainder, &remainder), &regionH)
-						&& asInt(nextToken(remainder, &remainder), &regionsAcross)
-						&& asInt(nextToken(remainder, &remainder), &regionsDown))
+						&& asInt(nextToken(remainder, &remainder), &regionH))
 					{
+						if (!(asInt(nextToken(remainder, &remainder), &regionsAcross)
+							&& asInt(nextToken(remainder, &remainder), &regionsDown)))
+						{
+							regionsAcross = 1;
+							regionsDown = 1;
+						}
+
 						def->textureAssetType = addNewTextureAssetType(assets);
 						addTiledTextureRegions(assets, def->textureAssetType, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
 					}
 					else
 					{
-						error(&reader, "Couldn't parse texture. Expected use: \"texture filename.png width height tilesAcross tilesDown\"");
+						error(&reader, "Couldn't parse texture. Expected use: \"texture filename.png width height (tilesAcross=1) (tilesDown=1)\"");
 						return;
 					}
 				}
