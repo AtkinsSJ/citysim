@@ -1,21 +1,10 @@
 #pragma once
 
-enum TerrainType
-{
-	Terrain_Invalid = 0,
-	Terrain_Ground = 1,
-	Terrain_Water = 2,
-	Terrain_Forest = 3,
-
-	Terrain_Size
-};
-
 struct TerrainDef
 {
-	TerrainType type;
-	u32 textureAssetType;
-
 	String name;
+
+	u32 textureAssetType;
 
 	bool canBuildOn;
 	bool canDemolish;
@@ -26,11 +15,29 @@ ChunkedArray<TerrainDef> terrainDefs = {};
 
 struct Terrain
 {
-	TerrainType type;
+	u32 type;
 	u32 textureRegionOffset; // used as the offset for getTextureRegionID
 };
 
-Terrain invalidTerrain = {Terrain_Invalid, 0};
+Terrain invalidTerrain = {0, 0};
 
 
 void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, File file);
+
+// Returns 0 if not found
+u32 findTerrainTypeByName(String name)
+{
+	u32 result = 0;
+
+	for (u32 terrainID = 1; terrainID < terrainDefs.itemCount; terrainID++)
+	{
+		TerrainDef *def = get(&terrainDefs, terrainID);
+		if (equals(def->name, name))
+		{
+			result = terrainID;
+			break;
+		}
+	}
+
+	return result;
+}

@@ -31,18 +31,14 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 			else
 			{
 				def = appendBlank(terrains);
-
-				s64 terrainType;
-				if (asInt(nextToken(remainder, &remainder), &terrainType))
+				
+				String name = trim(remainder);
+				if (name.length == 0)
 				{
-					def->type = (TerrainType) terrainType;
-					def->name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
-				}
-				else
-				{
-					error(&reader, "Couldn't parse TerrainType. Expected: ':Terrain type(int) name'");
+					error(&reader, "Couldn't parse TerrainType. Expected: ':Terrain name'");
 					return;
 				}
+				def->name = pushString(&assets->assetArena, name);
 			}
 		}
 		else // Properties!
@@ -122,11 +118,5 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 				}
 			}
 		}
-	}
-
-	// Make sure things match up, because they have to.
-	for (s32 i = 0; i < Terrain_Size; i++)
-	{
-		ASSERT(i == get(terrains, i)->type, "Terrain data file must match the TerrainType enum for now!");
 	}
 }

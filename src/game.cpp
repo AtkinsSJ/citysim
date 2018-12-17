@@ -696,7 +696,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			x++)
 		{
 			Terrain t = terrainAt(city,x,y);
-			if (t.type != Terrain_Invalid)
+			if (t.type != 0)
 			{
 				TerrainDef *tDef = get(&terrainDefs, t.type);
 

@@ -11,6 +11,8 @@ enum BuildMethod
 
 struct BuildingDef
 {
+	String name;
+
 	union
 	{
 		V2I size;
@@ -20,7 +22,6 @@ struct BuildingDef
 			s32 height;
 		};
 	};
-	String name;
 	u32 textureAssetType;
 
 	BuildMethod buildMethod;
@@ -56,3 +57,21 @@ struct Building
 };
 
 void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, File file);
+
+// Returns 0 if not found
+u32 findBuildingTypeByName(String name)
+{
+	u32 result = 0;
+
+	for (u32 buildingType = 1; buildingType < buildingDefs.itemCount; buildingType++)
+	{
+		BuildingDef *def = get(&buildingDefs, buildingType);
+		if (equals(def->name, name))
+		{
+			result = buildingType;
+			break;
+		}
+	}
+
+	return result;
+}

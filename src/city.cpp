@@ -23,6 +23,10 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 void generateTerrain(City *city, Random *random)
 {
+	u32 idGround = findTerrainTypeByName(stringFromChars("Ground"));
+	u32 idWater  = findTerrainTypeByName(stringFromChars("Water"));
+	u32 idForest = findTerrainTypeByName(stringFromChars("Forest"));
+
 	for (s32 y = 0; y < city->height; y++) {
 		for (s32 x = 0; x < city->width; x++) {
 
@@ -33,8 +37,8 @@ void generateTerrain(City *city, Random *random)
 
 			Terrain *terrain = &city->terrain[tileIndex(city, x, y)];
 			terrain->type = (perlinValue > 0.1f)
-				? Terrain_Forest
-				: Terrain_Ground;
+				? idForest
+				: idGround;
 			terrain->textureRegionOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
 		}
 	}
@@ -364,7 +368,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 			// Tear down all the trees!
 			if (canAfford(city, def->demolishCost)) {
 				spend(city, def->demolishCost);
-				city->terrain[posTI].type = Terrain_Ground;
+				city->terrain[posTI].type = findTerrainTypeByName(stringFromChars("Ground"));
 				return true;
 			} else {
 				pushUiMessage(uiState, stringFromChars("Not enough money to clear this terrain."));

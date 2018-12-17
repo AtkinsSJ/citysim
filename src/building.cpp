@@ -209,23 +209,8 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 						ingredient2 = trim(ingredient2);
 
 						// Now, find the buildings so we can link it up!
-						u32 ingredient1type = 0;
-						u32 ingredient2type = 0;
-
-						for (u32 typeID = 0; typeID < buildings->itemCount; typeID++)
-						{
-							BuildingDef *b = get(buildings, typeID);
-							if (ingredient1type == 0 && equals(b->name, ingredient1))
-							{
-								ingredient1type = typeID;
-							}
-							else if (ingredient2type == 0 && equals(b->name, ingredient2))
-							{
-								ingredient2type = typeID;
-							}
-
-							if (ingredient1type && ingredient2type) break;
-						}
+						u32 ingredient1type = findBuildingTypeByName(ingredient1);
+						u32 ingredient2type = findBuildingTypeByName(ingredient2);
 
 						if (ingredient1type == 0)
 						{
