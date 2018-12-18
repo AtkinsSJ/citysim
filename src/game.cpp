@@ -11,7 +11,7 @@ GameState *initialiseGameState()
 	GameState *result;
 	bootstrapArena(GameState, result, gameArena);
 
-	initCity(&result->gameArena, &result->city, 2000 / ITILE_SIZE, 1517 / ITILE_SIZE, LocalString("City Name Here"), gameStartFunds);
+	initCity(&result->gameArena, &result->city, 256, 256, LocalString("City Name Here"), gameStartFunds);
 	
 	Random random;
 	randomSeed(&random, 12345);

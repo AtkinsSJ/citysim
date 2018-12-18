@@ -378,7 +378,7 @@ void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, 
 
 		u32 frameIndex = debugState->writingFrameIndex;
 
-		renderBufferData->itemCount[frameIndex] = renderBuffer->itemCount;
+		renderBufferData->itemCount[frameIndex] = renderBuffer->items.count;
 		renderBufferData->drawCallCount[frameIndex] = drawCallCount;
 	}
 }

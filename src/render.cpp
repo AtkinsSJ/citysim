@@ -13,20 +13,18 @@ inline f32 depthFromY(s32 y)
 	return depthFromY((f32)y);
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 maxItems)
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize)
 {
 	buffer->name = pushString(arena, name);
-	buffer->items = PushArray(arena, RenderItem, maxItems);
-	buffer->itemCount = 0;
-	buffer->maxItems = maxItems;
+	initialiseArray(&buffer->items, initialSize);
 }
 
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window)
 {
 	renderer->window = window;
 
-	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", WORLD_SPRITE_MAX);
-	initRenderBuffer(renderArena, &renderer->uiBuffer, "UIBuffer", UI_SPRITE_MAX);
+	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", 16384);
+	initRenderBuffer(renderArena, &renderer->uiBuffer,    "UIBuffer",    16384);
 }
 
 void freeRenderer(Renderer *renderer)
@@ -98,21 +96,17 @@ inline RenderItem makeRenderItem(Rect2 rect, f32 depth, TextureRegionID textureR
 
 void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color)
 {
-	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
-
-	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, 0, color);
+	append(&buffer->items, makeRenderItem(rect, depth, 0, color));
 }
 
 void drawTextureRegion(RenderBuffer *buffer, TextureRegionID region, Rect2 rect, f32 depth, V4 color=makeWhite())
 {
-	ASSERT(buffer->itemCount < buffer->maxItems, "No room for DrawItem in %s.", buffer->name);
-
-	buffer->items[buffer->itemCount++] = makeRenderItem(rect, depth, region, color);
+	append(&buffer->items, makeRenderItem(rect, depth, region, color));
 }
 
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset)
 {
-	RenderItem *dest = buffer->items + buffer->itemCount++;
+	RenderItem *dest = appendBlank(&buffer->items);
 
 	dest->rect = offset(item->rect, offsetP);
 	dest->depth = item->depth + depthOffset;
@@ -120,41 +114,16 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 dept
 	dest->textureRegionID = item->textureRegionID;
 }
 
+s32 compareRenderItems(RenderItem *a, RenderItem *b)
+{
+	// NB: Hmmm. Having to convert float -> int might be a problem.
+	return (s32)(a->depth - b->depth);
+}
+
 void sortRenderBuffer(RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION();
-	// This is an implementation of the 'comb sort' algorithm, low to high
-
-	u32 gap = buffer->itemCount;
-	f32 shrink = 1.3f;
-
-	bool swapped = false;
-
-	while (gap > 1 || swapped)
-	{
-		gap = (u32)((f32)gap / shrink);
-		if (gap < 1)
-	{
-			gap = 1;
-		}
-
-		swapped = false;
-
-		// "comb" over the list
-		for (u32 i = 0;
-			i + gap < buffer->itemCount; // Here lies the remains of the flicker bug. It was <= not <. /fp
-			i++)
-		{
-			if (buffer->items[i].depth > buffer->items[i+gap].depth)
-			{
-				RenderItem temp = buffer->items[i];
-				buffer->items[i] = buffer->items[i+gap];
-				buffer->items[i+gap] = temp;
-
-				swapped = true;
-			}
-		}
-	}
+	sortInPlace(&buffer->items, compareRenderItems);
 }
 
 #if CHECK_BUFFERS_SORTED

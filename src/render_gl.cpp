@@ -325,11 +325,11 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 	GLuint glBoundTextureID = 0;
 	u32 drawCallCount = 0;
 
-	if (buffer->itemCount > 0)
+	if (buffer->items.count > 0)
 	{
-		for (u32 i=0; i < buffer->itemCount; i++)
+		for (u32 i=0; i < buffer->items.count; i++)
 		{
-			RenderItem *item = buffer->items + i;
+			RenderItem *item = pointerTo(&buffer->items, i);
 			ShaderProgramType desiredShader = getDesiredShader(item);
 
 			TextureRegion *region = getTextureRegion(assets, item->textureRegionID);
@@ -435,7 +435,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 
 	DEBUG_RENDER_BUFFER(buffer, drawCallCount);
 
-	buffer->itemCount = 0;
+	clear(&buffer->items);
 }
 
 static void GL_render(Renderer *renderer, AssetManager *assets)

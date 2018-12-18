@@ -35,17 +35,11 @@ struct RenderItem
 	u32 textureRegionID;
 };
 
-const int WORLD_SPRITE_MAX = 16384;
-const int UI_SPRITE_MAX    = 16384;
-const int SPRITE_MAX = MAX(WORLD_SPRITE_MAX, UI_SPRITE_MAX);
-
 struct RenderBuffer
 {
 	String name;
 	Camera camera;
-	RenderItem *items;
-	u32 itemCount;
-	u32 maxItems;
+	Array<RenderItem> items;
 };
 
 struct Renderer
