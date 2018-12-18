@@ -220,8 +220,9 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	city->totalResidents += def->residents;
 	city->totalJobs += def->jobs;
 
-	updateBuildingTexture(city, building, true, def);
-	
+	updateBuildingTexture(city, building, def);
+	updateAdjacentBuildingTextures(city, building->footprint);
+
 	if (needToRecalcPaths)
 	{
 		recalculatePathingConnectivity(city);
@@ -321,25 +322,8 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 			}
 		}
 
-		if (def->isPath)
-		{
-			// Update sprites for the tile's neighbours.
-			for (s32 y = building->footprint.y;
-				y < building->footprint.y + building->footprint.h;
-				y++)
-			{
-				updatePathTexture(city, building->footprint.x - 1,                     y);
-				updatePathTexture(city, building->footprint.x + building->footprint.w, y);
-			}
-
-			for (s32 x = building->footprint.x;
-				x < building->footprint.x + building->footprint.w;
-				x++)
-			{
-				updatePathTexture(city, x, building->footprint.y - 1);
-				updatePathTexture(city, x, building->footprint.y + building->footprint.h);
-			}
-		}
+		// Update sprites for the building's neighbours.
+		updateAdjacentBuildingTextures(city, building->footprint);
 
 		// Overwrite the building record with the highest one
 		// Unless it *IS* the highest one!
@@ -366,6 +350,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 			*highest = {};
 		}
 		city->buildings.count--;
+
 
 		return true;
 	}

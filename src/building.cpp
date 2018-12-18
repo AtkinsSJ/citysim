@@ -323,21 +323,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 	return;
 }
 
-void updatePathTexture(City *city, s32 x, s32 y)
-{
-	Building *building = getBuildingAtPosition(city, x, y);
-	if (building)
-	{
-		bool linkU = isPathable(city, x,   y-1);
-		bool linkD = isPathable(city, x,   y+1);
-		bool linkL = isPathable(city, x-1, y  );
-		bool linkR = isPathable(city, x+1, y  );
-
-		building->textureRegionOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
-	}
-}
-
-void updateBuildingTexture(City *city, Building *building, bool updateNeighbours, BuildingDef *def = null)
+void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null)
 {
 	if (building == null) return;
 
@@ -346,15 +332,15 @@ void updateBuildingTexture(City *city, Building *building, bool updateNeighbours
 		def = get(&buildingDefs, building->typeID);
 	}
 
-	s32 x = building->footprint.x;
-	s32 y = building->footprint.y;
-		
 	if (def->linkTexturesLayer)
 	{
 		// Sprite id is 0 to 15, depending on connecting neighbours.
 		// 1 = up, 2 = right, 4 = down, 8 = left
 		// For now, we'll decide that off-the-map does NOT connect
-		ASSERT(def->width == 1 && def->height == 1, "We only support 1x1 path buildings right now!");
+		ASSERT(def->width == 1 && def->height == 1, "We only support texture-linking for 1x1 buildings!");
+		
+		s32 x = building->footprint.x;
+		s32 y = building->footprint.y;
 
 		switch (def->linkTexturesLayer)
 		{
@@ -394,33 +380,44 @@ void updateBuildingTexture(City *city, Building *building, bool updateNeighbours
 		// Random sprite!
 		building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
 	}
+}
 
-	if (updateNeighbours)
+void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
+{
+	for (s32 y = footprint.y;
+		y < footprint.y + footprint.h;
+		y++)
 	{
-		Building *buildingU = getBuildingAtPosition(city, x,   y-1);
-		Building *buildingD = getBuildingAtPosition(city, x,   y+1);
-		Building *buildingL = getBuildingAtPosition(city, x-1, y  );
-		Building *buildingR = getBuildingAtPosition(city, x+1, y  );
+		Building *buildingL = getBuildingAtPosition(city, footprint.x - 1, y);
+		if (buildingL)
+		{
+			BuildingDef *defU = get(&buildingDefs, buildingL->typeID);
+			if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingL, defU);
+		}
 
+		Building *buildingR = getBuildingAtPosition(city, footprint.x + footprint.w, y);
+		if (buildingR)
+		{
+			BuildingDef *defD = get(&buildingDefs, buildingR->typeID);
+			if (defD->linkTexturesLayer) updateBuildingTexture(city, buildingR, defD);
+		}
+	}
+
+	for (s32 x = footprint.x;
+		x < footprint.x + footprint.w;
+		x++)
+	{
+		Building *buildingU = getBuildingAtPosition(city, x, footprint.y - 1);
+		Building *buildingD = getBuildingAtPosition(city, x, footprint.y + footprint.h);
 		if (buildingU)
 		{
-			BuildingDef *defU = get(&buildingDefs, buildingU->typeID);
-			if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingU, false, defU);
+			BuildingDef *defL = get(&buildingDefs, buildingU->typeID);
+			if (defL->linkTexturesLayer) updateBuildingTexture(city, buildingU, defL);
 		}
 		if (buildingD)
 		{
-			BuildingDef *defD = get(&buildingDefs, buildingD->typeID);
-			if (defD->linkTexturesLayer) updateBuildingTexture(city, buildingD, false, defD);
+			BuildingDef *defR = get(&buildingDefs, buildingD->typeID);
+			if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingD, defR);
 		}
-		if (buildingL)
-		{
-			BuildingDef *defL = get(&buildingDefs, buildingL->typeID);
-			if (defL->linkTexturesLayer) updateBuildingTexture(city, buildingL, false, defL);
-		}
-		if (buildingR)
-		{
-			BuildingDef *defR = get(&buildingDefs, buildingR->typeID);
-			if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingR, false, defR);
-		}		
 	}
 }
