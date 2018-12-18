@@ -13,7 +13,7 @@ struct Array
 	u32 maxCount;
 	T *items;
 
-	T operator[](u32 index)
+	inline T operator[](u32 index)
 	{
 		ASSERT(index >=0 && index < count, "Index out of range!");
 		return items[index];

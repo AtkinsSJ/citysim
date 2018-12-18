@@ -11,7 +11,7 @@ GameState *initialiseGameState()
 	GameState *result;
 	bootstrapArena(GameState, result, gameArena);
 
-	initCity(&result->gameArena, &result->city, 256, 256, LocalString("City Name Here"), gameStartFunds);
+	initCity(&result->gameArena, &result->city, 128, 128, LocalString("City Name Here"), gameStartFunds);
 	
 	Random random;
 	randomSeed(&random, 12345);
@@ -25,9 +25,28 @@ GameState *initialiseGameState()
 void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 cityWidth, s32 cityHeight)
 { 
 	// Zooming
-	if (canZoom && inputState->wheelY) {
-		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera->zoom = (f32) clamp((f32) round(10 * camera->zoom - inputState->wheelY) * 0.1f, 0.1f, 10.0f);
+	if (canZoom)
+	{
+		s32 zoomDelta = 0;
+
+		if (canZoom && inputState->wheelY) {
+			zoomDelta = inputState->wheelY;
+		}
+
+		if (keyJustPressed(inputState, SDLK_PAGEUP))
+		{
+			zoomDelta++;
+		}
+		else if (keyJustPressed(inputState, SDLK_PAGEDOWN))
+		{
+			zoomDelta--;
+		}
+
+		if (zoomDelta)
+		{
+			// round()ing the zoom so it doesn't gradually drift due to float imprecision
+			camera->zoom = (f32) clamp((f32) round(10 * camera->zoom + zoomDelta) * 0.1f, 0.1f, 10.0f);
+		}
 	}
 
 	// Panning
