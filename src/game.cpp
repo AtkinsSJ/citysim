@@ -244,11 +244,9 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	uiText(uiState, uiBuffer, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("£{0}", {formatInt(city->funds)}),
-	       v2(centre.x, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
+	uiText(uiState, uiBuffer, font, myprintf("£{0} (-£{0}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("(-£{0}/month)", {formatInt(city->monthlyExpenditure)}),
-	       v2(centre.x, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
+	uiText(uiState, uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
 
 	uiText(uiState, uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.combined.consumption), formatInt(city->powerLayer.combined.production)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);

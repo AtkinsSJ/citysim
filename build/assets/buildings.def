@@ -31,6 +31,7 @@ demolish_cost 50
 is_path false
 carries_power true
 power_use 20
+residents 40
 
 :Building Factory
 size 3 3
@@ -40,6 +41,7 @@ demolish_cost 100
 is_path false
 carries_power true
 power_use 200
+jobs 80
 
 :Building Power Station
 size 4 4
@@ -48,8 +50,23 @@ build plop 1000
 demolish_cost 200
 carries_power true
 power_gen 4000
+jobs 100
 
+#
+# Zoneables
+#
+
+:Building Small House
+size 1 1
+grows_in r
+texture house-2x2.png 32 32 2 2
+demolish_cost 50
+residents 10
+power_use 10
+
+#
 # Not actually buildable stuff
+#
 
 :Building Tree
 size 1 1

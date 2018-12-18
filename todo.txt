@@ -13,28 +13,9 @@ Things to work on next maybe:
 
 ------------------------------------------------
 
-2018-12-07: NEW new plan!
+THE PLAN:
 
-Similar, but I'm not going with that space-city theme. I'm undecided whether to go Simcity-like or Caesar-like. It's important that I really feel enthusiastic about whatever game I decide to make, given this is a hobby side-project!
-
-I do think Simcity is a more straightforward target to aim at. Just, maybe skip the space-ness and just make a game about building cities.
-
-------------------------------------------------
-
-2018-01-15: New plan!
-
-This project has become really unfocused. There's no game to it any more, it's just a vague "engine"
-which has no real direction. I don't want to make 'Under London' - I'm not confident what game it even
-is, and that's demotivating.
-
-So, instead the new game design is a simplified SimCity 1 type game about building space stations. Name pending.
-
-2D, simple pixel art, very basic simulation. Aiming for this to be a "quick" game to make, even though
-that will probably still be a long time coming. SimCity is a decent enough target, but this is different
-enough from that to still be worthwhile on its own. Cloning is less fun.
-
-Most of the engine tasks listed below are still desirable, but at least now I have a target to focus on,
-not just a list of work that might never come to anything.
+This project was way too directionless for too long, so we're now aiming for a city-building game along the lines of Simcity. Zone things, build roads and services, try and balance the budget, etc. 2D graphics, probably a square grid rather than isometric (at least to start with). 
 
 ------------------------------------------------
 

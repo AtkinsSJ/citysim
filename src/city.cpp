@@ -2,6 +2,8 @@
 
 void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String name, s32 funds)
 {
+	*city = {};
+
 	city->name = name;
 	city->funds = funds;
 	city->width = width;
@@ -225,6 +227,11 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 		}
 	}
 
+	building->currentResidents = 0;
+	building->currentJobs = 0;
+	city->totalResidents += def->residents;
+	city->totalJobs += def->jobs;
+
 	if (def->isPath)
 	{
 		// Sprite id is 0 to 15, depending on connecting neighbours.
@@ -321,6 +328,9 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 		}
 
 		spend(city, def->demolishCost);
+
+		city->totalResidents -= def->residents;
+		city->totalJobs -= def->jobs;
 
 		// Clear all references to this building
 		for (s32 y = building->footprint.y;

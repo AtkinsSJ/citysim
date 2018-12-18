@@ -27,12 +27,6 @@ struct BuildingDef
 
 	BuildMethod buildMethod;
 	s32 buildCost;
-	s32 demolishCost;
-	
-	bool isPath;
-	bool carriesPower;
-	s32 power; // Positive for production, negative for consumption
-
 	/*
 	 * This is a bit of a mess, and I don't have a good name for it!
 	 * If we try and place this building over a buildingTypeThisCanBeBuiltOver,
@@ -43,6 +37,17 @@ struct BuildingDef
 	 */
 	u32 canBeBuiltOnID;
 	u32 buildOverResult;
+
+	ZoneType growsInZone;
+
+	s32 demolishCost;
+
+	s32 residents;
+	s32 jobs;
+	
+	bool isPath;
+	bool carriesPower;
+	s32 power; // Positive for production, negative for consumption
 };
 
 ChunkedArray<BuildingDef> buildingDefs = {};
@@ -52,9 +57,9 @@ struct Building
 	u32 typeID;
 	Rect2I footprint;
 	u32 textureRegionOffset; // used as the offset for getTextureRegionID
-	// union {
-	// 	FieldData field;
-	// };
+	
+	s32 currentResidents;
+	s32 currentJobs;
 };
 
 void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, File file);

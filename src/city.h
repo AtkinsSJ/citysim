@@ -45,6 +45,9 @@ struct City
 	// Building IDs are 1-indexed (0 meaning null).
 
 	ZoneType *tileZones; // x,y -> ZoneType
+
+	s32 totalResidents;
+	s32 totalJobs;
 };
 
 inline u32 tileIndex(City *city, s32 x, s32 y)

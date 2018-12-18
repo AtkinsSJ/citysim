@@ -141,6 +141,27 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 						return;
 					}
 				}
+				else if (equals(firstWord, "grows_in"))
+				{
+					String zoneName = nextToken(remainder, &remainder);
+					if (equals(zoneName, "r"))
+					{
+						def->growsInZone = Zone_Residential;
+					}
+					else if (equals(zoneName, "c"))
+					{
+						def->growsInZone = Zone_Commercial;
+					}
+					else if (equals(zoneName, "i"))
+					{
+						def->growsInZone = Zone_Industrial;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse grows_in. Expected use:\"grows_in r/c/i\"");
+						return;
+					}
+				}
 				else if (equals(firstWord, "is_path"))
 				{
 					bool isPath;
@@ -194,6 +215,34 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 					else
 					{
 						error(&reader, "Couldn't parse power_use. Expected 1 int.");
+						return;
+					}
+				}
+				else if (equals(firstWord, "residents"))
+				{
+					s64 residents;
+
+					if (asInt(nextToken(remainder, &remainder), &residents))
+					{
+						def->residents = (s32) residents;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse residents. Expected 1 int.");
+						return;
+					}
+				}
+				else if (equals(firstWord, "jobs"))
+				{
+					s64 jobs;
+
+					if (asInt(nextToken(remainder, &remainder), &jobs))
+					{
+						def->jobs = (s32) jobs;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse jobs. Expected 1 int.");
 						return;
 					}
 				}
