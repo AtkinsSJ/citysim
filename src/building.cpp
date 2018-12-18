@@ -88,6 +88,22 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 						return;
 					}
 				}
+				else if (equals(firstWord, "link_textures"))
+				{
+					String layer = nextToken(remainder, &remainder);
+					if (equals(layer, "path"))
+					{
+						def->linkTexturesLayer = DataLayer_Paths;
+					}
+					else if (equals(layer, "power"))
+					{
+						def->linkTexturesLayer = DataLayer_Power;
+					}
+					else
+					{
+						warn(&reader, "Couldn't parse link_textures, assuming NONE.");
+					}
+				}
 				else if (equals(firstWord, "build"))
 				{
 					String buildMethodString;
@@ -305,4 +321,106 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 	}
 
 	return;
+}
+
+void updatePathTexture(City *city, s32 x, s32 y)
+{
+	Building *building = getBuildingAtPosition(city, x, y);
+	if (building)
+	{
+		bool linkU = isPathable(city, x,   y-1);
+		bool linkD = isPathable(city, x,   y+1);
+		bool linkL = isPathable(city, x-1, y  );
+		bool linkR = isPathable(city, x+1, y  );
+
+		building->textureRegionOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+	}
+}
+
+void updateBuildingTexture(City *city, Building *building, bool updateNeighbours, BuildingDef *def = null)
+{
+	if (building == null) return;
+
+	if (def == null)
+	{
+		def = get(&buildingDefs, building->typeID);
+	}
+
+	s32 x = building->footprint.x;
+	s32 y = building->footprint.y;
+		
+	if (def->linkTexturesLayer)
+	{
+		// Sprite id is 0 to 15, depending on connecting neighbours.
+		// 1 = up, 2 = right, 4 = down, 8 = left
+		// For now, we'll decide that off-the-map does NOT connect
+		ASSERT(def->width == 1 && def->height == 1, "We only support 1x1 path buildings right now!");
+
+		switch (def->linkTexturesLayer)
+		{
+			case DataLayer_Paths:
+			{
+				Building *buildingU = getBuildingAtPosition(city, x,   y-1);
+				Building *buildingD = getBuildingAtPosition(city, x,   y+1);
+				Building *buildingL = getBuildingAtPosition(city, x-1, y  );
+				Building *buildingR = getBuildingAtPosition(city, x+1, y  );
+
+				bool linkU = buildingU && get(&buildingDefs, buildingU->typeID)->isPath;
+				bool linkD = buildingD && get(&buildingDefs, buildingD->typeID)->isPath;
+				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->isPath;
+				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->isPath;
+
+				building->textureRegionOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+			} break;
+
+			case DataLayer_Power:
+			{
+				Building *buildingU = getBuildingAtPosition(city, x,   y-1);
+				Building *buildingD = getBuildingAtPosition(city, x,   y+1);
+				Building *buildingL = getBuildingAtPosition(city, x-1, y  );
+				Building *buildingR = getBuildingAtPosition(city, x+1, y  );
+
+				bool linkU = buildingU && get(&buildingDefs, buildingU->typeID)->carriesPower;
+				bool linkD = buildingD && get(&buildingDefs, buildingD->typeID)->carriesPower;
+				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->carriesPower;
+				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->carriesPower;
+
+				building->textureRegionOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+			} break;
+		}
+	}
+	else
+	{
+		// Random sprite!
+		building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
+	}
+
+	if (updateNeighbours)
+	{
+		Building *buildingU = getBuildingAtPosition(city, x,   y-1);
+		Building *buildingD = getBuildingAtPosition(city, x,   y+1);
+		Building *buildingL = getBuildingAtPosition(city, x-1, y  );
+		Building *buildingR = getBuildingAtPosition(city, x+1, y  );
+
+		if (buildingU)
+		{
+			BuildingDef *defU = get(&buildingDefs, buildingU->typeID);
+			if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingU, false, defU);
+		}
+		if (buildingD)
+		{
+			BuildingDef *defD = get(&buildingDefs, buildingD->typeID);
+			if (defD->linkTexturesLayer) updateBuildingTexture(city, buildingD, false, defD);
+		}
+		if (buildingL)
+		{
+			BuildingDef *defL = get(&buildingDefs, buildingL->typeID);
+			if (defL->linkTexturesLayer) updateBuildingTexture(city, buildingL, false, defL);
+		}
+		if (buildingR)
+		{
+			BuildingDef *defR = get(&buildingDefs, buildingR->typeID);
+			if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingR, false, defR);
+		}		
+	}
 }

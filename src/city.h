@@ -77,7 +77,40 @@ inline Building* getBuildingByID(City *city, u32 buildingID)
 	return pointerTo(&city->buildings, buildingID);
 }
 
-inline Building* getBuildingAtPosition(City *city, V2I position)
+inline Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
-	return getBuildingByID(city, city->tileBuildings[tileIndex(city,position.x,position.y)]);
+	if (!tileExists(city, x, y))
+	{
+		return null;
+	}
+	return getBuildingByID(city, city->tileBuildings[tileIndex(city, x, y)]);
+}
+
+inline s32 pathGroupAt(City *city, s32 x, s32 y)
+{
+	s32 result = 0;
+
+	if (tileExists(city, x, y))
+	{
+		result = city->pathLayer.data[tileIndex(city, x, y)];
+	}
+
+	return result;
+}
+
+inline bool isPathable(City *city, s32 x, s32 y)
+{
+	return pathGroupAt(city, x, y) > 0;
+}
+
+inline s32 powerGroupAt(City *city, s32 x, s32 y)
+{
+	s32 result = 0;
+
+	if (tileExists(city, x, y))
+	{
+		result = city->powerLayer.data[tileIndex(city, x, y)];
+	}
+
+	return result;
 }

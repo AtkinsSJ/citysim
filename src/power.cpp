@@ -1,17 +1,5 @@
 #pragma once
 
-inline s32 powerGroupAt(City *city, s32 x, s32 y)
-{
-	s32 result = 0;
-
-	if (tileExists(city, x, y))
-	{
-		result = city->powerLayer.data[tileIndex(city, x, y)];
-	}
-
-	return result;
-}
-
 void initialisePowerLayer(MemoryArena *gameArena, PowerLayer *layer, s32 tileCount)
 {
 	layer->data = PushArray(gameArena, s32, tileCount);

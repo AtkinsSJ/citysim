@@ -1,21 +1,4 @@
 
-inline s32 pathGroupAt(City *city, s32 x, s32 y)
-{
-	s32 result = 0;
-
-	if (tileExists(city, x, y))
-	{
-		result = city->pathLayer.data[tileIndex(city, x, y)];
-	}
-
-	return result;
-}
-
-inline bool isPathable(City *city, s32 x, s32 y)
-{
-	return pathGroupAt(city, x, y) > 0;
-}
-
 void floodFillPathingConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 {
 	city->pathLayer.data[tileIndex(city, x, y)] = fillValue;
@@ -109,7 +92,7 @@ bool canPathTo(City *city, Rect2I target, V2I from, MemoryArena *memoryArena)
 	// First, determine all path groups that are adjacent to the buiding 'from' is in, if any.
 	s32 pathGroupCount = 0;
 	s32 *pathGroups = PushArray(&tempArena, s32, city->pathLayer.pathGroupCount);
-	Building *building = getBuildingAtPosition(city, from);
+	Building *building = getBuildingAtPosition(city, from.x, from.y);
 	if (building
 		&& !get(&buildingDefs, building->typeID)->isPath)
 	{
@@ -263,7 +246,7 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryAren
 	V2I result = from;
 
 	s32 distance;
-	Building *fromBuilding = getBuildingAtPosition(city, from);
+	Building *fromBuilding = getBuildingAtPosition(city, from.x, from.y);
 	if (fromBuilding)
 	{
 		distance = manhattanDistance(target, fromBuilding->footprint);

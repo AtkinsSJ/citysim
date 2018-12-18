@@ -24,6 +24,7 @@ struct BuildingDef
 		};
 	};
 	u32 textureAssetType;
+	enum DataLayer linkTexturesLayer;
 
 	BuildMethod buildMethod;
 	s32 buildCost;

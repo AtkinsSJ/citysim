@@ -150,21 +150,6 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 	return true;
 }
 
-void updatePathTexture(City *city, s32 x, s32 y)
-{
-	// logInfo("updatePathTexture({0}, {1})", {formatInt(x), formatInt(y)});
-	Building *building = getBuildingAtPosition(city, v2i(x, y));
-	if (building)
-	{
-		bool pathU = pathGroupAt(city, x,   y-1) > 0;
-		bool pathD = pathGroupAt(city, x,   y+1) > 0;
-		bool pathL = pathGroupAt(city, x-1, y  ) > 0;
-		bool pathR = pathGroupAt(city, x+1, y  ) > 0;
-
-		building->textureRegionOffset = (pathU ? 1 : 0) | (pathR ? 2 : 0) | (pathD ? 4 : 0) | (pathL ? 8 : 0);
-	}
-}
-
 /**
  * Attempt to place a building. Returns whether successful.
  */
@@ -196,6 +181,9 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 
 		needToRecalcPaths = (oldDef->isPath != def->isPath);
 		needToRecalcPower = (oldDef->carriesPower != def->carriesPower);
+
+		city->totalResidents -= oldDef->residents;
+		city->totalJobs -= oldDef->jobs;
 	}
 	else
 	{
@@ -232,26 +220,8 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	city->totalResidents += def->residents;
 	city->totalJobs += def->jobs;
 
-	if (def->isPath)
-	{
-		// Sprite id is 0 to 15, depending on connecting neighbours.
-		// 1 = up, 2 = right, 4 = down, 8 = left
-		// For now, we'll decide that off-the-map does NOT connect
-		ASSERT(def->width == 1 && def->height == 1, "We only support 1x1 path buildings right now!");
-
-		// Update sprites for the tile, and the 4 neighbours.
-		updatePathTexture(city, left,   top);
-		updatePathTexture(city, left+1, top);
-		updatePathTexture(city, left-1, top);
-		updatePathTexture(city, left,   top+1);
-		updatePathTexture(city, left,   top-1);
-	}
-	else
-	{
-		// Random sprite!
-		building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
-	}
-
+	updateBuildingTexture(city, building, true, def);
+	
 	if (needToRecalcPaths)
 	{
 		recalculatePathingConnectivity(city);
@@ -261,6 +231,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	{
 		recalculatePowerConnectivity(city);
 	}
+
 
 	return true;
 }
@@ -301,9 +272,6 @@ void placeBuildingRect(UIState *uiState, City *city, u32 buildingTypeID, Rect2I 
 			placeBuilding(uiState, city, buildingTypeID, area.x + x, area.y + y, false);
 		}
 	}
-
-	recalculatePathingConnectivity(city);
-	recalculatePowerConnectivity(city);
 }
 
 // NB: Only for use withing demolishRect()!
