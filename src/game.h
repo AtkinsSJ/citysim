@@ -14,6 +14,7 @@ struct GameState
 {
 	MemoryArena gameArena;
 	GameStatus status;
+	Random gameRandom;
 	City city;
 
 	u32 dataLayerToDraw;

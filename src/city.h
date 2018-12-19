@@ -32,6 +32,9 @@ struct PowerLayer
 struct City
 {
 	String name;
+
+	Random *gameRandom;
+
 	s32 funds;
 	s32 monthlyExpenditure;
 

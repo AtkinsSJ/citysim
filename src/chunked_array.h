@@ -30,6 +30,58 @@ struct ChunkedArray
 	Chunk<T> *lastChunk;
 };
 
+template<class T>
+struct ChunkedArrayIterator
+{
+	Chunk<T> *currentChunk;
+	umm indexInChunk;
+	bool isDone;
+};
+
+template<class T>
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array)
+{
+	ChunkedArrayIterator<T> iterator = {};
+
+	iterator.currentChunk = &array->firstChunk;
+	iterator.indexInChunk = 0;
+	iterator.isDone = false;
+
+	return iterator;
+}
+
+template<class T>
+void next(ChunkedArrayIterator<T> *iterator)
+{
+	if (iterator->isDone) return;
+
+	iterator->indexInChunk++;
+	if (iterator->indexInChunk >= iterator->currentChunk->count)
+	{
+		if (iterator->currentChunk->count != iterator->currentChunk->maxCount)
+		{
+			// Done!
+			iterator->isDone = true;
+		}
+		else
+		{
+			iterator->currentChunk = iterator->currentChunk->nextChunk;
+			iterator->indexInChunk = 0;
+
+			if (iterator->currentChunk == null)
+			{
+				iterator->isDone = true;
+			}
+		}
+	}
+}
+
+template<class T>
+T get(ChunkedArrayIterator<T> iterator)
+{
+	return iterator.currentChunk->items[iterator.indexInChunk];
+}
+
 // markFirstChunkAsFull is a little hacky. It sets the itemCount to be chunkSize, so that
 // we can immediately get() those elements by index instead of having to append() to add them.
 template<class T>
@@ -157,50 +209,4 @@ T *get(ChunkedArray<T> *array, umm index)
 	}
 
 	return result;
-}
-
-template<class T>
-bool findAndRemove(ChunkedArray<T> *array, T toRemove)
-{
-	bool found = false;
-
-	for (Chunk<T> *chunk = &array->firstChunk;
-		chunk != null;
-		chunk = chunk->nextChunk)
-	{
-		for (umm i=0; i<chunk->count; i++)
-		{
-			if (equals(chunk->items[i], toRemove))
-			{
-				// FOUND IT!
-				found = true;
-
-				Chunk<T> *lastNonEmptyChunk = array->lastChunk;
-				while (lastNonEmptyChunk->count == 0)
-				{
-					lastNonEmptyChunk = lastNonEmptyChunk->prevChunk;
-				}
-
-				// Now, to copy the last element in the array to this position
-				if (chunk == lastNonEmptyChunk)
-				{
-					chunk->items[i] = chunk->items[chunk->count-1];
-					chunk->count--;
-					array->itemCount--;
-				}
-				else
-				{
-					chunk->items[i] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
-					lastNonEmptyChunk->count--;
-					array->itemCount--;
-				}
-
-				break;
-			}
-		}
-
-		if (found) break;
-	}
-
-	return found;
 }

@@ -65,6 +65,7 @@ struct AppState
 };
 AppState globalAppState;
 
+#include "chunked_array.cpp"
 #include "ui.cpp"
 #include "assets.cpp"
 #include "building.cpp"

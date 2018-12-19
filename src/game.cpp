@@ -10,12 +10,10 @@ GameState *initialiseGameState()
 {
 	GameState *result;
 	bootstrapArena(GameState, result, gameArena);
+	randomSeed(&result->gameRandom, 12345);
 
-	initCity(&result->gameArena, &result->city, 128, 128, LocalString("City Name Here"), gameStartFunds);
-	
-	Random random;
-	randomSeed(&random, 12345);
-	generateTerrain(&result->city, &random);
+	initCity(&result->gameArena, &result->gameRandom, &result->city, 128, 128, LocalString("City Name Here"), gameStartFunds);
+	generateTerrain(&result->city);
 
 	result->status = GameStatus_Playing;
 
@@ -415,14 +413,20 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	GameState *gameState = appState->gameState;
 	City *city = &gameState->city;
+	UIState *uiState = &globalAppState.uiState;
+
+	if (assets->assetReloadHasJustHappened)
+	{
+		uiState->theme = &assets->theme;
+		
+		refreshZoneGrowableBuildingLists(&city->zoneLayer);
+
+		assets->assetReloadHasJustHappened = false;
+	}
+
 
 	// Update the simulation... need a smarter way of doing this!
 	calculateDemand(city);
-
-
-	UIState *uiState = &globalAppState.uiState;
-	uiState->theme = &assets->theme;
-
 
 
 	// CAMERA!

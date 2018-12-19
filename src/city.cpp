@@ -1,8 +1,9 @@
 
 
-void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String name, s32 funds)
+void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds)
 {
 	*city = {};
+	city->gameRandom = gameRandom;
 
 	city->name = name;
 	city->funds = funds;
@@ -40,7 +41,7 @@ void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 
 	}
 }
 
-void generateTerrain(City *city, Random *random)
+void generateTerrain(City *city)
 {
 	u32 tGround = findTerrainTypeByName(stringFromChars("Ground"));
 	u32 tWater  = findTerrainTypeByName(stringFromChars("Water"));

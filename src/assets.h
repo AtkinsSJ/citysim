@@ -100,6 +100,7 @@ struct IndexRange
 struct AssetManager
 {
 	MemoryArena assetArena;
+	bool assetReloadHasJustHappened;
 
 	String assetsPath;
 

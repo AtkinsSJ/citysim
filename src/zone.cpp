@@ -3,12 +3,18 @@
 void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount)
 {
 	zoneLayer->tiles = PushArray(memoryArena, ZoneType, tileCount);
-	initChunkedArray(&zoneLayer->emptyRZones,  memoryArena, 256);
-	initChunkedArray(&zoneLayer->filledRZones, memoryArena, 256);
-	initChunkedArray(&zoneLayer->emptyCZones,  memoryArena, 256);
-	initChunkedArray(&zoneLayer->filledCZones, memoryArena, 256);
-	initChunkedArray(&zoneLayer->emptyIZones,  memoryArena, 256);
-	initChunkedArray(&zoneLayer->filledIZones, memoryArena, 256);
+
+	initChunkedArray(&zoneLayer->rGrowableBuildings, memoryArena, 256);
+	initChunkedArray(&zoneLayer->emptyRZones,        memoryArena, 256);
+	initChunkedArray(&zoneLayer->filledRZones,       memoryArena, 256);
+
+	initChunkedArray(&zoneLayer->cGrowableBuildings, memoryArena, 256);
+	initChunkedArray(&zoneLayer->emptyCZones,        memoryArena, 256);
+	initChunkedArray(&zoneLayer->filledCZones,       memoryArena, 256);
+
+	initChunkedArray(&zoneLayer->iGrowableBuildings, memoryArena, 256);
+	initChunkedArray(&zoneLayer->emptyIZones,        memoryArena, 256);
+	initChunkedArray(&zoneLayer->filledIZones,       memoryArena, 256);
 }
 
 bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
@@ -124,19 +130,73 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 
 void growSomeZoneBuildings(City *city)
 {
+	ZoneLayer *layer = &city->zoneLayer;
+
 	// Residential
 	if (city->residentialDemand > 0)
 	{
 		s32 remainingDemand = city->residentialDemand;
 		s32 minimumDemand = city->residentialDemand / 20; // Stop when we're below 20% of the original demand
 
-		while (remainingDemand > minimumDemand)
+		while ((layer->emptyRZones.itemCount > 0) && (remainingDemand > minimumDemand))
 		{
 			// Find a valid res zone
-
+			// TODO: Better selection than just a random one
+			V2I zonePos = *get(&layer->emptyRZones, randomNext(city->gameRandom));
+			
+			// TODO: Produce a rectangle of the contiguous empty zone area around that point,
+			// so we can fit larger buildings there if possible.
 
 			// Pick a building def that fits the space and is not more than 10% more than the remaining demand
-			// Place it!
+			BuildingDef *buildingDef = null;
+
+			for (auto it = iterate(&layer->rGrowableBuildings); !it.isDone; next(&it))
+			{
+				BuildingDef *aDef = get(&buildingDefs, get(it));
+				// TODO: Support more than 1x1 growables!
+				if (aDef->width == 1 && aDef->height == 1)
+				{
+					buildingDef = aDef;
+					break;
+				}
+			}
+
+			if (buildingDef)
+			{
+				// Place it!
+				aasdasd growZoneBuilding(city, buildingDef, irectPosDim(zonePos, buildingDef->size));
+			}
+			else
+			{
+				// We failed to find a building def, so we should probably stop trying to build things!
+				// Otherwise, we'll get stuck in an infinite loop
+				break;
+			}
 		}
 	}
+}
+
+void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer)
+{
+	clear(&zoneLayer->rGrowableBuildings);
+	clear(&zoneLayer->cGrowableBuildings);
+	clear(&zoneLayer->iGrowableBuildings);
+
+	for (auto it = iterate(&buildingDefs); !it.isDone; next(&it))
+	{
+		BuildingDef def = get(it);
+
+		switch(def.growsInZone)
+		{
+			case Zone_Residential:  append(&zoneLayer->rGrowableBuildings, def.typeID); break;
+			case Zone_Commercial:   append(&zoneLayer->cGrowableBuildings, def.typeID); break;
+			case Zone_Industrial:   append(&zoneLayer->iGrowableBuildings, def.typeID); break;
+		}
+	}
+
+	logInfo("Loaded {0} R, {1} C and {2} I growable buildings.", {
+		formatInt(zoneLayer->rGrowableBuildings.itemCount),
+		formatInt(zoneLayer->cGrowableBuildings.itemCount),
+		formatInt(zoneLayer->iGrowableBuildings.itemCount)
+	});
 }

@@ -32,6 +32,7 @@ u32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, s32 textu
 
 void initAssetManager(AssetManager *assets)
 {
+	*assets = {};
 	assets->assetsPath = pushString(&assets->assetArena, "assets");
 
 	initChunkedArray(&assets->rangesByTextureAssetType, &assets->assetArena, 32);
@@ -227,6 +228,8 @@ void loadAssets(AssetManager *assets)
 	}
 
 	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->textureRegions.itemCount), formatInt(assets->textures.itemCount)});
+
+	assets->assetReloadHasJustHappened = true;
 }
 
 u32 addNewTextureAssetType(AssetManager *assets)
