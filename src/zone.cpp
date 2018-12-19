@@ -203,7 +203,7 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 
 	city->totalResidents += def->residents;
 	city->totalJobs += def->jobs;
-	
+
 	updateBuildingTexture(city, building, def);
 }
 
@@ -223,31 +223,112 @@ void growSomeZoneBuildings(City *city)
 			// TODO: Better selection than just a random one
 			V2I zonePos = *get(&layer->emptyRZones, randomInRange(city->gameRandom, layer->emptyRZones.itemCount));
 			
-			// TODO: Produce a rectangle of the contiguous empty zone area around that point,
+			// Produce a rectangle of the contiguous empty zone area around that point,
 			// so we can fit larger buildings there if possible.
+			Rect2I zoneFootprint = irectXYWH(zonePos.x, zonePos.y, 1, 1);
+			{
+				// Gradually expand from zonePos outwards, checking if there is available, zoned space
+
+				bool tryX = randomBool(city->gameRandom);
+				bool positive = randomBool(city->gameRandom);
+
+				while (true)
+				{
+					bool canExpand = true;
+					if (tryX)
+					{
+						s32 x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
+
+						for (s32 y = zoneFootprint.y;
+							y < zoneFootprint.y + zoneFootprint.h;
+							y++)
+						{
+							if ((getZoneAt(city, x, y) != Zone_Residential)
+							 || (getBuildingAtPosition(city, x, y) != null))
+							{
+								canExpand = false;
+								break;
+							}
+						}
+
+						if (canExpand)
+						{
+							zoneFootprint.w++;
+							if (!positive) zoneFootprint.x--;
+						}
+					}
+					else // expand in y
+					{
+						s32 y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
+
+						for (s32 x = zoneFootprint.x;
+							x < zoneFootprint.x + zoneFootprint.w;
+							x++)
+						{
+							if ((getZoneAt(city, x, y) != Zone_Residential)
+							 || (getBuildingAtPosition(city, x, y) != null))
+							{
+								canExpand = false;
+								break;
+							}
+						}
+
+						if (canExpand)
+						{
+							zoneFootprint.h++;
+							if (!positive) zoneFootprint.y--;
+						}
+					}
+
+					// As soon as we fail to expand in a direction, just stop
+					if (!canExpand) break;
+
+					// Maximum size, don't bother trying more than 5x5
+					if (zoneFootprint.w >=5 && zoneFootprint.h >= 5) break;
+
+					tryX = !tryX; // Alternate x and y
+					positive = randomBool(city->gameRandom); // random direction to expand in
+				}
+			}
 
 			// Pick a building def that fits the space and is not more than 10% more than the remaining demand
 			BuildingDef *buildingDef = null;
 			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
 
-			for (auto it = iterate(&layer->rGrowableBuildings); !it.isDone; next(&it))
+			// Choose a random building, then fall back to walking the array if it's not acceptable.
+			BuildingDef *randomDef = get(&buildingDefs, *get(&layer->rGrowableBuildings, randomInRange(city->gameRandom, layer->rGrowableBuildings.itemCount)));
+			if ((randomDef->residents <= maximumResidents)
+			 && (randomDef->width <= zoneFootprint.w)
+			 && (randomDef->height <= zoneFootprint.h))
 			{
-				BuildingDef *aDef = get(&buildingDefs, get(it));
+				buildingDef = randomDef;
+			}
+			else
+			{
+				// TODO: For increased variety, could start the iteration at a random point instead,
+				// but that's more complicated as we'd have to then jump back to the beginning
+				// and know when we reached the start point again.
+				for (auto it = iterate(&layer->rGrowableBuildings); !it.isDone; next(&it))
+				{
+					BuildingDef *aDef = get(&buildingDefs, get(it));
 
-				// Cap residents
-				if (aDef->residents > maximumResidents) continue;
+					// Cap residents
+					if (aDef->residents > maximumResidents) continue;
 
-				// TODO: Support more than 1x1 growables!
-				if (aDef->width != 1 || aDef->height != 1) continue;
-				
-				buildingDef = aDef;
-				break;
+					// Cap based on size
+					if (aDef->width > zoneFootprint.w || aDef->height > zoneFootprint.h) continue;
+					
+					buildingDef = aDef;
+					break;
+				}
 			}
 
 			if (buildingDef)
 			{
 				// Place it!
-				growZoneBuilding(city, buildingDef, irectPosDim(zonePos, buildingDef->size));
+				// TODO: Right now this places at the top-left of the zoneFootprint... probably want to be better than that.
+				Rect2I footprint = irectPosDim(zoneFootprint.pos, buildingDef->size);
+				growZoneBuilding(city, buildingDef, footprint);
 				remainingDemand -= buildingDef->residents;
 			}
 			else
@@ -258,6 +339,12 @@ void growSomeZoneBuildings(City *city)
 			}
 		}
 	}
+
+	// TODO: Commercial
+
+	// TODO: Industrial
+
+	// TODO: Other zones maybe???
 }
 
 void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer)

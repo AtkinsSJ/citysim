@@ -10,3 +10,8 @@ s32 randomInRange(Random *random, s32 maxExclusive)
 {
 	return randomNext(random) % maxExclusive;
 }
+
+bool randomBool(Random *random)
+{
+	return (randomNext(random) % 2) != 0;
+}
