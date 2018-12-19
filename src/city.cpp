@@ -440,11 +440,11 @@ void calculateDemand(City *city)
 	// TODO: This is a generally terrible calculation!
 
 	// Residential
-	city->residentialDemand = (city->totalJobs * 3) - city->totalResidents + 500;
+	city->residentialDemand = (city->totalJobs * 3) - city->totalResidents + 50;
 
 	// Commercial
 	city->commercialDemand = 0;
 
 	// Industrial
-	city->industrialDemand = (city->totalResidents / 3) - city->totalJobs + 300;
+	city->industrialDemand = (city->totalResidents / 3) - city->totalJobs + 30;
 }

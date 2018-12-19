@@ -203,6 +203,8 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 
 	city->totalResidents += def->residents;
 	city->totalJobs += def->jobs;
+	
+	updateBuildingTexture(city, building, def);
 }
 
 void growSomeZoneBuildings(City *city)
@@ -226,16 +228,20 @@ void growSomeZoneBuildings(City *city)
 
 			// Pick a building def that fits the space and is not more than 10% more than the remaining demand
 			BuildingDef *buildingDef = null;
+			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
 
 			for (auto it = iterate(&layer->rGrowableBuildings); !it.isDone; next(&it))
 			{
 				BuildingDef *aDef = get(&buildingDefs, get(it));
+
+				// Cap residents
+				if (aDef->residents > maximumResidents) continue;
+
 				// TODO: Support more than 1x1 growables!
-				if (aDef->width == 1 && aDef->height == 1)
-				{
-					buildingDef = aDef;
-					break;
-				}
+				if (aDef->width != 1 || aDef->height != 1) continue;
+				
+				buildingDef = aDef;
+				break;
 			}
 
 			if (buildingDef)
