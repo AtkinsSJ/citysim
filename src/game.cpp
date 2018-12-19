@@ -427,6 +427,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// Update the simulation... need a smarter way of doing this!
 	calculateDemand(city);
+	growSomeZoneBuildings(city);
 
 
 	// CAMERA!

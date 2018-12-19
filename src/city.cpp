@@ -268,7 +268,8 @@ void placeBuildingRect(UIState *uiState, City *city, u32 buildingTypeID, Rect2I 
 }
 
 // NB: Only for use withing demolishRect()!
-bool demolishTile(UIState *uiState, City *city, V2I position) {
+bool demolishTile(UIState *uiState, City *city, V2I position)
+{
 	if (!tileExists(city, position.x, position.y)) return true;
 
 	u32 posTI = tileIndex(city, position.x, position.y);
@@ -276,14 +277,15 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 	u32 buildingID  = city->tileBuildings[posTI];
 	Terrain terrain = city->terrain[posTI];
 
-	if (buildingID) {
-
+	if (buildingID)
+	{
 		Building *building = getBuildingByID(city, buildingID);
 		ASSERT(building, "Tile is storing an invalid building ID!");
 		BuildingDef *def = get(&buildingDefs, building->typeID);
 
 		// Can we afford to demolish this?
-		if (!canAfford(city, def->demolishCost)) {
+		if (!canAfford(city, def->demolishCost))
+		{
 			pushUiMessage(uiState, stringFromChars("Not enough money to demolish this."));
 			return false;
 		}
@@ -296,11 +298,13 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 		// Clear all references to this building
 		for (s32 y = building->footprint.y;
 			y < building->footprint.y + building->footprint.h;
-			y++) {
+			y++)
+		{
 
 			for (s32 x = building->footprint.x;
 				x < building->footprint.x + building->footprint.w;
-				x++) {
+				x++)
+			{
 
 				s32 tile = tileIndex(city, x, y);
 
@@ -313,6 +317,9 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 				}
 			}
 		}
+
+		// Need to update the filled/empty zone lists
+		markZonesAsEmpty(city, building->footprint);
 
 		// Update sprites for the building's neighbours.
 		updateAdjacentBuildingTextures(city, building->footprint);
@@ -343,7 +350,6 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 		}
 		city->buildings.count--;
 
-
 		return true;
 	}
 	else
@@ -352,11 +358,14 @@ bool demolishTile(UIState *uiState, City *city, V2I position) {
 		if (def->canDemolish)
 		{
 			// Tear down all the trees!
-			if (canAfford(city, def->demolishCost)) {
+			if (canAfford(city, def->demolishCost))
+			{
 				spend(city, def->demolishCost);
 				city->terrain[posTI].type = findTerrainTypeByName(stringFromChars("Ground"));
 				return true;
-			} else {
+			}
+			else
+			{
 				pushUiMessage(uiState, stringFromChars("Not enough money to clear this terrain."));
 				return false;
 			}

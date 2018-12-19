@@ -75,6 +75,19 @@ static ChunkedArray<V2I> *getEmptyZonesArray(ZoneLayer *layer, ZoneType zoneType
 	return emptyZonesArray;
 }
 
+static ChunkedArray<V2I> *getFilledZonesArray(ZoneLayer *layer, ZoneType zoneType)
+{
+	ChunkedArray<V2I> *filledZonesArray = null;
+	switch (zoneType)
+	{
+		case Zone_Residential:  filledZonesArray = &layer->filledRZones; break;
+		case Zone_Commercial:   filledZonesArray = &layer->filledCZones; break;
+		case Zone_Industrial:   filledZonesArray = &layer->filledIZones; break;
+	}
+
+	return filledZonesArray;
+}
+
 void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney)
 {
 	if (chargeMoney)
@@ -123,9 +136,73 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 	recalculatePowerConnectivity(city);
 }
 
+void markZonesAsEmpty(City *city, Rect2I footprint)
+{
+	// NB: We're assuming there's only one zone type within the footprint,
+	// because we don't support buildings that can grow in multiple different zones.
+	ZoneType zoneType = getZoneAt(city, footprint.x, footprint.y);
+	ChunkedArray<V2I> *emptyZonesArray  = getEmptyZonesArray( &city->zoneLayer, zoneType);
+
+	if (emptyZonesArray)
+	{
+		ChunkedArray<V2I> *filledZonesArray = getFilledZonesArray(&city->zoneLayer, zoneType);
+
+		for (s32 y=0; y < footprint.h; y++)
+		{
+			for (s32 x=0; x < footprint.w; x++)
+			{
+				// Mark the zone as empty
+				V2I pos = v2i(footprint.x+x, footprint.y+y);
+				findAndRemove(filledZonesArray, pos);
+				append(emptyZonesArray, pos);
+			}
+		}
+	}
+}
+
 void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
+	/* We make some assumptions here:
+	 - There is no building or other obstacle already overlapping the footprint
+	 - This building doesn't affect the paths layer
+	 - This building doesn't affect the power layer (because power is carried by the zone)
+	 - This building doesn't remove the existing zone
+	 - This building doesn't need to affect adjacent building textures
+	 */
 
+	u32 buildingID = city->buildings.count;
+	Building *building = appendBlank(&city->buildings);
+	building->typeID = def->typeID;
+	building->footprint = footprint;
+
+	ZoneType zoneType = getZoneAt(city, footprint.x, footprint.y);
+	ChunkedArray<V2I> *emptyZonesArray  = getEmptyZonesArray( &city->zoneLayer, zoneType);
+	ChunkedArray<V2I> *filledZonesArray = getFilledZonesArray(&city->zoneLayer, zoneType);
+
+	ASSERT(emptyZonesArray && filledZonesArray, "Attempting to grow a building in a zone with no empty/filled zones arrays.");
+
+	for (s32 y=0; y<building->footprint.h; y++)
+	{
+		for (s32 x=0; x<building->footprint.w; x++)
+		{
+			V2I pos = v2i(building->footprint.x+x, building->footprint.y+y);
+			s32 tile = tileIndex(city, pos.x, pos.y);
+
+			// Put the building there
+			city->tileBuildings[tile] = buildingID;
+
+			// Mark the zone as filled
+			findAndRemove(emptyZonesArray, pos);
+			append(filledZonesArray, pos);
+		}
+	}
+
+	// TODO: Properly calculate occupancy!
+	building->currentResidents = def->residents;
+	building->currentJobs = def->jobs;
+
+	city->totalResidents += def->residents;
+	city->totalJobs += def->jobs;
 }
 
 void growSomeZoneBuildings(City *city)
@@ -142,7 +219,7 @@ void growSomeZoneBuildings(City *city)
 		{
 			// Find a valid res zone
 			// TODO: Better selection than just a random one
-			V2I zonePos = *get(&layer->emptyRZones, randomNext(city->gameRandom));
+			V2I zonePos = *get(&layer->emptyRZones, randomInRange(city->gameRandom, layer->emptyRZones.itemCount));
 			
 			// TODO: Produce a rectangle of the contiguous empty zone area around that point,
 			// so we can fit larger buildings there if possible.
@@ -164,7 +241,8 @@ void growSomeZoneBuildings(City *city)
 			if (buildingDef)
 			{
 				// Place it!
-				aasdasd growZoneBuilding(city, buildingDef, irectPosDim(zonePos, buildingDef->size));
+				growZoneBuilding(city, buildingDef, irectPosDim(zonePos, buildingDef->size));
+				remainingDemand -= buildingDef->residents;
 			}
 			else
 			{

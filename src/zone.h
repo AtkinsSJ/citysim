@@ -1,5 +1,7 @@
 #pragma once
 
+struct City;
+
 enum ZoneType
 {
 	Zone_None,
@@ -45,4 +47,5 @@ struct ZoneLayer
 };
 
 void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount);
-void placeZone(UIState *uiState, struct City *city, ZoneType zoneType, Rect2I area, bool chargeMoney=true);
+void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney=true);
+void markZonesAsEmpty(City *city, Rect2I footprint);
