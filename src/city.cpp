@@ -13,10 +13,9 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	city->terrain         = PushArray(gameArena, Terrain, tileCount);
 	city->tileBuildings   = PushArray(gameArena, u32, tileCount);
-	city->tileZones       = PushArray(gameArena, ZoneType, tileCount);
-
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
 	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
+	initZoneLayer(gameArena, &city->zoneLayer, tileCount);
 
 	initialiseArray(&city->buildings, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
@@ -193,6 +192,9 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 		building->footprint = irectXYWH(left, top, def->width, def->height);
 	}
 
+	// Remove zones
+	placeZone(uiState, city, Zone_None, building->footprint, false);
+
 	// Tiles
 	for (s32 y=0; y<building->footprint.h; y++) {
 		for (s32 x=0; x<building->footprint.w; x++) {
@@ -201,17 +203,6 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 
 			// Data layer updates
 			city->pathLayer.data[tile] = def->isPath ? 1 : 0;
-
-			// Remove zones
-			ZoneType oldZone = city->tileZones[tile];
-			if (oldZone)
-			{
-				city->tileZones[tile] = Zone_None;
-
-				// We may need to recalculate power!
-				bool zoneCarriedPower = zoneDefs[oldZone].carriesPower;
-				needToRecalcPower = zoneCarriedPower != def->carriesPower;
-			}
 		}
 	}
 
@@ -429,4 +420,21 @@ bool demolishRect(UIState *uiState, City *city, Rect2I area) {
 	recalculatePowerConnectivity(city);
 
 	return true;
+}
+
+void calculateDemand(City *city)
+{
+	// Ratio of residents to job should be roughly 3 : 1
+
+	// TODO: We want to consider AVAILABLE jobs/residents, not TOTAL ones.
+	// TODO: This is a generally terrible calculation!
+
+	// Residential
+	city->residentialDemand = (city->totalJobs * 3) - city->totalResidents + 500;
+
+	// Commercial
+	city->commercialDemand = 0;
+
+	// Industrial
+	city->industrialDemand = (city->totalResidents / 3) - city->totalJobs + 300;
 }

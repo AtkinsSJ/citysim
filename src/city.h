@@ -44,10 +44,15 @@ struct City
 	u32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
 
-	ZoneType *tileZones; // x,y -> ZoneType
+	struct ZoneLayer zoneLayer;
 
 	s32 totalResidents;
 	s32 totalJobs;
+
+	// Calculated every so often
+	s32 residentialDemand;
+	s32 commercialDemand;
+	s32 industrialDemand;
 };
 
 inline u32 tileIndex(City *city, s32 x, s32 y)
@@ -110,6 +115,18 @@ inline s32 powerGroupAt(City *city, s32 x, s32 y)
 	if (tileExists(city, x, y))
 	{
 		result = city->powerLayer.data[tileIndex(city, x, y)];
+	}
+
+	return result;
+}
+
+inline ZoneType getZoneAt(City *city, s32 x, s32 y)
+{
+	ZoneType result = Zone_None;
+
+	if (tileExists(city, x, y))
+	{
+		result = city->zoneLayer.tiles[tileIndex(city, x, y)];
 	}
 
 	return result;

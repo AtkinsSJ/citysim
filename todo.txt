@@ -10,6 +10,7 @@ Things to work on next maybe:
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?
 - Zones actually spawn stuff
+- Rather than directly recalculating power/pathing when we make a change, mark them as "dirty" and then recalculate at an appropriate moment.
 
 ------------------------------------------------
 

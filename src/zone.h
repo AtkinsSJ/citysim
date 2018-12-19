@@ -26,3 +26,20 @@ ZoneDef zoneDefs[] = {
 	{Zone_Commercial,  stringFromChars("Commercial"),  color255(  0,   0, 255, 128), 10, true},
 	{Zone_Industrial,  stringFromChars("Industrial"),  color255(255, 255,   0, 128), 20, true},
 };
+
+struct ZoneLayer
+{
+	ChunkedArray<V2I> emptyRZones;
+	ChunkedArray<V2I> filledRZones;
+
+	ChunkedArray<V2I> emptyCZones;
+	ChunkedArray<V2I> filledCZones;
+
+	ChunkedArray<V2I> emptyIZones;
+	ChunkedArray<V2I> filledIZones;
+
+	ZoneType *tiles; // x,y -> ZoneType
+};
+
+void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount);
+void placeZone(UIState *uiState, struct City *city, ZoneType zoneType, Rect2I area, bool chargeMoney=true);

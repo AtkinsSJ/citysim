@@ -235,7 +235,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	uiState->uiRects.count = 0;
 
 	f32 left = uiPadding;
-	f32 right = uiBuffer->camera.size.x - uiPadding;
+	f32 right = windowWidth - uiPadding;
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
@@ -250,6 +250,10 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	uiText(uiState, uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.combined.consumption), formatInt(city->powerLayer.combined.production)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
+
+	uiText(uiState, uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
+	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
+
 
 	// Build UI
 	{
@@ -410,9 +414,16 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	GameState *gameState = appState->gameState;
+	City *city = &gameState->city;
+
+	// Update the simulation... need a smarter way of doing this!
+	calculateDemand(city);
+
 
 	UIState *uiState = &globalAppState.uiState;
 	uiState->theme = &assets->theme;
+
+
 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
@@ -426,7 +437,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	bool mouseIsOverUI = inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos);
 	Rect2I demolitionRect = {0,0,-1,-1};
 
-	City *city = &gameState->city;
 	switch (uiState->actionMode)
 	{
 		case ActionMode_Build:
@@ -580,7 +590,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				{
 					if (canAfford(city, zoneCost))
 					{
-						zoneTiles(uiState, city, uiState->selectedZoneID, dragResult.dragRect);
+						placeZone(uiState, city, uiState->selectedZoneID, dragResult.dragRect);
 					}
 				} break;
 
@@ -664,7 +674,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
 
 					String zoneName;
-					ZoneType zone = city->tileZones[tileI];
+					ZoneType zone = city->zoneLayer.tiles[tileI];
 					if (zone)
 					{
 						zoneName = zoneDefs[zone].name;
@@ -751,7 +761,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			x < visibleTileBounds.x + visibleTileBounds.w;
 			x++)
 		{
-			ZoneType zoneType = city->tileZones[tileIndex(city, x, y)];
+			ZoneType zoneType = getZoneAt(city, x, y);
 			if (zoneType != Zone_None)
 			{
 				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, zoneDefs[zoneType].color);

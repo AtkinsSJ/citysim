@@ -55,7 +55,7 @@ void recalculatePowerConnectivity(City *city)
 	for (s32 tileIndex = 0; tileIndex < maxTileIndex; ++tileIndex)
 	{
 		bool tileCarriesPower = false;
-		if (zoneDefs[city->tileZones[tileIndex]].carriesPower)
+		if (zoneDefs[city->zoneLayer.tiles[tileIndex]].carriesPower)
 		{
 			tileCarriesPower = true;
 		}
