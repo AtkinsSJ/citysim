@@ -56,6 +56,19 @@ s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 	return total;
 }
 
+static ChunkedArray<V2I> *getEmptyZonesArray(ZoneLayer *layer, ZoneType zoneType)
+{
+	ChunkedArray<V2I> *emptyZonesArray = null;
+	switch (zoneType)
+	{
+		case Zone_Residential:  emptyZonesArray = &layer->emptyRZones; break;
+		case Zone_Commercial:   emptyZonesArray = &layer->emptyCZones; break;
+		case Zone_Industrial:   emptyZonesArray = &layer->emptyIZones; break;
+	}
+
+	return emptyZonesArray;
+}
+
 void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney)
 {
 	if (chargeMoney)
@@ -71,12 +84,30 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 			spend(city, cost);
 		}
 	}
+	
+	ChunkedArray<V2I> *emptyZonesArray = getEmptyZonesArray(&city->zoneLayer, zoneType);
 
 	for (int y=0; y<area.h; y++) {
 		for (int x=0; x<area.w; x++) {
-			if (canZoneTile(city, zoneType, area.x + x, area.y + y))
+			V2I pos = v2i(area.x + x, area.y + y);
+			if (canZoneTile(city, zoneType, pos.x, pos.y))
 			{
-				s32 tile = tileIndex(city, area.x + x, area.y + y);
+				s32 tile = tileIndex(city, pos.x, pos.y);
+
+				ZoneType oldZone = city->zoneLayer.tiles[tile];
+
+				ChunkedArray<V2I> *oldEmptyZonesArray = getEmptyZonesArray(&city->zoneLayer, oldZone);
+				if (oldEmptyZonesArray)
+				{
+					// We need to *remove* the position
+					findAndRemove(oldEmptyZonesArray, pos);
+				}
+
+				if (emptyZonesArray)
+				{
+					append(emptyZonesArray, pos);
+				}
+
 				city->zoneLayer.tiles[tile] = zoneType;
 			}
 		}

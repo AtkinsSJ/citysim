@@ -210,6 +210,30 @@ struct Rect2 {
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define WRAP(value, max) (((value) + (max)) % (max))
 
+// Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
+// In other cases, you'll want to write a type-specific function.
+// I'm not entirely confident this will work for all types, so make sure to TEST with any types you use it for!
+template<class T>
+bool equals(T a, T b)
+{
+	bool areEqual = true;
+
+	u8 *pA = (u8*)(&a);
+	u8 *pB = (u8*)(&b);
+	umm byteSize = sizeof(T);
+
+	for (umm i=0; i<byteSize; i++, pA++, pB++)
+	{
+		if (*pA != *pB)
+		{
+			areEqual = false;
+			break;
+		}
+	}
+
+	return areEqual;
+}
+
 /**********************************************
 	Asserts
  **********************************************/

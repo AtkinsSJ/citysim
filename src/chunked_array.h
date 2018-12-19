@@ -13,6 +13,7 @@ struct Chunk
 	umm maxCount;
 	T *items;
 
+	Chunk<T> *prevChunk;
 	Chunk<T> *nextChunk;
 };
 
@@ -43,6 +44,7 @@ void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, umm chunkSize,
 	array->firstChunk.maxCount = chunkSize;
 	array->firstChunk.items = PushArray(arena, T, chunkSize);
 	array->firstChunk.nextChunk = null;
+	array->firstChunk.prevChunk = null;
 
 	array->lastChunk = &array->firstChunk;
 
@@ -71,6 +73,7 @@ void appendChunk(ChunkedArray<T> *array)
 	newChunk->count = 0;
 	newChunk->maxCount = array->chunkSize;
 	newChunk->items = PushArray(array->memoryArena, T, array->chunkSize);
+	newChunk->prevChunk = array->lastChunk;
 	newChunk->nextChunk = null;
 
 	array->chunkCount++;
@@ -154,4 +157,50 @@ T *get(ChunkedArray<T> *array, umm index)
 	}
 
 	return result;
+}
+
+template<class T>
+bool findAndRemove(ChunkedArray<T> *array, T toRemove)
+{
+	bool found = false;
+
+	for (Chunk<T> *chunk = &array->firstChunk;
+		chunk != null;
+		chunk = chunk->nextChunk)
+	{
+		for (umm i=0; i<chunk->count; i++)
+		{
+			if (equals(chunk->items[i], toRemove))
+			{
+				// FOUND IT!
+				found = true;
+
+				Chunk<T> *lastNonEmptyChunk = array->lastChunk;
+				while (lastNonEmptyChunk->count == 0)
+				{
+					lastNonEmptyChunk = lastNonEmptyChunk->prevChunk;
+				}
+
+				// Now, to copy the last element in the array to this position
+				if (chunk == lastNonEmptyChunk)
+				{
+					chunk->items[i] = chunk->items[chunk->count-1];
+					chunk->count--;
+					array->itemCount--;
+				}
+				else
+				{
+					chunk->items[i] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
+					lastNonEmptyChunk->count--;
+					array->itemCount--;
+				}
+
+				break;
+			}
+		}
+
+		if (found) break;
+	}
+
+	return found;
 }
