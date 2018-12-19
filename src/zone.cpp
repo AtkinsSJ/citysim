@@ -297,6 +297,7 @@ void growSomeZoneBuildings(City *city)
 
 			// Choose a random building, then fall back to walking the array if it's not acceptable.
 			BuildingDef *randomDef = get(&buildingDefs, *get(&layer->rGrowableBuildings, randomInRange(city->gameRandom, layer->rGrowableBuildings.itemCount)));
+			// Copy-paste "is this acceptable?" check from the loop below.
 			if ((randomDef->residents <= maximumResidents)
 			 && (randomDef->width <= zoneFootprint.w)
 			 && (randomDef->height <= zoneFootprint.h))
@@ -308,6 +309,7 @@ void growSomeZoneBuildings(City *city)
 				// TODO: For increased variety, could start the iteration at a random point instead,
 				// but that's more complicated as we'd have to then jump back to the beginning
 				// and know when we reached the start point again.
+				// The extra benefit is, I wouldn't have to duplicate the "is this acceptable?" code above.
 				for (auto it = iterate(&layer->rGrowableBuildings); !it.isDone; next(&it))
 				{
 					BuildingDef *aDef = get(&buildingDefs, get(it));
