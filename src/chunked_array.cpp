@@ -13,7 +13,7 @@ Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, umm chunkIndex)
 	}
 	else if (chunkIndex == (array->chunkCount - 1))
 	{
-		result = &array->lastChunk;
+		chunk = array->lastChunk;
 	}
 	else
 	{
@@ -99,4 +99,69 @@ T removeIndex(ChunkedArray<T> *array, umm indexToRemove)
 	array->itemCount--;
 
 	return result;
+}
+
+//////////////////////////////////////////////////
+// ITERATOR STUFF                               //
+//////////////////////////////////////////////////
+
+/**
+ * This will iterate through every item in the array, starting at whichever initialIndex
+ * you specify (default to the beginning). It wraps when it reaches the end.
+ * Example usage:
+
+	for (auto it = iterate(&array, randomInRange(random, array.itemCount));
+		!it.isDone;
+		next(&it))
+	{
+		auto thing = get(it);
+		// do stuff with the thing
+	}
+ */
+template<class T>
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, umm initialIndex = 0)
+{
+	ChunkedArrayIterator<T> iterator = {};
+
+	iterator.array = array;
+	iterator.itemsIterated = 0;
+	iterator.isDone = false;
+
+	iterator.currentChunk = getChunkByIndex(array, initialIndex / array->chunkSize);
+	iterator.indexInChunk = initialIndex % array->chunkSize;
+
+	return iterator;
+}
+
+template<class T>
+void next(ChunkedArrayIterator<T> *iterator)
+{
+	if (iterator->isDone) return;
+
+	iterator->indexInChunk++;
+	iterator->itemsIterated++;
+
+	if (iterator->itemsIterated >= iterator->array->itemCount)
+	{
+		// We've seen each index once
+		iterator->isDone = true;
+	}
+
+	if (iterator->indexInChunk >= iterator->currentChunk->count)
+	{
+		iterator->currentChunk = iterator->currentChunk->nextChunk;
+		iterator->indexInChunk = 0;
+
+		if (iterator->currentChunk == null)
+		{
+			// Wrap to the beginning!
+			iterator->currentChunk = &iterator->array->firstChunk;
+		}
+	}
+}
+
+template<class T>
+T get(ChunkedArrayIterator<T> iterator)
+{
+	return iterator.currentChunk->items[iterator.indexInChunk];
 }

@@ -158,6 +158,22 @@ int main(int argc, char *argv[])
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
 
+	// DO TEST STUFF HERE
+	// ChunkedArray<char> chars = {};
+	// initChunkedArray(&chars, globalFrameTempArena, 5);
+	// for (char c = 'A'; c <= 'Z'; c++)
+	// {
+	// 	append(&chars, c);
+	// }
+
+	// for (auto it = iterate(&chars, 13); !it.isDone; next(&it))
+	// {
+	// 	char c = get(it);
+	// 	logInfo("Char is: {0}", {makeString(&c, 1)});
+	// }
+
+
+
 // Do we need this here?
 // {
 	UIState *uiState = &appState->uiState;

@@ -210,6 +210,7 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 void growSomeZoneBuildings(City *city)
 {
 	ZoneLayer *layer = &city->zoneLayer;
+	Random *random = city->gameRandom;
 
 	// Residential
 	if (city->residentialDemand > 0)
@@ -221,7 +222,7 @@ void growSomeZoneBuildings(City *city)
 		{
 			// Find a valid res zone
 			// TODO: Better selection than just a random one
-			V2I zonePos = *get(&layer->emptyRZones, randomInRange(city->gameRandom, layer->emptyRZones.itemCount));
+			V2I zonePos = *get(&layer->emptyRZones, randomInRange(random, layer->emptyRZones.itemCount));
 			
 			// Produce a rectangle of the contiguous empty zone area around that point,
 			// so we can fit larger buildings there if possible.
@@ -229,8 +230,8 @@ void growSomeZoneBuildings(City *city)
 			{
 				// Gradually expand from zonePos outwards, checking if there is available, zoned space
 
-				bool tryX = randomBool(city->gameRandom);
-				bool positive = randomBool(city->gameRandom);
+				bool tryX = randomBool(random);
+				bool positive = randomBool(random);
 
 				while (true)
 				{
@@ -287,7 +288,7 @@ void growSomeZoneBuildings(City *city)
 					if (zoneFootprint.w >=5 && zoneFootprint.h >= 5) break;
 
 					tryX = !tryX; // Alternate x and y
-					positive = randomBool(city->gameRandom); // random direction to expand in
+					positive = randomBool(random); // random direction to expand in
 				}
 			}
 
@@ -295,34 +296,21 @@ void growSomeZoneBuildings(City *city)
 			BuildingDef *buildingDef = null;
 			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
 
-			// Choose a random building, then fall back to walking the array if it's not acceptable.
-			BuildingDef *randomDef = get(&buildingDefs, *get(&layer->rGrowableBuildings, randomInRange(city->gameRandom, layer->rGrowableBuildings.itemCount)));
-			// Copy-paste "is this acceptable?" check from the loop below.
-			if ((randomDef->residents <= maximumResidents)
-			 && (randomDef->width <= zoneFootprint.w)
-			 && (randomDef->height <= zoneFootprint.h))
+			// Choose a random building, then carry on checking buildings until one is acceptable
+			for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, layer->rGrowableBuildings.itemCount));
+				!it.isDone;
+				next(&it))
 			{
-				buildingDef = randomDef;
-			}
-			else
-			{
-				// TODO: For increased variety, could start the iteration at a random point instead,
-				// but that's more complicated as we'd have to then jump back to the beginning
-				// and know when we reached the start point again.
-				// The extra benefit is, I wouldn't have to duplicate the "is this acceptable?" code above.
-				for (auto it = iterate(&layer->rGrowableBuildings); !it.isDone; next(&it))
-				{
-					BuildingDef *aDef = get(&buildingDefs, get(it));
+				BuildingDef *aDef = get(&buildingDefs, get(it));
 
-					// Cap residents
-					if (aDef->residents > maximumResidents) continue;
+				// Cap residents
+				if (aDef->residents > maximumResidents) continue;
 
-					// Cap based on size
-					if (aDef->width > zoneFootprint.w || aDef->height > zoneFootprint.h) continue;
-					
-					buildingDef = aDef;
-					break;
-				}
+				// Cap based on size
+				if (aDef->width > zoneFootprint.w || aDef->height > zoneFootprint.h) continue;
+				
+				buildingDef = aDef;
+				break;
 			}
 
 			if (buildingDef)
