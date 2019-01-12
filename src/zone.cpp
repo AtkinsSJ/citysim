@@ -207,6 +207,28 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	updateBuildingTexture(city, building, def);
 }
 
+static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
+{
+	// For now, we'll ignore zoneType and assume the same requirements for all zones, but later we'll want to make distance-to-road etc variable for them.
+	// TODO: Different requirements per ZoneType
+
+	bool isAcceptable = true;
+
+	if (getZoneAt(city, x, y) != zoneType)
+	{
+		isAcceptable = false;
+	}
+	else if (getBuildingAtPosition(city, x, y) != null)
+	{
+		isAcceptable = false;
+	}
+
+	// TODO: Distance to road!
+	// TODO: Power requirements!
+
+	return isAcceptable;
+}
+
 void growSomeZoneBuildings(City *city)
 {
 	ZoneLayer *layer = &city->zoneLayer;
@@ -222,7 +244,27 @@ void growSomeZoneBuildings(City *city)
 		{
 			// Find a valid res zone
 			// TODO: Better selection than just a random one
-			V2I zonePos = *get(&layer->emptyRZones, randomInRange(random, layer->emptyRZones.itemCount));
+			bool foundAZone = false;
+			V2I zonePos = {};
+			for (auto it = iterate(&layer->emptyRZones, randomInRange(random, layer->emptyRZones.itemCount));
+				!it.isDone;
+				next(&it))
+			{
+				V2I aPos = get(it);
+
+				if (isZoneAcceptable(city, Zone_Residential, aPos.x, aPos.y))
+				{
+					zonePos = aPos;
+					foundAZone = true;
+					break;
+				}
+			}
+
+			if (!foundAZone)
+			{
+				// There are empty zones, but none meet our requirements, so stop trying to grow anything
+				break;
+			}
 			
 			// Produce a rectangle of the contiguous empty zone area around that point,
 			// so we can fit larger buildings there if possible.
@@ -244,8 +286,7 @@ void growSomeZoneBuildings(City *city)
 							y < zoneFootprint.y + zoneFootprint.h;
 							y++)
 						{
-							if ((getZoneAt(city, x, y) != Zone_Residential)
-							 || (getBuildingAtPosition(city, x, y) != null))
+							if (!isZoneAcceptable(city, Zone_Residential, x, y))
 							{
 								canExpand = false;
 								break;
@@ -266,8 +307,7 @@ void growSomeZoneBuildings(City *city)
 							x < zoneFootprint.x + zoneFootprint.w;
 							x++)
 						{
-							if ((getZoneAt(city, x, y) != Zone_Residential)
-							 || (getBuildingAtPosition(city, x, y) != null))
+							if (!isZoneAcceptable(city, Zone_Residential, x, y))
 							{
 								canExpand = false;
 								break;

@@ -12,6 +12,23 @@ Things to work on next maybe:
 - Zones actually spawn stuff
 - Rather than directly recalculating power/pathing when we make a change, mark them as "dirty" and then recalculate at an appropriate moment.
 
+Data structure ideas I had late last night:
+- Buildings array:
+	Slots store whether they're empty or full. (Bitfield in the array chunk?)
+
+    When removing one, just mark that slot empty.
+
+    This way, building IDs (or anything else using that array type's indices) are constant. No need to update the id-by-tile array, or later, any other systems that might refer to a building. (Impressionable style walkers need an origin building, or SimCity citizens need a home and a workplace.)
+
+    Inserting into the array would require some walking, but we can keep track of the "earliest free slot index", which should reduce that a lot. (When you fill the slot, walk until you find another free one. When freeing a slot, if it's earlier than the current earliest index, replace that index.)
+
+    I mean, maybe we want a different data structure than what I've described, but still, constant IDs are a must!
+
+    Also probably want to consider what structure best suits other cases too, rather than just using Array always. Eg, ring buffers might be good sometimes.
+- Console text buffer:
+	Also, the console texts can be in a ring buffer! Store it as (line metadata, string data). When adding a line, see if there's room. While there's not, "free" the earliest by jumping ahead to the next one. As long as we don't try and enter a line larger than the buffer, it's fine. (We can just crop it.) Also, think what happens if the buffer becomes empty. (Jump to index 0?)
+
+
 ------------------------------------------------
 
 THE PLAN:
