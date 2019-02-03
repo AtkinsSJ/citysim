@@ -162,12 +162,16 @@ void markZonesAsEmpty(City *city, Rect2I footprint)
 
 void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
-	/* We make some assumptions here:
-	 - There is no building or other obstacle already overlapping the footprint
-	 - This building doesn't affect the paths layer
-	 - This building doesn't affect the power layer (because power is carried by the zone)
-	 - This building doesn't remove the existing zone
-	 - This building doesn't need to affect adjacent building textures
+	/* 
+		We make some assumptions here, because some building features don't make sense
+		for zoned buildings, and we already checked the footprint with isZoneAcceptable().
+		The assumptions are:
+		 - There is no building or other obstacle already overlapping the footprint
+		 - There is only one zone type across the entire footprint
+		 - This building doesn't affect the paths layer
+		 - This building doesn't affect the power layer (because power is carried by the zone)
+		 - This building doesn't remove the existing zone
+		 - This building doesn't need to affect adjacent building textures
 	 */
 
 	u32 buildingID = city->buildings.count;

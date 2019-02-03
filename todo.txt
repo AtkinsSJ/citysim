@@ -6,7 +6,10 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 
 ------------------------------------------------
 
+Simple algorithm for keeping pixel-art look without blurring, but still looking good: https://hero.handmade.network/forums/code-discussion/t/3618-scaling_in_bitmap_based_games#17223
+
 Things to work on next maybe:
+- Windowing system! I'm really excited about this all of a sudden. I think it's not nearly as complicated as I had previously assumed.
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?
 - Zones actually spawn stuff
@@ -18,7 +21,7 @@ Data structure ideas I had late last night:
 
     When removing one, just mark that slot empty.
 
-    This way, building IDs (or anything else using that array type's indices) are constant. No need to update the id-by-tile array, or later, any other systems that might refer to a building. (Impressionable style walkers need an origin building, or SimCity citizens need a home and a workplace.)
+    This way, building IDs (or anything else using that array type's indices) are constant. No need to update the id-by-tile array, or later, any other systems that might refer to a building. (Impressionable style walkers need an origin building, or SimCity citizens need a home and a workplace.) Also, this is necessary for inspection windows!
 
     Inserting into the array would require some walking, but we can keep track of the "earliest free slot index", which should reduce that a lot. (When you fill the slot, walk until you find another free one. When freeing a slot, if it's earlier than the current earliest index, replace that index.)
 

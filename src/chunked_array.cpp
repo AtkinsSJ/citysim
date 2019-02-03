@@ -125,10 +125,15 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, umm initialIndex = 0)
 
 	iterator.array = array;
 	iterator.itemsIterated = 0;
-	iterator.isDone = false;
 
-	iterator.currentChunk = getChunkByIndex(array, initialIndex / array->chunkSize);
-	iterator.indexInChunk = initialIndex % array->chunkSize;
+	// If the array is empty, we can skip some work.
+	iterator.isDone = array->itemCount == 0;
+
+	if (!iterator.isDone)
+	{
+		iterator.currentChunk = getChunkByIndex(array, initialIndex / array->chunkSize);
+		iterator.indexInChunk = initialIndex % array->chunkSize;
+	}
 
 	return iterator;
 }
