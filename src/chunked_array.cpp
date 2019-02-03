@@ -93,7 +93,7 @@ T removeIndex(ChunkedArray<T> *array, umm indexToRemove)
 	result = chunk->items[itemIndex];
 
 	Chunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
-	
+
 	if (indexToRemove != array->itemCount - 1)
 	{
 		// Copy last item to overwrite this one
