@@ -1,5 +1,15 @@
 #pragma once
 
+void testWindowProc(void *userData)
+{
+	s32 *ourNumber = (s32*) userData;
+
+	// Stuff we'd like to do:
+	// - print out the number
+	// - increment button
+	// - decrement button
+}
+
 void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
@@ -48,7 +58,9 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	buttonRect.y += 32;
 	if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Create a window"), buttonRect, 1))
 	{
-		showWindow(uiState, LocalString("Hello window!"));
+		s32 *aNumber = new s32;
+		*aNumber = randomInRange(&globalAppState.cosmeticRandom, INT32_MAX);
+		showWindow(uiState, LocalString("Hello window!"), testWindowProc, aNumber);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Website"), buttonRect, 1))

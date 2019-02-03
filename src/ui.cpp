@@ -262,12 +262,14 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 	drawRect(uiBuffer, knobRect, depth, knobColor);
 }
 
-void showWindow(UIState *uiState, String title)
+void showWindow(UIState *uiState, String title, WindowProc windowProc, void *userData)
 {
 	Window newWindow = {};
 	s32 offset = uiState->openWindows.itemCount * 20;
 	newWindow.title = title;
 	newWindow.area = irectXYWH(100 + offset, 100 + offset, 200, 200);
+	newWindow.windowProc = windowProc;
+	newWindow.userData = userData;
 
 	if (uiState->openWindows.itemCount > 0)
 	{
@@ -301,7 +303,7 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 	V4 titleColor     = color255(255, 255, 255, 255);
 
 	String closeButtonString = stringFromChars("X");
-	V4 closeButtonColorHover = color255(255, 96, 96, 255);
+	V4 closeButtonColorHover = color255(255, 64, 64, 255);
 
 	BitmapFont *titleFont = getFont(assets, FontAssetType_Main);
 
@@ -360,15 +362,17 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 			mouseInputHandled = true;
 		}
 
+		if (window->windowProc != null)
+		{
+			window->windowProc(window->userData);
+		}
+
 		drawRect(uiBuffer, windowAreaF, depth, isActive ? backColorActive : backColor);
 		drawRect(uiBuffer, barAreaF, depth + 1.0f, isActive ? barColorActive : barColor);
 		uiText(uiState, uiBuffer, titleFont, window->title, barAreaF.pos + v2(8.0f, barAreaF.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 2.0f, titleColor);
-		if (hoveringOverCloseButton)
-		{
-			drawRect(uiBuffer, closeButtonRect, depth + 2.0f, closeButtonColorHover);
-		}
-		uiText(uiState, uiBuffer, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 3.0f, titleColor);
 
+		if (hoveringOverCloseButton)  drawRect(uiBuffer, closeButtonRect, depth + 2.0f, closeButtonColorHover);
+		uiText(uiState, uiBuffer, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 3.0f, titleColor);
 	}
 
 	if (closeWindow != -1)
@@ -376,7 +380,12 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 		uiState->isDraggingWindow = false;
 		removeIndex(&uiState->openWindows, closeWindow);
 	}
-	
+	/*
+	 * NB: This is an imaginary else-if, because if we try to set a new active window, AND close one,
+	 * then things break. However, we never intentionally do that! I'm leaving this code "dangerous",
+	 * because that way, we crash when we try to do both at once, instead of hiding the bug.
+	 * - Sam, 3/2/2019
+	 */
 	if (newActiveWindow != null)
 	{
 		// For now, just swap it with window #0. This is hacky but it'll work

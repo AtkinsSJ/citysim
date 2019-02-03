@@ -36,10 +36,14 @@ struct UiMessage
 	f32 countdown; // In seconds
 };
 
+typedef void (*WindowProc)(void*);
+
 struct Window
 {
 	Rect2I area;
 	String title;
+	WindowProc windowProc;
+	void *userData;
 };
 
 /* 
