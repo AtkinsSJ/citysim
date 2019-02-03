@@ -20,6 +20,7 @@ struct InputState
 	bool mouseWasDown[MOUSE_BUTTON_COUNT];
 	V2 clickStartPosition[MOUSE_BUTTON_COUNT]; // Normalised
 	s32 wheelX, wheelY;
+	V2I mouseDeltaRaw;
 
 	// Keyboard
 	bool _keyWasDown[KEYBOARD_KEY_COUNT];
@@ -174,6 +175,8 @@ void updateInput(InputState *inputState)
 	// Clear mouse state
 	inputState->wheelX = 0;
 	inputState->wheelY = 0;
+	inputState->mouseDeltaRaw.x = 0;
+	inputState->mouseDeltaRaw.y = 0;
 
 	for (int i = 0; i < MOUSE_BUTTON_COUNT; i++) {
 		inputState->mouseWasDown[i] = inputState->mouseDown[i];
@@ -212,6 +215,9 @@ void updateInput(InputState *inputState)
 				// Mouse pos in screen coordinates
 				inputState->mousePosRaw.x = event.motion.x;
 				inputState->mousePosRaw.y = event.motion.y;
+
+				inputState->mouseDeltaRaw.x += event.motion.xrel;
+				inputState->mouseDeltaRaw.y += event.motion.yrel;
 			} break;
 			case SDL_MOUSEBUTTONDOWN: {
 				u8 buttonIndex = event.button.button - 1;

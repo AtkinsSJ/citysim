@@ -30,6 +30,8 @@ void initUiState(UIState *uiState)
 
 	initialiseArray(&uiState->uiRects, 16);
 
+	initChunkedArray(&uiState->openWindows, &uiState->arena, 16);
+
 	setCursorVisible(uiState, false);
 }
 
@@ -258,4 +260,73 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
 	drawRect(uiBuffer, knobRect, depth, knobColor);
+}
+
+void showWindow(UIState *uiState, String title)
+{
+	Window *window = appendBlank(&uiState->openWindows);
+	s32 offset = uiState->openWindows.itemCount * 20;
+	window->title = title;
+	window->area = irectXYWH(100 + offset, 100 + offset, 200, 200);
+}
+
+void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState)
+{
+	DEBUG_FUNCTION();
+
+	V2 mousePos = uiBuffer->camera.mousePos;
+	bool mouseInputHandled = false;
+	Window *newActiveWindow = null;
+
+	V4 backColor = color255(96, 96, 96, 128);
+	V4 backColorActive = color255(96, 255, 96, 255);
+	V4 textColor = color255(255, 255, 255, 255);
+	BitmapFont *titleFont = getFont(assets, FontAssetType_Main);
+
+	s32 windowIndex = 0;
+	for (auto it = iterate(&uiState->openWindows);
+		!it.isDone;
+		next(&it), windowIndex++)
+	{
+		Window *window = get(it);
+		Rect2 windowAreaF = rect2(window->area);
+
+		if (!mouseInputHandled && inRect(windowAreaF, mousePos))
+		{
+			if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+			{
+				if (windowIndex == 0)
+				{
+					// Drag
+					if (!mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+					{
+						window->area.pos += inputState->mouseDeltaRaw;
+					}
+				}
+				else
+				{
+					// Make this the active window! 
+					newActiveWindow = window;
+				}
+
+				mouseInputHandled = true;
+			}
+		}
+
+		f32 depth = 2000.0f - (20.0f * windowIndex);
+
+		V4 windowBackColor = (windowIndex == 0) ? backColorActive : backColor;
+
+		drawRect(uiBuffer, windowAreaF, depth, windowBackColor);
+		uiText(uiState, uiBuffer, titleFont, window->title, centre(window->area), ALIGN_CENTRE, depth + 1.0f, textColor);
+	}
+
+	if (newActiveWindow != null)
+	{
+		// For now, just swap it with window #0. This is hacky but it'll work
+		Window *oldActiveWindow = get(&uiState->openWindows, 0);
+		Window temp = *oldActiveWindow;
+		*oldActiveWindow = *newActiveWindow;
+		*newActiveWindow = temp;
+	}
 }

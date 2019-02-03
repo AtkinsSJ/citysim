@@ -166,7 +166,13 @@ void next(ChunkedArrayIterator<T> *iterator)
 }
 
 template<class T>
-T get(ChunkedArrayIterator<T> iterator)
+T *get(ChunkedArrayIterator<T> iterator)
+{
+	return &iterator.currentChunk->items[iterator.indexInChunk];
+}
+
+template<class T>
+T getValue(ChunkedArrayIterator<T> iterator)
 {
 	return iterator.currentChunk->items[iterator.indexInChunk];
 }

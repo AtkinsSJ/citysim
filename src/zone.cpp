@@ -254,7 +254,7 @@ void growSomeZoneBuildings(City *city)
 				!it.isDone;
 				next(&it))
 			{
-				V2I aPos = get(it);
+				V2I aPos = getValue(it);
 
 				if (isZoneAcceptable(city, Zone_Residential, aPos.x, aPos.y))
 				{
@@ -345,7 +345,7 @@ void growSomeZoneBuildings(City *city)
 				!it.isDone;
 				next(&it))
 			{
-				BuildingDef *aDef = get(&buildingDefs, get(it));
+				BuildingDef *aDef = get(&buildingDefs, getValue(it));
 
 				// Cap residents
 				if (aDef->residents > maximumResidents) continue;
@@ -389,13 +389,13 @@ void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer)
 
 	for (auto it = iterate(&buildingDefs); !it.isDone; next(&it))
 	{
-		BuildingDef def = get(it);
+		BuildingDef *def = get(it);
 
-		switch(def.growsInZone)
+		switch(def->growsInZone)
 		{
-			case Zone_Residential:  append(&zoneLayer->rGrowableBuildings, def.typeID); break;
-			case Zone_Commercial:   append(&zoneLayer->cGrowableBuildings, def.typeID); break;
-			case Zone_Industrial:   append(&zoneLayer->iGrowableBuildings, def.typeID); break;
+			case Zone_Residential:  append(&zoneLayer->rGrowableBuildings, def->typeID); break;
+			case Zone_Commercial:   append(&zoneLayer->cGrowableBuildings, def->typeID); break;
+			case Zone_Industrial:   append(&zoneLayer->iGrowableBuildings, def->typeID); break;
 		}
 	}
 

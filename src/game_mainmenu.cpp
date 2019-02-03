@@ -46,6 +46,11 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 		result = AppStatus_SettingsMenu;
 	}
 	buttonRect.y += 32;
+	if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Create a window"), buttonRect, 1))
+	{
+		showWindow(uiState, LocalString("Hello window!"));
+	}
+	buttonRect.y += 32;
 	if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Website"), buttonRect, 1))
 	{
 		openUrlUnsafe("http://samatkins.co.uk");
@@ -57,4 +62,12 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	}
 
 	appState->appStatus = result;
+
+	//
+	//
+	// Temporary window testing code!!!!
+	//
+	//
+
+	updateAndRenderWindows(uiState, uiBuffer, assets, inputState);
 }

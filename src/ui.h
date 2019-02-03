@@ -36,6 +36,12 @@ struct UiMessage
 	f32 countdown; // In seconds
 };
 
+struct Window
+{
+	Rect2I area;
+	String title;
+};
+
 /* 
  * So... Really, we have two different things here:
  * - Global UI state, such as the theme and current cursor
@@ -70,5 +76,7 @@ struct UIState
 	bool isDragging;
 	V2I mouseDragStartPos;
 	V2I mouseDragEndPos;
+
+	ChunkedArray<Window> openWindows;
 };
 
