@@ -264,10 +264,23 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 
 void showWindow(UIState *uiState, String title)
 {
-	Window *window = appendBlank(&uiState->openWindows);
+	Window newWindow = {};
 	s32 offset = uiState->openWindows.itemCount * 20;
-	window->title = title;
-	window->area = irectXYWH(100 + offset, 100 + offset, 200, 200);
+	newWindow.title = title;
+	newWindow.area = irectXYWH(100 + offset, 100 + offset, 200, 200);
+
+	if (uiState->openWindows.itemCount > 0)
+	{
+		// We do some fiddling to make the new window the first one:
+		// Append a copy of the currently-active window, then overwrite the original with the new window
+		Window *oldActiveWindow = get(&uiState->openWindows, 0);
+		append(&uiState->openWindows, *oldActiveWindow);
+		*oldActiveWindow = newWindow;
+	}
+	else
+	{
+		append(&uiState->openWindows, newWindow);
+	}
 }
 
 void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState)
@@ -306,16 +319,15 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 
 		Rect2 windowAreaF = rect2(window->area);
 
-		if (!mouseInputHandled && inRect(windowAreaF, mousePos))
+		if (!mouseInputHandled
+			 && inRect(windowAreaF, mousePos)
+			 && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 		{
-			if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
-			{
-				// Make this the active window! 
-				newActiveWindow = window;
-				uiState->isDraggingWindow = true;
+			// Make this the active window! 
+			newActiveWindow = window;
+			uiState->isDraggingWindow = true;
 
-				mouseInputHandled = true;
-			}
+			mouseInputHandled = true;
 		}
 
 		f32 depth = 2000.0f - (20.0f * windowIndex);
