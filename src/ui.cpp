@@ -290,10 +290,16 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 	V2 mousePos = uiBuffer->camera.mousePos;
 	bool mouseInputHandled = false;
 	Window *newActiveWindow = null;
+	s32 closeWindow = -1;
 
 	V4 backColor = color255(96, 96, 96, 128);
-	V4 backColorActive = color255(96, 255, 96, 255);
-	V4 textColor = color255(255, 255, 255, 255);
+	V4 backColorActive = color255(96, 96, 96, 255);
+
+	f32 barHeight = 32.0f;
+	V4 barColor = color255(96, 128, 96, 128);
+	V4 barColorActive = color255(96, 196, 96, 255);
+	V4 titleColor = color255(255, 255, 255, 255);
+
 	BitmapFont *titleFont = getFont(assets, FontAssetType_Main);
 
 	s32 windowIndex = 0;
@@ -302,8 +308,12 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 		next(&it), windowIndex++)
 	{
 		Window *window = get(it);
+		f32 depth = 2000.0f - (20.0f * windowIndex);
 
-		if (windowIndex == 0 && uiState->isDraggingWindow)
+		bool isActive = (windowIndex == 0);
+
+		// Handle dragging first, BEFORE we use the window rect anywhere
+		if (isActive && uiState->isDraggingWindow)
 		{
 			if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 			{
@@ -318,24 +328,43 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 		}
 
 		Rect2 windowAreaF = rect2(window->area);
+		Rect2 barAreaF = rectXYWH(window->area.x, window->area.y, window->area.w - barHeight, barHeight);
+
+		Rect2 closeButtonRect = rectXYWH(window->area.x + window->area.w - barHeight, window->area.y, barHeight, barHeight);
+		if (uiButton(uiState, uiBuffer, assets, inputState, stringFromChars("X"), closeButtonRect, depth + 3.0f))
+		{
+			closeWindow = windowIndex;
+			continue;
+		}
 
 		if (!mouseInputHandled
 			 && inRect(windowAreaF, mousePos)
 			 && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 		{
+			// If we're inside the X, close it!
+
+			// If we're inside the title bar, start dragging!
+			if (inRect(barAreaF, mousePos))
+			{
+				uiState->isDraggingWindow = true;
+			}
+
 			// Make this the active window! 
 			newActiveWindow = window;
-			uiState->isDraggingWindow = true;
 
 			mouseInputHandled = true;
 		}
 
-		f32 depth = 2000.0f - (20.0f * windowIndex);
 
-		V4 windowBackColor = (windowIndex == 0) ? backColorActive : backColor;
+		drawRect(uiBuffer, barAreaF, depth + 1.0f, isActive ? barColorActive : barColor);
+		drawRect(uiBuffer, windowAreaF, depth, isActive ? backColorActive : backColor);
+		uiText(uiState, uiBuffer, titleFont, window->title, barAreaF.pos + v2(8.0f, barAreaF.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 2.0f, titleColor);
+	}
 
-		drawRect(uiBuffer, windowAreaF, depth, windowBackColor);
-		uiText(uiState, uiBuffer, titleFont, window->title, centre(window->area), ALIGN_CENTRE, depth + 1.0f, textColor);
+	if (closeWindow != -1)
+	{
+		uiState->isDraggingWindow = false;
+		removeIndex(&uiState->openWindows, closeWindow);
 	}
 
 	if (newActiveWindow != null)
