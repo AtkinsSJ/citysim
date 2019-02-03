@@ -77,6 +77,8 @@ struct UIState
 	V2I mouseDragStartPos;
 	V2I mouseDragEndPos;
 
+	// Window stuff
 	ChunkedArray<Window> openWindows;
+	bool isDraggingWindow;
 };
 

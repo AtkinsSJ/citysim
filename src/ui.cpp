@@ -289,25 +289,30 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 		next(&it), windowIndex++)
 	{
 		Window *window = get(it);
+
+		if (windowIndex == 0 && uiState->isDraggingWindow)
+		{
+			if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+			{
+				uiState->isDraggingWindow = false;
+			}
+			else
+			{
+				window->area.pos += inputState->mouseDeltaRaw;
+			}
+			
+			mouseInputHandled = true;
+		}
+
 		Rect2 windowAreaF = rect2(window->area);
 
 		if (!mouseInputHandled && inRect(windowAreaF, mousePos))
 		{
-			if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+			if (mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 			{
-				if (windowIndex == 0)
-				{
-					// Drag
-					if (!mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
-					{
-						window->area.pos += inputState->mouseDeltaRaw;
-					}
-				}
-				else
-				{
-					// Make this the active window! 
-					newActiveWindow = window;
-				}
+				// Make this the active window! 
+				newActiveWindow = window;
+				uiState->isDraggingWindow = true;
 
 				mouseInputHandled = true;
 			}

@@ -173,14 +173,10 @@ int main(int argc, char *argv[])
 	// }
 
 
-
-// Do we need this here?
-// {
 	UIState *uiState = &appState->uiState;
 	initUiState(uiState);
 	setCursor(uiState, assets, Cursor_Main);
 	setCursorVisible(uiState, true);
-// }
 
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera = &renderer->uiBuffer.camera;
