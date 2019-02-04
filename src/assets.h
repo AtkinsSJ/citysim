@@ -89,7 +89,7 @@ struct ShaderHeader
 	String contents;
 };
 
-#include "uitheme.cpp"
+#include "uitheme.h"
 
 struct IndexRange
 {

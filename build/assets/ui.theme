@@ -48,3 +48,12 @@ depth             100
 font              normalFont
 textColor           0   0   0 255
 backgroundColor   255 255 255 255
+
+:Window
+titleFont                normalFont
+titleColor               255 255 255 255
+titleBarHeight           32
+titleBarColorActive       96 196  96 255
+titleBarColorInactive     96 128  96 128
+backgroundColorActive     96  96  96 255
+backgroundColorInactive   96  96  96 128

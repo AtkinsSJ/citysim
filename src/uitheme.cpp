@@ -1,60 +1,5 @@
 #pragma once
 
-struct UIButtonStyle
-{
-	FontAssetType font;
-	V4 textColor;
-
-	V4 backgroundColor;
-	V4 hoverColor;
-	V4 pressedColor;
-};
-
-struct UILabelStyle
-{
-	FontAssetType font;
-	V4 textColor;
-};
-
-struct UITextBoxStyle
-{
-	FontAssetType font;
-	V4 textColor;
-	V4 backgroundColor;
-};
-
-struct UITooltipStyle
-{
-	FontAssetType font;
-	V4 textColorNormal;
-	V4 textColorBad;
-
-	V4 backgroundColor;
-	f32 borderPadding;
-	f32 depth;
-};
-
-struct UIMessageStyle
-{
-	FontAssetType font;
-	V4 textColor;
-
-	V4 backgroundColor;
-	f32 borderPadding;
-	f32 depth;
-};
-
-struct UITheme
-{
-	V4 overlayColor;
-
-	UIButtonStyle buttonStyle;
-	UILabelStyle labelStyle;
-	UITooltipStyle tooltipStyle;
-	UIMessageStyle uiMessageStyle;
-	UITextBoxStyle textBoxStyle;
-};
-
 V4 readColor255(String input)
 {
 	s64 r = 0, g = 0, b = 0, a = 255;
@@ -89,11 +34,6 @@ V4 readColor255(String input)
 	return color255((u8)r, (u8)g, (u8)b, (u8)a);
 }
 
-static void invalidPropertyError(LineReader *reader, String property, String section)
-{
-	consoleWriteLine(myprintf("Error in UITheme file, line {0}: property '{1}' in an invalid section: '{2}'", {formatInt(reader->lineNumber), property, section}), CLS_Error);
-}
-
 /*
 	@Hack: So far, this is a MASSIVE hack! We simply hard-code what name links to what font asset ID.
 	But, I don't exactly know how we want to handle fonts so I'll leave it as is for now.
@@ -111,7 +51,7 @@ FontAssetType findFontByName(LineReader *reader, String fontName)
 	}
 	else
 	{
-		consoleWriteLine(myprintf("Error in UITheme file, line {0}: unrecognized font name '{1}'", {formatInt(reader->lineNumber), fontName}), CLS_Error);
+		error(reader, "Unrecognized font name '{0}'", {fontName});
 	}
 	return result;
 }
@@ -128,6 +68,7 @@ void loadUITheme(UITheme *theme, File file)
 		Section_Tooltip,
 		Section_UIMessage,
 		Section_TextBox,
+		Section_Window,
 	};
 	TargetType currentTarget = Section_None;
 	String sectionName = {};
@@ -167,30 +108,13 @@ void loadUITheme(UITheme *theme, File file)
 					consoleWriteLine(myprintf("Invalid font declaration, line {0}: '{1}'", {formatInt(reader.lineNumber), line}), CLS_Error);
 				}
 			}
-			else if (equals(firstWord, "General"))
-			{
-				currentTarget = Section_General;
-			}
-			else if (equals(firstWord, "Button"))
-			{
-				currentTarget = Section_Button;
-			}
-			else if (equals(firstWord, "Label"))
-			{
-				currentTarget = Section_Label;
-			}
-			else if (equals(firstWord, "Tooltip"))
-			{
-				currentTarget = Section_Tooltip;
-			}
-			else if (equals(firstWord, "UIMessage"))
-			{
-				currentTarget = Section_UIMessage;
-			}
-			else if (equals(firstWord, "TextBox"))
-			{
-				currentTarget = Section_TextBox;
-			}
+			else if (equals(firstWord, "General"))    currentTarget = Section_General;
+			else if (equals(firstWord, "Button"))     currentTarget = Section_Button;
+			else if (equals(firstWord, "Label"))      currentTarget = Section_Label;
+			else if (equals(firstWord, "Tooltip"))    currentTarget = Section_Tooltip;
+			else if (equals(firstWord, "UIMessage"))  currentTarget = Section_UIMessage;
+			else if (equals(firstWord, "TextBox"))    currentTarget = Section_TextBox;
+			else if (equals(firstWord, "Window"))     currentTarget = Section_Window;
 			else
 			{
 				consoleWriteLine(myprintf("Unrecognized command in UITheme file, line {0}: '{1}'", {formatInt(reader.lineNumber), firstWord}), CLS_Error);
@@ -207,177 +131,105 @@ void loadUITheme(UITheme *theme, File file)
 				}
 				else
 				{
-					invalidPropertyError(&reader, firstWord, sectionName);
+					error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "textColor"))
 			{
 				switch (currentTarget)
 				{
-					case Section_Button: {
-						theme->buttonStyle.textColor = readColor255(remainder);
-					} break;
-					case Section_Label: {
-						theme->labelStyle.textColor = readColor255(remainder);
-					} break;
-					case Section_TextBox: {
-						theme->textBoxStyle.textColor = readColor255(remainder);
-					} break;
-					case Section_UIMessage: {
-						theme->uiMessageStyle.textColor = readColor255(remainder);
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Button:     theme->buttonStyle.textColor    = readColor255(remainder); break;
+					case Section_Label:      theme->labelStyle.textColor     = readColor255(remainder); break;
+					case Section_TextBox:    theme->textBoxStyle.textColor   = readColor255(remainder); break;
+					case Section_UIMessage:  theme->uiMessageStyle.textColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "backgroundColor"))
 			{
 				switch (currentTarget)
 				{
-					case Section_Button: {
-						theme->buttonStyle.backgroundColor = readColor255(remainder);
-					} break;
-					case Section_TextBox: {
-						theme->textBoxStyle.backgroundColor = readColor255(remainder);
-					} break;
-					case Section_Tooltip: {
-						theme->tooltipStyle.backgroundColor = readColor255(remainder);
-					} break;
-					case Section_UIMessage: {
-						theme->uiMessageStyle.backgroundColor = readColor255(remainder);
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Button:    theme->buttonStyle.backgroundColor = readColor255(remainder); break;
+					case Section_TextBox:   theme->textBoxStyle.backgroundColor = readColor255(remainder); break;
+					case Section_Tooltip:   theme->tooltipStyle.backgroundColor = readColor255(remainder); break;
+					case Section_UIMessage: theme->uiMessageStyle.backgroundColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "hoverColor"))
 			{
 				switch (currentTarget)
 				{
-					case Section_Button: {
-						theme->buttonStyle.hoverColor = readColor255(remainder);
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Button:  theme->buttonStyle.hoverColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "pressedColor"))
 			{
 				switch (currentTarget)
 				{
-					case Section_Button: {
-						theme->buttonStyle.pressedColor = readColor255(remainder);
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Button:  theme->buttonStyle.pressedColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "textColorNormal"))
 			{
 				switch (currentTarget)
 				{
-					case Section_Tooltip: {
-						theme->tooltipStyle.textColorNormal = readColor255(remainder);
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Tooltip:  theme->tooltipStyle.textColorNormal = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "textColorBad"))
 			{
 				switch (currentTarget)
 				{
-					case Section_Tooltip: {
-						theme->tooltipStyle.textColorBad = readColor255(remainder);
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Tooltip:  theme->tooltipStyle.textColorBad = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "depth"))
 			{
+				s64 intValue;
+				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+
 				switch (currentTarget)
 				{
-					case Section_Tooltip: {
-						s64 intValue;
-						if (asInt(remainder, &intValue))
-						{
-							theme->tooltipStyle.depth = (f32) intValue;
-						}
-					} break;
-					case Section_UIMessage: {
-						s64 intValue;
-						if (asInt(remainder, &intValue))
-						{
-							theme->uiMessageStyle.depth = (f32) intValue;
-						}
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Tooltip:    theme->tooltipStyle.depth   = (f32) intValue; break;
+					case Section_UIMessage:  theme->uiMessageStyle.depth = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "borderPadding"))
 			{
+				s64 intValue;
+				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+
 				switch (currentTarget)
 				{
-					case Section_Tooltip: {
-						s64 intValue;
-						if (asInt(remainder, &intValue))
-						{
-							theme->tooltipStyle.borderPadding = (f32)intValue;
-						}
-					} break;
-					case Section_UIMessage: {
-						s64 intValue;
-						if (asInt(remainder, &intValue))
-						{
-							theme->uiMessageStyle.borderPadding = (f32)intValue;
-						}
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Tooltip:    theme->tooltipStyle.borderPadding   = (f32) intValue; break;
+					case Section_UIMessage:  theme->uiMessageStyle.borderPadding = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "font"))
 			{
+				String fontName = nextToken(remainder, null);
+				FontAssetType font = findFontByName(&reader, fontName);
+
 				switch (currentTarget)
 				{
-					case Section_Button: {
-						String fontName = nextToken(remainder, null);
-						theme->buttonStyle.font = findFontByName(&reader, fontName);
-					} break;
-					case Section_Label: {
-						String fontName = nextToken(remainder, null);
-						theme->labelStyle.font = findFontByName(&reader, fontName);
-					} break;
-					case Section_Tooltip: {
-						String fontName = nextToken(remainder, null);
-						theme->tooltipStyle.font = findFontByName(&reader, fontName);
-					} break;
-					case Section_TextBox: {
-						String fontName = nextToken(remainder, null);
-						theme->textBoxStyle.font = findFontByName(&reader, fontName);
-					} break;
-					case Section_UIMessage: {
-						String fontName = nextToken(remainder, null);
-						theme->uiMessageStyle.font = findFontByName(&reader, fontName);
-					} break;
-					default:
-						invalidPropertyError(&reader, firstWord, sectionName);
-						break;
+					case Section_Button:     theme->buttonStyle.font    = font; break;
+					case Section_Label:      theme->labelStyle.font     = font; break;
+					case Section_Tooltip:    theme->tooltipStyle.font   = font; break;
+					case Section_TextBox:    theme->textBoxStyle.font   = font; break;
+					case Section_UIMessage:  theme->uiMessageStyle.font = font; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else 
 			{
-				consoleWriteLine(myprintf("Error in UITheme file, line {0}: unrecognized property '{1}'", {formatInt(reader.lineNumber), firstWord}), CLS_Error);
+				error(&reader, "Unrecognized property '{0}'", {firstWord});
 			}
 		}
 	}

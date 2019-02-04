@@ -68,6 +68,7 @@ AppState globalAppState;
 #include "chunked_array.cpp"
 #include "ui.cpp"
 #include "ui_window.cpp"
+#include "uitheme.cpp"
 #include "assets.cpp"
 #include "building.cpp"
 #include "terrain.cpp"
