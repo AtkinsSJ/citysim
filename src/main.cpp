@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
 
 	UIState *uiState = &appState->uiState;
-	initUiState(uiState);
+	initUiState(uiState, &renderer->uiBuffer);
 	setCursor(uiState, assets, Cursor_Main);
 	setCursorVisible(uiState, true);
 

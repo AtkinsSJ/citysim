@@ -52,8 +52,11 @@ typedef void (*WindowProc)(WindowContext*, struct Window*, void*);
 
 struct Window
 {
-	Rect2I area;
 	String title;
+
+	Rect2I area;
+	bool hasAutomaticHeight;
+
 	WindowProc windowProc;
 	void *userData;
 };
@@ -70,6 +73,7 @@ struct Window
 struct UIState
 {
 	MemoryArena arena;
+	RenderBuffer *uiBuffer;
 
 	UITheme *theme;
 

@@ -23,12 +23,24 @@ bool window_button()
 	return false;
 }
 
-void showWindow(UIState *uiState, String title, WindowProc windowProc, void *userData)
+/**
+ * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
+ * If you pass -1 to the height, then the height will be determined automatically by the window's content.
+ */
+void showWindow(UIState *uiState, String title, s32 width, s32 height, WindowProc windowProc, void *userData)
 {
 	Window newWindow = {};
 	s32 offset = uiState->openWindows.itemCount * 20;
 	newWindow.title = title;
-	newWindow.area = irectXYWH(100 + offset, 100 + offset, 200, 200);
+
+	V2 windowOrigin = uiState->uiBuffer->camera.pos;
+	newWindow.hasAutomaticHeight = (height == -1);
+	if (newWindow.hasAutomaticHeight)
+	{
+		windowOrigin.y *= 0.5f;
+	}
+	newWindow.area = irectCentreWH(v2i(windowOrigin), width, height);
+	
 	newWindow.windowProc = windowProc;
 	newWindow.userData = userData;
 
@@ -117,6 +129,11 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 			context.renderDepth = depth + 1.0f;
 
 			window->windowProc(&context, window, window->userData);
+
+			if (window->hasAutomaticHeight)
+			{
+				window->area.h = barHeight + context.currentOffset.y + (contentPadding * 2.0f);
+			}
 		}
 
 		Rect2 wholeWindowArea = rect2(window->area);

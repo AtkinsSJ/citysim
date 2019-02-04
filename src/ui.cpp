@@ -12,9 +12,11 @@ void setCursorVisible(UIState *uiState, bool visible)
 	SDL_ShowCursor(visible ? 1 : 0);
 }
 
-void initUiState(UIState *uiState)
+void initUiState(UIState *uiState, RenderBuffer *uiBuffer)
 {
 	*uiState = {};
+
+	uiState->uiBuffer = uiBuffer;
 
 	initMemoryArena(&uiState->arena, MB(1));
 
