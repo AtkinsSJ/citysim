@@ -70,7 +70,7 @@ ConsoleCommand(resize_window)
 
 ConsoleCommand(reload_assets)
 {
-	reloadAssets(globalAppState.assets, &globalAppState.globalTempArena, globalAppState.renderer, &globalAppState.uiState);
+	reloadAssets(globalAppState.assets, globalAppState.renderer, &globalAppState.uiState);
 }
 
 ConsoleCommand(exit)

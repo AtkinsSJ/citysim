@@ -132,7 +132,7 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 	state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
 }
 
-BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, String text,
+BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text,
 									  V4 color, f32 maxWidth=0)
 {
 	DrawTextState state = {};
@@ -197,7 +197,7 @@ BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font,
 
 	return result;
 }
-BitmapFontCachedText *drawTextToCache(TemporaryMemory *memory, BitmapFont *font, char *text,
+BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, char *text,
 									  V4 color, f32 maxWidth=0)
 {
 	String string = stringFromChars(text);

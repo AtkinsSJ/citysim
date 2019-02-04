@@ -33,15 +33,6 @@ struct MemoryArena
 	MemoryBlock *currentBlock;
 
 	umm minimumBlockSize;
-	bool hasTemporaryArenaOpen;
-
-	MemoryArenaResetState resetState;
-};
-
-struct TemporaryMemory
-{
-	MemoryArena *arena;
-	bool isOpen;
 
 	MemoryArenaResetState resetState;
 };
@@ -122,12 +113,6 @@ void *allocate(MemoryArena *arena, umm size)
 	return result;
 }
 
-void *allocate(TemporaryMemory *tempArena, umm size)
-{
-	ASSERT(tempArena->isOpen, "TemporaryMemory already ended!");
-	return allocate(tempArena->arena, size);
-}
-
 void freeCurrentBlock(MemoryArena *arena)
 {
 	MemoryBlock *block = arena->currentBlock;
@@ -139,8 +124,6 @@ void freeCurrentBlock(MemoryArena *arena)
 // Returns the memory arena to a previous state
 void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState)
 {
-	ASSERT(!arena->hasTemporaryArenaOpen, "Can't reset while temp memory open!");
-
 	while (arena->currentBlock != resetState.currentBlock)
 	{
 		freeCurrentBlock(arena);
@@ -174,38 +157,6 @@ void freeMemoryArena(MemoryArena *arena)
 	MemoryBlock *finalBlock = arena->currentBlock;
 	arena->currentBlock = 0;
 	free(finalBlock);
-}
-
-TemporaryMemory beginTemporaryMemory(MemoryArena *parentArena)
-{
-	ASSERT(!parentArena->hasTemporaryArenaOpen, "Beginning temporary memory without ending it!");
-	if (parentArena->currentBlock == 0)
-	{
-		logWarn("Starting temporary memory on an empty arena! Wasteful if this is in frequently used code!");
-	}
-
-	TemporaryMemory tempMemory = {};
-
-	tempMemory.isOpen = true;
-	tempMemory.arena = parentArena;
-	parentArena->hasTemporaryArenaOpen = true;
-	
-	tempMemory.resetState.currentBlock = parentArena->currentBlock;
-	tempMemory.resetState.used = parentArena->currentBlock ? parentArena->currentBlock->used : 0;
-
-	return tempMemory;
-}
-
-void endTemporaryMemory(TemporaryMemory *tempMemory)
-{
-	MemoryArena *arena = tempMemory->arena;
-	ASSERT(arena->hasTemporaryArenaOpen, "Ending temporary memory without beginning it!");
-	arena->hasTemporaryArenaOpen = false;
-
-	revertMemoryArena(arena, tempMemory->resetState);
-
-	tempMemory->isOpen = false;
-	tempMemory->arena = 0; //null so we get a null pointer if we try to access it after ending.
 }
 
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))

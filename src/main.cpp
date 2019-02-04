@@ -67,6 +67,7 @@ AppState globalAppState;
 
 #include "chunked_array.cpp"
 #include "ui.cpp"
+#include "ui_window.cpp"
 #include "assets.cpp"
 #include "building.cpp"
 #include "terrain.cpp"
@@ -145,7 +146,7 @@ int main(int argc, char *argv[])
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
-	addAssets(assets, &appState->globalTempArena);
+	addAssets(assets);
 	loadAssets(assets);
 	appState->assets = assets;
 

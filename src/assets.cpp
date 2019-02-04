@@ -98,7 +98,7 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 	cursor->sdlCursor = 0;
 }
 
-BitmapFont *addBMFont(AssetManager *assets, MemoryArena *tempArena, FontAssetType fontAssetType, char *filename);
+BitmapFont *addBMFont(AssetManager *assets, FontAssetType fontAssetType, char *filename);
 
 void addShaderHeader(AssetManager *assets, char *filename)
 {
@@ -270,10 +270,10 @@ void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String f
 	}
 }
 
-void addAssets(AssetManager *assets, MemoryArena *tempArena)
+void addAssets(AssetManager *assets)
 {
-	addBMFont(assets, tempArena, FontAssetType_Buttons, "dejavu-14.fnt");
-	addBMFont(assets, tempArena, FontAssetType_Main, "dejavu-20.fnt");
+	addBMFont(assets, FontAssetType_Buttons, "dejavu-14.fnt");
+	addBMFont(assets, FontAssetType_Main, "dejavu-20.fnt");
 
 	addShaderHeader(assets, "header.glsl");
 	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.glsl", "textured.frag.glsl");
@@ -288,11 +288,11 @@ void addAssets(AssetManager *assets, MemoryArena *tempArena)
 	addCursor(assets, Cursor_Hire, "cursor_hire.png");
 
 #if BUILD_DEBUG
-	addBMFont(assets, tempArena, FontAssetType_Debug, "debug.fnt");
+	addBMFont(assets, FontAssetType_Debug, "debug.fnt");
 #endif
 }
 
-void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *renderer, UIState *uiState)
+void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 {
 	// Preparation
 	consoleWriteLine("Reloading assets...");
@@ -330,7 +330,7 @@ void reloadAssets(AssetManager *assets, MemoryArena *tempArena, Renderer *render
 	// The "throw everything away and start over" method of reloading. It's dumb but effective!
 	resetMemoryArena(&assets->assetArena);
 	initAssetManager(assets);
-	addAssets(assets, tempArena);
+	addAssets(assets);
 	loadAssets(assets);
 
 	// After stuff

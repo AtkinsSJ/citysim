@@ -36,7 +36,19 @@ struct UiMessage
 	f32 countdown; // In seconds
 };
 
-typedef void (*WindowProc)(void*);
+struct WindowContext
+{
+	struct UIState *uiState;
+	RenderBuffer *uiBuffer;
+	AssetManager *assets;
+	MemoryArena *temporaryMemory;
+
+	Rect2 contentArea;
+	V2 currentOffset;
+	f32 renderDepth;
+};
+
+typedef void (*WindowProc)(WindowContext*, struct Window*, void*);
 
 struct Window
 {

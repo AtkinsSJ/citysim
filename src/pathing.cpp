@@ -83,15 +83,13 @@ inline void _addPathGroup(s32 *pathGroupCount, s32 **pathGroups, s32 pathGroup)
 	}
 }
 
-bool canPathTo(City *city, Rect2I target, V2I from, MemoryArena *memoryArena)
+bool canPathTo(City *city, Rect2I target, V2I from)
 {
 	bool result = false;
 
-	TemporaryMemory tempArena = beginTemporaryMemory(memoryArena);
-
 	// First, determine all path groups that are adjacent to the buiding 'from' is in, if any.
 	s32 pathGroupCount = 0;
-	s32 *pathGroups = PushArray(&tempArena, s32, city->pathLayer.pathGroupCount);
+	s32 *pathGroups = PushArray(&globalAppState.globalTempArena, s32, city->pathLayer.pathGroupCount);
 	Building *building = getBuildingAtPosition(city, from.x, from.y);
 	if (building
 		&& !get(&buildingDefs, building->typeID)->isPath)
@@ -154,8 +152,6 @@ bool canPathTo(City *city, Rect2I target, V2I from, MemoryArena *memoryArena)
 			}
 		}
 	}
-
-	endTemporaryMemory(&tempArena);
 
 	return result;
 }
@@ -241,7 +237,7 @@ void _addPathNodeToQueue(City *city, PathingNode *nodes, V2I pos, PathingNode *p
 }
 
 // Returns the next tile to walk to in order to path to 'target'
-V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryArena)
+V2I pathToRectangle(City *city, Rect2I target, V2I from)
 {
 	V2I result = from;
 
@@ -273,8 +269,7 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryAren
 	else
 	{
 		// A-star!
-		TemporaryMemory tempArena = beginTemporaryMemory(memoryArena);
-		PathingNode *nodes = PushArray(&tempArena, PathingNode, city->width * city->height);
+		PathingNode *nodes = PushArray(&globalAppState.globalTempArena, PathingNode, city->width * city->height);
 		PathingNode *startNode = nodes + tileIndex(city, from.x, from.y);
 		*startNode = {true, from, 0, distance, 0, 0};
 		PathingNode *openQueue = null;
@@ -340,8 +335,6 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from, MemoryArena *memoryAren
 				}
 			}
 		}
-
-		endTemporaryMemory(&tempArena);
 	}
 
 	return result;
