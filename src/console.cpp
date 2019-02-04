@@ -184,7 +184,7 @@ void consoleHandleCommand(Console *console)
 	clear(&console->input);
 }
 
-void updateAndRenderConsole(Console *console, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
+void updateAndRenderConsole(Console *console, InputState *inputState, UIState *uiState)
 {
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{

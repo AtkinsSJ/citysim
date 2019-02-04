@@ -334,7 +334,7 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	loadAssets(assets);
 
 	// After stuff
-	setCursor(uiState, assets, uiState->currentCursor);
+	setCursor(uiState, uiState->currentCursor);
 	renderer->loadAssets(renderer, assets);
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }

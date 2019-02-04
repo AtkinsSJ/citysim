@@ -55,34 +55,34 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
-	if (uiButton(uiState, assets, inputState, LocalString("Play"), buttonRect, 1)) // , SDLK_RETURN
+	if (uiButton(uiState, inputState, LocalString("Play"), buttonRect, 1)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, assets, inputState, LocalString("Credits"), buttonRect, 1))
+	if (uiButton(uiState, inputState, LocalString("Credits"), buttonRect, 1))
 	{
 		result = AppStatus_Credits;
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, assets, inputState, LocalString("Settings"), buttonRect, 1))
+	if (uiButton(uiState, inputState, LocalString("Settings"), buttonRect, 1))
 	{
 		result = AppStatus_SettingsMenu;
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, assets, inputState, LocalString("Create a window"), buttonRect, 1))
+	if (uiButton(uiState, inputState, LocalString("Create a window"), buttonRect, 1))
 	{
 		s32 *aNumber = new s32;
 		*aNumber = randomInRange(&globalAppState.cosmeticRandom, INT32_MAX);
 		showWindow(uiState, LocalString("Hello window!"), 200, -1, testWindowProc, aNumber);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, assets, inputState, LocalString("Website"), buttonRect, 1))
+	if (uiButton(uiState, inputState, LocalString("Website"), buttonRect, 1))
 	{
 		openUrlUnsafe("http://samatkins.co.uk");
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, assets, inputState, LocalString("Exit"), buttonRect, 1))
+	if (uiButton(uiState, inputState, LocalString("Exit"), buttonRect, 1))
 	{
 		result = AppStatus_Quit;
 	}
@@ -95,5 +95,5 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	//
 	//
 
-	updateAndRenderWindows(uiState, assets, inputState);
+	updateAndRenderWindows(uiState, inputState);
 }

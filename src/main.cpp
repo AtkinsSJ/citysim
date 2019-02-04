@@ -175,8 +175,8 @@ int main(int argc, char *argv[])
 
 
 	UIState *uiState = &appState->uiState;
-	initUiState(uiState, &renderer->uiBuffer);
-	setCursor(uiState, assets, Cursor_Main);
+	initUiState(uiState, &renderer->uiBuffer, assets);
+	setCursor(uiState, Cursor_Main);
 	setCursorVisible(uiState, true);
 
 	Camera *worldCamera = &renderer->worldBuffer.camera;
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 
 		if (globalConsole)
 		{
-			updateAndRenderConsole(globalConsole, &inputState, uiState, &renderer->uiBuffer);
+			updateAndRenderConsole(globalConsole, &inputState, uiState);
 		}
 
 		updateAndRender(appState, &inputState, renderer, assets);

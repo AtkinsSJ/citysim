@@ -5,7 +5,7 @@ void window_text(WindowContext *context, String text, V4 color)
 	DEBUG_FUNCTION();
 
 	V2 origin = context->contentArea.pos + context->currentOffset;
-	BitmapFont *font = getFont(context->assets, FontAssetType_Buttons);
+	BitmapFont *font = getFont(context->uiState->assets, FontAssetType_Buttons);
 	f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
 	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, color, maxWidth);
@@ -67,7 +67,7 @@ Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
 					windowArea.h - barHeight - (contentPadding * 2.0f));
 }
 
-void updateAndRenderWindows(UIState *uiState, AssetManager *assets, InputState *inputState)
+void updateAndRenderWindows(UIState *uiState, InputState *inputState)
 {
 	DEBUG_FUNCTION();
 
@@ -89,7 +89,7 @@ void updateAndRenderWindows(UIState *uiState, AssetManager *assets, InputState *
 	String closeButtonString = stringFromChars("X");
 	V4 closeButtonColorHover = color255(255, 64, 64, 255);
 
-	BitmapFont *titleFont = getFont(assets, FontAssetType_Main);
+	BitmapFont *titleFont = getFont(uiState->assets, FontAssetType_Main);
 
 	s32 windowIndex = 0;
 	for (auto it = iterate(&uiState->openWindows);
@@ -120,7 +120,6 @@ void updateAndRenderWindows(UIState *uiState, AssetManager *assets, InputState *
 		{
 			WindowContext context = {};
 			context.uiState = uiState;
-			context.assets = assets;
 			context.temporaryMemory = &globalAppState.globalTempArena;
 
 			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
