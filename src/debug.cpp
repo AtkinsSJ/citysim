@@ -107,12 +107,11 @@ struct DebugTextState
 	bool progressUpwards;
 
 	UIState *uiState;
-	RenderBuffer *uiBuffer;
 
 	u32 charsLastPrinted;
 };
 
-void initDebugTextState(DebugTextState *textState, UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, V4 textColor, V2 screenSize, f32 screenEdgePadding, bool upwards, bool alignLeft)
+void initDebugTextState(DebugTextState *textState, UIState *uiState, BitmapFont *font, V4 textColor, V2 screenSize, f32 screenEdgePadding, bool upwards, bool alignLeft)
 {
 	*textState = {};
 
@@ -141,7 +140,6 @@ void initDebugTextState(DebugTextState *textState, UIState *uiState, RenderBuffe
 	textState->maxWidth = screenSize.x - (2*screenEdgePadding);
 
 	textState->uiState = uiState;
-	textState->uiBuffer = uiBuffer;
 }
 
 void debugTextOut(DebugTextState *textState, String text)
@@ -151,7 +149,7 @@ void debugTextOut(DebugTextState *textState, String text)
 	else                            align |= ALIGN_TOP;
 
 	textState->charsLastPrinted = text.length;
-	Rect2 resultRect = uiText(textState->uiState, textState->uiBuffer, textState->font, text, textState->pos,
+	Rect2 resultRect = uiText(textState->uiState, textState->font, text, textState->pos,
 	                             align, 300, textState->color, textState->maxWidth);
 
 	if (textState->progressUpwards)
@@ -164,7 +162,7 @@ void debugTextOut(DebugTextState *textState, String text)
 	}
 }
 
-void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiBuffer)
+void renderDebugData(DebugState *debugState, UIState *uiState)
 {
 	if (debugState)
 	{
@@ -173,13 +171,15 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 			debugState->font = getFont(globalAppState.assets, FontAssetType_Debug);
 		}
 
+		RenderBuffer *uiBuffer = uiState->uiBuffer;
+
 		u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 		u32 rfi = debugState->readingFrameIndex;
 		drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
 			     100, color255(0,0,0,128));
 
 		DebugTextState textState;
-		initDebugTextState(&textState, uiState, uiBuffer, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
+		initDebugTextState(&textState, uiState, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
 
 		u32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 		debugTextOut(&textState, myprintf("Examing {0} frames ago", {formatInt(framesAgo)}));
@@ -253,7 +253,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 		}
 
 		// Put FPS in top right
-		initDebugTextState(&textState, uiState, uiBuffer, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, false);
+		initDebugTextState(&textState, uiState, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, false);
 		{
 			String smsForFrame = stringFromChars("???");
 			String sfps = stringFromChars("???");
@@ -268,7 +268,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState, RenderBuffer *uiB
 	}
 }
 
-void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState, RenderBuffer *uiBuffer)
+void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState)
 {
 	if (keyJustPressed(inputState, SDLK_F2))
 	{
@@ -293,7 +293,7 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	if (debugState->showDebugData)
 	{
-		renderDebugData(debugState, uiState, uiBuffer);
+		renderDebugData(debugState, uiState);
 	}
 }
 

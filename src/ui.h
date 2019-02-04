@@ -39,7 +39,6 @@ struct UiMessage
 struct WindowContext
 {
 	struct UIState *uiState;
-	RenderBuffer *uiBuffer;
 	AssetManager *assets;
 	MemoryArena *temporaryMemory;
 

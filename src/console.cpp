@@ -23,7 +23,7 @@ struct ConsoleTextState
 	UIState *uiState;
 	RenderBuffer *uiBuffer;
 };
-inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiBuffer, V2 screenSize, f32 screenEdgePadding, f32 height)
+inline ConsoleTextState initConsoleTextState(UIState *uiState, V2 screenSize, f32 screenEdgePadding, f32 height)
 {
 	// Prevent weird artifacts from fractional sizes
 	screenEdgePadding = (f32) round(screenEdgePadding);
@@ -34,7 +34,6 @@ inline ConsoleTextState initConsoleTextState(UIState *uiState, RenderBuffer *uiB
 	textState.maxWidth = screenSize.x - (2*screenEdgePadding);
 
 	textState.uiState = uiState;
-	textState.uiBuffer = uiBuffer;
 
 	return textState;
 }
@@ -43,8 +42,7 @@ Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font,
 {
 	s32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
-	Rect2 resultRect = uiText(textState->uiState, textState->uiBuffer, font, text, textState->pos,
-	                             align, 300, style.textColor, textState->maxWidth);
+	Rect2 resultRect = uiText(textState->uiState, font, text, textState->pos, align, 300, style.textColor, textState->maxWidth);
 	textState->pos.y -= resultRect.h;
 
 	return resultRect;
@@ -83,7 +81,7 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?");
 }
 
-void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
+void renderConsole(Console *console, UIState *uiState)
 {
 	if (console->font == null)
 	{
@@ -91,11 +89,13 @@ void renderConsole(Console *console, UIState *uiState, RenderBuffer *uiBuffer)
 		console->charWidth = findChar(console->font, 'M')->xAdvance;
 	}
 
+	RenderBuffer *uiBuffer = uiState->uiBuffer;
+
 	f32 actualConsoleHeight = console->currentHeight * uiBuffer->camera.size.y;
 
-	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
+	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
-	Rect2 textInputRect = drawTextInput(uiState, uiBuffer, console->font, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
+	Rect2 textInputRect = drawTextInput(uiState, console->font, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
 	textState.pos.y -= textInputRect.h;
 
 	textState.pos.y -= 8.0f;
@@ -233,6 +233,6 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 			console->scrollPos = clamp(console->scrollPos + inputState->wheelY, 0, consoleMaxScrollPos(console));
 		}
 
-		renderConsole(console, uiState, uiBuffer);
+		renderConsole(console, uiState);
 	}
 }

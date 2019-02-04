@@ -37,26 +37,26 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer)
 	setCursorVisible(uiState, false);
 }
 
-Rect2 uiText(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, String text, V2 origin, s32 align,
+Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align,
 				 f32 depth, V4 color, f32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
 
 	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, text, color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, align);
-	drawCachedText(uiBuffer, textCache, topLeft, depth);
+	drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
 	Rect2 bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
 
 	return bounds;
 }
 
-Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0)
+Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
 
 	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, makeString(textInput->buffer, textInput->byteLength), color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, align);
-	drawCachedText(uiBuffer, textCache, topLeft, depth);
+	drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
 	Rect2 bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
 
 	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
@@ -91,7 +91,7 @@ Rect2 drawTextInput(UIState *uiState, RenderBuffer *uiBuffer, BitmapFont *font, 
 
 		caretRect.pos += topLeft;
 		caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
-		drawRect(uiBuffer, caretRect, depth + 10, color);
+		drawRect(uiState->uiBuffer, caretRect, depth + 10, color);
 	}
 
 	return bounds;
@@ -104,35 +104,35 @@ void setTooltip(UIState *uiState, String text, V4 color)
 	uiState->tooltip.show = true;
 }
 
-void drawTooltip(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
+void drawTooltip(UIState *uiState, AssetManager *assets)
 {
 	if (uiState->tooltip.show)
 	{
 		UITooltipStyle *style = &assets->theme.tooltipStyle;
 
-		V2 mousePos = uiBuffer->camera.mousePos;
+		V2 mousePos = uiState->uiBuffer->camera.mousePos;
 
 		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(style->borderPadding, style->borderPadding);
 
-		Rect2 labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->tooltip.text,
+		Rect2 labelRect = uiText(uiState, getFont(assets, style->font), uiState->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, style->depth + 1, uiState->tooltip.color);
 
 		labelRect = expand(labelRect, style->borderPadding);
 
-		drawRect(uiBuffer, labelRect, style->depth, style->backgroundColor);
+		drawRect(uiState->uiBuffer, labelRect, style->depth, style->backgroundColor);
 
 		uiState->tooltip.show = false;
 	}
 }
 
-bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
+bool uiButton(UIState *uiState, AssetManager *assets, InputState *inputState,
 	          String text, Rect2 bounds, f32 depth, bool active=false,
 	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	V2 mousePos = uiBuffer->camera.mousePos;
+	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	UITheme *theme = &assets->theme;
 	UIButtonStyle *style = &theme->buttonStyle;
 	V4 backColor = style->backgroundColor;
@@ -160,8 +160,8 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 		backColor = style->hoverColor;
 	}
 
-	drawRect(uiBuffer, bounds, depth, backColor);
-	uiText(uiState, uiBuffer, getFont(assets, style->font), text, centre(bounds), ALIGN_CENTRE, depth + 1,
+	drawRect(uiState->uiBuffer, bounds, depth, backColor);
+	uiText(uiState, getFont(assets, style->font), text, centre(bounds), ALIGN_CENTRE, depth + 1,
 			style->textColor);
 
 	// Keyboard shortcut!
@@ -174,14 +174,14 @@ bool uiButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, In
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState,
+bool uiMenuButton(UIState *uiState, AssetManager *assets, InputState *inputState,
 	              String text, Rect2 bounds, f32 depth, UIMenuID menuID,
 	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, uiBuffer, assets, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, assets, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -204,7 +204,7 @@ void pushUiMessage(UIState *uiState, String message)
 	uiState->message.countdown = uiMessageDisplayTime;
 }
 
-void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
+void drawUiMessage(UIState *uiState, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 	
@@ -236,13 +236,13 @@ void drawUiMessage(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *asset
 				textColor *= lerp(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(uiBuffer->camera.size.x * 0.5f, uiBuffer->camera.size.y - 8.0f);
-			Rect2 labelRect = uiText(uiState, uiBuffer, getFont(assets, style->font), uiState->message.text, origin,
+			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
+			Rect2 labelRect = uiText(uiState, getFont(assets, style->font), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, style->depth + 1, textColor);
 
 			labelRect = expand(labelRect, style->borderPadding);
 
-			drawRect(uiBuffer, labelRect, style->depth, backgroundColor);
+			drawRect(uiState->uiBuffer, labelRect, style->depth, backgroundColor);
 		}
 	}
 }

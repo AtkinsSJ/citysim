@@ -10,7 +10,7 @@ void window_text(WindowContext *context, String text, V4 color)
 
 	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, color, maxWidth);
 	V2 topLeft = calculateTextPosition(textCache, origin, ALIGN_TOP | ALIGN_LEFT);
-	drawCachedText(context->uiBuffer, textCache, topLeft, context->renderDepth);
+	drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth);
 
 	// For now, we'll always just start a new line.
 	// We'll probably want something fancier later.
@@ -67,11 +67,11 @@ Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
 					windowArea.h - barHeight - (contentPadding * 2.0f));
 }
 
-void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *inputState)
+void updateAndRenderWindows(UIState *uiState, AssetManager *assets, InputState *inputState)
 {
 	DEBUG_FUNCTION();
 
-	V2 mousePos = uiBuffer->camera.mousePos;
+	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	bool mouseInputHandled = false;
 	Window *newActiveWindow = null;
 	s32 closeWindow = -1;
@@ -120,7 +120,6 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 		{
 			WindowContext context = {};
 			context.uiState = uiState;
-			context.uiBuffer = uiBuffer;
 			context.assets = assets;
 			context.temporaryMemory = &globalAppState.globalTempArena;
 
@@ -167,12 +166,12 @@ void updateAndRenderWindows(UIState *uiState, RenderBuffer *uiBuffer, AssetManag
 			mouseInputHandled = true;
 		}
 
-		drawRect(uiBuffer, contentArea, depth, isActive ? backColorActive : backColor);
-		drawRect(uiBuffer, barArea, depth, isActive ? barColorActive : barColor);
-		uiText(uiState, uiBuffer, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
+		drawRect(uiState->uiBuffer, contentArea, depth, isActive ? backColorActive : backColor);
+		drawRect(uiState->uiBuffer, barArea, depth, isActive ? barColorActive : barColor);
+		uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
-		if (hoveringOverCloseButton)  drawRect(uiBuffer, closeButtonRect, depth + 1.0f, closeButtonColorHover);
-		uiText(uiState, uiBuffer, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
+		if (hoveringOverCloseButton)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, closeButtonColorHover);
+		uiText(uiState, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
 	}
 
 	if (closeWindow != -1)

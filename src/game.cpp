@@ -239,17 +239,17 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	append(&uiState->uiRects, uiRect);
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
 
-	uiText(uiState, uiBuffer, font, city->name,
+	uiText(uiState, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
+	uiText(uiState, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
+	uiText(uiState, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.combined.consumption), formatInt(city->powerLayer.combined.production)}),
+	uiText(uiState, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.combined.consumption), formatInt(city->powerLayer.combined.production)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
 
-	uiText(uiState, uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
+	uiText(uiState, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
 	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
 
 
@@ -258,7 +258,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, uiBuffer, assets, inputState, LocalString("Zone..."), buttonRect, 1, UIMenu_Zone))
+		if (uiMenuButton(uiState, assets, inputState, LocalString("Zone..."), buttonRect, 1, UIMenu_Zone))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -267,7 +267,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (uiButton(uiState, uiBuffer, assets, inputState, zoneDefs[zoneIndex].name, menuButtonRect, 1,
+				if (uiButton(uiState, assets, inputState, zoneDefs[zoneIndex].name, menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Zone) && (uiState->selectedZoneID == zoneIndex)))
 				{
 					uiState->openMenu = UIMenu_None;
@@ -286,7 +286,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, uiBuffer, assets, inputState, LocalString("Build..."), buttonRect, 1, UIMenu_Build))
+		if (uiMenuButton(uiState, assets, inputState, LocalString("Build..."), buttonRect, 1, UIMenu_Build))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -298,7 +298,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				BuildingDef *buildingDef = get(&buildingDefs, i);
 				if (!buildingDef->buildMethod) continue;
 
-				if (uiButton(uiState, uiBuffer, assets, inputState, buildingDef->name, menuButtonRect, 1,
+				if (uiButton(uiState, assets, inputState, buildingDef->name, menuButtonRect, 1,
 						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingTypeID == i)))
 				{
 					uiState->openMenu = UIMenu_None;
@@ -316,7 +316,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Demolish"), buttonRect, 1,
+		if (uiButton(uiState, assets, inputState, LocalString("Demolish"), buttonRect, 1,
 					(uiState->actionMode == ActionMode_Demolish),
 					SDLK_x, LocalString("(X)")))
 		{
@@ -327,14 +327,14 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiMenuButton(uiState, uiBuffer, assets, inputState, LocalString("Menu"), buttonRect, 1, UIMenu_System))
+		if (uiMenuButton(uiState, assets, inputState, LocalString("Menu"), buttonRect, 1, UIMenu_System))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
 			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Save"), menuButtonRect, 1))
+			if (uiButton(uiState, assets, inputState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
 				uiState->openMenu = UIMenu_None;
@@ -342,7 +342,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Save"), menuButtonRect, 1))
+			if (uiButton(uiState, assets, inputState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
 				uiState->openMenu = UIMenu_None;
@@ -350,7 +350,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Save"), menuButtonRect, 1))
+			if (uiButton(uiState, assets, inputState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
 				uiState->openMenu = UIMenu_None;
@@ -358,7 +358,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Save"), menuButtonRect, 1))
+			if (uiButton(uiState, assets, inputState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
 				uiState->openMenu = UIMenu_None;
@@ -366,7 +366,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Save"), menuButtonRect, 1))
+			if (uiButton(uiState, assets, inputState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
 				uiState->openMenu = UIMenu_None;
@@ -374,7 +374,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
 
-			if (uiButton(uiState, uiBuffer, assets, inputState, LocalString("Exit"), menuButtonRect, 1))
+			if (uiButton(uiState, assets, inputState, LocalString("Exit"), menuButtonRect, 1))
 			{
 				gameState->status = GameStatus_Quit;
 				uiState->openMenu = UIMenu_None;
@@ -871,8 +871,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	if (appState->appStatus == AppStatus_Game)
 	{
-		drawTooltip(uiState, &renderer->uiBuffer, assets);
-		drawUiMessage(uiState, &renderer->uiBuffer, assets);
+		drawTooltip(uiState, assets);
+		drawUiMessage(uiState, assets);
 	}
 }
 
