@@ -12,12 +12,13 @@ void setCursorVisible(UIState *uiState, bool visible)
 	SDL_ShowCursor(visible ? 1 : 0);
 }
 
-void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets)
+void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input)
 {
 	*uiState = {};
 
 	uiState->uiBuffer = uiBuffer;
 	uiState->assets = assets;
+	uiState->input = input;
 
 	initMemoryArena(&uiState->arena, MB(1));
 
@@ -126,7 +127,7 @@ void drawTooltip(UIState *uiState)
 	}
 }
 
-bool uiButton(UIState *uiState, InputState *inputState,
+bool uiButton(UIState *uiState,
 	          String text, Rect2 bounds, f32 depth, bool active=false,
 	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
@@ -135,12 +136,13 @@ bool uiButton(UIState *uiState, InputState *inputState,
 	bool buttonClicked = false;
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	UITheme *theme = &uiState->assets->theme;
+	InputState *input = uiState->input;
 	UIButtonStyle *style = &theme->buttonStyle;
 	V4 backColor = style->backgroundColor;
 
 	if (inRect(bounds, mousePos))
 	{
-		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+		if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
 		{
 			backColor = style->pressedColor;
 		}
@@ -149,7 +151,7 @@ bool uiButton(UIState *uiState, InputState *inputState,
 			backColor = style->hoverColor;
 		}
 
-		buttonClicked = mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT);
+		buttonClicked = mouseButtonJustReleased(input, SDL_BUTTON_LEFT);
 
 		if (tooltip.length)
 		{
@@ -167,7 +169,7 @@ bool uiButton(UIState *uiState, InputState *inputState,
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
-	&& keyJustPressed(inputState, shortcutKey))
+	&& keyJustPressed(input, shortcutKey))
 	{
 		buttonClicked = true;
 	}
@@ -175,14 +177,14 @@ bool uiButton(UIState *uiState, InputState *inputState,
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, InputState *inputState,
+bool uiMenuButton(UIState *uiState,
 	              String text, Rect2 bounds, f32 depth, UIMenuID menuID,
 	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, inputState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{

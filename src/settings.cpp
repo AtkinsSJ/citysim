@@ -23,7 +23,7 @@ void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Ren
 
 	f32 uiBorderPadding = 4;
 	Rect2 buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, inputState, LocalString("Back"), buttonRect, 1, false, SDLK_ESCAPE))
+	if (uiButton(uiState, LocalString("Back"), buttonRect, 1, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

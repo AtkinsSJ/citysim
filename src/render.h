@@ -12,8 +12,8 @@ const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
 
 inline V2I tilePosition(V2 worldPos) {
-	return {(int)floor(worldPos.x),
-			(int)floor(worldPos.y)};
+	return {floor_s32(worldPos.x),
+			floor_s32(worldPos.y)};
 }
 
 struct Camera

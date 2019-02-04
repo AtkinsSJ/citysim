@@ -73,6 +73,7 @@ struct UIState
 	MemoryArena arena;
 	RenderBuffer *uiBuffer;
 	AssetManager *assets;
+	InputState *input;
 
 	UITheme *theme;
 

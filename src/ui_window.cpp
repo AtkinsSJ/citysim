@@ -9,18 +9,58 @@ void window_text(WindowContext *context, String text, V4 color)
 	f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
 	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, color, maxWidth);
-	V2 topLeft = calculateTextPosition(textCache, origin, ALIGN_TOP | ALIGN_LEFT);
-	drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth);
+	drawCachedText(context->uiState->uiBuffer, textCache, origin, context->renderDepth);
 
 	// For now, we'll always just start a new line.
 	// We'll probably want something fancier later.
 	context->currentOffset.y += textCache->size.y;
 }
 
-bool window_button()
+bool window_button(WindowContext *context, String text)
 {
 	DEBUG_FUNCTION();
-	return false;
+	
+	bool buttonClicked = false;
+	UITheme *theme = &context->uiState->assets->theme;
+	UIButtonStyle *style = &theme->buttonStyle;
+	V4 backColor = style->backgroundColor;
+	f32 buttonPadding = 4.0f;
+	V2 mousePos = context->uiState->uiBuffer->camera.mousePos;
+
+	// Let's be a little bit fancy. Figure out the size of the text, then determine the button size based on that!
+	V2 origin = context->contentArea.pos + context->currentOffset;
+	BitmapFont *font = getFont(context->uiState->assets, FontAssetType_Buttons);
+	f32 maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
+
+	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
+	drawCachedText(context->uiState->uiBuffer, textCache, origin + v2(buttonPadding, buttonPadding), context->renderDepth + 1.0f);
+
+	Rect2 bounds = rectPosSize(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
+
+	if (inRect(bounds, mousePos))
+	{
+		if (mouseButtonJustPressed(context->uiState->input, SDL_BUTTON_LEFT))
+		{
+			buttonClicked = true;
+			backColor = style->pressedColor;
+		}
+		else if (mouseButtonPressed(context->uiState->input, SDL_BUTTON_LEFT))
+		{
+			backColor = style->pressedColor;
+		}
+		else
+		{
+			backColor = style->hoverColor;
+		}
+	}
+
+	drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, backColor);
+
+	// For now, we'll always just start a new line.
+	// We'll probably want something fancier later.
+	context->currentOffset.y += bounds.size.y;
+
+	return buttonClicked;
 }
 
 /**
@@ -30,7 +70,6 @@ bool window_button()
 void showWindow(UIState *uiState, String title, s32 width, s32 height, WindowProc windowProc, void *userData)
 {
 	Window newWindow = {};
-	s32 offset = uiState->openWindows.itemCount * 20;
 	newWindow.title = title;
 
 	V2 windowOrigin = uiState->uiBuffer->camera.pos;
@@ -67,10 +106,11 @@ Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
 					windowArea.h - barHeight - (contentPadding * 2.0f));
 }
 
-void updateAndRenderWindows(UIState *uiState, InputState *inputState)
+void updateAndRenderWindows(UIState *uiState)
 {
 	DEBUG_FUNCTION();
 
+	InputState *inputState = uiState->input;
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	bool mouseInputHandled = false;
 	Window *newActiveWindow = null;
@@ -130,7 +170,7 @@ void updateAndRenderWindows(UIState *uiState, InputState *inputState)
 
 			if (window->hasAutomaticHeight)
 			{
-				window->area.h = barHeight + context.currentOffset.y + (contentPadding * 2.0f);
+				window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
 			}
 		}
 

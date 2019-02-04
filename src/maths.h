@@ -1,9 +1,26 @@
 #pragma once
 
 // maths.h
+#include <math.h>
 
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
+
+// Standard rounding functions return doubles, so here's some int ones.
+inline s32 round_s32(f32 in)
+{
+	return (s32) round(in);
+}
+
+inline s32 floor_s32(f32 in)
+{
+	return (s32) floor(in);
+}
+
+inline s32 ceil_s32(f32 in)
+{
+	return (s32) ceil(in);
+}
 
 // How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
 inline s32 manhattanDistance(Rect2I rect, V2I point)
