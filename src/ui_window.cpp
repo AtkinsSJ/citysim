@@ -13,7 +13,7 @@ void window_text(WindowContext *context, String text, V4 color)
 
 	// For now, we'll always just start a new line.
 	// We'll probably want something fancier later.
-	context->currentOffset.y += textCache->size.y;
+	context->currentOffset.y += textCache->size.y + context->perItemPadding;
 }
 
 bool window_button(WindowContext *context, String text)
@@ -58,7 +58,7 @@ bool window_button(WindowContext *context, String text)
 
 	// For now, we'll always just start a new line.
 	// We'll probably want something fancier later.
-	context->currentOffset.y += bounds.size.y;
+	context->currentOffset.y += bounds.size.y + context->perItemPadding;
 
 	return buttonClicked;
 }
@@ -165,6 +165,7 @@ void updateAndRenderWindows(UIState *uiState)
 			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 			context.currentOffset = v2(0,0);
 			context.renderDepth = depth + 1.0f;
+			context.perItemPadding = 4.0f;
 
 			window->windowProc(&context, window, window->userData);
 

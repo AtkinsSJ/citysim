@@ -44,6 +44,7 @@ struct WindowContext
 	Rect2 contentArea;
 	V2 currentOffset;
 	f32 renderDepth;
+	f32 perItemPadding;
 };
 
 typedef void (*WindowProc)(WindowContext*, struct Window*, void*);
