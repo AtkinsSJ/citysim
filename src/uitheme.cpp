@@ -57,6 +57,23 @@ s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
 	return result;
 }
 
+UIButtonStyle *findButtonStyle(AssetManager *assets, String name)
+{
+	UIButtonStyle *result = null;
+
+	for (auto it = iterate(&assets->buttonStyles); !it.isDone; next(&it))
+	{
+		auto style = get(it);
+		if (equals(style->name, name))
+		{
+			result = style;
+			break;
+		}
+	}
+
+	return result;
+}
+
 UILabelStyle *findLabelStyle(AssetManager *assets, String name)
 {
 	UILabelStyle *result = null;
@@ -143,8 +160,10 @@ void loadUITheme(AssetManager *assets, File file)
 			}
 			else if (equals(firstWord, "Button"))
 			{
+				String name = nextToken(remainder, &remainder);
 				target.type = Section_Button;
-				target.button = &theme->buttonStyle;
+				target.button = appendBlank(&assets->buttonStyles);
+				target.button->name = pushString(&assets->assetArena, name);
 			}
 			else if (equals(firstWord, "Label"))
 			{
@@ -155,23 +174,31 @@ void loadUITheme(AssetManager *assets, File file)
 			}
 			else if (equals(firstWord, "Tooltip"))
 			{
+				String name = nextToken(remainder, &remainder);
 				target.type = Section_Tooltip;
-				target.tooltip = &theme->tooltipStyle;
+				target.tooltip = appendBlank(&assets->tooltipStyles);
+				target.tooltip->name = pushString(&assets->assetArena, name);
 			}
 			else if (equals(firstWord, "UIMessage"))
 			{
+				String name = nextToken(remainder, &remainder);
 				target.type = Section_UIMessage;
-				target.message = &theme->uiMessageStyle;
+				target.message = appendBlank(&assets->messageStyles);
+				target.message->name = pushString(&assets->assetArena, name);
 			}
 			else if (equals(firstWord, "TextBox"))
 			{
+				String name = nextToken(remainder, &remainder);
 				target.type = Section_TextBox;
-				target.textBox = &theme->textBoxStyle;
+				target.textBox = appendBlank(&assets->textBoxStyles);
+				target.textBox->name = pushString(&assets->assetArena, name);
 			}
 			else if (equals(firstWord, "Window"))
 			{
+				String name = nextToken(remainder, &remainder);
 				target.type = Section_Window;
-				target.window = &theme->windowStyle;
+				target.window = appendBlank(&assets->windowStyles);
+				target.window->name = pushString(&assets->assetArena, name);
 			}
 			else
 			{
@@ -372,7 +399,6 @@ void loadUITheme(AssetManager *assets, File file)
 			}
 			else if (equals(firstWord, "contentLabelStyle"))
 			{
-				// TODO: Replace this with a by-name lookup!
 				String styleName = nextToken(remainder, &remainder);
 				switch (target.type)
 				{
@@ -382,10 +408,10 @@ void loadUITheme(AssetManager *assets, File file)
 			}
 			else if (equals(firstWord, "contentButtonStyle"))
 			{
-				// TODO: Replace this with a by-name lookup!
+				String styleName = nextToken(remainder, &remainder);
 				switch (target.type)
 				{
-					case Section_Window:  target.window->buttonStyle = &theme->buttonStyle; break;
+					case Section_Window:  target.window->buttonStyle = findButtonStyle(assets, styleName); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}

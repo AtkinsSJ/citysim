@@ -52,8 +52,13 @@ void initAssetManager(AssetManager *assets)
 	initChunkedArray(&assets->shaderPrograms, &assets->assetArena, 16, true);
 
 	// Stuff that used to be in the UI theme is now here... I think UITheme isn't a useful concept?
-	initChunkedArray(&assets->fonts, &assets->assetArena, 16);
-	initChunkedArray(&assets->labelStyles, &assets->assetArena, 16);
+	initChunkedArray(&assets->fonts,         &assets->assetArena, 16);
+	initChunkedArray(&assets->buttonStyles,  &assets->assetArena, 16);
+	initChunkedArray(&assets->labelStyles,   &assets->assetArena, 16);
+	initChunkedArray(&assets->tooltipStyles, &assets->assetArena, 16);
+	initChunkedArray(&assets->messageStyles, &assets->assetArena, 16);
+	initChunkedArray(&assets->textBoxStyles, &assets->assetArena, 16);
+	initChunkedArray(&assets->windowStyles,  &assets->assetArena, 16);
 }
 
 AssetManager *createAssetManager()

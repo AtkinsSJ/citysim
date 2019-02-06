@@ -111,7 +111,12 @@ struct AssetManager
 	ChunkedArray<Cursor> cursors;
 
 	ChunkedArray<BitmapFont> fonts;
-	ChunkedArray<UILabelStyle> labelStyles;
+	ChunkedArray<UIButtonStyle>  buttonStyles;
+	ChunkedArray<UILabelStyle>   labelStyles;
+	ChunkedArray<UITooltipStyle> tooltipStyles;
+	ChunkedArray<UIMessageStyle> messageStyles;
+	ChunkedArray<UITextBoxStyle> textBoxStyles;
+	ChunkedArray<UIWindowStyle>  windowStyles;
 
 	UITheme theme;
 	File creditsText;

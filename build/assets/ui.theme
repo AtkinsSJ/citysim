@@ -17,7 +17,7 @@
 :General
  	 	overlayColor        0   0   0 128
 
-:Button
+:Button general
 font              smallFont            				# testing eol comment
 textColor           0   0   0 255
 backgroundColor   255 255 255 255
@@ -29,7 +29,7 @@ padding           4
 font              normalFont
 textColor         255 255  64 255
 
-:Label normal
+:Label general
 font              normalFont
 textColor         255 255 255 255
 
@@ -37,7 +37,7 @@ textColor         255 255 255 255
 font              smallFont
 textColor         255 255 255 255
 
-:Tooltip
+:Tooltip general
 font              normalFont
 textColorNormal   255 255 255 255
 textColorBad      255   0   0 255
@@ -46,19 +46,19 @@ borderPadding     4
 depth             100
 
 # ui message and tooltip seem a little redundant with other things
-:UIMessage
+:UIMessage general
 font              normalFont
 textColor         255 255 255 255
 backgroundColor     0   0   0 128
 borderPadding     4
 depth             100
 
-:TextBox
+:TextBox general
 font              normalFont
 textColor           0   0   0 255
 backgroundColor   255 255 255 255
 
-:Window
+:Window general
 titleFont                normalFont
 titleColor               255 255 255 255
 titleBarHeight           32
@@ -69,4 +69,4 @@ backgroundColor           96  96  96 255
 backgroundColorInactive   96  96  96 128
 contentPadding 12
 contentLabelStyle  small
-contentButtonStyle TODO
+contentButtonStyle general

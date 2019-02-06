@@ -79,10 +79,4 @@ struct UIWindowStyle
 struct UITheme
 {
 	V4 overlayColor;
-
-	UIButtonStyle buttonStyle;
-	UITooltipStyle tooltipStyle;
-	UIMessageStyle uiMessageStyle;
-	UITextBoxStyle textBoxStyle;
-	UIWindowStyle windowStyle;
 };
