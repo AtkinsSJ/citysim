@@ -21,6 +21,7 @@ inline s32 ceil_s32(f32 in)
 {
 	return (s32) ceil(in);
 }
+
 inline f32 round_f32(f32 in)
 {
 	return (f32) round(in);

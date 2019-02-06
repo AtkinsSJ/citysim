@@ -99,7 +99,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 			// We don't even know what the character was.
 			// So, a hack! We'll round the y to the closest multiple of the line height.
 
-			caretRect.y = (f32) floor(caretRect.y / (f32)font->lineHeight) * font->lineHeight;
+			caretRect.y = floor_f32(caretRect.y / (f32)font->lineHeight) * font->lineHeight;
 
 			caretRect.pos += topLeft;
 			caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
