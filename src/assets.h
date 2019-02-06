@@ -15,15 +15,6 @@ enum AssetState
 	AssetState_Loaded,
 };
 
-enum FontAssetType
-{
-	FontAssetType_Main,
-	FontAssetType_Buttons,
-	FontAssetType_Debug,
-
-	FontAssetTypeCount
-};
-
 enum CursorType
 {
 	Cursor_None,
@@ -147,9 +138,26 @@ TextureRegion *getTextureRegion(AssetManager *assets, TextureRegionID textureReg
 	return get(&assets->textureRegions, textureRegionIndex);
 }
 
-BitmapFont *getFont(AssetManager *assets, FontAssetType font)
+BitmapFont *getFont(AssetManager *assets, s32 fontID)
 {
-	return get(&assets->fonts, font);
+	return get(&assets->fonts, fontID);
+}
+
+BitmapFont *getFont(AssetManager *assets, String fontName)
+{
+	BitmapFont *result = null;
+
+	for (auto it = iterate(&assets->fonts); !it.isDone; next(&it))
+	{
+		auto font = get(it);
+		if (equals(font->name, fontName))
+		{
+			result = font;
+			break;
+		}
+	}
+
+	return result;
 }
 
 Cursor *getCursor(AssetManager *assets, u32 cursorID)
@@ -187,3 +195,5 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 
 	return result;
 }
+
+BitmapFont *addBMFont(AssetManager *assets, String name, String filename);

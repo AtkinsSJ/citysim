@@ -1,11 +1,20 @@
 #pragma once
 
-void window_text(WindowContext *context, String text, V4 color)
+void window_label(WindowContext *context, String text, V4 color={})
 {
 	DEBUG_FUNCTION();
 
+	UILabelStyle *style = context->window->style->labelStyle;
+
+	// Use the theme-defined color if none is provided. We determine this by checking for ~0 alpha, which
+	// isn't *perfect* but should work well enough.
+	if (color.a < 0.01f)
+	{
+		color = style->textColor;
+	}
+
 	V2 origin = context->contentArea.pos + context->currentOffset;
-	BitmapFont *font = getFont(context->uiState->assets, FontAssetType_Buttons);
+	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
 	f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
 	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, color, maxWidth);
@@ -21,15 +30,15 @@ bool window_button(WindowContext *context, String text)
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	UITheme *theme = &context->uiState->assets->theme;
-	UIButtonStyle *style = &theme->buttonStyle;
+	UIButtonStyle *style = context->window->style->buttonStyle;
+
 	V4 backColor = style->backgroundColor;
-	f32 buttonPadding = 4.0f;
+	f32 buttonPadding = style->padding;
 	V2 mousePos = context->uiState->uiBuffer->camera.mousePos;
 
 	// Let's be a little bit fancy. Figure out the size of the text, then determine the button size based on that!
 	V2 origin = context->contentArea.pos + context->currentOffset;
-	BitmapFont *font = getFont(context->uiState->assets, FontAssetType_Buttons);
+	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
 	f32 maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
 
 	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
@@ -137,7 +146,7 @@ void updateAndRenderWindows(UIState *uiState)
 		String closeButtonString = stringFromChars("X");
 		V4 closeButtonColorHover = window->style->titleBarButtonHoverColor;
 
-		BitmapFont *titleFont = getFont(uiState->assets, window->style->titleFont);
+		BitmapFont *titleFont = getFont(uiState->assets, window->style->titleFontID);
 
 
 		// Handle dragging first, BEFORE we use the window rect anywhere
@@ -160,6 +169,7 @@ void updateAndRenderWindows(UIState *uiState)
 			WindowContext context = {};
 			context.uiState = uiState;
 			context.temporaryMemory = &globalAppState.globalTempArena;
+			context.window = window;
 
 			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 			context.currentOffset = v2(0,0);

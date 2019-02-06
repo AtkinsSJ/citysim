@@ -70,6 +70,7 @@ u32 findBuildingTypeByName(String name)
 {
 	u32 result = 0;
 
+	// TODO: Use an iterator instead, it's faster!
 	for (u32 buildingType = 1; buildingType < buildingDefs.itemCount; buildingType++)
 	{
 		BuildingDef *def = get(&buildingDefs, buildingType);

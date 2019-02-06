@@ -2,30 +2,32 @@
 
 struct UIButtonStyle
 {
-	FontAssetType font;
+	s32 fontID;
 	V4 textColor;
 
 	V4 backgroundColor;
 	V4 hoverColor;
 	V4 pressedColor;
+
+	f32 padding;
 };
 
 struct UILabelStyle
 {
-	FontAssetType font;
+	s32 fontID;
 	V4 textColor;
 };
 
 struct UITextBoxStyle
 {
-	FontAssetType font;
+	s32 fontID;
 	V4 textColor;
 	V4 backgroundColor;
 };
 
 struct UITooltipStyle
 {
-	FontAssetType font;
+	s32 fontID;
 	V4 textColorNormal;
 	V4 textColorBad;
 
@@ -36,7 +38,7 @@ struct UITooltipStyle
 
 struct UIMessageStyle
 {
-	FontAssetType font;
+	s32 fontID;
 	V4 textColor;
 
 	V4 backgroundColor;
@@ -49,7 +51,7 @@ struct UIWindowStyle
 	f32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
-	FontAssetType titleFont;
+	s32 titleFontID;
 	V4 titleColor;
 	V4 titleBarButtonHoverColor;
 
@@ -57,6 +59,9 @@ struct UIWindowStyle
 	V4 backgroundColorInactive;
 
 	f32 contentPadding;
+
+	UIButtonStyle *buttonStyle;
+	UILabelStyle *labelStyle;
 };
 
 struct UITheme

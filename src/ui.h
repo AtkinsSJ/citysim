@@ -36,10 +36,12 @@ struct UiMessage
 	f32 countdown; // In seconds
 };
 
+struct Window;
 struct WindowContext
 {
 	struct UIState *uiState;
 	MemoryArena *temporaryMemory;
+	Window *window;
 
 	Rect2 contentArea;
 	V2 currentOffset;

@@ -98,8 +98,6 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 	cursor->sdlCursor = 0;
 }
 
-BitmapFont *addBMFont(AssetManager *assets, FontAssetType fontAssetType, char *filename);
-
 void addShaderHeader(AssetManager *assets, char *filename)
 {
 	ShaderHeader *shaderHeader = &assets->shaderHeader;
@@ -121,7 +119,7 @@ void loadAssets(AssetManager *assets)
 	DEBUG_FUNCTION();
 
 	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
-	loadUITheme(&assets->theme, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
+	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
 	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
 	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
 	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
@@ -272,8 +270,8 @@ void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String f
 
 void addAssets(AssetManager *assets)
 {
-	addBMFont(assets, FontAssetType_Buttons, "dejavu-14.fnt");
-	addBMFont(assets, FontAssetType_Main, "dejavu-20.fnt");
+	// addBMFont(assets, FontAssetType_Buttons, "dejavu-14.fnt");
+	// addBMFont(assets, FontAssetType_Main, "dejavu-20.fnt");
 
 	addShaderHeader(assets, "header.glsl");
 	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.glsl", "textured.frag.glsl");
@@ -288,7 +286,7 @@ void addAssets(AssetManager *assets)
 	addCursor(assets, Cursor_Hire, "cursor_hire.png");
 
 #if BUILD_DEBUG
-	addBMFont(assets, FontAssetType_Debug, "debug.fnt");
+	addBMFont(assets, stringFromChars("debug"), stringFromChars("debug.fnt"));
 #endif
 }
 

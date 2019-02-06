@@ -85,7 +85,7 @@ void renderConsole(Console *console, UIState *uiState)
 {
 	if (console->font == null)
 	{
-		console->font = getFont(globalAppState.assets, FontAssetType_Debug);
+		console->font = getFont(globalAppState.assets, stringFromChars("debug"));
 		console->charWidth = findChar(console->font, 'M')->xAdvance;
 	}
 

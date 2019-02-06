@@ -26,6 +26,7 @@ enum AppStatus
 #include "log.h"
 #include "memory.h"
 #include "chunked_array.h"
+#include "chunked_array.cpp"
 MemoryArena *globalFrameTempArena;
 #include "string.h"
 #include "unicode.h"
@@ -65,7 +66,6 @@ struct AppState
 };
 AppState globalAppState;
 
-#include "chunked_array.cpp"
 #include "ui.cpp"
 #include "ui_window.cpp"
 #include "uitheme.cpp"

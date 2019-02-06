@@ -60,7 +60,7 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-BitmapFont *addBMFont(AssetManager *assets, FontAssetType fontAssetType, char *filename)
+BitmapFont *addBMFont(AssetManager *assets, String name, String filename)
 {
 	BitmapFont *font = 0;
 
@@ -150,8 +150,8 @@ BitmapFont *addBMFont(AssetManager *assets, FontAssetType fontAssetType, char *f
 					pageStart += strlen(pageStart) + 1;
 				}
 
-				font = get(&assets->fonts, fontAssetType);
-				font->assetID = fontAssetType;
+				font = appendBlank(&assets->fonts);
+				font->name = pushString(&assets->assetArena, name);
 				font->textureAssetType = addNewTextureAssetType(assets);
 				font->lineHeight = common->lineHeight;
 				font->baseY = common->base;

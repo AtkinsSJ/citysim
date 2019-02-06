@@ -227,7 +227,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	f32 windowWidth = (f32) uiBuffer->camera.size.x;
 	V2 centre = uiBuffer->camera.pos;
 	UITheme *theme = &assets->theme;
-	BitmapFont *font = getFont(assets, theme->labelStyle.font);
+	BitmapFont *font = getFont(assets, theme->labelStyle.fontID);
 	City *city = &gameState->city;
 
 	uiState->uiRects.count = 0;

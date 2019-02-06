@@ -9,10 +9,8 @@ void testWindowProc(WindowContext *context, Window *window, void *userData)
 	// - increment button
 	// - decrement button
 
-	V4 textColor = color255(255, 255, 255, 255);
-
-	window_text(context, LocalString("This is a window! Fun times."), textColor);
-	window_text(context, myprintf("My favourite number is {0}!", {formatInt(*ourNumber)}), textColor);
+	window_label(context, LocalString("This is a window! Fun times."));
+	window_label(context, myprintf("My favourite number is {0}!", {formatInt(*ourNumber)}));
 	if (window_button(context, LocalString("Increment")))
 	{
 		(*ourNumber)++;
@@ -21,7 +19,7 @@ void testWindowProc(WindowContext *context, Window *window, void *userData)
 	{
 		(*ourNumber)--;
 	}
-	window_text(context, LocalString("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.\nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."), textColor);
+	window_label(context, LocalString("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.\nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."));
 }
 
 void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
@@ -46,7 +44,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	//position.y += 154.0f;
 
 	UILabelStyle *labelStyle = &theme->labelStyle;
-	BitmapFont *font = getFont(assets, labelStyle->font);
+	BitmapFont *font = getFont(assets, labelStyle->fontID);
 
 	position.y += (uiText(uiState, font, LocalString("City Builder Thing"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;

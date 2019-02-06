@@ -34,29 +34,30 @@ V4 readColor255(String input)
 	return color255((u8)r, (u8)g, (u8)b, (u8)a);
 }
 
-/*
-	@Hack: So far, this is a MASSIVE hack! We simply hard-code what name links to what font asset ID.
-	But, I don't exactly know how we want to handle fonts so I'll leave it as is for now.
- */
-FontAssetType findFontByName(LineReader *reader, String fontName)
+s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
 {
-	FontAssetType result = FontAssetType_Main;
-	if (equals(fontName, "smallFont"))
+	s32 result = -1;
+	
+	s32 i = 0;
+	for (auto it = iterate(&assets->fonts); !it.isDone; next(&it), i++)
 	{
-		result = FontAssetType_Buttons;
+		auto font = get(it);
+		if (equals(font->name, fontName))
+		{
+			result = i;
+			break;
+		}
 	}
-	else if (equals(fontName, "normalFont"))
-	{
-		result = FontAssetType_Main;
-	}
-	else
+
+	if (result == -1)
 	{
 		error(reader, "Unrecognized font name '{0}'", {fontName});
 	}
+
 	return result;
 }
 
-void loadUITheme(UITheme *theme, File file)
+void loadUITheme(AssetManager *assets, File file)
 {
 	LineReader reader = startFile(file, true, true, '#');
 	// Scoped enums are a thing, apparently! WOOHOO!
@@ -73,14 +74,14 @@ void loadUITheme(UITheme *theme, File file)
 	TargetType currentTarget = Section_None;
 	String sectionName = {};
 
+	UITheme *theme = &assets->theme;
+
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);
 
 		String firstWord, remainder;
 		firstWord = nextToken(line, &remainder);
-
-		// consoleWriteLine(myprintf("First word: '{0}', remainder: '{1}'", {firstWord, remainder}));
 
 		if (firstWord.chars[0] == ':')
 		{
@@ -98,14 +99,11 @@ void loadUITheme(UITheme *theme, File file)
 
 				if (fontName.length && fontFilename.length)
 				{
-					// TODO: Decide how this works. I'm not sure the font declaration even wants to work this way!
-					consoleWriteLine(myprintf("Valid font declaration, line {0}: '{1}' but we don't actually handle this yet so it doesn't do anything!", {formatInt(reader.lineNumber), line}));
-
-					
+					addBMFont(assets, fontName, fontFilename);
 				}
 				else
 				{
-					consoleWriteLine(myprintf("Invalid font declaration, line {0}: '{1}'", {formatInt(reader.lineNumber), line}), CLS_Error);
+					error(&reader, "Invalid font declaration: '{0}'", {line});
 				}
 			}
 			else if (equals(firstWord, "General"))    currentTarget = Section_General;
@@ -198,6 +196,17 @@ void loadUITheme(UITheme *theme, File file)
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
+			else if (equals(firstWord, "padding"))
+			{
+				s64 intValue;
+				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+
+				switch (currentTarget)
+				{
+					case Section_Button:  theme->buttonStyle.padding = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
 			else if (equals(firstWord, "borderPadding"))
 			{
 				s64 intValue;
@@ -213,26 +222,26 @@ void loadUITheme(UITheme *theme, File file)
 			else if (equals(firstWord, "font"))
 			{
 				String fontName = nextToken(remainder, null);
-				FontAssetType font = findFontByName(&reader, fontName);
+				s32 fontID = findFontByName(&reader, assets, fontName);
 
 				switch (currentTarget)
 				{
-					case Section_Button:     theme->buttonStyle.font    = font; break;
-					case Section_Label:      theme->labelStyle.font     = font; break;
-					case Section_Tooltip:    theme->tooltipStyle.font   = font; break;
-					case Section_TextBox:    theme->textBoxStyle.font   = font; break;
-					case Section_UIMessage:  theme->uiMessageStyle.font = font; break;
+					case Section_Button:     theme->buttonStyle.fontID        = fontID; break;
+					case Section_Label:      theme->labelStyle.fontID         = fontID; break;
+					case Section_Tooltip:    theme->tooltipStyle.fontID       = fontID; break;
+					case Section_TextBox:    theme->textBoxStyle.fontID       = fontID; break;
+					case Section_UIMessage:  theme->uiMessageStyle.fontID     = fontID; break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
 			else if (equals(firstWord, "titleFont"))
 			{
 				String fontName = nextToken(remainder, null);
-				FontAssetType font = findFontByName(&reader, fontName);
+				s32 fontID = findFontByName(&reader, assets, fontName);
 
 				switch (currentTarget)
 				{
-					case Section_Window:  theme->windowStyle.titleFont = font; break;
+					case Section_Window:  theme->windowStyle.titleFontID = fontID; break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
@@ -295,6 +304,24 @@ void loadUITheme(UITheme *theme, File file)
 				switch (currentTarget)
 				{
 					case Section_Window:  theme->windowStyle.contentPadding = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "contentTextStyle"))
+			{
+				// TODO: Replace this with a by-name lookup!
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.labelStyle = &theme->labelStyle; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "contentButtonStyle"))
+			{
+				// TODO: Replace this with a by-name lookup!
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.buttonStyle = &theme->buttonStyle; break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
