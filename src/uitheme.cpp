@@ -115,10 +115,7 @@ void loadUITheme(UITheme *theme, File file)
 			else if (equals(firstWord, "UIMessage"))  currentTarget = Section_UIMessage;
 			else if (equals(firstWord, "TextBox"))    currentTarget = Section_TextBox;
 			else if (equals(firstWord, "Window"))     currentTarget = Section_Window;
-			else
-			{
-				consoleWriteLine(myprintf("Unrecognized command in UITheme file, line {0}: '{1}'", {formatInt(reader.lineNumber), firstWord}), CLS_Error);
-			}
+			else                                      error(&reader, "Unrecognized command: '{0}'", {firstWord});
 		}
 		else
 		{
@@ -149,10 +146,11 @@ void loadUITheme(UITheme *theme, File file)
 			{
 				switch (currentTarget)
 				{
-					case Section_Button:    theme->buttonStyle.backgroundColor = readColor255(remainder); break;
-					case Section_TextBox:   theme->textBoxStyle.backgroundColor = readColor255(remainder); break;
-					case Section_Tooltip:   theme->tooltipStyle.backgroundColor = readColor255(remainder); break;
+					case Section_Button:    theme->buttonStyle.backgroundColor    = readColor255(remainder); break;
+					case Section_TextBox:   theme->textBoxStyle.backgroundColor   = readColor255(remainder); break;
+					case Section_Tooltip:   theme->tooltipStyle.backgroundColor   = readColor255(remainder); break;
 					case Section_UIMessage: theme->uiMessageStyle.backgroundColor = readColor255(remainder); break;
+					case Section_Window:    theme->windowStyle.backgroundColor    = readColor255(remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}
@@ -224,6 +222,79 @@ void loadUITheme(UITheme *theme, File file)
 					case Section_Tooltip:    theme->tooltipStyle.font   = font; break;
 					case Section_TextBox:    theme->textBoxStyle.font   = font; break;
 					case Section_UIMessage:  theme->uiMessageStyle.font = font; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "titleFont"))
+			{
+				String fontName = nextToken(remainder, null);
+				FontAssetType font = findFontByName(&reader, fontName);
+
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.titleFont = font; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "titleColor"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.titleColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "titleBarHeight"))
+			{
+				s64 intValue;
+				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.titleBarHeight = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "titleBarColor"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.titleBarColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "titleBarColorInactive"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.titleBarColorInactive = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "titleBarButtonHoverColor"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.titleBarButtonHoverColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "backgroundColorInactive"))
+			{
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.backgroundColorInactive = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+				}
+			}
+			else if (equals(firstWord, "contentPadding"))
+			{
+				s64 intValue;
+				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+
+				switch (currentTarget)
+				{
+					case Section_Window:  theme->windowStyle.contentPadding = (f32) intValue; break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
 				}
 			}

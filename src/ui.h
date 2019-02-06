@@ -55,6 +55,7 @@ struct Window
 
 	Rect2I area;
 	bool hasAutomaticHeight;
+	UIWindowStyle *style;
 
 	WindowProc windowProc;
 	void *userData;

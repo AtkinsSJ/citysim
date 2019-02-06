@@ -46,13 +46,17 @@ struct UIMessageStyle
 
 struct UIWindowStyle
 {
-	FontAssetType titleFont;
 	f32 titleBarHeight;
-	V4 titleColor;
-	V4 titleBarColorActive;
+	V4 titleBarColor;
 	V4 titleBarColorInactive;
-	V4 backgroundColorActive;
+	FontAssetType titleFont;
+	V4 titleColor;
+	V4 titleBarButtonHoverColor;
+
+	V4 backgroundColor;
 	V4 backgroundColorInactive;
+
+	f32 contentPadding;
 };
 
 struct UITheme

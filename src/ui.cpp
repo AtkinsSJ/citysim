@@ -18,6 +18,7 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 
 	uiState->uiBuffer = uiBuffer;
 	uiState->assets = assets;
+	uiState->theme = &assets->theme;
 	uiState->input = input;
 
 	initMemoryArena(&uiState->arena, MB(1));

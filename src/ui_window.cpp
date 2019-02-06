@@ -71,6 +71,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, WindowPro
 {
 	Window newWindow = {};
 	newWindow.title = title;
+	newWindow.style = &uiState->theme->windowStyle;
 
 	V2 windowOrigin = uiState->uiBuffer->camera.pos;
 	newWindow.hasAutomaticHeight = (height == -1);
@@ -116,21 +117,6 @@ void updateAndRenderWindows(UIState *uiState)
 	Window *newActiveWindow = null;
 	s32 closeWindow = -1;
 
-	V4 backColor       = color255(96, 96, 96, 128);
-	V4 backColorActive = color255(96, 96, 96, 255);
-
-	f32 barHeight = 32.0f;
-	V4 barColor       = color255(96, 128, 96, 128);
-	V4 barColorActive = color255(96, 196, 96, 255);
-	V4 titleColor     = color255(255, 255, 255, 255);
-
-	f32 contentPadding = 4.0f;
-
-	String closeButtonString = stringFromChars("X");
-	V4 closeButtonColorHover = color255(255, 64, 64, 255);
-
-	BitmapFont *titleFont = getFont(uiState->assets, FontAssetType_Main);
-
 	s32 windowIndex = 0;
 	for (auto it = iterate(&uiState->openWindows);
 		!it.isDone;
@@ -138,8 +124,21 @@ void updateAndRenderWindows(UIState *uiState)
 	{
 		Window *window = get(it);
 		f32 depth = 2000.0f - (20.0f * windowIndex);
-
 		bool isActive = (windowIndex == 0);
+
+		V4 backColor = (isActive ? window->style->backgroundColor : window->style->backgroundColorInactive);
+
+		f32 barHeight = window->style->titleBarHeight;
+		V4 barColor = (isActive ? window->style->titleBarColor : window->style->titleBarColorInactive);
+		V4 titleColor = window->style->titleColor;
+
+		f32 contentPadding = window->style->contentPadding;
+
+		String closeButtonString = stringFromChars("X");
+		V4 closeButtonColorHover = window->style->titleBarButtonHoverColor;
+
+		BitmapFont *titleFont = getFont(uiState->assets, window->style->titleFont);
+
 
 		// Handle dragging first, BEFORE we use the window rect anywhere
 		if (isActive && uiState->isDraggingWindow)
@@ -206,8 +205,8 @@ void updateAndRenderWindows(UIState *uiState)
 			mouseInputHandled = true;
 		}
 
-		drawRect(uiState->uiBuffer, contentArea, depth, isActive ? backColorActive : backColor);
-		drawRect(uiState->uiBuffer, barArea, depth, isActive ? barColorActive : barColor);
+		drawRect(uiState->uiBuffer, contentArea, depth, backColor);
+		drawRect(uiState->uiBuffer, barArea, depth, barColor);
 		uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
 		if (hoveringOverCloseButton)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, closeButtonColorHover);
