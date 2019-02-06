@@ -417,9 +417,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	UIState *uiState = &globalAppState.uiState;
 
 	if (assets->assetReloadHasJustHappened)
-	{
-		uiState->theme = &assets->theme;
-		
+	{	
 		refreshZoneGrowableBuildingLists(&city->zoneLayer);
 
 		assets->assetReloadHasJustHappened = false;

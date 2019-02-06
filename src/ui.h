@@ -79,8 +79,6 @@ struct UIState
 	AssetManager *assets;
 	InputState *input;
 
-	UITheme *theme;
-
 	UIMenuID openMenu;
 	ActionMode actionMode;
 	union
