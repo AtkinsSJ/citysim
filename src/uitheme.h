@@ -2,6 +2,8 @@
 
 struct UIButtonStyle
 {
+	String name;
+
 	s32 fontID;
 	V4 textColor;
 
@@ -14,12 +16,16 @@ struct UIButtonStyle
 
 struct UILabelStyle
 {
+	String name;
+	
 	s32 fontID;
 	V4 textColor;
 };
 
 struct UITextBoxStyle
 {
+	String name;
+	
 	s32 fontID;
 	V4 textColor;
 	V4 backgroundColor;
@@ -27,6 +33,8 @@ struct UITextBoxStyle
 
 struct UITooltipStyle
 {
+	String name;
+	
 	s32 fontID;
 	V4 textColorNormal;
 	V4 textColorBad;
@@ -38,6 +46,8 @@ struct UITooltipStyle
 
 struct UIMessageStyle
 {
+	String name;
+	
 	s32 fontID;
 	V4 textColor;
 
@@ -48,6 +58,8 @@ struct UIMessageStyle
 
 struct UIWindowStyle
 {
+	String name;
+	
 	f32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -69,7 +81,6 @@ struct UITheme
 	V4 overlayColor;
 
 	UIButtonStyle buttonStyle;
-	UILabelStyle labelStyle;
 	UITooltipStyle tooltipStyle;
 	UIMessageStyle uiMessageStyle;
 	UITextBoxStyle textBoxStyle;

@@ -9,7 +9,6 @@
 # may want variables we can define
 # may want to extend previously defined styles
 
-:Font debug       debug.fnt
 :Font smallFont   dejavu-14.fnt
 :Font normalFont  dejavu-20.fnt
 
@@ -26,8 +25,16 @@ hoverColor        192 192 255 255
 pressedColor      128 128 255 255
 padding           4
 
-:Label # comment # still a # comment
+:Label title
 font              normalFont
+textColor         255 255  64 255
+
+:Label normal
+font              normalFont
+textColor         255 255 255 255
+
+:Label small
+font              smallFont
 textColor         255 255 255 255
 
 :Tooltip
@@ -61,5 +68,5 @@ titleBarButtonHoverColor 255  64  64 255
 backgroundColor           96  96  96 255
 backgroundColorInactive   96  96  96 128
 contentPadding 12
-contentTextStyle   TODO
+contentLabelStyle  small
 contentButtonStyle TODO

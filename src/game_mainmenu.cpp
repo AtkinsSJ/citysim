@@ -43,7 +43,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	//drawGL_TextureAtlasItem(renderer, true, GL_TextureAtlasItem_Menu_Logo, position, v2(499.0f, 154.0f), 0);
 	//position.y += 154.0f;
 
-	UILabelStyle *labelStyle = &theme->labelStyle;
+	UILabelStyle *labelStyle = findLabelStyle(assets, stringFromChars("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontID);
 
 	position.y += (uiText(uiState, font, LocalString("City Builder Thing"),

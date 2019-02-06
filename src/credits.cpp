@@ -12,7 +12,7 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = &uiState->theme->labelStyle;
+	UILabelStyle *labelStyle = findLabelStyle(assets, stringFromChars("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontID);
 
 	LineReader reader = startFile(assets->creditsText, false, false);

@@ -57,11 +57,31 @@ s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
 	return result;
 }
 
+UILabelStyle *findLabelStyle(AssetManager *assets, String name)
+{
+	UILabelStyle *result = null;
+
+	for (auto it = iterate(&assets->labelStyles); !it.isDone; next(&it))
+	{
+		auto style = get(it);
+		if (equals(style->name, name))
+		{
+			result = style;
+			break;
+		}
+	}
+
+	return result;
+}
+
 void loadUITheme(AssetManager *assets, File file)
 {
 	LineReader reader = startFile(file, true, true, '#');
-	// Scoped enums are a thing, apparently! WOOHOO!
-	enum TargetType {
+
+	UITheme *theme = &assets->theme;
+
+	// Scoped structs and enums are a thing, apparently! WOOHOO!
+	enum SectionType {
 		Section_None = 0,
 		Section_General = 1,
 		Section_Button,
@@ -71,10 +91,21 @@ void loadUITheme(AssetManager *assets, File file)
 		Section_TextBox,
 		Section_Window,
 	};
-	TargetType currentTarget = Section_None;
-	String sectionName = {};
+	struct
+	{
+		SectionType type;
+		String name;
 
-	UITheme *theme = &assets->theme;
+		union
+		{
+			UIButtonStyle *button;
+			UILabelStyle *label;
+			UITooltipStyle *tooltip;
+			UIMessageStyle *message;
+			UITextBoxStyle *textBox;
+			UIWindowStyle *window;
+		};
+	} target = {};
 
 	while (reader.pos < reader.file.length)
 	{
@@ -88,11 +119,11 @@ void loadUITheme(AssetManager *assets, File file)
 			// define an item
 			++firstWord.chars;
 			--firstWord.length;
-			sectionName = firstWord;
+			target.name = firstWord;
 
 			if (equals(firstWord, "Font"))
 			{
-				currentTarget = Section_None;
+				target.type = Section_None;
 				String fontName, fontFilename;
 				fontName = nextToken(remainder, &fontFilename);
 				fontFilename = trimStart(fontFilename);
@@ -106,82 +137,114 @@ void loadUITheme(AssetManager *assets, File file)
 					error(&reader, "Invalid font declaration: '{0}'", {line});
 				}
 			}
-			else if (equals(firstWord, "General"))    currentTarget = Section_General;
-			else if (equals(firstWord, "Button"))     currentTarget = Section_Button;
-			else if (equals(firstWord, "Label"))      currentTarget = Section_Label;
-			else if (equals(firstWord, "Tooltip"))    currentTarget = Section_Tooltip;
-			else if (equals(firstWord, "UIMessage"))  currentTarget = Section_UIMessage;
-			else if (equals(firstWord, "TextBox"))    currentTarget = Section_TextBox;
-			else if (equals(firstWord, "Window"))     currentTarget = Section_Window;
-			else                                      error(&reader, "Unrecognized command: '{0}'", {firstWord});
+			else if (equals(firstWord, "General"))
+			{
+				target.type = Section_General;
+			}
+			else if (equals(firstWord, "Button"))
+			{
+				target.type = Section_Button;
+				target.button = &theme->buttonStyle;
+			}
+			else if (equals(firstWord, "Label"))
+			{
+				String name = nextToken(remainder, &remainder);
+				target.type = Section_Label;
+				target.label = appendBlank(&assets->labelStyles);
+				target.label->name = pushString(&assets->assetArena, name);
+			}
+			else if (equals(firstWord, "Tooltip"))
+			{
+				target.type = Section_Tooltip;
+				target.tooltip = &theme->tooltipStyle;
+			}
+			else if (equals(firstWord, "UIMessage"))
+			{
+				target.type = Section_UIMessage;
+				target.message = &theme->uiMessageStyle;
+			}
+			else if (equals(firstWord, "TextBox"))
+			{
+				target.type = Section_TextBox;
+				target.textBox = &theme->textBoxStyle;
+			}
+			else if (equals(firstWord, "Window"))
+			{
+				target.type = Section_Window;
+				target.window = &theme->windowStyle;
+			}
+			else
+			{
+				error(&reader, "Unrecognized command: '{0}'", {firstWord});
+			}
 		}
 		else
 		{
 			// properties of the item
 			if (equals(firstWord, "overlayColor"))
 			{
-				if (currentTarget == Section_General)
+				if (target.type == Section_General)
 				{
 					theme->overlayColor = readColor255(remainder);
 				}
 				else
 				{
-					error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "textColor"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Button:     theme->buttonStyle.textColor    = readColor255(remainder); break;
-					case Section_Label:      theme->labelStyle.textColor     = readColor255(remainder); break;
-					case Section_TextBox:    theme->textBoxStyle.textColor   = readColor255(remainder); break;
-					case Section_UIMessage:  theme->uiMessageStyle.textColor = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Button:     target.button->textColor    = readColor255(remainder); break;
+					case Section_Label:      target.label->textColor     = readColor255(remainder); break;
+					case Section_TextBox:    target.textBox->textColor   = readColor255(remainder); break;
+					case Section_UIMessage:  target.message->textColor   = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "backgroundColor"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Button:    theme->buttonStyle.backgroundColor    = readColor255(remainder); break;
-					case Section_TextBox:   theme->textBoxStyle.backgroundColor   = readColor255(remainder); break;
-					case Section_Tooltip:   theme->tooltipStyle.backgroundColor   = readColor255(remainder); break;
-					case Section_UIMessage: theme->uiMessageStyle.backgroundColor = readColor255(remainder); break;
-					case Section_Window:    theme->windowStyle.backgroundColor    = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Button:    target.button->backgroundColor    = readColor255(remainder); break;
+					case Section_TextBox:   target.textBox->backgroundColor   = readColor255(remainder); break;
+					case Section_Tooltip:   target.tooltip->backgroundColor   = readColor255(remainder); break;
+					case Section_UIMessage: target.message->backgroundColor   = readColor255(remainder); break;
+					case Section_Window:    target.window->backgroundColor    = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "hoverColor"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Button:  theme->buttonStyle.hoverColor = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Button:  target.button->hoverColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "pressedColor"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Button:  theme->buttonStyle.pressedColor = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Button:  target.button->pressedColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "textColorNormal"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Tooltip:  theme->tooltipStyle.textColorNormal = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Tooltip:  target.tooltip->textColorNormal = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "textColorBad"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Tooltip:  theme->tooltipStyle.textColorBad = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Tooltip:  target.tooltip->textColorBad = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "depth"))
@@ -189,11 +252,11 @@ void loadUITheme(AssetManager *assets, File file)
 				s64 intValue;
 				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
 
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Tooltip:    theme->tooltipStyle.depth   = (f32) intValue; break;
-					case Section_UIMessage:  theme->uiMessageStyle.depth = (f32) intValue; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Tooltip:    target.tooltip->depth   = (f32) intValue; break;
+					case Section_UIMessage:  target.message->depth   = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "padding"))
@@ -201,10 +264,10 @@ void loadUITheme(AssetManager *assets, File file)
 				s64 intValue;
 				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
 
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Button:  theme->buttonStyle.padding = (f32) intValue; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Button:  target.button->padding = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "borderPadding"))
@@ -212,11 +275,11 @@ void loadUITheme(AssetManager *assets, File file)
 				s64 intValue;
 				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
 
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Tooltip:    theme->tooltipStyle.borderPadding   = (f32) intValue; break;
-					case Section_UIMessage:  theme->uiMessageStyle.borderPadding = (f32) intValue; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Tooltip:    target.tooltip->borderPadding   = (f32) intValue; break;
+					case Section_UIMessage:  target.message->borderPadding   = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "font"))
@@ -224,14 +287,14 @@ void loadUITheme(AssetManager *assets, File file)
 				String fontName = nextToken(remainder, null);
 				s32 fontID = findFontByName(&reader, assets, fontName);
 
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Button:     theme->buttonStyle.fontID        = fontID; break;
-					case Section_Label:      theme->labelStyle.fontID         = fontID; break;
-					case Section_Tooltip:    theme->tooltipStyle.fontID       = fontID; break;
-					case Section_TextBox:    theme->textBoxStyle.fontID       = fontID; break;
-					case Section_UIMessage:  theme->uiMessageStyle.fontID     = fontID; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Button:     target.button->fontID        = fontID; break;
+					case Section_Label:      target.label->fontID         = fontID; break;
+					case Section_Tooltip:    target.tooltip->fontID       = fontID; break;
+					case Section_TextBox:    target.textBox->fontID       = fontID; break;
+					case Section_UIMessage:  target.message->fontID       = fontID; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "titleFont"))
@@ -239,18 +302,18 @@ void loadUITheme(AssetManager *assets, File file)
 				String fontName = nextToken(remainder, null);
 				s32 fontID = findFontByName(&reader, assets, fontName);
 
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.titleFontID = fontID; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->titleFontID = fontID; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "titleColor"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.titleColor = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->titleColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "titleBarHeight"))
@@ -258,42 +321,42 @@ void loadUITheme(AssetManager *assets, File file)
 				s64 intValue;
 				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
 
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.titleBarHeight = (f32) intValue; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->titleBarHeight = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "titleBarColor"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.titleBarColor = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->titleBarColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "titleBarColorInactive"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.titleBarColorInactive = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->titleBarColorInactive = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "titleBarButtonHoverColor"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.titleBarButtonHoverColor = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->titleBarButtonHoverColor = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "backgroundColorInactive"))
 			{
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.backgroundColorInactive = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->backgroundColorInactive = readColor255(remainder); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "contentPadding"))
@@ -301,28 +364,29 @@ void loadUITheme(AssetManager *assets, File file)
 				s64 intValue;
 				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
 
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.contentPadding = (f32) intValue; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->contentPadding = (f32) intValue; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
-			else if (equals(firstWord, "contentTextStyle"))
+			else if (equals(firstWord, "contentLabelStyle"))
 			{
 				// TODO: Replace this with a by-name lookup!
-				switch (currentTarget)
+				String styleName = nextToken(remainder, &remainder);
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.labelStyle = &theme->labelStyle; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->labelStyle = findLabelStyle(assets, styleName); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "contentButtonStyle"))
 			{
 				// TODO: Replace this with a by-name lookup!
-				switch (currentTarget)
+				switch (target.type)
 				{
-					case Section_Window:  theme->windowStyle.buttonStyle = &theme->buttonStyle; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, sectionName});
+					case Section_Window:  target.window->buttonStyle = &theme->buttonStyle; break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else 

@@ -108,9 +108,10 @@ struct AssetManager
 	ShaderHeader shaderHeader; // This is a bit hacky right now.
 	ChunkedArray<ShaderProgram> shaderPrograms;
 
-	ChunkedArray<BitmapFont> fonts;
-
 	ChunkedArray<Cursor> cursors;
+
+	ChunkedArray<BitmapFont> fonts;
+	ChunkedArray<UILabelStyle> labelStyles;
 
 	UITheme theme;
 	File creditsText;

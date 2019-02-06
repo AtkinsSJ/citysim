@@ -43,7 +43,7 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 		if (zoomDelta)
 		{
 			// round()ing the zoom so it doesn't gradually drift due to float imprecision
-			camera->zoom = (f32) clamp(round(10 * camera->zoom + zoomDelta) * 0.1f, 0.1f, 10.0f);
+			camera->zoom = (f32) clamp(round_f32(10 * camera->zoom + zoomDelta) * 0.1f, 0.1f, 10.0f);
 		}
 	}
 
@@ -227,7 +227,8 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	f32 windowWidth = (f32) uiBuffer->camera.size.x;
 	V2 centre = uiBuffer->camera.pos;
 	UITheme *theme = &assets->theme;
-	BitmapFont *font = getFont(assets, theme->labelStyle.fontID);
+	UILabelStyle *labelStyle = findLabelStyle(assets, stringFromChars("title"));
+	BitmapFont *font = getFont(assets, labelStyle->fontID);
 	City *city = &gameState->city;
 
 	uiState->uiRects.count = 0;
@@ -240,17 +241,17 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
 
 	uiText(uiState, font, city->name,
-	       v2(left, uiPadding), ALIGN_LEFT, 1, theme->labelStyle.textColor);
+	       v2(left, uiPadding), ALIGN_LEFT, 1, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
+	uiText(uiState, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, 1, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, theme->labelStyle.textColor);
+	uiText(uiState, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, labelStyle->textColor);
 
 	uiText(uiState, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.combined.consumption), formatInt(city->powerLayer.combined.production)}),
-	       v2(right, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
+	       v2(right, uiPadding), ALIGN_RIGHT, 1, labelStyle->textColor);
 
 	uiText(uiState, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
-	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, 1, theme->labelStyle.textColor);
+	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, 1, labelStyle->textColor);
 
 
 	// Build UI

@@ -48,9 +48,12 @@ void initAssetManager(AssetManager *assets)
 	TextureRegion *nullRegion = appendBlank(&assets->textureRegions);
 	nullRegion->textureID = -1;
 
-	initChunkedArray(&assets->fonts, &assets->assetArena, 16, true);
 	initChunkedArray(&assets->cursors, &assets->assetArena, 16, true);
 	initChunkedArray(&assets->shaderPrograms, &assets->assetArena, 16, true);
+
+	// Stuff that used to be in the UI theme is now here... I think UITheme isn't a useful concept?
+	initChunkedArray(&assets->fonts, &assets->assetArena, 16);
+	initChunkedArray(&assets->labelStyles, &assets->assetArena, 16);
 }
 
 AssetManager *createAssetManager()
