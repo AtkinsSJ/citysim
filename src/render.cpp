@@ -13,6 +13,28 @@ inline f32 depthFromY(s32 y)
 	return depthFromY((f32)y);
 }
 
+void updateCameraMatrix(Camera *camera)
+{
+	f32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;
+	f32 camHalfHeight = camera->size.y * 0.5f / camera->zoom;
+	camera->projectionMatrix = orthographicMatrix4(
+		camera->pos.x - camHalfWidth, camera->pos.x + camHalfWidth,
+		camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,
+		camera->nearClippingPlane, camera->farClippingPlane
+	);
+}
+
+void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0))
+{
+	camera->size = size;
+	camera->pos = position;
+	camera->zoom = 1.0f;
+	camera->nearClippingPlane = nearClippingPlane;
+	camera->farClippingPlane = farClippingPlane;
+
+	updateCameraMatrix(camera);
+}
+
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize)
 {
 	buffer->name = pushString(arena, name);
@@ -70,17 +92,6 @@ V2 unproject(Camera *camera, V2 screenPos)
 	result = unprojected.xy;
 
 	return result;
-}
-
-void updateCameraMatrix(Camera *camera)
-{
-	f32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;
-	f32 camHalfHeight = camera->size.y * 0.5f / camera->zoom;
-	camera->projectionMatrix = orthographicMatrix4(
-		camera->pos.x - camHalfWidth, camera->pos.x + camHalfWidth,
-		camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,
-		-10000.0f, 10000.0f
-	);
 }
 
 inline RenderItem makeRenderItem(Rect2 rect, f32 depth, TextureRegionID textureRegionID, V4 color)

@@ -57,11 +57,12 @@ s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
 	return result;
 }
 
-UIButtonStyle *findButtonStyle(AssetManager *assets, String name)
+template<typename Style>
+Style *findStyle(ChunkedArray<Style> *stylesArray, String name)
 {
-	UIButtonStyle *result = null;
+	Style *result = null;
 
-	for (auto it = iterate(&assets->buttonStyles); !it.isDone; next(&it))
+	for (auto it = iterate(stylesArray); !it.isDone; next(&it))
 	{
 		auto style = get(it);
 		if (equals(style->name, name))
@@ -74,21 +75,40 @@ UIButtonStyle *findButtonStyle(AssetManager *assets, String name)
 	return result;
 }
 
+inline
+UIButtonStyle *findButtonStyle(AssetManager *assets, String name)
+{
+	return findStyle(&assets->buttonStyles, name);
+}
+
+inline
 UILabelStyle *findLabelStyle(AssetManager *assets, String name)
 {
-	UILabelStyle *result = null;
+	return findStyle(&assets->labelStyles, name);
+}
 
-	for (auto it = iterate(&assets->labelStyles); !it.isDone; next(&it))
-	{
-		auto style = get(it);
-		if (equals(style->name, name))
-		{
-			result = style;
-			break;
-		}
-	}
+inline
+UITooltipStyle *findTooltipStyle(AssetManager *assets, String name)
+{
+	return findStyle(&assets->tooltipStyles, name);
+}
 
-	return result;
+inline
+UIMessageStyle *findMessageStyle(AssetManager *assets, String name)
+{
+	return findStyle(&assets->messageStyles, name);
+}
+
+inline
+UITextBoxStyle *findTextBoxStyle(AssetManager *assets, String name)
+{
+	return findStyle(&assets->textBoxStyles, name);
+}
+
+inline
+UIWindowStyle *findWindowStyle(AssetManager *assets, String name)
+{
+	return findStyle(&assets->windowStyles, name);
 }
 
 void loadUITheme(AssetManager *assets, File file)
@@ -226,6 +246,7 @@ void loadUITheme(AssetManager *assets, File file)
 					case Section_Button:     target.button->textColor    = readColor255(remainder); break;
 					case Section_Label:      target.label->textColor     = readColor255(remainder); break;
 					case Section_TextBox:    target.textBox->textColor   = readColor255(remainder); break;
+					case Section_Tooltip:    target.tooltip->textColor   = readColor255(remainder); break;
 					case Section_UIMessage:  target.message->textColor   = readColor255(remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
@@ -258,34 +279,6 @@ void loadUITheme(AssetManager *assets, File file)
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
-			else if (equals(firstWord, "textColorNormal"))
-			{
-				switch (target.type)
-				{
-					case Section_Tooltip:  target.tooltip->textColorNormal = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
-				}
-			}
-			else if (equals(firstWord, "textColorBad"))
-			{
-				switch (target.type)
-				{
-					case Section_Tooltip:  target.tooltip->textColorBad = readColor255(remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
-				}
-			}
-			else if (equals(firstWord, "depth"))
-			{
-				s64 intValue;
-				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-
-				switch (target.type)
-				{
-					case Section_Tooltip:    target.tooltip->depth   = (f32) intValue; break;
-					case Section_UIMessage:  target.message->depth   = (f32) intValue; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
-				}
-			}
 			else if (equals(firstWord, "padding"))
 			{
 				s64 intValue;
@@ -293,19 +286,9 @@ void loadUITheme(AssetManager *assets, File file)
 
 				switch (target.type)
 				{
-					case Section_Button:  target.button->padding = (f32) intValue; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
-				}
-			}
-			else if (equals(firstWord, "borderPadding"))
-			{
-				s64 intValue;
-				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-
-				switch (target.type)
-				{
-					case Section_Tooltip:    target.tooltip->borderPadding   = (f32) intValue; break;
-					case Section_UIMessage:  target.message->borderPadding   = (f32) intValue; break;
+					case Section_Button:     target.button->padding = (f32) intValue; break;
+					case Section_Tooltip:    target.tooltip->padding   = (f32) intValue; break;
+					case Section_UIMessage:  target.message->padding   = (f32) intValue; break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}

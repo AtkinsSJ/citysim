@@ -21,6 +21,8 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	uiState->theme = &assets->theme;
 	uiState->input = input;
 
+	uiState->closestDepth = uiBuffer->camera.nearClippingPlane;
+
 	initMemoryArena(&uiState->arena, MB(1));
 
 	uiState->actionMode = ActionMode_None;
@@ -110,29 +112,30 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 	return bounds;
 }
 
-void setTooltip(UIState *uiState, String text, V4 color)
+void setTooltip(UIState *uiState, String text, String style)
 {
 	copyString(text, &uiState->tooltip.text);
-	uiState->tooltip.color = color;
 	uiState->tooltip.show = true;
+	uiState->tooltip.styleName = style;
 }
 
 void drawTooltip(UIState *uiState)
 {
 	if (uiState->tooltip.show)
 	{
-		UITooltipStyle *style = &uiState->assets->theme.tooltipStyle;
+		UITooltipStyle *style = findTooltipStyle(uiState->assets, uiState->tooltip.styleName);
+		f32 depth = uiState->closestDepth - 100.0f;
 
 		V2 mousePos = uiState->uiBuffer->camera.mousePos;
 
-		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(style->borderPadding, style->borderPadding);
+		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(style->padding, style->padding);
 
 		Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontID), uiState->tooltip.text,
-			topLeft, ALIGN_LEFT | ALIGN_TOP, style->depth + 1, uiState->tooltip.color);
+			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1.0f, style->textColor);
 
-		labelRect = expand(labelRect, style->borderPadding);
+		labelRect = expand(labelRect, style->padding);
 
-		drawRect(uiState->uiBuffer, labelRect, style->depth, style->backgroundColor);
+		drawRect(uiState->uiBuffer, labelRect, depth, style->backgroundColor);
 
 		uiState->tooltip.show = false;
 	}
@@ -146,9 +149,8 @@ bool uiButton(UIState *uiState,
 	
 	bool buttonClicked = false;
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
-	UITheme *theme = &uiState->assets->theme;
 	InputState *input = uiState->input;
-	UIButtonStyle *style = &theme->buttonStyle;
+	UIButtonStyle *style = findButtonStyle(uiState->assets, stringFromChars("general"));
 	V4 backColor = style->backgroundColor;
 
 	if (inRect(bounds, mousePos))
@@ -166,7 +168,7 @@ bool uiButton(UIState *uiState,
 
 		if (tooltip.length)
 		{
-			setTooltip(uiState, tooltip, theme->tooltipStyle.textColorNormal);
+			setTooltip(uiState, tooltip, stringFromChars("general"));
 		}
 	}
 	else if (active)
@@ -228,7 +230,7 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = &uiState->theme->uiMessageStyle;
+			UIMessageStyle *style = findMessageStyle(uiState->assets, stringFromChars("general"));
 
 			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 
@@ -250,13 +252,15 @@ void drawUiMessage(UIState *uiState)
 				textColor *= lerp(textColor.a, 0, tt);
 			}
 
+			f32 depth = uiState->closestDepth - 100.0f;
+
 			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
 			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontID), uiState->message.text, origin,
-										 ALIGN_H_CENTRE | ALIGN_BOTTOM, style->depth + 1, textColor);
+										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1.0f, textColor);
 
-			labelRect = expand(labelRect, style->borderPadding);
+			labelRect = expand(labelRect, style->padding);
 
-			drawRect(uiState->uiBuffer, labelRect, style->depth, backgroundColor);
+			drawRect(uiState->uiBuffer, labelRect, depth, backgroundColor);
 		}
 	}
 }

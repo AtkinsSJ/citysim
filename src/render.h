@@ -23,6 +23,9 @@ struct Camera
 	f32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 	Matrix4 projectionMatrix;
 
+	f32 nearClippingPlane;
+	f32 farClippingPlane;
+
 	V2 mousePos;
 };
 const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second

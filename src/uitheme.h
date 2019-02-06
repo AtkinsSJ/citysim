@@ -36,12 +36,10 @@ struct UITooltipStyle
 	String name;
 	
 	s32 fontID;
-	V4 textColorNormal;
-	V4 textColorBad;
+	V4 textColor;
 
 	V4 backgroundColor;
-	f32 borderPadding;
-	f32 depth;
+	f32 padding;
 };
 
 struct UIMessageStyle
@@ -52,8 +50,7 @@ struct UIMessageStyle
 	V4 textColor;
 
 	V4 backgroundColor;
-	f32 borderPadding;
-	f32 depth;
+	f32 padding;
 };
 
 struct UIWindowStyle

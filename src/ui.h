@@ -22,9 +22,9 @@ enum UIMenuID
 struct Tooltip
 {
 	bool show;
-	V2 offsetFromCursor;
-	V4 color;
+	String styleName;
 	String text;
+	V2 offsetFromCursor;
 };
 
 const f32 uiMessageDisplayTime = 2.0f;
@@ -88,6 +88,8 @@ struct UIState
 		u32 selectedBuildingTypeID;
 		enum ZoneType selectedZoneID;
 	};
+
+	f32 closestDepth;
 
 	Tooltip tooltip;
 	UiMessage message;

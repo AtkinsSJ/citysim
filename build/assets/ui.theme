@@ -39,19 +39,28 @@ textColor         255 255 255 255
 
 :Tooltip general
 font              normalFont
-textColorNormal   255 255 255 255
-textColorBad      255   0   0 255
+textColor         255 255 255 255
 backgroundColor     0   0   0 128
-borderPadding     4
-depth             100
+padding           4
+
+:Tooltip cost-affordable
+font              normalFont
+textColor           0 255   0 255
+backgroundColor     0   0   0 128
+padding           4
+
+:Tooltip cost-unaffordable
+font              normalFont
+textColor         255   0   0 255
+backgroundColor     0   0   0 128
+padding           4
 
 # ui message and tooltip seem a little redundant with other things
 :UIMessage general
 font              normalFont
 textColor         255 255 255 255
 backgroundColor     0   0   0 128
-borderPadding     4
-depth             100
+padding           4
 
 :TextBox general
 font              normalFont

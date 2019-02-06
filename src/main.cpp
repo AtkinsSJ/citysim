@@ -66,9 +66,9 @@ struct AppState
 };
 AppState globalAppState;
 
+#include "uitheme.cpp"
 #include "ui.cpp"
 #include "ui_window.cpp"
-#include "uitheme.cpp"
 #include "assets.cpp"
 #include "building.cpp"
 #include "terrain.cpp"
@@ -182,17 +182,9 @@ int main(int argc, char *argv[])
 
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera = &renderer->uiBuffer.camera;
-
-	worldCamera->size = v2((f32)inputState.windowSize.x / TILE_SIZE,
-	                       (f32)inputState.windowSize.y / TILE_SIZE);
-	worldCamera->zoom = 1.0f;
-
-	uiCamera->size = v2(inputState.windowSize);
-	uiCamera->pos = uiCamera->size * 0.5f;
-	uiCamera->zoom = 1.0f;
-
-	updateCameraMatrix(worldCamera);
-	updateCameraMatrix(uiCamera);
+	V2 windowSize = v2(inputState.windowSize);
+	initCamera(worldCamera, windowSize * (1.0f/TILE_SIZE), 10000.0f, -10000.0f);
+	initCamera(uiCamera, windowSize, 10000.0f, -10000.0f, windowSize * 0.5f);
 
 	u32 initFinishedTicks = SDL_GetTicks();
 	logInfo("Game initialised in {0} milliseconds.", {formatInt(initFinishedTicks - initStartTicks)});

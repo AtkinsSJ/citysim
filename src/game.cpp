@@ -393,13 +393,13 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 void showCostTooltip(UIState *uiState, City *city, s32 buildCost)
 {
-	V4 color = canAfford(city, buildCost)
-				? uiState->theme->tooltipStyle.textColorNormal
-				: uiState->theme->tooltipStyle.textColorBad;
+	String style = canAfford(city, buildCost)
+				? stringFromChars("cost-affordable")
+				: stringFromChars("cost-unaffordable");
 
 	String text = myprintf("£{0}", {formatInt(buildCost)});
 
-	setTooltip(uiState, text, color);
+	setTooltip(uiState, text, style);
 }
 
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)

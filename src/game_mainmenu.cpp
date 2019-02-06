@@ -72,7 +72,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	{
 		s32 *aNumber = new s32;
 		*aNumber = randomInRange(&globalAppState.cosmeticRandom, INT32_MAX);
-		showWindow(uiState, LocalString("Hello window!"), 200, -1, testWindowProc, aNumber);
+		showWindow(uiState, LocalString("Hello window!"), 200, -1, stringFromChars("general"), testWindowProc, aNumber);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("Website"), buttonRect, 1))

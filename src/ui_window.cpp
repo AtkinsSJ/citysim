@@ -82,11 +82,11 @@ bool window_button(WindowContext *context, String text)
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  * If you pass -1 to the height, then the height will be determined automatically by the window's content.
  */
-void showWindow(UIState *uiState, String title, s32 width, s32 height, WindowProc windowProc, void *userData)
+void showWindow(UIState *uiState, String title, s32 width, s32 height, String style, WindowProc windowProc, void *userData)
 {
 	Window newWindow = {};
 	newWindow.title = title;
-	newWindow.style = &uiState->theme->windowStyle;
+	newWindow.style = findWindowStyle(uiState->assets, style);
 
 	V2 windowOrigin = uiState->uiBuffer->camera.pos;
 	newWindow.hasAutomaticHeight = (height == -1);
