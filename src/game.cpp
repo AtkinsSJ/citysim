@@ -118,13 +118,13 @@ Rect2I getDragArea(UIState *uiState, DragType dragType)
 {
 	Rect2I result = irectXYWH(0, 0, 0, 0);
 
-	if (uiState->isDragging)
+	if (uiState->isWorldDragging)
 	{
 		switch (dragType)
 		{
 			case DragRect:
 			{
-				result = irectCovering(uiState->mouseDragStartPos, uiState->mouseDragEndPos);
+				result = irectCovering(uiState->mouseDragStartWorldPos, uiState->mouseDragEndWorldPos);
 			} break;
 
 			case DragLine:
@@ -133,16 +133,16 @@ Rect2I getDragArea(UIState *uiState, DragType dragType)
 				// So, if you drag a diagonal line, it picks which direction has greater length and uses that.
 
 				// determine orientation
-				s32 xDiff = abs(uiState->mouseDragStartPos.x - uiState->mouseDragEndPos.x);
-				s32 yDiff = abs(uiState->mouseDragStartPos.y - uiState->mouseDragEndPos.y);
+				s32 xDiff = abs(uiState->mouseDragStartWorldPos.x - uiState->mouseDragEndWorldPos.x);
+				s32 yDiff = abs(uiState->mouseDragStartWorldPos.y - uiState->mouseDragEndWorldPos.y);
 				if (xDiff > yDiff)
 				{
 					// X
 					result.w = xDiff + 1;
 					result.h = 1;
 
-					result.x = MIN(uiState->mouseDragStartPos.x, uiState->mouseDragEndPos.x);
-					result.y = uiState->mouseDragStartPos.y;
+					result.x = MIN(uiState->mouseDragStartWorldPos.x, uiState->mouseDragEndWorldPos.x);
+					result.y = uiState->mouseDragStartWorldPos.y;
 				}
 				else
 				{
@@ -150,8 +150,8 @@ Rect2I getDragArea(UIState *uiState, DragType dragType)
 					result.w = 1;
 					result.h = yDiff + 1;
 
-					result.x = uiState->mouseDragStartPos.x;
-					result.y = MIN(uiState->mouseDragStartPos.y, uiState->mouseDragEndPos.y);
+					result.x = uiState->mouseDragStartWorldPos.x;
+					result.y = MIN(uiState->mouseDragStartWorldPos.y, uiState->mouseDragEndWorldPos.y);
 				}
 			} break;
 
@@ -176,7 +176,7 @@ DragResult updateDragState(UIState *uiState, InputState *inputState, V2I mouseTi
 {
 	DragResult result = {};
 
-	if (uiState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	if (uiState->isWorldDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 	{
 		if (!mouseIsOverUI)
 		{
@@ -184,20 +184,20 @@ DragResult updateDragState(UIState *uiState, InputState *inputState, V2I mouseTi
 			result.dragRect = getDragArea(uiState, dragType);
 		}
 
-		uiState->isDragging = false;
+		uiState->isWorldDragging = false;
 	}
 	else
 	{
 		// Update the dragging state
 		if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 		{
-			uiState->isDragging = true;
-			uiState->mouseDragStartPos = uiState->mouseDragEndPos = mouseTilePos;
+			uiState->isWorldDragging = true;
+			uiState->mouseDragStartWorldPos = uiState->mouseDragEndWorldPos = mouseTilePos;
 		}
 
-		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT) && uiState->isDragging)
+		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT) && uiState->isWorldDragging)
 		{
-			uiState->mouseDragEndPos = mouseTilePos;
+			uiState->mouseDragEndWorldPos = mouseTilePos;
 			result.dragRect = getDragArea(uiState, dragType);
 		}
 		else
@@ -206,7 +206,7 @@ DragResult updateDragState(UIState *uiState, InputState *inputState, V2I mouseTi
 		}
 
 		// Preview
-		if (!mouseIsOverUI || uiState->isDragging)
+		if (!mouseIsOverUI || uiState->isWorldDragging)
 		{
 			result.operation = DragResult_ShowPreview;
 		}
@@ -695,10 +695,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		} break;
 	}
 
-	if (uiState->isDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	if (uiState->isWorldDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 	{
 		// Not sure if this is the best idea, but it's the best I can come up with.
-		uiState->isDragging = false;
+		uiState->isWorldDragging = false;
 	}
 
 	if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
@@ -784,7 +784,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			V4 drawColor = makeWhite();
 
 			if (uiState->actionMode == ActionMode_Demolish
-				&& uiState->isDragging
+				&& uiState->isWorldDragging
 				&& rectsOverlap(building.footprint, demolitionRect)) {
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);

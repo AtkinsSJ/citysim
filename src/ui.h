@@ -97,12 +97,15 @@ struct UIState
 	u32 currentCursor;
 	bool cursorIsVisible;
 
-	bool isDragging;
-	V2I mouseDragStartPos;
-	V2I mouseDragEndPos;
+	// These are a bit awkwardly named, they should probably go in a game-ui struct instead.
+	bool isWorldDragging;
+	V2I mouseDragStartWorldPos;
+	V2I mouseDragEndWorldPos;
 
 	// Window stuff
 	ChunkedArray<Window> openWindows;
 	bool isDraggingWindow;
+	V2 windowDragMouseStartPos;
+	V2 windowDragWindowStartPos;
 };
 

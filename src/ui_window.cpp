@@ -165,7 +165,7 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 			else
 			{
-				window->area.pos += inputState->mouseDeltaRaw;
+				window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - uiState->windowDragMouseStartPos));
 			}
 			
 			mouseInputHandled = true;
@@ -217,6 +217,8 @@ void updateAndRenderWindows(UIState *uiState)
 				{
 					// If we're inside the title bar, start dragging!
 					uiState->isDraggingWindow = true;
+					uiState->windowDragMouseStartPos = mousePos;
+					uiState->windowDragWindowStartPos = v2(window->area.pos);
 				}
 
 				// Make this the active window! 
