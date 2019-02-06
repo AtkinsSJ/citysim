@@ -188,7 +188,7 @@ bool uiButton(UIState *uiState,
 }
 
 bool uiMenuButton(UIState *uiState,
-	              String text, Rect2 bounds, f32 depth, UIMenuID menuID,
+	              String text, Rect2 bounds, f32 depth, s32 menuID,
 	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
 {
 	DEBUG_FUNCTION();
@@ -198,7 +198,7 @@ bool uiMenuButton(UIState *uiState,
 	{
 		if (currentlyOpen)
 		{
-			uiState->openMenu = UIMenu_None;
+			uiState->openMenu = 0;
 			currentlyOpen = false;
 		}
 		else
@@ -269,4 +269,9 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
 	drawRect(uiBuffer, knobRect, depth, knobColor);
+}
+
+inline void uiCloseMenus(UIState *uiState)
+{
+	uiState->openMenu = 0;
 }

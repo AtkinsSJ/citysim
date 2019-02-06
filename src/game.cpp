@@ -261,7 +261,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, LocalString("Zone..."), buttonRect, 1, UIMenu_Zone))
+		if (uiMenuButton(uiState, LocalString("Zone..."), buttonRect, 1, Menu_Zone))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -273,7 +273,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				if (uiButton(uiState, zoneDefs[zoneIndex].name, menuButtonRect, 1,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
-					uiState->openMenu = UIMenu_None;
+					uiCloseMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
 					gameState->actionMode = ActionMode_Zone;
 					setCursor(uiState, Cursor_Build);
@@ -289,7 +289,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, LocalString("Build..."), buttonRect, 1, UIMenu_Build))
+		if (uiMenuButton(uiState, LocalString("Build..."), buttonRect, 1, Menu_Build))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -304,7 +304,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				if (uiButton(uiState, buildingDef->name, menuButtonRect, 1,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == i)))
 				{
-					uiState->openMenu = UIMenu_None;
+					uiCloseMenus(uiState);
 					gameState->selectedBuildingTypeID = i;
 					gameState->actionMode = ActionMode_Build;
 					setCursor(uiState, Cursor_Build);
@@ -330,7 +330,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiMenuButton(uiState, LocalString("Menu"), buttonRect, 1, UIMenu_System))
+		if (uiMenuButton(uiState, LocalString("Menu"), buttonRect, 1, Menu_System))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -340,7 +340,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiState->openMenu = UIMenu_None;
+				uiCloseMenus(uiState);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -348,7 +348,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiState->openMenu = UIMenu_None;
+				uiCloseMenus(uiState);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -356,7 +356,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiState->openMenu = UIMenu_None;
+				uiCloseMenus(uiState);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -364,7 +364,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiState->openMenu = UIMenu_None;
+				uiCloseMenus(uiState);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -372,7 +372,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
 			{
 				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiState->openMenu = UIMenu_None;
+				uiCloseMenus(uiState);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;
@@ -380,7 +380,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			if (uiButton(uiState, LocalString("Exit"), menuButtonRect, 1))
 			{
 				gameState->status = GameStatus_Quit;
-				uiState->openMenu = UIMenu_None;
+				uiCloseMenus(uiState);
 			}
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			menuRect.h += menuButtonRect.h + uiPadding;

@@ -45,15 +45,6 @@ struct Window
 	void *userData;
 };
 
-// TODO: Replace this! It's rubbish
-enum UIMenuID
-{
-	UIMenu_None,
-	UIMenu_Build,
-	UIMenu_Zone,
-	UIMenu_System,
-};
-
 struct UIState
 {
 	MemoryArena arena;
@@ -69,8 +60,7 @@ struct UIState
 	// TODO: Replace this with better "this input has already been used" code!
 	Array<Rect2> uiRects;
 
-	// TODO: Replace this too!
-	UIMenuID openMenu;
+	s32 openMenu;
 
 	u32 currentCursor;
 	bool cursorIsVisible;

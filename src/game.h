@@ -10,6 +10,14 @@ enum GameStatus
 	GameStatus_Quit,
 };
 
+enum GameMenuID
+{
+	Menu_None,
+	Menu_Build,
+	Menu_Zone,
+	Menu_System,
+};
+
 enum ActionMode {
 	ActionMode_None = 0,
 
