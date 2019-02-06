@@ -39,7 +39,7 @@ struct BuildingDef
 	u32 canBeBuiltOnID;
 	u32 buildOverResult;
 
-	ZoneType growsInZone;
+	enum ZoneType growsInZone;
 
 	s32 demolishCost;
 

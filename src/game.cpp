@@ -17,6 +17,8 @@ GameState *initialiseGameState()
 
 	result->status = GameStatus_Playing;
 
+	result->actionMode = ActionMode_None;
+
 	return result;
 }
 
@@ -114,17 +116,17 @@ enum DragType
 	DragLine,
 	DragRect
 };
-Rect2I getDragArea(UIState *uiState, DragType dragType)
+Rect2I getDragArea(GameState *gameState, DragType dragType)
 {
 	Rect2I result = irectXYWH(0, 0, 0, 0);
 
-	if (uiState->isWorldDragging)
+	if (gameState->isWorldDragging)
 	{
 		switch (dragType)
 		{
 			case DragRect:
 			{
-				result = irectCovering(uiState->mouseDragStartWorldPos, uiState->mouseDragEndWorldPos);
+				result = irectCovering(gameState->mouseDragStartWorldPos, gameState->mouseDragEndWorldPos);
 			} break;
 
 			case DragLine:
@@ -133,16 +135,16 @@ Rect2I getDragArea(UIState *uiState, DragType dragType)
 				// So, if you drag a diagonal line, it picks which direction has greater length and uses that.
 
 				// determine orientation
-				s32 xDiff = abs(uiState->mouseDragStartWorldPos.x - uiState->mouseDragEndWorldPos.x);
-				s32 yDiff = abs(uiState->mouseDragStartWorldPos.y - uiState->mouseDragEndWorldPos.y);
+				s32 xDiff = abs(gameState->mouseDragStartWorldPos.x - gameState->mouseDragEndWorldPos.x);
+				s32 yDiff = abs(gameState->mouseDragStartWorldPos.y - gameState->mouseDragEndWorldPos.y);
 				if (xDiff > yDiff)
 				{
 					// X
 					result.w = xDiff + 1;
 					result.h = 1;
 
-					result.x = MIN(uiState->mouseDragStartWorldPos.x, uiState->mouseDragEndWorldPos.x);
-					result.y = uiState->mouseDragStartWorldPos.y;
+					result.x = MIN(gameState->mouseDragStartWorldPos.x, gameState->mouseDragEndWorldPos.x);
+					result.y = gameState->mouseDragStartWorldPos.y;
 				}
 				else
 				{
@@ -150,8 +152,8 @@ Rect2I getDragArea(UIState *uiState, DragType dragType)
 					result.w = 1;
 					result.h = yDiff + 1;
 
-					result.x = uiState->mouseDragStartWorldPos.x;
-					result.y = MIN(uiState->mouseDragStartWorldPos.y, uiState->mouseDragEndWorldPos.y);
+					result.x = gameState->mouseDragStartWorldPos.x;
+					result.y = MIN(gameState->mouseDragStartWorldPos.y, gameState->mouseDragEndWorldPos.y);
 				}
 			} break;
 
@@ -172,33 +174,33 @@ struct DragResult
 	DragResultOperation operation;
 	Rect2I dragRect;
 };
-DragResult updateDragState(UIState *uiState, InputState *inputState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I minSize = {1,1})
+DragResult updateDragState(GameState *gameState, InputState *inputState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I minSize = {1,1})
 {
 	DragResult result = {};
 
-	if (uiState->isWorldDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	if (gameState->isWorldDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 	{
 		if (!mouseIsOverUI)
 		{
 			result.operation = DragResult_DoAction;
-			result.dragRect = getDragArea(uiState, dragType);
+			result.dragRect = getDragArea(gameState, dragType);
 		}
 
-		uiState->isWorldDragging = false;
+		gameState->isWorldDragging = false;
 	}
 	else
 	{
 		// Update the dragging state
 		if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 		{
-			uiState->isWorldDragging = true;
-			uiState->mouseDragStartWorldPos = uiState->mouseDragEndWorldPos = mouseTilePos;
+			gameState->isWorldDragging = true;
+			gameState->mouseDragStartWorldPos = gameState->mouseDragEndWorldPos = mouseTilePos;
 		}
 
-		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT) && uiState->isWorldDragging)
+		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT) && gameState->isWorldDragging)
 		{
-			uiState->mouseDragEndWorldPos = mouseTilePos;
-			result.dragRect = getDragArea(uiState, dragType);
+			gameState->mouseDragEndWorldPos = mouseTilePos;
+			result.dragRect = getDragArea(gameState, dragType);
 		}
 		else
 		{
@@ -206,7 +208,7 @@ DragResult updateDragState(UIState *uiState, InputState *inputState, V2I mouseTi
 		}
 
 		// Preview
-		if (!mouseIsOverUI || uiState->isWorldDragging)
+		if (!mouseIsOverUI || gameState->isWorldDragging)
 		{
 			result.operation = DragResult_ShowPreview;
 		}
@@ -269,11 +271,11 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
 				if (uiButton(uiState, zoneDefs[zoneIndex].name, menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Zone) && (uiState->selectedZoneID == zoneIndex)))
+						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiState->openMenu = UIMenu_None;
-					uiState->selectedZoneID = (ZoneType) zoneIndex;
-					uiState->actionMode = ActionMode_Zone;
+					gameState->selectedZoneID = (ZoneType) zoneIndex;
+					gameState->actionMode = ActionMode_Zone;
 					setCursor(uiState, Cursor_Build);
 				}
 
@@ -300,11 +302,11 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				if (!buildingDef->buildMethod) continue;
 
 				if (uiButton(uiState, buildingDef->name, menuButtonRect, 1,
-						(uiState->actionMode == ActionMode_Build) && (uiState->selectedBuildingTypeID == i)))
+						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == i)))
 				{
 					uiState->openMenu = UIMenu_None;
-					uiState->selectedBuildingTypeID = i;
-					uiState->actionMode = ActionMode_Build;
+					gameState->selectedBuildingTypeID = i;
+					gameState->actionMode = ActionMode_Build;
 					setCursor(uiState, Cursor_Build);
 				}
 
@@ -318,10 +320,10 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		if (uiButton(uiState, LocalString("Demolish"), buttonRect, 1,
-					(uiState->actionMode == ActionMode_Demolish),
+					(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, LocalString("(X)")))
 		{
-			uiState->actionMode = ActionMode_Demolish;
+			gameState->actionMode = ActionMode_Demolish;
 			setCursor(uiState, Cursor_Demolish);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
@@ -441,11 +443,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	bool mouseIsOverUI = inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos);
 	Rect2I demolitionRect = {0,0,-1,-1};
 
-	switch (uiState->actionMode)
+	switch (gameState->actionMode)
 	{
 		case ActionMode_Build:
 		{
-			BuildingDef *buildingDef = get(&buildingDefs, uiState->selectedBuildingTypeID);
+			BuildingDef *buildingDef = get(&buildingDefs, gameState->selectedBuildingTypeID);
 
 			switch (buildingDef->buildMethod)
 			{
@@ -456,14 +458,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
 						if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 						{
-							placeBuilding(uiState, city, uiState->selectedBuildingTypeID, footprint.x, footprint.y, true);
+							placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
 						}
 
 						s32 buildCost = buildingDef->buildCost;
 						showCostTooltip(uiState, city, buildCost);
 
 						V4 ghostColor = color255(128,255,128,255);
-						if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, footprint.x, footprint.y))
+						if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
 						{
 							ghostColor = color255(255,0,0,128);
 						}
@@ -479,14 +481,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
 						if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 						{
-							placeBuilding(uiState, city, uiState->selectedBuildingTypeID, footprint.x, footprint.y, true);
+							placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
 						}
 
 						s32 buildCost = buildingDef->buildCost;
 						showCostTooltip(uiState, city, buildCost);
 
 						V4 ghostColor = color255(128,255,128,255);
-						if (!canPlaceBuilding(uiState, &gameState->city, uiState->selectedBuildingTypeID, footprint.x, footprint.y))
+						if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
 						{
 							ghostColor = color255(255,0,0,128);
 						}
@@ -497,8 +499,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				case BuildMethod_DragLine:
 				{
-					DragResult dragResult = updateDragState(uiState, inputState, mouseTilePos, mouseIsOverUI, DragLine);
-					s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, dragResult.dragRect);
+					DragResult dragResult = updateDragState(gameState, inputState, mouseTilePos, mouseIsOverUI, DragLine);
+					s32 buildCost = calculateBuildCost(city, gameState->selectedBuildingTypeID, dragResult.dragRect);
 
 					switch (dragResult.operation)
 					{
@@ -506,7 +508,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							if (canAfford(city, buildCost))
 							{
-								placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, dragResult.dragRect);
+								placeBuildingRect(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect);
 							}
 						} break;
 
@@ -521,7 +523,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
 									{
 										V4 ghostColor = color255(128,255,128,255);
-										if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
+										if (!canPlaceBuilding(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
 										{
 											ghostColor = color255(255,0,0,128);
 										}
@@ -540,8 +542,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				case BuildMethod_DragRect:
 				{
-					DragResult dragResult = updateDragState(uiState, inputState, mouseTilePos, mouseIsOverUI, DragRect, buildingDef->size);
-					s32 buildCost = calculateBuildCost(city, uiState->selectedBuildingTypeID, dragResult.dragRect);
+					DragResult dragResult = updateDragState(gameState, inputState, mouseTilePos, mouseIsOverUI, DragRect, buildingDef->size);
+					s32 buildCost = calculateBuildCost(city, gameState->selectedBuildingTypeID, dragResult.dragRect);
 
 					switch (dragResult.operation)
 					{
@@ -549,7 +551,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							if (canAfford(city, buildCost))
 							{
-								placeBuildingRect(uiState, city, uiState->selectedBuildingTypeID, dragResult.dragRect);
+								placeBuildingRect(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect);
 							}
 						} break;
 
@@ -564,7 +566,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
 									{
 										V4 ghostColor = color255(128,255,128,255);
-										if (!canPlaceBuilding(uiState, city, uiState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
+										if (!canPlaceBuilding(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
 										{
 											ghostColor = color255(255,0,0,128);
 										}
@@ -585,8 +587,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		case ActionMode_Zone:
 		{
-			DragResult dragResult = updateDragState(uiState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
-			s32 zoneCost = calculateZoneCost(city, uiState->selectedZoneID, dragResult.dragRect);
+			DragResult dragResult = updateDragState(gameState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
+			s32 zoneCost = calculateZoneCost(city, gameState->selectedZoneID, dragResult.dragRect);
 
 			switch (dragResult.operation)
 			{
@@ -594,7 +596,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				{
 					if (canAfford(city, zoneCost))
 					{
-						placeZone(uiState, city, uiState->selectedZoneID, dragResult.dragRect);
+						placeZone(uiState, city, gameState->selectedZoneID, dragResult.dragRect);
 					}
 				} break;
 
@@ -608,9 +610,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							for (s32 x = dragResult.dragRect.x; x < dragResult.dragRect.x+dragResult.dragRect.w; x++)
 							{
-								if (canZoneTile(city, uiState->selectedZoneID, x, y))
+								if (canZoneTile(city, gameState->selectedZoneID, x, y))
 								{
-									drawRect(&renderer->worldBuffer, rectXYWHi(x, y, 1, 1), 0, zoneDefs[uiState->selectedZoneID].color);
+									drawRect(&renderer->worldBuffer, rectXYWHi(x, y, 1, 1), 0, zoneDefs[gameState->selectedZoneID].color);
 								}
 							}
 						}
@@ -625,7 +627,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		case ActionMode_Demolish:
 		{
-			DragResult dragResult = updateDragState(uiState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
+			DragResult dragResult = updateDragState(gameState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
 			s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
 			demolitionRect = dragResult.dragRect;
 
@@ -695,16 +697,16 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		} break;
 	}
 
-	if (uiState->isWorldDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	if (gameState->isWorldDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 	{
 		// Not sure if this is the best idea, but it's the best I can come up with.
-		uiState->isWorldDragging = false;
+		gameState->isWorldDragging = false;
 	}
 
 	if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
 	{
 		// Unselect current thing
-		uiState->actionMode = ActionMode_None;
+		gameState->actionMode = ActionMode_None;
 		setCursor(uiState, Cursor_Main);
 	}
 
@@ -783,8 +785,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			V4 drawColor = makeWhite();
 
-			if (uiState->actionMode == ActionMode_Demolish
-				&& uiState->isWorldDragging
+			if (gameState->actionMode == ActionMode_Demolish
+				&& gameState->isWorldDragging
 				&& rectsOverlap(building.footprint, demolitionRect)) {
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);

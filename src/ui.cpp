@@ -24,8 +24,6 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 
 	initMemoryArena(&uiState->arena, MB(1));
 
-	uiState->actionMode = ActionMode_None;
-
 	uiState->tooltip = {};
 	uiState->tooltip.offsetFromCursor = v2(16, 20);
 	uiState->tooltip.text = newString(&uiState->arena, 256);
