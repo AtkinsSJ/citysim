@@ -151,15 +151,6 @@ Arenas:
 UI Theme:
 - Rather than always doing getFont() etc, maybe cache a font ref from the assets system and then
   reload it when the assets change.
-- Could move the UITheme into UIState, again getting it from the assets system once then refreshing
-  when it's reloaded. Would save passing the assets system to everywhere in the UI code.
-- What is it?!?!
-	- All the information about how to draw the UI.
-	- So, font/colour/padding etc for a button, or a menu item.
-	- Do we want styles within this? So you say "this is a 'fancy' button, this is a 'normal' button"?
-	- If we want to go crazy we could define the UI itself in data. But that sounds awkward and unnecessary.
-		- Though I think I want to do that for the fancy text screens, as planned.
-		  (Victiorian typography, lots of different fonts and sizes and styles.)
 
 GAME:
 - Menu / Game are separate code.
