@@ -124,3 +124,40 @@ inline f32 moveTowards(f32 currentValue, f32 targetValue, f32 distance)
 
 	return result;
 }
+
+inline Rect2I confineRectangle(Rect2I inner, Rect2I outer)
+{
+	Rect2I result = inner;
+
+	// X
+	if (result.w > outer.w)
+	{
+		// If it's too big, centre it.
+		result.x = outer.x - ((result.w - outer.w) / 2);
+	}
+	else if (result.x < outer.x)
+	{
+		result.x = outer.x;
+	}
+	else if ((result.x + result.w) > (outer.x + outer.w))
+	{
+		result.x = outer.x + outer.w - result.w;
+	}
+
+	// Y
+	if (result.h > outer.h)
+	{
+		// If it's too big, centre it.
+		result.y = outer.y - ((result.h - outer.h) / 2);
+	}
+	else if (result.y < outer.y)
+	{
+		result.y = outer.y;
+	}
+	else if ((result.y + result.h) > (outer.y + outer.h))
+	{
+		result.y = outer.y + outer.h - result.h;
+	}
+
+	return result;
+}

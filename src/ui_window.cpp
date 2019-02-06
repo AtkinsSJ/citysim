@@ -131,6 +131,7 @@ void updateAndRenderWindows(UIState *uiState)
 	bool mouseInputHandled = false;
 	Window *newActiveWindow = null;
 	s32 closeWindow = -1;
+	Rect2I validWindowArea = irectCentreDim(uiState->uiBuffer->camera.pos, uiState->uiBuffer->camera.size);
 
 	s32 windowIndex = 0;
 	for (auto it = iterate(&uiState->openWindows);
@@ -170,6 +171,10 @@ void updateAndRenderWindows(UIState *uiState)
 			mouseInputHandled = true;
 		}
 
+		// Keep window on screen
+		window->area = confineRectangle(window->area, validWindowArea);
+
+		// Window proc
 		if (window->windowProc != null)
 		{
 			WindowContext context = {};
