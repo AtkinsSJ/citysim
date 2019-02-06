@@ -157,6 +157,11 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 		}
 	}
 
+	if (result == null)
+	{
+		logError("Requested font '{0}' was not found!", {fontName});
+	}
+
 	return result;
 }
 

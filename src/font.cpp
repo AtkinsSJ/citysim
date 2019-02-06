@@ -135,6 +135,12 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text,
 									  V4 color, f32 maxWidth=0)
 {
+	if (font == null)
+	{
+		logError("Attempted to display text with a null font: {0}", {text});
+		return null;
+	}
+
 	DrawTextState state = {};
 
 	state.maxWidth = maxWidth;
@@ -243,6 +249,8 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 
 void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth)
 {
+	if (cache == null) return;
+	
 	for (u32 spriteIndex=0;
 		spriteIndex < cache->charCount;
 		spriteIndex++)

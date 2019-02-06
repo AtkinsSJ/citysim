@@ -45,10 +45,15 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 ali
 {
 	DEBUG_FUNCTION();
 
+	Rect2 bounds = rect2(origin, 0, 0);
+
 	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, text, color, maxWidth);
-	V2 topLeft = calculateTextPosition(textCache, origin, align);
-	drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
-	Rect2 bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+	if (textCache)
+	{
+		V2 topLeft = calculateTextPosition(textCache, origin, align);
+		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
+		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
+	}
 
 	return bounds;
 }
@@ -57,44 +62,49 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 {
 	DEBUG_FUNCTION();
 
+	Rect2 bounds = rect2(origin, 0, 0);
+
 	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, makeString(textInput->buffer, textInput->byteLength), color, maxWidth);
-	V2 topLeft = calculateTextPosition(textCache, origin, align);
-	drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
-	Rect2 bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
-
-	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
-	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
-
-	if (showCaret)
+	if (textCache)
 	{
-		Rect2 caretRect = rectXYWH(0, 0, 2, font->lineHeight);
+		V2 topLeft = calculateTextPosition(textCache, origin, align);
+		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
+		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
 
-		if ((u32) textInput->caretGlyphPos < textCache->charCount)
+		textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
+		bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
+
+		if (showCaret)
 		{
-			RenderItem charCaretIsBefore = textCache->chars[textInput->caretGlyphPos];
-			caretRect.x += charCaretIsBefore.rect.x;
-			caretRect.y += charCaretIsBefore.rect.y;
+			Rect2 caretRect = rectXYWH(0, 0, 2, font->lineHeight);
+
+			if ((u32) textInput->caretGlyphPos < textCache->charCount)
+			{
+				RenderItem charCaretIsBefore = textCache->chars[textInput->caretGlyphPos];
+				caretRect.x += charCaretIsBefore.rect.x;
+				caretRect.y += charCaretIsBefore.rect.y;
+			}
+			else if (textCache->charCount > 0)
+			{
+				// we've overrun. Could mean we're just after the last char.
+				// So, we grab the last char and then add its width.
+
+				// @FixMe: we really want o move forward by the glyph's xAdvance, but we don't know it once we're here! Sad times.
+				RenderItem charCaretIsAfter = textCache->chars[textCache->charCount - 1];
+				caretRect.x += charCaretIsAfter.rect.x + (1 + textInput->caretGlyphPos - textCache->charCount) * charCaretIsAfter.rect.w;
+				caretRect.y += charCaretIsAfter.rect.y;
+			}
+
+			// Trouble is the y. Once we get here, we don't know what the per-character vertical offset is!
+			// We don't even know what the character was.
+			// So, a hack! We'll round the y to the closest multiple of the line height.
+
+			caretRect.y = (f32) floor(caretRect.y / (f32)font->lineHeight) * font->lineHeight;
+
+			caretRect.pos += topLeft;
+			caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
+			drawRect(uiState->uiBuffer, caretRect, depth + 10, color);
 		}
-		else if (textCache->charCount > 0)
-		{
-			// we've overrun. Could mean we're just after the last char.
-			// So, we grab the last char and then add its width.
-
-			// @FixMe: we really want o move forward by the glyph's xAdvance, but we don't know it once we're here! Sad times.
-			RenderItem charCaretIsAfter = textCache->chars[textCache->charCount - 1];
-			caretRect.x += charCaretIsAfter.rect.x + (1 + textInput->caretGlyphPos - textCache->charCount) * charCaretIsAfter.rect.w;
-			caretRect.y += charCaretIsAfter.rect.y;
-		}
-
-		// Trouble is the y. Once we get here, we don't know what the per-character vertical offset is!
-		// We don't even know what the character was.
-		// So, a hack! We'll round the y to the closest multiple of the line height.
-
-		caretRect.y = (f32) floor(caretRect.y / (f32)font->lineHeight) * font->lineHeight;
-
-		caretRect.pos += topLeft;
-		caretRect.x -= 1.0f; // Slightly more able to see things with this offset.
-		drawRect(uiState->uiBuffer, caretRect, depth + 10, color);
 	}
 
 	return bounds;

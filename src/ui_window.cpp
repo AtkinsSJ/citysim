@@ -15,14 +15,17 @@ void window_label(WindowContext *context, String text, V4 color={})
 
 	V2 origin = context->contentArea.pos + context->currentOffset;
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
-	f32 maxWidth = context->contentArea.w - context->currentOffset.x;
+	if (font)
+	{
+		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
-	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, color, maxWidth);
-	drawCachedText(context->uiState->uiBuffer, textCache, origin, context->renderDepth);
+		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, color, maxWidth);
+		drawCachedText(context->uiState->uiBuffer, textCache, origin, context->renderDepth);
 
-	// For now, we'll always just start a new line.
-	// We'll probably want something fancier later.
-	context->currentOffset.y += textCache->size.y + context->perItemPadding;
+		// For now, we'll always just start a new line.
+		// We'll probably want something fancier later.
+		context->currentOffset.y += textCache->size.y + context->perItemPadding;
+	}
 }
 
 bool window_button(WindowContext *context, String text)
@@ -39,35 +42,38 @@ bool window_button(WindowContext *context, String text)
 	// Let's be a little bit fancy. Figure out the size of the text, then determine the button size based on that!
 	V2 origin = context->contentArea.pos + context->currentOffset;
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
-	f32 maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
-
-	BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
-	drawCachedText(context->uiState->uiBuffer, textCache, origin + v2(buttonPadding, buttonPadding), context->renderDepth + 1.0f);
-
-	Rect2 bounds = rectPosSize(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
-
-	if (inRect(bounds, mousePos))
+	if (font)
 	{
-		if (mouseButtonJustPressed(context->uiState->input, SDL_BUTTON_LEFT))
+		f32 maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
+
+		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
+		drawCachedText(context->uiState->uiBuffer, textCache, origin + v2(buttonPadding, buttonPadding), context->renderDepth + 1.0f);
+
+		Rect2 bounds = rectPosSize(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
+
+		if (inRect(bounds, mousePos))
 		{
-			buttonClicked = true;
-			backColor = style->pressedColor;
+			if (mouseButtonJustPressed(context->uiState->input, SDL_BUTTON_LEFT))
+			{
+				buttonClicked = true;
+				backColor = style->pressedColor;
+			}
+			else if (mouseButtonPressed(context->uiState->input, SDL_BUTTON_LEFT))
+			{
+				backColor = style->pressedColor;
+			}
+			else
+			{
+				backColor = style->hoverColor;
+			}
 		}
-		else if (mouseButtonPressed(context->uiState->input, SDL_BUTTON_LEFT))
-		{
-			backColor = style->pressedColor;
-		}
-		else
-		{
-			backColor = style->hoverColor;
-		}
+
+		drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, backColor);
+
+		// For now, we'll always just start a new line.
+		// We'll probably want something fancier later.
+		context->currentOffset.y += bounds.size.y + context->perItemPadding;
 	}
-
-	drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, backColor);
-
-	// For now, we'll always just start a new line.
-	// We'll probably want something fancier later.
-	context->currentOffset.y += bounds.size.y + context->perItemPadding;
 
 	return buttonClicked;
 }
