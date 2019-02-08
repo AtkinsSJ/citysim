@@ -29,6 +29,7 @@ bool window_button(WindowContext *context, String text)
 	
 	bool buttonClicked = false;
 	UIButtonStyle *style = context->window->style->buttonStyle;
+	InputState *input = context->uiState->input;
 
 	V4 backColor = style->backgroundColor;
 	f32 buttonPadding = style->padding;
@@ -46,25 +47,27 @@ bool window_button(WindowContext *context, String text)
 
 		Rect2 bounds = rectPosSize(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
 
-		if (!context->uiState->mouseInputHandled)
+		if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
 		{
-			if (inRect(bounds, mousePos))
+			// Mouse pressed: must have started and currently be inside the bounds to show anything
+			// Mouse unpressed: show hover if in bounds
+			if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
 			{
-				context->uiState->mouseInputHandled = true;
-
-				if (mouseButtonJustPressed(context->uiState->input, SDL_BUTTON_LEFT))
+				if (inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+				{
+					backColor = style->pressedColor;
+				}
+			}
+			else
+			{
+				if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
+				 && inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
 				{
 					buttonClicked = true;
-					backColor = style->pressedColor;
+					context->uiState->mouseInputHandled = true;
 				}
-				else if (mouseButtonPressed(context->uiState->input, SDL_BUTTON_LEFT))
-				{
-					backColor = style->pressedColor;
-				}
-				else
-				{
-					backColor = style->hoverColor;
-				}
+
+				backColor = style->hoverColor;
 			}
 		}
 
