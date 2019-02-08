@@ -46,20 +46,23 @@ bool window_button(WindowContext *context, String text)
 
 		Rect2 bounds = rectPosSize(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
 
-		if (inRect(bounds, mousePos))
+		if (!context->uiState->mouseInputHandled)
 		{
-			if (mouseButtonJustPressed(context->uiState->input, SDL_BUTTON_LEFT))
+			if (inRect(bounds, mousePos))
 			{
-				buttonClicked = true;
-				backColor = style->pressedColor;
-			}
-			else if (mouseButtonPressed(context->uiState->input, SDL_BUTTON_LEFT))
-			{
-				backColor = style->pressedColor;
-			}
-			else
-			{
-				backColor = style->hoverColor;
+				if (mouseButtonJustPressed(context->uiState->input, SDL_BUTTON_LEFT))
+				{
+					buttonClicked = true;
+					backColor = style->pressedColor;
+				}
+				else if (mouseButtonPressed(context->uiState->input, SDL_BUTTON_LEFT))
+				{
+					backColor = style->pressedColor;
+				}
+				else
+				{
+					backColor = style->hoverColor;
+				}
 			}
 		}
 
@@ -159,7 +162,6 @@ void updateAndRenderWindows(UIState *uiState)
 
 	InputState *inputState = uiState->input;
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
-	bool mouseInputHandled = false;
 	s32 newActiveWindow = -1;
 	s32 closeWindow = -1;
 	Rect2I validWindowArea = irectCentreDim(uiState->uiBuffer->camera.pos, uiState->uiBuffer->camera.size);
@@ -172,6 +174,7 @@ void updateAndRenderWindows(UIState *uiState)
 		Window *window = get(it);
 		f32 depth = 2000.0f - (20.0f * windowIndex);
 		bool isActive = (windowIndex == 0);
+		bool isModal = (window->flags & WinFlag_Modal) != 0;
 
 		V4 backColor = (isActive ? window->style->backgroundColor : window->style->backgroundColorInactive);
 
@@ -186,7 +189,6 @@ void updateAndRenderWindows(UIState *uiState)
 
 		BitmapFont *titleFont = getFont(uiState->assets, window->style->titleFontID);
 
-
 		// Handle dragging first, BEFORE we use the window rect anywhere
 		if (isActive && uiState->isDraggingWindow)
 		{
@@ -199,7 +201,7 @@ void updateAndRenderWindows(UIState *uiState)
 				window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - uiState->windowDragMouseStartPos));
 			}
 			
-			mouseInputHandled = true;
+			uiState->mouseInputHandled = true;
 		}
 
 		// Keep window on screen
@@ -233,7 +235,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		bool hoveringOverCloseButton = inRect(closeButtonRect, mousePos);
 
-		if (!mouseInputHandled
+		if (!uiState->mouseInputHandled
 			 && inRect(wholeWindowArea, mousePos)
 			 && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 		{
@@ -256,15 +258,21 @@ void updateAndRenderWindows(UIState *uiState)
 				newActiveWindow = windowIndex;
 			}
 
-			mouseInputHandled = true;
+			uiState->mouseInputHandled = true;
 		}
 
 		drawRect(uiState->uiBuffer, contentArea, depth, backColor);
 		drawRect(uiState->uiBuffer, barArea, depth, barColor);
 		uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
-		if (hoveringOverCloseButton)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, closeButtonColorHover);
+		if (hoveringOverCloseButton && !uiState->mouseInputHandled)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, closeButtonColorHover);
 		uiText(uiState, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
+
+		if (isModal)
+		{
+			uiState->mouseInputHandled = true;
+			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, color255(64, 64, 64, 128)); 
+		}
 	}
 
 	if (closeWindow != -1)

@@ -234,6 +234,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	City *city = &gameState->city;
 
 	uiState->uiRects.count = 0;
+	uiState->mouseInputHandled = false;
 
 	f32 left = uiPadding;
 	f32 right = windowWidth - uiPadding;

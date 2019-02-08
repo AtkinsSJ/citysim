@@ -34,8 +34,9 @@ typedef void (*WindowProc)(WindowContext*, void*);
 
 enum WindowFlags
 {
-	WinFlag_AutomaticHeight = 1,
-	WinFlag_Unique          = 2, // Only one window with the same WindowProc will be allowed. A new one will replace the old.
+	WinFlag_AutomaticHeight = 0b00000001,
+	WinFlag_Unique          = 0b00000010, // Only one window with the same WindowProc will be allowed. A new one will replace the old.
+	WinFlag_Modal           = 0b00000100,
 };
 
 struct Window
@@ -69,6 +70,7 @@ struct UIState
 
 	u32 currentCursor;
 	bool cursorIsVisible;
+	bool mouseInputHandled;
 
 	// Window stuff
 	ChunkedArray<Window> openWindows;

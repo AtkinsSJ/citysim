@@ -48,6 +48,8 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	UITheme *theme = &assets->theme;
 	UIState *uiState = &appState->uiState;
 
+	uiState->mouseInputHandled = false;
+
 	drawRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, theme->overlayColor);
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
@@ -90,7 +92,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("About"), buttonRect, 1))
 	{
-		showWindow(uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique, aboutWindowProc, null);
+		showWindow(uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal, aboutWindowProc, null);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("Exit"), buttonRect, 1))
