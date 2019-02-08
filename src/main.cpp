@@ -168,12 +168,13 @@ int main(int argc, char *argv[])
 	// 	append(&chars, c);
 	// }
 
-	// for (auto it = iterate(&chars, 13); !it.isDone; next(&it))
-	// {
-	// 	char c = get(it);
-	// 	logInfo("Char is: {0}", {makeString(&c, 1)});
-	// }
+	// moveItemKeepingOrder(&chars, 0, 1);
+	// moveItemKeepingOrder(&chars, 1, 0);
 
+	// for (auto it = iterate(&chars); !it.isDone; next(&it))
+	// {
+	// 	logInfo("Char is: {0}", {makeString(get(it), 1)});
+	// }
 
 	UIState *uiState = &appState->uiState;
 	initUiState(uiState, &renderer->uiBuffer, assets, &inputState);

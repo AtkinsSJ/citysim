@@ -1,7 +1,7 @@
 #pragma once
 
 template<class T>
-Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, umm chunkIndex)
+Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 {
 	ASSERT(chunkIndex < array->chunkCount, "chunkIndex is out of range!");
 
@@ -46,6 +46,66 @@ Chunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
 }
 
 template<class T>
+void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
+{
+	// Skip if there's nothing to do
+	if (fromIndex == toIndex)  return;
+
+	if (fromIndex < toIndex)
+	{
+		// Moving >, so move each item in the range left 1
+		smm chunkIndex = fromIndex / array->chunkSize;
+		smm itemIndex  = fromIndex % array->chunkSize;
+		Chunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+
+		T movingItem = chunk->items[itemIndex];
+
+		for (smm currentPosition = fromIndex; currentPosition < toIndex; currentPosition++)
+		{
+			T *dest = &chunk->items[itemIndex];
+
+			itemIndex++;
+			if (itemIndex >= array->chunkSize)
+			{
+				chunk = chunk->nextChunk;
+				itemIndex = 0;
+			}
+
+			T *src  = &chunk->items[itemIndex];
+
+			*dest = *src;
+		}
+
+		chunk->items[itemIndex] = movingItem;
+	}
+	else
+	{
+		// Moving <, so move each item in the range right 1
+		smm chunkIndex = fromIndex / array->chunkSize;
+		smm itemIndex  = fromIndex % array->chunkSize;
+		Chunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+		
+		T movingItem = chunk->items[itemIndex];
+
+		for (smm currentPosition = fromIndex; currentPosition > toIndex; currentPosition--)
+		{
+			T *dest = &chunk->items[itemIndex];
+			itemIndex--;
+			if (itemIndex < 0)
+			{
+				chunk = chunk->prevChunk;
+				itemIndex = array->chunkSize - 1;
+			}
+			T *src = &chunk->items[itemIndex];
+
+			*dest = *src;
+		}
+
+		chunk->items[itemIndex] = movingItem;
+	}
+}
+
+template<class T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 {
 	bool found = false;
@@ -54,7 +114,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 		chunk != null;
 		chunk = chunk->nextChunk)
 	{
-		for (umm i=0; i<chunk->count; i++)
+		for (smm i=0; i<chunk->count; i++)
 		{
 			if (equals(chunk->items[i], toRemove))
 			{
@@ -79,25 +139,41 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 }
 
 template<class T>
-T removeIndex(ChunkedArray<T> *array, umm indexToRemove)
+T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 {
 	ASSERT(indexToRemove < array->itemCount, "indexToRemove is out of range!");
 
 	T result;
-
-	umm chunkIndex = indexToRemove / array->chunkSize;
-	umm itemIndex  = indexToRemove % array->chunkSize;
-
-	Chunk<T> *chunk = getChunkByIndex(array, chunkIndex);
-
-	result = chunk->items[itemIndex];
-
+	
 	Chunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
 
-	if (indexToRemove != array->itemCount - 1)
+	if (keepItemOrder)
 	{
-		// Copy last item to overwrite this one
-		chunk->items[indexToRemove] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
+		if (indexToRemove != (array->itemCount-1))
+		{
+			// NB: This copies the item we're about to remove to the end of the array.
+			// I guess if Item is large, this could be expensive unnecessarily?
+			// Then again, we're also copying it to `result`, which we currently don't ever use, so meh.
+			// - Sam, 8/2/2019
+			moveItemKeepingOrder(array, indexToRemove, array->itemCount-1);
+		}
+		result = lastNonEmptyChunk->items[lastNonEmptyChunk->count - 1];
+	}
+	else
+	{
+		smm chunkIndex = indexToRemove / array->chunkSize;
+		smm itemIndex  = indexToRemove % array->chunkSize;
+
+		Chunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+
+		result = chunk->items[itemIndex];
+
+		// We don't need to rearrange things if we're removing the last item
+		if (indexToRemove != array->itemCount - 1)
+		{
+			// Copy last item to overwrite this one
+			chunk->items[indexToRemove] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
+		}
 	}
 
 	lastNonEmptyChunk->count--;
@@ -124,7 +200,7 @@ T removeIndex(ChunkedArray<T> *array, umm indexToRemove)
 	}
  */
 template<class T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, umm initialIndex = 0)
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0)
 {
 	ChunkedArrayIterator<T> iterator = {};
 

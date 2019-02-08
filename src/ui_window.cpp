@@ -78,13 +78,15 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
 	// Don't do anything if it's already the active window.
 	if (windowIndex == 0)  return;
 
-	// Right now, we're just swapping the given index with the active one.
-	// TODO: Actually shuffle the array to keep the order the same.
-	Window *oldActive  = get(&uiState->openWindows, 0);
-	Window *toBeActive = get(&uiState->openWindows, windowIndex);
-	Window temp = *oldActive;
-	*oldActive = *toBeActive;
-	*toBeActive = temp;
+	moveItemKeepingOrder(&uiState->openWindows, windowIndex, 0);
+
+	// // Right now, we're just swapping the given index with the active one.
+	// // TODO: Actually shuffle the array to keep the order the same.
+	// Window *oldActive  = get(&uiState->openWindows, 0);
+	// Window *toBeActive = get(&uiState->openWindows, windowIndex);
+	// Window temp = *oldActive;
+	// *oldActive = *toBeActive;
+	// *toBeActive = temp;
 }
 
 /**
@@ -103,6 +105,8 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 	
 	newWindow.windowProc = windowProc;
 	newWindow.userData = userData;
+
+	bool createdWindowAlready = false;
 
 	if (uiState->openWindows.itemCount > 0)
 	{
@@ -128,22 +132,15 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 			{
 				*toReplace = newWindow;
 				makeWindowActive(uiState, oldWindowIndex);
+				createdWindowAlready = true;
 			}
-			else
-			{
-				append(&uiState->openWindows, newWindow);
-				makeWindowActive(uiState, uiState->openWindows.itemCount-1);
-			}
-		}
-		else
-		{
-			append(&uiState->openWindows, newWindow);
-			makeWindowActive(uiState, uiState->openWindows.itemCount-1);
 		}
 	}
-	else
+
+	if (!createdWindowAlready)
 	{
 		append(&uiState->openWindows, newWindow);
+		makeWindowActive(uiState, uiState->openWindows.itemCount-1);
 	}
 }
 
@@ -273,7 +270,7 @@ void updateAndRenderWindows(UIState *uiState)
 	if (closeWindow != -1)
 	{
 		uiState->isDraggingWindow = false;
-		removeIndex(&uiState->openWindows, closeWindow);
+		removeIndex(&uiState->openWindows, closeWindow, true);
 	}
 	/*
 	 * NB: This is an imaginary else-if, because if we try to set a new active window, AND close one,

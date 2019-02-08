@@ -9,8 +9,8 @@
 template<class T>
 struct Chunk
 {
-	umm count;
-	umm maxCount;
+	smm count;
+	smm maxCount;
 	T *items;
 
 	Chunk<T> *prevChunk;
@@ -22,9 +22,9 @@ struct ChunkedArray
 {
 	MemoryArena *memoryArena;
 
-	umm chunkSize;
-	umm chunkCount;
-	umm itemCount;
+	smm chunkSize;
+	smm chunkCount;
+	smm itemCount;
 
 	Chunk<T> firstChunk;
 	Chunk<T> *lastChunk;
@@ -36,18 +36,18 @@ struct ChunkedArrayIterator
 	ChunkedArray<T> *array;
 
 	Chunk<T> *currentChunk;
-	umm indexInChunk;
+	smm indexInChunk;
 
 	// This is a counter for use when we start not at the beginning of the array but want to iterate it ALL.
 	// For simplicity, we increment it each time we next(), and when it equals the itemCount, we're done.
-	umm itemsIterated;
+	smm itemsIterated;
 	bool isDone;
 };
 
 // markFirstChunkAsFull is a little hacky. It sets the itemCount to be chunkSize, so that
 // we can immediately get() those elements by index instead of having to append() to add them.
 template<class T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, umm chunkSize, bool markFirstChunkAsFull = false)
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize, bool markFirstChunkAsFull = false)
 {
 	array->memoryArena = arena;
 	array->chunkSize = chunkSize;
@@ -114,7 +114,7 @@ T *append(ChunkedArray<T> *array, T item)
 	else
 	{
 		chunk = &array->firstChunk;
-		umm indexWithinChunk = array->itemCount;
+		smm indexWithinChunk = array->itemCount;
 		while (indexWithinChunk >= array->chunkSize)
 		{
 			chunk = chunk->nextChunk;
@@ -138,14 +138,14 @@ T *appendBlank(ChunkedArray<T> *array)
 }
 
 template<class T>
-T *get(ChunkedArray<T> *array, umm index)
+T *get(ChunkedArray<T> *array, smm index)
 {
 	ASSERT(index < array->itemCount, "Index out of array bounds!");
 
 	T *result = null;
 
-	umm chunkIndex = index / array->chunkSize;
-	umm itemIndex  = index % array->chunkSize;
+	smm chunkIndex = index / array->chunkSize;
+	smm itemIndex  = index % array->chunkSize;
 
 	if (chunkIndex == 0)
 	{
