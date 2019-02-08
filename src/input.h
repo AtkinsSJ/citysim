@@ -18,9 +18,8 @@ struct InputState
 	V2 mousePosNormalised; // In normalised (-1 to 1) coordinates
 	bool mouseDown[MOUSE_BUTTON_COUNT];
 	bool mouseWasDown[MOUSE_BUTTON_COUNT];
-	V2 clickStartPosition[MOUSE_BUTTON_COUNT]; // Normalised
+	V2 clickStartPosNormalised[MOUSE_BUTTON_COUNT]; // In normalised (-1 to 1) coordinates
 	s32 wheelX, wheelY;
-	V2I mouseDeltaRaw;
 
 	// Keyboard
 	bool _keyWasDown[KEYBOARD_KEY_COUNT];
@@ -53,6 +52,12 @@ inline bool mouseButtonJustReleased(InputState *input, u8 mouseButton) {
 }
 inline bool mouseButtonPressed(InputState *input, u8 mouseButton) {
 	return input->mouseDown[mouseButtonIndex(mouseButton)];
+}
+
+inline V2 getClickStartPos(InputState *input, u8 mouseButton, struct Camera *camera)
+{
+	u8 buttonIndex = mouseButtonIndex(mouseButton);
+	return unproject(camera, input->clickStartPosNormalised[buttonIndex]);
 }
 
 /**
@@ -175,8 +180,6 @@ void updateInput(InputState *inputState)
 	// Clear mouse state
 	inputState->wheelX = 0;
 	inputState->wheelY = 0;
-	inputState->mouseDeltaRaw.x = 0;
-	inputState->mouseDeltaRaw.y = 0;
 
 	for (int i = 0; i < MOUSE_BUTTON_COUNT; i++) {
 		inputState->mouseWasDown[i] = inputState->mouseDown[i];
@@ -215,9 +218,6 @@ void updateInput(InputState *inputState)
 				// Mouse pos in screen coordinates
 				inputState->mousePosRaw.x = event.motion.x;
 				inputState->mousePosRaw.y = event.motion.y;
-
-				inputState->mouseDeltaRaw.x += event.motion.xrel;
-				inputState->mouseDeltaRaw.y += event.motion.yrel;
 			} break;
 			case SDL_MOUSEBUTTONDOWN: {
 				u8 buttonIndex = event.button.button - 1;
@@ -266,7 +266,7 @@ void updateInput(InputState *inputState)
 	for (u8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
 		if (mouseButtonJustPressed(inputState, i)) {
 			// Store the initial click position
-			inputState->clickStartPosition[mouseButtonIndex(i)] = inputState->mousePosNormalised;
+			inputState->clickStartPosNormalised[mouseButtonIndex(i)] = inputState->mousePosNormalised;
 		}
 	}
 }

@@ -50,6 +50,8 @@ bool window_button(WindowContext *context, String text)
 		{
 			if (inRect(bounds, mousePos))
 			{
+				context->uiState->mouseInputHandled = true;
+
 				if (mouseButtonJustPressed(context->uiState->input, SDL_BUTTON_LEFT))
 				{
 					buttonClicked = true;
@@ -82,19 +84,10 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
 	if (windowIndex == 0)  return;
 
 	moveItemKeepingOrder(&uiState->openWindows, windowIndex, 0);
-
-	// // Right now, we're just swapping the given index with the active one.
-	// // TODO: Actually shuffle the array to keep the order the same.
-	// Window *oldActive  = get(&uiState->openWindows, 0);
-	// Window *toBeActive = get(&uiState->openWindows, windowIndex);
-	// Window temp = *oldActive;
-	// *oldActive = *toBeActive;
-	// *toBeActive = temp;
 }
 
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
- * If you pass -1 to the height, then the height will be determined automatically by the window's content.
  */
 void showWindow(UIState *uiState, String title, s32 width, s32 height, String style, u32 flags, WindowProc windowProc, void *userData)
 {
@@ -203,7 +196,7 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 			else
 			{
-				window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - uiState->windowDragMouseStartPos));
+				window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(inputState, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)));
 			}
 			
 			uiState->mouseInputHandled = true;
@@ -255,7 +248,6 @@ void updateAndRenderWindows(UIState *uiState)
 				{
 					// If we're inside the title bar, start dragging!
 					uiState->isDraggingWindow = true;
-					uiState->windowDragMouseStartPos = mousePos;
 					uiState->windowDragWindowStartPos = v2(window->area.pos);
 				}
 

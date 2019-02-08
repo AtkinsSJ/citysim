@@ -34,9 +34,9 @@ typedef void (*WindowProc)(WindowContext*, void*);
 
 enum WindowFlags
 {
-	WinFlag_AutomaticHeight = 0b00000001,
-	WinFlag_Unique          = 0b00000010, // Only one window with the same WindowProc will be allowed. A new one will replace the old.
-	WinFlag_Modal           = 0b00000100,
+	WinFlag_AutomaticHeight = 1 << 0,
+	WinFlag_Unique          = 1 << 1, // Only one window with the same WindowProc will be allowed. A new one will replace the old.
+	WinFlag_Modal           = 1 << 2,
 };
 
 struct Window
@@ -75,6 +75,5 @@ struct UIState
 	// Window stuff
 	ChunkedArray<Window> openWindows;
 	bool isDraggingWindow;
-	V2 windowDragMouseStartPos;
 	V2 windowDragWindowStartPos;
 };
