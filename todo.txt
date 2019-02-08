@@ -91,6 +91,9 @@ Split the game code from the platform code
 - platform handles the renderer, input and memory.
 - game has a single entry point function that's run once per frame.
 
+GUI
+- Richer tooltips. Not as fancy as our window-proc stuff, but allow creating a tooltip by adding individual labels (or maybe images too eventually) each of which is styled individually. Actually maybe it should use the same system as windows!
+
 UI styles loaded from a file
 - Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
 - We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtof if I'm lazy.

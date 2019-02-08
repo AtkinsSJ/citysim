@@ -1,17 +1,12 @@
 #pragma once
 
-void window_label(WindowContext *context, String text, V4 color={})
+void window_label(WindowContext *context, String text, char *styleName=null)
 {
 	DEBUG_FUNCTION();
 
-	UILabelStyle *style = context->window->style->labelStyle;
-
-	// Use the theme-defined color if none is provided. We determine this by checking for ~0 alpha, which
-	// isn't *perfect* but should work well enough.
-	if (color.a < 0.01f)
-	{
-		color = style->textColor;
-	}
+	UILabelStyle *style = null;
+	if (styleName)      style = findLabelStyle(context->uiState->assets, stringFromChars(styleName));
+	if (style == null)  style = context->window->style->labelStyle;
 
 	V2 origin = context->contentArea.pos + context->currentOffset;
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
@@ -19,7 +14,7 @@ void window_label(WindowContext *context, String text, V4 color={})
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
-		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, color, maxWidth);
+		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
 		drawCachedText(context->uiState->uiBuffer, textCache, origin, context->renderDepth);
 
 		// For now, we'll always just start a new line.
@@ -78,22 +73,32 @@ bool window_button(WindowContext *context, String text)
 	return buttonClicked;
 }
 
+static void makeWindowActive(UIState *uiState, s32 windowIndex)
+{
+	// Don't do anything if it's already the active window.
+	if (windowIndex == 0)  return;
+
+	// Right now, we're just swapping the given index with the active one.
+	// TODO: Actually shuffle the array to keep the order the same.
+	Window *oldActive  = get(&uiState->openWindows, 0);
+	Window *toBeActive = get(&uiState->openWindows, windowIndex);
+	Window temp = *oldActive;
+	*oldActive = *toBeActive;
+	*toBeActive = temp;
+}
+
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  * If you pass -1 to the height, then the height will be determined automatically by the window's content.
  */
-void showWindow(UIState *uiState, String title, s32 width, s32 height, String style, WindowProc windowProc, void *userData)
+void showWindow(UIState *uiState, String title, s32 width, s32 height, String style, u32 flags, WindowProc windowProc, void *userData)
 {
 	Window newWindow = {};
 	newWindow.title = title;
+	newWindow.flags = flags;
 	newWindow.style = findWindowStyle(uiState->assets, style);
 
 	V2 windowOrigin = uiState->uiBuffer->camera.pos;
-	newWindow.hasAutomaticHeight = (height == -1);
-	if (newWindow.hasAutomaticHeight)
-	{
-		windowOrigin.y *= 0.5f;
-	}
 	newWindow.area = irectCentreWH(v2i(windowOrigin), width, height);
 	
 	newWindow.windowProc = windowProc;
@@ -101,11 +106,40 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 
 	if (uiState->openWindows.itemCount > 0)
 	{
-		// We do some fiddling to make the new window the first one:
-		// Append a copy of the currently-active window, then overwrite the original with the new window
-		Window *oldActiveWindow = get(&uiState->openWindows, 0);
-		append(&uiState->openWindows, *oldActiveWindow);
-		*oldActiveWindow = newWindow;
+		// If the window wants to be unique, then we search for an existing one with the same WindowProc
+		if (flags & WinFlag_Unique)
+		{
+			Window *toReplace = null;
+
+			s32 oldWindowIndex = 0;
+			for (auto it = iterate(&uiState->openWindows);
+				!it.isDone;
+				next(&it), oldWindowIndex++)
+			{
+				Window *oldWindow = get(it);
+				if (oldWindow->windowProc == windowProc)
+				{
+					toReplace = oldWindow;
+					break;
+				}
+			}
+
+			if (toReplace)
+			{
+				*toReplace = newWindow;
+				makeWindowActive(uiState, oldWindowIndex);
+			}
+			else
+			{
+				append(&uiState->openWindows, newWindow);
+				makeWindowActive(uiState, uiState->openWindows.itemCount-1);
+			}
+		}
+		else
+		{
+			append(&uiState->openWindows, newWindow);
+			makeWindowActive(uiState, uiState->openWindows.itemCount-1);
+		}
 	}
 	else
 	{
@@ -129,7 +163,7 @@ void updateAndRenderWindows(UIState *uiState)
 	InputState *inputState = uiState->input;
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	bool mouseInputHandled = false;
-	Window *newActiveWindow = null;
+	s32 newActiveWindow = -1;
 	s32 closeWindow = -1;
 	Rect2I validWindowArea = irectCentreDim(uiState->uiBuffer->camera.pos, uiState->uiBuffer->camera.size);
 
@@ -187,9 +221,9 @@ void updateAndRenderWindows(UIState *uiState)
 			context.renderDepth = depth + 1.0f;
 			context.perItemPadding = 4.0f;
 
-			window->windowProc(&context, window, window->userData);
+			window->windowProc(&context, window->userData);
 
-			if (window->hasAutomaticHeight)
+			if (window->flags & WinFlag_AutomaticHeight)
 			{
 				window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
 			}
@@ -222,7 +256,7 @@ void updateAndRenderWindows(UIState *uiState)
 				}
 
 				// Make this the active window! 
-				newActiveWindow = window;
+				newActiveWindow = windowIndex;
 			}
 
 			mouseInputHandled = true;
@@ -247,12 +281,8 @@ void updateAndRenderWindows(UIState *uiState)
 	 * because that way, we crash when we try to do both at once, instead of hiding the bug.
 	 * - Sam, 3/2/2019
 	 */
-	if (newActiveWindow != null)
+	if (newActiveWindow != -1)
 	{
-		// For now, just swap it with window #0. This is hacky but it'll work
-		Window *oldActiveWindow = get(&uiState->openWindows, 0);
-		Window temp = *oldActiveWindow;
-		*oldActiveWindow = *newActiveWindow;
-		*newActiveWindow = temp;
+		makeWindowActive(uiState, newActiveWindow);
 	}
 }

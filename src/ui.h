@@ -30,14 +30,20 @@ struct WindowContext
 	f32 perItemPadding;
 };
 
-typedef void (*WindowProc)(WindowContext*, struct Window*, void*);
+typedef void (*WindowProc)(WindowContext*, void*);
+
+enum WindowFlags
+{
+	WinFlag_AutomaticHeight = 1,
+	WinFlag_Unique          = 2, // Only one window with the same WindowProc will be allowed. A new one will replace the old.
+};
 
 struct Window
 {
 	String title;
+	u32 flags;
 
 	Rect2I area;
-	bool hasAutomaticHeight;
 	UIWindowStyle *style;
 
 	WindowProc windowProc;

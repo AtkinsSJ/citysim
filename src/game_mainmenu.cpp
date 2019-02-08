@@ -1,6 +1,6 @@
 #pragma once
 
-void testWindowProc(WindowContext *context, Window *window, void *userData)
+void testWindowProc(WindowContext *context, void *userData)
 {
 	s32 *ourNumber = (s32*) userData;
 
@@ -20,6 +20,16 @@ void testWindowProc(WindowContext *context, Window *window, void *userData)
 		(*ourNumber)--;
 	}
 	window_label(context, LocalString("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.\nIt was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."));
+}
+
+void aboutWindowProc(WindowContext *context, void *userData)
+{
+	window_label(context, LocalString("Some kind of city simulator game"), "title");
+	window_label(context, LocalString("© Copyright Samuel Atkins 20XX"));
+	if (window_button(context, LocalString("Website")))
+	{
+		openUrlUnsafe("http://samatkins.co.uk");
+	}
 }
 
 void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
@@ -72,12 +82,12 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	{
 		s32 *aNumber = new s32;
 		*aNumber = randomInRange(&globalAppState.cosmeticRandom, INT32_MAX);
-		showWindow(uiState, LocalString("Hello window!"), 200, -1, stringFromChars("general"), testWindowProc, aNumber);
+		showWindow(uiState, LocalString("Hello window!"), 200, 200, stringFromChars("general"), WinFlag_AutomaticHeight, testWindowProc, aNumber);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LocalString("Website"), buttonRect, 1))
+	if (uiButton(uiState, LocalString("About"), buttonRect, 1))
 	{
-		openUrlUnsafe("http://samatkins.co.uk");
+		showWindow(uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique, aboutWindowProc, null);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("Exit"), buttonRect, 1))
