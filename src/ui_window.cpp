@@ -189,8 +189,13 @@ void updateAndRenderWindows(UIState *uiState)
 
 		BitmapFont *titleFont = getFont(uiState->assets, window->style->titleFontID);
 
-		// Handle dragging first, BEFORE we use the window rect anywhere
-		if (isActive && uiState->isDraggingWindow)
+		// Handle dragging/position first, BEFORE we use the window rect anywhere
+		if (isModal)
+		{
+			// Modal windows can't be moved, they just auto-centre
+			window->area = centreRectangle(window->area, validWindowArea);
+		}
+		else if (isActive && uiState->isDraggingWindow)
 		{
 			if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 			{
@@ -246,7 +251,7 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 			else
 			{
-				if (inRect(barArea, mousePos))
+				if (!isModal && inRect(barArea, mousePos))
 				{
 					// If we're inside the title bar, start dragging!
 					uiState->isDraggingWindow = true;

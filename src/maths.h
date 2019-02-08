@@ -161,3 +161,13 @@ inline Rect2I confineRectangle(Rect2I inner, Rect2I outer)
 
 	return result;
 }
+
+inline Rect2I centreRectangle(Rect2I inner, Rect2I outer)
+{
+	Rect2I result = inner;
+
+	result.x = outer.x - ((result.w - outer.w) / 2);
+	result.y = outer.y - ((result.h - outer.h) / 2);
+
+	return result;
+}
