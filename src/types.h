@@ -90,7 +90,7 @@ const f64 f64Min = -DBL_MAX;
 const f64 f64Max =  DBL_MAX;
 
 typedef intptr_t  smm;
-typedef uintptr_t umm;
+//typedef uintptr_t umm; // Turned this off because I don't think there's a good reason for using it?
 
 #include <uchar.h>
 typedef char32_t unichar;
@@ -220,9 +220,9 @@ bool equals(T a, T b)
 
 	u8 *pA = (u8*)(&a);
 	u8 *pB = (u8*)(&b);
-	umm byteSize = sizeof(T);
+	smm byteSize = sizeof(T);
 
-	for (umm i=0; i<byteSize; i++, pA++, pB++)
+	for (smm i=0; i<byteSize; i++, pA++, pB++)
 	{
 		if (*pA != *pB)
 		{

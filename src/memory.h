@@ -17,29 +17,29 @@ struct MemoryBlock
 {
 	MemoryBlock *prevBlock;
 
-	umm size;
-	umm used;
+	smm size;
+	smm used;
 	u8 *memory;
 };
 
 struct MemoryArenaResetState
 {
 	MemoryBlock *currentBlock;
-	umm used;
+	smm used;
 };
 
 struct MemoryArena
 {
 	MemoryBlock *currentBlock;
 
-	umm minimumBlockSize;
+	smm minimumBlockSize;
 
 	MemoryArenaResetState resetState;
 };
 
-MemoryBlock *addMemoryBlock(MemoryArena *arena, umm size)
+MemoryBlock *addMemoryBlock(MemoryArena *arena, smm size)
 {
-	umm totalSize = size + sizeof(MemoryBlock);
+	smm totalSize = size + sizeof(MemoryBlock);
 	u8* memory = (u8*) calloc(totalSize, 1);
 
 	ASSERT(memory, "Failed to allocate memory block!");
@@ -60,7 +60,7 @@ void markResetPosition(MemoryArena *arena)
 	arena->resetState.used = arena->currentBlock ? arena->currentBlock->used : 0;
 }
 
-bool initMemoryArena(MemoryArena *arena, umm size, umm minimumBlockSize=MB(1))
+bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1))
 {
 	bool succeeded = true;
 
@@ -88,12 +88,12 @@ bool initMemoryArena(MemoryArena *arena, umm size, umm minimumBlockSize=MB(1))
 	markResetPosition(&containerName->arenaVarName);                                  \
 }
 
-void *allocate(MemoryArena *arena, umm size)
+void *allocate(MemoryArena *arena, smm size)
 {
 	if ((arena->currentBlock == 0)
 		|| (arena->currentBlock->used + size > arena->currentBlock->size))
 	{
-		umm newBlockSize = MAX(size, arena->minimumBlockSize);
+		smm newBlockSize = MAX(size, arena->minimumBlockSize);
 		arena->currentBlock = addMemoryBlock(arena, newBlockSize);
 	}
 

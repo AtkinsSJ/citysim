@@ -296,7 +296,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
 
-			for (u32 i=0; i < buildingDefs.itemCount; i++)
+			for (s32 i=0; i < buildingDefs.itemCount; i++)
 			{
 				BuildingDef *buildingDef = get(&buildingDefs, i);
 				if (!buildingDef->buildMethod) continue;

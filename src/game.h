@@ -45,7 +45,7 @@ struct GameState
 	ActionMode actionMode;
 	union
 	{
-		u32 selectedBuildingTypeID;
+		s32 selectedBuildingTypeID;
 		ZoneType selectedZoneID;
 	};
 };

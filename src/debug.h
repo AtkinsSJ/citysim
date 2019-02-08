@@ -28,8 +28,8 @@ struct DebugArenaData
 	String name;
 
 	u32 blockCount[DEBUG_FRAMES_COUNT];
-	umm totalSize[DEBUG_FRAMES_COUNT];
-	umm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
+	smm totalSize[DEBUG_FRAMES_COUNT];
+	smm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
 
 	DLinkedListMembers(DebugArenaData);
 };

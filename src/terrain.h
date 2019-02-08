@@ -25,11 +25,11 @@ Terrain invalidTerrain = {0, 0};
 void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, File file);
 
 // Returns 0 if not found
-u32 findTerrainTypeByName(String name)
+s32 findTerrainTypeByName(String name)
 {
-	u32 result = 0;
+	s32 result = 0;
 
-	for (u32 terrainID = 1; terrainID < terrainDefs.itemCount; terrainID++)
+	for (s32 terrainID = 1; terrainID < terrainDefs.itemCount; terrainID++)
 	{
 		TerrainDef *def = get(&terrainDefs, terrainID);
 		if (equals(def->name, name))

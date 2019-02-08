@@ -5,7 +5,7 @@ struct File
 	String name;
 	bool isLoaded;
 	
-	umm length;
+	smm length;
 	u8* data;
 };
 
@@ -18,7 +18,7 @@ File readFile(MemoryArena *memory, String filename)
 	SDL_RWops *file = SDL_RWFromFile(filename.chars, "rb");
 	if (file)
 	{
-		umm fileLength = (umm) file->seek(file, 0, RW_SEEK_END);
+		smm fileLength = (smm) file->seek(file, 0, RW_SEEK_END);
 		file->seek(file, 0, RW_SEEK_SET);
 
 		result.data = PushArray(memory, u8, fileLength);
@@ -50,8 +50,8 @@ struct LineReader
 	File file;
 	bool skipBlankLines;
 
-	umm pos;
-	umm lineNumber;
+	smm pos;
+	smm lineNumber;
 
 	bool removeComments;
 	char commentChar;

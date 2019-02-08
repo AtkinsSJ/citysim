@@ -24,6 +24,9 @@ void testWindowProc(WindowContext *context, void *userData)
 
 void aboutWindowProc(WindowContext *context, void *userData)
 {
+	// shut up the warning
+	userData = userData;
+
 	window_label(context, LocalString("Some kind of city simulator game"), "title");
 	window_label(context, LocalString("© Copyright Samuel Atkins 20XX"));
 	if (window_button(context, LocalString("Website")))

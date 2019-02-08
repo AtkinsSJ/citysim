@@ -132,7 +132,7 @@ void loadAssets(AssetManager *assets)
 	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
 	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
 
-	for (u32 i = 1; i < assets->textures.itemCount; ++i)
+	for (s32 i = 1; i < assets->textures.itemCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Unloaded)
@@ -178,7 +178,7 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Now we can convert UVs from pixel space to 0-1 space.
-	for (u32 regionIndex = 1; regionIndex < assets->textureRegions.itemCount; regionIndex++)
+	for (s32 regionIndex = 1; regionIndex < assets->textureRegions.itemCount; regionIndex++)
 	{
 		TextureRegion *tr = getTextureRegion(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
@@ -313,7 +313,7 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	// Actual reloading
 
 	// Clear out textures
-	for (u32 i = 1; i < assets->textures.itemCount; ++i)
+	for (s32 i = 1; i < assets->textures.itemCount; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Loaded)

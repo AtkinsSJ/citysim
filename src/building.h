@@ -66,12 +66,12 @@ struct Building
 void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, File file);
 
 // Returns 0 if not found
-u32 findBuildingTypeByName(String name)
+s32 findBuildingTypeByName(String name)
 {
-	u32 result = 0;
+	s32 result = 0;
 
 	// TODO: Use an iterator instead, it's faster!
-	for (u32 buildingType = 1; buildingType < buildingDefs.itemCount; buildingType++)
+	for (s32 buildingType = 1; buildingType < buildingDefs.itemCount; buildingType++)
 	{
 		BuildingDef *def = get(&buildingDefs, buildingType);
 		if (equals(def->name, name))
