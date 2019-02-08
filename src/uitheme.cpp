@@ -398,6 +398,18 @@ void loadUITheme(AssetManager *assets, File file)
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
+			else if (equals(firstWord, "offset"))
+			{
+				s64 offsetX, offsetY;
+				if (!asInt(nextToken(remainder, &remainder), &offsetX)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+				if (!asInt(nextToken(remainder, &remainder), &offsetY)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+
+				switch (target.type)
+				{
+					case Section_Tooltip:  target.tooltip->offsetFromCursor = v2((s32)offsetX, (s32)offsetY); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+				}
+			}
 			else 
 			{
 				error(&reader, "Unrecognized property '{0}'", {firstWord});

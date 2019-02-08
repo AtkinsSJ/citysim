@@ -148,10 +148,6 @@ Unicode stuff:
 Arenas:
 - Figure out how to prevent non-temp allocations happening when temp mem is open.
 
-UI Theme:
-- Rather than always doing getFont() etc, maybe cache a font ref from the assets system and then
-  reload it when the assets change.
-
 GAME:
 - Menu / Game are separate code.
 
@@ -161,7 +157,6 @@ BUGS:
 Rendering 2.0:
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
 - Draw things with an offset, defined per-texture-region(?)
-- Flash funds label when it changes
 - Probably replace the binary search for glyphs with something better?
 - Handle cursors ourselves? Not sure about latency.
 

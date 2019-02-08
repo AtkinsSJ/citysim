@@ -25,7 +25,6 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	initMemoryArena(&uiState->arena, MB(1));
 
 	uiState->tooltip = {};
-	uiState->tooltip.offsetFromCursor = v2(16, 20);
 	uiState->tooltip.text = newString(&uiState->arena, 256);
 
 	uiState->message = {};
@@ -125,7 +124,7 @@ void drawTooltip(UIState *uiState)
 
 		V2 mousePos = uiState->uiBuffer->camera.mousePos;
 
-		V2 topLeft = mousePos + uiState->tooltip.offsetFromCursor + v2(style->padding, style->padding);
+		V2 topLeft = mousePos + style->offsetFromCursor + v2(style->padding, style->padding);
 
 		Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontID), uiState->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1.0f, style->textColor);

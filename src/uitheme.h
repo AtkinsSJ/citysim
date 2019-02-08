@@ -40,6 +40,8 @@ struct UITooltipStyle
 
 	V4 backgroundColor;
 	f32 padding;
+
+	V2 offsetFromCursor;
 };
 
 struct UIMessageStyle

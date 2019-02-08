@@ -6,7 +6,6 @@ struct Tooltip
 	bool show;
 	String styleName;
 	String text;
-	V2 offsetFromCursor;
 };
 
 const f32 uiMessageDisplayTime = 2.0f;
@@ -71,4 +70,3 @@ struct UIState
 	V2 windowDragMouseStartPos;
 	V2 windowDragWindowStartPos;
 };
-
