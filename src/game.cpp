@@ -224,38 +224,32 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	City *city = &gameState->city;
 
 	V2I tilePos = gameState->inspectedTilePosition;
+	context->window->title = myprintf("Inspecting {0}, {1}", {formatInt(tilePos.x), formatInt(tilePos.y)});
 
 	int tileI = tileIndex(city, tilePos.x, tilePos.y);
 
-	String buildingName;
+	// Terrain
+	String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
+	window_label(context, myprintf("Terrain: {0}", {terrainName}));
+
+	// Zone
+	ZoneType zone = city->zoneLayer.tiles[tileI];
+	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : LocalString("None")}));
+
+	// Building
 	int buildingID = city->tileBuildings[tileI];
 	if (buildingID != 0)
 	{
-		buildingName = get(&buildingDefs, city->buildings[buildingID].typeID)->name;
+		Building building = city->buildings[buildingID];
+		BuildingDef *def = get(&buildingDefs, building.typeID);
+		window_label(context, myprintf("Building: {0} (ID {1})", {def->name, formatInt(buildingID)}));
+		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building.currentResidents), formatInt(def->residents)}));
+		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building.currentJobs), formatInt(def->jobs)}));
 	}
 	else
 	{
-		buildingName = stringFromChars("None");
+		window_label(context, LocalString("Building: None"));
 	}
-
-	String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
-
-	String zoneName;
-	ZoneType zone = city->zoneLayer.tiles[tileI];
-	if (zone)
-	{
-		zoneName = zoneDefs[zone].name;
-	}
-	else
-	{
-		zoneName = stringFromChars("None");
-	}
-
-	context->window->title = myprintf("Inspecting {0}, {1}", {formatInt(tilePos.x), formatInt(tilePos.y)});
-
-	window_label(context, myprintf("Terrain: {0}", {terrainName}));
-	window_label(context, myprintf("Zone: {0}", {zoneName}));
-	window_label(context, myprintf("Building: {0} ({1})", {buildingName, formatInt(buildingID)}));
 }
 
 void pauseMenuWindowProc(WindowContext *context, void *userData)
