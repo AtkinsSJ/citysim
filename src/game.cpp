@@ -279,7 +279,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 
 	if (window_button(context, LocalString("About")))
 	{
-		showWindow(context->uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal, aboutWindowProc, null);
+		showWindow(context->uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, aboutWindowProc, null);
 	}
 
 	if (window_button(context, LocalString("Exit")))
@@ -402,7 +402,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, LocalString("Menu"), buttonRect, 1))
 		{
-			showWindow(uiState, LocalString("Menu"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal, pauseMenuWindowProc, null);
+			showWindow(uiState, LocalString("Menu"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }

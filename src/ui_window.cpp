@@ -8,6 +8,11 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 	if (styleName)      style = findLabelStyle(context->uiState->assets, stringFromChars(styleName));
 	if (style == null)  style = context->window->style->labelStyle;
 
+	if (context->currentOffset.y > 0)
+	{
+		context->currentOffset.y += context->perItemPadding;
+	}
+
 	V2 origin = context->contentArea.pos + context->currentOffset;
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
 	if (font)
@@ -19,7 +24,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
-		context->currentOffset.y += textCache->size.y + context->perItemPadding;
+		context->currentOffset.y += textCache->size.y;
 	}
 }
 
@@ -34,6 +39,11 @@ bool window_button(WindowContext *context, String text)
 	V4 backColor = style->backgroundColor;
 	f32 buttonPadding = style->padding;
 	V2 mousePos = context->uiState->uiBuffer->camera.mousePos;
+
+	if (context->currentOffset.y > 0)
+	{
+		context->currentOffset.y += context->perItemPadding;
+	}
 
 	// Let's be a little bit fancy. Figure out the size of the text, then determine the button size based on that!
 	V2 origin = context->contentArea.pos + context->currentOffset;
@@ -75,7 +85,7 @@ bool window_button(WindowContext *context, String text)
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
-		context->currentOffset.y += bounds.size.y + context->perItemPadding;
+		context->currentOffset.y += bounds.size.y;
 	}
 
 	return buttonClicked;
