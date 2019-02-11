@@ -218,6 +218,46 @@ DragResult updateDragState(GameState *gameState, InputState *inputState, V2I mou
 	return result;
 }
 
+void inspectTileWindowProc(WindowContext *context, void *userData)
+{
+	GameState *gameState = (GameState *) userData;
+	City *city = &gameState->city;
+
+	V2I tilePos = gameState->inspectedTilePosition;
+
+	int tileI = tileIndex(city, tilePos.x, tilePos.y);
+
+	String buildingName;
+	int buildingID = city->tileBuildings[tileI];
+	if (buildingID != 0)
+	{
+		buildingName = get(&buildingDefs, city->buildings[buildingID].typeID)->name;
+	}
+	else
+	{
+		buildingName = stringFromChars("None");
+	}
+
+	String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
+
+	String zoneName;
+	ZoneType zone = city->zoneLayer.tiles[tileI];
+	if (zone)
+	{
+		zoneName = zoneDefs[zone].name;
+	}
+	else
+	{
+		zoneName = stringFromChars("None");
+	}
+
+	context->window->title = myprintf("Inspecting {0}, {1}", {formatInt(tilePos.x), formatInt(tilePos.y)});
+
+	window_label(context, myprintf("Terrain: {0}", {terrainName}));
+	window_label(context, myprintf("Zone: {0}", {zoneName}));
+	window_label(context, myprintf("Building: {0} ({1})", {buildingName, formatInt(buildingID)}));
+}
+
 void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState, GameState *gameState,
 	                       InputState *inputState)
 {
@@ -666,34 +706,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
 				{
-					int tileI = tileIndex(city, mouseTilePos.x, mouseTilePos.y);
-
-					String buildingName;
-					int buildingID = city->tileBuildings[tileI];
-					if (buildingID != 0)
-					{
-						buildingName = get(&buildingDefs, city->buildings[buildingID].typeID)->name;
-					}
-					else
-					{
-						buildingName = stringFromChars("None");
-					}
-
-					String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
-
-					String zoneName;
-					ZoneType zone = city->zoneLayer.tiles[tileI];
-					if (zone)
-					{
-						zoneName = zoneDefs[zone].name;
-					}
-					else
-					{
-						zoneName = stringFromChars("None");
-					}
-
-					logInfo("Clicked at ({0},{1}), terrain: {2}, building: {3}, zone: {4}", 
-						{formatInt(mouseTilePos.x), formatInt(mouseTilePos.y), terrainName, buildingName, zoneName});
+					gameState->inspectedTilePosition = mouseTilePos;
+					showWindow(uiState, stringFromChars("Inspect tile"), 200, 200, stringFromChars("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 				}
 			}
 		} break;

@@ -138,6 +138,9 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 
 			if (toReplace)
 			{
+				// Make it keep the current window's position
+				newWindow.area = toReplace->area;
+
 				*toReplace = newWindow;
 				makeWindowActive(uiState, oldWindowIndex);
 				createdWindowAlready = true;
