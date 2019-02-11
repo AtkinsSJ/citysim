@@ -18,7 +18,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 
 	if (alignment & ALIGN_RIGHT)
 	{
-		ASSERT(false, "Not implemented yet!");
+		origin.x = context->contentArea.pos.x + context->contentArea.w;
 	}
 	else if (alignment & ALIGN_H_CENTRE)
 	{
@@ -64,7 +64,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 
 	if (alignment & ALIGN_RIGHT)
 	{
-		ASSERT(false, "Not implemented yet!");
+		origin.x = context->contentArea.pos.x + context->contentArea.w;
+		textOriginOffset.x = -buttonPadding;
 	}
 	else if (alignment & ALIGN_H_CENTRE)
 	{
