@@ -85,7 +85,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 		}
 		else
 		{
-			maxWidth = textWidth;
+			maxWidth = (f32) textWidth;
 		}
 
 		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);

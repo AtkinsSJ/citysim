@@ -264,13 +264,22 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 
 	// Centred, with equal button sizes
 	context->alignment = ALIGN_H_CENTRE;
-	s32 maxButtonTextWidth = 100;
+
+	UIButtonStyle *buttonStyle = context->window->style->buttonStyle;
+	BitmapFont *buttonFont = getFont(context->uiState->assets, buttonStyle->fontID);
+	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
+	s32 maxButtonTextWidth = 0;
 
 	String resume = LocalString("Resume has a surprisingly verbose label");
+	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, resume, availableButtonTextWidth).x));
 	String save   = LocalString("Save");
+	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, save, availableButtonTextWidth).x));
 	String load   = LocalString("Load");
+	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, load, availableButtonTextWidth).x));
 	String about  = LocalString("About");
+	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, about, availableButtonTextWidth).x));
 	String exit   = LocalString("Exit");
+	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, exit, availableButtonTextWidth).x));
 
 	if (window_button(context, resume, maxButtonTextWidth))
 	{
