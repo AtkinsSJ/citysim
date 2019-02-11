@@ -89,6 +89,15 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
 	moveItemKeepingOrder(&uiState->openWindows, windowIndex, 0);
 }
 
+void setWindowStyle(WindowContext *context, String styleName)
+{
+	UIWindowStyle *style = findWindowStyle(context->uiState->assets, styleName);
+	if (style != null)
+	{
+		context->window->style = style;
+	}
+}
+
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  */
