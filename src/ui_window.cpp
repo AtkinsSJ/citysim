@@ -81,14 +81,6 @@ bool window_button(WindowContext *context, String text)
 	return buttonClicked;
 }
 
-static void makeWindowActive(UIState *uiState, s32 windowIndex)
-{
-	// Don't do anything if it's already the active window.
-	if (windowIndex == 0)  return;
-
-	moveItemKeepingOrder(&uiState->openWindows, windowIndex, 0);
-}
-
 void setWindowStyle(WindowContext *context, String styleName)
 {
 	UIWindowStyle *style = findWindowStyle(context->uiState->assets, styleName);
@@ -96,6 +88,14 @@ void setWindowStyle(WindowContext *context, String styleName)
 	{
 		context->window->style = style;
 	}
+}
+
+static void makeWindowActive(UIState *uiState, s32 windowIndex)
+{
+	// Don't do anything if it's already the active window.
+	if (windowIndex == 0)  return;
+
+	moveItemKeepingOrder(&uiState->openWindows, windowIndex, 0);
 }
 
 /**
@@ -281,6 +281,11 @@ void updateAndRenderWindows(UIState *uiState)
 		{
 			uiState->mouseInputHandled = true;
 			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, color255(64, 64, 64, 128)); 
+		}
+
+		if (inRect(wholeWindowArea, mousePos))
+		{
+			uiState->mouseInputHandled = true;
 		}
 	}
 

@@ -70,6 +70,9 @@ struct UIState
 
 	u32 currentCursor;
 	bool cursorIsVisible;
+
+	// UI elements that react to the mouse should only do so if this is false - and then
+	// they should set it to true. 
 	bool mouseInputHandled;
 
 	// Window stuff

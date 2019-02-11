@@ -149,18 +149,27 @@ bool uiButton(UIState *uiState,
 	UIButtonStyle *style = findButtonStyle(uiState->assets, stringFromChars("general"));
 	V4 backColor = style->backgroundColor;
 
-	if (inRect(bounds, mousePos))
+	if (!uiState->mouseInputHandled && inRect(bounds, mousePos))
 	{
+		// Mouse pressed: must have started and currently be inside the bounds to show anything
+		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
 		{
-			backColor = style->pressedColor;
+			if (inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)))
+			{
+				backColor = style->pressedColor;
+			}
 		}
 		else
 		{
+			if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
+			 && inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)))
+			{
+				buttonClicked = true;
+				uiState->mouseInputHandled = true;
+			}
 			backColor = style->hoverColor;
 		}
-
-		buttonClicked = mouseButtonJustReleased(input, SDL_BUTTON_LEFT);
 
 		if (tooltip.length)
 		{
