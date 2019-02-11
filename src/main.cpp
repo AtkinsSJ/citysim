@@ -81,6 +81,7 @@ AppState globalAppState;
 #include "power.cpp"
 #include "city.cpp"
 #include "zone.cpp"
+#include "about.cpp"
 #include "game.cpp"
 #include "log.cpp"
 

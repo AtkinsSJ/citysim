@@ -279,7 +279,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 
 	if (window_button(context, LocalString("About")))
 	{
-		showWindow(context->uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, aboutWindowProc, null);
+		showAboutWindow(context->uiState);
 	}
 
 	if (window_button(context, LocalString("Exit")))

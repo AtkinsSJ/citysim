@@ -31,19 +31,6 @@ void testWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-void aboutWindowProc(WindowContext *context, void *userData)
-{
-	// shut up the warning
-	userData = userData;
-
-	window_label(context, LocalString("Some kind of city simulator game"), "title");
-	window_label(context, LocalString("© Copyright Samuel Atkins 20XX"));
-	if (window_button(context, LocalString("Website")))
-	{
-		openUrlUnsafe("http://samatkins.co.uk");
-	}
-}
-
 void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
@@ -102,7 +89,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("About"), buttonRect, 1))
 	{
-		showWindow(uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal, aboutWindowProc, null);
+		showAboutWindow(uiState);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("Exit"), buttonRect, 1))
