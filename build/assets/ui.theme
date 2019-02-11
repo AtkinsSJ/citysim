@@ -24,7 +24,7 @@ backgroundColor   255 255 255 255
 hoverColor        192 192 255 255
 pressedColor      128 128 255 255
 padding           4
-textAlignment     LEFT BOTTOM
+textAlignment     H_CENTRE BOTTOM
 
 :Label title
 font              normalFont

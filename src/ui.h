@@ -23,6 +23,7 @@ struct WindowContext
 	struct UIState *uiState;
 	MemoryArena *temporaryMemory;
 	Window *window;
+	UIWindowStyle *windowStyle;
 
 	Rect2 contentArea;
 	V2 currentOffset;
@@ -49,7 +50,7 @@ struct Window
 	u32 flags;
 
 	Rect2I area;
-	UIWindowStyle *style;
+	String styleName;
 
 	WindowProc windowProc;
 	void *userData;

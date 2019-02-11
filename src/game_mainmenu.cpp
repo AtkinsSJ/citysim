@@ -23,11 +23,11 @@ void testWindowProc(WindowContext *context, void *userData)
 
 	if (window_button(context, LocalString("Green style")))
 	{
-		setWindowStyle(context, stringFromChars("general"));
+		context->window->styleName = stringFromChars("general");
 	}
 	if (window_button(context, LocalString("Blue style")))
 	{
-		setWindowStyle(context, stringFromChars("blue"));
+		context->window->styleName = stringFromChars("blue");
 	}
 }
 

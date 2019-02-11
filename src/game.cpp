@@ -265,7 +265,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	// Centred, with equal button sizes
 	context->alignment = ALIGN_H_CENTRE;
 
-	UIButtonStyle *buttonStyle = context->window->style->buttonStyle;
+	UIButtonStyle *buttonStyle = context->windowStyle->buttonStyle;
 	BitmapFont *buttonFont = getFont(context->uiState->assets, buttonStyle->fontID);
 	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
 	s32 maxButtonTextWidth = 0;

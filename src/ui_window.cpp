@@ -6,7 +6,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 
 	UILabelStyle *style = null;
 	if (styleName)      style = findLabelStyle(context->uiState->assets, stringFromChars(styleName));
-	if (style == null)  style = context->window->style->labelStyle;
+	if (style == null)  style = context->windowStyle->labelStyle;
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -51,7 +51,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	UIButtonStyle *style = context->window->style->buttonStyle;
+	UIButtonStyle *style = context->windowStyle->buttonStyle;
 	InputState *input = context->uiState->input;
 
 	u32 textAlignment = style->textAlignment;
@@ -140,15 +140,6 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 	return buttonClicked;
 }
 
-void setWindowStyle(WindowContext *context, String styleName)
-{
-	UIWindowStyle *style = findWindowStyle(context->uiState->assets, styleName);
-	if (style != null)
-	{
-		context->window->style = style;
-	}
-}
-
 static void makeWindowActive(UIState *uiState, s32 windowIndex)
 {
 	// Don't do anything if it's already the active window.
@@ -160,12 +151,12 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  */
-void showWindow(UIState *uiState, String title, s32 width, s32 height, String style, u32 flags, WindowProc windowProc, void *userData)
+void showWindow(UIState *uiState, String title, s32 width, s32 height, String styleName, u32 flags, WindowProc windowProc, void *userData)
 {
 	Window newWindow = {};
 	newWindow.title = title;
 	newWindow.flags = flags;
-	newWindow.style = findWindowStyle(uiState->assets, style);
+	newWindow.styleName = styleName;
 
 	V2 windowOrigin = uiState->uiBuffer->camera.pos;
 	newWindow.area = irectCentreWH(v2i(windowOrigin), width, height);
@@ -242,19 +233,20 @@ void updateAndRenderWindows(UIState *uiState)
 		f32 depth = 2000.0f - (20.0f * windowIndex);
 		bool isActive = (windowIndex == 0);
 		bool isModal = isActive && (window->flags & WinFlag_Modal) != 0;
+		UIWindowStyle *windowStyle = findWindowStyle(uiState->assets, window->styleName);
 
-		V4 backColor = (isActive ? window->style->backgroundColor : window->style->backgroundColorInactive);
+		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
 
-		f32 barHeight = window->style->titleBarHeight;
-		V4 barColor = (isActive ? window->style->titleBarColor : window->style->titleBarColorInactive);
-		V4 titleColor = window->style->titleColor;
+		f32 barHeight = windowStyle->titleBarHeight;
+		V4 barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
+		V4 titleColor = windowStyle->titleColor;
 
-		f32 contentPadding = window->style->contentPadding;
+		f32 contentPadding = windowStyle->contentPadding;
 
 		String closeButtonString = stringFromChars("X");
-		V4 closeButtonColorHover = window->style->titleBarButtonHoverColor;
+		V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
-		BitmapFont *titleFont = getFont(uiState->assets, window->style->titleFontID);
+		BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontID);
 
 		// Handle dragging/position first, BEFORE we use the window rect anywhere
 		if (isModal)
@@ -286,6 +278,7 @@ void updateAndRenderWindows(UIState *uiState)
 			context.uiState = uiState;
 			context.temporaryMemory = &globalAppState.globalTempArena;
 			context.window = window;
+			context.windowStyle = windowStyle;
 
 			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 			context.currentOffset = v2(0,0);
