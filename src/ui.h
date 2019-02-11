@@ -28,6 +28,9 @@ struct WindowContext
 	V2 currentOffset;
 	f32 renderDepth;
 	f32 perItemPadding;
+
+	// Results
+	bool closeRequested;
 };
 
 typedef void (*WindowProc)(WindowContext*, void*);

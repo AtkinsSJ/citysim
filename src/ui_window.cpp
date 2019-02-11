@@ -182,7 +182,7 @@ void updateAndRenderWindows(UIState *uiState)
 		Window *window = get(it);
 		f32 depth = 2000.0f - (20.0f * windowIndex);
 		bool isActive = (windowIndex == 0);
-		bool isModal = (window->flags & WinFlag_Modal) != 0;
+		bool isModal = isActive && (window->flags & WinFlag_Modal) != 0;
 
 		V4 backColor = (isActive ? window->style->backgroundColor : window->style->backgroundColorInactive);
 
@@ -238,6 +238,11 @@ void updateAndRenderWindows(UIState *uiState)
 			if (window->flags & WinFlag_AutomaticHeight)
 			{
 				window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
+			}
+
+			if (context.closeRequested)
+			{
+				closeWindow = windowIndex;
 			}
 		}
 

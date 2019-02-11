@@ -258,6 +258,37 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Building: {0} ({1})", {buildingName, formatInt(buildingID)}));
 }
 
+void pauseMenuWindowProc(WindowContext *context, void *userData)
+{
+	userData = userData; // Prevent the dumb warning
+
+	if (window_button(context, LocalString("Resume")))
+	{
+		context->closeRequested = true;
+	}
+
+	if (window_button(context, LocalString("Save")))
+	{
+		pushUiMessage(context->uiState, LocalString("Saving isn't implemented yet!"));
+	}
+
+	if (window_button(context, LocalString("Load")))
+	{
+		pushUiMessage(context->uiState, LocalString("Loading isn't implemented yet!"));
+	}
+
+	if (window_button(context, LocalString("About")))
+	{
+		showWindow(context->uiState, LocalString("About"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal, aboutWindowProc, null);
+	}
+
+	if (window_button(context, LocalString("Exit")))
+	{
+		globalAppState.gameState->status = GameStatus_Quit;
+		context->closeRequested = true;
+	}
+}
+
 void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState, GameState *gameState,
 	                       InputState *inputState)
 {
@@ -369,65 +400,9 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiMenuButton(uiState, LocalString("Menu"), buttonRect, 1, Menu_System))
+		if (uiButton(uiState, LocalString("Menu"), buttonRect, 1))
 		{
-			Rect2 menuButtonRect = buttonRect;
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-
-			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
-
-			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
-			{
-				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiCloseMenus(uiState);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
-			{
-				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiCloseMenus(uiState);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
-			{
-				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiCloseMenus(uiState);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
-			{
-				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiCloseMenus(uiState);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, LocalString("Save"), menuButtonRect, 1))
-			{
-				pushUiMessage(uiState, LocalString("Saving isn't implemented yet!"));
-				uiCloseMenus(uiState);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-			if (uiButton(uiState, LocalString("Exit"), menuButtonRect, 1))
-			{
-				gameState->status = GameStatus_Quit;
-				uiCloseMenus(uiState);
-			}
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			menuRect.h += menuButtonRect.h + uiPadding;
-
-
-
-			append(&uiState->uiRects, menuRect);
-			drawRect(uiBuffer, menuRect, 0, theme->overlayColor);
+			showWindow(uiState, LocalString("Menu"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal, pauseMenuWindowProc, null);
 		}
 	}
 }
