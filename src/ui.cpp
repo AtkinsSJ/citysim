@@ -148,11 +148,12 @@ bool uiButton(UIState *uiState,
 	InputState *input = uiState->input;
 	UIButtonStyle *style = findButtonStyle(uiState->assets, stringFromChars("general"));
 	V4 backColor = style->backgroundColor;
+	u32 textAlignment = style->textAlignment;
 
 	if (!uiState->mouseInputHandled && inRect(bounds, mousePos))
 	{
 		uiState->mouseInputHandled = true;
-		
+
 		// Mouse pressed: must have started and currently be inside the bounds to show anything
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
@@ -183,7 +184,8 @@ bool uiButton(UIState *uiState,
 	}
 
 	drawRect(uiState->uiBuffer, bounds, depth, backColor);
-	uiText(uiState, getFont(uiState->assets, style->fontID), text, centre(bounds), ALIGN_CENTRE, depth + 1,
+	V2 textOrigin = originWithinRectangle(bounds, textAlignment, style->padding);
+	uiText(uiState, getFont(uiState->assets, style->fontID), text, textOrigin, textAlignment, depth + 1,
 			style->textColor);
 
 	// Keyboard shortcut!
