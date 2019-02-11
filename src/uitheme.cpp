@@ -1,6 +1,6 @@
 #pragma once
 
-V4 readColor255(String input)
+static V4 readColor255(String input)
 {
 	s64 r = 0, g = 0, b = 0, a = 255;
 	String token, rest;
@@ -34,7 +34,7 @@ V4 readColor255(String input)
 	return color255((u8)r, (u8)g, (u8)b, (u8)a);
 }
 
-s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
+static s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
 {
 	s32 result = -1;
 	
@@ -52,6 +52,81 @@ s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
 	if (result == -1)
 	{
 		error(reader, "Unrecognized font name '{0}'", {fontName});
+	}
+
+	return result;
+}
+
+static u32 readAlignment(LineReader *reader, String text)
+{
+	u32 result = 0;
+
+	String remainder = text;
+
+	String token = nextToken(remainder, &remainder);
+	while (token.length > 0)
+	{
+		if (equals(token, "LEFT"))
+		{
+			if (result & ALIGN_H)
+			{
+				error(reader, "Multiple horizontal alignment keywords given!");
+				break;
+			}
+			result |= ALIGN_LEFT;
+		}
+		else if (equals(token, "H_CENTRE"))
+		{
+			if (result & ALIGN_H)
+			{
+				error(reader, "Multiple horizontal alignment keywords given!");
+				break;
+			}
+			result |= ALIGN_H_CENTRE;
+		}
+		else if (equals(token, "RIGHT"))
+		{
+			if (result & ALIGN_H)
+			{
+				error(reader, "Multiple horizontal alignment keywords given!");
+				break;
+			}
+			result |= ALIGN_RIGHT;
+		}
+		else if (equals(token, "TOP"))
+		{
+			if (result & ALIGN_V)
+			{
+				error(reader, "Multiple vertical alignment keywords given!");
+				break;
+			}
+			result |= ALIGN_TOP;
+		}
+		else if (equals(token, "V_CENTRE"))
+		{
+			if (result & ALIGN_V)
+			{
+				error(reader, "Multiple vertical alignment keywords given!");
+				break;
+			}
+			result |= ALIGN_V_CENTRE;
+		}
+		else if (equals(token, "BOTTOM"))
+		{
+			if (result & ALIGN_V)
+			{
+				error(reader, "Multiple vertical alignment keywords given!");
+				break;
+			}
+			result |= ALIGN_BOTTOM;
+		}
+		else
+		{
+			error(reader, "Unrecognized alignment keyword '{0}'", {token});
+			break;
+		}
+
+		token = nextToken(remainder, &remainder);
 	}
 
 	return result;
@@ -407,6 +482,15 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Tooltip:  target.tooltip->offsetFromCursor = v2((s32)offsetX, (s32)offsetY); break;
+					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+				}
+			}
+			else if (equals(firstWord, "textAlignment"))
+			{
+				u32 alignment = readAlignment(&reader, remainder);
+				switch (target.type)
+				{
+					case Section_Button:  target.button->textAlignment = alignment; break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}

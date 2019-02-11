@@ -54,6 +54,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 	UIButtonStyle *style = context->window->style->buttonStyle;
 	InputState *input = context->uiState->input;
 
+	u32 textAlignment = style->textAlignment;
 	V4 backColor = style->backgroundColor;
 	f32 buttonPadding = style->padding;
 	V2 mousePos = context->uiState->uiBuffer->camera.mousePos;
@@ -66,20 +67,14 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 
 	s32 alignment = context->alignment;
 	V2 origin = context->contentArea.pos + context->currentOffset;
-	V2 textOriginOffset = v2(0.0f, buttonPadding);
 
 	if (alignment & ALIGN_RIGHT)
 	{
 		origin.x = context->contentArea.pos.x + context->contentArea.w;
-		textOriginOffset.x = -buttonPadding;
 	}
 	else if (alignment & ALIGN_H_CENTRE)
 	{
 		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
-	}
-	else
-	{
-		textOriginOffset.x = buttonPadding;
 	}
 
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
@@ -96,8 +91,6 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 		}
 
 		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
-		V2 topLeft = calculateTextPosition(textCache, origin + textOriginOffset, alignment);
-		drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth + 1.0f);
 
 		Rect2 bounds;
 		if (textWidth == -1)
@@ -108,6 +101,10 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 		{
 			bounds = rectAligned(origin, v2((f32)textWidth, textCache->size.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
 		}
+
+		V2 textOrigin = originWithinRectangle(bounds, textAlignment, buttonPadding);
+		V2 textTopLeft = calculateTextPosition(textCache, textOrigin, textAlignment);
+		drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f);
 
 		if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
 		{

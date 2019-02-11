@@ -6,6 +6,7 @@ struct UIButtonStyle
 
 	s32 fontID;
 	V4 textColor;
+	u32 textAlignment;
 
 	V4 backgroundColor;
 	V4 hoverColor;

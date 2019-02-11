@@ -618,3 +618,40 @@ inline V2 centre(Rect2 rect)
 		rect.y + rect.h / 2.0f
 	);
 }
+
+inline V2 originWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0)
+{
+	V2 result = v2(0,0);
+
+	switch (alignment & ALIGN_H)
+	{
+		case ALIGN_H_CENTRE: {
+			result.x = bounds.x + bounds.w / 2.0f;
+		} break;
+
+		case ALIGN_RIGHT: {
+			result.x = bounds.x + bounds.w - padding;
+		} break;
+
+		default: { // Left is default
+			result.x = bounds.x + padding;
+		} break;
+	}
+
+	switch (alignment & ALIGN_V)
+	{
+		case ALIGN_V_CENTRE: {
+			result.y = bounds.y + bounds.h / 2.0f;
+		} break;
+
+		case ALIGN_BOTTOM: {
+			result.y = bounds.y + bounds.h - padding;
+		} break;
+
+		default: { // Top is default
+			result.y = bounds.y + padding;
+		} break;
+	}
+
+	return result;
+}
