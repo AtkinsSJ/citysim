@@ -540,32 +540,18 @@ inline Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
 
 	switch (alignment & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE: {
-			rect.x = origin.x - round_f32(size.x / 2.0f);
-		} break;
-
-		case ALIGN_RIGHT: {
-			rect.x = origin.x - size.x;
-		} break;
-
-		default: { // Left is default
-			rect.x = origin.x;
-		} break;
+		case ALIGN_H_CENTRE:  rect.x = origin.x - round_f32(size.x / 2.0f);  break;
+		case ALIGN_RIGHT:     rect.x = origin.x - size.x;                    break;
+		case ALIGN_LEFT:      // Left is default
+		default:              rect.x = origin.x;                             break;
 	}
 
 	switch (alignment & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE: {
-			rect.y = origin.y - round_f32(size.y / 2.0f);
-		} break;
-
-		case ALIGN_BOTTOM: {
-			rect.y = origin.y - size.y;
-		} break;
-
-		default: { // Top is default
-			rect.y = origin.y;
-		} break;
+		case ALIGN_V_CENTRE:  rect.y = origin.y - round_f32(size.y / 2.0f);  break;
+		case ALIGN_BOTTOM:    rect.y = origin.y - size.y;                    break;
+		case ALIGN_TOP:       // Top is default
+		default:              rect.y = origin.y;                             break;
 	}
 
 	return rect;
@@ -625,32 +611,18 @@ inline V2 originWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0)
 
 	switch (alignment & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE: {
-			result.x = bounds.x + bounds.w / 2.0f;
-		} break;
-
-		case ALIGN_RIGHT: {
-			result.x = bounds.x + bounds.w - padding;
-		} break;
-
-		default: { // Left is default
-			result.x = bounds.x + padding;
-		} break;
+		case ALIGN_H_CENTRE:  result.x = bounds.x + bounds.w / 2.0f;     break;
+		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding;  break;
+		case ALIGN_LEFT:      // Left is default
+		default:              result.x = bounds.x + padding;             break;
 	}
 
 	switch (alignment & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE: {
-			result.y = bounds.y + bounds.h / 2.0f;
-		} break;
-
-		case ALIGN_BOTTOM: {
-			result.y = bounds.y + bounds.h - padding;
-		} break;
-
-		default: { // Top is default
-			result.y = bounds.y + padding;
-		} break;
+		case ALIGN_V_CENTRE:  result.y = bounds.y + bounds.h / 2.0f;     break;
+		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding;  break;
+		case ALIGN_TOP:       // Top is default
+		default:              result.y = bounds.y + padding;             break;
 	}
 
 	return result;
