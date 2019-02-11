@@ -151,6 +151,8 @@ bool uiButton(UIState *uiState,
 
 	if (!uiState->mouseInputHandled && inRect(bounds, mousePos))
 	{
+		uiState->mouseInputHandled = true;
+		
 		// Mouse pressed: must have started and currently be inside the bounds to show anything
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
@@ -166,7 +168,6 @@ bool uiButton(UIState *uiState,
 			 && inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)))
 			{
 				buttonClicked = true;
-				uiState->mouseInputHandled = true;
 			}
 			backColor = style->hoverColor;
 		}

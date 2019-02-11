@@ -180,11 +180,8 @@ DragResult updateDragState(GameState *gameState, InputState *inputState, V2I mou
 
 	if (gameState->isWorldDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 	{
-		if (!mouseIsOverUI)
-		{
-			result.operation = DragResult_DoAction;
-			result.dragRect = getDragArea(gameState, dragType);
-		}
+		result.operation = DragResult_DoAction;
+		result.dragRect = getDragArea(gameState, dragType);
 
 		gameState->isWorldDragging = false;
 	}
@@ -235,6 +232,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	uiState->uiRects.count = 0;
 	uiState->mouseInputHandled = false;
+	updateAndRenderWindows(uiState);
 
 	f32 left = uiPadding;
 	f32 right = windowWidth - uiPadding;
@@ -417,7 +415,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	GameState *gameState = appState->gameState;
 	City *city = &gameState->city;
-	UIState *uiState = &globalAppState.uiState;
 
 	if (assets->assetReloadHasJustHappened)
 	{	
@@ -432,6 +429,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	growSomeZoneBuildings(city);
 
 
+	// UI!
+	UIState *uiState = &globalAppState.uiState;
+	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState, inputState);
+
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
 	Camera *uiCamera    = &renderer->uiBuffer.camera;
@@ -441,7 +442,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
-	bool mouseIsOverUI = inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos);
+	bool mouseIsOverUI = uiState->mouseInputHandled || inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos);
 	Rect2I demolitionRect = {0,0,-1,-1};
 
 	switch (gameState->actionMode)
@@ -860,9 +861,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 		}
 	}
-
-	// Draw the UI!
-	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState, inputState);
 
 	if (gameState->status == GameStatus_Quit)
 	{
