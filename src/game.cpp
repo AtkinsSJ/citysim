@@ -423,7 +423,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, LocalString("Menu"), buttonRect, 1))
 		{
-			showWindow(uiState, LocalString("Menu"), 300, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, LocalString("Menu"), 200, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }

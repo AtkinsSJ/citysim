@@ -57,6 +57,7 @@ struct DrawTextState
 
 	V2 position;
 
+	bool hasRenderItems;
 	RenderItem *startOfCurrentWord;
 	RenderItem *endOfCurrentWord;
 	f32 currentWordWidth;
@@ -74,7 +75,7 @@ static void nextLine(DrawTextState *state)
 	state->lineCount++;
 }
 
-void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
+static void addCharAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 {
 	if (state->startOfCurrentWord == null)
 	{
@@ -85,6 +86,7 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 	if (isWhitespace(c->codepoint))
 	{
 		state->startOfCurrentWord = null;
+		state->currentWordWidth = 0;
 	}
 	else if (state->doWrap)
 	{
@@ -105,23 +107,29 @@ void checkAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 				state->startOfCurrentWord = state->endOfCurrentWord;
 				state->currentWordWidth = 0;
 
-				state->startOfCurrentWord->rect.pos.x = state->position.x;
-				state->startOfCurrentWord->rect.pos.y = state->position.y + (f32)c->yOffset;
+				if (state->hasRenderItems)
+				{
+					state->startOfCurrentWord->rect.pos.x = state->position.x;
+					state->startOfCurrentWord->rect.pos.y = state->position.y + (f32)c->yOffset;
+				}
 			}
 			else
 			{
 				// Wrap the whole word onto a new line
 				nextLine(state);
 
-				V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
-				while (state->startOfCurrentWord <= state->endOfCurrentWord)
-				{
-					state->startOfCurrentWord->rect.pos += offset;
-					state->startOfCurrentWord++;
-				}
-
 				state->position.x = state->currentWordWidth;
 				state->currentLineWidth = state->currentWordWidth;
+
+				if (state->hasRenderItems)
+				{
+					V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
+					while (state->startOfCurrentWord <= state->endOfCurrentWord)
+					{
+						state->startOfCurrentWord->rect.pos += offset;
+						state->startOfCurrentWord++;
+					}
+				}
 			}
 		}
 	}
@@ -142,16 +150,11 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	}
 
 	DrawTextState state = {};
-
 	state.maxWidth = maxWidth;
 	state.doWrap = (maxWidth > 0);
 	state.lineCount = 1;
-	state.longestLineWidth = 0;
 	state.lineHeight = font->lineHeight;
-	state.position = {};
-	state.startOfCurrentWord = null;
-	state.currentWordWidth = 0;
-	state.currentLineWidth = 0;
+	state.hasRenderItems = true;
 
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
@@ -175,7 +178,6 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 			}
 			else
 			{
-
 				BitmapFontChar *c = findChar(font, glyph);
 				if (c)
 				{
@@ -186,16 +188,12 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 						0.0f, c->textureRegionID, color
 					);
 
-					checkAndHandleWrapping(&state, c);
+					addCharAndHandleWrapping(&state, c);
 				}
 			}
 
 			bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 		}
-
-		// Final flush to make sure the last line is correct
-		// TODO: I think this isn't necessary now?
-		checkAndHandleWrapping(&state, &font->nullChar);
 
 		result->size.x = MAX(state.longestLineWidth, state.currentLineWidth);
 		result->size.y = (f32)(font->lineHeight * state.lineCount);
@@ -222,15 +220,11 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 
 	// COPIED from drawTextToCache() - maybe we want these to both be the same code path?
 	DrawTextState state = {};
-
 	state.maxWidth = maxWidth;
 	state.doWrap = (maxWidth > 0);
 	state.lineCount = 1;
-	state.longestLineWidth = 0;
 	state.lineHeight = font->lineHeight;
-	state.position = {};
-	state.currentWordWidth = 0;
-	state.currentLineWidth = 0;
+	state.hasRenderItems = false;
 
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
@@ -248,16 +242,12 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 			BitmapFontChar *c = findChar(font, glyph);
 			if (c)
 			{
-				checkAndHandleWrapping(&state, c);
+				addCharAndHandleWrapping(&state, c);
 			}
 		}
 
 		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 	}
-
-	// Final flush to make sure the last line is correct
-	// TODO: I think this isn't necessary now?
-	checkAndHandleWrapping(&state, &font->nullChar);
 
 	result.x = MAX(state.longestLineWidth, state.currentLineWidth);
 	result.y = (f32)(font->lineHeight * state.lineCount);
