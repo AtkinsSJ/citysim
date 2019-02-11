@@ -13,14 +13,26 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 		context->currentOffset.y += context->perItemPadding;
 	}
 
+	s32 alignment = context->alignment;
 	V2 origin = context->contentArea.pos + context->currentOffset;
+
+	if (alignment & ALIGN_RIGHT)
+	{
+		ASSERT(false, "Not implemented yet!");
+	}
+	else if (alignment & ALIGN_H_CENTRE)
+	{
+		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
+	}
+
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
 	if (font)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
 		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
-		drawCachedText(context->uiState->uiBuffer, textCache, origin, context->renderDepth);
+		V2 topLeft = calculateTextPosition(textCache, origin, alignment);
+		drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth);
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
@@ -45,17 +57,29 @@ bool window_button(WindowContext *context, String text)
 		context->currentOffset.y += context->perItemPadding;
 	}
 
+	s32 alignment = context->alignment;
 	// Let's be a little bit fancy. Figure out the size of the text, then determine the button size based on that!
 	V2 origin = context->contentArea.pos + context->currentOffset;
+
+	if (alignment & ALIGN_RIGHT)
+	{
+		ASSERT(false, "Not implemented yet!");
+	}
+	else if (alignment & ALIGN_H_CENTRE)
+	{
+		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f) - buttonPadding;
+	}
+
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
 	if (font)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
 
 		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
-		drawCachedText(context->uiState->uiBuffer, textCache, origin + v2(buttonPadding, buttonPadding), context->renderDepth + 1.0f);
+		V2 topLeft = calculateTextPosition(textCache, origin, alignment);
+		drawCachedText(context->uiState->uiBuffer, textCache, topLeft + v2(buttonPadding, buttonPadding), context->renderDepth + 1.0f);
 
-		Rect2 bounds = rectPosSize(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
+		Rect2 bounds = rectPosSize(topLeft, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
 
 		if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
 		{
@@ -240,6 +264,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 			context.currentOffset = v2(0,0);
+			context.alignment = ALIGN_TOP | ALIGN_LEFT;
 			context.renderDepth = depth + 1.0f;
 			context.perItemPadding = 4.0f;
 

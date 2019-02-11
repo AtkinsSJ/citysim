@@ -26,6 +26,7 @@ struct WindowContext
 
 	Rect2 contentArea;
 	V2 currentOffset;
+	s32 alignment;
 	f32 renderDepth;
 	f32 perItemPadding;
 

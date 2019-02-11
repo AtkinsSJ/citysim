@@ -217,7 +217,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 	switch (align & ALIGN_H)
 	{
 		case ALIGN_H_CENTRE: {
-			offset.x = origin.x - cache->size.x / 2.0f;
+			offset.x = origin.x - round_f32(cache->size.x / 2.0f);
 		} break;
 
 		case ALIGN_RIGHT: {
@@ -232,7 +232,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 	switch (align & ALIGN_V)
 	{
 		case ALIGN_V_CENTRE: {
-			offset.y = origin.y - cache->size.y / 2.0f;
+			offset.y = origin.y - round_f32(cache->size.y / 2.0f);
 		} break;
 
 		case ALIGN_BOTTOM: {
@@ -250,11 +250,14 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth)
 {
 	if (cache == null) return;
+
+	// Make sure we're on whole-pixel boundaries for nicer text rendering
+	V2 origin = v2(round_f32(topLeft.x), round_f32(topLeft.y));
 	
 	for (u32 spriteIndex=0;
 		spriteIndex < cache->charCount;
 		spriteIndex++)
 	{
-		drawRenderItem(uiBuffer, cache->chars + spriteIndex, topLeft, depth);
+		drawRenderItem(uiBuffer, cache->chars + spriteIndex, origin, depth);
 	}
 }

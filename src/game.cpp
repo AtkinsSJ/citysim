@@ -262,27 +262,38 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 {
 	userData = userData; // Prevent the dumb warning
 
-	if (window_button(context, LocalString("Resume")))
+	// Centred, with equal button sizes
+	context->alignment = ALIGN_H_CENTRE;
+
+	String resume = LocalString("Resume");
+	String save   = LocalString("Save");
+	String load   = LocalString("Load");
+	String about  = LocalString("About");
+	String exit   = LocalString("Exit");
+
+	if (window_button(context, resume))
 	{
 		context->closeRequested = true;
 	}
 
-	if (window_button(context, LocalString("Save")))
+	if (window_button(context, save))
 	{
 		pushUiMessage(context->uiState, LocalString("Saving isn't implemented yet!"));
 	}
 
-	if (window_button(context, LocalString("Load")))
+	if (window_button(context, load))
 	{
 		pushUiMessage(context->uiState, LocalString("Loading isn't implemented yet!"));
 	}
 
-	if (window_button(context, LocalString("About")))
+	if (window_button(context, about))
 	{
 		showAboutWindow(context->uiState);
 	}
 
-	if (window_button(context, LocalString("Exit")))
+	window_label(context, stringFromChars("Test text"));
+
+	if (window_button(context, exit))
 	{
 		globalAppState.gameState->status = GameStatus_Quit;
 		context->closeRequested = true;
