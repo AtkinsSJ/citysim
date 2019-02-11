@@ -8,6 +8,7 @@ void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Ren
 	f32 windowWidth = (f32) uiBuffer->camera.size.x;
 	f32 windowHeight = (f32) uiBuffer->camera.size.y;
 	UIState *uiState = &appState->uiState;
+	uiState->mouseInputHandled = false;
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;

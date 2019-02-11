@@ -78,16 +78,19 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	if (uiButton(uiState, LocalString("Play"), buttonRect, 1)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;
+		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("Credits"), buttonRect, 1))
 	{
 		result = AppStatus_Credits;
+		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("Settings"), buttonRect, 1))
 	{
 		result = AppStatus_SettingsMenu;
+		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("Create a window"), buttonRect, 1))

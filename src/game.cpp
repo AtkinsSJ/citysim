@@ -707,7 +707,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
 				{
 					gameState->inspectedTilePosition = mouseTilePos;
-					showWindow(uiState, stringFromChars("Inspect tile"), 200, 200, stringFromChars("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+					showWindow(uiState, stringFromChars("Inspect tile"), 250, 200, stringFromChars("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 				}
 			}
 		} break;
@@ -881,6 +881,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		freeMemoryArena(&gameState->gameArena);
 		appState->gameState = null;
 		appState->appStatus = AppStatus_MainMenu;
+		clear(&uiState->openWindows);
 	}
 
 	if (appState->appStatus == AppStatus_Game)
