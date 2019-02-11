@@ -264,36 +264,37 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 
 	// Centred, with equal button sizes
 	context->alignment = ALIGN_H_CENTRE;
+	s32 maxButtonTextWidth = 100;
 
-	String resume = LocalString("Resume");
+	String resume = LocalString("Resume has a surprisingly verbose label");
 	String save   = LocalString("Save");
 	String load   = LocalString("Load");
 	String about  = LocalString("About");
 	String exit   = LocalString("Exit");
 
-	if (window_button(context, resume))
+	if (window_button(context, resume, maxButtonTextWidth))
 	{
 		context->closeRequested = true;
 	}
 
-	if (window_button(context, save))
+	if (window_button(context, save, maxButtonTextWidth))
 	{
 		pushUiMessage(context->uiState, LocalString("Saving isn't implemented yet!"));
 	}
 
-	if (window_button(context, load))
+	if (window_button(context, load, maxButtonTextWidth))
 	{
 		pushUiMessage(context->uiState, LocalString("Loading isn't implemented yet!"));
 	}
 
-	if (window_button(context, about))
+	if (window_button(context, about, maxButtonTextWidth))
 	{
 		showAboutWindow(context->uiState);
 	}
 
 	window_label(context, stringFromChars("Test text"));
 
-	if (window_button(context, exit))
+	if (window_button(context, exit, maxButtonTextWidth))
 	{
 		globalAppState.gameState->status = GameStatus_Quit;
 		context->closeRequested = true;

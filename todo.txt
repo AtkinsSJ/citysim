@@ -92,6 +92,7 @@ Split the game code from the platform code
 - game has a single entry point function that's run once per frame.
 
 GUI
+- BUG: Text alignment doesn't work when the text wraps onto multiple lines! Each line should align itself horizontally. (So, a multi-line wrapped text with ALIGN_H_CENTRE should have each line centred!)
 - Richer tooltips. Not as fancy as our window-proc stuff, but allow creating a tooltip by adding individual labels (or maybe images too eventually) each of which is styled individually. Actually maybe it should use the same system as windows!
 
 UI styles loaded from a file

@@ -210,6 +210,37 @@ struct Rect2 {
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define WRAP(value, max) (((value) + (max)) % (max))
 
+// Standard rounding functions return doubles, so here's some int ones.
+inline s32 round_s32(f32 in)
+{
+	return (s32) round(in);
+}
+
+inline s32 floor_s32(f32 in)
+{
+	return (s32) floor(in);
+}
+
+inline s32 ceil_s32(f32 in)
+{
+	return (s32) ceil(in);
+}
+
+inline f32 round_f32(f32 in)
+{
+	return (f32) round(in);
+}
+
+inline f32 floor_f32(f32 in)
+{
+	return (f32) floor(in);
+}
+
+inline f32 ceil_f32(f32 in)
+{
+	return (f32) ceil(in);
+}
+
 // Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
 // In other cases, you'll want to write a type-specific function.
 // I'm not entirely confident this will work for all types, so make sure to TEST with any types you use it for!

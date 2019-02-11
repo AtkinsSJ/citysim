@@ -40,7 +40,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 	}
 }
 
-bool window_button(WindowContext *context, String text)
+bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 {
 	DEBUG_FUNCTION();
 	
@@ -60,6 +60,7 @@ bool window_button(WindowContext *context, String text)
 	s32 alignment = context->alignment;
 	// Let's be a little bit fancy. Figure out the size of the text, then determine the button size based on that!
 	V2 origin = context->contentArea.pos + context->currentOffset;
+	V2 textOriginOffset = v2(0.0f, buttonPadding);
 
 	if (alignment & ALIGN_RIGHT)
 	{
@@ -67,19 +68,39 @@ bool window_button(WindowContext *context, String text)
 	}
 	else if (alignment & ALIGN_H_CENTRE)
 	{
-		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f) - buttonPadding;
+		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
+	}
+	else
+	{
+		textOriginOffset.x = buttonPadding;
 	}
 
 	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
 	if (font)
 	{
-		f32 maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
+		f32 maxWidth;
+		if (textWidth == -1)
+		{
+			maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
+		}
+		else
+		{
+			maxWidth = textWidth;
+		}
 
 		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
-		V2 topLeft = calculateTextPosition(textCache, origin, alignment);
-		drawCachedText(context->uiState->uiBuffer, textCache, topLeft + v2(buttonPadding, buttonPadding), context->renderDepth + 1.0f);
+		V2 topLeft = calculateTextPosition(textCache, origin + textOriginOffset, alignment);
+		drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth + 1.0f);
 
-		Rect2 bounds = rectPosSize(topLeft, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f));
+		Rect2 bounds;
+		if (textWidth == -1)
+		{
+ 			bounds = rectAligned(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+		}
+		else
+		{
+			bounds = rectAligned(origin, v2((f32)textWidth, textCache->size.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+		}
 
 		if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
 		{

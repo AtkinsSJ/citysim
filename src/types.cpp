@@ -533,6 +533,44 @@ inline Rect2 rectCentreSize(V2 centre, V2 size)
 	return rect;
 }
 
+inline Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
+{
+	Rect2 rect = {};
+	rect.size = size;
+
+	switch (alignment & ALIGN_H)
+	{
+		case ALIGN_H_CENTRE: {
+			rect.x = origin.x - round_f32(size.x / 2.0f);
+		} break;
+
+		case ALIGN_RIGHT: {
+			rect.x = origin.x - size.x;
+		} break;
+
+		default: { // Left is default
+			rect.x = origin.x;
+		} break;
+	}
+
+	switch (alignment & ALIGN_V)
+	{
+		case ALIGN_V_CENTRE: {
+			rect.y = origin.y - round_f32(size.y / 2.0f);
+		} break;
+
+		case ALIGN_BOTTOM: {
+			rect.y = origin.y - size.y;
+		} break;
+
+		default: { // Top is default
+			rect.y = origin.y;
+		} break;
+	}
+
+	return rect;
+}
+
 inline Rect2 expand(Rect2 rect, f32 addRadius)
 {
 	return rectXYWH(
