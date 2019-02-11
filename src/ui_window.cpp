@@ -8,6 +8,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 	if (styleName)      style = findLabelStyle(context->uiState->assets, stringFromChars(styleName));
 	if (style == null)  style = context->window->style->labelStyle;
 
+	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
 	{
 		context->currentOffset.y += context->perItemPadding;
@@ -40,6 +41,11 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 	}
 }
 
+/*
+ * If you pass textWidth, then the button will be sized as though the text was that size. If you leave
+ * it blank (or pass -1 manually) then the button will be automatically sized to wrap the contained text.
+ * Either way, it always matches the size vertically.
+ */
 bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 {
 	DEBUG_FUNCTION();
@@ -52,13 +58,13 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 	f32 buttonPadding = style->padding;
 	V2 mousePos = context->uiState->uiBuffer->camera.mousePos;
 
+	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
 	{
 		context->currentOffset.y += context->perItemPadding;
 	}
 
 	s32 alignment = context->alignment;
-	// Let's be a little bit fancy. Figure out the size of the text, then determine the button size based on that!
 	V2 origin = context->contentArea.pos + context->currentOffset;
 	V2 textOriginOffset = v2(0.0f, buttonPadding);
 
