@@ -213,8 +213,7 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 
 static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 {
-	// For now, we'll ignore zoneType and assume the same requirements for all zones, but later we'll want to make distance-to-road etc variable for them.
-	// TODO: Different requirements per ZoneType
+	ZoneDef def = zoneDefs[zoneType];
 
 	bool isAcceptable = true;
 
@@ -226,8 +225,11 @@ static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 	{
 		isAcceptable = false;
 	}
+	else if (calculateDistanceToRoad(city, x, y, def.maximumDistanceToRoad) > def.maximumDistanceToRoad)
+	{
+		isAcceptable = false;
+	}
 
-	// TODO: Distance to road!
 	// TODO: Power requirements!
 
 	return isAcceptable;

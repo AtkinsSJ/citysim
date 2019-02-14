@@ -448,3 +448,70 @@ void calculateDemand(City *city)
 	// Industrial
 	city->industrialDemand = (city->totalResidents / 3) - city->totalJobs + 30;
 }
+
+/**
+ * Distance to road, counting diagonal distances as 1.
+ * If nothing is found within the maxDistanceToCheck, returns a *really big number*.
+ * If the tile itself is a road, just returns 0 as you'd expect.
+ */
+s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
+{
+	s32 result = s32Max;
+
+	if (isPathable(city, x, y))
+	{
+		result = 0;
+	}
+	else
+	{
+		bool done = false;
+
+		for (s32 distance = 1;
+			 !done && distance <= maxDistanceToCheck;
+			 distance++)
+		{
+			s32 leftX   = x - distance;
+			s32 rightX  = x + distance;
+			s32 bottomY = y - distance;
+			s32 topY    = y + distance;
+
+			for (s32 px = leftX; px <= rightX; px++)
+			{
+				if (isPathable(city, px, bottomY))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+
+				if (isPathable(city, px, topY))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+			}
+
+			if (done) break;
+
+			for (s32 py = bottomY; py <= topY; py++)
+			{
+				if (isPathable(city, leftX, py))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+
+				if (isPathable(city, rightX, py))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+			}
+		}
+	}
+
+	return result;
+}

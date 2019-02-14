@@ -20,13 +20,14 @@ struct ZoneDef
 	V4 color;
 	s32 costPerTile;
 	bool carriesPower;
+	s32 maximumDistanceToRoad;
 };
 
 ZoneDef zoneDefs[] = {
-	{Zone_None,        stringFromChars("Dezone"),      color255(255, 255, 255, 128), 10, false},
-	{Zone_Residential, stringFromChars("Residential"), color255(  0, 255,   0, 128), 10, true},
-	{Zone_Commercial,  stringFromChars("Commercial"),  color255(  0,   0, 255, 128), 10, true},
-	{Zone_Industrial,  stringFromChars("Industrial"),  color255(255, 255,   0, 128), 20, true},
+	{Zone_None,        stringFromChars("Dezone"),      color255(255, 255, 255, 128), 10, false, 0},
+	{Zone_Residential, stringFromChars("Residential"), color255(  0, 255,   0, 128), 10, true,  3},
+	{Zone_Commercial,  stringFromChars("Commercial"),  color255(  0,   0, 255, 128), 10, true,  2},
+	{Zone_Industrial,  stringFromChars("Industrial"),  color255(255, 255,   0, 128), 20, true,  4},
 };
 
 struct ZoneLayer
