@@ -90,6 +90,7 @@ static ChunkedArray<V2I> *getFilledZonesArray(ZoneLayer *layer, ZoneType zoneTyp
 
 void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney)
 {
+	DEBUG_FUNCTION();
 	if (chargeMoney)
 	{
 		s32 cost = calculateZoneCost(city, zoneType, area);
@@ -138,6 +139,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 
 void markZonesAsEmpty(City *city, Rect2I footprint)
 {
+	DEBUG_FUNCTION();
 	// NB: We're assuming there's only one zone type within the footprint,
 	// because we don't support buildings that can grow in multiple different zones.
 	ZoneType zoneType = getZoneAt(city, footprint.x, footprint.y);
@@ -213,6 +215,8 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 
 static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 {
+	DEBUG_FUNCTION();
+	
 	ZoneDef def = zoneDefs[zoneType];
 
 	bool isAcceptable = true;
@@ -237,6 +241,8 @@ static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 
 void growSomeZoneBuildings(City *city)
 {
+	DEBUG_FUNCTION();
+
 	ZoneLayer *layer = &city->zoneLayer;
 	Random *random = city->gameRandom;
 
@@ -388,6 +394,8 @@ void growSomeZoneBuildings(City *city)
 
 void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer)
 {
+	DEBUG_FUNCTION();
+
 	clear(&zoneLayer->rGrowableBuildings);
 	clear(&zoneLayer->cGrowableBuildings);
 	clear(&zoneLayer->iGrowableBuildings);

@@ -26,6 +26,8 @@ void floodFillPathingConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 
 void recalculatePathingConnectivity(City *city)
 {
+	DEBUG_FUNCTION();
+
 	// This is a flood fill.
 	// First, normalise things so path tiles are -1, others are 0
 	// Then, iterate over the tiles and flood fill from each -1 value.
@@ -85,6 +87,8 @@ inline void _addPathGroup(s32 *pathGroupCount, s32 **pathGroups, s32 pathGroup)
 
 bool canPathTo(City *city, Rect2I target, V2I from)
 {
+	DEBUG_FUNCTION();
+
 	bool result = false;
 
 	// First, determine all path groups that are adjacent to the buiding 'from' is in, if any.
@@ -239,6 +243,8 @@ void _addPathNodeToQueue(City *city, PathingNode *nodes, V2I pos, PathingNode *p
 // Returns the next tile to walk to in order to path to 'target'
 V2I pathToRectangle(City *city, Rect2I target, V2I from)
 {
+	DEBUG_FUNCTION();
+
 	V2I result = from;
 
 	s32 distance;

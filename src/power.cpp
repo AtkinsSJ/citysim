@@ -46,6 +46,8 @@ bool floodFillPowerConnectivity(City *city, s32 x, s32 y, s32 fillValue)
  */
 void recalculatePowerConnectivity(City *city)
 {
+	DEBUG_FUNCTION();
+
 	// This is a flood fill.
 	// First, normalise things so path tiles are -1, others are 0
 	// Then, iterate over the tiles and flood fill from each -1 value.
