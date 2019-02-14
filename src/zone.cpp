@@ -246,6 +246,8 @@ void growSomeZoneBuildings(City *city)
 		s32 remainingDemand = city->residentialDemand;
 		s32 minimumDemand = city->residentialDemand / 20; // Stop when we're below 20% of the original demand
 
+		s32 maxRBuildingDim = layer->maxRBuildingDim;
+
 		while ((layer->emptyRZones.itemCount > 0) && (remainingDemand > minimumDemand))
 		{
 			// Find a valid res zone
@@ -330,8 +332,9 @@ void growSomeZoneBuildings(City *city)
 					// As soon as we fail to expand in a direction, just stop
 					if (!canExpand) break;
 
-					// Maximum size, don't bother trying more than 5x5
-					if (zoneFootprint.w >=5 && zoneFootprint.h >= 5) break;
+					// No need to grow bigger than the largest possible building!
+					// (Unless at some point we do "batches" of buildings like SC4 does)
+					if (zoneFootprint.w >= maxRBuildingDim && zoneFootprint.h >= maxRBuildingDim) break;
 
 					tryX = !tryX; // Alternate x and y
 					positive = randomBool(random); // random direction to expand in
@@ -389,15 +392,30 @@ void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer)
 	clear(&zoneLayer->cGrowableBuildings);
 	clear(&zoneLayer->iGrowableBuildings);
 
+	zoneLayer->maxRBuildingDim = 0;
+	zoneLayer->maxCBuildingDim = 0;
+	zoneLayer->maxIBuildingDim = 0;
+
 	for (auto it = iterate(&buildingDefs); !it.isDone; next(&it))
 	{
 		BuildingDef *def = get(it);
 
 		switch(def->growsInZone)
 		{
-			case Zone_Residential:  append(&zoneLayer->rGrowableBuildings, def->typeID); break;
-			case Zone_Commercial:   append(&zoneLayer->cGrowableBuildings, def->typeID); break;
-			case Zone_Industrial:   append(&zoneLayer->iGrowableBuildings, def->typeID); break;
+			case Zone_Residential: {
+				append(&zoneLayer->rGrowableBuildings, def->typeID);
+				zoneLayer->maxRBuildingDim = max(zoneLayer->maxRBuildingDim, max(def->width, def->height));
+			} break;
+
+			case Zone_Commercial: {
+				append(&zoneLayer->cGrowableBuildings, def->typeID);
+				zoneLayer->maxCBuildingDim = max(zoneLayer->maxCBuildingDim, max(def->width, def->height));
+			} break;
+
+			case Zone_Industrial: {
+				append(&zoneLayer->iGrowableBuildings, def->typeID);
+				zoneLayer->maxIBuildingDim = max(zoneLayer->maxIBuildingDim, max(def->width, def->height));
+			} break;
 		}
 	}
 
