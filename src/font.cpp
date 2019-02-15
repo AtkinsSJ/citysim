@@ -57,9 +57,9 @@ struct DrawTextState
 
 	V2 position;
 
-	bool hasRenderItems;
-	RenderItem *startOfCurrentWord;
-	RenderItem *endOfCurrentWord;
+	RenderItem *firstRenderItem;
+	s32 startOfCurrentWord;
+	s32 endOfCurrentWord;
 	f32 currentWordWidth;
 
 	f32 currentLineWidth;
@@ -75,9 +75,9 @@ static void nextLine(DrawTextState *state)
 	state->lineCount++;
 }
 
-static void addCharAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
+static void handleWrapping(DrawTextState *state, BitmapFontChar *c)
 {
-	if (state->startOfCurrentWord == null)
+	if (state->startOfCurrentWord == -1)
 	{
 		state->startOfCurrentWord = state->endOfCurrentWord;
 		state->currentWordWidth = 0;
@@ -85,7 +85,7 @@ static void addCharAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 
 	if (isWhitespace(c->codepoint))
 	{
-		state->startOfCurrentWord = null;
+		state->startOfCurrentWord = -1;
 		state->currentWordWidth = 0;
 	}
 	else if (state->doWrap)
@@ -107,10 +107,11 @@ static void addCharAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 				state->startOfCurrentWord = state->endOfCurrentWord;
 				state->currentWordWidth = 0;
 
-				if (state->hasRenderItems)
+				if (state->firstRenderItem)
 				{
-					state->startOfCurrentWord->rect.pos.x = state->position.x;
-					state->startOfCurrentWord->rect.pos.y = state->position.y + (f32)c->yOffset;
+					RenderItem *firstItemInWord = state->firstRenderItem + state->startOfCurrentWord;
+					firstItemInWord->rect.pos.x = state->position.x;
+					firstItemInWord->rect.pos.y = state->position.y + (f32)c->yOffset;
 				}
 			}
 			else
@@ -121,20 +122,24 @@ static void addCharAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 				state->position.x = state->currentWordWidth;
 				state->currentLineWidth = state->currentWordWidth;
 
-				if (state->hasRenderItems)
+				if (state->firstRenderItem)
 				{
-					V2 offset = v2(-state->startOfCurrentWord->rect.x, state->lineHeight);
+					V2 offset = v2(-state->firstRenderItem[state->startOfCurrentWord].rect.x, state->lineHeight);
 					while (state->startOfCurrentWord <= state->endOfCurrentWord)
 					{
-						state->startOfCurrentWord->rect.pos += offset;
+						state->firstRenderItem[state->startOfCurrentWord].rect.pos += offset;
 						state->startOfCurrentWord++;
 					}
+				}
+				else
+				{
+					state->startOfCurrentWord = state->endOfCurrentWord;
 				}
 			}
 		}
 	}
 
-	state->position.x += c->xAdvance;
+	state->position.x       += c->xAdvance;
 	state->currentWordWidth += c->xAdvance;
 	state->currentLineWidth += c->xAdvance;
 	state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
@@ -156,7 +161,8 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 	state.doWrap = (maxWidth > 0);
 	state.lineCount = 1;
 	state.lineHeight = font->lineHeight;
-	state.hasRenderItems = false;
+	state.startOfCurrentWord = -1;
+	state.endOfCurrentWord = -1;
 
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
@@ -174,7 +180,11 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 			BitmapFontChar *c = findChar(font, glyph);
 			if (c)
 			{
-				addCharAndHandleWrapping(&state, c);
+				// NB: the actual VALUE of endOfCurrentWord doesn't matter here, it just needs to be
+				// *something* that isn't the default -1 value.
+				// This whole thing is hacks on top of hacks, and I really don't like it.
+				state.endOfCurrentWord = glyphIndex;
+				handleWrapping(&state, c);
 			}
 		}
 
@@ -196,13 +206,6 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 		return null;
 	}
 
-	DrawTextState state = {};
-	state.maxWidth = maxWidth;
-	state.doWrap = (maxWidth > 0);
-	state.lineCount = 1;
-	state.lineHeight = font->lineHeight;
-	state.hasRenderItems = true;
-
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
 	// Memory management witchcraft
@@ -211,6 +214,15 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
 	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
 	result->size = v2(0, font->lineHeight);
+
+	DrawTextState state = {};
+	state.maxWidth = maxWidth;
+	state.doWrap = (maxWidth > 0);
+	state.lineCount = 1;
+	state.lineHeight = font->lineHeight;
+	state.startOfCurrentWord = -1;
+	state.endOfCurrentWord = -1;
+	state.firstRenderItem = result->chars;
 
 	if (result)
 	{
@@ -228,14 +240,16 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 				BitmapFontChar *c = findChar(font, glyph);
 				if (c)
 				{
-					state.endOfCurrentWord = result->chars + result->charCount++;
-					*state.endOfCurrentWord = makeRenderItem(
+					state.endOfCurrentWord = result->charCount;
+					result->chars[result->charCount] = makeRenderItem(
 						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
 								 (f32)c->size.w, (f32)c->size.h),
 						0.0f, c->textureRegionID, color
 					);
 
-					addCharAndHandleWrapping(&state, c);
+					result->charCount++;
+
+					handleWrapping(&state, c);
 				}
 			}
 

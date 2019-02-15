@@ -4,6 +4,8 @@ void testWindowProc(WindowContext *context, void *userData)
 {
 	s32 *ourNumber = (s32*) userData;
 
+	window_label(context, LocalString("survived not only five into electronic typesetting, remaining essentially unchanged."));
+
 	// Stuff we'd like to do:
 	// - print out the number
 	// - increment button
@@ -19,7 +21,7 @@ void testWindowProc(WindowContext *context, void *userData)
 	// {
 	// 	(*ourNumber)--;
 	// }
-	window_label(context, LocalString("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."));
+	// window_label(context, LocalString("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."));
 
 	// if (window_button(context, LocalString("Green style")))
 	// {
@@ -81,7 +83,9 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LocalString("Create a window"), buttonRect, 1))
+
+	// if (uiButton(uiState, LocalString("Create a window"), buttonRect, 1))
+	if (uiState->openWindows.itemCount == 0)
 	{
 		s32 *aNumber = new s32;
 		*aNumber = randomInRange(&globalAppState.cosmeticRandom, INT32_MAX);
