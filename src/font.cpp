@@ -66,6 +66,20 @@ struct DrawTextState
 	f32 longestLineWidth;
 };
 
+static DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem *firstRenderItem=null)
+{
+	DrawTextState result = {};
+
+	result.doWrap = (maxWidth > 0);
+	result.maxWidth = maxWidth;
+	result.lineHeight = lineHeight;
+	result.lineCount = 1;
+
+	result.firstRenderItem = firstRenderItem;
+
+	return result;
+}
+
 static void nextLine(DrawTextState *state)
 {
 	state->longestLineWidth = state->maxWidth;
@@ -77,7 +91,7 @@ static void nextLine(DrawTextState *state)
 
 static void handleWrapping(DrawTextState *state, BitmapFontChar *c)
 {
-	if (state->startOfCurrentWord == -1)
+	if (state->startOfCurrentWord == 0)
 	{
 		state->startOfCurrentWord = state->endOfCurrentWord;
 		state->currentWordWidth = 0;
@@ -85,7 +99,7 @@ static void handleWrapping(DrawTextState *state, BitmapFontChar *c)
 
 	if (isWhitespace(c->codepoint))
 	{
-		state->startOfCurrentWord = -1;
+		state->startOfCurrentWord = 0;
 		state->currentWordWidth = 0;
 	}
 	else if (state->doWrap)
@@ -156,13 +170,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 	}
 
 	// COPIED from drawTextToCache() - maybe we want these to both be the same code path?
-	DrawTextState state = {};
-	state.maxWidth = maxWidth;
-	state.doWrap = (maxWidth > 0);
-	state.lineCount = 1;
-	state.lineHeight = font->lineHeight;
-	state.startOfCurrentWord = -1;
-	state.endOfCurrentWord = -1;
+	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight);
 
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
@@ -215,14 +223,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
 	result->size = v2(0, font->lineHeight);
 
-	DrawTextState state = {};
-	state.maxWidth = maxWidth;
-	state.doWrap = (maxWidth > 0);
-	state.lineCount = 1;
-	state.lineHeight = font->lineHeight;
-	state.startOfCurrentWord = -1;
-	state.endOfCurrentWord = -1;
-	state.firstRenderItem = result->chars;
+	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight, result->chars);
 
 	if (result)
 	{
