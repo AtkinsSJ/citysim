@@ -125,10 +125,9 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 dept
 	dest->textureRegionID = item->textureRegionID;
 }
 
-s32 compareRenderItems(RenderItem *a, RenderItem *b)
+f32 compareRenderItems(RenderItem *a, RenderItem *b)
 {
-	// NB: Hmmm. Having to convert float -> int might be a problem.
-	return (s32)(a->depth - b->depth);
+	return (a->depth - b->depth);
 }
 
 void sortRenderBuffer(RenderBuffer *buffer)

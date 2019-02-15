@@ -177,7 +177,16 @@ struct Rect2 {
 /**********************************************
 	Slightly hacky doubly-linked list stuff
  **********************************************/
-
+// TODO: We only use this in the debug system, so maybe we should just flatten it there.
+// Also, I had the game freeze in DLinkedListFreeAll() just now and don't know why. (Only
+// detail is, the DebugState's topCodeBlocksFreeListSentinel and topCodeBlocksSentinel were
+// intertwined somehow, so that was making it fail. So, could be a bug in the freeing, or
+// a bug somewhere else that only became a *problem* when I tried to free it.
+// In any case, this is buggy and it's hard to debug because it's #defines not "real" code.
+// So, I'd like to replace it.
+// 
+// - Sam, 15/2/2019
+//
 #define DLinkedListMembers(type) type *prev; type *next;
 #define DLinkedListInit(sentinel) (sentinel)->prev = (sentinel)->next = (sentinel);
 #define DLinkedListInsertBefore(item, sentinel) \
