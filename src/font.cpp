@@ -283,33 +283,22 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 
 	switch (align & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE: {
-			offset.x = origin.x - round_f32(cache->size.x / 2.0f);
-		} break;
-
-		case ALIGN_RIGHT: {
-			offset.x = origin.x - cache->size.x;
-		} break;
-
-		default: { // Left is default
-			offset.x = origin.x;
-		} break;
+		case ALIGN_H_CENTRE:  offset.x = origin.x - (cache->size.x / 2.0f);  break;
+		case ALIGN_RIGHT:     offset.x = origin.x - cache->size.x;           break;
+		case ALIGN_LEFT:      // Left is default
+		default:              offset.x = origin.x;                           break;
 	}
 
 	switch (align & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE: {
-			offset.y = origin.y - round_f32(cache->size.y / 2.0f);
-		} break;
-
-		case ALIGN_BOTTOM: {
-			offset.y = origin.y - cache->size.y;
-		} break;
-
-		default: { // Top is default
-			offset.y = origin.y;
-		} break;
+		case ALIGN_V_CENTRE:  offset.y = origin.y - (cache->size.y / 2.0f);  break;
+		case ALIGN_BOTTOM:    offset.y = origin.y - cache->size.y;           break;
+		case ALIGN_TOP:       // Top is default
+		default:              offset.y = origin.y;                           break;
 	}
+
+	offset.x = round_f32(offset.x);
+	offset.y = round_f32(offset.y);
 
 	return offset;
 }
