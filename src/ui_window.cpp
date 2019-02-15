@@ -39,9 +39,9 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 		}
 		else
 		{
-			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
+			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, maxWidth);
 			V2 topLeft = calculateTextPosition(textCache, origin, alignment);
-			drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth);
+			drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth, style->textColor);
 			size = textCache->size;
 		}
 
@@ -118,7 +118,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 		}
 		else
 		{
-			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
+			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, maxWidth);
 
 			Rect2 bounds;
 			if (textWidth == -1)
@@ -133,7 +133,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 
 			V2 textOrigin = originWithinRectangle(bounds, textAlignment, buttonPadding);
 			V2 textTopLeft = calculateTextPosition(textCache, textOrigin, textAlignment);
-			drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f);
+			drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f, style->textColor);
 
 			if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
 			{

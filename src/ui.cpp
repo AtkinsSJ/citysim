@@ -45,11 +45,11 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 ali
 
 	Rect2 bounds = rect2(origin, 0, 0);
 
-	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, text, color, maxWidth);
+	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, text, maxWidth);
 	if (textCache)
 	{
 		V2 topLeft = calculateTextPosition(textCache, origin, align);
-		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
+		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color);
 		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
 	}
 
@@ -62,11 +62,11 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 
 	Rect2 bounds = rect2(origin, 0, 0);
 
-	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, makeString(textInput->buffer, textInput->byteLength), color, maxWidth);
+	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, makeString(textInput->buffer, textInput->byteLength), maxWidth);
 	if (textCache)
 	{
 		V2 topLeft = calculateTextPosition(textCache, origin, align);
-		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth);
+		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color);
 		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->size.x, textCache->size.y);
 
 		textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);

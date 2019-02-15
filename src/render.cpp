@@ -94,7 +94,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline RenderItem makeRenderItem(Rect2 rect, f32 depth, TextureRegionID textureRegionID, V4 color)
+inline RenderItem makeRenderItem(Rect2 rect, f32 depth, TextureRegionID textureRegionID, V4 color=makeWhite())
 {
 	RenderItem item = {};
 	item.rect = rect;
@@ -115,13 +115,13 @@ void drawTextureRegion(RenderBuffer *buffer, TextureRegionID region, Rect2 rect,
 	append(&buffer->items, makeRenderItem(rect, depth, region, color));
 }
 
-void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset)
+void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color)
 {
 	RenderItem *dest = appendBlank(&buffer->items);
 
 	dest->rect = offset(item->rect, offsetP);
 	dest->depth = item->depth + depthOffset;
-	dest->color = item->color;
+	dest->color = color;
 	dest->textureRegionID = item->textureRegionID;
 }
 

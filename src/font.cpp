@@ -205,8 +205,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 	return result;
 }
 
-BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text,
-									  V4 color, f32 maxWidth=0)
+BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth=0)
 {
 	if (font == null)
 	{
@@ -245,7 +244,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 					result->chars[result->charCount] = makeRenderItem(
 						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
 								 (f32)c->size.w, (f32)c->size.h),
-						0.0f, c->textureRegionID, color
+						0.0f, c->textureRegionID
 					);
 
 					result->charCount++;
@@ -270,11 +269,10 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	return result;
 }
 
-BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, char *text,
-									  V4 color, f32 maxWidth=0)
+BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, char *text, f32 maxWidth=0)
 {
 	String string = stringFromChars(text);
-	return drawTextToCache(memory, font, string, color, maxWidth);
+	return drawTextToCache(memory, font, string, maxWidth);
 }
 
 V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
@@ -303,7 +301,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 	return offset;
 }
 
-void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth)
+void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color)
 {
 	if (cache == null) return;
 
@@ -314,6 +312,6 @@ void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topL
 		spriteIndex < cache->charCount;
 		spriteIndex++)
 	{
-		drawRenderItem(uiBuffer, cache->chars + spriteIndex, origin, depth);
+		drawRenderItem(uiBuffer, cache->chars + spriteIndex, origin, depth, color);
 	}
 }
