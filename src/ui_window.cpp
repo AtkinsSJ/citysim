@@ -183,6 +183,12 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
  */
 void showWindow(UIState *uiState, String title, s32 width, s32 height, String styleName, u32 flags, WindowProc windowProc, void *userData)
 {
+	if (windowProc == null)
+	{
+		logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}", {title});
+		return;
+	}
+
 	Window newWindow = {};
 	newWindow.title = title;
 	newWindow.flags = flags;
@@ -260,6 +266,7 @@ void updateAndRenderWindows(UIState *uiState)
 		next(&it), windowIndex++)
 	{
 		Window *window = get(it);
+
 		f32 depth = 2000.0f - (20.0f * windowIndex);
 		bool isActive = (windowIndex == 0);
 		bool isModal = isActive && (window->flags & WinFlag_Modal) != 0;
@@ -279,29 +286,24 @@ void updateAndRenderWindows(UIState *uiState)
 		BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontID);
 
 		WindowContext context = {};
-		if (window->windowProc != null)
-		{
-			context.uiState = uiState;
-			context.temporaryMemory = &globalAppState.globalTempArena;
-			context.window = window;
-			context.windowStyle = windowStyle;
-			context.measureOnly = false;
+		context.uiState = uiState;
+		context.temporaryMemory = &globalAppState.globalTempArena;
+		context.window = window;
+		context.windowStyle = windowStyle;
+		context.measureOnly = false;
+		context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
+		context.currentOffset = v2(0,0);
+		context.alignment = ALIGN_TOP | ALIGN_LEFT;
+		context.renderDepth = depth + 1.0f;
+		context.perItemPadding = 4.0f;
 
-			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
-			context.currentOffset = v2(0,0);
-			context.alignment = ALIGN_TOP | ALIGN_LEFT;
-			context.renderDepth = depth + 1.0f;
-			context.perItemPadding = 4.0f;
-		}
-
-		// Lay-out the window once first so we can measure its size
+		// Run the WindowProc once first so we can measure its size
 		if (window->flags & WinFlag_AutomaticHeight)
 		{
 			context.measureOnly = true;
 			window->windowProc(&context, window->userData);
 			window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
 		}
-
 
 		// Handle dragging/position first, BEFORE we use the window rect anywhere
 		if (isModal)
@@ -326,24 +328,14 @@ void updateAndRenderWindows(UIState *uiState)
 		// Keep window on screen
 		window->area = confineRectangle(window->area, validWindowArea);
 
-		// Window proc
-		if (window->windowProc != null)
+		// Run the window proc FOR REALZ
+		context.measureOnly = false;
+		context.currentOffset = v2(0,0);
+		context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
+		window->windowProc(&context, window->userData);
+		if (context.closeRequested)
 		{
-			context.measureOnly = false;
-			context.currentOffset = v2(0,0);
-			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
-
-			window->windowProc(&context, window->userData);
-
-			// if (window->flags & WinFlag_AutomaticHeight)
-			// {
-			// 	window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
-			// }
-
-			if (context.closeRequested)
-			{
-				closeWindow = windowIndex;
-			}
+			closeWindow = windowIndex;
 		}
 
 		Rect2 wholeWindowArea = rect2(window->area);
