@@ -265,6 +265,11 @@ bool equals(T a, T b)
 	return areEqual;
 }
 
+bool equals(f32 a, f32 b, f32 epsilon)
+{
+	return (fabs(a-b) < epsilon);
+}
+
 /**********************************************
 	Asserts
  **********************************************/

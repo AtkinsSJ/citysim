@@ -140,6 +140,53 @@ static void addCharAndHandleWrapping(DrawTextState *state, BitmapFontChar *c)
 	state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
 }
 
+V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
+{
+	V2 result = v2(0, font->lineHeight);
+
+	if (font == null)
+	{
+		logError("Attempted to display text with a null font: {0}", {text});
+		return result;
+	}
+
+	// COPIED from drawTextToCache() - maybe we want these to both be the same code path?
+	DrawTextState state = {};
+	state.maxWidth = maxWidth;
+	state.doWrap = (maxWidth > 0);
+	state.lineCount = 1;
+	state.lineHeight = font->lineHeight;
+	state.hasRenderItems = false;
+
+	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
+
+	s32 bytePos = 0;
+	for (s32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
+	{
+		unichar glyph = readUnicodeChar(text.chars + bytePos);
+
+		if (glyph == '\n')
+		{
+			nextLine(&state);
+		}
+		else
+		{
+			BitmapFontChar *c = findChar(font, glyph);
+			if (c)
+			{
+				addCharAndHandleWrapping(&state, c);
+			}
+		}
+
+		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
+	}
+
+	result.x = MAX(state.longestLineWidth, state.currentLineWidth);
+	result.y = (f32)(font->lineHeight * state.lineCount);
+
+	return result;
+}
+
 BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text,
 									  V4 color, f32 maxWidth=0)
 {
@@ -197,62 +244,22 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 
 		result->size.x = MAX(state.longestLineWidth, state.currentLineWidth);
 		result->size.y = (f32)(font->lineHeight * state.lineCount);
+
+		#if BUILD_DEBUG
+			V2 verificationSize = calculateTextSize(font, text, maxWidth);
+			ASSERT(equals(verificationSize.x, result->size.x, 0.01f)
+				&& equals(verificationSize.y, result->size.y, 0.01f), "calculateTextSize() is wrong!");
+		#endif
 	}
 
 	return result;
 }
+
 BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, char *text,
 									  V4 color, f32 maxWidth=0)
 {
 	String string = stringFromChars(text);
 	return drawTextToCache(memory, font, string, color, maxWidth);
-}
-
-V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
-{
-	V2 result = v2(0,0);
-
-	if (font == null)
-	{
-		logError("Attempted to display text with a null font: {0}", {text});
-		return result;
-	}
-
-	// COPIED from drawTextToCache() - maybe we want these to both be the same code path?
-	DrawTextState state = {};
-	state.maxWidth = maxWidth;
-	state.doWrap = (maxWidth > 0);
-	state.lineCount = 1;
-	state.lineHeight = font->lineHeight;
-	state.hasRenderItems = false;
-
-	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
-
-	s32 bytePos = 0;
-	for (s32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
-	{
-		unichar glyph = readUnicodeChar(text.chars + bytePos);
-
-		if (glyph == '\n')
-		{
-			nextLine(&state);
-		}
-		else
-		{
-			BitmapFontChar *c = findChar(font, glyph);
-			if (c)
-			{
-				addCharAndHandleWrapping(&state, c);
-			}
-		}
-
-		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
-	}
-
-	result.x = MAX(state.longestLineWidth, state.currentLineWidth);
-	result.y = (f32)(font->lineHeight * state.lineCount);
-
-	return result;
 }
 
 V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)

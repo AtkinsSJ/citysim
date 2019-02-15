@@ -290,7 +290,6 @@ void updateAndRenderWindows(UIState *uiState)
 		context.temporaryMemory = &globalAppState.globalTempArena;
 		context.window = window;
 		context.windowStyle = windowStyle;
-		context.measureOnly = false;
 		context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 		context.currentOffset = v2(0,0);
 		context.alignment = ALIGN_TOP | ALIGN_LEFT;
@@ -330,6 +329,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		// Run the window proc FOR REALZ
 		context.measureOnly = false;
+		context.alignment = ALIGN_TOP | ALIGN_LEFT;
 		context.currentOffset = v2(0,0);
 		context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 		window->windowProc(&context, window->userData);
