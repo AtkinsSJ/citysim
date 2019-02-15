@@ -25,6 +25,8 @@ struct WindowContext
 	Window *window;
 	UIWindowStyle *windowStyle;
 
+	bool measureOnly; // Whether we're actually displaying/updating the window contents, or just measuring it
+
 	Rect2 contentArea;
 	V2 currentOffset;
 	s32 alignment;

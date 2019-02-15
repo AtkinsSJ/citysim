@@ -31,13 +31,23 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
-		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
-		V2 topLeft = calculateTextPosition(textCache, origin, alignment);
-		drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth);
+		V2 size = {};
+
+		if (context->measureOnly)
+		{
+			size = calculateTextSize(font, text, maxWidth);
+		}
+		else
+		{
+			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
+			V2 topLeft = calculateTextPosition(textCache, origin, alignment);
+			drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth);
+			size = textCache->size;
+		}
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
-		context->currentOffset.y += textCache->size.y;
+		context->currentOffset.y += size.y;
 	}
 }
 
@@ -90,51 +100,71 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 			maxWidth = (f32) textWidth;
 		}
 
-		BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
+		V2 buttonSize = {};
 
-		Rect2 bounds;
-		if (textWidth == -1)
+		if (context->measureOnly)
 		{
- 			bounds = rectAligned(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
-		}
-		else
-		{
-			bounds = rectAligned(origin, v2((f32)textWidth, textCache->size.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
-		}
-
-		V2 textOrigin = originWithinRectangle(bounds, textAlignment, buttonPadding);
-		V2 textTopLeft = calculateTextPosition(textCache, textOrigin, textAlignment);
-		drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f);
-
-		if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
-		{
-			// Mouse pressed: must have started and currently be inside the bounds to show anything
-			// Mouse unpressed: show hover if in bounds
-			if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
+			V2 textSize = calculateTextSize(font, text, maxWidth);
+			Rect2 bounds;
+			if (textWidth == -1)
 			{
-				if (inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
-				{
-					backColor = style->pressedColor;
-				}
+	 			bounds = rectAligned(origin, textSize + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
 			}
 			else
 			{
-				if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
-				 && inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
-				{
-					buttonClicked = true;
-					context->uiState->mouseInputHandled = true;
-				}
-
-				backColor = style->hoverColor;
+				bounds = rectAligned(origin, v2((f32)textWidth, textSize.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
 			}
+			buttonSize = bounds.size;
 		}
+		else
+		{
+			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, style->textColor, maxWidth);
 
-		drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, backColor);
+			Rect2 bounds;
+			if (textWidth == -1)
+			{
+	 			bounds = rectAligned(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+			}
+			else
+			{
+				bounds = rectAligned(origin, v2((f32)textWidth, textCache->size.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+			}
+			buttonSize = bounds.size;
+
+			V2 textOrigin = originWithinRectangle(bounds, textAlignment, buttonPadding);
+			V2 textTopLeft = calculateTextPosition(textCache, textOrigin, textAlignment);
+			drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f);
+
+			if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
+			{
+				// Mouse pressed: must have started and currently be inside the bounds to show anything
+				// Mouse unpressed: show hover if in bounds
+				if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
+				{
+					if (inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					{
+						backColor = style->pressedColor;
+					}
+				}
+				else
+				{
+					if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
+					 && inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					{
+						buttonClicked = true;
+						context->uiState->mouseInputHandled = true;
+					}
+
+					backColor = style->hoverColor;
+				}
+			}
+
+			drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, backColor);
+		}
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
-		context->currentOffset.y += bounds.size.y;
+		context->currentOffset.y += buttonSize.y;
 	}
 
 	return buttonClicked;
@@ -248,6 +278,31 @@ void updateAndRenderWindows(UIState *uiState)
 
 		BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontID);
 
+		WindowContext context = {};
+		if (window->windowProc != null)
+		{
+			context.uiState = uiState;
+			context.temporaryMemory = &globalAppState.globalTempArena;
+			context.window = window;
+			context.windowStyle = windowStyle;
+			context.measureOnly = false;
+
+			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
+			context.currentOffset = v2(0,0);
+			context.alignment = ALIGN_TOP | ALIGN_LEFT;
+			context.renderDepth = depth + 1.0f;
+			context.perItemPadding = 4.0f;
+		}
+
+		// Lay-out the window once first so we can measure its size
+		if (window->flags & WinFlag_AutomaticHeight)
+		{
+			context.measureOnly = true;
+			window->windowProc(&context, window->userData);
+			window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
+		}
+
+
 		// Handle dragging/position first, BEFORE we use the window rect anywhere
 		if (isModal)
 		{
@@ -274,24 +329,16 @@ void updateAndRenderWindows(UIState *uiState)
 		// Window proc
 		if (window->windowProc != null)
 		{
-			WindowContext context = {};
-			context.uiState = uiState;
-			context.temporaryMemory = &globalAppState.globalTempArena;
-			context.window = window;
-			context.windowStyle = windowStyle;
-
-			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
+			context.measureOnly = false;
 			context.currentOffset = v2(0,0);
-			context.alignment = ALIGN_TOP | ALIGN_LEFT;
-			context.renderDepth = depth + 1.0f;
-			context.perItemPadding = 4.0f;
+			context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 
 			window->windowProc(&context, window->userData);
 
-			if (window->flags & WinFlag_AutomaticHeight)
-			{
-				window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
-			}
+			// if (window->flags & WinFlag_AutomaticHeight)
+			// {
+			// 	window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
+			// }
 
 			if (context.closeRequested)
 			{
