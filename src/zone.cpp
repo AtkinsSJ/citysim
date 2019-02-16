@@ -254,13 +254,13 @@ void growSomeZoneBuildings(City *city)
 
 		s32 maxRBuildingDim = layer->maxRBuildingDim;
 
-		while ((layer->emptyRZones.itemCount > 0) && (remainingDemand > minimumDemand))
+		while ((layer->emptyRZones.count > 0) && (remainingDemand > minimumDemand))
 		{
 			// Find a valid res zone
 			// TODO: Better selection than just a random one
 			bool foundAZone = false;
 			V2I zonePos = {};
-			for (auto it = iterate(&layer->emptyRZones, randomInRange(random, layer->emptyRZones.itemCount));
+			for (auto it = iterate(&layer->emptyRZones, randomInRange(random, layer->emptyRZones.count));
 				!it.isDone;
 				next(&it))
 			{
@@ -352,7 +352,7 @@ void growSomeZoneBuildings(City *city)
 			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
 
 			// Choose a random building, then carry on checking buildings until one is acceptable
-			for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, layer->rGrowableBuildings.itemCount));
+			for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, layer->rGrowableBuildings.count));
 				!it.isDone;
 				next(&it))
 			{
@@ -428,8 +428,8 @@ void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer)
 	}
 
 	logInfo("Loaded {0} R, {1} C and {2} I growable buildings.", {
-		formatInt(zoneLayer->rGrowableBuildings.itemCount),
-		formatInt(zoneLayer->cGrowableBuildings.itemCount),
-		formatInt(zoneLayer->iGrowableBuildings.itemCount)
+		formatInt(zoneLayer->rGrowableBuildings.count),
+		formatInt(zoneLayer->cGrowableBuildings.count),
+		formatInt(zoneLayer->iGrowableBuildings.count)
 	});
 }

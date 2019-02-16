@@ -2,7 +2,7 @@
 
 u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
-	u32 textureID = assets->textures.itemCount;
+	u32 textureID = assets->textures.count;
 
 	Texture *texture = appendBlank(&assets->textures);
 
@@ -15,7 +15,7 @@ u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 
 u32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, s32 textureID, Rect2 uv)
 {
-	u32 textureRegionID = assets->textureRegions.itemCount;
+	u32 textureRegionID = assets->textureRegions.count;
 
 	TextureRegion *region = appendBlank(&assets->textureRegions);
 
@@ -74,7 +74,7 @@ AssetManager *createAssetManager()
 s32 findTexture(AssetManager *assets, String filename)
 {
 	s32 index = -1;
-	for (s32 i = 0; i < (s32)assets->textures.itemCount; ++i)
+	for (s32 i = 0; i < (s32)assets->textures.count; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (equals(filename, tex->filename))
@@ -132,7 +132,7 @@ void loadAssets(AssetManager *assets)
 	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
 	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
 
-	for (s32 i = 1; i < assets->textures.itemCount; ++i)
+	for (s32 i = 1; i < assets->textures.count; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Unloaded)
@@ -178,7 +178,7 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Now we can convert UVs from pixel space to 0-1 space.
-	for (s32 regionIndex = 1; regionIndex < assets->textureRegions.itemCount; regionIndex++)
+	for (s32 regionIndex = 1; regionIndex < assets->textureRegions.count; regionIndex++)
 	{
 		TextureRegion *tr = getTextureRegion(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
@@ -233,14 +233,14 @@ void loadAssets(AssetManager *assets)
 		}
 	}
 
-	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->textureRegions.itemCount), formatInt(assets->textures.itemCount)});
+	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->textureRegions.count), formatInt(assets->textures.count)});
 
 	assets->assetReloadHasJustHappened = true;
 }
 
 u32 addNewTextureAssetType(AssetManager *assets)
 {
-	u32 newTypeID = assets->rangesByTextureAssetType.itemCount;
+	u32 newTypeID = assets->rangesByTextureAssetType.count;
 
 	IndexRange range;
 	range.firstIndex = u32Max;
@@ -313,7 +313,7 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	// Actual reloading
 
 	// Clear out textures
-	for (s32 i = 1; i < assets->textures.itemCount; ++i)
+	for (s32 i = 1; i < assets->textures.count; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
 		if (tex->state == AssetState_Loaded)

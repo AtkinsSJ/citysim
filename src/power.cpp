@@ -98,14 +98,14 @@ void recalculatePowerConnectivity(City *city)
 
 	// Find all power production/consumption buildings and add them up
 	// TODO: some kind of building-type query would probably be better?
-	for (u32 buildingIndex = 0; buildingIndex < city->buildings.count; buildingIndex++)
+	for (auto it = iterate(&city->buildings); !it.isDone; next(&it))
 	{
-		Building building = city->buildings[buildingIndex];
-		BuildingDef *def = get(&buildingDefs, building.typeID);
+		Building *building = get(it);
+		BuildingDef *def = get(&buildingDefs, building->typeID);
 
 		if (def->power != 0)
 		{
-			PowerGroup *powerGroup = pointerTo(&city->powerLayer.groups, powerGroupAt(city, building.footprint.x, building.footprint.y));
+			PowerGroup *powerGroup = pointerTo(&city->powerLayer.groups, powerGroupAt(city, building->footprint.x, building->footprint.y));
 
 			if (def->power > 0)
 			{

@@ -202,7 +202,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 
 	bool createdWindowAlready = false;
 
-	if (uiState->openWindows.itemCount > 0)
+	if (uiState->openWindows.count > 0)
 	{
 		// If the window wants to be unique, then we search for an existing one with the same WindowProc
 		if (flags & WinFlag_Unique)
@@ -237,7 +237,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 	if (!createdWindowAlready)
 	{
 		append(&uiState->openWindows, newWindow);
-		makeWindowActive(uiState, uiState->openWindows.itemCount-1);
+		makeWindowActive(uiState, uiState->openWindows.count-1);
 	}
 }
 

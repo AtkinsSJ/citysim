@@ -13,12 +13,12 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	s32 tileCount = width*height;
 
 	city->terrain         = PushArray(gameArena, Terrain, tileCount);
-	city->tileBuildings   = PushArray(gameArena, u32, tileCount);
+	city->tileBuildings   = PushArray(gameArena, s32, tileCount);
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
 	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
 	initZoneLayer(gameArena, &city->zoneLayer, tileCount);
 
-	initialiseArray(&city->buildings, 1024);
+	initChunkedArray(&city->buildings, gameArena, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
 	nullBuilding->typeID = 0;
 }
@@ -135,8 +135,8 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 			if (city->tileBuildings[ti] != 0)
 			{
 				// Check if we can combine this with the building that's already there
-				Building buildingAtPos = city->buildings[city->tileBuildings[ti]];
-				if (get(&buildingDefs, buildingAtPos.typeID)->canBeBuiltOnID == selectedBuildingTypeID)
+				Building *buildingAtPos = get(&city->buildings, city->tileBuildings[ti]);
+				if (get(&buildingDefs, buildingAtPos->typeID)->canBeBuiltOnID == selectedBuildingTypeID)
 				{
 					// We can!
 				}
@@ -274,7 +274,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 
 	u32 posTI = tileIndex(city, position.x, position.y);
 
-	u32 buildingID  = city->tileBuildings[posTI];
+	s32 buildingID  = city->tileBuildings[posTI];
 	Terrain terrain = city->terrain[posTI];
 
 	if (buildingID)
@@ -398,12 +398,13 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	// We want to only get the cost of each building once.
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
 	// TODO: Make this instead do a position-based query, keeping track of checked buildings
-	for (u32 i=1; i<city->buildings.count; i++)
+	for (auto it = iterate(&city->buildings); !it.isDone; next(&it))
 	{
-		Building building = city->buildings[i];
-		if (rectsOverlap(building.footprint, area))
+		Building *building = get(it);
+
+		if (rectsOverlap(building->footprint, area))
 		{
-			total += get(&buildingDefs, building.typeID)->demolishCost;
+			total += get(&buildingDefs, building->typeID)->demolishCost;
 		}
 	}
 

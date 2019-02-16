@@ -34,7 +34,7 @@ Chunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
 {
 	Chunk<T> *lastNonEmptyChunk = array->lastChunk;
 
-	if (array->itemCount > 0)
+	if (array->count > 0)
 	{
 		while (lastNonEmptyChunk->count == 0)
 		{
@@ -126,7 +126,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 				// Now, to copy the last element in the array to this position
 				chunk->items[i] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
 				lastNonEmptyChunk->count--;
-				array->itemCount--;
+				array->count--;
 
 				break;
 			}
@@ -141,7 +141,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 template<class T>
 T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 {
-	ASSERT(indexToRemove < array->itemCount, "indexToRemove is out of range!");
+	ASSERT(indexToRemove < array->count, "indexToRemove is out of range!");
 
 	T result;
 	
@@ -149,13 +149,13 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 
 	if (keepItemOrder)
 	{
-		if (indexToRemove != (array->itemCount-1))
+		if (indexToRemove != (array->count-1))
 		{
 			// NB: This copies the item we're about to remove to the end of the array.
 			// I guess if Item is large, this could be expensive unnecessarily?
 			// Then again, we're also copying it to `result`, which we currently don't ever use, so meh.
 			// - Sam, 8/2/2019
-			moveItemKeepingOrder(array, indexToRemove, array->itemCount-1);
+			moveItemKeepingOrder(array, indexToRemove, array->count-1);
 		}
 		result = lastNonEmptyChunk->items[lastNonEmptyChunk->count - 1];
 	}
@@ -169,7 +169,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 		result = chunk->items[itemIndex];
 
 		// We don't need to rearrange things if we're removing the last item
-		if (indexToRemove != array->itemCount - 1)
+		if (indexToRemove != array->count - 1)
 		{
 			// Copy last item to overwrite this one
 			chunk->items[indexToRemove] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
@@ -177,7 +177,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 	}
 
 	lastNonEmptyChunk->count--;
-	array->itemCount--;
+	array->count--;
 
 	return result;
 }
@@ -191,7 +191,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
  * you specify (default to the beginning). It wraps when it reaches the end.
  * Example usage:
 
-	for (auto it = iterate(&array, randomInRange(random, array.itemCount));
+	for (auto it = iterate(&array, randomInRange(random, array.count));
 		!it.isDone;
 		next(&it))
 	{
@@ -208,7 +208,7 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0)
 	iterator.itemsIterated = 0;
 
 	// If the array is empty, we can skip some work.
-	iterator.isDone = array->itemCount == 0;
+	iterator.isDone = array->count == 0;
 
 	if (!iterator.isDone)
 	{
@@ -227,7 +227,7 @@ void next(ChunkedArrayIterator<T> *iterator)
 	iterator->indexInChunk++;
 	iterator->itemsIterated++;
 
-	if (iterator->itemsIterated >= iterator->array->itemCount)
+	if (iterator->itemsIterated >= iterator->array->count)
 	{
 		// We've seen each index once
 		iterator->isDone = true;

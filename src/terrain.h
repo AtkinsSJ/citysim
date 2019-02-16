@@ -29,7 +29,7 @@ s32 findTerrainTypeByName(String name)
 {
 	s32 result = 0;
 
-	for (s32 terrainID = 1; terrainID < terrainDefs.itemCount; terrainID++)
+	for (s32 terrainID = 1; terrainID < terrainDefs.count; terrainID++)
 	{
 		TerrainDef *def = get(&terrainDefs, terrainID);
 		if (equals(def->name, name))

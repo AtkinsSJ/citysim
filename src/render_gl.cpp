@@ -194,9 +194,9 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Textures
 	clear(&gl->textureInfo);
-	reserve(&gl->textureInfo, assets->textures.itemCount);
+	reserve(&gl->textureInfo, assets->textures.count);
 
-	for (s32 i=0; i < assets->textures.itemCount; i++)
+	for (s32 i=0; i < assets->textures.count; i++)
 	{
 		if (i == 0)
 		{
@@ -475,9 +475,7 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 	gl->currentShader = ShaderProgram_Invalid;
 
 	renderBuffer(gl, assets, &renderer->worldBuffer);
-		// renderer->worldBuffer.itemCount = 0;
 	renderBuffer(gl, assets, &renderer->uiBuffer);
-		// renderer->uiBuffer.itemCount = 0;
 
 	glUseProgram(NULL);
 	GL_checkForError();

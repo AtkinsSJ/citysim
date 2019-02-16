@@ -43,8 +43,8 @@ struct City
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
 
-	Array<Building> buildings;
-	u32 *tileBuildings; // Map from x,y -> building id at that location.
+	ChunkedArray<Building> buildings;
+	s32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).
 
 	struct ZoneLayer zoneLayer;
@@ -75,14 +75,14 @@ inline Terrain terrainAt(City *city, s32 x, s32 y)
 	return city->terrain[tileIndex(city, x, y)];
 }
 
-inline Building* getBuildingByID(City *city, u32 buildingID)
+inline Building* getBuildingByID(City *city, s32 buildingID)
 {
 	if (buildingID <= 0 || buildingID > city->buildings.count)
 	{
 		return null;
 	}
 
-	return pointerTo(&city->buildings, buildingID);
+	return get(&city->buildings, buildingID);
 }
 
 inline Building* getBuildingAtPosition(City *city, s32 x, s32 y)

@@ -240,11 +240,11 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	int buildingID = city->tileBuildings[tileI];
 	if (buildingID != 0)
 	{
-		Building building = city->buildings[buildingID];
-		BuildingDef *def = get(&buildingDefs, building.typeID);
+		Building *building = get(&city->buildings, buildingID);
+		BuildingDef *def = get(&buildingDefs, building->typeID);
 		window_label(context, myprintf("Building: {0} (ID {1})", {def->name, formatInt(buildingID)}));
-		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building.currentResidents), formatInt(def->residents)}));
-		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building.currentJobs), formatInt(def->jobs)}));
+		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building->currentResidents), formatInt(def->residents)}));
+		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building->currentJobs), formatInt(def->jobs)}));
 	}
 	else
 	{
@@ -381,7 +381,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
 
-			for (s32 i=0; i < buildingDefs.itemCount; i++)
+			for (s32 i=0; i < buildingDefs.count; i++)
 			{
 				BuildingDef *buildingDef = get(&buildingDefs, i);
 				if (!buildingDef->buildMethod) continue;
@@ -781,26 +781,26 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 	}
 	
-	for (u32 i=1; i<gameState->city.buildings.count; i++)
+	for (auto it = iterate(&city->buildings); !it.isDone; next(&it))
 	{
-		Building building = gameState->city.buildings[i];
+		Building *building = get(it);
 
-		if (rectsOverlap(building.footprint, visibleTileBounds))
+		if (rectsOverlap(building->footprint, visibleTileBounds))
 		{
-			BuildingDef *def = get(&buildingDefs, building.typeID);
+			BuildingDef *def = get(&buildingDefs, building->typeID);
 
 			V4 drawColor = makeWhite();
 
 			if (gameState->actionMode == ActionMode_Demolish
 				&& gameState->isWorldDragging
-				&& rectsOverlap(building.footprint, demolitionRect)) {
+				&& rectsOverlap(building->footprint, demolitionRect)) {
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);
 			}
 
-			V2 drawPos = centre(building.footprint);
-			drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAssetType, building.textureRegionOffset),
-							  rect2(building.footprint), depthFromY(drawPos.y), drawColor);
+			V2 drawPos = centre(building->footprint);
+			drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, def->textureAssetType, building->textureRegionOffset),
+							  rect2(building->footprint), depthFromY(drawPos.y), drawColor);
 		}
 	}
 

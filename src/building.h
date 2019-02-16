@@ -71,7 +71,7 @@ s32 findBuildingTypeByName(String name)
 	s32 result = 0;
 
 	// TODO: Use an iterator instead, it's faster!
-	for (s32 buildingType = 1; buildingType < buildingDefs.itemCount; buildingType++)
+	for (s32 buildingType = 1; buildingType < buildingDefs.count; buildingType++)
 	{
 		BuildingDef *def = get(&buildingDefs, buildingType);
 		if (equals(def->name, name))

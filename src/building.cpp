@@ -32,7 +32,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 			{
 				def = appendBlank(buildings);
 				def->name = pushString(&assets->assetArena, trimEnd(remainder));
-				def->typeID = buildings->itemCount - 1;
+				def->typeID = buildings->count - 1;
 			}
 		}
 		else // Properties!
