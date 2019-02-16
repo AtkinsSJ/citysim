@@ -193,18 +193,26 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	gl->textureCount = assets->textures.itemCount;
-	for (u32 i=0; i<gl->textureCount; i++)
+	clear(&gl->textureInfo);
+	reserve(&gl->textureInfo, assets->textures.itemCount);
+
+	for (s32 i=0; i < assets->textures.itemCount; i++)
 	{
 		if (i == 0)
 		{
-			gl->textureInfo[i].glTextureID = 0;
-			gl->textureInfo[i].isLoaded = true;
+			GL_TextureInfo ti = {};
+			ti.glTextureID = 0;
+			ti.isLoaded = true;
+
+			append(&gl->textureInfo, ti);
 		}
 		else
 		{
-			glGenTextures(1, &gl->textureInfo[i].glTextureID);
-			gl->textureInfo[i].isLoaded = false;
+			GL_TextureInfo ti = {};
+			glGenTextures(1, &ti.glTextureID);
+			ti.isLoaded = false;
+
+			append(&gl->textureInfo, ti);
 		}
 	}
 
@@ -221,9 +229,9 @@ static void GL_unloadAssets(Renderer *renderer)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	for (u32 i=1; i<gl->textureCount; i++)
+	for (auto it = iterate(&gl->textureInfo); !it.isDone; next(&it))
 	{
-		GL_TextureInfo *info = gl->textureInfo + i;
+		GL_TextureInfo *info = get(it);
 		if (info->isLoaded)
 		{
 			glDeleteTextures(1, &info->glTextureID);
@@ -231,7 +239,7 @@ static void GL_unloadAssets(Renderer *renderer)
 			info->isLoaded = false;
 		}
 	}
-	gl->textureCount = 0;
+	clear(&gl->textureInfo);
 
 	// Shaders
 	gl->currentShader = -1;
@@ -333,7 +341,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			ShaderProgramType desiredShader = getDesiredShader(item);
 
 			TextureRegion *region = getTextureRegion(assets, item->textureRegionID);
-			GL_TextureInfo *textureInfo = renderer->textureInfo + region->textureID;
+			GL_TextureInfo *textureInfo = get(&renderer->textureInfo, region->textureID);
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
 			if ((vertexCount == 0)
@@ -482,7 +490,11 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 	bool succeeded = (gl != 0);
 	Renderer *renderer = &gl->renderer;
 
-	if (succeeded)
+	if (!succeeded)
+	{
+		logCritical("Failed to allocate memory for GL_Renderer!");
+	}
+	else
 	{
 		initRenderer(renderer, &renderer->renderArena, window);
 
@@ -525,27 +537,25 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		// Init OpenGL
 		if (succeeded)
 		{
-			if (succeeded)
-			{
-				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			initChunkedArray(&gl->textureInfo, &renderer->renderArena, 64);
 
-				glGenBuffers(1, &gl->VBO);
-				glBindBuffer(GL_ARRAY_BUFFER, gl->VBO);
-				GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->vertices[0]);
-				glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_STATIC_DRAW);
+			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-				glGenBuffers(1, &gl->IBO);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->IBO);
-				GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->indices[0]);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, null, GL_STATIC_DRAW);
+			glGenBuffers(1, &gl->VBO);
+			glBindBuffer(GL_ARRAY_BUFFER, gl->VBO);
+			GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->vertices[0]);
+			glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_STATIC_DRAW);
 
-				GL_checkForError();
-			}
+			glGenBuffers(1, &gl->IBO);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->IBO);
+			GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->indices[0]);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, null, GL_STATIC_DRAW);
 
-			if (!succeeded)
-			{
-				logCritical("Could not initialise OpenGL! :(");
-			}
+			GL_checkForError();
+		}
+		else
+		{
+			logCritical("Could not initialise OpenGL! :(");
 		}
 
 		if (!succeeded)

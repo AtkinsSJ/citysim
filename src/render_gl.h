@@ -68,8 +68,7 @@ struct GL_Renderer
 	GL_VertexData vertices[RENDER_BATCH_VERTEX_COUNT];
 	GLuint indices[RENDER_BATCH_INDEX_COUNT];
 
-	GLuint textureCount;
-	GL_TextureInfo textureInfo[64]; // TODO: Make this the right length
+	ChunkedArray<GL_TextureInfo> textureInfo;
 };
 
 #include "render_gl.cpp"

@@ -172,3 +172,12 @@ T *get(ChunkedArray<T> *array, smm index)
 
 	return result;
 }
+
+template<typename T>
+void reserve(ChunkedArray<T> *array, smm desiredSize)
+{
+	while ((array->chunkSize * array->chunkCount) < desiredSize)
+	{
+		appendChunk(array);
+	}
+}
