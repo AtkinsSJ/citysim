@@ -126,7 +126,5 @@ String nextLine(LineReader *reader)
 	}
 	while ((line.length <= 0));
 
-	// consoleWriteLine(myprintf("LINE {1}: \"{0}\"", {line, formatInt(reader->lineNumber)}));
-
 	return line;
 }

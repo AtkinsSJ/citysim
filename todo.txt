@@ -127,7 +127,6 @@ String HashTable!
 - Other hashes: http://www.cse.yorku.ca/~oz/hash.html
 
 Console:
-- Could replace all use of ConsoleWriteLine with logBLAH() now that we route log data to the console.
 - Why does typing a space not move the caret far enough? I must be measuring the wrong thing.
 	- OK, it's because we want the xAdvance but don't have it by that point. yay
 - Console eats all input events while it is open?

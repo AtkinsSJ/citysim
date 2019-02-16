@@ -382,4 +382,3 @@ void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, 
 		renderBufferData->drawCallCount[frameIndex] = drawCallCount;
 	}
 }
-#undef FIND_OR_CREATE_DEBUG_DATA
