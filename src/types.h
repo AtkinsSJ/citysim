@@ -38,6 +38,15 @@ I will create shorter versions of the basic types though.
 #define STRVAL_(a) #a
 #define STRVAL(a) STRVAL_(a)
 
+/**********************************************
+	Asserts
+ **********************************************/
+
+// Not sure if I want them to print to the log, or just disappear entirely.
+// Really janky assertion macro, yay
+#define ASSERT(expr, msg, ...) if(!(expr)) {*(int *)0 = 0;}
+#define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
+
 /*
 	Defer macro, to run code at the end of a scope.
 
@@ -174,42 +183,64 @@ struct Rect2 {
 	};
 };
 
-/**********************************************
-	Slightly hacky doubly-linked list stuff
- **********************************************/
-// TODO: We only use this in the debug system, so maybe we should just flatten it there.
-// Also, I had the game freeze in DLinkedListFreeAll() just now and don't know why. (Only
-// detail is, the DebugState's topCodeBlocksFreeListSentinel and topCodeBlocksSentinel were
-// intertwined somehow, so that was making it fail. So, could be a bug in the freeing, or
-// a bug somewhere else that only became a *problem* when I tried to free it.
-// In any case, this is buggy and it's hard to debug because it's #defines not "real" code.
-// So, I'd like to replace it.
-// 
-// - Sam, 15/2/2019
-//
-#define DLinkedListMembers(type) type *prev; type *next;
-#define DLinkedListInit(sentinel) (sentinel)->prev = (sentinel)->next = (sentinel);
-#define DLinkedListInsertBefore(item, sentinel) \
-	(item)->prev = (sentinel)->prev;            \
-	(item)->next = (sentinel);                  \
-	(item)->prev->next = (item);                \
-	(item)->next->prev = (item);
-#define DLinkedListRemove(item)                 \
-	(item)->next->prev = item->prev;            \
-	(item)->prev->next = (item)->next;
-#define DLinkedListIsEmpty(sentinel) (((sentinel)->prev == (sentinel)) && ((sentinel)->next == (sentinel)))
-// TODO: Could shortcut this by simply changing the first and last list elements to point to the free list.
-// Would be faster but more complicated, so maybe later if it matters.
-#define DLinkedListFreeAll(type, srcSentinel, freeSentinel)   \
-	{                                                         \
-		type *toFree = (srcSentinel)->next;                   \
-		while (toFree != (srcSentinel))                       \
-		{                                                     \
-			DLinkedListRemove(toFree);                        \
-			DLinkedListInsertBefore(toFree, (freeSentinel));  \
-			toFree = (srcSentinel)->next;                     \
-		}                                                     \
+/*****************************************************************
+ * Somewhat less-hacky doubly-linked-list stuff using templates. *
+ *****************************************************************/
+template<typename T>
+struct LinkedListNode
+{
+	T *prevNode;
+	T *nextNode;
+};
+
+template<typename T>
+void initLinkedListSentinel(T *sentinel)
+{
+	sentinel->prevNode = sentinel;
+	sentinel->nextNode = sentinel;
+}
+
+template<typename T>
+void addToLinkedList(T *item, T *sentinel)
+{
+	item->prevNode = sentinel->prevNode;
+	item->nextNode = sentinel;
+	item->prevNode->nextNode = item;
+	item->nextNode->prevNode = item;
+}
+
+template<typename T>
+void removeFromLinkedList(T *item)
+{
+	item->nextNode->prevNode = item->prevNode;
+	item->prevNode->nextNode = item->nextNode;
+
+	item->nextNode = item->prevNode = item;
+}
+
+template<typename T>
+bool linkedListIsEmpty(LinkedListNode<T> *sentinel)
+{
+	bool hasNext = (sentinel->nextNode != sentinel);
+	bool hasPrev = (sentinel->prevNode != sentinel);
+	ASSERT(hasNext == hasPrev, "Linked list is corrupted!");
+	return !hasNext;
+}
+
+template<typename T>
+void moveAllNodes(T *srcSentinel, T *destSentinel)
+{
+	if (linkedListIsEmpty(srcSentinel)) return;
+
+	while (!linkedListIsEmpty(srcSentinel))
+	{
+		T *node = srcSentinel->nextNode;
+		removeFromLinkedList(node);
+		addToLinkedList(node, destSentinel);
 	}
+
+	srcSentinel->nextNode = srcSentinel->prevNode = srcSentinel;
+}
 
 /**********************************************
 	General
@@ -278,12 +309,3 @@ bool equals(f32 a, f32 b, f32 epsilon)
 {
 	return (fabs(a-b) < epsilon);
 }
-
-/**********************************************
-	Asserts
- **********************************************/
-
-// Not sure if I want them to print to the log, or just disappear entirely.
-// Really janky assertion macro, yay
-#define ASSERT(expr, msg, ...) if(!(expr)) {*(int *)0 = 0;}
-#define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;

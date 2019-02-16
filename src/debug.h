@@ -23,42 +23,35 @@ struct DebugState *globalDebugState = 0;
 #define DEBUG_FRAMES_COUNT 120
 #define DEBUG_TOP_CODE_BLOCKS_COUNT 20
 
-struct DebugArenaData
+struct DebugArenaData : LinkedListNode<DebugArenaData>
 {
 	String name;
 
 	u32 blockCount[DEBUG_FRAMES_COUNT];
 	smm totalSize[DEBUG_FRAMES_COUNT];
 	smm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
-
-	DLinkedListMembers(DebugArenaData);
 };
 
-struct DebugCodeData
+struct DebugCodeData : LinkedListNode<DebugCodeData>
 {
 	String name;
 
 	u32 callCount[DEBUG_FRAMES_COUNT];
 	u64 totalCycleCount[DEBUG_FRAMES_COUNT];
 	u64 averageCycleCount[DEBUG_FRAMES_COUNT];
-
-	DLinkedListMembers(DebugCodeData);
 };
 
-struct DebugCodeDataWrapper
+struct DebugCodeDataWrapper : LinkedListNode<DebugCodeDataWrapper>
 {
 	DebugCodeData *data;
-	DLinkedListMembers(DebugCodeDataWrapper);
 };
 
-struct DebugRenderBufferData
+struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData>
 {
 	String name;
 
 	u32 itemCount[DEBUG_FRAMES_COUNT];
 	u32 drawCallCount[DEBUG_FRAMES_COUNT];
-
-	DLinkedListMembers(DebugRenderBufferData);
 };
 
 struct DebugState

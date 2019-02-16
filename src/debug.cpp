@@ -8,28 +8,28 @@ void debugInit()
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 	globalDebugState->font = 0;
 
-	DLinkedListInit(&globalDebugState->arenaDataSentinel);
-	DLinkedListInit(&globalDebugState->codeDataSentinel);
-	DLinkedListInit(&globalDebugState->renderBufferDataSentinel);
+	initLinkedListSentinel(&globalDebugState->arenaDataSentinel);
+	initLinkedListSentinel(&globalDebugState->codeDataSentinel);
+	initLinkedListSentinel(&globalDebugState->renderBufferDataSentinel);
 
-	DLinkedListInit(&globalDebugState->topCodeBlocksFreeListSentinel);
-	DLinkedListInit(&globalDebugState->topCodeBlocksSentinel);
+	initLinkedListSentinel(&globalDebugState->topCodeBlocksFreeListSentinel);
+	initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
 	for (u32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
 	{
 		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
-		DLinkedListInsertBefore(item, &globalDebugState->topCodeBlocksFreeListSentinel);
+		addToLinkedList(item, &globalDebugState->topCodeBlocksFreeListSentinel);
 	}
 }
 
 void clearDebugFrame(DebugState *debugState, s32 frameIndex)
 {
-	DebugCodeData *codeData = debugState->codeDataSentinel.next;
+	DebugCodeData *codeData = debugState->codeDataSentinel.nextNode;
 	while (codeData != &debugState->codeDataSentinel)
 	{
 		codeData->callCount[frameIndex] = 0;
 		codeData->totalCycleCount[frameIndex] = 0;
 		codeData->averageCycleCount[frameIndex] = 0;
-		codeData = codeData->next;
+		codeData = codeData->nextNode;
 	}
 }
 
@@ -46,16 +46,15 @@ void processDebugData(DebugState *debugState)
 		}
 		debugState->frameStartCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
 
-		DLinkedListFreeAll(DebugCodeDataWrapper, &debugState->topCodeBlocksSentinel,
-			               &debugState->topCodeBlocksFreeListSentinel);
-		ASSERT(DLinkedListIsEmpty(&debugState->topCodeBlocksSentinel), "List we just freed is not empty!");
+		moveAllNodes(&debugState->topCodeBlocksSentinel, &debugState->topCodeBlocksFreeListSentinel);
+		ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel), "List we just freed is not empty!");
 
 		// Calculate new top blocks list
-		DebugCodeData *code = debugState->codeDataSentinel.next;
+		DebugCodeData *code = debugState->codeDataSentinel.nextNode;
 		while (code != &debugState->codeDataSentinel)
 		{
 			// Find spot on list. If we fail, target is the sentinel so it all still works!
-			DebugCodeDataWrapper *target = debugState->topCodeBlocksSentinel.next;
+			DebugCodeDataWrapper *target = debugState->topCodeBlocksSentinel.nextNode;
 			bool foundSmallerItem = false;
 			while (target != &debugState->topCodeBlocksSentinel)
 			{
@@ -65,30 +64,30 @@ void processDebugData(DebugState *debugState)
 					foundSmallerItem = true;
 					break;
 				}
-				target = target->next;
+				target = target->nextNode;
 			}
 
-			bool freeListHasItem = !DLinkedListIsEmpty(&debugState->topCodeBlocksFreeListSentinel);
+			bool freeListHasItem = !linkedListIsEmpty(&debugState->topCodeBlocksFreeListSentinel);
 
 			DebugCodeDataWrapper *item = 0;
 			if (freeListHasItem)
 			{
-				item = debugState->topCodeBlocksFreeListSentinel.next;
-				DLinkedListRemove(item);
+				item = debugState->topCodeBlocksFreeListSentinel.nextNode;
+				removeFromLinkedList(item);
 			}
 			else if (foundSmallerItem)
 			{
-				item = debugState->topCodeBlocksSentinel.prev;
-				DLinkedListRemove(item);
+				item = debugState->topCodeBlocksSentinel.prevNode;
+				removeFromLinkedList(item);
 			}
 
 			if (item)
 			{
 				item->data = code;
-				DLinkedListInsertBefore(item, target);
+				addToLinkedList(item, target);
 			}
 
-			code = code->next;
+			code = code->nextNode;
 		}
 
 		// Zero-out new writing frame.
@@ -186,23 +185,23 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 
 		// Memory arenas
 		{
-			DebugArenaData *arena = debugState->arenaDataSentinel.next;
+			DebugArenaData *arena = debugState->arenaDataSentinel.nextNode;
 			while (arena != &debugState->arenaDataSentinel)
 			{
 				debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated",
 					{arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi])}));
-				arena = arena->next;
+				arena = arena->nextNode;
 			}
 		}
 
 		// Render buffers
 		{
-			DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.next;
+			DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.nextNode;
 			while (renderBuffer != &debugState->renderBufferDataSentinel)
 			{
 				debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches",
 					{renderBuffer->name, formatInt(renderBuffer->itemCount[rfi]), formatInt(renderBuffer->drawCallCount[rfi])}));
-				renderBuffer = renderBuffer->next;
+				renderBuffer = renderBuffer->nextNode;
 			}
 		}
 
@@ -215,7 +214,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 				 formatString("Calls", 20, false), formatString("Avg Cycles", 20, false)}));
 
 			debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
-			DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.next;
+			DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.nextNode;
 			while (topBlock != &debugState->topCodeBlocksSentinel)
 			{
 				DebugCodeData *code = topBlock->data;
@@ -224,7 +223,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 					 formatString(formatInt(code->totalCycleCount[rfi]), 20, false),
 					 formatString(formatInt(code->callCount[rfi]), 20, false),
 					 formatString(formatInt(code->averageCycleCount[rfi]), 20, false)}));
-				topBlock = topBlock->next;
+				topBlock = topBlock->nextNode;
 			}
 		}
 
@@ -297,34 +296,37 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 	}
 }
 
+template<typename T>
+T *findOrCreateDebugData(DebugState *debugState, String name, T *sentinel)
+{
+	T *result = null;
 
-#define FIND_OR_CREATE_DEBUG_DATA(TYPE, NAME, SENTINEL, RESULT) { \
-	TYPE *data = debugState->SENTINEL.next;                       \
-	bool found = false;                                           \
-	while (data != &debugState->SENTINEL)                         \
-	{                                                             \
-		if (equals(data->name, NAME))                             \
-		{                                                         \
-			found = true;                                         \
-			break;                                                \
-		}                                                         \
-		data = data->next;                                        \
-	}                                                             \
-	if (!found)                                                   \
-	{                                                             \
-		data = PushStruct(&debugState->debugArena, TYPE);         \
-		DLinkedListInsertBefore(data, &debugState->SENTINEL);     \
-		data->name = NAME;                                        \
-	}                                                             \
-	RESULT = data;                                                \
+	T *data = sentinel->nextNode;
+	while (data != sentinel)
+	{
+		if (equals(data->name, name))
+		{
+			result = data;
+			break;
+		}
+		data = data->nextNode;
+	}
+
+	if (result == null)
+	{
+		result = PushStruct(&debugState->debugArena, T);
+		addToLinkedList(result, sentinel);
+		result->name = name;
+	}
+
+	return result;
 }
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 {
 	if (debugState)
 	{
-		DebugArenaData *arenaData;
-		FIND_OR_CREATE_DEBUG_DATA(DebugArenaData, name, arenaDataSentinel, arenaData);
+		DebugArenaData *arenaData = findOrCreateDebugData(debugState, name, &debugState->arenaDataSentinel);
 
 		u32 frameIndex = debugState->writingFrameIndex;
 
@@ -358,8 +360,7 @@ void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
 {
 	if (debugState)
 	{
-		DebugCodeData *codeData;
-		FIND_OR_CREATE_DEBUG_DATA(DebugCodeData, name, codeDataSentinel, codeData);
+		DebugCodeData *codeData = findOrCreateDebugData(debugState, name, &debugState->codeDataSentinel);
 
 		u32 frameIndex = debugState->writingFrameIndex;
 
@@ -373,8 +374,7 @@ void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, 
 {
 	if (debugState)
 	{
-		DebugRenderBufferData *renderBufferData;
-		FIND_OR_CREATE_DEBUG_DATA(DebugRenderBufferData, renderBuffer->name, renderBufferDataSentinel, renderBufferData);
+		DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBuffer->name, &debugState->renderBufferDataSentinel);
 
 		u32 frameIndex = debugState->writingFrameIndex;
 
