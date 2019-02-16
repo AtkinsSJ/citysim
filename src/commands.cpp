@@ -85,7 +85,7 @@ ConsoleCommand(funds)
 	s64 amount = 0;
 	if (asInt(sAmount, &amount))
 	{
-		if (globalAppState.gameState != nullptr)
+		if (globalAppState.gameState != null)
 		{
 			consoleWriteLine(myprintf("Set funds to {0}", {sAmount}), CLS_Success);
 			globalAppState.gameState->city.funds = (s32) amount;
@@ -105,7 +105,7 @@ ConsoleCommand(funds)
 ConsoleCommand(show_layer)
 {
 	// For now this is a toggle, but it'd be nice if we could say "show_paths true" or "show_paths 1" maybe
-	if (globalAppState.gameState != nullptr)
+	if (globalAppState.gameState != null)
 	{
 		if (tokens->count == 1)
 		{
