@@ -19,6 +19,16 @@ struct Command
 #define ConsoleCommand(name) void cmd_##name(Console *console, TokenList *tokens)
 Array<Command> consoleCommands;
 
+static bool checkInGame()
+{
+	bool inGame = (globalAppState.gameState != null);
+	if (!inGame)
+	{
+		consoleWriteLine("You can only do that when a game is in progress!", CLS_Error);
+	}
+	return inGame;
+}
+
 ConsoleCommand(help)
 {
 	consoleWriteLine("Available commands are:");
@@ -81,19 +91,14 @@ ConsoleCommand(exit)
 
 ConsoleCommand(funds)
 {
+	if (!checkInGame()) return;
+
 	String sAmount = tokens->tokens[1];
 	s64 amount = 0;
 	if (asInt(sAmount, &amount))
 	{
-		if (globalAppState.gameState != null)
-		{
-			consoleWriteLine(myprintf("Set funds to {0}", {sAmount}), CLS_Success);
-			globalAppState.gameState->city.funds = (s32) amount;
-		}
-		else
-		{
-			consoleWriteLine("You can only do that when a game is in progress!", CLS_Error);
-		}
+		consoleWriteLine(myprintf("Set funds to {0}", {sAmount}), CLS_Success);
+		globalAppState.gameState->city.funds = (s32) amount;
 	}
 	else
 	{
@@ -104,40 +109,34 @@ ConsoleCommand(funds)
 
 ConsoleCommand(show_layer)
 {
+	if (!checkInGame()) return;
+	
 	// For now this is a toggle, but it'd be nice if we could say "show_paths true" or "show_paths 1" maybe
-	if (globalAppState.gameState != null)
+	if (tokens->count == 1)
 	{
-		if (tokens->count == 1)
+		// Hide layers
+		globalAppState.gameState->dataLayerToDraw = DataLayer_None;
+		consoleWriteLine("Hiding data layers", CLS_Success);
+	}
+	else if (tokens->count == 2)
+	{
+		String layerName = tokens->tokens[1];
+		if (equals(layerName, "paths"))
 		{
-			// Hide layers
-			globalAppState.gameState->dataLayerToDraw = DataLayer_None;
-			consoleWriteLine("Hiding data layers", CLS_Success);
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Paths;
+			consoleWriteLine("Showing paths layer", CLS_Success);
 		}
-		else if (tokens->count == 2)
+		else if (equals(layerName, "power"))
 		{
-			String layerName = tokens->tokens[1];
-			if (equals(layerName, "paths"))
-			{
-				globalAppState.gameState->dataLayerToDraw = DataLayer_Paths;
-				consoleWriteLine("Showing paths layer", CLS_Success);
-			}
-			else if (equals(layerName, "power"))
-			{
-				globalAppState.gameState->dataLayerToDraw = DataLayer_Power;
-				consoleWriteLine("Showing power layer", CLS_Success);
-			}
-		}
-		else
-		{
-			consoleWriteLine(myprintf("Usage: {0} (paths|power), or with no argument to hide the data layer",
-								{tokens->tokens[0]}), CLS_Error);
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Power;
+			consoleWriteLine("Showing power layer", CLS_Success);
 		}
 	}
 	else
 	{
-		consoleWriteLine("You can only do that when a game is in progress!", CLS_Error);
+		consoleWriteLine(myprintf("Usage: {0} (paths|power), or with no argument to hide the data layer",
+							{tokens->tokens[0]}), CLS_Error);
 	}
-
 }
 
 s32 compareCommands(Command *a, Command *b)
