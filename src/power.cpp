@@ -3,7 +3,7 @@
 void initialisePowerLayer(MemoryArena *gameArena, PowerLayer *layer, s32 tileCount)
 {
 	layer->data = PushArray(gameArena, s32, tileCount);
-	initialiseArray(&layer->groups, 64);
+	initChunkedArray(&layer->groups, gameArena, 64);
 }
 
 bool floodFillPowerConnectivity(City *city, s32 x, s32 y, s32 fillValue)
@@ -98,14 +98,14 @@ void recalculatePowerConnectivity(City *city)
 
 	// Find all power production/consumption buildings and add them up
 	// TODO: some kind of building-type query would probably be better?
-	for (auto it = iterate(&city->buildings); !it.isDone; next(&it))
+	for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
 	{
 		Building *building = get(it);
 		BuildingDef *def = get(&buildingDefs, building->typeID);
 
 		if (def->power != 0)
 		{
-			PowerGroup *powerGroup = pointerTo(&city->powerLayer.groups, powerGroupAt(city, building->footprint.x, building->footprint.y));
+			PowerGroup *powerGroup = get(&city->powerLayer.groups, powerGroupAt(city, building->footprint.x, building->footprint.y));
 
 			if (def->power > 0)
 			{
@@ -118,10 +118,10 @@ void recalculatePowerConnectivity(City *city)
 		}
 	}
 
-	for (u32 powerGroupIndex = 1; powerGroupIndex < city->powerLayer.groups.count; powerGroupIndex++)
+	for (auto it = iterate(&city->powerLayer.groups, 1, false); !it.isDone; next(&it))
 	{
-		PowerGroup group = city->powerLayer.groups[powerGroupIndex];
-		city->powerLayer.combined.production += group.production;
-		city->powerLayer.combined.consumption += group.consumption;
+		PowerGroup *group = get(it);
+		city->powerLayer.combined.production  += group->production;
+		city->powerLayer.combined.consumption += group->consumption;
 	}
 }

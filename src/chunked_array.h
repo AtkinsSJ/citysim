@@ -41,6 +41,7 @@ struct ChunkedArrayIterator
 	// This is a counter for use when we start not at the beginning of the array but want to iterate it ALL.
 	// For simplicity, we increment it each time we next(), and when it equals the count, we're done.
 	smm itemsIterated;
+	bool wrapAround;
 	bool isDone;
 };
 

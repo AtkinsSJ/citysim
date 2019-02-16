@@ -188,10 +188,12 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 
 /**
  * This will iterate through every item in the array, starting at whichever initialIndex
- * you specify (default to the beginning). It wraps when it reaches the end.
+ * you specify (default to the beginning).
+ * If wrapAround is true, the iterator will wrap from the end to the beginning so that
+ * every item is iterated once. If false, we stop after the last item.
  * Example usage:
 
-	for (auto it = iterate(&array, randomInRange(random, array.count));
+	for (auto it = iterate(&array, randomInRange(random, array.count), true);
 		!it.isDone;
 		next(&it))
 	{
@@ -200,12 +202,13 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 	}
  */
 template<class T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0)
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true)
 {
 	ChunkedArrayIterator<T> iterator = {};
 
 	iterator.array = array;
 	iterator.itemsIterated = 0;
+	iterator.wrapAround = wrapAround;
 
 	// If the array is empty, we can skip some work.
 	iterator.isDone = array->count == 0;
@@ -240,8 +243,16 @@ void next(ChunkedArrayIterator<T> *iterator)
 
 		if (iterator->currentChunk == null)
 		{
-			// Wrap to the beginning!
-			iterator->currentChunk = &iterator->array->firstChunk;
+			if (iterator->wrapAround)
+			{
+				// Wrap to the beginning!
+				iterator->currentChunk = &iterator->array->firstChunk;
+			}
+			else
+			{
+				// We're not wrapping, so we're done
+				iterator->isDone = true;
+			}
 		}
 	}
 }

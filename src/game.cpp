@@ -781,7 +781,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 	}
 	
-	for (auto it = iterate(&city->buildings); !it.isDone; next(&it))
+	for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
 	{
 		Building *building = get(it);
 

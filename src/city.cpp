@@ -25,7 +25,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 top)
 {
-	u32 buildingID = city->buildings.count;
+	s32 buildingID = city->buildings.count;
 	Building *building = appendBlank(&city->buildings);
 	building->typeID = buildingDef->typeID;
 	building->footprint = irectXYWH(left, top, buildingDef->width, buildingDef->height);
@@ -167,7 +167,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	bool needToRecalcPower = def->carriesPower;
 
 	Building *building = null;
-	u32 buildingID = city->tileBuildings[tileIndex(city, left, top)];
+	s32 buildingID = city->tileBuildings[tileIndex(city, left, top)];
 
 	if (buildingID)
 	{
@@ -326,6 +326,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 
 		// Overwrite the building record with the highest one
 		// Unless it *IS* the highest one!
+		// TODO: REPLACE THIS with a system that has consistent IDs!
 		if (buildingID != (city->buildings.count-1))
 		{
 			Building *highest = getBuildingByID(city, city->buildings.count - 1);
@@ -348,7 +349,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 
 			*highest = {};
 		}
-		city->buildings.count--;
+		removeIndex(&city->buildings, city->buildings.count-1, false);
 
 		return true;
 	}
@@ -398,7 +399,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	// We want to only get the cost of each building once.
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
 	// TODO: Make this instead do a position-based query, keeping track of checked buildings
-	for (auto it = iterate(&city->buildings); !it.isDone; next(&it))
+	for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
 	{
 		Building *building = get(it);
 
