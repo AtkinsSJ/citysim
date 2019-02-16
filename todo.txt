@@ -31,6 +31,12 @@ Data structure ideas I had late last night:
 	Also, the console texts can be in a ring buffer! Store it as (line metadata, string data). When adding a line, see if there's room. While there's not, "free" the earliest by jumping ahead to the next one. As long as we don't try and enter a line larger than the buffer, it's fine. (We can just crop it.) Also, think what happens if the buffer becomes empty. (Jump to index 0?)
 
 
+Arrays stuff
+- "markFirstChunkAsFull" is a hack, try to replace it.
+- Try to remove all "dynamic" uses of Array<>, because it's bad. Replace with ChunkedArray for now.
+- Main issue is, how do we sort ChunkedArrays?
+	- I guess the best idea would be to take advantage of the chunks rather than letting them be a weakness. Maybe some variation on a Merge Sort? (Sort the items within each chunk, then combine them by walking the chunks simultaneously.) Though, that gets compilcated because of the variable (and possibly very large) number of chunks, and because we'd need an extra set of chunks to put the results in. (Could use temp memory, maybe that's OK?)
+
 ------------------------------------------------
 
 THE PLAN:
