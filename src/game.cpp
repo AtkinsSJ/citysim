@@ -529,52 +529,12 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					}
 				} break;
 
-				case BuildMethod_DragLine:
-				{
-					DragResult dragResult = updateDragState(gameState, inputState, mouseTilePos, mouseIsOverUI, DragLine);
-					s32 buildCost = calculateBuildCost(city, gameState->selectedBuildingTypeID, dragResult.dragRect);
-
-					switch (dragResult.operation)
-					{
-						case DragResult_DoAction:
-						{
-							if (canAfford(city, buildCost))
-							{
-								placeBuildingRect(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect);
-							}
-						} break;
-
-						case DragResult_ShowPreview:
-						{
-							if (!mouseIsOverUI) showCostTooltip(uiState, city, buildCost);
-
-							if (canAfford(city, buildCost))
-							{
-								for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
-								{
-									for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
-									{
-										V4 ghostColor = color255(128,255,128,255);
-										if (!canPlaceBuilding(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
-										{
-											ghostColor = color255(255,0,0,128);
-										}
-										drawTextureRegion(&renderer->worldBuffer, getTextureRegionID(assets, buildingDef->textureAssetType, 0),
-										                  rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragResult.dragRect.y + y) + 100, ghostColor);
-									}
-								}
-							}
-							else
-							{
-								drawRect(&renderer->worldBuffer, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128));
-							}
-						} break;
-					}
-				} break;
-
+				case BuildMethod_DragLine: // Fallthrough
 				case BuildMethod_DragRect:
 				{
-					DragResult dragResult = updateDragState(gameState, inputState, mouseTilePos, mouseIsOverUI, DragRect, buildingDef->size);
+					DragType dragType = (buildingDef->buildMethod == BuildMethod_DragLine) ? DragLine : DragRect;
+
+					DragResult dragResult = updateDragState(gameState, inputState, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
 					s32 buildCost = calculateBuildCost(city, gameState->selectedBuildingTypeID, dragResult.dragRect);
 
 					switch (dragResult.operation)
