@@ -453,8 +453,14 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 	
 	// Sort sprites
-	sortRenderBuffer(&renderer->worldBuffer);
-	sortRenderBuffer(&renderer->uiBuffer);
+	{
+		// DEBUG_BLOCK("SORT WORLD BUFFER");
+		sortRenderBuffer(&renderer->worldBuffer);
+	}
+	{
+		// DEBUG_BLOCK("SORT UI BUFFER");
+		sortRenderBuffer(&renderer->uiBuffer);
+	}
 
 #if CHECK_BUFFERS_SORTED
 	// Check buffers are sorted
@@ -474,8 +480,14 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 
 	gl->currentShader = ShaderProgram_Invalid;
 
-	renderBuffer(gl, assets, &renderer->worldBuffer);
-	renderBuffer(gl, assets, &renderer->uiBuffer);
+	{
+		// DEBUG_BLOCK("DRAW WORLD BUFFER");
+		renderBuffer(gl, assets, &renderer->worldBuffer);
+	}
+	{
+		// DEBUG_BLOCK("DRAW UI BUFFER");
+		renderBuffer(gl, assets, &renderer->uiBuffer);
+	}
 
 	glUseProgram(NULL);
 	GL_checkForError();

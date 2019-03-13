@@ -134,7 +134,7 @@ TextureRegionID getTextureRegionID(AssetManager *assets, u32 textureAssetType, u
 	u32 max = range->lastIndex;
 
 	u32 id = clampToRangeWrapping(min, max, offset);
-	ASSERT((id >= min) && (id <= max), "Got a textureRegionId outside of the range.");
+	ASSERT((id >= min) && (id <= max), "Got a textureRegionID outside of the range.");
 
 	return id;
 }

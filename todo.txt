@@ -37,6 +37,8 @@ Arrays stuff
 - Main issue is, how do we sort ChunkedArrays?
 	- I guess the best idea would be to take advantage of the chunks rather than letting them be a weakness. Maybe some variation on a Merge Sort? (Sort the items within each chunk, then combine them by walking the chunks simultaneously.) Though, that gets compilcated because of the variable (and possibly very large) number of chunks, and because we'd need an extra set of chunks to put the results in. (Could use temp memory, maybe that's OK?)
 
+BUG: We get frame hitching at almost regular intervals. Profiling says it's caused by renderBuffer() sometimes taking twice as long. Need to identify this!
+
 ------------------------------------------------
 
 THE PLAN:
@@ -81,6 +83,9 @@ Data views:
 	Police coverage
 Pause/resume/speed controls
 Map generator
+
+Notes:
+Simcity 4 map sizes: 64x64 (~1km), 128x128 (~2km), 256x256 (~4km)
 
 -------------------------------------------------
 
