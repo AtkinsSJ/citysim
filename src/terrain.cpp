@@ -52,43 +52,11 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 			{
 				if (equals(firstWord, "texture"))
 				{
-					String textureName = nextToken(remainder, &remainder);
-					s64 regionW;
-					s64 regionH;
-					s64 regionsAcross;
-					s64 regionsDown;
-
-					if (asInt(nextToken(remainder, &remainder), &regionW)
-						&& asInt(nextToken(remainder, &remainder), &regionH))
-					{
-						if (!(asInt(nextToken(remainder, &remainder), &regionsAcross)
-							&& asInt(nextToken(remainder, &remainder), &regionsDown)))
-						{
-							regionsAcross = 1;
-							regionsDown = 1;
-						}
-						
-						def->textureAssetType = addNewTextureAssetType(assets);
-						addTiledTextureRegions(assets, def->textureAssetType, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
-					}
-					else
-					{
-						error(&reader, "Couldn't parse texture. Expected use: \"texture filename.png width height tilesAcross tilesDown\"");
-						return;
-					}
+					def->textureAssetType = readTextureDefinition(&reader, assets, remainder);
 				}
 				else if (equals(firstWord, "can_build_on"))
 				{
-					bool canBuildOn;
-					if (asBool(nextToken(remainder, &remainder), &canBuildOn))
-					{
-						def->canBuildOn = canBuildOn;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse can_build_on. Expected 1 boolean (true/false).");
-						return;
-					}
+					def->canBuildOn = readBool(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "can_demolish"))
 				{

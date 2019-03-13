@@ -1,39 +1,5 @@
 #pragma once
 
-static V4 readColor255(String input)
-{
-	s64 r = 0, g = 0, b = 0, a = 255;
-	String token, rest;
-	bool succeeded;
-
-	token = nextToken(input, &rest);
-	succeeded = asInt(token, &r);
-
-	if (succeeded)
-	{
-		token = nextToken(rest, &rest);
-		succeeded = asInt(token, &g);
-	}
-
-	if (succeeded)
-	{
-		token = nextToken(rest, &rest);
-		succeeded = asInt(token, &b);
-	}
-
-	if (succeeded)
-	{
-		token = nextToken(rest, &rest);
-	}
-
-	if (token.length)
-	{
-		succeeded = asInt(token, &a);
-	}
-
-	return color255((u8)r, (u8)g, (u8)b, (u8)a);
-}
-
 static s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
 {
 	s32 result = -1;
@@ -52,81 +18,6 @@ static s32 findFontByName(LineReader *reader, AssetManager *assets, String fontN
 	if (result == -1)
 	{
 		error(reader, "Unrecognized font name '{0}'", {fontName});
-	}
-
-	return result;
-}
-
-static u32 readAlignment(LineReader *reader, String text)
-{
-	u32 result = 0;
-
-	String remainder = text;
-
-	String token = nextToken(remainder, &remainder);
-	while (token.length > 0)
-	{
-		if (equals(token, "LEFT"))
-		{
-			if (result & ALIGN_H)
-			{
-				error(reader, "Multiple horizontal alignment keywords given!");
-				break;
-			}
-			result |= ALIGN_LEFT;
-		}
-		else if (equals(token, "H_CENTRE"))
-		{
-			if (result & ALIGN_H)
-			{
-				error(reader, "Multiple horizontal alignment keywords given!");
-				break;
-			}
-			result |= ALIGN_H_CENTRE;
-		}
-		else if (equals(token, "RIGHT"))
-		{
-			if (result & ALIGN_H)
-			{
-				error(reader, "Multiple horizontal alignment keywords given!");
-				break;
-			}
-			result |= ALIGN_RIGHT;
-		}
-		else if (equals(token, "TOP"))
-		{
-			if (result & ALIGN_V)
-			{
-				error(reader, "Multiple vertical alignment keywords given!");
-				break;
-			}
-			result |= ALIGN_TOP;
-		}
-		else if (equals(token, "V_CENTRE"))
-		{
-			if (result & ALIGN_V)
-			{
-				error(reader, "Multiple vertical alignment keywords given!");
-				break;
-			}
-			result |= ALIGN_V_CENTRE;
-		}
-		else if (equals(token, "BOTTOM"))
-		{
-			if (result & ALIGN_V)
-			{
-				error(reader, "Multiple vertical alignment keywords given!");
-				break;
-			}
-			result |= ALIGN_BOTTOM;
-		}
-		else
-		{
-			error(reader, "Unrecognized alignment keyword '{0}'", {token});
-			break;
-		}
-
-		token = nextToken(remainder, &remainder);
 	}
 
 	return result;
@@ -307,7 +198,7 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				if (target.type == Section_General)
 				{
-					theme->overlayColor = readColor255(remainder);
+					theme->overlayColor = readColor255(&reader, firstWord, remainder);
 				}
 				else
 				{
@@ -318,11 +209,11 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Button:     target.button->textColor    = readColor255(remainder); break;
-					case Section_Label:      target.label->textColor     = readColor255(remainder); break;
-					case Section_TextBox:    target.textBox->textColor   = readColor255(remainder); break;
-					case Section_Tooltip:    target.tooltip->textColor   = readColor255(remainder); break;
-					case Section_UIMessage:  target.message->textColor   = readColor255(remainder); break;
+					case Section_Button:     target.button->textColor    = readColor255(&reader, firstWord, remainder); break;
+					case Section_Label:      target.label->textColor     = readColor255(&reader, firstWord, remainder); break;
+					case Section_TextBox:    target.textBox->textColor   = readColor255(&reader, firstWord, remainder); break;
+					case Section_Tooltip:    target.tooltip->textColor   = readColor255(&reader, firstWord, remainder); break;
+					case Section_UIMessage:  target.message->textColor   = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -330,11 +221,11 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Button:    target.button->backgroundColor    = readColor255(remainder); break;
-					case Section_TextBox:   target.textBox->backgroundColor   = readColor255(remainder); break;
-					case Section_Tooltip:   target.tooltip->backgroundColor   = readColor255(remainder); break;
-					case Section_UIMessage: target.message->backgroundColor   = readColor255(remainder); break;
-					case Section_Window:    target.window->backgroundColor    = readColor255(remainder); break;
+					case Section_Button:    target.button->backgroundColor    = readColor255(&reader, firstWord, remainder); break;
+					case Section_TextBox:   target.textBox->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
+					case Section_Tooltip:   target.tooltip->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
+					case Section_UIMessage: target.message->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
+					case Section_Window:    target.window->backgroundColor    = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -342,7 +233,7 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Button:  target.button->hoverColor = readColor255(remainder); break;
+					case Section_Button:  target.button->hoverColor = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -350,27 +241,23 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Button:  target.button->pressedColor = readColor255(remainder); break;
+					case Section_Button:  target.button->pressedColor = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "padding"))
 			{
-				s64 intValue;
-				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-
 				switch (target.type)
 				{
-					case Section_Button:     target.button->padding = (f32) intValue; break;
-					case Section_Tooltip:    target.tooltip->padding   = (f32) intValue; break;
-					case Section_UIMessage:  target.message->padding   = (f32) intValue; break;
+					case Section_Button:     target.button->padding    = (f32) readInt(&reader, firstWord, remainder); break;
+					case Section_Tooltip:    target.tooltip->padding   = (f32) readInt(&reader, firstWord, remainder); break;
+					case Section_UIMessage:  target.message->padding   = (f32) readInt(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "font"))
 			{
-				String fontName = nextToken(remainder, null);
-				s32 fontID = findFontByName(&reader, assets, fontName);
+				s32 fontID = findFontByName(&reader, assets, nextToken(remainder, &remainder));
 
 				switch (target.type)
 				{
@@ -384,8 +271,7 @@ void loadUITheme(AssetManager *assets, File file)
 			}
 			else if (equals(firstWord, "titleFont"))
 			{
-				String fontName = nextToken(remainder, null);
-				s32 fontID = findFontByName(&reader, assets, fontName);
+				s32 fontID = findFontByName(&reader, assets, nextToken(remainder, &remainder));
 
 				switch (target.type)
 				{
@@ -397,18 +283,15 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Window:  target.window->titleColor = readColor255(remainder); break;
+					case Section_Window:  target.window->titleColor = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "titleBarHeight"))
 			{
-				s64 intValue;
-				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-
 				switch (target.type)
 				{
-					case Section_Window:  target.window->titleBarHeight = (f32) intValue; break;
+					case Section_Window:  target.window->titleBarHeight = (f32) readInt(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -416,7 +299,7 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Window:  target.window->titleBarColor = readColor255(remainder); break;
+					case Section_Window:  target.window->titleBarColor = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -424,7 +307,7 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Window:  target.window->titleBarColorInactive = readColor255(remainder); break;
+					case Section_Window:  target.window->titleBarColorInactive = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -432,7 +315,7 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Window:  target.window->titleBarButtonHoverColor = readColor255(remainder); break;
+					case Section_Window:  target.window->titleBarButtonHoverColor = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -440,18 +323,15 @@ void loadUITheme(AssetManager *assets, File file)
 			{
 				switch (target.type)
 				{
-					case Section_Window:  target.window->backgroundColorInactive = readColor255(remainder); break;
+					case Section_Window:  target.window->backgroundColorInactive = readColor255(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
 			else if (equals(firstWord, "contentPadding"))
 			{
-				s64 intValue;
-				if (!asInt(remainder, &intValue)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-
 				switch (target.type)
 				{
-					case Section_Window:  target.window->contentPadding = (f32) intValue; break;
+					case Section_Window:  target.window->contentPadding = (f32) readInt(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}
@@ -487,10 +367,9 @@ void loadUITheme(AssetManager *assets, File file)
 			}
 			else if (equals(firstWord, "textAlignment"))
 			{
-				u32 alignment = readAlignment(&reader, remainder);
 				switch (target.type)
 				{
-					case Section_Button:  target.button->textAlignment = alignment; break;
+					case Section_Button:  target.button->textAlignment = readAlignment(&reader, firstWord, remainder); break;
 					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
 				}
 			}

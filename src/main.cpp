@@ -66,10 +66,11 @@ struct AppState
 };
 AppState globalAppState;
 
+#include "assets.cpp"
+#include "data_file.cpp"
 #include "uitheme.cpp"
 #include "ui.cpp"
 #include "ui_window.cpp"
-#include "assets.cpp"
 #include "building.cpp"
 #include "terrain.cpp"
 #include "bmfont.h"

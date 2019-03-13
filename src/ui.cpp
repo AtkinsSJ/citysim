@@ -1,11 +1,5 @@
 // ui.cpp
 
-void setCursor(UIState *uiState, u32 cursorID)
-{
-	uiState->currentCursor = cursorID;
-	SDL_SetCursor(getCursor(uiState->assets, cursorID)->sdlCursor);
-}
-
 void setCursorVisible(UIState *uiState, bool visible)
 {
 	uiState->cursorIsVisible = visible;

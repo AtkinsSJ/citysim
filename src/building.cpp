@@ -63,30 +63,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 				}
 				else if (equals(firstWord, "texture"))
 				{
-					String textureName = nextToken(remainder, &remainder);
-					s64 regionW;
-					s64 regionH;
-					s64 regionsAcross;
-					s64 regionsDown;
-
-					if (asInt(nextToken(remainder, &remainder), &regionW)
-						&& asInt(nextToken(remainder, &remainder), &regionH))
-					{
-						if (!(asInt(nextToken(remainder, &remainder), &regionsAcross)
-							&& asInt(nextToken(remainder, &remainder), &regionsDown)))
-						{
-							regionsAcross = 1;
-							regionsDown = 1;
-						}
-
-						def->textureAssetType = addNewTextureAssetType(assets);
-						addTiledTextureRegions(assets, def->textureAssetType, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
-					}
-					else
-					{
-						error(&reader, "Couldn't parse texture. Expected use: \"texture filename.png width height (tilesAcross=1) (tilesDown=1)\"");
-						return;
-					}
+					def->textureAssetType = readTextureDefinition(&reader, assets, remainder);
 				}
 				else if (equals(firstWord, "link_textures"))
 				{
@@ -145,17 +122,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 				}
 				else if (equals(firstWord, "demolish_cost"))
 				{
-					s64 cost;
-
-					if (asInt(nextToken(remainder, &remainder), &cost))
-					{
-						def->demolishCost = (s32) cost;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse demolish_cost. Expected 1 int.");
-						return;
-					}
+					def->demolishCost = (s32) readInt(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "grows_in"))
 				{
@@ -180,87 +147,27 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 				}
 				else if (equals(firstWord, "is_path"))
 				{
-					bool isPath;
-
-					if (asBool(nextToken(remainder, &remainder), &isPath))
-					{
-						def->isPath = isPath;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse is_path. Expected 1 boolean (true/false).");
-						return;
-					}
+					def->isPath = readBool(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "carries_power"))
 				{
-					bool carriesPower;
-
-					if (asBool(nextToken(remainder, &remainder), &carriesPower))
-					{
-						def->carriesPower = carriesPower;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse carries_power. Expected 1 boolean (true/false).");
-						return;
-					}
+					def->carriesPower = readBool(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "power_gen"))
 				{
-					s64 power;
-
-					if (asInt(nextToken(remainder, &remainder), &power))
-					{
-						def->power = (s32) power;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse power_gen. Expected 1 int.");
-						return;
-					}
+					def->power = (s32) readInt(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "power_use"))
 				{
-					s64 power;
-
-					if (asInt(nextToken(remainder, &remainder), &power))
-					{
-						def->power = (s32) -power;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse power_use. Expected 1 int.");
-						return;
-					}
+					def->power = (s32) -readInt(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "residents"))
 				{
-					s64 residents;
-
-					if (asInt(nextToken(remainder, &remainder), &residents))
-					{
-						def->residents = (s32) residents;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse residents. Expected 1 int.");
-						return;
-					}
+					def->residents = (s32) readInt(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "jobs"))
 				{
-					s64 jobs;
-
-					if (asInt(nextToken(remainder, &remainder), &jobs))
-					{
-						def->jobs = (s32) jobs;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse jobs. Expected 1 int.");
-						return;
-					}
+					def->jobs = (s32) readInt(&reader, firstWord, remainder);
 				}
 				else if (equals(firstWord, "combination_of"))
 				{

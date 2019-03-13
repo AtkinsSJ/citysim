@@ -153,40 +153,43 @@ bool asInt(String string, s64 *result)
 {
 	bool succeeded = string.length > 0;
 
-	s64 value = 0;
-	s32 startPosition = 0;
-	bool isNegative = false;
-	if (string.chars[0] == '-')
-	{
-		isNegative = true;
-		startPosition++;
-	}
-	else if (string.chars[0] == '+')
-	{
-		// allow a leading + in case people want it for some reason.
-		startPosition++;
-	}
-
-	for (int position=startPosition; position<string.length; position++)
-	{
-		value *= 10;
-
-		char c = string.chars[position];
-		if (c >= '0' && c <= '9')
-		{
-			value += c - '0';
-		}
-		else
-		{
-			succeeded = false;
-			break;
-		}
-	}
-
 	if (succeeded)
 	{
-		*result = value;
-		if (isNegative) *result = -*result;
+		s64 value = 0;
+		s32 startPosition = 0;
+		bool isNegative = false;
+		if (string.chars[0] == '-')
+		{
+			isNegative = true;
+			startPosition++;
+		}
+		else if (string.chars[0] == '+')
+		{
+			// allow a leading + in case people want it for some reason.
+			startPosition++;
+		}
+
+		for (int position=startPosition; position<string.length; position++)
+		{
+			value *= 10;
+
+			char c = string.chars[position];
+			if (c >= '0' && c <= '9')
+			{
+				value += c - '0';
+			}
+			else
+			{
+				succeeded = false;
+				break;
+			}
+		}
+
+		if (succeeded)
+		{
+			*result = value;
+			if (isNegative) *result = -*result;
+		}
 	}
 
 	return succeeded;
