@@ -77,6 +77,8 @@ UIWindowStyle *findWindowStyle(AssetManager *assets, String name)
 	return findStyle(&assets->windowStyles, name);
 }
 
+#define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name})
+
 void loadUITheme(AssetManager *assets, File file)
 {
 	LineReader reader = startFile(file, true, true, '#');
@@ -202,7 +204,7 @@ void loadUITheme(AssetManager *assets, File file)
 				}
 				else
 				{
-					error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "textColor"))
@@ -214,7 +216,7 @@ void loadUITheme(AssetManager *assets, File file)
 					case Section_TextBox:    target.textBox->textColor   = readColor255(&reader, firstWord, remainder); break;
 					case Section_Tooltip:    target.tooltip->textColor   = readColor255(&reader, firstWord, remainder); break;
 					case Section_UIMessage:  target.message->textColor   = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "backgroundColor"))
@@ -226,7 +228,7 @@ void loadUITheme(AssetManager *assets, File file)
 					case Section_Tooltip:   target.tooltip->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
 					case Section_UIMessage: target.message->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
 					case Section_Window:    target.window->backgroundColor    = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "hoverColor"))
@@ -234,7 +236,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Button:  target.button->hoverColor = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "pressedColor"))
@@ -242,7 +244,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Button:  target.button->pressedColor = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "padding"))
@@ -252,7 +254,7 @@ void loadUITheme(AssetManager *assets, File file)
 					case Section_Button:     target.button->padding    = (f32) readInt(&reader, firstWord, remainder); break;
 					case Section_Tooltip:    target.tooltip->padding   = (f32) readInt(&reader, firstWord, remainder); break;
 					case Section_UIMessage:  target.message->padding   = (f32) readInt(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "font"))
@@ -266,7 +268,7 @@ void loadUITheme(AssetManager *assets, File file)
 					case Section_Tooltip:    target.tooltip->fontID       = fontID; break;
 					case Section_TextBox:    target.textBox->fontID       = fontID; break;
 					case Section_UIMessage:  target.message->fontID       = fontID; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleFont"))
@@ -276,7 +278,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->titleFontID = fontID; break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleColor"))
@@ -284,7 +286,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->titleColor = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleBarHeight"))
@@ -292,7 +294,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->titleBarHeight = (f32) readInt(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleBarColor"))
@@ -300,7 +302,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->titleBarColor = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleBarColorInactive"))
@@ -308,7 +310,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->titleBarColorInactive = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleBarButtonHoverColor"))
@@ -316,7 +318,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->titleBarButtonHoverColor = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "backgroundColorInactive"))
@@ -324,7 +326,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->backgroundColorInactive = readColor255(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "contentPadding"))
@@ -332,7 +334,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->contentPadding = (f32) readInt(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "contentLabelStyle"))
@@ -341,7 +343,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->labelStyle = findLabelStyle(assets, styleName); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "contentButtonStyle"))
@@ -350,7 +352,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Window:  target.window->buttonStyle = findButtonStyle(assets, styleName); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "offset"))
@@ -362,7 +364,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Tooltip:  target.tooltip->offsetFromCursor = v2((s32)offsetX, (s32)offsetY); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "textAlignment"))
@@ -370,7 +372,7 @@ void loadUITheme(AssetManager *assets, File file)
 				switch (target.type)
 				{
 					case Section_Button:  target.button->textAlignment = readAlignment(&reader, firstWord, remainder); break;
-					default:  error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name});
+					default:  WRONG_SECTION;
 				}
 			}
 			else 
@@ -380,3 +382,4 @@ void loadUITheme(AssetManager *assets, File file)
 		}
 	}
 }
+#undef WRONG_SECTION
