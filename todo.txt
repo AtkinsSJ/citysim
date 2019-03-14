@@ -37,6 +37,8 @@ Arrays stuff
 
 BUG: We get frame hitching at almost regular intervals. Profiling says it's caused by renderBuffer() sometimes taking twice as long. Need to identify this!
 
+Problem: The new pixel-art shader is great, but the edges of coloured rectangles (and possibly textured ones though it's harder to tell?) still flicker because they're always full pixels. Ideally we'd be able to smooth those out too. Maybe just switch to MSAA to fix that if I can't find/figure-out a shader solution. (It seems like we can't determine from a shader whether a fragment is on the edge or not.)
+
 ------------------------------------------------
 
 THE PLAN:
