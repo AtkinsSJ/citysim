@@ -131,6 +131,7 @@ Asset system:
 - Asset packer of some kind. Maybe just creates an assets table?
 - Strings! Translateable and stored as assets.
 	- https://blog.thimbleweedpark.com/text_lock
+	- BETTER: https://ourmachinery.com/post/localization-in-the-machinerys-ui/
 - Audio when we have that!
 
 String HashTable!

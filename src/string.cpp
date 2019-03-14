@@ -5,6 +5,8 @@
  * A printf() that takes a string like "Hello {0}!" where each {n} is replaced by the arg at that index.
  * Extra { and } characters may be stripped. We try to print out any invalid {n} indices but there is not a ton
  * of error-reporting. Try to pass valid input!
+ * You pass the arguments in an initializer-list, so like: myprintf("Hello {0}!", {name});
+ * All arguments must already be Strings. Use the various formatXXX() functions to convert things to Strings.
  */
 String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate=false)
 {
@@ -98,6 +100,7 @@ String formatInt(u64 value, u8 base=10)
 	while (v != 0);
 
 	// reverse it
+	// TODO: We don't have to reverse it if we insert characters from the *end* and work backwards!
 	reverseString(temp, count);
 
 	return makeString(temp, count);
@@ -113,7 +116,7 @@ String formatInt(s64 value, u8 base=10)
 	bool isNegative = (value < 0);
 	u32 count = 0;
 
-	// One complication here: If we're passed s64_MIN, then -value is 1 larger than can be help in an s64!
+	// One complication here: If we're passed s64_MIN, then -value is 1 larger than can be held in an s64!
 	// So, rather than flipping it and treating it like a positive number with an '-' appended,
 	// we have to make each digit positive as we get it.
 
@@ -133,6 +136,7 @@ String formatInt(s64 value, u8 base=10)
 	}
 
 	// reverse it
+	// TODO: We don't have to reverse it if we insert characters from the *end* and work backwards!
 	reverseString(temp, count);
 
 	return makeString(temp, count);
