@@ -36,6 +36,7 @@ struct RenderItem
 	f32 depth; // Positive is towards the player
 	V4 color;
 	u32 textureRegionID;
+	ShaderProgramType shaderID;
 };
 
 struct RenderBuffer

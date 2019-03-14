@@ -139,6 +139,38 @@ ConsoleCommand(show_layer)
 	}
 }
 
+ConsoleCommand(zoom)
+{
+	bool succeeded = false;
+
+	if (tokens->count == 1)
+	{
+		// list the zoom
+		f32 zoom = globalAppState.renderer->worldBuffer.camera.zoom;
+		consoleWriteLine(myprintf("Current zoom is {0}", {formatFloat(zoom, 3)}), CLS_Success);
+		succeeded = true;
+	}
+	else if (tokens->count == 2)
+	{
+		// set the zoom
+		// TODO: We don't have a float-parsing function yet, so we're stuck with ints!
+		s64 requestedZoom;
+		if (asInt(tokens->tokens[1], &requestedZoom))
+		{
+			f32 newZoom = (f32) requestedZoom;
+			globalAppState.renderer->worldBuffer.camera.zoom = newZoom;
+			consoleWriteLine(myprintf("Set zoom to {0}", {formatFloat(newZoom, 3)}), CLS_Success);
+			succeeded = true;
+		}
+	}
+
+	if (!succeeded)
+	{
+		consoleWriteLine(myprintf("Usage: {0} (scale), where scale is an integer, or with no argument to list the current zoom",
+							{tokens->tokens[0]}), CLS_Error);
+	}
+}
+
 s32 compareCommands(Command *a, Command *b)
 {
 	return compare(a->name, b->name);
@@ -157,6 +189,7 @@ void initCommands(Console *console)
 	append(&consoleCommands, Command(CMD(exit), 0, 0));
 	append(&consoleCommands, Command(CMD(funds), 1, 1));
 	append(&consoleCommands, Command(CMD(show_layer), 0, 1));
+	append(&consoleCommands, Command(CMD(zoom), 0, 1));
 
 	sortInPlace(&consoleCommands, compareCommands);
 

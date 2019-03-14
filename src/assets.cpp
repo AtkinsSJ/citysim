@@ -282,16 +282,17 @@ void addAssets(AssetManager *assets)
 	// addBMFont(assets, FontAssetType_Main, "dejavu-20.fnt");
 
 	addShaderHeader(assets, "header.glsl");
-	addShaderProgram(assets, ShaderProgram_Textured, "textured.vert.glsl", "textured.frag.glsl");
+	addShaderProgram(assets, ShaderProgram_Textured,   "textured.vert.glsl",   "textured.frag.glsl");
 	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
+	addShaderProgram(assets, ShaderProgram_PixelArt,   "textured.vert.glsl",   "pixelart.frag.glsl");
 
 	// NB: These have to be in the same order as the CursorType right now!
-	addCursor(assets, Cursor_Main, "cursor_main.png");
-	addCursor(assets, Cursor_Build, "cursor_build.png");
+	addCursor(assets, Cursor_Main,     "cursor_main.png");
+	addCursor(assets, Cursor_Build,    "cursor_build.png");
 	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
-	addCursor(assets, Cursor_Plant, "cursor_plant.png");
-	addCursor(assets, Cursor_Harvest, "cursor_harvest.png");
-	addCursor(assets, Cursor_Hire, "cursor_hire.png");
+	addCursor(assets, Cursor_Plant,    "cursor_plant.png");
+	addCursor(assets, Cursor_Harvest,  "cursor_harvest.png");
+	addCursor(assets, Cursor_Hire,     "cursor_hire.png");
 
 #if BUILD_DEBUG
 	addBMFont(assets, stringFromChars("debug"), stringFromChars("debug.fnt"));

@@ -6,8 +6,6 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 
 ------------------------------------------------
 
-Simple algorithm for keeping pixel-art look without blurring, but still looking good: https://hero.handmade.network/forums/code-discussion/t/3618-scaling_in_bitmap_based_games#17223
-
 Things to work on next maybe:
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?

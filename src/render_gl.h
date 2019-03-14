@@ -39,13 +39,14 @@ struct GL_ShaderProgram
 	bool isValid;
 
 	// Uniforms
-	GLint uProjectionMatrixLoc,
-		  uTextureLoc;
+	GLint uProjectionMatrixLoc;
+	GLint uTextureLoc;
+	GLint uScaleLoc;
 
 	// Attributes
-	GLint aPositionLoc,
-		  aColorLoc,
-		  aUVLoc;
+	GLint aPositionLoc;
+	GLint aColorLoc;
+	GLint aUVLoc;
 };
 
 // TODO: Figure out what a good number is for this!

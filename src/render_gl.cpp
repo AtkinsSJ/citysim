@@ -102,7 +102,7 @@ static void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *
 	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
 	if (*attribLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->shaderProgramID), stringFromChars(attribName)});
+		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->assetID), stringFromChars(attribName)});
 	}
 }
 
@@ -111,7 +111,7 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	*uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
 	if (*uniformLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->shaderProgramID), stringFromChars(uniformName)});
+		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->assetID), stringFromChars(uniformName)});
 	}
 }
 
@@ -164,7 +164,7 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 					infoLog = stringFromChars("No error log provided by OpenGL. Sad panda.");
 				}
 
-				logError("Unable to link shader program {0}! ({1})", {formatInt(glShader->shaderProgramID), infoLog});
+				logError("Unable to link shader program {0}! ({1})", {formatInt(glShader->assetID), infoLog});
 			}
 			else
 			{
@@ -176,6 +176,7 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 				// Uniforms
 				loadShaderUniform(glShader, "uProjectionMatrix", &glShader->uProjectionMatrixLoc);
 				loadShaderUniform(glShader, "uTexture", &glShader->uTextureLoc);
+				loadShaderUniform(glShader, "uScale", &glShader->uScaleLoc);
 			}
 		}
 		result = glShader->isValid;
@@ -338,7 +339,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 		for (u32 i=0; i < buffer->items.count; i++)
 		{
 			RenderItem *item = pointerTo(&buffer->items, i);
-			ShaderProgramType desiredShader = getDesiredShader(item);
+			ShaderProgramType desiredShader = item->shaderID;
 
 			TextureRegion *region = getTextureRegion(assets, item->textureRegionID);
 			GL_TextureInfo *textureInfo = get(&renderer->textureInfo, region->textureID);
@@ -364,6 +365,8 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
 				GL_checkForError();
+
+				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
 
 				// Bind new texture if this shader uses textures
 				if (activeShader->uTextureLoc != -1)
@@ -510,10 +513,10 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 
 		renderer->platformRenderer = gl;
 		renderer->windowResized = &GL_windowResized;
-		renderer->render = &GL_render;
-		renderer->loadAssets = &GL_loadAssets;
-		renderer->unloadAssets = &GL_unloadAssets;
-		renderer->free = &GL_freeRenderer;
+		renderer->render        = &GL_render;
+		renderer->loadAssets    = &GL_loadAssets;
+		renderer->unloadAssets  = &GL_unloadAssets;
+		renderer->free          = &GL_freeRenderer;
 
 		// Use GL3.1 Core
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);

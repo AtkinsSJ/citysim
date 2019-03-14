@@ -33,6 +33,7 @@ enum ShaderProgramType
 {
 	ShaderProgram_Textured,
 	ShaderProgram_Untextured,
+	ShaderProgram_PixelArt,
 
 	ShaderProgramCount,
 	ShaderProgram_Invalid = -1
