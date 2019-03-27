@@ -66,22 +66,36 @@ void onWindowResized(Renderer *renderer, s32 w, s32 h)
 void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen)
 {
 	SDL_RestoreWindow(renderer->window);
-	SDL_SetWindowSize(renderer->window, w, h);
+
+	// There are functions in SDL that appear to get the min/max window size, but they actually
+	// return 0 unless we've already told it what they should be, which makes them useless.
+	// TODO: Maybe examine the screen resolutions for each available display and make a decent
+	// guess from that? It's not a pretty solution though.
+	s32 newW = w;
+	s32 newH = h;
+
+	SDL_SetWindowSize(renderer->window, newW, newH);
 
 	// NB: SDL_WINDOW_FULLSCREEN_DESKTOP is a fake-fullscreen window, rather than actual fullscreen.
 	// I think that's a better option.
 	SDL_SetWindowFullscreen(renderer->window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+
+	// Centre the window
+	if (!fullscreen)
+	{
+		SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	}
 
 	// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
 	// it simplifies things massively if we generate one ourselves.
 	SDL_Event resizeEvent = {};
 	resizeEvent.type = SDL_WINDOWEVENT;
 	resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
-	resizeEvent.window.data1 = w;
-	resizeEvent.window.data2 = h;
+	resizeEvent.window.data1 = newW;
+	resizeEvent.window.data2 = newH;
 	SDL_PushEvent(&resizeEvent);
 
-	onWindowResized(renderer, w, h);
+	onWindowResized(renderer, newW, newH);
 }
 
 // Screen -> scene space

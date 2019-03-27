@@ -2,14 +2,15 @@
 
 inline s32 clamp(s32 value, s32 min, s32 max)
 {
-	ASSERT(min < max, "min > max in clamp()!");
+	ASSERT(min <= max, "min > max in clamp()!");
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;
 }
+
 inline f32 clamp(f32 value, f32 min, f32 max)
 {
-	ASSERT(min < max, "min > max in clamp()!");
+	ASSERT(min <= max, "min > max in clamp()!");
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;

@@ -44,7 +44,7 @@ I will create shorter versions of the basic types though.
 
 // Not sure if I want them to print to the log, or just disappear entirely.
 // Really janky assertion macro, yay
-#define ASSERT(expr, msg, ...) if(!(expr)) {*(int *)0 = 0;}
+#define ASSERT(expr, msg, ...) if(!(expr)) {*(int *)0 = 0;};
 #define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
 
 /*
