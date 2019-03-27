@@ -237,12 +237,12 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : LocalString("None")}));
 
 	// Building
-	int buildingID = city->tileBuildings[tileI];
-	if (buildingID != 0)
+	int buildingArrayIndex = city->tileBuildings[tileI];
+	if (buildingArrayIndex != 0)
 	{
-		Building *building = get(&city->buildings, buildingID);
+		Building *building = get(&city->buildings, buildingArrayIndex);
 		BuildingDef *def = get(&buildingDefs, building->typeID);
-		window_label(context, myprintf("Building: {0} (ID {1})", {def->name, formatInt(buildingID)}));
+		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})", {def->name, formatInt(building->id), formatInt(buildingArrayIndex)}));
 		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building->currentJobs), formatInt(def->jobs)}));
 	}

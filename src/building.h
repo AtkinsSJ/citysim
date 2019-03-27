@@ -55,6 +55,7 @@ ChunkedArray<BuildingDef> buildingDefs = {};
 
 struct Building
 {
+	u32 id;
 	u32 typeID;
 	Rect2I footprint;
 	u32 textureRegionOffset; // used as the offset for getTextureRegionID

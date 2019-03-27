@@ -43,6 +43,7 @@ struct City
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
 
+	u32 highestBuildingID;
 	ChunkedArray<Building> buildings;
 	s32 *tileBuildings; // Map from x,y -> building id at that location.
 	// Building IDs are 1-indexed (0 meaning null).

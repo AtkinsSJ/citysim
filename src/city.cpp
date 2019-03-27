@@ -18,27 +18,37 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
 	initZoneLayer(gameArena, &city->zoneLayer, tileCount);
 
+	city->highestBuildingID = 0;
 	initChunkedArray(&city->buildings, gameArena, 1024);
 	Building *nullBuilding = appendBlank(&city->buildings);
+	nullBuilding->id = 0;
 	nullBuilding->typeID = 0;
+}
+
+Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
+{
+	s32 buildingArrayIndex = city->buildings.count;
+	Building *building = appendBlank(&city->buildings);
+	building->id = ++city->highestBuildingID;
+	building->typeID = def->typeID;
+	building->footprint = footprint;
+
+	for (s32 y=0; y<footprint.h; y++)
+	{
+		for (s32 x=0; x<footprint.w; x++)
+		{
+			s32 tile = tileIndex(city, footprint.x+x, footprint.y+y);
+			city->tileBuildings[tile] = buildingArrayIndex;
+		}
+	}
+
+	return building;
 }
 
 void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 top)
 {
-	s32 buildingID = city->buildings.count;
-	Building *building = appendBlank(&city->buildings);
-	building->typeID = buildingDef->typeID;
-	building->footprint = irectXYWH(left, top, buildingDef->width, buildingDef->height);
+	Building *building = addBuilding(city, buildingDef, irectXYWH(left, top, buildingDef->width, buildingDef->height));
 	building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
-
-	for (s32 y=0; y<building->footprint.h; y++)
-	{
-		for (s32 x=0; x<building->footprint.w; x++)
-		{
-			s32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
-			city->tileBuildings[tile] = buildingID;
-		}
-	}
 }
 
 void generateTerrain(City *city)
@@ -167,12 +177,13 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	bool needToRecalcPower = def->carriesPower;
 
 	Building *building = null;
-	s32 buildingID = city->tileBuildings[tileIndex(city, left, top)];
+	s32 buildingArrayIndex = city->tileBuildings[tileIndex(city, left, top)];
 
-	if (buildingID)
+	if (buildingArrayIndex)
 	{
 		// Do a quick replace! We already established in canPlaceBuilding() that we match.
-		building = getBuildingByID(city, buildingID);
+		// NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
+		building = getBuildingByID(city, buildingArrayIndex);
 		ASSERT(building, "Somehow this building doesn't exist even though it should!");
 		BuildingDef *oldDef = get(&buildingDefs, building->typeID);
 
@@ -187,10 +198,9 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	}
 	else
 	{
-		buildingID = city->buildings.count;
-		building = appendBlank(&city->buildings);
-		building->typeID = buildingTypeID;
-		building->footprint = irectXYWH(left, top, def->width, def->height);
+		buildingArrayIndex = city->buildings.count;
+
+		building = addBuilding(city, def, irectXYWH(left, top, def->width, def->height));
 	}
 
 	// Remove zones
@@ -200,7 +210,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	for (s32 y=0; y<building->footprint.h; y++) {
 		for (s32 x=0; x<building->footprint.w; x++) {
 			s32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
-			city->tileBuildings[tile] = buildingID;
+			city->tileBuildings[tile] = buildingArrayIndex;
 
 			// Data layer updates
 			city->pathLayer.data[tile] = def->isPath ? 1 : 0;

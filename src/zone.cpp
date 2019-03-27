@@ -176,10 +176,7 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		 - This building doesn't need to affect adjacent building textures
 	 */
 
-	u32 buildingID = city->buildings.count;
-	Building *building = appendBlank(&city->buildings);
-	building->typeID = def->typeID;
-	building->footprint = footprint;
+	Building *building = addBuilding(city, def, footprint);
 
 	ZoneType zoneType = getZoneAt(city, footprint.x, footprint.y);
 	ChunkedArray<V2I> *emptyZonesArray  = getEmptyZonesArray( &city->zoneLayer, zoneType);
@@ -192,10 +189,6 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		for (s32 x=0; x<building->footprint.w; x++)
 		{
 			V2I pos = v2i(building->footprint.x+x, building->footprint.y+y);
-			s32 tile = tileIndex(city, pos.x, pos.y);
-
-			// Put the building there
-			city->tileBuildings[tile] = buildingID;
 
 			// Mark the zone as filled
 			findAndRemove(emptyZonesArray, pos);
