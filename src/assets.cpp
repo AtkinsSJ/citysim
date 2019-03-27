@@ -284,7 +284,7 @@ void addAssets(AssetManager *assets)
 	addShaderHeader(assets, "header.glsl");
 	addShaderProgram(assets, ShaderProgram_Textured,   "textured.vert.glsl",   "textured.frag.glsl");
 	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
-	addShaderProgram(assets, ShaderProgram_PixelArt,   "textured.vert.glsl",   "pixelart.frag.glsl");
+	addShaderProgram(assets, ShaderProgram_PixelArt,   "pixelart.vert.glsl",   "pixelart.frag.glsl");
 
 	// NB: These have to be in the same order as the CursorType right now!
 	addCursor(assets, Cursor_Main,     "cursor_main.png");
