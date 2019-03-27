@@ -63,10 +63,14 @@ void onWindowResized(Renderer *renderer, s32 w, s32 h)
 	renderer->uiBuffer.camera.pos = renderer->uiBuffer.camera.size * 0.5f;
 }
 
-void resizeWindow(Renderer *renderer, s32 w, s32 h)
+void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen)
 {
 	SDL_RestoreWindow(renderer->window);
 	SDL_SetWindowSize(renderer->window, w, h);
+
+	// NB: SDL_WINDOW_FULLSCREEN_DESKTOP is a fake-fullscreen window, rather than actual fullscreen.
+	// I think that's a better option.
+	SDL_SetWindowFullscreen(renderer->window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
 	// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
 	// it simplifies things massively if we generate one ourselves.

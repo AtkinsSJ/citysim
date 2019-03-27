@@ -41,6 +41,7 @@ MemoryArena *globalFrameTempArena;
 #include "localisation.h"
 #include "maths.h"
 #include "file.h"
+#include "settings.h"
 #include "assets.h"
 #include "render.h"
 #include "font.cpp"
@@ -198,6 +199,16 @@ int main(int argc, char *argv[])
 		DEBUG_BLOCK("Game loop");
 
 		updateInput(&inputState);
+		
+		if (globalConsole)
+		{
+			updateAndRenderConsole(globalConsole, &inputState, uiState);
+		}
+
+		if (assets->assetReloadHasJustHappened)
+		{
+			applySettings(&assets->settings);
+		}
 
 		if (inputState.receivedQuitSignal)
 		{
@@ -213,10 +224,6 @@ int main(int argc, char *argv[])
 		worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 		uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
-		if (globalConsole)
-		{
-			updateAndRenderConsole(globalConsole, &inputState, uiState);
-		}
 
 		updateAndRender(appState, &inputState, renderer, assets);
 
@@ -246,6 +253,8 @@ int main(int argc, char *argv[])
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
 			SDL_GL_SwapWindow(renderer->window);
 		}
+
+		assets->assetReloadHasJustHappened = false;
 	}
 
 	// CLEAN UP

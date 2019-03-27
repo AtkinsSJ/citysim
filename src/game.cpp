@@ -515,8 +515,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	if (assets->assetReloadHasJustHappened)
 	{	
 		refreshZoneGrowableBuildingLists(&city->zoneLayer);
-
-		assets->assetReloadHasJustHappened = false;
 	}
 
 

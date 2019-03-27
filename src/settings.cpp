@@ -1,5 +1,63 @@
 #pragma once
 
+inline Settings defaultSettings()
+{
+	Settings result = {};
+	result.windowed = true;
+	result.windowWidth = 1280;
+	result.windowHeight = 1024;
+
+	return result;
+}
+
+void loadSettings(Settings *settings, AssetManager *assets, File file)
+{
+	*settings = defaultSettings();
+
+	LineReader reader = startFile(file);
+
+	while (reader.pos < reader.file.length)
+	{
+		String line = nextLine(&reader);
+		String command;
+		String remainder;
+
+		command = nextToken(line, &remainder);
+
+		if (equals(command, "resolution"))
+		{
+			s64 w;
+			s64 h;
+
+			if (asInt(nextToken(remainder, &remainder), &w)
+				&& asInt(nextToken(remainder, &remainder), &h))
+			{
+				settings->windowWidth = (s32) w;
+				settings->windowHeight = (s32) h;
+			}
+			else
+			{
+				error(&reader, "Couldn't parse window size. Expected format: \"{0} 1024 768\"", {command});
+			}
+		}
+		else if (equals(command, "windowed"))
+		{
+			settings->windowed = readBool(&reader, command, remainder);
+		}
+		else
+		{
+			error(&reader, "Unrecognized command: {0}", {command});
+		}
+	}
+
+	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}", {formatBool(settings->windowed), formatInt(settings->windowWidth), formatInt(settings->windowHeight)});
+}
+
+void applySettings(Settings *settings)
+{
+	resizeWindow(globalAppState.renderer, settings->windowWidth, settings->windowHeight, !settings->windowed);
+}
+
 void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	AppStatus result = appState->appStatus;

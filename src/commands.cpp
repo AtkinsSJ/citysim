@@ -68,7 +68,7 @@ ConsoleCommand(resize_window)
 		consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
 
 		succeeded = true;
-		resizeWindow(globalAppState.renderer, (s32)width, (s32)height);
+		resizeWindow(globalAppState.renderer, (s32)width, (s32)height, false);
 	}
 
 	if (!succeeded)

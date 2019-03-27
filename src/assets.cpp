@@ -127,10 +127,12 @@ void loadAssets(AssetManager *assets)
 	DEBUG_FUNCTION();
 
 	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
+	loadSettings(&assets->settings, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("settings.cnf"))));
 	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
 	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
 	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
 	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
+
 
 	for (s32 i = 1; i < assets->textures.count; ++i)
 	{
