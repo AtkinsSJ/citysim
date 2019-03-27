@@ -111,12 +111,7 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 	}
 }
 
-enum DragType
-{
-	DragLine,
-	DragRect
-};
-Rect2I getDragArea(DragState *dragState, DragType dragType)
+Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
 {
 	Rect2I result = irectXYWH(0, 0, 0, 0);
 
@@ -126,7 +121,54 @@ Rect2I getDragArea(DragState *dragState, DragType dragType)
 		{
 			case DragRect:
 			{
-				result = irectCovering(dragState->mouseDragStartWorldPos, dragState->mouseDragEndWorldPos);
+				// This is more complicated than a simple rectangle covering both points.
+				// If the user is dragging a 3x3 building, then the drag area must cover that 3x3 footprint
+				// even if they drag right-to-left, and in the case where the rectangle is not an even multiple
+				// of 3, the building placements are aligned to match that initial footprint.
+				// I'm struggling to find a good way of describing that... But basically, we want this to be
+				// as intuitive to use as possible, and that means there MUST be a building placed where the
+				// ghost was before the user pressed the mouse button, no matter which direction or size they
+				// then drag it!
+
+				V2I startP = dragState->mouseDragStartWorldPos;
+				V2I endP = dragState->mouseDragEndWorldPos;
+
+				if (startP.x < endP.x)
+				{
+					result.x = startP.x;
+					result.w = max(endP.x - startP.x + 1, itemSize.x);
+
+					s32 xRemainder = result.w % itemSize.x;
+					result.w -= xRemainder;
+				}
+				else
+				{
+					result.x = endP.x;
+					result.w = startP.x - endP.x + itemSize.x;
+
+					s32 xRemainder = result.w % itemSize.x;
+					result.x += xRemainder;
+					result.w -= xRemainder;
+				}
+
+				if (startP.y < endP.y)
+				{
+					result.y = startP.y;
+					result.h = max(endP.y - startP.y + 1, itemSize.y);
+
+					s32 yRemainder = result.w % itemSize.y;
+					result.h -= yRemainder;
+				}
+				else
+				{
+					result.y = endP.y;
+					result.h = startP.y - endP.y + itemSize.y;
+
+					s32 yRemainder = result.h % itemSize.y;
+					result.y += yRemainder;
+					result.h -= yRemainder;
+				}
+
 			} break;
 
 			case DragLine:
@@ -134,26 +176,60 @@ Rect2I getDragArea(DragState *dragState, DragType dragType)
 				// Axis-aligned straight line, in one dimension.
 				// So, if you drag a diagonal line, it picks which direction has greater length and uses that.
 
+				V2I startP = dragState->mouseDragStartWorldPos;
+				V2I endP = dragState->mouseDragEndWorldPos;
+
 				// determine orientation
-				s32 xDiff = abs(dragState->mouseDragStartWorldPos.x - dragState->mouseDragEndWorldPos.x);
-				s32 yDiff = abs(dragState->mouseDragStartWorldPos.y - dragState->mouseDragEndWorldPos.y);
+				s32 xDiff = abs(startP.x - endP.x);
+				s32 yDiff = abs(startP.y - endP.y);
+
 				if (xDiff > yDiff)
 				{
 					// X
-					result.w = xDiff + 1;
-					result.h = 1;
+					if (startP.x < endP.x)
+					{
+						result.x = startP.x;
+						result.w = max(xDiff + 1, itemSize.x);
 
-					result.x = MIN(dragState->mouseDragStartWorldPos.x, dragState->mouseDragEndWorldPos.x);
-					result.y = dragState->mouseDragStartWorldPos.y;
+						s32 xRemainder = result.w % itemSize.x;
+						result.w -= xRemainder;
+					}
+					else
+					{
+						result.x = endP.x;
+						result.w = xDiff + itemSize.x;
+
+						s32 xRemainder = result.w % itemSize.x;
+						result.x += xRemainder;
+						result.w -= xRemainder;
+					}
+
+					result.y = startP.y;
+					result.h = itemSize.y;
 				}
 				else
 				{
 					// Y
-					result.w = 1;
-					result.h = yDiff + 1;
+					if (startP.y < endP.y)
+					{
+						result.y = startP.y;
+						result.h = max(yDiff + 1, itemSize.y);
 
-					result.x = dragState->mouseDragStartWorldPos.x;
-					result.y = MIN(dragState->mouseDragStartWorldPos.y, dragState->mouseDragEndWorldPos.y);
+						s32 yRemainder = result.h % itemSize.y;
+						result.h -= yRemainder;
+					}
+					else
+					{
+						result.y = endP.y;
+						result.h = yDiff + itemSize.y;
+
+						s32 yRemainder = result.h % itemSize.y;
+						result.y += yRemainder;
+						result.h -= yRemainder;
+					}
+
+					result.x = startP.x;
+					result.w = itemSize.x;
 				}
 			} break;
 
@@ -163,25 +239,15 @@ Rect2I getDragArea(DragState *dragState, DragType dragType)
 
 	return result;
 }
-enum DragResultOperation
-{
-	DragResult_Nothing,
-	DragResult_DoAction,
-	DragResult_ShowPreview,
-};
-struct DragResult
-{
-	DragResultOperation operation;
-	Rect2I dragRect;
-};
-DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I minSize = {1,1})
+
+DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1})
 {
 	DragResult result = {};
 
 	if (dragState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 	{
 		result.operation = DragResult_DoAction;
-		result.dragRect = getDragArea(dragState, dragType);
+		result.dragRect = getDragArea(dragState, dragType, itemSize);
 
 		dragState->isDragging = false;
 	}
@@ -197,7 +263,7 @@ DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mou
 		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT) && dragState->isDragging)
 		{
 			dragState->mouseDragEndWorldPos = mouseTilePos;
-			result.dragRect = getDragArea(dragState, dragType);
+			result.dragRect = getDragArea(dragState, dragType, itemSize);
 		}
 		else
 		{
@@ -212,8 +278,8 @@ DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mou
 	}
 
 	// minimum size
-	if (result.dragRect.w < minSize.x) result.dragRect.w = minSize.x;
-	if (result.dragRect.h < minSize.y) result.dragRect.h = minSize.y;
+	if (result.dragRect.w < itemSize.x) result.dragRect.w = itemSize.x;
+	if (result.dragRect.h < itemSize.y) result.dragRect.h = itemSize.y;
 
 	return result;
 }

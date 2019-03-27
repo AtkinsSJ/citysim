@@ -34,6 +34,25 @@ struct DragState {
 	V2I mouseDragEndWorldPos;
 };
 
+enum DragType
+{
+	DragLine,
+	DragRect
+};
+
+enum DragResultOperation
+{
+	DragResult_Nothing,
+	DragResult_DoAction,
+	DragResult_ShowPreview,
+};
+
+struct DragResult
+{
+	DragResultOperation operation;
+	Rect2I dragRect;
+};
+
 struct GameState
 {
 	MemoryArena gameArena;
