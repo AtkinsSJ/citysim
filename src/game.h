@@ -28,6 +28,12 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
+struct DragState {
+	bool isDragging;
+	V2I mouseDragStartWorldPos;
+	V2I mouseDragEndWorldPos;
+};
+
 struct GameState
 {
 	MemoryArena gameArena;
@@ -37,11 +43,7 @@ struct GameState
 
 	u32 dataLayerToDraw;
 
-	// These are a bit awkwardly named, they should probably go in a game-ui struct instead.
-	bool isWorldDragging;
-	V2I mouseDragStartWorldPos;
-	V2I mouseDragEndWorldPos;
-
+	DragState worldDragState;
 	ActionMode actionMode;
 	union
 	{
