@@ -127,6 +127,8 @@ void loadAssets(AssetManager *assets)
 	DEBUG_FUNCTION();
 
 	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
+
+	// Settings should go in SDL_GetPrefPath()
 	loadSettings(&globalAppState.settings, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("settings.cnf"))));
 	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
 	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));

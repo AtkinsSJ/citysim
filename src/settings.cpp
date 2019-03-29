@@ -48,27 +48,59 @@ void loadSettings(Settings *settings, AssetManager *assets, File file)
 
 		command = nextToken(line, &remainder, '=');
 
-		if (equals(command, "resolution"))
-		{
-			s64 w;
-			s64 h;
+		bool foundIt = false;
 
-			if (asInt(nextToken(remainder, &remainder), &w)
-				&& asInt(nextToken(remainder, &remainder), &h))
-			{
-				settings->resolution.x = (s32) w;
-				settings->resolution.y = (s32) h;
-			}
-			else
-			{
-				error(&reader, "Couldn't parse window size. Expected format: \"{0} 1024 768\"", {command});
-			}
-		}
-		else if (equals(command, "windowed"))
+		for (auto it = iterate(&settings->defs);
+			!it.isDone;
+			next(&it))
 		{
-			settings->windowed = readBool(&reader, command, remainder);
+			auto def = get(it);
+			if (equals(def->name, command))
+			{
+				u8* firstItem = ((u8*)settings) + def->offset;
+
+				for (s32 i=0; i < def->count; i++)
+				{
+					String sValue = nextToken(remainder, &remainder);
+					switch (def->type)
+					{
+						case Type_bool:
+						{
+							bool value;
+							if (asBool(sValue, &value))
+							{
+								((bool *)firstItem)[i] = value;
+							}
+							else
+							{
+								error(&reader, "Invalid value \"{0}\", expected true or false.", {sValue});
+							}
+						} break;
+
+						case Type_s32:
+						{
+							s64 value;
+							if (asInt(sValue, &value))
+							{
+								((s32 *)firstItem)[i] = (s32) value;
+							}
+							else
+							{
+								error(&reader, "Invalid value \"{0}\", expected integer.", {sValue});
+							}
+						} break;
+
+						default: ASSERT(false, "Unhandled setting type!");
+					}
+				}
+
+				foundIt = true;
+
+				break;
+			}
 		}
-		else
+		
+		if (!foundIt)
 		{
 			error(&reader, "Unrecognized command: {0}", {command});
 		}
@@ -103,6 +135,14 @@ void saveSettings(Settings *settings)
 	// of doing so by name. OOOOOOH!
 	// Another consideration: how do we store defaults in this system? Maybe a constant Settings struct
 	// that has the default values, and we just copy from it? The offsets would be the same.
+
+	// MOAR NOTES!
+	// I think we'll actually have 2 settings.cnf files. One is the default settings, and is a read-only
+	// asset file. The other is the user settings, stored in the SDL_GetPrefPath() directory. For reading,
+	// we first read the settings from the defaults file, then we read the user settings and apply those
+	// "over the top". If there's no user file, we only have defaults. If some settings are missing, again
+	// the defaults will be left. This also means the defaults are a data file instead of code, which is
+	// always a plus!
 
 	logInfo("SAVING SETTINGS");
 
