@@ -56,11 +56,13 @@ MemoryArena *globalFrameTempArena;
 struct AppState
 {
 	AppStatus appStatus;
+	MemoryArena systemArena;
 	MemoryArena globalTempArena;
 
 	UIState uiState;
 	AssetManager *assets;
 	Renderer *renderer;
+	Settings settings;
 
 	GameState *gameState;
 	Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
@@ -132,8 +134,11 @@ int main(int argc, char *argv[])
 
 	globalAppState = {};
 	AppState *appState = &globalAppState;
+
+	initMemoryArena(&globalAppState.systemArena, MB(1));
+
 	globalFrameTempArena = &globalAppState.globalTempArena;
-	initMemoryArena(&appState->globalTempArena, MB(1));
+	initMemoryArena(&globalAppState.globalTempArena, MB(4));
 
 #if BUILD_DEBUG
 	debugInit();
@@ -150,6 +155,7 @@ int main(int argc, char *argv[])
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
+	initSettings(&assets->settings); // TODO: We'd like to do this earlier, maybe move it outside of the asset system?
 	addAssets(assets);
 	loadAssets(assets);
 	appState->assets = assets;
@@ -234,6 +240,7 @@ int main(int argc, char *argv[])
 		// Debug stuff
 		if (globalDebugState)
 		{
+			DEBUG_ARENA(&appState->systemArena, "System");
 			DEBUG_ARENA(&appState->globalTempArena, "Global Temp Arena");
 			DEBUG_ARENA(&assets->assetArena, "Assets");
 			DEBUG_ARENA(&renderer->renderArena, "Renderer");
