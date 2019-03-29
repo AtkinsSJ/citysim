@@ -148,14 +148,17 @@ int main(int argc, char *argv[])
 	globalDebugState->showDebugData = false;
 #endif
 
+	initSettings(&globalAppState.settings);
+
 	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
 
-	SDL_Window *window = initSDL(1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
+	u32 fullscreenFlag = globalAppState.settings.windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+	SDL_Window *window = initSDL(globalAppState.settings.resolution.x, globalAppState.settings.resolution.y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | fullscreenFlag,
 	                             "Some kind of city builder");
 	ASSERT(window, "Failed to create window.");
 
 	AssetManager *assets = createAssetManager();
-	initSettings(&assets->settings); // TODO: We'd like to do this earlier, maybe move it outside of the asset system?
 	addAssets(assets);
 	loadAssets(assets);
 	appState->assets = assets;
@@ -213,7 +216,7 @@ int main(int argc, char *argv[])
 
 		if (assets->assetReloadHasJustHappened)
 		{
-			applySettings(&assets->settings);
+			applySettings(&appState->settings);
 		}
 
 		if (inputState.receivedQuitSignal)

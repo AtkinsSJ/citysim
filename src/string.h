@@ -316,6 +316,8 @@ String trim(String input)
 	return trimStart(trimEnd(input));
 }
 
+// If splitChar is provided, the token ends before that, and it is skipped.
+// Otherwise, we stop at the first whitespace character, determined by isWhitespace()
 String nextToken(String input, String *remainder, char splitChar = 0)
 {
 	String firstWord = input;

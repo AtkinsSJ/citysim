@@ -121,8 +121,6 @@ struct AssetManager
 
 	UITheme theme;
 	File creditsText;
-
-	Settings settings;
 };
 
 Texture *getTexture(AssetManager *assets, u32 textureIndex)
