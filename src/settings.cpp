@@ -1,15 +1,5 @@
 #pragma once
 
-inline Settings defaultSettings()
-{
-	Settings result = {};
-	result.windowed = true;
-	result.resolution.x = 1024;
-	result.resolution.y = 768;
-
-	return result;
-}
-
 void registerSetting(Settings *settings, String settingName, smm offset, Type type, s32 count)
 {
 	SettingDef *def = appendBlank(&settings->defs);
@@ -21,7 +11,7 @@ void registerSetting(Settings *settings, String settingName, smm offset, Type ty
 
 void initSettings(Settings *settings)
 {
-	*settings = defaultSettings();
+	*settings = {};
 	initChunkedArray(&settings->defs, &globalAppState.systemArena, 64);
 
 #define REGISTER_SETTING(settingName, type, count) registerSetting(settings, stringFromChars(#settingName), offsetof(Settings, settingName), Type_##type, count)
@@ -34,19 +24,17 @@ void initSettings(Settings *settings)
 
 void saveSettings(Settings *settings);
 
-void loadSettings(Settings *settings, AssetManager *assets, File file)
+void loadSettingsFile(Settings *settings, File file)
 {
-	// todo: restore defaults here
-	
 	LineReader reader = startFile(file);
 
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);
-		String command;
+		String settingName;
 		String remainder;
 
-		command = nextToken(line, &remainder, '=');
+		settingName = nextToken(line, &remainder, '=');
 
 		bool foundIt = false;
 
@@ -55,7 +43,7 @@ void loadSettings(Settings *settings, AssetManager *assets, File file)
 			next(&it))
 		{
 			auto def = get(it);
-			if (equals(def->name, command))
+			if (equals(def->name, settingName))
 			{
 				u8* firstItem = ((u8*)settings) + def->offset;
 
@@ -99,12 +87,18 @@ void loadSettings(Settings *settings, AssetManager *assets, File file)
 				break;
 			}
 		}
-		
+
 		if (!foundIt)
 		{
-			error(&reader, "Unrecognized command: {0}", {command});
+			error(&reader, "Unrecognized setting: {0}", {settingName});
 		}
 	}
+}
+
+void loadSettings(Settings *settings, File defaultSettingsFile, File userSettingsFile)
+{
+	loadSettingsFile(settings, defaultSettingsFile);
+	loadSettingsFile(settings, userSettingsFile);
 
 	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}", {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y)});
 

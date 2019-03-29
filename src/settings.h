@@ -22,5 +22,5 @@ struct Settings
 	V2I resolution;
 };
 
-void loadSettings(Settings *settings, struct AssetManager *assets, File file);
+void loadSettings(Settings *settings, File defaultSettingsFile, File userSettingsFile);
 void applySettings(Settings *settings);
