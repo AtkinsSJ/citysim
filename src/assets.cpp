@@ -35,6 +35,10 @@ void initAssetManager(AssetManager *assets)
 	*assets = {};
 	assets->assetsPath = pushString(&assets->assetArena, "assets");
 
+	char *userDataPath = SDL_GetPrefPath("Baffled Badger Games", "CitySim");
+	assets->userDataPath = pushString(&assets->assetArena, userDataPath);
+	SDL_free(userDataPath);
+
 	initChunkedArray(&assets->rangesByTextureAssetType, &assets->assetArena, 32);
 	appendBlank(&assets->rangesByTextureAssetType);
 
@@ -128,8 +132,11 @@ void loadAssets(AssetManager *assets)
 
 	// Settings should go in SDL_GetPrefPath()
 	File defaultSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("default-settings.cnf")));
-	File userSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("settings.cnf")));
+	File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(assets));
 	loadSettings(&globalAppState.settings, defaultSettingsFile, userSettingsFile);
+
+	// TEMP: Test saving
+	saveSettings(&globalAppState.settings, assets);
 
 	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
 	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));

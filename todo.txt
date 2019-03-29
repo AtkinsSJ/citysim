@@ -173,6 +173,9 @@ GAME:
 BUGS:
 - Unloading Fraps does something funny with our Window reference, causing a crash.
 
+FULLSCREEN!
+- It's weird and buggy right now. Probably want to do the FULLSCREEN_DESKTOP flag, with special case code to make it centred on the screen and make sure input works.
+
 Rendering 2.0:
 - At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
 - Draw things with an offset, defined per-texture-region(?)

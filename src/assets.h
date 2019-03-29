@@ -95,6 +95,7 @@ struct AssetManager
 	bool assetReloadHasJustHappened;
 
 	String assetsPath;
+	String userDataPath;
 
 	// NB: index 0 reserved as a null texture.
 	ChunkedArray<Texture> textures;
@@ -206,6 +207,16 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	}
 
 	return result;
+}
+
+String getUserDataPath(AssetManager *assets, String shortName)
+{
+	return myprintf("{0}{1}", {assets->userDataPath, shortName}, true);
+}
+
+String getUserSettingsPath(AssetManager *assets)
+{
+	return getUserDataPath(assets, stringFromChars("settings.cnf"));
 }
 
 BitmapFont *addBMFont(AssetManager *assets, String name, String filename);

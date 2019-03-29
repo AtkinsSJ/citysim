@@ -77,7 +77,9 @@ void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen)
 	SDL_SetWindowSize(renderer->window, newW, newH);
 
 	// NB: SDL_WINDOW_FULLSCREEN_DESKTOP is a fake-fullscreen window, rather than actual fullscreen.
-	// I think that's a better option.
+	// I think that's a better option, but it doesn't work properly right now if we request a
+	// non-native screen resolution with it!
+	// Then again, regular fullscreen does a bunch of flickery stuff in that case, so yeahhhhh
 	SDL_SetWindowFullscreen(renderer->window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
 
 	// Centre the window

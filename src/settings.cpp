@@ -22,8 +22,6 @@ void initSettings(Settings *settings)
 #undef REGISTER_SETTING
 }
 
-void saveSettings(Settings *settings);
-
 void loadSettingsFile(Settings *settings, File file)
 {
 	LineReader reader = startFile(file);
@@ -98,11 +96,14 @@ void loadSettingsFile(Settings *settings, File file)
 void loadSettings(Settings *settings, File defaultSettingsFile, File userSettingsFile)
 {
 	loadSettingsFile(settings, defaultSettingsFile);
-	loadSettingsFile(settings, userSettingsFile);
+
+	// User settings might not exist
+	if (userSettingsFile.isLoaded)
+	{
+		loadSettingsFile(settings, userSettingsFile);
+	}
 
 	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}", {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y)});
-
-	saveSettings(settings);
 }
 
 void applySettings(Settings *settings)
@@ -110,7 +111,7 @@ void applySettings(Settings *settings)
 	resizeWindow(globalAppState.renderer, settings->resolution.x, settings->resolution.y, !settings->windowed);
 }
 
-void saveSettings(Settings *settings)
+void saveSettings(Settings *settings, AssetManager *assets)
 {
 	// We have to decide at some point about how file-writing should work. Do we just pass a filename
 	// into this function? Do we have a handle of some kind?
@@ -140,6 +141,8 @@ void saveSettings(Settings *settings)
 
 	logInfo("SAVING SETTINGS");
 
+	StringBuilder stb = newStringBuilder(2048);
+
 	u8* base = (u8*) settings;
 	for (auto it = iterate(&settings->defs);
 		!it.isDone;
@@ -147,7 +150,6 @@ void saveSettings(Settings *settings)
 	{
 		auto def = get(it);
 
-		StringBuilder stb = newStringBuilder(1024);
 		append(&stb, def->name);
 		append(&stb, " = ");
 
@@ -174,8 +176,19 @@ void saveSettings(Settings *settings)
 		}
 
 		append(&stb, '\n');
+	}
 
-		logInfo("Saving setting: {0}", {getString(&stb)});
+	String userSettingsPath = getUserSettingsPath(assets);
+	String fileData = getString(&stb);
+
+	if (writeFile(userSettingsPath, fileData))
+	{
+		logInfo("Settings saved successfully.");
+	}
+	else
+	{
+		// TODO: Really really really need to display an error window to the user!
+		logError("Failed to save user settings to {0}.", {userSettingsPath});
 	}
 }
 
