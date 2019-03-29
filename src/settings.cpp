@@ -30,7 +30,7 @@ void loadSettingsFile(Settings *settings, File file)
 	{
 		String line = nextLine(&reader);
 		if (line.length == 0) break;
-		
+
 		String settingName;
 		String remainder;
 
@@ -141,9 +141,10 @@ void saveSettings(Settings *settings, AssetManager *assets)
 	// the defaults will be left. This also means the defaults are a data file instead of code, which is
 	// always a plus!
 
-	logInfo("SAVING SETTINGS");
-
 	StringBuilder stb = newStringBuilder(2048);
+	append(&stb, "# User-specific settings file.\n#\n");
+	append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n");
+	append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n");
 
 	u8* base = (u8*) settings;
 	for (auto it = iterate(&settings->defs);
