@@ -1,4 +1,4 @@
 # settings
 
-resolution  2000 800
-windowed    true
+resolution = 2000 800
+windowed   = true

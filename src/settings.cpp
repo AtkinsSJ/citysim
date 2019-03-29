@@ -46,7 +46,7 @@ void loadSettings(Settings *settings, AssetManager *assets, File file)
 		String command;
 		String remainder;
 
-		command = nextToken(line, &remainder);
+		command = nextToken(line, &remainder, '=');
 
 		if (equals(command, "resolution"))
 		{
@@ -115,7 +115,7 @@ void saveSettings(Settings *settings)
 
 		StringBuilder stb = newStringBuilder(1024);
 		append(&stb, def->name);
-		append(&stb, ' ');
+		append(&stb, " = ");
 
 		u8* firstItem = base + def->offset;
 
@@ -138,6 +138,8 @@ void saveSettings(Settings *settings)
 				default: ASSERT(false, "Unhandled setting type!");
 			}
 		}
+
+		append(&stb, '\n');
 
 		logInfo("Saving setting: {0}", {getString(&stb)});
 	}

@@ -316,15 +316,28 @@ String trim(String input)
 	return trimStart(trimEnd(input));
 }
 
-String nextToken(String input, String *remainder)
+String nextToken(String input, String *remainder, char splitChar = 0)
 {
 	String firstWord = input;
 	firstWord.length = 0;
 
-	while (!isWhitespace(firstWord.chars[firstWord.length], true)
-		&& (firstWord.length < input.length))
+	if (splitChar == 0)
 	{
-		++firstWord.length;
+		while (!isWhitespace(firstWord.chars[firstWord.length], true)
+			&& (firstWord.length < input.length))
+		{
+			++firstWord.length;
+		}
+	}
+	else
+	{
+		while (firstWord.chars[firstWord.length] != splitChar
+			&& (firstWord.length < input.length))
+		{
+			++firstWord.length;
+		}
+
+		firstWord = trim(firstWord);
 	}
 
 	if (remainder)
@@ -332,6 +345,14 @@ String nextToken(String input, String *remainder)
 		remainder->chars = firstWord.chars + firstWord.length;
 		remainder->length = input.length - firstWord.length;
 		*remainder = trimStart(*remainder);
+
+		// Skip the split char
+		if (splitChar != 0 && remainder->length > 0)
+		{
+			remainder->length--;
+			remainder->chars++;
+			*remainder = trimStart(*remainder);
+		}
 	}
 
 	return firstWord;
