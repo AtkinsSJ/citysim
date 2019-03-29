@@ -43,7 +43,7 @@ String nextLine(LineReader *reader)
 
 	do
 	{
-		// get next line
+		// Get next line
 		++reader->lineNumber;
 		line.chars = (char *)(reader->file.data + reader->pos);
 		line.length = 0;
@@ -52,14 +52,18 @@ String nextLine(LineReader *reader)
 			++reader->pos;
 			++line.length;
 		}
-		++reader->pos;
-		// fix for windows' stupid double-newline.
-		if (isNewline(reader->file.data[reader->pos]) && (reader->file.data[reader->pos] != reader->file.data[reader->pos-1]))
+
+		// Handle Windows' stupid double-character newline.
+		if (reader->pos < reader->file.length)
 		{
 			++reader->pos;
+			if (isNewline(reader->file.data[reader->pos]) && (reader->file.data[reader->pos] != reader->file.data[reader->pos-1]))
+			{
+				++reader->pos;
+			}
 		}
 
-		// trim the comment
+		// Trim the comment
 		if (reader->removeComments)
 		{
 			for (s32 p=0; p<line.length; p++)
@@ -72,14 +76,13 @@ String nextLine(LineReader *reader)
 			}
 		}
 
-		// trim front whitespace
-		line = trimStart(line);
-		// trim back whitespace
-		line = trimEnd(line);
+		// Trim whitespace
+		line = trim(line);
 
+		// This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
 		if (!reader->skipBlankLines) break;
 	}
-	while ((line.length <= 0));
+	while ((line.length <= 0) && (reader->pos < reader->file.length));
 
 	return line;
 }

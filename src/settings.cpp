@@ -29,6 +29,8 @@ void loadSettingsFile(Settings *settings, File file)
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);
+		if (line.length == 0) break;
+		
 		String settingName;
 		String remainder;
 

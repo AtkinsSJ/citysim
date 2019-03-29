@@ -12,6 +12,8 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);
+		if (line.length == 0) break;
+
 		String firstWord;
 		String remainder;
 

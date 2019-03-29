@@ -115,6 +115,7 @@ void loadUITheme(AssetManager *assets, File file)
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);
+		if (line.length == 0) break;
 
 		String firstWord, remainder;
 		firstWord = nextToken(line, &remainder);
