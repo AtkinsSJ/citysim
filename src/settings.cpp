@@ -115,32 +115,6 @@ void applySettings(Settings *settings)
 
 void saveSettings(Settings *settings, AssetManager *assets)
 {
-	// We have to decide at some point about how file-writing should work. Do we just pass a filename
-	// into this function? Do we have a handle of some kind?
-	// And then, how do we write out the settings in a way that's not 99 tons of boilerplate?
-	// I guess it depends on what settings we even want, but if they're always a collection of N items
-	// of the same type, we could do something like:
-	//
-	//     registerSetting("resolution", &settings->resolution, Type_S32, 2);
-	//     registerSetting(...)
-	//     registerSetting(...)
-	//     registerSetting(...)
-	//
-	// ... with a table of some kind stored in the Settings struct (or elsewhere I guess) but in a way
-	// that we run that code once on startup. Actually, we could use that for reading the settings too!
-	// Might not even need to flatten things, if we use a pointer offset to access those fields instead
-	// of doing so by name. OOOOOOH!
-	// Another consideration: how do we store defaults in this system? Maybe a constant Settings struct
-	// that has the default values, and we just copy from it? The offsets would be the same.
-
-	// MOAR NOTES!
-	// I think we'll actually have 2 settings.cnf files. One is the default settings, and is a read-only
-	// asset file. The other is the user settings, stored in the SDL_GetPrefPath() directory. For reading,
-	// we first read the settings from the defaults file, then we read the user settings and apply those
-	// "over the top". If there's no user file, we only have defaults. If some settings are missing, again
-	// the defaults will be left. This also means the defaults are a data file instead of code, which is
-	// always a plus!
-
 	StringBuilder stb = newStringBuilder(2048);
 	append(&stb, "# User-specific settings file.\n#\n");
 	append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n");
