@@ -1,5 +1,7 @@
 #include "zone.h"
 
+void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer);
+
 void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount)
 {
 	zoneLayer->tiles = PushArray(memoryArena, ZoneType, tileCount);
@@ -15,6 +17,8 @@ void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount
 	initChunkedArray(&zoneLayer->iGrowableBuildings, memoryArena, 256);
 	initChunkedArray(&zoneLayer->emptyIZones,        memoryArena, 256);
 	initChunkedArray(&zoneLayer->filledIZones,       memoryArena, 256);
+
+	refreshZoneGrowableBuildingLists(zoneLayer);
 }
 
 bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)

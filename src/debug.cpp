@@ -181,15 +181,20 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		initDebugTextState(&textState, uiState, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
 
 		u32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
-		debugTextOut(&textState, myprintf("Examing {0} frames ago", {formatInt(framesAgo)}));
+		debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
 
 		// Memory arenas
 		{
 			DebugArenaData *arena = debugState->arenaDataSentinel.nextNode;
 			while (arena != &debugState->arenaDataSentinel)
 			{
-				debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated",
-					{arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi])}));
+				debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)", {
+					arena->name,
+					formatInt(arena->blockCount[rfi]),
+					formatInt(arena->usedSize[rfi]),
+					formatInt(arena->totalSize[rfi]),
+					formatFloat(100.0f * (f32)arena->usedSize[rfi] / (f32)arena->totalSize[rfi], 1)
+				}));
 				arena = arena->nextNode;
 			}
 		}
@@ -199,8 +204,11 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 			DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.nextNode;
 			while (renderBuffer != &debugState->renderBufferDataSentinel)
 			{
-				debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches",
-					{renderBuffer->name, formatInt(renderBuffer->itemCount[rfi]), formatInt(renderBuffer->drawCallCount[rfi])}));
+				debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches", {
+					renderBuffer->name,
+					formatInt(renderBuffer->itemCount[rfi]),
+					formatInt(renderBuffer->drawCallCount[rfi])
+				}));
 				renderBuffer = renderBuffer->nextNode;
 			}
 		}
@@ -209,20 +217,22 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 
 		// Top code blocks
 		{
-			debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
-				{formatString("Code", 30), formatString("Total cycles", 20, false),
-				 formatString("Calls", 20, false), formatString("Avg Cycles", 20, false)}));
+			debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}", {
+				formatString("Code", 30), formatString("Total cycles", 20, false),
+				formatString("Calls", 20, false), formatString("Avg Cycles", 20, false)
+			}));
 
 			debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
 			DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.nextNode;
 			while (topBlock != &debugState->topCodeBlocksSentinel)
 			{
 				DebugCodeData *code = topBlock->data;
-				debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}",
-					{formatString(code->name, 30),
-					 formatString(formatInt(code->totalCycleCount[rfi]), 20, false),
-					 formatString(formatInt(code->callCount[rfi]), 20, false),
-					 formatString(formatInt(code->averageCycleCount[rfi]), 20, false)}));
+				debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}", {
+					formatString(code->name, 30),
+					formatString(formatInt(code->totalCycleCount[rfi]), 20, false),
+					formatString(formatInt(code->callCount[rfi]), 20, false),
+					formatString(formatInt(code->averageCycleCount[rfi]), 20, false)
+				}));
 				topBlock = topBlock->nextNode;
 			}
 		}

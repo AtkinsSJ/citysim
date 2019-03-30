@@ -8,7 +8,15 @@ typedef RandomMT Random;
 
 s32 randomInRange(Random *random, s32 maxExclusive)
 {
-	return randomNext(random) % maxExclusive;
+	s32 result = 0;
+
+	// 0 or negative max values don't make sense, so we return a 0 for those.
+	if (maxExclusive > 0)
+	{
+		result = randomNext(random) % maxExclusive;
+	}
+
+	return result;
 }
 
 bool randomBool(Random *random)

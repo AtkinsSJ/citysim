@@ -156,6 +156,7 @@ String formatFloat(f64 value, s32 decimalPlaces)
 
 	return makeString(buffer, MIN(written, length));
 }
+inline String formatFloat(f32 value, s32 decimalPlaces) {return formatFloat((f64)value, decimalPlaces);}
 
 String formatString(String value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
 {
