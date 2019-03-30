@@ -57,23 +57,23 @@ void append(TextInput *textInput, TextInput *source)
 	append(textInput, source->buffer, source->byteLength);
 }
 
-void insert(TextInput *textInput, char *source, s32 length)
+void insert(TextInput *textInput, String source)
 {
 	if (textInput->caretBytePos == textInput->byteLength)
 	{
-		append(textInput, source, length);
+		append(textInput, source);
 		return;
 	}
 
-	s32 bytesToCopy = length;
-	if ((textInput->byteLength + length) > textInput->maxByteLength)
+	s32 bytesToCopy = source.length;
+	if ((textInput->byteLength + source.length) > textInput->maxByteLength)
 	{
 		s32 newByteLengthToCopy = textInput->maxByteLength - textInput->byteLength;
 
-		bytesToCopy = floorToWholeGlyphs(source, newByteLengthToCopy);
+		bytesToCopy = floorToWholeGlyphs(source.chars, newByteLengthToCopy);
 	}
 
-	s32 glyphsToCopy = countGlyphs(source, bytesToCopy);
+	s32 glyphsToCopy = countGlyphs(source.chars, bytesToCopy);
 
 	// move the existing chars by bytesToCopy
 	for (s32 i=textInput->byteLength - textInput->caretBytePos - 1; i>=0; i--)
@@ -227,6 +227,7 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 		backspace(textInput);
 		textInput->caretFlashCounter = 0;
 	}
+
 	if (keyJustPressed(inputState, SDLK_DELETE))
 	{
 		deleteChar(textInput);
@@ -263,12 +264,14 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 		}
 		textInput->caretFlashCounter = 0;
 	}
+
 	if (keyJustPressed(inputState, SDLK_HOME))
 	{
 		textInput->caretBytePos = 0;
 		textInput->caretGlyphPos = 0;
 		textInput->caretFlashCounter = 0;
 	}
+
 	if (keyJustPressed(inputState, SDLK_END))
 	{
 		textInput->caretBytePos = textInput->byteLength;
@@ -278,27 +281,18 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 
 	if (wasTextEntered(inputState))
 	{
-		char *enteredText = getEnteredText(inputState);
-		s32 inputTextLength = strlen(enteredText);
-
-		insert(textInput, enteredText, inputTextLength);
+		insert(textInput, getEnteredText(inputState));
 		textInput->caretFlashCounter = 0;
 	}
 
 	if (keyJustPressed(inputState, SDLK_v, KeyMod_Ctrl))
 	{
-		if (SDL_HasClipboardText())
+		String clipboard = getClipboardText();
+		if (clipboard.length > 0)
 		{
-			char *clipboard = SDL_GetClipboardText();
-			if (clipboard)
-			{
-				s32 clipboardLength = strlen(clipboard);
-				insert(textInput, clipboard, clipboardLength);
-				textInput->caretFlashCounter = 0;
-
-				SDL_free(clipboard);
-			}
+			insert(textInput, clipboard);
 		}
+		textInput->caretFlashCounter = 0;
 	}
 
 	return pressedReturn;

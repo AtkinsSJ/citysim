@@ -167,10 +167,29 @@ inline bool wasTextEntered(InputState *input)
 {
 	return input->hasUnhandledTextEntered;
 }
-inline char *getEnteredText(InputState *input)
+
+inline String getEnteredText(InputState *input)
 {
 	input->hasUnhandledTextEntered = false;
-	return input->_textEntered;
+	return stringFromChars(input->_textEntered);
+}
+
+inline String getClipboardText()
+{
+	String result = {};
+	
+	if (SDL_HasClipboardText())
+	{
+		char *clipboard = SDL_GetClipboardText();
+
+		if (clipboard)
+		{
+			result = pushString(globalFrameTempArena, clipboard);
+			SDL_free(clipboard);
+		}
+	}
+	
+	return result;
 }
 
 void updateInput(InputState *inputState)
