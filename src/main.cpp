@@ -168,7 +168,8 @@ int main(int argc, char *argv[])
 	renderer->loadAssets(renderer, assets);
 	appState->renderer = renderer;
 
-	InputState inputState = {};
+	InputState inputState;
+	initInput(&inputState);
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
 

@@ -25,6 +25,7 @@ struct InputState
 	bool _keyWasDown[KEYBOARD_KEY_COUNT];
 	bool _keyDown[KEYBOARD_KEY_COUNT];
 	bool hasUnhandledTextEntered; // Has anyone requested the _textEntered?
+	String textEntered;
 	char _textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
 
 	// Extra
@@ -171,13 +172,13 @@ inline bool wasTextEntered(InputState *input)
 inline String getEnteredText(InputState *input)
 {
 	input->hasUnhandledTextEntered = false;
-	return stringFromChars(input->_textEntered);
+	return input->textEntered;
 }
 
 inline String getClipboardText()
 {
 	String result = {};
-	
+
 	if (SDL_HasClipboardText())
 	{
 		char *clipboard = SDL_GetClipboardText();
@@ -190,6 +191,12 @@ inline String getClipboardText()
 	}
 	
 	return result;
+}
+
+void initInput(InputState *inputState)
+{
+	*inputState = {};
+	inputState->textEntered = makeString(&inputState->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
 }
 
 void updateInput(InputState *inputState)
@@ -209,7 +216,7 @@ void updateInput(InputState *inputState)
 	}
 
 	inputState->hasUnhandledTextEntered = false;
-	inputState->_textEntered[0] = 0;
+	inputState->textEntered.length = 0;
 
 	inputState->receivedQuitSignal = false;
 	inputState->wasWindowResized = false;
@@ -273,8 +280,7 @@ void updateInput(InputState *inputState)
 			} break;
 			case SDL_TEXTINPUT: {
 				inputState->hasUnhandledTextEntered = true;
-				// copyChars(event.text.text, inputState->_textEntered, SDL_TEXTINPUTEVENT_TEXT_SIZE);
-				strncpy(inputState->_textEntered, event.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
+				copyChars(event.text.text, &inputState->textEntered, strlen(event.text.text));
 			} break;
 		}
 	}
