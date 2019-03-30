@@ -65,6 +65,8 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 	console->openSpeed = openSpeed;
 
 	console->input = newTextInput(debugArena, consoleLineLength);
+	initChunkedArray(&console->inputHistory, debugArena, 256);
+	console->inputHistoryCursor = -1;
 	console->charWidth = 0;
 
 	console->outputLineCount = outputLineCount;
@@ -134,6 +136,10 @@ void consoleHandleCommand(Console *console)
 
 	if (console->input.glyphLength != 0)
 	{
+		// Add to history
+		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, inputS));
+		console->inputHistoryCursor = -1;
+
 		TokenList tokens = tokenize(inputS);
 		if (tokens.count > 0)
 		{
@@ -225,6 +231,43 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 		{
 			consoleHandleCommand(console);
 			console->scrollPos = 0;
+		}
+		else
+		{
+			// Command history
+			if (console->inputHistory.count > 0)
+			{
+				if (keyJustPressed(inputState, SDLK_UP))
+				{
+					if (console->inputHistoryCursor == -1)
+					{
+						console->inputHistoryCursor = console->inputHistory.count - 1;
+					}
+					else
+					{
+						console->inputHistoryCursor = MAX(console->inputHistoryCursor - 1, 0);
+					}
+
+					clear(&console->input);
+					String oldInput = *get(&console->inputHistory, console->inputHistoryCursor);
+					append(&console->input, oldInput);
+				}
+				else if (keyJustPressed(inputState, SDLK_DOWN))
+				{
+					if (console->inputHistoryCursor == -1)
+					{
+						console->inputHistoryCursor = console->inputHistory.count - 1;
+					}
+					else
+					{
+						console->inputHistoryCursor = MIN(console->inputHistoryCursor + 1, console->inputHistory.count - 1);
+					}
+
+					clear(&console->input);
+					String oldInput = *get(&console->inputHistory, console->inputHistoryCursor);
+					append(&console->input, oldInput);
+				}
+			}
 		}
 
 		// scrolling!

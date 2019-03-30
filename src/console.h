@@ -36,6 +36,8 @@ struct Console
 	f32 openSpeed; // % per second
 
 	TextInput input;
+	ChunkedArray<String> inputHistory;
+	s32 inputHistoryCursor;
 	s32 charWidth;
 
 	s32 outputLineCount;
