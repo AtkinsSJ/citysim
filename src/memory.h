@@ -42,7 +42,7 @@ MemoryBlock *addMemoryBlock(MemoryArena *arena, smm size)
 	smm totalSize = size + sizeof(MemoryBlock);
 	u8* memory = (u8*) calloc(totalSize, 1);
 
-	ASSERT(memory, "Failed to allocate memory block!");
+	ASSERT(memory != null, "Failed to allocate memory block!");
 
 	MemoryBlock *block = (MemoryBlock*) memory;
 	block->memory = memory + sizeof(MemoryBlock);
@@ -82,7 +82,7 @@ bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1))
 #define bootstrapArena(containerType, containerName, arenaVarName)         \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
-	ASSERT(initMemoryArena(&bootstrap, sizeof(containerType)),"Failed to allocate memory for %s arena!", #containerType);\
+	ASSERT(initMemoryArena(&bootstrap, sizeof(containerType)),"Failed to allocate memory for {0} arena!", {stringFromChars(#containerType)});\
 	containerName = PushStruct(&bootstrap, containerType);                            \
 	containerName->arenaVarName = bootstrap;                                          \
 	markResetPosition(&containerName->arenaVarName);                                  \
@@ -97,7 +97,7 @@ void *allocate(MemoryArena *arena, smm size)
 		arena->currentBlock = addMemoryBlock(arena, newBlockSize);
 	}
 
-	ASSERT(arena->currentBlock, "No memory in arena!");
+	ASSERT(arena->currentBlock != null, "No memory in arena!");
 
 	// TODO: Prevent normal allocations while temp mem is open, and vice versa
 	// We tried passing an isTempAllocation bool, but code that just takes a MemoryArena doesn't know
@@ -116,7 +116,7 @@ void *allocate(MemoryArena *arena, smm size)
 void freeCurrentBlock(MemoryArena *arena)
 {
 	MemoryBlock *block = arena->currentBlock;
-	ASSERT(block, "Attempting to free non-existent block");
+	ASSERT(block != null, "Attempting to free non-existent block");
 	arena->currentBlock = block->prevBlock;
 	free(block);
 }

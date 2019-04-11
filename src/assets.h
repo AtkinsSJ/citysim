@@ -193,16 +193,16 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Font:
-		result = myprintf("{0}/fonts/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/fonts/{1}",    {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Shader:
-		result = myprintf("{0}/shaders/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/shaders/{1}",  {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Texture:
 		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
 		break;
 	default:
-		result = myprintf("{0}/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/{1}",          {assets->assetsPath, shortName}, true);
 		break;
 	}
 

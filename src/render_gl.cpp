@@ -22,7 +22,7 @@ static void logGLError(GLenum errorCode)
 static inline void GL_checkForError()
 {
 	GLenum errorCode = glGetError();
-	ASSERT(errorCode == 0, "GL Error %d: %s", errorCode, gluErrorString(errorCode));
+	ASSERT(errorCode == 0, "GL Error {0}: {1}", {formatInt(errorCode), stringFromChars((char *)gluErrorString(errorCode))});
 }
 
 // Disable GL error checking for release version.
@@ -57,9 +57,11 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 
 	if (header && (header->state == AssetState_Loaded))
 	{
-		char *datas[] = {header->contents.chars, shaderSource->chars};
-		s32 lengths[] = {header->contents.length, shaderSource->length};
-		glShaderSource(shaderID, 2, datas, lengths);
+		// NB: We add a newline between the two, so the lines don't get smooshed together if we forget
+		// a trailing newline in the header file!
+		char *datas[] = {header->contents.chars, "\n", shaderSource->chars};
+		s32 lengths[] = {header->contents.length, 1,   shaderSource->length};
+		glShaderSource(shaderID, 3, datas, lengths);
 	}
 	else
 	{
@@ -120,7 +122,7 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 	bool result = false;
 
 	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramAssetID);
-	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset %d not loaded!", shaderProgramAssetID);
+	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset {0} not loaded!", {formatInt(shaderProgramAssetID)});
 
 	ShaderHeader *header = &assets->shaderHeader;
 	if(header->state != AssetState_Loaded)
@@ -221,7 +223,7 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	for (u32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		bool shaderLoaded = loadShaderProgram(gl, assets, (ShaderProgramType)shaderID);
-		ASSERT(shaderLoaded, "Failed to load shader %d into OpenGL.", shaderID);
+		ASSERT(shaderLoaded, "Failed to load shader {0} into OpenGL.", {formatInt(shaderID)});
 	}
 }
 

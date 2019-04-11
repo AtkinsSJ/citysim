@@ -151,7 +151,7 @@ void loadAssets(AssetManager *assets)
 		if (tex->state == AssetState_Unloaded)
 		{
 			tex->surface = IMG_Load(getAssetPath(assets, AssetType_Texture, tex->filename).chars);
-			ASSERT(tex->surface, "Failed to load image '%*s'!\n%s", tex->filename.length, tex->filename.chars, IMG_GetError());
+			ASSERT(tex->surface != null, "Failed to load image '{0}'!\n{1}", {tex->filename, stringFromChars(IMG_GetError())});
 
 			ASSERT(tex->surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
 			if (!tex->isAlphaPremultiplied)

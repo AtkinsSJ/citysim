@@ -185,7 +185,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 		// Do a quick replace! We already established in canPlaceBuilding() that we match.
 		// NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
 		building = getBuildingByID(city, buildingArrayIndex);
-		ASSERT(building, "Somehow this building doesn't exist even though it should!");
+		ASSERT(building != null, "Somehow this building doesn't exist even though it should!");
 		BuildingDef *oldDef = get(&buildingDefs, building->typeID);
 
 		building->typeID = def->buildOverResult;
@@ -291,7 +291,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 	if (buildingID)
 	{
 		Building *building = getBuildingByID(city, buildingID);
-		ASSERT(building, "Tile is storing an invalid building ID!");
+		ASSERT(building != null, "Tile is storing an invalid building ID!");
 		BuildingDef *def = get(&buildingDefs, building->typeID);
 
 		// Can we afford to demolish this?

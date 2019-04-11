@@ -20,10 +20,10 @@ enum AppStatus
 	AppStatus_Quit,
 };
 
+#include "log.h"
 #include "types.h"
 #include "matrix4.h"
 #include "array.h"
-#include "log.h"
 #include "memory.h"
 #include "chunked_array.h"
 #include "chunked_array.cpp"
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Some kind of city builder");
 
-	ASSERT(window, "Failed to create window.");
+	ASSERT(window != null, "Failed to create window.");
 
 	initSettings(&globalAppState.settings);
 	AssetManager *assets = createAssetManager();
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 	appState->assets = assets;
 
 	Renderer *renderer = platform_initializeRenderer(window);
-	ASSERT(renderer->platformRenderer, "Failed to initialize renderer.");
+	ASSERT(renderer->platformRenderer != null, "Failed to initialize renderer.");
 	renderer->loadAssets(renderer, assets);
 	appState->renderer = renderer;
 
