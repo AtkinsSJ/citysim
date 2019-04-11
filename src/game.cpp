@@ -292,7 +292,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	V2I tilePos = gameState->inspectedTilePosition;
 	context->window->title = myprintf("Inspecting {0}, {1}", {formatInt(tilePos.x), formatInt(tilePos.y)});
 
-	int tileI = tileIndex(city, tilePos.x, tilePos.y);
+	s32 tileI = tileIndex(city, tilePos.x, tilePos.y);
 
 	// Terrain
 	String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
@@ -303,7 +303,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : LocalString("None")}));
 
 	// Building
-	int buildingArrayIndex = city->tileBuildings[tileI];
+	s32 buildingArrayIndex = city->tileBuildings[tileI];
 	if (buildingArrayIndex != 0)
 	{
 		Building *building = get(&city->buildings, buildingArrayIndex);
@@ -315,6 +315,18 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	else
 	{
 		window_label(context, LocalString("Building: None"));
+	}
+
+	// Power group
+	s32 powerGroupIndex = powerGroupAt(city, tilePos.x, tilePos.y);
+	if (powerGroupIndex != 0)
+	{
+		PowerGroup *powerGroup = get(&city->powerLayer.groups, powerGroupIndex);
+		window_label(context, myprintf("Power Group: #{0}\n- Production: {1}\n- Consumption: {2}", {formatInt(powerGroupIndex), formatInt(powerGroup->production), formatInt(powerGroup->consumption)}));
+	}
+	else
+	{
+		window_label(context, LocalString("Power Group: None"));
 	}
 }
 
