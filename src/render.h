@@ -51,6 +51,7 @@ struct Renderer
 	MemoryArena renderArena;
 	
 	SDL_Window *window;
+
 	RenderBuffer worldBuffer;
 	RenderBuffer uiBuffer;
 

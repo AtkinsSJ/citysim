@@ -148,16 +148,23 @@ int main(int argc, char *argv[])
 	globalDebugState->showDebugData = false;
 #endif
 
-	initSettings(&globalAppState.settings);
-
 	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
 
-	u32 fullscreenFlag = globalAppState.settings.windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP;
-
-	SDL_Window *window = initSDL(globalAppState.settings.resolution.x, globalAppState.settings.resolution.y, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | fullscreenFlag,
+	//
+	// TODO: Theoretically we'd like to create the window with the desired size and fullscreenness, but
+	// we don't start up the asset system until after SDL is initialised!
+	// The asset system needs a lot of work, honestly. We want to load the settings FIRST, and some
+	// basic required images for the sake of a loading screen, then load the others while displaying
+	// a loading bar of some kind. Also, only reloading assets that have changed, and doing so automatically!
+	//
+	// - Sam, 11/4/2019
+	//
+	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
 	                             "Some kind of city builder");
+
 	ASSERT(window, "Failed to create window.");
 
+	initSettings(&globalAppState.settings);
 	AssetManager *assets = createAssetManager();
 	addAssets(assets);
 	loadAssets(assets);
