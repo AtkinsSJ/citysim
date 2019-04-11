@@ -171,6 +171,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	}
 
 	BuildingDef *def = get(&buildingDefs, buildingTypeID);
+	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 	spend(city, def->buildCost);
 
 	bool needToRecalcPaths = def->isPath;
@@ -198,19 +199,19 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	}
 	else
 	{
+		// Remove zones
+		placeZone(uiState, city, Zone_None, footprint, false);
+
 		buildingArrayIndex = city->buildings.count;
 
-		building = addBuilding(city, def, irectXYWH(left, top, def->width, def->height));
+		building = addBuilding(city, def, footprint);
 	}
 
-	// Remove zones
-	placeZone(uiState, city, Zone_None, building->footprint, false);
 
 	// Tiles
-	for (s32 y=0; y<building->footprint.h; y++) {
-		for (s32 x=0; x<building->footprint.w; x++) {
-			s32 tile = tileIndex(city,building->footprint.x+x,building->footprint.y+y);
-			city->tileBuildings[tile] = buildingArrayIndex;
+	for (s32 y=0; y<footprint.h; y++) {
+		for (s32 x=0; x<footprint.w; x++) {
+			s32 tile = tileIndex(city,footprint.x+x,footprint.y+y);
 
 			// Data layer updates
 			city->pathLayer.data[tile] = def->isPath ? 1 : 0;
@@ -223,7 +224,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	city->totalJobs += def->jobs;
 
 	updateBuildingTexture(city, building, def);
-	updateAdjacentBuildingTextures(city, building->footprint);
+	updateAdjacentBuildingTextures(city, footprint);
 
 	if (needToRecalcPaths)
 	{
