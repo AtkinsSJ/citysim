@@ -1,9 +1,5 @@
 #pragma once
 
-#include "game_mainmenu.cpp"
-#include "credits.cpp"
-#include "settings.cpp"
-
 const f32 uiPadding = 4; // TODO: Move this somewhere sensible!
 
 GameState *initialiseGameState()

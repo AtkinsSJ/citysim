@@ -1,7 +1,5 @@
 #pragma once
 
-#include "city.h"
-
 const int gameStartFunds = 1000000;
 
 enum GameStatus

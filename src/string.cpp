@@ -1,6 +1,194 @@
 #pragma once
 #include <stdio.h> // For snprintf
 
+String trimStart(String input)
+{
+	String result = input;
+	while ((input.length > 0) && isWhitespace(result.chars[0], false))
+	{
+		++result.chars;
+		--result.length;
+	}
+
+	return result;
+}
+
+String trimEnd(String input)
+{
+	String result = input;
+	while ((input.length > 0) && isWhitespace(result.chars[result.length-1], false))
+	{
+		--result.length;
+	}
+
+	return result;
+}
+
+inline String trim(String input)
+{
+	return trimStart(trimEnd(input));
+}
+
+bool asInt(String string, s64 *result)
+{
+	bool succeeded = string.length > 0;
+
+	if (succeeded)
+	{
+		s64 value = 0;
+		s32 startPosition = 0;
+		bool isNegative = false;
+		if (string.chars[0] == '-')
+		{
+			isNegative = true;
+			startPosition++;
+		}
+		else if (string.chars[0] == '+')
+		{
+			// allow a leading + in case people want it for some reason.
+			startPosition++;
+		}
+
+		for (int position=startPosition; position<string.length; position++)
+		{
+			value *= 10;
+
+			char c = string.chars[position];
+			if (c >= '0' && c <= '9')
+			{
+				value += c - '0';
+			}
+			else
+			{
+				succeeded = false;
+				break;
+			}
+		}
+
+		if (succeeded)
+		{
+			*result = value;
+			if (isNegative) *result = -*result;
+		}
+	}
+
+	return succeeded;
+}
+
+bool asBool(String string, bool *result)
+{
+	bool succeeded = string.length > 0;
+
+	if (equals(string, "true"))
+	{
+		*result = true;
+	}
+	else if (equals(string, "false"))
+	{
+		*result = false;
+	}
+	else
+	{
+		succeeded = false;
+	}
+
+	return succeeded;
+}
+
+s32 countTokens(String input)
+{
+	s32 result = 0;
+
+	s32 position = 0;
+
+	while (position < input.length)
+	{
+		while ((position <= input.length) && isWhitespace(input.chars[position]))
+		{
+			position++;
+		}
+
+		if (position < input.length)
+		{
+			result++;
+			
+			// length
+			while ((position < input.length) && !isWhitespace(input.chars[position]))
+			{
+				position++;
+			}
+		}
+	}
+
+	return result;
+}
+
+// If splitChar is provided, the token ends before that, and it is skipped.
+// Otherwise, we stop at the first whitespace character, determined by isWhitespace()
+String nextToken(String input, String *remainder, char splitChar = 0)
+{
+	String firstWord = input;
+	firstWord.length = 0;
+
+	if (splitChar == 0)
+	{
+		while (!isWhitespace(firstWord.chars[firstWord.length], true)
+			&& (firstWord.length < input.length))
+		{
+			++firstWord.length;
+		}
+	}
+	else
+	{
+		while (firstWord.chars[firstWord.length] != splitChar
+			&& (firstWord.length < input.length))
+		{
+			++firstWord.length;
+		}
+
+		firstWord = trim(firstWord);
+	}
+
+	if (remainder)
+	{
+		remainder->chars = firstWord.chars + firstWord.length;
+		remainder->length = input.length - firstWord.length;
+		*remainder = trimStart(*remainder);
+
+		// Skip the split char
+		if (splitChar != 0 && remainder->length > 0)
+		{
+			remainder->length--;
+			remainder->chars++;
+			*remainder = trimStart(*remainder);
+		}
+	}
+
+	return firstWord;
+}
+
+bool splitInTwo(String input, char divider, String *leftResult, String *rightResult)
+{
+	bool foundDivider = false;
+
+	for (s32 i=0; i < input.length; i++)
+	{
+		if (input[i] == divider)
+		{
+			leftResult->chars = input.chars;
+			leftResult->length = i;
+
+			rightResult->chars = input.chars + i + 1;
+			rightResult->length = input.length - i - 1;
+
+			foundDivider = true;
+			break;
+		}
+	}
+
+	return foundDivider;
+}
+
 /**
  * A printf() that takes a string like "Hello {0}!" where each {n} is replaced by the arg at that index.
  * Extra { and } characters may be stripped. We try to print out any invalid {n} indices but there is not a ton
@@ -209,7 +397,6 @@ String formatBool(bool value)
 	if (value) return stringFromChars("true");
 	else       return stringFromChars("false");
 }
-
 
 String repeatChar(char c, s32 length)
 {

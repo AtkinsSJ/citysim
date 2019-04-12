@@ -140,11 +140,12 @@ void consoleHandleCommand(Console *console)
 		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, inputS));
 		console->inputHistoryCursor = -1;
 
-		TokenList tokens = tokenize(inputS);
-		if (tokens.count > 0)
+		s32 tokenCount = countTokens(inputS);
+		if (tokenCount > 0)
 		{
 			bool foundCommand = false;
-			String firstToken = tokens.tokens[0];
+			String arguments;
+			String firstToken = nextToken(inputS, &arguments);
 			for (u32 i=0; i < consoleCommands.count; i++)
 			{
 				Command cmd = consoleCommands[i];
@@ -152,7 +153,7 @@ void consoleHandleCommand(Console *console)
 				{
 					foundCommand = true;
 
-					s32 argCount = tokens.count-1;
+					s32 argCount = tokenCount - 1;
 					if ((argCount < cmd.minArgs) || (argCount > cmd.maxArgs))
 					{
 						if (cmd.minArgs == cmd.maxArgs)
@@ -169,7 +170,7 @@ void consoleHandleCommand(Console *console)
 					else
 					{
 						u32 commandStartTime = SDL_GetTicks();
-						cmd.function(console, &tokens);
+						cmd.function(console, argCount, arguments);
 						u32 commandEndTime = SDL_GetTicks();
 
 						consoleWriteLine(myprintf("Command executed in {0}ms", {formatInt(commandEndTime - commandStartTime)}));

@@ -5,10 +5,10 @@
 struct Command
 {
 	String name;
-	void (*function)(Console*, TokenList*);
+	void (*function)(Console*, s32, String);
 	s32 minArgs, maxArgs;
 
-	Command(char *name, void (*function)(Console*, TokenList*), s32 minArgs, s32 maxArgs)
+	Command(char *name, void (*function)(Console*, s32, String), s32 minArgs, s32 maxArgs)
 	{
 		this->name = stringFromChars(name);
 		this->function = function;
@@ -16,7 +16,7 @@ struct Command
 		this->maxArgs = maxArgs;
 	}
 };
-#define ConsoleCommand(name) void cmd_##name(Console *console, TokenList *tokens)
+#define ConsoleCommand(name) void cmd_##name(Console *console, s32 argumentsCount, String arguments)
 Array<Command> consoleCommands;
 
 static bool checkInGame()
@@ -55,10 +55,11 @@ ConsoleCommand(window_size)
 
 ConsoleCommand(resize_window)
 {
+	String remainder = arguments;
 	bool succeeded = false;
 
-	String sWidth = tokens->tokens[1];
-	String sHeight = tokens->tokens[2];
+	String sWidth  = nextToken(remainder, &remainder);
+	String sHeight = nextToken(remainder, &remainder);
 	
 	s64 width = 0;
 	s64 height = 0;
@@ -73,8 +74,7 @@ ConsoleCommand(resize_window)
 
 	if (!succeeded)
 	{
-		consoleWriteLine(myprintf("Usage: {0} width height, where both width and height are positive integers",
-								{tokens->tokens[0]}), CLS_Error);
+		consoleWriteLine("Usage: resize_window width height, where both width and height are positive integers", CLS_Error);
 	}
 }
 
@@ -91,9 +91,10 @@ ConsoleCommand(exit)
 
 ConsoleCommand(funds)
 {
+	String remainder = arguments;
 	if (!checkInGame()) return;
 
-	String sAmount = tokens->tokens[1];
+	String sAmount = nextToken(remainder, &remainder);
 	s64 amount = 0;
 	if (asInt(sAmount, &amount))
 	{
@@ -102,25 +103,25 @@ ConsoleCommand(funds)
 	}
 	else
 	{
-		consoleWriteLine(myprintf("Usage: {0} amount, where amount is an integer",
-								{tokens->tokens[0]}), CLS_Error);
+		consoleWriteLine("Usage: funds amount, where amount is an integer", CLS_Error);
 	}
 }
 
 ConsoleCommand(show_layer)
 {
+	String remainder = arguments;
 	if (!checkInGame()) return;
 	
 	// For now this is a toggle, but it'd be nice if we could say "show_paths true" or "show_paths 1" maybe
-	if (tokens->count == 1)
+	if (argumentsCount == 1)
 	{
 		// Hide layers
 		globalAppState.gameState->dataLayerToDraw = DataLayer_None;
 		consoleWriteLine("Hiding data layers", CLS_Success);
 	}
-	else if (tokens->count == 2)
+	else if (argumentsCount == 2)
 	{
-		String layerName = tokens->tokens[1];
+		String layerName = nextToken(remainder, &remainder);
 		if (equals(layerName, "paths"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Paths;
@@ -134,28 +135,28 @@ ConsoleCommand(show_layer)
 	}
 	else
 	{
-		consoleWriteLine(myprintf("Usage: {0} (paths|power), or with no argument to hide the data layer",
-							{tokens->tokens[0]}), CLS_Error);
+		consoleWriteLine("Usage: show_layer (paths|power), or with no argument to hide the data layer", CLS_Error);
 	}
 }
 
 ConsoleCommand(zoom)
 {
+	String remainder = arguments;
 	bool succeeded = false;
 
-	if (tokens->count == 1)
+	if (argumentsCount == 1)
 	{
 		// list the zoom
 		f32 zoom = globalAppState.renderer->worldBuffer.camera.zoom;
 		consoleWriteLine(myprintf("Current zoom is {0}", {formatFloat(zoom, 3)}), CLS_Success);
 		succeeded = true;
 	}
-	else if (tokens->count == 2)
+	else if (argumentsCount == 2)
 	{
 		// set the zoom
 		// TODO: We don't have a float-parsing function yet, so we're stuck with ints!
 		s64 requestedZoom;
-		if (asInt(tokens->tokens[1], &requestedZoom))
+		if (asInt(nextToken(remainder, &remainder), &requestedZoom))
 		{
 			f32 newZoom = (f32) requestedZoom;
 			globalAppState.renderer->worldBuffer.camera.zoom = newZoom;
@@ -166,8 +167,7 @@ ConsoleCommand(zoom)
 
 	if (!succeeded)
 	{
-		consoleWriteLine(myprintf("Usage: {0} (scale), where scale is an integer, or with no argument to list the current zoom",
-							{tokens->tokens[0]}), CLS_Error);
+		consoleWriteLine("Usage: zoom (scale), where scale is an integer, or with no argument to list the current zoom", CLS_Error);
 	}
 }
 

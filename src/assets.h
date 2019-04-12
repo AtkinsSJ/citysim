@@ -56,8 +56,6 @@ struct TextureRegion
 
 typedef u32 TextureRegionID;
 
-#include "font.h"
-
 struct Cursor
 {
 	String filename;
@@ -80,8 +78,6 @@ struct ShaderHeader
 	String filename;
 	String contents;
 };
-
-#include "uitheme.h"
 
 struct IndexRange
 {

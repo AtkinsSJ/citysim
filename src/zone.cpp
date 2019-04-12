@@ -1,4 +1,4 @@
-#include "zone.h"
+#pragma once
 
 void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer);
 

@@ -42,6 +42,8 @@ MemoryArena *globalFrameTempArena;
 #include "maths.h"
 #include "file.h"
 #include "settings.h"
+#include "font.h"
+#include "uitheme.h"
 #include "assets.h"
 #include "render.h"
 #include "font.cpp"
@@ -87,6 +89,9 @@ AppState globalAppState;
 #include "city.cpp"
 #include "zone.cpp"
 #include "about.cpp"
+#include "game_mainmenu.cpp"
+#include "credits.cpp"
+#include "settings.cpp"
 #include "game.cpp"
 #include "log.cpp"
 
