@@ -3,7 +3,7 @@
 MemoryBlock *addMemoryBlock(MemoryArena *arena, smm size)
 {
 	smm totalSize = size + sizeof(MemoryBlock);
-	u8* memory = (u8*) calloc(totalSize, 1);
+	u8* memory = allocateRaw(totalSize);
 
 	ASSERT(memory != null, "Failed to allocate memory block!");
 

@@ -183,6 +183,20 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		u32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 		debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
 
+		// Asset system
+		{
+			DebugAssetData *assets = &debugState->assetData;
+			debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} memory ({3} max). Metadata arena: {4} blocks, {5} used / {6} allocated.", {
+				formatInt(assets->loadedAssetCount[rfi]),
+				formatInt(assets->assetCount[rfi]),
+				formatInt(assets->assetMemoryAllocated[rfi]),
+				formatInt(assets->maxAssetMemoryAllocated[rfi]),
+				formatInt(assets->arenaBlockCount[rfi]),
+				formatInt(assets->arenaUsedSize[rfi]),
+				formatInt(assets->arenaTotalSize[rfi])
+			}));
+		}
+
 		// Memory arenas
 		{
 			DebugArenaData *arena = debugState->arenaDataSentinel.nextNode;
@@ -349,20 +363,70 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 			if (arena->currentBlock)
 			{
 				arenaData->blockCount[frameIndex] = 1;
-				arenaData->totalSize[frameIndex] = arena->currentBlock->size;
-				arenaData->usedSize[frameIndex] = arena->currentBlock->used;
+				arenaData->totalSize [frameIndex] = arena->currentBlock->size;
+				arenaData->usedSize  [frameIndex] = arena->currentBlock->used;
 
 				MemoryBlock *block = arena->currentBlock->prevBlock;
 				while (block)
 				{
 					arenaData->blockCount[frameIndex]++;
 					arenaData->totalSize[frameIndex] += block->size;
-					arenaData->usedSize[frameIndex] += block->size;
+					arenaData->usedSize[frameIndex]  += block->size;
 
 					block = block->prevBlock;
 				}
 			}
 		}
+	}
+}
+
+void debugTrackAssets(DebugState *debugState, AssetManager *assets)
+{
+	if (debugState)
+	{
+		DebugAssetData *assetData = &debugState->assetData;
+		u32 frameIndex = debugState->writingFrameIndex;
+
+		assetData->arenaBlockCount        [frameIndex] = 0;
+		assetData->arenaTotalSize         [frameIndex] = 0;
+		assetData->arenaUsedSize          [frameIndex] = 0;
+		assetData->assetCount             [frameIndex] = 0;
+		assetData->loadedAssetCount       [frameIndex] = 0;
+		assetData->assetMemoryAllocated   [frameIndex] = 0;
+		assetData->maxAssetMemoryAllocated[frameIndex] = 0;
+
+		// The assets arena
+		MemoryArena *arena = &assets->assetArena;
+		if (arena) // So passing null just keeps it zeroed out
+		{
+			if (arena->currentBlock)
+			{
+				assetData->arenaBlockCount[frameIndex] = 1;
+				assetData->arenaTotalSize [frameIndex] = arena->currentBlock->size;
+				assetData->arenaUsedSize  [frameIndex] = arena->currentBlock->used;
+
+				MemoryBlock *block = arena->currentBlock->prevBlock;
+				while (block)
+				{
+					assetData->arenaBlockCount[frameIndex]++;
+					assetData->arenaTotalSize [frameIndex] += block->size;
+					assetData->arenaUsedSize  [frameIndex] += block->size;
+
+					block = block->prevBlock;
+				}
+			}
+		}
+
+		// The asset-memory stuff
+		for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+		{
+			Asset *asset = get(it);
+
+			assetData->assetCount[frameIndex]++;
+			if (asset->state == AssetState_Loaded) assetData->loadedAssetCount[frameIndex]++;
+		}
+		assetData->assetMemoryAllocated   [frameIndex] = assets->assetMemoryAllocated;
+		assetData->maxAssetMemoryAllocated[frameIndex] = assets->maxAssetMemoryAllocated;
 	}
 }
 

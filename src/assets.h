@@ -15,6 +15,19 @@ enum AssetState
 	AssetState_Loaded,
 };
 
+struct Asset
+{
+	AssetType type;
+
+	// shortName = "foo.txt", fullName = "c:/whatever/foo.txt"
+	String shortName;
+	String fullName;
+
+	AssetState state;
+	smm size;
+	u8* memory;
+};
+
 enum CursorType
 {
 	Cursor_None,
@@ -89,9 +102,13 @@ struct AssetManager
 {
 	MemoryArena assetArena;
 	bool assetReloadHasJustHappened;
+	smm assetMemoryAllocated;
+	smm maxAssetMemoryAllocated;
 
 	String assetsPath;
 	String userDataPath;
+
+	ChunkedArray<Asset> allAssets;
 
 	// NB: index 0 reserved as a null texture.
 	ChunkedArray<Texture> textures;

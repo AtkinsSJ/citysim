@@ -1,5 +1,11 @@
 #pragma once
 
+struct FileHandle
+{
+	bool isOpen;
+	SDL_RWops *sdl_file;
+};
+
 struct File
 {
 	String name;
@@ -9,6 +15,58 @@ struct File
 	u8* data;
 };
 
+enum FileAccessMode
+{
+	FileAccess_Read,
+	FileAccess_Write
+};
+
+char *fileAccessModeStrings[] = {
+	"rb",
+	"wb"
+};
+
+FileHandle openFile(String path, FileAccessMode mode)
+{
+	ASSERT(!path.isNullTerminated, "openFile() path must be null-terminated.");
+
+	FileHandle result = {};
+
+	result.sdl_file = SDL_RWFromFile(path.chars, fileAccessModeStrings[mode]);
+	result.isOpen = (result.sdl_file != null);
+
+	return result;
+}
+
+void closeFile(FileHandle *file)
+{
+	if (file->isOpen)
+	{
+		SDL_RWclose(file->sdl_file);
+		file->isOpen = false;
+	}
+}
+
+smm getFileSize(FileHandle *file)
+{
+	s64 currentPos = SDL_RWtell(file->sdl_file);
+
+	smm fileSize = (smm) SDL_RWseek(file->sdl_file, 0, RW_SEEK_END);
+	SDL_RWseek(file->sdl_file, currentPos, RW_SEEK_SET);
+
+	return fileSize;
+}
+
+smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
+{
+	smm bytesRead = 0;
+
+	bytesRead = SDL_RWread(file->sdl_file, memory, size, 1);
+
+	return bytesRead;
+}
+
+// TODO: Switch to FileHandle!
 File readFile(MemoryArena *memory, String filename)
 {
 	File result = {};
@@ -37,6 +95,7 @@ File readFile(MemoryArena *memory, String filename)
 	return result;
 }
 
+// TODO: Switch to FileHandle!
 String readFileAsString(MemoryArena *memory, String filename)
 {
 	File file = readFile(memory, filename);
@@ -45,6 +104,7 @@ String readFileAsString(MemoryArena *memory, String filename)
 	return result;
 }
 
+// TODO: Switch to FileHandle!
 bool writeFile(String filename, String contents)
 {
 	bool succeeded = false;

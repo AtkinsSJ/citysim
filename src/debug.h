@@ -6,6 +6,7 @@
 #define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
 #define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
+#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
 #define DEBUG_RENDER_BUFFER(buffer, drawCallCount) debugTrackRenderBuffer(globalDebugState, buffer, drawCallCount)
 
 #else
@@ -13,6 +14,7 @@
 #define DEBUG_BLOCK(...) 
 #define DEBUG_FUNCTION(...) 
 #define DEBUG_ARENA(...)
+#define DEBUG_ASSETS(...)
 #define DEBUG_RENDER_BUFFER(...)
 
 #endif
@@ -54,6 +56,20 @@ struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData>
 	u32 drawCallCount[DEBUG_FRAMES_COUNT];
 };
 
+struct DebugAssetData // Not a linked list because there's only one asset system!
+{
+	// AssetsArena
+	u32 arenaBlockCount[DEBUG_FRAMES_COUNT];
+	smm arenaTotalSize[DEBUG_FRAMES_COUNT];
+	smm arenaUsedSize[DEBUG_FRAMES_COUNT];
+
+	// Asset memory
+	s32 assetCount[DEBUG_FRAMES_COUNT];
+	s32 loadedAssetCount[DEBUG_FRAMES_COUNT];
+	smm assetMemoryAllocated[DEBUG_FRAMES_COUNT];
+	smm maxAssetMemoryAllocated[DEBUG_FRAMES_COUNT];
+};
+
 struct DebugState
 {
 	MemoryArena debugArena;
@@ -68,6 +84,7 @@ struct DebugState
 	DebugArenaData arenaDataSentinel;
 	DebugCodeData codeDataSentinel;
 	DebugRenderBufferData renderBufferDataSentinel;
+	DebugAssetData assetData; // Not a sentinel because there's only one asset system!
 
 	// Processed stuff
 	DebugCodeDataWrapper topCodeBlocksFreeListSentinel;

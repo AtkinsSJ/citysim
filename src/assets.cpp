@@ -1,35 +1,5 @@
 #pragma once
 
-u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
-{
-	u32 textureID = assets->textures.count;
-
-	Texture *texture = appendBlank(&assets->textures);
-
-	texture->state = AssetState_Unloaded;
-	texture->filename = pushString(&assets->assetArena, filename);
-	texture->isAlphaPremultiplied = isAlphaPremultiplied;
-
-	return textureID;
-}
-
-u32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, s32 textureID, Rect2 uv)
-{
-	u32 textureRegionID = assets->textureRegions.count;
-
-	TextureRegion *region = appendBlank(&assets->textureRegions);
-
-	region->textureRegionAssetType = textureRegionAssetType;
-	region->textureID = textureID;
-	region->uv = uv;
-
-	IndexRange *range = get(&assets->rangesByTextureAssetType, textureRegionAssetType);
-	range->firstIndex = MIN(textureRegionID, range->firstIndex);
-	range->lastIndex  = MAX(textureRegionID, range->lastIndex);
-
-	return textureRegionID;
-}
-
 void initAssetManager(AssetManager *assets)
 {
 	*assets = {};
@@ -38,6 +8,11 @@ void initAssetManager(AssetManager *assets)
 	char *userDataPath = SDL_GetPrefPath("Baffled Badger Games", "CitySim");
 	assets->userDataPath = pushString(&assets->assetArena, userDataPath);
 	SDL_free(userDataPath);
+
+	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
+	assets->assetMemoryAllocated = 0;
+	assets->maxAssetMemoryAllocated = 0;
+
 
 	initChunkedArray(&assets->rangesByTextureAssetType, &assets->assetArena, 32);
 	appendBlank(&assets->rangesByTextureAssetType);
@@ -73,6 +48,88 @@ AssetManager *createAssetManager()
 	initAssetManager(assets);
 
 	return assets;
+}
+
+s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
+{
+	s32 index = assets->allAssets.count;
+
+	Asset *asset = appendBlank(&assets->allAssets);
+	asset->type = type;
+	asset->shortName = pushString(&assets->assetArena, shortName);
+	asset->fullName = getAssetPath(assets, asset->type, asset->shortName);
+	asset->state = AssetState_Unloaded;
+	asset->size = 0;
+	asset->memory = null;
+
+	return index;
+}
+
+void loadAsset(AssetManager *assets, Asset *asset)
+{
+	ASSERT(asset->state == AssetState_Unloaded, "Attempted to load an asset ({0}) that is already loaded!", {asset->fullName});
+
+	FileHandle file = openFile(asset->fullName, FileAccess_Read);
+
+	smm fileSize = getFileSize(&file);
+	asset->memory = allocateRaw(fileSize);
+
+	asset->size = fileSize;
+
+	smm bytesRead = readFileIntoMemory(&file, fileSize, asset->memory);
+	assets->assetMemoryAllocated += bytesRead;
+	assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
+
+	if (bytesRead != fileSize)
+	{
+		logError("File {0} was only partially loaded. Size {1}, loaded {2}", {asset->fullName, formatInt(fileSize), formatInt(bytesRead)});
+	}
+	else
+	{
+		asset->state = AssetState_Loaded;
+	}
+
+	closeFile(&file);
+}
+
+void freeAsset(AssetManager *assets, Asset *asset)
+{
+	if (asset->state == AssetState_Unloaded) return;
+
+	assets->assetMemoryAllocated -= asset->size;
+	asset->size = 0;
+	free(asset->memory);
+	asset->state = AssetState_Unloaded;
+}
+
+u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
+{
+	u32 textureID = assets->textures.count;
+
+	Texture *texture = appendBlank(&assets->textures);
+
+	texture->state = AssetState_Unloaded;
+	texture->filename = pushString(&assets->assetArena, filename);
+	texture->isAlphaPremultiplied = isAlphaPremultiplied;
+
+	return textureID;
+}
+
+u32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, s32 textureID, Rect2 uv)
+{
+	u32 textureRegionID = assets->textureRegions.count;
+
+	TextureRegion *region = appendBlank(&assets->textureRegions);
+
+	region->textureRegionAssetType = textureRegionAssetType;
+	region->textureID = textureID;
+	region->uv = uv;
+
+	IndexRange *range = get(&assets->rangesByTextureAssetType, textureRegionAssetType);
+	range->firstIndex = MIN(textureRegionID, range->firstIndex);
+	range->lastIndex  = MAX(textureRegionID, range->lastIndex);
+
+	return textureRegionID;
 }
 
 s32 findTexture(AssetManager *assets, String filename)
@@ -344,6 +401,13 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 		Cursor *cursor = get(&assets->cursors, cursorID);
 		SDL_FreeCursor(cursor->sdlCursor);
 		cursor->sdlCursor = 0;
+	}
+
+	// Clear managed assets
+	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	{
+		Asset *asset = get(it);
+		freeAsset(assets, asset);
 	}
 
 	// General resetting of Assets system

@@ -5,6 +5,7 @@ struct String
 	char *chars;
 	s32 length;
 	s32 maxLength;
+	bool isNullTerminated;
 
 	char operator[](s32 index)
 	{
@@ -21,6 +22,7 @@ inline String makeString(char *chars, s32 length)
 	result.chars = chars;
 	result.length = length;
 	result.maxLength = result.length;
+	result.isNullTerminated = false;
 
 	return result;
 }

@@ -51,7 +51,13 @@ struct MemoryArena
 #define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
 
 bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1));
-void *allocate(MemoryArena *arena, smm size);
 void markResetPosition(MemoryArena *arena);
+void *allocate(MemoryArena *arena, smm size);
+u8 *allocateRaw(smm size)
+{
+	u8 *result = (u8*) calloc(size, 1);
+	ASSERT(result != null, "calloc() failed!!! I don't think there's anything reasonable we can do here.");
+	return result;
+}
 
 #endif

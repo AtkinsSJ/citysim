@@ -23,7 +23,7 @@ struct Array
 template<class T>
 void initialiseArray(Array<T> *a, u32 initialSize)
 {
-	a->items = (T*) calloc(initialSize, sizeof(T));
+	a->items = (T*) allocateRaw(initialSize * sizeof(T));
 	a->count = 0;
 	a->maxCount = initialSize;
 }
