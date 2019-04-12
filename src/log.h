@@ -13,6 +13,8 @@ LOGFUNCDEF(Warn);
 LOGFUNCDEF(Error);
 LOGFUNCDEF(Critical);
 
+#undef LOGFUNCDEF
+
 
 #if BUILD_DEBUG
 	#if defined(_MSC_VER)

@@ -69,6 +69,7 @@ struct AppState
 };
 AppState globalAppState;
 
+#include "memory.cpp"
 #include "assets.cpp"
 #include "data_file.cpp"
 #include "uitheme.cpp"
