@@ -10,6 +10,25 @@ Handy emojis:
 
 ------------------------------------------------
 
+So, I'm part-way through making the assets system able to reload individual assets, by having all the assets stored as their own allocations, instead of in the assetArena, and just putting the metadata in that arena.
+Current progress is the 'Asset' struct, stored in AssetManager.allAssets, and accessed by an s32 index.
+Right now, we only store the credits/uitheme/buildingdef/terraindef files, all store their index in AssetManager rather than a clever lookup.
+We need some kind of lookup by string, for textures etc. So that buildings can specify the texture, and we just look that up and make sure it's loaded, adding it as an asset if it's not already defined.
+
+I'm tired and getting confused so I should probably leave it.
+
+At some point we want:
+- Automatic cataloguing of asset files by reading the directory listing.
+- Hash table for lookups
+- Ability to reload an individual file
+- Detect filesystem changes and reload the files that change
+	- Includes being a bit smart about dependant files. eg if a building texture was used, but after the building defs reload, they no longer use that texture, it could be unloaded? But honestly, keeping it around is way simpler and our memory requirements are going to be tiny anyway.
+	- If a file gets deleted, what happens?
+- Eventually, don't "resetMemoryArena(&assets->assetArena); initAssetManager(assets);", keep that data around.
+
+------------------------------------------------
+
+
 Things to work on next maybe:
 - STRING HASH TABLES!!! http://www.craftinginterpreters.com/hash-tables.html
 	- And then we can make the assets system fancy, etc etc.

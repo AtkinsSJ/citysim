@@ -134,7 +134,11 @@ struct AssetManager
 	ChunkedArray<UIWindowStyle>  windowStyles;
 
 	UITheme theme;
+	
 	s32 creditsAssetIndex;
+	s32 uiThemeAssetIndex;
+	s32 buildingDefsAssetIndex;
+	s32 terrainDefsAssetIndex;
 };
 
 Texture *getTexture(AssetManager *assets, u32 textureIndex)
@@ -196,6 +200,7 @@ ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID
 	return get(&assets->shaderPrograms, shaderID);
 }
 
+// TODO: A way to get this as a String might be more convenient!
 Asset *getTextAsset(AssetManager *assets, s32 assetIndex)
 {
 	Asset *asset = get(&assets->allAssets, assetIndex);

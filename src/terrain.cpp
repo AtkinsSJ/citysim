@@ -1,15 +1,15 @@
 #pragma once
 
-void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, File file)
+void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Asset *asset)
 {
-	LineReader reader = startFile(file);
+	LineReader reader = readLines(asset);
 
 	initChunkedArray(terrains, &assets->assetArena, 16);
 	appendBlank(terrains);
 
 	TerrainDef *def = null;
 
-	while (reader.pos < reader.file.length)
+	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
 		if (line.length == 0) break;

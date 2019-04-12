@@ -79,9 +79,9 @@ UIWindowStyle *findWindowStyle(AssetManager *assets, String name)
 
 #define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name})
 
-void loadUITheme(AssetManager *assets, File file)
+void loadUITheme(AssetManager *assets, Asset *asset)
 {
-	LineReader reader = startFile(file, true, true, '#');
+	LineReader reader = readLines(asset, true, true, '#');
 
 	UITheme *theme = &assets->theme;
 
@@ -112,7 +112,7 @@ void loadUITheme(AssetManager *assets, File file)
 		};
 	} target = {};
 
-	while (reader.pos < reader.file.length)
+	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
 		if (line.length == 0) break;

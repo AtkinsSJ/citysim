@@ -1,15 +1,15 @@
 #pragma once
 
-void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, File file)
+void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Asset *asset)
 {
-	LineReader reader = startFile(file);
+	LineReader reader = readLines(asset);
 
 	initChunkedArray(buildings, &assets->assetArena, 64);
 	appendBlank(buildings);
 
 	BuildingDef *def = null;
 
-	while (reader.pos < reader.file.length)
+	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
 		if (line.length == 0) break;

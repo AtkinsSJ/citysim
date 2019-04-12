@@ -17,13 +17,8 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	BitmapFont *font = getFont(assets, labelStyle->fontID);
 
 	Asset *creditsText = getTextAsset(assets, assets->creditsAssetIndex);
-	// HACK!
-	File fakeFile = {};
-	fakeFile.name = creditsText->shortName;
-	fakeFile.length = creditsText->size;
-	fakeFile.data = creditsText->memory;
-	LineReader reader = startFile(fakeFile, false, false);
-	while (reader.pos < reader.file.length)
+	LineReader reader = readLines(creditsText, false, false);
+	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
 		position.y += (uiText(uiState, font, line,

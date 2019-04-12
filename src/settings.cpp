@@ -26,7 +26,7 @@ void loadSettingsFile(Settings *settings, File file)
 {
 	LineReader reader = startFile(file);
 
-	while (reader.pos < reader.file.length)
+	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
 		if (line.length == 0) break;

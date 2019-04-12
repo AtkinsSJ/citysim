@@ -81,4 +81,4 @@ struct UITheme
 	V4 overlayColor;
 };
 
-void loadUITheme(struct AssetManager *assets, File file);
+void loadUITheme(struct AssetManager *assets, struct Asset *asset);

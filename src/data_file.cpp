@@ -2,7 +2,10 @@
 
 struct LineReader
 {
-	File file;
+	String filename;
+	smm dataLength;
+	u8* data;
+
 	bool skipBlankLines;
 
 	smm pos;
@@ -12,10 +15,14 @@ struct LineReader
 	char commentChar;
 };
 
-LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+LineReader readLines(String filename, smm dataLength, u8* data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
 {
 	LineReader result = {};
-	result.file = file;
+
+	result.filename   = filename;
+	result.dataLength = dataLength;
+	result.data       = data;
+
 	result.pos = 0;
 	result.lineNumber = 0;
 	result.removeComments = removeComments;
@@ -25,16 +32,32 @@ LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=tr
 	return result;
 }
 
+inline LineReader readLines(Asset *asset, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+{
+	return readLines(asset->shortName, asset->size, asset->memory, skipBlankLines, removeComments, commentChar);
+}
+
+// @Deprecated, use readLines() instead
+inline LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+{
+	return readLines(file.name, file.length, file.data, skipBlankLines, removeComments, commentChar);
+}
+
+inline bool isDone(LineReader *reader)
+{
+	return (reader->pos >= reader->dataLength);
+}
+
 void warn(LineReader *reader, char *message, std::initializer_list<String> args = {})
 {
 	String text = myprintf(message, args, false);
-	logWarn("{0}:{1} - {2}", {reader->file.name, formatInt(reader->lineNumber), text});
+	logWarn("{0}:{1} - {2}", {reader->filename, formatInt(reader->lineNumber), text});
 }
 
 void error(LineReader *reader, char *message, std::initializer_list<String> args = {})
 {
 	String text = myprintf(message, args, false);
-	logError("{0}:{1} - {2}", {reader->file.name, formatInt(reader->lineNumber), text});
+	logError("{0}:{1} - {2}", {reader->filename, formatInt(reader->lineNumber), text});
 }
 
 String nextLine(LineReader *reader)
@@ -45,19 +68,19 @@ String nextLine(LineReader *reader)
 	{
 		// Get next line
 		++reader->lineNumber;
-		line.chars = (char *)(reader->file.data + reader->pos);
+		line.chars = (char *)(reader->data + reader->pos);
 		line.length = 0;
-		while (!isNewline(reader->file.data[reader->pos]) && (reader->pos < reader->file.length))
+		while (!isNewline(reader->data[reader->pos]) && (reader->pos < reader->dataLength))
 		{
 			++reader->pos;
 			++line.length;
 		}
 
 		// Handle Windows' stupid double-character newline.
-		if (reader->pos < reader->file.length)
+		if (reader->pos < reader->dataLength)
 		{
 			++reader->pos;
-			if (isNewline(reader->file.data[reader->pos]) && (reader->file.data[reader->pos] != reader->file.data[reader->pos-1]))
+			if (isNewline(reader->data[reader->pos]) && (reader->data[reader->pos] != reader->data[reader->pos-1]))
 			{
 				++reader->pos;
 			}
@@ -82,7 +105,7 @@ String nextLine(LineReader *reader)
 		// This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
 		if (!reader->skipBlankLines) break;
 	}
-	while ((line.length <= 0) && (reader->pos < reader->file.length));
+	while ((line.length <= 0) && !isDone(reader));
 
 	return line;
 }

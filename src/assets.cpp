@@ -187,7 +187,6 @@ void loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 
-	// Settings should go in SDL_GetPrefPath()
 	File defaultSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("default-settings.cnf")));
 	File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(assets));
 	loadSettings(&globalAppState.settings, defaultSettingsFile, userSettingsFile);
@@ -195,16 +194,16 @@ void loadAssets(AssetManager *assets)
 	// TEMP: Test saving
 	saveSettings(&globalAppState.settings, assets);
 
-	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
-	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("ui.theme"))));
-	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("buildings.def"))));
-	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("terrain.def"))));
-
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
 		Asset *asset = get(it);
 		loadAsset(assets, asset);
 	}
+
+	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
+	loadUITheme(assets, getTextAsset(assets, assets->uiThemeAssetIndex));
+	loadBuildingDefs(&buildingDefs, assets, getTextAsset(assets, assets->buildingDefsAssetIndex));
+	loadTerrainDefinitions(&terrainDefs, assets, getTextAsset(assets, assets->terrainDefsAssetIndex));
 
 	for (s32 i = 1; i < assets->textures.count; ++i)
 	{
@@ -219,13 +218,13 @@ void loadAssets(AssetManager *assets)
 			{
 				// Premultiply alpha
 				u32 Rmask = tex->surface->format->Rmask,
-					   Gmask = tex->surface->format->Gmask,
-					   Bmask = tex->surface->format->Bmask,
-					   Amask = tex->surface->format->Amask;
+					Gmask = tex->surface->format->Gmask,
+					Bmask = tex->surface->format->Bmask,
+					Amask = tex->surface->format->Amask;
 				f32 rRmask = (f32)Rmask,
-					   rGmask = (f32)Gmask,
-					   rBmask = (f32)Bmask,
-					   rAmask = (f32)Amask;
+					rGmask = (f32)Gmask,
+					rBmask = (f32)Bmask,
+					rAmask = (f32)Amask;
 
 				u32 pixelCount = tex->surface->w * tex->surface->h;
 				for (u32 pixelIndex=0;
@@ -352,7 +351,13 @@ void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String f
 
 void addAssets(AssetManager *assets)
 {
-	assets->creditsAssetIndex = addAsset(assets, AssetType_Misc, "credits.txt");
+	assets->creditsAssetIndex      = addAsset(assets, AssetType_Misc, "credits.txt");
+	assets->uiThemeAssetIndex      = addAsset(assets, AssetType_Misc, "ui.theme");
+	assets->buildingDefsAssetIndex = addAsset(assets, AssetType_Misc, "buildings.def");
+	assets->terrainDefsAssetIndex  = addAsset(assets, AssetType_Misc, "terrain.def");
+
+	// TODO: Settings?
+
 
 	// addBMFont(assets, FontAssetType_Buttons, "dejavu-14.fnt");
 	// addBMFont(assets, FontAssetType_Main, "dejavu-20.fnt");
