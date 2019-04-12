@@ -197,10 +197,14 @@ void loadAssets(AssetManager *assets)
 
 	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
 	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("ui.theme"))));
-	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, makeString("credits.txt")));
 	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("buildings.def"))));
 	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("terrain.def"))));
 
+	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	{
+		Asset *asset = get(it);
+		loadAsset(assets, asset);
+	}
 
 	for (s32 i = 1; i < assets->textures.count; ++i)
 	{
@@ -348,6 +352,8 @@ void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String f
 
 void addAssets(AssetManager *assets)
 {
+	assets->creditsAssetIndex = addAsset(assets, AssetType_Misc, "credits.txt");
+
 	// addBMFont(assets, FontAssetType_Buttons, "dejavu-14.fnt");
 	// addBMFont(assets, FontAssetType_Main, "dejavu-20.fnt");
 

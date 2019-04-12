@@ -61,7 +61,7 @@ smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
 {
 	smm bytesRead = 0;
 
-	bytesRead = SDL_RWread(file->sdl_file, memory, size, 1);
+	bytesRead = SDL_RWread(file->sdl_file, memory, 1, size);
 
 	return bytesRead;
 }

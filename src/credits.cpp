@@ -16,7 +16,13 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontID);
 
-	LineReader reader = startFile(assets->creditsText, false, false);
+	Asset *creditsText = getTextAsset(assets, assets->creditsAssetIndex);
+	// HACK!
+	File fakeFile = {};
+	fakeFile.name = creditsText->shortName;
+	fakeFile.length = creditsText->size;
+	fakeFile.data = creditsText->memory;
+	LineReader reader = startFile(fakeFile, false, false);
 	while (reader.pos < reader.file.length)
 	{
 		String line = nextLine(&reader);

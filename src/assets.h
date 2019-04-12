@@ -134,7 +134,7 @@ struct AssetManager
 	ChunkedArray<UIWindowStyle>  windowStyles;
 
 	UITheme theme;
-	File creditsText;
+	s32 creditsAssetIndex;
 };
 
 Texture *getTexture(AssetManager *assets, u32 textureIndex)
@@ -194,6 +194,13 @@ Cursor *getCursor(AssetManager *assets, u32 cursorID)
 ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
 {
 	return get(&assets->shaderPrograms, shaderID);
+}
+
+Asset *getTextAsset(AssetManager *assets, s32 assetIndex)
+{
+	Asset *asset = get(&assets->allAssets, assetIndex);
+	// TODO: load it if it's not loaded?
+	return asset;
 }
 
 String getAssetPath(AssetManager *assets, AssetType type, String shortName)
