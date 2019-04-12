@@ -27,7 +27,7 @@ void initAssetManager(AssetManager *assets)
 	TextureRegion *nullRegion = appendBlank(&assets->textureRegions);
 	nullRegion->textureID = -1;
 
-	initChunkedArray(&assets->cursors, &assets->assetArena, 16, true);
+	initChunkedArray(&assets->cursorTypeToAssetIndex, &assets->assetArena, CursorCount, true);
 	initChunkedArray(&assets->shaderPrograms, &assets->assetArena, 16, true);
 
 	// Stuff that used to be in the UI theme is now here... I think UITheme isn't a useful concept?
@@ -77,6 +77,8 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	asset->size = fileSize;
 
 	smm bytesRead = readFileIntoMemory(&file, fileSize, asset->memory);
+	closeFile(&file);
+
 	assets->assetMemoryAllocated += bytesRead;
 	assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
 
@@ -89,12 +91,35 @@ void loadAsset(AssetManager *assets, Asset *asset)
 		asset->state = AssetState_Loaded;
 	}
 
-	closeFile(&file);
+	// Type-specific loading
+	switch (asset->type)
+	{
+		case AssetType_Cursor:
+		{
+			SDL_RWops *rw = SDL_RWFromConstMem(asset->memory, asset->size);
+			SDL_Surface *cursorSurface = IMG_Load_RW(rw, 0);
+			asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
+			SDL_FreeSurface(cursorSurface);
+			SDL_RWclose(rw);
+		} break;
+	}
 }
 
 void freeAsset(AssetManager *assets, Asset *asset)
 {
 	if (asset->state == AssetState_Unloaded) return;
+
+	switch (asset->type)
+	{
+		case AssetType_Cursor:
+		{
+			if (asset->cursor.sdlCursor != null)
+			{
+				SDL_FreeCursor(asset->cursor.sdlCursor);
+				asset->cursor.sdlCursor = null;
+			}
+		} break;
+	}
 
 	assets->assetMemoryAllocated -= asset->size;
 	asset->size = 0;
@@ -162,9 +187,8 @@ s32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, char *fil
 
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 {
-	Cursor *cursor = get(&assets->cursors, cursorID);
-	cursor->filename = pushString(&assets->assetArena, filename);
-	cursor->sdlCursor = 0;
+	s32 assetIndex = addAsset(assets, AssetType_Cursor, filename);
+	*get(&assets->cursorTypeToAssetIndex, cursorID) = assetIndex;
 }
 
 void addShaderHeader(AssetManager *assets, char *filename)
@@ -268,16 +292,6 @@ void loadAssets(AssetManager *assets)
 		);
 	}
 
-	// Load up our cursors
-	for (u32 cursorID = 1; cursorID < CursorCount; cursorID++)
-	{
-		Cursor *cursor = get(&assets->cursors, cursorID);
-
-		SDL_Surface *cursorSurface = IMG_Load(getAssetPath(assets, AssetType_Cursor, cursor->filename).chars);
-		cursor->sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
-		SDL_FreeSurface(cursorSurface);
-	}
-
 	// Load shader programs
 	ShaderHeader *shaderHeader = &assets->shaderHeader;
 	shaderHeader->contents = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shaderHeader->filename));
@@ -367,7 +381,6 @@ void addAssets(AssetManager *assets)
 	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
 	addShaderProgram(assets, ShaderProgram_PixelArt,   "pixelart.vert.glsl",   "pixelart.frag.glsl");
 
-	// NB: These have to be in the same order as the CursorType right now!
 	addCursor(assets, Cursor_Main,     "cursor_main.png");
 	addCursor(assets, Cursor_Build,    "cursor_build.png");
 	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
@@ -404,14 +417,6 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 			tex->surface = 0;
 		}
 		tex->state = AssetState_Unloaded;
-	}
-
-	// Clear cursors
-	for (u32 cursorID = 0; cursorID < CursorCount; cursorID++)
-	{
-		Cursor *cursor = get(&assets->cursors, cursorID);
-		SDL_FreeCursor(cursor->sdlCursor);
-		cursor->sdlCursor = 0;
 	}
 
 	// Clear managed assets

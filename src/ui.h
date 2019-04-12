@@ -91,5 +91,5 @@ struct UIState
 void setCursor(UIState *uiState, u32 cursorID)
 {
 	uiState->currentCursor = cursorID;
-	SDL_SetCursor(getCursor(uiState->assets, cursorID)->sdlCursor);
+	SDL_SetCursor(getCursor(uiState->assets, cursorID)->cursor.sdlCursor);
 }

@@ -15,19 +15,6 @@ enum AssetState
 	AssetState_Loaded,
 };
 
-struct Asset
-{
-	AssetType type;
-
-	// shortName = "foo.txt", fullName = "c:/whatever/foo.txt"
-	String shortName;
-	String fullName;
-
-	AssetState state;
-	smm size;
-	u8* memory;
-};
-
 enum CursorType
 {
 	Cursor_None,
@@ -40,6 +27,32 @@ enum CursorType
 	Cursor_Hire,
 
 	CursorCount
+};
+
+struct Asset
+{
+	AssetType type;
+
+	// shortName = "foo.txt", fullName = "c:/whatever/foo.txt"
+	String shortName;
+	String fullName;
+
+	AssetState state;
+	smm size;
+	u8* memory;
+
+	// Type-specific stuff
+	// Not sure if this is the better option, or keeping separate ChunkedArrays of the type-specific stuff
+	// is the better option, and just storing an index into that here?
+	// Probably this is the more understandable one. It also means we can pass around Assets, and they're
+	// fully-featured and self-contained, and you don't have to do extra lookups if you decide you care
+	// that this is a Texture. The information is all right there!
+	union {
+		struct {
+			SDL_Cursor *sdlCursor;
+		} cursor;
+
+	};
 };
 
 enum ShaderProgramType
@@ -68,12 +81,6 @@ struct TextureRegion
 };
 
 typedef u32 TextureRegionID;
-
-struct Cursor
-{
-	String filename;
-	SDL_Cursor *sdlCursor;
-};
 
 struct ShaderProgram
 {
@@ -123,7 +130,7 @@ struct AssetManager
 	ShaderHeader shaderHeader; // This is a bit hacky right now.
 	ChunkedArray<ShaderProgram> shaderPrograms;
 
-	ChunkedArray<Cursor> cursors;
+	ChunkedArray<s32> cursorTypeToAssetIndex;
 
 	ChunkedArray<BitmapFont> fonts;
 	ChunkedArray<UIButtonStyle>  buttonStyles;
@@ -140,6 +147,13 @@ struct AssetManager
 	s32 buildingDefsAssetIndex;
 	s32 terrainDefsAssetIndex;
 };
+
+Asset *getAsset(AssetManager *assets, s32 assetIndex)
+{
+	Asset *asset = get(&assets->allAssets, assetIndex);
+	// TODO: load it if it's not loaded?
+	return asset;
+}
 
 Texture *getTexture(AssetManager *assets, u32 textureIndex)
 {
@@ -190,9 +204,10 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 	return result;
 }
 
-Cursor *getCursor(AssetManager *assets, u32 cursorID)
+// TODO: Remove this!
+Asset *getCursor(AssetManager *assets, u32 cursorID)
 {
-	return get(&assets->cursors, cursorID);
+	return getAsset(assets, *get(&assets->cursorTypeToAssetIndex, cursorID));
 }
 
 ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
