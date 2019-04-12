@@ -41,7 +41,7 @@ struct MemoryArena
 #define bootstrapArena(containerType, containerName, arenaVarName)         \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
-	ASSERT(initMemoryArena(&bootstrap, sizeof(containerType)),"Failed to allocate memory for {0} arena!", {stringFromChars(#containerType)});\
+	ASSERT(initMemoryArena(&bootstrap, sizeof(containerType)),"Failed to allocate memory for {0} arena!", {makeString(#containerType)});\
 	containerName = PushStruct(&bootstrap, containerType);                            \
 	containerName->arenaVarName = bootstrap;                                          \
 	markResetPosition(&containerName->arenaVarName);                                  \

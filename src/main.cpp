@@ -101,7 +101,7 @@ SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		logCritical("SDL could not be initialised! :(\n {0}\n", {stringFromChars(SDL_GetError())});
+		logCritical("SDL could not be initialised! :(\n {0}\n", {makeString(SDL_GetError())});
 	}
 	else
 	{
@@ -109,7 +109,7 @@ SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle
 		u8 imgFlags = IMG_INIT_PNG;
 		if (!(IMG_Init(imgFlags) & imgFlags))
 		{
-			logCritical("SDL_image could not be initialised! :(\n {0}\n", {stringFromChars(IMG_GetError())});
+			logCritical("SDL_image could not be initialised! :(\n {0}\n", {makeString(IMG_GetError())});
 		}
 		else
 		{
@@ -120,7 +120,7 @@ SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle
 
 			if (!window)
 			{
-				logCritical("Window could not be created! :(\n {0}", {stringFromChars(SDL_GetError())});
+				logCritical("Window could not be created! :(\n {0}", {makeString(SDL_GetError())});
 			}
 		}
 	}

@@ -25,11 +25,11 @@ void testWindowProc(WindowContext *context, void *userData)
 
 	if (window_button(context, LocalString("Green style")))
 	{
-		context->window->styleName = stringFromChars("general");
+		context->window->styleName = makeString("general");
 	}
 	if (window_button(context, LocalString("Blue style")))
 	{
-		context->window->styleName = stringFromChars("blue");
+		context->window->styleName = makeString("blue");
 	}
 	window_label(context, LocalString("Test"));
 }
@@ -55,7 +55,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(assets, stringFromChars("title"));
+	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontID);
 
 	position.y += (uiText(uiState, font, LocalString("City Builder Thing"),
@@ -89,7 +89,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	{
 		s32 *aNumber = new s32;
 		*aNumber = randomInRange(&globalAppState.cosmeticRandom, INT32_MAX);
-		showWindow(uiState, LocalString("Hello window!"), 200, 200, stringFromChars("general"), WinFlag_AutomaticHeight, testWindowProc, aNumber);
+		showWindow(uiState, LocalString("Hello window!"), 200, 200, makeString("general"), WinFlag_AutomaticHeight, testWindowProc, aNumber);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LocalString("About"), buttonRect, 1))

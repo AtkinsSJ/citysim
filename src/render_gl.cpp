@@ -15,14 +15,14 @@ static void logGLError(GLenum errorCode)
 {
 	if (errorCode != GL_NO_ERROR)
 	{
-		logError("{0}", {stringFromChars((char*)gluErrorString(errorCode))});
+		logError("{0}", {makeString((char*)gluErrorString(errorCode))});
 	}
 }
 
 static inline void GL_checkForError()
 {
 	GLenum errorCode = glGetError();
-	ASSERT(errorCode == 0, "GL Error {0}: {1}", {formatInt(errorCode), stringFromChars((char *)gluErrorString(errorCode))});
+	ASSERT(errorCode == 0, "GL Error {0}: {1}", {formatInt(errorCode), makeString((char *)gluErrorString(errorCode))});
 }
 
 // Disable GL error checking for release version.
@@ -85,12 +85,12 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 		int logMaxLength = 0;
 		
 		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logMaxLength);
-		String infoLog = newString(globalFrameTempArena, logMaxLength);
+		String infoLog = pushString(globalFrameTempArena, logMaxLength);
 		glGetShaderInfoLog(shaderID, logMaxLength, &infoLog.length, infoLog.chars);
 
 		if (infoLog.length == 0)
 		{
-			infoLog = stringFromChars("No error log provided by OpenGL. Sad panda.");
+			infoLog = makeString("No error log provided by OpenGL. Sad panda.");
 		}
 
 		logError("Unable to compile shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), filename, infoLog});
@@ -104,7 +104,7 @@ static void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *
 	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
 	if (*attribLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->assetID), stringFromChars(attribName)});
+		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->assetID), makeString(attribName)});
 	}
 }
 
@@ -113,7 +113,7 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	*uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
 	if (*uniformLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->assetID), stringFromChars(uniformName)});
+		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->assetID), makeString(uniformName)});
 	}
 }
 
@@ -158,12 +158,12 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 				int logMaxLength = 0;
 				
 				glGetProgramiv(glShader->shaderProgramID, GL_INFO_LOG_LENGTH, &logMaxLength);
-				String infoLog = newString(globalFrameTempArena, logMaxLength);
+				String infoLog = pushString(globalFrameTempArena, logMaxLength);
 				glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLog.length, infoLog.chars);
 
 				if (infoLog.length == 0)
 				{
-					infoLog = stringFromChars("No error log provided by OpenGL. Sad panda.");
+					infoLog = makeString("No error log provided by OpenGL. Sad panda.");
 				}
 
 				logError("Unable to link shader program {0}! ({1})", {formatInt(glShader->assetID), infoLog});
@@ -529,7 +529,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		gl->context = SDL_GL_CreateContext(renderer->window);
 		if (gl->context == NULL)
 		{
-			logCritical("OpenGL context could not be created! :(\n %s", {stringFromChars(SDL_GetError())});
+			logCritical("OpenGL context could not be created! :(\n %s", {makeString(SDL_GetError())});
 			succeeded = false;
 		}
 
@@ -538,14 +538,14 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		GLenum glewError = glewInit();
 		if (succeeded && glewError != GLEW_OK)
 		{
-			logCritical("Could not initialise GLEW! :(\n %s", {stringFromChars((char*)glewGetErrorString(glewError))});
+			logCritical("Could not initialise GLEW! :(\n %s", {makeString((char*)glewGetErrorString(glewError))});
 			succeeded = false;
 		}
 
 		// VSync
 		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
 		{
-			logCritical("Could not set vsync! :(\n %s", {stringFromChars(SDL_GetError())});
+			logCritical("Could not set vsync! :(\n %s", {makeString(SDL_GetError())});
 			succeeded = false;
 		}
 

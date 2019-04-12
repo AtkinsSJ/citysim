@@ -369,7 +369,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 		showAboutWindow(context->uiState);
 	}
 
-	window_label(context, stringFromChars("Test text"));
+	window_label(context, makeString("Test text"));
 
 	if (window_button(context, exit, maxButtonTextWidth))
 	{
@@ -386,7 +386,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	f32 windowWidth = (f32) uiBuffer->camera.size.x;
 	V2 centre = uiBuffer->camera.pos;
 	UITheme *theme = &assets->theme;
-	UILabelStyle *labelStyle = findLabelStyle(assets, stringFromChars("title"));
+	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontID);
 	City *city = &gameState->city;
 
@@ -491,7 +491,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, LocalString("Menu"), buttonRect, 1))
 		{
-			showWindow(uiState, LocalString("Menu"), 200, 200, stringFromChars("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, LocalString("Menu"), 200, 200, makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }
@@ -499,8 +499,8 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 void showCostTooltip(UIState *uiState, City *city, s32 buildCost)
 {
 	String style = canAfford(city, buildCost)
-				? stringFromChars("cost-affordable")
-				: stringFromChars("cost-unaffordable");
+				? makeString("cost-affordable")
+				: makeString("cost-unaffordable");
 
 	String text = myprintf("£{0}", {formatInt(buildCost)});
 
@@ -729,7 +729,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
 				{
 					gameState->inspectedTilePosition = mouseTilePos;
-					showWindow(uiState, stringFromChars("Inspect tile"), 250, 200, stringFromChars("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+					showWindow(uiState, makeString("Inspect tile"), 250, 200, makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 				}
 			}
 		} break;

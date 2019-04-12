@@ -100,7 +100,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 		s32 cost = calculateZoneCost(city, zoneType, area);
 		if (!canAfford(city, cost))
 		{
-			pushUiMessage(uiState, stringFromChars("Not enough money to zone this."));
+			pushUiMessage(uiState, makeString("Not enough money to zone this."));
 			return;
 		}
 		else

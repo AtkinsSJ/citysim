@@ -60,7 +60,7 @@ bool writeFile(String filename, String contents)
 		else
 		{
 			logError("Error while writing file {0}: {1} ({2} of {3} bytes written)",
-					{filename, stringFromChars(SDL_GetError()), formatInt(writeLength), formatInt(contents.length)});
+					{filename, makeString(SDL_GetError()), formatInt(writeLength), formatInt(contents.length)});
 		}
 		SDL_RWclose(file);
 	}

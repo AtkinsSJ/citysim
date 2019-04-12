@@ -271,7 +271,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 
 BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, char *text, f32 maxWidth=0)
 {
-	String string = stringFromChars(text);
+	String string = makeString(text);
 	return drawTextToCache(memory, font, string, maxWidth);
 }
 

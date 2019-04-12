@@ -15,16 +15,6 @@ struct String
 
 const String nullString = {};
 
-String newString(MemoryArena *arena, s32 length)
-{
-	String s = {};
-	s.chars = PushArray(arena, char, length);
-	s.length = 0;
-	s.maxLength = length;
-
-	return s;
-}
-
 inline String makeString(char *chars, s32 length)
 {
 	String result = {};
@@ -34,73 +24,58 @@ inline String makeString(char *chars, s32 length)
 
 	return result;
 }
-
-String stringFromChars(char *chars)
+inline String makeString(char *chars)
 {
-	String result = {};
-	result.chars = chars;
-	result.length = strlen(chars);
-	result.maxLength = result.length;
-
-	return result;
+	return makeString(chars, strlen(chars));
 }
 // const is a huge pain in the bum
-String stringFromChars(const char *chars)
+inline String makeString(const char *chars)
 {
-	return stringFromChars((char*)chars);
+	return makeString((char*)chars, strlen(chars));
 }
 
-void copyChars(char *src, String *dest, s32 length)
+void copyString(char *src, s32 srcLength, String *dest)
 {
-	s32 copyLength = MIN(length, dest->maxLength);
+	s32 copyLength = MIN(srcLength, dest->maxLength);
 	for (s32 i=0; i<copyLength; i++)
 	{
 		dest->chars[i] = src[i];
 	}
 	dest->length = copyLength;
 }
+inline void copyString(String src, String *dest)
+{
+	copyString(src.chars, src.length, dest);
+}
 
+String pushString(MemoryArena *arena, s32 length)
+{
+	String s = {};
+	s.chars = PushArray(arena, char, length);
+	s.length = 0;
+	s.maxLength = length;
+
+	return s;
+}
 String pushString(MemoryArena *arena, char *src)
 {
 	s32 len = strlen(src);
 
-	String s = newString(arena, len);
-	copyChars(src, &s, len);
+	String s = pushString(arena, len);
+	copyString(src, len, &s);
 	return s;
 }
-
-void copyString(String source, String *dest)
-{
-	s32 copyLength = MIN(source.length, dest->maxLength);
-	for (s32 i=0; i<copyLength; i++)
-	{
-		dest->chars[i] = source.chars[i];
-	}
-	dest->length = copyLength;
-}
-
 String pushString(MemoryArena *arena, String src)
 {
-	String s = newString(arena, src.length);
+	String s = pushString(arena, src.length);
 	copyString(src, &s);
 	return s;
-}
-
-void reverseString(char* first, u32 length)
-{
-	u32 flips = length / 2;
-	char temp;
-	for (u32 n=0; n < flips; n++)
-	{
-		temp = first[n];
-		first[n] = first[length-1-n];
-		first[length-1-n] = temp;
-	}
 }
 
 bool equals(String a, String b)
 {
 	bool result = true;
+
 	if (a.length != b.length)
 	{
 		result = false;
@@ -120,9 +95,9 @@ bool equals(String a, String b)
 	return result;
 }
 
-bool equals(String a, char *b)
+inline bool equals(String a, char *b)
 {
-	return equals(a, stringFromChars(b));
+	return equals(a, makeString(b));
 }
 
 // Like strcmp()

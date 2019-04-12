@@ -5,7 +5,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 	DEBUG_FUNCTION();
 
 	UILabelStyle *style = null;
-	if (styleName)      style = findLabelStyle(context->uiState->assets, stringFromChars(styleName));
+	if (styleName)      style = findLabelStyle(context->uiState->assets, makeString(styleName));
 	if (style == null)  style = context->windowStyle->labelStyle;
 
 	// Add padding between this and the previous element
@@ -280,7 +280,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		f32 contentPadding = windowStyle->contentPadding;
 
-		String closeButtonString = stringFromChars("X");
+		String closeButtonString = makeString("X");
 		V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
 		BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontID);

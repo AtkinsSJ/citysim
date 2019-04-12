@@ -49,7 +49,7 @@ void append(TextInput *textInput, String source)
 
 void append(TextInput *textInput, char *source)
 {
-	append(textInput, stringFromChars(source));
+	append(textInput, makeString(source));
 }
 
 void append(TextInput *textInput, TextInput *source)

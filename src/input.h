@@ -280,7 +280,7 @@ void updateInput(InputState *inputState)
 			} break;
 			case SDL_TEXTINPUT: {
 				inputState->hasUnhandledTextEntered = true;
-				copyChars(event.text.text, &inputState->textEntered, strlen(event.text.text));
+				copyString(event.text.text, strlen(event.text.text), &inputState->textEntered);
 			} break;
 		}
 	}

@@ -68,7 +68,7 @@ BitmapFont *addBMFont(AssetManager *assets, String name, String filename)
 	File file = readFile(&globalAppState.globalTempArena, getAssetPath(assets, AssetType_Font, sFilename));
 	if (!file.isLoaded)
 	{
-		logError("Failed to open font file {0}: {1}", {sFilename, stringFromChars(SDL_GetError())});
+		logError("Failed to open font file {0}: {1}", {sFilename, makeString(SDL_GetError())});
 	}
 	else
 	{

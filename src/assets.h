@@ -212,7 +212,7 @@ String getUserDataPath(AssetManager *assets, String shortName)
 
 String getUserSettingsPath(AssetManager *assets)
 {
-	return getUserDataPath(assets, stringFromChars("settings.cnf"));
+	return getUserDataPath(assets, makeString("settings.cnf"));
 }
 
 BitmapFont *addBMFont(AssetManager *assets, String name, String filename);

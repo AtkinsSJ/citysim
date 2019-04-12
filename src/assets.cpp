@@ -131,7 +131,7 @@ void loadAssets(AssetManager *assets)
 	DEBUG_FUNCTION();
 
 	// Settings should go in SDL_GetPrefPath()
-	File defaultSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("default-settings.cnf")));
+	File defaultSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("default-settings.cnf")));
 	File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(assets));
 	loadSettings(&globalAppState.settings, defaultSettingsFile, userSettingsFile);
 
@@ -139,10 +139,10 @@ void loadAssets(AssetManager *assets)
 	saveSettings(&globalAppState.settings, assets);
 
 	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
-	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("ui.theme"))));
-	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, stringFromChars("credits.txt")));
-	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("buildings.def"))));
-	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, stringFromChars("terrain.def"))));
+	loadUITheme(assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("ui.theme"))));
+	assets->creditsText = readFile(&assets->assetArena, getAssetPath(assets, AssetType_Misc, makeString("credits.txt")));
+	loadBuildingDefs(&buildingDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("buildings.def"))));
+	loadTerrainDefinitions(&terrainDefs, assets, readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("terrain.def"))));
 
 
 	for (s32 i = 1; i < assets->textures.count; ++i)
@@ -151,7 +151,7 @@ void loadAssets(AssetManager *assets)
 		if (tex->state == AssetState_Unloaded)
 		{
 			tex->surface = IMG_Load(getAssetPath(assets, AssetType_Texture, tex->filename).chars);
-			ASSERT(tex->surface != null, "Failed to load image '{0}'!\n{1}", {tex->filename, stringFromChars(IMG_GetError())});
+			ASSERT(tex->surface != null, "Failed to load image '{0}'!\n{1}", {tex->filename, makeString(IMG_GetError())});
 
 			ASSERT(tex->surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
 			if (!tex->isAlphaPremultiplied)
@@ -308,7 +308,7 @@ void addAssets(AssetManager *assets)
 	addCursor(assets, Cursor_Hire,     "cursor_hire.png");
 
 #if BUILD_DEBUG
-	addBMFont(assets, stringFromChars("debug"), stringFromChars("debug.fnt"));
+	addBMFont(assets, makeString("debug"), makeString("debug.fnt"));
 #endif
 }
 

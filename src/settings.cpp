@@ -14,7 +14,7 @@ void initSettings(Settings *settings)
 	*settings = {};
 	initChunkedArray(&settings->defs, &globalAppState.systemArena, 64);
 
-#define REGISTER_SETTING(settingName, type, count) registerSetting(settings, stringFromChars(#settingName), offsetof(Settings, settingName), Type_##type, count)
+#define REGISTER_SETTING(settingName, type, count) registerSetting(settings, makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
 
 	REGISTER_SETTING(windowed,   bool, 1);
 	REGISTER_SETTING(resolution, s32,  2);
@@ -182,7 +182,7 @@ void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Ren
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(assets, stringFromChars("title"));
+	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontID);
 
 	position.y += (uiText(uiState, font, LocalString("Settings"),

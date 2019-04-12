@@ -2,7 +2,7 @@
 #pragma once
 
 // This is a placeholder so I can find translatable strings. It will probably get renamed and replaced!
-#define LocalString(str) stringFromChars(str)
+#define LocalString(str) makeString(str)
 // #define LocalString(str) (str)
 
 enum TestLanguage

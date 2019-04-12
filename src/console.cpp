@@ -73,7 +73,7 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
 	for (s32 i=0; i < console->outputLineCount; i++)
 	{
-		console->outputLines[i].text = newString(debugArena, consoleLineLength);
+		console->outputLines[i].text = pushString(debugArena, consoleLineLength);
 		console->outputLines[i].style = CLS_Default;
 	}
 	console->scrollPos = 0;
@@ -87,7 +87,7 @@ void renderConsole(Console *console, UIState *uiState)
 {
 	if (console->font == null)
 	{
-		console->font = getFont(globalAppState.assets, stringFromChars("debug"));
+		console->font = getFont(globalAppState.assets, makeString("debug"));
 		console->charWidth = findChar(console->font, 'M')->xAdvance;
 	}
 

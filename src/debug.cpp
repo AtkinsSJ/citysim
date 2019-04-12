@@ -167,7 +167,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	{
 		if (debugState->font == null)
 		{
-			debugState->font = getFont(globalAppState.assets, stringFromChars("debug"));
+			debugState->font = getFont(globalAppState.assets, makeString("debug"));
 		}
 
 		RenderBuffer *uiBuffer = uiState->uiBuffer;
@@ -264,8 +264,8 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		// Put FPS in top right
 		initDebugTextState(&textState, uiState, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, false);
 		{
-			String smsForFrame = stringFromChars("???");
-			String sfps = stringFromChars("???");
+			String smsForFrame = makeString("???");
+			String sfps = makeString("???");
 			if (rfi != debugState->writingFrameIndex)
 			{
 				f32 msForFrame = (f32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond/1000);

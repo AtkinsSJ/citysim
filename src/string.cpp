@@ -29,6 +29,18 @@ inline String trim(String input)
 	return trimStart(trimEnd(input));
 }
 
+void reverseString(char* first, u32 length)
+{
+	u32 flips = length / 2;
+	char temp;
+	for (u32 n=0; n < flips; n++)
+	{
+		temp = first[n];
+		first[n] = first[length-1-n];
+		first[length-1-n] = temp;
+	}
+}
+
 bool asInt(String string, s64 *result)
 {
 	bool succeeded = string.length > 0;
@@ -269,7 +281,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 	return result;
 }
 
-inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(stringFromChars(format), args, zeroTerminate); }
+inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(makeString(format), args, zeroTerminate); }
 
 const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 String formatInt(u64 value, u8 base=10)
@@ -357,7 +369,7 @@ String formatString(String value, s32 length=-1, bool alignLeft = true, char pad
 	}
 	else
 	{
-		String result = newString(globalFrameTempArena, length);
+		String result = pushString(globalFrameTempArena, length);
 		result.length = length;
 
 		if (alignLeft)
@@ -389,18 +401,18 @@ String formatString(String value, s32 length=-1, bool alignLeft = true, char pad
 }
 String formatString(char *value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
 {
-	return formatString(stringFromChars(value), length, alignLeft, paddingChar);
+	return formatString(makeString(value), length, alignLeft, paddingChar);
 }
 
 String formatBool(bool value)
 {
-	if (value) return stringFromChars("true");
-	else       return stringFromChars("false");
+	if (value) return makeString("true");
+	else       return makeString("false");
 }
 
 String repeatChar(char c, s32 length)
 {
-	String result = newString(globalFrameTempArena, length);
+	String result = pushString(globalFrameTempArena, length);
 	result.length = length;
 
 	for (s32 i=0; i<length; i++)

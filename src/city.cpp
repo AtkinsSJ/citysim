@@ -53,10 +53,10 @@ void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 
 
 void generateTerrain(City *city)
 {
-	u32 tGround = findTerrainTypeByName(stringFromChars("Ground"));
-	u32 tWater  = findTerrainTypeByName(stringFromChars("Water"));
+	u32 tGround = findTerrainTypeByName(makeString("Ground"));
+	u32 tWater  = findTerrainTypeByName(makeString("Water"));
 
-	BuildingDef *bTree = get(&buildingDefs, findBuildingTypeByName(stringFromChars("Tree")));
+	BuildingDef *bTree = get(&buildingDefs, findBuildingTypeByName(makeString("Tree")));
 
 	for (s32 y = 0; y < city->height; y++) {
 		for (s32 x = 0; x < city->width; x++) {
@@ -106,7 +106,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(uiState, stringFromChars("Not enough money to build this."));
+			pushUiMessage(uiState, makeString("Not enough money to build this."));
 		}
 		return false;
 	}
@@ -118,7 +118,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 	{
 		if (isAttemptingToBuild)
 		{
-			pushUiMessage(uiState, stringFromChars("You cannot build off the map edge."));
+			pushUiMessage(uiState, makeString("You cannot build off the map edge."));
 		}
 		return false;
 	}
@@ -137,7 +137,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
 			{
 				if (isAttemptingToBuild)
 				{
-					pushUiMessage(uiState, stringFromChars("You cannot build there."));
+					pushUiMessage(uiState, makeString("You cannot build there."));
 				}
 				return false;
 			}
@@ -266,7 +266,7 @@ void placeBuildingRect(UIState *uiState, City *city, u32 buildingTypeID, Rect2I 
 	s32 cost = calculateBuildCost(city, buildingTypeID, area);
 	if (!canAfford(city, cost))
 	{
-		pushUiMessage(uiState, stringFromChars("Not enough money for construction."));
+		pushUiMessage(uiState, makeString("Not enough money for construction."));
 	}
 
 	for (s32 y=0; y + def->height <= area.h; y += def->height)
@@ -297,7 +297,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		// Can we afford to demolish this?
 		if (!canAfford(city, def->demolishCost))
 		{
-			pushUiMessage(uiState, stringFromChars("Not enough money to demolish this."));
+			pushUiMessage(uiState, makeString("Not enough money to demolish this."));
 			return false;
 		}
 
@@ -373,12 +373,12 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 			if (canAfford(city, def->demolishCost))
 			{
 				spend(city, def->demolishCost);
-				city->terrain[posTI].type = findTerrainTypeByName(stringFromChars("Ground"));
+				city->terrain[posTI].type = findTerrainTypeByName(makeString("Ground"));
 				return true;
 			}
 			else
 			{
-				pushUiMessage(uiState, stringFromChars("Not enough money to clear this terrain."));
+				pushUiMessage(uiState, makeString("Not enough money to clear this terrain."));
 				return false;
 			}
 		}
@@ -427,7 +427,7 @@ bool demolishRect(UIState *uiState, City *city, Rect2I area) {
 
 	s32 cost = calculateDemolitionCost(city, area);
 	if (!canAfford(city, cost)) {
-		pushUiMessage(uiState, stringFromChars("Not enough money for demolition."));
+		pushUiMessage(uiState, makeString("Not enough money for demolition."));
 		return false;
 	}
 

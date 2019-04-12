@@ -2,10 +2,10 @@
 
 #ifdef BUILD_DEBUG
 
-#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (stringFromChars(name))
+#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (makeString(name))
 #define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
-#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, stringFromChars(name))
+#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
 #define DEBUG_RENDER_BUFFER(buffer, drawCallCount) debugTrackRenderBuffer(globalDebugState, buffer, drawCallCount)
 
 #else

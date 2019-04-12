@@ -24,10 +24,10 @@ struct ZoneDef
 };
 
 ZoneDef zoneDefs[] = {
-	{Zone_None,        stringFromChars("Dezone"),      color255(255, 255, 255, 128), 10, false, 0},
-	{Zone_Residential, stringFromChars("Residential"), color255(  0, 255,   0, 128), 10, true,  3},
-	{Zone_Commercial,  stringFromChars("Commercial"),  color255(  0,   0, 255, 128), 10, true,  2},
-	{Zone_Industrial,  stringFromChars("Industrial"),  color255(255, 255,   0, 128), 20, true,  4},
+	{Zone_None,        makeString("Dezone"),      color255(255, 255, 255, 128), 10, false, 0},
+	{Zone_Residential, makeString("Residential"), color255(  0, 255,   0, 128), 10, true,  3},
+	{Zone_Commercial,  makeString("Commercial"),  color255(  0,   0, 255, 128), 10, true,  2},
+	{Zone_Industrial,  makeString("Industrial"),  color255(255, 255,   0, 128), 20, true,  4},
 };
 
 struct ZoneLayer

@@ -19,10 +19,10 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	initMemoryArena(&uiState->arena, MB(1));
 
 	uiState->tooltip = {};
-	uiState->tooltip.text = newString(&uiState->arena, 256);
+	uiState->tooltip.text = pushString(&uiState->arena, 256);
 
 	uiState->message = {};
-	uiState->message.text = newString(&uiState->arena, 256);
+	uiState->message.text = pushString(&uiState->arena, 256);
 	uiState->message.countdown = -1;
 
 	initialiseArray(&uiState->uiRects, 16);
@@ -140,7 +140,7 @@ bool uiButton(UIState *uiState,
 	bool buttonClicked = false;
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	InputState *input = uiState->input;
-	UIButtonStyle *style = findButtonStyle(uiState->assets, stringFromChars("general"));
+	UIButtonStyle *style = findButtonStyle(uiState->assets, makeString("general"));
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
@@ -169,7 +169,7 @@ bool uiButton(UIState *uiState,
 
 		if (tooltip.length)
 		{
-			setTooltip(uiState, tooltip, stringFromChars("general"));
+			setTooltip(uiState, tooltip, makeString("general"));
 		}
 	}
 	else if (active)
@@ -232,7 +232,7 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = findMessageStyle(uiState->assets, stringFromChars("general"));
+			UIMessageStyle *style = findMessageStyle(uiState->assets, makeString("general"));
 
 			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 

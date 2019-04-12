@@ -10,7 +10,7 @@ struct Command
 
 	Command(char *name, void (*function)(Console*, s32, String), s32 minArgs, s32 maxArgs)
 	{
-		this->name = stringFromChars(name);
+		this->name = makeString(name);
 		this->function = function;
 		this->minArgs = minArgs;
 		this->maxArgs = maxArgs;
