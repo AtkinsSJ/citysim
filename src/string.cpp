@@ -287,23 +287,21 @@ const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 String formatInt(u64 value, u8 base=10)
 {
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
-	char *temp = PushArray(globalFrameTempArena, char, 64); // Worst case is base 1, which is 64 characters!
+	s32 arraySize = 64;
+	char *temp = PushArray(globalFrameTempArena, char, arraySize); // Worst case is base 1, which is 64 characters!
 	u32 count = 0;
 
 	u64 v = value;
 
 	do
 	{
-		temp[count++] = intBaseChars[v % base];
+		// We start at the end and work backwards, so that we don't have to reverse the string afterwards!
+		temp[arraySize - 1 - count++] = intBaseChars[v % base];
 		v = v / base;
 	}
 	while (v != 0);
 
-	// reverse it
-	// TODO: We don't have to reverse it if we insert characters from the *end* and work backwards!
-	reverseString(temp, count);
-
-	return makeString(temp, count);
+	return makeString(temp + (arraySize - count), count);
 }
 inline String formatInt(u32 value, u8 base=10) {return formatInt((u64)value, base);}
 inline String formatInt(u16 value, u8 base=10) {return formatInt((u64)value, base);}
@@ -312,7 +310,8 @@ inline String formatInt(u8  value, u8 base=10) {return formatInt((u64)value, bas
 String formatInt(s64 value, u8 base=10)
 {
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
-	char *temp = PushArray(globalFrameTempArena, char, 65); // Worst case is base 1, which is 64 characters! Plus 1 for sign
+	s32 arraySize = 65;
+	char *temp = PushArray(globalFrameTempArena, char, arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
 	bool isNegative = (value < 0);
 	u32 count = 0;
 
@@ -325,21 +324,17 @@ String formatInt(s64 value, u8 base=10)
 
 	do
 	{
-		temp[count++] = intBaseChars[ ((isNegative ? -1 : 1) * (v % base)) ];
+		temp[arraySize - 1 - count++] = intBaseChars[ ((isNegative ? -1 : 1) * (v % base)) ];
 		v = v / base;
 	}
 	while (v != 0);
 
 	if (isNegative)
 	{
-		temp[count++] = '-';
+		temp[arraySize - 1 - count++] = '-';
 	}
 
-	// reverse it
-	// TODO: We don't have to reverse it if we insert characters from the *end* and work backwards!
-	reverseString(temp, count);
-
-	return makeString(temp, count);
+	return makeString(temp + (arraySize - count), count);
 }
 inline String formatInt(s32 value, u8 base=10) {return formatInt((s64)value, base);}
 inline String formatInt(s16 value, u8 base=10) {return formatInt((s64)value, base);}
