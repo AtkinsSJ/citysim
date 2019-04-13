@@ -5,7 +5,10 @@ enum AssetType
 	AssetType_Misc,
 	AssetType_Cursor,
 	AssetType_Font,
-	AssetType_Shader,
+	
+	AssetType_ShaderProgram,
+	AssetType_ShaderPart,
+
 	AssetType_Texture,
 };
 
@@ -52,6 +55,10 @@ struct Asset
 			SDL_Cursor *sdlCursor;
 		} cursor;
 
+		struct {
+			s32 fragShaderAssetIndex;
+			s32 vertShaderAssetIndex;
+		} shaderProgram;
 	};
 };
 
@@ -82,16 +89,6 @@ struct TextureRegion
 
 typedef u32 TextureRegionID;
 
-struct ShaderProgram
-{
-	AssetState state;
-	String fragFilename;
-	String vertFilename;
-
-	String fragShader;
-	String vertShader;
-};
-
 struct IndexRange
 {
 	u32 firstIndex;
@@ -120,9 +117,8 @@ struct AssetManager
 	// So, assets with the same type must be contiguous!
 	ChunkedArray<IndexRange> rangesByTextureAssetType;
 
-	ChunkedArray<ShaderProgram> shaderPrograms;
-
 	ChunkedArray<s32> cursorTypeToAssetIndex;
+	ChunkedArray<s32> shaderProgramTypeToAssetIndex;
 
 	ChunkedArray<BitmapFont> fonts;
 	ChunkedArray<UIButtonStyle>  buttonStyles;
@@ -205,9 +201,9 @@ Asset *getCursor(AssetManager *assets, u32 cursorID)
 	return getAsset(assets, *get(&assets->cursorTypeToAssetIndex, cursorID));
 }
 
-ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
+Asset *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
 {
-	return get(&assets->shaderPrograms, shaderID);
+	return getAsset(assets, *get(&assets->shaderProgramTypeToAssetIndex, shaderID));
 }
 
 // TODO: A way to get this as a String might be more convenient!
@@ -230,7 +226,10 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	case AssetType_Font:
 		result = myprintf("{0}/fonts/{1}",    {assets->assetsPath, shortName}, true);
 		break;
-	case AssetType_Shader:
+	case AssetType_ShaderProgram:
+		result = nullString;
+		break;
+	case AssetType_ShaderPart:
 		result = myprintf("{0}/shaders/{1}",  {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Texture:

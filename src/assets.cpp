@@ -27,7 +27,7 @@ void initAssetManager(AssetManager *assets)
 	nullRegion->textureID = -1;
 
 	initChunkedArray(&assets->cursorTypeToAssetIndex, &assets->assetArena, CursorCount, true);
-	initChunkedArray(&assets->shaderPrograms, &assets->assetArena, 16, true);
+	initChunkedArray(&assets->shaderProgramTypeToAssetIndex, &assets->assetArena, ShaderProgramCount, true);
 
 	// Stuff that used to be in the UI theme is now here... I think UITheme isn't a useful concept?
 	initChunkedArray(&assets->fonts,         &assets->assetArena, 16);
@@ -55,8 +55,11 @@ s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
 
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
-	asset->shortName = pushString(&assets->assetArena, shortName);
-	asset->fullName = getAssetPath(assets, asset->type, asset->shortName);
+	if (shortName != null)
+	{
+		asset->shortName = pushString(&assets->assetArena, shortName);
+		asset->fullName = getAssetPath(assets, asset->type, asset->shortName);
+	}
 	asset->state = AssetState_Unloaded;
 	asset->size = 0;
 	asset->memory = null;
@@ -68,26 +71,31 @@ void loadAsset(AssetManager *assets, Asset *asset)
 {
 	ASSERT(asset->state == AssetState_Unloaded, "Attempted to load an asset ({0}) that is already loaded!", {asset->fullName});
 
-	FileHandle file = openFile(asset->fullName, FileAccess_Read);
-
-	smm fileSize = getFileSize(&file);
-	asset->memory = allocateRaw(fileSize);
-
-	asset->size = fileSize;
-
-	smm bytesRead = readFileIntoMemory(&file, fileSize, asset->memory);
-	closeFile(&file);
-
-	assets->assetMemoryAllocated += bytesRead;
-	assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
-
-	if (bytesRead != fileSize)
+	// Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.
+	// eg, ShaderPrograms are made of several ShaderParts.
+	if (asset->fullName.length > 0)
 	{
-		logError("File {0} was only partially loaded. Size {1}, loaded {2}", {asset->fullName, formatInt(fileSize), formatInt(bytesRead)});
-	}
-	else
-	{
-		asset->state = AssetState_Loaded;
+		FileHandle file = openFile(asset->fullName, FileAccess_Read);
+
+		smm fileSize = getFileSize(&file);
+		asset->memory = allocateRaw(fileSize);
+
+		asset->size = fileSize;
+
+		smm bytesRead = readFileIntoMemory(&file, fileSize, asset->memory);
+		closeFile(&file);
+
+		assets->assetMemoryAllocated += bytesRead;
+		assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
+
+		if (bytesRead != fileSize)
+		{
+			logError("File {0} was only partially loaded. Size {1}, loaded {2}", {asset->fullName, formatInt(fileSize), formatInt(bytesRead)});
+		}
+		else
+		{
+			asset->state = AssetState_Loaded;
+		}
 	}
 
 	// Type-specific loading
@@ -100,6 +108,24 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
 			SDL_FreeSurface(cursorSurface);
 			SDL_RWclose(rw);
+		} break;
+
+		case AssetType_ShaderProgram:
+		{
+			Asset *frag = getAsset(assets, asset->shaderProgram.fragShaderAssetIndex);
+			Asset *vert = getAsset(assets, asset->shaderProgram.vertShaderAssetIndex);
+			if ((frag->state == AssetState_Loaded) && (vert->state == AssetState_Loaded))
+			{
+				asset->state = AssetState_Loaded;
+			}
+			else
+			{
+				logError("ShaderProgram {0} cannot be loaded because 1 or more of its component parts are not loaded. {1}: Loaded={2}, {3}: Loaded={4}", {
+					asset->shortName,
+					frag->shortName, formatBool(frag->state == AssetState_Loaded),
+					vert->shortName, formatBool(vert->state == AssetState_Loaded)
+				});
+			}
 		} break;
 	}
 }
@@ -192,16 +218,22 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 
 void addShaderHeader(AssetManager *assets, char *filename)
 {
-	assets->shaderHeaderAssetIndex = addAsset(assets, AssetType_Shader, filename);
+	assets->shaderHeaderAssetIndex = addAsset(assets, AssetType_ShaderPart, filename);
 }
 
 void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename,
 	                  char *fragFilename)
 {
-	ShaderProgram *shader = get(&assets->shaderPrograms, shaderID);
-	shader->state = AssetState_Unloaded;
-	shader->fragFilename = pushString(&assets->assetArena, fragFilename);
-	shader->vertFilename = pushString(&assets->assetArena, vertFilename);
+	// NB: For now, we have to load the part assets before the program asset, so they must come first
+	s32 fragShaderAssetIndex = addAsset(assets, AssetType_ShaderPart, fragFilename);
+	s32 vertShaderAssetIndex = addAsset(assets, AssetType_ShaderPart, vertFilename);
+
+	s32 assetIndex = addAsset(assets, AssetType_ShaderProgram, null);
+	*get(&assets->shaderProgramTypeToAssetIndex, shaderID) = assetIndex;
+
+	Asset *asset = getAsset(assets, assetIndex);
+	asset->shaderProgram.fragShaderAssetIndex = fragShaderAssetIndex;
+	asset->shaderProgram.vertShaderAssetIndex = vertShaderAssetIndex;
 }
 
 void loadAssets(AssetManager *assets)
@@ -287,23 +319,6 @@ void loadAssets(AssetManager *assets)
 			tr->uv.w / textureWidth,
 			tr->uv.h / textureHeight
 		);
-	}
-
-	// Load shader programs
-	for (u32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
-	{
-		ShaderProgram *shader = get(&assets->shaderPrograms, shaderID);
-		shader->vertShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->vertFilename));
-		shader->fragShader = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shader->fragFilename));
-
-		if (shader->vertShader.length && shader->fragShader.length)
-		{
-			shader->state = AssetState_Loaded;
-		}
-		else
-		{
-			logError("Failed to load shader program {0}", {formatInt(shaderID)});
-		}
 	}
 
 	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->textureRegions.count), formatInt(assets->textures.count)});

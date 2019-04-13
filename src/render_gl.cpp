@@ -28,45 +28,25 @@ static inline void GL_checkForError()
 // Disable GL error checking for release version.
 // #define GL_checkForError() 
 
-static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset, Asset *shaderHeader)
+static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderPart shaderPart, Asset *shaderHeader, Asset *shaderPartAsset)
 {
 	bool result = false;
-	String *shaderSource = null;
-	String filename = {};
 
-	switch (shaderType)
-	{
-		case GL_ShaderType_Fragment:
-		{
-			shaderSource = &shaderAsset->fragShader;
-			filename = shaderAsset->fragFilename;
-		} break;
-		case GL_ShaderType_Vertex:
-		{
-			shaderSource = &shaderAsset->vertShader;
-			filename = shaderAsset->vertFilename;
-		} break;
-
-		INVALID_DEFAULT_CASE;
-	}
-
-	ASSERT(shaderSource && filename.length, "Failed to select a shader!");
-
-	GLuint shaderID = glCreateShader(shaderType);
+	GLuint shaderID = glCreateShader(shaderPart);
 	defer { glDeleteShader(shaderID); };
 
 	if (shaderHeader && (shaderHeader->state == AssetState_Loaded))
 	{
 		// NB: We add a newline between the two, so the lines don't get smooshed together if we forget
 		// a trailing newline in the header file!
-		char *datas[] = {(char *)shaderHeader->memory, "\n", shaderSource->chars};
-		s32 lengths[] = {shaderHeader->size,            1,   shaderSource->length};
+		char *datas[] = {(char *)shaderHeader->memory, "\n", (char *)shaderPartAsset->memory};
+		s32 lengths[] = {shaderHeader->size,            1,   shaderPartAsset->size};
 		glShaderSource(shaderID, 3, datas, lengths);
 	}
 	else
 	{
 		// no header, so compile without it
-		glShaderSource(shaderID, 1, &shaderSource->chars, &shaderSource->length);
+		glShaderSource(shaderID, 1, (char **)&shaderPartAsset->memory, &shaderPartAsset->size);
 	}
 
 	glCompileShader(shaderID);
@@ -93,7 +73,7 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 			infoLog = makeString("No error log provided by OpenGL. Sad panda.");
 		}
 
-		logError("Unable to compile shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), filename, infoLog});
+		logError("Unable to compile shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), shaderPartAsset->shortName, infoLog});
 	}
 
 	return result;
@@ -104,7 +84,7 @@ static void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *
 	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
 	if (*attribLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->assetID), makeString(attribName)});
+		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->type), makeString(attribName)});
 	}
 }
 
@@ -113,16 +93,16 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	*uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
 	if (*uniformLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->assetID), makeString(uniformName)});
+		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->type), makeString(uniformName)});
 	}
 }
 
-static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramAssetID)
+static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramType)
 {
 	bool result = false;
 
-	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramAssetID);
-	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset {0} not loaded!", {formatInt(shaderProgramAssetID)});
+	Asset *shaderProgramAsset = getShaderProgram(assets, shaderProgramType);
+	ASSERT(shaderProgramAsset->state == AssetState_Loaded, "Shader asset {0} not loaded!", {formatInt(shaderProgramType)});
 
 	Asset *header = getTextAsset(assets, assets->shaderHeaderAssetIndex);
 	if(header->state != AssetState_Loaded)
@@ -130,21 +110,32 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->shortName});
 	}
 
-	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramAssetID;
-	glShader->assetID = shaderProgramAssetID;
+	Asset *fragAsset = getTextAsset(assets, shaderProgramAsset->shaderProgram.fragShaderAssetIndex);
+	if(fragAsset->state != AssetState_Loaded)
+	{
+		logWarn("Compiling a shader but shader fragment file \'{0}\' is not loaded!", {fragAsset->shortName});
+	}
 
-	bool isVertexShaderCompiled = GL_FALSE;
+	Asset *vertAsset = getTextAsset(assets, shaderProgramAsset->shaderProgram.vertShaderAssetIndex);
+	if(vertAsset->state != AssetState_Loaded)
+	{
+		logWarn("Compiling a shader but shader vertex file \'{0}\' is not loaded!", {vertAsset->shortName});
+	}
+
+	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramType;
+	glShader->type = shaderProgramType;
+
+	bool isVertexShaderCompiled   = GL_FALSE;
 	bool isFragmentShaderCompiled = GL_FALSE;
 
 	glShader->shaderProgramID = glCreateProgram();
 
 	if (glShader->shaderProgramID)
 	{
-		// VERTEX SHADER
-		isVertexShaderCompiled = compileShader(glShader, GL_ShaderType_Vertex, shaderAsset, header);
-		isFragmentShaderCompiled = compileShader(glShader, GL_ShaderType_Fragment, shaderAsset, header);
+		isVertexShaderCompiled   = compileShader(glShader, GL_ShaderPart_Vertex,   header, vertAsset);
+		isFragmentShaderCompiled = compileShader(glShader, GL_ShaderPart_Fragment, header, fragAsset);
 
-		// Link shader program
+		// Link shader programs
 		if (isVertexShaderCompiled && isFragmentShaderCompiled)
 		{
 			glLinkProgram(glShader->shaderProgramID);
@@ -166,7 +157,7 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 					infoLog = makeString("No error log provided by OpenGL. Sad panda.");
 				}
 
-				logError("Unable to link shader program {0}! ({1})", {formatInt(glShader->assetID), infoLog});
+				logError("Unable to link shader program {0}! ({1})", {formatInt(glShader->type), infoLog});
 			}
 			else
 			{

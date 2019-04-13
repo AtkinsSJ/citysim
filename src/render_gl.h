@@ -25,16 +25,16 @@ struct GL_TextureInfo
 	bool isLoaded;
 };
 
-enum GL_ShaderType
+enum GL_ShaderPart
 {
-	GL_ShaderType_Fragment = GL_FRAGMENT_SHADER,
-	GL_ShaderType_Geometry = GL_GEOMETRY_SHADER,
-	GL_ShaderType_Vertex = GL_VERTEX_SHADER,
+	GL_ShaderPart_Fragment = GL_FRAGMENT_SHADER,
+	GL_ShaderPart_Geometry = GL_GEOMETRY_SHADER,
+	GL_ShaderPart_Vertex = GL_VERTEX_SHADER,
 };
 
 struct GL_ShaderProgram
 {
-	ShaderProgramType assetID;
+	ShaderProgramType type;
 	GLuint shaderProgramID;
 	bool isValid;
 
