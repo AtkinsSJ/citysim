@@ -3,6 +3,9 @@
 enum AssetType
 {
 	AssetType_Misc,
+
+	AssetType_BuildingDefs,
+
 	AssetType_Cursor,
 	AssetType_Font,
 	
@@ -10,6 +13,10 @@ enum AssetType
 	AssetType_ShaderPart,
 
 	AssetType_Texture,
+
+	AssetType_TerrainDefs,
+
+	AssetType_UITheme,
 };
 
 enum AssetState
@@ -45,11 +52,6 @@ struct Asset
 	u8* memory;
 
 	// Type-specific stuff
-	// Not sure if this is the better option, or keeping separate ChunkedArrays of the type-specific stuff
-	// is the better option, and just storing an index into that here?
-	// Probably this is the more understandable one. It also means we can pass around Assets, and they're
-	// fully-featured and self-contained, and you don't have to do extra lookups if you decide you care
-	// that this is a Texture. The information is all right there!
 	union {
 		struct {
 			SDL_Cursor *sdlCursor;
@@ -132,11 +134,30 @@ struct AssetManager
 	
 	// TODO: We eventually want some kind of by-name lookup rather than hard-coded indices!
 	s32 creditsAssetIndex;
-	s32 uiThemeAssetIndex;
-	s32 buildingDefsAssetIndex;
-	s32 terrainDefsAssetIndex;
 
 	s32 shaderHeaderAssetIndex;
+
+	/*
+
+	TODO
+	----
+
+	Asset types:
+	- font assets
+	- texture assets
+	- texture regions somehow???
+
+	Much later...
+	- audio! (sfx/music as separate things probably)
+	- localised text
+
+	Other changes:
+	- lookup by name
+	- reload individual files
+	- automated reloading
+	- automated cataloguing
+
+	*/
 };
 
 Asset *getAsset(AssetManager *assets, s32 assetIndex)

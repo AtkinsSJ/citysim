@@ -127,6 +127,21 @@ void loadAsset(AssetManager *assets, Asset *asset)
 				});
 			}
 		} break;
+
+		case AssetType_UITheme:
+		{
+			loadUITheme(assets, asset);
+		} break;
+
+		case AssetType_BuildingDefs:
+		{
+			loadBuildingDefs(&buildingDefs, assets, asset);
+		} break;
+
+		case AssetType_TerrainDefs:
+		{
+			loadTerrainDefinitions(&terrainDefs, assets, asset);
+		} break;
 	}
 }
 
@@ -253,11 +268,6 @@ void loadAssets(AssetManager *assets)
 		loadAsset(assets, asset);
 	}
 
-	// FIXME @Hack: hard-coded asset files, should be replaced with proper stuff later.
-	loadUITheme(assets, getTextAsset(assets, assets->uiThemeAssetIndex));
-	loadBuildingDefs(&buildingDefs, assets, getTextAsset(assets, assets->buildingDefsAssetIndex));
-	loadTerrainDefinitions(&terrainDefs, assets, getTextAsset(assets, assets->terrainDefsAssetIndex));
-
 	for (s32 i = 1; i < assets->textures.count; ++i)
 	{
 		Texture *tex = getTexture(assets, i);
@@ -366,10 +376,10 @@ void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String f
 
 void addAssets(AssetManager *assets)
 {
-	assets->creditsAssetIndex      = addAsset(assets, AssetType_Misc, "credits.txt");
-	assets->uiThemeAssetIndex      = addAsset(assets, AssetType_Misc, "ui.theme");
-	assets->buildingDefsAssetIndex = addAsset(assets, AssetType_Misc, "buildings.def");
-	assets->terrainDefsAssetIndex  = addAsset(assets, AssetType_Misc, "terrain.def");
+	assets->creditsAssetIndex = addAsset(assets, AssetType_Misc, "credits.txt");
+	addAsset(assets, AssetType_UITheme,      "ui.theme");
+	addAsset(assets, AssetType_BuildingDefs, "buildings.def");
+	addAsset(assets, AssetType_TerrainDefs,  "terrain.def");
 
 	// TODO: Settings?
 
