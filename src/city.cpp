@@ -48,7 +48,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 top)
 {
 	Building *building = addBuilding(city, buildingDef, irectXYWH(left, top, buildingDef->width, buildingDef->height));
-	building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
+	building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
 }
 
 void generateTerrain(City *city)
@@ -82,7 +82,7 @@ void generateTerrain(City *city)
 				}
 			}
 
-			terrain->textureRegionOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
+			terrain->spriteOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
 		}
 	}
 }

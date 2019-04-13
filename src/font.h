@@ -13,7 +13,7 @@ struct BitmapFontChar
 struct BitmapFont
 {
 	String name;
-	u32 textureAssetType;
+	u32 spriteType;
 
 	u16 lineHeight;
 	u16 baseY;

@@ -254,10 +254,10 @@ u32 readTextureDefinition(LineReader *reader, AssetManager *assets, String token
 			regionsDown = 1;
 		}
 
-		u32 textureAssetType = addNewTextureAssetType(assets);
-		addTiledTextureRegions(assets, textureAssetType, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
+		u32 spriteType = addNewTextureAssetType(assets);
+		addTiledSprites(assets, spriteType, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
 
-		return textureAssetType;
+		return spriteType;
 	}
 	else
 	{

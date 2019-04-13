@@ -54,7 +54,7 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 			{
 				if (equals(firstWord, "texture"))
 				{
-					def->textureAssetType = readTextureDefinition(&reader, assets, remainder);
+					def->spriteType = readTextureDefinition(&reader, assets, remainder);
 				}
 				else if (equals(firstWord, "can_build_on"))
 				{

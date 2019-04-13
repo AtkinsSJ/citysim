@@ -114,17 +114,17 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline RenderItem makeRenderItem(Rect2 rect, f32 depth, TextureRegionID textureRegionID, V4 color=makeWhite(), ShaderProgramType shaderID = ShaderProgram_Invalid)
+inline RenderItem makeRenderItem(Rect2 rect, f32 depth, s32 spriteID, V4 color=makeWhite(), ShaderProgramType shaderID = ShaderProgram_Invalid)
 {
 	RenderItem item = {};
 	item.rect = rect;
 	item.depth = depth;
 	item.color = color;
-	item.textureRegionID = textureRegionID;
+	item.spriteID = spriteID;
 
 	if (shaderID == ShaderProgram_Invalid)
 	{
-		item.shaderID = (textureRegionID == 0) ? ShaderProgram_Untextured : ShaderProgram_Textured;
+		item.shaderID = (spriteID == 0) ? ShaderProgram_Untextured : ShaderProgram_Textured;
 	}
 	else
 	{
@@ -139,9 +139,9 @@ void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderProgr
 	append(&buffer->items, makeRenderItem(rect, depth, 0, color, shaderID));
 }
 
-void drawTextureRegion(RenderBuffer *buffer, TextureRegionID region, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderProgramType shaderID = ShaderProgram_Invalid)
+void drawSprite(RenderBuffer *buffer, s32 spriteID, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderProgramType shaderID = ShaderProgram_Invalid)
 {
-	append(&buffer->items, makeRenderItem(rect, depth, region, color, shaderID));
+	append(&buffer->items, makeRenderItem(rect, depth, spriteID, color, shaderID));
 }
 
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color)
@@ -151,7 +151,7 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 dept
 	dest->rect = offset(item->rect, offsetP);
 	dest->depth = item->depth + depthOffset;
 	dest->color = color;
-	dest->textureRegionID = item->textureRegionID;
+	dest->spriteID = item->spriteID;
 }
 
 f32 compareRenderItems(RenderItem *a, RenderItem *b)

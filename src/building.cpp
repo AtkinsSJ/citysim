@@ -65,7 +65,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 				}
 				else if (equals(firstWord, "texture"))
 				{
-					def->textureAssetType = readTextureDefinition(&reader, assets, remainder);
+					def->spriteType = readTextureDefinition(&reader, assets, remainder);
 				}
 				else if (equals(firstWord, "link_textures"))
 				{
@@ -265,7 +265,7 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->isPath;
 				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->isPath;
 
-				building->textureRegionOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
 
 			case DataLayer_Power:
@@ -280,14 +280,14 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->carriesPower;
 				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->carriesPower;
 
-				building->textureRegionOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
 		}
 	}
 	else
 	{
 		// Random sprite!
-		building->textureRegionOffset = randomNext(&globalAppState.cosmeticRandom);
+		building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
 	}
 }
 

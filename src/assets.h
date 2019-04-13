@@ -82,14 +82,15 @@ struct Texture
 	SDL_Surface *surface;
 };
 
-struct TextureRegion
+struct Sprite
 {
-	u32 textureRegionAssetType;
+	// Identifier so multiple sprites can be associated with the same id.
+	// eg, for getting a random sprite from a list, or we also use this for glyphs within a font.
+	s32 spriteAssetType;
+
 	s32 textureID;
 	Rect2 uv; // in (0 to 1) space
 };
-
-typedef u32 TextureRegionID;
 
 struct IndexRange
 {
@@ -112,12 +113,12 @@ struct AssetManager
 	// NB: index 0 reserved as a null texture.
 	ChunkedArray<Texture> textures;
 
-	// NB: index 0 is reserved as a null region.
-	ChunkedArray<TextureRegion> textureRegions;
+	// NB: index 0 is reserved as a null sprite.
+	ChunkedArray<Sprite> sprites;
 
 	// NOTE: At each index is the first or last position in textureRegions array matching that type.
 	// So, assets with the same type must be contiguous!
-	ChunkedArray<IndexRange> rangesByTextureAssetType;
+	ChunkedArray<IndexRange> rangesBySpriteAssetType;
 
 	ChunkedArray<s32> cursorTypeToAssetIndex;
 	ChunkedArray<s32> shaderProgramTypeToAssetIndex;
@@ -145,7 +146,7 @@ struct AssetManager
 	Asset types:
 	- font assets
 	- texture assets
-	- texture regions somehow???
+	- sprites somehow??? There are thousands of them, because of fonts... maybe font glyphs should use a different, more specialised system?
 
 	Much later...
 	- audio! (sfx/music as separate things probably)
@@ -172,21 +173,21 @@ Texture *getTexture(AssetManager *assets, u32 textureIndex)
 	return get(&assets->textures, textureIndex);
 }
 
-TextureRegionID getTextureRegionID(AssetManager *assets, u32 textureAssetType, u32 offset)
+s32 getSpriteID(AssetManager *assets, s32 spriteAssetType, u32 offset)
 {
-	IndexRange *range = get(&assets->rangesByTextureAssetType, textureAssetType);
+	IndexRange *range = get(&assets->rangesBySpriteAssetType, spriteAssetType);
 	u32 min = range->firstIndex;
 	u32 max = range->lastIndex;
 
 	u32 id = clampToRangeWrapping(min, max, offset);
-	ASSERT((id >= min) && (id <= max), "Got a textureRegionID outside of the range.");
+	ASSERT((id >= min) && (id <= max), "Got a sprite id outside of the range.");
 
 	return id;
 }
 
-TextureRegion *getTextureRegion(AssetManager *assets, TextureRegionID textureRegionIndex)
+Sprite *getSprite(AssetManager *assets, s32 spriteIndex)
 {
-	return get(&assets->textureRegions, textureRegionIndex);
+	return get(&assets->sprites, spriteIndex);
 }
 
 BitmapFont *getFont(AssetManager *assets, s32 fontID)

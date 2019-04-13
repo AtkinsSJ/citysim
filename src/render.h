@@ -35,7 +35,7 @@ struct RenderItem
 	Rect2 rect;
 	f32 depth; // Positive is towards the player
 	V4 color;
-	u32 textureRegionID;
+	s32 spriteID;
 	ShaderProgramType shaderID;
 };
 

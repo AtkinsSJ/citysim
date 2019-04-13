@@ -334,8 +334,11 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			RenderItem *item = pointerTo(&buffer->items, i);
 			ShaderProgramType desiredShader = item->shaderID;
 
-			TextureRegion *region = getTextureRegion(assets, item->textureRegionID);
-			GL_TextureInfo *textureInfo = get(&renderer->textureInfo, region->textureID);
+			// TODO: @Speed Don't need to try and get this info if there's no sprite??? (spriteID==0)
+			// Currently, sprite index 0 is a "null sprite" with a texture of -1, so that getting the texture is
+			// guaranteed to fail and return null... but that's a lot of effort we could short-circuit!
+			Sprite *sprite = getSprite(assets, item->spriteID);
+			GL_TextureInfo *textureInfo = get(&renderer->textureInfo, sprite->textureID);
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
 			if ((vertexCount == 0)
@@ -385,7 +388,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 						// Upload texture
-						Texture *texture = getTexture(assets, region->textureID);
+						Texture *texture = getTexture(assets, sprite->textureID);
 						ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 						textureInfo->isLoaded = true;
@@ -404,24 +407,24 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			int firstVertex = vertexCount;
 
 			renderer->vertices[vertexCount++] = {
-				v3( item->rect.x, item->rect.y, item->depth),
+				v3(item->rect.x, item->rect.y, item->depth),
 				item->color,
-				v2(region->uv.x, region->uv.y)
+				v2(sprite->uv.x, sprite->uv.y)
 			};
 			renderer->vertices[vertexCount++] = {
-				v3( item->rect.x + item->rect.size.x, item->rect.y, item->depth),
+				v3(item->rect.x + item->rect.size.x, item->rect.y, item->depth),
 				item->color,
-				v2(region->uv.x + region->uv.w, region->uv.y)
+				v2(sprite->uv.x + sprite->uv.w, sprite->uv.y)
 			};
 			renderer->vertices[vertexCount++] = {
-				v3( item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
+				v3(item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
 				item->color,
-				v2(region->uv.x + region->uv.w, region->uv.y + region->uv.h)
+				v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h)
 			};
 			renderer->vertices[vertexCount++] = {
-				v3( item->rect.x, item->rect.y + item->rect.size.y, item->depth),
+				v3(item->rect.x, item->rect.y + item->rect.size.y, item->depth),
 				item->color,
-				v2(region->uv.x, region->uv.y + region->uv.h)
+				v2(sprite->uv.x, sprite->uv.y + sprite->uv.h)
 			};
 
 			renderer->indices[indexCount++] = firstVertex + 0;

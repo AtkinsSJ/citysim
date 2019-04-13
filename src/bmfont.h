@@ -152,7 +152,7 @@ BitmapFont *addBMFont(AssetManager *assets, String name, String filename)
 
 				font = appendBlank(&assets->fonts);
 				font->name = pushString(&assets->assetArena, name);
-				font->textureAssetType = addNewTextureAssetType(assets);
+				font->spriteType = addNewTextureAssetType(assets);
 				font->lineHeight = common->lineHeight;
 				font->baseY = common->base;
 
@@ -174,7 +174,7 @@ BitmapFont *addBMFont(AssetManager *assets, String name, String filename)
 					dest->yOffset = src->yOffset;
 					dest->xAdvance = src->xAdvance;
 
-					dest->textureRegionID = addTextureRegion(assets, font->textureAssetType, pageToTextureID[src->page],
+					dest->textureRegionID = addSprite(assets, font->spriteType, pageToTextureID[src->page],
 						rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h));
 				}
 			}

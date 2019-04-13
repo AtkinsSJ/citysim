@@ -13,8 +13,8 @@ void initAssetManager(AssetManager *assets)
 	assets->assetMemoryAllocated = 0;
 	assets->maxAssetMemoryAllocated = 0;
 
-	initChunkedArray(&assets->rangesByTextureAssetType, &assets->assetArena, 32);
-	appendBlank(&assets->rangesByTextureAssetType);
+	initChunkedArray(&assets->rangesBySpriteAssetType, &assets->assetArena, 256);
+	appendBlank(&assets->rangesBySpriteAssetType);
 
 	initChunkedArray(&assets->textures, &assets->assetArena, 32);
 	Texture *nullTexture = appendBlank(&assets->textures);
@@ -22,9 +22,9 @@ void initAssetManager(AssetManager *assets)
 	nullTexture->surface = null;
 	nullTexture->isAlphaPremultiplied = true;
 
-	initChunkedArray(&assets->textureRegions, &assets->assetArena, 512);
-	TextureRegion *nullRegion = appendBlank(&assets->textureRegions);
-	nullRegion->textureID = -1;
+	initChunkedArray(&assets->sprites, &assets->assetArena, 512);
+	Sprite *nullSprite = appendBlank(&assets->sprites);
+	nullSprite->textureID = -1;
 
 	initChunkedArray(&assets->cursorTypeToAssetIndex, &assets->assetArena, CursorCount, true);
 	initChunkedArray(&assets->shaderProgramTypeToAssetIndex, &assets->assetArena, ShaderProgramCount, true);
@@ -180,17 +180,17 @@ u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 	return textureID;
 }
 
-u32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, s32 textureID, Rect2 uv)
+u32 addSprite(AssetManager *assets, u32 spriteAssetType, s32 textureID, Rect2 uv)
 {
-	u32 textureRegionID = assets->textureRegions.count;
+	u32 textureRegionID = assets->sprites.count;
 
-	TextureRegion *region = appendBlank(&assets->textureRegions);
+	Sprite *region = appendBlank(&assets->sprites);
 
-	region->textureRegionAssetType = textureRegionAssetType;
+	region->spriteAssetType = spriteAssetType;
 	region->textureID = textureID;
 	region->uv = uv;
 
-	IndexRange *range = get(&assets->rangesByTextureAssetType, textureRegionAssetType);
+	IndexRange *range = get(&assets->rangesBySpriteAssetType, spriteAssetType);
 	range->firstIndex = MIN(textureRegionID, range->firstIndex);
 	range->lastIndex  = MAX(textureRegionID, range->lastIndex);
 
@@ -212,7 +212,7 @@ s32 findTexture(AssetManager *assets, String filename)
 	return index;
 }
 
-s32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, char *filename, Rect2 uv,
+s32 addSprite(AssetManager *assets, u32 spriteAssetType, char *filename, Rect2 uv,
 	                   bool isAlphaPremultiplied=false)
 {
 	String sFilename = pushString(&assets->assetArena, filename);
@@ -222,7 +222,7 @@ s32 addTextureRegion(AssetManager *assets, u32 textureRegionAssetType, char *fil
 		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
 	}
 
-	return addTextureRegion(assets, textureRegionAssetType, textureID, uv);
+	return addSprite(assets, spriteAssetType, textureID, uv);
 }
 
 void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
@@ -314,9 +314,9 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Now we can convert UVs from pixel space to 0-1 space.
-	for (s32 regionIndex = 1; regionIndex < assets->textureRegions.count; regionIndex++)
+	for (s32 regionIndex = 1; regionIndex < assets->sprites.count; regionIndex++)
 	{
-		TextureRegion *tr = getTextureRegion(assets, regionIndex);
+		Sprite *tr = getSprite(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
 		// Maybe we could cache the current texture?
 		Texture *t = getTexture(assets, tr->textureID);
@@ -331,24 +331,24 @@ void loadAssets(AssetManager *assets)
 		);
 	}
 
-	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->textureRegions.count), formatInt(assets->textures.count)});
+	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->sprites.count), formatInt(assets->textures.count)});
 
 	assets->assetReloadHasJustHappened = true;
 }
 
 u32 addNewTextureAssetType(AssetManager *assets)
 {
-	u32 newTypeID = assets->rangesByTextureAssetType.count;
+	u32 newTypeID = assets->rangesBySpriteAssetType.count;
 
 	IndexRange range;
 	range.firstIndex = u32Max;
 	range.lastIndex  = 0;
-	append(&assets->rangesByTextureAssetType, range);
+	append(&assets->rangesBySpriteAssetType, range);
 
 	return newTypeID;
 }
 
-void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
+void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
 {
 	String sFilename = pushString(&assets->assetArena, filename);
 	s32 textureID = findTexture(assets, sFilename);
@@ -368,7 +368,7 @@ void addTiledTextureRegions(AssetManager *assets, u32 textureAssetType, String f
 		{
 			uv.x = (f32)(x * tileWidth);
 
-			addTextureRegion(assets, textureAssetType, textureID, uv);
+			addSprite(assets, spriteType, textureID, uv);
 			index++;
 		}
 	}
