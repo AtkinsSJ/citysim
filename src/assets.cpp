@@ -16,13 +16,10 @@ void initAssetManager(AssetManager *assets)
 	initChunkedArray(&assets->rangesBySpriteAssetType, &assets->assetArena, 256);
 	appendBlank(&assets->rangesBySpriteAssetType);
 
-	initChunkedArray(&assets->textures, &assets->assetArena, 32);
-	Texture *nullTexture = appendBlank(&assets->textures);
-	nullTexture->state = AssetState_Loaded;
-	nullTexture->surface = null;
-	nullTexture->isAlphaPremultiplied = true;
+	initChunkedArray(&assets->textureIndexToAssetIndex, &assets->assetArena, 256);
+	appendBlank(&assets->textureIndexToAssetIndex);
 
-	initChunkedArray(&assets->sprites, &assets->assetArena, 512);
+	initChunkedArray(&assets->sprites, &assets->assetArena, 1024);
 	Sprite *nullSprite = appendBlank(&assets->sprites);
 	nullSprite->textureID = -1;
 
@@ -49,15 +46,15 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
-s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
+s32 addAsset(AssetManager *assets, AssetType type, String shortName)
 {
 	s32 index = assets->allAssets.count;
 
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
-	if (shortName != null)
+	if (shortName.length != 0)
 	{
-		asset->shortName = pushString(&assets->assetArena, shortName);
+		asset->shortName = shortName;
 		asset->fullName = getAssetPath(assets, asset->type, asset->shortName);
 	}
 	asset->state = AssetState_Unloaded;
@@ -65,6 +62,40 @@ s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
 	asset->memory = null;
 
 	return index;
+}
+
+inline s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
+{
+	String name = nullString;
+	if (shortName != null) name = pushString(&assets->assetArena, shortName);
+	return addAsset(assets, type, name);
+}
+
+SDL_Surface *createSurfaceFromAsset(Asset *asset)
+{
+	SDL_Surface *result = null;
+
+	ASSERT(asset->state == AssetState_Loaded, "Attempted to create a surface from an unloaded asset! ({0})", {asset->fullName});
+
+	SDL_RWops *rw = SDL_RWFromConstMem(asset->memory, asset->size);
+	if (rw)
+	{
+		result = IMG_Load_RW(rw, 0);
+
+		ASSERT(result != null, "Failed to load create SDL_Surface from asset '{0}'!\n{1}", {
+			asset->fullName, makeString(IMG_GetError())
+		});
+
+		SDL_RWclose(rw);
+	}
+	else
+	{
+		logError("Failed to create SDL_RWops from asset '{0}'!\n{1}", {
+			asset->fullName, makeString(SDL_GetError())
+		});
+	}
+
+	return result;
 }
 
 void loadAsset(AssetManager *assets, Asset *asset)
@@ -101,13 +132,16 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	// Type-specific loading
 	switch (asset->type)
 	{
+		case AssetType_BuildingDefs:
+		{
+			loadBuildingDefs(&buildingDefs, assets, asset);
+		} break;
+
 		case AssetType_Cursor:
 		{
-			SDL_RWops *rw = SDL_RWFromConstMem(asset->memory, asset->size);
-			SDL_Surface *cursorSurface = IMG_Load_RW(rw, 0);
+			SDL_Surface *cursorSurface = createSurfaceFromAsset(asset);
 			asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
 			SDL_FreeSurface(cursorSurface);
-			SDL_RWclose(rw);
 		} break;
 
 		case AssetType_ShaderProgram:
@@ -128,19 +162,55 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			}
 		} break;
 
-		case AssetType_UITheme:
-		{
-			loadUITheme(assets, asset);
-		} break;
-
-		case AssetType_BuildingDefs:
-		{
-			loadBuildingDefs(&buildingDefs, assets, asset);
-		} break;
-
 		case AssetType_TerrainDefs:
 		{
 			loadTerrainDefinitions(&terrainDefs, assets, asset);
+		} break;
+
+		case AssetType_Texture:
+		{
+			SDL_Surface *surface = createSurfaceFromAsset(asset);
+			ASSERT(surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
+
+			if (!asset->texture.isFileAlphaPremultiplied)
+			{
+				// Premultiply alpha
+				u32 Rmask = surface->format->Rmask,
+					Gmask = surface->format->Gmask,
+					Bmask = surface->format->Bmask,
+					Amask = surface->format->Amask;
+				f32 rRmask = (f32)Rmask,
+					rGmask = (f32)Gmask,
+					rBmask = (f32)Bmask,
+					rAmask = (f32)Amask;
+
+				u32 pixelCount = surface->w * surface->h;
+				for (u32 pixelIndex=0;
+					pixelIndex < pixelCount;
+					pixelIndex++)
+				{
+					u32 pixel = ((u32*)surface->pixels)[pixelIndex];
+					f32 rr = (f32)(pixel & Rmask) / rRmask;
+					f32 rg = (f32)(pixel & Gmask) / rGmask;
+					f32 rb = (f32)(pixel & Bmask) / rBmask;
+					f32 ra = (f32)(pixel & Amask) / rAmask;
+
+					u32 r = (u32)(rr * ra * rRmask) & Rmask;
+					u32 g = (u32)(rg * ra * rGmask) & Gmask;
+					u32 b = (u32)(rb * ra * rBmask) & Bmask;
+					u32 a = (u32)(ra * rAmask) & Amask;
+
+					((u32*)surface->pixels)[pixelIndex] = (u32)r | (u32)g | (u32)b | (u32)a;
+				}
+			}
+
+			asset->texture.surface = surface;	
+			asset->state = AssetState_Loaded;	
+		} break;
+
+		case AssetType_UITheme:
+		{
+			loadUITheme(assets, asset);
 		} break;
 	}
 }
@@ -159,6 +229,15 @@ void freeAsset(AssetManager *assets, Asset *asset)
 				asset->cursor.sdlCursor = null;
 			}
 		} break;
+
+		case AssetType_Texture:
+		{
+			if (asset->texture.surface != null)
+			{
+				SDL_FreeSurface(asset->texture.surface);
+				asset->texture.surface = null;
+			}
+		} break;
 	}
 
 	assets->assetMemoryAllocated -= asset->size;
@@ -167,15 +246,19 @@ void freeAsset(AssetManager *assets, Asset *asset)
 	asset->state = AssetState_Unloaded;
 }
 
+// NOTE: Returns a texture ID, NOT an asset ID!
+// TODO: Fix that
 u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
-	u32 textureID = assets->textures.count;
+	s32 assetIndex = addAsset(assets, AssetType_Texture, filename);
+	Asset *asset = getAsset(assets, assetIndex);
+	asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
 
-	Texture *texture = appendBlank(&assets->textures);
+	u32 textureID = assets->textureIndexToAssetIndex.count;
 
-	texture->state = AssetState_Unloaded;
-	texture->filename = pushString(&assets->assetArena, filename);
-	texture->isAlphaPremultiplied = isAlphaPremultiplied;
+	Texture_Temp *textureTemp = appendBlank(&assets->textureIndexToAssetIndex);
+	textureTemp->filename = asset->shortName;
+	textureTemp->assetIndex = assetIndex;
 
 	return textureID;
 }
@@ -197,12 +280,14 @@ u32 addSprite(AssetManager *assets, u32 spriteAssetType, s32 textureID, Rect2 uv
 	return textureRegionID;
 }
 
+// NOTE: Returns a texture ID, NOT an asset ID!
+// TODO: Fix that
 s32 findTexture(AssetManager *assets, String filename)
 {
 	s32 index = -1;
-	for (s32 i = 0; i < (s32)assets->textures.count; ++i)
+	for (s32 i = 0; i < assets->textureIndexToAssetIndex.count; i++)
 	{
-		Texture *tex = getTexture(assets, i);
+		Texture_Temp *tex = get(&assets->textureIndexToAssetIndex, i);
 		if (equals(filename, tex->filename))
 		{
 			index = i;
@@ -215,11 +300,10 @@ s32 findTexture(AssetManager *assets, String filename)
 s32 addSprite(AssetManager *assets, u32 spriteAssetType, char *filename, Rect2 uv,
 	                   bool isAlphaPremultiplied=false)
 {
-	String sFilename = pushString(&assets->assetArena, filename);
-	s32 textureID = findTexture(assets, sFilename);
+	s32 textureID = findTexture(assets, makeString(filename));
 	if (textureID == -1)
 	{
-		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
+		textureID = addTexture(assets, pushString(&assets->assetArena, filename), isAlphaPremultiplied);
 	}
 
 	return addSprite(assets, spriteAssetType, textureID, uv);
@@ -268,60 +352,15 @@ void loadAssets(AssetManager *assets)
 		loadAsset(assets, asset);
 	}
 
-	for (s32 i = 1; i < assets->textures.count; ++i)
-	{
-		Texture *tex = getTexture(assets, i);
-		if (tex->state == AssetState_Unloaded)
-		{
-			tex->surface = IMG_Load(getAssetPath(assets, AssetType_Texture, tex->filename).chars);
-			ASSERT(tex->surface != null, "Failed to load image '{0}'!\n{1}", {tex->filename, makeString(IMG_GetError())});
-
-			ASSERT(tex->surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
-			if (!tex->isAlphaPremultiplied)
-			{
-				// Premultiply alpha
-				u32 Rmask = tex->surface->format->Rmask,
-					Gmask = tex->surface->format->Gmask,
-					Bmask = tex->surface->format->Bmask,
-					Amask = tex->surface->format->Amask;
-				f32 rRmask = (f32)Rmask,
-					rGmask = (f32)Gmask,
-					rBmask = (f32)Bmask,
-					rAmask = (f32)Amask;
-
-				u32 pixelCount = tex->surface->w * tex->surface->h;
-				for (u32 pixelIndex=0;
-					pixelIndex < pixelCount;
-					pixelIndex++)
-				{
-					u32 pixel = ((u32*)tex->surface->pixels)[pixelIndex];
-					f32 rr = (f32)(pixel & Rmask) / rRmask;
-					f32 rg = (f32)(pixel & Gmask) / rGmask;
-					f32 rb = (f32)(pixel & Bmask) / rBmask;
-					f32 ra = (f32)(pixel & Amask) / rAmask;
-
-					u32 r = (u32)(rr * ra * rRmask) & Rmask;
-					u32 g = (u32)(rg * ra * rGmask) & Gmask;
-					u32 b = (u32)(rb * ra * rBmask) & Bmask;
-					u32 a = (u32)(ra * rAmask) & Amask;
-
-					((u32*)tex->surface->pixels)[pixelIndex] = (u32)r | (u32)g | (u32)b | (u32)a;
-				}
-			}
-
-			tex->state = AssetState_Loaded;
-		}
-	}
-
 	// Now we can convert UVs from pixel space to 0-1 space.
 	for (s32 regionIndex = 1; regionIndex < assets->sprites.count; regionIndex++)
 	{
 		Sprite *tr = getSprite(assets, regionIndex);
 		// NB: We look up the texture for every char, so fairly inefficient.
 		// Maybe we could cache the current texture?
-		Texture *t = getTexture(assets, tr->textureID);
-		f32 textureWidth = (f32) t->surface->w;
-		f32 textureHeight = (f32) t->surface->h;
+		Asset *t = getTexture(assets, tr->textureID);
+		f32 textureWidth  = (f32) t->texture.surface->w;
+		f32 textureHeight = (f32) t->texture.surface->h;
 
 		tr->uv = rectXYWH(
 			tr->uv.x / textureWidth,
@@ -331,7 +370,7 @@ void loadAssets(AssetManager *assets)
 		);
 	}
 
-	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->sprites.count), formatInt(assets->textures.count)});
+	logInfo("Loaded {0} texture regions and {1} textures.", {formatInt(assets->sprites.count), formatInt(assets->textureIndexToAssetIndex.count)});
 
 	assets->assetReloadHasJustHappened = true;
 }
@@ -350,11 +389,10 @@ u32 addNewTextureAssetType(AssetManager *assets)
 
 void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
 {
-	String sFilename = pushString(&assets->assetArena, filename);
-	s32 textureID = findTexture(assets, sFilename);
+	s32 textureID = findTexture(assets, filename);
 	if (textureID == -1)
 	{
-		textureID = addTexture(assets, sFilename, isAlphaPremultiplied);
+		textureID = addTexture(assets, filename, isAlphaPremultiplied);
 	}
 
 	Rect2 uv = rectXYWH(0, 0, (f32)tileWidth, (f32)tileHeight);
@@ -417,18 +455,6 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	globalConsole->font = null;
 
 	// Actual reloading
-
-	// Clear out textures
-	for (s32 i = 1; i < assets->textures.count; ++i)
-	{
-		Texture *tex = getTexture(assets, i);
-		if (tex->state == AssetState_Loaded)
-		{
-			SDL_FreeSurface(tex->surface);
-			tex->surface = 0;
-		}
-		tex->state = AssetState_Unloaded;
-	}
 
 	// Clear managed assets
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))

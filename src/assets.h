@@ -61,6 +61,11 @@ struct Asset
 			s32 fragShaderAssetIndex;
 			s32 vertShaderAssetIndex;
 		} shaderProgram;
+
+		struct {
+			bool isFileAlphaPremultiplied;
+			SDL_Surface *surface;
+		} texture;
 	};
 };
 
@@ -74,12 +79,10 @@ enum ShaderProgramType
 	ShaderProgram_Invalid = -1
 };
 
-struct Texture
+struct Texture_Temp
 {
-	AssetState state;
 	String filename;
-	bool isAlphaPremultiplied; // Is the source file premultiplied?
-	SDL_Surface *surface;
+	s32 assetIndex;
 };
 
 struct Sprite
@@ -111,7 +114,7 @@ struct AssetManager
 	ChunkedArray<Asset> allAssets;
 
 	// NB: index 0 reserved as a null texture.
-	ChunkedArray<Texture> textures;
+	ChunkedArray<Texture_Temp> textureIndexToAssetIndex;
 
 	// NB: index 0 is reserved as a null sprite.
 	ChunkedArray<Sprite> sprites;
@@ -168,9 +171,9 @@ Asset *getAsset(AssetManager *assets, s32 assetIndex)
 	return asset;
 }
 
-Texture *getTexture(AssetManager *assets, u32 textureIndex)
+Asset *getTexture(AssetManager *assets, u32 textureIndex)
 {
-	return get(&assets->textures, textureIndex);
+	return getAsset(assets, get(&assets->textureIndexToAssetIndex, textureIndex)->assetIndex);
 }
 
 s32 getSpriteID(AssetManager *assets, s32 spriteAssetType, u32 offset)

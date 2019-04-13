@@ -188,9 +188,9 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Textures
 	clear(&gl->textureInfo);
-	reserve(&gl->textureInfo, assets->textures.count);
+	reserve(&gl->textureInfo, assets->textureIndexToAssetIndex.count);
 
-	for (s32 i=0; i < assets->textures.count; i++)
+	for (s32 i=0; i < assets->textureIndexToAssetIndex.count; i++)
 	{
 		if (i == 0)
 		{
@@ -388,9 +388,9 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 						// Upload texture
-						Texture *texture = getTexture(assets, sprite->textureID);
+						Asset *texture = getTexture(assets, sprite->textureID);
 						ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
-						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
+						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->texture.surface->w, texture->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->texture.surface->pixels);
 						textureInfo->isLoaded = true;
 						GL_checkForError();
 					}
