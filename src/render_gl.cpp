@@ -28,7 +28,7 @@ static inline void GL_checkForError()
 // Disable GL error checking for release version.
 // #define GL_checkForError() 
 
-static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset, ShaderHeader *header)
+static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderType, ShaderProgram *shaderAsset, Asset *shaderHeader)
 {
 	bool result = false;
 	String *shaderSource = null;
@@ -55,12 +55,12 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderType shaderT
 	GLuint shaderID = glCreateShader(shaderType);
 	defer { glDeleteShader(shaderID); };
 
-	if (header && (header->state == AssetState_Loaded))
+	if (shaderHeader && (shaderHeader->state == AssetState_Loaded))
 	{
 		// NB: We add a newline between the two, so the lines don't get smooshed together if we forget
 		// a trailing newline in the header file!
-		char *datas[] = {header->contents.chars, "\n", shaderSource->chars};
-		s32 lengths[] = {header->contents.length, 1,   shaderSource->length};
+		char *datas[] = {(char *)shaderHeader->memory, "\n", shaderSource->chars};
+		s32 lengths[] = {shaderHeader->size,            1,   shaderSource->length};
 		glShaderSource(shaderID, 3, datas, lengths);
 	}
 	else
@@ -124,10 +124,10 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 	ShaderProgram *shaderAsset = getShaderProgram(assets, shaderProgramAssetID);
 	ASSERT(shaderAsset->state == AssetState_Loaded, "Shader asset {0} not loaded!", {formatInt(shaderProgramAssetID)});
 
-	ShaderHeader *header = &assets->shaderHeader;
+	Asset *header = getTextAsset(assets, assets->shaderHeaderAssetIndex);
 	if(header->state != AssetState_Loaded)
 	{
-		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->filename});
+		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->shortName});
 	}
 
 	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramAssetID;

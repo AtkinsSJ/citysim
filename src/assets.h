@@ -92,13 +92,6 @@ struct ShaderProgram
 	String vertShader;
 };
 
-struct ShaderHeader
-{
-	AssetState state;
-	String filename;
-	String contents;
-};
-
 struct IndexRange
 {
 	u32 firstIndex;
@@ -127,7 +120,6 @@ struct AssetManager
 	// So, assets with the same type must be contiguous!
 	ChunkedArray<IndexRange> rangesByTextureAssetType;
 
-	ShaderHeader shaderHeader; // This is a bit hacky right now.
 	ChunkedArray<ShaderProgram> shaderPrograms;
 
 	ChunkedArray<s32> cursorTypeToAssetIndex;
@@ -142,10 +134,13 @@ struct AssetManager
 
 	UITheme theme;
 	
+	// TODO: We eventually want some kind of by-name lookup rather than hard-coded indices!
 	s32 creditsAssetIndex;
 	s32 uiThemeAssetIndex;
 	s32 buildingDefsAssetIndex;
 	s32 terrainDefsAssetIndex;
+
+	s32 shaderHeaderAssetIndex;
 };
 
 Asset *getAsset(AssetManager *assets, s32 assetIndex)

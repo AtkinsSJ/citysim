@@ -13,7 +13,6 @@ void initAssetManager(AssetManager *assets)
 	assets->assetMemoryAllocated = 0;
 	assets->maxAssetMemoryAllocated = 0;
 
-
 	initChunkedArray(&assets->rangesByTextureAssetType, &assets->assetArena, 32);
 	appendBlank(&assets->rangesByTextureAssetType);
 
@@ -193,9 +192,7 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 
 void addShaderHeader(AssetManager *assets, char *filename)
 {
-	ShaderHeader *shaderHeader = &assets->shaderHeader;
-	shaderHeader->state = AssetState_Unloaded;
-	shaderHeader->filename = pushString(&assets->assetArena, filename);
+	assets->shaderHeaderAssetIndex = addAsset(assets, AssetType_Shader, filename);
 }
 
 void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename,
@@ -293,17 +290,6 @@ void loadAssets(AssetManager *assets)
 	}
 
 	// Load shader programs
-	ShaderHeader *shaderHeader = &assets->shaderHeader;
-	shaderHeader->contents = readFileAsString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, shaderHeader->filename));
-	if (shaderHeader->contents.length)
-	{
-		shaderHeader->state = AssetState_Loaded;
-	}
-	else
-	{
-		logError("Failed to load shader header file {0}", {shaderHeader->filename});
-	}
-
 	for (u32 shaderID = 0; shaderID < ShaderProgramCount; shaderID++)
 	{
 		ShaderProgram *shader = get(&assets->shaderPrograms, shaderID);
