@@ -265,7 +265,7 @@ u32 addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 
 u32 addSprite(AssetManager *assets, u32 spriteAssetType, s32 textureID, Rect2 uv)
 {
-	u32 textureRegionID = assets->sprites.count;
+	u32 spriteID = assets->sprites.count;
 
 	Sprite *region = appendBlank(&assets->sprites);
 
@@ -274,10 +274,10 @@ u32 addSprite(AssetManager *assets, u32 spriteAssetType, s32 textureID, Rect2 uv
 	region->uv = uv;
 
 	IndexRange *range = get(&assets->rangesBySpriteAssetType, spriteAssetType);
-	range->firstIndex = MIN(textureRegionID, range->firstIndex);
-	range->lastIndex  = MAX(textureRegionID, range->lastIndex);
+	range->firstIndex = MIN(spriteID, range->firstIndex);
+	range->lastIndex  = MAX(spriteID, range->lastIndex);
 
-	return textureRegionID;
+	return spriteID;
 }
 
 // NOTE: Returns a texture ID, NOT an asset ID!

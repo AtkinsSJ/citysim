@@ -244,7 +244,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 					result->chars[result->charCount] = makeRenderItem(
 						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
 								 (f32)c->size.w, (f32)c->size.h),
-						0.0f, c->textureRegionID
+						0.0f, c->spriteID
 					);
 
 					result->charCount++;

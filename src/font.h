@@ -7,7 +7,10 @@ struct BitmapFontChar
 	s16 xOffset, yOffset; // Offset when rendering to the screen
 	s16 xAdvance; // How far to move after rendering this character
 
-	u32 textureRegionID;
+	// TODO: Referring to a sprite too is redundant! Also, in some cases, we need to know the ^above data
+	// but have progressed through the renderer so we only have the RenderItem. Maybe entirely use
+	// BitmapFontChars for text rendering instead?
+	u32 spriteID;
 };
 
 struct BitmapFont

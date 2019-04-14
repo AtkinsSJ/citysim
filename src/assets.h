@@ -119,7 +119,7 @@ struct AssetManager
 	// NB: index 0 is reserved as a null sprite.
 	ChunkedArray<Sprite> sprites;
 
-	// NOTE: At each index is the first or last position in textureRegions array matching that type.
+	// NOTE: At each index is the first or last position in sprites array matching that type.
 	// So, assets with the same type must be contiguous!
 	ChunkedArray<IndexRange> rangesBySpriteAssetType;
 
@@ -145,6 +145,11 @@ struct AssetManager
 
 	TODO
 	----
+
+	Our current Asset struct, which keeps a copy of the file contents in memory, is not actually what we want!
+	A bunch of assets actually want the file to be loaded, then processed, and the result should be what's
+	kept in the Asset, because we never look at the source file's data ever again!
+	eg, for Fonts, we probably want the memory* pointer to be to the glyph data so it's easy to locate.
 
 	Asset types:
 	- font assets

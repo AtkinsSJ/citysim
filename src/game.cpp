@@ -789,9 +789,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				TerrainDef *tDef = get(&terrainDefs, t.type);
 
-				u32 textureRegionID = getSpriteID(assets, tDef->spriteType, t.spriteOffset);
+				u32 spriteID = getSpriteID(assets, tDef->spriteType, t.spriteOffset);
 
-				drawSprite(&renderer->worldBuffer, textureRegionID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, makeWhite(), ShaderProgram_PixelArt);
+				drawSprite(&renderer->worldBuffer, spriteID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, makeWhite(), ShaderProgram_PixelArt);
 			}
 		}
 	}

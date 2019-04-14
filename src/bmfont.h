@@ -174,7 +174,7 @@ BitmapFont *addBMFont(AssetManager *assets, String name, String filename)
 					dest->yOffset = src->yOffset;
 					dest->xAdvance = src->xAdvance;
 
-					dest->textureRegionID = addSprite(assets, font->spriteType, pageToTextureID[src->page],
+					dest->spriteID = addSprite(assets, font->spriteType, pageToTextureID[src->page],
 						rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h));
 				}
 			}
