@@ -7,8 +7,7 @@ enum AssetType
 	AssetType_BitmapFont,
 	AssetType_BuildingDefs,
 	AssetType_Cursor,
-	AssetType_ShaderProgram,
-	AssetType_ShaderPart,
+	AssetType_Shader,
 	AssetType_Texture,
 	AssetType_TerrainDefs,
 	AssetType_UITheme,
@@ -34,10 +33,14 @@ enum CursorType
 	CursorCount
 };
 
-struct ShaderProgram
+struct Shader
 {
-	s32 fragShaderAssetIndex;
-	s32 vertShaderAssetIndex;
+	String shaderHeaderFilename;
+	String vertexShaderFilename;
+	String fragmentShaderFilename;
+
+	String vertexShader;
+	String fragmentShader;
 };
 
 struct Asset
@@ -60,7 +63,7 @@ struct Asset
 			SDL_Cursor *sdlCursor;
 		} cursor;
 
-		ShaderProgram shaderProgram;
+		Shader shader;
 
 		struct {
 			bool isFileAlphaPremultiplied;
@@ -71,14 +74,14 @@ struct Asset
 	};
 };
 
-enum ShaderProgramType
+enum ShaderType
 {
-	ShaderProgram_Textured,
-	ShaderProgram_Untextured,
-	ShaderProgram_PixelArt,
+	Shader_Textured,
+	Shader_Untextured,
+	Shader_PixelArt,
 
-	ShaderProgramCount,
-	ShaderProgram_Invalid = -1
+	ShaderCount,
+	Shader_Invalid = -1
 };
 
 struct Texture_Temp
@@ -132,7 +135,7 @@ struct AssetManager
 	ChunkedArray<IndexRange> rangesBySpriteAssetType;
 
 	ChunkedArray<s32> cursorTypeToAssetIndex;
-	ChunkedArray<s32> shaderProgramTypeToAssetIndex;
+	ChunkedArray<s32> shaderTypeToAssetIndex;
 
 	ChunkedArray<BitmapFont_Meta> fonts;
 
@@ -148,8 +151,6 @@ struct AssetManager
 	
 	// TODO: We eventually want some kind of by-name lookup rather than hard-coded indices!
 	s32 creditsAssetIndex;
-
-	s32 shaderHeaderAssetIndex;
 
 	/*
 
@@ -240,9 +241,9 @@ Asset *getCursor(AssetManager *assets, u32 cursorID)
 	return getAsset(assets, *get(&assets->cursorTypeToAssetIndex, cursorID));
 }
 
-ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
+Shader *getShader(AssetManager *assets, ShaderType shaderID)
 {
-	return &getAsset(assets, *get(&assets->shaderProgramTypeToAssetIndex, shaderID))->shaderProgram;
+	return &getAsset(assets, *get(&assets->shaderTypeToAssetIndex, shaderID))->shader;
 }
 
 // TODO: A way to get this as a String might be more convenient!
@@ -265,10 +266,7 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	case AssetType_BitmapFont:
 		result = myprintf("{0}/fonts/{1}",    {assets->assetsPath, shortName}, true);
 		break;
-	case AssetType_ShaderProgram:
-		result = nullString;
-		break;
-	case AssetType_ShaderPart:
+	case AssetType_Shader:
 		result = myprintf("{0}/shaders/{1}",  {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Texture:
@@ -280,6 +278,10 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	}
 
 	return result;
+}
+inline String getAssetPath(AssetManager *assets, AssetType type, char *shortName)
+{
+	return getAssetPath(assets, type, makeString(shortName));
 }
 
 String getUserDataPath(AssetManager *assets, String shortName)

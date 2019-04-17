@@ -34,7 +34,7 @@ enum GL_ShaderPart
 
 struct GL_ShaderProgram
 {
-	ShaderProgramType type;
+	ShaderType type;
 	GLuint shaderProgramID;
 	bool isValid;
 
@@ -60,7 +60,7 @@ struct GL_Renderer
 
 	SDL_GLContext context;
 
-	GL_ShaderProgram shaders[ShaderProgramCount];
+	GL_ShaderProgram shaders[ShaderCount];
 	s32 currentShader;
 
 	GLuint VBO;

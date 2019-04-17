@@ -114,7 +114,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline RenderItem makeRenderItem(Rect2 rect, f32 depth, s32 spriteID, V4 color=makeWhite(), ShaderProgramType shaderID = ShaderProgram_Invalid)
+inline RenderItem makeRenderItem(Rect2 rect, f32 depth, s32 spriteID, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
 {
 	RenderItem item = {};
 	item.rect = rect;
@@ -122,9 +122,9 @@ inline RenderItem makeRenderItem(Rect2 rect, f32 depth, s32 spriteID, V4 color=m
 	item.color = color;
 	item.spriteID = spriteID;
 
-	if (shaderID == ShaderProgram_Invalid)
+	if (shaderID == Shader_Invalid)
 	{
-		item.shaderID = (spriteID == 0) ? ShaderProgram_Untextured : ShaderProgram_Textured;
+		item.shaderID = (spriteID == 0) ? Shader_Untextured : Shader_Textured;
 	}
 	else
 	{
@@ -134,12 +134,12 @@ inline RenderItem makeRenderItem(Rect2 rect, f32 depth, s32 spriteID, V4 color=m
 	return item;
 }
 
-void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderProgramType shaderID = ShaderProgram_Invalid)
+void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderType shaderID = Shader_Invalid)
 {
 	append(&buffer->items, makeRenderItem(rect, depth, 0, color, shaderID));
 }
 
-void drawSprite(RenderBuffer *buffer, s32 spriteID, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderProgramType shaderID = ShaderProgram_Invalid)
+void drawSprite(RenderBuffer *buffer, s32 spriteID, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
 {
 	append(&buffer->items, makeRenderItem(rect, depth, spriteID, color, shaderID));
 }

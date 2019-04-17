@@ -24,7 +24,7 @@ void initAssetManager(AssetManager *assets)
 	nullSprite->textureID = -1;
 
 	initChunkedArray(&assets->cursorTypeToAssetIndex, &assets->assetArena, CursorCount, true);
-	initChunkedArray(&assets->shaderProgramTypeToAssetIndex, &assets->assetArena, ShaderProgramCount, true);
+	initChunkedArray(&assets->shaderTypeToAssetIndex, &assets->assetArena, ShaderCount, true);
 
 	// Stuff that used to be in the UI theme is now here... I think UITheme isn't a useful concept?
 	initChunkedArray(&assets->fonts,         &assets->assetArena, 16);
@@ -115,6 +115,26 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 	return result;
 }
 
+static Blob readTempFile(String filePath)
+{
+	Blob fileData = {};
+	FileHandle file = openFile(filePath, FileAccess_Read);
+
+	smm fileSize = getFileSize(&file);
+
+	fileData.size = fileSize;
+	fileData.memory = (u8*) allocate(&globalAppState.globalTempArena, fileSize);
+	smm bytesRead = readFileIntoMemory(&file, fileSize, fileData.memory);
+	closeFile(&file);
+
+	if (bytesRead != fileSize)
+	{
+		logError("File {0} was only partially loaded. Size {1}, loaded {2}", {filePath, formatInt(fileSize), formatInt(bytesRead)});
+	}
+
+	return fileData;
+}
+
 void loadAsset(AssetManager *assets, Asset *asset)
 {
 	ASSERT(asset->state == AssetState_Unloaded, "Attempted to load an asset ({0}) that is already loaded!", {asset->fullName});
@@ -124,19 +144,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	// eg, ShaderPrograms are made of several ShaderParts.
 	if (asset->fullName.length > 0)
 	{
-		FileHandle file = openFile(asset->fullName, FileAccess_Read);
-
-		smm fileSize = getFileSize(&file);
-
-		fileData.size = fileSize;
-		fileData.memory = (u8*) allocate(&globalAppState.globalTempArena, fileSize);
-		smm bytesRead = readFileIntoMemory(&file, fileSize, fileData.memory);
-		closeFile(&file);
-
-		if (bytesRead != fileSize)
-		{
-			logError("File {0} was only partially loaded. Size {1}, loaded {2}", {asset->fullName, formatInt(fileSize), formatInt(bytesRead)});
-		}
+		fileData = readTempFile(asset->fullName);
 	}
 
 	// Type-specific loading
@@ -162,22 +170,40 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			asset->state = AssetState_Loaded;
 		} break;
 
-		case AssetType_ShaderProgram:
+		case AssetType_Shader:
 		{
-			Asset *frag = getAsset(assets, asset->shaderProgram.fragShaderAssetIndex);
-			Asset *vert = getAsset(assets, asset->shaderProgram.vertShaderAssetIndex);
-			if ((frag->state == AssetState_Loaded) && (vert->state == AssetState_Loaded))
-			{
-				asset->state = AssetState_Loaded;
-			}
-			else
-			{
-				logError("ShaderProgram {0} cannot be loaded because 1 or more of its component parts are not loaded. {1}: Loaded={2}, {3}: Loaded={4}", {
-					asset->shortName,
-					frag->shortName, formatBool(frag->state == AssetState_Loaded),
-					vert->shortName, formatBool(vert->state == AssetState_Loaded)
-				});
-			}
+			Blob headerFile   = readTempFile(asset->shader.shaderHeaderFilename);
+			Blob vertexFile   = readTempFile(asset->shader.vertexShaderFilename);
+			Blob fragmentFile = readTempFile(asset->shader.fragmentShaderFilename);
+			
+			// nb: extra 1 byte each, for newlines between the header and main source
+			smm vertexSize   = headerFile.size + vertexFile.size   + 1;
+			smm fragmentSize = headerFile.size + fragmentFile.size + 1;
+			smm totalSize    = fragmentSize + vertexSize;
+
+			asset->size = totalSize;
+			asset->memory = allocate(assets, totalSize);
+
+			asset->shader.vertexShader   = makeString((char*)asset->memory, vertexSize);
+			asset->shader.fragmentShader = makeString((char*)asset->memory + vertexSize, fragmentSize);
+
+			smm offset = 0;
+
+			memcpy(asset->memory + offset, headerFile.memory, headerFile.size);
+			offset += headerFile.size;
+			asset->memory[offset++] = '\n';
+			memcpy(asset->memory + offset, vertexFile.memory, vertexFile.size);
+			offset += vertexFile.size;
+
+			memcpy(asset->memory + offset, headerFile.memory, headerFile.size);
+			offset += headerFile.size;
+			asset->memory[offset++] = '\n';
+			memcpy(asset->memory + offset, fragmentFile.memory, fragmentFile.size);
+			offset += fragmentFile.size;
+
+			ASSERT(offset == totalSize, "We copied the shader data wrong!");
+
+			asset->state = AssetState_Loaded;
 		} break;
 
 		case AssetType_TerrainDefs:
@@ -345,24 +371,15 @@ void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
 	*get(&assets->cursorTypeToAssetIndex, cursorID) = assetIndex;
 }
 
-void addShaderHeader(AssetManager *assets, char *filename)
+void addShader(AssetManager *assets, ShaderType shaderID, char *headerFilename, char *vertFilename, char *fragFilename)
 {
-	assets->shaderHeaderAssetIndex = addAsset(assets, AssetType_ShaderPart, filename);
-}
-
-void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *vertFilename,
-	                  char *fragFilename)
-{
-	// NB: For now, we have to load the part assets before the program asset, so they must come first
-	s32 fragShaderAssetIndex = addAsset(assets, AssetType_ShaderPart, fragFilename);
-	s32 vertShaderAssetIndex = addAsset(assets, AssetType_ShaderPart, vertFilename);
-
-	s32 assetIndex = addAsset(assets, AssetType_ShaderProgram, null);
-	*get(&assets->shaderProgramTypeToAssetIndex, shaderID) = assetIndex;
+	s32 assetIndex = addAsset(assets, AssetType_Shader, null);
+	*get(&assets->shaderTypeToAssetIndex, shaderID) = assetIndex;
 
 	Asset *asset = getAsset(assets, assetIndex);
-	asset->shaderProgram.fragShaderAssetIndex = fragShaderAssetIndex;
-	asset->shaderProgram.vertShaderAssetIndex = vertShaderAssetIndex;
+	asset->shader.shaderHeaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, headerFilename));
+	asset->shader.vertexShaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, vertFilename));
+	asset->shader.fragmentShaderFilename = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, fragFilename));
 }
 
 void addBitmapFont(AssetManager *assets, String name, String filename)
@@ -459,11 +476,9 @@ void addAssets(AssetManager *assets)
 
 	// TODO: Settings?
 
-
-	addShaderHeader(assets, "header.glsl");
-	addShaderProgram(assets, ShaderProgram_Textured,   "textured.vert.glsl",   "textured.frag.glsl");
-	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
-	addShaderProgram(assets, ShaderProgram_PixelArt,   "pixelart.vert.glsl",   "pixelart.frag.glsl");
+	addShader(assets, Shader_Textured,   "header.glsl", "textured.vert.glsl",   "textured.frag.glsl");
+	addShader(assets, Shader_Untextured, "header.glsl", "untextured.vert.glsl", "untextured.frag.glsl");
+	addShader(assets, Shader_PixelArt,   "header.glsl", "pixelart.vert.glsl",   "pixelart.frag.glsl");
 
 	addCursor(assets, Cursor_Main,     "cursor_main.png");
 	addCursor(assets, Cursor_Build,    "cursor_build.png");

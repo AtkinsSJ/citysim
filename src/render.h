@@ -36,7 +36,7 @@ struct RenderItem
 	f32 depth; // Positive is towards the player
 	V4 color;
 	s32 spriteID;
-	ShaderProgramType shaderID;
+	ShaderType shaderID;
 };
 
 struct RenderBuffer

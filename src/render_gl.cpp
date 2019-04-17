@@ -28,26 +28,33 @@ static inline void GL_checkForError()
 // Disable GL error checking for release version.
 // #define GL_checkForError() 
 
-static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderPart shaderPart, Asset *shaderHeader, Asset *shaderPartAsset)
+static bool compileShader(GL_ShaderProgram *glShader, Shader *shaderProgram, GL_ShaderPart shaderPart)
 {
 	bool result = false;
 
 	GLuint shaderID = glCreateShader(shaderPart);
 	defer { glDeleteShader(shaderID); };
 
-	if (shaderHeader && (shaderHeader->state == AssetState_Loaded))
+	String source   = nullString;
+	String filename = nullString;
+	switch (shaderPart)
 	{
-		// NB: We add a newline between the two, so the lines don't get smooshed together if we forget
-		// a trailing newline in the header file!
-		char *datas[] = {(char *)shaderHeader->memory, "\n", (char *)shaderPartAsset->memory};
-		s32 lengths[] = {shaderHeader->size,            1,   shaderPartAsset->size};
-		glShaderSource(shaderID, 3, datas, lengths);
+		case GL_ShaderPart_Vertex:
+		{
+			source = shaderProgram->vertexShader;
+			filename = shaderProgram->vertexShaderFilename;
+		} break;
+
+		case GL_ShaderPart_Fragment:
+		{
+			source = shaderProgram->fragmentShader;
+			filename = shaderProgram->fragmentShaderFilename;
+		} break;
+
+		INVALID_DEFAULT_CASE;
 	}
-	else
-	{
-		// no header, so compile without it
-		glShaderSource(shaderID, 1, (char **)&shaderPartAsset->memory, &shaderPartAsset->size);
-	}
+
+	glShaderSource(shaderID, 1, (char **)&source.chars, &source.length);
 
 	glCompileShader(shaderID);
 
@@ -57,7 +64,7 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderPart shaderP
 
 	if (result)
 	{
-		glAttachShader(shaderProgram->shaderProgramID, shaderID);
+		glAttachShader(glShader->shaderProgramID, shaderID);
 	}
 	else
 	{
@@ -73,7 +80,7 @@ static bool compileShader(GL_ShaderProgram *shaderProgram, GL_ShaderPart shaderP
 			infoLog = makeString("No error log provided by OpenGL. Sad panda.");
 		}
 
-		logError("Unable to compile shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), shaderPartAsset->shortName, infoLog});
+		logError("Unable to compile shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), filename, infoLog});
 	}
 
 	return result;
@@ -97,29 +104,11 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	}
 }
 
-static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderProgramType shaderProgramType)
+static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderType shaderProgramType)
 {
 	bool result = false;
 
-	ShaderProgram *shaderProgram = getShaderProgram(assets, shaderProgramType);
-
-	Asset *header = getTextAsset(assets, assets->shaderHeaderAssetIndex);
-	if(header->state != AssetState_Loaded)
-	{
-		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->shortName});
-	}
-
-	Asset *fragAsset = getTextAsset(assets, shaderProgram->fragShaderAssetIndex);
-	if(fragAsset->state != AssetState_Loaded)
-	{
-		logWarn("Compiling a shader but shader fragment file \'{0}\' is not loaded!", {fragAsset->shortName});
-	}
-
-	Asset *vertAsset = getTextAsset(assets, shaderProgram->vertShaderAssetIndex);
-	if(vertAsset->state != AssetState_Loaded)
-	{
-		logWarn("Compiling a shader but shader vertex file \'{0}\' is not loaded!", {vertAsset->shortName});
-	}
+	Shader *shaderProgram = getShader(assets, shaderProgramType);
 
 	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramType;
 	glShader->type = shaderProgramType;
@@ -131,8 +120,8 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 
 	if (glShader->shaderProgramID)
 	{
-		isVertexShaderCompiled   = compileShader(glShader, GL_ShaderPart_Vertex,   header, vertAsset);
-		isFragmentShaderCompiled = compileShader(glShader, GL_ShaderPart_Fragment, header, fragAsset);
+		isVertexShaderCompiled   = compileShader(glShader, shaderProgram, GL_ShaderPart_Vertex);
+		isFragmentShaderCompiled = compileShader(glShader, shaderProgram, GL_ShaderPart_Fragment);
 
 		// Link shader programs
 		if (isVertexShaderCompiled && isFragmentShaderCompiled)
@@ -210,9 +199,9 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	}
 
 	// Shaders
-	for (u32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
+	for (u32 shaderID=0; shaderID < ShaderCount; shaderID++)
 	{
-		bool shaderLoaded = loadShaderProgram(gl, assets, (ShaderProgramType)shaderID);
+		bool shaderLoaded = loadShaderProgram(gl, assets, (ShaderType)shaderID);
 		ASSERT(shaderLoaded, "Failed to load shader {0} into OpenGL.", {formatInt(shaderID)});
 	}
 }
@@ -236,7 +225,7 @@ static void GL_unloadAssets(Renderer *renderer)
 
 	// Shaders
 	gl->currentShader = -1;
-	for (u32 shaderID=0; shaderID < ShaderProgramCount; shaderID++)
+	for (u32 shaderID=0; shaderID < ShaderCount; shaderID++)
 	{
 		GL_ShaderProgram *shader = gl->shaders + shaderID;
 		glDeleteProgram(shader->shaderProgramID);
@@ -246,7 +235,7 @@ static void GL_unloadAssets(Renderer *renderer)
 
 static GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 {
-	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderProgramCount, "Invalid shader!");
+	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderCount, "Invalid shader!");
 	GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 	ASSERT(activeShader->isValid, "Shader not properly loaded!");
 
@@ -331,7 +320,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 		for (u32 i=0; i < buffer->items.count; i++)
 		{
 			RenderItem *item = pointerTo(&buffer->items, i);
-			ShaderProgramType desiredShader = item->shaderID;
+			ShaderType desiredShader = item->shaderID;
 
 			// TODO: @Speed Don't need to try and get this info if there's no sprite??? (spriteID==0)
 			// Currently, sprite index 0 is a "null sprite" with a texture of -1, so that getting the texture is
@@ -476,7 +465,7 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 	glEnable(GL_TEXTURE_2D);
 	GL_checkForError();
 
-	gl->currentShader = ShaderProgram_Invalid;
+	gl->currentShader = Shader_Invalid;
 
 	{
 		// DEBUG_BLOCK("DRAW WORLD BUFFER");
