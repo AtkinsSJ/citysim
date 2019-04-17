@@ -58,6 +58,11 @@ struct Asset
 	u8* memory;
 
 	// Type-specific stuff
+	// TODO: This union represents type-specific data size, which affects ALL assets!
+	// We might want to move everything into the *memory pointer, so that each Asset is only as big
+	// as it needs to be. The Shader struct is 65+ bytes (not including padding) which really inflates
+	// the other asset types. Though 65 isn't much, so maybe it's not a big deal. We'll see if we
+	// have anything bigger later.
 	union {
 		struct {
 			SDL_Cursor *sdlCursor;
