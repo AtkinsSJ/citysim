@@ -101,8 +101,7 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 {
 	bool result = false;
 
-	Asset *shaderProgramAsset = getShaderProgram(assets, shaderProgramType);
-	ASSERT(shaderProgramAsset->state == AssetState_Loaded, "Shader asset {0} not loaded!", {formatInt(shaderProgramType)});
+	ShaderProgram *shaderProgram = getShaderProgram(assets, shaderProgramType);
 
 	Asset *header = getTextAsset(assets, assets->shaderHeaderAssetIndex);
 	if(header->state != AssetState_Loaded)
@@ -110,13 +109,13 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 		logWarn("Compiling a shader but shader header file \'{0}\' is not loaded!", {header->shortName});
 	}
 
-	Asset *fragAsset = getTextAsset(assets, shaderProgramAsset->shaderProgram.fragShaderAssetIndex);
+	Asset *fragAsset = getTextAsset(assets, shaderProgram->fragShaderAssetIndex);
 	if(fragAsset->state != AssetState_Loaded)
 	{
 		logWarn("Compiling a shader but shader fragment file \'{0}\' is not loaded!", {fragAsset->shortName});
 	}
 
-	Asset *vertAsset = getTextAsset(assets, shaderProgramAsset->shaderProgram.vertShaderAssetIndex);
+	Asset *vertAsset = getTextAsset(assets, shaderProgram->vertShaderAssetIndex);
 	if(vertAsset->state != AssetState_Loaded)
 	{
 		logWarn("Compiling a shader but shader vertex file \'{0}\' is not loaded!", {vertAsset->shortName});

@@ -34,6 +34,12 @@ enum CursorType
 	CursorCount
 };
 
+struct ShaderProgram
+{
+	s32 fragShaderAssetIndex;
+	s32 vertShaderAssetIndex;
+};
+
 struct Asset
 {
 	AssetType type;
@@ -54,10 +60,7 @@ struct Asset
 			SDL_Cursor *sdlCursor;
 		} cursor;
 
-		struct {
-			s32 fragShaderAssetIndex;
-			s32 vertShaderAssetIndex;
-		} shaderProgram;
+		ShaderProgram shaderProgram;
 
 		struct {
 			bool isFileAlphaPremultiplied;
@@ -237,9 +240,9 @@ Asset *getCursor(AssetManager *assets, u32 cursorID)
 	return getAsset(assets, *get(&assets->cursorTypeToAssetIndex, cursorID));
 }
 
-Asset *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
+ShaderProgram *getShaderProgram(AssetManager *assets, ShaderProgramType shaderID)
 {
-	return getAsset(assets, *get(&assets->shaderProgramTypeToAssetIndex, shaderID));
+	return &getAsset(assets, *get(&assets->shaderProgramTypeToAssetIndex, shaderID))->shaderProgram;
 }
 
 // TODO: A way to get this as a String might be more convenient!
