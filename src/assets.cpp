@@ -142,6 +142,12 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	// Type-specific loading
 	switch (asset->type)
 	{
+		case AssetType_BitmapFont:
+		{
+			loadBMFont(assets, fileData, asset);
+			asset->state = AssetState_Loaded;
+		} break;
+
 		case AssetType_BuildingDefs:
 		{
 			loadBuildingDefs(&buildingDefs, assets, fileData, asset);
@@ -235,7 +241,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	}
 }
 
-void freeAsset(AssetManager *assets, Asset *asset)
+void unloadAsset(AssetManager *assets, Asset *asset)
 {
 	if (asset->state == AssetState_Unloaded) return;
 
@@ -260,9 +266,13 @@ void freeAsset(AssetManager *assets, Asset *asset)
 		} break;
 	}
 
-	assets->assetMemoryAllocated -= asset->size;
-	asset->size = 0;
-	free(asset->memory);
+	if (asset->memory != null)
+	{
+		assets->assetMemoryAllocated -= asset->size;
+		asset->size = 0;
+		free(asset->memory);
+	}
+
 	asset->state = AssetState_Unloaded;
 }
 
@@ -355,6 +365,14 @@ void addShaderProgram(AssetManager *assets, ShaderProgramType shaderID, char *ve
 	asset->shaderProgram.vertShaderAssetIndex = vertShaderAssetIndex;
 }
 
+void addBitmapFont(AssetManager *assets, String name, String filename)
+{
+	s32 assetIndex = addAsset(assets, AssetType_BitmapFont, filename);
+	BitmapFont_Meta *fontMeta = appendBlank(&assets->fonts);
+	fontMeta->name = name;
+	fontMeta->assetIndex = assetIndex;
+}
+
 void loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
@@ -442,9 +460,6 @@ void addAssets(AssetManager *assets)
 	// TODO: Settings?
 
 
-	// addBMFont(assets, FontAssetType_Buttons, "dejavu-14.fnt");
-	// addBMFont(assets, FontAssetType_Main, "dejavu-20.fnt");
-
 	addShaderHeader(assets, "header.glsl");
 	addShaderProgram(assets, ShaderProgram_Textured,   "textured.vert.glsl",   "textured.frag.glsl");
 	addShaderProgram(assets, ShaderProgram_Untextured, "untextured.vert.glsl", "untextured.frag.glsl");
@@ -458,7 +473,7 @@ void addAssets(AssetManager *assets)
 	addCursor(assets, Cursor_Hire,     "cursor_hire.png");
 
 #if BUILD_DEBUG
-	addBMFont(assets, makeString("debug"), makeString("debug.fnt"));
+	addBitmapFont(assets, makeString("debug"), makeString("debug.fnt"));
 #endif
 }
 
@@ -480,7 +495,7 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
 		Asset *asset = get(it);
-		freeAsset(assets, asset);
+		unloadAsset(assets, asset);
 	}
 
 	// General resetting of Assets system

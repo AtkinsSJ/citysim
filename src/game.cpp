@@ -334,7 +334,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	context->alignment = ALIGN_H_CENTRE;
 
 	UIButtonStyle *buttonStyle = context->windowStyle->buttonStyle;
-	BitmapFont *buttonFont = getFont(context->uiState->assets, buttonStyle->fontID);
+	BitmapFont *buttonFont = getFont(context->uiState->assets, buttonStyle->fontAssetIndex);
 	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
 	s32 maxButtonTextWidth = 0;
 
@@ -387,7 +387,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	V2 centre = uiBuffer->camera.pos;
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
-	BitmapFont *font = getFont(assets, labelStyle->fontID);
+	BitmapFont *font = getFont(assets, labelStyle->fontAssetIndex);
 	City *city = &gameState->city;
 
 	uiState->uiRects.count = 0;

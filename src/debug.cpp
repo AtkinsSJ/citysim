@@ -167,7 +167,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	{
 		if (debugState->font == null)
 		{
-			debugState->font = getFont(globalAppState.assets, makeString("debug"));
+			debugState->font = findFont(globalAppState.assets, makeString("debug"));
 		}
 
 		RenderBuffer *uiBuffer = uiState->uiBuffer;

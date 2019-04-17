@@ -26,7 +26,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
 	}
 
-	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
+	BitmapFont *font = getFont(context->uiState->assets, style->fontAssetIndex);
 	if (font)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
@@ -87,7 +87,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
 	}
 
-	BitmapFont *font = getFont(context->uiState->assets, style->fontID);
+	BitmapFont *font = getFont(context->uiState->assets, style->fontAssetIndex);
 	if (font)
 	{
 		f32 maxWidth;

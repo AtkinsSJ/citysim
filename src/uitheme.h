@@ -4,7 +4,7 @@ struct UIButtonStyle
 {
 	String name;
 
-	s32 fontID;
+	s32 fontAssetIndex;
 	V4 textColor;
 	u32 textAlignment;
 
@@ -19,7 +19,7 @@ struct UILabelStyle
 {
 	String name;
 	
-	s32 fontID;
+	s32 fontAssetIndex;
 	V4 textColor;
 };
 
@@ -27,7 +27,7 @@ struct UITextBoxStyle
 {
 	String name;
 	
-	s32 fontID;
+	s32 fontAssetIndex;
 	V4 textColor;
 	V4 backgroundColor;
 };
@@ -36,7 +36,7 @@ struct UITooltipStyle
 {
 	String name;
 	
-	s32 fontID;
+	s32 fontAssetIndex;
 	V4 textColor;
 
 	V4 backgroundColor;
@@ -49,7 +49,7 @@ struct UIMessageStyle
 {
 	String name;
 	
-	s32 fontID;
+	s32 fontAssetIndex;
 	V4 textColor;
 
 	V4 backgroundColor;
@@ -78,6 +78,7 @@ struct UIWindowStyle
 
 struct UITheme
 {
+	// TODO: Remove this?
 	V4 overlayColor;
 };
 

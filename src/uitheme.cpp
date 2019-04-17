@@ -10,7 +10,7 @@ static s32 findFontByName(LineReader *reader, AssetManager *assets, String fontN
 		auto font = get(it);
 		if (equals(font->name, fontName))
 		{
-			result = i;
+			result = font->assetIndex;
 			break;
 		}
 	}
@@ -136,7 +136,7 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 
 				if (fontName.length && fontFilename.length)
 				{
-					addBMFont(assets, fontName, fontFilename);
+					addBitmapFont(assets, fontName, fontFilename);
 				}
 				else
 				{
@@ -260,25 +260,25 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "font"))
 			{
-				s32 fontID = findFontByName(&reader, assets, nextToken(remainder, &remainder));
+				s32 fontAssetIndex = findFontByName(&reader, assets, nextToken(remainder, &remainder));
 
 				switch (target.type)
 				{
-					case Section_Button:     target.button->fontID        = fontID; break;
-					case Section_Label:      target.label->fontID         = fontID; break;
-					case Section_Tooltip:    target.tooltip->fontID       = fontID; break;
-					case Section_TextBox:    target.textBox->fontID       = fontID; break;
-					case Section_UIMessage:  target.message->fontID       = fontID; break;
+					case Section_Button:     target.button->fontAssetIndex        = fontAssetIndex; break;
+					case Section_Label:      target.label->fontAssetIndex         = fontAssetIndex; break;
+					case Section_Tooltip:    target.tooltip->fontAssetIndex       = fontAssetIndex; break;
+					case Section_TextBox:    target.textBox->fontAssetIndex       = fontAssetIndex; break;
+					case Section_UIMessage:  target.message->fontAssetIndex       = fontAssetIndex; break;
 					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleFont"))
 			{
-				s32 fontID = findFontByName(&reader, assets, nextToken(remainder, &remainder));
+				s32 fontAssetIndex = findFontByName(&reader, assets, nextToken(remainder, &remainder));
 
 				switch (target.type)
 				{
-					case Section_Window:  target.window->titleFontID = fontID; break;
+					case Section_Window:  target.window->titleFontID = fontAssetIndex; break;
 					default:  WRONG_SECTION;
 				}
 			}

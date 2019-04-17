@@ -4,18 +4,13 @@ enum AssetType
 {
 	AssetType_Misc,
 
+	AssetType_BitmapFont,
 	AssetType_BuildingDefs,
-
 	AssetType_Cursor,
-	AssetType_Font,
-	
 	AssetType_ShaderProgram,
 	AssetType_ShaderPart,
-
 	AssetType_Texture,
-
 	AssetType_TerrainDefs,
-
 	AssetType_UITheme,
 };
 
@@ -68,6 +63,8 @@ struct Asset
 			bool isFileAlphaPremultiplied;
 			SDL_Surface *surface;
 		} texture;
+
+		BitmapFont bitmapFont;
 	};
 };
 
@@ -84,6 +81,12 @@ enum ShaderProgramType
 struct Texture_Temp
 {
 	String filename;
+	s32 assetIndex;
+};
+
+struct BitmapFont_Meta
+{
+	String name;
 	s32 assetIndex;
 };
 
@@ -128,7 +131,10 @@ struct AssetManager
 	ChunkedArray<s32> cursorTypeToAssetIndex;
 	ChunkedArray<s32> shaderProgramTypeToAssetIndex;
 
-	ChunkedArray<BitmapFont> fonts;
+	ChunkedArray<BitmapFont_Meta> fonts;
+
+	// TODO: This stuff is in the assetArena, maybe we should migrate it to each of the styles being an Asset?
+	UITheme theme;
 	ChunkedArray<UIButtonStyle>  buttonStyles;
 	ChunkedArray<UILabelStyle>   labelStyles;
 	ChunkedArray<UITooltipStyle> tooltipStyles;
@@ -136,7 +142,6 @@ struct AssetManager
 	ChunkedArray<UITextBoxStyle> textBoxStyles;
 	ChunkedArray<UIWindowStyle>  windowStyles;
 
-	UITheme theme;
 	
 	// TODO: We eventually want some kind of by-name lookup rather than hard-coded indices!
 	s32 creditsAssetIndex;
@@ -154,7 +159,6 @@ struct AssetManager
 	eg, for Fonts, we probably want the memory* pointer to be to the glyph data so it's easy to locate.
 
 	Asset types:
-	- font assets
 	- texture assets
 	- sprites somehow??? There are thousands of them, because of fonts... maybe font glyphs should use a different, more specialised system?
 
@@ -200,12 +204,12 @@ Sprite *getSprite(AssetManager *assets, s32 spriteIndex)
 	return get(&assets->sprites, spriteIndex);
 }
 
-BitmapFont *getFont(AssetManager *assets, s32 fontID)
+BitmapFont *getFont(AssetManager *assets, s32 assetIndex)
 {
-	return get(&assets->fonts, fontID);
+	return &getAsset(assets, assetIndex)->bitmapFont;
 }
 
-BitmapFont *getFont(AssetManager *assets, String fontName)
+BitmapFont *findFont(AssetManager *assets, String fontName)
 {
 	BitmapFont *result = null;
 
@@ -214,7 +218,7 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 		auto font = get(it);
 		if (equals(font->name, fontName))
 		{
-			result = font;
+			result = getFont(assets, font->assetIndex);
 			break;
 		}
 	}
@@ -255,7 +259,7 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	case AssetType_Cursor:
 		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
 		break;
-	case AssetType_Font:
+	case AssetType_BitmapFont:
 		result = myprintf("{0}/fonts/{1}",    {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_ShaderProgram:
@@ -284,5 +288,3 @@ String getUserSettingsPath(AssetManager *assets)
 {
 	return getUserDataPath(assets, makeString("settings.cnf"));
 }
-
-BitmapFont *addBMFont(AssetManager *assets, String name, String filename);
