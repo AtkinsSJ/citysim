@@ -22,7 +22,7 @@ struct Terrain
 Terrain invalidTerrain = {0, 0};
 
 
-void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Asset *asset);
+void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset);
 
 // Returns 0 if not found
 s32 findTerrainTypeByName(String name)

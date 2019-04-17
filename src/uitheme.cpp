@@ -79,9 +79,9 @@ UIWindowStyle *findWindowStyle(AssetManager *assets, String name)
 
 #define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name})
 
-void loadUITheme(AssetManager *assets, Asset *asset)
+void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 {
-	LineReader reader = readLines(asset, true, true, '#');
+	LineReader reader = readLines(asset->shortName, data, true, true, '#');
 
 	UITheme *theme = &assets->theme;
 

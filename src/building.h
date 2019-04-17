@@ -64,7 +64,7 @@ struct Building
 	s32 currentJobs;
 };
 
-void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Asset *asset);
+void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Blob data, Asset *asset);
 
 // Returns 0 if not found
 s32 findBuildingTypeByName(String name)

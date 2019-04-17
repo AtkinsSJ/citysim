@@ -1,8 +1,8 @@
 #pragma once
 
-void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Asset *asset)
+void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset)
 {
-	LineReader reader = readLines(asset);
+	LineReader reader = readLines(asset->shortName, data);
 
 	initChunkedArray(terrains, &assets->assetArena, 16);
 	appendBlank(terrains);

@@ -1,8 +1,8 @@
 #pragma once
 
-void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Asset *asset)
+void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Blob data, Asset *asset)
 {
-	LineReader reader = readLines(asset);
+	LineReader reader = readLines(asset->shortName, data);
 
 	initChunkedArray(buildings, &assets->assetArena, 64);
 	appendBlank(buildings);

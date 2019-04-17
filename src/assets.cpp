@@ -144,8 +144,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	{
 		case AssetType_BuildingDefs:
 		{
-			copyFileIntoAsset(assets, fileData, asset);
-			loadBuildingDefs(&buildingDefs, assets, asset);
+			loadBuildingDefs(&buildingDefs, assets, fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -177,8 +176,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_TerrainDefs:
 		{
-			copyFileIntoAsset(assets, fileData, asset);
-			loadTerrainDefinitions(&terrainDefs, assets, asset);
+			loadTerrainDefinitions(&terrainDefs, assets, fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -225,8 +223,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_UITheme:
 		{
-			copyFileIntoAsset(assets, fileData, asset);
-			loadUITheme(assets, asset);
+			loadUITheme(assets, fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 

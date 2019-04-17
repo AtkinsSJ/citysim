@@ -37,6 +37,11 @@ inline LineReader readLines(Asset *asset, bool skipBlankLines=true, bool removeC
 	return readLines(asset->shortName, asset->size, asset->memory, skipBlankLines, removeComments, commentChar);
 }
 
+inline LineReader readLines(String name, Blob data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+{
+	return readLines(name, data.size, data.memory, skipBlankLines, removeComments, commentChar);
+}
+
 // @Deprecated, use readLines() instead
 inline LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
 {
