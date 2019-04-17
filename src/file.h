@@ -49,10 +49,15 @@ void closeFile(FileHandle *file)
 
 smm getFileSize(FileHandle *file)
 {
-	s64 currentPos = SDL_RWtell(file->sdl_file);
+	smm fileSize = -1;
 
-	smm fileSize = (smm) SDL_RWseek(file->sdl_file, 0, RW_SEEK_END);
-	SDL_RWseek(file->sdl_file, currentPos, RW_SEEK_SET);
+	if (file->isOpen)
+	{
+		s64 currentPos = SDL_RWtell(file->sdl_file);
+
+		fileSize = (smm) SDL_RWseek(file->sdl_file, 0, RW_SEEK_END);
+		SDL_RWseek(file->sdl_file, currentPos, RW_SEEK_SET);
+	}
 
 	return fileSize;
 }
@@ -61,7 +66,10 @@ smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
 {
 	smm bytesRead = 0;
 
-	bytesRead = SDL_RWread(file->sdl_file, memory, 1, size);
+	if (file->isOpen)
+	{
+		bytesRead = SDL_RWread(file->sdl_file, memory, 1, size);
+	}
 
 	return bytesRead;
 }

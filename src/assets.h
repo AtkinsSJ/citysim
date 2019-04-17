@@ -48,6 +48,8 @@ struct Asset
 	String fullName;
 
 	AssetState state;
+
+	// Depending on the AssetType, this could be the file contents, or something else!
 	smm size;
 	u8* memory;
 

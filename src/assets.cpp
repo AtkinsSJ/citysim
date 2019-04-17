@@ -46,6 +46,16 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
+u8 *allocate(AssetManager *assets, smm size)
+{
+	u8 *result = allocateRaw(size);
+
+	assets->assetMemoryAllocated += size;
+	assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
+
+	return result;
+}
+
 s32 addAsset(AssetManager *assets, AssetType type, String shortName)
 {
 	s32 index = assets->allAssets.count;
@@ -71,19 +81,26 @@ inline s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
 	return addAsset(assets, type, name);
 }
 
-SDL_Surface *createSurfaceFromAsset(Asset *asset)
+void copyFileIntoAsset(AssetManager *assets, Blob fileData, Asset *asset)
+{
+	asset->size = fileData.size;
+	asset->memory = allocate(assets, fileData.size);
+	memcpy(asset->memory, fileData.memory, fileData.size);
+}
+
+SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 {
 	SDL_Surface *result = null;
 
-	ASSERT(asset->state == AssetState_Loaded, "Attempted to create a surface from an unloaded asset! ({0})", {asset->fullName});
+	ASSERT(fileData.size > 0, "Attempted to create a surface from an unloaded asset! ({0})", {name});
 
-	SDL_RWops *rw = SDL_RWFromConstMem(asset->memory, asset->size);
+	SDL_RWops *rw = SDL_RWFromConstMem(fileData.memory, fileData.size);
 	if (rw)
 	{
 		result = IMG_Load_RW(rw, 0);
 
-		ASSERT(result != null, "Failed to load create SDL_Surface from asset '{0}'!\n{1}", {
-			asset->fullName, makeString(IMG_GetError())
+		ASSERT(result != null, "Failed to create SDL_Surface from asset '{0}'!\n{1}", {
+			name, makeString(IMG_GetError())
 		});
 
 		SDL_RWclose(rw);
@@ -91,7 +108,7 @@ SDL_Surface *createSurfaceFromAsset(Asset *asset)
 	else
 	{
 		logError("Failed to create SDL_RWops from asset '{0}'!\n{1}", {
-			asset->fullName, makeString(SDL_GetError())
+			name, makeString(SDL_GetError())
 		});
 	}
 
@@ -102,6 +119,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 {
 	ASSERT(asset->state == AssetState_Unloaded, "Attempted to load an asset ({0}) that is already loaded!", {asset->fullName});
 
+	Blob fileData = {};
 	// Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.
 	// eg, ShaderPrograms are made of several ShaderParts.
 	if (asset->fullName.length > 0)
@@ -109,23 +127,15 @@ void loadAsset(AssetManager *assets, Asset *asset)
 		FileHandle file = openFile(asset->fullName, FileAccess_Read);
 
 		smm fileSize = getFileSize(&file);
-		asset->memory = allocateRaw(fileSize);
 
-		asset->size = fileSize;
-
-		smm bytesRead = readFileIntoMemory(&file, fileSize, asset->memory);
+		fileData.size = fileSize;
+		fileData.memory = (u8*) allocate(&globalAppState.globalTempArena, fileSize);
+		smm bytesRead = readFileIntoMemory(&file, fileSize, fileData.memory);
 		closeFile(&file);
-
-		assets->assetMemoryAllocated += bytesRead;
-		assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
 
 		if (bytesRead != fileSize)
 		{
 			logError("File {0} was only partially loaded. Size {1}, loaded {2}", {asset->fullName, formatInt(fileSize), formatInt(bytesRead)});
-		}
-		else
-		{
-			asset->state = AssetState_Loaded;
 		}
 	}
 
@@ -134,14 +144,17 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	{
 		case AssetType_BuildingDefs:
 		{
+			copyFileIntoAsset(assets, fileData, asset);
 			loadBuildingDefs(&buildingDefs, assets, asset);
+			asset->state = AssetState_Loaded;
 		} break;
 
 		case AssetType_Cursor:
 		{
-			SDL_Surface *cursorSurface = createSurfaceFromAsset(asset);
+			SDL_Surface *cursorSurface = createSurfaceFromFileData(fileData, asset->fullName);
 			asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
 			SDL_FreeSurface(cursorSurface);
+			asset->state = AssetState_Loaded;
 		} break;
 
 		case AssetType_ShaderProgram:
@@ -164,12 +177,14 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_TerrainDefs:
 		{
+			copyFileIntoAsset(assets, fileData, asset);
 			loadTerrainDefinitions(&terrainDefs, assets, asset);
+			asset->state = AssetState_Loaded;
 		} break;
 
 		case AssetType_Texture:
 		{
-			SDL_Surface *surface = createSurfaceFromAsset(asset);
+			SDL_Surface *surface = createSurfaceFromFileData(fileData, asset->fullName);
 			ASSERT(surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
 
 			if (!asset->texture.isFileAlphaPremultiplied)
@@ -210,7 +225,15 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_UITheme:
 		{
+			copyFileIntoAsset(assets, fileData, asset);
 			loadUITheme(assets, asset);
+			asset->state = AssetState_Loaded;
+		} break;
+
+		default:
+		{
+			copyFileIntoAsset(assets, fileData, asset);
+			asset->state = AssetState_Loaded;
 		} break;
 	}
 }
