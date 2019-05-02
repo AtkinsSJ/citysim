@@ -1,0 +1,5 @@
+# Keyboard shortcuts for console commands
+# Only works if the console is enabled, obviously!
+
+F5    reload_assets
+HOME  resize_window 1024 768

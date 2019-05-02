@@ -24,6 +24,29 @@ struct ConsoleOutputLine
 	ConsoleLineStyleID style;
 };
 
+struct CommandShortcut
+{
+	KeyboardShortcut shortcut;
+	String command;
+};
+
+struct Console;
+
+struct Command
+{
+	String name;
+	void (*function)(Console*, s32, String);
+	s32 minArgs, maxArgs;
+
+	Command(char *name, void (*function)(Console*, s32, String), s32 minArgs, s32 maxArgs)
+	{
+		this->name = makeString(name);
+		this->function = function;
+		this->minArgs = minArgs;
+		this->maxArgs = maxArgs;
+	}
+};
+
 struct Console
 {
 	struct BitmapFont *font;
@@ -44,9 +67,12 @@ struct Console
 	ConsoleOutputLine *outputLines;
 	s32 currentOutputLine;
 	s32 scrollPos; // first line to draw, just above the console input
-};
-Console *globalConsole;
 
+	ChunkedArray<Command> commands;
+	ChunkedArray<CommandShortcut> commandShortcuts;
+};
+
+Console *globalConsole;
 const s32 consoleLineLength = 255;
 
 String *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=CLS_Default)
@@ -71,3 +97,5 @@ inline s32 consoleMaxScrollPos(Console *console)
 	s32 result = MIN(console->currentOutputLine-1, console->outputLineCount)-1;
 	return result;
 }
+
+void initCommands(Console *console); // Implementation in commands.cpp

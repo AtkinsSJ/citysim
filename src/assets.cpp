@@ -170,6 +170,12 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			asset->state = AssetState_Loaded;
 		} break;
 
+		case AssetType_Keymap:
+		{
+			
+			asset->state = AssetState_Loaded;
+		} break;
+
 		case AssetType_Shader:
 		{
 			Blob headerFile   = readTempFile(asset->shader.shaderHeaderFilename);
@@ -473,6 +479,8 @@ void addAssets(AssetManager *assets)
 	addAsset(assets, AssetType_UITheme,      "ui.theme");
 	addAsset(assets, AssetType_BuildingDefs, "buildings.def");
 	addAsset(assets, AssetType_TerrainDefs,  "terrain.def");
+
+	addAsset(assets, AssetType_Keymap, "dev.keymap");
 
 	// TODO: Settings?
 

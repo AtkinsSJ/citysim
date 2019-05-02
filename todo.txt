@@ -32,6 +32,12 @@ At some point we want:
 Things to work on next maybe:
 - STRING HASH TABLES!!! http://www.craftinginterpreters.com/hash-tables.html
 	- And then we can make the assets system fancy, etc etc.
+- Developer key commands!
+	- A dev.keymap file, that's a list of shortcuts, and then the console command to run. e.g:
+	F5 reload_assets
+	HOME resize_window 1024 768
+	- By just running console commands, it should be really simple to implement, AND it's really flexible and powerful too! Add a console command, with arguments, and automatically you can run it as a keyboard shortcut.
+	- We might want to add some other console commands for new things we want to do with shortcuts that aren't currently handled. But we'll get to that when we need to.
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?
 - Zones actually spawn stuff
@@ -183,9 +189,6 @@ Strings:
 
 Unicode stuff:
 - 2-stage table for properties, will save space! Not sure if I need that, but thought it was sensible to put the link here in case I do. https://www.strchr.com/multi-stage_tables
-
-Arenas:
-- Figure out how to prevent non-temp allocations happening when temp mem is open.
 
 GAME:
 - Menu / Game are separate code.

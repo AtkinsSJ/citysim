@@ -32,6 +32,7 @@ MemoryArena *globalFrameTempArena;
 #include "unicode.h"
 #include "stringbuilder.h"
 #include "string.cpp"
+#include "input.h"
 #include "debug.h"
 #include "types.cpp"
 #include "textinput.h"
@@ -48,7 +49,6 @@ MemoryArena *globalFrameTempArena;
 #include "assets.h"
 #include "render.h"
 #include "font.cpp"
-#include "input.h"
 #include "ui.h"
 #include "building.h"
 #include "terrain.h"
@@ -74,6 +74,7 @@ AppState globalAppState;
 
 #include "memory.cpp"
 #include "assets.cpp"
+#include "input.cpp"
 #include "data_file.cpp"
 #include "uitheme.cpp"
 #include "ui.cpp"
@@ -150,7 +151,6 @@ int main(int argc, char *argv[])
 #if BUILD_DEBUG
 	debugInit();
 	initConsole(&globalDebugState->debugArena, 256, 0.2f, 0.9f, 6.0f);
-	initCommands(globalConsole);
 
 	globalDebugState->showDebugData = false;
 #endif

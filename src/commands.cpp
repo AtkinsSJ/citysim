@@ -2,22 +2,7 @@
 #pragma warning(push)
 #pragma warning(disable: 4100) // Disable unused-arg warnings for commands, as they all have to take the same args.
 
-struct Command
-{
-	String name;
-	void (*function)(Console*, s32, String);
-	s32 minArgs, maxArgs;
-
-	Command(char *name, void (*function)(Console*, s32, String), s32 minArgs, s32 maxArgs)
-	{
-		this->name = makeString(name);
-		this->function = function;
-		this->minArgs = minArgs;
-		this->maxArgs = maxArgs;
-	}
-};
 #define ConsoleCommand(name) void cmd_##name(Console *console, s32 argumentsCount, String arguments)
-Array<Command> consoleCommands;
 
 static bool checkInGame()
 {
@@ -32,9 +17,13 @@ static bool checkInGame()
 ConsoleCommand(help)
 {
 	consoleWriteLine("Available commands are:");
-	for (u32 i=0; i < consoleCommands.count; i++)
+
+	for (auto it = iterate(&globalConsole->commands);
+		!it.isDone;
+		next(&it))
 	{
-		consoleWriteLine(myprintf(" - {0}", {consoleCommands[i].name}));
+		Command *command = get(it);
+		consoleWriteLine(myprintf(" - {0}", {command->name}));
 	}
 }
 
@@ -171,29 +160,22 @@ ConsoleCommand(zoom)
 	}
 }
 
-s32 compareCommands(Command *a, Command *b)
-{
-	return compare(a->name, b->name);
-}
-
 #define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
-	initialiseArray(&consoleCommands, 64);
+	initChunkedArray(&console->commands, &globalAppState.systemArena, 64);
 
-	append(&consoleCommands, Command(CMD(help), 0, 0));
-	append(&consoleCommands, Command(CMD(hello), 0, 1));
-	append(&consoleCommands, Command(CMD(window_size), 0, 0));
-	append(&consoleCommands, Command(CMD(resize_window), 2, 2));
-	append(&consoleCommands, Command(CMD(reload_assets), 0, 0));
-	append(&consoleCommands, Command(CMD(exit), 0, 0));
-	append(&consoleCommands, Command(CMD(funds), 1, 1));
-	append(&consoleCommands, Command(CMD(show_layer), 0, 1));
-	append(&consoleCommands, Command(CMD(zoom), 0, 1));
+	append(&console->commands, Command(CMD(help), 0, 0));
+	append(&console->commands, Command(CMD(exit), 0, 0));
+	append(&console->commands, Command(CMD(funds), 1, 1));
+	append(&console->commands, Command(CMD(hello), 0, 1));
+	append(&console->commands, Command(CMD(reload_assets), 0, 0));
+	append(&console->commands, Command(CMD(resize_window), 2, 2));
+	append(&console->commands, Command(CMD(show_layer), 0, 1));
+	append(&console->commands, Command(CMD(window_size), 0, 0));
+	append(&console->commands, Command(CMD(zoom), 0, 1));
 
-	sortInPlace(&consoleCommands, compareCommands);
-
-	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(consoleCommands.count)}), CLS_Default);
+	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(console->commands.count)}), CLS_Default);
 }
 #undef CMD
 

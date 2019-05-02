@@ -52,7 +52,7 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 {
 	Console *console = &theConsole;
 	console->currentHeight = 0;
-	console->font = 0;
+	console->font = null;
 	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
 	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
 	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 255);
@@ -77,6 +77,8 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 		console->outputLines[i].style = CLS_Default;
 	}
 	console->scrollPos = 0;
+
+	initCommands(console);
 
 	globalConsole = console;
 
@@ -128,49 +130,52 @@ void renderConsole(Console *console, UIState *uiState)
 	}
 }
 
-void consoleHandleCommand(Console *console)
+void consoleHandleCommand(Console *console, String commandInput)
 {
 	// copy input to output, for readability
-	String inputS = textInputToString(&console->input);
-	consoleWriteLine(myprintf("> {0}", {inputS}), CLS_InputEcho);
+	consoleWriteLine(myprintf("> {0}", {commandInput}), CLS_InputEcho);
 
 	if (console->input.glyphLength != 0)
 	{
 		// Add to history
-		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, inputS));
+		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, commandInput));
 		console->inputHistoryCursor = -1;
 
-		s32 tokenCount = countTokens(inputS);
+		s32 tokenCount = countTokens(commandInput);
 		if (tokenCount > 0)
 		{
 			bool foundCommand = false;
 			String arguments;
-			String firstToken = nextToken(inputS, &arguments);
-			for (u32 i=0; i < consoleCommands.count; i++)
+			String firstToken = nextToken(commandInput, &arguments);
+			
+			for (auto it = iterate(&globalConsole->commands);
+				!it.isDone;
+				next(&it))
 			{
-				Command cmd = consoleCommands[i];
-				if (equals(cmd.name, firstToken))
+				Command *command = get(it);
+
+				if (equals(command->name, firstToken))
 				{
 					foundCommand = true;
 
 					s32 argCount = tokenCount - 1;
-					if ((argCount < cmd.minArgs) || (argCount > cmd.maxArgs))
+					if ((argCount < command->minArgs) || (argCount > command->maxArgs))
 					{
-						if (cmd.minArgs == cmd.maxArgs)
+						if (command->minArgs == command->maxArgs)
 						{
 							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given.",
-								{firstToken, formatInt(cmd.minArgs), formatInt(argCount)}), CLS_Error);
+								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
 						}
 						else
 						{
 							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given.",
-								{firstToken, formatInt(cmd.minArgs), formatInt(cmd.maxArgs), formatInt(argCount)}), CLS_Error);
+								{firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount)}), CLS_Error);
 						}
 					}
 					else
 					{
 						u32 commandStartTime = SDL_GetTicks();
-						cmd.function(console, argCount, arguments);
+						command->function(console, argCount, arguments);
 						u32 commandEndTime = SDL_GetTicks();
 
 						consoleWriteLine(myprintf("Command executed in {0}ms", {formatInt(commandEndTime - commandStartTime)}));
@@ -230,7 +235,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 	{
 		if (updateTextInput(&console->input, inputState))
 		{
-			consoleHandleCommand(console);
+			consoleHandleCommand(console, textInputToString(&console->input));
 			console->scrollPos = 0;
 		}
 		else
