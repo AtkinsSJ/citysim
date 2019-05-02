@@ -99,3 +99,5 @@ inline s32 consoleMaxScrollPos(Console *console)
 }
 
 void initCommands(Console *console); // Implementation in commands.cpp
+
+void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);

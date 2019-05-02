@@ -170,9 +170,16 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			asset->state = AssetState_Loaded;
 		} break;
 
-		case AssetType_Keymap:
+		case AssetType_DevKeymap:
 		{
-			
+			if (globalConsole != null)
+			{
+				// NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
+				// directly refer to the string data from the file, instead of having to allocate a copy
+				// and not be able to free it ever. This is more memory efficient.
+				copyFileIntoAsset(assets, fileData, asset);
+				loadConsoleKeyboardShortcuts(globalConsole, fileData, asset->shortName);
+			}
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -480,7 +487,7 @@ void addAssets(AssetManager *assets)
 	addAsset(assets, AssetType_BuildingDefs, "buildings.def");
 	addAsset(assets, AssetType_TerrainDefs,  "terrain.def");
 
-	addAsset(assets, AssetType_Keymap, "dev.keymap");
+	addAsset(assets, AssetType_DevKeymap, "dev.keymap");
 
 	// TODO: Settings?
 

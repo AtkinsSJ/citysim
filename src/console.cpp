@@ -78,7 +78,11 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 	}
 	console->scrollPos = 0;
 
+	initChunkedArray(&console->commands, &globalAppState.systemArena, 64);
+	initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
+
 	initCommands(console);
+	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(console->commands.count)}), CLS_Default);
 
 	globalConsole = console;
 
@@ -147,7 +151,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 			bool foundCommand = false;
 			String arguments;
 			String firstToken = nextToken(commandInput, &arguments);
-			
+
 			for (auto it = iterate(&globalConsole->commands);
 				!it.isDone;
 				next(&it))
@@ -198,6 +202,21 @@ void consoleHandleCommand(Console *console, String commandInput)
 
 void updateAndRenderConsole(Console *console, InputState *inputState, UIState *uiState)
 {
+	// Keyboard shortcuts for commands
+	for (auto it = iterate(&console->commandShortcuts);
+		!it.isDone;
+		next(&it))
+	{
+		CommandShortcut *shortcut = get(it);
+
+		if (keyJustPressed(inputState, shortcut->shortcut))
+		{
+			consoleHandleCommand(console, shortcut->command);
+			console->scrollPos = 0;
+		}
+	}
+
+	// Show/hide the console
 	if (keyJustPressed(inputState, SDLK_TAB))
 	{
 		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
@@ -283,5 +302,33 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 		}
 
 		renderConsole(console, uiState);
+	}
+}
+
+void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
+{
+	LineReader reader = readLines(filename, data);
+
+	clear(&console->commandShortcuts);
+
+	while (!isDone(&reader))
+	{
+		String line = nextLine(&reader);
+
+		String shortcutString, command;
+
+		shortcutString = nextToken(line, &command);
+
+		KeyboardShortcut shortcut = parseKeyboardShortcut(shortcutString);
+		if (shortcut.key == SDLK_UNKNOWN)
+		{
+			error(&reader, "Unrecognised key in keyboard shortcut sequence '{0}'", {shortcutString});
+		}
+		else
+		{
+			CommandShortcut *commandShortcut = appendBlank(&console->commandShortcuts);
+			commandShortcut->shortcut = shortcut;
+			commandShortcut->command = command;
+		}
 	}
 }

@@ -163,8 +163,6 @@ ConsoleCommand(zoom)
 #define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
-	initChunkedArray(&console->commands, &globalAppState.systemArena, 64);
-
 	append(&console->commands, Command(CMD(help), 0, 0));
 	append(&console->commands, Command(CMD(exit), 0, 0));
 	append(&console->commands, Command(CMD(funds), 1, 1));
@@ -174,8 +172,6 @@ void initCommands(Console *console)
 	append(&console->commands, Command(CMD(show_layer), 0, 1));
 	append(&console->commands, Command(CMD(window_size), 0, 0));
 	append(&console->commands, Command(CMD(zoom), 0, 1));
-
-	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(console->commands.count)}), CLS_Default);
 }
 #undef CMD
 

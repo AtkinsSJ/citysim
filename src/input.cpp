@@ -275,3 +275,111 @@ void updateInput(InputState *inputState)
 		}
 	}
 }
+
+/**
+ * NB: Right now, we only support a very small number of shortcut key types.
+ * Add fancier stuff as needed.
+ *
+ * Basic format of a shortcut is, eg:
+ * Ctrl+Alt+Shift+Super+Home
+ *
+ * If any key in the sequence is unrecognised, we return SDLK_UNKNOWN for the `key` field.
+ *
+ * Only one "key", plus any combination of modifiers, is supported.
+ * Note that this means you can't bind something to just pressing a modifier key!
+ */
+
+KeyboardShortcut parseKeyboardShortcut(String input)
+{
+	KeyboardShortcut result = {};
+
+	String keyName, remainder;
+	keyName = nextToken(input, &remainder, '+');
+
+	while (keyName.length > 0)
+	{
+		// 
+		// MODIFIERS
+		// 
+		if (equals(keyName, "Alt"))
+		{
+			result.modifiers |= KeyMod_Alt;
+		}
+		else if (equals(keyName, "Ctrl"))
+		{
+			result.modifiers |= KeyMod_Ctrl;
+		}
+		else if (equals(keyName, "Shift"))
+		{
+			result.modifiers |= KeyMod_Shift;
+		}
+		else if (equals(keyName, "Super"))
+		{
+			result.modifiers |= KeyMod_Super;
+		}
+		// 
+		// KEYS
+		// 
+		else if (equals(keyName, "F1"))
+		{
+			result.key = SDLK_F1;
+		}
+		else if (equals(keyName, "F2"))
+		{
+			result.key = SDLK_F2;
+		}
+		else if (equals(keyName, "F3"))
+		{
+			result.key = SDLK_F3;
+		}
+		else if (equals(keyName, "F4"))
+		{
+			result.key = SDLK_F4;
+		}
+		else if (equals(keyName, "F5"))
+		{
+			result.key = SDLK_F5;
+		}
+		else if (equals(keyName, "F6"))
+		{
+			result.key = SDLK_F6;
+		}
+		else if (equals(keyName, "F7"))
+		{
+			result.key = SDLK_F7;
+		}
+		else if (equals(keyName, "F8"))
+		{
+			result.key = SDLK_F8;
+		}
+		else if (equals(keyName, "F9"))
+		{
+			result.key = SDLK_F9;
+		}
+		else if (equals(keyName, "F10"))
+		{
+			result.key = SDLK_F10;
+		}
+		else if (equals(keyName, "F11"))
+		{
+			result.key = SDLK_F11;
+		}
+		else if (equals(keyName, "F12"))
+		{
+			result.key = SDLK_F12;
+		}
+		// 
+		// DUNNO!
+		// 
+		else
+		{
+			// Error!
+			result.key = SDLK_UNKNOWN;
+			break;
+		}
+
+		keyName = nextToken(remainder, &remainder, '+');
+	}
+
+	return result;
+}

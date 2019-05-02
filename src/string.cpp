@@ -176,6 +176,9 @@ String nextToken(String input, String *remainder, char splitChar = 0)
 		}
 	}
 
+	// This is probably unnecessary because this string is meant to be read-only, but just in case.
+	firstWord.maxLength = firstWord.length;
+
 	return firstWord;
 }
 

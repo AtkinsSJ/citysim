@@ -7,7 +7,7 @@ enum AssetType
 	AssetType_BitmapFont,
 	AssetType_BuildingDefs,
 	AssetType_Cursor,
-	AssetType_Keymap,
+	AssetType_DevKeymap,
 	AssetType_Shader,
 	AssetType_Texture,
 	AssetType_TerrainDefs,
