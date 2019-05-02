@@ -368,6 +368,10 @@ KeyboardShortcut parseKeyboardShortcut(String input)
 		{
 			result.key = SDLK_F12;
 		}
+		else if (equals(keyName, "Home"))
+		{
+			result.key = SDLK_HOME;
+		}
 		// 
 		// DUNNO!
 		// 

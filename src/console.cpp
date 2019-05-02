@@ -139,7 +139,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 	// copy input to output, for readability
 	consoleWriteLine(myprintf("> {0}", {commandInput}), CLS_InputEcho);
 
-	if (console->input.glyphLength != 0)
+	if (commandInput.length > 0)
 	{
 		// Add to history
 		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, commandInput));
@@ -195,9 +195,6 @@ void consoleHandleCommand(Console *console, String commandInput)
 			}
 		}
 	}
-
-	// Do this last so we can actually read the input. To do otherwise would be Very Dumb™.
-	clear(&console->input);
 }
 
 void updateAndRenderConsole(Console *console, InputState *inputState, UIState *uiState)
@@ -256,6 +253,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 		{
 			consoleHandleCommand(console, textInputToString(&console->input));
 			console->scrollPos = 0;
+			clear(&console->input);
 		}
 		else
 		{

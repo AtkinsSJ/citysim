@@ -161,6 +161,8 @@ String nextToken(String input, String *remainder, char splitChar = 0)
 		firstWord = trim(firstWord);
 	}
 
+	firstWord.maxLength = firstWord.length;
+
 	if (remainder)
 	{
 		remainder->chars = firstWord.chars + firstWord.length;
@@ -174,10 +176,9 @@ String nextToken(String input, String *remainder, char splitChar = 0)
 			remainder->chars++;
 			*remainder = trimStart(*remainder);
 		}
-	}
 
-	// This is probably unnecessary because this string is meant to be read-only, but just in case.
-	firstWord.maxLength = firstWord.length;
+		remainder->maxLength = remainder->length;
+	}
 
 	return firstWord;
 }

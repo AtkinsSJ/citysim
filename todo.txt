@@ -33,11 +33,9 @@ Things to work on next maybe:
 - STRING HASH TABLES!!! http://www.craftinginterpreters.com/hash-tables.html
 	- And then we can make the assets system fancy, etc etc.
 - Developer key commands!
-	- A dev.keymap file, that's a list of shortcuts, and then the console command to run. e.g:
-	F5 reload_assets
-	HOME resize_window 1024 768
-	- By just running console commands, it should be really simple to implement, AND it's really flexible and powerful too! Add a console command, with arguments, and automatically you can run it as a keyboard shortcut.
-	- We might want to add some other console commands for new things we want to do with shortcuts that aren't currently handled. But we'll get to that when we need to.
+	- TODO: Right now, a shortcut with no modifiers will trigger if the modifiers ARE held too!
+		eg, Ctrl-F5 will trigger an "F5" shortcut.
+		Not sure how best to handle this. In some cases we might want that to happen, but in others we definitely don't!
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?
 - Zones actually spawn stuff

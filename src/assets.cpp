@@ -81,11 +81,15 @@ inline s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
 	return addAsset(assets, type, name);
 }
 
-void copyFileIntoAsset(AssetManager *assets, Blob fileData, Asset *asset)
+void copyFileIntoAsset(AssetManager *assets, Blob *fileData, Asset *asset)
 {
-	asset->size = fileData.size;
-	asset->memory = allocate(assets, fileData.size);
-	memcpy(asset->memory, fileData.memory, fileData.size);
+	asset->size = fileData->size;
+	asset->memory = allocate(assets, fileData->size);
+	memcpy(asset->memory, fileData->memory, fileData->size);
+
+	// NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
+	// can still use fileData without having to mess with it. Already had one bug caused by not doing this!
+	fileData->memory = asset->memory;
 }
 
 SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
@@ -177,7 +181,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 				// NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
 				// directly refer to the string data from the file, instead of having to allocate a copy
 				// and not be able to free it ever. This is more memory efficient.
-				copyFileIntoAsset(assets, fileData, asset);
+				copyFileIntoAsset(assets, &fileData, asset);
 				loadConsoleKeyboardShortcuts(globalConsole, fileData, asset->shortName);
 			}
 			asset->state = AssetState_Loaded;
@@ -274,7 +278,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		default:
 		{
-			copyFileIntoAsset(assets, fileData, asset);
+			copyFileIntoAsset(assets, &fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 	}
