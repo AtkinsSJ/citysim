@@ -2,4 +2,8 @@
 # Only works if the console is enabled, obviously!
 
 F5    reload_assets
-Home  resize_window 1024 768
+
+Ctrl+Home   resize_window 2560 1080
+Shift+Home  resize_window 1920 1080
+Alt+Home    resize_window 800 600
+Home        resize_window 1024 768

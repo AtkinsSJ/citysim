@@ -54,6 +54,18 @@ inline bool modifierKeyIsPressed(InputState *input, ModifierKey modifier)
 	return result;
 }
 
+inline u8 getPressedModifierKeys(InputState *input)
+{
+	u8 result = 0;
+
+	if (modifierKeyIsPressed(input, KeyMod_Alt))    result |= KeyMod_Alt;
+	if (modifierKeyIsPressed(input, KeyMod_Ctrl))   result |= KeyMod_Ctrl;
+	if (modifierKeyIsPressed(input, KeyMod_Shift))  result |= KeyMod_Shift;
+	if (modifierKeyIsPressed(input, KeyMod_Super))  result |= KeyMod_Super;
+
+	return result;
+}
+
 inline bool modifierKeysArePressed(InputState *input, u8 modifiers)
 {
 	bool result = true;
@@ -95,11 +107,6 @@ inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 	return result;
 }
 
-inline bool keyIsPressed(InputState *input, KeyboardShortcut shortcut)
-{
-	return keyIsPressed(input, shortcut.key, shortcut.modifiers);
-}
-
 inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
 	s32 keycode = keycodeToIndex(key);
@@ -129,19 +136,15 @@ inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 	return result;
 }
 
-inline bool keyWasPressed(InputState *input, KeyboardShortcut shortcut)
-{
-	return keyWasPressed(input, shortcut.key, shortcut.modifiers);
-}
-
 inline bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 {
 	return keyIsPressed(input, key, modifiers) && !keyWasPressed(input, key);
 }
 
-inline bool keyJustPressed(InputState *input, KeyboardShortcut shortcut)
+inline bool wasShortcutJustPressed(InputState *input, KeyboardShortcut shortcut)
 {
-	return keyJustPressed(input, shortcut.key, shortcut.modifiers);
+	return input->_keyDown[keycodeToIndex(shortcut.key)]
+		&& (getPressedModifierKeys(input) == shortcut.modifiers);
 }
 
 inline bool wasTextEntered(InputState *input)

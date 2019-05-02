@@ -206,7 +206,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 	{
 		CommandShortcut *shortcut = get(it);
 
-		if (keyJustPressed(inputState, shortcut->shortcut))
+		if (wasShortcutJustPressed(inputState, shortcut->shortcut))
 		{
 			consoleHandleCommand(console, shortcut->command);
 			console->scrollPos = 0;

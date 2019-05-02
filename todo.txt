@@ -32,10 +32,6 @@ At some point we want:
 Things to work on next maybe:
 - STRING HASH TABLES!!! http://www.craftinginterpreters.com/hash-tables.html
 	- And then we can make the assets system fancy, etc etc.
-- Developer key commands!
-	- TODO: Right now, a shortcut with no modifiers will trigger if the modifiers ARE held too!
-		eg, Ctrl-F5 will trigger an "F5" shortcut.
-		Not sure how best to handle this. In some cases we might want that to happen, but in others we definitely don't!
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?
 - Zones actually spawn stuff
