@@ -490,7 +490,7 @@ void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 
 
 void addAssets(AssetManager *assets)
 {
-	assets->creditsAssetIndex = addAsset(assets, AssetType_Misc, "credits.txt");
+	addAsset(assets, AssetType_Misc,         "credits.txt");
 	addAsset(assets, AssetType_UITheme,      "ui.theme");
 	addAsset(assets, AssetType_BuildingDefs, "buildings.def");
 	addAsset(assets, AssetType_TerrainDefs,  "terrain.def");

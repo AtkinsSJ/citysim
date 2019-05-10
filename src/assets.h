@@ -145,10 +145,6 @@ struct AssetManager
 	ChunkedArray<UITextBoxStyle> textBoxStyles;
 	ChunkedArray<UIWindowStyle>  windowStyles;
 
-	
-	// TODO: We eventually want some kind of by-name lookup rather than hard-coded indices!
-	s32 creditsAssetIndex;
-
 	/*
 
 	TODO
@@ -248,14 +244,6 @@ BitmapFont *findFont(AssetManager *assets, String fontName)
 Shader *getShader(AssetManager *assets, ShaderType shaderID)
 {
 	return &getAsset(assets, *get(&assets->shaderTypeToAssetIndex, shaderID))->shader;
-}
-
-// TODO: A way to get this as a String might be more convenient!
-Asset *getTextAsset(AssetManager *assets, s32 assetIndex)
-{
-	Asset *asset = getAsset(assets, assetIndex);
-	// TODO: load it if it's not loaded?
-	return asset;
 }
 
 String getAssetPath(AssetManager *assets, AssetType type, String shortName)

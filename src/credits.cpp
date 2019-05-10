@@ -16,7 +16,7 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontAssetIndex);
 
-	Asset *creditsText = getTextAsset(assets, assets->creditsAssetIndex);
+	Asset *creditsText = getAsset(assets, AssetType_Misc, makeString("credits.txt"));
 	LineReader reader = readLines(creditsText, false, false);
 	while (!isDone(&reader))
 	{
