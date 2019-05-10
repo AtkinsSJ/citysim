@@ -113,7 +113,7 @@ void drawTooltip(UIState *uiState)
 {
 	if (uiState->tooltip.show)
 	{
-		UITooltipStyle *style = findTooltipStyle(uiState->assets, uiState->tooltip.styleName);
+		UITooltipStyle *style = findTooltipStyle(&uiState->assets->theme, uiState->tooltip.styleName);
 		f32 depth = uiState->closestDepth - 100.0f;
 
 		V2 mousePos = uiState->uiBuffer->camera.mousePos;
@@ -140,7 +140,7 @@ bool uiButton(UIState *uiState,
 	bool buttonClicked = false;
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	InputState *input = uiState->input;
-	UIButtonStyle *style = findButtonStyle(uiState->assets, makeString("general"));
+	UIButtonStyle *style = findButtonStyle(&uiState->assets->theme, makeString("general"));
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
@@ -232,7 +232,7 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = findMessageStyle(uiState->assets, makeString("general"));
+			UIMessageStyle *style = findMessageStyle(&uiState->assets->theme, makeString("general"));
 
 			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 

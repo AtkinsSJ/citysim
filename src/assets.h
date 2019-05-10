@@ -130,12 +130,6 @@ struct AssetManager
 
 	// TODO: This stuff is in the assetArena, maybe we should migrate it to each of the styles being an Asset?
 	UITheme theme;
-	ChunkedArray<UIButtonStyle>  buttonStyles;
-	ChunkedArray<UILabelStyle>   labelStyles;
-	ChunkedArray<UITooltipStyle> tooltipStyles;
-	ChunkedArray<UIMessageStyle> messageStyles;
-	ChunkedArray<UITextBoxStyle> textBoxStyles;
-	ChunkedArray<UIWindowStyle>  windowStyles;
 
 	/*
 

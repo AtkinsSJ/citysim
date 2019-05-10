@@ -182,7 +182,7 @@ void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Ren
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
+	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
 	position.y += (uiText(uiState, font, LocalString("Settings"),

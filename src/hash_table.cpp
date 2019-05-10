@@ -102,7 +102,7 @@ inline smm growHashTableCapacity(smm capacity)
 }
 
 template<typename T>
-void put(HashTable<T> *table, String key, T value)
+T *put(HashTable<T> *table, String key, T value)
 {
 	DEBUG_FUNCTION();
 	// Expand if necessary
@@ -122,6 +122,8 @@ void put(HashTable<T> *table, String key, T value)
 	}
 
 	entry->value = value;
+
+	return &entry->value;
 }
 
 template<typename T>

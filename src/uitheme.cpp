@@ -3,60 +3,13 @@
 void initUITheme(UITheme *theme)
 {
 	initHashTable(&theme->fontNamesToAssetNames);
-}
 
-template<typename Style>
-Style *findStyle(ChunkedArray<Style> *stylesArray, String name)
-{
-	Style *result = null;
-
-	for (auto it = iterate(stylesArray); !it.isDone; next(&it))
-	{
-		auto style = get(it);
-		if (equals(style->name, name))
-		{
-			result = style;
-			break;
-		}
-	}
-
-	return result;
-}
-
-inline
-UIButtonStyle *findButtonStyle(AssetManager *assets, String name)
-{
-	return findStyle(&assets->buttonStyles, name);
-}
-
-inline
-UILabelStyle *findLabelStyle(AssetManager *assets, String name)
-{
-	return findStyle(&assets->labelStyles, name);
-}
-
-inline
-UITooltipStyle *findTooltipStyle(AssetManager *assets, String name)
-{
-	return findStyle(&assets->tooltipStyles, name);
-}
-
-inline
-UIMessageStyle *findMessageStyle(AssetManager *assets, String name)
-{
-	return findStyle(&assets->messageStyles, name);
-}
-
-inline
-UITextBoxStyle *findTextBoxStyle(AssetManager *assets, String name)
-{
-	return findStyle(&assets->textBoxStyles, name);
-}
-
-inline
-UIWindowStyle *findWindowStyle(AssetManager *assets, String name)
-{
-	return findStyle(&assets->windowStyles, name);
+	initHashTable(&theme->buttonStyles);
+	initHashTable(&theme->labelStyles);
+	initHashTable(&theme->tooltipStyles);
+	initHashTable(&theme->messageStyles);
+	initHashTable(&theme->textBoxStyles);
+	initHashTable(&theme->windowStyles);
 }
 
 #define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name})
@@ -67,6 +20,12 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 
 	UITheme *theme = &assets->theme;
 	clear(&theme->fontNamesToAssetNames);
+	clear(&theme->buttonStyles);
+	clear(&theme->labelStyles);
+	clear(&theme->tooltipStyles);
+	clear(&theme->messageStyles);
+	clear(&theme->textBoxStyles);
+	clear(&theme->windowStyles);
 
 	// Scoped structs and enums are a thing, apparently! WOOHOO!
 	enum SectionType {
@@ -132,45 +91,39 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "Button"))
 			{
-				String name = nextToken(remainder, &remainder);
+				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				target.type = Section_Button;
-				target.button = appendBlank(&assets->buttonStyles);
-				target.button->name = pushString(&assets->assetArena, name);
+				target.button = put(&theme->buttonStyles, name);
 			}
 			else if (equals(firstWord, "Label"))
 			{
-				String name = nextToken(remainder, &remainder);
+				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				target.type = Section_Label;
-				target.label = appendBlank(&assets->labelStyles);
-				target.label->name = pushString(&assets->assetArena, name);
+				target.label = put(&theme->labelStyles, name);
 			}
 			else if (equals(firstWord, "Tooltip"))
 			{
-				String name = nextToken(remainder, &remainder);
+				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				target.type = Section_Tooltip;
-				target.tooltip = appendBlank(&assets->tooltipStyles);
-				target.tooltip->name = pushString(&assets->assetArena, name);
+				target.tooltip = put(&theme->tooltipStyles, name);
 			}
 			else if (equals(firstWord, "UIMessage"))
 			{
-				String name = nextToken(remainder, &remainder);
+				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				target.type = Section_UIMessage;
-				target.message = appendBlank(&assets->messageStyles);
-				target.message->name = pushString(&assets->assetArena, name);
+				target.message = put(&theme->messageStyles, name);
 			}
 			else if (equals(firstWord, "TextBox"))
 			{
-				String name = nextToken(remainder, &remainder);
+				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				target.type = Section_TextBox;
-				target.textBox = appendBlank(&assets->textBoxStyles);
-				target.textBox->name = pushString(&assets->assetArena, name);
+				target.textBox = put(&theme->textBoxStyles, name);
 			}
 			else if (equals(firstWord, "Window"))
 			{
-				String name = nextToken(remainder, &remainder);
+				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				target.type = Section_Window;
-				target.window = appendBlank(&assets->windowStyles);
-				target.window->name = pushString(&assets->assetArena, name);
+				target.window = put(&theme->windowStyles, name);
 			}
 			else
 			{
@@ -323,19 +276,19 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "contentLabelStyle"))
 			{
-				String styleName = nextToken(remainder, &remainder);
+				String styleName = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				switch (target.type)
 				{
-					case Section_Window:  target.window->labelStyle = findLabelStyle(assets, styleName); break;
+					case Section_Window:  target.window->labelStyleName = styleName; break;
 					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "contentButtonStyle"))
 			{
-				String styleName = nextToken(remainder, &remainder);
+				String styleName = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 				switch (target.type)
 				{
-					case Section_Window:  target.window->buttonStyle = findButtonStyle(assets, styleName); break;
+					case Section_Window:  target.window->buttonStyleName = styleName; break;
 					default:  WRONG_SECTION;
 				}
 			}

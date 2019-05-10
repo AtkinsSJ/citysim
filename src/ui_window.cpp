@@ -5,8 +5,8 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 	DEBUG_FUNCTION();
 
 	UILabelStyle *style = null;
-	if (styleName)      style = findLabelStyle(context->uiState->assets, makeString(styleName));
-	if (style == null)  style = context->windowStyle->labelStyle;
+	if (styleName)      style = findLabelStyle(&context->uiState->assets->theme, makeString(styleName));
+	if (style == null)  style = findLabelStyle(&context->uiState->assets->theme, context->windowStyle->labelStyleName);
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -61,7 +61,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	UIButtonStyle *style = context->windowStyle->buttonStyle;
+	UIButtonStyle *style = findButtonStyle(&context->uiState->assets->theme, context->windowStyle->buttonStyleName);
 	InputState *input = context->uiState->input;
 
 	u32 textAlignment = style->textAlignment;
@@ -270,7 +270,7 @@ void updateAndRenderWindows(UIState *uiState)
 		f32 depth = 2000.0f - (20.0f * windowIndex);
 		bool isActive = (windowIndex == 0);
 		bool isModal = isActive && (window->flags & WinFlag_Modal) != 0;
-		UIWindowStyle *windowStyle = findWindowStyle(uiState->assets, window->styleName);
+		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
 
 		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
 
