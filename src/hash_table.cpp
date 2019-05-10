@@ -123,3 +123,19 @@ void put(HashTable<T> *table, String key, T value)
 
 	entry->value = value;
 }
+
+template<typename T>
+void clear(HashTable<T> *table)
+{
+	if (table->count > 0)
+	{
+		table->count = 0;
+		if (table->entries != null)
+		{
+			for (s32 i=0; i < table->capacity; i++)
+			{
+				table->entries[i].isOccupied = false;
+			}
+		}
+	}
+}

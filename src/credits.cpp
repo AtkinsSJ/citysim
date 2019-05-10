@@ -14,7 +14,7 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	f32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
-	BitmapFont *font = getFont(assets, labelStyle->fontAssetIndex);
+	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
 	Asset *creditsText = getAsset(assets, AssetType_Misc, makeString("credits.txt"));
 	LineReader reader = readLines(creditsText, false, false);

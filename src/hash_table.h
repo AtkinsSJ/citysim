@@ -30,3 +30,6 @@ T findValue(HashTable<T> *table, String key);
 
 template<typename T>
 void put(HashTable<T> *table, String key, T value);
+
+template<typename T>
+void clear(HashTable<T> *table);

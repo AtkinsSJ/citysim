@@ -89,8 +89,6 @@ struct DebugState
 	// Processed stuff
 	DebugCodeDataWrapper topCodeBlocksFreeListSentinel;
 	DebugCodeDataWrapper topCodeBlocksSentinel;
-
-	struct BitmapFont *font;
 };
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);

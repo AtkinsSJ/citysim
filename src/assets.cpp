@@ -31,13 +31,14 @@ void initAssetManager(AssetManager *assets)
 	initChunkedArray(&assets->shaderTypeToAssetIndex, &assets->assetArena, ShaderCount, true);
 
 	// Stuff that used to be in the UI theme is now here... I think UITheme isn't a useful concept?
-	initChunkedArray(&assets->fonts,         &assets->assetArena, 16);
 	initChunkedArray(&assets->buttonStyles,  &assets->assetArena, 16);
 	initChunkedArray(&assets->labelStyles,   &assets->assetArena, 16);
 	initChunkedArray(&assets->tooltipStyles, &assets->assetArena, 16);
 	initChunkedArray(&assets->messageStyles, &assets->assetArena, 16);
 	initChunkedArray(&assets->textBoxStyles, &assets->assetArena, 16);
 	initChunkedArray(&assets->windowStyles,  &assets->assetArena, 16);
+
+	initUITheme(&assets->theme);
 }
 
 AssetManager *createAssetManager()
@@ -392,6 +393,12 @@ s32 addSprite(AssetManager *assets, u32 spriteAssetType, char *filename, Rect2 u
 	return addSprite(assets, spriteAssetType, textureID, uv);
 }
 
+void addFont(AssetManager *assets, String name, String filename)
+{
+	addAsset(assets, AssetType_BitmapFont, filename);
+	put(&assets->theme.fontNamesToAssetNames, name, filename);
+}
+
 void addShader(AssetManager *assets, ShaderType shaderID, char *headerFilename, char *vertFilename, char *fragFilename)
 {
 	s32 assetIndex = addAsset(assets, AssetType_Shader, null);
@@ -401,14 +408,6 @@ void addShader(AssetManager *assets, ShaderType shaderID, char *headerFilename, 
 	asset->shader.shaderHeaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, headerFilename));
 	asset->shader.vertexShaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, vertFilename));
 	asset->shader.fragmentShaderFilename = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, fragFilename));
-}
-
-void addBitmapFont(AssetManager *assets, String name, String filename)
-{
-	s32 assetIndex = addAsset(assets, AssetType_BitmapFont, filename);
-	BitmapFont_Meta *fontMeta = appendBlank(&assets->fonts);
-	fontMeta->name = name;
-	fontMeta->assetIndex = assetIndex;
 }
 
 void loadAssets(AssetManager *assets)
@@ -509,10 +508,6 @@ void addAssets(AssetManager *assets)
 	addAsset(assets, AssetType_Cursor, "cursor_plant.png");
 	addAsset(assets, AssetType_Cursor, "cursor_harvest.png");
 	addAsset(assets, AssetType_Cursor, "cursor_hire.png");
-
-#if BUILD_DEBUG
-	addBitmapFont(assets, makeString("debug"), makeString("debug.fnt"));
-#endif
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
@@ -524,9 +519,6 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	SDL_SetCursor(systemWaitCursor);
 	defer { SDL_FreeCursor(systemWaitCursor); };
-
-	globalDebugState->font = null;
-	globalConsole->font = null;
 
 	// Actual reloading
 

@@ -1,26 +1,8 @@
 #pragma once
 
-static s32 findFontByName(LineReader *reader, AssetManager *assets, String fontName)
+void initUITheme(UITheme *theme)
 {
-	s32 result = -1;
-	
-	s32 i = 0;
-	for (auto it = iterate(&assets->fonts); !it.isDone; next(&it), i++)
-	{
-		auto font = get(it);
-		if (equals(font->name, fontName))
-		{
-			result = font->assetIndex;
-			break;
-		}
-	}
-
-	if (result == -1)
-	{
-		error(reader, "Unrecognized font name '{0}'", {fontName});
-	}
-
-	return result;
+	initHashTable(&theme->fontNamesToAssetNames);
 }
 
 template<typename Style>
@@ -84,6 +66,7 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 	LineReader reader = readLines(asset->shortName, data, true, true, '#');
 
 	UITheme *theme = &assets->theme;
+	clear(&theme->fontNamesToAssetNames);
 
 	// Scoped structs and enums are a thing, apparently! WOOHOO!
 	enum SectionType {
@@ -136,7 +119,7 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 
 				if (fontName.length && fontFilename.length)
 				{
-					addBitmapFont(assets, fontName, fontFilename);
+					addFont(assets, pushString(&assets->assetArena, fontName), pushString(&assets->assetArena, fontFilename));
 				}
 				else
 				{
@@ -260,25 +243,25 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "font"))
 			{
-				s32 fontAssetIndex = findFontByName(&reader, assets, nextToken(remainder, &remainder));
-
+				String fontName = pushString(&assets->assetArena, nextToken(remainder, &remainder));
+				
 				switch (target.type)
 				{
-					case Section_Button:     target.button->fontAssetIndex        = fontAssetIndex; break;
-					case Section_Label:      target.label->fontAssetIndex         = fontAssetIndex; break;
-					case Section_Tooltip:    target.tooltip->fontAssetIndex       = fontAssetIndex; break;
-					case Section_TextBox:    target.textBox->fontAssetIndex       = fontAssetIndex; break;
-					case Section_UIMessage:  target.message->fontAssetIndex       = fontAssetIndex; break;
+					case Section_Button:     target.button->fontName        = fontName; break;
+					case Section_Label:      target.label->fontName         = fontName; break;
+					case Section_Tooltip:    target.tooltip->fontName       = fontName; break;
+					case Section_TextBox:    target.textBox->fontName       = fontName; break;
+					case Section_UIMessage:  target.message->fontName       = fontName; break;
 					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleFont"))
 			{
-				s32 fontAssetIndex = findFontByName(&reader, assets, nextToken(remainder, &remainder));
+				String fontName = pushString(&assets->assetArena, nextToken(remainder, &remainder));
 
 				switch (target.type)
 				{
-					case Section_Window:  target.window->titleFontID = fontAssetIndex; break;
+					case Section_Window:  target.window->titleFontName = fontName; break;
 					default:  WRONG_SECTION;
 				}
 			}

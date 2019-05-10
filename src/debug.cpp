@@ -6,7 +6,6 @@ void debugInit()
 	globalDebugState->showDebugData = false;
 	globalDebugState->captureDebugData = true;
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
-	globalDebugState->font = 0;
 
 	initLinkedListSentinel(&globalDebugState->arenaDataSentinel);
 	initLinkedListSentinel(&globalDebugState->codeDataSentinel);
@@ -165,10 +164,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 {
 	if (debugState)
 	{
-		if (debugState->font == null)
-		{
-			debugState->font = findFont(globalAppState.assets, makeString("debug"));
-		}
+		BitmapFont *font = getFont(globalAppState.assets, makeString("debug"));
 
 		RenderBuffer *uiBuffer = uiState->uiBuffer;
 
@@ -178,7 +174,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 			     100, color255(0,0,0,128));
 
 		DebugTextState textState;
-		initDebugTextState(&textState, uiState, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
+		initDebugTextState(&textState, uiState, font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
 
 		u32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 		debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
@@ -276,7 +272,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		}
 
 		// Put FPS in top right
-		initDebugTextState(&textState, uiState, debugState->font, makeWhite(), uiBuffer->camera.size, 16.0f, false, false);
+		initDebugTextState(&textState, uiState, font, makeWhite(), uiBuffer->camera.size, 16.0f, false, false);
 		{
 			String smsForFrame = makeString("???");
 			String sfps = makeString("???");

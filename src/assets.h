@@ -84,12 +84,6 @@ struct Texture_Temp
 	s32 assetIndex;
 };
 
-struct BitmapFont_Meta
-{
-	String name;
-	s32 assetIndex;
-};
-
 struct Sprite
 {
 	// Identifier so multiple sprites can be associated with the same id.
@@ -133,8 +127,6 @@ struct AssetManager
 	ChunkedArray<IndexRange> rangesBySpriteAssetType;
 
 	ChunkedArray<s32> shaderTypeToAssetIndex;
-
-	ChunkedArray<BitmapFont_Meta> fonts;
 
 	// TODO: This stuff is in the assetArena, maybe we should migrate it to each of the styles being an Asset?
 	UITheme theme;
@@ -183,7 +175,14 @@ Asset *getAsset(AssetManager *assets, s32 assetIndex)
 Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 {
 	DEBUG_FUNCTION();
-	return findValue(&assets->assetsByName[type], shortName);
+	Asset *result = findValue(&assets->assetsByName[type], shortName);
+
+	if (result == null)
+	{
+		logError("Requested asset '{0}' was not found!", {shortName});
+	}
+
+	return result;
 }
 
 inline Asset *getCursor(AssetManager *assets, String shortName)
@@ -213,37 +212,36 @@ Sprite *getSprite(AssetManager *assets, s32 spriteIndex)
 	return get(&assets->sprites, spriteIndex);
 }
 
-BitmapFont *getFont(AssetManager *assets, s32 assetIndex)
-{
-	return &getAsset(assets, assetIndex)->bitmapFont;
-}
-
-BitmapFont *findFont(AssetManager *assets, String fontName)
-{
-	DEBUG_FUNCTION();
-	BitmapFont *result = null;
-
-	for (auto it = iterate(&assets->fonts); !it.isDone; next(&it))
-	{
-		auto font = get(it);
-		if (equals(font->name, fontName))
-		{
-			result = getFont(assets, font->assetIndex);
-			break;
-		}
-	}
-
-	if (result == null)
-	{
-		logError("Requested font '{0}' was not found!", {fontName});
-	}
-
-	return result;
-}
-
 Shader *getShader(AssetManager *assets, ShaderType shaderID)
 {
 	return &getAsset(assets, *get(&assets->shaderTypeToAssetIndex, shaderID))->shader;
+}
+
+BitmapFont *getFont(AssetManager *assets, String fontName)
+{
+	BitmapFont *result = null;
+
+	String *fontFilename = find(&assets->theme.fontNamesToAssetNames, fontName);
+	if (fontFilename == null)
+	{
+		// Fall back to treating it as a filename
+		Asset *fontAsset = getAsset(assets, AssetType_BitmapFont, fontName);
+		if (fontAsset != null)
+		{
+			result = &fontAsset->bitmapFont;
+		}
+		logError("Failed to find font named '{0}' in the UITheme.", {fontName});
+	}
+	else
+	{
+		Asset *fontAsset = getAsset(assets, AssetType_BitmapFont, *fontFilename);
+		if (fontAsset != null)
+		{
+			result = &fontAsset->bitmapFont;
+		}
+	}
+
+	return result;
 }
 
 String getAssetPath(AssetManager *assets, AssetType type, String shortName)

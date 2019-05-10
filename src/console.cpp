@@ -52,7 +52,6 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 {
 	Console *console = &theConsole;
 	console->currentHeight = 0;
-	console->font = null;
 	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
 	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
 	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 255);
@@ -67,7 +66,6 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 	console->input = newTextInput(debugArena, consoleLineLength);
 	initChunkedArray(&console->inputHistory, debugArena, 256);
 	console->inputHistoryCursor = -1;
-	console->charWidth = 0;
 
 	console->outputLineCount = outputLineCount;
 	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
@@ -91,11 +89,7 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 
 void renderConsole(Console *console, UIState *uiState)
 {
-	if (console->font == null)
-	{
-		console->font = findFont(globalAppState.assets, makeString("debug"));
-		console->charWidth = findChar(console->font, 'M')->xAdvance;
-	}
+	BitmapFont *consoleFont = getFont(globalAppState.assets, makeString("debug"));
 
 	RenderBuffer *uiBuffer = uiState->uiBuffer;
 
@@ -103,7 +97,7 @@ void renderConsole(Console *console, UIState *uiState)
 
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
-	Rect2 textInputRect = drawTextInput(uiState, console->font, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
+	Rect2 textInputRect = drawTextInput(uiState, consoleFont, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
 	textState.pos.y -= textInputRect.h;
 
 	textState.pos.y -= 8.0f;
@@ -124,7 +118,7 @@ void renderConsole(Console *console, UIState *uiState)
 	for (s32 i=console->outputLineCount-console->scrollPos-1; i>=0; i--)
 	{
 		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
-		consoleTextOut(&textState, line->text, console->font, console->styles[line->style]);
+		consoleTextOut(&textState, line->text, consoleFont, console->styles[line->style]);
 
 		// If we've gone off the screen, stop!
 		if ((textState.pos.y < 0) || (textState.pos.y > uiBuffer->camera.size.y))

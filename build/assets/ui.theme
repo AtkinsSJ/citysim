@@ -9,6 +9,7 @@
 # may want variables we can define
 # may want to extend previously defined styles
 
+:Font debug       debug.fnt
 :Font smallFont   dejavu-14.fnt
 :Font normalFont  dejavu-20.fnt
 

@@ -4,7 +4,7 @@ struct UIButtonStyle
 {
 	String name;
 
-	s32 fontAssetIndex;
+	String fontName;
 	V4 textColor;
 	u32 textAlignment;
 
@@ -19,7 +19,7 @@ struct UILabelStyle
 {
 	String name;
 	
-	s32 fontAssetIndex;
+	String fontName;
 	V4 textColor;
 };
 
@@ -27,7 +27,7 @@ struct UITextBoxStyle
 {
 	String name;
 	
-	s32 fontAssetIndex;
+	String fontName;
 	V4 textColor;
 	V4 backgroundColor;
 };
@@ -36,7 +36,7 @@ struct UITooltipStyle
 {
 	String name;
 	
-	s32 fontAssetIndex;
+	String fontName;
 	V4 textColor;
 
 	V4 backgroundColor;
@@ -49,7 +49,7 @@ struct UIMessageStyle
 {
 	String name;
 	
-	s32 fontAssetIndex;
+	String fontName;
 	V4 textColor;
 
 	V4 backgroundColor;
@@ -63,7 +63,7 @@ struct UIWindowStyle
 	f32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
-	s32 titleFontID;
+	String titleFontName;
 	V4 titleColor;
 	V4 titleBarButtonHoverColor;
 
@@ -80,6 +80,9 @@ struct UITheme
 {
 	// TODO: Remove this?
 	V4 overlayColor;
+
+	HashTable<String> fontNamesToAssetNames;
 };
 
+void initUITheme(UITheme *theme);
 void loadUITheme(struct AssetManager *assets, Blob data, struct Asset *asset);

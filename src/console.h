@@ -49,7 +49,6 @@ struct Command
 
 struct Console
 {
-	struct BitmapFont *font;
 	ConsoleLineStyle styles[CLS_COUNT];
 
 	f32 currentHeight;
@@ -61,7 +60,6 @@ struct Console
 	TextInput input;
 	ChunkedArray<String> inputHistory;
 	s32 inputHistoryCursor;
-	s32 charWidth;
 
 	s32 outputLineCount;
 	ConsoleOutputLine *outputLines;

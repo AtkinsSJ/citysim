@@ -56,7 +56,7 @@ void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Rendere
 	f32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(assets, makeString("title"));
-	BitmapFont *font = getFont(assets, labelStyle->fontAssetIndex);
+	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
 	position.y += (uiText(uiState, font, LocalString("City Builder Thing"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;

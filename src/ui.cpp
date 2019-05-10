@@ -120,7 +120,7 @@ void drawTooltip(UIState *uiState)
 
 		V2 topLeft = mousePos + style->offsetFromCursor + v2(style->padding, style->padding);
 
-		Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontAssetIndex), uiState->tooltip.text,
+		Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->tooltip.text,
 			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1.0f, style->textColor);
 
 		labelRect = expand(labelRect, style->padding);
@@ -179,7 +179,7 @@ bool uiButton(UIState *uiState,
 
 	drawRect(uiState->uiBuffer, bounds, depth, backColor);
 	V2 textOrigin = originWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(uiState, getFont(uiState->assets, style->fontAssetIndex), text, textOrigin, textAlignment, depth + 1,
+	uiText(uiState, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, depth + 1,
 			style->textColor);
 
 	// Keyboard shortcut!
@@ -257,7 +257,7 @@ void drawUiMessage(UIState *uiState)
 			f32 depth = uiState->closestDepth - 100.0f;
 
 			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
-			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontAssetIndex), uiState->message.text, origin,
+			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1.0f, textColor);
 
 			labelRect = expand(labelRect, style->padding);
