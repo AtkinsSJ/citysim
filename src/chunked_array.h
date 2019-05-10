@@ -6,7 +6,7 @@
  * BUT, it also means the array won't be contiguious after allocating a second chunk.
  */
 
-template<class T>
+template<typename T>
 struct Chunk
 {
 	smm count;
@@ -17,7 +17,7 @@ struct Chunk
 	Chunk<T> *nextChunk;
 };
 
-template<class T>
+template<typename T>
 struct ChunkedArray
 {
 	MemoryArena *memoryArena;
@@ -30,7 +30,7 @@ struct ChunkedArray
 	Chunk<T> *lastChunk;
 };
 
-template<class T>
+template<typename T>
 struct ChunkedArrayIterator
 {
 	ChunkedArray<T> *array;
@@ -47,7 +47,7 @@ struct ChunkedArrayIterator
 
 // markFirstChunkAsFull is a little hacky. It sets the count to be chunkSize, so that
 // we can immediately get() those elements by index instead of having to append() to add them.
-template<class T>
+template<typename T>
 void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize, bool markFirstChunkAsFull = false)
 {
 	array->memoryArena = arena;
@@ -71,7 +71,7 @@ void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize,
 }
 
 // Doesn't free any memory, just marks all the chunks as empty.
-template<class T>
+template<typename T>
 void clear(ChunkedArray<T> *array)
 {
 	array->count = 0;
@@ -81,7 +81,7 @@ void clear(ChunkedArray<T> *array)
 	}
 }
 
-template<class T>
+template<typename T>
 void appendChunk(ChunkedArray<T> *array)
 {
 	Chunk<T> *newChunk = PushStruct(array->memoryArena, Chunk<T>);
@@ -96,7 +96,7 @@ void appendChunk(ChunkedArray<T> *array)
 	array->lastChunk = newChunk;
 }
 
-template<class T>
+template<typename T>
 T *append(ChunkedArray<T> *array, T item)
 {
 	bool useLastChunk = (array->count >= array->chunkSize * (array->chunkCount-1));
@@ -131,14 +131,14 @@ T *append(ChunkedArray<T> *array, T item)
 	return result;
 }
 
-template<class T>
+template<typename T>
 T *appendBlank(ChunkedArray<T> *array)
 {
 	T *result = append(array, {});
 	return result;
 }
 
-template<class T>
+template<typename T>
 T *get(ChunkedArray<T> *array, smm index)
 {
 	ASSERT(index < array->count, "Index out of array bounds!");

@@ -1,6 +1,6 @@
 #pragma once
 
-template<class T>
+template<typename T>
 Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 {
 	ASSERT(chunkIndex < array->chunkCount, "chunkIndex is out of range!");
@@ -29,7 +29,7 @@ Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 	return chunk;
 }
 
-template<class T>
+template<typename T>
 Chunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
 {
 	Chunk<T> *lastNonEmptyChunk = array->lastChunk;
@@ -45,7 +45,7 @@ Chunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
 	return lastNonEmptyChunk;
 }
 
-template<class T>
+template<typename T>
 void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 {
 	// Skip if there's nothing to do
@@ -105,7 +105,7 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 	}
 }
 
-template<class T>
+template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 {
 	bool found = false;
@@ -138,7 +138,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 	return found;
 }
 
-template<class T>
+template<typename T>
 T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 {
 	ASSERT(indexToRemove < array->count, "indexToRemove is out of range!");
@@ -201,7 +201,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 		// do stuff with the thing
 	}
  */
-template<class T>
+template<typename T>
 ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true)
 {
 	ChunkedArrayIterator<T> iterator = {};
@@ -222,7 +222,7 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bo
 	return iterator;
 }
 
-template<class T>
+template<typename T>
 void next(ChunkedArrayIterator<T> *iterator)
 {
 	if (iterator->isDone) return;
@@ -257,13 +257,13 @@ void next(ChunkedArrayIterator<T> *iterator)
 	}
 }
 
-template<class T>
+template<typename T>
 T *get(ChunkedArrayIterator<T> iterator)
 {
 	return &iterator.currentChunk->items[iterator.indexInChunk];
 }
 
-template<class T>
+template<typename T>
 T getValue(ChunkedArrayIterator<T> iterator)
 {
 	return iterator.currentChunk->items[iterator.indexInChunk];

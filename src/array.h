@@ -6,7 +6,7 @@
  * Could have a fixed-size option too, that allocates from a certain arena.
  */
 
-template<class T>
+template<typename T>
 struct Array
 {
 	u32 count;
@@ -20,7 +20,7 @@ struct Array
 	}
 };
 
-template<class T>
+template<typename T>
 void initialiseArray(Array<T> *a, u32 initialSize)
 {
 	a->items = (T*) allocateRaw(initialSize * sizeof(T));
@@ -28,20 +28,20 @@ void initialiseArray(Array<T> *a, u32 initialSize)
 	a->maxCount = initialSize;
 }
 
-template<class T>
+template<typename T>
 void free(Array<T> *a)
 {
 	free(a->items);
 }
 
 // Doesn't free the memory, just marks it as empty.
-template<class T>
+template<typename T>
 void clear(Array<T> *a)
 {
 	a->count = 0;
 }
 
-template<class T>
+template<typename T>
 bool resize(Array<T> *a, u32 newSize)
 {
 	ASSERT(newSize > a->count, "Shrinking an Array is not supported!");
@@ -59,7 +59,7 @@ bool resize(Array<T> *a, u32 newSize)
 	return false;
 }
 
-template<class T>
+template<typename T>
 T *append(Array<T> *a, T item)
 {
 	if (a->count >= a->maxCount)
@@ -74,7 +74,7 @@ T *append(Array<T> *a, T item)
 	return result;
 }
 
-template<class T>
+template<typename T>
 T *appendBlank(Array<T> *a)
 {
 	if (a->count >= a->maxCount)
@@ -89,7 +89,7 @@ T *appendBlank(Array<T> *a)
 	return result;
 }
 
-template<class T>
+template<typename T>
 T * pointerTo(Array<T> *a, u32 index)
 {
 	ASSERT(index >=0 && index < a->count, "Index out of range!");

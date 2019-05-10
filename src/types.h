@@ -49,8 +49,8 @@ I will create shorter versions of the basic types though.
 */
 #ifndef defer
 struct defer_dummy {};
-template <class F> struct deferrer { F f; ~deferrer() { f(); } };
-template <class F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
+template <typename F> struct deferrer { F f; ~deferrer() { f(); } };
+template <typename F> deferrer<F> operator*(defer_dummy, F f) { return {f}; }
 #define DEFER_(LINE) zz_defer##LINE
 #define DEFER(LINE) DEFER_(LINE)
 #define defer auto DEFER(__LINE__) = defer_dummy{} *[&]()
@@ -282,7 +282,7 @@ inline f32 ceil_f32(f32 in)
 // Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
 // In other cases, you'll want to write a type-specific function.
 // I'm not entirely confident this will work for all types, so make sure to TEST with any types you use it for!
-template<class T>
+template<typename T>
 bool equals(T a, T b)
 {
 	bool areEqual = true;
