@@ -32,6 +32,8 @@ MemoryArena *globalFrameTempArena;
 #include "unicode.h"
 #include "stringbuilder.h"
 #include "string.cpp"
+#include "hash_table.h"
+#include "hash_table.cpp"
 #include "input.h"
 #include "debug.h"
 #include "types.cpp"
@@ -188,6 +190,17 @@ int main(int argc, char *argv[])
 
 
 	// DO TEST STUFF HERE
+
+	HashTable<char> table = {};
+	initHashTable(&table);
+	for (char c = 'A'; c <= 'Z'; c++)
+	{
+		put(&table, repeatChar(c, 3), c);
+	}
+
+	char *f = find(&table, repeatChar('F', 3));
+	ASSERT(f != null, "");
+
 	// ChunkedArray<char> chars = {};
 	// initChunkedArray(&chars, globalFrameTempArena, 5);
 	// for (char c = 'A'; c <= 'Z'; c++)

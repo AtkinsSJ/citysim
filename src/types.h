@@ -126,11 +126,11 @@ struct V2I {
 
 struct Rect2I {
 	union {
-		struct {V2I pos;};
+		V2I pos;
 		struct {s32 x, y;};
 	};
 	union {
-		struct {V2I dim;};
+		V2I dim;
 		struct {s32 w, h;};
 	};
 };

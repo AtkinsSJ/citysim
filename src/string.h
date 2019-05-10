@@ -126,6 +126,21 @@ s32 compare(String a, String b)
 	return result;
 }
 
+u32 hashString(String s)
+{
+	// FNV-1a hash
+	// http://www.isthe.com/chongo/tech/comp/fnv/
+
+	u32 result = 2166136261;
+	for (s32 i = 0; i < s.length; i++)
+	{
+		result ^= s.chars[i];
+		result *= 16777619;
+	}
+
+	return result;
+}
+
 inline bool isWhitespace(unichar uChar, bool countNewlines=true)
 {
 	// TODO: There's probably more whitespace characters somewhere.

@@ -32,6 +32,12 @@ At some point we want:
 Things to work on next maybe:
 - STRING HASH TABLES!!! http://www.craftinginterpreters.com/hash-tables.html
 	- And then we can make the assets system fancy, etc etc.
+	- Hash tables are in! Still to do:
+		- Actually use them
+		- Cache string hashes rather than recomputing them always
+		- Somehow roll the memory allocations into another system? Hash table entries are in their own separate memory allocation right now, that feels a *little* icky.
+		- Removing items from the table
+		- Clearing the table
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?
 - Zones actually spawn stuff
