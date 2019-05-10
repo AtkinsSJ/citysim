@@ -3,6 +3,7 @@
 template<typename T>
 void expandHashTable(HashTable<T> *table, smm newCapacity)
 {
+	DEBUG_FUNCTION();
 	ASSERT(newCapacity > 0, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
 	ASSERT(newCapacity > table->capacity, "Attempted to shrink a hash table from {0} to {1}", {formatInt(table->capacity), formatInt(newCapacity)});
 
@@ -34,7 +35,7 @@ void expandHashTable(HashTable<T> *table, smm newCapacity)
 }
 
 template<typename T>
-void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, smm initialCapacity=0)
+void initHashTable(HashTable<T> *table, f32 maxLoadFactor, smm initialCapacity)
 {
 	*table = {};
 
@@ -49,7 +50,9 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, smm initialCapa
 template<typename T>
 HashTableEntry<T> *findEntry(HashTable<T> *table, String key)
 {
-	u32 index = hashString(key) % table->capacity;
+	DEBUG_FUNCTION();
+	u32 hash = hashString(key);
+	u32 index = hash % table->capacity;
 	HashTableEntry<T> *result = null;
 
 	// "Linear probing" - on collision, just keep going until you find an empty slot
@@ -57,7 +60,8 @@ HashTableEntry<T> *findEntry(HashTable<T> *table, String key)
 	{
 		HashTableEntry<T> *entry = table->entries + index;
 
-		if (entry->isOccupied == false || equals(key, entry->key))
+		if (entry->isOccupied == false || 
+			(hash == entry->keyHash && equals(key, entry->key)))
 		{
 			result = entry;
 			break;
@@ -72,6 +76,7 @@ HashTableEntry<T> *findEntry(HashTable<T> *table, String key)
 template<typename T>
 T *find(HashTable<T> *table, String key)
 {
+	DEBUG_FUNCTION();
 	if (table->entries == null) return null;
 
 	HashTableEntry<T> *entry = findEntry(table, key);
@@ -93,6 +98,7 @@ inline smm growHashTableCapacity(smm capacity)
 template<typename T>
 void put(HashTable<T> *table, String key, T value)
 {
+	DEBUG_FUNCTION();
 	// Expand if necessary
 	if (table->count + 1 > (table->capacity * table->maxLoadFactor))
 	{

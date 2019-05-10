@@ -30,6 +30,35 @@ struct ChunkedArray
 	Chunk<T> *lastChunk;
 };
 
+// markFirstChunkAsFull is a little hacky. It sets the count to be chunkSize, so that
+// we can immediately get() those elements by index instead of having to append() to add them.
+template<typename T>
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize, bool markFirstChunkAsFull = false);
+
+// Doesn't free any memory, just marks all the chunks as empty.
+template<typename T>
+void clear(ChunkedArray<T> *array);
+
+template<typename T>
+T *append(ChunkedArray<T> *array, T item);
+
+template<typename T>
+T *appendBlank(ChunkedArray<T> *array)
+{
+	T *result = append(array, {});
+	return result;
+}
+
+template<typename T>
+T *get(ChunkedArray<T> *array, smm index);
+
+template<typename T>
+void reserve(ChunkedArray<T> *array, smm desiredSize);
+
+//////////////////////////////////////////////////
+// ITERATOR STUFF                               //
+//////////////////////////////////////////////////
+
 template<typename T>
 struct ChunkedArrayIterator
 {
@@ -45,140 +74,14 @@ struct ChunkedArrayIterator
 	bool isDone;
 };
 
-// markFirstChunkAsFull is a little hacky. It sets the count to be chunkSize, so that
-// we can immediately get() those elements by index instead of having to append() to add them.
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize, bool markFirstChunkAsFull = false)
-{
-	array->memoryArena = arena;
-	array->chunkSize = chunkSize;
-	array->chunkCount = 1;
-	array->count = 0;
-
-	array->firstChunk.count = 0;
-	array->firstChunk.maxCount = chunkSize;
-	array->firstChunk.items = PushArray(arena, T, chunkSize);
-	array->firstChunk.nextChunk = null;
-	array->firstChunk.prevChunk = null;
-
-	array->lastChunk = &array->firstChunk;
-
-	if (markFirstChunkAsFull)
-	{
-		array->count = chunkSize;
-		array->firstChunk.count = chunkSize;
-	}
-}
-
-// Doesn't free any memory, just marks all the chunks as empty.
-template<typename T>
-void clear(ChunkedArray<T> *array)
-{
-	array->count = 0;
-	for (Chunk<T> *chunk = &array->firstChunk; chunk; chunk = chunk->nextChunk)
-	{
-		chunk->count = 0;
-	}
-}
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true);
 
 template<typename T>
-void appendChunk(ChunkedArray<T> *array)
-{
-	Chunk<T> *newChunk = PushStruct(array->memoryArena, Chunk<T>);
-	newChunk->count = 0;
-	newChunk->maxCount = array->chunkSize;
-	newChunk->items = PushArray(array->memoryArena, T, array->chunkSize);
-	newChunk->prevChunk = array->lastChunk;
-	newChunk->nextChunk = null;
-
-	array->chunkCount++;
-	array->lastChunk->nextChunk = newChunk;
-	array->lastChunk = newChunk;
-}
+void next(ChunkedArrayIterator<T> *iterator);
 
 template<typename T>
-T *append(ChunkedArray<T> *array, T item)
-{
-	bool useLastChunk = (array->count >= array->chunkSize * (array->chunkCount-1));
-	if (array->count >= (array->chunkSize * array->chunkCount))
-	{
-		appendChunk(array);
-		useLastChunk = true;
-	}
-
-	// Shortcut to the last chunk, because that's what we want 99% of the time!
-	Chunk<T> *chunk = null;
-	if (useLastChunk)
-	{
-		chunk = array->lastChunk;
-	}
-	else
-	{
-		chunk = &array->firstChunk;
-		smm indexWithinChunk = array->count;
-		while (indexWithinChunk >= array->chunkSize)
-		{
-			chunk = chunk->nextChunk;
-			indexWithinChunk -= array->chunkSize;
-		}
-	}
-
-	array->count++;
-
-	T *result = chunk->items + chunk->count++;
-	*result = item;
-
-	return result;
-}
+T *get(ChunkedArrayIterator<T> iterator);
 
 template<typename T>
-T *appendBlank(ChunkedArray<T> *array)
-{
-	T *result = append(array, {});
-	return result;
-}
-
-template<typename T>
-T *get(ChunkedArray<T> *array, smm index)
-{
-	ASSERT(index < array->count, "Index out of array bounds!");
-
-	T *result = null;
-
-	smm chunkIndex = index / array->chunkSize;
-	smm itemIndex  = index % array->chunkSize;
-
-	if (chunkIndex == 0)
-	{
-		// Early out!
-		result = array->firstChunk.items + itemIndex;
-	}
-	else if (chunkIndex == (array->chunkCount - 1))
-	{
-		// Early out!
-		result = array->lastChunk->items + itemIndex;
-	}
-	else
-	{
-		// Walk the chunk chain
-		Chunk<T> *chunk = &array->firstChunk;
-		while (chunkIndex > 0)
-		{
-			chunkIndex--;
-			chunk = chunk->nextChunk;
-		}
-
-		result = chunk->items + itemIndex;
-	}
-
-	return result;
-}
-
-template<typename T>
-void reserve(ChunkedArray<T> *array, smm desiredSize)
-{
-	while ((array->chunkSize * array->chunkCount) < desiredSize)
-	{
-		appendChunk(array);
-	}
-}
+T getValue(ChunkedArrayIterator<T> iterator);

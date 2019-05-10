@@ -18,3 +18,12 @@ struct HashTable
 	f32 maxLoadFactor;
 	HashTableEntry<T> *entries;
 };
+
+template<typename T>
+void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, smm initialCapacity=0);
+
+template<typename T>
+T *find(HashTable<T> *table, String key);
+
+template<typename T>
+void put(HashTable<T> *table, String key, T value);

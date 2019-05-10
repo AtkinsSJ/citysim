@@ -19,6 +19,7 @@ enum AppStatus
 	AppStatus_Credits,
 	AppStatus_Quit,
 };
+struct MemoryArena *globalFrameTempArena;
 
 #include "log.h"
 #include "types.h"
@@ -26,14 +27,11 @@ enum AppStatus
 #include "array.h"
 #include "memory.h"
 #include "chunked_array.h"
-#include "chunked_array.cpp"
-MemoryArena *globalFrameTempArena;
 #include "string.h"
 #include "unicode.h"
 #include "stringbuilder.h"
 #include "string.cpp"
 #include "hash_table.h"
-#include "hash_table.cpp"
 #include "input.h"
 #include "debug.h"
 #include "types.cpp"
@@ -75,6 +73,8 @@ struct AppState
 AppState globalAppState;
 
 #include "memory.cpp"
+#include "chunked_array.cpp"
+#include "hash_table.cpp"
 #include "assets.cpp"
 #include "input.cpp"
 #include "data_file.cpp"

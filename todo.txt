@@ -36,7 +36,7 @@ Things to work on next maybe:
 		- Actually use them
 		- Cache string hashes rather than recomputing them always
 		- Somehow roll the memory allocations into another system? Hash table entries are in their own separate memory allocation right now, that feels a *little* icky.
-		- Removing items from the table
+		- Removing items from the table, see http://www.craftinginterpreters.com/hash-tables.html#deleting-entries
 		- Clearing the table
 - Power stations and connectivity and consumption?
 - Make assets reload automatically?
