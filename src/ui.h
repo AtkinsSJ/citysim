@@ -75,7 +75,7 @@ struct UIState
 
 	s32 openMenu;
 
-	u32 currentCursor;
+	String currentCursor;
 	bool cursorIsVisible;
 
 	// UI elements that react to the mouse should only do so if this is false - and then
@@ -88,8 +88,12 @@ struct UIState
 	V2 windowDragWindowStartPos;
 };
 
-void setCursor(UIState *uiState, u32 cursorID)
+void setCursor(UIState *uiState, String cursorName)
 {
-	uiState->currentCursor = cursorID;
-	SDL_SetCursor(getCursor(uiState->assets, cursorID)->cursor.sdlCursor);
+	uiState->currentCursor = cursorName;
+	SDL_SetCursor(getCursor(uiState->assets, cursorName)->cursor.sdlCursor);
+}
+inline void setCursor(UIState *uiState, char *cursorName)
+{
+	setCursor(uiState, makeString(cursorName));
 }

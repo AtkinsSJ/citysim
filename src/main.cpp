@@ -191,15 +191,14 @@ int main(int argc, char *argv[])
 
 	// DO TEST STUFF HERE
 
-	HashTable<char> table = {};
-	initHashTable(&table);
-	for (char c = 'A'; c <= 'Z'; c++)
-	{
-		put(&table, repeatChar(c, 3), c);
-	}
-
-	char *f = find(&table, repeatChar('F', 3));
-	ASSERT(f != null, "");
+	// HashTable<char> table = {};
+	// initHashTable(&table);
+	// for (char c = 'A'; c <= 'Z'; c++)
+	// {
+	// 	put(&table, repeatChar(c, 3), c);
+	// }
+	// char *f = find(&table, repeatChar('F', 3));
+	// ASSERT(f != null, "");
 
 	// ChunkedArray<char> chars = {};
 	// initChunkedArray(&chars, globalFrameTempArena, 5);
@@ -207,10 +206,8 @@ int main(int argc, char *argv[])
 	// {
 	// 	append(&chars, c);
 	// }
-
 	// moveItemKeepingOrder(&chars, 0, 1);
 	// moveItemKeepingOrder(&chars, 1, 0);
-
 	// for (auto it = iterate(&chars); !it.isDone; next(&it))
 	// {
 	// 	logInfo("Char is: {0}", {makeString(get(it), 1)});
@@ -218,7 +215,7 @@ int main(int argc, char *argv[])
 
 	UIState *uiState = &appState->uiState;
 	initUiState(uiState, &renderer->uiBuffer, assets, &inputState);
-	setCursor(uiState, Cursor_Main);
+	setCursor(uiState, "cursor_main.png");
 	setCursorVisible(uiState, true);
 
 	Camera *worldCamera = &renderer->worldBuffer.camera;

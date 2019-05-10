@@ -90,6 +90,12 @@ T *find(HashTable<T> *table, String key)
 	}
 }
 
+template<typename T>
+T findValue(HashTable<T> *table, String key)
+{
+	return *find(table, key);
+}
+
 inline smm growHashTableCapacity(smm capacity)
 {
 	return (capacity < 8) ? 8 : capacity * 2;

@@ -13,6 +13,11 @@ void initAssetManager(AssetManager *assets)
 	assets->assetMemoryAllocated = 0;
 	assets->maxAssetMemoryAllocated = 0;
 
+	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
+	{
+		initHashTable(&assets->assetsByName[assetType]);
+	}
+
 	initChunkedArray(&assets->rangesBySpriteAssetType, &assets->assetArena, 256);
 	appendBlank(&assets->rangesBySpriteAssetType);
 
@@ -23,7 +28,6 @@ void initAssetManager(AssetManager *assets)
 	Sprite *nullSprite = appendBlank(&assets->sprites);
 	nullSprite->textureID = -1;
 
-	initChunkedArray(&assets->cursorTypeToAssetIndex, &assets->assetArena, CursorCount, true);
 	initChunkedArray(&assets->shaderTypeToAssetIndex, &assets->assetArena, ShaderCount, true);
 
 	// Stuff that used to be in the UI theme is now here... I think UITheme isn't a useful concept?
@@ -65,11 +69,13 @@ s32 addAsset(AssetManager *assets, AssetType type, String shortName)
 	if (shortName.length != 0)
 	{
 		asset->shortName = shortName;
-		asset->fullName = getAssetPath(assets, asset->type, asset->shortName);
+		asset->fullName = getAssetPath(assets, asset->type, shortName);
 	}
 	asset->state = AssetState_Unloaded;
 	asset->size = 0;
 	asset->memory = null;
+
+	put(&assets->assetsByName[type], shortName, asset);
 
 	return index;
 }
@@ -142,6 +148,7 @@ static Blob readTempFile(String filePath)
 void loadAsset(AssetManager *assets, Asset *asset)
 {
 	ASSERT(asset->state == AssetState_Unloaded, "Attempted to load an asset ({0}) that is already loaded!", {asset->fullName});
+	DEBUG_FUNCTION();
 
 	Blob fileData = {};
 	// Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.
@@ -168,7 +175,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_Cursor:
 		{
-			SDL_Surface *cursorSurface = createSurfaceFromFileData(fileData, asset->fullName);
+			SDL_Surface *cursorSurface = createSurfaceFromFileData(fileData, asset->shortName);
 			asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
 			SDL_FreeSurface(cursorSurface);
 			asset->state = AssetState_Loaded;
@@ -286,6 +293,8 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 void unloadAsset(AssetManager *assets, Asset *asset)
 {
+	DEBUG_FUNCTION();
+	
 	if (asset->state == AssetState_Unloaded) return;
 
 	switch (asset->type)
@@ -357,6 +366,7 @@ u32 addSprite(AssetManager *assets, u32 spriteAssetType, s32 textureID, Rect2 uv
 // TODO: Fix that
 s32 findTexture(AssetManager *assets, String filename)
 {
+	DEBUG_FUNCTION();
 	s32 index = -1;
 	for (s32 i = 0; i < assets->textureIndexToAssetIndex.count; i++)
 	{
@@ -380,12 +390,6 @@ s32 addSprite(AssetManager *assets, u32 spriteAssetType, char *filename, Rect2 u
 	}
 
 	return addSprite(assets, spriteAssetType, textureID, uv);
-}
-
-void addCursor(AssetManager *assets, CursorType cursorID, char *filename)
-{
-	s32 assetIndex = addAsset(assets, AssetType_Cursor, filename);
-	*get(&assets->cursorTypeToAssetIndex, cursorID) = assetIndex;
 }
 
 void addShader(AssetManager *assets, ShaderType shaderID, char *headerFilename, char *vertFilename, char *fragFilename)
@@ -499,12 +503,12 @@ void addAssets(AssetManager *assets)
 	addShader(assets, Shader_Untextured, "header.glsl", "untextured.vert.glsl", "untextured.frag.glsl");
 	addShader(assets, Shader_PixelArt,   "header.glsl", "pixelart.vert.glsl",   "pixelart.frag.glsl");
 
-	addCursor(assets, Cursor_Main,     "cursor_main.png");
-	addCursor(assets, Cursor_Build,    "cursor_build.png");
-	addCursor(assets, Cursor_Demolish, "cursor_demolish.png");
-	addCursor(assets, Cursor_Plant,    "cursor_plant.png");
-	addCursor(assets, Cursor_Harvest,  "cursor_harvest.png");
-	addCursor(assets, Cursor_Hire,     "cursor_hire.png");
+	addAsset(assets, AssetType_Cursor, "cursor_main.png");
+	addAsset(assets, AssetType_Cursor, "cursor_build.png");
+	addAsset(assets, AssetType_Cursor, "cursor_demolish.png");
+	addAsset(assets, AssetType_Cursor, "cursor_plant.png");
+	addAsset(assets, AssetType_Cursor, "cursor_harvest.png");
+	addAsset(assets, AssetType_Cursor, "cursor_hire.png");
 
 #if BUILD_DEBUG
 	addBitmapFont(assets, makeString("debug"), makeString("debug.fnt"));
@@ -513,6 +517,7 @@ void addAssets(AssetManager *assets)
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 {
+	DEBUG_FUNCTION();
 	// Preparation
 	consoleWriteLine("Reloading assets...");
 	renderer->unloadAssets(renderer);

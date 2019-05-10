@@ -12,26 +12,14 @@ enum AssetType
 	AssetType_Texture,
 	AssetType_TerrainDefs,
 	AssetType_UITheme,
+
+	AssetTypeCount
 };
 
 enum AssetState
 {
 	AssetState_Unloaded,
 	AssetState_Loaded,
-};
-
-enum CursorType
-{
-	Cursor_None,
-
-	Cursor_Main,
-	Cursor_Build,
-	Cursor_Demolish,
-	Cursor_Plant,
-	Cursor_Harvest,
-	Cursor_Hire,
-
-	CursorCount
 };
 
 struct Shader
@@ -48,7 +36,7 @@ struct Asset
 {
 	AssetType type;
 
-	// shortName = "foo.txt", fullName = "c:/whatever/foo.txt"
+	// shortName = "foo.png", fullName = "c:/mygame/assets/textures/foo.png"
 	String shortName;
 	String fullName;
 
@@ -122,6 +110,8 @@ struct AssetManager
 {
 	MemoryArena assetArena;
 	bool assetReloadHasJustHappened;
+
+	// TODO: Include the size of the assetsByName HashTables here!
 	smm assetMemoryAllocated;
 	smm maxAssetMemoryAllocated;
 
@@ -129,6 +119,8 @@ struct AssetManager
 	String userDataPath;
 
 	ChunkedArray<Asset> allAssets;
+
+	HashTable<Asset*> assetsByName[AssetTypeCount];
 
 	// NB: index 0 reserved as a null texture.
 	ChunkedArray<Texture_Temp> textureIndexToAssetIndex;
@@ -140,7 +132,6 @@ struct AssetManager
 	// So, assets with the same type must be contiguous!
 	ChunkedArray<IndexRange> rangesBySpriteAssetType;
 
-	ChunkedArray<s32> cursorTypeToAssetIndex;
 	ChunkedArray<s32> shaderTypeToAssetIndex;
 
 	ChunkedArray<BitmapFont_Meta> fonts;
@@ -187,9 +178,21 @@ struct AssetManager
 
 Asset *getAsset(AssetManager *assets, s32 assetIndex)
 {
+	DEBUG_FUNCTION();
 	Asset *asset = get(&assets->allAssets, assetIndex);
 	// TODO: load it if it's not loaded?
 	return asset;
+}
+
+Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
+{
+	DEBUG_FUNCTION();
+	return findValue(&assets->assetsByName[type], shortName);
+}
+
+inline Asset *getCursor(AssetManager *assets, String shortName)
+{
+	return getAsset(assets, AssetType_Cursor, shortName);
 }
 
 Asset *getTexture(AssetManager *assets, u32 textureIndex)
@@ -221,6 +224,7 @@ BitmapFont *getFont(AssetManager *assets, s32 assetIndex)
 
 BitmapFont *findFont(AssetManager *assets, String fontName)
 {
+	DEBUG_FUNCTION();
 	BitmapFont *result = null;
 
 	for (auto it = iterate(&assets->fonts); !it.isDone; next(&it))
@@ -241,12 +245,6 @@ BitmapFont *findFont(AssetManager *assets, String fontName)
 	return result;
 }
 
-// TODO: Remove this!
-Asset *getCursor(AssetManager *assets, u32 cursorID)
-{
-	return getAsset(assets, *get(&assets->cursorTypeToAssetIndex, cursorID));
-}
-
 Shader *getShader(AssetManager *assets, ShaderType shaderID)
 {
 	return &getAsset(assets, *get(&assets->shaderTypeToAssetIndex, shaderID))->shader;
@@ -255,7 +253,7 @@ Shader *getShader(AssetManager *assets, ShaderType shaderID)
 // TODO: A way to get this as a String might be more convenient!
 Asset *getTextAsset(AssetManager *assets, s32 assetIndex)
 {
-	Asset *asset = get(&assets->allAssets, assetIndex);
+	Asset *asset = getAsset(assets, assetIndex);
 	// TODO: load it if it's not loaded?
 	return asset;
 }
@@ -279,7 +277,7 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
 		break;
 	default:
-		result = myprintf("{0}/{1}",          {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/{1}", {assets->assetsPath, shortName}, true);
 		break;
 	}
 

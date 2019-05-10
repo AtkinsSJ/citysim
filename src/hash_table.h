@@ -26,4 +26,7 @@ template<typename T>
 T *find(HashTable<T> *table, String key);
 
 template<typename T>
+T findValue(HashTable<T> *table, String key);
+
+template<typename T>
 void put(HashTable<T> *table, String key, T value);
