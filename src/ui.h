@@ -90,8 +90,12 @@ struct UIState
 
 void setCursor(UIState *uiState, String cursorName)
 {
-	uiState->currentCursor = cursorName;
-	SDL_SetCursor(getCursor(uiState->assets, cursorName)->cursor.sdlCursor);
+	Asset *newCursorAsset = getAsset(uiState->assets, AssetType_Cursor, cursorName);
+	if (newCursorAsset != null)
+	{
+		uiState->currentCursor = cursorName;
+		SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
+	}
 }
 inline void setCursor(UIState *uiState, char *cursorName)
 {
