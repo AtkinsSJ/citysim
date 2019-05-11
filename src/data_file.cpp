@@ -34,7 +34,7 @@ LineReader readLines(String filename, smm dataLength, u8* data, bool skipBlankLi
 
 inline LineReader readLines(Asset *asset, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
 {
-	return readLines(asset->shortName, asset->size, asset->memory, skipBlankLines, removeComments, commentChar);
+	return readLines(asset->shortName, asset->data.size, asset->data.memory, skipBlankLines, removeComments, commentChar);
 }
 
 inline LineReader readLines(String name, Blob data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')

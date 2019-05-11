@@ -65,8 +65,8 @@ s32 addAsset(AssetManager *assets, AssetType type, String shortName)
 		asset->fullName = getAssetPath(assets, asset->type, shortName);
 	}
 	asset->state = AssetState_Unloaded;
-	asset->size = 0;
-	asset->memory = null;
+	asset->data.size = 0;
+	asset->data.memory = null;
 
 	put(&assets->assetsByName[type], shortName, asset);
 
@@ -82,13 +82,13 @@ inline s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
 
 void copyFileIntoAsset(AssetManager *assets, Blob *fileData, Asset *asset)
 {
-	asset->size = fileData->size;
-	asset->memory = allocate(assets, fileData->size);
-	memcpy(asset->memory, fileData->memory, fileData->size);
+	asset->data.size = fileData->size;
+	asset->data.memory = allocate(assets, fileData->size);
+	memcpy(asset->data.memory, fileData->memory, fileData->size);
 
 	// NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
 	// can still use fileData without having to mess with it. Already had one bug caused by not doing this!
-	fileData->memory = asset->memory;
+	fileData->memory = asset->data.memory;
 }
 
 SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
@@ -198,24 +198,24 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			smm fragmentSize = headerFile.size + fragmentFile.size + 1;
 			smm totalSize    = fragmentSize + vertexSize;
 
-			asset->size = totalSize;
-			asset->memory = allocate(assets, totalSize);
+			asset->data.size = totalSize;
+			asset->data.memory = allocate(assets, totalSize);
 
-			asset->shader.vertexShader   = makeString((char*)asset->memory, vertexSize);
-			asset->shader.fragmentShader = makeString((char*)asset->memory + vertexSize, fragmentSize);
+			asset->shader.vertexShader   = makeString((char*)asset->data.memory, vertexSize);
+			asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexSize, fragmentSize);
 
 			smm offset = 0;
 
-			memcpy(asset->memory + offset, headerFile.memory, headerFile.size);
+			memcpy(asset->data.memory + offset, headerFile.memory, headerFile.size);
 			offset += headerFile.size;
-			asset->memory[offset++] = '\n';
-			memcpy(asset->memory + offset, vertexFile.memory, vertexFile.size);
+			asset->data.memory[offset++] = '\n';
+			memcpy(asset->data.memory + offset, vertexFile.memory, vertexFile.size);
 			offset += vertexFile.size;
 
-			memcpy(asset->memory + offset, headerFile.memory, headerFile.size);
+			memcpy(asset->data.memory + offset, headerFile.memory, headerFile.size);
 			offset += headerFile.size;
-			asset->memory[offset++] = '\n';
-			memcpy(asset->memory + offset, fragmentFile.memory, fragmentFile.size);
+			asset->data.memory[offset++] = '\n';
+			memcpy(asset->data.memory + offset, fragmentFile.memory, fragmentFile.size);
 			offset += fragmentFile.size;
 
 			ASSERT(offset == totalSize, "We copied the shader data wrong!");
@@ -311,11 +311,11 @@ void unloadAsset(AssetManager *assets, Asset *asset)
 		} break;
 	}
 
-	if (asset->memory != null)
+	if (asset->data.memory != null)
 	{
-		assets->assetMemoryAllocated -= asset->size;
-		asset->size = 0;
-		free(asset->memory);
+		assets->assetMemoryAllocated -= asset->data.size;
+		asset->data.size = 0;
+		free(asset->data.memory);
 	}
 
 	asset->state = AssetState_Unloaded;

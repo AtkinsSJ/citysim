@@ -43,8 +43,7 @@ struct Asset
 	AssetState state;
 
 	// Depending on the AssetType, this could be the file contents, or something else!
-	smm size;
-	u8* memory;
+	Blob data;
 
 	// Type-specific stuff
 	// TODO: This union represents type-specific data size, which affects ALL assets!
@@ -105,7 +104,8 @@ struct AssetManager
 	MemoryArena assetArena;
 	bool assetReloadHasJustHappened;
 
-	// TODO: Include the size of the assetsByName HashTables here!
+	// TODO: Include the size of the assetsByName HashTables in the debug display!
+	// TODO: Also include size of the UITheme, somehow.
 	smm assetMemoryAllocated;
 	smm maxAssetMemoryAllocated;
 
@@ -128,7 +128,6 @@ struct AssetManager
 
 	ChunkedArray<s32> shaderTypeToAssetIndex;
 
-	// TODO: This stuff is in the assetArena, maybe we should migrate it to each of the styles being an Asset?
 	UITheme theme;
 
 	/*
@@ -158,6 +157,8 @@ struct AssetManager
 	*/
 };
 
+// TODO: remove this
+// Also, could then make the assets HashTable store assets directly, instead of pointing into the array!
 Asset *getAsset(AssetManager *assets, s32 assetIndex)
 {
 	DEBUG_FUNCTION();
@@ -177,11 +178,6 @@ Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 	}
 
 	return result;
-}
-
-inline Asset *getCursor(AssetManager *assets, String shortName)
-{
-	return getAsset(assets, AssetType_Cursor, shortName);
 }
 
 Asset *getTexture(AssetManager *assets, u32 textureIndex)
