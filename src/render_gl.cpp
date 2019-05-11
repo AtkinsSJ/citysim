@@ -238,6 +238,15 @@ static GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
 	return activeShader;
 }
 
+void useShader(GL_Renderer *renderer, ShaderType shaderType)
+{
+	if (renderer->currentShader != shaderType)
+	{
+		renderer->currentShader = shaderType;
+		glUseProgram(getActiveShader(renderer)->shaderProgramID);
+	}
+}
+
 void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
 	DEBUG_FUNCTION();
@@ -345,10 +354,8 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 					renderPartOfBuffer(renderer, vertexCount, indexCount);
 				}
 
-				renderer->currentShader = desiredShader;
+				useShader(renderer, desiredShader);
 				GL_ShaderProgram *activeShader = getActiveShader(renderer);
-
-				glUseProgram(activeShader->shaderProgramID);
 
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
 
