@@ -435,7 +435,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 					uiCloseMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
 					gameState->actionMode = ActionMode_Zone;
-					setCursor(uiState, "cursor_build.png");
+					setCursor(uiState, "build.png");
 				}
 
 				menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -466,7 +466,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 					uiCloseMenus(uiState);
 					gameState->selectedBuildingTypeID = i;
 					gameState->actionMode = ActionMode_Build;
-					setCursor(uiState, "cursor_build.png");
+					setCursor(uiState, "build.png");
 				}
 
 				menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -483,7 +483,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 					SDLK_x, LocalString("(X)")))
 		{
 			gameState->actionMode = ActionMode_Demolish;
-			setCursor(uiState, "cursor_demolish.png");
+			setCursor(uiState, "demolish.png");
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -745,7 +745,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		// Unselect current thing
 		gameState->actionMode = ActionMode_None;
-		setCursor(uiState, "cursor_main.png");
+		setCursor(uiState, "default.png");
 	}
 
 	// RENDERING

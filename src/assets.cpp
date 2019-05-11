@@ -474,12 +474,9 @@ void addAssets(AssetManager *assets)
 	addShader(assets, Shader_Untextured, "header.glsl", "untextured.vert.glsl", "untextured.frag.glsl");
 	addShader(assets, Shader_PixelArt,   "header.glsl", "pixelart.vert.glsl",   "pixelart.frag.glsl");
 
-	addAsset(assets, AssetType_Cursor, "cursor_main.png");
-	addAsset(assets, AssetType_Cursor, "cursor_build.png");
-	addAsset(assets, AssetType_Cursor, "cursor_demolish.png");
-	addAsset(assets, AssetType_Cursor, "cursor_plant.png");
-	addAsset(assets, AssetType_Cursor, "cursor_harvest.png");
-	addAsset(assets, AssetType_Cursor, "cursor_hire.png");
+	addAsset(assets, AssetType_Cursor, "default.png");
+	addAsset(assets, AssetType_Cursor, "build.png");
+	addAsset(assets, AssetType_Cursor, "demolish.png");
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)

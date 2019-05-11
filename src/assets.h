@@ -241,7 +241,7 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	switch (type)
 	{
 	case AssetType_Cursor:
-		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/cursors/{1}", {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_BitmapFont:
 		result = myprintf("{0}/fonts/{1}",    {assets->assetsPath, shortName}, true);

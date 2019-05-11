@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 
 	UIState *uiState = &appState->uiState;
 	initUiState(uiState, &renderer->uiBuffer, assets, &inputState);
-	setCursor(uiState, "cursor_main.png");
+	setCursor(uiState, "default.png");
 	setCursorVisible(uiState, true);
 
 	Camera *worldCamera = &renderer->worldBuffer.camera;
