@@ -313,22 +313,6 @@ void reserve(ChunkedArray<T> *array, smm desiredSize)
 //////////////////////////////////////////////////
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
-
-/**
- * This will iterate through every item in the array, starting at whichever initialIndex
- * you specify (default to the beginning).
- * If wrapAround is true, the iterator will wrap from the end to the beginning so that
- * every item is iterated once. If false, we stop after the last item.
- * Example usage:
-
-	for (auto it = iterate(&array, randomInRange(random, array.count), true);
-		!it.isDone;
-		next(&it))
-	{
-		auto thing = get(it);
-		// do stuff with the thing
-	}
- */
 template<typename T>
 ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex, bool wrapAround)
 {

@@ -141,3 +141,51 @@ void clear(HashTable<T> *table)
 		}
 	}
 }
+
+template<typename T>
+HashTableIterator<T> iterate(HashTable<T> *table)
+{
+	HashTableIterator<T> iterator = {};
+
+	iterator.hashTable = table;
+	iterator.currentIndex = 0;
+
+	// If the table is empty, we can skip some work.
+	iterator.isDone = (table->count == 0);
+
+	// If the first entry is unoccupied, we need to skip ahead
+	if (!iterator.isDone && !get(iterator)->isOccupied)
+	{
+		next(&iterator);
+	}
+
+	return iterator;
+}
+
+template<typename T>
+void next(HashTableIterator<T> *iterator)
+{
+	while (!iterator->isDone)
+	{
+		iterator->currentIndex++;
+
+		if (iterator->currentIndex >= iterator->hashTable->capacity)
+		{
+			iterator->isDone = true;
+		}
+		else
+		{
+			// Only stop iterating if we find an occupied entry
+			if (get(*iterator)->isOccupied)
+			{
+				break;
+			}
+		}
+	}
+}
+
+template<typename T>
+HashTableEntry<T> *get(HashTableIterator<T> iterator)
+{
+	return iterator.hashTable->entries + iterator.currentIndex;
+}

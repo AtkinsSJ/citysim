@@ -2,17 +2,19 @@
 
 void registerSetting(Settings *settings, String settingName, smm offset, Type type, s32 count)
 {
-	SettingDef *def = appendBlank(&settings->defs);
-	def->name = settingName;
-	def->offset = offset;
-	def->type = type;
-	def->count = count;
+	SettingDef def = {};
+	def.name = settingName;
+	def.offset = offset;
+	def.type = type;
+	def.count = count;
+
+	put(&settings->defs, settingName, def);
 }
 
 void initSettings(Settings *settings)
 {
 	*settings = {};
-	initChunkedArray(&settings->defs, &globalAppState.systemArena, 64);
+	initHashTable(&settings->defs);
 
 #define REGISTER_SETTING(settingName, type, count) registerSetting(settings, makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
 
@@ -36,61 +38,50 @@ void loadSettingsFile(Settings *settings, File file)
 
 		settingName = nextToken(line, &remainder, '=');
 
-		bool foundIt = false;
+		SettingDef *def = find(&settings->defs, settingName);
 
-		for (auto it = iterate(&settings->defs);
-			!it.isDone;
-			next(&it))
-		{
-			auto def = get(it);
-			if (equals(def->name, settingName))
-			{
-				u8* firstItem = ((u8*)settings) + def->offset;
-
-				for (s32 i=0; i < def->count; i++)
-				{
-					String sValue = nextToken(remainder, &remainder);
-					switch (def->type)
-					{
-						case Type_bool:
-						{
-							bool value;
-							if (asBool(sValue, &value))
-							{
-								((bool *)firstItem)[i] = value;
-							}
-							else
-							{
-								error(&reader, "Invalid value \"{0}\", expected true or false.", {sValue});
-							}
-						} break;
-
-						case Type_s32:
-						{
-							s64 value;
-							if (asInt(sValue, &value))
-							{
-								((s32 *)firstItem)[i] = (s32) value;
-							}
-							else
-							{
-								error(&reader, "Invalid value \"{0}\", expected integer.", {sValue});
-							}
-						} break;
-
-						default: ASSERT(false, "Unhandled setting type!");
-					}
-				}
-
-				foundIt = true;
-
-				break;
-			}
-		}
-
-		if (!foundIt)
+		if (def == null)
 		{
 			error(&reader, "Unrecognized setting: {0}", {settingName});
+		}
+		else
+		{
+			u8* firstItem = ((u8*)settings) + def->offset;
+
+			for (s32 i=0; i < def->count; i++)
+			{
+				String sValue = nextToken(remainder, &remainder);
+				switch (def->type)
+				{
+					case Type_bool:
+					{
+						bool value;
+						if (asBool(sValue, &value))
+						{
+							((bool *)firstItem)[i] = value;
+						}
+						else
+						{
+							error(&reader, "Invalid value \"{0}\", expected true or false.", {sValue});
+						}
+					} break;
+
+					case Type_s32:
+					{
+						s64 value;
+						if (asInt(sValue, &value))
+						{
+							((s32 *)firstItem)[i] = (s32) value;
+						}
+						else
+						{
+							error(&reader, "Invalid value \"{0}\", expected integer.", {sValue});
+						}
+					} break;
+
+					default: ASSERT(false, "Unhandled setting type!");
+				}
+			}
 		}
 	}
 }
@@ -125,9 +116,11 @@ void saveSettings(Settings *settings, AssetManager *assets)
 		!it.isDone;
 		next(&it))
 	{
-		auto def = get(it);
+		auto entry = get(it);
+		String name = entry->key;
+		SettingDef *def = &entry->value;
 
-		append(&stb, def->name);
+		append(&stb, name);
 		append(&stb, " = ");
 
 		u8* firstItem = base + def->offset;

@@ -16,7 +16,7 @@ struct SettingDef
 
 struct Settings
 {
-	ChunkedArray<SettingDef> defs;
+	HashTable<SettingDef> defs;
 
 	bool windowed;
 	V2I resolution;
