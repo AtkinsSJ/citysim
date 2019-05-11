@@ -229,28 +229,28 @@ static void GL_unloadAssets(Renderer *renderer)
 	}
 }
 
-static GL_ShaderProgram *getActiveShader(GL_Renderer *renderer)
-{
-	ASSERT(renderer->currentShader >= 0 && renderer->currentShader < ShaderCount, "Invalid shader!");
-	GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
-	ASSERT(activeShader->isValid, "Shader not properly loaded!");
-
-	return activeShader;
-}
-
 void useShader(GL_Renderer *renderer, ShaderType shaderType)
 {
+	ASSERT(shaderType >= 0 && shaderType < ShaderCount, "Invalid shader!");
 	if (renderer->currentShader != shaderType)
 	{
-		renderer->currentShader = shaderType;
-		glUseProgram(getActiveShader(renderer)->shaderProgramID);
+		GL_ShaderProgram *targetShader = renderer->shaders + shaderType;
+		if (targetShader->isValid)
+		{
+			glUseProgram(targetShader->shaderProgramID);
+			renderer->currentShader = shaderType;
+		}
+		else
+		{
+			ASSERT(false, "Attempting to use a shader that isn't loaded!");
+		}
 	}
 }
 
 void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
 	DEBUG_FUNCTION();
-	GL_ShaderProgram *activeShader = getActiveShader(renderer);
+	GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 
 	// Fill VBO
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
@@ -355,7 +355,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 				}
 
 				useShader(renderer, desiredShader);
-				GL_ShaderProgram *activeShader = getActiveShader(renderer);
+				GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
 
