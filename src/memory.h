@@ -56,6 +56,8 @@ struct MemoryArena
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))
 #define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
 
+Blob allocateBlob(MemoryArena *arena, smm size);
+
 bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1));
 void markResetPosition(MemoryArena *arena);
 void *allocate(MemoryArena *arena, smm size);

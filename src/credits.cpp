@@ -17,7 +17,7 @@ void updateAndRenderCredits(AppState *appState, InputState *inputState, Renderer
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
 	Asset *creditsText = getAsset(assets, AssetType_Misc, makeString("credits.txt"));
-	LineReader reader = readLines(creditsText, false, false);
+	LineReader reader = readLines(creditsText->shortName, creditsText->data, false, false);
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);

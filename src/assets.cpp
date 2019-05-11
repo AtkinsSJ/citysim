@@ -119,23 +119,6 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 	return result;
 }
 
-static Blob readTempFile(String filePath)
-{
-	FileHandle file = openFile(filePath, FileAccess_Read);
-	defer { closeFile(&file); };
-
-	smm fileSize = getFileSize(&file);
-	Blob fileData = allocateBlob(&globalAppState.globalTempArena, fileSize);
-	smm bytesRead = readFileIntoMemory(&file, fileSize, fileData.memory);
-
-	if (bytesRead != fileSize)
-	{
-		logError("File {0} was only partially loaded. Size {1}, loaded {2}", {filePath, formatInt(fileSize), formatInt(bytesRead)});
-	}
-
-	return fileData;
-}
-
 void loadAsset(AssetManager *assets, Asset *asset)
 {
 	ASSERT(asset->state == AssetState_Unloaded, "Attempted to load an asset ({0}) that is already loaded!", {asset->fullName});

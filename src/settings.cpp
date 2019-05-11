@@ -24,7 +24,7 @@ void initSettings(Settings *settings)
 
 void loadSettingsFile(Settings *settings, File file)
 {
-	LineReader reader = readLines(file.name, file.length, file.data);
+	LineReader reader = readLines(file.name, file.data);
 
 	while (!isDone(&reader))
 	{

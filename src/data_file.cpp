@@ -37,11 +37,6 @@ inline LineReader readLines(String name, Blob data, bool skipBlankLines=true, bo
 	return readLines(name, data.size, data.memory, skipBlankLines, removeComments, commentChar);
 }
 
-inline LineReader readLines(Asset *asset, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
-{
-	return readLines(asset->shortName, asset->data, skipBlankLines, removeComments, commentChar);
-}
-
 inline bool isDone(LineReader *reader)
 {
 	return (reader->pos >= reader->dataLength);

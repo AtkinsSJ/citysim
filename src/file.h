@@ -11,8 +11,7 @@ struct File
 	String name;
 	bool isLoaded;
 	
-	smm length;
-	u8* data;
+	Blob data;
 };
 
 enum FileAccessMode
@@ -74,63 +73,53 @@ smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
 	return bytesRead;
 }
 
-// TODO: Switch to FileHandle!
-File readFile(MemoryArena *memory, String filename)
+File readFile(MemoryArena *memoryArena, String filePath)
 {
 	File result = {};
-	result.name = filename;
+	result.name = filePath;
 	result.isLoaded = false;
 
-	SDL_RWops *file = SDL_RWFromFile(filename.chars, "rb");
-	if (file)
+	FileHandle handle = openFile(filePath, FileAccess_Read);
+	defer { closeFile(&handle); };
+
+	smm fileSize = getFileSize(&handle);
+	result.data = allocateBlob(memoryArena, fileSize);
+	smm bytesRead = readFileIntoMemory(&handle, fileSize, result.data.memory);
+
+	if (bytesRead != fileSize)
 	{
-		smm fileLength = (smm) SDL_RWseek(file, 0, RW_SEEK_END);
-		SDL_RWseek(file, 0, RW_SEEK_SET);
-
-		result.data = PushArray(memory, u8, fileLength);
-
-		if (result.data)
-		{
-			SDL_RWread(file, result.data, fileLength, 1);
-			result.length = fileLength;
-			result.isLoaded = true;
-		}
-
-		SDL_RWclose(file);
-
+		logError("File {0} was only partially read. Size {1}, read {2}", {filePath, formatInt(fileSize), formatInt(bytesRead)});
 	}
-	
+	else
+	{
+		result.isLoaded = true;
+	}
+
 	return result;
 }
 
-// TODO: Switch to FileHandle!
-String readFileAsString(MemoryArena *memory, String filename)
+// Reads the entire file into a Blob that's allocated in temporary memory.
+// If you want to refer to parts of it later, you need to copy the data somewhere else!
+inline Blob readTempFile(String filePath)
 {
-	File file = readFile(memory, filename);
-	String result = makeString((char*)file.data, file.length);
-
-	return result;
+	return readFile(globalFrameTempArena, filePath).data;
 }
 
-// TODO: Switch to FileHandle!
-bool writeFile(String filename, String contents)
+bool writeFile(String filePath, String contents)
 {
 	bool succeeded = false;
 
-	SDL_RWops *file = SDL_RWFromFile(filename.chars, "wb");
-	if (file)
+	FileHandle file = openFile(filePath, FileAccess_Write);
+	defer { closeFile(&file); };
+
+	if (file.isOpen)
 	{
-		smm writeLength = SDL_RWwrite(file, contents.chars, 1, contents.length);
-		if (writeLength == contents.length)
-		{
-			succeeded = true;
-		}
-		else
-		{
-			logError("Error while writing file {0}: {1} ({2} of {3} bytes written)",
-					{filename, makeString(SDL_GetError()), formatInt(writeLength), formatInt(contents.length)});
-		}
-		SDL_RWclose(file);
+		smm bytesWritten = SDL_RWwrite(file.sdl_file, contents.chars, 1, contents.length);
+		succeeded = (bytesWritten == contents.length);
+	}
+	else
+	{
+		logError("Failed to open file '{0}' for writing!", {filePath});
 	}
 
 	return succeeded;
