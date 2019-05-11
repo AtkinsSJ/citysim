@@ -313,16 +313,24 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 
 	if (buffer->items.count > 0)
 	{
+		Sprite *sprite = null;
+		s32 spriteID = -1;
+		GL_TextureInfo *textureInfo = null;
+
 		for (u32 i=0; i < buffer->items.count; i++)
 		{
 			RenderItem *item = pointerTo(&buffer->items, i);
 			ShaderType desiredShader = item->shaderID;
 
-			// TODO: @Speed Don't need to try and get this info if there's no sprite??? (spriteID==0)
-			// Currently, sprite index 0 is a "null sprite" with a texture of -1, so that getting the texture is
-			// guaranteed to fail and return null... but that's a lot of effort we could short-circuit!
-			Sprite *sprite = getSprite(assets, item->spriteID);
-			GL_TextureInfo *textureInfo = find(&renderer->textureInfo, sprite->textureName);
+			if (item->spriteID != spriteID)
+			{
+				spriteID = item->spriteID;
+				// TODO: @Speed Don't need to try and get this info if there's no sprite??? (spriteID==0)
+				// Currently, sprite index 0 is a "null sprite" with a texture of -1, so that getting the texture is
+				// guaranteed to fail and return null... but that's a lot of effort we could short-circuit!
+				sprite = getSprite(assets, item->spriteID);
+				textureInfo = find(&renderer->textureInfo, sprite->textureName);
+			}
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
 			if ((vertexCount == 0)
@@ -341,10 +349,8 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 				GL_ShaderProgram *activeShader = getActiveShader(renderer);
 
 				glUseProgram(activeShader->shaderProgramID);
-				GL_checkForError();
 
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-				GL_checkForError();
 
 				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
 
@@ -353,21 +359,13 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 				{
 					glEnable(GL_TEXTURE_2D);
 					glActiveTexture(GL_TEXTURE0);
-					GL_checkForError();
 					glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
-					GL_checkForError();
 
 					if (!textureInfo->isLoaded)
 					{
 						// Load texture into GPU
-	#if 0
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	#else
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	#endif
-
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -380,7 +378,6 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 					}
 
 					glUniform1i(activeShader->uTextureLoc, 0);
-					GL_checkForError();
 				}
 
 				vertexCount = 0;
