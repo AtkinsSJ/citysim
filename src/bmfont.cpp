@@ -86,8 +86,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 
 			asset->bitmapFont.nullChar = {};
 
-			asset->data.size = charCount * sizeof(BitmapFontChar);
-			asset->data.memory = allocate(assets, asset->data.size);
+			asset->data = allocate(assets, charCount * sizeof(BitmapFontChar));
 			asset->bitmapFont.charCount = charCount;
 			asset->bitmapFont.chars = (BitmapFontChar *)asset->data.memory;
 

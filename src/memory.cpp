@@ -1,5 +1,15 @@
 #pragma once
 
+Blob allocateBlob(MemoryArena *arena, smm size)
+{
+	Blob result = {};
+
+	result.size = size;
+	result.memory = (u8*) allocate(arena, size);
+
+	return result;
+}
+
 MemoryBlock *addMemoryBlock(MemoryArena *arena, smm size)
 {
 	smm totalSize = size + sizeof(MemoryBlock);

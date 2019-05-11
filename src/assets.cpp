@@ -43,9 +43,11 @@ AssetManager *createAssetManager()
 	return assets;
 }
 
-u8 *allocate(AssetManager *assets, smm size)
+Blob allocate(AssetManager *assets, smm size)
 {
-	u8 *result = allocateRaw(size);
+	Blob result = {};
+	result.size = size;
+	result.memory = allocateRaw(size);
 
 	assets->assetMemoryAllocated += size;
 	assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
@@ -82,8 +84,7 @@ inline s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
 
 void copyFileIntoAsset(AssetManager *assets, Blob *fileData, Asset *asset)
 {
-	asset->data.size = fileData->size;
-	asset->data.memory = allocate(assets, fileData->size);
+	asset->data = allocate(assets, fileData->size);
 	memcpy(asset->data.memory, fileData->memory, fileData->size);
 
 	// NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
@@ -120,15 +121,12 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 
 static Blob readTempFile(String filePath)
 {
-	Blob fileData = {};
 	FileHandle file = openFile(filePath, FileAccess_Read);
+	defer { closeFile(&file); };
 
 	smm fileSize = getFileSize(&file);
-
-	fileData.size = fileSize;
-	fileData.memory = (u8*) allocate(&globalAppState.globalTempArena, fileSize);
+	Blob fileData = allocateBlob(&globalAppState.globalTempArena, fileSize);
 	smm bytesRead = readFileIntoMemory(&file, fileSize, fileData.memory);
-	closeFile(&file);
 
 	if (bytesRead != fileSize)
 	{
@@ -198,8 +196,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			smm fragmentSize = headerFile.size + fragmentFile.size + 1;
 			smm totalSize    = fragmentSize + vertexSize;
 
-			asset->data.size = totalSize;
-			asset->data.memory = allocate(assets, totalSize);
+			asset->data = allocate(assets, totalSize);
 
 			asset->shader.vertexShader   = makeString((char*)asset->data.memory, vertexSize);
 			asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexSize, fragmentSize);

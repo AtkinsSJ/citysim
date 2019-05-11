@@ -32,20 +32,14 @@ LineReader readLines(String filename, smm dataLength, u8* data, bool skipBlankLi
 	return result;
 }
 
-inline LineReader readLines(Asset *asset, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
-{
-	return readLines(asset->shortName, asset->data.size, asset->data.memory, skipBlankLines, removeComments, commentChar);
-}
-
 inline LineReader readLines(String name, Blob data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
 {
 	return readLines(name, data.size, data.memory, skipBlankLines, removeComments, commentChar);
 }
 
-// @Deprecated, use readLines() instead
-inline LineReader startFile(File file, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+inline LineReader readLines(Asset *asset, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
 {
-	return readLines(file.name, file.length, file.data, skipBlankLines, removeComments, commentChar);
+	return readLines(asset->shortName, asset->data, skipBlankLines, removeComments, commentChar);
 }
 
 inline bool isDone(LineReader *reader)

@@ -99,11 +99,6 @@ typedef char32_t unichar;
 
 #define null nullptr
 
-struct Blob {
-	smm size;
-	u8 *memory;
-};
-
 enum Alignment {
 	ALIGN_LEFT = 1,
 	ALIGN_H_CENTRE = 2,

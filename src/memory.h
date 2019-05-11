@@ -11,6 +11,12 @@
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 #define ArrayCountS(a) ((int)(ArrayCount(a)))
 
+struct Blob
+{
+	smm size;
+	u8 *memory;
+};
+
 // NB: MemoryBlock is positioned just before its memory pointer.
 // So when deallocating, we can just free(block)!
 struct MemoryBlock
