@@ -3,8 +3,7 @@
 struct LineReader
 {
 	String filename;
-	smm dataLength;
-	u8* data;
+	Blob data;
 
 	bool skipBlankLines;
 
@@ -15,12 +14,11 @@ struct LineReader
 	char commentChar;
 };
 
-LineReader readLines(String filename, smm dataLength, u8* data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+LineReader readLines(String filename, Blob data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
 {
 	LineReader result = {};
 
 	result.filename   = filename;
-	result.dataLength = dataLength;
 	result.data       = data;
 
 	result.pos = 0;
@@ -32,14 +30,9 @@ LineReader readLines(String filename, smm dataLength, u8* data, bool skipBlankLi
 	return result;
 }
 
-inline LineReader readLines(String name, Blob data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
-{
-	return readLines(name, data.size, data.memory, skipBlankLines, removeComments, commentChar);
-}
-
 inline bool isDone(LineReader *reader)
 {
-	return (reader->pos >= reader->dataLength);
+	return (reader->pos >= reader->data.size);
 }
 
 void warn(LineReader *reader, char *message, std::initializer_list<String> args = {})
@@ -62,19 +55,19 @@ String nextLine(LineReader *reader)
 	{
 		// Get next line
 		++reader->lineNumber;
-		line.chars = (char *)(reader->data + reader->pos);
+		line.chars = (char *)(reader->data.memory + reader->pos);
 		line.length = 0;
-		while (!isNewline(reader->data[reader->pos]) && (reader->pos < reader->dataLength))
+		while (!isNewline(reader->data.memory[reader->pos]) && (reader->pos < reader->data.size))
 		{
 			++reader->pos;
 			++line.length;
 		}
 
 		// Handle Windows' stupid double-character newline.
-		if (reader->pos < reader->dataLength)
+		if (reader->pos < reader->data.size)
 		{
 			++reader->pos;
-			if (isNewline(reader->data[reader->pos]) && (reader->data[reader->pos] != reader->data[reader->pos-1]))
+			if (isNewline(reader->data.memory[reader->pos]) && (reader->data.memory[reader->pos] != reader->data.memory[reader->pos-1]))
 			{
 				++reader->pos;
 			}
