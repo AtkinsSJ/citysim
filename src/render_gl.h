@@ -69,7 +69,7 @@ struct GL_Renderer
 	GL_VertexData vertices[RENDER_BATCH_VERTEX_COUNT];
 	GLuint indices[RENDER_BATCH_INDEX_COUNT];
 
-	ChunkedArray<GL_TextureInfo> textureInfo;
+	HashTable<GL_TextureInfo> textureInfo;
 };
 
 #include "render_gl.cpp"

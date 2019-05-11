@@ -174,28 +174,24 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 {
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
-	// Textures
-	clear(&gl->textureInfo);
-	reserve(&gl->textureInfo, assets->textureIndexToAssetIndex.count);
+	// Null texture
+	GL_TextureInfo nullTexture = {};
+	nullTexture.glTextureID = 0;
+	nullTexture.isLoaded = true;
+	put(&gl->textureInfo, nullString, nullTexture);
 
-	for (s32 i=0; i < assets->textureIndexToAssetIndex.count; i++)
+	// Real textures
+	for (auto it = iterate(&assets->assetsByName[AssetType_Texture]);
+		!it.isDone;
+		next(&it))
 	{
-		if (i == 0)
-		{
-			GL_TextureInfo ti = {};
-			ti.glTextureID = 0;
-			ti.isLoaded = true;
+		auto entry = getEntry(it);
 
-			append(&gl->textureInfo, ti);
-		}
-		else
-		{
-			GL_TextureInfo ti = {};
-			glGenTextures(1, &ti.glTextureID);
-			ti.isLoaded = false;
+		GL_TextureInfo ti = {};
+		glGenTextures(1, &ti.glTextureID);
+		ti.isLoaded = false;
 
-			append(&gl->textureInfo, ti);
-		}
+		put(&gl->textureInfo, entry->key, ti);
 	}
 
 	// Shaders
@@ -214,7 +210,7 @@ static void GL_unloadAssets(Renderer *renderer)
 	for (auto it = iterate(&gl->textureInfo); !it.isDone; next(&it))
 	{
 		GL_TextureInfo *info = get(it);
-		if (info->isLoaded)
+		if (info->isLoaded && info->glTextureID != 0)
 		{
 			glDeleteTextures(1, &info->glTextureID);
 			info->glTextureID = 0;
@@ -326,7 +322,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			// Currently, sprite index 0 is a "null sprite" with a texture of -1, so that getting the texture is
 			// guaranteed to fail and return null... but that's a lot of effort we could short-circuit!
 			Sprite *sprite = getSprite(assets, item->spriteID);
-			GL_TextureInfo *textureInfo = get(&renderer->textureInfo, sprite->textureID);
+			GL_TextureInfo *textureInfo = find(&renderer->textureInfo, sprite->textureName);
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
 			if ((vertexCount == 0)
@@ -376,8 +372,8 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 						// Upload texture
-						Asset *texture = getTexture(assets, sprite->textureID);
-						ASSERT(texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
+						Asset *texture = getAsset(assets, AssetType_Texture, sprite->textureName);
+						ASSERT(texture != null && texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->texture.surface->w, texture->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->texture.surface->pixels);
 						textureInfo->isLoaded = true;
 						GL_checkForError();
@@ -534,7 +530,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		// Init OpenGL
 		if (succeeded)
 		{
-			initChunkedArray(&gl->textureInfo, &renderer->renderArena, 64);
+			initHashTable(&gl->textureInfo);
 
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 

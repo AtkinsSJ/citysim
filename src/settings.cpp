@@ -116,7 +116,7 @@ void saveSettings(Settings *settings, AssetManager *assets)
 		!it.isDone;
 		next(&it))
 	{
-		auto entry = get(it);
+		auto entry = getEntry(it);
 		String name = entry->key;
 		SettingDef *def = &entry->value;
 

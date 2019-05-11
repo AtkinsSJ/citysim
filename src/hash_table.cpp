@@ -48,9 +48,10 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, smm initialCapacity)
 }
 
 template<typename T>
-HashTableEntry<T> *findEntry(HashTable<T> *table, String key)
+HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 {
 	DEBUG_FUNCTION();
+
 	u32 hash = hashString(key);
 	u32 index = hash % table->capacity;
 	HashTableEntry<T> *result = null;
@@ -77,9 +78,10 @@ template<typename T>
 T *find(HashTable<T> *table, String key)
 {
 	DEBUG_FUNCTION();
+	
 	if (table->entries == null) return null;
 
-	HashTableEntry<T> *entry = findEntry(table, key);
+	HashTableEntry<T> *entry = findEntryInternal(table, key);
 	if (!entry->isOccupied)
 	{
 		return null;
@@ -111,7 +113,7 @@ T *put(HashTable<T> *table, String key, T value)
 		expandHashTable(table, growHashTableCapacity(table->capacity));
 	}
 
-	HashTableEntry<T> *entry = findEntry(table, key);
+	HashTableEntry<T> *entry = findEntryInternal(table, key);
 
 	if (!entry->isOccupied)
 	{
@@ -154,7 +156,7 @@ HashTableIterator<T> iterate(HashTable<T> *table)
 	iterator.isDone = (table->count == 0);
 
 	// If the first entry is unoccupied, we need to skip ahead
-	if (!iterator.isDone && !get(iterator)->isOccupied)
+	if (!iterator.isDone && !getEntry(iterator)->isOccupied)
 	{
 		next(&iterator);
 	}
@@ -176,7 +178,7 @@ void next(HashTableIterator<T> *iterator)
 		else
 		{
 			// Only stop iterating if we find an occupied entry
-			if (get(*iterator)->isOccupied)
+			if (getEntry(*iterator)->isOccupied)
 			{
 				break;
 			}
@@ -185,7 +187,13 @@ void next(HashTableIterator<T> *iterator)
 }
 
 template<typename T>
-HashTableEntry<T> *get(HashTableIterator<T> iterator)
+HashTableEntry<T> *getEntry(HashTableIterator<T> iterator)
 {
 	return iterator.hashTable->entries + iterator.currentIndex;
+}
+
+template<typename T>
+T *get(HashTableIterator<T> iterator)
+{
+	return &getEntry(iterator)->value;
 }

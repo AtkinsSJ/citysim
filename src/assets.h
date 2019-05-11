@@ -50,7 +50,7 @@ struct Asset
 	// We might want to move everything into the *memory pointer, so that each Asset is only as big
 	// as it needs to be. The Shader struct is 65+ bytes (not including padding) which really inflates
 	// the other asset types. Though 65 isn't much, so maybe it's not a big deal. We'll see if we
-	// have anything bigger later.
+	// have anything bigger later. (Well, the BitmapFont is definitely bigger!)
 	union {
 		struct {
 			SDL_Cursor *sdlCursor;
@@ -89,7 +89,7 @@ struct Sprite
 	// eg, for getting a random sprite from a list, or we also use this for glyphs within a font.
 	s32 spriteAssetType;
 
-	s32 textureID;
+	String textureName;
 	Rect2 uv; // in (0 to 1) space
 };
 
@@ -115,9 +115,6 @@ struct AssetManager
 	ChunkedArray<Asset> allAssets;
 
 	HashTable<Asset*> assetsByName[AssetTypeCount];
-
-	// NB: index 0 reserved as a null texture.
-	ChunkedArray<Texture_Temp> textureIndexToAssetIndex;
 
 	// NB: index 0 is reserved as a null sprite.
 	ChunkedArray<Sprite> sprites;
@@ -178,11 +175,6 @@ Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 	}
 
 	return result;
-}
-
-Asset *getTexture(AssetManager *assets, u32 textureIndex)
-{
-	return getAsset(assets, get(&assets->textureIndexToAssetIndex, textureIndex)->assetIndex);
 }
 
 s32 getSpriteID(AssetManager *assets, s32 spriteAssetType, u32 offset)

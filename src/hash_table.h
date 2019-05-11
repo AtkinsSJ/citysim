@@ -50,4 +50,7 @@ template<typename T>
 void next(HashTableIterator<T> *iterator);
 
 template<typename T>
-HashTableEntry<T> *get(HashTableIterator<T> iterator);
+HashTableEntry<T> *getEntry(HashTableIterator<T> iterator);
+
+template<typename T>
+T *get(HashTableIterator<T> iterator);
