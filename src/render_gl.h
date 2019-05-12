@@ -21,6 +21,10 @@ struct GL_VertexData
 
 struct GL_TextureInfo
 {
+	// Keeping this pointer here feels a bit wrong, and we might have to remove it
+	// later, but it does make things a lot simpler and faster, in theory. 
+	Asset *asset;
+
 	GLuint glTextureID;
 	bool isLoaded;
 };
@@ -29,7 +33,7 @@ enum GL_ShaderPart
 {
 	GL_ShaderPart_Fragment = GL_FRAGMENT_SHADER,
 	GL_ShaderPart_Geometry = GL_GEOMETRY_SHADER,
-	GL_ShaderPart_Vertex = GL_VERTEX_SHADER,
+	GL_ShaderPart_Vertex   = GL_VERTEX_SHADER,
 };
 
 struct GL_ShaderProgram

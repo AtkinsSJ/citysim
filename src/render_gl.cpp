@@ -176,6 +176,7 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Null texture
 	GL_TextureInfo nullTexture = {};
+	nullTexture.asset = null;
 	nullTexture.glTextureID = 0;
 	nullTexture.isLoaded = true;
 	put(&gl->textureInfo, nullString, nullTexture);
@@ -188,6 +189,7 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 		auto entry = getEntry(it);
 
 		GL_TextureInfo ti = {};
+		ti.asset = entry->value;
 		glGenTextures(1, &ti.glTextureID);
 		ti.isLoaded = false;
 
@@ -245,6 +247,30 @@ void useShader(GL_Renderer *renderer, ShaderType shaderType)
 			ASSERT(false, "Attempting to use a shader that isn't loaded!");
 		}
 	}
+}
+
+void bindTexture(GL_TextureInfo *textureInfo, Asset *asset, s32 uniformID, u32 textureSlot=0)
+{
+	glEnable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0 + textureSlot);
+	glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
+
+	if (!textureInfo->isLoaded)
+	{
+		// Load texture into GPU
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		// Upload texture
+		ASSERT(asset != null && asset->state == AssetState_Loaded, "Texture asset not loaded yet!");
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, asset->texture.surface->w, asset->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, asset->texture.surface->pixels);
+		textureInfo->isLoaded = true;
+		GL_checkForError();
+	}
+
+	glUniform1i(uniformID, textureSlot);
 }
 
 void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
@@ -335,8 +361,6 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			{
 				spriteID = item->spriteID;
 				// TODO: @Speed Don't need to try and get this info if there's no sprite??? (spriteID==0)
-				// Currently, sprite index 0 is a "null sprite" with a texture of -1, so that getting the texture is
-				// guaranteed to fail and return null... but that's a lot of effort we could short-circuit!
 				sprite = getSprite(assets, item->spriteID);
 				textureInfo = find(&renderer->textureInfo, sprite->textureName);
 			}
@@ -364,27 +388,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 				// Bind new texture if this shader uses textures
 				if (activeShader->uTextureLoc != -1)
 				{
-					glEnable(GL_TEXTURE_2D);
-					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
-
-					if (!textureInfo->isLoaded)
-					{
-						// Load texture into GPU
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-						// Upload texture
-						Asset *texture = getAsset(assets, AssetType_Texture, sprite->textureName);
-						ASSERT(texture != null && texture->state == AssetState_Loaded, "Texture asset not loaded yet!");
-						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->texture.surface->w, texture->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->texture.surface->pixels);
-						textureInfo->isLoaded = true;
-						GL_checkForError();
-					}
-
-					glUniform1i(activeShader->uTextureLoc, 0);
+					bindTexture(textureInfo, textureInfo->asset, activeShader->uTextureLoc, 0);
 				}
 
 				vertexCount = 0;
