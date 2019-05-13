@@ -68,23 +68,32 @@ void processDebugData(DebugState *debugState)
 
 			bool freeListHasItem = !linkedListIsEmpty(&debugState->topCodeBlocksFreeListSentinel);
 
-			DebugCodeDataWrapper *item = 0;
+			DebugCodeDataWrapper *item = null;
 			if (freeListHasItem)
 			{
 				item = debugState->topCodeBlocksFreeListSentinel.nextNode;
-				removeFromLinkedList(item);
 			}
 			else if (foundSmallerItem)
 			{
 				item = debugState->topCodeBlocksSentinel.prevNode;
-				removeFromLinkedList(item);
 			}
 
 			if (item)
 			{
+				// NB: If the item we want was at the end of the list, it could ALSO be the target!
+				// So, we only move it around if that's not the case. Otherwise it gets added to a
+				// new list that's just itself, and it disappears off into the aether forever.
+				// - Sam, 13/05/2019
+				if (item != target)
+				{
+					removeFromLinkedList(item);
+					addToLinkedList(item, target);
+				}
+
 				item->data = code;
-				addToLinkedList(item, target);
 			}
+
+			ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT, "We lost a top code blocks node!");
 
 			code = code->nextNode;
 		}

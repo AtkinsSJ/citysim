@@ -67,7 +67,6 @@ Arrays stuff
 	- I guess the best idea would be to take advantage of the chunks rather than letting them be a weakness. Maybe some variation on a Merge Sort? (Sort the items within each chunk, then combine them by walking the chunks simultaneously.) Though, that gets compilcated because of the variable (and possibly very large) number of chunks, and because we'd need an extra set of chunks to put the results in. (Could use temp memory, maybe that's OK?)
 
 BUG: We get frame hitching at almost regular intervals. Profiling says it's caused by renderBuffer() sometimes taking twice as long. Need to identify this!
-	UPDATE: Determined that the debug system itself gets messed up in some situations and loses the "top code blocks" results. This is unhelpful.
 
 Problem: The new pixel-art shader is great, but the edges of coloured rectangles (and possibly textured ones though it's harder to tell?) still flicker because they're always full pixels. Ideally we'd be able to smooth those out too. Maybe just switch to MSAA to fix that if I can't find/figure-out a shader solution. (It seems like we can't determine from a shader whether a fragment is on the edge or not.)
 	Maybe we could draw coloured rectangles by using a plain white texture with a 1px transparent border, then doing funky things with the UVs??? So that the edge of the polygon isn't coloured, and the visible edge is handled by the awesome shader. That could be cool.

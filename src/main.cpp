@@ -27,6 +27,7 @@ struct MemoryArena *globalFrameTempArena;
 #include "array.h"
 #include "memory.h"
 #include "chunked_array.h"
+#include "linked_list.h"
 #include "string.h"
 #include "unicode.h"
 #include "stringbuilder.h"
