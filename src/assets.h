@@ -104,7 +104,6 @@ struct AssetManager
 	MemoryArena assetArena;
 	bool assetReloadHasJustHappened;
 
-	// TODO: Include the size of the assetsByName HashTables in the debug display!
 	// TODO: Also include size of the UITheme, somehow.
 	smm assetMemoryAllocated;
 	smm maxAssetMemoryAllocated;

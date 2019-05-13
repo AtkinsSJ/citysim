@@ -67,6 +67,7 @@ struct DebugAssetData // Not a linked list because there's only one asset system
 	s32 loadedAssetCount[DEBUG_FRAMES_COUNT];
 	smm assetMemoryAllocated[DEBUG_FRAMES_COUNT];
 	smm maxAssetMemoryAllocated[DEBUG_FRAMES_COUNT];
+	smm assetsByNameSize[DEBUG_FRAMES_COUNT];
 };
 
 struct DebugState
@@ -91,8 +92,9 @@ struct DebugState
 };
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
-void debugTrackRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer, u32 drawCallCount);
+void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
 void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount);
+void debugTrackRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer, u32 drawCallCount);
 
 struct DebugBlock
 {

@@ -191,14 +191,15 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		// Asset system
 		{
 			DebugAssetData *assets = &debugState->assetData;
-			debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} memory ({3} max). Metadata arena: {4} blocks, {5} used / {6} allocated.", {
+			debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} memory ({3} max). Metadata arena: {4} blocks, {5} used / {6} allocated. HashTables: {7} bytes used", {
 				formatInt(assets->loadedAssetCount[rfi]),
 				formatInt(assets->assetCount[rfi]),
 				formatInt(assets->assetMemoryAllocated[rfi]),
 				formatInt(assets->maxAssetMemoryAllocated[rfi]),
 				formatInt(assets->arenaBlockCount[rfi]),
 				formatInt(assets->arenaUsedSize[rfi]),
-				formatInt(assets->arenaTotalSize[rfi])
+				formatInt(assets->arenaTotalSize[rfi]),
+				formatInt(assets->assetsByNameSize[rfi])
 			}));
 		}
 
@@ -399,27 +400,32 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 		assetData->loadedAssetCount       [frameIndex] = 0;
 		assetData->assetMemoryAllocated   [frameIndex] = 0;
 		assetData->maxAssetMemoryAllocated[frameIndex] = 0;
+		assetData->assetsByNameSize       [frameIndex] = 0;
 
 		// The assets arena
 		MemoryArena *arena = &assets->assetArena;
-		if (arena) // So passing null just keeps it zeroed out
+		if (arena->currentBlock)
 		{
-			if (arena->currentBlock)
+			assetData->arenaBlockCount[frameIndex] = 1;
+			assetData->arenaTotalSize [frameIndex] = arena->currentBlock->size;
+			assetData->arenaUsedSize  [frameIndex] = arena->currentBlock->used;
+
+			MemoryBlock *block = arena->currentBlock->prevBlock;
+			while (block)
 			{
-				assetData->arenaBlockCount[frameIndex] = 1;
-				assetData->arenaTotalSize [frameIndex] = arena->currentBlock->size;
-				assetData->arenaUsedSize  [frameIndex] = arena->currentBlock->used;
+				assetData->arenaBlockCount[frameIndex]++;
+				assetData->arenaTotalSize [frameIndex] += block->size;
+				assetData->arenaUsedSize  [frameIndex] += block->size;
 
-				MemoryBlock *block = arena->currentBlock->prevBlock;
-				while (block)
-				{
-					assetData->arenaBlockCount[frameIndex]++;
-					assetData->arenaTotalSize [frameIndex] += block->size;
-					assetData->arenaUsedSize  [frameIndex] += block->size;
-
-					block = block->prevBlock;
-				}
+				block = block->prevBlock;
 			}
+		}
+
+		// assetsByName HashTables
+		for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
+		{
+			auto assetsByNameForType = assets->assetsByName[assetType];
+			assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
 		}
 
 		// The asset-memory stuff
