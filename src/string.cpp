@@ -212,7 +212,7 @@ bool splitInTwo(String input, char divider, String *leftResult, String *rightRes
  * You pass the arguments in an initializer-list, so like: myprintf("Hello {0}!", {name});
  * All arguments must already be Strings. Use the various formatXXX() functions to convert things to Strings.
  */
-String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate=false)
+String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate)
 {
 	String result;
 
@@ -285,10 +285,9 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 	return result;
 }
 
-inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(makeString(format), args, zeroTerminate); }
 
 const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-String formatInt(u64 value, u8 base=10)
+String formatInt(u64 value, u8 base)
 {
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	s32 arraySize = 64;
@@ -307,11 +306,8 @@ String formatInt(u64 value, u8 base=10)
 
 	return makeString(temp + (arraySize - count), count);
 }
-inline String formatInt(u32 value, u8 base=10) {return formatInt((u64)value, base);}
-inline String formatInt(u16 value, u8 base=10) {return formatInt((u64)value, base);}
-inline String formatInt(u8  value, u8 base=10) {return formatInt((u64)value, base);}
 
-String formatInt(s64 value, u8 base=10)
+String formatInt(s64 value, u8 base)
 {
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	s32 arraySize = 65;
@@ -340,9 +336,6 @@ String formatInt(s64 value, u8 base=10)
 
 	return makeString(temp + (arraySize - count), count);
 }
-inline String formatInt(s32 value, u8 base=10) {return formatInt((s64)value, base);}
-inline String formatInt(s16 value, u8 base=10) {return formatInt((s64)value, base);}
-inline String formatInt(s8  value, u8 base=10) {return formatInt((s64)value, base);}
 
 // TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
 String formatFloat(f64 value, s32 decimalPlaces)
@@ -355,9 +348,8 @@ String formatFloat(f64 value, s32 decimalPlaces)
 
 	return makeString(buffer, MIN(written, length));
 }
-inline String formatFloat(f32 value, s32 decimalPlaces) {return formatFloat((f64)value, decimalPlaces);}
 
-String formatString(String value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
+String formatString(String value, s32 length, bool alignLeft, char paddingChar)
 {
 	if ((value.length == length) || (length == -1)) return value;
 
@@ -398,10 +390,6 @@ String formatString(String value, s32 length=-1, bool alignLeft = true, char pad
 		return result;
 	}
 }
-String formatString(char *value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
-{
-	return formatString(makeString(value), length, alignLeft, paddingChar);
-}
 
 String formatBool(bool value)
 {
@@ -417,6 +405,23 @@ String repeatChar(char c, s32 length)
 	for (s32 i=0; i<length; i++)
 	{
 		result.chars[i] = c;
+	}
+
+	return result;
+}
+
+u32 hashString(String s)
+{
+	DEBUG_FUNCTION();
+	
+	// FNV-1a hash
+	// http://www.isthe.com/chongo/tech/comp/fnv/
+
+	u32 result = 2166136261;
+	for (s32 i = 0; i < s.length; i++)
+	{
+		result ^= s.chars[i];
+		result *= 16777619;
 	}
 
 	return result;

@@ -126,20 +126,7 @@ s32 compare(String a, String b)
 	return result;
 }
 
-u32 hashString(String s)
-{
-	// FNV-1a hash
-	// http://www.isthe.com/chongo/tech/comp/fnv/
-
-	u32 result = 2166136261;
-	for (s32 i = 0; i < s.length; i++)
-	{
-		result ^= s.chars[i];
-		result *= 16777619;
-	}
-
-	return result;
-}
+u32 hashString(String s);
 
 inline bool isWhitespace(unichar uChar, bool countNewlines=true)
 {
@@ -173,3 +160,27 @@ inline bool isNewline(char c)
 	bool result = (c == '\n') || (c == '\r');
 	return result;
 }
+
+String formatInt(u64 value, u8 base=10);
+inline String formatInt(u32 value, u8 base=10) {return formatInt((u64)value, base);}
+inline String formatInt(u16 value, u8 base=10) {return formatInt((u64)value, base);}
+inline String formatInt(u8  value, u8 base=10) {return formatInt((u64)value, base);}
+
+String formatInt(s64 value, u8 base=10);
+inline String formatInt(s32 value, u8 base=10) {return formatInt((s64)value, base);}
+inline String formatInt(s16 value, u8 base=10) {return formatInt((s64)value, base);}
+inline String formatInt(s8  value, u8 base=10) {return formatInt((s64)value, base);}
+
+String formatFloat(f64 value, s32 decimalPlaces);
+inline String formatFloat(f32 value, s32 decimalPlaces) {return formatFloat((f64)value, decimalPlaces);}
+
+String formatString(String value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ');
+inline String formatString(char *value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
+{
+	return formatString(makeString(value), length, alignLeft, paddingChar);
+}
+
+String formatBool(bool value);
+
+String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate=false);
+inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(makeString(format), args, zeroTerminate); }

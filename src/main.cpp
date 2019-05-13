@@ -30,7 +30,6 @@ struct MemoryArena *globalFrameTempArena;
 #include "string.h"
 #include "unicode.h"
 #include "stringbuilder.h"
-#include "string.cpp"
 #include "hash_table.h"
 #include "input.h"
 #include "debug.h"
@@ -73,6 +72,7 @@ struct AppState
 AppState globalAppState;
 
 #include "memory.cpp"
+#include "string.cpp"
 #include "chunked_array.cpp"
 #include "hash_table.cpp"
 #include "assets.cpp"
