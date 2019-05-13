@@ -87,8 +87,11 @@ struct Sprite
 {
 	// Identifier so multiple sprites can be associated with the same id.
 	// eg, for getting a random sprite from a list, or we also use this for glyphs within a font.
+	// Right now (13/05/2019) we only ever *set* this, we don't ever read it. Seems wasteful.
 	s32 spriteAssetType;
 
+	// TODO: Using a texture name is inefficient, we have to lookup the texture by name
+	// for each Sprite that's drawn.
 	String textureName;
 	Rect2 uv; // in (0 to 1) space
 };
