@@ -85,18 +85,18 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 			asset->bitmapFont.lineHeight = common->lineHeight;
 			asset->bitmapFont.baseY = common->base;
 
-			asset->bitmapFont.nullChar = {};
+			asset->bitmapFont.nullGlyph = {};
 
-			asset->data = allocate(assets, charCount * sizeof(BitmapFontChar));
-			asset->bitmapFont.charCount = charCount;
-			asset->bitmapFont.chars = (BitmapFontChar *)asset->data.memory;
+			asset->data = allocate(assets, charCount * sizeof(BitmapFontGlyph));
+			asset->bitmapFont.glyphCount = charCount;
+			asset->bitmapFont.glyphs = (BitmapFontGlyph *)asset->data.memory;
 
 			for (u32 charIndex = 0;
 				charIndex < charCount;
 				charIndex++)
 			{
 				BMFont_Char *src = chars + charIndex;
-				BitmapFontChar *dest = asset->bitmapFont.chars + charIndex;
+				BitmapFontGlyph *dest = asset->bitmapFont.glyphs + charIndex;
 
 				dest->codepoint = src->id;
 				dest->size = irectXYWH(src->x, src->y, src->w, src->h);

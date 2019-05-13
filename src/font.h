@@ -1,6 +1,6 @@
 #pragma once
 
-struct BitmapFontChar
+struct BitmapFontGlyph
 {
 	unichar codepoint;
 	Rect2I size;
@@ -9,7 +9,7 @@ struct BitmapFontChar
 
 	// TODO: Referring to a sprite too is redundant! Also, in some cases, we need to know the ^above data
 	// but have progressed through the renderer so we only have the RenderItem. Maybe entirely use
-	// BitmapFontChars for text rendering instead?
+	// BitmapFontGlyphs for text rendering instead?
 	u32 spriteID;
 };
 
@@ -21,10 +21,10 @@ struct BitmapFont
 	u16 lineHeight;
 	u16 baseY;
 
-	BitmapFontChar nullChar;
+	BitmapFontGlyph nullGlyph;
 
-	u32 charCount;
-	BitmapFontChar *chars;
+	u32 glyphCount;
+	BitmapFontGlyph *glyphs;
 };
 
 struct BitmapFontCachedText

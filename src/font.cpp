@@ -1,18 +1,18 @@
 // font.cpp
 
-BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
+BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 {
-	BitmapFontChar *result = 0;
+	BitmapFontGlyph *result = 0;
 
 	// BINARY SEARCH! :D
 
 	// FIXME: This really needs to be replaced by a better system.
 
-	u32 high = font->charCount;
+	u32 high = font->glyphCount;
 	u32 low = 0;
 	u32 current = (high + low) / 2;
 
-	BitmapFontChar *currentChar = font->chars + current;
+	BitmapFontGlyph *currentChar = font->glyphs + current;
 
 	while (high >= low)
 	{
@@ -31,13 +31,13 @@ BitmapFontChar *findChar(BitmapFont *font, unichar targetChar)
 			high = current - 1;
 		}
 
-		if (high > font->charCount)
+		if (high > font->glyphCount)
 		{
 			break;
 		}
 
 		current = (high + low) / 2;
-		currentChar = font->chars + current;
+		currentChar = font->glyphs + current;
 	}
 
 	if (!result)
@@ -89,7 +89,7 @@ static void nextLine(DrawTextState *state)
 	state->lineCount++;
 }
 
-static void handleWrapping(DrawTextState *state, BitmapFontChar *c)
+static void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 {
 	if (state->startOfCurrentWord == 0)
 	{
@@ -185,7 +185,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 		}
 		else
 		{
-			BitmapFontChar *c = findChar(font, glyph);
+			BitmapFontGlyph *c = findChar(font, glyph);
 			if (c)
 			{
 				// NB: the actual VALUE of endOfCurrentWord doesn't matter here, it just needs to be
@@ -237,7 +237,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 			}
 			else
 			{
-				BitmapFontChar *c = findChar(font, glyph);
+				BitmapFontGlyph *c = findChar(font, glyph);
 				if (c)
 				{
 					state.endOfCurrentWord = result->charCount;
