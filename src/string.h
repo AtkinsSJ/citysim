@@ -2,15 +2,12 @@
 
 struct String
 {
-	char *chars;
 	s32 length;
-	s32 maxLength;
+	s32 maxLength; // TODO: @Performance Maybe we should have a separate struct for editable Strings? That way String itself can be small, PLUS we'd know that the hash value was correct.
+	char *chars;
 
-	char operator[](s32 index)
-	{
-		ASSERT(index >=0 && index < length, "String index out of range!");
-		return chars[index];
-	}
+	bool hasHash;
+	u32 hash;
 };
 
 const String nullString = {};
@@ -124,7 +121,7 @@ s32 compare(String a, String b)
 	return result;
 }
 
-u32 hashString(String s);
+u32 hashString(String *s);
 
 inline bool isWhitespace(unichar uChar, bool countNewlines=true)
 {

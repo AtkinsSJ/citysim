@@ -89,6 +89,7 @@ String getString(StringBuilder *stb)
 	String result = {};
 	result.chars = stb->buffer;
 	result.length = stb->length;
+	result.maxLength = stb->length;
 
 	return result;
 }

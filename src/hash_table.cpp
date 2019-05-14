@@ -52,7 +52,7 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 {
 	DEBUG_FUNCTION();
 
-	u32 hash = hashString(key);
+	u32 hash = hashString(&key);
 	u32 index = hash % table->capacity;
 	HashTableEntry<T> *result = null;
 
@@ -62,7 +62,7 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 		HashTableEntry<T> *entry = table->entries + index;
 
 		if (entry->isOccupied == false || 
-			(hash == entry->keyHash && equals(key, entry->key)))
+			(hash == hashString(&entry->key) && equals(key, entry->key)))
 		{
 			result = entry;
 			break;
@@ -119,8 +119,8 @@ T *put(HashTable<T> *table, String key, T value)
 	{
 		table->count++;
 		entry->isOccupied = true;
+		hashString(&key);
 		entry->key = key;
-		entry->keyHash = hashString(key);
 	}
 
 	entry->value = value;

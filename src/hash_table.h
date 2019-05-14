@@ -5,7 +5,6 @@ struct HashTableEntry
 {
 	bool isOccupied;
 	String key;
-	u32 keyHash;
 	
 	T value;
 };

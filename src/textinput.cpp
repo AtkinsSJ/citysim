@@ -84,7 +84,7 @@ void insert(TextInput *textInput, String source)
 	// write from source
 	for (s32 i=0; i < bytesToCopy; i++)
 	{
-		textInput->buffer[textInput->caretBytePos + i] = source[i];
+		textInput->buffer[textInput->caretBytePos + i] = source.chars[i];
 	}
 
 	textInput->byteLength += bytesToCopy;

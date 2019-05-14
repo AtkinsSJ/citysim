@@ -189,7 +189,7 @@ bool splitInTwo(String input, char divider, String *leftResult, String *rightRes
 
 	for (s32 i=0; i < input.length; i++)
 	{
-		if (input[i] == divider)
+		if (input.chars[i] == divider)
 		{
 			leftResult->chars = input.chars;
 			leftResult->length = i;
@@ -414,18 +414,25 @@ String repeatChar(char c, s32 length)
 	return result;
 }
 
-u32 hashString(String s)
+u32 hashString(String *s)
 {
 	DEBUG_FUNCTION();
-	
-	// FNV-1a hash
-	// http://www.isthe.com/chongo/tech/comp/fnv/
 
-	u32 result = 2166136261;
-	for (s32 i = 0; i < s.length; i++)
+	u32 result = s->hash;
+
+	if (!s->hasHash)
 	{
-		result ^= s.chars[i];
-		result *= 16777619;
+		// FNV-1a hash
+		// http://www.isthe.com/chongo/tech/comp/fnv/
+		result = 2166136261;
+		for (s32 i = 0; i < s->length; i++)
+		{
+			result ^= s->chars[i];
+			result *= 16777619;
+		}
+
+		s->hash = result;
+		s->hasHash = true;
 	}
 
 	return result;

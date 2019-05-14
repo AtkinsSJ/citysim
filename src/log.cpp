@@ -3,21 +3,38 @@
 void log(char *format, std::initializer_list<String> args)
 {
 	String text = myprintf(makeString(format), args, true);
-	SDL_Log("%s", text);
+	SDL_Log("%s", text.chars);
 }
-
-#define LOGFUNC(TYPE) void log##TYPE(char *format, std::initializer_list<String> args) \
-{ \
-	String text = myprintf(makeString(format), args, true); \
-	SDL_Log##TYPE(SDL_LOG_CATEGORY_CUSTOM, "%s", text); \
+void logVerbose(char *format, std::initializer_list<String> args)
+{
+	String text = myprintf(makeString(format), args, true);
+	SDL_LogVerbose(SDL_LOG_CATEGORY_CUSTOM, "%s", text.chars);
 }
-
-LOGFUNC(Verbose);
-LOGFUNC(Debug);
-LOGFUNC(Info);
-LOGFUNC(Warn);
-LOGFUNC(Error);
-LOGFUNC(Critical);
+void logDebug(char *format, std::initializer_list<String> args)
+{
+	String text = myprintf(makeString(format), args, true);
+	SDL_LogDebug(SDL_LOG_CATEGORY_CUSTOM, "%s", text.chars);
+}
+void logInfo(char *format, std::initializer_list<String> args)
+{
+	String text = myprintf(makeString(format), args, true);
+	SDL_LogInfo(SDL_LOG_CATEGORY_CUSTOM, "%s", text.chars);
+}
+void logWarn(char *format, std::initializer_list<String> args)
+{
+	String text = myprintf(makeString(format), args, true);
+	SDL_LogWarn(SDL_LOG_CATEGORY_CUSTOM, "%s", text.chars);
+}
+void logError(char *format, std::initializer_list<String> args)
+{
+	String text = myprintf(makeString(format), args, true);
+	SDL_LogError(SDL_LOG_CATEGORY_CUSTOM, "%s", text.chars);
+}
+void logCritical(char *format, std::initializer_list<String> args)
+{
+	String text = myprintf(makeString(format), args, true);
+	SDL_LogCritical(SDL_LOG_CATEGORY_CUSTOM, "%s", text.chars);
+}
 
 /*
  * Our custom logger posts the message into the built-in console, AND then sends it off to SDL's
