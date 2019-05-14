@@ -42,6 +42,8 @@ struct GL_ShaderProgram
 	GLuint shaderProgramID;
 	bool isValid;
 
+	Asset *asset;
+
 	// Uniforms
 	GLint uProjectionMatrixLoc;
 	GLint uTextureLoc;

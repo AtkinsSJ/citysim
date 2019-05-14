@@ -24,6 +24,8 @@ enum AssetState
 
 struct Shader
 {
+	enum ShaderType shaderType;
+
 	String shaderHeaderFilename;
 	String vertexShaderFilename;
 	String fragmentShaderFilename;
@@ -39,6 +41,7 @@ struct Asset
 	// shortName = "foo.png", fullName = "c:/mygame/assets/textures/foo.png"
 	String shortName;
 	String fullName;
+	bool isAFile; // Whether the file at fullName should be loaded into memory when loading this Asset
 
 	AssetState state;
 
@@ -125,8 +128,6 @@ struct AssetManager
 	// So, assets with the same type must be contiguous!
 	ChunkedArray<IndexRange> rangesBySpriteAssetType;
 
-	ChunkedArray<s32> shaderTypeToAssetIndex;
-
 	UITheme theme;
 
 	/*
@@ -196,9 +197,9 @@ Sprite *getSprite(AssetManager *assets, s32 spriteIndex)
 	return get(&assets->sprites, spriteIndex);
 }
 
-Shader *getShader(AssetManager *assets, ShaderType shaderID)
+Shader *getShader(AssetManager *assets, String shaderName)
 {
-	return &getAsset(assets, *get(&assets->shaderTypeToAssetIndex, shaderID))->shader;
+	return &getAsset(assets, AssetType_Shader, shaderName)->shader;
 }
 
 BitmapFont *getFont(AssetManager *assets, String fontName)

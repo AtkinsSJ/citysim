@@ -104,24 +104,14 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	}
 }
 
-static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, ShaderType shaderProgramType)
+static void loadShaderProgram(GL_Renderer *renderer, Asset *asset, GL_ShaderProgram *glShader)
 {
-	bool result = false;
-
-	Shader *shaderProgram = getShader(assets, shaderProgramType);
-
-	GL_ShaderProgram *glShader = renderer->shaders + shaderProgramType;
-	glShader->type = shaderProgramType;
-
-	bool isVertexShaderCompiled   = GL_FALSE;
-	bool isFragmentShaderCompiled = GL_FALSE;
-
 	glShader->shaderProgramID = glCreateProgram();
 
 	if (glShader->shaderProgramID)
 	{
-		isVertexShaderCompiled   = compileShader(glShader, shaderProgram, GL_ShaderPart_Vertex);
-		isFragmentShaderCompiled = compileShader(glShader, shaderProgram, GL_ShaderPart_Fragment);
+		bool isVertexShaderCompiled   = compileShader(glShader, &asset->shader, GL_ShaderPart_Vertex);
+		bool isFragmentShaderCompiled = compileShader(glShader, &asset->shader, GL_ShaderPart_Fragment);
 
 		// Link shader programs
 		if (isVertexShaderCompiled && isFragmentShaderCompiled)
@@ -145,7 +135,7 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 					infoLog = makeString("No error log provided by OpenGL. Sad panda.");
 				}
 
-				logError("Unable to link shader program {0}! ({1})", {formatInt(glShader->type), infoLog});
+				logError("Unable to link shader program {0}! ({1})", {asset->shortName, infoLog});
 			}
 			else
 			{
@@ -160,14 +150,11 @@ static bool loadShaderProgram(GL_Renderer *renderer, AssetManager *assets, Shade
 				loadShaderUniform(glShader, "uScale", &glShader->uScaleLoc);
 			}
 		}
-		result = glShader->isValid;
 	}
 	else
 	{
 		logGLError(glGetError());
 	}
-
-	return result;
 }
 
 static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
@@ -186,21 +173,29 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 		!it.isDone;
 		next(&it))
 	{
-		auto entry = getEntry(it);
+		Asset *asset = *get(it);
 
 		GL_TextureInfo ti = {};
-		ti.asset = entry->value;
+		ti.asset = asset;
 		glGenTextures(1, &ti.glTextureID);
 		ti.isLoaded = false;
 
-		put(&gl->textureInfo, entry->key, ti);
+		put(&gl->textureInfo, asset->shortName, ti);
 	}
 
 	// Shaders
-	for (u32 shaderID=0; shaderID < ShaderCount; shaderID++)
+	for (auto it = iterate(&assets->assetsByName[AssetType_Shader]);
+		!it.isDone;
+		next(&it))
 	{
-		bool shaderLoaded = loadShaderProgram(gl, assets, (ShaderType)shaderID);
-		ASSERT(shaderLoaded, "Failed to load shader {0} into OpenGL.", {formatInt(shaderID)});
+		Asset *asset = *get(it);
+
+		GL_ShaderProgram *shader = &gl->shaders[asset->shader.shaderType];
+		shader->type = asset->shader.shaderType;
+		shader->asset = asset;
+
+		loadShaderProgram(gl, asset, shader);
+		ASSERT(shader->isValid, "Failed to load shader '{0}' into OpenGL.", {asset->shortName});
 	}
 }
 

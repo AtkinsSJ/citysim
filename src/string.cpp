@@ -239,7 +239,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 					if (asInt(indexString, &parsedIndex))
 					{
 						// now we try and see if it's valid
-						if (parsedIndex >= 0 && parsedIndex < args.size())
+						if (parsedIndex >= 0 && parsedIndex < (s64)args.size())
 						{
 							succeeded = true;
 							String arg = args.begin()[parsedIndex];

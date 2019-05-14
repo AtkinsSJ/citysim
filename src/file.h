@@ -80,19 +80,27 @@ File readFile(MemoryArena *memoryArena, String filePath)
 	result.isLoaded = false;
 
 	FileHandle handle = openFile(filePath, FileAccess_Read);
-	defer { closeFile(&handle); };
 
-	smm fileSize = getFileSize(&handle);
-	result.data = allocateBlob(memoryArena, fileSize);
-	smm bytesRead = readFileIntoMemory(&handle, fileSize, result.data.memory);
-
-	if (bytesRead != fileSize)
+	if (handle.isOpen)
 	{
-		logError("File {0} was only partially read. Size {1}, read {2}", {filePath, formatInt(fileSize), formatInt(bytesRead)});
+		smm fileSize = getFileSize(&handle);
+		result.data = allocateBlob(memoryArena, fileSize);
+		smm bytesRead = readFileIntoMemory(&handle, fileSize, result.data.memory);
+
+		if (bytesRead != fileSize)
+		{
+			logWarn("File '{0}' was only partially read. Size {1}, read {2}", {filePath, formatInt(fileSize), formatInt(bytesRead)});
+		}
+		else
+		{
+			result.isLoaded = true;
+		}
+
+		closeFile(&handle);
 	}
 	else
 	{
-		result.isLoaded = true;
+		logError("Failed to open file '{0}' for reading.", {filePath});
 	}
 
 	return result;
@@ -110,16 +118,16 @@ bool writeFile(String filePath, String contents)
 	bool succeeded = false;
 
 	FileHandle file = openFile(filePath, FileAccess_Write);
-	defer { closeFile(&file); };
 
 	if (file.isOpen)
 	{
 		smm bytesWritten = SDL_RWwrite(file.sdl_file, contents.chars, 1, contents.length);
 		succeeded = (bytesWritten == contents.length);
+		closeFile(&file);
 	}
 	else
 	{
-		logError("Failed to open file '{0}' for writing!", {filePath});
+		logError("Failed to open file '{0}' for writing.", {filePath});
 	}
 
 	return succeeded;

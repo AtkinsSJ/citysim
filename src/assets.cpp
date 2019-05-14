@@ -26,8 +26,6 @@ void initAssetManager(AssetManager *assets)
 	Sprite *nullSprite = appendBlank(&assets->sprites);
 	nullSprite->textureName = nullString;
 
-	initChunkedArray(&assets->shaderTypeToAssetIndex, &assets->assetArena, ShaderCount, true);
-
 	initUITheme(&assets->theme);
 }
 
@@ -53,10 +51,8 @@ Blob allocate(AssetManager *assets, smm size)
 	return result;
 }
 
-s32 addAsset(AssetManager *assets, AssetType type, String shortName)
+Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isAFile=true)
 {
-	s32 index = assets->allAssets.count;
-
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
 	if (shortName.length != 0)
@@ -67,17 +63,18 @@ s32 addAsset(AssetManager *assets, AssetType type, String shortName)
 	asset->state = AssetState_Unloaded;
 	asset->data.size = 0;
 	asset->data.memory = null;
+	asset->isAFile = isAFile;
 
 	put(&assets->assetsByName[type], shortName, asset);
 
-	return index;
+	return asset;
 }
 
-inline s32 addAsset(AssetManager *assets, AssetType type, char *shortName)
+inline Asset *addAsset(AssetManager *assets, AssetType type, char *shortName, bool isAFile=true)
 {
 	String name = nullString;
 	if (shortName != null) name = pushString(&assets->assetArena, shortName);
-	return addAsset(assets, type, name);
+	return addAsset(assets, type, name, isAFile);
 }
 
 void copyFileIntoAsset(AssetManager *assets, Blob *fileData, Asset *asset)
@@ -125,7 +122,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	Blob fileData = {};
 	// Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.
 	// eg, ShaderPrograms are made of several ShaderParts.
-	if (asset->fullName.length > 0)
+	if (asset->isAFile)
 	{
 		fileData = readTempFile(asset->fullName);
 	}
@@ -301,8 +298,7 @@ void unloadAsset(AssetManager *assets, Asset *asset)
 
 void addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
-	s32 assetIndex = addAsset(assets, AssetType_Texture, filename);
-	Asset *asset = getAsset(assets, assetIndex);
+	Asset *asset = addAsset(assets, AssetType_Texture, filename);
 	asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
 }
 
@@ -366,12 +362,10 @@ void addFont(AssetManager *assets, String name, String filename)
 	put(&assets->theme.fontNamesToAssetNames, name, filename);
 }
 
-void addShader(AssetManager *assets, ShaderType shaderID, char *headerFilename, char *vertFilename, char *fragFilename)
+void addShader(AssetManager *assets, ShaderType shaderID, char *name, char *headerFilename, char *vertFilename, char *fragFilename)
 {
-	s32 assetIndex = addAsset(assets, AssetType_Shader, null);
-	*get(&assets->shaderTypeToAssetIndex, shaderID) = assetIndex;
-
-	Asset *asset = getAsset(assets, assetIndex);
+	Asset *asset = addAsset(assets, AssetType_Shader, pushString(&assets->assetArena, name), false);
+	asset->shader.shaderType = shaderID;
 	asset->shader.shaderHeaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, headerFilename));
 	asset->shader.vertexShaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, vertFilename));
 	asset->shader.fragmentShaderFilename = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, fragFilename));
@@ -438,9 +432,9 @@ void addAssets(AssetManager *assets)
 
 	// TODO: Settings?
 
-	addShader(assets, Shader_Textured,   "header.glsl", "textured.vert.glsl",   "textured.frag.glsl");
-	addShader(assets, Shader_Untextured, "header.glsl", "untextured.vert.glsl", "untextured.frag.glsl");
-	addShader(assets, Shader_PixelArt,   "header.glsl", "pixelart.vert.glsl",   "pixelart.frag.glsl");
+	addShader(assets, Shader_Textured,   "textured",   "header.glsl", "textured.vert.glsl",   "textured.frag.glsl");
+	addShader(assets, Shader_Untextured, "untextured", "header.glsl", "untextured.vert.glsl", "untextured.frag.glsl");
+	addShader(assets, Shader_PixelArt,   "pixelart",   "header.glsl", "pixelart.vert.glsl",   "pixelart.frag.glsl");
 
 	addAsset(assets, AssetType_Cursor, "default.png");
 	addAsset(assets, AssetType_Cursor, "build.png");
