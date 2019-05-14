@@ -5,7 +5,6 @@ struct String
 	char *chars;
 	s32 length;
 	s32 maxLength;
-	bool isNullTerminated;
 
 	char operator[](s32 index)
 	{
@@ -22,7 +21,6 @@ inline String makeString(char *chars, s32 length)
 	result.chars = chars;
 	result.length = length;
 	result.maxLength = result.length;
-	result.isNullTerminated = false;
 
 	return result;
 }
@@ -158,6 +156,13 @@ inline bool isWhitespace(unichar uChar, bool countNewlines=true)
 inline bool isNewline(char c)
 {
 	bool result = (c == '\n') || (c == '\r');
+	return result;
+}
+
+inline bool isNullTerminated(String s)
+{
+	// A 0-length string, by definition, can't have a null terminator
+	bool result = (s.length > 0) && (s.chars[s.length-1] == 0);
 	return result;
 }
 

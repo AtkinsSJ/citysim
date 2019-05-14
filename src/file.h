@@ -27,7 +27,7 @@ char *fileAccessModeStrings[] = {
 
 FileHandle openFile(String path, FileAccessMode mode)
 {
-	ASSERT(!path.isNullTerminated, "openFile() path must be null-terminated.");
+	ASSERT(isNullTerminated(path), "openFile() path must be null-terminated.");
 
 	FileHandle result = {};
 

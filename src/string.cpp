@@ -242,7 +242,15 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 						if (parsedIndex >= 0 && parsedIndex < args.size())
 						{
 							succeeded = true;
-							append(&stb, args.begin()[parsedIndex]);
+							String arg = args.begin()[parsedIndex];
+
+							// We don't want the null termination byte to be included in the length, or else we get problems if
+							// we myprintf() the result! Yes, this has happened. It was confusing.
+							// - Sam, 10/12/2018
+							// Update 14/05/2019 - we now do the check here, instead of myprintf() appending a null byte that's not included in the String length. (Because checking if that byte is there for isNullTerminated() means reading off the end of the array... not a great idea! 
+							if (isNullTerminated(arg)) arg.length--;
+
+							append(&stb, arg);
 						}
 						
 					}
@@ -274,10 +282,6 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 	if (zeroTerminate)
 	{
 		append(&stb, '\0');
-		// We don't want the null termination byte to be included in the length, or else we get problems if
-		// we myprintf() the result! Yes, this has happened. It was confusing.
-		// - Sam, 10/12/2018
-		stb.length--;
 	}
 
 	result = getString(&stb);
