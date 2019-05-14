@@ -12,8 +12,8 @@ struct HashTableEntry
 template<typename T>
 struct HashTable
 {
-	smm count;
-	smm capacity;
+	s32 count;
+	s32 capacity;
 	f32 maxLoadFactor;
 	HashTableEntry<T> *entries;
 };
@@ -22,13 +22,13 @@ template<typename T>
 struct HashTableIterator
 {
 	HashTable<T> *hashTable;
-	smm currentIndex;
+	s32 currentIndex;
 
 	bool isDone;
 };
 
 template<typename T>
-void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, smm initialCapacity=0);
+void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, s32 initialCapacity=0);
 
 template<typename T>
 T *find(HashTable<T> *table, String key);

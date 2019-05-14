@@ -104,7 +104,7 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	}
 }
 
-static void loadShaderProgram(GL_Renderer *renderer, Asset *asset, GL_ShaderProgram *glShader)
+static void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 {
 	glShader->shaderProgramID = glCreateProgram();
 
@@ -194,7 +194,7 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 		shader->type = asset->shader.shaderType;
 		shader->asset = asset;
 
-		loadShaderProgram(gl, asset, shader);
+		loadShaderProgram(asset, shader);
 		ASSERT(shader->isValid, "Failed to load shader '{0}' into OpenGL.", {asset->shortName});
 	}
 }

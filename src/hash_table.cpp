@@ -1,14 +1,14 @@
 #pragma once
 
 template<typename T>
-void expandHashTable(HashTable<T> *table, smm newCapacity)
+void expandHashTable(HashTable<T> *table, s32 newCapacity)
 {
 	DEBUG_FUNCTION();
 	ASSERT(newCapacity > 0, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
 	ASSERT(newCapacity > table->capacity, "Attempted to shrink a hash table from {0} to {1}", {formatInt(table->capacity), formatInt(newCapacity)});
 
-	smm oldCount = table->count;
-	smm oldCapacity = table->capacity;
+	s32 oldCount = table->count;
+	s32 oldCapacity = table->capacity;
 	HashTableEntry<T> *oldItems = table->entries;
 
 	table->capacity = newCapacity;
@@ -35,7 +35,7 @@ void expandHashTable(HashTable<T> *table, smm newCapacity)
 }
 
 template<typename T>
-void initHashTable(HashTable<T> *table, f32 maxLoadFactor, smm initialCapacity)
+void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 {
 	*table = {};
 
@@ -98,7 +98,7 @@ T findValue(HashTable<T> *table, String key)
 	return *find(table, key);
 }
 
-inline smm growHashTableCapacity(smm capacity)
+inline s32 growHashTableCapacity(s32 capacity)
 {
 	return (capacity < 8) ? 8 : capacity * 2;
 }

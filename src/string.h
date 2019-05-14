@@ -2,8 +2,8 @@
 
 struct String
 {
-	s32 length;
-	s32 maxLength; // TODO: @Performance Maybe we should have a separate struct for editable Strings? That way String itself can be small, PLUS we'd know that the hash value was correct.
+	smm length;
+	smm maxLength; // TODO: @Performance Maybe we should have a separate struct for editable Strings? That way String itself can be small, PLUS we'd know that the hash value was correct.
 	char *chars;
 
 	bool hasHash;
@@ -12,7 +12,7 @@ struct String
 
 const String nullString = {};
 
-inline String makeString(char *chars, s32 length)
+inline String makeString(char *chars, smm length)
 {
 	String result = {};
 	result.chars = chars;
@@ -31,10 +31,10 @@ inline String makeString(const char *chars)
 	return makeString((char*)chars, strlen(chars));
 }
 
-void copyString(char *src, s32 srcLength, String *dest)
+void copyString(char *src, smm srcLength, String *dest)
 {
-	s32 copyLength = MIN(srcLength, dest->maxLength);
-	for (s32 i=0; i<copyLength; i++)
+	smm copyLength = MIN(srcLength, dest->maxLength);
+	for (smm i=0; i<copyLength; i++)
 	{
 		dest->chars[i] = src[i];
 	}
@@ -45,7 +45,7 @@ inline void copyString(String src, String *dest)
 	copyString(src.chars, src.length, dest);
 }
 
-String pushString(MemoryArena *arena, s32 length)
+String pushString(MemoryArena *arena, smm length)
 {
 	String s = {};
 	s.chars = PushArray(arena, char, length);
@@ -56,7 +56,7 @@ String pushString(MemoryArena *arena, s32 length)
 }
 String pushString(MemoryArena *arena, char *src)
 {
-	s32 len = strlen(src);
+	smm len = strlen(src);
 
 	String s = pushString(arena, len);
 	copyString(src, len, &s);
@@ -98,13 +98,13 @@ inline bool equals(String a, char *b)
 }
 
 // Like strcmp()
-s32 compare(String a, String b)
+smm compare(String a, String b)
 {
 	bool foundDifference = false;
-	s32 result = 0;
-	for (s32 i = 0; i<b.length; i++)
+	smm result = 0;
+	for (smm i = 0; i<b.length; i++)
 	{
-		s32 diff = a.chars[i] - b.chars[i];
+		smm diff = a.chars[i] - b.chars[i];
 		if (diff != 0)
 		{
 			result = diff;

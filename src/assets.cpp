@@ -92,6 +92,7 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 	SDL_Surface *result = null;
 
 	ASSERT(fileData.size > 0, "Attempted to create a surface from an unloaded asset! ({0})", {name});
+	ASSERT(fileData.size < s32Max, "File '{0}' is too big for SDL's RWOps!", {name});
 
 	SDL_RWops *rw = SDL_RWFromConstMem(fileData.memory, fileData.size);
 	if (rw)
