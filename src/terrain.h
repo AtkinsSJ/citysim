@@ -17,6 +17,7 @@ struct Terrain
 {
 	u32 type;
 	u32 spriteOffset; // used as the offset for getSprite
+	Sprite *sprite;
 };
 
 Terrain invalidTerrain = {0, 0};

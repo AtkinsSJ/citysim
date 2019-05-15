@@ -182,6 +182,7 @@ Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 
 Sprite *getSprite(AssetManager *assets, String name, u32 offset)
 {
+	DEBUG_FUNCTION();
 	Sprite *result = null;
 	Asset *asset = getAsset(assets, AssetType_Sprite, name);
 

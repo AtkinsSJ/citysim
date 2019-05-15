@@ -398,7 +398,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	{
 		for (int x=0; x<area.w; x++)
 		{
-			TerrainDef *tDef = get(&terrainDefs, terrainAt(city, area.x + x, area.y + y).type);
+			TerrainDef *tDef = get(&terrainDefs, terrainAt(city, area.x + x, area.y + y)->type);
 
 			if (tDef->canDemolish)
 			{

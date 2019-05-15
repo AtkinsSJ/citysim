@@ -59,6 +59,7 @@ struct Building
 	u32 typeID;
 	Rect2I footprint;
 	u32 spriteOffset; // used as the offset for getSprite
+	Sprite *sprite;
 	
 	s32 currentResidents;
 	s32 currentJobs;
@@ -67,6 +68,7 @@ struct Building
 void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Blob data, Asset *asset);
 
 // Returns 0 if not found
+// TODO: use a hashmap!
 s32 findBuildingTypeByName(String name)
 {
 	s32 result = 0;

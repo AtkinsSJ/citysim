@@ -27,7 +27,7 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 
 	s32 tile = tileIndex(city, x, y);
 
-	TerrainDef *tDef = get(&terrainDefs, terrainAt(city, x, y).type);
+	TerrainDef *tDef = get(&terrainDefs, terrainAt(city, x, y)->type);
 	if (!tDef->canBuildOn) return false;
 
 	if (city->tileBuildings[tile] != 0) return false;

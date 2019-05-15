@@ -624,6 +624,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 							if (canAfford(city, buildCost))
 							{
+								Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
 								for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
 								{
 									for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
@@ -633,7 +634,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 										{
 											ghostColor = color255(255,0,0,128);
 										}
-										drawSprite(&renderer->worldBuffer, getSprite(assets, buildingDef->spriteName, 0),
+										drawSprite(&renderer->worldBuffer, sprite,
 										                  rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragResult.dragRect.y + y) + 100, ghostColor, Shader_PixelArt);
 									}
 								}
@@ -783,12 +784,16 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			x < visibleTileBounds.x + visibleTileBounds.w;
 			x++)
 		{
-			Terrain t = terrainAt(city,x,y);
-			if (t.type != 0)
+			Terrain *t = terrainAt(city,x,y);
+			if (t->type != 0)
 			{
-				TerrainDef *tDef = get(&terrainDefs, t.type);
+				if (t->sprite == null || assets->assetReloadHasJustHappened)
+				{
+					TerrainDef *tDef = get(&terrainDefs, t->type);
+					t->sprite = getSprite(assets, tDef->spriteName, t->spriteOffset);
+				}
 
-				drawSprite(&renderer->worldBuffer, getSprite(assets, tDef->spriteName, t.spriteOffset), rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, makeWhite(), Shader_PixelArt);
+				drawSprite(&renderer->worldBuffer, t->sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, makeWhite(), Shader_PixelArt);
 			}
 		}
 	}
@@ -822,14 +827,19 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			if (gameState->actionMode == ActionMode_Demolish
 				&& gameState->worldDragState.isDragging
-				&& rectsOverlap(building->footprint, demolitionRect)) {
+				&& rectsOverlap(building->footprint, demolitionRect))
+			{
 				// Draw building red to preview demolition
 				drawColor = color255(255,128,128,255);
 			}
 
+			if (building->sprite == null || assets->assetReloadHasJustHappened)
+			{
+				building->sprite = getSprite(assets, def->spriteName, building->spriteOffset);
+			}
+
 			V2 drawPos = centre(building->footprint);
-			drawSprite(&renderer->worldBuffer, getSprite(assets, def->spriteName, building->spriteOffset),
-							  rect2(building->footprint), depthFromY(drawPos.y), drawColor, Shader_PixelArt);
+			drawSprite(&renderer->worldBuffer, building->sprite, rect2(building->footprint), depthFromY(drawPos.y), drawColor, Shader_PixelArt);
 		}
 	}
 
