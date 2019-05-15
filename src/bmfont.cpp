@@ -104,7 +104,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				dest->yOffset = src->yOffset;
 				dest->xAdvance = src->xAdvance;
 
-				dest->spriteID = addSprite(assets, asset->bitmapFont.spriteType, pageToTextureName[src->page],
+				dest->sprite = addSprite(assets, asset->bitmapFont.spriteType, pageToTextureName[src->page],
 					rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h));
 			}
 		}

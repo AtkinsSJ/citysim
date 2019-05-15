@@ -228,7 +228,9 @@ static void GL_unloadAssets(Renderer *renderer)
 
 void useShader(GL_Renderer *renderer, ShaderType shaderType)
 {
+	DEBUG_FUNCTION();
 	ASSERT(shaderType >= 0 && shaderType < ShaderCount, "Invalid shader!");
+
 	if (renderer->currentShader != shaderType)
 	{
 		GL_ShaderProgram *targetShader = renderer->shaders + shaderType;
@@ -246,6 +248,8 @@ void useShader(GL_Renderer *renderer, ShaderType shaderType)
 
 void bindTexture(GL_TextureInfo *textureInfo, Asset *asset, s32 uniformID, u32 textureSlot=0)
 {
+	DEBUG_FUNCTION();
+
 	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0 + textureSlot);
 	glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
@@ -343,8 +347,7 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 
 	if (buffer->items.count > 0)
 	{
-		Sprite *sprite = null;
-		s32 spriteID = -1;
+		Sprite *sprite = (Sprite *)-1;
 		GL_TextureInfo *textureInfo = null;
 
 		for (u32 i=0; i < buffer->items.count; i++)
@@ -352,12 +355,13 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 			RenderItem *item = pointerTo(&buffer->items, i);
 			ShaderType desiredShader = item->shaderID;
 
-			if (item->spriteID != spriteID)
+			if (item->sprite != sprite)
 			{
-				spriteID = item->spriteID;
-				// TODO: @Speed Don't need to try and get this info if there's no sprite??? (spriteID==0)
-				sprite = getSprite(assets, item->spriteID);
-				textureInfo = find(&renderer->textureInfo, sprite->textureName);
+				DEBUG_BLOCK("renderer sprite lookup");
+
+				sprite = item->sprite;
+				String textureName = (sprite == null) ? nullString : sprite->textureName;
+				textureInfo = find(&renderer->textureInfo, textureName);
 			}
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
@@ -366,6 +370,8 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 				|| (textureInfo->glTextureID != glBoundTextureID)
 				|| (desiredShader != renderer->currentShader))
 			{
+				DEBUG_BLOCK("renderer flush");
+
 				// Render existing buffer contents
 				if (vertexCount)
 				{
@@ -393,25 +399,28 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 
 			int firstVertex = vertexCount;
 
+			Rect2 uvs = {};
+			if (sprite != null) uvs = sprite->uv;
+
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x, item->rect.y, item->depth),
 				item->color,
-				v2(sprite->uv.x, sprite->uv.y)
+				v2(uvs.x, uvs.y)
 			};
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x + item->rect.size.x, item->rect.y, item->depth),
 				item->color,
-				v2(sprite->uv.x + sprite->uv.w, sprite->uv.y)
+				v2(uvs.x + uvs.w, uvs.y)
 			};
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
 				item->color,
-				v2(sprite->uv.x + sprite->uv.w, sprite->uv.y + sprite->uv.h)
+				v2(uvs.x + uvs.w, uvs.y + uvs.h)
 			};
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x, item->rect.y + item->rect.size.y, item->depth),
 				item->color,
-				v2(sprite->uv.x, sprite->uv.y + sprite->uv.h)
+				v2(uvs.x, uvs.y + uvs.h)
 			};
 
 			renderer->indices[indexCount++] = firstVertex + 0;

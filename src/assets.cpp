@@ -303,25 +303,25 @@ void addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied
 	asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
 }
 
-u32 addSprite(AssetManager *assets, u32 spriteAssetType, String textureName, Rect2 uv)
+Sprite *addSprite(AssetManager *assets, u32 spriteAssetType, String textureName, Rect2 uv)
 {
 	ASSERT(textureName.length > 0, "Attempted to add a sprite with a blank filename!");
 	u32 spriteID = (u32) assets->sprites.count;
 
-	Sprite *region = appendBlank(&assets->sprites);
+	Sprite *sprite = appendBlank(&assets->sprites);
 
-	region->spriteAssetType = spriteAssetType;
-	region->textureName = textureName;
-	region->uv = uv;
+	sprite->spriteAssetType = spriteAssetType;
+	sprite->textureName = textureName;
+	sprite->uv = uv;
 
 	IndexRange *range = get(&assets->rangesBySpriteAssetType, spriteAssetType);
 	range->firstIndex = MIN(spriteID, range->firstIndex);
 	range->lastIndex  = MAX(spriteID, range->lastIndex);
 
-	return spriteID;
+	return sprite;
 }
 
-s32 addSprite(AssetManager *assets, u32 spriteAssetType, char *filename, Rect2 uv, bool isAlphaPremultiplied=false)
+Sprite *addSprite(AssetManager *assets, u32 spriteAssetType, char *filename, Rect2 uv, bool isAlphaPremultiplied=false)
 {
 	ASSERT(filename != null, "Attempted to add a sprite with no filename!");
 

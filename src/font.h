@@ -10,7 +10,8 @@ struct BitmapFontGlyph
 	// TODO: Referring to a sprite too is redundant! Also, in some cases, we need to know the ^above data
 	// but have progressed through the renderer so we only have the RenderItem. Maybe entirely use
 	// BitmapFontGlyphs for text rendering instead?
-	u32 spriteID;
+	// u32 spriteID;
+	struct Sprite *sprite;
 };
 
 struct BitmapFont
