@@ -68,7 +68,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 		}
 		else
 		{
-			String *pageToTextureName = PushArray(&globalAppState.globalTempArena, String, common->pageCount);
+			Asset **pageToTextureAsset = PushArray(&globalAppState.globalTempArena, Asset*, common->pageCount);
 			char *pageStart = (char *) pages;
 
 			for (u32 pageIndex = 0;
@@ -76,8 +76,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				pageIndex++)
 			{
 				String textureName = pushString(&assets->assetArena, pageStart);
-				addTexture(assets, textureName, false);
-				pageToTextureName[pageIndex] = textureName;
+				pageToTextureAsset[pageIndex] = addTexture(assets, textureName, false);
 				pageStart += strlen(pageStart) + 1;
 			}
 
@@ -104,7 +103,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				dest->yOffset = src->yOffset;
 				dest->xAdvance = src->xAdvance;
 
-				dest->sprite = addSprite(assets, asset->bitmapFont.spriteType, pageToTextureName[src->page],
+				dest->sprite = addSprite(assets, asset->bitmapFont.spriteType, pageToTextureAsset[src->page],
 					rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h));
 			}
 		}

@@ -9,11 +9,11 @@
 template<typename T>
 struct Array
 {
-	u32 count;
-	u32 maxCount;
+	s32 count;
+	s32 maxCount;
 	T *items;
 
-	inline T operator[](u32 index)
+	inline T operator[](s32 index)
 	{
 		ASSERT(index >=0 && index < count, "Index out of range!");
 		return items[index];
@@ -21,7 +21,7 @@ struct Array
 };
 
 template<typename T>
-void initialiseArray(Array<T> *a, u32 initialSize)
+void initialiseArray(Array<T> *a, s32 initialSize)
 {
 	a->items = (T*) allocateRaw(initialSize * sizeof(T));
 	a->count = 0;
@@ -42,7 +42,7 @@ void clear(Array<T> *a)
 }
 
 template<typename T>
-bool resize(Array<T> *a, u32 newSize)
+bool resize(Array<T> *a, s32 newSize)
 {
 	ASSERT(newSize > a->count, "Shrinking an Array is not supported!");
 	logInfo("Resizing an array.");
@@ -90,7 +90,7 @@ T *appendBlank(Array<T> *a)
 }
 
 template<typename T>
-T * pointerTo(Array<T> *a, u32 index)
+T * pointerTo(Array<T> *a, s32 index)
 {
 	ASSERT(index >=0 && index < a->count, "Index out of range!");
 	return a->items + index;
@@ -102,7 +102,7 @@ void sortInPlace(Array<T> *a, CompareResult (*compare)(T*, T*))
 {
 	// This is an implementation of the 'comb sort' algorithm, low to high
 
-	u32 gap = a->count;
+	s32 gap = a->count;
 	f32 shrink = 1.3f;
 
 	bool swapped = false;
@@ -118,7 +118,7 @@ void sortInPlace(Array<T> *a, CompareResult (*compare)(T*, T*))
 		swapped = false;
 
 		// "comb" over the list
-		for (u32 i = 0;
+		for (s32 i = 0;
 			i + gap < a->count; // Here lies the remains of the flicker bug. It was <= not <. /fp
 			i++)
 		{

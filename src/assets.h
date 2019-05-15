@@ -34,6 +34,15 @@ struct Shader
 	String fragmentShader;
 };
 
+struct Texture
+{
+	bool isFileAlphaPremultiplied;
+	SDL_Surface *surface;
+
+	// Renderer-specific ID.
+	s32 rendererTextureID;
+};
+
 struct Asset
 {
 	AssetType type;
@@ -61,10 +70,7 @@ struct Asset
 
 		Shader shader;
 
-		struct {
-			bool isFileAlphaPremultiplied;
-			SDL_Surface *surface;
-		} texture;
+		Texture texture;
 
 		BitmapFont bitmapFont;
 	};
@@ -80,12 +86,6 @@ enum ShaderType
 	Shader_Invalid = -1
 };
 
-struct Texture_Temp
-{
-	String filename;
-	s32 assetIndex;
-};
-
 struct Sprite
 {
 	// Identifier so multiple sprites can be associated with the same id.
@@ -93,9 +93,7 @@ struct Sprite
 	// Right now (13/05/2019) we only ever *set* this, we don't ever read it. Seems wasteful.
 	s32 spriteAssetType;
 
-	// TODO: Using a texture name is inefficient, we have to lookup the texture by name
-	// for each Sprite that's drawn.
-	String textureName;
+	Asset *texture;
 	Rect2 uv; // in (0 to 1) space
 };
 

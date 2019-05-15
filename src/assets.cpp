@@ -24,7 +24,7 @@ void initAssetManager(AssetManager *assets)
 	initChunkedArray(&assets->sprites, &assets->assetArena, 1024);
 	// TODO: Do we still need this?
 	Sprite *nullSprite = appendBlank(&assets->sprites);
-	nullSprite->textureName = nullString;
+	nullSprite->texture = null;
 
 	initUITheme(&assets->theme);
 }
@@ -297,21 +297,23 @@ void unloadAsset(AssetManager *assets, Asset *asset)
 	asset->state = AssetState_Unloaded;
 }
 
-void addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
+Asset *addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
 {
 	Asset *asset = addAsset(assets, AssetType_Texture, filename);
 	asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
+
+	return asset;
 }
 
-Sprite *addSprite(AssetManager *assets, u32 spriteAssetType, String textureName, Rect2 uv)
+Sprite *addSprite(AssetManager *assets, u32 spriteAssetType, Asset *textureAsset, Rect2 uv)
 {
-	ASSERT(textureName.length > 0, "Attempted to add a sprite with a blank filename!");
+	ASSERT(textureAsset != null, "Attempted to add a sprite with no Texture!");
 	u32 spriteID = (u32) assets->sprites.count;
 
 	Sprite *sprite = appendBlank(&assets->sprites);
 
 	sprite->spriteAssetType = spriteAssetType;
-	sprite->textureName = textureName;
+	sprite->texture = textureAsset;
 	sprite->uv = uv;
 
 	IndexRange *range = get(&assets->rangesBySpriteAssetType, spriteAssetType);
@@ -321,25 +323,18 @@ Sprite *addSprite(AssetManager *assets, u32 spriteAssetType, String textureName,
 	return sprite;
 }
 
-Sprite *addSprite(AssetManager *assets, u32 spriteAssetType, char *filename, Rect2 uv, bool isAlphaPremultiplied=false)
-{
-	ASSERT(filename != null, "Attempted to add a sprite with no filename!");
-
-	String textureName = pushString(&assets->assetArena, filename);
-	if (find(&assets->assetsByName[AssetType_Texture], textureName) == null)
-	{
-		addTexture(assets, textureName, isAlphaPremultiplied);
-	}
-
-	return addSprite(assets, spriteAssetType, textureName, uv);
-}
-
 void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
 {
 	String textureName = pushString(&assets->assetArena, filename);
-	if (find(&assets->assetsByName[AssetType_Texture], textureName) == null)
+	Asset **findResult = find(&assets->assetsByName[AssetType_Texture], textureName);
+	Asset *textureAsset;
+	if (findResult == null)
 	{
-		addTexture(assets, textureName, isAlphaPremultiplied);
+		textureAsset = addTexture(assets, textureName, isAlphaPremultiplied);
+	}
+	else
+	{
+		textureAsset = *findResult;
 	}
 
 	Rect2 uv = rectXYWH(0, 0, (f32)tileWidth, (f32)tileHeight);
@@ -352,7 +347,7 @@ void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 
 		{
 			uv.x = (f32)(x * tileWidth);
 
-			addSprite(assets, spriteType, textureName, uv);
+			addSprite(assets, spriteType, textureAsset, uv);
 		}
 	}
 }
@@ -393,9 +388,7 @@ void loadAssets(AssetManager *assets)
 	for (s32 regionIndex = 1; regionIndex < assets->sprites.count; regionIndex++)
 	{
 		Sprite *tr = getSprite(assets, regionIndex);
-		// NB: We look up the texture for every char, so fairly inefficient.
-		// Maybe we could cache the current texture?
-		Asset *t = getAsset(assets, AssetType_Texture, tr->textureName);
+		Asset *t = tr->texture;
 		f32 textureWidth  = (f32) t->texture.surface->w;
 		f32 textureHeight = (f32) t->texture.surface->h;
 
