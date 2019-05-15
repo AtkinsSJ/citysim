@@ -34,7 +34,7 @@ void testWindowProc(WindowContext *context, void *userData)
 	window_label(context, LocalString("Test"));
 }
 
-void updateAndRenderMainMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 	

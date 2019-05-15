@@ -263,7 +263,7 @@ void updateInput(InputState *inputState)
 			} break;
 			case SDL_TEXTINPUT: {
 				inputState->hasUnhandledTextEntered = true;
-				copyString(event.text.text, strlen(event.text.text), &inputState->textEntered);
+				copyString(event.text.text, truncate32(strlen(event.text.text)), &inputState->textEntered);
 			} break;
 		}
 	}

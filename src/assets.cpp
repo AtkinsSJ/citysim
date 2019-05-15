@@ -94,7 +94,7 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 	ASSERT(fileData.size > 0, "Attempted to create a surface from an unloaded asset! ({0})", {name});
 	ASSERT(fileData.size < s32Max, "File '{0}' is too big for SDL's RWOps!", {name});
 
-	SDL_RWops *rw = SDL_RWFromConstMem(fileData.memory, fileData.size);
+	SDL_RWops *rw = SDL_RWFromConstMem(fileData.memory, truncate32(fileData.size));
 	if (rw)
 	{
 		result = IMG_Load_RW(rw, 0);
@@ -177,8 +177,8 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 			asset->data = allocate(assets, totalSize);
 
-			asset->shader.vertexShader   = makeString((char*)asset->data.memory, vertexSize);
-			asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexSize, fragmentSize);
+			asset->shader.vertexShader   = makeString((char*)asset->data.memory, truncate32(vertexSize));
+			asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexSize, truncate32(fragmentSize));
 
 			smm offset = 0;
 
@@ -306,7 +306,7 @@ void addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied
 u32 addSprite(AssetManager *assets, u32 spriteAssetType, String textureName, Rect2 uv)
 {
 	ASSERT(textureName.length > 0, "Attempted to add a sprite with a blank filename!");
-	u32 spriteID = assets->sprites.count;
+	u32 spriteID = (u32) assets->sprites.count;
 
 	Sprite *region = appendBlank(&assets->sprites);
 
@@ -412,7 +412,7 @@ void loadAssets(AssetManager *assets)
 
 u32 addNewTextureAssetType(AssetManager *assets)
 {
-	u32 newTypeID = assets->rangesBySpriteAssetType.count;
+	u32 newTypeID = (u32) assets->rangesBySpriteAssetType.count;
 
 	IndexRange range;
 	range.firstIndex = u32Max;

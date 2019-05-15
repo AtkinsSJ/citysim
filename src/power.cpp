@@ -88,7 +88,7 @@ void recalculatePowerConnectivity(City *city)
 			if (city->powerLayer.data[tileIndex] == -1)
 			{
 				// Flood fill from here!
-				floodFillPowerConnectivity(city, x, y, city->powerLayer.groups.count);
+				floodFillPowerConnectivity(city, x, y, truncate32(city->powerLayer.groups.count));
 				PowerGroup *newGroup = appendBlank(&city->powerLayer.groups);
 				newGroup->production = 0;
 				newGroup->consumption = 0;

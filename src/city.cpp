@@ -27,7 +27,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
-	s32 buildingArrayIndex = city->buildings.count;
+	s32 buildingArrayIndex = truncate32(city->buildings.count);
 	Building *building = appendBlank(&city->buildings);
 	building->id = ++city->highestBuildingID;
 	building->typeID = def->typeID;
@@ -202,7 +202,7 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 		// Remove zones
 		placeZone(uiState, city, Zone_None, footprint, false);
 
-		buildingArrayIndex = city->buildings.count;
+		buildingArrayIndex = truncate32(city->buildings.count);
 
 		building = addBuilding(city, def, footprint);
 	}
@@ -340,7 +340,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		// TODO: REPLACE THIS with a system that has consistent IDs!
 		if (buildingID != (city->buildings.count-1))
 		{
-			Building *highest = getBuildingByID(city, city->buildings.count - 1);
+			Building *highest = getBuildingByID(city, truncate32(city->buildings.count - 1));
 
 			// Change all references to highest building
 			for (s32 y = highest->footprint.y;

@@ -2,8 +2,8 @@
 
 struct String
 {
-	smm length;
-	smm maxLength; // TODO: @Performance Maybe we should have a separate struct for editable Strings? That way String itself can be small, PLUS we'd know that the hash value was correct.
+	s32 length;
+	s32 maxLength; // TODO: @Performance Maybe we should have a separate struct for editable Strings? That way String itself can be small, PLUS we'd know that the hash value was correct.
 	char *chars;
 
 	bool hasHash;
@@ -12,7 +12,7 @@ struct String
 
 const String nullString = {};
 
-inline String makeString(char *chars, smm length)
+inline String makeString(char *chars, s32 length)
 {
 	String result = {};
 	result.chars = chars;
@@ -23,18 +23,18 @@ inline String makeString(char *chars, smm length)
 }
 inline String makeString(char *chars)
 {
-	return makeString(chars, strlen(chars));
+	return makeString(chars, truncate32(strlen(chars)));
 }
 // const is a huge pain in the bum
 inline String makeString(const char *chars)
 {
-	return makeString((char*)chars, strlen(chars));
+	return makeString((char*)chars, truncate32(strlen(chars)));
 }
 
-void copyString(char *src, smm srcLength, String *dest)
+void copyString(char *src, s32 srcLength, String *dest)
 {
-	smm copyLength = MIN(srcLength, dest->maxLength);
-	for (smm i=0; i<copyLength; i++)
+	s32 copyLength = MIN(srcLength, dest->maxLength);
+	for (s32 i=0; i<copyLength; i++)
 	{
 		dest->chars[i] = src[i];
 	}
@@ -45,7 +45,7 @@ inline void copyString(String src, String *dest)
 	copyString(src.chars, src.length, dest);
 }
 
-String pushString(MemoryArena *arena, smm length)
+String pushString(MemoryArena *arena, s32 length)
 {
 	String s = {};
 	s.chars = PushArray(arena, char, length);
@@ -56,7 +56,7 @@ String pushString(MemoryArena *arena, smm length)
 }
 String pushString(MemoryArena *arena, char *src)
 {
-	smm len = strlen(src);
+	s32 len = truncate32(strlen(src));
 
 	String s = pushString(arena, len);
 	copyString(src, len, &s);
@@ -98,13 +98,13 @@ inline bool equals(String a, char *b)
 }
 
 // Like strcmp()
-smm compare(String a, String b)
+s32 compare(String a, String b)
 {
 	bool foundDifference = false;
-	smm result = 0;
-	for (smm i = 0; i<b.length; i++)
+	s32 result = 0;
+	for (s32 i = 0; i<b.length; i++)
 	{
-		smm diff = a.chars[i] - b.chars[i];
+		s32 diff = a.chars[i] - b.chars[i];
 		if (diff != 0)
 		{
 			result = diff;

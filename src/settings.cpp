@@ -162,7 +162,7 @@ void saveSettings(Settings *settings, AssetManager *assets)
 	}
 }
 
-void updateAndRenderSettingsMenu(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderSettingsMenu(AppState *appState, Renderer *renderer, AssetManager *assets)
 {
 	AppStatus result = appState->appStatus;
 

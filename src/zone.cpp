@@ -257,7 +257,7 @@ void growSomeZoneBuildings(City *city)
 			// TODO: Better selection than just a random one
 			bool foundAZone = false;
 			V2I zonePos = {};
-			for (auto it = iterate(&layer->emptyRZones, randomInRange(random, layer->emptyRZones.count));
+			for (auto it = iterate(&layer->emptyRZones, randomInRange(random, truncate32(layer->emptyRZones.count)));
 				!it.isDone;
 				next(&it))
 			{
@@ -349,7 +349,7 @@ void growSomeZoneBuildings(City *city)
 			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
 
 			// Choose a random building, then carry on checking buildings until one is acceptable
-			for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, layer->rGrowableBuildings.count));
+			for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, truncate32(layer->rGrowableBuildings.count)));
 				!it.isDone;
 				next(&it))
 			{

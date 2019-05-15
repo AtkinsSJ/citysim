@@ -378,8 +378,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState, GameState *gameState,
-	                       InputState *inputState)
+void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState, GameState *gameState)
 {
 	DEBUG_FUNCTION();
 	
@@ -533,7 +532,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// UI!
 	UIState *uiState = &globalAppState.uiState;
-	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState, inputState);
+	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState);
 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
@@ -921,17 +920,17 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 	{
 		case AppStatus_MainMenu:
 		{
-			updateAndRenderMainMenu(appState, inputState, renderer, assets);
+			updateAndRenderMainMenu(appState, renderer, assets);
 		} break;
 
 		case AppStatus_Credits:
 		{
-			updateAndRenderCredits(appState, inputState, renderer, assets);
+			updateAndRenderCredits(appState, renderer, assets);
 		} break;
 
 		case AppStatus_SettingsMenu:
 		{
-			updateAndRenderSettingsMenu(appState, inputState, renderer, assets);
+			updateAndRenderSettingsMenu(appState, renderer, assets);
 		} break;
 
 		case AppStatus_Game:

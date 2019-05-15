@@ -184,6 +184,12 @@ struct Rect2 {
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define WRAP(value, max) (((value) + (max)) % (max))
 
+inline s32 truncate32(s64 in)
+{
+	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");
+	return (s32) in;
+}
+
 // Standard rounding functions return doubles, so here's some int ones.
 inline s32 round_s32(f32 in)
 {

@@ -25,18 +25,6 @@ char *fileAccessModeStrings[] = {
 	"wb"
 };
 
-// HACK HACK HACK!
-// This function takes a 32-bit size, so here's a workaround that patches in the 64bit size.
-// It relies on the interior workings of SDL, but should be stable.
-// - Sam, 14/05/2019
-SDL_RWops * SDL_RWFromConstMem(const void *mem, smm size)
-{
-	SDL_RWops *result = SDL_RWFromConstMem(mem, 0);
-	result->hidden.mem.stop = result->hidden.mem.base + size;
-
-	return result;
-}
-
 FileHandle openFile(String path, FileAccessMode mode)
 {
 	ASSERT(isNullTerminated(path), "openFile() path must be null-terminated.");

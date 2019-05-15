@@ -258,7 +258,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 				{
 					if (console->inputHistoryCursor == -1)
 					{
-						console->inputHistoryCursor = console->inputHistory.count - 1;
+						console->inputHistoryCursor = truncate32(console->inputHistory.count - 1);
 					}
 					else
 					{
@@ -273,11 +273,11 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 				{
 					if (console->inputHistoryCursor == -1)
 					{
-						console->inputHistoryCursor = console->inputHistory.count - 1;
+						console->inputHistoryCursor = truncate32(console->inputHistory.count - 1);
 					}
 					else
 					{
-						console->inputHistoryCursor = MIN(console->inputHistoryCursor + 1, console->inputHistory.count - 1);
+						console->inputHistoryCursor = truncate32(MIN(console->inputHistoryCursor + 1, console->inputHistory.count - 1));
 					}
 
 					clear(&console->input);

@@ -237,7 +237,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 	if (!createdWindowAlready)
 	{
 		append(&uiState->openWindows, newWindow);
-		makeWindowActive(uiState, uiState->openWindows.count-1);
+		makeWindowActive(uiState, truncate32(uiState->openWindows.count-1));
 	}
 }
 
