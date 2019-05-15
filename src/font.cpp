@@ -2,6 +2,8 @@
 
 BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 {
+	DEBUG_FUNCTION();
+	
 	BitmapFontGlyph *result = 0;
 
 	// BINARY SEARCH! :D
@@ -161,6 +163,8 @@ static void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 {
+	DEBUG_FUNCTION();
+	
 	V2 result = v2(0, font->lineHeight);
 
 	if (font == null)
@@ -207,6 +211,8 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 
 BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth=0)
 {
+	DEBUG_FUNCTION();
+	
 	if (font == null)
 	{
 		logError("Attempted to display text with a null font: {0}", {text});
@@ -303,6 +309,8 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 
 void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color)
 {
+	DEBUG_FUNCTION();
+	
 	if (cache == null) return;
 
 	// Make sure we're on whole-pixel boundaries for nicer text rendering
