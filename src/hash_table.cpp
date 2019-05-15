@@ -50,7 +50,7 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 template<typename T>
 HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 {
-	DEBUG_FUNCTION();
+	// DEBUG_FUNCTION();
 
 	u32 hash = hashString(&key);
 	u32 index = hash % table->capacity;
