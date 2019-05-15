@@ -62,9 +62,11 @@ struct DebugAssetData // Not a linked list because there's only one asset system
 	smm arenaTotalSize[DEBUG_FRAMES_COUNT];
 	smm arenaUsedSize[DEBUG_FRAMES_COUNT];
 
-	// Asset memory
+	// Asset stats
 	s32 assetCount[DEBUG_FRAMES_COUNT];
 	s32 loadedAssetCount[DEBUG_FRAMES_COUNT];
+
+	// Asset memory
 	smm assetMemoryAllocated[DEBUG_FRAMES_COUNT];
 	smm maxAssetMemoryAllocated[DEBUG_FRAMES_COUNT];
 	smm assetsByNameSize[DEBUG_FRAMES_COUNT];

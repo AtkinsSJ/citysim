@@ -431,11 +431,12 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 		{
 			Asset *asset = get(it);
 
-			assetData->assetCount[frameIndex]++;
 			if (asset->state == AssetState_Loaded) assetData->loadedAssetCount[frameIndex]++;
 		}
 		assetData->assetMemoryAllocated   [frameIndex] = assets->assetMemoryAllocated;
 		assetData->maxAssetMemoryAllocated[frameIndex] = assets->maxAssetMemoryAllocated;
+
+		assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
 	}
 }
 

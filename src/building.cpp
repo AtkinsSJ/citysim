@@ -65,7 +65,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 				}
 				else if (equals(firstWord, "texture"))
 				{
-					def->spriteType = readTextureDefinition(&reader, assets, remainder);
+					def->spriteName = readTextureDefinition(&reader, assets, remainder);
 				}
 				else if (equals(firstWord, "link_textures"))
 				{

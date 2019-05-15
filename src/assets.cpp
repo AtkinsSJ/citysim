@@ -18,14 +18,6 @@ void initAssetManager(AssetManager *assets)
 		initHashTable(&assets->assetsByName[assetType]);
 	}
 
-	initChunkedArray(&assets->rangesBySpriteAssetType, &assets->assetArena, 256);
-	appendBlank(&assets->rangesBySpriteAssetType);
-
-	initChunkedArray(&assets->sprites, &assets->assetArena, 1024);
-	// TODO: Do we still need this?
-	Sprite *nullSprite = appendBlank(&assets->sprites);
-	nullSprite->texture = null;
-
 	initUITheme(&assets->theme);
 }
 
@@ -199,6 +191,27 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			asset->state = AssetState_Loaded;
 		} break;
 
+		case AssetType_Sprite:
+		{
+			// Convert UVs from pixel space to 0-1 space
+			for (s32 i = 0; i < asset->spriteGroup.count; i++)
+			{
+				Sprite *sprite = asset->spriteGroup.sprites + i;
+				Asset *t = sprite->texture;
+				f32 textureWidth  = (f32) t->texture.surface->w;
+				f32 textureHeight = (f32) t->texture.surface->h;
+
+				sprite->uv = rectXYWH(
+					sprite->uv.x / textureWidth,
+					sprite->uv.y / textureHeight,
+					sprite->uv.w / textureWidth,
+					sprite->uv.h / textureHeight
+				);
+			}
+
+			asset->state = AssetState_Loaded;
+		} break;
+
 		case AssetType_TerrainDefs:
 		{
 			loadTerrainDefinitions(&terrainDefs, assets, fileData, asset);
@@ -305,27 +318,34 @@ Asset *addTexture(AssetManager *assets, String filename, bool isAlphaPremultipli
 	return asset;
 }
 
-Sprite *addSprite(AssetManager *assets, u32 spriteAssetType, Asset *textureAsset, Rect2 uv)
+Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount)
+{
+	ASSERT(spriteCount > 0, "Must have a positive number of sprites in a Sprite Group!");
+
+	Asset *spriteGroup = addAsset(assets, AssetType_Sprite, name, false);
+	Blob spritesBlob = allocate(assets, spriteCount * sizeof(Sprite));
+	spriteGroup->spriteGroup.count = spriteCount;
+	spriteGroup->spriteGroup.sprites = (Sprite*) spritesBlob.memory;
+
+	return spriteGroup;
+}
+
+Sprite *addSprite(AssetManager *assets, String name, Asset *textureAsset, Rect2 uv)
 {
 	ASSERT(textureAsset != null, "Attempted to add a sprite with no Texture!");
-	u32 spriteID = (u32) assets->sprites.count;
 
-	Sprite *sprite = appendBlank(&assets->sprites);
+	Asset *spriteGroup = addSpriteGroup(assets, name, 1);
 
-	sprite->spriteAssetType = spriteAssetType;
+	Sprite *sprite = spriteGroup->spriteGroup.sprites + 0;
 	sprite->texture = textureAsset;
 	sprite->uv = uv;
-
-	IndexRange *range = get(&assets->rangesBySpriteAssetType, spriteAssetType);
-	range->firstIndex = MIN(spriteID, range->firstIndex);
-	range->lastIndex  = MAX(spriteID, range->lastIndex);
 
 	return sprite;
 }
 
-void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
+void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
 {
-	String textureName = pushString(&assets->assetArena, filename);
+	String textureName = pushString(&assets->assetArena, textureFilename);
 	Asset **findResult = find(&assets->assetsByName[AssetType_Texture], textureName);
 	Asset *textureAsset;
 	if (findResult == null)
@@ -337,8 +357,12 @@ void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 
 		textureAsset = *findResult;
 	}
 
+	ASSERT(textureAsset != null, "Failed to find/create texture for Sprite!");
+
+	Asset *spriteGroup = addSpriteGroup(assets, name, tilesAcross * tilesDown);
 	Rect2 uv = rectXYWH(0, 0, (f32)tileWidth, (f32)tileHeight);
 
+	s32 spriteIndex = 0;
 	for (u32 y = 0; y < tilesDown; y++)
 	{
 		uv.y = (f32)(y * tileHeight);
@@ -347,7 +371,9 @@ void addTiledSprites(AssetManager *assets, u32 spriteType, String filename, u32 
 		{
 			uv.x = (f32)(x * tileWidth);
 
-			addSprite(assets, spriteType, textureAsset, uv);
+			Sprite *sprite = spriteGroup->spriteGroup.sprites + spriteIndex++;
+			sprite->texture = textureAsset;
+			sprite->uv = uv;
 		}
 	}
 }
@@ -384,35 +410,7 @@ void loadAssets(AssetManager *assets)
 		loadAsset(assets, asset);
 	}
 
-	// Now we can convert UVs from pixel space to 0-1 space.
-	for (s32 regionIndex = 1; regionIndex < assets->sprites.count; regionIndex++)
-	{
-		Sprite *tr = getSprite(assets, regionIndex);
-		Asset *t = tr->texture;
-		f32 textureWidth  = (f32) t->texture.surface->w;
-		f32 textureHeight = (f32) t->texture.surface->h;
-
-		tr->uv = rectXYWH(
-			tr->uv.x / textureWidth,
-			tr->uv.y / textureHeight,
-			tr->uv.w / textureWidth,
-			tr->uv.h / textureHeight
-		);
-	}
-
 	assets->assetReloadHasJustHappened = true;
-}
-
-u32 addNewTextureAssetType(AssetManager *assets)
-{
-	u32 newTypeID = (u32) assets->rangesBySpriteAssetType.count;
-
-	IndexRange range;
-	range.firstIndex = u32Max;
-	range.lastIndex  = 0;
-	append(&assets->rangesBySpriteAssetType, range);
-
-	return newTypeID;
 }
 
 void addAssets(AssetManager *assets)

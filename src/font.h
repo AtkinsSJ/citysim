@@ -17,7 +17,7 @@ struct BitmapFontGlyph
 struct BitmapFont
 {
 	String name;
-	u32 spriteType;
+	struct Asset *spriteGroup; // TODO: Remove this, instead just put the relevant data inside the BitmapFontGlyph
 
 	u16 lineHeight;
 	u16 baseY;

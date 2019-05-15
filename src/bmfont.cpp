@@ -80,7 +80,6 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				pageStart += strlen(pageStart) + 1;
 			}
 
-			asset->bitmapFont.spriteType = addNewTextureAssetType(assets);
 			asset->bitmapFont.lineHeight = common->lineHeight;
 			asset->bitmapFont.baseY = common->base;
 
@@ -89,6 +88,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 			asset->data = allocate(assets, charCount * sizeof(BitmapFontGlyph));
 			asset->bitmapFont.glyphCount = charCount;
 			asset->bitmapFont.glyphs = (BitmapFontGlyph *)asset->data.memory;
+			asset->bitmapFont.spriteGroup = addSpriteGroup(assets, asset->shortName, charCount);
 
 			for (u32 charIndex = 0;
 				charIndex < charCount;
@@ -103,8 +103,9 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				dest->yOffset = src->yOffset;
 				dest->xAdvance = src->xAdvance;
 
-				dest->sprite = addSprite(assets, asset->bitmapFont.spriteType, pageToTextureAsset[src->page],
-					rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h));
+				dest->sprite = asset->bitmapFont.spriteGroup->spriteGroup.sprites + charIndex;
+				dest->sprite->texture = pageToTextureAsset[src->page];
+				dest->sprite->uv = rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h);
 			}
 		}
 	}

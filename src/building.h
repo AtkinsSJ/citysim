@@ -23,7 +23,7 @@ struct BuildingDef
 			s32 height;
 		};
 	};
-	u32 spriteType;
+	String spriteName;
 	enum DataLayer linkTexturesLayer;
 
 	BuildMethod buildMethod;
@@ -58,7 +58,7 @@ struct Building
 	u32 id;
 	u32 typeID;
 	Rect2I footprint;
-	u32 spriteOffset; // used as the offset for getSpriteID
+	u32 spriteOffset; // used as the offset for getSprite
 	
 	s32 currentResidents;
 	s32 currentJobs;

@@ -4,7 +4,7 @@ struct TerrainDef
 {
 	String name;
 
-	u32 spriteType;
+	String spriteName;
 
 	bool canBuildOn;
 	bool canDemolish;
@@ -16,7 +16,7 @@ ChunkedArray<TerrainDef> terrainDefs = {};
 struct Terrain
 {
 	u32 type;
-	u32 spriteOffset; // used as the offset for getSpriteID
+	u32 spriteOffset; // used as the offset for getSprite
 };
 
 Terrain invalidTerrain = {0, 0};

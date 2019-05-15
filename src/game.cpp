@@ -572,7 +572,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							ghostColor = color255(255,0,0,128);
 						}
-						drawSprite(&renderer->worldBuffer, getSprite(assets, getSpriteID(assets, buildingDef->spriteType, 0)),
+						drawSprite(&renderer->worldBuffer, getSprite(assets, buildingDef->spriteName, 0),
 										  rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, Shader_PixelArt);
 					}
 				} break;
@@ -595,7 +595,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							ghostColor = color255(255,0,0,128);
 						}
-						drawSprite(&renderer->worldBuffer, getSprite(assets, getSpriteID(assets, buildingDef->spriteType, 0)),
+						drawSprite(&renderer->worldBuffer, getSprite(assets, buildingDef->spriteName, 0),
 										  rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, Shader_PixelArt);
 					}
 				} break;
@@ -633,7 +633,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 										{
 											ghostColor = color255(255,0,0,128);
 										}
-										drawSprite(&renderer->worldBuffer, getSprite(assets, getSpriteID(assets, buildingDef->spriteType, 0)),
+										drawSprite(&renderer->worldBuffer, getSprite(assets, buildingDef->spriteName, 0),
 										                  rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragResult.dragRect.y + y) + 100, ghostColor, Shader_PixelArt);
 									}
 								}
@@ -788,9 +788,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				TerrainDef *tDef = get(&terrainDefs, t.type);
 
-				u32 spriteID = getSpriteID(assets, tDef->spriteType, t.spriteOffset);
-
-				drawSprite(&renderer->worldBuffer, getSprite(assets, spriteID), rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, makeWhite(), Shader_PixelArt);
+				drawSprite(&renderer->worldBuffer, getSprite(assets, tDef->spriteName, t.spriteOffset), rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, makeWhite(), Shader_PixelArt);
 			}
 		}
 	}
@@ -830,7 +828,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 
 			V2 drawPos = centre(building->footprint);
-			drawSprite(&renderer->worldBuffer, getSprite(assets, getSpriteID(assets, def->spriteType, building->spriteOffset)),
+			drawSprite(&renderer->worldBuffer, getSprite(assets, def->spriteName, building->spriteOffset),
 							  rect2(building->footprint), depthFromY(drawPos.y), drawColor, Shader_PixelArt);
 		}
 	}

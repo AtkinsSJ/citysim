@@ -223,8 +223,11 @@ u32 readAlignment(LineReader *reader, String command, String arguments)
 	return result;
 }
 
-u32 readTextureDefinition(LineReader *reader, AssetManager *assets, String tokens)
+String readTextureDefinition(LineReader *reader, AssetManager *assets, String tokens)
 {
+	String result = nullString;
+
+	String spriteName = pushString(&assets->assetArena, nextToken(tokens, &tokens));
 	String textureName = nextToken(tokens, &tokens);
 	s64 regionW;
 	s64 regionH;
@@ -241,14 +244,14 @@ u32 readTextureDefinition(LineReader *reader, AssetManager *assets, String token
 			regionsDown = 1;
 		}
 
-		u32 spriteType = addNewTextureAssetType(assets);
-		addTiledSprites(assets, spriteType, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
+		addTiledSprites(assets, spriteName, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
 
-		return spriteType;
+		result = spriteName;
 	}
 	else
 	{
 		error(reader, "Couldn't parse texture. Expected use: \"texture filename.png width height (tilesAcross=1) (tilesDown=1)\"");
-		return 0;
 	}
+
+	return result;
 }

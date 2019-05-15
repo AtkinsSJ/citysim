@@ -141,6 +141,7 @@ void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderType 
 
 void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
 {
+	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
 	append(&buffer->items, makeRenderItem(rect, depth, sprite, color, shaderID));
 }
 
@@ -152,6 +153,7 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 dept
 	dest->depth = item->depth + depthOffset;
 	dest->color = color;
 	dest->sprite = item->sprite;
+	dest->shaderID = item->shaderID;
 }
 
 f32 compareRenderItems(RenderItem *a, RenderItem *b)

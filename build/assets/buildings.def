@@ -2,7 +2,7 @@
 
 :Building Road
 size 1 1
-texture road.png 16 16 4 4
+texture road road.png 16 16 4 4
 link_textures path
 build line 10
 demolish_cost 10
@@ -10,7 +10,7 @@ is_path true
 
 :Building Power Line
 size 1 1
-texture power-line.png 16 16 4 4
+texture power-line power-line.png 16 16 4 4
 link_textures power
 build line 2
 demolish_cost 2
@@ -19,14 +19,14 @@ carries_power true
 :Building Power Line Over Road
 combination_of Road | Power Line
 size 1 1
-texture power-line-over-road.png 16 16 2 1
+texture power-line-over-road power-line-over-road.png 16 16 2 1
 demolish_cost 10
 is_path true
 carries_power true
 
 :Building Factory
 size 3 3
-texture factory-3x3.png 48 48
+texture factory-3x3 factory-3x3.png 48 48
 build line 40
 demolish_cost 100
 carries_power true
@@ -35,7 +35,7 @@ jobs 7
 
 :Building Power Station
 size 4 4
-texture power-plant.png 64 64
+texture power-plant power-plant.png 64 64
 build rect 1000
 demolish_cost 200
 carries_power true
@@ -48,7 +48,7 @@ jobs 100
 
 :Building Small House
 size 1 1
-texture house-2x2.png 32 32 2 2
+texture house-2x2 house-2x2.png 32 32 2 2
 grows_in r
 demolish_cost 50
 residents 10
@@ -56,7 +56,7 @@ power_use 10
 
 :Building House
 size 2 2
-texture house-2x2.png 32 32 2 2
+texture house-2x2 house-2x2.png 32 32 2 2
 grows_in r
 demolish_cost 200
 residents 40
@@ -68,5 +68,5 @@ power_use 20
 
 :Building Tree
 size 1 1
-texture forest.png 16 16
+texture forest forest.png 16 16
 demolish_cost 100

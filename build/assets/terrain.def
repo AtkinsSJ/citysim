@@ -1,11 +1,11 @@
 # Terrain!
 
 :Terrain Ground
-texture grass.png 16 16 2 2
+texture grass grass.png 16 16 2 2
 can_build_on true
 can_demolish false
 
 :Terrain Water
-texture water.png 16 16
+texture water water.png 16 16
 can_build_on false
 can_demolish false

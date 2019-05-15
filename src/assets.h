@@ -9,6 +9,7 @@ enum AssetType
 	AssetType_Cursor,
 	AssetType_DevKeymap,
 	AssetType_Shader,
+	AssetType_Sprite,
 	AssetType_Texture,
 	AssetType_TerrainDefs,
 	AssetType_UITheme,
@@ -22,9 +23,24 @@ enum AssetState
 	AssetState_Loaded,
 };
 
+struct Cursor
+{
+	SDL_Cursor *sdlCursor;
+};
+
+enum ShaderType
+{
+	Shader_Textured,
+	Shader_Untextured,
+	Shader_PixelArt,
+
+	ShaderCount,
+	Shader_Invalid = -1
+};
+
 struct Shader
 {
-	enum ShaderType shaderType;
+	ShaderType shaderType;
 
 	String shaderHeaderFilename;
 	String vertexShaderFilename;
@@ -32,6 +48,18 @@ struct Shader
 
 	String vertexShader;
 	String fragmentShader;
+};
+
+struct Sprite
+{
+	Asset *texture;
+	Rect2 uv; // in (0 to 1) space
+};
+
+struct SpriteGroup
+{
+	s32 count;
+	Sprite *sprites;
 };
 
 struct Texture
@@ -69,37 +97,12 @@ struct Asset
 	// the other asset types. Though 65 isn't much, so maybe it's not a big deal. We'll see if we
 	// have anything bigger later. (Well, the BitmapFont is definitely bigger!)
 	union {
-		struct {
-			SDL_Cursor *sdlCursor;
-		} cursor;
-
-		Shader shader;
-
-		Texture texture;
-
 		BitmapFont bitmapFont;
+		Cursor cursor;
+		Shader shader;
+		SpriteGroup spriteGroup;
+		Texture texture;
 	};
-};
-
-enum ShaderType
-{
-	Shader_Textured,
-	Shader_Untextured,
-	Shader_PixelArt,
-
-	ShaderCount,
-	Shader_Invalid = -1
-};
-
-struct Sprite
-{
-	// Identifier so multiple sprites can be associated with the same id.
-	// eg, for getting a random sprite from a list, or we also use this for glyphs within a font.
-	// Right now (13/05/2019) we only ever *set* this, we don't ever read it. Seems wasteful.
-	s32 spriteAssetType;
-
-	Asset *texture;
-	Rect2 uv; // in (0 to 1) space
 };
 
 struct IndexRange
@@ -123,13 +126,6 @@ struct AssetManager
 	ChunkedArray<Asset> allAssets;
 
 	HashTable<Asset*> assetsByName[AssetTypeCount];
-
-	// NB: index 0 is reserved as a null sprite.
-	ChunkedArray<Sprite> sprites;
-
-	// NOTE: At each index is the first or last position in sprites array matching that type.
-	// So, assets with the same type must be contiguous!
-	ChunkedArray<IndexRange> rangesBySpriteAssetType;
 
 	UITheme theme;
 
@@ -173,31 +169,28 @@ Asset *getAsset(AssetManager *assets, s32 assetIndex)
 Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 {
 	DEBUG_FUNCTION();
-	Asset *result = findValue(&assets->assetsByName[type], shortName);
+	Asset **result = find(&assets->assetsByName[type], shortName);
 
 	if (result == null)
 	{
 		logError("Requested asset '{0}' was not found!", {shortName});
+		return null;
+	}
+
+	return *result;
+}
+
+Sprite *getSprite(AssetManager *assets, String name, u32 offset)
+{
+	Sprite *result = null;
+	Asset *asset = getAsset(assets, AssetType_Sprite, name);
+
+	if (asset != null && asset->spriteGroup.count > 0)
+	{
+		result = asset->spriteGroup.sprites + (offset % asset->spriteGroup.count);
 	}
 
 	return result;
-}
-
-s32 getSpriteID(AssetManager *assets, s32 spriteAssetType, u32 offset)
-{
-	IndexRange *range = get(&assets->rangesBySpriteAssetType, spriteAssetType);
-	u32 min = range->firstIndex;
-	u32 max = range->lastIndex;
-
-	u32 id = clampToRangeWrapping(min, max, offset);
-	ASSERT((id >= min) && (id <= max), "Got a sprite id outside of the range.");
-
-	return id;
-}
-
-Sprite *getSprite(AssetManager *assets, s32 spriteIndex)
-{
-	return get(&assets->sprites, spriteIndex);
 }
 
 Shader *getShader(AssetManager *assets, String shaderName)
