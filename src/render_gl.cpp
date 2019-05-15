@@ -330,14 +330,6 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	// Fill VBO
 	u32 vertexCount = 0;
 	u32 indexCount = 0;
-
-	// 0 means no texture, so we can't start with this = 0, otherwise, if the buffer starts with
-	// some textureless RenderItems, they'll be drawn using the projection matrix and other settings
-	// from the previous call to renderBuffer!!!
-	// This was a bug that confused me for so long.
-	// It can't be -1 though! So... we're checking for vertexCount being 0 below, to make sure that
-	// we ALWAYS start a new batch at the start of each buffer.
-	GLuint glBoundTextureID = 0;
 	u32 drawCallCount = 0;
 
 	if (buffer->items.count > 0)
@@ -350,14 +342,12 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			ShaderType desiredShader = item->shaderID;
 			Asset *desiredTexture = (item->sprite == null) ? null : item->sprite->texture;
 
-			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
+			// Check to see if we need to start a new batch.
 			if ((vertexCount == 0)
 				|| (vertexCount == RENDER_BATCH_VERTEX_COUNT)
 				|| (desiredTexture != texture)
 				|| (desiredShader != renderer->currentShader))
 			{
-				DEBUG_BLOCK("renderer flush");
-
 				// Render existing buffer contents
 				if (vertexCount)
 				{
@@ -377,7 +367,6 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				{
 					texture = desiredTexture;
 					bindTexture(texture, activeShader->uTextureLoc, 0);
-					glBoundTextureID = texture->texture.gl.glTextureID;
 				}
 
 				vertexCount = 0;
@@ -428,7 +417,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	clear(&buffer->items);
 }
 
-static void GL_render(Renderer *renderer, AssetManager *assets)
+static void GL_render(Renderer *renderer)
 {
 	DEBUG_FUNCTION();
 

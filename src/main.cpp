@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
 		}
 
 		// Actually draw things!
-		renderer->render(renderer, assets);
+		renderer->render(renderer);
 
 		resetMemoryArena(&appState->globalTempArena);
 

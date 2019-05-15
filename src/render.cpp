@@ -168,6 +168,7 @@ void sortRenderBuffer(RenderBuffer *buffer)
 #if CHECK_BUFFERS_SORTED
 bool isBufferSorted(RenderBuffer *buffer)
 {
+	DEBUG_FUNCTION();
 	bool isSorted = true;
 	f32 lastDepth = f32Min;
 	for (u32 i=0; i < buffer->itemCount; i++)

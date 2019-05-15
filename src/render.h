@@ -58,7 +58,7 @@ struct Renderer
 	void *platformRenderer;
 
 	void (*windowResized)(s32, s32);
-	void (*render)(Renderer *, AssetManager *);
+	void (*render)(Renderer *);
 	void (*loadAssets)(Renderer *, AssetManager *);
 	void (*unloadAssets)(Renderer *, AssetManager *);
 	void (*free)(Renderer *);
