@@ -39,8 +39,13 @@ struct Texture
 	bool isFileAlphaPremultiplied;
 	SDL_Surface *surface;
 
-	// Renderer-specific ID.
-	s32 rendererTextureID;
+	// Renderer-specific stuff.
+	union {
+		struct {
+			u32 glTextureID;
+			bool isLoaded;
+		} gl;
+	};
 };
 
 struct Asset

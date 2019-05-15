@@ -440,7 +440,7 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	DEBUG_FUNCTION();
 	// Preparation
 	consoleWriteLine("Reloading assets...");
-	renderer->unloadAssets(renderer);
+	renderer->unloadAssets(renderer, assets);
 	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	SDL_SetCursor(systemWaitCursor);
 	defer { SDL_FreeCursor(systemWaitCursor); };

@@ -161,36 +161,16 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 {
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
-	s32 textureCount = assets->assetsByName[AssetType_Texture].count;
-	if (textureCount > gl->textureInfo.maxCount)
-	{
-		free(&gl->textureInfo);
-		initialiseArray(&gl->textureInfo, textureCount);
-	}
-
-	// Null texture
-	GL_TextureInfo nullTexture = {};
-	nullTexture.asset = null;
-	nullTexture.glTextureID = 0;
-	nullTexture.isLoaded = true;
-	append(&gl->textureInfo, nullTexture);
-
-	// Real textures
+	// Textures
 	for (auto it = iterate(&assets->assetsByName[AssetType_Texture]);
 		!it.isDone;
 		next(&it))
 	{
 		Asset *asset = *get(it);
+		Texture *texture = &asset->texture;
 
-		s32 textureIndex = gl->textureInfo.count;
-		asset->texture.rendererTextureID = textureIndex;
-
-		GL_TextureInfo ti = {};
-		ti.asset = asset;
-		glGenTextures(1, &ti.glTextureID);
-		ti.isLoaded = false;
-
-		append(&gl->textureInfo, ti);
+		glGenTextures(1, &texture->gl.glTextureID);
+		texture->gl.isLoaded = false;
 	}
 
 	// Shaders
@@ -209,22 +189,25 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	}
 }
 
-static void GL_unloadAssets(Renderer *renderer)
+static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 {
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	for (s32 textureIndex = 0; textureIndex < gl->textureInfo.count; textureIndex++)
+	for (auto it = iterate(&assets->assetsByName[AssetType_Texture]);
+		!it.isDone;
+		next(&it))
 	{
-		GL_TextureInfo *info = pointerTo(&gl->textureInfo, textureIndex);
-		if (info->isLoaded && info->glTextureID != 0)
+		Asset *asset = *get(it);
+		Texture *texture = &asset->texture;
+
+		if (texture->gl.isLoaded && texture->gl.glTextureID != 0)
 		{
-			glDeleteTextures(1, &info->glTextureID);
-			info->glTextureID = 0;
-			info->isLoaded = false;
+			glDeleteTextures(1, &texture->gl.glTextureID);
+			texture->gl.glTextureID = 0;
+			texture->gl.isLoaded = false;
 		}
 	}
-	clear(&gl->textureInfo);
 
 	// Shaders
 	gl->currentShader = -1;
@@ -256,15 +239,17 @@ void useShader(GL_Renderer *renderer, ShaderType shaderType)
 	}
 }
 
-void bindTexture(GL_TextureInfo *textureInfo, s32 uniformID, u32 textureSlot=0)
+void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 {
 	DEBUG_FUNCTION();
 
+	Texture *texture = &asset->texture;
+
 	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0 + textureSlot);
-	glBindTexture(GL_TEXTURE_2D, textureInfo->glTextureID);
+	glBindTexture(GL_TEXTURE_2D, texture->gl.glTextureID);
 
-	if (!textureInfo->isLoaded)
+	if (!texture->gl.isLoaded)
 	{
 		// Load texture into GPU
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -273,10 +258,9 @@ void bindTexture(GL_TextureInfo *textureInfo, s32 uniformID, u32 textureSlot=0)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		// Upload texture
-		Asset *asset = textureInfo->asset;
 		ASSERT(asset != null && asset->state == AssetState_Loaded, "Texture asset not loaded yet!");
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, asset->texture.surface->w, asset->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, asset->texture.surface->pixels);
-		textureInfo->isLoaded = true;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
+		texture->gl.isLoaded = true;
 		GL_checkForError();
 	}
 
@@ -339,7 +323,7 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	GL_checkForError();
 }
 
-static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuffer *buffer)
+static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION();
 
@@ -358,27 +342,18 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 
 	if (buffer->items.count > 0)
 	{
-		Sprite *sprite = (Sprite *)-1;
-		GL_TextureInfo *textureInfo = null;
+		Asset *texture = null;
 
 		for (s32 i=0; i < buffer->items.count; i++)
 		{
 			RenderItem *item = pointerTo(&buffer->items, i);
 			ShaderType desiredShader = item->shaderID;
-
-			if (item->sprite != sprite)
-			{
-				DEBUG_BLOCK("renderer sprite lookup");
-
-				sprite = item->sprite;
-				s32 textureInfoIndex = (sprite != null) ? sprite->texture->texture.rendererTextureID : 0;
-				textureInfo = pointerTo(&renderer->textureInfo, textureInfoIndex);
-			}
+			Asset *desiredTexture = (item->sprite == null) ? null : item->sprite->texture;
 
 			// Check to see if we need to start a new batch. This is where the glBoundTextureID=0 bug above was hiding.
 			if ((vertexCount == 0)
 				|| (vertexCount == RENDER_BATCH_VERTEX_COUNT)
-				|| (textureInfo->glTextureID != glBoundTextureID)
+				|| (desiredTexture != texture)
 				|| (desiredShader != renderer->currentShader))
 			{
 				DEBUG_BLOCK("renderer flush");
@@ -400,18 +375,19 @@ static void renderBuffer(GL_Renderer *renderer, AssetManager *assets, RenderBuff
 				// Bind new texture if this shader uses textures
 				if (activeShader->uTextureLoc != -1)
 				{
-					bindTexture(textureInfo, activeShader->uTextureLoc, 0);
+					texture = desiredTexture;
+					bindTexture(texture, activeShader->uTextureLoc, 0);
+					glBoundTextureID = texture->texture.gl.glTextureID;
 				}
 
 				vertexCount = 0;
 				indexCount = 0;
-				glBoundTextureID = textureInfo->glTextureID;
 			}
 
 			int firstVertex = vertexCount;
 
 			Rect2 uvs = {};
-			if (sprite != null) uvs = sprite->uv;
+			if (item->sprite != null) uvs = item->sprite->uv;
 
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x, item->rect.y, item->depth),
@@ -488,11 +464,11 @@ static void GL_render(Renderer *renderer, AssetManager *assets)
 
 	{
 		// DEBUG_BLOCK("DRAW WORLD BUFFER");
-		renderBuffer(gl, assets, &renderer->worldBuffer);
+		renderBuffer(gl, &renderer->worldBuffer);
 	}
 	{
 		// DEBUG_BLOCK("DRAW UI BUFFER");
-		renderBuffer(gl, assets, &renderer->uiBuffer);
+		renderBuffer(gl, &renderer->uiBuffer);
 	}
 
 	glUseProgram(NULL);
@@ -553,8 +529,6 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		// Init OpenGL
 		if (succeeded)
 		{
-			gl->textureInfo = {};
-
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 			glGenBuffers(1, &gl->VBO);
