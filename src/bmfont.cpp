@@ -68,29 +68,30 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 		}
 		else
 		{
-			Asset **pageToTextureAsset = PushArray(&globalAppState.globalTempArena, Asset*, common->pageCount);
-			char *pageStart = (char *) pages;
+			BitmapFont *font = &asset->bitmapFont;
+			font->lineHeight = common->lineHeight;
+			font->baseY = common->base;
+			font->nullGlyph = {};
+			font->glyphCount = 0;
 
+			smm pageMemorySize = common->pageCount * sizeof(font->pageTextures[0]);
+			font->glyphCapacity = charCount * fontGlyphCapacityMultiplier;
+			smm glyphEntryMemorySize = font->glyphCapacity * sizeof(BitmapFontGlyphEntry);
+			asset->data = allocate(assets, pageMemorySize + glyphEntryMemorySize);
+
+			font->pageTextures = (Asset **)(asset->data.memory);
+			font->glyphEntries = (BitmapFontGlyphEntry *)(asset->data.memory + pageMemorySize);
+
+			font->pageCount = common->pageCount;
+			char *pageStart = (char *) pages;
 			for (u32 pageIndex = 0;
 				pageIndex < common->pageCount;
 				pageIndex++)
 			{
 				String textureName = pushString(&assets->assetArena, pageStart);
-				pageToTextureAsset[pageIndex] = addTexture(assets, textureName, false);
+				font->pageTextures[pageIndex] = addTexture(assets, textureName, false);
 				pageStart += strlen(pageStart) + 1;
 			}
-
-			BitmapFont *font = &asset->bitmapFont;
-
-			font->lineHeight = common->lineHeight;
-			font->baseY = common->base;
-
-			font->nullGlyph = {};
-
-			font->glyphCount = 0;
-			font->glyphCapacity = charCount * fontGlyphCapacityMultiplier;
-			asset->data = allocate(assets, font->glyphCapacity * sizeof(BitmapFontGlyphEntry));
-			font->glyphEntries = (BitmapFontGlyphEntry *)asset->data.memory;
 
 			font->spriteGroup = addSpriteGroup(assets, asset->shortName, charCount);
 
@@ -107,9 +108,11 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				dest->xOffset = src->xOffset;
 				dest->yOffset = src->yOffset;
 				dest->xAdvance = src->xAdvance;
+				dest->page = src->page;
+				dest->uv = rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h);
 
 				dest->sprite = font->spriteGroup->spriteGroup.sprites + charIndex;
-				dest->sprite->texture = pageToTextureAsset[src->page];
+				dest->sprite->texture = font->pageTextures[src->page];
 				dest->sprite->uv = rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h);
 			}
 		}

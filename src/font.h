@@ -7,6 +7,9 @@ struct BitmapFontGlyph
 	s16 xOffset, yOffset; // Offset when rendering to the screen
 	s16 xAdvance; // How far to move after rendering this character
 
+	u32 page;
+	Rect2 uv;
+
 	// TODO: Referring to a sprite too is redundant! Also, in some cases, we need to know the ^above data
 	// but have progressed through the renderer so we only have the RenderItem. Maybe entirely use
 	// BitmapFontGlyphs for text rendering instead?
@@ -37,6 +40,9 @@ struct BitmapFont
 	u32 glyphCount;
 	u32 glyphCapacity;
 	BitmapFontGlyphEntry *glyphEntries;
+
+	u32 pageCount;
+	Asset **pageTextures;
 };
 
 struct BitmapFontCachedText
