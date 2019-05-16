@@ -323,9 +323,9 @@ Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount)
 	ASSERT(spriteCount > 0, "Must have a positive number of sprites in a Sprite Group!");
 
 	Asset *spriteGroup = addAsset(assets, AssetType_Sprite, name, false);
-	Blob spritesBlob = allocate(assets, spriteCount * sizeof(Sprite));
+	spriteGroup->data = allocate(assets, spriteCount * sizeof(Sprite));
 	spriteGroup->spriteGroup.count = spriteCount;
-	spriteGroup->spriteGroup.sprites = (Sprite*) spritesBlob.memory;
+	spriteGroup->spriteGroup.sprites = (Sprite*) spriteGroup->data.memory;
 
 	return spriteGroup;
 }

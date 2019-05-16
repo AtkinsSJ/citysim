@@ -114,46 +114,39 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline RenderItem makeRenderItem(Rect2 rect, f32 depth, Sprite *sprite, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
+inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Sprite *sprite, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
 {
-	RenderItem item = {};
-	item.rect = rect;
-	item.depth = depth;
-	item.color = color;
-	item.sprite = sprite;
+	*result = {};
+	result->rect = rect;
+	result->depth = depth;
+	result->color = color;
+	result->sprite = sprite;
 
 	if (shaderID == Shader_Invalid)
 	{
-		item.shaderID = (sprite == 0) ? Shader_Untextured : Shader_Textured;
+		result->shaderID = (sprite == 0) ? Shader_Untextured : Shader_Textured;
 	}
 	else
 	{
-		item.shaderID = shaderID;
+		result->shaderID = shaderID;
 	}
-	
-	return item;
 }
 
-void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderType shaderID = Shader_Invalid)
+inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderType shaderID = Shader_Invalid)
 {
-	append(&buffer->items, makeRenderItem(rect, depth, null, color, shaderID));
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, color, shaderID);
 }
 
-void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
+inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
 {
 	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
-	append(&buffer->items, makeRenderItem(rect, depth, sprite, color, shaderID));
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite, color, shaderID);
 }
 
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color)
 {
-	RenderItem *dest = appendBlank(&buffer->items);
-
-	dest->rect = offset(item->rect, offsetP);
-	dest->depth = item->depth + depthOffset;
-	dest->color = color;
-	dest->sprite = item->sprite;
-	dest->shaderID = item->shaderID;
+	ASSERT(item != null, "Attempted to draw a null RenderItem!");
+	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->sprite, color, item->shaderID);
 }
 
 f32 compareRenderItems(RenderItem *a, RenderItem *b)
