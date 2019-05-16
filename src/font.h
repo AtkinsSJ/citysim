@@ -14,6 +14,15 @@ struct BitmapFontGlyph
 	struct Sprite *sprite;
 };
 
+struct BitmapFontGlyphEntry
+{
+	bool isOccupied;
+	unichar codepoint;
+	BitmapFontGlyph glyph;
+};
+
+const s32 fontGlyphCapacityMultiplier = 2;
+
 struct BitmapFont
 {
 	String name;
@@ -24,8 +33,10 @@ struct BitmapFont
 
 	BitmapFontGlyph nullGlyph;
 
+	// Hash-table style thing
 	u32 glyphCount;
-	BitmapFontGlyph *glyphs;
+	u32 glyphCapacity;
+	BitmapFontGlyphEntry *glyphEntries;
 };
 
 struct BitmapFontCachedText

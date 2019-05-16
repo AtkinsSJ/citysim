@@ -1,50 +1,53 @@
 // font.cpp
 
+inline BitmapFontGlyphEntry *findGlyphInternal(BitmapFont *font, unichar targetChar)
+{
+	u32 index = targetChar % font->glyphCapacity;
+	BitmapFontGlyphEntry *result = null;
+
+	while (true)
+	{
+		BitmapFontGlyphEntry *entry = font->glyphEntries + index;
+		if (!entry->isOccupied || entry->codepoint == targetChar)
+		{
+			result = entry;
+			break;
+		}
+
+		index = (index + 1) % font->glyphCapacity;
+	}
+
+	return result;
+}
+
+BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar)
+{
+	BitmapFontGlyphEntry *result = findGlyphInternal(font, targetChar);
+
+	ASSERT(result != null, "Failed to add a glyph to font '{0}'!", {font->name});
+	result->codepoint = targetChar;
+	ASSERT(result->isOccupied == false, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
+	result->isOccupied = true;
+
+	font->glyphCount++;
+
+	return &result->glyph;
+}
+
 BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 {
 	DEBUG_FUNCTION();
-	
-	BitmapFontGlyph *result = 0;
 
-	// BINARY SEARCH! :D
+	BitmapFontGlyph *result = null;
+	BitmapFontGlyphEntry *entry = findGlyphInternal(font, targetChar);
 
-	// FIXME: This really needs to be replaced by a better system.
-
-	u32 high = font->glyphCount;
-	u32 low = 0;
-	u32 current = (high + low) / 2;
-
-	BitmapFontGlyph *currentChar = font->glyphs + current;
-
-	while (high >= low)
-	{
-		if (currentChar->codepoint == targetChar)
-		{
-			result = currentChar;
-			break;
-		}
-
-		if (currentChar->codepoint < targetChar)
-		{
-			low = current + 1;
-		}
-		else
-		{
-			high = current - 1;
-		}
-
-		if (high > font->glyphCount)
-		{
-			break;
-		}
-
-		current = (high + low) / 2;
-		currentChar = font->glyphs + current;
-	}
-
-	if (!result)
+	if (entry == null || !entry->isOccupied)
 	{
 		log("Failed to find char 0x{0} in font.", {formatInt(targetChar, 16)});
+	}
+	else
+	{
+		result = &entry->glyph;
 	}
 
 	return result;
