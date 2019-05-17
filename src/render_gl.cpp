@@ -361,10 +361,10 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
 
+				texture = item->texture; // We need this set whether we bind the texture or not, otherwise it never gets nulled and we use a separate batch for every zone tile, for example!
 				// Bind new texture if this shader uses textures
 				if (activeShader->uTextureLoc != -1)
 				{
-					texture = item->texture;
 					bindTexture(texture, activeShader->uTextureLoc, 0);
 				}
 
