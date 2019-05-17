@@ -419,12 +419,12 @@ static void GL_render(Renderer *renderer)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 	
 	// Sort sprites
+	// {
+	// 	DEBUG_BLOCK("SORT WORLD BUFFER");
+	// 	sortRenderBuffer(&renderer->worldBuffer);
+	// }
 	{
-		// DEBUG_BLOCK("SORT WORLD BUFFER");
-		sortRenderBuffer(&renderer->worldBuffer);
-	}
-	{
-		// DEBUG_BLOCK("SORT UI BUFFER");
+		DEBUG_BLOCK("SORT UI BUFFER");
 		sortRenderBuffer(&renderer->uiBuffer);
 	}
 

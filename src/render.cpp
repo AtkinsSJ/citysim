@@ -151,6 +151,12 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 dept
 	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, color, item->shaderID);
 }
 
+void drawRenderItem(RenderBuffer *buffer, RenderItem *item)
+{
+	ASSERT(item != null, "Attempted to draw a null RenderItem!");
+	*appendBlank(&buffer->items) = *item;
+}
+
 f32 compareRenderItems(RenderItem *a, RenderItem *b)
 {
 	return (a->depth - b->depth);

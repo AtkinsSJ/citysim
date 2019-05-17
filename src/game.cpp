@@ -15,6 +15,8 @@ GameState *initialiseGameState()
 
 	result->actionMode = ActionMode_None;
 
+	initChunkedArray(&result->overlayRenderItems, &result->gameArena, 512);
+
 	return result;
 }
 
@@ -572,8 +574,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							ghostColor = color255(255,0,0,128);
 						}
-						drawSprite(&renderer->worldBuffer, getSprite(assets, buildingDef->spriteName, 0),
-										  rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, Shader_PixelArt);
+
+						Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
+						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(footprint), depthFromY(mouseTilePos.y) + 100, sprite->texture, sprite->uv, ghostColor, Shader_PixelArt);
 					}
 				} break;
 
@@ -595,8 +598,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						{
 							ghostColor = color255(255,0,0,128);
 						}
-						drawSprite(&renderer->worldBuffer, getSprite(assets, buildingDef->spriteName, 0),
-										  rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, Shader_PixelArt);
+						
+						Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
+						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(footprint), depthFromY(mouseTilePos.y) + 100, sprite->texture, sprite->uv, ghostColor, Shader_PixelArt);
 					}
 				} break;
 
@@ -634,14 +638,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 										{
 											ghostColor = color255(255,0,0,128);
 										}
-										drawSprite(&renderer->worldBuffer, sprite,
-										                  rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragResult.dragRect.y + y) + 100, ghostColor, Shader_PixelArt);
+
+										makeRenderItem(appendBlank(&gameState->overlayRenderItems), rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragResult.dragRect.y + y) + 100, sprite->texture, sprite->uv, ghostColor, Shader_PixelArt);
 									}
 								}
 							}
 							else
 							{
-								drawRect(&renderer->worldBuffer, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128));
+								makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(255, 64, 64, 128));
 							}
 						} break;
 					}
@@ -676,14 +680,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							{
 								if (canZoneTile(city, gameState->selectedZoneID, x, y))
 								{
-									drawRect(&renderer->worldBuffer, rectXYWHi(x, y, 1, 1), 0, zoneDefs[gameState->selectedZoneID].color);
+									makeRenderItem(appendBlank(&gameState->overlayRenderItems), rectXYWHi(x, y, 1, 1), 0, null, {}, zoneDefs[gameState->selectedZoneID].color);
 								}
 							}
 						}
 					}
 					else
 					{
-						drawRect(&renderer->worldBuffer, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128));
+						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(255, 64, 64, 128));
 					}
 				} break;
 			}
@@ -712,11 +716,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					if (canAfford(city, demolishCost))
 					{
 						// Demolition outline
-						drawRect(&renderer->worldBuffer, rect2(dragResult.dragRect), 0, color255(128, 0, 0, 128));
+						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(128, 0, 0, 128));
 					}
 					else
 					{
-						drawRect(&renderer->worldBuffer, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128));
+						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(255, 64, 64, 128));
 					}
 				} break;
 			}
@@ -904,6 +908,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 		}
 	}
+
+	// Draw the things we prepared in overlayRenderItems earlier
+	for (auto it = iterate(&gameState->overlayRenderItems);
+		!it.isDone;
+		next(&it))
+	{
+		drawRenderItem(&renderer->worldBuffer, get(it));
+	}
+	clear(&gameState->overlayRenderItems);
 
 	if (gameState->status == GameStatus_Quit)
 	{
