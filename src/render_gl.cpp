@@ -242,6 +242,7 @@ void useShader(GL_Renderer *renderer, ShaderType shaderType)
 void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 {
 	DEBUG_FUNCTION();
+	ASSERT(asset != null, "Attempted to bind a null texture asset!");
 
 	Texture *texture = &asset->texture;
 
@@ -258,7 +259,7 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		// Upload texture
-		ASSERT(asset != null && asset->state == AssetState_Loaded, "Texture asset not loaded yet!");
+		ASSERT(asset->state == AssetState_Loaded, "Attempted to bind an unloaded texture '{0}'!", {asset->shortName});
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 		texture->gl.isLoaded = true;
 		GL_checkForError();
@@ -371,7 +372,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				indexCount = 0;
 			}
 
-			int firstVertex = vertexCount;
+			u32 firstVertex = vertexCount;
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x, item->rect.y, item->depth),
 				item->color,

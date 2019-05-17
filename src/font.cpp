@@ -273,12 +273,6 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 
 		result->bounds.x = MAX(state.longestLineWidth, state.currentLineWidth);
 		result->bounds.y = (f32)(font->lineHeight * state.lineCount);
-
-		#if BUILD_DEBUG
-			V2 verificationSize = calculateTextSize(font, text, maxWidth);
-			ASSERT(equals(verificationSize.x, result->bounds.x, 0.01f)
-				&& equals(verificationSize.y, result->bounds.y, 0.01f), "calculateTextSize() is wrong!");
-		#endif
 	}
 
 	return result;
