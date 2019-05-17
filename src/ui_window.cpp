@@ -42,7 +42,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, maxWidth);
 			V2 topLeft = calculateTextPosition(textCache, origin, alignment);
 			drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth, style->textColor);
-			size = textCache->size;
+			size = textCache->bounds;
 		}
 
 		// For now, we'll always just start a new line.
@@ -123,11 +123,11 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 			Rect2 bounds;
 			if (textWidth == -1)
 			{
-	 			bounds = rectAligned(origin, textCache->size + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+	 			bounds = rectAligned(origin, textCache->bounds + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
 			}
 			else
 			{
-				bounds = rectAligned(origin, v2((f32)textWidth, textCache->size.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+				bounds = rectAligned(origin, v2((f32)textWidth, textCache->bounds.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
 			}
 			buttonSize = bounds.size;
 

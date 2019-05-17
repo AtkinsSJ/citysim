@@ -225,13 +225,17 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
 	// Memory management witchcraft
-	u32 memorySize = sizeof(BitmapFontCachedText) + (sizeof(RenderItem) * glyphsToOutput);
-	u8 *data = (u8 *) allocate(memory, memorySize);
-	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
-	result->chars = (RenderItem *)(data + sizeof(BitmapFontCachedText));
-	result->size = v2(0, font->lineHeight);
+	smm baseStructSize = sizeof(BitmapFontCachedText);
+	smm renderItemsSize = sizeof(RenderItem) * glyphsToOutput;
+	smm glyphPointersSize = sizeof(BitmapFontGlyph*) * glyphsToOutput;
 
-	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight, result->chars);
+	u8 *data = (u8 *) allocate(memory, baseStructSize + renderItemsSize + glyphPointersSize);
+	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
+	result->renderItems = (RenderItem *)(data + baseStructSize);
+	result->glyphs = (BitmapFontGlyph **)(data + baseStructSize + renderItemsSize);
+	result->bounds = v2(0, font->lineHeight);
+
+	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight, result->renderItems);
 
 	if (result)
 	{
@@ -249,14 +253,16 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 				BitmapFontGlyph *c = findChar(font, glyph);
 				if (c)
 				{
-					state.endOfCurrentWord = result->charCount;
-					makeRenderItem(result->chars + result->charCount, 
+					state.endOfCurrentWord = result->glyphCount;
+					makeRenderItem(result->renderItems + result->glyphCount, 
 						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
 								 (f32)c->size.w, (f32)c->size.h),
 						0.0f, font->pageTextures[c->page], c->uv
 					);
 
-					result->charCount++;
+					result->glyphs[result->glyphCount] = c;
+
+					result->glyphCount++;
 
 					handleWrapping(&state, c);
 				}
@@ -265,13 +271,13 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 			bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 		}
 
-		result->size.x = MAX(state.longestLineWidth, state.currentLineWidth);
-		result->size.y = (f32)(font->lineHeight * state.lineCount);
+		result->bounds.x = MAX(state.longestLineWidth, state.currentLineWidth);
+		result->bounds.y = (f32)(font->lineHeight * state.lineCount);
 
 		#if BUILD_DEBUG
 			V2 verificationSize = calculateTextSize(font, text, maxWidth);
-			ASSERT(equals(verificationSize.x, result->size.x, 0.01f)
-				&& equals(verificationSize.y, result->size.y, 0.01f), "calculateTextSize() is wrong!");
+			ASSERT(equals(verificationSize.x, result->bounds.x, 0.01f)
+				&& equals(verificationSize.y, result->bounds.y, 0.01f), "calculateTextSize() is wrong!");
 		#endif
 	}
 
@@ -290,16 +296,16 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 
 	switch (align & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE:  offset.x = origin.x - (cache->size.x / 2.0f);  break;
-		case ALIGN_RIGHT:     offset.x = origin.x - cache->size.x;           break;
+		case ALIGN_H_CENTRE:  offset.x = origin.x - (cache->bounds.x / 2.0f);  break;
+		case ALIGN_RIGHT:     offset.x = origin.x - cache->bounds.x;           break;
 		case ALIGN_LEFT:      // Left is default
 		default:              offset.x = origin.x;                           break;
 	}
 
 	switch (align & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE:  offset.y = origin.y - (cache->size.y / 2.0f);  break;
-		case ALIGN_BOTTOM:    offset.y = origin.y - cache->size.y;           break;
+		case ALIGN_V_CENTRE:  offset.y = origin.y - (cache->bounds.y / 2.0f);  break;
+		case ALIGN_BOTTOM:    offset.y = origin.y - cache->bounds.y;           break;
 		case ALIGN_TOP:       // Top is default
 		default:              offset.y = origin.y;                           break;
 	}
@@ -319,10 +325,10 @@ void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topL
 	// Make sure we're on whole-pixel boundaries for nicer text rendering
 	V2 origin = v2(round_f32(topLeft.x), round_f32(topLeft.y));
 	
-	for (u32 spriteIndex=0;
-		spriteIndex < cache->charCount;
-		spriteIndex++)
+	for (u32 renderItemIndex=0;
+		renderItemIndex < cache->glyphCount;
+		renderItemIndex++)
 	{
-		drawRenderItem(uiBuffer, cache->chars + spriteIndex, origin, depth, color);
+		drawRenderItem(uiBuffer, cache->renderItems + renderItemIndex, origin, depth, color);
 	}
 }

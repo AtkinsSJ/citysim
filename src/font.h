@@ -40,7 +40,10 @@ struct BitmapFont
 
 struct BitmapFontCachedText
 {
-	V2 size;
-	u32 charCount;
-	struct RenderItem *chars;
+	V2 bounds;
+	
+	// These are parallel arrays. renderItems for the render items, glyphs for the font glyph info
+	u32 glyphCount;
+	struct RenderItem *renderItems;
+	struct BitmapFontGlyph **glyphs; 
 };
