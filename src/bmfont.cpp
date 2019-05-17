@@ -91,7 +91,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				String textureName = pushString(&assets->assetArena, pageStart);
 				Asset *textureAsset = addTexture(assets, textureName, false);
 				font->pageTextures[pageIndex] = textureAsset;
-				loadAsset(assets, textureAsset);
+				ensureAssetIsLoaded(assets, textureAsset);
 				pageStart += strlen(pageStart) + 1;
 			}
 

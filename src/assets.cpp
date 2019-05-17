@@ -107,6 +107,15 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 	return result;
 }
 
+void ensureAssetIsLoaded(AssetManager *assets, Asset *asset)
+{
+	if (asset->state == AssetState_Loaded) return;
+
+	loadAsset(assets, asset);
+
+	ASSERT(asset->state == AssetState_Loaded, "Failed to load asset '{0}'", {asset->shortName});
+}
+
 void loadAsset(AssetManager *assets, Asset *asset)
 {
 	DEBUG_FUNCTION();
@@ -198,6 +207,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			{
 				Sprite *sprite = asset->spriteGroup.sprites + i;
 				Asset *t = sprite->texture;
+				ensureAssetIsLoaded(assets, t);
 				f32 textureWidth  = (f32) t->texture.surface->w;
 				f32 textureHeight = (f32) t->texture.surface->h;
 

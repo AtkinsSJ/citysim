@@ -156,6 +156,9 @@ struct AssetManager
 	*/
 };
 
+void loadAsset(AssetManager *assets, Asset *asset);
+void ensureAssetIsLoaded(AssetManager *assets, Asset *asset);
+
 // TODO: remove this
 // Also, could then make the assets HashTable store assets directly, instead of pointing into the array!
 Asset *getAsset(AssetManager *assets, s32 assetIndex)
