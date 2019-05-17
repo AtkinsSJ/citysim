@@ -253,7 +253,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 					makeRenderItem(result->chars + result->charCount, 
 						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
 								 (f32)c->size.w, (f32)c->size.h),
-						0.0f, c->sprite
+						0.0f, font->pageTextures[c->page], c->uv
 					);
 
 					result->charCount++;

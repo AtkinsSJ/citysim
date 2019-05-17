@@ -114,17 +114,19 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Sprite *sprite, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
+inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
 {
 	*result = {};
 	result->rect = rect;
 	result->depth = depth;
 	result->color = color;
-	result->sprite = sprite;
+
+	result->texture = texture;
+	result->uv = uv;
 
 	if (shaderID == Shader_Invalid)
 	{
-		result->shaderID = (sprite == 0) ? Shader_Untextured : Shader_Textured;
+		result->shaderID = (texture == null) ? Shader_Untextured : Shader_Textured;
 	}
 	else
 	{
@@ -134,19 +136,19 @@ inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Sprite *sp
 
 inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderType shaderID = Shader_Invalid)
 {
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, color, shaderID);
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, {}, color, shaderID);
 }
 
 inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
 {
 	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite, color, shaderID);
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite->texture, sprite->uv, color, shaderID);
 }
 
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color)
 {
 	ASSERT(item != null, "Attempted to draw a null RenderItem!");
-	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->sprite, color, item->shaderID);
+	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, color, item->shaderID);
 }
 
 f32 compareRenderItems(RenderItem *a, RenderItem *b)

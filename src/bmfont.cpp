@@ -89,11 +89,11 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				pageIndex++)
 			{
 				String textureName = pushString(&assets->assetArena, pageStart);
-				font->pageTextures[pageIndex] = addTexture(assets, textureName, false);
+				Asset *textureAsset = addTexture(assets, textureName, false);
+				font->pageTextures[pageIndex] = textureAsset;
+				loadAsset(assets, textureAsset);
 				pageStart += strlen(pageStart) + 1;
 			}
-
-			font->spriteGroup = addSpriteGroup(assets, asset->shortName, charCount);
 
 			for (u32 charIndex = 0;
 				charIndex < charCount;
@@ -102,6 +102,9 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				BMFont_Char *src = chars + charIndex;
 
 				BitmapFontGlyph *dest = addGlyph(font, src->id);
+				Asset *pageTexture = font->pageTextures[src->page];
+				f32 textureWidth  = (f32) pageTexture->texture.surface->w;
+				f32 textureHeight = (f32) pageTexture->texture.surface->h;
 
 				dest->codepoint = src->id;
 				dest->size = irectXYWH(src->x, src->y, src->w, src->h);
@@ -109,11 +112,12 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				dest->yOffset = src->yOffset;
 				dest->xAdvance = src->xAdvance;
 				dest->page = src->page;
-				dest->uv = rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h);
-
-				dest->sprite = font->spriteGroup->spriteGroup.sprites + charIndex;
-				dest->sprite->texture = font->pageTextures[src->page];
-				dest->sprite->uv = rectXYWH( (f32)src->x, (f32)src->y, (f32)src->w, (f32)src->h);
+				dest->uv = rectXYWH(
+					(f32)src->x / textureWidth,
+					(f32)src->y / textureHeight,
+					(f32)src->w / textureWidth,
+					(f32)src->h / textureHeight
+				);
 			}
 		}
 	}

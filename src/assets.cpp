@@ -109,8 +109,8 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 
 void loadAsset(AssetManager *assets, Asset *asset)
 {
-	ASSERT(asset->state == AssetState_Unloaded, "Attempted to load an asset ({0}) that is already loaded!", {asset->fullName});
 	DEBUG_FUNCTION();
+	if (asset->state != AssetState_Unloaded) return;
 
 	Blob fileData = {};
 	// Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.

@@ -9,12 +9,6 @@ struct BitmapFontGlyph
 
 	u32 page;
 	Rect2 uv;
-
-	// TODO: Referring to a sprite too is redundant! Also, in some cases, we need to know the ^above data
-	// but have progressed through the renderer so we only have the RenderItem. Maybe entirely use
-	// BitmapFontGlyphs for text rendering instead?
-	// u32 spriteID;
-	struct Sprite *sprite;
 };
 
 struct BitmapFontGlyphEntry
@@ -29,7 +23,6 @@ const s32 fontGlyphCapacityMultiplier = 2;
 struct BitmapFont
 {
 	String name;
-	struct Asset *spriteGroup; // TODO: Remove this, instead just put the relevant data inside the BitmapFontGlyph
 
 	u16 lineHeight;
 	u16 baseY;
@@ -42,7 +35,7 @@ struct BitmapFont
 	BitmapFontGlyphEntry *glyphEntries;
 
 	u32 pageCount;
-	Asset **pageTextures;
+	struct Asset **pageTextures;
 };
 
 struct BitmapFontCachedText

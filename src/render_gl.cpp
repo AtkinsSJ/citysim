@@ -339,14 +339,12 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		for (s32 i=0; i < buffer->items.count; i++)
 		{
 			RenderItem *item = pointerTo(&buffer->items, i);
-			ShaderType desiredShader = item->shaderID;
-			Asset *desiredTexture = (item->sprite == null) ? null : item->sprite->texture;
 
 			// Check to see if we need to start a new batch.
 			if ((vertexCount == 0)
 				|| (vertexCount == RENDER_BATCH_VERTEX_COUNT)
-				|| (desiredTexture != texture)
-				|| (desiredShader != renderer->currentShader))
+				|| (item->texture != texture)
+				|| (item->shaderID != renderer->currentShader))
 			{
 				// Render existing buffer contents
 				if (vertexCount)
@@ -355,7 +353,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 					renderPartOfBuffer(renderer, vertexCount, indexCount);
 				}
 
-				useShader(renderer, desiredShader);
+				useShader(renderer, item->shaderID);
 				GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
@@ -365,7 +363,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				// Bind new texture if this shader uses textures
 				if (activeShader->uTextureLoc != -1)
 				{
-					texture = desiredTexture;
+					texture = item->texture;
 					bindTexture(texture, activeShader->uTextureLoc, 0);
 				}
 
@@ -374,29 +372,25 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			}
 
 			int firstVertex = vertexCount;
-
-			Rect2 uvs = {};
-			if (item->sprite != null) uvs = item->sprite->uv;
-
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x, item->rect.y, item->depth),
 				item->color,
-				v2(uvs.x, uvs.y)
+				v2(item->uv.x, item->uv.y)
 			};
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x + item->rect.size.x, item->rect.y, item->depth),
 				item->color,
-				v2(uvs.x + uvs.w, uvs.y)
+				v2(item->uv.x + item->uv.w, item->uv.y)
 			};
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
 				item->color,
-				v2(uvs.x + uvs.w, uvs.y + uvs.h)
+				v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
 			};
 			renderer->vertices[vertexCount++] = {
 				v3(item->rect.x, item->rect.y + item->rect.size.y, item->depth),
 				item->color,
-				v2(uvs.x, uvs.y + uvs.h)
+				v2(item->uv.x, item->uv.y + item->uv.h)
 			};
 
 			renderer->indices[indexCount++] = firstVertex + 0;
