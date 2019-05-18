@@ -341,35 +341,44 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		{
 			RenderItem *item = pointerTo(&buffer->items, i);
 
+			bool shaderChanged = (item->shaderID != renderer->currentShader);
+			bool textureChanged = (item->texture != texture);
+
 			// Check to see if we need to start a new batch.
-			if ((vertexCount == 0)
-				|| (vertexCount == RENDER_BATCH_VERTEX_COUNT)
-				|| (item->texture != texture)
-				|| (item->shaderID != renderer->currentShader))
+			if ((i == 0) || shaderChanged || textureChanged || (vertexCount == RENDER_BATCH_VERTEX_COUNT))
 			{
 				// Render existing buffer contents
-				if (vertexCount)
+				if (vertexCount > 0)
 				{
 					drawCallCount++;
 					renderPartOfBuffer(renderer, vertexCount, indexCount);
 				}
 
-				useShader(renderer, item->shaderID);
-				GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
-
-				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-
-				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
-
-				texture = item->texture; // We need this set whether we bind the texture or not, otherwise it never gets nulled and we use a separate batch for every zone tile, for example!
-				// Bind new texture if this shader uses textures
-				if (activeShader->uTextureLoc != -1)
 				{
-					bindTexture(texture, activeShader->uTextureLoc, 0);
-				}
+					DEBUG_BLOCK("Start new batch");
+					useShader(renderer, item->shaderID);
+					GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 
-				vertexCount = 0;
-				indexCount = 0;
+					if (i==0 || shaderChanged)
+					{
+						glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+
+						glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+					}
+
+					texture = item->texture; // We need this set whether we bind the texture or not, otherwise it never gets nulled and we use a separate batch for every zone tile, for example!
+					// Bind new texture if this shader uses textures
+
+					if ((i == 0 || textureChanged || shaderChanged)
+						&& (activeShader->uTextureLoc != -1)
+						&& (texture != null))
+					{
+						bindTexture(texture, activeShader->uTextureLoc, 0);
+					}
+
+					vertexCount = 0;
+					indexCount = 0;
+				}
 			}
 
 			u32 firstVertex = vertexCount;
