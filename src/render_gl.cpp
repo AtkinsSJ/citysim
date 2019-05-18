@@ -338,6 +338,8 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION();
 
+	DEBUG_BEGIN_RENDER_BUFFER(buffer);
+
 	// Fill VBO
 	u32 vertexCount = 0;
 	u32 indexCount = 0;
@@ -346,6 +348,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	if (buffer->items.count > 0)
 	{
 		Asset *texture = null;
+		GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
 
 		for (s32 i=0; i < buffer->items.count; i++)
 		{
@@ -362,12 +365,13 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				{
 					drawCallCount++;
 					renderPartOfBuffer(renderer, vertexCount, indexCount);
+					DEBUG_DRAW_CALL(buffer, activeShader->asset->shortName, (vertexCount >> 2));
 				}
 
 				{
 					DEBUG_BLOCK("Start new batch");
 					useShader(renderer, item->shaderID);
-					GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
+					activeShader = renderer->shaders + renderer->currentShader;
 
 					if (i==0 || shaderChanged)
 					{
@@ -424,9 +428,8 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		// Do one final draw for remaining items
 		drawCallCount++;
 		renderPartOfBuffer(renderer, vertexCount, indexCount);
+		DEBUG_DRAW_CALL(buffer, activeShader->asset->shortName, (vertexCount >> 2));
 	}
-
-	DEBUG_RENDER_BUFFER(buffer, drawCallCount);
 
 	clear(&buffer->items);
 }

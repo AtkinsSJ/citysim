@@ -218,10 +218,16 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.nextNode;
 		while (renderBuffer != &debugState->renderBufferDataSentinel)
 		{
+			s32 drawCallCount = renderBuffer->drawCallCount[rfi];
+			s32 itemsDrawn = 0;
+			for (s32 i=0; i<drawCallCount; i++)
+			{
+				itemsDrawn += renderBuffer->drawCalls[rfi][i].itemsDrawn;
+			}
 			debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches", {
 				renderBuffer->name,
-				formatInt(renderBuffer->itemCount[rfi]),
-				formatInt(renderBuffer->drawCallCount[rfi])
+				formatInt(itemsDrawn),
+				formatInt(drawCallCount)
 			}));
 			renderBuffer = renderBuffer->nextNode;
 		}
@@ -440,12 +446,22 @@ void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
 	codeData->averageCycleCount[frameIndex] = codeData->totalCycleCount[frameIndex] / codeData->callCount[frameIndex];
 }
 
-void debugTrackRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer, u32 drawCallCount)
+void debugTrackDrawCall(DebugState *debugState, RenderBuffer *renderBuffer, String shaderName, u32 itemsDrawn)
 {
-	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBuffer->name, &debugState->renderBufferDataSentinel);
+	DebugRenderBufferData *renderBufferData = debugState->currentRenderBuffer;
 
 	u32 frameIndex = debugState->writingFrameIndex;
 
-	renderBufferData->itemCount[frameIndex] = renderBuffer->items.count;
-	renderBufferData->drawCallCount[frameIndex] = drawCallCount;
+	DebugDrawCallData *drawCall = &renderBufferData->drawCalls[frameIndex][renderBufferData->drawCallCount[frameIndex]++];
+	drawCall->shaderName = shaderName;
+	drawCall->itemsDrawn = itemsDrawn;
+}
+
+void debugStartTrackingRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer)
+{
+	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBuffer->name, &debugState->renderBufferDataSentinel);
+	u32 frameIndex = debugState->writingFrameIndex;
+
+	debugState->currentRenderBuffer = renderBufferData;
+	renderBufferData->drawCallCount[frameIndex] = 0;
 }

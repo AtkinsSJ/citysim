@@ -22,7 +22,8 @@
 
 	#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
 	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
-	#define DEBUG_RENDER_BUFFER(buffer, drawCallCount) debugTrackRenderBuffer(globalDebugState, buffer, drawCallCount)
+	#define DEBUG_DRAW_CALL(buffer, shaderName, itemCount) debugTrackDrawCall(globalDebugState, buffer, shaderName, itemCount)
+	#define DEBUG_BEGIN_RENDER_BUFFER(buffer) debugStartTrackingRenderBuffer(globalDebugState, buffer)
 #else
 	#define DEBUG_BREAK()
 
@@ -33,9 +34,11 @@
 
 	#define DEBUG_BLOCK(...) 
 	#define DEBUG_FUNCTION(...) 
+
 	#define DEBUG_ARENA(...)
 	#define DEBUG_ASSETS(...)
-	#define DEBUG_RENDER_BUFFER(...)
+	#define DEBUG_DRAW_CALL(...)
+	#define DEBUG_BEGIN_RENDER_BUFFER(...)
 #endif
 
 struct DebugState *globalDebugState = 0;
@@ -66,12 +69,19 @@ struct DebugCodeDataWrapper : LinkedListNode<DebugCodeDataWrapper>
 	DebugCodeData *data;
 };
 
+struct DebugDrawCallData
+{
+	String shaderName;
+	u32 itemsDrawn;
+};
+
+#define DEBUG_DRAW_CALLS_RECORDED_PER_FRAME 2048
 struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData>
 {
 	String name;
 
-	u32 itemCount[DEBUG_FRAMES_COUNT];
 	u32 drawCallCount[DEBUG_FRAMES_COUNT];
+	DebugDrawCallData drawCalls[DEBUG_FRAMES_COUNT][DEBUG_DRAW_CALLS_RECORDED_PER_FRAME];
 };
 
 struct DebugAssetData // Not a linked list because there's only one asset system!
@@ -105,6 +115,7 @@ struct DebugState
 	DebugArenaData arenaDataSentinel;
 	DebugCodeData codeDataSentinel;
 	DebugRenderBufferData renderBufferDataSentinel;
+	DebugRenderBufferData *currentRenderBuffer;
 	DebugAssetData assetData; // Not a sentinel because there's only one asset system!
 
 	// Processed stuff
@@ -115,7 +126,8 @@ struct DebugState
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
 void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount);
-void debugTrackRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer, u32 drawCallCount);
+void debugTrackDrawCall(DebugState *debugState, struct RenderBuffer *renderBuffer, String shaderName, u32 itemsDrawn);
+void debugStartTrackingRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer);
 
 struct DebugBlock
 {
