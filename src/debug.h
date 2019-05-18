@@ -22,7 +22,7 @@
 
 	#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
 	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
-	#define DEBUG_DRAW_CALL(buffer, shaderName, itemCount) debugTrackDrawCall(globalDebugState, buffer, shaderName, itemCount)
+	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
 	#define DEBUG_BEGIN_RENDER_BUFFER(buffer) debugStartTrackingRenderBuffer(globalDebugState, buffer)
 #else
 	#define DEBUG_BREAK()
@@ -72,6 +72,7 @@ struct DebugCodeDataWrapper : LinkedListNode<DebugCodeDataWrapper>
 struct DebugDrawCallData
 {
 	String shaderName;
+	String textureName;
 	u32 itemsDrawn;
 };
 
@@ -80,6 +81,7 @@ struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData>
 {
 	String name;
 
+	u64 timeToSort[DEBUG_FRAMES_COUNT];
 	u32 drawCallCount[DEBUG_FRAMES_COUNT];
 	DebugDrawCallData drawCalls[DEBUG_FRAMES_COUNT][DEBUG_DRAW_CALLS_RECORDED_PER_FRAME];
 };
@@ -126,7 +128,7 @@ struct DebugState
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
 void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount);
-void debugTrackDrawCall(DebugState *debugState, struct RenderBuffer *renderBuffer, String shaderName, u32 itemsDrawn);
+void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugStartTrackingRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer);
 
 struct DebugBlock

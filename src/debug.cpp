@@ -317,6 +317,25 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 		debugState->readingFrameIndex = WRAP(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
 	}
 
+	if (keyJustPressed(inputState, SDLK_INSERT))
+	{
+		// Output draw call data
+		logDebug("****************** DRAW CALLS ******************");
+		DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.nextNode;
+		u32 rfi = debugState->readingFrameIndex;
+		while (renderBuffer != &debugState->renderBufferDataSentinel)
+		{
+			s32 drawCallCount = renderBuffer->drawCallCount[rfi];
+			logDebug("Buffer {0} ({1} calls)\n-------------------------------", {renderBuffer->name, formatInt(drawCallCount)});
+			for (s32 i=0; i<drawCallCount; i++)
+			{
+				DebugDrawCallData *drawCall = renderBuffer->drawCalls[rfi] + i;
+				logDebug("{0}: {1} item(s), shader '{2}', texture '{3}'", {formatInt(i), formatInt(drawCall->itemsDrawn), drawCall->shaderName, drawCall->textureName});
+			}
+			renderBuffer = renderBuffer->nextNode;
+		}
+	}
+
 	processDebugData(debugState);
 
 	if (debugState->showDebugData)
@@ -446,7 +465,7 @@ void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
 	codeData->averageCycleCount[frameIndex] = codeData->totalCycleCount[frameIndex] / codeData->callCount[frameIndex];
 }
 
-void debugTrackDrawCall(DebugState *debugState, RenderBuffer *renderBuffer, String shaderName, u32 itemsDrawn)
+void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn)
 {
 	DebugRenderBufferData *renderBufferData = debugState->currentRenderBuffer;
 
@@ -454,6 +473,7 @@ void debugTrackDrawCall(DebugState *debugState, RenderBuffer *renderBuffer, Stri
 
 	DebugDrawCallData *drawCall = &renderBufferData->drawCalls[frameIndex][renderBufferData->drawCallCount[frameIndex]++];
 	drawCall->shaderName = shaderName;
+	drawCall->textureName = textureName;
 	drawCall->itemsDrawn = itemsDrawn;
 }
 

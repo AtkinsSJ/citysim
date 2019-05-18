@@ -365,7 +365,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				{
 					drawCallCount++;
 					renderPartOfBuffer(renderer, vertexCount, indexCount);
-					DEBUG_DRAW_CALL(buffer, activeShader->asset->shortName, (vertexCount >> 2));
+					DEBUG_DRAW_CALL(activeShader->asset->shortName, (texture == null) ? nullString : texture->shortName, (vertexCount >> 2));
 				}
 
 				{
@@ -428,7 +428,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		// Do one final draw for remaining items
 		drawCallCount++;
 		renderPartOfBuffer(renderer, vertexCount, indexCount);
-		DEBUG_DRAW_CALL(buffer, activeShader->asset->shortName, (vertexCount >> 2));
+		DEBUG_DRAW_CALL(activeShader->asset->shortName, (texture == null) ? nullString : texture->shortName,(vertexCount >> 2));
 	}
 
 	clear(&buffer->items);
