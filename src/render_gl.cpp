@@ -19,14 +19,35 @@ static inline void logGLError(GLenum errorCode)
 	}
 }
 
-static inline void GL_checkForError()
+void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-	GLenum errorCode = glGetError();
-	ASSERT(errorCode == 0, "GL Error {0}: {1}", {formatInt(errorCode), makeString((char *)gluErrorString(errorCode))});
+	String typeString = nullString;
+	switch (type)
+	{
+		case GL_DEBUG_TYPE_ERROR:                typeString = makeString("ERROR");                break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:  typeString = makeString("DEPRECATED_BEHAVIOR");  break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:   typeString = makeString("UNDEFINED_BEHAVIOR");   break;
+		case GL_DEBUG_TYPE_PORTABILITY:          typeString = makeString("PORTABILITY");          break;
+		case GL_DEBUG_TYPE_PERFORMANCE:          typeString = makeString("PERFORMANCE");          break;
+		default:                                 typeString = makeString("OTHER");                break;
+	}
+
+	String severityString = nullString;
+	switch (severity)
+	{
+		case GL_DEBUG_SEVERITY_HIGH:   severityString = makeString("HIGH");    break;
+		case GL_DEBUG_SEVERITY_MEDIUM: severityString = makeString("MEDIUM");  break;
+		case GL_DEBUG_SEVERITY_LOW:    severityString = makeString("LOW");     break;
+		default:                       severityString = makeString("OTHER");   break;
+	}
+
+	String messageString = makeString((char*)message, truncate32(length));
+
+	log("GL DEBUG: {0} (severity {1}, id {2}): {3}", {typeString, severityString, formatInt(id), messageString});
+
+	DEBUG_BREAK();
 }
 
-// Disable GL error checking for release version.
-// #define GL_checkForError() 
 
 static bool compileShader(GL_ShaderProgram *glShader, Shader *shaderProgram, GL_ShaderPart shaderPart)
 {
@@ -262,7 +283,6 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 		ASSERT(asset->state == AssetState_Loaded, "Attempted to bind an unloaded texture '{0}'!", {asset->shortName});
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 		texture->gl.isLoaded = true;
-		GL_checkForError();
 	}
 
 	glUniform1i(uniformID, textureSlot);
@@ -278,42 +298,32 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT, "Tried to render too many vertices at once!");
 	GLint vBufferSizeNeeded = vertexCount * sizeof(renderer->vertices[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, renderer->vertices);
-	GL_checkForError();
 
 	// Fill IBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
 	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT, "Tried to render too many indices at once!");
 	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
-	GL_checkForError();
 
 	glEnableVertexAttribArray(activeShader->aPositionLoc);
 	glEnableVertexAttribArray(activeShader->aColorLoc);
-	GL_checkForError();
 
 	if (activeShader->aUVLoc != -1)
 	{
 		glEnableVertexAttribArray(activeShader->aUVLoc);
-		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
-	GL_checkForError();
 	glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
-	GL_checkForError();
 	glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
-	GL_checkForError();
 
 	if (activeShader->aUVLoc != -1)
 	{
 		glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
-		GL_checkForError();
 	}
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
-	GL_checkForError();
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
-	GL_checkForError();
 
 	glDisableVertexAttribArray(activeShader->aPositionLoc);
 	glDisableVertexAttribArray(activeShader->aColorLoc);
@@ -321,7 +331,6 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	{
 		glDisableVertexAttribArray(activeShader->aUVLoc);
 	}
-	GL_checkForError();
 }
 
 static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
@@ -444,14 +453,10 @@ static void GL_render(Renderer *renderer)
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	GL_checkForError();
 	glEnable(GL_BLEND);
-	GL_checkForError();
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	GL_checkForError();
 
 	glEnable(GL_TEXTURE_2D);
-	GL_checkForError();
 
 	gl->currentShader = Shader_Invalid;
 
@@ -465,7 +470,6 @@ static void GL_render(Renderer *renderer)
 	}
 
 	glUseProgram(NULL);
-	GL_checkForError();
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)
@@ -495,6 +499,11 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+		s32 contextFlags = 0;
+		SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
+		contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
+
 		// Create context
 		gl->context = SDL_GL_CreateContext(renderer->window);
 		if (gl->context == NULL)
@@ -511,6 +520,10 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			logCritical("Could not initialise GLEW! :(\n %s", {makeString((char*)glewGetErrorString(glewError))});
 			succeeded = false;
 		}
+
+		// Debug callbacks
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(GL_debugCallback, null);
 
 		// VSync
 		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
@@ -534,7 +547,6 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->indices[0]);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, null, GL_STATIC_DRAW);
 
-			GL_checkForError();
 		}
 		else
 		{
