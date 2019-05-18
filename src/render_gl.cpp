@@ -33,17 +33,18 @@ void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum s
 	}
 
 	String severityString = nullString;
+	SDL_LogPriority priority;
 	switch (severity)
 	{
-		case GL_DEBUG_SEVERITY_HIGH:   severityString = makeString("HIGH");    break;
-		case GL_DEBUG_SEVERITY_MEDIUM: severityString = makeString("MEDIUM");  break;
-		case GL_DEBUG_SEVERITY_LOW:    severityString = makeString("LOW");     break;
-		default:                       severityString = makeString("OTHER");   break;
+		case GL_DEBUG_SEVERITY_HIGH:   severityString = makeString("HIGH");    priority = SDL_LOG_PRIORITY_ERROR;  break;
+		case GL_DEBUG_SEVERITY_MEDIUM: severityString = makeString("MEDIUM");  priority = SDL_LOG_PRIORITY_WARN;   break;
+		case GL_DEBUG_SEVERITY_LOW:    severityString = makeString("LOW");     priority = SDL_LOG_PRIORITY_WARN;   break;
+		default:                       severityString = makeString("OTHER");   priority = SDL_LOG_PRIORITY_INFO;   break;
 	}
 
 	String messageString = makeString((char*)message, truncate32(length));
 
-	log("GL DEBUG: {0} (severity {1}, id {2}): {3}", {typeString, severityString, formatInt(id), messageString});
+	log(priority, "GL DEBUG: {0} (severity {1}, id {2}): {3}", {typeString, severityString, formatInt(id), messageString});
 
 	DEBUG_BREAK();
 }
