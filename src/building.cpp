@@ -241,6 +241,8 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 		def = get(&buildingDefs, building->typeID);
 	}
 
+	u32 newSpriteOffset = 0;
+
 	if (def->linkTexturesLayer)
 	{
 		// Sprite id is 0 to 15, depending on connecting neighbours.
@@ -265,7 +267,7 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->isPath;
 				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->isPath;
 
-				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+				newSpriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
 
 			case DataLayer_Power:
@@ -280,14 +282,20 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->carriesPower;
 				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->carriesPower;
 
-				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+				newSpriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
 		}
 	}
 	else
 	{
 		// Random sprite!
-		building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
+		newSpriteOffset = randomNext(&globalAppState.cosmeticRandom);
+	}
+
+	if (newSpriteOffset != building->spriteOffset)
+	{
+		building->spriteOffset = newSpriteOffset;
+		building->sprite = null;
 	}
 }
 
