@@ -499,10 +499,12 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+#if BUILD_DEBUG
 		s32 contextFlags = 0;
 		SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
 		contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
+#endif
 
 		// Create context
 		gl->context = SDL_GL_CreateContext(renderer->window);
@@ -521,9 +523,19 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			succeeded = false;
 		}
 
+#if BUILD_DEBUG
 		// Debug callbacks
-		glEnable(GL_DEBUG_OUTPUT);
-		glDebugMessageCallback(GL_debugCallback, null);
+		if (GLEW_KHR_debug)
+		{
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+			glDebugMessageCallback(GL_debugCallback, null);
+			logInfo("OpenGL debug message callback enabled");
+		}
+		else
+		{
+			logInfo("OpenGL debug message callback not available in this context");
+		}
+#endif
 
 		// VSync
 		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
