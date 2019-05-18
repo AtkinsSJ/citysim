@@ -38,6 +38,9 @@ I will create shorter versions of the basic types though.
 #define STRVAL_(a) #a
 #define STRVAL(a) STRVAL_(a)
 
+// Defined in debug.h
+void ASSERT(bool expr, char *format, std::initializer_list<String> args = {});
+
 #define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
 
 /*

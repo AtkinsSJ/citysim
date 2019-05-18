@@ -1,22 +1,41 @@
 #pragma once
 
-#ifdef BUILD_DEBUG
+#if BUILD_DEBUG
+	#if defined(_MSC_VER)
+		// Pauses the MS debugger
+		#define DEBUG_BREAK() __debugbreak()
+	#else
+		#define DEBUG_BREAK() {*(int *)0 = 0;}
+	#endif
 
-#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (makeString(name))
-#define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
+	void ASSERT(bool expr, char *format, std::initializer_list<String> args)
+	{
+		if(!(expr))
+		{
+			logError(format, args);
+			DEBUG_BREAK();
+		}
+	}
 
-#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
-#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
-#define DEBUG_RENDER_BUFFER(buffer, drawCallCount) debugTrackRenderBuffer(globalDebugState, buffer, drawCallCount)
+	#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (makeString(name))
+	#define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
+	#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
+	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
+	#define DEBUG_RENDER_BUFFER(buffer, drawCallCount) debugTrackRenderBuffer(globalDebugState, buffer, drawCallCount)
 #else
+	#define DEBUG_BREAK()
 
-#define DEBUG_BLOCK(...) 
-#define DEBUG_FUNCTION(...) 
-#define DEBUG_ARENA(...)
-#define DEBUG_ASSETS(...)
-#define DEBUG_RENDER_BUFFER(...)
+	// We put a dummy thing here to stop the compiler complaining
+	// "local variable is initialized but not referenced"
+	// if a variable is only used in expr.
+	#define ASSERT(expr, ...) if (expr) {};
 
+	#define DEBUG_BLOCK(...) 
+	#define DEBUG_FUNCTION(...) 
+	#define DEBUG_ARENA(...)
+	#define DEBUG_ASSETS(...)
+	#define DEBUG_RENDER_BUFFER(...)
 #endif
 
 struct DebugState *globalDebugState = 0;
