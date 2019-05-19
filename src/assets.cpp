@@ -60,6 +60,9 @@ Blob allocate(AssetManager *assets, smm size)
 
 Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isAFile=true)
 {
+	Asset *existing = getAsset(assets, type, shortName);
+	if (existing) return existing;
+
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
 	if (shortName.length != 0)
@@ -75,13 +78,6 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 	put(&assets->assetsByName[type], shortName, asset);
 
 	return asset;
-}
-
-inline Asset *addAsset(AssetManager *assets, AssetType type, char *shortName, bool isAFile=true)
-{
-	String name = nullString;
-	if (shortName != null) name = pushString(&assets->assetArena, shortName);
-	return addAsset(assets, type, name, isAFile);
 }
 
 void copyFileIntoAsset(AssetManager *assets, Blob *fileData, Asset *asset)
@@ -193,7 +189,6 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 			memcpy(asset->data.memory,                   vertexFile.memory,   vertexFile.size);
 			memcpy(asset->data.memory + vertexFile.size, fragmentFile.memory, fragmentFile.size);
-
 
 			asset->state = AssetState_Loaded;
 		} break;
