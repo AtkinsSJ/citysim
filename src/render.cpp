@@ -114,7 +114,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
+inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite())
 {
 	*result = {};
 	result->rect = rect;
@@ -123,32 +123,24 @@ inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *tex
 
 	result->texture = texture;
 	result->uv = uv;
-
-	if (shaderID == Shader_Invalid)
-	{
-		result->shaderID = (texture == null) ? Shader_Untextured : Shader_Textured;
-	}
-	else
-	{
-		result->shaderID = shaderID;
-	}
+	result->shaderID = shaderID;
 }
 
-inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, V4 color, ShaderType shaderID = Shader_Invalid)
+inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
 {
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, {}, color, shaderID);
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, {}, shaderID, color);
 }
 
-inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, V4 color=makeWhite(), ShaderType shaderID = Shader_Invalid)
+inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
 {
 	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite->texture, sprite->uv, color, shaderID);
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
 
-void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color)
+void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color, s32 shaderID)
 {
 	ASSERT(item != null, "Attempted to draw a null RenderItem!");
-	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, color, item->shaderID);
+	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
 }
 
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item)

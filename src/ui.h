@@ -65,6 +65,9 @@ struct UIState
 	AssetManager *assets;
 	InputState *input;
 
+	s32 textShaderID;
+	s32 untexturedShaderID;
+
 	f32 closestDepth;
 
 	Tooltip tooltip;

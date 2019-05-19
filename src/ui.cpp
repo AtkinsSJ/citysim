@@ -6,6 +6,12 @@ void setCursorVisible(UIState *uiState, bool visible)
 	SDL_ShowCursor(visible ? 1 : 0);
 }
 
+void cacheUIShaders(UIState *uiState, AssetManager *assets)
+{
+	uiState->textShaderID       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
+	uiState->untexturedShaderID = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
+}
+
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input)
 {
 	*uiState = {};
@@ -43,7 +49,7 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 ali
 	if (textCache)
 	{
 		V2 topLeft = calculateTextPosition(textCache, origin, align);
-		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color);
+		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color, uiState->textShaderID);
 		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->bounds.x, textCache->bounds.y);
 	}
 
@@ -60,7 +66,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 	if (textCache)
 	{
 		V2 topLeft = calculateTextPosition(textCache, origin, align);
-		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color);
+		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color, uiState->textShaderID);
 		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->bounds.x, textCache->bounds.y);
 
 		textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
@@ -91,7 +97,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 				caretRect.y += charCaretIsAfter->rect.y - glyphCaretIsAfter->yOffset;
 			}
 
-			drawRect(uiState->uiBuffer, caretRect, depth + 10, color);
+			drawRect(uiState->uiBuffer, caretRect, depth + 10, uiState->untexturedShaderID, color);
 		}
 	}
 
@@ -121,7 +127,7 @@ void drawTooltip(UIState *uiState)
 
 		labelRect = expand(labelRect, style->padding);
 
-		drawRect(uiState->uiBuffer, labelRect, depth, style->backgroundColor);
+		drawRect(uiState->uiBuffer, labelRect, depth, uiState->untexturedShaderID, style->backgroundColor);
 
 		uiState->tooltip.show = false;
 	}
@@ -173,7 +179,7 @@ bool uiButton(UIState *uiState,
 		backColor = style->hoverColor;
 	}
 
-	drawRect(uiState->uiBuffer, bounds, depth, backColor);
+	drawRect(uiState->uiBuffer, bounds, depth, uiState->untexturedShaderID, backColor);
 	V2 textOrigin = originWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(uiState, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, depth + 1,
 			style->textColor);
@@ -258,18 +264,18 @@ void drawUiMessage(UIState *uiState)
 
 			labelRect = expand(labelRect, style->padding);
 
-			drawRect(uiState->uiBuffer, labelRect, depth, backgroundColor);
+			drawRect(uiState->uiBuffer, labelRect, depth, uiState->untexturedShaderID, backgroundColor);
 		}
 	}
 }
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, f32 depth, V4 knobColor)
+void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, f32 depth, V4 knobColor, s32 shaderID)
 {
 	knobSize.y = MIN(knobSize.y, height); // force knob to fit
 	f32 knobTravelableH = height - knobSize.y;
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
-	drawRect(uiBuffer, knobRect, depth, knobColor);
+	drawRect(uiBuffer, knobRect, depth, shaderID, knobColor);
 }
 
 inline void uiCloseMenus(UIState *uiState)

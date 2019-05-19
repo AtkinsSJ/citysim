@@ -12,6 +12,7 @@ struct String
 
 const String nullString = {};
 
+
 inline String makeString(char *chars, s32 length)
 {
 	String result = {};
@@ -29,6 +30,11 @@ inline String makeString(char *chars)
 inline String makeString(const char *chars)
 {
 	return makeString((char*)chars, truncate32(strlen(chars)));
+}
+
+inline String stringFromBlob(Blob blob)
+{
+	return makeString((char*)blob.memory, truncate32(blob.size));
 }
 
 void copyString(char *src, s32 srcLength, String *dest)

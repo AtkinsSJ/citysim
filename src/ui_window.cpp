@@ -41,7 +41,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
 		{
 			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, maxWidth);
 			V2 topLeft = calculateTextPosition(textCache, origin, alignment);
-			drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth, style->textColor);
+			drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth, style->textColor, context->uiState->textShaderID);
 			size = textCache->bounds;
 		}
 
@@ -133,7 +133,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 
 			V2 textOrigin = originWithinRectangle(bounds, textAlignment, buttonPadding);
 			V2 textTopLeft = calculateTextPosition(textCache, textOrigin, textAlignment);
-			drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f, style->textColor);
+			drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
 			if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
 			{
@@ -159,7 +159,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth=-1)
 				}
 			}
 
-			drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, backColor);
+			drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, context->uiState->untexturedShaderID,backColor);
 		}
 
 		// For now, we'll always just start a new line.
@@ -370,17 +370,17 @@ void updateAndRenderWindows(UIState *uiState)
 			uiState->mouseInputHandled = true;
 		}
 
-		drawRect(uiState->uiBuffer, contentArea, depth, backColor);
-		drawRect(uiState->uiBuffer, barArea, depth, barColor);
+		drawRect(uiState->uiBuffer, contentArea, depth, uiState->untexturedShaderID, backColor);
+		drawRect(uiState->uiBuffer, barArea, depth, uiState->untexturedShaderID, barColor);
 		uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
-		if (hoveringOverCloseButton && !uiState->mouseInputHandled)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, closeButtonColorHover);
+		if (hoveringOverCloseButton && !uiState->mouseInputHandled)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
 		uiText(uiState, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
 
 		if (isModal)
 		{
 			uiState->mouseInputHandled = true;
-			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, color255(64, 64, 64, 128)); 
+			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, uiState->untexturedShaderID, color255(64, 64, 64, 128)); 
 		}
 
 		if (inRect(wholeWindowArea, mousePos))

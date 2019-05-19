@@ -50,7 +50,7 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	uiState->mouseInputHandled = false;
 	updateAndRenderWindows(uiState);
 
-	drawRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, theme->overlayColor);
+	drawRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, uiState->untexturedShaderID, theme->overlayColor);
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;

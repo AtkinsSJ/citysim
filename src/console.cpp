@@ -104,13 +104,13 @@ void renderConsole(Console *console, UIState *uiState)
 
 	// draw backgrounds now we know size of input area
 	Rect2 inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
-	drawRect(uiBuffer, inputBackRect, 100, color255(64,64,64,245));
+	drawRect(uiBuffer, inputBackRect, 100, uiState->untexturedShaderID, color255(64,64,64,245));
 	Rect2 consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
-	drawRect(uiBuffer, consoleBackRect, 100, color255(0,0,0,245));
+	drawRect(uiBuffer, consoleBackRect, 100, uiState->untexturedShaderID, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, 200, color255(48, 48, 48, 245));
+	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, 200, color255(48, 48, 48, 245), uiState->untexturedShaderID);
 
 	textState.pos.y -= 8.0f;
 

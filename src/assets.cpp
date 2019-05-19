@@ -21,7 +21,7 @@ void initAssetManager(AssetManager *assets)
 	initHashTable(&assets->directoryNameToType);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "cursors"), AssetType_Cursor);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"), AssetType_BitmapFont);
-	// put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"), AssetType_Shader);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"), AssetType_Shader);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"), AssetType_Texture);
 
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
@@ -178,17 +178,20 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_Shader:
 		{
-			Blob vertexFile   = readTempFile(asset->shader.vertexShaderFilename);
-			Blob fragmentFile = readTempFile(asset->shader.fragmentShaderFilename);
+			copyFileIntoAsset(assets, &fileData, asset);
+			splitInTwo(stringFromBlob(fileData), '$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
+
+			// Blob vertexFile   = readTempFile(asset->shader.vertexShaderFilename);
+			// Blob fragmentFile = readTempFile(asset->shader.fragmentShaderFilename);
 			
-			smm totalSize = fragmentFile.size + vertexFile.size;
-			asset->data = allocate(assets, totalSize);
+			// smm totalSize = fragmentFile.size + vertexFile.size;
+			// asset->data = allocate(assets, totalSize);
 
-			asset->shader.vertexShader   = makeString((char*)asset->data.memory, truncate32(vertexFile.size));
-			asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexFile.size, truncate32(fragmentFile.size));
+			// asset->shader.vertexShader   = makeString((char*)asset->data.memory, truncate32(vertexFile.size));
+			// asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexFile.size, truncate32(fragmentFile.size));
 
-			memcpy(asset->data.memory,                   vertexFile.memory,   vertexFile.size);
-			memcpy(asset->data.memory + vertexFile.size, fragmentFile.memory, fragmentFile.size);
+			// memcpy(asset->data.memory,                   vertexFile.memory,   vertexFile.size);
+			// memcpy(asset->data.memory + vertexFile.size, fragmentFile.memory, fragmentFile.size);
 
 			asset->state = AssetState_Loaded;
 		} break;
@@ -387,14 +390,6 @@ void addFont(AssetManager *assets, String name, String filename)
 	put(&assets->theme.fontNamesToAssetNames, name, filename);
 }
 
-void addShader(AssetManager *assets, ShaderType shaderID, char *name, char *vertFilename, char *fragFilename)
-{
-	Asset *asset = addAsset(assets, AssetType_Shader, pushString(&assets->assetArena, name), false);
-	asset->shader.shaderType = shaderID;
-	asset->shader.vertexShaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, vertFilename));
-	asset->shader.fragmentShaderFilename = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, fragFilename));
-}
-
 void loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
@@ -490,9 +485,9 @@ void addAssets(AssetManager *assets)
 
 	// TODO: Settings?
 
-	addShader(assets, Shader_Textured,   "textured",   "textured.vert.glsl",   "textured.frag.glsl");
-	addShader(assets, Shader_Untextured, "untextured", "untextured.vert.glsl", "untextured.frag.glsl");
-	addShader(assets, Shader_PixelArt,   "pixelart",   "pixelart.vert.glsl",   "pixelart.frag.glsl");
+	// addShader(assets, Shader_Textured,   "textured",   "textured.vert.glsl",   "textured.frag.glsl");
+	// addShader(assets, Shader_Untextured, "untextured", "untextured.vert.glsl", "untextured.frag.glsl");
+	// addShader(assets, Shader_PixelArt,   "pixelart",   "pixelart.vert.glsl",   "pixelart.frag.glsl");
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)

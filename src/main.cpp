@@ -243,6 +243,7 @@ int main(int argc, char *argv[])
 		if (assets->assetReloadHasJustHappened)
 		{
 			applySettings(&appState->settings);
+			cacheUIShaders(uiState, assets);
 		}
 
 		if (inputState.receivedQuitSignal)

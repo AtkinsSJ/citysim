@@ -400,7 +400,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
-	drawRect(uiBuffer, uiRect, 0, theme->overlayColor);
+	drawRect(uiBuffer, uiRect, 0, uiState->untexturedShaderID, theme->overlayColor);
 
 	uiText(uiState, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, 1, labelStyle->textColor);
@@ -444,7 +444,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(uiBuffer, menuRect, 0, theme->overlayColor);
+			drawRect(uiBuffer, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -475,7 +475,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(uiBuffer, menuRect, 0, theme->overlayColor);
+			drawRect(uiBuffer, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -508,6 +508,18 @@ void showCostTooltip(UIState *uiState, City *city, s32 buildCost)
 	setTooltip(uiState, text, style);
 }
 
+void pushOverlayRenderItem(GameState *gameState, Rect2 rect, f32 depth, V4 color, s32 shaderID, Sprite *sprite = null)
+{
+	Asset *texture = null;
+	Rect2 uv = {};
+	if (sprite != null)
+	{
+		texture = sprite->texture;
+		uv = sprite->uv;
+	}
+	makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect, depth, texture, uv, shaderID, color);
+}
+
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
@@ -535,6 +547,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// UI!
 	UIState *uiState = &globalAppState.uiState;
 	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState);
+
+	s32 pixelArtShaderID  = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
+	s32 rectangleShaderID = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
@@ -576,7 +591,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						}
 
 						Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
-						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(footprint), depthFromY(mouseTilePos.y) + 100, sprite->texture, sprite->uv, ghostColor, Shader_PixelArt);
+						pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
 					}
 				} break;
 
@@ -600,7 +615,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						}
 						
 						Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
-						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(footprint), depthFromY(mouseTilePos.y) + 100, sprite->texture, sprite->uv, ghostColor, Shader_PixelArt);
+						pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
 					}
 				} break;
 
@@ -639,13 +654,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 											ghostColor = color255(255,0,0,128);
 										}
 
-										makeRenderItem(appendBlank(&gameState->overlayRenderItems), rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height), depthFromY(dragResult.dragRect.y + y) + 100, sprite->texture, sprite->uv, ghostColor, Shader_PixelArt);
+										Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
+										pushOverlayRenderItem(gameState, rect, depthFromY(dragResult.dragRect.y + y) + 100, ghostColor, pixelArtShaderID, sprite);
 									}
 								}
 							}
 							else
 							{
-								makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(255, 64, 64, 128));
+								pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
 							}
 						} break;
 					}
@@ -680,14 +696,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							{
 								if (canZoneTile(city, gameState->selectedZoneID, x, y))
 								{
-									makeRenderItem(appendBlank(&gameState->overlayRenderItems), rectXYWHi(x, y, 1, 1), 0, null, {}, zoneDefs[gameState->selectedZoneID].color);
+									pushOverlayRenderItem(gameState, rectXYWHi(x, y, 1, 1), 0, zoneDefs[gameState->selectedZoneID].color, rectangleShaderID);
 								}
 							}
 						}
 					}
 					else
 					{
-						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(255, 64, 64, 128));
+						pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
 					}
 				} break;
 			}
@@ -716,11 +732,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					if (canAfford(city, demolishCost))
 					{
 						// Demolition outline
-						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(128, 0, 0, 128));
+						pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(128, 0, 0, 128), rectangleShaderID);
 					}
 					else
 					{
-						makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect2(dragResult.dragRect), 0, null, {}, color255(255, 64, 64, 128));
+						pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
 					}
 				} break;
 			}
@@ -797,7 +813,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					t->sprite = getSprite(assets, tDef->spriteName, t->spriteOffset);
 				}
 
-				drawSprite(&renderer->worldBuffer, t->sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, makeWhite(), Shader_PixelArt);
+				drawSprite(&renderer->worldBuffer, t->sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
 			}
 		}
 	}
@@ -814,7 +830,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			ZoneType zoneType = getZoneAt(city, x, y);
 			if (zoneType != Zone_None)
 			{
-				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, zoneDefs[zoneType].color);
+				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, uiState->untexturedShaderID, zoneDefs[zoneType].color);
 			}
 		}
 	}
@@ -843,7 +859,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 
 			V2 drawPos = centre(building->footprint);
-			drawSprite(&renderer->worldBuffer, building->sprite, rect2(building->footprint), depthFromY(drawPos.y), drawColor, Shader_PixelArt);
+			drawSprite(&renderer->worldBuffer, building->sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
 		}
 	}
 
@@ -903,7 +919,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				if (color.a > 0.01f)
 				{
-					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 9999.0f, color);
+					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 9999.0f, uiState->untexturedShaderID, color);
 				}
 			}
 		}

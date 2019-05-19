@@ -257,7 +257,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 					makeRenderItem(result->renderItems + result->glyphCount, 
 						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
 								 (f32)c->size.w, (f32)c->size.h),
-						0.0f, font->pageTextures[c->page], c->uv
+						0.0f, font->pageTextures[c->page], c->uv, -1
 					);
 
 					result->glyphs[result->glyphCount] = c;
@@ -310,7 +310,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 	return offset;
 }
 
-void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color)
+void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color, s32 shaderID)
 {
 	DEBUG_FUNCTION();
 	
@@ -323,6 +323,6 @@ void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topL
 		renderItemIndex < cache->glyphCount;
 		renderItemIndex++)
 	{
-		drawRenderItem(uiBuffer, cache->renderItems + renderItemIndex, origin, depth, color);
+		drawRenderItem(uiBuffer, cache->renderItems + renderItemIndex, origin, depth, color, shaderID);
 	}
 }

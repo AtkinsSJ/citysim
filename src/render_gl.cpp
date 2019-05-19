@@ -53,27 +53,24 @@ void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum s
 }
 
 
-static bool compileShader(GL_ShaderProgram *glShader, Shader *shaderProgram, GL_ShaderPart shaderPart)
+static bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader *shaderProgram, GL_ShaderPart shaderPart)
 {
 	bool result = false;
 
 	GLuint shaderID = glCreateShader(shaderPart);
 	defer { glDeleteShader(shaderID); };
 
-	String source   = nullString;
-	String filename = nullString;
+	String source = nullString;
 	switch (shaderPart)
 	{
 		case GL_ShaderPart_Vertex:
 		{
 			source = shaderProgram->vertexShader;
-			filename = shaderProgram->vertexShaderFilename;
 		} break;
 
 		case GL_ShaderPart_Fragment:
 		{
 			source = shaderProgram->fragmentShader;
-			filename = shaderProgram->fragmentShaderFilename;
 		} break;
 
 		INVALID_DEFAULT_CASE;
@@ -105,7 +102,7 @@ static bool compileShader(GL_ShaderProgram *glShader, Shader *shaderProgram, GL_
 			infoLog = makeString("No error log provided by OpenGL. Sad panda.");
 		}
 
-		logError("Unable to compile shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), filename, infoLog});
+		logError("Unable to compile part {3} of shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), shaderName, infoLog, formatInt(shaderPart)});
 	}
 
 	return result;
@@ -116,7 +113,7 @@ static void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *
 	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
 	if (*attribLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested variable {1}", {formatInt(glShader->type), makeString(attribName)});
+		logWarn("Shader '{0}' does not contain requested variable '{1}'", {glShader->asset->shortName, makeString(attribName)});
 	}
 }
 
@@ -125,7 +122,7 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 	*uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
 	if (*uniformLocation == -1)
 	{
-		logWarn("Shader #{0} does not contain requested uniform {1}", {formatInt(glShader->type), makeString(uniformName)});
+		logWarn("Shader '{0}' does not contain requested uniform '{1}'", {glShader->asset->shortName, makeString(uniformName)});
 	}
 }
 
@@ -135,8 +132,8 @@ static void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 
 	if (glShader->shaderProgramID)
 	{
-		bool isVertexShaderCompiled   = compileShader(glShader, &asset->shader, GL_ShaderPart_Vertex);
-		bool isFragmentShaderCompiled = compileShader(glShader, &asset->shader, GL_ShaderPart_Fragment);
+		bool isVertexShaderCompiled   = compileShader(glShader, asset->shortName, &asset->shader, GL_ShaderPart_Vertex);
+		bool isFragmentShaderCompiled = compileShader(glShader, asset->shortName, &asset->shader, GL_ShaderPart_Fragment);
 
 		// Link shader programs
 		if (isVertexShaderCompiled && isFragmentShaderCompiled)
@@ -199,15 +196,17 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	}
 
 	// Shaders
+	clear(&gl->shaders); // Just in case
 	for (auto it = iterate(&assets->assetsByName[AssetType_Shader]);
 		!it.isDone;
 		next(&it))
 	{
 		Asset *asset = *get(it);
 
-		GL_ShaderProgram *shader = &gl->shaders[asset->shader.shaderType];
-		shader->type = asset->shader.shaderType;
+		s32 shaderIndex = gl->shaders.count;
+		GL_ShaderProgram *shader = appendBlank(&gl->shaders);
 		shader->asset = asset;
+		asset->shader.rendererShaderID = shaderIndex;
 
 		loadShaderProgram(asset, shader);
 		ASSERT(shader->isValid, "Failed to load shader '{0}' into OpenGL.", {asset->shortName});
@@ -236,26 +235,39 @@ static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Shaders
 	gl->currentShader = -1;
-	for (u32 shaderID=0; shaderID < ShaderCount; shaderID++)
+	for (s32 shaderID=0; shaderID < gl->shaders.count; shaderID++)
 	{
-		GL_ShaderProgram *shader = gl->shaders + shaderID;
+		GL_ShaderProgram *shader = pointerTo(&gl->shaders, shaderID);
 		glDeleteProgram(shader->shaderProgramID);
 		*shader = {};
 	}
+	clear(&gl->shaders);
 }
 
-void useShader(GL_Renderer *renderer, ShaderType shaderType)
+inline GL_ShaderProgram *getCurrentShader(GL_Renderer *renderer)
+{
+	GL_ShaderProgram *result = null;
+
+	if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
+	{
+		result = pointerTo(&renderer->shaders, renderer->currentShader);
+	}
+
+	return result;
+}
+
+void useShader(GL_Renderer *renderer, s32 shaderID)
 {
 	DEBUG_FUNCTION();
-	ASSERT(shaderType >= 0 && shaderType < ShaderCount, "Invalid shader!");
+	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count, "Invalid shader!");
 
-	if (renderer->currentShader != shaderType)
+	if (renderer->currentShader != shaderID)
 	{
-		GL_ShaderProgram *targetShader = renderer->shaders + shaderType;
+		GL_ShaderProgram *targetShader = pointerTo(&renderer->shaders, shaderID);
 		if (targetShader->isValid)
 		{
 			glUseProgram(targetShader->shaderProgramID);
-			renderer->currentShader = shaderType;
+			renderer->currentShader = shaderID;
 		}
 		else
 		{
@@ -295,7 +307,7 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
 	DEBUG_FUNCTION();
-	GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
+	GL_ShaderProgram *activeShader = getCurrentShader(renderer);
 
 	// Fill VBO
 	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
@@ -351,7 +363,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	if (buffer->items.count > 0)
 	{
 		Asset *texture = null;
-		GL_ShaderProgram *activeShader = renderer->shaders + renderer->currentShader;
+		GL_ShaderProgram *activeShader = getCurrentShader(renderer);
 
 		for (s32 i=0; i < buffer->items.count; i++)
 		{
@@ -374,7 +386,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				{
 					DEBUG_BLOCK("Start new batch");
 					useShader(renderer, item->shaderID);
-					activeShader = renderer->shaders + renderer->currentShader;
+					activeShader = getCurrentShader(renderer);
 
 					if (i==0 || shaderChanged)
 					{
@@ -465,7 +477,7 @@ static void GL_render(Renderer *renderer)
 
 	glEnable(GL_TEXTURE_2D);
 
-	gl->currentShader = Shader_Invalid;
+	gl->currentShader = -1;
 
 	{
 		// DEBUG_BLOCK("DRAW WORLD BUFFER");

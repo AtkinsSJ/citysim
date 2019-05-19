@@ -29,22 +29,9 @@ struct Cursor
 	SDL_Cursor *sdlCursor;
 };
 
-enum ShaderType
-{
-	Shader_Textured,
-	Shader_Untextured,
-	Shader_PixelArt,
-
-	ShaderCount,
-	Shader_Invalid = -1
-};
-
 struct Shader
 {
-	ShaderType shaderType;
-
-	String vertexShaderFilename;
-	String fragmentShaderFilename;
+	s32 rendererShaderID;
 
 	String vertexShader;
 	String fragmentShader;

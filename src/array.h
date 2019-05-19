@@ -64,7 +64,8 @@ T *append(Array<T> *a, T item)
 {
 	if (a->count >= a->maxCount)
 	{
-		ASSERT(resize(a, a->maxCount * 2), "Failed to make room in array!");
+		s32 newSize = (a->maxCount == 0) ? 16 : (a->maxCount * 2);
+		ASSERT(resize(a, newSize), "Failed to make room in array!");
 	}
 
 	T *result = a->items + a->count++;
@@ -75,18 +76,9 @@ T *append(Array<T> *a, T item)
 }
 
 template<typename T>
-T *appendBlank(Array<T> *a)
+inline T *appendBlank(Array<T> *a)
 {
-	if (a->count >= a->maxCount)
-	{
-		ASSERT(resize(a, a->maxCount * 2), "Failed to make room in array!");
-	}
-
-	T *result = a->items + a->count++;
-	
-	*result = {};
-
-	return result;
+	return append(a, {});
 }
 
 template<typename T>
