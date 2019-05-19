@@ -102,13 +102,13 @@ ConsoleCommand(show_layer)
 	if (!checkInGame()) return;
 	
 	// For now this is a toggle, but it'd be nice if we could say "show_paths true" or "show_paths 1" maybe
-	if (argumentsCount == 1)
+	if (argumentsCount == 0)
 	{
 		// Hide layers
 		globalAppState.gameState->dataLayerToDraw = DataLayer_None;
 		consoleWriteLine("Hiding data layers", CLS_Success);
 	}
-	else if (argumentsCount == 2)
+	else if (argumentsCount == 1)
 	{
 		String layerName = nextToken(remainder, &remainder);
 		if (equals(layerName, "paths"))
@@ -133,14 +133,14 @@ ConsoleCommand(zoom)
 	String remainder = arguments;
 	bool succeeded = false;
 
-	if (argumentsCount == 1)
+	if (argumentsCount == 0)
 	{
 		// list the zoom
 		f32 zoom = globalAppState.renderer->worldBuffer.camera.zoom;
 		consoleWriteLine(myprintf("Current zoom is {0}", {formatFloat(zoom, 3)}), CLS_Success);
 		succeeded = true;
 	}
-	else if (argumentsCount == 2)
+	else if (argumentsCount == 1)
 	{
 		// set the zoom
 		// TODO: We don't have a float-parsing function yet, so we're stuck with ints!
