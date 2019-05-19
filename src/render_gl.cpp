@@ -21,6 +21,9 @@ static inline void logGLError(GLenum errorCode)
 
 void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
+	// Prevent warnings
+	if (userParam && source) {}
+
 	String typeString = nullString;
 	switch (type)
 	{
