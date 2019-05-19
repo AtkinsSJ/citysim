@@ -78,6 +78,8 @@ template<typename T>
 struct ChunkedArrayIterator
 {
 	ChunkedArray<T> *array;
+	bool wrapAround;
+	bool goBackwards;
 
 	Chunk<T> *currentChunk;
 	smm indexInChunk;
@@ -85,12 +87,11 @@ struct ChunkedArrayIterator
 	// This is a counter for use when we start not at the beginning of the array but want to iterate it ALL.
 	// For simplicity, we increment it each time we next(), and when it equals the count, we're done.
 	smm itemsIterated;
-	bool wrapAround;
 	bool isDone;
 };
 
 template<typename T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true);
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true, bool goBackwards = false);
 
 template<typename T>
 void next(ChunkedArrayIterator<T> *iterator);

@@ -61,9 +61,7 @@ struct Console
 	ChunkedArray<String> inputHistory;
 	s32 inputHistoryCursor;
 
-	s32 outputLineCount;
-	ConsoleOutputLine *outputLines;
-	s32 currentOutputLine;
+	ChunkedArray<ConsoleOutputLine> outputLines;
 	s32 scrollPos; // first line to draw, just above the console input
 
 	ChunkedArray<Command> commands;
@@ -73,17 +71,6 @@ struct Console
 Console *globalConsole;
 const s32 consoleLineLength = 255;
 
-String *consoleNextOutputLine(Console *console, ConsoleLineStyleID style=CLS_Default)
-{
-	ConsoleOutputLine *line = console->outputLines + console->currentOutputLine;
-	line->style = style;
-
-	String *result = &line->text;
-	console->currentOutputLine = WRAP(console->currentOutputLine + 1, console->outputLineCount);
-
-	return result;
-}
-
 void consoleWriteLine(String text, ConsoleLineStyleID style=CLS_Default);
 inline void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
 {
@@ -92,8 +79,7 @@ inline void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
 
 inline s32 consoleMaxScrollPos(Console *console)
 {
-	s32 result = MIN(console->currentOutputLine-1, console->outputLineCount)-1;
-	return result;
+	return truncate32(console->outputLines.count - 1);
 }
 
 void initCommands(Console *console); // Implementation in commands.cpp

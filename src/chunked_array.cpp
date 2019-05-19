@@ -314,13 +314,14 @@ void reserve(ChunkedArray<T> *array, smm desiredSize)
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
 template<typename T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex, bool wrapAround)
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex, bool wrapAround, bool goBackwards)
 {
 	ChunkedArrayIterator<T> iterator = {};
 
 	iterator.array = array;
 	iterator.itemsIterated = 0;
 	iterator.wrapAround = wrapAround;
+	iterator.goBackwards = goBackwards;
 
 	// If the array is empty, we can skip some work.
 	iterator.isDone = array->count == 0;
@@ -334,36 +335,66 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex, bool w
 	return iterator;
 }
 
+
 template<typename T>
 void next(ChunkedArrayIterator<T> *iterator)
 {
 	if (iterator->isDone) return;
 
-	iterator->indexInChunk++;
 	iterator->itemsIterated++;
-
 	if (iterator->itemsIterated >= iterator->array->count)
 	{
 		// We've seen each index once
 		iterator->isDone = true;
 	}
 
-	if (iterator->indexInChunk >= iterator->currentChunk->count)
+	if (iterator->goBackwards)
 	{
-		iterator->currentChunk = iterator->currentChunk->nextChunk;
-		iterator->indexInChunk = 0;
+		iterator->indexInChunk--;
 
-		if (iterator->currentChunk == null)
+		if (iterator->indexInChunk < 0)
 		{
-			if (iterator->wrapAround)
+			// Prev chunk
+			iterator->currentChunk = iterator->currentChunk->prevChunk;
+
+			if (iterator->currentChunk == null)
 			{
-				// Wrap to the beginning!
-				iterator->currentChunk = &iterator->array->firstChunk;
+				if (iterator->wrapAround)
+				{
+					// Wrap to the beginning!
+					iterator->currentChunk = iterator->array->lastChunk;
+					iterator->indexInChunk = iterator->currentChunk->count - 1;
+				}
+				else
+				{
+					// We're not wrapping, so we're done
+					iterator->isDone = true;
+				}
 			}
-			else
+		}
+	}
+	else
+	{
+		iterator->indexInChunk++;
+
+		if (iterator->indexInChunk >= iterator->currentChunk->count)
+		{
+			// Next chunk
+			iterator->currentChunk = iterator->currentChunk->nextChunk;
+			iterator->indexInChunk = 0;
+
+			if (iterator->currentChunk == null)
 			{
-				// We're not wrapping, so we're done
-				iterator->isDone = true;
+				if (iterator->wrapAround)
+				{
+					// Wrap to the beginning!
+					iterator->currentChunk = &iterator->array->firstChunk;
+				}
+				else
+				{
+					// We're not wrapping, so we're done
+					iterator->isDone = true;
+				}
 			}
 		}
 	}

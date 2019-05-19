@@ -6,12 +6,9 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 {
 	if (globalConsole)
 	{
-		String *line = consoleNextOutputLine(globalConsole, style);
-		line->length = MIN(text.length, line->maxLength);
-		for (s32 i=0; i<line->length; i++)
-		{
-			line->chars[i] = text.chars[i];
-		}
+		ConsoleOutputLine *line = appendBlank(&globalConsole->outputLines);
+		line->style = style;
+		line->text = pushString(globalConsole->outputLines.memoryArena, text);
 	}
 }
 
@@ -48,7 +45,7 @@ Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font,
 	return resultRect;
 }
 
-void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f32 maximisedHeight, f32 openSpeed)
+void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed)
 {
 	Console *console = &theConsole;
 	console->currentHeight = 0;
@@ -67,13 +64,7 @@ void initConsole(MemoryArena *debugArena, s32 outputLineCount, f32 openHeight, f
 	initChunkedArray(&console->inputHistory, debugArena, 256);
 	console->inputHistoryCursor = -1;
 
-	console->outputLineCount = outputLineCount;
-	console->outputLines = PushArray(debugArena, ConsoleOutputLine, console->outputLineCount);
-	for (s32 i=0; i < console->outputLineCount; i++)
-	{
-		console->outputLines[i].text = pushString(debugArena, consoleLineLength);
-		console->outputLines[i].style = CLS_Default;
-	}
+	initChunkedArray(&console->outputLines, debugArena, 1024);
 	console->scrollPos = 0;
 
 	initChunkedArray(&console->commands, &globalAppState.systemArena, 64);
@@ -115,9 +106,11 @@ void renderConsole(Console *console, UIState *uiState)
 	textState.pos.y -= 8.0f;
 
 	// print output lines
-	for (s32 i=console->outputLineCount-console->scrollPos-1; i>=0; i--)
+	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
+		!it.isDone;
+		next(&it))
 	{
-		ConsoleOutputLine *line = console->outputLines + WRAP(console->currentOutputLine + i, console->outputLineCount);
+		ConsoleOutputLine *line = get(it);
 		consoleTextOut(&textState, line->text, consoleFont, console->styles[line->style]);
 
 		// If we've gone off the screen, stop!

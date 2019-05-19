@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
 #if BUILD_DEBUG
 	debugInit();
-	initConsole(&globalDebugState->debugArena, 256, 0.2f, 0.9f, 6.0f);
+	initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
 
 	globalDebugState->showDebugData = false;
 #endif

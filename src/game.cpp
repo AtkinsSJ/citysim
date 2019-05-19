@@ -830,7 +830,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			ZoneType zoneType = getZoneAt(city, x, y);
 			if (zoneType != Zone_None)
 			{
-				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, uiState->untexturedShaderID, zoneDefs[zoneType].color);
+				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, rectangleShaderID, zoneDefs[zoneType].color);
 			}
 		}
 	}
@@ -919,7 +919,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				if (color.a > 0.01f)
 				{
-					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 9999.0f, uiState->untexturedShaderID, color);
+					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 9999.0f, rectangleShaderID, color);
 				}
 			}
 		}

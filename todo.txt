@@ -49,9 +49,6 @@ Data structure ideas I had late last night:
     I mean, maybe we want a different data structure than what I've described, but still, constant IDs are a must!
 
     Also probably want to consider what structure best suits other cases too, rather than just using Array always. Eg, ring buffers might be good sometimes.
-- Console text buffer:
-	Also, the console texts can be in a ring buffer! Store it as (line metadata, string data). When adding a line, see if there's room. While there's not, "free" the earliest by jumping ahead to the next one. As long as we don't try and enter a line larger than the buffer, it's fine. (We can just crop it.) Also, think what happens if the buffer becomes empty. (Jump to index 0?)
-
 
 Arrays stuff
 - "markFirstChunkAsFull" is a hack, try to replace it.
@@ -111,6 +108,7 @@ Map generator
 
 Notes:
 Simcity 4 map sizes: 64x64 (~1km), 128x128 (~2km), 256x256 (~4km)
+(Simcity 3000 map size info is harder to find, but apparently the largest is also 256x256 tiles)
 
 -------------------------------------------------
 
