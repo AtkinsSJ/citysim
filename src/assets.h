@@ -43,7 +43,6 @@ struct Shader
 {
 	ShaderType shaderType;
 
-	String shaderHeaderFilename;
 	String vertexShaderFilename;
 	String fragmentShaderFilename;
 

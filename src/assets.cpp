@@ -182,35 +182,18 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_Shader:
 		{
-			Blob headerFile   = readTempFile(asset->shader.shaderHeaderFilename);
 			Blob vertexFile   = readTempFile(asset->shader.vertexShaderFilename);
 			Blob fragmentFile = readTempFile(asset->shader.fragmentShaderFilename);
 			
-			// nb: extra 1 byte each, for newlines between the header and main source
-			smm vertexSize   = headerFile.size + vertexFile.size   + 1;
-			smm fragmentSize = headerFile.size + fragmentFile.size + 1;
-			smm totalSize    = fragmentSize + vertexSize;
-
+			smm totalSize = fragmentFile.size + vertexFile.size;
 			asset->data = allocate(assets, totalSize);
 
-			asset->shader.vertexShader   = makeString((char*)asset->data.memory, truncate32(vertexSize));
-			asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexSize, truncate32(fragmentSize));
+			asset->shader.vertexShader   = makeString((char*)asset->data.memory, truncate32(vertexFile.size));
+			asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexFile.size, truncate32(fragmentFile.size));
 
-			smm offset = 0;
+			memcpy(asset->data.memory,                   vertexFile.memory,   vertexFile.size);
+			memcpy(asset->data.memory + vertexFile.size, fragmentFile.memory, fragmentFile.size);
 
-			memcpy(asset->data.memory + offset, headerFile.memory, headerFile.size);
-			offset += headerFile.size;
-			asset->data.memory[offset++] = '\n';
-			memcpy(asset->data.memory + offset, vertexFile.memory, vertexFile.size);
-			offset += vertexFile.size;
-
-			memcpy(asset->data.memory + offset, headerFile.memory, headerFile.size);
-			offset += headerFile.size;
-			asset->data.memory[offset++] = '\n';
-			memcpy(asset->data.memory + offset, fragmentFile.memory, fragmentFile.size);
-			offset += fragmentFile.size;
-
-			ASSERT(offset == totalSize, "We copied the shader data wrong!");
 
 			asset->state = AssetState_Loaded;
 		} break;
@@ -409,11 +392,10 @@ void addFont(AssetManager *assets, String name, String filename)
 	put(&assets->theme.fontNamesToAssetNames, name, filename);
 }
 
-void addShader(AssetManager *assets, ShaderType shaderID, char *name, char *headerFilename, char *vertFilename, char *fragFilename)
+void addShader(AssetManager *assets, ShaderType shaderID, char *name, char *vertFilename, char *fragFilename)
 {
 	Asset *asset = addAsset(assets, AssetType_Shader, pushString(&assets->assetArena, name), false);
 	asset->shader.shaderType = shaderID;
-	asset->shader.shaderHeaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, headerFilename));
 	asset->shader.vertexShaderFilename   = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, vertFilename));
 	asset->shader.fragmentShaderFilename = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Shader, fragFilename));
 }
@@ -513,9 +495,9 @@ void addAssets(AssetManager *assets)
 
 	// TODO: Settings?
 
-	addShader(assets, Shader_Textured,   "textured",   "header.glsl", "textured.vert.glsl",   "textured.frag.glsl");
-	addShader(assets, Shader_Untextured, "untextured", "header.glsl", "untextured.vert.glsl", "untextured.frag.glsl");
-	addShader(assets, Shader_PixelArt,   "pixelart",   "header.glsl", "pixelart.vert.glsl",   "pixelart.frag.glsl");
+	addShader(assets, Shader_Textured,   "textured",   "textured.vert.glsl",   "textured.frag.glsl");
+	addShader(assets, Shader_Untextured, "untextured", "untextured.vert.glsl", "untextured.frag.glsl");
+	addShader(assets, Shader_PixelArt,   "pixelart",   "pixelart.vert.glsl",   "pixelart.frag.glsl");
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)

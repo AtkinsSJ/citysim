@@ -1,3 +1,5 @@
+#version 150
+
 uniform sampler2D uTexture;
 uniform float uScale;
 
