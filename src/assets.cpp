@@ -18,6 +18,12 @@ void initAssetManager(AssetManager *assets)
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"), AssetType_DevKeymap);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"), AssetType_UITheme);
 
+	initHashTable(&assets->directoryNameToType);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "cursors"), AssetType_Cursor);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"), AssetType_BitmapFont);
+	// put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"), AssetType_Shader);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"), AssetType_Texture);
+
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
 	assets->assetMemoryAllocated = 0;
 	assets->maxAssetMemoryAllocated = 0;
@@ -432,54 +438,76 @@ void loadAssets(AssetManager *assets)
 	assets->assetReloadHasJustHappened = true;
 }
 
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType=AssetType_Unknown)
+{
+	String pathToScan;
+	if (subDirectory.length == 0)
+	{
+		pathToScan = myprintf("{0}\\*", {assets->assetsPath}, true);
+	}
+	else
+	{
+		pathToScan = myprintf("{0}\\{1}\\*", {assets->assetsPath, subDirectory}, true);
+	}
+
+	WIN32_FIND_DATA findFileData;
+	HANDLE hFindFile;
+
+	hFindFile = FindFirstFile(pathToScan.chars, &findFileData);
+	if (hFindFile == INVALID_HANDLE_VALUE)
+	{
+		logError("Failed to read directory listing '{0}' (error {1})", {pathToScan, formatInt((u32)GetLastError())});
+	}
+	else
+	{
+		do
+		{
+			if ((findFileData.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_DIRECTORY))
+				|| (findFileData.cFileName[0] == '.'))
+			{
+				 continue;
+			}
+
+			String filename = pushString(&assets->assetArena, findFileData.cFileName);
+			AssetType assetType = manualAssetType;
+
+			// Attempt to categorise the asset based on file extension
+			if (assetType == AssetType_Unknown)
+			{
+				String fileExtension = getFileExtension(filename);
+				AssetType *foundAssetType = find(&assets->fileExtensionToType, fileExtension);
+				assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
+				logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
+			}
+			else
+			{
+				logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
+			}
+
+			addAsset(assets, assetType, filename);
+		}
+		while (FindNextFile(hFindFile, &findFileData));
+		FindClose(hFindFile);
+	}
+}
+
 void addAssets(AssetManager *assets)
 {
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
 	{
 		DEBUG_BLOCK("Read asset directories");
+		addAssetsFromDirectory(assets, nullString);
 
-		String assetsDir = myprintf("{0}\\*", {assets->assetsPath}, true);
-		WIN32_FIND_DATA findFileData;
-		HANDLE hFindFile;
-
-		hFindFile = FindFirstFile(assetsDir.chars, &findFileData);
-		if (hFindFile == INVALID_HANDLE_VALUE)
+		for (auto it = iterate(&assets->directoryNameToType);
+			!it.isDone;
+			next(&it))
 		{
-			logError("Failed to read directory listing '{0}' (error {1})", {assetsDir, formatInt((u32)GetLastError())});
-		}
-		else
-		{
-			do
-			{
-				if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
-					|| (findFileData.cFileName[0] == '.'))
-				{
-					 continue;
-				}
-
-				if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				{
-					logInfo("Found asset directory '{0}'", {makeString(findFileData.cFileName)});
-				}
-				else
-				{
-					String filename = pushString(&assets->assetArena, findFileData.cFileName);
-
-					// Attempt to categorise the asset based on file extension
-					String fileExtension = getFileExtension(filename);
-					AssetType *foundAssetType = find(&assets->fileExtensionToType, fileExtension);
-					AssetType assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
-
-					logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
-					addAsset(assets, assetType, filename);
-				}
-			}
-			while (FindNextFile(hFindFile, &findFileData));
-			FindClose(hFindFile);
+			auto entry = getEntry(it);
+			addAssetsFromDirectory(assets, entry->key, entry->value);
 		}
 	}
 
@@ -488,10 +516,6 @@ void addAssets(AssetManager *assets)
 	addShader(assets, Shader_Textured,   "textured",   "header.glsl", "textured.vert.glsl",   "textured.frag.glsl");
 	addShader(assets, Shader_Untextured, "untextured", "header.glsl", "untextured.vert.glsl", "untextured.frag.glsl");
 	addShader(assets, Shader_PixelArt,   "pixelart",   "header.glsl", "pixelart.vert.glsl",   "pixelart.frag.glsl");
-
-	addAsset(assets, AssetType_Cursor, "default.png");
-	addAsset(assets, AssetType_Cursor, "build.png");
-	addAsset(assets, AssetType_Cursor, "demolish.png");
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)

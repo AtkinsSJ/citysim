@@ -14,7 +14,8 @@ enum AssetType
 	AssetType_TerrainDefs,
 	AssetType_UITheme,
 
-	AssetTypeCount
+	AssetTypeCount,
+	AssetType_Unknown = -1
 };
 
 enum AssetState
@@ -124,6 +125,7 @@ struct AssetManager
 	String userDataPath;
 
 	HashTable<AssetType> fileExtensionToType;
+	HashTable<AssetType> directoryNameToType;
 
 	ChunkedArray<Asset> allAssets;
 
