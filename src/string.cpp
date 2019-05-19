@@ -183,6 +183,7 @@ String nextToken(String input, String *remainder, char splitChar = 0)
 	return firstWord;
 }
 
+// NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String *leftResult, String *rightResult)
 {
 	bool foundDivider = false;
@@ -191,11 +192,17 @@ bool splitInTwo(String input, char divider, String *leftResult, String *rightRes
 	{
 		if (input.chars[i] == divider)
 		{
-			leftResult->chars = input.chars;
-			leftResult->length = i;
+			if (leftResult != null)
+			{
+				leftResult->chars = input.chars;
+				leftResult->length = i;
+			}
 
-			rightResult->chars = input.chars + i + 1;
-			rightResult->length = input.length - i - 1;
+			if (rightResult != null)
+			{
+				rightResult->chars = input.chars + i + 1;
+				rightResult->length = input.length - i - 1;
+			}
 
 			foundDivider = true;
 			break;

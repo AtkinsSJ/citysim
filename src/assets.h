@@ -123,6 +123,8 @@ struct AssetManager
 	String assetsPath;
 	String userDataPath;
 
+	HashTable<AssetType> fileExtensionToType;
+
 	ChunkedArray<Asset> allAssets;
 
 	HashTable<Asset*> assetsByName[AssetTypeCount];

@@ -25,6 +25,30 @@ char *fileAccessModeStrings[] = {
 	"wb"
 };
 
+// Returns the part of 'filename' after the final '.'
+// eg, getFileExtension("foo.bar.baz") would return "baz".
+// If there is no '.', we return an empty String.
+String getFileExtension(String filename)
+{
+	String fileExtension = {};
+
+	s32 length = 0;
+	while ((length < filename.length) && (filename.chars[filename.length - length - 1] != '.'))
+	{
+		length++;
+	}
+
+	if (length == filename.length)
+	{
+		// no extension!
+		length = 0;
+	}
+
+	fileExtension = makeString(filename.chars + filename.length - length, length);
+
+	return fileExtension;
+}
+
 FileHandle openFile(String path, FileAccessMode mode)
 {
 	ASSERT(isNullTerminated(path), "openFile() path must be null-terminated.");

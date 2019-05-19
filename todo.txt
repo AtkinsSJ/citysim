@@ -128,11 +128,12 @@ Split the game code from the platform code
 
 GUI
 - BUG: Text alignment doesn't work when the text wraps onto multiple lines! Each line should align itself horizontally. (So, a multi-line wrapped text with ALIGN_H_CENTRE should have each line centred!)
-- Richer tooltips. Not as fancy as our window-proc stuff, but allow creating a tooltip by adding individual labels (or maybe images too eventually) each of which is styled individually. Actually maybe it should use the same system as windows!
+- Convert Tooltips to a special kind of Window, so that we can reuse the fancy window code.
+	- Window flag for following the mouse
 
 UI styles loaded from a file
 - Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
-- We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtof if I'm lazy.
+- We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtod if I'm lazy.
 
 Audio!
 - Probably use SoLoud, rather than SDL_mixer: http://sol.gfxile.net/soloud/
@@ -165,8 +166,6 @@ String HashTable!
 - Other hashes: http://www.cse.yorku.ca/~oz/hash.html
 
 Console:
-- Why does typing a space not move the caret far enough? I must be measuring the wrong thing.
-	- OK, it's because we want the xAdvance but don't have it by that point. yay
 - Console eats all input events while it is open?
 - Automatic parameter type checking? That might be crazy though.
 
@@ -174,8 +173,8 @@ Return false for isKeyPressed() etc, when the key is a printable character and w
 
 Strings:
 - translation! getString("string_id") return the localised string.
+	- String file managed by assets system
 	- Read strings from a compiled file. (.mo? https://www.gnu.org/software/gettext/manual/html_node/MO-Files.html)
-	- Managed by assets system
 	- Reload correctly
 	- Can switch language at runtime
 
@@ -191,17 +190,11 @@ BUGS:
 FULLSCREEN!
 - It's weird and buggy right now. Probably want to do the FULLSCREEN_DESKTOP flag, with special case code to make it centred on the screen and make sure input works.
 
-Rendering 2.0:
-- At some point, need to distinguish between "flat" sprites (e.g. field)  and "tall" ones (e.g. barn, farmhouse, farmer).
-- Draw things with an offset, defined per-texture-region(?)
-- Probably replace the binary search for glyphs with something better?
-- Handle cursors ourselves? Not sure about latency.
-
-Asset packing:
-- Pack asset PNGs into a set of standard-sized ones, with 1 px of padding around them
-	for the bilinear filtering
-- Store TextureRegion information in a little binary file
-- Read data from these rather than hard-coded filenames
+Sprite Atlas:
+- Take individual sprite .png files and pack them together into a single texture.
+- Pad them with a 1px border equal to whatever the edge pixel of the sprite was.
+- Output the atlas info to a file.
+- Asset system reads the atlas and uses it to populate Sprite assets.
 
 ---------------------------------------------
 NOTES:
@@ -209,7 +202,7 @@ NOTES:
 
 BUILD:
 
-For future reference, here's the build system config for sublime text 3:
+For future reference, here's the build system config (which I'm no longer using) for sublime text 3:
 {
 	"shell_cmd": "build.bat",
 	"working_dir": "${file_path}",

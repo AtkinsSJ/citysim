@@ -9,6 +9,15 @@ void initAssetManager(AssetManager *assets)
 	assets->userDataPath = pushString(&assets->assetArena, userDataPath);
 	SDL_free(userDataPath);
 
+	// NB: We only need to define these for assets in the root assets/ directory
+	// Well, for now at least.
+	// - Sam, 19/05/2019
+	initHashTable(&assets->fileExtensionToType);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "buildings"), AssetType_BuildingDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"), AssetType_TerrainDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"), AssetType_DevKeymap);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"), AssetType_UITheme);
+
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
 	assets->assetMemoryAllocated = 0;
 	assets->maxAssetMemoryAllocated = 0;
@@ -425,12 +434,54 @@ void loadAssets(AssetManager *assets)
 
 void addAssets(AssetManager *assets)
 {
-	addAsset(assets, AssetType_Misc,         "credits.txt");
-	addAsset(assets, AssetType_UITheme,      "ui.theme");
-	addAsset(assets, AssetType_BuildingDefs, "buildings.def");
-	addAsset(assets, AssetType_TerrainDefs,  "terrain.def");
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
+	{
+		DEBUG_BLOCK("Read asset directories");
 
-	addAsset(assets, AssetType_DevKeymap, "dev.keymap");
+		String assetsDir = myprintf("{0}\\*", {assets->assetsPath}, true);
+		WIN32_FIND_DATA findFileData;
+		HANDLE hFindFile;
+
+		hFindFile = FindFirstFile(assetsDir.chars, &findFileData);
+		if (hFindFile == INVALID_HANDLE_VALUE)
+		{
+			logError("Failed to read directory listing '{0}' (error {1})", {assetsDir, formatInt((u32)GetLastError())});
+		}
+		else
+		{
+			do
+			{
+				if ((findFileData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
+					|| (findFileData.cFileName[0] == '.'))
+				{
+					 continue;
+				}
+
+				if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				{
+					logInfo("Found asset directory '{0}'", {makeString(findFileData.cFileName)});
+				}
+				else
+				{
+					String filename = pushString(&assets->assetArena, findFileData.cFileName);
+
+					// Attempt to categorise the asset based on file extension
+					String fileExtension = getFileExtension(filename);
+					AssetType *foundAssetType = find(&assets->fileExtensionToType, fileExtension);
+					AssetType assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
+
+					logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
+					addAsset(assets, assetType, filename);
+				}
+			}
+			while (FindNextFile(hFindFile, &findFileData));
+			FindClose(hFindFile);
+		}
+	}
 
 	// TODO: Settings?
 
