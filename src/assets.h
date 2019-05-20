@@ -159,18 +159,24 @@ Asset *getAsset(AssetManager *assets, s32 assetIndex)
 	return asset;
 }
 
+Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName)
+{
+	Asset **result = find(&assets->assetsByName[type], shortName);
+
+	return (result == null) ? null : *result;
+}
+
 Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 {
 	DEBUG_FUNCTION();
-	Asset **result = find(&assets->assetsByName[type], shortName);
+	Asset *result = getAssetIfExists(assets, type, shortName);
 
 	if (result == null)
 	{
 		logError("Requested asset '{0}' was not found!", {shortName});
-		return null;
 	}
 
-	return *result;
+	return result;
 }
 
 Sprite *getSprite(AssetManager *assets, String name, u32 offset)

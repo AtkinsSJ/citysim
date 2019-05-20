@@ -283,7 +283,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 		// scrolling!
 		if (inputState->wheelY != 0)
 		{
-			console->scrollPos = clamp(console->scrollPos + inputState->wheelY, 0, consoleMaxScrollPos(console));
+			console->scrollPos = clamp(console->scrollPos + (inputState->wheelY * 3), 0, consoleMaxScrollPos(console));
 		}
 
 		renderConsole(console, uiState);

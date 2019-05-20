@@ -60,7 +60,7 @@ Blob allocate(AssetManager *assets, smm size)
 
 Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isAFile=true)
 {
-	Asset *existing = getAsset(assets, type, shortName);
+	Asset *existing = getAssetIfExists(assets, type, shortName);
 	if (existing) return existing;
 
 	Asset *asset = appendBlank(&assets->allAssets);
