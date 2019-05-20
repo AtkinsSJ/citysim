@@ -410,42 +410,35 @@ void loadAssets(AssetManager *assets)
 	assets->assetReloadHasJustHappened = true;
 }
 
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
-	// NB: TEMPORARY, Windows-specific filesystem reading code!!!!!!!
 void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType=AssetType_Unknown)
 {
 	String pathToScan;
 	if (subDirectory.length == 0)
 	{
-		pathToScan = myprintf("{0}\\*", {assets->assetsPath}, true);
+		pathToScan = constructPath({assets->assetsPath, makeString("*")});
 	}
 	else
 	{
-		pathToScan = myprintf("{0}\\{1}\\*", {assets->assetsPath, subDirectory}, true);
+		pathToScan = constructPath({assets->assetsPath, subDirectory, makeString("*")});
 	}
 
-	WIN32_FIND_DATA findFileData;
-	HANDLE hFindFile;
-
-	hFindFile = FindFirstFile(pathToScan.chars, &findFileData);
-	if (hFindFile == INVALID_HANDLE_VALUE)
+	FileInfo fileInfo;
+	DirectoryListingHandle handle = beginDirectoryListing(pathToScan, &fileInfo);
+	if (!handle.isValid)
 	{
-		logError("Failed to read directory listing '{0}' (error {1})", {pathToScan, formatInt((u32)GetLastError())});
+		logError("Failed to read directory listing '{0}' (error {1})", {pathToScan, formatInt(handle.errorCode)});
 	}
 	else
 	{
 		do
 		{
-			if ((findFileData.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_DIRECTORY))
-				|| (findFileData.cFileName[0] == '.'))
+			if ((fileInfo.flags & (FileFlag_Hidden | FileFlag_Directory))
+				|| (fileInfo.filename.chars[0] == '.'))
 			{
 				 continue;
 			}
 
-			String filename = pushString(&assets->assetArena, findFileData.cFileName);
+			String filename = pushString(&assets->assetArena, fileInfo.filename);
 			AssetType assetType = manualAssetType;
 
 			// Attempt to categorise the asset based on file extension
@@ -463,8 +456,7 @@ void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType
 
 			addAsset(assets, assetType, filename);
 		}
-		while (FindNextFile(hFindFile, &findFileData));
-		FindClose(hFindFile);
+		while (nextFileInDirectory(&handle, &fileInfo));
 	}
 }
 

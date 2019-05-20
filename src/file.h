@@ -25,6 +25,34 @@ char *fileAccessModeStrings[] = {
 	"wb"
 };
 
+struct DirectoryListingHandle
+{
+	bool isValid;
+	u32 errorCode;
+
+	union
+	{
+		struct
+		{
+			HANDLE hFile;
+		} windows;
+	};
+};
+
+enum FileFlags
+{
+	FileFlag_Directory = 1 << 0,
+	FileFlag_Hidden    = 1 << 1,
+	FileFlag_ReadOnly  = 1 << 2,
+};
+
+struct FileInfo
+{
+	String filename;
+	u32 flags;
+	smm size;
+};
+
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".
 // If there is no '.', we return an empty String.
@@ -47,6 +75,11 @@ String getFileExtension(String filename)
 	fileExtension = makeString(filename.chars + filename.length - length, length);
 
 	return fileExtension;
+}
+
+String constructPath(std::initializer_list<String> parts)
+{
+	return platform_constructPath(parts);
 }
 
 FileHandle openFile(String path, FileAccessMode mode)
@@ -155,4 +188,18 @@ bool writeFile(String filePath, String contents)
 	}
 
 	return succeeded;
+}
+
+DirectoryListingHandle beginDirectoryListing(String path, FileInfo *result)
+{
+	return platform_beginDirectoryListing(path, result);
+}
+
+bool nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result)
+{
+	ASSERT(handle != null, "Null value given for handle in nextFileInDirectory()");
+	ASSERT(result != null, "Null value given for result in nextFileInDirectory()");
+
+	bool foundAResult = platform_nextFileInDirectory(handle, result);
+	return foundAResult;
 }

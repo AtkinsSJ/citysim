@@ -38,9 +38,9 @@ struct MemoryArena *globalFrameTempArena;
 #include "textinput.h"
 #include "console.h"
 #include "random.h"
-#include "platform.h"
 #include "localisation.h"
 #include "maths.h"
+#include "platform.h"
 #include "file.h"
 #include "settings.h"
 #include "font.h"
@@ -99,6 +99,12 @@ AppState globalAppState;
 #include "settings.cpp"
 #include "game.cpp"
 #include "log.cpp"
+
+#ifdef __linux__
+#include "platform_linux.cpp"
+#else // Windows
+#include "platform_win32.cpp"
+#endif
 
 SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle)
 {
