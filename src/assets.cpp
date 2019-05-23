@@ -415,11 +415,11 @@ void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType
 	String pathToScan;
 	if (subDirectory.length == 0)
 	{
-		pathToScan = constructPath({assets->assetsPath, makeString("*")});
+		pathToScan = constructPath({assets->assetsPath}, true);
 	}
 	else
 	{
-		pathToScan = constructPath({assets->assetsPath, subDirectory, makeString("*")});
+		pathToScan = constructPath({assets->assetsPath, subDirectory}, true);
 	}
 
 	FileInfo fileInfo;

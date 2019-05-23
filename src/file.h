@@ -77,9 +77,9 @@ String getFileExtension(String filename)
 	return fileExtension;
 }
 
-String constructPath(std::initializer_list<String> parts)
+String constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
-	return platform_constructPath(parts);
+	return platform_constructPath(parts, appendWildcard);
 }
 
 FileHandle openFile(String path, FileAccessMode mode)

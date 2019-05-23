@@ -17,6 +17,6 @@ void openUrlUnsafe(char* url);
 struct DirectoryListingHandle;
 struct FileInfo;
 
-String platform_constructPath(std::initializer_list<String> parts);
+String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard);
 DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo *result);
 bool platform_nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result);

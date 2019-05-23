@@ -6,7 +6,7 @@ void openUrlUnsafe(char* url) {
 	ShellExecute(null, "open", url, null, null, SW_SHOWNORMAL);
 }
 
-String platform_constructPath(std::initializer_list<String> parts)
+String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
 	StringBuilder stb = newStringBuilder(256);
 
@@ -17,6 +17,11 @@ String platform_constructPath(std::initializer_list<String> parts)
 			if (it != parts.begin()) append(&stb, '\\');
 			append(&stb, *it);
 		}
+	}
+
+	if (appendWildcard)
+	{
+		append(&stb, "\\*");
 	}
 
 	append(&stb, '\0');
