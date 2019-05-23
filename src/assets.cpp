@@ -3,7 +3,8 @@
 void initAssetManager(AssetManager *assets)
 {
 	*assets = {};
-	assets->assetsPath = pushString(&assets->assetArena, "assets");
+	char *basePath = SDL_GetBasePath();
+	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), makeString("assets")}));
 
 	char *userDataPath = SDL_GetPrefPath("Baffled Badger Games", "CitySim");
 	assets->userDataPath = pushString(&assets->assetArena, userDataPath);
@@ -476,6 +477,79 @@ void addAssets(AssetManager *assets)
 	}
 
 	// TODO: Settings?
+}
+
+void detectAssetFileChanges(AssetManager *assets)
+{
+	// **********************
+	// **********************
+	// **********************
+	// **********************
+	// Windows-specific code, move out to platform code at some point!
+	// **********************
+	// **********************
+	// **********************
+	// **********************
+	bool filesChanged = false;
+
+	if (!assets->assetChangeHandle.isValid)
+	{
+		assets->assetChangeHandle.windows.handle = FindFirstChangeNotification(assets->assetsPath.chars, true, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
+
+		if (assets->assetChangeHandle.windows.handle == INVALID_HANDLE_VALUE)
+		{
+			assets->assetChangeHandle.isValid = false;
+			u32 errorCode = (u32)GetLastError();
+			assets->assetChangeHandle.errorCode = errorCode;
+			logError("Failed to set notification for asset file changes. (Error {0})", {formatInt(errorCode)});
+		}
+		else
+		{
+			assets->assetChangeHandle.isValid = true;
+		}
+	}
+
+	if (assets->assetChangeHandle.isValid)
+	{
+		DWORD waitResult = WaitForSingleObject(assets->assetChangeHandle.windows.handle, 0);
+		switch (waitResult)
+		{
+			case WAIT_FAILED: 
+			{
+				// Something broke
+				assets->assetChangeHandle.isValid = false;
+				u32 errorCode = (u32)GetLastError();
+				assets->assetChangeHandle.errorCode = errorCode;
+				logError("Failed to poll for asset file changes. (Error {0})", {formatInt(errorCode)});
+			} break;
+			case WAIT_TIMEOUT: 
+			{
+				// Nothing to report
+				filesChanged = false;
+			} break;
+			case WAIT_ABANDONED: 
+			{
+				// Something mutex-related, I think we can ignore this?
+				// https://docs.microsoft.com/en-gb/windows/desktop/api/synchapi/nf-synchapi-waitforsingleobject
+			} break;
+			case WAIT_OBJECT_0: 
+			{
+				// We got a result!
+				logInfo("*** An asset file changed!!! ***");
+				filesChanged = true;
+
+				// Re-set the notification
+				if (FindNextChangeNotification(assets->assetChangeHandle.windows.handle) == false)
+				{
+					// something broke
+					assets->assetChangeHandle.isValid = false;
+					u32 errorCode = (u32)GetLastError();
+					assets->assetChangeHandle.errorCode = errorCode;
+					logError("Failed to re-set notification for asset file changes. (Error {0})", {formatInt(errorCode)});
+				}
+			} break;
+		}
+	}
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)

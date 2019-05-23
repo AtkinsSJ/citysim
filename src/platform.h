@@ -13,7 +13,6 @@
 // Only use this for URLs we know for sure are OK.
 void openUrlUnsafe(char* url);
 
-
 struct DirectoryListingHandle;
 struct FileInfo;
 

@@ -101,6 +101,7 @@ struct IndexRange
 struct AssetManager
 {
 	MemoryArena assetArena;
+	DirectoryChangeWatchingHandle assetChangeHandle;
 	bool assetReloadHasJustHappened;
 
 	// TODO: Also include size of the UITheme, somehow.
@@ -148,6 +149,7 @@ struct AssetManager
 
 void loadAsset(AssetManager *assets, Asset *asset);
 void ensureAssetIsLoaded(AssetManager *assets, Asset *asset);
+void detectAssetFileChanges(AssetManager *assets);
 
 // TODO: remove this
 // Also, could then make the assets HashTable store assets directly, instead of pointing into the array!

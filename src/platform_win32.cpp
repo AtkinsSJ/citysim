@@ -16,6 +16,8 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 		{
 			if (it != parts.begin()) append(&stb, '\\');
 			append(&stb, *it);
+			// Trim off a trailing null that might be there.
+			if (stb.buffer[stb.length - 1] == '\0') stb.length--;
 		}
 	}
 

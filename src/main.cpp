@@ -246,6 +246,8 @@ int main(int argc, char *argv[])
 			updateAndRenderConsole(globalConsole, &inputState, uiState);
 		}
 
+		detectAssetFileChanges(assets);
+
 		if (assets->assetReloadHasJustHappened)
 		{
 			applySettings(&appState->settings);

@@ -53,6 +53,20 @@ struct FileInfo
 	smm size;
 };
 
+struct DirectoryChangeWatchingHandle
+{
+	bool isValid;
+	u32 errorCode;
+
+	union
+	{
+		struct
+		{
+			HANDLE handle;
+		} windows;
+	};
+};
+
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".
 // If there is no '.', we return an empty String.
@@ -77,7 +91,7 @@ String getFileExtension(String filename)
 	return fileExtension;
 }
 
-String constructPath(std::initializer_list<String> parts, bool appendWildcard)
+String constructPath(std::initializer_list<String> parts, bool appendWildcard=false)
 {
 	return platform_constructPath(parts, appendWildcard);
 }
@@ -203,3 +217,5 @@ bool nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result)
 	bool foundAResult = platform_nextFileInDirectory(handle, result);
 	return foundAResult;
 }
+
+
