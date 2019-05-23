@@ -12,6 +12,18 @@ void initUITheme(UITheme *theme)
 	initHashTable(&theme->windowStyles);
 }
 
+void freeUITheme(UITheme *theme)
+{
+	freeHashTable(&theme->fontNamesToAssetNames);
+
+	freeHashTable(&theme->buttonStyles);
+	freeHashTable(&theme->labelStyles);
+	freeHashTable(&theme->tooltipStyles);
+	freeHashTable(&theme->messageStyles);
+	freeHashTable(&theme->textBoxStyles);
+	freeHashTable(&theme->windowStyles);
+}
+
 #define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name})
 
 void loadUITheme(AssetManager *assets, Blob data, Asset *asset)

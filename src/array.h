@@ -29,7 +29,7 @@ void initialiseArray(Array<T> *a, s32 initialSize)
 }
 
 template<typename T>
-void free(Array<T> *a)
+void freeArray(Array<T> *a)
 {
 	free(a->items);
 }

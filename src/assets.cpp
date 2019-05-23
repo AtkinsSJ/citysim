@@ -476,15 +476,12 @@ void addAssets(AssetManager *assets)
 	}
 
 	// TODO: Settings?
-
-	// addShader(assets, Shader_Textured,   "textured",   "textured.vert.glsl",   "textured.frag.glsl");
-	// addShader(assets, Shader_Untextured, "untextured", "untextured.vert.glsl", "untextured.frag.glsl");
-	// addShader(assets, Shader_PixelArt,   "pixelart",   "pixelart.vert.glsl",   "pixelart.frag.glsl");
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 {
 	DEBUG_FUNCTION();
+
 	// Preparation
 	consoleWriteLine("Reloading assets...");
 	renderer->unloadAssets(renderer, assets);
@@ -492,14 +489,21 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	SDL_SetCursor(systemWaitCursor);
 	defer { SDL_FreeCursor(systemWaitCursor); };
 
-	// Actual reloading
-
 	// Clear managed assets
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
 		Asset *asset = get(it);
 		unloadAsset(assets, asset);
 	}
+
+	// Delete hash tables, because they get reinitialised in initAssetManager() below. (Otherwise, leaks!)
+	freeHashTable(&assets->fileExtensionToType);
+	freeHashTable(&assets->directoryNameToType);
+	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
+	{
+		freeHashTable(&assets->assetsByName[assetType]);
+	}
+	freeUITheme(&assets->theme);
 
 	// General resetting of Assets system
 	// The "throw everything away and start over" method of reloading. It's dumb but effective!

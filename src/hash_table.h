@@ -43,6 +43,9 @@ template<typename T>
 void clear(HashTable<T> *table);
 
 template<typename T>
+void freeHashTable(HashTable<T> *table);
+
+template<typename T>
 HashTableIterator<T> iterate(HashTable<T> *table);
 
 template<typename T>

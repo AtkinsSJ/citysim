@@ -11,13 +11,14 @@ Handy emojis:
 ------------------------------------------------
 
 At some point we want:
-- Automatic cataloguing of asset files by reading the directory listing.
+✔ Automatic cataloguing of asset files by reading the directory listing.
 ✔ Hash table for lookups
 - Ability to reload an individual file
 - Detect filesystem changes and reload the files that change
 	- Includes being a bit smart about dependant files. eg if a building texture was used, but after the building defs reload, they no longer use that texture, it could be unloaded? But honestly, keeping it around is way simpler and our memory requirements are going to be tiny anyway.
 	- If a file gets deleted, what happens?
 - Eventually, don't "resetMemoryArena(&assets->assetArena); initAssetManager(assets);", keep that data around.
+- There's a ~4KB memory leak each time we reload the assets. Nie dobrze.
 
 ------------------------------------------------
 

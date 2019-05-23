@@ -145,6 +145,16 @@ void clear(HashTable<T> *table)
 }
 
 template<typename T>
+void freeHashTable(HashTable<T> *table)
+{
+	if (table->entries != null)
+	{
+		free(table->entries);
+		*table = {};
+	}
+}
+
+template<typename T>
 HashTableIterator<T> iterate(HashTable<T> *table)
 {
 	HashTableIterator<T> iterator = {};
