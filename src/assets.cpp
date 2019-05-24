@@ -2,7 +2,7 @@
 
 void initAssetManager(AssetManager *assets)
 {
-	*assets = {};
+	ASSERT(assets->assetArena.currentBlock != null, "initAssetManager() called with uninitialised/corrupted memory arena!");
 	char *basePath = SDL_GetBasePath();
 	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), makeString("assets")}));
 
@@ -24,6 +24,11 @@ void initAssetManager(AssetManager *assets)
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"), AssetType_BitmapFont);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"), AssetType_Shader);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"), AssetType_Texture);
+
+
+	// NB: This has to happen just after the last addition to the AssetArena which should remain
+	// across asset reloads. Maybe we should just have multiple arenas? IDK.
+	markResetPosition(&assets->assetArena);
 
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
 	assets->assetMemoryAllocated = 0;
@@ -69,7 +74,7 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 	if (shortName.length != 0)
 	{
 		asset->shortName = shortName;
-		asset->fullName = getAssetPath(assets, asset->type, shortName);
+		asset->fullName = pushString(&assets->assetArena, getAssetPath(assets, asset->type, shortName));
 	}
 	asset->state = AssetState_Unloaded;
 	asset->data.size = 0;
@@ -181,19 +186,6 @@ void loadAsset(AssetManager *assets, Asset *asset)
 		{
 			copyFileIntoAsset(assets, &fileData, asset);
 			splitInTwo(stringFromBlob(fileData), '$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
-
-			// Blob vertexFile   = readTempFile(asset->shader.vertexShaderFilename);
-			// Blob fragmentFile = readTempFile(asset->shader.fragmentShaderFilename);
-			
-			// smm totalSize = fragmentFile.size + vertexFile.size;
-			// asset->data = allocate(assets, totalSize);
-
-			// asset->shader.vertexShader   = makeString((char*)asset->data.memory, truncate32(vertexFile.size));
-			// asset->shader.fragmentShader = makeString((char*)asset->data.memory + vertexFile.size, truncate32(fragmentFile.size));
-
-			// memcpy(asset->data.memory,                   vertexFile.memory,   vertexFile.size);
-			// memcpy(asset->data.memory + vertexFile.size, fragmentFile.memory, fragmentFile.size);
-
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -550,6 +542,11 @@ void detectAssetFileChanges(AssetManager *assets)
 			} break;
 		}
 	}
+
+	if (filesChanged)
+	{
+		// reloadAssets(assets, );
+	}
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
@@ -571,18 +568,20 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	}
 
 	// Delete hash tables, because they get reinitialised in initAssetManager() below. (Otherwise, leaks!)
-	freeHashTable(&assets->fileExtensionToType);
-	freeHashTable(&assets->directoryNameToType);
+	// freeHashTable(&assets->fileExtensionToType);
+	// freeHashTable(&assets->directoryNameToType);
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
-		freeHashTable(&assets->assetsByName[assetType]);
+		clear(&assets->assetsByName[assetType]);
 	}
-	freeUITheme(&assets->theme);
+	// freeUITheme(&assets->theme);
 
 	// General resetting of Assets system
 	// The "throw everything away and start over" method of reloading. It's dumb but effective!
 	resetMemoryArena(&assets->assetArena);
-	initAssetManager(assets);
+	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
+
+	// initAssetManager(assets);
 	addAssets(assets);
 	loadAssets(assets);
 

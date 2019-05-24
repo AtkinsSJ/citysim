@@ -247,7 +247,6 @@ int main(int argc, char *argv[])
 		}
 
 		detectAssetFileChanges(assets);
-
 		if (assets->assetReloadHasJustHappened)
 		{
 			applySettings(&appState->settings);

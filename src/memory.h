@@ -43,8 +43,8 @@ struct MemoryArena
 	MemoryArenaResetState resetState;
 };
 
-// Creates an arena , and pushes a struct on it which contains the arena.
-#define bootstrapArena(containerType, containerName, arenaVarName)         \
+// Creates an arena, and pushes a struct on it which contains the arena.
+#define bootstrapArena(containerType, containerName, arenaVarName)  \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
 	ASSERT(initMemoryArena(&bootstrap, sizeof(containerType)),"Failed to allocate memory for {0} arena!", {makeString(#containerType)});\
