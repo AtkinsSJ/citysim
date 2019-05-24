@@ -6,10 +6,6 @@ void initAssetManager(AssetManager *assets)
 	char *basePath = SDL_GetBasePath();
 	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), makeString("assets")}));
 
-	char *userDataPath = SDL_GetPrefPath("Baffled Badger Games", "CitySim");
-	assets->userDataPath = pushString(&assets->assetArena, userDataPath);
-	SDL_free(userDataPath);
-
 	// NB: We only need to define these for assets in the root assets/ directory
 	// Well, for now at least.
 	// - Sam, 19/05/2019
@@ -18,6 +14,7 @@ void initAssetManager(AssetManager *assets)
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"), AssetType_TerrainDefs);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"), AssetType_DevKeymap);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"), AssetType_UITheme);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "cnf"), AssetType_Settings);
 
 	initHashTable(&assets->directoryNameToType);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "cursors"), AssetType_Cursor);
@@ -387,12 +384,12 @@ void loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 
-	File defaultSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("default-settings.cnf")));
-	File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(assets));
-	loadSettings(&globalAppState.settings, defaultSettingsFile, userSettingsFile);
+	// File defaultSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("default-settings.cnf")));
+	// File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(assets));
+	// loadSettings(&globalAppState.settings, defaultSettingsFile, userSettingsFile);
 
-	// TEMP: Test saving
-	saveSettings(&globalAppState.settings, assets);
+	// // TEMP: Test saving
+	// saveSettings(&globalAppState.settings, assets);
 
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
@@ -567,21 +564,17 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 		unloadAsset(assets, asset);
 	}
 
-	// Delete hash tables, because they get reinitialised in initAssetManager() below. (Otherwise, leaks!)
-	// freeHashTable(&assets->fileExtensionToType);
-	// freeHashTable(&assets->directoryNameToType);
+	// Clear the hash tables
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
 		clear(&assets->assetsByName[assetType]);
 	}
-	// freeUITheme(&assets->theme);
 
 	// General resetting of Assets system
 	// The "throw everything away and start over" method of reloading. It's dumb but effective!
+	// We're now not *quite* throwing everything away.
 	resetMemoryArena(&assets->assetArena);
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
-
-	// initAssetManager(assets);
 	addAssets(assets);
 	loadAssets(assets);
 

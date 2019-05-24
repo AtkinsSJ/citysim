@@ -106,7 +106,7 @@ AppState globalAppState;
 #include "platform_win32.cpp"
 #endif
 
-SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle)
+SDL_Window *initSDL(Settings *settings, const char *windowTitle)
 {
 	SDL_Window *window = 0;
 
@@ -125,9 +125,12 @@ SDL_Window *initSDL(u32 winW, u32 winH, u32 windowFlags, const char *windowTitle
 		else
 		{
 			// Window
-			window = SDL_CreateWindow(windowTitle,
-							SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-							winW, winH,	windowFlags);
+			u32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+			if (!settings->windowed)
+			{
+				windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+			}
+			window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, settings->resolution.x, settings->resolution.y, windowFlags);
 
 			if (!window)
 			{
@@ -166,25 +169,17 @@ int main(int argc, char *argv[])
 
 	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
 
-	//
-	// TODO: Theoretically we'd like to create the window with the desired size and fullscreenness, but
-	// we don't start up the asset system until after SDL is initialised!
-	// The asset system needs a lot of work, honestly. We want to load the settings FIRST, and some
-	// basic required images for the sake of a loading screen, then load the others while displaying
-	// a loading bar of some kind. Also, only reloading assets that have changed, and doing so automatically!
-	//
-	// - Sam, 11/4/2019
-	//
-	SDL_Window *window = initSDL(800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE,
-	                             "Some kind of city builder");
-
-	ASSERT(window != null, "Failed to create window.");
-
-	initSettings(&globalAppState.settings);
 	AssetManager *assets = createAssetManager();
 	addAssets(assets);
 	loadAssets(assets);
 	appState->assets = assets;
+
+	Settings *settings = &globalAppState.settings;
+	initSettings(settings);
+	loadSettings(settings, assets);
+
+	SDL_Window *window = initSDL(settings, "Some kind of city builder");
+	ASSERT(window != null, "Failed to initialise SDL.");
 
 	Renderer *renderer = platform_initializeRenderer(window);
 	ASSERT(renderer->platformRenderer != null, "Failed to initialize renderer.");
@@ -194,31 +189,6 @@ int main(int argc, char *argv[])
 	InputState inputState;
 	initInput(&inputState);
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
-
-
-	// DO TEST STUFF HERE
-
-	// HashTable<char> table = {};
-	// initHashTable(&table);
-	// for (char c = 'A'; c <= 'Z'; c++)
-	// {
-	// 	put(&table, repeatChar(c, 3), c);
-	// }
-	// char *f = find(&table, repeatChar('F', 3));
-	// ASSERT(f != null, "");
-
-	// ChunkedArray<char> chars = {};
-	// initChunkedArray(&chars, globalFrameTempArena, 5);
-	// for (char c = 'A'; c <= 'Z'; c++)
-	// {
-	// 	append(&chars, c);
-	// }
-	// moveItemKeepingOrder(&chars, 0, 1);
-	// moveItemKeepingOrder(&chars, 1, 0);
-	// for (auto it = iterate(&chars); !it.isDone; next(&it))
-	// {
-	// 	logInfo("Char is: {0}", {makeString(get(it), 1)});
-	// }
 
 	UIState *uiState = &appState->uiState;
 	initUiState(uiState, &renderer->uiBuffer, assets, &inputState);
@@ -249,7 +219,6 @@ int main(int argc, char *argv[])
 		detectAssetFileChanges(assets);
 		if (assets->assetReloadHasJustHappened)
 		{
-			applySettings(&appState->settings);
 			cacheUIShaders(uiState, assets);
 		}
 

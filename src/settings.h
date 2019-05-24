@@ -18,12 +18,15 @@ struct Settings
 {
 	HashTable<SettingDef> defs;
 
+	String userDataPath;
+	String userSettingsFilename;
+	String defaultSettingsFilename;
+
+	// The actual settings
 	bool windowed;
 	V2I resolution;
 };
 
-struct AssetManager;
-
-void loadSettings(Settings *settings, File defaultSettingsFile, File userSettingsFile);
+void loadSettings(Settings *settings, struct AssetManager *assets);
 void applySettings(Settings *settings);
-void saveSettings(Settings *settings, AssetManager *assets);
+void saveSettings(Settings *settings);

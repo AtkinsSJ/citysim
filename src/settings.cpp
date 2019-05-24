@@ -16,6 +16,10 @@ void initSettings(Settings *settings)
 	*settings = {};
 	initHashTable(&settings->defs);
 
+	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
+	settings->userSettingsFilename = makeString("settings.cnf");
+	settings->defaultSettingsFilename = makeString("default-settings.cnf");
+
 #define REGISTER_SETTING(settingName, type, count) registerSetting(settings, makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
 
 	REGISTER_SETTING(windowed,   bool, 1);
@@ -24,9 +28,14 @@ void initSettings(Settings *settings)
 #undef REGISTER_SETTING
 }
 
-void loadSettingsFile(Settings *settings, File file)
+inline String getUserSettingsPath(Settings *settings)
 {
-	LineReader reader = readLines(file.name, file.data);
+	return myprintf("{0}{1}", {settings->userDataPath, settings->userSettingsFilename}, true);
+}
+
+void loadSettingsFile(Settings *settings, String name, Blob settingsData)
+{
+	LineReader reader = readLines(name, settingsData);
 
 	while (!isDone(&reader))
 	{
@@ -86,14 +95,17 @@ void loadSettingsFile(Settings *settings, File file)
 	}
 }
 
-void loadSettings(Settings *settings, File defaultSettingsFile, File userSettingsFile)
+void loadSettings(Settings *settings, AssetManager *assets)
 {
-	loadSettingsFile(settings, defaultSettingsFile);
+	Asset *defaultSettings = getAsset(assets, AssetType_Settings, settings->defaultSettingsFilename);
+	ASSERT(defaultSettings != null, "Default settings file missing! This is really bad.");
+	loadSettingsFile(settings, defaultSettings->shortName, defaultSettings->data);
 
+	File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(settings));
 	// User settings might not exist
 	if (userSettingsFile.isLoaded)
 	{
-		loadSettingsFile(settings, userSettingsFile);
+		loadSettingsFile(settings, userSettingsFile.name, userSettingsFile.data);
 	}
 
 	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}", {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y)});
@@ -104,7 +116,7 @@ void applySettings(Settings *settings)
 	resizeWindow(globalAppState.renderer, settings->resolution.x, settings->resolution.y, !settings->windowed);
 }
 
-void saveSettings(Settings *settings, AssetManager *assets)
+void saveSettings(Settings *settings)
 {
 	StringBuilder stb = newStringBuilder(2048);
 	append(&stb, "# User-specific settings file.\n#\n");
@@ -148,7 +160,7 @@ void saveSettings(Settings *settings, AssetManager *assets)
 		append(&stb, '\n');
 	}
 
-	String userSettingsPath = getUserSettingsPath(assets);
+	String userSettingsPath = getUserSettingsPath(settings);
 	String fileData = getString(&stb);
 
 	if (writeFile(userSettingsPath, fileData))

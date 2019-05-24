@@ -19,6 +19,8 @@ At some point we want:
 	- If a file gets deleted, what happens?
 - Eventually, don't "resetMemoryArena(&assets->assetArena); initAssetManager(assets);", keep that data around.
 - There's a ~4KB memory leak each time we reload the assets. Nie dobrze.
+	- Update: We were underestimating the leak, it was bigger than that! But it's now down to 96 bytes, I believe.
+	- Well... I think I just can't trust Resource Monitor for this? The memory usage increases semi-randomly when I just move the window around. ACTUALLY, I wonder if std::out logging is contributing to that? Yeah, just typing any old garbage in the game console makes the "Working Set" value increase sporadically. So, I can't use Windows' own tools, and I can't trust my in-game measurements because they could be buggy! Sigh.
 
 ------------------------------------------------
 

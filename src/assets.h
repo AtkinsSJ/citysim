@@ -8,6 +8,7 @@ enum AssetType
 	AssetType_BuildingDefs,
 	AssetType_Cursor,
 	AssetType_DevKeymap,
+	AssetType_Settings,
 	AssetType_Shader,
 	AssetType_Sprite,
 	AssetType_Texture,
@@ -109,7 +110,6 @@ struct AssetManager
 	smm maxAssetMemoryAllocated;
 
 	String assetsPath;
-	String userDataPath;
 
 	HashTable<AssetType> fileExtensionToType;
 	HashTable<AssetType> directoryNameToType;
@@ -255,14 +255,4 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 inline String getAssetPath(AssetManager *assets, AssetType type, char *shortName)
 {
 	return getAssetPath(assets, type, makeString(shortName));
-}
-
-String getUserDataPath(AssetManager *assets, String shortName)
-{
-	return myprintf("{0}{1}", {assets->userDataPath, shortName}, true);
-}
-
-String getUserSettingsPath(AssetManager *assets)
-{
-	return getUserDataPath(assets, makeString("settings.cnf"));
 }

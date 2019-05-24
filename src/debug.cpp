@@ -189,11 +189,15 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		DebugAssetData *assets = &debugState->assetData;
 		smm totalAssetMemory = assets->assetMemoryAllocated[rfi] + assets->assetsByNameSize[rfi] + assets->arenaTotalSize[rfi];
 		smm usedAssetMemory = assets->assetMemoryAllocated[rfi] + assets->assetsByNameSize[rfi] + assets->arenaUsedSize[rfi];
-		debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)", {
+		debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables", {
 			formatInt(assets->loadedAssetCount[rfi]),
 			formatInt(assets->assetCount[rfi]),
 			formatInt(usedAssetMemory),
-			formatInt(totalAssetMemory)
+			formatInt(totalAssetMemory),
+
+			formatInt(assets->arenaTotalSize[rfi]),
+			formatInt(assets->assetMemoryAllocated[rfi]),
+			formatInt(assets->assetsByNameSize[rfi])
 		}));
 	}
 
