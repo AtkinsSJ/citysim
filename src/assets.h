@@ -110,14 +110,17 @@ struct AssetManager
 	smm maxAssetMemoryAllocated;
 
 	String assetsPath;
-
 	HashTable<AssetType> fileExtensionToType;
 	HashTable<AssetType> directoryNameToType;
 
 	ChunkedArray<Asset> allAssets;
-
 	HashTable<Asset*> assetsByName[AssetTypeCount];
 
+	// TODO: If the theme is an asset, we should remove this direct reference!
+	// Will want to make the UITheme itself a densely-packed struct, rather than a set of hashtables,
+	// so that we can put the whole thing inside the Asset's data blob.
+	// After all, the theme doesn't change after it's loaded. We can use the string identifiers
+	// for linking, and then just use direct IDs maybe? IDK, it's worth a thought.
 	UITheme theme;
 
 	/*
