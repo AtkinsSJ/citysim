@@ -468,7 +468,7 @@ void addAssets(AssetManager *assets)
 	// TODO: Settings?
 }
 
-void detectAssetFileChanges(AssetManager *assets)
+bool detectAssetFileChanges(AssetManager *assets)
 {
 	// **********************
 	// **********************
@@ -540,10 +540,7 @@ void detectAssetFileChanges(AssetManager *assets)
 		}
 	}
 
-	if (filesChanged)
-	{
-		// reloadAssets(assets, );
-	}
+	return filesChanged;
 }
 
 void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)

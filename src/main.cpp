@@ -216,7 +216,11 @@ int main(int argc, char *argv[])
 			updateAndRenderConsole(globalConsole, &inputState, uiState);
 		}
 
-		detectAssetFileChanges(assets);
+		if (detectAssetFileChanges(assets))
+		{
+			reloadAssets(assets, renderer, uiState);
+		}
+
 		if (assets->assetReloadHasJustHappened)
 		{
 			cacheUIShaders(uiState, assets);
