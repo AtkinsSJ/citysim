@@ -175,21 +175,8 @@ Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 
 	if (result == null)
 	{
+		DEBUG_BREAK();
 		logError("Requested asset '{0}' was not found!", {shortName});
-	}
-
-	return result;
-}
-
-Sprite *getSprite(AssetManager *assets, String name, u32 offset)
-{
-	DEBUG_FUNCTION();
-	Sprite *result = null;
-	Asset *asset = getAsset(assets, AssetType_Sprite, name);
-
-	if (asset != null && asset->spriteGroup.count > 0)
-	{
-		result = asset->spriteGroup.sprites + (offset % asset->spriteGroup.count);
 	}
 
 	return result;

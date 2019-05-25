@@ -528,6 +528,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		appState->gameState = initialiseGameState();
 		renderer->worldBuffer.camera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
+
+		refreshBuildingSpriteCache(&buildingDefs, assets);
+		refreshTerrainSpriteCache(&terrainDefs, assets);
 	}
 
 	GameState *gameState = appState->gameState;
@@ -537,6 +540,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{	
 		refreshZoneGrowableBuildingLists(&city->zoneLayer);
 
+		refreshBuildingSpriteCache(&buildingDefs, assets);
 		refreshTerrainSpriteCache(&terrainDefs, assets);
 	}
 
@@ -592,7 +596,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							ghostColor = color255(255,0,0,128);
 						}
 
-						Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
+						Sprite *sprite = getSprite(buildingDef->sprites, 0);
 						pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
 					}
 				} break;
@@ -616,7 +620,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							ghostColor = color255(255,0,0,128);
 						}
 						
-						Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
+						Sprite *sprite = getSprite(buildingDef->sprites, 0);
 						pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
 					}
 				} break;
@@ -645,7 +649,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 							if (canAfford(city, buildCost))
 							{
-								Sprite *sprite = getSprite(assets, buildingDef->spriteName, 0);
+								Sprite *sprite = getSprite(buildingDef->sprites, 0);
 								for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
 								{
 									for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
@@ -811,12 +815,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				TerrainDef *tDef = get(&terrainDefs, t->type);
 
-				// First time through, we haven't cached any of the sprites
-				if (tDef->sprites == null)
-				{
-					refreshTerrainSpriteCache(&terrainDefs, assets);
-				}
-
 				Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
 
 				drawSprite(&renderer->worldBuffer, sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
@@ -859,13 +857,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				drawColor = color255(255,128,128,255);
 			}
 
-			if (true)//building->sprite == null || assets->assetReloadHasJustHappened)
-			{
-				building->sprite = getSprite(assets, def->spriteName, building->spriteOffset);
-			}
-
+			Sprite *sprite = getSprite(def->sprites, building->spriteOffset);
 			V2 drawPos = centre(building->footprint);
-			drawSprite(&renderer->worldBuffer, building->sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
+			drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
 		}
 	}
 

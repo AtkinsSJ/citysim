@@ -24,6 +24,7 @@ struct BuildingDef
 		};
 	};
 	String spriteName;
+	SpriteGroup *sprites;
 	enum DataLayer linkTexturesLayer;
 
 	BuildMethod buildMethod;
@@ -59,13 +60,17 @@ struct Building
 	u32 typeID;
 	Rect2I footprint;
 	u32 spriteOffset; // used as the offset for getSprite
-	Sprite *sprite;
 	
 	s32 currentResidents;
 	s32 currentJobs;
 };
 
+struct City;
+
 void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Blob data, Asset *asset);
+void refreshBuildingSpriteCache(ChunkedArray<BuildingDef> *buildings, AssetManager *assets);
+void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);
+void updateAdjacentBuildingTextures(City *city, Rect2I footprint);
 
 // Returns 0 if not found
 // TODO: use a hashmap!

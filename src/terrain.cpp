@@ -97,6 +97,10 @@ void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager 
 	{
 		TerrainDef *def = get(it);
 
-		def->sprites = getSpriteGroup(assets, def->spriteName);
+		// Account for the "null" terrain
+		if (def->spriteName.length > 0)
+		{
+			def->sprites = getSpriteGroup(assets, def->spriteName);
+		}
 	}
 }

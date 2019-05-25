@@ -232,7 +232,7 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 	return;
 }
 
-void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null)
+void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 {
 	if (building == null) return;
 
@@ -240,8 +240,6 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 	{
 		def = get(&buildingDefs, building->typeID);
 	}
-
-	u32 newSpriteOffset = 0;
 
 	if (def->linkTexturesLayer)
 	{
@@ -267,7 +265,7 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->isPath;
 				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->isPath;
 
-				newSpriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
 
 			case DataLayer_Power:
@@ -282,20 +280,14 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def = nu
 				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->carriesPower;
 				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->carriesPower;
 
-				newSpriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
 		}
 	}
 	else
 	{
 		// Random sprite!
-		newSpriteOffset = randomNext(&globalAppState.cosmeticRandom);
-	}
-
-	if (newSpriteOffset != building->spriteOffset)
-	{
-		building->spriteOffset = newSpriteOffset;
-		building->sprite = null;
+		building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
 	}
 }
 
@@ -335,6 +327,20 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 		{
 			BuildingDef *defR = get(&buildingDefs, buildingD->typeID);
 			if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingD, defR);
+		}
+	}
+}
+
+void refreshBuildingSpriteCache(ChunkedArray<BuildingDef> *buildings, AssetManager *assets)
+{
+	for (auto it = iterate(buildings); !it.isDone; next(&it))
+	{
+		BuildingDef *def = get(it);
+
+		// Account for the "null" building
+		if (def->spriteName.length > 0)
+		{
+			def->sprites = getSpriteGroup(assets, def->spriteName);
 		}
 	}
 }
