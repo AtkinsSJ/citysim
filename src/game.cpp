@@ -536,6 +536,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	if (assets->assetReloadHasJustHappened)
 	{	
 		refreshZoneGrowableBuildingLists(&city->zoneLayer);
+
+		refreshTerrainSpriteCache(&terrainDefs, assets);
 	}
 
 
@@ -807,13 +809,17 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			Terrain *t = terrainAt(city,x,y);
 			if (t->type != 0)
 			{
-				if (t->sprite == null || assets->assetReloadHasJustHappened)
+				TerrainDef *tDef = get(&terrainDefs, t->type);
+
+				// First time through, we haven't cached any of the sprites
+				if (tDef->sprites == null)
 				{
-					TerrainDef *tDef = get(&terrainDefs, t->type);
-					t->sprite = getSprite(assets, tDef->spriteName, t->spriteOffset);
+					refreshTerrainSpriteCache(&terrainDefs, assets);
 				}
 
-				drawSprite(&renderer->worldBuffer, t->sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
+				Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
+
+				drawSprite(&renderer->worldBuffer, sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
 			}
 		}
 	}
@@ -853,7 +859,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				drawColor = color255(255,128,128,255);
 			}
 
-			if (building->sprite == null || assets->assetReloadHasJustHappened)
+			if (true)//building->sprite == null || assets->assetReloadHasJustHappened)
 			{
 				building->sprite = getSprite(assets, def->spriteName, building->spriteOffset);
 			}

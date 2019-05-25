@@ -246,6 +246,8 @@ String readTextureDefinition(LineReader *reader, AssetManager *assets, String to
 
 		addTiledSprites(assets, spriteName, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
 
+		hashString(&spriteName);
+
 		result = spriteName;
 	}
 	else

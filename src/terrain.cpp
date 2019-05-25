@@ -90,3 +90,13 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 		}
 	}
 }
+
+void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager *assets)
+{
+	for (auto it = iterate(terrains); !it.isDone; next(&it))
+	{
+		TerrainDef *def = get(it);
+
+		def->sprites = getSpriteGroup(assets, def->spriteName);
+	}
+}

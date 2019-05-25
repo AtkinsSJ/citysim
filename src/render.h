@@ -66,7 +66,42 @@ struct Renderer
 	void (*free)(Renderer *);
 };
 
-#include "render.cpp"
+inline f32 depthFromY(f32 y)
+{
+	return (y * 0.1f);
+}
+inline f32 depthFromY(u32 y)
+{
+	return depthFromY((f32)y);
+}
+inline f32 depthFromY(s32 y)
+{
+	return depthFromY((f32)y);
+}
+
+void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
+void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
+void sortRenderBuffer(RenderBuffer *buffer);
+
+void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
+void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
+
+inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
+{
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, {}, shaderID, color);
+}
+
+inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
+{
+	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
+	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite->texture, sprite->uv, shaderID, color);
+}
+
+inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color, s32 shaderID)
+{
+	ASSERT(item != null, "Attempted to draw a null RenderItem!");
+	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
+}
 
 // TODO: Some kind of switch to determine which renderer we want to load.
 #include "render_gl.h"

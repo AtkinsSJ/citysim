@@ -195,6 +195,16 @@ Sprite *getSprite(AssetManager *assets, String name, u32 offset)
 	return result;
 }
 
+SpriteGroup *getSpriteGroup(AssetManager *assets, String name)
+{
+	return &getAsset(assets, AssetType_Sprite, name)->spriteGroup;
+}
+
+Sprite *getSprite(SpriteGroup *group, u32 offset)
+{
+	return group->sprites + (offset % group->count);
+}
+
 Shader *getShader(AssetManager *assets, String shaderName)
 {
 	return &getAsset(assets, AssetType_Shader, shaderName)->shader;

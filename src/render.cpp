@@ -1,18 +1,5 @@
 #pragma once
 
-inline f32 depthFromY(f32 y)
-{
-	return (y * 0.1f);
-}
-inline f32 depthFromY(u32 y)
-{
-	return depthFromY((f32)y);
-}
-inline f32 depthFromY(s32 y)
-{
-	return depthFromY((f32)y);
-}
-
 void updateCameraMatrix(Camera *camera)
 {
 	f32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;
@@ -24,7 +11,7 @@ void updateCameraMatrix(Camera *camera)
 	);
 }
 
-void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0))
+void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position)
 {
 	camera->size = size;
 	camera->pos = position;
@@ -114,7 +101,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite())
+void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color)
 {
 	*result = {};
 	result->rect = rect;
@@ -124,23 +111,17 @@ inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *tex
 	result->texture = texture;
 	result->uv = uv;
 	result->shaderID = shaderID;
-}
 
-inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
-{
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, {}, shaderID, color);
-}
+	// DEBUG STUFF
+	if (result->shaderID == 0 && texture != null)
+	{
+		// We had a weird issue where invalid textures are sometimes reaching the renderer, so we'll try to
+		// catch them here instead.
 
-inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
-{
-	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite->texture, sprite->uv, shaderID, color);
-}
-
-void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color, s32 shaderID)
-{
-	ASSERT(item != null, "Attempted to draw a null RenderItem!");
-	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
+		Asset *min = globalAppState.assets->allAssets.firstChunk.items;
+		Asset *max = globalAppState.assets->allAssets.lastChunk->items + globalAppState.assets->allAssets.chunkSize;
+		ASSERT(texture >= min && texture <= max, "Attempted to draw using an invalid texture asset pointer!");
+	}
 }
 
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item)

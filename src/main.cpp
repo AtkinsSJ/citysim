@@ -77,6 +77,7 @@ AppState globalAppState;
 #include "chunked_array.cpp"
 #include "hash_table.cpp"
 #include "assets.cpp"
+#include "render.cpp"
 #include "input.cpp"
 #include "data_file.cpp"
 #include "uitheme.cpp"
