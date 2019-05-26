@@ -72,8 +72,6 @@ inline bool isFullGlyph(char *buffer, s32 glyphStartPos, s32 bufferByteLength)
 // returns 0 (start of the buffer) if can't find the start of the glyph
 s32 findStartOfGlyph(char *buffer, s32 byteOffset)
 {
-	DEBUG_FUNCTION();
-	
 	s32 pos = byteOffset;
 	while ((pos > 0) && !byteIsStartOfGlyph(buffer[pos]) )
 	{
@@ -86,8 +84,6 @@ s32 findStartOfGlyph(char *buffer, s32 byteOffset)
 // returns -1 if no next glyph exists
 s32 findStartOfNextGlyph(char *buffer, s32 byteOffset, s32 bufferByteLength)
 {
-	DEBUG_FUNCTION();
-	
 	s32 pos = byteOffset + 1;
 
 	while ((pos < bufferByteLength) && !byteIsStartOfGlyph(buffer[pos]))
@@ -108,8 +104,6 @@ s32 findStartOfNextGlyph(char *buffer, s32 byteOffset, s32 bufferByteLength)
 // returns 0 if we start mid-way through a glyph
 s32 floorToWholeGlyphs(char *startByte, s32 byteLength)
 {
-	DEBUG_FUNCTION();
-	
 	// @Speed: Should be able to start at the end, find the start of that glyph, then see how many bytes it
 	// is - that's all we need to know to floor it!
 
@@ -135,8 +129,6 @@ s32 floorToWholeGlyphs(char *startByte, s32 byteLength)
 // Counts how many full glyphs are in the buffer
 s32 countGlyphs(char *startByte, s32 byteLength)
 {
-	DEBUG_FUNCTION();
-	
 	s32 glyphCount = 0;
 
 	// Check that the byte we start on is actually a glyph start byte!

@@ -61,7 +61,6 @@ struct DebugCodeData : LinkedListNode<DebugCodeData>
 
 	u32 callCount[DEBUG_FRAMES_COUNT];
 	u64 totalCycleCount[DEBUG_FRAMES_COUNT];
-	u64 averageCycleCount[DEBUG_FRAMES_COUNT];
 };
 
 struct DebugCodeDataWrapper : LinkedListNode<DebugCodeDataWrapper>

@@ -27,7 +27,6 @@ void clearDebugFrame(DebugState *debugState, s32 frameIndex)
 	{
 		codeData->callCount[frameIndex] = 0;
 		codeData->totalCycleCount[frameIndex] = 0;
-		codeData->averageCycleCount[frameIndex] = 0;
 		codeData = codeData->nextNode;
 	}
 }
@@ -257,13 +256,15 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		while (topBlock != &debugState->topCodeBlocksSentinel)
 		{
 			DebugCodeData *code = topBlock->data;
+			f32 totalCycles = (f32)code->totalCycleCount[rfi];
+			f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
 			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)", {
 				formatString(code->name, 40),
 				formatString(formatInt(code->totalCycleCount[rfi]), 16, false),
-				formatString(formatFloat((f32)code->totalCycleCount[rfi] * msPerCycle, 2), 5, false),
+				formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
 				formatString(formatInt(code->callCount[rfi]), 10, false),
-				formatString(formatInt(code->averageCycleCount[rfi]), 16, false),
-				formatString(formatFloat((f32)code->averageCycleCount[rfi] * msPerCycle, 2), 5, false),
+				formatString(formatInt((s32)averageCycles), 16, false),
+				formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
 			}), true);
 			topBlock = topBlock->nextNode;
 		}
@@ -474,7 +475,6 @@ void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
 
 	codeData->callCount[frameIndex]++;
 	codeData->totalCycleCount[frameIndex] += cycleCount;
-	codeData->averageCycleCount[frameIndex] = codeData->totalCycleCount[frameIndex] / codeData->callCount[frameIndex];
 }
 
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn)
