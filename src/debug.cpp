@@ -147,7 +147,7 @@ void initDebugTextState(DebugTextState *textState, UIState *uiState, BitmapFont 
 	textState->uiState = uiState;
 }
 
-void debugTextOut(DebugTextState *textState, String text)
+void debugTextOut(DebugTextState *textState, String text, bool doHighlight = false)
 {
 	s32 align = textState->hAlign;
 	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
@@ -164,6 +164,11 @@ void debugTextOut(DebugTextState *textState, String text)
 	else
 	{
 		textState->pos.y += resultRect.h;
+	}
+
+	if (doHighlight && inRect(resultRect, textState->uiState->uiBuffer->camera.mousePos))
+	{
+		drawRect(textState->uiState->uiBuffer, resultRect, 300 - 10, textState->uiState->untexturedShaderID, color255(255, 255, 0, 128));
 	}
 }
 
@@ -242,21 +247,24 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	// Top code blocks
 	{
 		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}", {
-			formatString("Code", 30), formatString("Total cycles", 20, false),
-			formatString("Calls", 20, false), formatString("Avg Cycles", 20, false)
+			formatString("Code", 40), formatString("Total cycles", 26, false),
+			formatString("Calls", 10, false), formatString("Avg Cycles", 26, false)
 		}));
 
 		debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
 		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.nextNode;
+		f32 msPerCycle = 1000.0f / (f32)cyclesPerSecond;
 		while (topBlock != &debugState->topCodeBlocksSentinel)
 		{
 			DebugCodeData *code = topBlock->data;
-			debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}", {
-				formatString(code->name, 30),
-				formatString(formatInt(code->totalCycleCount[rfi]), 20, false),
-				formatString(formatInt(code->callCount[rfi]), 20, false),
-				formatString(formatInt(code->averageCycleCount[rfi]), 20, false)
-			}));
+			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)", {
+				formatString(code->name, 40),
+				formatString(formatInt(code->totalCycleCount[rfi]), 16, false),
+				formatString(formatFloat((f32)code->totalCycleCount[rfi] * msPerCycle, 2), 5, false),
+				formatString(formatInt(code->callCount[rfi]), 10, false),
+				formatString(formatInt(code->averageCycleCount[rfi]), 16, false),
+				formatString(formatFloat((f32)code->averageCycleCount[rfi] * msPerCycle, 2), 5, false),
+			}), true);
 			topBlock = topBlock->nextNode;
 		}
 	}

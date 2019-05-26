@@ -23,6 +23,8 @@ void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount
 
 bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 {
+	DEBUG_FUNCTION();
+	
 	if (!tileExists(city, x, y)) return false;
 
 	s32 tile = tileIndex(city, x, y);
@@ -40,6 +42,8 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 
 s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 {
+	DEBUG_FUNCTION();
+
 	ZoneDef zoneDef = zoneDefs[zoneType];
 
 	s32 total = 0;
@@ -168,6 +172,8 @@ void markZonesAsEmpty(City *city, Rect2I footprint)
 
 void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
+	DEBUG_FUNCTION();
+	
 	/* 
 		We make some assumptions here, because some building features don't make sense
 		for zoned buildings, and we already checked the footprint with isZoneAcceptable().
@@ -257,17 +263,20 @@ void growSomeZoneBuildings(City *city)
 			// TODO: Better selection than just a random one
 			bool foundAZone = false;
 			V2I zonePos = {};
-			for (auto it = iterate(&layer->emptyRZones, randomInRange(random, truncate32(layer->emptyRZones.count)));
-				!it.isDone;
-				next(&it))
 			{
-				V2I aPos = getValue(it);
-
-				if (isZoneAcceptable(city, Zone_Residential, aPos.x, aPos.y))
+				DEBUG_BLOCK("growSomeZoneBuildings - find a valid zone");
+				for (auto it = iterate(&layer->emptyRZones, randomInRange(random, truncate32(layer->emptyRZones.count)));
+					!it.isDone;
+					next(&it))
 				{
-					zonePos = aPos;
-					foundAZone = true;
-					break;
+					V2I aPos = getValue(it);
+
+					if (isZoneAcceptable(city, Zone_Residential, aPos.x, aPos.y))
+					{
+						zonePos = aPos;
+						foundAZone = true;
+						break;
+					}
 				}
 			}
 
@@ -281,6 +290,7 @@ void growSomeZoneBuildings(City *city)
 			// so we can fit larger buildings there if possible.
 			Rect2I zoneFootprint = irectXYWH(zonePos.x, zonePos.y, 1, 1);
 			{
+				DEBUG_BLOCK("growSomeZoneBuildings - expand rect");
 				// Gradually expand from zonePos outwards, checking if there is available, zoned space
 
 				bool tryX = randomBool(random);
@@ -348,21 +358,25 @@ void growSomeZoneBuildings(City *city)
 			BuildingDef *buildingDef = null;
 			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
 
-			// Choose a random building, then carry on checking buildings until one is acceptable
-			for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, truncate32(layer->rGrowableBuildings.count)));
-				!it.isDone;
-				next(&it))
 			{
-				BuildingDef *aDef = get(&buildingDefs, getValue(it));
+				DEBUG_BLOCK("growSomeZoneBuildings - pick a building def");
 
-				// Cap residents
-				if (aDef->residents > maximumResidents) continue;
+				// Choose a random building, then carry on checking buildings until one is acceptable
+				for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, truncate32(layer->rGrowableBuildings.count)));
+					!it.isDone;
+					next(&it))
+				{
+					BuildingDef *aDef = get(&buildingDefs, getValue(it));
 
-				// Cap based on size
-				if (aDef->width > zoneFootprint.w || aDef->height > zoneFootprint.h) continue;
-				
-				buildingDef = aDef;
-				break;
+					// Cap residents
+					if (aDef->residents > maximumResidents) continue;
+
+					// Cap based on size
+					if (aDef->width > zoneFootprint.w || aDef->height > zoneFootprint.h) continue;
+					
+					buildingDef = aDef;
+					break;
+				}
 			}
 
 			if (buildingDef)

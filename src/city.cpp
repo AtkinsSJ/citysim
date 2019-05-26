@@ -27,6 +27,8 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
+	DEBUG_FUNCTION();
+	
 	s32 buildingArrayIndex = truncate32(city->buildings.count);
 	Building *building = appendBlank(&city->buildings);
 	building->id = ++city->highestBuildingID;
@@ -53,6 +55,8 @@ void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 
 
 void generateTerrain(City *city)
 {
+	DEBUG_FUNCTION();
+	
 	u32 tGround = findTerrainTypeByName(makeString("Ground"));
 	u32 tWater  = findTerrainTypeByName(makeString("Water"));
 
@@ -99,6 +103,8 @@ void spend(City *city, s32 cost)
 
 bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, s32 left, s32 top, bool isAttemptingToBuild = false)
 {
+	DEBUG_FUNCTION();
+	
 	BuildingDef *def = get(&buildingDefs, selectedBuildingTypeID);
 
 	// Can we afford to build this?
@@ -165,6 +171,8 @@ bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, 
  */
 bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s32 top, bool showBuildErrors)
 {
+	DEBUG_FUNCTION();
+	
 	if (!canPlaceBuilding(uiState, city, buildingTypeID, left, top, showBuildErrors))
 	{
 		return false;
@@ -242,6 +250,8 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 
 s32 calculateBuildCost(City *city, u32 buildingTypeID, Rect2I area)
 {
+	DEBUG_FUNCTION();
+	
 	BuildingDef *def = get(&buildingDefs, buildingTypeID);
 	s32 totalCost = 0;
 
@@ -261,6 +271,8 @@ s32 calculateBuildCost(City *city, u32 buildingTypeID, Rect2I area)
 
 void placeBuildingRect(UIState *uiState, City *city, u32 buildingTypeID, Rect2I area)
 {
+	DEBUG_FUNCTION();
+	
 	BuildingDef *def = get(&buildingDefs, buildingTypeID);
 
 	s32 cost = calculateBuildCost(city, buildingTypeID, area);
@@ -281,6 +293,8 @@ void placeBuildingRect(UIState *uiState, City *city, u32 buildingTypeID, Rect2I 
 // NB: Only for use withing demolishRect()!
 bool demolishTile(UIState *uiState, City *city, V2I position)
 {
+	DEBUG_FUNCTION();
+	
 	if (!tileExists(city, position.x, position.y)) return true;
 
 	u32 posTI = tileIndex(city, position.x, position.y);
@@ -391,6 +405,8 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 
 s32 calculateDemolitionCost(City *city, Rect2I area)
 {
+	DEBUG_FUNCTION();
+	
 	s32 total = 0;
 
 	// Terrain clearing cost
@@ -423,7 +439,9 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	return total;
 }
 
-bool demolishRect(UIState *uiState, City *city, Rect2I area) {
+bool demolishRect(UIState *uiState, City *city, Rect2I area)
+{
+	DEBUG_FUNCTION();
 
 	s32 cost = calculateDemolitionCost(city, area);
 	if (!canAfford(city, cost)) {
@@ -447,6 +465,8 @@ bool demolishRect(UIState *uiState, City *city, Rect2I area) {
 
 void calculateDemand(City *city)
 {
+	DEBUG_FUNCTION();
+	
 	// Ratio of residents to job should be roughly 3 : 1
 
 	// TODO: We want to consider AVAILABLE jobs/residents, not TOTAL ones.
@@ -469,6 +489,8 @@ void calculateDemand(City *city)
  */
 s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 {
+	DEBUG_FUNCTION();
+	
 	s32 result = s32Max;
 
 	if (isPathable(city, x, y))

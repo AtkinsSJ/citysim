@@ -43,6 +43,8 @@ void reverseString(char* first, u32 length)
 
 bool asInt(String string, s64 *result)
 {
+	DEBUG_FUNCTION();
+	
 	bool succeeded = string.length > 0;
 
 	if (succeeded)
@@ -89,6 +91,8 @@ bool asInt(String string, s64 *result)
 
 bool asBool(String string, bool *result)
 {
+	DEBUG_FUNCTION();
+	
 	bool succeeded = string.length > 0;
 
 	if (equals(string, "true"))
@@ -109,6 +113,8 @@ bool asBool(String string, bool *result)
 
 s32 countTokens(String input)
 {
+	DEBUG_FUNCTION();
+	
 	s32 result = 0;
 
 	s32 position = 0;
@@ -139,6 +145,8 @@ s32 countTokens(String input)
 // Otherwise, we stop at the first whitespace character, determined by isWhitespace()
 String nextToken(String input, String *remainder, char splitChar = 0)
 {
+	DEBUG_FUNCTION();
+	
 	String firstWord = input;
 	firstWord.length = 0;
 
@@ -186,6 +194,8 @@ String nextToken(String input, String *remainder, char splitChar = 0)
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String *leftResult, String *rightResult)
 {
+	DEBUG_FUNCTION();
+	
 	bool foundDivider = false;
 
 	for (s32 i=0; i < input.length; i++)
@@ -221,6 +231,8 @@ bool splitInTwo(String input, char divider, String *leftResult, String *rightRes
  */
 String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate)
 {
+	DEBUG_FUNCTION();
+	
 	String result;
 
 	StringBuilder stb = newStringBuilder(format.length * 2);
@@ -300,6 +312,8 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 String formatInt(u64 value, u8 base)
 {
+	DEBUG_FUNCTION();
+	
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	s32 arraySize = 64;
 	char *temp = PushArray(globalFrameTempArena, char, arraySize); // Worst case is base 1, which is 64 characters!
@@ -320,6 +334,8 @@ String formatInt(u64 value, u8 base)
 
 String formatInt(s64 value, u8 base)
 {
+	DEBUG_FUNCTION();
+	
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	s32 arraySize = 65;
 	char *temp = PushArray(globalFrameTempArena, char, arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
@@ -351,6 +367,8 @@ String formatInt(s64 value, u8 base)
 // TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
 String formatFloat(f64 value, s32 decimalPlaces)
 {
+	DEBUG_FUNCTION();
+	
 	String formatString = myprintf("%.{0}f\0", {formatInt(decimalPlaces)});
 
 	s32 length = 100; // TODO: is 100 enough?
@@ -362,6 +380,8 @@ String formatFloat(f64 value, s32 decimalPlaces)
 
 String formatString(String value, s32 length, bool alignLeft, char paddingChar)
 {
+	DEBUG_FUNCTION();
+	
 	if ((value.length == length) || (length == -1)) return value;
 
 	if (length < value.length)
