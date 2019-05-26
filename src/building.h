@@ -76,6 +76,8 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint);
 // TODO: use a hashmap!
 s32 findBuildingTypeByName(String name)
 {
+	DEBUG_FUNCTION();
+	
 	s32 result = 0;
 
 	// TODO: Use an iterator instead, it's faster!

@@ -11,70 +11,19 @@ struct LinkedListNode
 };
 
 template<typename T>
-void initLinkedListSentinel(T *sentinel)
-{
-	sentinel->prevNode = sentinel;
-	sentinel->nextNode = sentinel;
-}
+void initLinkedListSentinel(T *sentinel);
 
 template<typename T>
-void addToLinkedList(T *item, T *sentinel)
-{
-	item->prevNode = sentinel->prevNode;
-	item->nextNode = sentinel;
-	item->prevNode->nextNode = item;
-	item->nextNode->prevNode = item;
-}
+void addToLinkedList(T *item, T *sentinel);
 
 template<typename T>
-void removeFromLinkedList(T *item)
-{
-	item->nextNode->prevNode = item->prevNode;
-	item->prevNode->nextNode = item->nextNode;
-
-	item->nextNode = item->prevNode = item;
-}
+void removeFromLinkedList(T *item);
 
 template<typename T>
-bool linkedListIsEmpty(LinkedListNode<T> *sentinel)
-{
-	bool hasNext = (sentinel->nextNode != sentinel);
-	bool hasPrev = (sentinel->prevNode != sentinel);
-	ASSERT(hasNext == hasPrev, "Linked list is corrupted!");
-	return !hasNext;
-}
+bool linkedListIsEmpty(LinkedListNode<T> *sentinel);
 
 template<typename T>
-void moveAllNodes(T *srcSentinel, T *destSentinel)
-{
-	if (linkedListIsEmpty(srcSentinel)) return;
-
-	while (!linkedListIsEmpty(srcSentinel))
-	{
-		T *node = srcSentinel->nextNode;
-		removeFromLinkedList(node);
-		addToLinkedList(node, destSentinel);
-	}
-
-	srcSentinel->nextNode = srcSentinel->prevNode = srcSentinel;
-}
+void moveAllNodes(T *srcSentinel, T *destSentinel);
 
 template<typename T>
-s32 countNodes(T *sentinel)
-{
-	s32 result = 0;
-
-	if (sentinel != null)
-	{
-		T *cursor = sentinel->nextNode;
-
-		while (cursor != sentinel)
-		{
-			ASSERT(cursor != null, "null node in linked list");
-			cursor = cursor->nextNode;
-			result++;
-		}
-	}
-
-	return result;
-}
+s32 countNodes(T *sentinel);

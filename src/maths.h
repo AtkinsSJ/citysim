@@ -1,8 +1,5 @@
 #pragma once
 
-// maths.h
-#include <math.h>
-
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 

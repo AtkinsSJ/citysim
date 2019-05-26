@@ -29,6 +29,8 @@ void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager 
 // Returns 0 if not found
 s32 findTerrainTypeByName(String name)
 {
+	DEBUG_FUNCTION();
+	
 	s32 result = 0;
 
 	for (s32 terrainID = 1; terrainID < terrainDefs.count; terrainID++)

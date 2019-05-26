@@ -96,6 +96,8 @@ static void nextLine(DrawTextState *state)
 
 static void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 {
+	DEBUG_FUNCTION();
+	
 	if (state->startOfCurrentWord == 0)
 	{
 		state->startOfCurrentWord = state->endOfCurrentWord;

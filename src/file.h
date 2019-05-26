@@ -98,6 +98,8 @@ String constructPath(std::initializer_list<String> parts, bool appendWildcard=fa
 
 FileHandle openFile(String path, FileAccessMode mode)
 {
+	DEBUG_FUNCTION();
+	
 	ASSERT(isNullTerminated(path), "openFile() path must be null-terminated.");
 
 	FileHandle result = {};
@@ -110,6 +112,8 @@ FileHandle openFile(String path, FileAccessMode mode)
 
 void closeFile(FileHandle *file)
 {
+	DEBUG_FUNCTION();
+	
 	if (file->isOpen)
 	{
 		SDL_RWclose(file->sdl_file);
@@ -134,6 +138,8 @@ smm getFileSize(FileHandle *file)
 
 smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
 {
+	DEBUG_FUNCTION();
+	
 	smm bytesRead = 0;
 
 	if (file->isOpen)
@@ -146,6 +152,8 @@ smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
 
 File readFile(MemoryArena *memoryArena, String filePath)
 {
+	DEBUG_FUNCTION();
+	
 	File result = {};
 	result.name = filePath;
 	result.isLoaded = false;
@@ -186,6 +194,8 @@ inline Blob readTempFile(String filePath)
 
 bool writeFile(String filePath, String contents)
 {
+	DEBUG_FUNCTION();
+	
 	bool succeeded = false;
 
 	FileHandle file = openFile(filePath, FileAccess_Write);

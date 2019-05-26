@@ -37,15 +37,7 @@ inline String stringFromBlob(Blob blob)
 	return makeString((char*)blob.memory, truncate32(blob.size));
 }
 
-void copyString(char *src, s32 srcLength, String *dest)
-{
-	s32 copyLength = MIN(srcLength, dest->maxLength);
-	for (s32 i=0; i<copyLength; i++)
-	{
-		dest->chars[i] = src[i];
-	}
-	dest->length = copyLength;
-}
+void copyString(char *src, s32 srcLength, String *dest);
 inline void copyString(String src, String *dest)
 {
 	copyString(src.chars, src.length, dest);
@@ -75,58 +67,14 @@ String pushString(MemoryArena *arena, String src)
 	return s;
 }
 
-bool equals(String a, String b)
-{
-	bool result = true;
-
-	if (a.length != b.length)
-	{
-		result = false;
-	}
-	else
-	{
-		for (s32 i = 0; i<b.length; i++)
-		{
-			if (a.chars[i] != b.chars[i])
-			{
-				result = false;
-				break;
-			}
-		}
-	}
-
-	return result;
-}
-
+bool equals(String a, String b);
 inline bool equals(String a, char *b)
 {
 	return equals(a, makeString(b));
 }
 
 // Like strcmp()
-s32 compare(String a, String b)
-{
-	bool foundDifference = false;
-	s32 result = 0;
-	for (s32 i = 0; i<b.length; i++)
-	{
-		s32 diff = a.chars[i] - b.chars[i];
-		if (diff != 0)
-		{
-			result = diff;
-			foundDifference = true;
-			break;
-		}
-	}
-
-	if (!foundDifference && a.length != b.length)
-	{
-		result = a.length - b.length;
-	}
-
-	return result;
-}
-
+s32 compare(String a, String b);
 u32 hashString(String *s);
 
 inline bool isWhitespace(unichar uChar, bool countNewlines=true)

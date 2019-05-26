@@ -93,6 +93,8 @@ struct UIState
 
 void setCursor(UIState *uiState, String cursorName)
 {
+	DEBUG_FUNCTION();
+	
 	Asset *newCursorAsset = getAsset(uiState->assets, AssetType_Cursor, cursorName);
 	if (newCursorAsset != null)
 	{

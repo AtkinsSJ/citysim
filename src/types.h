@@ -179,6 +179,14 @@ struct Rect2 {
 	};
 };
 
+struct Matrix4 {
+	union {
+		f32 v[4][4]; // Column-major order, so [COLUMN][ROW]
+		f32 flat[4*4];
+	};
+};
+
+
 /**********************************************
 	General
  **********************************************/

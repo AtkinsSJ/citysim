@@ -29,6 +29,18 @@ inline String trim(String input)
 	return trimStart(trimEnd(input));
 }
 
+void copyString(char *src, s32 srcLength, String *dest)
+{
+	DEBUG_FUNCTION();
+	
+	s32 copyLength = MIN(srcLength, dest->maxLength);
+	for (s32 i=0; i<copyLength; i++)
+	{
+		dest->chars[i] = src[i];
+	}
+	dest->length = copyLength;
+}
+
 void reverseString(char* first, u32 length)
 {
 	u32 flips = length / 2;
@@ -39,6 +51,78 @@ void reverseString(char* first, u32 length)
 		first[n] = first[length-1-n];
 		first[length-1-n] = temp;
 	}
+}
+
+bool equals(String a, String b)
+{
+	bool result = true;
+
+	if (a.length != b.length)
+	{
+		result = false;
+	}
+	else
+	{
+		for (s32 i = 0; i<b.length; i++)
+		{
+			if (a.chars[i] != b.chars[i])
+			{
+				result = false;
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+s32 compare(String a, String b)
+{
+	DEBUG_FUNCTION();
+	
+	bool foundDifference = false;
+	s32 result = 0;
+	for (s32 i = 0; i<b.length; i++)
+	{
+		s32 diff = a.chars[i] - b.chars[i];
+		if (diff != 0)
+		{
+			result = diff;
+			foundDifference = true;
+			break;
+		}
+	}
+
+	if (!foundDifference && a.length != b.length)
+	{
+		result = a.length - b.length;
+	}
+
+	return result;
+}
+
+u32 hashString(String *s)
+{
+	DEBUG_FUNCTION();
+
+	u32 result = s->hash;
+
+	if (!s->hasHash)
+	{
+		// FNV-1a hash
+		// http://www.isthe.com/chongo/tech/comp/fnv/
+		result = 2166136261;
+		for (s32 i = 0; i < s->length; i++)
+		{
+			result ^= s->chars[i];
+			result *= 16777619;
+		}
+
+		s->hash = result;
+		s->hasHash = true;
+	}
+
+	return result;
 }
 
 bool asInt(String string, s64 *result)
@@ -436,30 +520,6 @@ String repeatChar(char c, s32 length)
 	for (s32 i=0; i<length; i++)
 	{
 		result.chars[i] = c;
-	}
-
-	return result;
-}
-
-u32 hashString(String *s)
-{
-	DEBUG_FUNCTION();
-
-	u32 result = s->hash;
-
-	if (!s->hasHash)
-	{
-		// FNV-1a hash
-		// http://www.isthe.com/chongo/tech/comp/fnv/
-		result = 2166136261;
-		for (s32 i = 0; i < s->length; i++)
-		{
-			result ^= s->chars[i];
-			result *= 16777619;
-		}
-
-		s->hash = result;
-		s->hasHash = true;
 	}
 
 	return result;

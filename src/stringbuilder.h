@@ -20,76 +20,31 @@ struct StringBuilder
 	s32 currentMaxLength;
 };
 
-StringBuilder newStringBuilder(s32 initialSize, MemoryArena *arena=globalFrameTempArena)
-{
-	StringBuilder b = {};
-	b.arena = arena;
-	b.buffer = PushArray(arena, char, initialSize);
-	b.currentMaxLength = initialSize;
-	b.length = 0;
-
-	return b;
-}
+StringBuilder newStringBuilder(s32 initialSize, MemoryArena *arena=globalFrameTempArena);
 
 // NB: As mentioned above, the old buffer is NOT deallocated!
-void expand(StringBuilder *stb, s32 newSize=-1)
-{
-	s32 targetSize = newSize;
-	if (targetSize == -1) targetSize = stb->currentMaxLength * 2;
+void expand(StringBuilder *stb, s32 newSize=-1);
 
-	ASSERT(targetSize > stb->currentMaxLength, "OOPS");
+void append(StringBuilder *stb, char *source, s32 length);
 
-	char *newBuffer = PushArray(stb->arena, char, targetSize);
-	for (s32 i=0; i<stb->currentMaxLength; i++)
-	{
-		newBuffer[i] = stb->buffer[i];
-	}
-
-	stb->buffer = newBuffer;
-	stb->currentMaxLength = targetSize;
-}
-
-void append(StringBuilder *stb, char *source, s32 length)
-{
-	s32 lengthToCopy = length;
-	if ((stb->length + length) > stb->currentMaxLength)
-	{
-		s32 newMaxLength = MAX(stb->length + length, stb->currentMaxLength * 2);
-		expand(stb, newMaxLength);
-	}
-
-	for (s32 i=0; i < lengthToCopy; i++)
-	{
-		stb->buffer[stb->length++] = source[i];
-	}
-}
-
-void append(StringBuilder *stringBuilder, String source)
+inline void append(StringBuilder *stringBuilder, String source)
 {
 	append(stringBuilder, source.chars, source.length);
 }
 
-void append(StringBuilder *stringBuilder, char *source)
+inline void append(StringBuilder *stringBuilder, char *source)
 {
 	append(stringBuilder, source, truncate32(strlen(source)));
 }
 
-void append(StringBuilder *stringBuilder, char source)
+inline void append(StringBuilder *stringBuilder, char source)
 {
 	append(stringBuilder, &source, 1);
 }
 
-void append(StringBuilder *stringBuilder, StringBuilder *source)
+inline void append(StringBuilder *stringBuilder, StringBuilder *source)
 {
 	append(stringBuilder, source->buffer, source->length);
 }
 
-String getString(StringBuilder *stb)
-{
-	String result = {};
-	result.chars = stb->buffer;
-	result.length = stb->length;
-	result.maxLength = stb->length;
-
-	return result;
-}
+String getString(StringBuilder *stb);

@@ -73,7 +73,12 @@ struct AppState
 AppState globalAppState;
 
 #include "memory.cpp"
+#include "array.cpp"
+#include "linked_list.cpp"
+#include "maths.cpp"
+#include "unicode.cpp"
 #include "string.cpp"
+#include "stringbuilder.cpp"
 #include "chunked_array.cpp"
 #include "hash_table.cpp"
 #include "assets.cpp"
