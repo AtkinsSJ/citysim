@@ -17,7 +17,9 @@
 		}
 	}
 
-	#define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (makeString(name))
+	// TODO: Use static strings for the name in other places, if this works well!
+	#define DEBUG_BLOCK(name) static String GLUE(debugBlockName____, __LINE__) = makeString(name, true); DebugBlock GLUE(debugBlock____, __LINE__) (GLUE(debugBlockName____, __LINE__))
+	// #define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (makeString(name))
 	#define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
 	#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
@@ -55,7 +57,7 @@ struct DebugArenaData : LinkedListNode<DebugArenaData>
 	smm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
 };
 
-struct DebugCodeData : LinkedListNode<DebugCodeData>
+struct DebugCodeData
 {
 	String name;
 
@@ -114,10 +116,11 @@ struct DebugState
 	u64 frameEndCycle[DEBUG_FRAMES_COUNT];
 
 	DebugArenaData arenaDataSentinel;
-	DebugCodeData codeDataSentinel;
 	DebugRenderBufferData renderBufferDataSentinel;
 	DebugRenderBufferData *currentRenderBuffer;
 	DebugAssetData assetData; // Not a sentinel because there's only one asset system!
+
+	HashTable<DebugCodeData> codeData;
 
 	// Processed stuff
 	DebugCodeDataWrapper topCodeBlocksFreeListSentinel;

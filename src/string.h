@@ -12,29 +12,35 @@ struct String
 
 const String nullString = {};
 
+u32 hashString(String *s);
 
-inline String makeString(char *chars, s32 length)
+inline String makeString(char *chars, s32 length, bool hash=false)
 {
 	String result = {};
 	result.chars = chars;
 	result.length = length;
 	result.maxLength = result.length;
 
+	if (hash)
+	{
+		hashString(&result);
+	}
+
 	return result;
 }
-inline String makeString(char *chars)
+inline String makeString(char *chars, bool hash=false)
 {
-	return makeString(chars, truncate32(strlen(chars)));
+	return makeString(chars, truncate32(strlen(chars)), hash);
 }
 // const is a huge pain in the bum
-inline String makeString(const char *chars)
+inline String makeString(const char *chars, bool hash=false)
 {
-	return makeString((char*)chars, truncate32(strlen(chars)));
+	return makeString((char*)chars, truncate32(strlen(chars)), hash);
 }
 
-inline String stringFromBlob(Blob blob)
+inline String stringFromBlob(Blob blob, bool hash=false)
 {
-	return makeString((char*)blob.memory, truncate32(blob.size));
+	return makeString((char*)blob.memory, truncate32(blob.size), hash);
 }
 
 void copyString(char *src, s32 srcLength, String *dest);
@@ -75,7 +81,6 @@ inline bool equals(String a, char *b)
 
 // Like strcmp()
 s32 compare(String a, String b);
-u32 hashString(String *s);
 
 inline bool isWhitespace(unichar uChar, bool countNewlines=true)
 {

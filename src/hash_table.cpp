@@ -3,7 +3,6 @@
 template<typename T>
 void expandHashTable(HashTable<T> *table, s32 newCapacity)
 {
-	DEBUG_FUNCTION();
 	ASSERT(newCapacity > 0, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
 	ASSERT(newCapacity > table->capacity, "Attempted to shrink a hash table from {0} to {1}", {formatInt(table->capacity), formatInt(newCapacity)});
 
@@ -50,7 +49,11 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 template<typename T>
 HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 {
-	// DEBUG_FUNCTION();
+	// Expand if necessary
+	if (table->count + 1 > (table->capacity * table->maxLoadFactor))
+	{
+		expandHashTable(table, growHashTableCapacity(table->capacity));
+	}
 
 	u32 hash = hashString(&key);
 	u32 index = hash % table->capacity;
@@ -77,8 +80,6 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 template<typename T>
 T *find(HashTable<T> *table, String key)
 {
-	DEBUG_FUNCTION();
-	
 	if (table->entries == null) return null;
 
 	HashTableEntry<T> *entry = findEntryInternal(table, key);
@@ -90,6 +91,21 @@ T *find(HashTable<T> *table, String key)
 	{
 		return &entry->value;
 	}
+}
+
+template<typename T>
+T *findOrAdd(HashTable<T> *table, String key)
+{
+	HashTableEntry<T> *entry = findEntryInternal(table, key);
+	if (!entry->isOccupied)
+	{
+		table->count++;
+		entry->isOccupied = true;
+		hashString(&key);
+		entry->key = key;
+	}
+
+	return &entry->value;
 }
 
 template<typename T>
@@ -106,13 +122,6 @@ inline s32 growHashTableCapacity(s32 capacity)
 template<typename T>
 T *put(HashTable<T> *table, String key, T value)
 {
-	DEBUG_FUNCTION();
-	// Expand if necessary
-	if (table->count + 1 > (table->capacity * table->maxLoadFactor))
-	{
-		expandHashTable(table, growHashTableCapacity(table->capacity));
-	}
-
 	HashTableEntry<T> *entry = findEntryInternal(table, key);
 
 	if (!entry->isOccupied)

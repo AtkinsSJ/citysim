@@ -8,8 +8,9 @@ void debugInit()
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 
 	initLinkedListSentinel(&globalDebugState->arenaDataSentinel);
-	initLinkedListSentinel(&globalDebugState->codeDataSentinel);
 	initLinkedListSentinel(&globalDebugState->renderBufferDataSentinel);
+
+	initHashTable(&globalDebugState->codeData, 0.5f, 2048);
 
 	initLinkedListSentinel(&globalDebugState->topCodeBlocksFreeListSentinel);
 	initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
@@ -22,12 +23,11 @@ void debugInit()
 
 void clearDebugFrame(DebugState *debugState, s32 frameIndex)
 {
-	DebugCodeData *codeData = debugState->codeDataSentinel.nextNode;
-	while (codeData != &debugState->codeDataSentinel)
+	for (auto it = iterate(&debugState->codeData); !it.isDone; next(&it))
 	{
+		DebugCodeData *codeData = get(it);
 		codeData->callCount[frameIndex] = 0;
 		codeData->totalCycleCount[frameIndex] = 0;
-		codeData = codeData->nextNode;
 	}
 }
 
@@ -47,9 +47,10 @@ void processDebugData(DebugState *debugState)
 	ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel), "List we just freed is not empty!");
 
 	// Calculate new top blocks list
-	DebugCodeData *code = debugState->codeDataSentinel.nextNode;
-	while (code != &debugState->codeDataSentinel)
+	for (auto it = iterate(&debugState->codeData); !it.isDone; next(&it))
 	{
+		DebugCodeData *code = get(it);
+
 		// Find spot on list. If we fail, target is the sentinel so it all still works!
 		DebugCodeDataWrapper *target = debugState->topCodeBlocksSentinel.nextNode;
 		bool foundSmallerItem = false;
@@ -92,8 +93,6 @@ void processDebugData(DebugState *debugState)
 		}
 
 		ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT, "We lost a top code blocks node!");
-
-		code = code->nextNode;
 	}
 
 	// Zero-out new writing frame.
@@ -469,10 +468,11 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 
 void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
 {
-	DebugCodeData *codeData = findOrCreateDebugData(debugState, name, &debugState->codeDataSentinel);
+	DebugCodeData *codeData = findOrAdd(&debugState->codeData, name);
+
+	codeData->name = name;
 
 	u32 frameIndex = debugState->writingFrameIndex;
-
 	codeData->callCount[frameIndex]++;
 	codeData->totalCycleCount[frameIndex] += cycleCount;
 }
