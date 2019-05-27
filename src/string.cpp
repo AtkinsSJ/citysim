@@ -61,6 +61,10 @@ bool equals(String a, String b)
 	{
 		result = false;
 	}
+	else if (a.hasHash && b.hasHash && a.hash != b.hash)
+	{
+		result = false;
+	}
 	else
 	{
 		for (s32 i = 0; i<b.length; i++)

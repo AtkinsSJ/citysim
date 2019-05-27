@@ -17,12 +17,15 @@
 		}
 	}
 
-	// TODO: Use static strings for the name in other places, if this works well!
-	#define DEBUG_BLOCK(name) static String GLUE(debugBlockName____, __LINE__) = makeString(name, true); DebugBlock GLUE(debugBlock____, __LINE__) (GLUE(debugBlockName____, __LINE__))
-	// #define DEBUG_BLOCK(name) DebugBlock GLUE(debugBlock____, __COUNTER__) (makeString(name))
+	#define DEBUG_BLOCK(name) \
+			static String GLUE(debugBlockName____, __LINE__) = makeString(name, true); \
+			DebugBlock GLUE(debugBlock____, __LINE__) (GLUE(debugBlockName____, __LINE__))
 	#define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
 
-	#define DEBUG_ARENA(arena, name) debugTrackArena(globalDebugState, arena, makeString(name))
+	#define DEBUG_ARENA(arena, name) \
+			static String GLUE(debugArenaName____, __LINE__) = makeString(name, true); \
+			debugTrackArena(globalDebugState, arena, GLUE(debugArenaName____, __LINE__))
+
 	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
 	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
 	#define DEBUG_BEGIN_RENDER_BUFFER(buffer) debugStartTrackingRenderBuffer(globalDebugState, buffer)
