@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 
 		// FRAMERATE MONITORING AND CAPPING
 		{
-			DEBUG_BLOCK("SDL_GL_SwapWindow");
+			DEBUG_BLOCK_T("SDL_GL_SwapWindow", DCDT_Renderer);
 			SDL_GL_SwapWindow(renderer->window);
 		}
 

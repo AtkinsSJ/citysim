@@ -17,10 +17,13 @@
 		}
 	}
 
-	#define DEBUG_BLOCK(name) \
+	#define DEBUG_BLOCK_T(name, tag) \
 			static String GLUE(debugBlockName____, __LINE__) = makeString(name, true); \
-			DebugBlock GLUE(debugBlock____, __LINE__) (GLUE(debugBlockName____, __LINE__))
-	#define DEBUG_FUNCTION() DEBUG_BLOCK(__FUNCTION__)
+			DebugBlock GLUE(debugBlock____, __LINE__) (GLUE(debugBlockName____, __LINE__), tag)
+	#define DEBUG_FUNCTION_T(tag) DEBUG_BLOCK_T(__FUNCTION__, tag)
+
+	#define DEBUG_BLOCK(name) DEBUG_BLOCK_T(name, DCDT_Misc)
+	#define DEBUG_FUNCTION() DEBUG_FUNCTION_T(DCDT_Misc)
 
 	#define DEBUG_ARENA(arena, name) \
 			static String GLUE(debugArenaName____, __LINE__) = makeString(name, true); \
@@ -37,8 +40,10 @@
 	// if a variable is only used in expr.
 	#define ASSERT(expr, ...) if (expr) {};
 
-	#define DEBUG_BLOCK(...) 
-	#define DEBUG_FUNCTION(...) 
+	#define DEBUG_BLOCK(...)
+	#define DEBUG_FUNCTION(...)
+	#define DEBUG_BLOCK_T(...)
+	#define DEBUG_FUNCTION_T(...)
 
 	#define DEBUG_ARENA(...)
 	#define DEBUG_ASSETS(...)
@@ -60,9 +65,24 @@ struct DebugArenaData : LinkedListNode<DebugArenaData>
 	smm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
 };
 
+enum DebugCodeDataTag
+{
+	DCDT_Misc,
+	DCDT_Renderer,
+	DCDT_Debugging,
+
+	DebugCodeDataTagCount
+};
+V4 debugCodeDataTagColors[DebugCodeDataTagCount] = {
+	color255(255, 255, 255, 255),
+	color255(  0, 255,   0, 255),
+	color255(255,   0, 255, 255),
+};
+
 struct DebugCodeData
 {
 	String name;
+	DebugCodeDataTag tag;
 
 	u32 callCount[DEBUG_FRAMES_COUNT];
 	u64 totalCycleCount[DEBUG_FRAMES_COUNT];
@@ -132,24 +152,26 @@ struct DebugState
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
-void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount);
+void debugTrackCodeCall(DebugState *debugState, String name, DebugCodeDataTag tag, u64 cycleCount);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugStartTrackingRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer);
 
 struct DebugBlock
 {
 	String name;
+	DebugCodeDataTag tag;
 	u64 startTime;
 
-	DebugBlock(String name)
+	DebugBlock(String name, DebugCodeDataTag tag)
 	{
 		this->name = name;
+		this->tag = tag;
 		this->startTime = SDL_GetPerformanceCounter();
 	}
 
 	~DebugBlock()
 	{
 		u64 cycleCount = SDL_GetPerformanceCounter() - this->startTime;
-		debugTrackCodeCall(globalDebugState, this->name, cycleCount);
+		debugTrackCodeCall(globalDebugState, this->name, this->tag, cycleCount);
 	}
 };

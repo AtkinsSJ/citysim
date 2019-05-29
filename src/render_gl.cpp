@@ -55,6 +55,8 @@ void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum s
 
 static bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader *shaderProgram, GL_ShaderPart shaderPart)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+
 	bool result = false;
 
 	GLuint shaderID = glCreateShader(shaderPart);
@@ -110,6 +112,8 @@ static bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader 
 
 static void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribLocation)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+	
 	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
 	if (*attribLocation == -1)
 	{
@@ -119,6 +123,8 @@ static void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *
 
 static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+	
 	*uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
 	if (*uniformLocation == -1)
 	{
@@ -128,6 +134,8 @@ static void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int
 
 static void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+	
 	glShader->shaderProgramID = glCreateProgram();
 
 	if (glShader->shaderProgramID)
@@ -181,6 +189,8 @@ static void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 
 static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+	
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
@@ -215,6 +225,8 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 
 static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+	
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
@@ -258,7 +270,7 @@ inline GL_ShaderProgram *getCurrentShader(GL_Renderer *renderer)
 
 void useShader(GL_Renderer *renderer, s32 shaderID)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Renderer);
 	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count, "Invalid shader!");
 
 	if (renderer->currentShader != shaderID)
@@ -278,7 +290,7 @@ void useShader(GL_Renderer *renderer, s32 shaderID)
 
 void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Renderer);
 	ASSERT(asset != null, "Attempted to bind a null texture asset!");
 
 	Texture *texture = &asset->texture;
@@ -306,7 +318,7 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 
 void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Renderer);
 	GL_ShaderProgram *activeShader = getCurrentShader(renderer);
 
 	// Fill VBO
@@ -351,7 +363,7 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 
 static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Renderer);
 
 	DEBUG_BEGIN_RENDER_BUFFER(buffer);
 
@@ -384,7 +396,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				}
 
 				{
-					DEBUG_BLOCK("Start new batch");
+					DEBUG_BLOCK_T("Start new batch", DCDT_Renderer);
 					useShader(renderer, item->shaderID);
 					activeShader = getCurrentShader(renderer);
 
@@ -451,17 +463,17 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 static void GL_render(Renderer *renderer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Renderer);
 
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 	
 	// Sort sprites
 	// {
-	// 	DEBUG_BLOCK("SORT WORLD BUFFER");
+	// 	DEBUG_BLOCK_T("SORT WORLD BUFFER", DCDT_Renderer);
 	// 	sortRenderBuffer(&renderer->worldBuffer);
 	// }
 	{
-		DEBUG_BLOCK("SORT UI BUFFER");
+		DEBUG_BLOCK_T("SORT UI BUFFER", DCDT_Renderer);
 		sortRenderBuffer(&renderer->uiBuffer);
 	}
 
@@ -480,11 +492,11 @@ static void GL_render(Renderer *renderer)
 	gl->currentShader = -1;
 
 	{
-		// DEBUG_BLOCK("DRAW WORLD BUFFER");
+		// DEBUG_BLOCK_T("DRAW WORLD BUFFER", DCDT_Renderer);
 		renderBuffer(gl, &renderer->worldBuffer);
 	}
 	{
-		// DEBUG_BLOCK("DRAW UI BUFFER");
+		// DEBUG_BLOCK_T("DRAW UI BUFFER", DCDT_Renderer);
 		renderBuffer(gl, &renderer->uiBuffer);
 	}
 

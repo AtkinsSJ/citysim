@@ -145,15 +145,16 @@ void initDebugTextState(DebugTextState *textState, UIState *uiState, BitmapFont 
 	textState->uiState = uiState;
 }
 
-void debugTextOut(DebugTextState *textState, String text, bool doHighlight = false)
+void debugTextOut(DebugTextState *textState, String text, bool doHighlight = false, V4 *color = null)
 {
 	s32 align = textState->hAlign;
 	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
 	else                            align |= ALIGN_TOP;
 
 	textState->charsLastPrinted = text.length;
+	V4 textColor = (color != null) ? *color : textState->color;
 	Rect2 resultRect = uiText(textState->uiState, textState->font, text, textState->pos,
-	                             align, 300, textState->color, textState->maxWidth);
+	                             align, 300, textColor, textState->maxWidth);
 
 	if (textState->progressUpwards)
 	{
@@ -264,7 +265,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 				formatString(formatInt(code->callCount[rfi]), 10, false),
 				formatString(formatInt((s32)averageCycles), 16, false),
 				formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
-			}), true);
+			}), true, debugCodeDataTagColors + code->tag);
 			topBlock = topBlock->nextNode;
 		}
 	}
@@ -466,11 +467,12 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 	assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
 }
 
-void debugTrackCodeCall(DebugState *debugState, String name, u64 cycleCount)
+void debugTrackCodeCall(DebugState *debugState, String name, DebugCodeDataTag tag, u64 cycleCount)
 {
 	DebugCodeData *codeData = findOrAdd(&debugState->codeData, name);
 
 	codeData->name = name;
+	codeData->tag = tag;
 
 	u32 frameIndex = debugState->writingFrameIndex;
 	codeData->callCount[frameIndex]++;

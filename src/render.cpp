@@ -137,14 +137,14 @@ f32 compareRenderItems(RenderItem *a, RenderItem *b)
 
 void sortRenderBuffer(RenderBuffer *buffer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Renderer);
 	sortInPlace(&buffer->items, compareRenderItems);
 }
 
 #if CHECK_BUFFERS_SORTED
 bool isBufferSorted(RenderBuffer *buffer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Debugging);
 	bool isSorted = true;
 	f32 lastDepth = f32Min;
 	for (u32 i=0; i < buffer->itemCount; i++)

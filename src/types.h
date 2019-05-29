@@ -260,3 +260,5 @@ bool equals(f32 a, f32 b, f32 epsilon)
 {
 	return (fabs(a-b) < epsilon);
 }
+
+V4 color255(u8 r, u8 g, u8 b, u8 a);
