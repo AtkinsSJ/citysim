@@ -262,24 +262,43 @@ inline GL_ShaderProgram *getCurrentShader(GL_Renderer *renderer)
 
 	if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
 	{
-		result = pointerTo(&renderer->shaders, renderer->currentShader);
+		result = renderer->shaders.items + renderer->currentShader;
 	}
 
 	return result;
 }
 
-void useShader(GL_Renderer *renderer, s32 shaderID)
+inline void useShader(GL_Renderer *renderer, s32 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count, "Invalid shader!");
 
 	if (renderer->currentShader != shaderID)
 	{
-		GL_ShaderProgram *targetShader = pointerTo(&renderer->shaders, shaderID);
+		GL_ShaderProgram *oldShader = getCurrentShader(renderer);
+		if (oldShader != null)
+		{
+			glDisableVertexAttribArray(oldShader->aPositionLoc);
+			glDisableVertexAttribArray(oldShader->aColorLoc);
+			if (oldShader->aUVLoc != -1)
+			{
+				glDisableVertexAttribArray(oldShader->aUVLoc);
+			}
+		}
+
+		GL_ShaderProgram *targetShader = renderer->shaders.items + shaderID;
 		if (targetShader->isValid)
 		{
 			glUseProgram(targetShader->shaderProgramID);
 			renderer->currentShader = shaderID;
+
+			glEnableVertexAttribArray(targetShader->aPositionLoc);
+			glEnableVertexAttribArray(targetShader->aColorLoc);
+
+			if (targetShader->aUVLoc != -1)
+			{
+				glEnableVertexAttribArray(targetShader->aUVLoc);
+			}
 		}
 		else
 		{
@@ -295,7 +314,6 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 
 	Texture *texture = &asset->texture;
 
-	glEnable(GL_TEXTURE_2D);
 	glActiveTexture(GL_TEXTURE0 + textureSlot);
 	glBindTexture(GL_TEXTURE_2D, texture->gl.glTextureID);
 
@@ -322,26 +340,15 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	GL_ShaderProgram *activeShader = getCurrentShader(renderer);
 
 	// Fill VBO
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT, "Tried to render too many vertices at once!");
 	GLint vBufferSizeNeeded = vertexCount * sizeof(renderer->vertices[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, renderer->vertices);
 
 	// Fill IBO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
 	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT, "Tried to render too many indices at once!");
 	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
 
-	glEnableVertexAttribArray(activeShader->aPositionLoc);
-	glEnableVertexAttribArray(activeShader->aColorLoc);
-
-	if (activeShader->aUVLoc != -1)
-	{
-		glEnableVertexAttribArray(activeShader->aUVLoc);
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, renderer->VBO);
 	glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
 	glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
 
@@ -350,15 +357,7 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 		glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
 	}
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderer->IBO);
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
-
-	glDisableVertexAttribArray(activeShader->aPositionLoc);
-	glDisableVertexAttribArray(activeShader->aColorLoc);
-	if (activeShader->aUVLoc != -1)
-	{
-		glDisableVertexAttribArray(activeShader->aUVLoc);
-	}
 }
 
 static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
