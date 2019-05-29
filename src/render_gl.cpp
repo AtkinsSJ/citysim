@@ -368,9 +368,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
 		glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
 
-		Asset *texture = texture = firstItem->texture; // We need this set whether we bind the texture or not, otherwise it never gets nulled and we use a separate batch for every zone tile, for example!
-		// Bind new texture if this shader uses textures
-
+		Asset *texture = firstItem->texture;
 		if ((activeShader->uTextureLoc != -1) && (texture != null))
 		{
 			bindTexture(texture, activeShader->uTextureLoc, 0);
@@ -397,7 +395,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 					if (shaderChanged)
 					{
 						activeShader = useShader(renderer, item->shaderID);
-						
+
 						glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
 						glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
 					}
@@ -479,10 +477,6 @@ static void GL_render(Renderer *renderer)
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-	glEnable(GL_TEXTURE_2D);
 
 	gl->currentShader = -1;
 
@@ -494,8 +488,6 @@ static void GL_render(Renderer *renderer)
 		// DEBUG_BLOCK_T("DRAW UI BUFFER", DCDT_Renderer);
 		renderBuffer(gl, &renderer->uiBuffer);
 	}
-
-	glUseProgram(NULL);
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)
@@ -573,6 +565,10 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 		// Init OpenGL
 		if (succeeded)
 		{
+			glEnable(GL_TEXTURE_2D);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+			
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 			glGenBuffers(1, &gl->VBO);
