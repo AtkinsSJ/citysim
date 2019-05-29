@@ -7,8 +7,9 @@ out vec4 vColor;
 
 uniform mat4 uProjectionMatrix;
 
-void main() {
-	gl_Position = uProjectionMatrix * vec4( aPosition.xyz, 1 );
+void main()
+{
+	gl_Position = uProjectionMatrix * vec4(aPosition.xyz, 1);
 	vColor = aColor;
 }
 
@@ -20,6 +21,7 @@ in vec4 vColor;
 
 out vec4 fragColor;
 
-void main() {
+void main()
+{
 	fragColor = vColor;
 }

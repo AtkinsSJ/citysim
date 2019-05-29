@@ -9,8 +9,9 @@ out vec2 vUV;
 
 uniform mat4 uProjectionMatrix;
 
-void main() {
-	gl_Position = uProjectionMatrix * vec4( aPosition.xyz, 1 );
+void main()
+{
+	gl_Position = uProjectionMatrix * vec4(aPosition.xyz, 1);
 	vColor = aColor;
 	vUV = aUV;
 }
@@ -27,7 +28,8 @@ in vec2 vUV;
 
 out vec4 fragColor;
 
-void main() {
+void main()
+{
 	fragColor = vColor;
 
 	// https://hero.handmade.network/forums/code-discussion/t/3618-scaling_in_bitmap_based_games#17223
