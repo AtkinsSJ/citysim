@@ -237,6 +237,8 @@ Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
 
 DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1})
 {
+	DEBUG_FUNCTION();
+
 	DragResult result = {};
 
 	if (dragState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
@@ -281,6 +283,8 @@ DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mou
 
 void inspectTileWindowProc(WindowContext *context, void *userData)
 {
+	DEBUG_FUNCTION();
+
 	GameState *gameState = (GameState *) userData;
 	City *city = &gameState->city;
 
@@ -327,6 +331,8 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 void pauseMenuWindowProc(WindowContext *context, void *userData)
 {
+	DEBUG_FUNCTION();
+
 	userData = userData; // Prevent the dumb warning
 
 	// Centred, with equal button sizes
@@ -519,7 +525,7 @@ void pushOverlayRenderItem(GameState *gameState, Rect2 rect, f32 depth, V4 color
 
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 	
 	if (appState->gameState == null)
 	{
@@ -543,8 +549,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 
 	// Update the simulation... need a smarter way of doing this!
-	calculateDemand(city);
-	growSomeZoneBuildings(city);
+	{
+		DEBUG_BLOCK_T("Update simulation", DCDT_GameUpdate);
+		calculateDemand(city);
+		growSomeZoneBuildings(city);
+	}
 
 
 	// UI!
@@ -566,196 +575,200 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	bool mouseIsOverUI = uiState->mouseInputHandled || inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos);
 	Rect2I demolitionRect = {0,0,-1,-1};
 
-	switch (gameState->actionMode)
 	{
-		case ActionMode_Build:
+		DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
+
+		switch (gameState->actionMode)
 		{
-			BuildingDef *buildingDef = get(&buildingDefs, gameState->selectedBuildingTypeID);
-
-			switch (buildingDef->buildMethod)
+			case ActionMode_Build:
 			{
-				case BuildMethod_Paint:
+				BuildingDef *buildingDef = get(&buildingDefs, gameState->selectedBuildingTypeID);
+
+				switch (buildingDef->buildMethod)
 				{
-					if (!mouseIsOverUI)
+					case BuildMethod_Paint:
 					{
-						Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
-						if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
+						if (!mouseIsOverUI)
 						{
-							placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
-						}
-
-						s32 buildCost = buildingDef->buildCost;
-						showCostTooltip(uiState, city, buildCost);
-
-						V4 ghostColor = color255(128,255,128,255);
-						if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
-						{
-							ghostColor = color255(255,0,0,128);
-						}
-
-						Sprite *sprite = getSprite(buildingDef->sprites, 0);
-						pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
-					}
-				} break;
-
-				case BuildMethod_Plop:
-				{
-					if (!mouseIsOverUI)
-					{
-						Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
-						if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-						{
-							placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
-						}
-
-						s32 buildCost = buildingDef->buildCost;
-						showCostTooltip(uiState, city, buildCost);
-
-						V4 ghostColor = color255(128,255,128,255);
-						if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
-						{
-							ghostColor = color255(255,0,0,128);
-						}
-						
-						Sprite *sprite = getSprite(buildingDef->sprites, 0);
-						pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
-					}
-				} break;
-
-				case BuildMethod_DragLine: // Fallthrough
-				case BuildMethod_DragRect:
-				{
-					DragType dragType = (buildingDef->buildMethod == BuildMethod_DragLine) ? DragLine : DragRect;
-
-					DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
-					s32 buildCost = calculateBuildCost(city, gameState->selectedBuildingTypeID, dragResult.dragRect);
-
-					switch (dragResult.operation)
-					{
-						case DragResult_DoAction:
-						{
-							if (canAfford(city, buildCost))
+							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
+							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 							{
-								placeBuildingRect(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect);
+								placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
 							}
-						} break;
 
-						case DragResult_ShowPreview:
-						{
-							if (!mouseIsOverUI) showCostTooltip(uiState, city, buildCost);
+							s32 buildCost = buildingDef->buildCost;
+							showCostTooltip(uiState, city, buildCost);
 
-							if (canAfford(city, buildCost))
+							V4 ghostColor = color255(128,255,128,255);
+							if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
 							{
-								Sprite *sprite = getSprite(buildingDef->sprites, 0);
-								for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
-								{
-									for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
-									{
-										V4 ghostColor = color255(128,255,128,255);
-										if (!canPlaceBuilding(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
-										{
-											ghostColor = color255(255,0,0,128);
-										}
+								ghostColor = color255(255,0,0,128);
+							}
 
-										Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
-										pushOverlayRenderItem(gameState, rect, depthFromY(dragResult.dragRect.y + y) + 100, ghostColor, pixelArtShaderID, sprite);
+							Sprite *sprite = getSprite(buildingDef->sprites, 0);
+							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
+						}
+					} break;
+
+					case BuildMethod_Plop:
+					{
+						if (!mouseIsOverUI)
+						{
+							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
+							if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+							{
+								placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
+							}
+
+							s32 buildCost = buildingDef->buildCost;
+							showCostTooltip(uiState, city, buildCost);
+
+							V4 ghostColor = color255(128,255,128,255);
+							if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
+							{
+								ghostColor = color255(255,0,0,128);
+							}
+							
+							Sprite *sprite = getSprite(buildingDef->sprites, 0);
+							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
+						}
+					} break;
+
+					case BuildMethod_DragLine: // Fallthrough
+					case BuildMethod_DragRect:
+					{
+						DragType dragType = (buildingDef->buildMethod == BuildMethod_DragLine) ? DragLine : DragRect;
+
+						DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
+						s32 buildCost = calculateBuildCost(city, gameState->selectedBuildingTypeID, dragResult.dragRect);
+
+						switch (dragResult.operation)
+						{
+							case DragResult_DoAction:
+							{
+								if (canAfford(city, buildCost))
+								{
+									placeBuildingRect(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect);
+								}
+							} break;
+
+							case DragResult_ShowPreview:
+							{
+								if (!mouseIsOverUI) showCostTooltip(uiState, city, buildCost);
+
+								if (canAfford(city, buildCost))
+								{
+									Sprite *sprite = getSprite(buildingDef->sprites, 0);
+									for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
+									{
+										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
+										{
+											V4 ghostColor = color255(128,255,128,255);
+											if (!canPlaceBuilding(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
+											{
+												ghostColor = color255(255,0,0,128);
+											}
+
+											Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
+											pushOverlayRenderItem(gameState, rect, depthFromY(dragResult.dragRect.y + y) + 100, ghostColor, pixelArtShaderID, sprite);
+										}
+									}
+								}
+								else
+								{
+									pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+								}
+							} break;
+						}
+					} break;
+				}
+			} break;
+
+			case ActionMode_Zone:
+			{
+				DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
+				s32 zoneCost = calculateZoneCost(city, gameState->selectedZoneID, dragResult.dragRect);
+
+				switch (dragResult.operation)
+				{
+					case DragResult_DoAction:
+					{
+						if (canAfford(city, zoneCost))
+						{
+							placeZone(uiState, city, gameState->selectedZoneID, dragResult.dragRect);
+						}
+					} break;
+
+					case DragResult_ShowPreview:
+					{
+						if (!mouseIsOverUI) showCostTooltip(uiState, city, zoneCost);
+
+						if (canAfford(city, zoneCost))
+						{
+							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
+							{
+								for (s32 x = dragResult.dragRect.x; x < dragResult.dragRect.x+dragResult.dragRect.w; x++)
+								{
+									if (canZoneTile(city, gameState->selectedZoneID, x, y))
+									{
+										pushOverlayRenderItem(gameState, rectXYWHi(x, y, 1, 1), 0, zoneDefs[gameState->selectedZoneID].color, rectangleShaderID);
 									}
 								}
 							}
-							else
-							{
-								pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
-							}
-						} break;
-					}
-				} break;
-			}
-		} break;
-
-		case ActionMode_Zone:
-		{
-			DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
-			s32 zoneCost = calculateZoneCost(city, gameState->selectedZoneID, dragResult.dragRect);
-
-			switch (dragResult.operation)
-			{
-				case DragResult_DoAction:
-				{
-					if (canAfford(city, zoneCost))
-					{
-						placeZone(uiState, city, gameState->selectedZoneID, dragResult.dragRect);
-					}
-				} break;
-
-				case DragResult_ShowPreview:
-				{
-					if (!mouseIsOverUI) showCostTooltip(uiState, city, zoneCost);
-
-					if (canAfford(city, zoneCost))
-					{
-						for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
-						{
-							for (s32 x = dragResult.dragRect.x; x < dragResult.dragRect.x+dragResult.dragRect.w; x++)
-							{
-								if (canZoneTile(city, gameState->selectedZoneID, x, y))
-								{
-									pushOverlayRenderItem(gameState, rectXYWHi(x, y, 1, 1), 0, zoneDefs[gameState->selectedZoneID].color, rectangleShaderID);
-								}
-							}
 						}
-					}
-					else
-					{
-						pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
-					}
-				} break;
-			}
-		} break;
-
-		case ActionMode_Demolish:
-		{
-			DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
-			s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
-			demolitionRect = dragResult.dragRect;
-
-			switch (dragResult.operation)
-			{
-				case DragResult_DoAction:
-				{
-					if (canAfford(city, demolishCost))
-					{
-						demolishRect(uiState, city, dragResult.dragRect);
-					}
-				} break;
-
-				case DragResult_ShowPreview:
-				{
-					if (!mouseIsOverUI) showCostTooltip(uiState, city, demolishCost);
-
-					if (canAfford(city, demolishCost))
-					{
-						// Demolition outline
-						pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(128, 0, 0, 128), rectangleShaderID);
-					}
-					else
-					{
-						pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
-					}
-				} break;
-			}
-		} break;
-
-		case ActionMode_None:
-		{
-			if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
-			{
-				if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
-				{
-					gameState->inspectedTilePosition = mouseTilePos;
-					showWindow(uiState, makeString("Inspect tile"), 250, 200, makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						else
+						{
+							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+						}
+					} break;
 				}
-			}
-		} break;
+			} break;
+
+			case ActionMode_Demolish:
+			{
+				DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
+				s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
+				demolitionRect = dragResult.dragRect;
+
+				switch (dragResult.operation)
+				{
+					case DragResult_DoAction:
+					{
+						if (canAfford(city, demolishCost))
+						{
+							demolishRect(uiState, city, dragResult.dragRect);
+						}
+					} break;
+
+					case DragResult_ShowPreview:
+					{
+						if (!mouseIsOverUI) showCostTooltip(uiState, city, demolishCost);
+
+						if (canAfford(city, demolishCost))
+						{
+							// Demolition outline
+							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(128, 0, 0, 128), rectangleShaderID);
+						}
+						else
+						{
+							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+						}
+					} break;
+				}
+			} break;
+
+			case ActionMode_None:
+			{
+				if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+				{
+					if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
+					{
+						gameState->inspectedTilePosition = mouseTilePos;
+						showWindow(uiState, makeString("Inspect tile"), 250, 200, makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+					}
+				}
+			} break;
+		}
 	}
 
 	if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
@@ -799,70 +812,84 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// Draw terrain
-	for (s32 y = visibleTileBounds.y;
-		y < visibleTileBounds.y + visibleTileBounds.h;
-		y++)
 	{
-		for (s32 x = visibleTileBounds.x;
-			x < visibleTileBounds.x + visibleTileBounds.w;
-			x++)
+		DEBUG_BLOCK_T("Draw terrain", DCDT_GameUpdate);
+		
+		for (s32 y = visibleTileBounds.y;
+			y < visibleTileBounds.y + visibleTileBounds.h;
+			y++)
 		{
-			Terrain *t = terrainAt(city,x,y);
-			if (t->type != 0)
+			for (s32 x = visibleTileBounds.x;
+				x < visibleTileBounds.x + visibleTileBounds.w;
+				x++)
 			{
-				TerrainDef *tDef = get(&terrainDefs, t->type);
+				Terrain *t = terrainAt(city,x,y);
+				if (t->type != 0)
+				{
+					TerrainDef *tDef = get(&terrainDefs, t->type);
 
-				Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
+					Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
 
-				drawSprite(&renderer->worldBuffer, sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
+					drawSprite(&renderer->worldBuffer, sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
+				}
 			}
 		}
 	}
 
 	// Draw zones
-	for (s32 y = visibleTileBounds.y;
-		y < visibleTileBounds.y + visibleTileBounds.h;
-		y++)
 	{
-		for (s32 x = visibleTileBounds.x;
-			x < visibleTileBounds.x + visibleTileBounds.w;
-			x++)
+		DEBUG_BLOCK_T("Draw zones", DCDT_GameUpdate);
+
+		for (s32 y = visibleTileBounds.y;
+			y < visibleTileBounds.y + visibleTileBounds.h;
+			y++)
 		{
-			ZoneType zoneType = getZoneAt(city, x, y);
-			if (zoneType != Zone_None)
+			for (s32 x = visibleTileBounds.x;
+				x < visibleTileBounds.x + visibleTileBounds.w;
+				x++)
 			{
-				drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, rectangleShaderID, zoneDefs[zoneType].color);
+				ZoneType zoneType = getZoneAt(city, x, y);
+				if (zoneType != Zone_None)
+				{
+					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, rectangleShaderID, zoneDefs[zoneType].color);
+				}
 			}
 		}
 	}
 	
-	for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
 	{
-		Building *building = get(it);
-
-		if (rectsOverlap(building->footprint, visibleTileBounds))
+		DEBUG_BLOCK_T("Draw buildings", DCDT_GameUpdate);
+		
+		for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
 		{
-			BuildingDef *def = get(&buildingDefs, building->typeID);
+			Building *building = get(it);
 
-			V4 drawColor = makeWhite();
-
-			if (gameState->actionMode == ActionMode_Demolish
-				&& gameState->worldDragState.isDragging
-				&& rectsOverlap(building->footprint, demolitionRect))
+			if (rectsOverlap(building->footprint, visibleTileBounds))
 			{
-				// Draw building red to preview demolition
-				drawColor = color255(255,128,128,255);
-			}
+				BuildingDef *def = get(&buildingDefs, building->typeID);
 
-			Sprite *sprite = getSprite(def->sprites, building->spriteOffset);
-			V2 drawPos = centre(building->footprint);
-			drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
+				V4 drawColor = makeWhite();
+
+				if (gameState->actionMode == ActionMode_Demolish
+					&& gameState->worldDragState.isDragging
+					&& rectsOverlap(building->footprint, demolitionRect))
+				{
+					// Draw building red to preview demolition
+					drawColor = color255(255,128,128,255);
+				}
+
+				Sprite *sprite = getSprite(def->sprites, building->spriteOffset);
+				V2 drawPos = centre(building->footprint);
+				drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
+			}
 		}
 	}
 
 	// Data layer rendering
 	if (gameState->dataLayerToDraw)
 	{
+		DEBUG_BLOCK_T("Draw data layer", DCDT_GameUpdate);
+
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
