@@ -130,15 +130,21 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item)
 	*appendBlank(&buffer->items) = *item;
 }
 
-f32 compareRenderItems(RenderItem *a, RenderItem *b)
+int compareRenderItems(const void *a, const void *b)
 {
-	return (a->depth - b->depth);
+	f32 depthA = ((RenderItem*)a)->depth;
+	f32 depthB = ((RenderItem*)b)->depth;
+
+	if (depthA < depthB) return -1;
+	if (depthA > depthB) return 1;
+	return 0;
 }
 
 void sortRenderBuffer(RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
-	sortInPlace(&buffer->items, compareRenderItems);
+
+	qsort(buffer->items.items, buffer->items.count, sizeof(RenderItem), compareRenderItems);
 }
 
 #if CHECK_BUFFERS_SORTED

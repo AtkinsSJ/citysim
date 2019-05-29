@@ -65,10 +65,12 @@ T * pointerTo(Array<T> *a, s32 index)
 
 // NB: compare() should act like strcmp(): <0 if A comes before B, 0 if equal, >0 if B comes before A
 template<typename T, typename CompareResult>
-void sortInPlace(Array<T> *a, CompareResult (*compare)(T*, T*))
+void combSort(Array<T> *a, CompareResult (*compare)(T*, T*))
 {
 	DEBUG_FUNCTION();
 	// This is an implementation of the 'comb sort' algorithm, low to high
+
+	// In the end I've decided to just use the standard-library's qsort(), because it's about 8 times faster! 
 
 	s32 gap = a->count;
 	f32 shrink = 1.3f;

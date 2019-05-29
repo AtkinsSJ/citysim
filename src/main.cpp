@@ -2,6 +2,7 @@
 #include <math.h>
 #include <initializer_list>
 #include <time.h> // For seeding RNGs
+#include <stdlib.h> // For qsort()
 
 #ifdef __linux__
 #	include <SDL2/SDL.h>
