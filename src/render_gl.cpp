@@ -379,7 +379,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 		for (s32 i=0; i < buffer->items.count; i++)
 		{
-			RenderItem *item = pointerTo(&buffer->items, i);
+			RenderItem *item = buffer->items.items + i;
 
 			bool shaderChanged = (item->shaderID != renderer->currentShader);
 			bool textureChanged = (item->texture != texture);
