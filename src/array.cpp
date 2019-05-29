@@ -90,8 +90,8 @@ void sortInPlace(Array<T> *a, CompareResult (*compare)(T*, T*))
 			i + gap < a->count; // Here lies the remains of the flicker bug. It was <= not <. /fp
 			i++)
 		{
-			T *first  = pointerTo(a, i);
-			T *second = pointerTo(a, i+gap);
+			T *first  = a->items + i;
+			T *second = a->items + i+gap;
 			if (compare(first, second) > 0)
 			{
 				T temp = *first;
