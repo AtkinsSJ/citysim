@@ -256,28 +256,19 @@ static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 	clear(&gl->shaders);
 }
 
-inline GL_ShaderProgram *getCurrentShader(GL_Renderer *renderer)
-{
-	GL_ShaderProgram *result = null;
-
-	if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
-	{
-		result = renderer->shaders.items + renderer->currentShader;
-	}
-
-	return result;
-}
-
-inline void useShader(GL_Renderer *renderer, s32 shaderID)
+inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s32 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count, "Invalid shader!");
 
+	GL_ShaderProgram *activeShader = renderer->shaders.items + shaderID;
+
 	if (renderer->currentShader != shaderID)
 	{
-		GL_ShaderProgram *oldShader = getCurrentShader(renderer);
-		if (oldShader != null)
+		if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
 		{
+			// Clean up the old shader's stuff
+			GL_ShaderProgram *oldShader = renderer->shaders.items + renderer->currentShader;
 			glDisableVertexAttribArray(oldShader->aPositionLoc);
 			glDisableVertexAttribArray(oldShader->aColorLoc);
 			if (oldShader->aUVLoc != -1)
@@ -286,18 +277,22 @@ inline void useShader(GL_Renderer *renderer, s32 shaderID)
 			}
 		}
 
-		GL_ShaderProgram *targetShader = renderer->shaders.items + shaderID;
-		if (targetShader->isValid)
+		if (activeShader->isValid)
 		{
-			glUseProgram(targetShader->shaderProgramID);
+			glUseProgram(activeShader->shaderProgramID);
 			renderer->currentShader = shaderID;
 
-			glEnableVertexAttribArray(targetShader->aPositionLoc);
-			glEnableVertexAttribArray(targetShader->aColorLoc);
+			// Initialise the new shader's stuff
+			glEnableVertexAttribArray(activeShader->aPositionLoc);
+			glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
 
-			if (targetShader->aUVLoc != -1)
+			glEnableVertexAttribArray(activeShader->aColorLoc);
+			glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
+
+			if (activeShader->aUVLoc != -1)
 			{
-				glEnableVertexAttribArray(targetShader->aUVLoc);
+				glEnableVertexAttribArray(activeShader->aUVLoc);
+				glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
 			}
 		}
 		else
@@ -305,6 +300,8 @@ inline void useShader(GL_Renderer *renderer, s32 shaderID)
 			ASSERT(false, "Attempting to use a shader that isn't loaded!");
 		}
 	}
+
+	return activeShader;
 }
 
 void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
@@ -337,7 +334,6 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
-	GL_ShaderProgram *activeShader = getCurrentShader(renderer);
 
 	// Fill VBO
 	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT, "Tried to render too many vertices at once!");
@@ -348,14 +344,6 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT, "Tried to render too many indices at once!");
 	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
-
-	glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
-	glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
-
-	if (activeShader->aUVLoc != -1)
-	{
-		glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
-	}
 
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
 }
@@ -373,10 +361,22 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 	if (buffer->items.count > 0)
 	{
-		Asset *texture = null;
-		GL_ShaderProgram *activeShader = getCurrentShader(renderer);
+		// Initialise stuff using the first item
+		RenderItem *firstItem = buffer->items.items + 0;
+		GL_ShaderProgram *activeShader = useShader(renderer, firstItem->shaderID);
 
-		for (s32 i=0; i < buffer->items.count; i++)
+		glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+		glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+
+		Asset *texture = texture = firstItem->texture; // We need this set whether we bind the texture or not, otherwise it never gets nulled and we use a separate batch for every zone tile, for example!
+		// Bind new texture if this shader uses textures
+
+		if ((activeShader->uTextureLoc != -1) && (texture != null))
+		{
+			bindTexture(texture, activeShader->uTextureLoc, 0);
+		}
+
+		for (s32 i=1; i < buffer->items.count; i++)
 		{
 			RenderItem *item = buffer->items.items + i;
 
@@ -384,32 +384,28 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			bool textureChanged = (item->texture != texture);
 
 			// Check to see if we need to start a new batch.
-			if ((i == 0) || shaderChanged || textureChanged || (vertexCount == RENDER_BATCH_VERTEX_COUNT))
+			if (shaderChanged || textureChanged || (vertexCount == RENDER_BATCH_VERTEX_COUNT))
 			{
 				// Render existing buffer contents
-				if (vertexCount > 0)
-				{
-					drawCallCount++;
-					renderPartOfBuffer(renderer, vertexCount, indexCount);
-					DEBUG_DRAW_CALL(activeShader->asset->shortName, (texture == null) ? nullString : texture->shortName, (vertexCount >> 2));
-				}
+				drawCallCount++;
+				renderPartOfBuffer(renderer, vertexCount, indexCount);
+				DEBUG_DRAW_CALL(activeShader->asset->shortName, (texture == null) ? nullString : texture->shortName, (vertexCount >> 2));
 
 				{
 					DEBUG_BLOCK_T("Start new batch", DCDT_Renderer);
-					useShader(renderer, item->shaderID);
-					activeShader = getCurrentShader(renderer);
 
-					if (i==0 || shaderChanged)
+					if (shaderChanged)
 					{
+						activeShader = useShader(renderer, item->shaderID);
+						
 						glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-
 						glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
 					}
 
 					texture = item->texture; // We need this set whether we bind the texture or not, otherwise it never gets nulled and we use a separate batch for every zone tile, for example!
 					// Bind new texture if this shader uses textures
 
-					if ((i == 0 || textureChanged || shaderChanged)
+					if ((textureChanged || shaderChanged)
 						&& (activeShader->uTextureLoc != -1)
 						&& (texture != null))
 					{
