@@ -25,20 +25,17 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 	// Zooming
 	if (canZoom)
 	{
-		s32 zoomDelta = 0;
+		s32 zoomDelta = inputState->wheelY;
 
-		if (canZoom && inputState->wheelY) {
-			zoomDelta = inputState->wheelY;
-		}
-
-		if (keyJustPressed(inputState, SDLK_PAGEUP))
-		{
-			zoomDelta++;
-		}
-		else if (keyJustPressed(inputState, SDLK_PAGEDOWN))
-		{
-			zoomDelta--;
-		}
+		// Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
+		// if (keyJustPressed(inputState, SDLK_PAGEUP))
+		// {
+		// 	zoomDelta++;
+		// }
+		// else if (keyJustPressed(inputState, SDLK_PAGEDOWN))
+		// {
+		// 	zoomDelta--;
+		// }
 
 		if (zoomDelta)
 		{
