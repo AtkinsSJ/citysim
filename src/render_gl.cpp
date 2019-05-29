@@ -261,44 +261,36 @@ inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s32 shaderID)
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count, "Invalid shader!");
 
-	GL_ShaderProgram *activeShader = renderer->shaders.items + shaderID;
 
-	if (renderer->currentShader != shaderID)
+	if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
 	{
-		if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
+		// Clean up the old shader's stuff
+		GL_ShaderProgram *oldShader = renderer->shaders.items + renderer->currentShader;
+		glDisableVertexAttribArray(oldShader->aPositionLoc);
+		glDisableVertexAttribArray(oldShader->aColorLoc);
+		if (oldShader->aUVLoc != -1)
 		{
-			// Clean up the old shader's stuff
-			GL_ShaderProgram *oldShader = renderer->shaders.items + renderer->currentShader;
-			glDisableVertexAttribArray(oldShader->aPositionLoc);
-			glDisableVertexAttribArray(oldShader->aColorLoc);
-			if (oldShader->aUVLoc != -1)
-			{
-				glDisableVertexAttribArray(oldShader->aUVLoc);
-			}
+			glDisableVertexAttribArray(oldShader->aUVLoc);
 		}
+	}
 
-		if (activeShader->isValid)
-		{
-			glUseProgram(activeShader->shaderProgramID);
-			renderer->currentShader = shaderID;
+	renderer->currentShader = shaderID;
+	GL_ShaderProgram *activeShader = renderer->shaders.items + renderer->currentShader;
 
-			// Initialise the new shader's stuff
-			glEnableVertexAttribArray(activeShader->aPositionLoc);
-			glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
+	ASSERT(activeShader->isValid, "Attempting to use a shader that isn't loaded!");
+	glUseProgram(activeShader->shaderProgramID);
 
-			glEnableVertexAttribArray(activeShader->aColorLoc);
-			glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
+	// Initialise the new shader's stuff
+	glEnableVertexAttribArray(activeShader->aPositionLoc);
+	glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
 
-			if (activeShader->aUVLoc != -1)
-			{
-				glEnableVertexAttribArray(activeShader->aUVLoc);
-				glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
-			}
-		}
-		else
-		{
-			ASSERT(false, "Attempting to use a shader that isn't loaded!");
-		}
+	glEnableVertexAttribArray(activeShader->aColorLoc);
+	glVertexAttribPointer(activeShader->aColorLoc,    4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
+
+	if (activeShader->aUVLoc != -1)
+	{
+		glEnableVertexAttribArray(activeShader->aUVLoc);
+		glVertexAttribPointer(activeShader->aUVLoc,   2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
 	}
 
 	return activeShader;
@@ -361,7 +353,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 	if (buffer->items.count > 0)
 	{
-		// Initialise stuff using the first item
+		// Initialise stuff using the first item...
 		RenderItem *firstItem = buffer->items.items + 0;
 		GL_ShaderProgram *activeShader = useShader(renderer, firstItem->shaderID);
 
@@ -374,7 +366,8 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			bindTexture(texture, activeShader->uTextureLoc, 0);
 		}
 
-		for (s32 i=1; i < buffer->items.count; i++)
+		// ...but we still draw the first item in this loop!
+		for (s32 i=0; i < buffer->items.count; i++)
 		{
 			RenderItem *item = buffer->items.items + i;
 
@@ -466,7 +459,7 @@ static void GL_render(Renderer *renderer)
 	// 	sortRenderBuffer(&renderer->worldBuffer);
 	// }
 	{
-		DEBUG_BLOCK_T("SORT UI BUFFER", DCDT_Renderer);
+		DEBUG_BLOCK_T("sortRenderBuffer(ui)", DCDT_Renderer);
 		sortRenderBuffer(&renderer->uiBuffer);
 	}
 
@@ -478,14 +471,12 @@ static void GL_render(Renderer *renderer)
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	gl->currentShader = -1;
-
 	{
-		// DEBUG_BLOCK_T("DRAW WORLD BUFFER", DCDT_Renderer);
+		DEBUG_BLOCK_T("renderBuffer(world)", DCDT_Renderer);
 		renderBuffer(gl, &renderer->worldBuffer);
 	}
 	{
-		// DEBUG_BLOCK_T("DRAW UI BUFFER", DCDT_Renderer);
+		DEBUG_BLOCK_T("renderBuffer(ui)", DCDT_Renderer);
 		renderBuffer(gl, &renderer->uiBuffer);
 	}
 }
@@ -568,7 +559,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			glEnable(GL_TEXTURE_2D);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-			
+
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 			glGenBuffers(1, &gl->VBO);
