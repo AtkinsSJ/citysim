@@ -1,0 +1,9 @@
+# test file for text assets
+
+game_title       City Builder Test 9000
+
+button_play      Play
+button_credits   Credits
+button_settings  Settings
+button_about     About
+button_exit      Exit
