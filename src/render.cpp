@@ -113,6 +113,7 @@ void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, R
 	result->shaderID = shaderID;
 
 	// DEBUG STUFF
+#if 0
 	if (result->shaderID == 0 && texture != null)
 	{
 		// We had a weird issue where invalid textures are sometimes reaching the renderer, so we'll try to
@@ -122,6 +123,7 @@ void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, R
 		Asset *max = globalAppState.assets->allAssets.lastChunk->items + globalAppState.assets->allAssets.chunkSize;
 		ASSERT(texture >= min && texture <= max, "Attempted to draw using an invalid texture asset pointer!");
 	}
+#endif
 }
 
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item)

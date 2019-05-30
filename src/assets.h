@@ -154,16 +154,6 @@ void loadAsset(AssetManager *assets, Asset *asset);
 void ensureAssetIsLoaded(AssetManager *assets, Asset *asset);
 bool detectAssetFileChanges(AssetManager *assets);
 
-// // TODO: remove this
-// // Also, could then make the assets HashTable store assets directly, instead of pointing into the array!
-// Asset *getAsset(AssetManager *assets, s32 assetIndex)
-// {
-// 	DEBUG_FUNCTION();
-// 	Asset *asset = get(&assets->allAssets, assetIndex);
-// 	// TODO: load it if it's not loaded?
-// 	return asset;
-// }
-
 Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName)
 {
 	Asset **result = find(&assets->assetsByName[type], shortName);
@@ -185,17 +175,17 @@ Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 	return result;
 }
 
-SpriteGroup *getSpriteGroup(AssetManager *assets, String name)
+inline SpriteGroup *getSpriteGroup(AssetManager *assets, String name)
 {
 	return &getAsset(assets, AssetType_Sprite, name)->spriteGroup;
 }
 
-Sprite *getSprite(SpriteGroup *group, s32 offset)
+inline Sprite *getSprite(SpriteGroup *group, s32 offset)
 {
 	return group->sprites + (offset % group->count);
 }
 
-Shader *getShader(AssetManager *assets, String shaderName)
+inline Shader *getShader(AssetManager *assets, String shaderName)
 {
 	return &getAsset(assets, AssetType_Shader, shaderName)->shader;
 }

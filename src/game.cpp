@@ -826,14 +826,12 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
 		{
-			u32 tile = tileIndex(city, visibleTileBounds.x, y);
-			
+			Terrain *t = city->terrain + tileIndex(city, visibleTileBounds.x, y);
+
 			for (s32 x = visibleTileBounds.x;
 				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++, tile++)
+				x++, t++)
 			{
-				Terrain *t = city->terrain + tile;
-
 				if (t->type != terrainType)
 				{
 					tDef = get(&terrainDefs, t->type);
