@@ -4,41 +4,29 @@ TODO: https://trello.com/b/0Z1oVdg9/under-london
 I don't know whether I prefer keeping the list here or on Trello.
 Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which requires my internet to work...)
 
-Handy emojis:
-✔
-✖
-™
+Handy emojis: ✔ ✖ ™
 
 ------------------------------------------------
-
-At some point we want:
-✔ Automatic cataloguing of asset files by reading the directory listing.
-✔ Hash table for lookups
-- Ability to reload an individual file
-- Detect filesystem changes and reload the files that change
-	- Includes being a bit smart about dependant files. eg if a building texture was used, but after the building defs reload, they no longer use that texture, it could be unloaded? But honestly, keeping it around is way simpler and our memory requirements are going to be tiny anyway.
-	- If a file gets deleted, what happens?
-- Eventually, don't "resetMemoryArena(&assets->assetArena); initAssetManager(assets);", keep that data around.
-- There's a ~4KB memory leak each time we reload the assets. Nie dobrze.
-	- Update: We were underestimating the leak, it was bigger than that! But it's now down to 96 bytes, I believe.
-	- Well... I think I just can't trust Resource Monitor for this? The memory usage increases semi-randomly when I just move the window around. ACTUALLY, I wonder if std::out logging is contributing to that? Yeah, just typing any old garbage in the game console makes the "Working Set" value increase sporadically. So, I can't use Windows' own tools, and I can't trust my in-game measurements because they could be buggy! Sigh.
-
-------------------------------------------------
-
 
 Things to work on next maybe:
-- STRING HASH TABLES!!! http://www.craftinginterpreters.com/hash-tables.html
-	- And then we can make the assets system fancy, etc etc.
-	- Hash tables are in! Still to do:
-		✔ Actually use them
-		✔ Cache string hashes rather than recomputing them always
-		- Somehow roll the memory allocations into another system? Hash table entries are in their own separate memory allocation right now, that feels a *little* icky.
-		- Removing items from the table, see http://www.craftinginterpreters.com/hash-tables.html#deleting-entries
-		✔ Clearing the table
 - Power stations and connectivity and consumption?
-- Make assets reload automatically?
 - Zones actually spawn stuff
 - Rather than directly recalculating power/pathing when we make a change, mark them as "dirty" and then recalculate at an appropriate moment.
+- String assets
+- Break the world into chunks, each of which handles local information. (Power, path connectivity etc)
+	- Transport, power, water, and probably other things, all rely heavily on a flood-fill connectivity check to know what parts of the city are relevant, and it's expensive to recalculate the entire map any time something changes. If we break this into two parts, within-chunk and between-chunks, we'd only need to recalculate at most a single chunk, and then the chunks graph itself. The downside is this is more complicated.
+	- This means each chunk would have its own list of PowerGroups, etc. That starts to get messy memory-wise, I don't think something like that would work with our MemoryArena approach. IDK, maybe we could be really sloppy and allocate tons of them? Or put all those things in a central place? Actually that makes more sense.
+	- Assuming chunks track their buildings (which I'd expect they will) then buildings need to only "belong" to a single chunk so they don't get included in calculations multiple times. Maybe the building's top-left tile's chunk is the one it belongs to.
+	- This also goes towards a few "nice to have" things, like expandable or infinite maps that stream chunks in and out as you move around, or multi-threaded simulation processing (calculate the power network for several chunks simultaneously).
+	- Took me WAY TOO LONG to find this: Tynan Sylvester's description of Rimworld's region system: https://www.youtube.com/watch?v=RMBQn_sg7DA
+		- OK, so his works differently to how I remembered - regions are not a strict grid. They don't find their neighbours spatially, but by using a global hash of the (x, y, direction and length) of each edge.
+		- Each region knows which connectivity group ("room") it is part of, by direct pointer to the Room struct.
+		- Modifying a region just involves deleting it and rebuilding it, and possibly adjusting the connections of its neighbours.
+		- When two rooms become connected, (determined by a new, no-region tile having different rooms in neighbouring regions,) it calculates which has fewer regions, and makes those part of the larger room. That means no global recalculation!
+		- I guess there must be some global table of which regions are contained within each grid square, for finding them in those cases? IDK. I guess you could just query that information from the tiles.
+	- Rimworld's is highly specialised for spatial navigation. In our case, our different things (roads, power, etc) would require separate regions for each one. Maybe that's OK?
+		- Maybe a hybrid - world is broken down into regular-sized chunks, eg 16x16. (Maybe not 16x16 if we're using it for hash purposes! 15 or a prime number might be better then.) Each one contains some number of road regions, and power regions, etc. It also keeps some statistics, like how many jobs and residents are inside it. It knows which buildings are in it. It could even cache the sprites inside it, eg a single "mesh" for the terrain. It also has flags, eg "there are valid empty R zones", "contains industry", or "there's a fire", which would speed up searches for things. 
+
 
 Data structure ideas I had late last night:
 - Buildings array:
@@ -141,21 +129,24 @@ Audio!
 - Probably use SoLoud, rather than SDL_mixer: http://sol.gfxile.net/soloud/
 
 Asset system:
+- Ability to reload an individual file
+- Detect filesystem changes and reload the files that change
+	- Includes being a bit smart about dependant files. eg if a building texture was used, but after the building defs reload, they no longer use that texture, it could be unloaded? But honestly, keeping it around is way simpler and our memory requirements are going to be tiny anyway.
+	- If a file gets deleted, what happens?
+- Eventually, don't "resetMemoryArena(&assets->assetArena); initAssetManager(assets);", keep that data around.
+- There's a 96-byte memory leak when we reload the assets, and I'm not sure why.
 - Replace sdl_image with our own loader so we can control where the memory comes from!
 	- see https://github.com/spurious/SDL-mirror/blob/HEAD/src/stdlib/SDL_malloc.c
 	- Looks like I need to update my version of SDL. Actually, worse than that, it was added AFTER 2.0.9 which is the current release version.
 - Fancier memory management, if needed:
 	- (We only need to worry about this if our asset memory usage gets high.
 		If not, keep the current "load everything" system!)
-	- Do a malloc/free for each asset that's loaded
 	- reload asset, just free() then malloc() again!
 		- Optimisation: Don't reallocate if it's the exact same size.
 	- Keep a memory limit, track the current size of all loaded assets.
 	- If we cross the limit, evict the least-recently-used asset.
 	- At the end of a level, we can also evict all level-specific assets if we want?
 	- Track evictions so we can monitor it and see if it's misbehaving.
-- Automatic file-reloading. https://msdn.microsoft.com/en-us/library/windows/desktop/aa365465(v=vs.85).aspx
-	- For now, we can trigger reloadAssets() completely when we detect this.
 - Asset packer of some kind. Maybe just creates an assets table?
 - Strings! Translateable and stored as assets.
 	- https://blog.thimbleweedpark.com/text_lock
