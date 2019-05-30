@@ -907,17 +907,20 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
 		{
+			s32 tile = tileIndex(city, visibleTileBounds.x, y);
+
 			for (s32 x = visibleTileBounds.x;
 				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++)
+				x++, tile++)
 			{
+				bool tileHasData = false;
 				V4 color = {};
 
 				switch (gameState->dataLayerToDraw)
 				{
 					case DataLayer_Paths:
 					{
-						s32 pathGroup = pathGroupAt(city, x, y);
+						s32 pathGroup = city->pathLayer.data[tile];
 						if (pathGroup > 0)
 						{
 							switch (pathGroup)
@@ -931,12 +934,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 								default: color = color255(255, 255, 255, 63); break;
 							}
+							tileHasData = true;
 						}
 					} break;
 
 					case DataLayer_Power:
 					{
-						s32 powerGroup = powerGroupAt(city, x, y);
+						s32 powerGroup = city->powerLayer.data[tile];
 						if (powerGroup > 0)
 						{
 							switch (powerGroup)
@@ -950,11 +954,12 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 								default: color = color255(255, 255, 255, 63); break;
 							}
+							tileHasData = true;
 						}
 					} break;
 				}
 
-				if (color.a > 0.01f)
+				if (tileHasData)
 				{
 					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 9999.0f, rectangleShaderID, color);
 				}
