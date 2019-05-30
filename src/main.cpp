@@ -82,6 +82,7 @@ AppState globalAppState;
 #include "stringbuilder.cpp"
 #include "chunked_array.cpp"
 #include "hash_table.cpp"
+#include "file.cpp"
 #include "assets.cpp"
 #include "render.cpp"
 #include "input.cpp"
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
 				updateAndRenderConsole(globalConsole, &inputState, uiState);
 			}
 
-			if (detectAssetFileChanges(assets))
+			if (haveAssetFilesChanged(assets))
 			{
 				reloadAssets(assets, renderer, uiState);
 			}

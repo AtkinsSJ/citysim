@@ -152,7 +152,7 @@ struct AssetManager
 
 void loadAsset(AssetManager *assets, Asset *asset);
 void ensureAssetIsLoaded(AssetManager *assets, Asset *asset);
-bool detectAssetFileChanges(AssetManager *assets);
+bool haveAssetFilesChanged(AssetManager *assets);
 
 Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName)
 {

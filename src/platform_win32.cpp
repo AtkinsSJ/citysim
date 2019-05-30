@@ -52,12 +52,16 @@ DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo *res
 	DirectoryListingHandle handle = {};
 	WIN32_FIND_DATA findFileData;
 
+	handle.path = path;
+
 	handle.windows.hFile = FindFirstFile(path.chars, &findFileData);
 
 	if (handle.windows.hFile == INVALID_HANDLE_VALUE)
 	{
 		handle.isValid = false;
-		handle.errorCode = (u32)GetLastError();
+		u32 errorCode = (u32)GetLastError();
+		handle.errorCode = errorCode;
+		logError("Failed to read directory listing in \"{0}\". (Error {1})", {handle.path, formatInt(errorCode)});
 	}
 	else
 	{
@@ -83,4 +87,80 @@ bool platform_nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *resu
 	}
 
 	return succeeded;
+}
+
+DirectoryChangeWatchingHandle platform_beginWatchingDirectory(String path)
+{
+	DirectoryChangeWatchingHandle handle = {};
+	handle.path = path;
+
+	handle.windows.handle = FindFirstChangeNotification(path.chars, true, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
+
+	if (handle.windows.handle == INVALID_HANDLE_VALUE)
+	{
+		handle.isValid = false;
+		u32 errorCode = (u32)GetLastError();
+		handle.errorCode = errorCode;
+		logError("Failed to set notification for file changes in \"{0}\". (Error {1})", {handle.path, formatInt(errorCode)});
+	}
+	else
+	{
+		handle.isValid = true;
+	}
+
+	return handle;
+}
+
+bool platform_hasDirectoryChanged(DirectoryChangeWatchingHandle *handle)
+{
+	bool filesChanged = false;
+
+	DWORD waitResult = WaitForSingleObject(handle->windows.handle, 0);
+	switch (waitResult)
+	{
+		case WAIT_FAILED: 
+		{
+			// Something broke
+			handle->isValid = false;
+			u32 errorCode = (u32)GetLastError();
+			handle->errorCode = errorCode;
+			logError("Failed to poll for file changes in \"{0}\". (Error {1})", {handle->path, formatInt(errorCode)});
+		} break;
+
+		case WAIT_TIMEOUT: 
+		{
+			// Nothing to report
+			filesChanged = false;
+		} break;
+
+		case WAIT_ABANDONED: 
+		{
+			// Something mutex-related, I think we can ignore this?
+			// https://docs.microsoft.com/en-gb/windows/desktop/api/synchapi/nf-synchapi-waitforsingleobject
+		} break;
+
+		case WAIT_OBJECT_0: 
+		{
+			// We got a result!
+			filesChanged = true;
+
+			// Re-set the notification
+			if (FindNextChangeNotification(handle->windows.handle) == false)
+			{
+				// something broke
+				handle->isValid = false;
+				u32 errorCode = (u32)GetLastError();
+				handle->errorCode = errorCode;
+				logError("Failed to re-set notification for file changes in \"{0}\". (Error {1})", {handle->path, formatInt(errorCode)});
+			}
+		} break;
+	}
+
+	return filesChanged;
+}
+
+void platform_stopWatchingDirectory(DirectoryChangeWatchingHandle *handle)
+{
+	FindCloseChangeNotification(handle->windows.handle);
+	handle->windows.handle = INVALID_HANDLE_VALUE;
 }
