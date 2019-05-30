@@ -83,10 +83,16 @@ bool platform_nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *resu
 	}
 	else
 	{
-		FindClose(handle->windows.hFile);
+		platform_stopDirectoryListing(handle);
 	}
 
 	return succeeded;
+}
+
+void platform_stopDirectoryListing(DirectoryListingHandle *handle)
+{
+	FindClose(handle->windows.hFile);
+	handle->windows.hFile = INVALID_HANDLE_VALUE;
 }
 
 DirectoryChangeWatchingHandle platform_beginWatchingDirectory(String path)

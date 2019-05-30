@@ -90,9 +90,32 @@ inline Blob readTempFile(String filePath)
 
 bool writeFile(String filePath, String contents);
 
+/*
+ * Lists the files and folders in a directory, one at a time. This is NOT recursive!
+ * Start with beginDirectoryListing(), then call nextFileInDirectory() to get subsequent results.
+ * The handle is automatically closed when you reach the end of the directory listing, or you can
+ * call stopDirectoryListing() to finish early.
+ * 
+ * nextFileInDirectory() checks the handle is valid, and returns false if not.
+ * 
+ * - Sam, 30/05/2019
+ */
 DirectoryListingHandle beginDirectoryListing(String path, FileInfo *result);
 bool nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result);
+void stopDirectoryListing(DirectoryListingHandle *handle);
 
+/*
+ * Watch for file changes within a specific directory.
+ * Right now, this watches for any file or directory changes within that directory, recursively.
+ * Call beginWatchingDirectory() with the path, then hasDirectoryChanged() to see if anything has
+ * changed since the last call. If you want to, you can close the handle with stopWatchingDirectory().
+ *
+ * hasDirectoryChanged() checks if the handle is valid, and returns false (for "no changes") if not,
+ * so it's safe to call it on platforms that this system isn't implemented on, or in cases where the
+ * beginWatchingDirectory() call failed for whatever reason. It Just Works!™
+ * 
+ * - Sam, 30/05/2019
+ */
 DirectoryChangeWatchingHandle beginWatchingDirectory(String path);
 bool hasDirectoryChanged(DirectoryChangeWatchingHandle *handle);
 void stopWatchingDirectory(DirectoryChangeWatchingHandle *handle);

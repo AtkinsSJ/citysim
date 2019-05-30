@@ -38,6 +38,8 @@ void initAssetManager(AssetManager *assets)
 
 	initUITheme(&assets->theme);
 
+	// NB: This might fail, or we might be on a platform where it isn't implemented.
+	// That's OK though! 
 	assets->assetChangeHandle = beginWatchingDirectory(assets->assetsPath);
 }
 

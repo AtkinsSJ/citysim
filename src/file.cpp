@@ -147,11 +147,21 @@ DirectoryListingHandle beginDirectoryListing(String path, FileInfo *result)
 
 bool nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result)
 {
-	ASSERT(handle != null, "Null value given for handle in nextFileInDirectory()");
-	ASSERT(result != null, "Null value given for result in nextFileInDirectory()");
-
-	bool foundAResult = platform_nextFileInDirectory(handle, result);
+	bool foundAResult = false;
+	if (handle->isValid)
+	{
+		foundAResult = platform_nextFileInDirectory(handle, result);
+	}
 	return foundAResult;
+}
+
+void stopDirectoryListing(DirectoryListingHandle *handle)
+{
+	if (handle->isValid)
+	{
+		platform_stopDirectoryListing(handle);
+		handle->isValid = false;
+	}
 }
 
 
