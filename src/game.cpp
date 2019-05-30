@@ -804,8 +804,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		DEBUG_BLOCK_T("Draw terrain", DCDT_GameUpdate);
 
 		s32 terrainType = -1;
-		TerrainDef *tDef = null;
-		SpriteGroup *tSprites = null;
+		SpriteGroup *terrainSprites = null;
 
 		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 		V4 terrainColor = makeWhite();
@@ -824,11 +823,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				if (t->type != terrainType)
 				{
 					terrainType = t->type;
-					tDef = get(&terrainDefs, terrainType);
-					tSprites = tDef->sprites;
+					terrainSprites = get(&terrainDefs, terrainType)->sprites;
 				}
 
-				Sprite *sprite = getSprite(tSprites, t->spriteOffset);
+				Sprite *sprite = getSprite(terrainSprites, t->spriteOffset);
 				spriteBounds.x = (f32)x;
 
 				drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
@@ -842,7 +840,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 		s32 zoneType = -1;
-		V4 zoneColor;
+		V4 zoneColor = {};
 
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
@@ -863,7 +861,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						zoneType = *zone;
 						zoneColor = zoneDefs[zoneType].color;
 					}
-					
+
 					spriteBounds.x = (f32)x;
 
 					drawRect(&renderer->worldBuffer, spriteBounds, depth, rectangleShaderID, zoneColor);
