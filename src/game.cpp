@@ -818,24 +818,31 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// Draw terrain
 	{
 		DEBUG_BLOCK_T("Draw terrain", DCDT_GameUpdate);
+
+		s32 terrainType = -1;
+		TerrainDef *tDef = null;
 		
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
 		{
+			u32 tile = tileIndex(city, visibleTileBounds.x, y);
+			
 			for (s32 x = visibleTileBounds.x;
 				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++)
+				x++, tile++)
 			{
-				Terrain *t = terrainAt(city,x,y);
-				if (t->type != 0)
+				Terrain *t = city->terrain + tile;
+
+				if (t->type != terrainType)
 				{
-					TerrainDef *tDef = get(&terrainDefs, t->type);
-
-					Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
-
-					drawSprite(&renderer->worldBuffer, sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
+					tDef = get(&terrainDefs, t->type);
+					terrainType = t->type;
 				}
+
+				Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
+
+				drawSprite(&renderer->worldBuffer, sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
 			}
 		}
 	}

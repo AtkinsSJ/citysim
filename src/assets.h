@@ -190,7 +190,7 @@ SpriteGroup *getSpriteGroup(AssetManager *assets, String name)
 	return &getAsset(assets, AssetType_Sprite, name)->spriteGroup;
 }
 
-Sprite *getSprite(SpriteGroup *group, u32 offset)
+Sprite *getSprite(SpriteGroup *group, s32 offset)
 {
 	return group->sprites + (offset % group->count);
 }
