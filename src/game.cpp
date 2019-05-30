@@ -796,24 +796,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		(s32) (worldCamera->size.x / worldCamera->zoom + 5),
 		(s32) (worldCamera->size.y / worldCamera->zoom + 5)
 	);
-	if (visibleTileBounds.x < 0)
-	{
-		visibleTileBounds.w += visibleTileBounds.x;
-		visibleTileBounds.x = 0;
-	}
-	if (visibleTileBounds.y < 0)
-	{
-		visibleTileBounds.h += visibleTileBounds.y;
-		visibleTileBounds.y = 0;
-	}
-	if (visibleTileBounds.w > gameState->city.width)
-	{
-		visibleTileBounds.w = gameState->city.width;
-	}
-	if (visibleTileBounds.h > gameState->city.height)
-	{
-		visibleTileBounds.h = gameState->city.height;
-	}
+	Rect2I cityBounds = irectXYWH(0, 0, city->width, city->height);
+	visibleTileBounds = cropRectangle(visibleTileBounds, cityBounds);
 
 	// Draw terrain
 	{

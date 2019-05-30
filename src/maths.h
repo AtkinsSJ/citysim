@@ -91,38 +91,34 @@ inline f32 moveTowards(f32 currentValue, f32 targetValue, f32 distance)
 	return result;
 }
 
-inline Rect2I confineRectangle(Rect2I inner, Rect2I outer)
+inline Rect2I cropRectangle(Rect2I inner, Rect2I outer)
 {
 	Rect2I result = inner;
 
 	// X
-	if (result.w > outer.w)
+	s32 rightExtension = (result.x + result.w) - (outer.x + outer.w);
+	if (rightExtension > 0)
 	{
-		// If it's too big, centre it.
-		result.x = outer.x - ((result.w - outer.w) / 2);
+		result.w -= rightExtension;
 	}
-	else if (result.x < outer.x)
+	if (result.x < outer.x)
 	{
-		result.x = outer.x;
-	}
-	else if ((result.x + result.w) > (outer.x + outer.w))
-	{
-		result.x = outer.x + outer.w - result.w;
+		s32 leftExtension = outer.x - result.x;
+		result.x += leftExtension;
+		result.w -= leftExtension;
 	}
 
 	// Y
-	if (result.h > outer.h)
+	s32 bottomExtension = (result.y + result.h) - (outer.y + outer.h);
+	if (bottomExtension > 0)
 	{
-		// If it's too big, centre it.
-		result.y = outer.y - ((result.h - outer.h) / 2);
+		result.h -= bottomExtension;
 	}
-	else if (result.y < outer.y)
+	if (result.y < outer.y)
 	{
-		result.y = outer.y;
-	}
-	else if ((result.y + result.h) > (outer.y + outer.h))
-	{
-		result.y = outer.y + outer.h - result.h;
+		s32 topExtension = outer.y - result.y;
+		result.y += topExtension;
+		result.h -= topExtension;
 	}
 
 	return result;

@@ -325,7 +325,37 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 
 		// Keep window on screen
-		window->area = confineRectangle(window->area, validWindowArea);
+		{
+			// X
+			if (window->area.w > validWindowArea.w)
+			{
+				// If it's too big, centre it.
+				window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
+			}
+			else if (window->area.x < validWindowArea.x)
+			{
+				window->area.x = validWindowArea.x;
+			}
+			else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
+			{
+				window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
+			}
+
+			// Y
+			if (window->area.h > validWindowArea.h)
+			{
+				// If it's too big, centre it.
+				window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
+			}
+			else if (window->area.y < validWindowArea.y)
+			{
+				window->area.y = validWindowArea.y;
+			}
+			else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
+			{
+				window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
+			}
+		}
 
 		// Run the window proc FOR REALZ
 		context.measureOnly = false;
