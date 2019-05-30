@@ -805,12 +805,16 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		s32 terrainType = -1;
 		TerrainDef *tDef = null;
+
+		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+		V4 terrainColor = makeWhite();
 		
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
 		{
 			Terrain *t = city->terrain + tileIndex(city, visibleTileBounds.x, y);
+			spriteBounds.y = (f32)y;
 
 			for (s32 x = visibleTileBounds.x;
 				x < visibleTileBounds.x + visibleTileBounds.w;
@@ -823,8 +827,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				}
 
 				Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
+				spriteBounds.x = (f32)x;
 
-				drawSprite(&renderer->worldBuffer, sprite, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), -1000.0f, pixelArtShaderID, makeWhite());
+				drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
 			}
 		}
 	}
