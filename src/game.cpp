@@ -805,6 +805,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		s32 terrainType = -1;
 		TerrainDef *tDef = null;
+		SpriteGroup *tSprites = null;
 
 		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 		V4 terrainColor = makeWhite();
@@ -824,9 +825,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				{
 					tDef = get(&terrainDefs, t->type);
 					terrainType = t->type;
+					tSprites = tDef->sprites;
 				}
 
-				Sprite *sprite = getSprite(tDef->sprites, t->spriteOffset);
+				Sprite *sprite = getSprite(tSprites, t->spriteOffset);
 				spriteBounds.x = (f32)x;
 
 				drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
