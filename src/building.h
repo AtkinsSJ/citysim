@@ -12,7 +12,7 @@ enum BuildMethod
 struct BuildingDef
 {
 	String name;
-	u32 typeID;
+	s32 typeID;
 
 	union
 	{
@@ -37,8 +37,8 @@ struct BuildingDef
 	 * of "a + b -> c" building combinations. Right now, a building can only be an
 	 * ingredient for one building, which I KNOW is not enough!
 	 */
-	u32 canBeBuiltOnID;
-	u32 buildOverResult;
+	s32 canBeBuiltOnID;
+	s32 buildOverResult;
 
 	enum ZoneType growsInZone;
 
@@ -57,7 +57,7 @@ ChunkedArray<BuildingDef> buildingDefs = {};
 struct Building
 {
 	u32 id;
-	u32 typeID;
+	s32 typeID;
 	Rect2I footprint;
 	s32 spriteOffset; // used as the offset for getSprite
 	

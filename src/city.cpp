@@ -101,7 +101,7 @@ void spend(City *city, s32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(UIState *uiState, City *city, u32 selectedBuildingTypeID, s32 left, s32 top, bool isAttemptingToBuild = false)
+bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, s32 left, s32 top, bool isAttemptingToBuild = false)
 {
 	DEBUG_FUNCTION();
 	

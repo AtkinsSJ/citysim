@@ -872,6 +872,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	
 	{
 		DEBUG_BLOCK_T("Draw buildings", DCDT_GameUpdate);
+
+		s32 typeID = -1;
+		SpriteGroup *sprites = null;
+		V4 drawColorNormal = makeWhite();
+		V4 drawColorDemolish = color255(255,128,128,255);
 		
 		for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
 		{
@@ -879,19 +884,23 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			if (rectsOverlap(building->footprint, visibleTileBounds))
 			{
-				BuildingDef *def = get(&buildingDefs, building->typeID);
+				if (typeID != building->typeID)
+				{
+					typeID = building->typeID;
+					sprites = get(&buildingDefs, typeID)->sprites;
+				}
 
-				V4 drawColor = makeWhite();
+				V4 drawColor = drawColorNormal;
 
 				if (gameState->actionMode == ActionMode_Demolish
 					&& gameState->worldDragState.isDragging
 					&& rectsOverlap(building->footprint, demolitionRect))
 				{
 					// Draw building red to preview demolition
-					drawColor = color255(255,128,128,255);
+					drawColor = drawColorDemolish;
 				}
 
-				Sprite *sprite = getSprite(def->sprites, building->spriteOffset);
+				Sprite *sprite = getSprite(sprites, building->spriteOffset);
 				V2 drawPos = centre(building->footprint);
 				drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
 			}
