@@ -401,13 +401,13 @@ void next(ChunkedArrayIterator<T> *iterator)
 }
 
 template<typename T>
-T *get(ChunkedArrayIterator<T> iterator)
+inline T *get(ChunkedArrayIterator<T> iterator)
 {
 	return &iterator.currentChunk->items[iterator.indexInChunk];
 }
 
 template<typename T>
-T getValue(ChunkedArrayIterator<T> iterator)
+inline T getValue(ChunkedArrayIterator<T> iterator)
 {
 	return iterator.currentChunk->items[iterator.indexInChunk];
 }
