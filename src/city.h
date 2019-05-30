@@ -59,7 +59,7 @@ struct City
 	s32 industrialDemand;
 };
 
-inline u32 tileIndex(City *city, s32 x, s32 y)
+inline s32 tileIndex(City *city, s32 x, s32 y)
 {
 	return (y * city->width) + x;
 }

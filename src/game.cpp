@@ -823,8 +823,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				if (t->type != terrainType)
 				{
-					tDef = get(&terrainDefs, t->type);
 					terrainType = t->type;
+					tDef = get(&terrainDefs, terrainType);
 					tSprites = tDef->sprites;
 				}
 
@@ -840,18 +840,33 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		DEBUG_BLOCK_T("Draw zones", DCDT_GameUpdate);
 
+		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+		s32 zoneType = -1;
+		V4 zoneColor;
+
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
 		{
+			ZoneType *zone = city->zoneLayer.tiles + tileIndex(city, visibleTileBounds.x, y);
+			spriteBounds.y = (f32)y;
+			f32 depth = depthFromY(y) - 10.0f;
+
 			for (s32 x = visibleTileBounds.x;
 				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++)
+				x++, zone++)
 			{
-				ZoneType zoneType = getZoneAt(city, x, y);
-				if (zoneType != Zone_None)
+				if (*zone != Zone_None)
 				{
-					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), depthFromY(y) - 10.0f, rectangleShaderID, zoneDefs[zoneType].color);
+					if (*zone != zoneType)
+					{
+						zoneType = *zone;
+						zoneColor = zoneDefs[zoneType].color;
+					}
+					
+					spriteBounds.x = (f32)x;
+
+					drawRect(&renderer->worldBuffer, spriteBounds, depth, rectangleShaderID, zoneColor);
 				}
 			}
 		}
