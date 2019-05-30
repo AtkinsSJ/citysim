@@ -22,6 +22,8 @@ GameState *initialiseGameState()
 
 void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 cityWidth, s32 cityHeight)
 { 
+	DEBUG_FUNCTION();
+
 	// Zooming
 	if (canZoom)
 	{
@@ -108,6 +110,8 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 
 Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
 {
+	DEBUG_FUNCTION();
+
 	Rect2I result = irectXYWH(0, 0, 0, 0);
 
 	if (dragState->isDragging)

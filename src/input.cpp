@@ -294,6 +294,8 @@ void updateInput(InputState *inputState)
 
 KeyboardShortcut parseKeyboardShortcut(String input)
 {
+	DEBUG_FUNCTION();
+
 	KeyboardShortcut result = {};
 
 	String keyName, remainder;

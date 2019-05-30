@@ -2,6 +2,8 @@
 
 void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset)
 {
+	DEBUG_FUNCTION();
+
 	LineReader reader = readLines(asset->shortName, data);
 
 	initChunkedArray(terrains, &assets->assetArena, 16);
@@ -93,6 +95,8 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 
 void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager *assets)
 {
+	DEBUG_FUNCTION();
+
 	for (auto it = iterate(terrains); !it.isDone; next(&it))
 	{
 		TerrainDef *def = get(it);

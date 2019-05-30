@@ -214,63 +214,65 @@ int main(int argc, char *argv[])
 	// GAME LOOP
 	while (appState->appStatus != AppStatus_Quit)
 	{
-		DEBUG_BLOCK("Game loop");
-
-		updateInput(&inputState);
-		
-		if (globalConsole)
 		{
-			updateAndRenderConsole(globalConsole, &inputState, uiState);
+			DEBUG_BLOCK("Game loop");
+
+			updateInput(&inputState);
+			
+			if (globalConsole)
+			{
+				updateAndRenderConsole(globalConsole, &inputState, uiState);
+			}
+
+			if (detectAssetFileChanges(assets))
+			{
+				reloadAssets(assets, renderer, uiState);
+			}
+
+			if (assets->assetReloadHasJustHappened)
+			{
+				cacheUIShaders(uiState, assets);
+			}
+
+			if (inputState.receivedQuitSignal)
+			{
+				appState->appStatus = AppStatus_Quit;
+				break;
+			}
+
+			if (inputState.wasWindowResized)
+			{
+				onWindowResized(renderer, inputState.windowWidth, inputState.windowHeight);
+			}
+
+			worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
+			uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
+
+
+			updateAndRender(appState, &inputState, renderer, assets);
+
+			// Update camera matrices here
+			updateCameraMatrix(worldCamera);
+			updateCameraMatrix(uiCamera);
+
+			// Debug stuff
+			if (globalDebugState)
+			{
+				DEBUG_ASSETS(assets);
+				DEBUG_ARENA(&appState->systemArena, "System");
+				DEBUG_ARENA(&appState->globalTempArena, "Global Temp Arena");
+				DEBUG_ARENA(&renderer->renderArena, "Renderer");
+				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
+				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
+
+				debugUpdate(globalDebugState, &inputState, uiState);
+			}
+
+			// Actually draw things!
+			renderer->render(renderer);
+
+			resetMemoryArena(&appState->globalTempArena);
 		}
-
-		if (detectAssetFileChanges(assets))
-		{
-			reloadAssets(assets, renderer, uiState);
-		}
-
-		if (assets->assetReloadHasJustHappened)
-		{
-			cacheUIShaders(uiState, assets);
-		}
-
-		if (inputState.receivedQuitSignal)
-		{
-			appState->appStatus = AppStatus_Quit;
-			break;
-		}
-
-		if (inputState.wasWindowResized)
-		{
-			onWindowResized(renderer, inputState.windowWidth, inputState.windowHeight);
-		}
-
-		worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
-		uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
-
-
-		updateAndRender(appState, &inputState, renderer, assets);
-
-		// Update camera matrices here
-		updateCameraMatrix(worldCamera);
-		updateCameraMatrix(uiCamera);
-
-		// Debug stuff
-		if (globalDebugState)
-		{
-			DEBUG_ASSETS(assets);
-			DEBUG_ARENA(&appState->systemArena, "System");
-			DEBUG_ARENA(&appState->globalTempArena, "Global Temp Arena");
-			DEBUG_ARENA(&renderer->renderArena, "Renderer");
-			DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
-			DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
-
-			debugUpdate(globalDebugState, &inputState, uiState);
-		}
-
-		// Actually draw things!
-		renderer->render(renderer);
-
-		resetMemoryArena(&appState->globalTempArena);
 
 		// FRAMERATE MONITORING AND CAPPING
 		{

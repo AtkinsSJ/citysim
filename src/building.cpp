@@ -2,6 +2,8 @@
 
 void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Blob data, Asset *asset)
 {
+	DEBUG_FUNCTION();
+
 	LineReader reader = readLines(asset->shortName, data);
 
 	initChunkedArray(buildings, &assets->assetArena, 64);
@@ -234,6 +236,8 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 {
+	DEBUG_FUNCTION();
+
 	if (building == null) return;
 
 	if (def == null)
@@ -293,6 +297,8 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 
 void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 {
+	DEBUG_FUNCTION();
+
 	for (s32 y = footprint.y;
 		y < footprint.y + footprint.h;
 		y++)
@@ -333,6 +339,8 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 
 void refreshBuildingSpriteCache(ChunkedArray<BuildingDef> *buildings, AssetManager *assets)
 {
+	DEBUG_FUNCTION();
+
 	for (auto it = iterate(buildings); !it.isDone; next(&it))
 	{
 		BuildingDef *def = get(it);
