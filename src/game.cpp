@@ -8,7 +8,7 @@ GameState *initialiseGameState()
 	bootstrapArena(GameState, result, gameArena);
 	randomSeed(&result->gameRandom, 12345);
 
-	initCity(&result->gameArena, &result->gameRandom, &result->city, 128, 128, LocalString("City Name Here"), gameStartFunds);
+	initCity(&result->gameArena, &result->gameRandom, &result->city, 128, 128, LOCAL("city_default_name"), gameStartFunds);
 	generateTerrain(&result->city);
 
 	result->status = GameStatus_Playing;
@@ -293,7 +293,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	City *city = &gameState->city;
 
 	V2I tilePos = gameState->inspectedTilePosition;
-	context->window->title = myprintf("Inspecting {0}, {1}", {formatInt(tilePos.x), formatInt(tilePos.y)});
+	context->window->title = myprintf(LOCAL("title_inspect"), {formatInt(tilePos.x), formatInt(tilePos.y)});
 
 	s32 tileI = tileIndex(city, tilePos.x, tilePos.y);
 
@@ -303,7 +303,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Zone
 	ZoneType zone = city->zoneLayer.tiles[tileI];
-	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : LocalString("None")}));
+	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
 
 	// Building
 	s32 buildingArrayIndex = city->tileBuildings[tileI];
@@ -317,7 +317,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 	else
 	{
-		window_label(context, LocalString("Building: None"));
+		window_label(context, makeString("Building: {0}"));
 	}
 
 	// Power group
@@ -329,7 +329,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 	else
 	{
-		window_label(context, LocalString("Power Group: None"));
+		window_label(context, makeString("Power Group: None"));
 	}
 }
 
@@ -347,15 +347,15 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
 	s32 maxButtonTextWidth = 0;
 
-	String resume = LocalString("Resume has a surprisingly verbose label");
+	String resume = LOCAL("button_resume");
 	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, resume, availableButtonTextWidth).x));
-	String save   = LocalString("Save");
+	String save   = LOCAL("button_save");
 	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, save, availableButtonTextWidth).x));
-	String load   = LocalString("Load");
+	String load   = LOCAL("button_load");
 	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, load, availableButtonTextWidth).x));
-	String about  = LocalString("About");
+	String about  = LOCAL("button_about");
 	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, about, availableButtonTextWidth).x));
-	String exit   = LocalString("Exit");
+	String exit   = LOCAL("button_exit");
 	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, exit, availableButtonTextWidth).x));
 
 	if (window_button(context, resume, maxButtonTextWidth))
@@ -365,12 +365,12 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 
 	if (window_button(context, save, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, LocalString("Saving isn't implemented yet!"));
+		pushUiMessage(context->uiState, makeString("Saving isn't implemented yet!"));
 	}
 
 	if (window_button(context, load, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, LocalString("Loading isn't implemented yet!"));
+		pushUiMessage(context->uiState, makeString("Loading isn't implemented yet!"));
 	}
 
 	if (window_button(context, about, maxButtonTextWidth))
@@ -428,7 +428,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, LocalString("Zone..."), buttonRect, 1, Menu_Zone))
+		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, 1, Menu_Zone))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -456,7 +456,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, LocalString("Build..."), buttonRect, 1, Menu_Build))
+		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, 1, Menu_Build))
 		{
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -486,9 +486,9 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		if (uiButton(uiState, LocalString("Demolish"), buttonRect, 1,
+		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect, 1,
 					(gameState->actionMode == ActionMode_Demolish),
-					SDLK_x, LocalString("(X)")))
+					SDLK_x, makeString("(X)")))
 		{
 			gameState->actionMode = ActionMode_Demolish;
 			setCursor(uiState, "demolish.png");
@@ -497,9 +497,9 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiButton(uiState, LocalString("Menu"), buttonRect, 1))
+		if (uiButton(uiState, LOCAL("button_menu"), buttonRect, 1))
 		{
-			showWindow(uiState, LocalString("Menu"), 200, 200, makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, LOCAL("title_menu"), 200, 200, makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }

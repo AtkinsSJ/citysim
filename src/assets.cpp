@@ -66,7 +66,7 @@ Blob allocate(AssetManager *assets, smm size)
 	return result;
 }
 
-Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isAFile=true)
+Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isAFile)
 {
 	Asset *existing = getAssetIfExists(assets, type, shortName);
 	if (existing) return existing;
@@ -355,19 +355,6 @@ Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount)
 	return spriteGroup;
 }
 
-Sprite *addSprite(AssetManager *assets, String name, Asset *textureAsset, Rect2 uv)
-{
-	ASSERT(textureAsset != null, "Attempted to add a sprite with no Texture!");
-
-	Asset *spriteGroup = addSpriteGroup(assets, name, 1);
-
-	Sprite *sprite = spriteGroup->spriteGroup.sprites + 0;
-	sprite->texture = textureAsset;
-	sprite->uv = uv;
-
-	return sprite;
-}
-
 void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied)
 {
 	String textureName = pushString(&assets->assetArena, textureFilename);
@@ -422,7 +409,7 @@ void loadAssets(AssetManager *assets)
 	assets->assetReloadHasJustHappened = true;
 }
 
-void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType=AssetType_Unknown)
+void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType)
 {
 	String pathToScan;
 	if (subDirectory.length == 0)
@@ -532,4 +519,122 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	setCursor(uiState, uiState->currentCursor);
 	renderer->loadAssets(renderer, assets);
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
+}
+
+
+
+
+
+Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName)
+{
+	Asset **result = find(&assets->assetsByType[type], shortName);
+
+	return (result == null) ? null : *result;
+}
+
+Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
+{
+	DEBUG_FUNCTION();
+	Asset *result = getAssetIfExists(assets, type, shortName);
+
+	if (result == null)
+	{
+		DEBUG_BREAK();
+		logError("Requested asset '{0}' was not found!", {shortName});
+	}
+
+	return result;
+}
+
+inline SpriteGroup *getSpriteGroup(AssetManager *assets, String name)
+{
+	return &getAsset(assets, AssetType_Sprite, name)->spriteGroup;
+}
+
+inline Sprite *getSprite(SpriteGroup *group, s32 offset)
+{
+	return group->sprites + (offset % group->count);
+}
+
+inline Shader *getShader(AssetManager *assets, String shaderName)
+{
+	return &getAsset(assets, AssetType_Shader, shaderName)->shader;
+}
+
+BitmapFont *getFont(AssetManager *assets, String fontName)
+{
+	BitmapFont *result = null;
+
+	String *fontFilename = find(&assets->theme.fontNamesToAssetNames, fontName);
+	if (fontFilename == null)
+	{
+		// Fall back to treating it as a filename
+		Asset *fontAsset = getAsset(assets, AssetType_BitmapFont, fontName);
+		if (fontAsset != null)
+		{
+			result = &fontAsset->bitmapFont;
+		}
+		logError("Failed to find font named '{0}' in the UITheme.", {fontName});
+	}
+	else
+	{
+		Asset *fontAsset = getAsset(assets, AssetType_BitmapFont, *fontFilename);
+		if (fontAsset != null)
+		{
+			result = &fontAsset->bitmapFont;
+		}
+	}
+
+	return result;
+}
+
+#define LOCAL(str) getText(globalAppState.assets, makeString(str))
+
+inline String getText(AssetManager *assets, String name)
+{
+	DEBUG_FUNCTION();
+
+	String result = name;
+
+	String *foundText = find(&assets->texts, name);
+	if (foundText != null)
+	{
+		result = *foundText;
+	}
+	else
+	{
+		logError("Locale {0} is missing text for '{1}'.", {globalAppState.settings.locale, name});
+		put(&assets->texts, name, name);
+	}
+
+	return result;
+}
+
+String getAssetPath(AssetManager *assets, AssetType type, String shortName)
+{
+	String result = shortName;
+
+	switch (type)
+	{
+	case AssetType_Cursor:
+		result = myprintf("{0}/cursors/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	case AssetType_BitmapFont:
+		result = myprintf("{0}/fonts/{1}",    {assets->assetsPath, shortName}, true);
+		break;
+	case AssetType_Shader:
+		result = myprintf("{0}/shaders/{1}",  {assets->assetsPath, shortName}, true);
+		break;
+	case AssetType_Texts:
+		result = myprintf("{0}/locale/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	case AssetType_Texture:
+		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	default:
+		result = myprintf("{0}/{1}", {assets->assetsPath, shortName}, true);
+		break;
+	}
+
+	return result;
 }

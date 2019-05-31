@@ -1,9 +1,27 @@
 # test file for text assets
 
-game_title       City Builder Test 9000
+game_title           City Builder Test 9000
+game_subtitle        Very much a work in progress!
+game_copyright       © Copyright Samuel Atkins 20XX
 
-button_play      Play
-button_credits   Credits
-button_settings  Settings
-button_about     About
-button_exit      Exit
+button_about         About
+button_back          Back
+button_build         Build...
+button_credits       Credits
+button_demolish      Demolish
+button_exit          Exit
+button_load          Load
+button_menu          Menu
+button_play          Play
+button_resume        Resume has a surprisingly verbose label
+button_save          Save
+button_settings      Settings
+button_website       Website
+button_zone          Zone...
+
+title_about          About
+title_inspect        Inspecting {0}, {1}
+title_menu           Menu
+title_settings       Settings
+
+city_default_name    City Name Here
