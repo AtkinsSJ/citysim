@@ -14,7 +14,6 @@ void initAssetManager(AssetManager *assets)
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"), AssetType_TerrainDefs);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"), AssetType_DevKeymap);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"), AssetType_UITheme);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "cnf"), AssetType_Settings);
 
 	initHashTable(&assets->directoryNameToType);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "cursors"), AssetType_Cursor);
@@ -388,13 +387,6 @@ void loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 
-	// File defaultSettingsFile = readFile(globalFrameTempArena, getAssetPath(assets, AssetType_Misc, makeString("default-settings.cnf")));
-	// File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(assets));
-	// loadSettings(&globalAppState.settings, defaultSettingsFile, userSettingsFile);
-
-	// // TEMP: Test saving
-	// saveSettings(&globalAppState.settings, assets);
-
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
 		Asset *asset = get(it);
@@ -468,8 +460,6 @@ void addAssets(AssetManager *assets)
 			addAssetsFromDirectory(assets, entry->key, entry->value);
 		}
 	}
-
-	// TODO: Settings?
 }
 
 bool haveAssetFilesChanged(AssetManager *assets)

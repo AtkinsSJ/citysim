@@ -8,7 +8,6 @@ enum AssetType
 	AssetType_BuildingDefs,
 	AssetType_Cursor,
 	AssetType_DevKeymap,
-	AssetType_Settings,
 	AssetType_Shader,
 	AssetType_Sprite,
 	AssetType_Texture,

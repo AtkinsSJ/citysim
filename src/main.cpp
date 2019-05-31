@@ -177,14 +177,14 @@ int main(int argc, char *argv[])
 
 	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
 
+	Settings *settings = &globalAppState.settings;
+	initSettings(settings);
+	loadSettings(settings);
+
 	AssetManager *assets = createAssetManager();
 	addAssets(assets);
 	loadAssets(assets);
 	appState->assets = assets;
-
-	Settings *settings = &globalAppState.settings;
-	initSettings(settings);
-	loadSettings(settings, assets);
 
 	SDL_Window *window = initSDL(settings, "Some kind of city builder");
 	ASSERT(window != null, "Failed to initialise SDL.");

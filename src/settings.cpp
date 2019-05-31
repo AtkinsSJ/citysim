@@ -11,6 +11,13 @@ void registerSetting(Settings *settings, String settingName, smm offset, Type ty
 	put(&settings->defs, settingName, def);
 }
 
+void loadDefaultSettings(Settings *settings)
+{
+	settings->windowed = true;
+	settings->resolution = v2i(1024, 768);
+	settings->locale = makeString("en");
+}
+
 void initSettings(Settings *settings)
 {
 	*settings = {};
@@ -27,6 +34,8 @@ void initSettings(Settings *settings)
 	REGISTER_SETTING(locale,     String, 1);
 
 #undef REGISTER_SETTING
+
+	loadDefaultSettings(settings);
 }
 
 inline String getUserSettingsPath(Settings *settings)
@@ -101,11 +110,9 @@ void loadSettingsFile(Settings *settings, String name, Blob settingsData)
 	}
 }
 
-void loadSettings(Settings *settings, AssetManager *assets)
+void loadSettings(Settings *settings)
 {
-	Asset *defaultSettings = getAsset(assets, AssetType_Settings, settings->defaultSettingsFilename);
-	ASSERT(defaultSettings != null, "Default settings file missing! This is really bad.");
-	loadSettingsFile(settings, defaultSettings->shortName, defaultSettings->data);
+	loadDefaultSettings(settings);
 
 	File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(settings));
 	// User settings might not exist
