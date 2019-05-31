@@ -4,6 +4,7 @@ enum Type
 {
 	Type_bool,
 	Type_s32,
+	Type_String,
 };
 
 struct SettingDef
@@ -25,6 +26,7 @@ struct Settings
 	// The actual settings
 	bool windowed;
 	V2I resolution;
+	String locale;
 };
 
 void loadSettings(Settings *settings, struct AssetManager *assets);

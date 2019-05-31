@@ -22,8 +22,9 @@ void initSettings(Settings *settings)
 
 #define REGISTER_SETTING(settingName, type, count) registerSetting(settings, makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
 
-	REGISTER_SETTING(windowed,   bool, 1);
-	REGISTER_SETTING(resolution, s32,  2);
+	REGISTER_SETTING(windowed,   bool,   1);
+	REGISTER_SETTING(resolution, s32,    2);
+	REGISTER_SETTING(locale,     String, 1);
 
 #undef REGISTER_SETTING
 }
@@ -88,6 +89,11 @@ void loadSettingsFile(Settings *settings, String name, Blob settingsData)
 						}
 					} break;
 
+					case Type_String:
+					{
+						((String *)firstItem)[i] = pushString(&globalAppState.systemArena, sValue);
+					} break;
+
 					default: ASSERT(false, "Unhandled setting type!");
 				}
 			}
@@ -108,7 +114,7 @@ void loadSettings(Settings *settings, AssetManager *assets)
 		loadSettingsFile(settings, userSettingsFile.name, userSettingsFile.data);
 	}
 
-	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}", {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y)});
+	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}", {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y), settings->locale});
 }
 
 void applySettings(Settings *settings)
@@ -144,13 +150,16 @@ void saveSettings(Settings *settings)
 				case Type_bool:
 				{
 					append(&stb, formatBool(((bool *)firstItem)[i]));
-					append(&stb, ' ');
 				} break;
 
 				case Type_s32:
 				{
 					append(&stb, formatInt(((s32 *)firstItem)[i]));
-					append(&stb, ' ');
+				} break;
+
+				case Type_String:
+				{
+					append(&stb, ((String *)firstItem)[i]);
 				} break;
 
 				default: ASSERT(false, "Unhandled setting type!");

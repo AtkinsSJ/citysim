@@ -1,0 +1,9 @@
+# test file for text assets
+
+game_title       Miasto
+
+button_play      Grać
+button_credits   Kredyty
+button_settings  Ustawienia
+button_about     O
+button_exit      Wyjście
