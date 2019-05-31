@@ -127,6 +127,8 @@ void loadSettings(Settings *settings)
 void applySettings(Settings *settings)
 {
 	resizeWindow(globalAppState.renderer, settings->resolution.x, settings->resolution.y, !settings->windowed);
+
+	setLocale(globalAppState.assets, settings->locale);
 }
 
 void saveSettings(Settings *settings)

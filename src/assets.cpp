@@ -462,7 +462,8 @@ void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType
 void addAssets(AssetManager *assets)
 {
 	// Manually add the texts asset, because it's special.
-	addAsset(assets, AssetType_Texts, myprintf("{0}.text", {globalAppState.settings.locale}));
+	assets->locale = globalAppState.settings.locale;
+	addAsset(assets, AssetType_Texts, myprintf("{0}.text", {assets->locale}));
 
 	{
 		DEBUG_BLOCK("Read asset directories");
@@ -637,4 +638,15 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	}
 
 	return result;
+}
+
+void setLocale(AssetManager *assets, String locale)
+{
+	if (!equals(locale, assets->locale))
+	{
+		assets->locale = locale;
+
+		// TODO: Try something smarter here. Only need to reload the locale-specific assets.
+		reloadAssets(assets, globalAppState.renderer, &globalAppState.uiState);
+	}
 }

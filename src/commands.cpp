@@ -72,6 +72,12 @@ ConsoleCommand(reload_assets)
 	reloadAssets(globalAppState.assets, globalAppState.renderer, &globalAppState.uiState);
 }
 
+ConsoleCommand(reload_settings)
+{
+	loadSettings(&globalAppState.settings);
+	applySettings(&globalAppState.settings);
+}
+
 ConsoleCommand(exit)
 {
 	consoleWriteLine("Quitting game...", CLS_Success);
@@ -168,6 +174,7 @@ void initCommands(Console *console)
 	append(&console->commands, Command(CMD(funds), 1, 1));
 	append(&console->commands, Command(CMD(hello), 0, 1));
 	append(&console->commands, Command(CMD(reload_assets), 0, 0));
+	append(&console->commands, Command(CMD(reload_settings), 0, 0));
 	append(&console->commands, Command(CMD(resize_window), 2, 2));
 	append(&console->commands, Command(CMD(show_layer), 0, 1));
 	append(&console->commands, Command(CMD(window_size), 0, 0));

@@ -12,7 +12,6 @@ Things to work on next maybe:
 - Power stations and connectivity and consumption?
 - Zones actually spawn stuff
 - Rather than directly recalculating power/pathing when we make a change, mark them as "dirty" and then recalculate at an appropriate moment.
-- String assets
 - Break the world into chunks, each of which handles local information. (Power, path connectivity etc)
 	- Transport, power, water, and probably other things, all rely heavily on a flood-fill connectivity check to know what parts of the city are relevant, and it's expensive to recalculate the entire map any time something changes. If we break this into two parts, within-chunk and between-chunks, we'd only need to recalculate at most a single chunk, and then the chunks graph itself. The downside is this is more complicated.
 	- This means each chunk would have its own list of PowerGroups, etc. That starts to get messy memory-wise, I don't think something like that would work with our MemoryArena approach. IDK, maybe we could be really sloppy and allocate tons of them? Or put all those things in a central place? Actually that makes more sense.
@@ -148,7 +147,7 @@ Asset system:
 	- At the end of a level, we can also evict all level-specific assets if we want?
 	- Track evictions so we can monitor it and see if it's misbehaving.
 - Asset packer of some kind. Maybe just creates an assets table?
-- Strings! Translateable and stored as assets.
+- Text assets compiled in some way so we don't need a string lookup?
 	- https://blog.thimbleweedpark.com/text_lock
 	- BETTER: https://ourmachinery.com/post/localization-in-the-machinerys-ui/
 - Audio when we have that!
@@ -163,13 +162,6 @@ Console:
 - Automatic parameter type checking? That might be crazy though.
 
 Return false for isKeyPressed() etc, when the key is a printable character and we have a text input active?
-
-Strings:
-- translation! getString("string_id") return the localised string.
-	- String file managed by assets system
-	- Read strings from a compiled file. (.mo? https://www.gnu.org/software/gettext/manual/html_node/MO-Files.html)
-	- Reload correctly
-	- Can switch language at runtime
 
 Unicode stuff:
 - 2-stage table for properties, will save space! Not sure if I need that, but thought it was sensible to put the link here in case I do. https://www.strchr.com/multi-stage_tables
