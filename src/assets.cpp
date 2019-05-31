@@ -32,10 +32,12 @@ void initAssetManager(AssetManager *assets)
 
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
-		initHashTable(&assets->assetsByName[assetType]);
+		initHashTable(&assets->assetsByType[assetType]);
 	}
 
 	initUITheme(&assets->theme);
+
+	initHashTable(&assets->texts);
 
 	// NB: This might fail, or we might be on a platform where it isn't implemented.
 	// That's OK though! 
@@ -81,7 +83,7 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 	asset->data.memory = null;
 	asset->isAFile = isAFile;
 
-	put(&assets->assetsByName[type], shortName, asset);
+	put(&assets->assetsByType[type], shortName, asset);
 
 	return asset;
 }
@@ -131,6 +133,23 @@ void ensureAssetIsLoaded(AssetManager *assets, Asset *asset)
 	loadAsset(assets, asset);
 
 	ASSERT(asset->state == AssetState_Loaded, "Failed to load asset '{0}'", {asset->shortName});
+}
+
+void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
+{
+	LineReader reader = readLines(asset->shortName, fileData);
+
+	clear(texts);
+
+	while (!isDone(&reader))
+	{
+		String line = nextLine(&reader);
+
+		String key, value;
+		key = nextToken(line, &value);
+
+		put(texts, key, value);
+	}
 }
 
 void loadAsset(AssetManager *assets, Asset *asset)
@@ -214,6 +233,13 @@ void loadAsset(AssetManager *assets, Asset *asset)
 		case AssetType_TerrainDefs:
 		{
 			loadTerrainDefinitions(&terrainDefs, assets, fileData, asset);
+			asset->state = AssetState_Loaded;
+		} break;
+
+		case AssetType_Texts:
+		{
+			copyFileIntoAsset(assets, &fileData, asset);
+			loadTexts(&assets->texts, asset, fileData);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -342,10 +368,10 @@ Sprite *addSprite(AssetManager *assets, String name, Asset *textureAsset, Rect2 
 	return sprite;
 }
 
-void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false)
+void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied)
 {
 	String textureName = pushString(&assets->assetArena, textureFilename);
-	Asset **findResult = find(&assets->assetsByName[AssetType_Texture], textureName);
+	Asset **findResult = find(&assets->assetsByType[AssetType_Texture], textureName);
 	Asset *textureAsset;
 	if (findResult == null)
 	{
@@ -448,6 +474,9 @@ void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType
 
 void addAssets(AssetManager *assets)
 {
+	// Manually add the texts asset, because it's special.
+	addAsset(assets, AssetType_Texts, myprintf("{0}.text", {globalAppState.settings.locale}));
+
 	{
 		DEBUG_BLOCK("Read asset directories");
 		addAssetsFromDirectory(assets, nullString);
@@ -488,7 +517,7 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	// Clear the hash tables
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
-		clear(&assets->assetsByName[assetType]);
+		clear(&assets->assetsByType[assetType]);
 	}
 
 	// General resetting of Assets system

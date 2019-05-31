@@ -55,29 +55,29 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(theme, makeString("title"));
+	UILabelStyle *labelStyle = findLabelStyle(theme, LocalString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
-	position.y += (uiText(uiState, font, LocalString("City Builder Thing"),
+	position.y += (uiText(uiState, font, LOCAL("game_title"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	position.y += (uiText(uiState, font, LocalString("Very much a work in progress!"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
-	if (uiButton(uiState, LocalString("Play"), buttonRect, 1)) // , SDLK_RETURN
+	if (uiButton(uiState, LOCAL("button_play"), buttonRect, 1)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;
 		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LocalString("Credits"), buttonRect, 1))
+	if (uiButton(uiState, LOCAL("button_credits"), buttonRect, 1))
 	{
 		result = AppStatus_Credits;
 		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LocalString("Settings"), buttonRect, 1))
+	if (uiButton(uiState, LOCAL("button_settings"), buttonRect, 1))
 	{
 		result = AppStatus_SettingsMenu;
 		clear(&uiState->openWindows);
@@ -92,12 +92,12 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 		showWindow(uiState, LocalString("Hello window!"), 200, 200, makeString("general"), WinFlag_AutomaticHeight, testWindowProc, aNumber);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LocalString("About"), buttonRect, 1))
+	if (uiButton(uiState, LOCAL("button_about"), buttonRect, 1))
 	{
 		showAboutWindow(uiState);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LocalString("Exit"), buttonRect, 1))
+	if (uiButton(uiState, LOCAL("button_exit"), buttonRect, 1))
 	{
 		result = AppStatus_Quit;
 	}

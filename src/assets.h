@@ -10,6 +10,7 @@ enum AssetType
 	AssetType_DevKeymap,
 	AssetType_Shader,
 	AssetType_Sprite,
+	AssetType_Texts,
 	AssetType_Texture,
 	AssetType_TerrainDefs,
 	AssetType_UITheme,
@@ -92,12 +93,6 @@ struct Asset
 	};
 };
 
-struct IndexRange
-{
-	u32 firstIndex;
-	u32 lastIndex;
-};
-
 struct AssetManager
 {
 	MemoryArena assetArena;
@@ -113,7 +108,7 @@ struct AssetManager
 	HashTable<AssetType> directoryNameToType;
 
 	ChunkedArray<Asset> allAssets;
-	HashTable<Asset*> assetsByName[AssetTypeCount];
+	HashTable<Asset*> assetsByType[AssetTypeCount];
 
 	// TODO: If the theme is an asset, we should remove this direct reference!
 	// Will want to make the UITheme itself a densely-packed struct, rather than a set of hashtables,
@@ -121,6 +116,11 @@ struct AssetManager
 	// After all, the theme doesn't change after it's loaded. We can use the string identifiers
 	// for linking, and then just use direct IDs maybe? IDK, it's worth a thought.
 	UITheme theme;
+
+	// TODO: this probably belongs somewhere else? IDK.
+	// It feels icky having parts of assets directly in this struct, but when there's only 1, and you
+	// have to do a hashtable lookup inside it, it makes more sense to avoid the "find the asset" lookup.
+	HashTable<String> texts;
 
 	/*
 
@@ -133,18 +133,18 @@ struct AssetManager
 	eg, for Fonts, we probably want the memory* pointer to be to the glyph data so it's easy to locate.
 
 	Asset types:
-	- texture assets
-	- sprites somehow??? There are thousands of them, because of fonts... maybe font glyphs should use a different, more specialised system?
+	✔ texture assets
+	✔ sprites somehow??? There are thousands of them, because of fonts... maybe font glyphs should use a different, more specialised system?
 
 	Much later...
 	- audio! (sfx/music as separate things probably)
 	- localised text
 
 	Other changes:
-	- lookup by name
+	✔ lookup by name
 	- reload individual files
-	- automated reloading
-	- automated cataloguing
+	✔ automated reloading
+	✔ automated cataloguing
 
 	*/
 };
@@ -153,9 +153,12 @@ void loadAsset(AssetManager *assets, Asset *asset);
 void ensureAssetIsLoaded(AssetManager *assets, Asset *asset);
 bool haveAssetFilesChanged(AssetManager *assets);
 
+
+void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false);
+
 Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName)
 {
-	Asset **result = find(&assets->assetsByName[type], shortName);
+	Asset **result = find(&assets->assetsByType[type], shortName);
 
 	return (result == null) ? null : *result;
 }
@@ -216,6 +219,23 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 	return result;
 }
 
+// TODO: Remove LocalString, we don't use it any more!
+#define LocalString(str) makeString(str)
+#define LOCAL(str) getText(globalAppState.assets, makeString(str))
+
+inline String getText(AssetManager *assets, String name)
+{
+	String result = name;
+
+	String *foundText = find(&assets->texts, name);
+	if (foundText != null)
+	{
+		result = *foundText;
+	}
+
+	return result;
+}
+
 String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 {
 	String result = shortName;
@@ -231,6 +251,9 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	case AssetType_Shader:
 		result = myprintf("{0}/shaders/{1}",  {assets->assetsPath, shortName}, true);
 		break;
+	case AssetType_Texts:
+		result = myprintf("{0}/locale/{1}", {assets->assetsPath, shortName}, true);
+		break;
 	case AssetType_Texture:
 		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
 		break;
@@ -240,8 +263,4 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	}
 
 	return result;
-}
-inline String getAssetPath(AssetManager *assets, AssetType type, char *shortName)
-{
-	return getAssetPath(assets, type, makeString(shortName));
 }

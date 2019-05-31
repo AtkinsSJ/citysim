@@ -50,7 +50,7 @@ void loadSettingsFile(Settings *settings, String name, Blob settingsData)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (line.length == 0) break;
+		if (line.length == 0) break; // Is this necessary? It shouldn't be!
 
 		String settingName;
 		String remainder;

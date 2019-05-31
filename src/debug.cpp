@@ -447,10 +447,10 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 		}
 	}
 
-	// assetsByName HashTables
+	// assetsByType HashTables
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
-		auto assetsByNameForType = assets->assetsByName[assetType];
+		auto assetsByNameForType = assets->assetsByType[assetType];
 		assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
 	}
 

@@ -194,7 +194,7 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	for (auto it = iterate(&assets->assetsByName[AssetType_Texture]);
+	for (auto it = iterate(&assets->assetsByType[AssetType_Texture]);
 		!it.isDone;
 		next(&it))
 	{
@@ -207,7 +207,7 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Shaders
 	clear(&gl->shaders); // Just in case
-	for (auto it = iterate(&assets->assetsByName[AssetType_Shader]);
+	for (auto it = iterate(&assets->assetsByType[AssetType_Shader]);
 		!it.isDone;
 		next(&it))
 	{
@@ -230,7 +230,7 @@ static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	for (auto it = iterate(&assets->assetsByName[AssetType_Texture]);
+	for (auto it = iterate(&assets->assetsByType[AssetType_Texture]);
 		!it.isDone;
 		next(&it))
 	{

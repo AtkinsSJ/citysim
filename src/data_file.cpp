@@ -1,20 +1,6 @@
 #pragma once
 
-struct LineReader
-{
-	String filename;
-	Blob data;
-
-	bool skipBlankLines;
-
-	smm pos;
-	smm lineNumber;
-
-	bool removeComments;
-	char commentChar;
-};
-
-LineReader readLines(String filename, Blob data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#')
+LineReader readLines(String filename, Blob data, bool skipBlankLines, bool removeComments, char commentChar)
 {
 	LineReader result = {};
 
@@ -30,18 +16,13 @@ LineReader readLines(String filename, Blob data, bool skipBlankLines=true, bool 
 	return result;
 }
 
-inline bool isDone(LineReader *reader)
-{
-	return (reader->pos >= reader->data.size);
-}
-
-void warn(LineReader *reader, char *message, std::initializer_list<String> args = {})
+void warn(LineReader *reader, char *message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
 	logWarn("{0}:{1} - {2}", {reader->filename, formatInt(reader->lineNumber), text});
 }
 
-void error(LineReader *reader, char *message, std::initializer_list<String> args = {})
+void error(LineReader *reader, char *message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
 	logError("{0}:{1} - {2}", {reader->filename, formatInt(reader->lineNumber), text});

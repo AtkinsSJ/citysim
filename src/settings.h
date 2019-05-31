@@ -29,6 +29,6 @@ struct Settings
 	String locale;
 };
 
-void loadSettings(Settings *settings, struct AssetManager *assets);
+void loadSettings(Settings *settings);
 void applySettings(Settings *settings);
 void saveSettings(Settings *settings);
