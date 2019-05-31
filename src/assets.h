@@ -162,8 +162,9 @@ void addTiledSprites(AssetManager *assets, String name, String textureFilename, 
 void addFont(AssetManager *assets, String name, String filename);
 
 void loadAsset(AssetManager *assets, Asset *asset);
-void unloadAsset(AssetManager *assets, Asset *asset);
 void ensureAssetIsLoaded(AssetManager *assets, Asset *asset);
+void unloadAsset(AssetManager *assets, Asset *asset);
+void reloadAsset(AssetManager *assets, Asset *asset);
 
 void addAssets(AssetManager *assets);
 void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType=AssetType_Unknown);

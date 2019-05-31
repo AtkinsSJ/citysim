@@ -238,6 +238,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_Texts:
 		{
+			fileData = readTempFile(getAssetPath(assets, AssetType_Texts, myprintf("{0}.text", {assets->locale})));
 			copyFileIntoAsset(assets, &fileData, asset);
 			loadTexts(&assets->texts, asset, fileData);
 			asset->state = AssetState_Loaded;
@@ -463,7 +464,7 @@ void addAssets(AssetManager *assets)
 {
 	// Manually add the texts asset, because it's special.
 	assets->locale = globalAppState.settings.locale;
-	addAsset(assets, AssetType_Texts, myprintf("{0}.text", {assets->locale}));
+	addAsset(assets, AssetType_Texts, makeString("LOCALE.text"), false);
 
 	{
 		DEBUG_BLOCK("Read asset directories");
@@ -522,9 +523,11 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }
 
-
-
-
+void reloadAsset(AssetManager *assets, Asset *asset)
+{
+	unloadAsset(assets, asset);
+	loadAsset(assets, asset);
+}
 
 Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName)
 {
@@ -646,7 +649,8 @@ void setLocale(AssetManager *assets, String locale)
 	{
 		assets->locale = locale;
 
-		// TODO: Try something smarter here. Only need to reload the locale-specific assets.
-		reloadAssets(assets, globalAppState.renderer, &globalAppState.uiState);
+		// Text
+		Asset *textAsset = getAsset(assets, AssetType_Texts, makeString("LOCALE.text"));
+		reloadAsset(assets, textAsset);
 	}
 }
