@@ -120,9 +120,9 @@ Split the game code from the platform code
 GUI
 - BUG: Text alignment doesn't work when the text wraps onto multiple lines! Each line should align itself horizontally. (So, a multi-line wrapped text with ALIGN_H_CENTRE should have each line centred!)
 - Convert Tooltips to a special kind of Window, so that we can reuse the fancy window code.
-	- Window flag for following the mouse
-	- Remove Tooltip style
-	- Remove tooltip code
+	✔ Window flag for following the mouse
+	✔ Remove Tooltip style
+	✔ Remove tooltip code
 	- Make tooltips not be an "active" window, so they don't render other windows inactive!
 - Convert the "UI message" to a window too
 

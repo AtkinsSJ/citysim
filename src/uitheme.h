@@ -26,17 +26,6 @@ struct UITextBoxStyle
 	V4 backgroundColor;
 };
 
-struct UITooltipStyle
-{
-	String fontName;
-	V4 textColor;
-
-	V4 backgroundColor;
-	f32 padding;
-
-	V2 offsetFromCursor;
-};
-
 struct UIMessageStyle
 {
 	String fontName;
@@ -75,7 +64,6 @@ struct UITheme
 
 	HashTable<UIButtonStyle>  buttonStyles;
 	HashTable<UILabelStyle>   labelStyles;
-	HashTable<UITooltipStyle> tooltipStyles;
 	HashTable<UIMessageStyle> messageStyles;
 	HashTable<UITextBoxStyle> textBoxStyles;
 	HashTable<UIWindowStyle>  windowStyles;
@@ -91,10 +79,6 @@ inline UIButtonStyle *findButtonStyle(UITheme *theme, String name)
 inline UILabelStyle *findLabelStyle(UITheme *theme, String name)
 {
 	return find(&theme->labelStyles, name);
-}
-inline UITooltipStyle *findTooltipStyle(UITheme *theme, String name)
-{
-	return find(&theme->tooltipStyles, name);
 }
 inline UIMessageStyle *findMessageStyle(UITheme *theme, String name)
 {

@@ -24,9 +24,6 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 
 	initMemoryArena(&uiState->arena, MB(1));
 
-	uiState->tooltip = {};
-	uiState->tooltip.text = pushString(&uiState->arena, 256);
-
 	uiState->message = {};
 	uiState->message.text = pushString(&uiState->arena, 256);
 	uiState->message.countdown = -1;
@@ -104,19 +101,15 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 	return bounds;
 }
 
-void basicTooltipWindowProc(WindowContext *context, void *userData)
+void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 {
-	window_label(context, context->uiState->tooltip.text);
-	context->closeRequested = true;
+	window_label(context, context->uiState->tooltipText);
 }
 
-void setTooltip(UIState *uiState, String text, String style)
+void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 {
-	copyString(text, &uiState->tooltip.text);
-	uiState->tooltip.show = true;
-	uiState->tooltip.styleName = style;
-
-	showWindow(uiState, nullString, 300, 0, makeString("tooltip"), WinFlag_AutomaticHeight | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, basicTooltipWindowProc, null);
+	static String styleName = makeString("tooltip");
+	showWindow(uiState, nullString, 300, 0, styleName, WinFlag_AutomaticHeight | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
 bool uiButton(UIState *uiState,
@@ -157,7 +150,8 @@ bool uiButton(UIState *uiState,
 
 		if (tooltip.length)
 		{
-			setTooltip(uiState, tooltip, makeString("general"));
+			uiState->tooltipText = tooltip;
+			showTooltip(uiState, basicTooltipWindowProc, null);
 		}
 	}
 	else if (active)

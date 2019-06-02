@@ -268,9 +268,10 @@ void updateAndRenderWindows(UIState *uiState)
 		Window *window = get(it);
 
 		f32 depth = 2000.0f - (20.0f * windowIndex);
-		bool isActive = (windowIndex == 0);
-		bool isModal = isActive && (window->flags & WinFlag_Modal) != 0;
+		bool isActive    = (windowIndex == 0);
+		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
+		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
 
@@ -318,7 +319,7 @@ void updateAndRenderWindows(UIState *uiState)
 			
 			uiState->mouseInputHandled = true;
 		}
-		else if (window->flags & WinFlag_Tooltip)
+		else if (isTooltip)
 		{
 			window->area.pos = v2i(uiState->uiBuffer->camera.mousePos) + windowStyle->offsetFromMouse;
 		}
@@ -362,7 +363,7 @@ void updateAndRenderWindows(UIState *uiState)
 		context.currentOffset = v2(0,0);
 		context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 		window->windowProc(&context, window->userData);
-		if (context.closeRequested)
+		if (context.closeRequested || isTooltip)
 		{
 			closeWindow = windowIndex;
 		}
@@ -397,7 +398,7 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 
 			// Tooltips don't take mouse input
-			if (!(window->flags & WinFlag_Tooltip))
+			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
 			}
@@ -431,7 +432,7 @@ void updateAndRenderWindows(UIState *uiState)
 		if (inRect(wholeWindowArea, mousePos))
 		{
 			// Tooltips don't take mouse input
-			if (!(window->flags & WinFlag_Tooltip))
+			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
 			}

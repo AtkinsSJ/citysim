@@ -504,15 +504,22 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	}
 }
 
-void showCostTooltip(UIState *uiState, City *city, s32 buildCost)
+void costTooltipWindowProc(WindowContext *context, void *userData)
 {
-	String style = canAfford(city, buildCost)
-				? makeString("cost-affordable")
-				: makeString("cost-unaffordable");
+	s32 buildCost = truncate32((smm)userData);
+	City *city = &globalAppState.gameState->city;
+
+	char *style = canAfford(city, buildCost)
+				? "cost-affordable"
+				: "cost-unaffordable";
 
 	String text = myprintf("£{0}", {formatInt(buildCost)});
+	window_label(context, text, style);
+}
 
-	setTooltip(uiState, text, style);
+void showCostTooltip(UIState *uiState, s32 buildCost)
+{
+	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
 void pushOverlayRenderItem(GameState *gameState, Rect2 rect, f32 depth, V4 color, s32 shaderID, Sprite *sprite = null)
@@ -601,7 +608,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							}
 
 							s32 buildCost = buildingDef->buildCost;
-							showCostTooltip(uiState, city, buildCost);
+							showCostTooltip(uiState, buildCost);
 
 							V4 ghostColor = color255(128,255,128,255);
 							if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
@@ -625,7 +632,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							}
 
 							s32 buildCost = buildingDef->buildCost;
-							showCostTooltip(uiState, city, buildCost);
+							showCostTooltip(uiState, buildCost);
 
 							V4 ghostColor = color255(128,255,128,255);
 							if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
@@ -658,7 +665,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 							case DragResult_ShowPreview:
 							{
-								if (!mouseIsOverUI) showCostTooltip(uiState, city, buildCost);
+								if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
 
 								if (canAfford(city, buildCost))
 								{
@@ -705,7 +712,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 					case DragResult_ShowPreview:
 					{
-						if (!mouseIsOverUI) showCostTooltip(uiState, city, zoneCost);
+						if (!mouseIsOverUI) showCostTooltip(uiState, zoneCost);
 
 						if (canAfford(city, zoneCost))
 						{
@@ -746,7 +753,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 					case DragResult_ShowPreview:
 					{
-						if (!mouseIsOverUI) showCostTooltip(uiState, city, demolishCost);
+						if (!mouseIsOverUI) showCostTooltip(uiState, demolishCost);
 
 						if (canAfford(city, demolishCost))
 						{

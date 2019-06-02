@@ -1,13 +1,6 @@
 #pragma once
 // ui.h
 
-struct Tooltip
-{
-	bool show;
-	String styleName;
-	String text;
-};
-
 const f32 uiMessageDisplayTime = 2.0f;
 const f32 uiMessageBottomMargin = 4;
 const f32 uiMessageTextPadding = 4;
@@ -31,7 +24,7 @@ struct UIState
 
 	f32 closestDepth;
 
-	Tooltip tooltip;
+	String tooltipText;
 	UiMessage message;
 
 	// TODO: Replace this with better "this input has already been used" code!

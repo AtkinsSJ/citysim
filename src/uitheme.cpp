@@ -6,7 +6,6 @@ void initUITheme(UITheme *theme)
 
 	initHashTable(&theme->buttonStyles);
 	initHashTable(&theme->labelStyles);
-	initHashTable(&theme->tooltipStyles);
 	initHashTable(&theme->messageStyles);
 	initHashTable(&theme->textBoxStyles);
 	initHashTable(&theme->windowStyles);
@@ -22,7 +21,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 	clear(&theme->fontNamesToAssetNames);
 	clear(&theme->buttonStyles);
 	clear(&theme->labelStyles);
-	clear(&theme->tooltipStyles);
 	clear(&theme->messageStyles);
 	clear(&theme->textBoxStyles);
 	clear(&theme->windowStyles);
@@ -33,7 +31,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 		Section_General = 1,
 		Section_Button,
 		Section_Label,
-		Section_Tooltip,
 		Section_UIMessage,
 		Section_TextBox,
 		Section_Window,
@@ -47,7 +44,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 		{
 			UIButtonStyle *button;
 			UILabelStyle *label;
-			UITooltipStyle *tooltip;
 			UIMessageStyle *message;
 			UITextBoxStyle *textBox;
 			UIWindowStyle *window;
@@ -101,12 +97,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 				target.type = Section_Label;
 				target.label = put(&theme->labelStyles, name);
 			}
-			else if (equals(firstWord, "Tooltip"))
-			{
-				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
-				target.type = Section_Tooltip;
-				target.tooltip = put(&theme->tooltipStyles, name);
-			}
 			else if (equals(firstWord, "UIMessage"))
 			{
 				String name = pushString(&assets->assetArena, nextToken(remainder, &remainder));
@@ -139,7 +129,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 				{
 					case Section_Button:    target.button->backgroundColor    = readColor255(&reader, firstWord, remainder); break;
 					case Section_TextBox:   target.textBox->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
-					case Section_Tooltip:   target.tooltip->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
 					case Section_UIMessage: target.message->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
 					case Section_Window:    target.window->backgroundColor    = readColor255(&reader, firstWord, remainder); break;
 					default:  WRONG_SECTION;
@@ -187,7 +176,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 				{
 					case Section_Button:     target.button->fontName        = fontName; break;
 					case Section_Label:      target.label->fontName         = fontName; break;
-					case Section_Tooltip:    target.tooltip->fontName       = fontName; break;
 					case Section_TextBox:    target.textBox->fontName       = fontName; break;
 					case Section_UIMessage:  target.message->fontName       = fontName; break;
 					default:  WRONG_SECTION;
@@ -198,18 +186,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 				switch (target.type)
 				{
 					case Section_Button:  target.button->hoverColor = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "offset"))
-			{
-				s64 offsetX, offsetY;
-				if (!asInt(nextToken(remainder, &remainder), &offsetX)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-				if (!asInt(nextToken(remainder, &remainder), &offsetY)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-
-				switch (target.type)
-				{
-					case Section_Tooltip:  target.tooltip->offsetFromCursor = v2((s32)offsetX, (s32)offsetY); break;
 					default:  WRONG_SECTION;
 				}
 			}
@@ -241,7 +217,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 				switch (target.type)
 				{
 					case Section_Button:     target.button->padding    = (f32) readInt(&reader, firstWord, remainder); break;
-					case Section_Tooltip:    target.tooltip->padding   = (f32) readInt(&reader, firstWord, remainder); break;
 					case Section_UIMessage:  target.message->padding   = (f32) readInt(&reader, firstWord, remainder); break;
 					default:  WRONG_SECTION;
 				}
@@ -269,7 +244,6 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 					case Section_Button:     target.button->textColor    = readColor255(&reader, firstWord, remainder); break;
 					case Section_Label:      target.label->textColor     = readColor255(&reader, firstWord, remainder); break;
 					case Section_TextBox:    target.textBox->textColor   = readColor255(&reader, firstWord, remainder); break;
-					case Section_Tooltip:    target.tooltip->textColor   = readColor255(&reader, firstWord, remainder); break;
 					case Section_UIMessage:  target.message->textColor   = readColor255(&reader, firstWord, remainder); break;
 					default:  WRONG_SECTION;
 				}
