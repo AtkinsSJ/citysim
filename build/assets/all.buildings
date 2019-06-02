@@ -27,7 +27,7 @@ carries_power true
 :Building Factory
 size 3 3
 texture factory-3x3 factory-3x3.png 48 48
-build line 40
+build paint 40
 demolish_cost 100
 carries_power true
 power_use 200

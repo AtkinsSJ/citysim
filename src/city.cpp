@@ -101,11 +101,9 @@ void spend(City *city, s32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, s32 left, s32 top, bool isAttemptingToBuild = false)
+bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32 top, bool isAttemptingToBuild = false)
 {
 	DEBUG_FUNCTION();
-	
-	BuildingDef *def = get(&buildingDefs, selectedBuildingTypeID);
 
 	// Can we afford to build this?
 	if (!canAfford(city, def->buildCost))
@@ -152,7 +150,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, 
 			{
 				// Check if we can combine this with the building that's already there
 				Building *buildingAtPos = get(&city->buildings, city->tileBuildings[ti]);
-				if (get(&buildingDefs, buildingAtPos->typeID)->canBeBuiltOnID == selectedBuildingTypeID)
+				if (get(&buildingDefs, buildingAtPos->typeID)->canBeBuiltOnID == def->typeID)
 				{
 					// We can!
 				}
@@ -169,16 +167,15 @@ bool canPlaceBuilding(UIState *uiState, City *city, s32 selectedBuildingTypeID, 
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s32 top, bool showBuildErrors)
+bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32 top, bool showBuildErrors)
 {
 	DEBUG_FUNCTION();
 	
-	if (!canPlaceBuilding(uiState, city, buildingTypeID, left, top, showBuildErrors))
+	if (!canPlaceBuilding(uiState, city, def, left, top, showBuildErrors))
 	{
 		return false;
 	}
 
-	BuildingDef *def = get(&buildingDefs, buildingTypeID);
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 	spend(city, def->buildCost);
 
@@ -248,18 +245,17 @@ bool placeBuilding(UIState *uiState, City *city, u32 buildingTypeID, s32 left, s
 	return true;
 }
 
-s32 calculateBuildCost(City *city, u32 buildingTypeID, Rect2I area)
+s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area)
 {
 	DEBUG_FUNCTION();
 	
-	BuildingDef *def = get(&buildingDefs, buildingTypeID);
 	s32 totalCost = 0;
 
 	for (s32 y=0; y + def->height <= area.h; y += def->height)
 	{
 		for (s32 x=0; x + def->width <= area.w; x += def->width)
 		{
-			if (canPlaceBuilding(null, city, buildingTypeID, area.x + x, area.y + y))
+			if (canPlaceBuilding(null, city, def, area.x + x, area.y + y))
 			{
 				totalCost += def->buildCost;
 			}
@@ -269,23 +265,15 @@ s32 calculateBuildCost(City *city, u32 buildingTypeID, Rect2I area)
 	return totalCost;
 }
 
-void placeBuildingRect(UIState *uiState, City *city, u32 buildingTypeID, Rect2I area)
+void placeBuildingRect(UIState *uiState, City *city, BuildingDef *def, Rect2I area)
 {
 	DEBUG_FUNCTION();
-	
-	BuildingDef *def = get(&buildingDefs, buildingTypeID);
-
-	s32 cost = calculateBuildCost(city, buildingTypeID, area);
-	if (!canAfford(city, cost))
-	{
-		pushUiMessage(uiState, makeString("Not enough money for construction."));
-	}
 
 	for (s32 y=0; y + def->height <= area.h; y += def->height)
 	{
 		for (s32 x=0; x + def->width <= area.w; x += def->width)
 		{
-			placeBuilding(uiState, city, buildingTypeID, area.x + x, area.y + y, false);
+			placeBuilding(uiState, city, def, area.x + x, area.y + y, false);
 		}
 	}
 }
@@ -384,17 +372,9 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		if (def->canDemolish)
 		{
 			// Tear down all the trees!
-			if (canAfford(city, def->demolishCost))
-			{
-				spend(city, def->demolishCost);
-				city->terrain[posTI].type = findTerrainTypeByName(makeString("Ground"));
-				return true;
-			}
-			else
-			{
-				pushUiMessage(uiState, makeString("Not enough money to clear this terrain."));
-				return false;
-			}
+			spend(city, def->demolishCost);
+			city->terrain[posTI].type = findTerrainTypeByName(makeString("Ground"));
+			return true;
 		}
 		else
 		{
@@ -442,12 +422,6 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 bool demolishRect(UIState *uiState, City *city, Rect2I area)
 {
 	DEBUG_FUNCTION();
-
-	s32 cost = calculateDemolitionCost(city, area);
-	if (!canAfford(city, cost)) {
-		pushUiMessage(uiState, makeString("Not enough money for demolition."));
-		return false;
-	}
 
 	for (int y=0; y<area.h; y++) {
 		for (int x=0; x<area.w; x++) {

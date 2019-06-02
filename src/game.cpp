@@ -604,14 +604,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
 							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
 							{
-								placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
+								placeBuilding(uiState, city, buildingDef, footprint.x, footprint.y, true);
 							}
 
 							s32 buildCost = buildingDef->buildCost;
 							showCostTooltip(uiState, buildCost);
 
 							V4 ghostColor = color255(128,255,128,255);
-							if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
+							if (!canPlaceBuilding(uiState, &gameState->city, buildingDef, footprint.x, footprint.y))
 							{
 								ghostColor = color255(255,0,0,128);
 							}
@@ -628,14 +628,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
 							if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 							{
-								placeBuilding(uiState, city, gameState->selectedBuildingTypeID, footprint.x, footprint.y, true);
+								placeBuilding(uiState, city, buildingDef, footprint.x, footprint.y, true);
 							}
 
 							s32 buildCost = buildingDef->buildCost;
 							showCostTooltip(uiState, buildCost);
 
 							V4 ghostColor = color255(128,255,128,255);
-							if (!canPlaceBuilding(uiState, &gameState->city, gameState->selectedBuildingTypeID, footprint.x, footprint.y))
+							if (!canPlaceBuilding(uiState, &gameState->city, buildingDef, footprint.x, footprint.y))
 							{
 								ghostColor = color255(255,0,0,128);
 							}
@@ -651,7 +651,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						DragType dragType = (buildingDef->buildMethod == BuildMethod_DragLine) ? DragLine : DragRect;
 
 						DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
-						s32 buildCost = calculateBuildCost(city, gameState->selectedBuildingTypeID, dragResult.dragRect);
+						s32 buildCost = calculateBuildCost(city, buildingDef, dragResult.dragRect);
 
 						switch (dragResult.operation)
 						{
@@ -659,7 +659,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							{
 								if (canAfford(city, buildCost))
 								{
-									placeBuildingRect(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect);
+									placeBuildingRect(uiState, city, buildingDef, dragResult.dragRect);
+								}
+								else
+								{
+									pushUiMessage(uiState, makeString("Not enough money for construction."));
 								}
 							} break;
 
@@ -675,7 +679,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
 										{
 											V4 ghostColor = color255(128,255,128,255);
-											if (!canPlaceBuilding(uiState, city, gameState->selectedBuildingTypeID, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
+											if (!canPlaceBuilding(uiState, city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
 											{
 												ghostColor = color255(255,0,0,128);
 											}
@@ -748,6 +752,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						if (canAfford(city, demolishCost))
 						{
 							demolishRect(uiState, city, dragResult.dragRect);
+						}
+						else
+						{
+							pushUiMessage(uiState, makeString("Not enough money for demolition."));
 						}
 					} break;
 
