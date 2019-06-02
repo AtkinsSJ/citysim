@@ -51,11 +51,6 @@ void window_label(WindowContext *context, String text, char *styleName)
 	}
 }
 
-/*
- * If you pass textWidth, then the button will be sized as though the text was that size. If you leave
- * it blank (or pass -1 manually) then the button will be automatically sized to wrap the contained text.
- * Either way, it always matches the size vertically.
- */
 bool window_button(WindowContext *context, String text, s32 textWidth)
 {
 	DEBUG_FUNCTION();

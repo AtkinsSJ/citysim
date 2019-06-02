@@ -14,70 +14,6 @@ static bool checkInGame()
 	return inGame;
 }
 
-ConsoleCommand(help)
-{
-	consoleWriteLine("Available commands are:");
-
-	for (auto it = iterate(&globalConsole->commands);
-		!it.isDone;
-		next(&it))
-	{
-		Command *command = get(it);
-		consoleWriteLine(myprintf(" - {0}", {command->name}));
-	}
-}
-
-ConsoleCommand(hello)
-{
-	consoleWriteLine("Hello human!");
-	consoleWriteLine(myprintf("Testing formatInt bases: 10:{0}, 16:{1}, 36:{2}, 8:{3}, 2:{4}", {formatInt(123456, 10), formatInt(123456, 16), formatInt(123456, 36), formatInt(123456, 8), formatInt(123456, 2)}));
-}
-
-ConsoleCommand(window_size)
-{
-	// The only place we can access the window size is via the renderer's UI camera!
-	// UGH this is so hacky. But I guess that's how the debug console should be?
-	V2 screenSize = globalAppState.renderer->uiBuffer.camera.size;
-
-	consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
-}
-
-ConsoleCommand(resize_window)
-{
-	String remainder = arguments;
-	bool succeeded = false;
-
-	String sWidth  = nextToken(remainder, &remainder);
-	String sHeight = nextToken(remainder, &remainder);
-	
-	s64 width = 0;
-	s64 height = 0;
-	if (asInt(sWidth, &width)   && (width > 0)
-	 && asInt(sHeight, &height) && (height > 0))
-	{
-		consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
-
-		succeeded = true;
-		resizeWindow(globalAppState.renderer, (s32)width, (s32)height, false);
-	}
-
-	if (!succeeded)
-	{
-		consoleWriteLine("Usage: resize_window width height, where both width and height are positive integers", CLS_Error);
-	}
-}
-
-ConsoleCommand(reload_assets)
-{
-	reloadAssets(globalAppState.assets, globalAppState.renderer, &globalAppState.uiState);
-}
-
-ConsoleCommand(reload_settings)
-{
-	loadSettings(&globalAppState.settings);
-	applySettings(&globalAppState.settings);
-}
-
 ConsoleCommand(exit)
 {
 	consoleWriteLine("Quitting game...", CLS_Success);
@@ -100,6 +36,41 @@ ConsoleCommand(funds)
 	{
 		consoleWriteLine("Usage: funds amount, where amount is an integer", CLS_Error);
 	}
+}
+
+ConsoleCommand(hello)
+{
+	consoleWriteLine("Hello human!");
+	consoleWriteLine(myprintf("Testing formatInt bases: 10:{0}, 16:{1}, 36:{2}, 8:{3}, 2:{4}", {formatInt(123456, 10), formatInt(123456, 16), formatInt(123456, 36), formatInt(123456, 8), formatInt(123456, 2)}));
+}
+
+ConsoleCommand(help)
+{
+	consoleWriteLine("Available commands are:");
+
+	for (auto it = iterate(&globalConsole->commands);
+		!it.isDone;
+		next(&it))
+	{
+		Command *command = get(it);
+		consoleWriteLine(myprintf(" - {0}", {command->name}));
+	}
+}
+
+ConsoleCommand(message)
+{
+	pushUiMessage(&globalAppState.uiState, arguments);
+}
+
+ConsoleCommand(reload_assets)
+{
+	reloadAssets(globalAppState.assets, globalAppState.renderer, &globalAppState.uiState);
+}
+
+ConsoleCommand(reload_settings)
+{
+	loadSettings(&globalAppState.settings);
+	applySettings(&globalAppState.settings);
 }
 
 ConsoleCommand(show_layer)
@@ -131,6 +102,41 @@ ConsoleCommand(show_layer)
 	else
 	{
 		consoleWriteLine("Usage: show_layer (paths|power), or with no argument to hide the data layer", CLS_Error);
+	}
+}
+
+ConsoleCommand(window_size)
+{
+	bool succeeded = false;
+	if (argumentsCount == 2)
+	{
+		String remainder = arguments;
+
+		String sWidth  = nextToken(remainder, &remainder);
+		String sHeight = nextToken(remainder, &remainder);
+		
+		s64 width = 0;
+		s64 height = 0;
+		if (asInt(sWidth, &width)   && (width > 0)
+		 && asInt(sHeight, &height) && (height > 0))
+		{
+			consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
+
+			succeeded = true;
+			resizeWindow(globalAppState.renderer, (s32)width, (s32)height, false);
+		}
+	}
+	else if (argumentsCount == 0)
+	{
+		V2 screenSize = globalAppState.renderer->uiBuffer.camera.size;
+		consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
+
+		succeeded = true;
+	}
+
+	if (!succeeded)
+	{
+		consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned.", CLS_Error);
 	}
 }
 
@@ -169,15 +175,16 @@ ConsoleCommand(zoom)
 #define CMD(name) #name, &cmd_##name
 void initCommands(Console *console)
 {
+	// NB: a max-arguments value of -1 means "no maximum"
 	append(&console->commands, Command(CMD(help), 0, 0));
 	append(&console->commands, Command(CMD(exit), 0, 0));
 	append(&console->commands, Command(CMD(funds), 1, 1));
 	append(&console->commands, Command(CMD(hello), 0, 1));
+	append(&console->commands, Command(CMD(message), 1, -1));
 	append(&console->commands, Command(CMD(reload_assets), 0, 0));
 	append(&console->commands, Command(CMD(reload_settings), 0, 0));
-	append(&console->commands, Command(CMD(resize_window), 2, 2));
 	append(&console->commands, Command(CMD(show_layer), 0, 1));
-	append(&console->commands, Command(CMD(window_size), 0, 0));
+	append(&console->commands, Command(CMD(window_size), 0, 2));
 	append(&console->commands, Command(CMD(zoom), 0, 1));
 }
 #undef CMD

@@ -28,6 +28,7 @@ enum WindowFlags
 	WinFlag_Modal           = 1 << 2,
 	WinFlag_Tooltip         = 1 << 3,
 	WinFlag_Headless        = 1 << 4,
+	WinFlag_Toast           = 1 << 5, // A window that animates in, stays for a while, and then disappears
 };
 
 struct Window
@@ -45,6 +46,11 @@ struct Window
 void showWindow(UIState *uiState, String title, s32 width, s32 height, String styleName, u32 flags, WindowProc windowProc, void *userData);
 
 void window_label(WindowContext *context, String text, char *styleName=null);
+/*
+ * If you pass textWidth, then the button will be sized as though the text was that size. If you leave
+ * it blank (or pass -1 manually) then the button will be automatically sized to wrap the contained text.
+ * Either way, it always matches the size vertically.
+ */
 bool window_button(WindowContext *context, String text, s32 textWidth=-1);
 
 void updateAndRenderWindows(UIState *uiState);

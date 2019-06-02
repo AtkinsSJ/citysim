@@ -8,13 +8,10 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 
-	f32 windowWidth = (f32) uiBuffer->camera.size.x;
+	f32 windowWidth  = (f32) uiBuffer->camera.size.x;
 	f32 windowHeight = (f32) uiBuffer->camera.size.y;
 	UITheme *theme = &assets->theme;
 	UIState *uiState = &appState->uiState;
-
-	uiState->mouseInputHandled = false;
-	updateAndRenderWindows(uiState);
 
 	drawRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), 0, uiState->untexturedShaderID, theme->overlayColor);
 
@@ -34,19 +31,16 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	if (uiButton(uiState, LOCAL("button_play"), buttonRect, 1)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;
-		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LOCAL("button_credits"), buttonRect, 1))
 	{
 		result = AppStatus_Credits;
-		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LOCAL("button_settings"), buttonRect, 1))
 	{
 		result = AppStatus_SettingsMenu;
-		clear(&uiState->openWindows);
 	}
 	buttonRect.y += 32;
 	if (uiButton(uiState, LOCAL("button_about"), buttonRect, 1))

@@ -150,7 +150,8 @@ void consoleHandleCommand(Console *console, String commandInput)
 					foundCommand = true;
 
 					s32 argCount = tokenCount - 1;
-					if ((argCount < command->minArgs) || (argCount > command->maxArgs))
+					bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
+					if ((argCount < command->minArgs) || tooManyArgs)
 					{
 						if (command->minArgs == command->maxArgs)
 						{

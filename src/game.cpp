@@ -398,10 +398,6 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 	City *city = &gameState->city;
 
-	uiState->uiRects.count = 0;
-	uiState->mouseInputHandled = false;
-	updateAndRenderWindows(uiState);
-
 	f32 left = uiPadding;
 	f32 right = windowWidth - uiPadding;
 
@@ -1005,18 +1001,19 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		freeMemoryArena(&gameState->gameArena);
 		appState->gameState = null;
 		appState->appStatus = AppStatus_MainMenu;
-		clear(&uiState->openWindows);
-	}
-
-	if (appState->appStatus == AppStatus_Game)
-	{
-		drawUiMessage(uiState);
 	}
 }
 
 void updateAndRender(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
+
+	AppStatus oldAppStatus = appState->appStatus;
+
+	UIState *uiState = &appState->uiState;
+	uiState->uiRects.count = 0;
+	uiState->mouseInputHandled = false;
+	updateAndRenderWindows(uiState);
 	
 	switch (appState->appStatus)
 	{
@@ -1047,4 +1044,11 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 			ASSERT(false, "Not implemented this AppStatus yet!");
 		} break;
 	}
+
+	if (appState->appStatus != oldAppStatus)
+	{
+		clear(&uiState->openWindows);
+	}
+
+	drawUiMessage(uiState);
 }
