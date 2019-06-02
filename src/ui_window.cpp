@@ -261,6 +261,7 @@ void updateAndRenderWindows(UIState *uiState)
 	Rect2I validWindowArea = irectCentreDim(uiState->uiBuffer->camera.pos, uiState->uiBuffer->camera.size);
 
 	s32 windowIndex = 0;
+	bool isActive = true;
 	for (auto it = iterate(&uiState->openWindows);
 		!it.isDone;
 		next(&it), windowIndex++)
@@ -268,7 +269,6 @@ void updateAndRenderWindows(UIState *uiState)
 		Window *window = get(it);
 
 		f32 depth = 2000.0f - (20.0f * windowIndex);
-		bool isActive    = (windowIndex == 0);
 		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
@@ -436,6 +436,24 @@ void updateAndRenderWindows(UIState *uiState)
 			{
 				uiState->mouseInputHandled = true;
 			}
+		}
+
+		//
+		// NB: This is a little confusing, so some explanation:
+		// Tooltips are windows, theoretically the front-most window, because they're shown fresh each frame.
+		// We take the front-most window as the active one. Problem is, we don't want the "real" front-most
+		// window to appear inactive just because a tooltip is visible. It feels weird and glitchy.
+		// So, instead of "isActive = (i == 0)", weset it to true before the loop, and then set it to false
+		// the first time we finish a window that wasn't a tooltip, which will be the front-most non-tooltip
+		// window!
+		// Actually, a similar thing will apply to UI messages once we port those, so I'll have to break it
+		// into a separate WindowFlag.
+		//
+		// - Sam, 02/06/2019
+		//
+		if (!isTooltip)
+		{
+			isActive = false;
 		}
 	}
 
