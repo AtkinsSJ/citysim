@@ -124,7 +124,11 @@ GUI
 	✔ Remove Tooltip style
 	✔ Remove tooltip code
 	✔ Make tooltips not be an "active" window, so they don't render other windows inactive!
-- Convert the "UI message" to a window too
+- Convert Toasts (née UI-Message) to use windows too
+	- This is somewhat more involved....
+	- Multiple toasts can exist at once. I'm thinking each new one pushes all the previous ones up.
+	- After an amount of time, they fade out.
+	- So, probably keep Toasts in a separate array to Windows, because they work in a special way. Still use the WindowProc/Context stuff for convenience, but don't deal with them in updateAndRenderWindows(). So, also no need for a special WinFlag!
 
 Audio!
 - Probably use SoLoud, rather than SDL_mixer: http://sol.gfxile.net/soloud/
