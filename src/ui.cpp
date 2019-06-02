@@ -104,33 +104,19 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 	return bounds;
 }
 
+void basicTooltipWindowProc(WindowContext *context, void *userData)
+{
+	window_label(context, context->uiState->tooltip.text);
+	context->closeRequested = true;
+}
+
 void setTooltip(UIState *uiState, String text, String style)
 {
 	copyString(text, &uiState->tooltip.text);
 	uiState->tooltip.show = true;
 	uiState->tooltip.styleName = style;
-}
 
-void drawTooltip(UIState *uiState)
-{
-	if (uiState->tooltip.show)
-	{
-		UITooltipStyle *style = findTooltipStyle(&uiState->assets->theme, uiState->tooltip.styleName);
-		f32 depth = uiState->closestDepth - 100.0f;
-
-		V2 mousePos = uiState->uiBuffer->camera.mousePos;
-
-		V2 topLeft = mousePos + style->offsetFromCursor + v2(style->padding, style->padding);
-
-		Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->tooltip.text,
-			topLeft, ALIGN_LEFT | ALIGN_TOP, depth + 1.0f, style->textColor);
-
-		labelRect = expand(labelRect, style->padding);
-
-		drawRect(uiState->uiBuffer, labelRect, depth, uiState->untexturedShaderID, style->backgroundColor);
-
-		uiState->tooltip.show = false;
-	}
+	showWindow(uiState, nullString, 300, 0, makeString("tooltip"), WinFlag_AutomaticHeight | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, basicTooltipWindowProc, null);
 }
 
 bool uiButton(UIState *uiState,

@@ -72,10 +72,15 @@ inline bool isFullGlyph(char *buffer, s32 glyphStartPos, s32 bufferByteLength)
 // returns 0 (start of the buffer) if can't find the start of the glyph
 s32 findStartOfGlyph(char *buffer, s32 byteOffset)
 {
-	s32 pos = byteOffset;
-	while ((pos > 0) && !byteIsStartOfGlyph(buffer[pos]) )
+	s32 pos = 0;
+
+	if (buffer != null)
 	{
-		pos--;
+		pos = byteOffset;
+		while ((pos > 0) && !byteIsStartOfGlyph(buffer[pos]) )
+		{
+			pos--;
+		}
 	}
 
 	return pos;
@@ -84,18 +89,21 @@ s32 findStartOfGlyph(char *buffer, s32 byteOffset)
 // returns -1 if no next glyph exists
 s32 findStartOfNextGlyph(char *buffer, s32 byteOffset, s32 bufferByteLength)
 {
-	s32 pos = byteOffset + 1;
-
-	while ((pos < bufferByteLength) && !byteIsStartOfGlyph(buffer[pos]))
-	{
-		pos++;
-	}
-
 	s32 result = -1;
 
-	if (byteIsStartOfGlyph(buffer[pos]))
+	if (bufferByteLength > 0)
 	{
-		result = pos;
+		s32 pos = byteOffset + 1;
+
+		while ((pos < bufferByteLength) && !byteIsStartOfGlyph(buffer[pos]))
+		{
+			pos++;
+		}
+
+		if (byteIsStartOfGlyph(buffer[pos]))
+		{
+			result = pos;
+		}
 	}
 
 	return result;
@@ -111,7 +119,7 @@ s32 floorToWholeGlyphs(char *startByte, s32 byteLength)
 
 	// Only count if we start at the beginning of a glyph.
 	// Otherwise, we return 0.
-	if (byteIsStartOfGlyph(*startByte))
+	if (byteLength > 0 && byteIsStartOfGlyph(*startByte))
 	{
 		s32 pos = 0;
 		s32 glyphLength = lengthOfGlyph(startByte[pos]);
@@ -131,20 +139,23 @@ s32 countGlyphs(char *startByte, s32 byteLength)
 {
 	s32 glyphCount = 0;
 
-	// Check that the byte we start on is actually a glyph start byte!
-	// Otherwise our result will be meaningless.
-	ASSERT(byteIsStartOfGlyph(*startByte), "Can't count glyphs starting part-way through a glyph!");
-
-	s32 pos = 0;
-	while (pos != -1)
+	if (byteLength > 0)
 	{
-		if (!isFullGlyph(startByte, pos, byteLength))
-		{
-			break;
-		}
+		// Check that the byte we start on is actually a glyph start byte!
+		// Otherwise our result will be meaningless.
+		ASSERT(byteIsStartOfGlyph(*startByte), "Can't count glyphs starting part-way through a glyph!");
 
-		glyphCount++;
-		pos = findStartOfNextGlyph(startByte, pos, byteLength);
+		s32 pos = 0;
+		while (pos != -1)
+		{
+			if (!isFullGlyph(startByte, pos, byteLength))
+			{
+				break;
+			}
+
+			glyphCount++;
+			pos = findStartOfNextGlyph(startByte, pos, byteLength);
+		}
 	}
 
 	return glyphCount;
@@ -155,7 +166,7 @@ unichar readUnicodeChar(char *firstChar)
 {
 	unichar result = 0;
 
-	if (byteIsStartOfGlyph(*firstChar))
+	if (firstChar != null && byteIsStartOfGlyph(*firstChar))
 	{
 		u8 b1 = *firstChar;
 		if ((b1 & 0b10000000) == 0)

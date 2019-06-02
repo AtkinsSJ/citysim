@@ -995,7 +995,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	if (appState->appStatus == AppStatus_Game)
 	{
-		drawTooltip(uiState);
 		drawUiMessage(uiState);
 	}
 }

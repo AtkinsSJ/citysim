@@ -17,46 +17,7 @@ struct UiMessage
 	f32 countdown; // In seconds
 };
 
-struct Window;
-struct WindowContext
-{
-	struct UIState *uiState;
-	MemoryArena *temporaryMemory;
-	Window *window;
-	UIWindowStyle *windowStyle;
-
-	bool measureOnly; // Whether we're actually displaying/updating the window contents, or just measuring it
-
-	Rect2 contentArea;
-	V2 currentOffset;
-	s32 alignment;
-	f32 renderDepth;
-	f32 perItemPadding;
-
-	// Results
-	bool closeRequested;
-};
-
-typedef void (*WindowProc)(WindowContext*, void*);
-
-enum WindowFlags
-{
-	WinFlag_AutomaticHeight = 1 << 0,
-	WinFlag_Unique          = 1 << 1, // Only one window with the same WindowProc will be allowed. A new one will replace the old.
-	WinFlag_Modal           = 1 << 2,
-};
-
-struct Window
-{
-	String title;
-	u32 flags;
-
-	Rect2I area;
-	String styleName;
-
-	WindowProc windowProc;
-	void *userData;
-};
+#include "ui_window.h"
 
 struct UIState
 {

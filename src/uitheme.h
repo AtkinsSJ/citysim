@@ -60,6 +60,8 @@ struct UIWindowStyle
 
 	f32 contentPadding;
 
+	V2I offsetFromMouse;
+
 	String buttonStyleName;
 	String labelStyleName;
 };

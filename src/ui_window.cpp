@@ -1,6 +1,6 @@
 #pragma once
 
-void window_label(WindowContext *context, String text, char *styleName=null)
+void window_label(WindowContext *context, String text, char *styleName)
 {
 	DEBUG_FUNCTION();
 
@@ -56,7 +56,7 @@ void window_label(WindowContext *context, String text, char *styleName=null)
  * it blank (or pass -1 manually) then the button will be automatically sized to wrap the contained text.
  * Either way, it always matches the size vertically.
  */
-bool window_button(WindowContext *context, String text, s32 textWidth=-1)
+bool window_button(WindowContext *context, String text, s32 textWidth)
 {
 	DEBUG_FUNCTION();
 	
@@ -270,20 +270,15 @@ void updateAndRenderWindows(UIState *uiState)
 		f32 depth = 2000.0f - (20.0f * windowIndex);
 		bool isActive = (windowIndex == 0);
 		bool isModal = isActive && (window->flags & WinFlag_Modal) != 0;
+		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
+
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
 
 		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
 
-		f32 barHeight = windowStyle->titleBarHeight;
-		V4 barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
-		V4 titleColor = windowStyle->titleColor;
+		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
 		f32 contentPadding = windowStyle->contentPadding;
-
-		String closeButtonString = makeString("X");
-		V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
-
-		BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontName);
 
 		WindowContext context = {};
 		context.uiState = uiState;
@@ -322,6 +317,10 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 			
 			uiState->mouseInputHandled = true;
+		}
+		else if (window->flags & WinFlag_Tooltip)
+		{
+			window->area.pos = v2i(uiState->uiBuffer->camera.mousePos) + windowStyle->offsetFromMouse;
 		}
 
 		// Keep window on screen
@@ -397,15 +396,31 @@ void updateAndRenderWindows(UIState *uiState)
 				newActiveWindow = windowIndex;
 			}
 
-			uiState->mouseInputHandled = true;
+			// Tooltips don't take mouse input
+			if (!(window->flags & WinFlag_Tooltip))
+			{
+				uiState->mouseInputHandled = true;
+			}
 		}
 
 		drawRect(uiState->uiBuffer, contentArea, depth, uiState->untexturedShaderID, backColor);
-		drawRect(uiState->uiBuffer, barArea, depth, uiState->untexturedShaderID, barColor);
-		uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
-		if (hoveringOverCloseButton && !uiState->mouseInputHandled)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
-		uiText(uiState, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
+		if (hasTitleBar)
+		{
+			V4 barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
+			V4 titleColor = windowStyle->titleColor;
+
+			String closeButtonString = makeString("X");
+			V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
+
+			BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontName);
+
+			drawRect(uiState->uiBuffer, barArea, depth, uiState->untexturedShaderID, barColor);
+			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
+
+			if (hoveringOverCloseButton && !uiState->mouseInputHandled)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
+			uiText(uiState, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
+		}
 
 		if (isModal)
 		{
@@ -415,7 +430,11 @@ void updateAndRenderWindows(UIState *uiState)
 
 		if (inRect(wholeWindowArea, mousePos))
 		{
-			uiState->mouseInputHandled = true;
+			// Tooltips don't take mouse input
+			if (!(window->flags & WinFlag_Tooltip))
+			{
+				uiState->mouseInputHandled = true;
+			}
 		}
 	}
 
