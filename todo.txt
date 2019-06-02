@@ -42,7 +42,6 @@ Data structure ideas I had late last night:
     Also probably want to consider what structure best suits other cases too, rather than just using Array always. Eg, ring buffers might be good sometimes.
 
 Arrays stuff
-- "markFirstChunkAsFull" is a hack, try to replace it.
 - Try to remove all "dynamic" uses of Array<>, because it's bad. Replace with ChunkedArray for now.
 - Main issue is, how do we sort ChunkedArrays?
 	- I guess the best idea would be to take advantage of the chunks rather than letting them be a weakness. Maybe some variation on a Merge Sort? (Sort the items within each chunk, then combine them by walking the chunks simultaneously.) Though, that gets compilcated because of the variable (and possibly very large) number of chunks, and because we'd need an extra set of chunks to put the results in. (Could use temp memory, maybe that's OK?)
@@ -120,10 +119,6 @@ GUI
 - Convert Tooltips to a special kind of Window, so that we can reuse the fancy window code.
 	- Window flag for following the mouse
 
-UI styles loaded from a file
-- Try and make sure it will handle utf8 encoding. I think handling the file byte by byte actually will work fine, but it's hard to be certain without thinking properly about it and testing it!
-- We'll need a string-to-float routine at some point! Not written one yet. Maybe use atof/strtod if I'm lazy.
-
 Audio!
 - Probably use SoLoud, rather than SDL_mixer: http://sol.gfxile.net/soloud/
 
@@ -132,7 +127,6 @@ Asset system:
 - Detect filesystem changes and reload the files that change
 	- Includes being a bit smart about dependant files. eg if a building texture was used, but after the building defs reload, they no longer use that texture, it could be unloaded? But honestly, keeping it around is way simpler and our memory requirements are going to be tiny anyway.
 	- If a file gets deleted, what happens?
-- Eventually, don't "resetMemoryArena(&assets->assetArena); initAssetManager(assets);", keep that data around.
 - There's a 96-byte memory leak when we reload the assets, and I'm not sure why.
 - Replace sdl_image with our own loader so we can control where the memory comes from!
 	- see https://github.com/spurious/SDL-mirror/blob/HEAD/src/stdlib/SDL_malloc.c
@@ -144,13 +138,23 @@ Asset system:
 		- Optimisation: Don't reallocate if it's the exact same size.
 	- Keep a memory limit, track the current size of all loaded assets.
 	- If we cross the limit, evict the least-recently-used asset.
-	- At the end of a level, we can also evict all level-specific assets if we want?
 	- Track evictions so we can monitor it and see if it's misbehaving.
 - Asset packer of some kind. Maybe just creates an assets table?
 - Text assets compiled in some way so we don't need a string lookup?
 	- https://blog.thimbleweedpark.com/text_lock
 	- BETTER: https://ourmachinery.com/post/localization-in-the-machinerys-ui/
 - Audio when we have that!
+- Sprite Atlas:
+	- Take individual sprite .png files and pack them together into a single texture.
+	- Pad them with a 1px border equal to whatever the edge pixel of the sprite was.
+	- Output the atlas info to a file.
+	- Asset system reads the atlas and uses it to populate Sprite assets.
+- Asset Packs:
+	- Assets can be grouped together into a "pack", and then we can specify to load a certain pack. This means not having to put all assets in memory at once.
+	- At a basic level, we'd have a "preload" pack, which is loaded first, and provides what's needed to display a loading screen.
+	- This could then be used for assets tied to a specific game level, if we *have* levels, or similar things like if you can have cities in different regions or planets with different terrain art, etc.
+	- If we're going to evict assets at the end of a level though, we'd need to track which assets are associated with each pack - and some assets could be in multiple ones, potentially. Unless we make it a requirement that each asset only goes in one pack somehow? IDK.
+	- A pack would probably just be defined in a text file. Lines of `type shortname.blah`
 
 String HashTable!
 - MeowHash???
@@ -166,20 +170,12 @@ Return false for isKeyPressed() etc, when the key is a printable character and w
 Unicode stuff:
 - 2-stage table for properties, will save space! Not sure if I need that, but thought it was sensible to put the link here in case I do. https://www.strchr.com/multi-stage_tables
 
-GAME:
-- Menu / Game are separate code.
-
 BUGS:
 - Unloading Fraps does something funny with our Window reference, causing a crash.
 
 FULLSCREEN!
 - It's weird and buggy right now. Probably want to do the FULLSCREEN_DESKTOP flag, with special case code to make it centred on the screen and make sure input works.
 
-Sprite Atlas:
-- Take individual sprite .png files and pack them together into a single texture.
-- Pad them with a 1px border equal to whatever the edge pixel of the sprite was.
-- Output the atlas info to a file.
-- Asset system reads the atlas and uses it to populate Sprite assets.
 
 ---------------------------------------------
 NOTES:

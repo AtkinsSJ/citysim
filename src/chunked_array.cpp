@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize, bool markFirstChunkAsFull)
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize)
 {
 	array->memoryArena = arena;
 	array->chunkSize = chunkSize;
@@ -15,12 +15,6 @@ void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize,
 	array->firstChunk.prevChunk = null;
 
 	array->lastChunk = &array->firstChunk;
-
-	if (markFirstChunkAsFull)
-	{
-		array->count = chunkSize;
-		array->firstChunk.count = chunkSize;
-	}
 }
 
 template<typename T>

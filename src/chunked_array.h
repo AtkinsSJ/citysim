@@ -33,7 +33,7 @@ struct ChunkedArray
 // markFirstChunkAsFull is a little hacky. It sets the count to be chunkSize, so that
 // we can immediately get() those elements by index instead of having to append() to add them.
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize, bool markFirstChunkAsFull = false);
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize);
 
 // Doesn't free any memory, just marks all the chunks as empty.
 template<typename T>
