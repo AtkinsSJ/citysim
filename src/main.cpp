@@ -181,13 +181,13 @@ int main(int argc, char *argv[])
 	initSettings(settings);
 	loadSettings(settings);
 
+	SDL_Window *window = initSDL(settings, "Some kind of city builder");
+	ASSERT(window != null, "Failed to initialise SDL.");
+
 	AssetManager *assets = createAssetManager();
 	addAssets(assets);
 	loadAssets(assets);
 	appState->assets = assets;
-
-	SDL_Window *window = initSDL(settings, "Some kind of city builder");
-	ASSERT(window != null, "Failed to initialise SDL.");
 
 	Renderer *renderer = platform_initializeRenderer(window);
 	ASSERT(renderer->platformRenderer != null, "Failed to initialize renderer.");
