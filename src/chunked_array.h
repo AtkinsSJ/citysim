@@ -18,22 +18,34 @@ struct Chunk
 };
 
 template<typename T>
+struct ChunkPool
+{
+	MemoryArena *memoryArena;
+	smm chunkSize;
+
+	smm count;
+	Chunk<T> *firstChunk;
+};
+
+template<typename T>
 struct ChunkedArray
 {
+	ChunkPool<T> *chunkPool;
 	MemoryArena *memoryArena;
 
 	smm chunkSize;
 	smm chunkCount;
 	smm count;
 
-	Chunk<T> firstChunk;
+	Chunk<T> *firstChunk;
 	Chunk<T> *lastChunk;
 };
 
-// markFirstChunkAsFull is a little hacky. It sets the count to be chunkSize, so that
-// we can immediately get() those elements by index instead of having to append() to add them.
 template<typename T>
 void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize);
+
+template<typename T>
+void initChunkedArray(ChunkedArray<T> *array, ChunkPool<T> *pool);
 
 // Doesn't free any memory, just marks all the chunks as empty.
 template<typename T>
@@ -54,6 +66,13 @@ T *get(ChunkedArray<T> *array, smm index);
 
 template<typename T>
 void reserve(ChunkedArray<T> *array, smm desiredSize);
+
+//////////////////////////////////////////////////
+// POOL STUFF                                   //
+//////////////////////////////////////////////////
+
+template<typename T>
+void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize);
 
 //////////////////////////////////////////////////
 // ITERATOR STUFF                               //

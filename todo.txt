@@ -25,6 +25,11 @@ Things to work on next maybe:
 		- I guess there must be some global table of which regions are contained within each grid square, for finding them in those cases? IDK. I guess you could just query that information from the tiles.
 	- Rimworld's is highly specialised for spatial navigation. In our case, our different things (roads, power, etc) would require separate regions for each one. Maybe that's OK?
 		- Maybe a hybrid - world is broken down into regular-sized chunks, eg 16x16. (Maybe not 16x16 if we're using it for hash purposes! 15 or a prime number might be better then.) Each one contains some number of road regions, and power regions, etc. It also keeps some statistics, like how many jobs and residents are inside it. It knows which buildings are in it. It could even cache the sprites inside it, eg a single "mesh" for the terrain. It also has flags, eg "there are valid empty R zones", "contains industry", or "there's a fire", which would speed up searches for things. 
+	- Other stuff we could put in chunks:
+		- List of service buildings whose areas of effect cover part of this chunk, by service type. (Health, fire, police etc)
+	- This is getting a bit complicated memory-wise. How do we manage the variable (and dynamic) memory usage for each chunk without a million malloc/free calls all the time?
+		- Option 1: The City has a dynamic array of each kind of thing. EG, power-groups. The chunk points to its first power-group, and then each group points to the next one in the same chunk, linked-list style. It's not super cache-friendly, but means we can add and remove them easily without allocations. I think I like this!
+		- Option 2: Option 1, but each linked-list node holds several of that type, instead of just 1. Like a ChunkedArray chunk. Effectively it's a group of ChunkedArrays that all share a pool of unused memory chunks.
 
 
 Data structure ideas I had late last night:
@@ -59,51 +64,6 @@ THE PLAN:
 This project was way too directionless for too long, so we're now aiming for a city-building game along the lines of Simcity. Zone things, build roads and services, try and balance the budget, etc. 2D graphics, probably a square grid rather than isometric (at least to start with). 
 
 ------------------------------------------------
-
-Simcity Classic features:
-(Can play it online at http://micropolis.mostka.com/ )
-	Code at https://github.com/simhacker/micropolis
-	A decent guide to how it works at https://github.com/SimHacker/micropolis/blob/wiki/InsideTheSimulator.md
-	If we want to rip sprites from it, a good folder of PNGs is https://github.com/jason17055/micropolis-java/tree/master/graphics
-R/C/I
-	Zones! You plop a square down, but then it can be built in sections.
-		I think I'll do drag-rect zones instead
-	Demand! Formula is probably very simple
-Demolish
-Forest
-Water
-Roads
-	Roads are placed by dragging a line, then release to place it all.
-Fire/Police department buildings and coverage
-	(seems to affect a plus-shap covering 5 8x8 tile chunks.)
-Power stations and power lines
-	Power lines need to exist "on top" of roads. How do we handle this? Maybe a building that's both, and we special-case place it when the player tries to place one on top of the other.
-Water, bridges
-Fires
-Rails
-Disasters?
-	Flooding
-Budget (control tax rate, transport/fire/police funding)
-Query tool
-Data views:
-	Land value
-	Crime
-	Fire
-	Pollution
-	Traffic density
-	Power connectivity
-	Fire coverage
-	Police coverage
-Pause/resume/speed controls
-Map generator
-
-Notes:
-Simcity 4 map sizes: 64x64 (~1km), 128x128 (~2km), 256x256 (~4km)
-(Simcity 3000 map size info is harder to find, but apparently the largest is also 256x256 tiles)
-
-SC3K does indeed model individual power networks, not just "is it connected to a power station" and "is the total of consumption < total production".
-
--------------------------------------------------
 
 Zoning
 - We need some kind of "RCI demand" source/calculation. Probably a simple one for now because we don't have anything to simulate really, but we need *something*.
@@ -192,6 +152,51 @@ FULLSCREEN!
 ---------------------------------------------
 NOTES:
 ---------------------------------------------
+
+Simcity Classic features:
+(Can play it online at http://micropolis.mostka.com/ )
+	Code at https://github.com/simhacker/micropolis
+	A decent guide to how it works at https://github.com/SimHacker/micropolis/blob/wiki/InsideTheSimulator.md
+	If we want to rip sprites from it, a good folder of PNGs is https://github.com/jason17055/micropolis-java/tree/master/graphics
+R/C/I
+	Zones! You plop a square down, but then it can be built in sections.
+		I think I'll do drag-rect zones instead
+	Demand! Formula is probably very simple
+Demolish
+Forest
+Water
+Roads
+	Roads are placed by dragging a line, then release to place it all.
+Fire/Police department buildings and coverage
+	(seems to affect a plus-shap covering 5 8x8 tile chunks.)
+Power stations and power lines
+	Power lines need to exist "on top" of roads. How do we handle this? Maybe a building that's both, and we special-case place it when the player tries to place one on top of the other.
+Water, bridges
+Fires
+Rails
+Disasters?
+	Flooding
+Budget (control tax rate, transport/fire/police funding)
+Query tool
+Data views:
+	Land value
+	Crime
+	Fire
+	Pollution
+	Traffic density
+	Power connectivity
+	Fire coverage
+	Police coverage
+Pause/resume/speed controls
+Map generator
+
+Notes:
+Simcity 4 map sizes: 64x64 (~1km), 128x128 (~2km), 256x256 (~4km)
+(Simcity 3000 map size info is harder to find, but apparently the largest is also 256x256 tiles)
+
+SC3K does indeed model individual power networks, not just "is it connected to a power station" and "is the total of consumption < total production".
+
+-------------------------------------------------
 
 BUILD:
 

@@ -85,7 +85,7 @@ static DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem 
 	return result;
 }
 
-static void nextLine(DrawTextState *state)
+static inline void nextLine(DrawTextState *state)
 {
 	state->longestLineWidth = state->maxWidth;
 	state->position.y += state->lineHeight;

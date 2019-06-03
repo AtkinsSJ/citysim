@@ -6,6 +6,8 @@ void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount
 {
 	zoneLayer->tiles = PushArray(memoryArena, ZoneType, tileCount);
 
+	initChunkPool(&zoneLayer->zoneLocationsChunkPool, memoryArena, 256);
+
 	initChunkedArray(&zoneLayer->rGrowableBuildings, memoryArena, 256);
 	initChunkedArray(&zoneLayer->emptyRZones,        memoryArena, 256);
 	initChunkedArray(&zoneLayer->filledRZones,       memoryArena, 256);

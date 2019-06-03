@@ -4,24 +4,33 @@ template<typename T>
 void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize)
 {
 	array->memoryArena = arena;
+	array->chunkPool = null;
 	array->chunkSize = chunkSize;
-	array->chunkCount = 1;
+	array->chunkCount = 0;
 	array->count = 0;
+	array->firstChunk = null;
+	array->lastChunk = null;
 
-	array->firstChunk.count = 0;
-	array->firstChunk.maxCount = chunkSize;
-	array->firstChunk.items = PushArray(arena, T, chunkSize);
-	array->firstChunk.nextChunk = null;
-	array->firstChunk.prevChunk = null;
+	appendChunk(array);
+}
 
-	array->lastChunk = &array->firstChunk;
+template<typename T>
+void initChunkedArray(ChunkedArray<T> *array, ChunkPool<T> *pool)
+{
+	array->memoryArena = null;
+	array->chunkPool = pool;
+	array->chunkSize = pool->chunkSize;
+	array->chunkCount = 0;
+	array->count = 0;
+	array->firstChunk = null;
+	array->lastChunk = null;
 }
 
 template<typename T>
 void clear(ChunkedArray<T> *array)
 {
 	array->count = 0;
-	for (Chunk<T> *chunk = &array->firstChunk; chunk; chunk = chunk->nextChunk)
+	for (Chunk<T> *chunk = array->firstChunk; chunk; chunk = chunk->nextChunk)
 	{
 		chunk->count = 0;
 	}
@@ -30,16 +39,25 @@ void clear(ChunkedArray<T> *array)
 template<typename T>
 void appendChunk(ChunkedArray<T> *array)
 {
-	Chunk<T> *newChunk = PushStruct(array->memoryArena, Chunk<T>);
+	// Rolled into a single allocation
+	Blob blob = allocateBlob(array->memoryArena, sizeof(Chunk<T>) + (sizeof(T) * array->chunkSize));
+	Chunk<T> *newChunk = (Chunk<T> *)blob.memory;
 	newChunk->count = 0;
 	newChunk->maxCount = array->chunkSize;
-	newChunk->items = PushArray(array->memoryArena, T, array->chunkSize);
+	newChunk->items = (T *)(blob.memory + sizeof(Chunk<T>));
 	newChunk->prevChunk = array->lastChunk;
 	newChunk->nextChunk = null;
 
 	array->chunkCount++;
-	array->lastChunk->nextChunk = newChunk;
+	if (array->lastChunk != null)
+	{
+		array->lastChunk->nextChunk = newChunk;
+	}
 	array->lastChunk = newChunk;
+	if (array->firstChunk == null)
+	{
+		array->firstChunk = newChunk;
+	}
 }
 
 template<typename T>
@@ -60,7 +78,7 @@ T *append(ChunkedArray<T> *array, T item)
 	}
 	else
 	{
-		chunk = &array->firstChunk;
+		chunk = array->firstChunk;
 		smm indexWithinChunk = array->count;
 		while (indexWithinChunk >= array->chunkSize)
 		{
@@ -90,7 +108,7 @@ T *get(ChunkedArray<T> *array, smm index)
 	if (chunkIndex == 0)
 	{
 		// Early out!
-		result = array->firstChunk.items + itemIndex;
+		result = array->firstChunk->items + itemIndex;
 	}
 	else if (chunkIndex == (array->chunkCount - 1))
 	{
@@ -100,7 +118,7 @@ T *get(ChunkedArray<T> *array, smm index)
 	else
 	{
 		// Walk the chunk chain
-		Chunk<T> *chunk = &array->firstChunk;
+		Chunk<T> *chunk = array->firstChunk;
 		while (chunkIndex > 0)
 		{
 			chunkIndex--;
@@ -122,7 +140,7 @@ Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 
 	if (chunkIndex == 0)
 	{
-		chunk = &array->firstChunk;
+		chunk = array->firstChunk;
 	}
 	else if (chunkIndex == (array->chunkCount - 1))
 	{
@@ -131,7 +149,7 @@ Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 	else
 	{
 		// Walk the chunk chain
-		chunk = &array->firstChunk;
+		chunk = array->firstChunk;
 		while (chunkIndex > 0)
 		{
 			chunkIndex--;
@@ -223,7 +241,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 {
 	bool found = false;
 
-	for (Chunk<T> *chunk = &array->firstChunk;
+	for (Chunk<T> *chunk = array->firstChunk;
 		chunk != null;
 		chunk = chunk->nextChunk)
 	{
@@ -305,6 +323,19 @@ void reserve(ChunkedArray<T> *array, smm desiredSize)
 }
 
 //////////////////////////////////////////////////
+// POOL STUFF                                   //
+//////////////////////////////////////////////////
+
+template<typename T>
+void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize)
+{
+	pool->memoryArena = arena;
+	pool->chunkSize = chunkSize;
+	pool->count = 0;
+	pool->firstChunk = null;
+}
+
+//////////////////////////////////////////////////
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
 template<typename T>
@@ -382,7 +413,7 @@ void next(ChunkedArrayIterator<T> *iterator)
 				if (iterator->wrapAround)
 				{
 					// Wrap to the beginning!
-					iterator->currentChunk = &iterator->array->firstChunk;
+					iterator->currentChunk = iterator->array->firstChunk;
 				}
 				else
 				{

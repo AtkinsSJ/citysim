@@ -32,6 +32,8 @@ ZoneDef zoneDefs[] = {
 
 struct ZoneLayer
 {
+	ChunkPool<V2I> zoneLocationsChunkPool;
+
 	ChunkedArray<s32> rGrowableBuildings;
 	ChunkedArray<V2I> emptyRZones;
 	ChunkedArray<V2I> filledRZones;
