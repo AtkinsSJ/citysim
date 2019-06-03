@@ -9,16 +9,16 @@ void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount
 	initChunkPool(&zoneLayer->zoneLocationsChunkPool, memoryArena, 256);
 
 	initChunkedArray(&zoneLayer->rGrowableBuildings, memoryArena, 256);
-	initChunkedArray(&zoneLayer->emptyRZones,        memoryArena, 256);
-	initChunkedArray(&zoneLayer->filledRZones,       memoryArena, 256);
+	initChunkedArray(&zoneLayer->emptyRZones,        &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->filledRZones,       &zoneLayer->zoneLocationsChunkPool);
 
 	initChunkedArray(&zoneLayer->cGrowableBuildings, memoryArena, 256);
-	initChunkedArray(&zoneLayer->emptyCZones,        memoryArena, 256);
-	initChunkedArray(&zoneLayer->filledCZones,       memoryArena, 256);
+	initChunkedArray(&zoneLayer->emptyCZones,        &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->filledCZones,       &zoneLayer->zoneLocationsChunkPool);
 
 	initChunkedArray(&zoneLayer->iGrowableBuildings, memoryArena, 256);
-	initChunkedArray(&zoneLayer->emptyIZones,        memoryArena, 256);
-	initChunkedArray(&zoneLayer->filledIZones,       memoryArena, 256);
+	initChunkedArray(&zoneLayer->emptyIZones,        &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->filledIZones,       &zoneLayer->zoneLocationsChunkPool);
 
 	refreshZoneGrowableBuildingLists(zoneLayer);
 }
@@ -125,6 +125,15 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 				s32 tile = tileIndex(city, pos.x, pos.y);
 
 				ZoneType oldZone = city->zoneLayer.tiles[tile];
+
+				// URGHGGHGHHH THIS IS HORRRRRIBLE!
+				// We're doing a linear search through the chunked array for EVERY TILE that's changed!
+				// Then again, I'm not sure there's a good way to *not* do that while still having a
+				// list of locations by zone type, which we use for spawning buildings. Maybe this is
+				// actually slower overall than not having the empty-zones list at all.
+				// In any case, it'll be a lot better once we have the city divided up into smaller
+				// sections that manage their own caches.
+				// - Sam, 03/06/2019
 
 				ChunkedArray<V2I> *oldEmptyZonesArray = getEmptyZonesArray(&city->zoneLayer, oldZone);
 				if (oldEmptyZonesArray)

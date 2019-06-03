@@ -37,14 +37,43 @@ void clear(ChunkedArray<T> *array)
 }
 
 template<typename T>
-void appendChunk(ChunkedArray<T> *array)
+Chunk<T> *allocateChunk(MemoryArena *arena, smm chunkSize)
 {
 	// Rolled into a single allocation
-	Blob blob = allocateBlob(array->memoryArena, sizeof(Chunk<T>) + (sizeof(T) * array->chunkSize));
+	Blob blob = allocateBlob(arena, sizeof(Chunk<T>) + (sizeof(T) * chunkSize));
 	Chunk<T> *newChunk = (Chunk<T> *)blob.memory;
+	*newChunk = {};
 	newChunk->count = 0;
-	newChunk->maxCount = array->chunkSize;
+	newChunk->maxCount = chunkSize;
 	newChunk->items = (T *)(blob.memory + sizeof(Chunk<T>));
+
+	return newChunk;
+}
+
+template<typename T>
+void appendChunk(ChunkedArray<T> *array)
+{
+	Chunk<T> *newChunk = null;
+	
+	// Attempt to get a chunk from the pool if we can
+	if (array->chunkPool != null)
+	{
+		if (array->chunkPool->count > 0)
+		{
+			newChunk = array->chunkPool->firstChunk;
+			array->chunkPool->firstChunk = newChunk->nextChunk;
+			array->chunkPool->count--;
+			array->chunkPool->firstChunk->prevChunk = null;
+		}
+		else
+		{
+			newChunk = allocateChunk<T>(array->chunkPool->memoryArena, array->chunkPool->chunkSize);
+		}
+	}
+	else
+	{
+		newChunk = allocateChunk<T>(array->memoryArena, array->chunkSize);
+	}
 	newChunk->prevChunk = array->lastChunk;
 	newChunk->nextChunk = null;
 
@@ -179,6 +208,8 @@ Chunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
 template<typename T>
 void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 {
+	DEBUG_FUNCTION();
+
 	// Skip if there's nothing to do
 	if (fromIndex == toIndex)  return;
 
@@ -239,6 +270,8 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 {
+	DEBUG_FUNCTION();
+
 	bool found = false;
 
 	for (Chunk<T> *chunk = array->firstChunk;
@@ -272,6 +305,8 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 template<typename T>
 T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 {
+	DEBUG_FUNCTION();
+
 	ASSERT(indexToRemove < array->count, "indexToRemove is out of range!");
 
 	T result;
@@ -316,6 +351,8 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 template<typename T>
 void reserve(ChunkedArray<T> *array, smm desiredSize)
 {
+	DEBUG_FUNCTION();
+	
 	while ((array->chunkSize * array->chunkCount) < desiredSize)
 	{
 		appendChunk(array);
