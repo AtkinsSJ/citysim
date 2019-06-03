@@ -48,6 +48,8 @@ void window_label(WindowContext *context, String text, char *styleName)
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
 		context->currentOffset.y += size.y;
+		
+		context->largestItemWidth = max(size.x, context->largestItemWidth);
 	}
 }
 
@@ -160,6 +162,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
 		context->currentOffset.y += buttonSize.y;
+
+		context->largestItemWidth = max(buttonSize.x, context->largestItemWidth);
 	}
 
 	return buttonClicked;
@@ -283,16 +287,26 @@ void updateAndRenderWindows(UIState *uiState)
 		context.windowStyle = windowStyle;
 		context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 		context.currentOffset = v2(0,0);
+		context.largestItemWidth = 0;
 		context.alignment = ALIGN_TOP | ALIGN_LEFT;
 		context.renderDepth = depth + 1.0f;
 		context.perItemPadding = 4.0f;
 
 		// Run the WindowProc once first so we can measure its size
-		if (window->flags & WinFlag_AutomaticHeight)
+		if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
 		{
 			context.measureOnly = true;
 			window->windowProc(&context, window->userData);
-			window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
+
+			if (window->flags & WinFlag_AutomaticHeight)
+			{
+				window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
+			}
+
+			if (window->flags & WinFlag_ShrinkWidth)
+			{
+				window->area.w = round_s32(context.largestItemWidth + (contentPadding * 2.0f));
+			}
 		}
 
 		// Handle dragging/position first, BEFORE we use the window rect anywhere
@@ -356,6 +370,7 @@ void updateAndRenderWindows(UIState *uiState)
 		context.measureOnly = false;
 		context.alignment = ALIGN_TOP | ALIGN_LEFT;
 		context.currentOffset = v2(0,0);
+		context.largestItemWidth = 0;
 		context.contentArea = getWindowContentArea(window->area, barHeight, contentPadding);
 		window->windowProc(&context, window->userData);
 		if (context.closeRequested || isTooltip)

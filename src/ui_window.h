@@ -11,6 +11,7 @@ struct WindowContext
 
 	Rect2 contentArea;
 	V2 currentOffset;
+	f32 largestItemWidth;
 	s32 alignment;
 	f32 renderDepth;
 	f32 perItemPadding;
@@ -28,6 +29,7 @@ enum WindowFlags
 	WinFlag_Modal           = 1 << 2,
 	WinFlag_Tooltip         = 1 << 3,
 	WinFlag_Headless        = 1 << 4,
+	WinFlag_ShrinkWidth     = 1 << 5,
 };
 
 struct Window

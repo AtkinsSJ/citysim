@@ -2,8 +2,6 @@
 // ui.h
 
 const f32 uiMessageDisplayTime = 2.0f;
-const f32 uiMessageBottomMargin = 4;
-const f32 uiMessageTextPadding = 4;
 struct UiMessage
 {
 	String text;

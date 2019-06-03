@@ -109,7 +109,7 @@ void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 {
 	static String styleName = makeString("tooltip");
-	showWindow(uiState, nullString, 300, 0, styleName, WinFlag_AutomaticHeight | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
+	showWindow(uiState, nullString, 300, 0, styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
 bool uiButton(UIState *uiState,
