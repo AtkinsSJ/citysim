@@ -37,8 +37,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 			}
 		}
 	}
-	
-	city->terrain         = PushArray(gameArena, Terrain, tileCount);
+
 	city->tileBuildings   = PushArray(gameArena, s32, tileCount);
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
 	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
@@ -96,7 +95,7 @@ void generateTerrain(City *city)
 
 			f32 perlinValue = stb_perlin_noise3(px, py, 0);
 
-			Terrain *terrain = &city->terrain[tileIndex(city, x, y)];
+			Terrain *terrain = terrainAt(city, x, y);
 			bool isGround = (perlinValue > 0.1f);
 			if (isGround)
 			{
@@ -158,10 +157,8 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 	{
 		for (s32 x=0; x<def->width; x++)
 		{
-			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
-
-			Terrain terrain = city->terrain[ti];
-			TerrainDef *terrainDef = get(&terrainDefs, terrain.type);
+			Terrain *terrain = terrainAt(city, x, y);
+			TerrainDef *terrainDef = get(&terrainDefs, terrain->type);
 
 			if (!terrainDef->canBuildOn)
 			{
@@ -172,6 +169,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 				return false;
 			}
 
+			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
 			if (city->tileBuildings[ti] != 0)
 			{
 				// Check if we can combine this with the building that's already there
@@ -314,7 +312,6 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 	u32 posTI = tileIndex(city, position.x, position.y);
 
 	s32 buildingID  = city->tileBuildings[posTI];
-	Terrain terrain = city->terrain[posTI];
 
 	if (buildingID)
 	{
@@ -394,12 +391,13 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 	}
 	else
 	{
-		TerrainDef *def = get(&terrainDefs, terrain.type);
+		Terrain *terrain = terrainAt(city, position.x, position.y);
+		TerrainDef *def = get(&terrainDefs, terrain->type);
 		if (def->canDemolish)
 		{
 			// Tear down all the trees!
 			spend(city, def->demolishCost);
-			city->terrain[posTI].type = findTerrainTypeByName(makeString("Ground"));
+			terrain->type = findTerrainTypeByName(makeString("Ground"));
 			return true;
 		}
 		else

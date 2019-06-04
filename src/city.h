@@ -50,7 +50,6 @@ struct City
 	s32 sectorsX, sectorsY;
 	Sector *sectors;
 
-	Terrain *terrain;
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
 
@@ -75,6 +74,18 @@ inline s32 tileIndex(City *city, s32 x, s32 y)
 	return (y * city->width) + x;
 }
 
+inline Sector *sectorAt(City *city, s32 x, s32 y)
+{
+	Sector *result = null;
+
+	if (x >= 0 && x < city->width && y >= 0 && y < city->height)
+	{
+		result = city->sectors + ((y / SECTOR_SIZE) * city->sectorsX) + (x / SECTOR_SIZE);
+	}
+
+	return result;
+}
+
 inline bool tileExists(City *city, s32 x, s32 y)
 {
 	return (x >= 0) && (x < city->width)
@@ -83,8 +94,18 @@ inline bool tileExists(City *city, s32 x, s32 y)
 
 inline Terrain *terrainAt(City *city, s32 x, s32 y)
 {
-	if (!tileExists(city, x, y)) return &invalidTerrain;
-	return &city->terrain[tileIndex(city, x, y)];
+	Terrain *result = &invalidTerrain;
+
+	if (tileExists(city, x, y))
+	{
+		Sector *sector = sectorAt(city, x, y);
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		return &sector->terrain[relX][relY];
+	}
+
+	return result;
 }
 
 inline Building* getBuildingByID(City *city, s32 buildingID)

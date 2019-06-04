@@ -298,7 +298,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	s32 tileI = tileIndex(city, tilePos.x, tilePos.y);
 
 	// Terrain
-	String terrainName = get(&terrainDefs, city->terrain[tileI].type)->name;
+	String terrainName = get(&terrainDefs, terrainAt(city, tilePos.x, tilePos.y)->type)->name;
 	window_label(context, myprintf("Terrain: {0}", {terrainName}));
 
 	// Zone
@@ -824,13 +824,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
 		{
-			Terrain *t = city->terrain + tileIndex(city, visibleTileBounds.x, y);
 			spriteBounds.y = (f32)y;
 
 			for (s32 x = visibleTileBounds.x;
 				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++, t++)
+				x++)
 			{
+				Terrain *t = terrainAt(city, x, y);
+
 				if (t->type != terrainType)
 				{
 					terrainType = t->type;
