@@ -67,6 +67,15 @@ T *get(ChunkedArray<T> *array, smm index);
 template<typename T>
 void reserve(ChunkedArray<T> *array, smm desiredSize);
 
+template<typename T>
+bool findAndRemove(ChunkedArray<T> *array, T toRemove);
+
+template<typename T>
+T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder);
+
+template<typename T>
+void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex);
+
 //////////////////////////////////////////////////
 // POOL STUFF                                   //
 //////////////////////////////////////////////////

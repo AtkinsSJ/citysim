@@ -117,6 +117,11 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 	
 	ChunkedArray<V2I> *emptyZonesArray = getEmptyZonesArray(&city->zoneLayer, zoneType);
 
+	// TODO: @Speed Invert how zone location removal is done.
+	// Rather than doing a linear search for each tile, we could instead loop once through the zones
+	// list and remove any that are within the rectangle. (If we can edit an array while iterating it...)
+	// Once we have sectors, changes like this can be done by looping through the affected sectors and
+	// then doing the check in each one.
 	for (int y=0; y<area.h; y++) {
 		for (int x=0; x<area.w; x++) {
 			V2I pos = v2i(area.x + x, area.y + y);

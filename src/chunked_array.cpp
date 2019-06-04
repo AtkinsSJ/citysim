@@ -63,7 +63,10 @@ void appendChunk(ChunkedArray<T> *array)
 			newChunk = array->chunkPool->firstChunk;
 			array->chunkPool->firstChunk = newChunk->nextChunk;
 			array->chunkPool->count--;
-			array->chunkPool->firstChunk->prevChunk = null;
+			if (array->chunkPool->firstChunk != null)
+			{
+				array->chunkPool->firstChunk->prevChunk = null;
+			}
 		}
 		else
 		{
@@ -268,6 +271,27 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 }
 
 template<typename T>
+void returnLastChunkToPool(ChunkedArray<T> *array)
+{
+	Chunk<T> *chunk = array->lastChunk;
+	ChunkPool<T> *pool = array->chunkPool;
+
+	ASSERT(chunk->count == 0, "Attempting to return a non-empty chunk to the chunk pool!");
+	array->lastChunk = array->lastChunk->prevChunk;
+	if (array->firstChunk == chunk) array->firstChunk = array->lastChunk;
+	array->chunkCount--;
+
+	chunk->prevChunk = null;
+	chunk->nextChunk = pool->firstChunk;
+	if (pool->firstChunk != null)
+	{
+		pool->firstChunk->prevChunk = chunk;
+	}
+	pool->firstChunk = chunk;
+	pool->count++;
+}
+
+template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 {
 	DEBUG_FUNCTION();
@@ -297,6 +321,12 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 		}
 
 		if (found) break;
+	}
+
+	// Return empty chunks to the chunkpool
+	if (found && (array->chunkPool != null) && (array->lastChunk->count == 0))
+	{
+		returnLastChunkToPool(array);
 	}
 
 	return found;
@@ -344,6 +374,12 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 
 	lastNonEmptyChunk->count--;
 	array->count--;
+
+	// Return empty chunks to the chunkpool
+	if ((array->chunkPool != null) && (array->lastChunk->count == 0))
+	{
+		returnLastChunkToPool(array);
+	}
 
 	return result;
 }
