@@ -34,7 +34,9 @@ struct Sector
 {
 	Rect2I bounds;
 
+	// All of these are in [y][x] order!
 	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
+	s32 tileBuildings[SECTOR_SIZE][SECTOR_SIZE]; // Map from y,x -> building id at that location. Building IDs are 1-indexed (0 meaning null).
 };
 
 struct City
@@ -55,8 +57,6 @@ struct City
 
 	u32 highestBuildingID;
 	ChunkedArray<Building> buildings;
-	s32 *tileBuildings; // Map from x,y -> building id at that location.
-	// Building IDs are 1-indexed (0 meaning null).
 
 	struct ZoneLayer zoneLayer;
 
@@ -100,10 +100,10 @@ inline bool tileExists(City *city, s32 x, s32 y)
 inline Terrain *terrainAt(City *city, s32 x, s32 y)
 {
 	Terrain *result = &invalidTerrain;
+	Sector *sector = sectorAtTilePos(city, x, y);
 
-	if (tileExists(city, x, y))
+	if (sector != null)
 	{
-		Sector *sector = sectorAtTilePos(city, x, y);
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
@@ -123,13 +123,25 @@ inline Building* getBuildingByID(City *city, s32 buildingID)
 	return get(&city->buildings, buildingID);
 }
 
+inline s32 getBuildingIDAtPosition(City *city, s32 x, s32 y)
+{
+	s32 result = 0;
+	Sector *sector = sectorAtTilePos(city, x, y);
+
+	if (sector != null)
+	{
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		result = sector->tileBuildings[relY][relX];
+	}
+
+	return result;
+}
+
 inline Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
-	if (!tileExists(city, x, y))
-	{
-		return null;
-	}
-	return getBuildingByID(city, city->tileBuildings[tileIndex(city, x, y)]);
+	return getBuildingByID(city, getBuildingIDAtPosition(city, x, y));
 }
 
 inline s32 pathGroupAt(City *city, s32 x, s32 y)

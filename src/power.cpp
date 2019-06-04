@@ -63,14 +63,18 @@ void recalculatePowerConnectivity(City *city)
 		}
 		else
 		{
-			u32 buildingID = city->tileBuildings[tileIndex];
-			if (buildingID)
-			{
-				if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
-				{
-					tileCarriesPower = true;
-				}
-			}
+			// TODO: Reimplement buildings carrying power!!!
+			// I disabled it because this whole function is old and will need rewriting to work with Sectors
+			// anyway once power networks are stored in them, so spending time fixing it now would be pointless!
+			// - Sam, 04/06/2019
+			// u32 buildingID = city->tileBuildings[tileIndex];
+			// if (buildingID)
+			// {
+			// 	if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
+			// 	{
+			// 		tileCarriesPower = true;
+			// 	}
+			// }
 		}
 
 		city->powerLayer.data[tileIndex] = tileCarriesPower ? -1 : 0;

@@ -306,7 +306,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
 
 	// Building
-	s32 buildingArrayIndex = city->tileBuildings[tileI];
+	s32 buildingArrayIndex = getBuildingIDAtPosition(city, tilePos.x, tilePos.y);
 	if (buildingArrayIndex != 0)
 	{
 		Building *building = get(&city->buildings, buildingArrayIndex);
@@ -317,7 +317,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 	else
 	{
-		window_label(context, makeString("Building: {0}"));
+		window_label(context, makeString("Building: None"));
 	}
 
 	// Power group
@@ -1016,24 +1016,34 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 	clear(&gameState->overlayRenderItems);
 
-	// DEBUG draw the sectors
-	for (s32 y = 0; y < city->sectorsY; y++)
 	{
-		for (s32 x = 0; x < city->sectorsX; x++)
+		// DEBUG draw the sectors
+		#if 0
+		for (s32 y = 0; y < city->sectorsY; y++)
 		{
-			Sector *sector = city->sectors + (city->sectorsX * y) + x;
-
-			V4 color;
-			if ((x + y) % 2 == 1)
+			for (s32 x = 0; x < city->sectorsX; x++)
 			{
-				color = color255(  0,   0, 255, 63);
-			}
-			else
-			{
-				color = color255(255,   0,   0, 63);
-			}
+				Sector *sector = city->sectors + (city->sectorsX * y) + x;
 
-			drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, rectangleShaderID, color);
+				V4 color;
+				if ((x + y) % 2 == 1)
+				{
+					color = color255(  0,   0, 255, 63);
+				}
+				else
+				{
+					color = color255(255,   0,   0, 63);
+				}
+
+				drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, rectangleShaderID, color);
+			}
+		}
+		#endif
+
+		Sector *cursorSector = sectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
+		if (cursorSector != null)
+		{
+			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, rectangleShaderID, color255(255, 255, 255, 63));
 		}
 	}
 

@@ -38,7 +38,6 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 		}
 	}
 
-	city->tileBuildings   = PushArray(gameArena, s32, tileCount);
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
 	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
 	initZoneLayer(gameArena, &city->zoneLayer, tileCount);
@@ -60,12 +59,13 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	building->typeID = def->typeID;
 	building->footprint = footprint;
 
+	// TODO: Optimise this per-sector!
 	for (s32 y=0; y<footprint.h; y++)
 	{
 		for (s32 x=0; x<footprint.w; x++)
 		{
-			s32 tile = tileIndex(city, footprint.x+x, footprint.y+y);
-			city->tileBuildings[tile] = buildingArrayIndex;
+			Sector *sector = sectorAtTilePos(city, footprint.x+x, footprint.y+y);
+			sector->tileBuildings[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x] = buildingArrayIndex;
 		}
 	}
 
@@ -153,6 +153,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 	}
 
 	// Check terrain is buildable and empty
+	// TODO: Optimise this per-sector!
 	for (s32 y=0; y<def->height; y++)
 	{
 		for (s32 x=0; x<def->width; x++)
@@ -169,11 +170,10 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 				return false;
 			}
 
-			u32 ti = tileIndex(city, footprint.x + x, footprint.y + y);
-			if (city->tileBuildings[ti] != 0)
+			Building *buildingAtPos = getBuildingAtPosition(city, footprint.x + x, footprint.y + y);
+			if (buildingAtPos != null)
 			{
 				// Check if we can combine this with the building that's already there
-				Building *buildingAtPos = get(&city->buildings, city->tileBuildings[ti]);
 				if (get(&buildingDefs, buildingAtPos->typeID)->canBeBuiltOnID == def->typeID)
 				{
 					// We can!
@@ -206,15 +206,11 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 	bool needToRecalcPaths = def->isPath;
 	bool needToRecalcPower = def->carriesPower;
 
-	Building *building = null;
-	s32 buildingArrayIndex = city->tileBuildings[tileIndex(city, left, top)];
-
-	if (buildingArrayIndex)
+	Building *building = getBuildingAtPosition(city, left, top);
+	if (building != null)
 	{
 		// Do a quick replace! We already established in canPlaceBuilding() that we match.
 		// NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
-		building = getBuildingByID(city, buildingArrayIndex);
-		ASSERT(building != null, "Somehow this building doesn't exist even though it should!");
 		BuildingDef *oldDef = get(&buildingDefs, building->typeID);
 
 		building->typeID = def->buildOverResult;
@@ -230,8 +226,6 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 	{
 		// Remove zones
 		placeZone(uiState, city, Zone_None, footprint, false);
-
-		buildingArrayIndex = truncate32(city->buildings.count);
 
 		building = addBuilding(city, def, footprint);
 	}
@@ -309,14 +303,11 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 	
 	if (!tileExists(city, position.x, position.y)) return true;
 
-	u32 posTI = tileIndex(city, position.x, position.y);
+	s32 buildingID = getBuildingIDAtPosition(city, position.x, position.y);
+	Building *building = getBuildingByID(city, buildingID);
 
-	s32 buildingID  = city->tileBuildings[posTI];
-
-	if (buildingID)
+	if (building != null)
 	{
-		Building *building = getBuildingByID(city, buildingID);
-		ASSERT(building != null, "Tile is storing an invalid building ID!");
 		BuildingDef *def = get(&buildingDefs, building->typeID);
 
 		// Can we afford to demolish this?
@@ -332,19 +323,22 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		city->totalJobs -= def->jobs;
 
 		// Clear all references to this building
+		// TODO: Optimise this per-sector!
 		for (s32 y = building->footprint.y;
 			y < building->footprint.y + building->footprint.h;
 			y++)
 		{
-
 			for (s32 x = building->footprint.x;
 				x < building->footprint.x + building->footprint.w;
 				x++)
 			{
+				Sector *sector = sectorAtTilePos(city, x, y);
+				s32 relX = x - sector->bounds.x;
+				s32 relY = y - sector->bounds.y;
+				sector->tileBuildings[relY][relX] = 0;
+
 
 				s32 tile = tileIndex(city, x, y);
-
-				city->tileBuildings[tile] = 0;
 
 				if (def->isPath)
 				{
@@ -368,15 +362,19 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 			Building *highest = getBuildingByID(city, truncate32(city->buildings.count - 1));
 
 			// Change all references to highest building
+			// TODO: Optimise this per-sector!
 			for (s32 y = highest->footprint.y;
 				y < highest->footprint.y + highest->footprint.h;
-				y++) {
-
+				y++)
+			{
 				for (s32 x = highest->footprint.x;
 					x < highest->footprint.x + highest->footprint.w;
-					x++) {
-
-					city->tileBuildings[tileIndex(city, x, y)] = buildingID;
+					x++)
+				{
+					Sector *sector = sectorAtTilePos(city, x, y);
+					s32 relX = x - sector->bounds.x;
+					s32 relY = y - sector->bounds.y;
+					sector->tileBuildings[relY][relX] = buildingID;
 				}
 			}
 
