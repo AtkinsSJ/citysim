@@ -8,7 +8,7 @@ GameState *initialiseGameState()
 	bootstrapArena(GameState, result, gameArena);
 	randomSeed(&result->gameRandom, 12345);
 
-	initCity(&result->gameArena, &result->gameRandom, &result->city, 128, 128, LOCAL("city_default_name"), gameStartFunds);
+	initCity(&result->gameArena, &result->gameRandom, &result->city, 133, 117, LOCAL("city_default_name"), gameStartFunds);
 	generateTerrain(&result->city);
 
 	result->status = GameStatus_Playing;
@@ -995,6 +995,27 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		drawRenderItem(&renderer->worldBuffer, get(it));
 	}
 	clear(&gameState->overlayRenderItems);
+
+	// DEBUG draw the sectors
+	for (s32 y = 0; y < city->sectorsY; y++)
+	{
+		for (s32 x = 0; x < city->sectorsX; x++)
+		{
+			Sector *sector = city->sectors + (city->sectorsX * y) + x;
+
+			V4 color;
+			if ((x + y) % 2 == 1)
+			{
+				color = color255(  0,   0, 255, 63);
+			}
+			else
+			{
+				color = color255(255,   0,   0, 63);
+			}
+
+			drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, rectangleShaderID, color);
+		}
+	}
 
 	if (gameState->status == GameStatus_Quit)
 	{

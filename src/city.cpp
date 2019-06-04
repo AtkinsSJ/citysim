@@ -12,6 +12,32 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	s32 tileCount = width*height;
 
+	city->sectorsX = ceil_s32((f32)width  / (f32)SECTOR_SIZE);
+	city->sectorsY = ceil_s32((f32)height / (f32)SECTOR_SIZE);
+	city->sectors = PushArray(gameArena, Sector, city->sectorsX * city->sectorsY);
+
+	s32 remainderWidth  = width % SECTOR_SIZE;
+	s32 remainderHeight = height % SECTOR_SIZE;
+	for (s32 y = 0; y < city->sectorsY; y++)
+	{
+		for (s32 x = 0; x < city->sectorsX; x++)
+		{
+			Sector *sector = city->sectors + (city->sectorsX * y) + x;
+
+			*sector = {};
+			sector->bounds = irectXYWH(x * SECTOR_SIZE, y * SECTOR_SIZE, SECTOR_SIZE, SECTOR_SIZE);
+
+			if ((x == city->sectorsX - 1) && remainderWidth > 0)
+			{
+				sector->bounds.w = remainderWidth;
+			}
+			if ((y == city->sectorsY - 1) && remainderHeight > 0)
+			{
+				sector->bounds.h = remainderHeight;
+			}
+		}
+	}
+	
 	city->terrain         = PushArray(gameArena, Terrain, tileCount);
 	city->tileBuildings   = PushArray(gameArena, s32, tileCount);
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);

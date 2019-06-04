@@ -29,6 +29,14 @@ struct PowerLayer
 	s32 *data; // Represents the power grid "group". 0 = none, >0 = any tile with the same value is connected
 };
 
+#define SECTOR_SIZE 16
+struct Sector
+{
+	Rect2I bounds;
+
+	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
+};
+
 struct City
 {
 	String name;
@@ -39,6 +47,9 @@ struct City
 	s32 monthlyExpenditure;
 
 	s32 width, height;
+	s32 sectorsX, sectorsY;
+	Sector *sectors;
+
 	Terrain *terrain;
 	PathLayer pathLayer;
 	PowerLayer powerLayer;

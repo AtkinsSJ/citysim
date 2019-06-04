@@ -251,7 +251,7 @@ inline V4 color255(u8 r, u8 g, u8 b, u8 a)
 	V4 v = {};
 	v.a = (f32)a / 255.0f;
 
-	// NB: Prremultiplied alpha!
+	// NB: Premultiplied alpha!
 	v.r = v.a * ((f32)r / 255.0f);
 	v.g = v.a * ((f32)g / 255.0f);
 	v.b = v.a * ((f32)b / 255.0f);
