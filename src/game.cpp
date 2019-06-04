@@ -803,12 +803,20 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// Pre-calculate the tile area that's visible to the player.
 	// We err on the side of drawing too much, rather than risking having holes in the world.
 	Rect2I visibleTileBounds = irectCentreWH(
-		v2i((s32)worldCamera->pos.x - 1, (s32)worldCamera->pos.y - 1),
-		(s32) (worldCamera->size.x / worldCamera->zoom + 5),
-		(s32) (worldCamera->size.y / worldCamera->zoom + 5)
+		v2i((s32)worldCamera->pos.x, (s32)worldCamera->pos.y),
+		(s32) (worldCamera->size.x / worldCamera->zoom) + 2,
+		(s32) (worldCamera->size.y / worldCamera->zoom) + 2
 	);
-	Rect2I cityBounds = irectXYWH(0, 0, city->width, city->height);
-	visibleTileBounds = cropRectangle(visibleTileBounds, cityBounds);
+	visibleTileBounds = cropRectangle(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
+	Rect2I visibleSectors = irectXYWH(
+		visibleTileBounds.x / SECTOR_SIZE,
+		visibleTileBounds.y / SECTOR_SIZE,
+		(visibleTileBounds.w / SECTOR_SIZE) + 2,
+		(visibleTileBounds.h / SECTOR_SIZE) + 2
+	);
+	visibleSectors = cropRectangle(visibleSectors, irectXYWH(0, 0, city->sectorsX, city->sectorsY));
+
+	logDebug("Visible sectors: ({0} {1} {2} {3})", {formatInt(visibleSectors.x),formatInt(visibleSectors.y),formatInt(visibleSectors.w),formatInt(visibleSectors.h)});
 
 	// Draw terrain
 	{
@@ -819,29 +827,40 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 		V4 terrainColor = makeWhite();
-		
-		for (s32 y = visibleTileBounds.y;
-			y < visibleTileBounds.y + visibleTileBounds.h;
-			y++)
+
+		for (s32 sY = visibleSectors.y;
+			sY < visibleSectors.y + visibleSectors.h;
+			sY++)
 		{
-			spriteBounds.y = (f32)y;
-
-			for (s32 x = visibleTileBounds.x;
-				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++)
+			for (s32 sX = visibleSectors.x;
+				sX < visibleSectors.x + visibleSectors.w;
+				sX++)
 			{
-				Terrain *t = terrainAt(city, x, y);
+				Sector *sector = getSector(city, sX, sY);
 
-				if (t->type != terrainType)
+				for (s32 relY = 0;
+					relY < sector->bounds.h;
+					relY++)
 				{
-					terrainType = t->type;
-					terrainSprites = get(&terrainDefs, terrainType)->sprites;
+					Terrain *terrain = sector->terrain[relY];
+					spriteBounds.y = (f32)(sector->bounds.y + relY);
+
+					for (s32 relX = 0;
+						relX < sector->bounds.w;
+						relX++, terrain++)
+					{
+						if (terrain->type != terrainType)
+						{
+							terrainType = terrain->type;
+							terrainSprites = get(&terrainDefs, terrainType)->sprites;
+						}
+
+						Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
+						spriteBounds.x = (f32)(sector->bounds.x + relX);
+
+						drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
+					}
 				}
-
-				Sprite *sprite = getSprite(terrainSprites, t->spriteOffset);
-				spriteBounds.x = (f32)x;
-
-				drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
 			}
 		}
 	}

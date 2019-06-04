@@ -74,16 +74,21 @@ inline s32 tileIndex(City *city, s32 x, s32 y)
 	return (y * city->width) + x;
 }
 
-inline Sector *sectorAt(City *city, s32 x, s32 y)
+inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
 {
 	Sector *result = null;
 
-	if (x >= 0 && x < city->width && y >= 0 && y < city->height)
+	if (sectorX >= 0 && sectorX < city->sectorsX && sectorY >= 0 && sectorY < city->sectorsY)
 	{
-		result = city->sectors + ((y / SECTOR_SIZE) * city->sectorsX) + (x / SECTOR_SIZE);
+		result = city->sectors + (sectorY * city->sectorsX) + sectorX;
 	}
 
 	return result;
+}
+
+inline Sector *sectorAtTilePos(City *city, s32 x, s32 y)
+{
+	return getSector(city, x / SECTOR_SIZE, y / SECTOR_SIZE);
 }
 
 inline bool tileExists(City *city, s32 x, s32 y)
@@ -98,11 +103,11 @@ inline Terrain *terrainAt(City *city, s32 x, s32 y)
 
 	if (tileExists(city, x, y))
 	{
-		Sector *sector = sectorAt(city, x, y);
+		Sector *sector = sectorAtTilePos(city, x, y);
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		return &sector->terrain[relX][relY];
+		return &sector->terrain[relY][relX];
 	}
 
 	return result;
