@@ -42,6 +42,22 @@ struct ChunkedArray
 };
 
 template<typename T>
+struct ChunkedArrayIterator
+{
+	ChunkedArray<T> *array;
+	bool wrapAround;
+	bool goBackwards;
+
+	Chunk<T> *currentChunk;
+	smm indexInChunk;
+
+	// This is a counter for use when we start not at the beginning of the array but want to iterate it ALL.
+	// For simplicity, we increment it each time we next(), and when it equals the count, we're done.
+	smm itemsIterated;
+	bool isDone;
+};
+
+template<typename T>
 void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize);
 
 template<typename T>
@@ -83,6 +99,12 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex);
 template<typename T>
 void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize);
 
+template<typename T>
+Chunk<T> *getChunkFromPool(ChunkPool<T> *pool);
+
+template<typename T>
+void returnLastChunkToPool(ChunkedArray<T> *array);
+
 //////////////////////////////////////////////////
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
@@ -101,22 +123,6 @@ void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize);
 		// do stuff with the thing
 	}
  */
-
-template<typename T>
-struct ChunkedArrayIterator
-{
-	ChunkedArray<T> *array;
-	bool wrapAround;
-	bool goBackwards;
-
-	Chunk<T> *currentChunk;
-	smm indexInChunk;
-
-	// This is a counter for use when we start not at the beginning of the array but want to iterate it ALL.
-	// For simplicity, we increment it each time we next(), and when it equals the count, we're done.
-	smm itemsIterated;
-	bool isDone;
-};
 
 template<typename T>
 ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true, bool goBackwards = false);

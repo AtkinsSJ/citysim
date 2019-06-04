@@ -58,20 +58,7 @@ void appendChunk(ChunkedArray<T> *array)
 	// Attempt to get a chunk from the pool if we can
 	if (array->chunkPool != null)
 	{
-		if (array->chunkPool->count > 0)
-		{
-			newChunk = array->chunkPool->firstChunk;
-			array->chunkPool->firstChunk = newChunk->nextChunk;
-			array->chunkPool->count--;
-			if (array->chunkPool->firstChunk != null)
-			{
-				array->chunkPool->firstChunk->prevChunk = null;
-			}
-		}
-		else
-		{
-			newChunk = allocateChunk<T>(array->chunkPool->memoryArena, array->chunkPool->chunkSize);
-		}
+		newChunk = getChunkFromPool(array->chunkPool);
 	}
 	else
 	{
@@ -271,27 +258,6 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 }
 
 template<typename T>
-void returnLastChunkToPool(ChunkedArray<T> *array)
-{
-	Chunk<T> *chunk = array->lastChunk;
-	ChunkPool<T> *pool = array->chunkPool;
-
-	ASSERT(chunk->count == 0, "Attempting to return a non-empty chunk to the chunk pool!");
-	array->lastChunk = array->lastChunk->prevChunk;
-	if (array->firstChunk == chunk) array->firstChunk = array->lastChunk;
-	array->chunkCount--;
-
-	chunk->prevChunk = null;
-	chunk->nextChunk = pool->firstChunk;
-	if (pool->firstChunk != null)
-	{
-		pool->firstChunk->prevChunk = chunk;
-	}
-	pool->firstChunk = chunk;
-	pool->count++;
-}
-
-template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 {
 	DEBUG_FUNCTION();
@@ -406,6 +372,50 @@ void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize)
 	pool->chunkSize = chunkSize;
 	pool->count = 0;
 	pool->firstChunk = null;
+}
+
+template<typename T>
+Chunk<T> *getChunkFromPool(ChunkPool<T> *pool)
+{
+	Chunk<T> *newChunk = null;
+
+	if (pool->count > 0)
+	{
+		newChunk = pool->firstChunk;
+		pool->firstChunk = newChunk->nextChunk;
+		pool->count--;
+		if (pool->firstChunk != null)
+		{
+			pool->firstChunk->prevChunk = null;
+		}
+	}
+	else
+	{
+		newChunk = allocateChunk<T>(pool->memoryArena, pool->chunkSize);
+	}
+
+	return newChunk;
+}
+
+template<typename T>
+void returnLastChunkToPool(ChunkedArray<T> *array)
+{
+	Chunk<T> *chunk = array->lastChunk;
+	ChunkPool<T> *pool = array->chunkPool;
+
+	ASSERT(chunk->count == 0, "Attempting to return a non-empty chunk to the chunk pool!");
+	array->lastChunk = array->lastChunk->prevChunk;
+	if (array->firstChunk == chunk) array->firstChunk = array->lastChunk;
+	array->chunkCount--;
+
+	chunk->prevChunk = null;
+	chunk->nextChunk = pool->firstChunk;
+	if (pool->firstChunk != null)
+	{
+		pool->firstChunk->prevChunk = chunk;
+	}
+	pool->firstChunk = chunk;
+	pool->count++;
 }
 
 //////////////////////////////////////////////////
