@@ -124,7 +124,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 			if (canZoneTile(city, zoneType, pos.x, pos.y))
 			{
 				Sector *sector = sectorAtTilePos(city, pos.x, pos.y);
-				ZoneType oldZone = sector->zones[pos.y - sector->bounds.y][pos.x - sector->bounds.x];
+				ZoneType oldZone = sector->tileZone[pos.y - sector->bounds.y][pos.x - sector->bounds.x];
 
 				// URGHGGHGHHH THIS IS HORRRRRIBLE!
 				// We're doing a linear search through the chunked array for EVERY TILE that's changed!
@@ -147,7 +147,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 					append(emptyZonesArray, pos);
 				}
 
-				sector->zones[pos.y - sector->bounds.y][pos.x - sector->bounds.x] = zoneType;
+				sector->tileZone[pos.y - sector->bounds.y][pos.x - sector->bounds.x] = zoneType;
 			}
 		}
 	}

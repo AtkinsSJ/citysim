@@ -1,16 +1,27 @@
 #pragma once
 
-void initialisePowerLayer(MemoryArena *gameArena, PowerLayer *layer, s32 tileCount)
+void initialisePowerLayer(MemoryArena *gameArena, PowerLayer *layer)
 {
-	layer->data = PushArray(gameArena, s32, tileCount);
 	initChunkedArray(&layer->groups, gameArena, 64);
+}
+
+void setPowerGroup(City *city, s32 x, s32 y, s32 value)
+{
+	Sector *sector = sectorAtTilePos(city, x, y);
+	if (sector != null)
+	{
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		sector->tilePowerGroup[relY][relX] = value;
+	}
 }
 
 bool floodFillPowerConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 {
 	bool didCreateNewGroup = false;
 
-	city->powerLayer.data[tileIndex(city, x, y)] = fillValue;
+	setPowerGroup(city, x, y, fillValue);
 
 	if (powerGroupAt(city, x-1, y) == -1)
 	{
@@ -53,33 +64,46 @@ void recalculatePowerConnectivity(City *city)
 	// Then, iterate over the tiles and flood fill from each -1 value.
 
 	// Reset things to 0/-1
-
-	s32 maxTileIndex = city->width * city->height;
-	for (s32 tileIndex = 0; tileIndex < maxTileIndex; ++tileIndex)
+	for (s32 sY = 0;
+		sY < city->sectorsY;
+		sY++)
 	{
-		bool tileCarriesPower = false;
-		// TODO: OK, ALL of this needs rewriting once we're switched to using sectors!
-		// if (zoneDefs[city->zoneLayer.tiles[tileIndex]].carriesPower)
-		// {
-		// 	tileCarriesPower = true;
-		// }
-		// else
-		// {
-		// 	// TODO: Reimplement buildings carrying power!!!
-		// 	// I disabled it because this whole function is old and will need rewriting to work with Sectors
-		// 	// anyway once power networks are stored in them, so spending time fixing it now would be pointless!
-		// 	// - Sam, 04/06/2019
-		// 	// u32 buildingID = city->tileBuildings[tileIndex];
-		// 	// if (buildingID)
-		// 	// {
-		// 	// 	if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
-		// 	// 	{
-		// 	// 		tileCarriesPower = true;
-		// 	// 	}
-		// 	// }
-		// }
+		for (s32 sX = 0;
+			sX < city->sectorsX;
+			sX++)
+		{
+			Sector *sector = getSector(city, sX, sY);
 
-		city->powerLayer.data[tileIndex] = tileCarriesPower ? -1 : 0;
+			for (s32 relY = 0;
+				relY < sector->bounds.h;
+				relY++)
+			{
+				for (s32 relX = 0;
+					relX < sector->bounds.w;
+					relX++)
+				{
+					bool tileCarriesPower = false;
+					ZoneType zone = sector->tileZone[relY][relX];
+					if (zoneDefs[zone].carriesPower)
+					{
+						tileCarriesPower = true;
+					}
+					else
+					{
+						s32 buildingID = sector->tileBuilding[relY][relX];
+						if (buildingID != 0)
+						{
+							if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
+							{
+								tileCarriesPower = true;
+							}
+						}
+					}
+
+					sector->tilePowerGroup[relY][relX] = tileCarriesPower ? -1 : 0;
+				}
+			}
+		}
 	}
 
 	clear(&city->powerLayer.groups);
@@ -91,7 +115,7 @@ void recalculatePowerConnectivity(City *city)
 	{
 		for (s32 x=0; x<city->width; x++, tileIndex++)
 		{
-			if (city->powerLayer.data[tileIndex] == -1)
+			if (powerGroupAt(city, x, y) == -1)
 			{
 				// Flood fill from here!
 				floodFillPowerConnectivity(city, x, y, truncate32(city->powerLayer.groups.count));

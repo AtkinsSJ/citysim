@@ -13,7 +13,7 @@ enum DataLayer
 struct PathLayer
 {
 	s32 pathGroupCount;
-	s32 *data; // Represents the pathing 'group'. 0 = unpathable, >0 = any tile with the same value is connected
+	s32 *data;
 };
 
 struct PowerGroup
@@ -26,7 +26,6 @@ struct PowerLayer
 {
 	PowerGroup combined;
 	ChunkedArray<PowerGroup> groups;
-	s32 *data; // Represents the power grid "group". 0 = none, >0 = any tile with the same value is connected
 };
 
 #define SECTOR_SIZE 16
@@ -36,8 +35,11 @@ struct Sector
 
 	// All of these are in [y][x] order!
 	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
-	s32 tileBuildings[SECTOR_SIZE][SECTOR_SIZE]; // Map from y,x -> building id at that location. Building IDs are 1-indexed (0 meaning null).
-	ZoneType zones[SECTOR_SIZE][SECTOR_SIZE];
+	s32 tileBuilding[SECTOR_SIZE][SECTOR_SIZE]; // Map from y,x -> building id at that location. Building IDs are 1-indexed (0 meaning null).
+	ZoneType tileZone[SECTOR_SIZE][SECTOR_SIZE];
+
+	s32 tilePathGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = unpathable, >0 = any tile with the same value is connected
+	s32 tilePowerGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = none, >0 = any tile with the same value is connected
 };
 
 struct City
@@ -134,7 +136,7 @@ inline s32 getBuildingIDAtPosition(City *city, s32 x, s32 y)
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		result = sector->tileBuildings[relY][relX];
+		result = sector->tileBuilding[relY][relX];
 	}
 
 	return result;
@@ -165,10 +167,14 @@ inline bool isPathable(City *city, s32 x, s32 y)
 inline s32 powerGroupAt(City *city, s32 x, s32 y)
 {
 	s32 result = 0;
+	Sector *sector = sectorAtTilePos(city, x, y);
 
-	if (tileExists(city, x, y))
+	if (sector != null)
 	{
-		result = city->powerLayer.data[tileIndex(city, x, y)];
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		result = sector->tilePowerGroup[relY][relX];
 	}
 
 	return result;
@@ -184,7 +190,7 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		result = sector->zones[relY][relX];
+		result = sector->tileZone[relY][relX];
 	}
 
 	return result;

@@ -814,8 +814,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	);
 	visibleSectors = cropRectangle(visibleSectors, irectXYWH(0, 0, city->sectorsX, city->sectorsY));
 
-	logDebug("Visible sectors: ({0} {1} {2} {3})", {formatInt(visibleSectors.x),formatInt(visibleSectors.y),formatInt(visibleSectors.w),formatInt(visibleSectors.h)});
-
 	// Draw terrain
 	{
 		DEBUG_BLOCK_T("Draw terrain", DCDT_GameUpdate);
@@ -885,7 +883,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					relY < sector->bounds.h;
 					relY++)
 				{
-					ZoneType *zone = sector->zones[relY];
+					ZoneType *zone = sector->tileZone[relY];
 					spriteBounds.y = (f32)(sector->bounds.y + relY);
 
 					for (s32 relX = 0;
@@ -956,11 +954,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			y < visibleTileBounds.y + visibleTileBounds.h;
 			y++)
 		{
-			s32 tile = tileIndex(city, visibleTileBounds.x, y);
-
 			for (s32 x = visibleTileBounds.x;
 				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++, tile++)
+				x++)
 			{
 				bool tileHasData = false;
 				V4 color = {};
@@ -969,7 +965,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				{
 					case DataLayer_Paths:
 					{
-						s32 pathGroup = city->pathLayer.data[tile];
+						s32 pathGroup = pathGroupAt(city, x, y);
 						if (pathGroup > 0)
 						{
 							switch (pathGroup)
@@ -989,7 +985,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 					case DataLayer_Power:
 					{
-						s32 powerGroup = city->powerLayer.data[tile];
+						s32 powerGroup = powerGroupAt(city, x, y);
 						if (powerGroup > 0)
 						{
 							switch (powerGroup)

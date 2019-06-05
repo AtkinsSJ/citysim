@@ -39,7 +39,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	}
 
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
-	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
+	initialisePowerLayer(gameArena, &city->powerLayer);
 	initZoneLayer(gameArena, &city->zoneLayer);
 
 	city->highestBuildingID = 0;
@@ -65,7 +65,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		for (s32 x=0; x<footprint.w; x++)
 		{
 			Sector *sector = sectorAtTilePos(city, footprint.x+x, footprint.y+y);
-			sector->tileBuildings[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x] = buildingArrayIndex;
+			sector->tileBuilding[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x] = buildingArrayIndex;
 		}
 	}
 
@@ -335,7 +335,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 				Sector *sector = sectorAtTilePos(city, x, y);
 				s32 relX = x - sector->bounds.x;
 				s32 relY = y - sector->bounds.y;
-				sector->tileBuildings[relY][relX] = 0;
+				sector->tileBuilding[relY][relX] = 0;
 
 
 				s32 tile = tileIndex(city, x, y);
@@ -374,7 +374,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 					Sector *sector = sectorAtTilePos(city, x, y);
 					s32 relX = x - sector->bounds.x;
 					s32 relY = y - sector->bounds.y;
-					sector->tileBuildings[relY][relX] = buildingID;
+					sector->tileBuilding[relY][relX] = buildingID;
 				}
 			}
 
