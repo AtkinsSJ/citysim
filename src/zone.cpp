@@ -2,10 +2,8 @@
 
 void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer);
 
-void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount)
+void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer)
 {
-	zoneLayer->tiles = PushArray(memoryArena, ZoneType, tileCount);
-
 	initChunkPool(&zoneLayer->zoneLocationsChunkPool, memoryArena, 256);
 
 	initChunkedArray(&zoneLayer->rGrowableBuildings, memoryArena, 256);
@@ -29,15 +27,13 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 	
 	if (!tileExists(city, x, y)) return false;
 
-	s32 tile = tileIndex(city, x, y);
-
 	TerrainDef *tDef = get(&terrainDefs, terrainAt(city, x, y)->type);
 	if (!tDef->canBuildOn) return false;
 
 	if (getBuildingIDAtPosition(city, x, y) != 0) return false;
 
 	// Ignore tiles that are already this zone!
-	if (city->zoneLayer.tiles[tile] == zoneType) return false;
+	if (getZoneAt(city, x, y) == zoneType) return false;
 
 	return true;
 }
@@ -127,9 +123,8 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 			V2I pos = v2i(area.x + x, area.y + y);
 			if (canZoneTile(city, zoneType, pos.x, pos.y))
 			{
-				s32 tile = tileIndex(city, pos.x, pos.y);
-
-				ZoneType oldZone = city->zoneLayer.tiles[tile];
+				Sector *sector = sectorAtTilePos(city, pos.x, pos.y);
+				ZoneType oldZone = sector->zones[pos.y - sector->bounds.y][pos.x - sector->bounds.x];
 
 				// URGHGGHGHHH THIS IS HORRRRRIBLE!
 				// We're doing a linear search through the chunked array for EVERY TILE that's changed!
@@ -152,7 +147,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 					append(emptyZonesArray, pos);
 				}
 
-				city->zoneLayer.tiles[tile] = zoneType;
+				sector->zones[pos.y - sector->bounds.y][pos.x - sector->bounds.x] = zoneType;
 			}
 		}
 	}

@@ -48,10 +48,8 @@ struct ZoneLayer
 	ChunkedArray<V2I> emptyIZones;
 	ChunkedArray<V2I> filledIZones;
 	s32 maxIBuildingDim;
-
-	ZoneType *tiles; // x,y -> ZoneType
 };
 
-void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer, s32 tileCount);
+void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer);
 void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney=true);
 void markZonesAsEmpty(City *city, Rect2I footprint);

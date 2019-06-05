@@ -40,7 +40,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
 	initialisePowerLayer(gameArena, &city->powerLayer, tileCount);
-	initZoneLayer(gameArena, &city->zoneLayer, tileCount);
+	initZoneLayer(gameArena, &city->zoneLayer);
 
 	city->highestBuildingID = 0;
 	initChunkedArray(&city->buildings, gameArena, 1024);

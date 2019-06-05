@@ -53,29 +53,31 @@ void recalculatePowerConnectivity(City *city)
 	// Then, iterate over the tiles and flood fill from each -1 value.
 
 	// Reset things to 0/-1
+
 	s32 maxTileIndex = city->width * city->height;
 	for (s32 tileIndex = 0; tileIndex < maxTileIndex; ++tileIndex)
 	{
 		bool tileCarriesPower = false;
-		if (zoneDefs[city->zoneLayer.tiles[tileIndex]].carriesPower)
-		{
-			tileCarriesPower = true;
-		}
-		else
-		{
-			// TODO: Reimplement buildings carrying power!!!
-			// I disabled it because this whole function is old and will need rewriting to work with Sectors
-			// anyway once power networks are stored in them, so spending time fixing it now would be pointless!
-			// - Sam, 04/06/2019
-			// u32 buildingID = city->tileBuildings[tileIndex];
-			// if (buildingID)
-			// {
-			// 	if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
-			// 	{
-			// 		tileCarriesPower = true;
-			// 	}
-			// }
-		}
+		// TODO: OK, ALL of this needs rewriting once we're switched to using sectors!
+		// if (zoneDefs[city->zoneLayer.tiles[tileIndex]].carriesPower)
+		// {
+		// 	tileCarriesPower = true;
+		// }
+		// else
+		// {
+		// 	// TODO: Reimplement buildings carrying power!!!
+		// 	// I disabled it because this whole function is old and will need rewriting to work with Sectors
+		// 	// anyway once power networks are stored in them, so spending time fixing it now would be pointless!
+		// 	// - Sam, 04/06/2019
+		// 	// u32 buildingID = city->tileBuildings[tileIndex];
+		// 	// if (buildingID)
+		// 	// {
+		// 	// 	if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
+		// 	// 	{
+		// 	// 		tileCarriesPower = true;
+		// 	// 	}
+		// 	// }
+		// }
 
 		city->powerLayer.data[tileIndex] = tileCarriesPower ? -1 : 0;
 	}

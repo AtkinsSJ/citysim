@@ -295,14 +295,12 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	V2I tilePos = gameState->inspectedTilePosition;
 	context->window->title = myprintf(LOCAL("title_inspect"), {formatInt(tilePos.x), formatInt(tilePos.y)});
 
-	s32 tileI = tileIndex(city, tilePos.x, tilePos.y);
-
 	// Terrain
 	String terrainName = get(&terrainDefs, terrainAt(city, tilePos.x, tilePos.y)->type)->name;
 	window_label(context, myprintf("Terrain: {0}", {terrainName}));
 
 	// Zone
-	ZoneType zone = city->zoneLayer.tiles[tileI];
+	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
 
 	// Building
@@ -873,29 +871,40 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		s32 zoneType = -1;
 		V4 zoneColor = {};
 
-		for (s32 y = visibleTileBounds.y;
-			y < visibleTileBounds.y + visibleTileBounds.h;
-			y++)
+		for (s32 sY = visibleSectors.y;
+			sY < visibleSectors.y + visibleSectors.h;
+			sY++)
 		{
-			ZoneType *zone = city->zoneLayer.tiles + tileIndex(city, visibleTileBounds.x, y);
-			spriteBounds.y = (f32)y;
-			f32 depth = depthFromY(y) - 10.0f;
-
-			for (s32 x = visibleTileBounds.x;
-				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++, zone++)
+			for (s32 sX = visibleSectors.x;
+				sX < visibleSectors.x + visibleSectors.w;
+				sX++)
 			{
-				if (*zone != Zone_None)
+				Sector *sector = getSector(city, sX, sY);
+
+				for (s32 relY = 0;
+					relY < sector->bounds.h;
+					relY++)
 				{
-					if (*zone != zoneType)
+					ZoneType *zone = sector->zones[relY];
+					spriteBounds.y = (f32)(sector->bounds.y + relY);
+
+					for (s32 relX = 0;
+						relX < sector->bounds.w;
+						relX++, zone++)
 					{
-						zoneType = *zone;
-						zoneColor = zoneDefs[zoneType].color;
+						if (*zone != Zone_None)
+						{
+							if (*zone != zoneType)
+							{
+								zoneType = *zone;
+								zoneColor = zoneDefs[zoneType].color;
+							}
+
+							spriteBounds.x = (f32)(sector->bounds.x + relX);
+
+							drawRect(&renderer->worldBuffer, spriteBounds, -900.0f, rectangleShaderID, zoneColor);
+						}
 					}
-
-					spriteBounds.x = (f32)x;
-
-					drawRect(&renderer->worldBuffer, spriteBounds, depth, rectangleShaderID, zoneColor);
 				}
 			}
 		}

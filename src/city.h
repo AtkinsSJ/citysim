@@ -37,6 +37,7 @@ struct Sector
 	// All of these are in [y][x] order!
 	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
 	s32 tileBuildings[SECTOR_SIZE][SECTOR_SIZE]; // Map from y,x -> building id at that location. Building IDs are 1-indexed (0 meaning null).
+	ZoneType zones[SECTOR_SIZE][SECTOR_SIZE];
 };
 
 struct City
@@ -176,10 +177,14 @@ inline s32 powerGroupAt(City *city, s32 x, s32 y)
 inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 {
 	ZoneType result = Zone_None;
+	Sector *sector = sectorAtTilePos(city, x, y);
 
-	if (tileExists(city, x, y))
+	if (sector != null)
 	{
-		result = city->zoneLayer.tiles[tileIndex(city, x, y)];
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		result = sector->zones[relY][relX];
 	}
 
 	return result;
