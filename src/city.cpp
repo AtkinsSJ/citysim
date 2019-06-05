@@ -10,8 +10,6 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->width = width;
 	city->height = height;
 
-	s32 tileCount = width*height;
-
 	city->sectorsX = ceil_s32((f32)width  / (f32)SECTOR_SIZE);
 	city->sectorsY = ceil_s32((f32)height / (f32)SECTOR_SIZE);
 	city->sectors = PushArray(gameArena, Sector, city->sectorsX * city->sectorsY);
@@ -38,7 +36,6 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 		}
 	}
 
-	city->pathLayer.data  = PushArray(gameArena, s32, tileCount);
 	initialisePowerLayer(gameArena, &city->powerLayer);
 	initZoneLayer(gameArena, &city->zoneLayer);
 
@@ -232,12 +229,13 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 
 
 	// Tiles
-	for (s32 y=0; y<footprint.h; y++) {
-		for (s32 x=0; x<footprint.w; x++) {
-			s32 tile = tileIndex(city,footprint.x+x,footprint.y+y);
-
+	for (s32 y=0; y<footprint.h; y++)
+	{
+		for (s32 x=0; x<footprint.w; x++)
+		{
 			// Data layer updates
-			city->pathLayer.data[tile] = def->isPath ? 1 : 0;
+			// TODO: Local recalculation instead of completely starting over
+			setPathGroup(city, footprint.x+x, footprint.y+y, def->isPath ? 1 : 0);
 		}
 	}
 
@@ -251,11 +249,13 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 
 	if (needToRecalcPaths)
 	{
+		// TODO: Local recalculation instead of completely starting over
 		recalculatePathingConnectivity(city);
 	}
 
 	if (needToRecalcPower)
 	{
+		// TODO: Local recalculation instead of completely starting over
 		recalculatePowerConnectivity(city);
 	}
 
@@ -337,13 +337,10 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 				s32 relY = y - sector->bounds.y;
 				sector->tileBuilding[relY][relX] = 0;
 
-
-				s32 tile = tileIndex(city, x, y);
-
 				if (def->isPath)
 				{
 					// Remove from the pathing layer
-					city->pathLayer.data[tile] = 0;
+					sector->tilePathGroup[relY][relX] = 0;
 				}
 			}
 		}
@@ -412,9 +409,9 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	s32 total = 0;
 
 	// Terrain clearing cost
-	for (int y=0; y<area.h; y++)
+	for (s32 y=0; y<area.h; y++)
 	{
-		for (int x=0; x<area.w; x++)
+		for (s32 x=0; x<area.w; x++)
 		{
 			TerrainDef *tDef = get(&terrainDefs, terrainAt(city, area.x + x, area.y + y)->type);
 
@@ -445,14 +442,18 @@ bool demolishRect(UIState *uiState, City *city, Rect2I area)
 {
 	DEBUG_FUNCTION();
 
-	for (int y=0; y<area.h; y++) {
-		for (int x=0; x<area.w; x++) {
-			if (!demolishTile(uiState, city, {area.x + x, area.y + y})) {
+	for (s32 y=0; y<area.h; y++)
+	{
+		for (s32 x=0; x<area.w; x++)
+		{
+			if (!demolishTile(uiState, city, v2i(area.x + x, area.y + y)))
+			{
 				return false;
 			}
 		}
 	}
 
+	// TODO: Local recalculation!
 	recalculatePathingConnectivity(city);
 	recalculatePowerConnectivity(city);
 

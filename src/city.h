@@ -13,7 +13,6 @@ enum DataLayer
 struct PathLayer
 {
 	s32 pathGroupCount;
-	s32 *data;
 };
 
 struct PowerGroup
@@ -150,10 +149,14 @@ inline Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 inline s32 pathGroupAt(City *city, s32 x, s32 y)
 {
 	s32 result = 0;
+	Sector *sector = sectorAtTilePos(city, x, y);
 
-	if (tileExists(city, x, y))
+	if (sector != null)
 	{
-		result = city->pathLayer.data[tileIndex(city, x, y)];
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		result = sector->tilePathGroup[relY][relX];
 	}
 
 	return result;

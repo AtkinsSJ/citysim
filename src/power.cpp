@@ -17,37 +17,29 @@ void setPowerGroup(City *city, s32 x, s32 y, s32 value)
 	}
 }
 
-bool floodFillPowerConnectivity(City *city, s32 x, s32 y, s32 fillValue)
+void floodFillPowerConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 {
-	bool didCreateNewGroup = false;
-
 	setPowerGroup(city, x, y, fillValue);
 
 	if (powerGroupAt(city, x-1, y) == -1)
 	{
 		floodFillPowerConnectivity(city, x-1, y, fillValue);
-		didCreateNewGroup = true;
 	}
 	
 	if (powerGroupAt(city, x+1, y) == -1)
 	{
 		floodFillPowerConnectivity(city, x+1, y, fillValue);
-		didCreateNewGroup = true;
 	}
 
 	if (powerGroupAt(city, x, y+1) == -1)
 	{
 		floodFillPowerConnectivity(city, x, y+1, fillValue);
-		didCreateNewGroup = true;
 	}
 
 	if (powerGroupAt(city, x, y-1) == -1)
 	{
 		floodFillPowerConnectivity(city, x, y-1, fillValue);
-		didCreateNewGroup = true;
 	}
-
-	return didCreateNewGroup;
 }
 
 /*
@@ -111,6 +103,7 @@ void recalculatePowerConnectivity(City *city)
 	city->powerLayer.combined = {};
 
 	// Find -1 tiles
+	// TODO: Calculate this per-sector!
 	for (s32 y=0, tileIndex = 0; y<city->height; y++)
 	{
 		for (s32 x=0; x<city->width; x++, tileIndex++)

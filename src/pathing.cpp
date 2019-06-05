@@ -1,7 +1,19 @@
 
+void setPathGroup(City *city, s32 x, s32 y, s32 value)
+{
+	Sector *sector = sectorAtTilePos(city, x, y);
+	if (sector != null)
+	{
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		sector->tilePathGroup[relY][relX] = value;
+	}
+}
+
 void floodFillPathingConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 {
-	city->pathLayer.data[tileIndex(city, x, y)] = fillValue;
+	setPathGroup(city, x, y, fillValue);
 
 	if (pathGroupAt(city, x-1, y) == -1)
 	{
@@ -33,23 +45,42 @@ void recalculatePathingConnectivity(City *city)
 	// Then, iterate over the tiles and flood fill from each -1 value.
 
 	// Reset things to 0/-1
-	s32 maxTileIndex = city->width * city->height;
-	for (s32 tileIndex = 0; tileIndex < maxTileIndex; ++tileIndex)
+	for (s32 sY = 0;
+		sY < city->sectorsY;
+		sY++)
 	{
-		if (city->pathLayer.data[tileIndex] > 0)
+		for (s32 sX = 0;
+			sX < city->sectorsX;
+			sX++)
 		{
-			city->pathLayer.data[tileIndex] = -1;
+			Sector *sector = getSector(city, sX, sY);
+
+			for (s32 relY = 0;
+				relY < sector->bounds.h;
+				relY++)
+			{
+				for (s32 relX = 0;
+					relX < sector->bounds.w;
+					relX++)
+				{
+					if (sector->tilePathGroup[relY][relX] > 0)
+					{
+						sector->tilePathGroup[relY][relX] = -1;
+					}
+				}
+			}
 		}
 	}
 
 	city->pathLayer.pathGroupCount = 0;
 
 	// Find -1 tiles
+	// TODO: Calculate this per-sector!
 	for (s32 y=0, tileIndex = 0; y<city->height; y++)
 	{
 		for (s32 x=0; x<city->width; x++, tileIndex++)
 		{
-			if (city->pathLayer.data[tileIndex] == -1)
+			if (pathGroupAt(city, x, y) == -1)
 			{
 				// Flood fill from here!
 				floodFillPathingConnectivity(city, x, y, ++city->pathLayer.pathGroupCount);
