@@ -304,12 +304,11 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
 
 	// Building
-	s32 buildingArrayIndex = getBuildingIDAtPosition(city, tilePos.x, tilePos.y);
-	if (buildingArrayIndex != 0)
+	Building *building = getBuildingAtPosition(city, tilePos.x, tilePos.y);
+	if (building != null)
 	{
-		Building *building = get(&city->buildings, buildingArrayIndex);
 		BuildingDef *def = get(&buildingDefs, building->typeID);
-		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})", {def->name, formatInt(building->id), formatInt(buildingArrayIndex)}));
+		window_label(context, myprintf("Building: {0} (ID {1})", {def->name, formatInt(building->id)}));
 		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building->currentJobs), formatInt(def->jobs)}));
 	}
@@ -915,34 +914,73 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		SpriteGroup *sprites = null;
 		V4 drawColorNormal = makeWhite();
 		V4 drawColorDemolish = color255(255,128,128,255);
-		
-		for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
+
+		for (s32 sY = visibleSectors.y;
+			sY < visibleSectors.y + visibleSectors.h;
+			sY++)
 		{
-			Building *building = get(it);
-
-			if (rectsOverlap(building->footprint, visibleTileBounds))
+			for (s32 sX = visibleSectors.x;
+				sX < visibleSectors.x + visibleSectors.w;
+				sX++)
 			{
-				if (typeID != building->typeID)
+				Sector *sector = getSector(city, sX, sY);
+
+				for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
 				{
-					typeID = building->typeID;
-					sprites = get(&buildingDefs, typeID)->sprites;
+					Building *building = get(it);
+					if (rectsOverlap(building->footprint, visibleTileBounds))
+					{
+						if (typeID != building->typeID)
+						{
+							typeID = building->typeID;
+							sprites = get(&buildingDefs, typeID)->sprites;
+						}
+
+						V4 drawColor = drawColorNormal;
+
+						if (gameState->actionMode == ActionMode_Demolish
+							&& gameState->worldDragState.isDragging
+							&& rectsOverlap(building->footprint, demolitionRect))
+						{
+							// Draw building red to preview demolition
+							drawColor = drawColorDemolish;
+						}
+
+						Sprite *sprite = getSprite(sprites, building->spriteOffset);
+						V2 drawPos = centre(building->footprint);
+						drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
+					}
 				}
-
-				V4 drawColor = drawColorNormal;
-
-				if (gameState->actionMode == ActionMode_Demolish
-					&& gameState->worldDragState.isDragging
-					&& rectsOverlap(building->footprint, demolitionRect))
-				{
-					// Draw building red to preview demolition
-					drawColor = drawColorDemolish;
-				}
-
-				Sprite *sprite = getSprite(sprites, building->spriteOffset);
-				V2 drawPos = centre(building->footprint);
-				drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
 			}
 		}
+		
+		// for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
+		// {
+		// 	Building *building = get(it);
+
+		// 	if (rectsOverlap(building->footprint, visibleTileBounds))
+		// 	{
+		// 		if (typeID != building->typeID)
+		// 		{
+		// 			typeID = building->typeID;
+		// 			sprites = get(&buildingDefs, typeID)->sprites;
+		// 		}
+
+		// 		V4 drawColor = drawColorNormal;
+
+		// 		if (gameState->actionMode == ActionMode_Demolish
+		// 			&& gameState->worldDragState.isDragging
+		// 			&& rectsOverlap(building->footprint, demolitionRect))
+		// 		{
+		// 			// Draw building red to preview demolition
+		// 			drawColor = drawColorDemolish;
+		// 		}
+
+		// 		Sprite *sprite = getSprite(sprites, building->spriteOffset);
+		// 		V2 drawPos = centre(building->footprint);
+		// 		drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
+		// 	}
+		// }
 	}
 
 	// Data layer rendering

@@ -56,44 +56,40 @@ void recalculatePowerConnectivity(City *city)
 	// Then, iterate over the tiles and flood fill from each -1 value.
 
 	// Reset things to 0/-1
-	for (s32 sY = 0;
-		sY < city->sectorsY;
-		sY++)
+	for (s32 sectorIndex = 0;
+		sectorIndex < city->sectorCount;
+		sectorIndex++)
 	{
-		for (s32 sX = 0;
-			sX < city->sectorsX;
-			sX++)
-		{
-			Sector *sector = getSector(city, sX, sY);
+		Sector *sector = city->sectors + sectorIndex;
 
-			for (s32 relY = 0;
-				relY < sector->bounds.h;
-				relY++)
+		for (s32 relY = 0;
+			relY < sector->bounds.h;
+			relY++)
+		{
+			for (s32 relX = 0;
+				relX < sector->bounds.w;
+				relX++)
 			{
-				for (s32 relX = 0;
-					relX < sector->bounds.w;
-					relX++)
+				bool tileCarriesPower = false;
+				ZoneType zone = sector->tileZone[relY][relX];
+				if (zoneDefs[zone].carriesPower)
 				{
-					bool tileCarriesPower = false;
-					ZoneType zone = sector->tileZone[relY][relX];
-					if (zoneDefs[zone].carriesPower)
+					tileCarriesPower = true;
+				}
+				else
+				{
+					// TODO: This is super inefficient
+					Building *building = getBuildingAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);
+					if (building != null)
 					{
-						tileCarriesPower = true;
-					}
-					else
-					{
-						s32 buildingID = sector->tileBuilding[relY][relX];
-						if (buildingID != 0)
+						if (get(&buildingDefs, building->typeID)->carriesPower)
 						{
-							if (get(&buildingDefs, getBuildingByID(city, buildingID)->typeID)->carriesPower)
-							{
-								tileCarriesPower = true;
-							}
+							tileCarriesPower = true;
 						}
 					}
-
-					sector->tilePowerGroup[relY][relX] = tileCarriesPower ? -1 : 0;
 				}
+
+				sector->tilePowerGroup[relY][relX] = tileCarriesPower ? -1 : 0;
 			}
 		}
 	}
@@ -121,22 +117,29 @@ void recalculatePowerConnectivity(City *city)
 
 	// Find all power production/consumption buildings and add them up
 	// TODO: some kind of building-type query would probably be better?
-	for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
+	for (s32 sectorIndex = 0;
+		sectorIndex < city->sectorCount;
+		sectorIndex++)
 	{
-		Building *building = get(it);
-		BuildingDef *def = get(&buildingDefs, building->typeID);
+		Sector *sector = city->sectors + sectorIndex;
 
-		if (def->power != 0)
+		for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
 		{
-			PowerGroup *powerGroup = get(&city->powerLayer.groups, powerGroupAt(city, building->footprint.x, building->footprint.y));
+			Building *building = get(it);
+			BuildingDef *def = get(&buildingDefs, building->typeID);
 
-			if (def->power > 0)
+			if (def->power != 0)
 			{
-				powerGroup->production += def->power;
-			}
-			else
-			{
-				powerGroup->consumption -= def->power;
+				PowerGroup *powerGroup = get(&city->powerLayer.groups, powerGroupAt(city, building->footprint.x, building->footprint.y));
+
+				if (def->power > 0)
+				{
+					powerGroup->production += def->power;
+				}
+				else
+				{
+					powerGroup->consumption -= def->power;
+				}
 			}
 		}
 	}

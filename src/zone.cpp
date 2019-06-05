@@ -30,7 +30,7 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 	TerrainDef *tDef = get(&terrainDefs, terrainAt(city, x, y)->type);
 	if (!tDef->canBuildOn) return false;
 
-	if (getBuildingIDAtPosition(city, x, y) != 0) return false;
+	if (getBuildingAtPosition(city, x, y) != null) return false;
 
 	// Ignore tiles that are already this zone!
 	if (getZoneAt(city, x, y) == zoneType) return false;

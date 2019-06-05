@@ -27,6 +27,18 @@ struct PowerLayer
 	ChunkedArray<PowerGroup> groups;
 };
 
+struct TileBuildingRef
+{
+	bool isOccupied;
+
+	s32 originX;
+	s32 originY;
+
+	// TODO: Could combine these two, have -1 be for non-local buildings?
+	bool isLocal;
+	s32 localIndex;
+};
+
 #define SECTOR_SIZE 16
 struct Sector
 {
@@ -34,11 +46,12 @@ struct Sector
 
 	// All of these are in [y][x] order!
 	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
-	s32 tileBuilding[SECTOR_SIZE][SECTOR_SIZE]; // Map from y,x -> building id at that location. Building IDs are 1-indexed (0 meaning null).
+	TileBuildingRef tileBuilding[SECTOR_SIZE][SECTOR_SIZE];
 	ZoneType tileZone[SECTOR_SIZE][SECTOR_SIZE];
-
 	s32 tilePathGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = unpathable, >0 = any tile with the same value is connected
 	s32 tilePowerGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = none, >0 = any tile with the same value is connected
+
+	ChunkedArray<Building> buildings; // A building is owned by a Sector if its top-left corner tile is inside that Sector.
 };
 
 struct City
@@ -52,15 +65,17 @@ struct City
 
 	s32 width, height;
 	s32 sectorsX, sectorsY;
+	s32 sectorCount;
 	Sector *sectors;
 
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
 
 	u32 highestBuildingID;
-	ChunkedArray<Building> buildings;
 
 	struct ZoneLayer zoneLayer;
+
+	ChunkPool<Building> sectorBuildingsChunkPool;
 
 	s32 totalResidents;
 	s32 totalJobs;
@@ -115,35 +130,36 @@ inline Terrain *terrainAt(City *city, s32 x, s32 y)
 	return result;
 }
 
-inline Building* getBuildingByID(City *city, s32 buildingID)
+Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
-	if (buildingID <= 0 || buildingID > city->buildings.count)
-	{
-		return null;
-	}
+	Building *result = null;
 
-	return get(&city->buildings, buildingID);
-}
-
-inline s32 getBuildingIDAtPosition(City *city, s32 x, s32 y)
-{
-	s32 result = 0;
 	Sector *sector = sectorAtTilePos(city, x, y);
-
 	if (sector != null)
 	{
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		result = sector->tileBuilding[relY][relX];
+		TileBuildingRef ref = sector->tileBuilding[relY][relX];
+		if (ref.isOccupied)
+		{
+			if (ref.isLocal)
+			{
+				result = get(&sector->buildings, ref.localIndex);
+			}
+			else
+			{
+				// Decided that recursion is the easiest option here to avoid a whole load of
+				// duplicate code with slightly different variable names. (Which sounds like a
+				// recipe for a whole load of subtle bugs.)
+				// We SHOULD only be recursing once, if it's more than once that's a bug. But IDK.
+				// - Sam, 05/06/2019
+				result = getBuildingAtPosition(city, ref.originX, ref.originY);
+			}
+		}
 	}
 
 	return result;
-}
-
-inline Building* getBuildingAtPosition(City *city, s32 x, s32 y)
-{
-	return getBuildingByID(city, getBuildingIDAtPosition(city, x, y));
 }
 
 inline s32 pathGroupAt(City *city, s32 x, s32 y)
@@ -195,6 +211,15 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 
 		result = sector->tileZone[relY][relX];
 	}
+
+	return result;
+}
+
+Rect2I cropRectangleToRelativeWithinSector(Rect2I area, Sector *sector)
+{
+	Rect2I result = cropRectangle(area, sector->bounds);
+	result.x -= sector->bounds.x;
+	result.y -= sector->bounds.y;
 
 	return result;
 }

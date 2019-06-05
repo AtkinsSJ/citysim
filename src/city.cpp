@@ -12,7 +12,10 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	city->sectorsX = ceil_s32((f32)width  / (f32)SECTOR_SIZE);
 	city->sectorsY = ceil_s32((f32)height / (f32)SECTOR_SIZE);
-	city->sectors = PushArray(gameArena, Sector, city->sectorsX * city->sectorsY);
+	city->sectorCount = city->sectorsX * city->sectorsY;
+	city->sectors = PushArray(gameArena, Sector, city->sectorCount);
+
+	initChunkPool(&city->sectorBuildingsChunkPool, gameArena, 32);
 
 	s32 remainderWidth  = width % SECTOR_SIZE;
 	s32 remainderHeight = height % SECTOR_SIZE;
@@ -33,6 +36,8 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 			{
 				sector->bounds.h = remainderHeight;
 			}
+
+			initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
 		}
 	}
 
@@ -40,18 +45,16 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initZoneLayer(gameArena, &city->zoneLayer);
 
 	city->highestBuildingID = 0;
-	initChunkedArray(&city->buildings, gameArena, 1024);
-	Building *nullBuilding = appendBlank(&city->buildings);
-	nullBuilding->id = 0;
-	nullBuilding->typeID = 0;
 }
 
 Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
+
+	Sector *ownerSector = sectorAtTilePos(city, footprint.x, footprint.y);
 	
-	s32 buildingArrayIndex = truncate32(city->buildings.count);
-	Building *building = appendBlank(&city->buildings);
+	s32 localIndex = (s32) ownerSector->buildings.count;
+	Building *building = appendBlank(&ownerSector->buildings);
 	building->id = ++city->highestBuildingID;
 	building->typeID = def->typeID;
 	building->footprint = footprint;
@@ -62,7 +65,12 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		for (s32 x=0; x<footprint.w; x++)
 		{
 			Sector *sector = sectorAtTilePos(city, footprint.x+x, footprint.y+y);
-			sector->tileBuilding[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x] = buildingArrayIndex;
+			TileBuildingRef *ref = &sector->tileBuilding[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x];
+			ref->isOccupied = true;
+			ref->originX = footprint.x;
+			ref->originY = footprint.y;
+			ref->isLocal = (sector == ownerSector);
+			if (ref->isLocal) ref->localIndex = localIndex;
 		}
 	}
 
@@ -303,8 +311,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 	
 	if (!tileExists(city, position.x, position.y)) return true;
 
-	s32 buildingID = getBuildingIDAtPosition(city, position.x, position.y);
-	Building *building = getBuildingByID(city, buildingID);
+	Building *building = getBuildingAtPosition(city, position.x, position.y);
 
 	if (building != null)
 	{
@@ -324,6 +331,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 
 		// Clear all references to this building
 		// TODO: Optimise this per-sector!
+		// Sector *buildingOwnerSector = sectorAtTilePos(city, building->footprint.x, building->footprint.y);
 		for (s32 y = building->footprint.y;
 			y < building->footprint.y + building->footprint.h;
 			y++)
@@ -335,7 +343,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 				Sector *sector = sectorAtTilePos(city, x, y);
 				s32 relX = x - sector->bounds.x;
 				s32 relY = y - sector->bounds.y;
-				sector->tileBuilding[relY][relX] = 0;
+				sector->tileBuilding[relY][relX].isOccupied = false;
 
 				if (def->isPath)
 				{
@@ -354,33 +362,42 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		// Overwrite the building record with the highest one
 		// Unless it *IS* the highest one!
 		// TODO: REPLACE THIS with a system that has consistent IDs!
-		if (buildingID != (city->buildings.count-1))
-		{
-			Building *highest = getBuildingByID(city, truncate32(city->buildings.count - 1));
+		// if (buildingID != (city->buildings.count-1))
+		// {
+		// 	Building *highest = getBuildingByID(city, truncate32(city->buildings.count - 1));
+		// 	Sector *highestBuildingSector = sectorAtTilePos(city, highest->footprint.x, highest->footprint.y);
 
-			// Change all references to highest building
-			// TODO: Optimise this per-sector!
-			for (s32 y = highest->footprint.y;
-				y < highest->footprint.y + highest->footprint.h;
-				y++)
-			{
-				for (s32 x = highest->footprint.x;
-					x < highest->footprint.x + highest->footprint.w;
-					x++)
-				{
-					Sector *sector = sectorAtTilePos(city, x, y);
-					s32 relX = x - sector->bounds.x;
-					s32 relY = y - sector->bounds.y;
-					sector->tileBuilding[relY][relX] = buildingID;
-				}
-			}
+		// 	// Change all references to highest building
+		// 	// TODO: Optimise this per-sector!
+		// 	for (s32 y = highest->footprint.y;
+		// 		y < highest->footprint.y + highest->footprint.h;
+		// 		y++)
+		// 	{
+		// 		for (s32 x = highest->footprint.x;
+		// 			x < highest->footprint.x + highest->footprint.w;
+		// 			x++)
+		// 		{
+		// 			Sector *sector = sectorAtTilePos(city, x, y);
+		// 			s32 relX = x - sector->bounds.x;
+		// 			s32 relY = y - sector->bounds.y;
 
-			// Move it!
-			*building = *highest;
+		// 			TileBuildingRef *ref = &sector->tileBuilding[relY][relX];
+		// 			ref->isOccupied = true;
+		// 			ref->buildingID = buildingID;
+		// 			ref->originX = highest->footprint.x;
+		// 			ref->originY = highest->footprint.y;
+		// 			ref->isLocal = (sector == highestBuildingSector);
+		// 		}
+		// 	}
 
-			*highest = {};
-		}
-		removeIndex(&city->buildings, city->buildings.count-1, false);
+		// 	// Move it!
+		// 	*building = *highest;
+
+		// 	*highest = {};
+		// }
+		// removeIndex(&city->buildings, city->buildings.count-1, false);
+
+		// findAndRemove(&buildingOwnerSector->buildings, building);
 
 		return true;
 	}
@@ -408,8 +425,72 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	
 	s32 total = 0;
 
+	for (s32 sX = (area.x / SECTOR_SIZE);
+		sX < (area.x + area.w) / SECTOR_SIZE;
+		sX++)
+	{
+		for (s32 sY = (area.y / SECTOR_SIZE);
+			sY < (area.y + area.h) / SECTOR_SIZE;
+			sY++)
+		{
+			Sector *sector = getSector(city, sX, sY);
+			Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
+
+			// Terrain clearing cost
+			for (s32 y=relArea.y;
+				y < relArea.y + relArea.h;
+				y++)
+			{
+				for (s32 x=relArea.x;
+					x < relArea.x + relArea.w;
+					x++)
+				{
+					TerrainDef *tDef = get(&terrainDefs, sector->terrain[y][x].type);
+
+					if (tDef->canDemolish)
+					{
+						total += tDef->demolishCost;
+					}
+				}
+			}
+		}
+	}
+
+	// Building demolition cost
+	// This is trickier. We want to make sure we check all the buildings that could overlap,
+	// without counting any twice, and without missing any. We used to have a big Buildings array
+	// and just check every one, but now that we have sectors it's not quite so simple.
+	// (Well, I guess we could still check every one, but that's wasteful!)
+	// For starters, a Building's origin is its top-left corner, so it can only be in the current
+	// Sector, or one that is left and/or up from it. So, we don't need to check any to the right
+	// or below the ones covered by `area`.
+	// If we knew the maximum building size, we could limit how far left and up we need to check
+	// too, but right now we don't have that information.
+	// TODO: Record the largest building w/h so we can speed up queries like this!
+	for (s32 sX = 0;
+		sX < (area.x + area.w) / SECTOR_SIZE;
+		sX++)
+	{
+		for (s32 sY = 0;
+			sY < (area.y + area.h) / SECTOR_SIZE;
+			sY++)
+		{
+			Sector *sector = getSector(city, sX, sY);
+
+			for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
+			{
+				Building *building = get(it);
+
+				if (rectsOverlap(building->footprint, area))
+				{
+					total += get(&buildingDefs, building->typeID)->demolishCost;
+				}
+			}
+		}
+	}
+
 	// Terrain clearing cost
-	for (s32 y=0; y<area.h; y++)
+/*	for (s32 y=0; y<area.h; y++)
 	{
 		for (s32 x=0; x<area.w; x++)
 		{
@@ -420,8 +501,8 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 				total += tDef->demolishCost;
 			}
 		}
-	}
-
+	}*/
+/*
 	// We want to only get the cost of each building once.
 	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
 	// TODO: Make this instead do a position-based query, keeping track of checked buildings
@@ -433,7 +514,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 		{
 			total += get(&buildingDefs, building->typeID)->demolishCost;
 		}
-	}
+	}*/
 
 	return total;
 }
