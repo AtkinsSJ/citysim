@@ -426,11 +426,11 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	s32 total = 0;
 
 	for (s32 sX = (area.x / SECTOR_SIZE);
-		sX < (area.x + area.w) / SECTOR_SIZE;
+		sX <= (area.x + area.w) / SECTOR_SIZE;
 		sX++)
 	{
 		for (s32 sY = (area.y / SECTOR_SIZE);
-			sY < (area.y + area.h) / SECTOR_SIZE;
+			sY <= (area.y + area.h) / SECTOR_SIZE;
 			sY++)
 		{
 			Sector *sector = getSector(city, sX, sY);
@@ -468,11 +468,11 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	// too, but right now we don't have that information.
 	// TODO: Record the largest building w/h so we can speed up queries like this!
 	for (s32 sX = 0;
-		sX < (area.x + area.w) / SECTOR_SIZE;
+		sX <= (area.x + area.w) / SECTOR_SIZE;
 		sX++)
 	{
 		for (s32 sY = 0;
-			sY < (area.y + area.h) / SECTOR_SIZE;
+			sY <= (area.y + area.h) / SECTOR_SIZE;
 			sY++)
 		{
 			Sector *sector = getSector(city, sX, sY);
@@ -488,33 +488,6 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 			}
 		}
 	}
-
-	// Terrain clearing cost
-/*	for (s32 y=0; y<area.h; y++)
-	{
-		for (s32 x=0; x<area.w; x++)
-		{
-			TerrainDef *tDef = get(&terrainDefs, terrainAt(city, area.x + x, area.y + y)->type);
-
-			if (tDef->canDemolish)
-			{
-				total += tDef->demolishCost;
-			}
-		}
-	}*/
-/*
-	// We want to only get the cost of each building once.
-	// So, we'll just iterate through the buildings list. This might be terrible? I dunno.
-	// TODO: Make this instead do a position-based query, keeping track of checked buildings
-	for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
-	{
-		Building *building = get(it);
-
-		if (rectsOverlap(building->footprint, area))
-		{
-			total += get(&buildingDefs, building->typeID)->demolishCost;
-		}
-	}*/
 
 	return total;
 }

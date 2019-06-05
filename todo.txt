@@ -31,6 +31,7 @@ Things to work on next maybe:
 	- This is getting a bit complicated memory-wise. How do we manage the variable (and dynamic) memory usage for each chunk without a million malloc/free calls all the time?
 		- Option 1: The City has a dynamic array of each kind of thing. EG, power-groups. The chunk points to its first power-group, and then each group points to the next one in the same chunk, linked-list style. It's not super cache-friendly, but means we can add and remove them easily without allocations. I think I like this!
 		- Option 2: Option 1, but each linked-list node holds several of that type, instead of just 1. Like a ChunkedArray chunk. Effectively it's a group of ChunkedArrays that all share a pool of unused memory chunks.
+- Record the max building w or h somewhere so we can be smarter about how wide a margin of Sectors around the edge we check when querying buildings withing an area. (eg calculateDemolitionCost()) Currently we check ALL the Sectors that are up or left!
 
 
 Data structure ideas I had late last night:

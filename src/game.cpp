@@ -801,8 +801,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// We err on the side of drawing too much, rather than risking having holes in the world.
 	Rect2I visibleTileBounds = irectCentreWH(
 		v2i((s32)worldCamera->pos.x, (s32)worldCamera->pos.y),
-		(s32) (worldCamera->size.x / worldCamera->zoom) + 2,
-		(s32) (worldCamera->size.y / worldCamera->zoom) + 2
+		(s32) (worldCamera->size.x / worldCamera->zoom) + 3,
+		(s32) (worldCamera->size.y / worldCamera->zoom) + 3
 	);
 	visibleTileBounds = cropRectangle(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 	Rect2I visibleSectors = irectXYWH(
@@ -832,25 +832,26 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				sX++)
 			{
 				Sector *sector = getSector(city, sX, sY);
-
-				for (s32 relY = 0;
-					relY < sector->bounds.h;
+				Rect2I relArea = cropRectangleToRelativeWithinSector(visibleTileBounds, sector);
+				for (s32 relY=relArea.y;
+					relY < relArea.y + relArea.h;
 					relY++)
 				{
-					Terrain *terrain = sector->terrain[relY];
 					spriteBounds.y = (f32)(sector->bounds.y + relY);
 
-					for (s32 relX = 0;
-						relX < sector->bounds.w;
-						relX++, terrain++)
+					for (s32 relX=relArea.x;
+						relX < relArea.x + relArea.w;
+						relX++)
 					{
-						if (terrain->type != terrainType)
+						Terrain terrain = sector->terrain[relY][relX];
+
+						if (terrain.type != terrainType)
 						{
-							terrainType = terrain->type;
+							terrainType = terrain.type;
 							terrainSprites = get(&terrainDefs, terrainType)->sprites;
 						}
 
-						Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
+						Sprite *sprite = getSprite(terrainSprites, terrain.spriteOffset);
 						spriteBounds.x = (f32)(sector->bounds.x + relX);
 
 						drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
@@ -878,22 +879,23 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				Sector *sector = getSector(city, sX, sY);
 
-				for (s32 relY = 0;
-					relY < sector->bounds.h;
+				Rect2I relArea = cropRectangleToRelativeWithinSector(visibleTileBounds, sector);
+				for (s32 relY=relArea.y;
+					relY < relArea.y + relArea.h;
 					relY++)
 				{
-					ZoneType *zone = sector->tileZone[relY];
 					spriteBounds.y = (f32)(sector->bounds.y + relY);
 
-					for (s32 relX = 0;
-						relX < sector->bounds.w;
-						relX++, zone++)
+					for (s32 relX=relArea.x;
+						relX < relArea.x + relArea.w;
+						relX++)
 					{
-						if (*zone != Zone_None)
+						ZoneType zone = sector->tileZone[relY][relX];
+						if (zone != Zone_None)
 						{
-							if (*zone != zoneType)
+							if (zone != zoneType)
 							{
-								zoneType = *zone;
+								zoneType = zone;
 								zoneColor = zoneDefs[zoneType].color;
 							}
 
@@ -915,11 +917,16 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		V4 drawColorNormal = makeWhite();
 		V4 drawColorDemolish = color255(255,128,128,255);
 
-		for (s32 sY = visibleSectors.y;
+		// TODO: If we knew the largest building size, we could speed this up a lot by only
+		// iterating through Sectors that could possibly contain visible buildings, instead
+		// of all the ones that are up or left from the camera.
+		// Then again, buildings that visually extend up above their footprint would need
+		// a similar thing for down/right directions probably.
+		for (s32 sY = 0;
 			sY < visibleSectors.y + visibleSectors.h;
 			sY++)
 		{
-			for (s32 sX = visibleSectors.x;
+			for (s32 sX = 0;
 				sX < visibleSectors.x + visibleSectors.w;
 				sX++)
 			{
@@ -947,40 +954,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						}
 
 						Sprite *sprite = getSprite(sprites, building->spriteOffset);
-						V2 drawPos = centre(building->footprint);
-						drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
+						drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), 0, pixelArtShaderID, drawColor);
 					}
 				}
 			}
 		}
-		
-		// for (auto it = iterate(&city->buildings, 1, false); !it.isDone; next(&it))
-		// {
-		// 	Building *building = get(it);
-
-		// 	if (rectsOverlap(building->footprint, visibleTileBounds))
-		// 	{
-		// 		if (typeID != building->typeID)
-		// 		{
-		// 			typeID = building->typeID;
-		// 			sprites = get(&buildingDefs, typeID)->sprites;
-		// 		}
-
-		// 		V4 drawColor = drawColorNormal;
-
-		// 		if (gameState->actionMode == ActionMode_Demolish
-		// 			&& gameState->worldDragState.isDragging
-		// 			&& rectsOverlap(building->footprint, demolitionRect))
-		// 		{
-		// 			// Draw building red to preview demolition
-		// 			drawColor = drawColorDemolish;
-		// 		}
-
-		// 		Sprite *sprite = getSprite(sprites, building->spriteOffset);
-		// 		V2 drawPos = centre(building->footprint);
-		// 		drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), depthFromY(drawPos.y), pixelArtShaderID, drawColor);
-		// 	}
-		// }
 	}
 
 	// Data layer rendering
