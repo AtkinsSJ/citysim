@@ -436,7 +436,8 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex, bool w
 
 	if (!iterator.isDone)
 	{
-		iterator.currentChunk = getChunkByIndex(array, initialIndex / array->chunkSize);
+		iterator.chunkIndex   = initialIndex / array->chunkSize;
+		iterator.currentChunk = getChunkByIndex(array, iterator.chunkIndex);
 		iterator.indexInChunk = initialIndex % array->chunkSize;
 	}
 
@@ -464,12 +465,14 @@ void next(ChunkedArrayIterator<T> *iterator)
 		{
 			// Prev chunk
 			iterator->currentChunk = iterator->currentChunk->prevChunk;
+			iterator->chunkIndex--;
 
 			if (iterator->currentChunk == null)
 			{
 				if (iterator->wrapAround)
 				{
 					// Wrap to the beginning!
+					iterator->chunkIndex   = iterator->array->chunkCount - 1;
 					iterator->currentChunk = iterator->array->lastChunk;
 					iterator->indexInChunk = iterator->currentChunk->count - 1;
 				}
@@ -488,6 +491,7 @@ void next(ChunkedArrayIterator<T> *iterator)
 		if (iterator->indexInChunk >= iterator->currentChunk->count)
 		{
 			// Next chunk
+			iterator->chunkIndex++;
 			iterator->currentChunk = iterator->currentChunk->nextChunk;
 			iterator->indexInChunk = 0;
 
@@ -496,6 +500,7 @@ void next(ChunkedArrayIterator<T> *iterator)
 				if (iterator->wrapAround)
 				{
 					// Wrap to the beginning!
+					iterator->chunkIndex = 0;
 					iterator->currentChunk = iterator->array->firstChunk;
 				}
 				else
@@ -512,6 +517,12 @@ template<typename T>
 inline T *get(ChunkedArrayIterator<T> iterator)
 {
 	return &iterator.currentChunk->items[iterator.indexInChunk];
+}
+
+template<typename T>
+smm getIndex(ChunkedArrayIterator<T> iterator)
+{
+	return (iterator.chunkIndex * iterator.array->chunkSize) + iterator.indexInChunk;
 }
 
 template<typename T>

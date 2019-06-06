@@ -39,10 +39,16 @@ struct TileBuildingRef
 	s32 localIndex;
 };
 
+enum SectorFlags
+{
+
+};
+
 #define SECTOR_SIZE 16
 struct Sector
 {
 	Rect2I bounds;
+	u32 flags;
 
 	// All of these are in [y][x] order!
 	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
@@ -128,6 +134,16 @@ inline Terrain *terrainAt(City *city, s32 x, s32 y)
 	}
 
 	return result;
+}
+
+TileBuildingRef *getSectorBuildingRefAtWorldPosition(Sector *sector, s32 x, s32 y)
+{
+	ASSERT(contains(sector->bounds, x, y), "getSectorBuildingRefAtWorldPosition() passed a coordinate that is outside of the sector!");
+
+	s32 relX = x - sector->bounds.x;
+	s32 relY = y - sector->bounds.y;
+
+	return &sector->tileBuilding[relY][relX];
 }
 
 Building* getBuildingAtPosition(City *city, s32 x, s32 y)

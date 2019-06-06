@@ -446,6 +446,14 @@ inline V2I iCentre(Rect2I rect)
 	return v2i(rect.x + rect.w/2, rect.y + rect.h/2);
 }
 
+inline bool contains(Rect2I rect, s32 x, s32 y)
+{
+	return (x >= rect.x)
+		&& (x < rect.x + rect.w)
+		&& (y >= rect.y)
+		&& (y < rect.y + rect.h);
+}
+
 /**********************************************
 	Rect2
  **********************************************/

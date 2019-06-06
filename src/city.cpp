@@ -1,4 +1,4 @@
-
+#pragma once
 
 void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds)
 {
@@ -70,7 +70,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 			ref->originX = footprint.x;
 			ref->originY = footprint.y;
 			ref->isLocal = (sector == ownerSector);
-			if (ref->isLocal) ref->localIndex = localIndex;
+			ref->localIndex = (ref->isLocal) ? localIndex : -1;
 		}
 	}
 
@@ -311,11 +311,24 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 	
 	if (!tileExists(city, position.x, position.y)) return true;
 
-	Building *building = getBuildingAtPosition(city, position.x, position.y);
+	Sector *sectorAtPos = sectorAtTilePos(city, position.x, position.y);
+	TileBuildingRef *tileBuildingRef = getSectorBuildingRefAtWorldPosition(sectorAtPos, position.x, position.y);
 
-	if (building != null)
+	if (tileBuildingRef->isOccupied)
 	{
-		BuildingDef *def = get(&buildingDefs, building->typeID);
+		Sector *buildingOwnerSector = null;
+		if (tileBuildingRef->isLocal)
+		{
+			buildingOwnerSector = sectorAtPos;
+		}
+		else
+		{
+			buildingOwnerSector = sectorAtTilePos(city, tileBuildingRef->originX, tileBuildingRef->originY);
+			tileBuildingRef = getSectorBuildingRefAtWorldPosition(buildingOwnerSector, tileBuildingRef->originX, tileBuildingRef->originY);
+		}
+
+		Building *buildingToDemolish = get(&buildingOwnerSector->buildings, tileBuildingRef->localIndex);
+		BuildingDef *def = get(&buildingDefs, buildingToDemolish->typeID);
 
 		// Can we afford to demolish this?
 		if (!canAfford(city, def->demolishCost))
@@ -329,21 +342,26 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		city->totalResidents -= def->residents;
 		city->totalJobs -= def->jobs;
 
+		Rect2I buildingFootprint = buildingToDemolish->footprint;
+
+		removeIndex(&buildingOwnerSector->buildings, tileBuildingRef->localIndex, false);
+		buildingToDemolish = null; // For safety, because we just deleted the Building!
+
 		// Clear all references to this building
 		// TODO: Optimise this per-sector!
-		// Sector *buildingOwnerSector = sectorAtTilePos(city, building->footprint.x, building->footprint.y);
-		for (s32 y = building->footprint.y;
-			y < building->footprint.y + building->footprint.h;
+		for (s32 y = buildingFootprint.y;
+			y < buildingFootprint.y + buildingFootprint.h;
 			y++)
 		{
-			for (s32 x = building->footprint.x;
-				x < building->footprint.x + building->footprint.w;
+			for (s32 x = buildingFootprint.x;
+				x < buildingFootprint.x + buildingFootprint.w;
 				x++)
 			{
 				Sector *sector = sectorAtTilePos(city, x, y);
 				s32 relX = x - sector->bounds.x;
 				s32 relY = y - sector->bounds.y;
-				sector->tileBuilding[relY][relX].isOccupied = false;
+				TileBuildingRef *tileBuilding = getSectorBuildingRefAtWorldPosition(sector, x, y);
+				tileBuilding->isOccupied = false;
 
 				if (def->isPath)
 				{
@@ -352,12 +370,34 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 				}
 			}
 		}
+		
+		// Recalculate the localIndex info for each local building in the buildingOwnerSector, because
+		// removing a building from it changes the indices.
+		for (auto it = iterate(&buildingOwnerSector->buildings); !it.isDone; next(&it))
+		{
+			Building *building = get(it);
+			s32 buildingIndex = (s32) getIndex(it);
+
+			Rect2I relArea = cropRectangleToRelativeWithinSector(building->footprint, buildingOwnerSector);
+			for (s32 relY=relArea.y;
+				relY < relArea.y + relArea.h;
+				relY++)
+			{
+				for (s32 relX=relArea.x;
+					relX < relArea.x + relArea.w;
+					relX++)
+				{
+					buildingOwnerSector->tileBuilding[relY][relX].localIndex = buildingIndex;
+				}
+			}
+		}
 
 		// Need to update the filled/empty zone lists
-		markZonesAsEmpty(city, building->footprint);
+		markZonesAsEmpty(city, buildingFootprint);
 
 		// Update sprites for the building's neighbours.
-		updateAdjacentBuildingTextures(city, building->footprint);
+		updateAdjacentBuildingTextures(city, buildingFootprint);
+
 
 		// Overwrite the building record with the highest one
 		// Unless it *IS* the highest one!

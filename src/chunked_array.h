@@ -49,6 +49,7 @@ struct ChunkedArrayIterator
 	bool goBackwards;
 
 	Chunk<T> *currentChunk;
+	smm chunkIndex;
 	smm indexInChunk;
 
 	// This is a counter for use when we start not at the beginning of the array but want to iterate it ALL.
@@ -132,6 +133,9 @@ void next(ChunkedArrayIterator<T> *iterator);
 
 template<typename T>
 T *get(ChunkedArrayIterator<T> iterator);
+
+template<typename T>
+smm getIndex(ChunkedArrayIterator<T> iterator);
 
 template<typename T>
 T getValue(ChunkedArrayIterator<T> iterator);
