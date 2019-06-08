@@ -51,7 +51,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
-	Sector *ownerSector = sectorAtTilePos(city, footprint.x, footprint.y);
+	Sector *ownerSector = getSectorAtTilePos(city, footprint.x, footprint.y);
 	
 	s32 localIndex = (s32) ownerSector->buildings.count;
 	Building *building = appendBlank(&ownerSector->buildings);
@@ -64,7 +64,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	{
 		for (s32 x=0; x<footprint.w; x++)
 		{
-			Sector *sector = sectorAtTilePos(city, footprint.x+x, footprint.y+y);
+			Sector *sector = getSectorAtTilePos(city, footprint.x+x, footprint.y+y);
 			TileBuildingRef *ref = &sector->tileBuilding[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x];
 			ref->isOccupied = true;
 			ref->originX = footprint.x;
@@ -311,7 +311,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 	
 	if (!tileExists(city, position.x, position.y)) return true;
 
-	Sector *sectorAtPos = sectorAtTilePos(city, position.x, position.y);
+	Sector *sectorAtPos = getSectorAtTilePos(city, position.x, position.y);
 	TileBuildingRef *tileBuildingRef = getSectorBuildingRefAtWorldPosition(sectorAtPos, position.x, position.y);
 
 	if (tileBuildingRef->isOccupied)
@@ -323,7 +323,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		}
 		else
 		{
-			buildingOwnerSector = sectorAtTilePos(city, tileBuildingRef->originX, tileBuildingRef->originY);
+			buildingOwnerSector = getSectorAtTilePos(city, tileBuildingRef->originX, tileBuildingRef->originY);
 			tileBuildingRef = getSectorBuildingRefAtWorldPosition(buildingOwnerSector, tileBuildingRef->originX, tileBuildingRef->originY);
 		}
 
@@ -357,11 +357,13 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 				x < buildingFootprint.x + buildingFootprint.w;
 				x++)
 			{
-				Sector *sector = sectorAtTilePos(city, x, y);
+				Sector *sector = getSectorAtTilePos(city, x, y);
 				s32 relX = x - sector->bounds.x;
 				s32 relY = y - sector->bounds.y;
 				TileBuildingRef *tileBuilding = getSectorBuildingRefAtWorldPosition(sector, x, y);
 				tileBuilding->isOccupied = false;
+
+				ASSERT(getSectorBuildingRefAtWorldPosition(sector, x, y)->isOccupied == false, "Test");
 
 				if (def->isPath)
 				{
@@ -405,7 +407,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		// if (buildingID != (city->buildings.count-1))
 		// {
 		// 	Building *highest = getBuildingByID(city, truncate32(city->buildings.count - 1));
-		// 	Sector *highestBuildingSector = sectorAtTilePos(city, highest->footprint.x, highest->footprint.y);
+		// 	Sector *highestBuildingSector = getSectorAtTilePos(city, highest->footprint.x, highest->footprint.y);
 
 		// 	// Change all references to highest building
 		// 	// TODO: Optimise this per-sector!
@@ -417,7 +419,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		// 			x < highest->footprint.x + highest->footprint.w;
 		// 			x++)
 		// 		{
-		// 			Sector *sector = sectorAtTilePos(city, x, y);
+		// 			Sector *sector = getSectorAtTilePos(city, x, y);
 		// 			s32 relX = x - sector->bounds.x;
 		// 			s32 relY = y - sector->bounds.y;
 

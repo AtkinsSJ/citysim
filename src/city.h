@@ -109,7 +109,7 @@ inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
 	return result;
 }
 
-inline Sector *sectorAtTilePos(City *city, s32 x, s32 y)
+inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 {
 	return getSector(city, x / SECTOR_SIZE, y / SECTOR_SIZE);
 }
@@ -123,7 +123,7 @@ inline bool tileExists(City *city, s32 x, s32 y)
 inline Terrain *terrainAt(City *city, s32 x, s32 y)
 {
 	Terrain *result = &invalidTerrain;
-	Sector *sector = sectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(city, x, y);
 
 	if (sector != null)
 	{
@@ -150,18 +150,15 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
 	Building *result = null;
 
-	Sector *sector = sectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(city, x, y);
 	if (sector != null)
 	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
-
-		TileBuildingRef ref = sector->tileBuilding[relY][relX];
-		if (ref.isOccupied)
+		TileBuildingRef *ref = getSectorBuildingRefAtWorldPosition(sector, x, y);
+		if (ref->isOccupied)
 		{
-			if (ref.isLocal)
+			if (ref->isLocal)
 			{
-				result = get(&sector->buildings, ref.localIndex);
+				result = get(&sector->buildings, ref->localIndex);
 			}
 			else
 			{
@@ -170,7 +167,7 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 				// recipe for a whole load of subtle bugs.)
 				// We SHOULD only be recursing once, if it's more than once that's a bug. But IDK.
 				// - Sam, 05/06/2019
-				result = getBuildingAtPosition(city, ref.originX, ref.originY);
+				result = getBuildingAtPosition(city, ref->originX, ref->originY);
 			}
 		}
 	}
@@ -181,7 +178,7 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 inline s32 pathGroupAt(City *city, s32 x, s32 y)
 {
 	s32 result = 0;
-	Sector *sector = sectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(city, x, y);
 
 	if (sector != null)
 	{
@@ -202,7 +199,7 @@ inline bool isPathable(City *city, s32 x, s32 y)
 inline s32 powerGroupAt(City *city, s32 x, s32 y)
 {
 	s32 result = 0;
-	Sector *sector = sectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(city, x, y);
 
 	if (sector != null)
 	{
@@ -218,7 +215,7 @@ inline s32 powerGroupAt(City *city, s32 x, s32 y)
 inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 {
 	ZoneType result = Zone_None;
-	Sector *sector = sectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(city, x, y);
 
 	if (sector != null)
 	{

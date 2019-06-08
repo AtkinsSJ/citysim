@@ -204,7 +204,7 @@ void updateInput(InputState *inputState)
 	inputState->receivedQuitSignal = false;
 	inputState->wasWindowResized = false;
 
-	SDL_Event event;
+	SDL_Event event = {};
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			// WINDOW EVENTS

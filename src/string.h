@@ -20,10 +20,12 @@ inline String makeString(char *chars, s32 length, bool hash=false)
 	result.chars = chars;
 	result.length = length;
 	result.maxLength = result.length;
+	result.hasHash = false;
+	result.hash = 0;
 
 	if (hash)
 	{
-		hashString(&result);
+		hashString(&result); // NB: Sets the hash and hasHash.
 	}
 
 	return result;

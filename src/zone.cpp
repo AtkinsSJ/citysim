@@ -123,7 +123,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 			V2I pos = v2i(area.x + x, area.y + y);
 			if (canZoneTile(city, zoneType, pos.x, pos.y))
 			{
-				Sector *sector = sectorAtTilePos(city, pos.x, pos.y);
+				Sector *sector = getSectorAtTilePos(city, pos.x, pos.y);
 				ZoneType oldZone = sector->tileZone[pos.y - sector->bounds.y][pos.x - sector->bounds.x];
 
 				// URGHGGHGHHH THIS IS HORRRRRIBLE!

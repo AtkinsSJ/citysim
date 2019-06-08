@@ -7,7 +7,7 @@ void initialisePowerLayer(MemoryArena *gameArena, PowerLayer *layer)
 
 void setPowerGroup(City *city, s32 x, s32 y, s32 value)
 {
-	Sector *sector = sectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(city, x, y);
 	if (sector != null)
 	{
 		s32 relX = x - sector->bounds.x;

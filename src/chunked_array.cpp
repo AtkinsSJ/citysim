@@ -303,7 +303,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 {
 	DEBUG_FUNCTION();
 
-	ASSERT(indexToRemove < array->count, "indexToRemove is out of range!");
+	ASSERT(indexToRemove >= 0 && indexToRemove < array->count, "indexToRemove is out of range!");
 
 	T result;
 	
@@ -334,7 +334,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 		if (indexToRemove != array->count - 1)
 		{
 			// Copy last item to overwrite this one
-			chunk->items[indexToRemove] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
+			chunk->items[itemIndex] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
 		}
 	}
 

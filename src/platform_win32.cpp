@@ -50,7 +50,7 @@ inline void fillFileInfo(WIN32_FIND_DATA *findFileData, FileInfo *result)
 DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo *result)
 {
 	DirectoryListingHandle handle = {};
-	WIN32_FIND_DATA findFileData;
+	WIN32_FIND_DATA findFileData = {};
 
 	handle.path = path;
 
@@ -74,7 +74,7 @@ DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo *res
 
 bool platform_nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result)
 {
-	WIN32_FIND_DATA findFileData;
+	WIN32_FIND_DATA findFileData = {};
 	bool succeeded = FindNextFile(handle->windows.hFile, &findFileData) != 0;
 
 	if (succeeded)

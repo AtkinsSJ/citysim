@@ -1061,7 +1061,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 		#endif
 
-		Sector *cursorSector = sectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
+		Sector *cursorSector = getSectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
 		if (cursorSector != null)
 		{
 			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, rectangleShaderID, color255(255, 255, 255, 63));
