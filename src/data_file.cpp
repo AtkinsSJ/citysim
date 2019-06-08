@@ -38,7 +38,7 @@ String nextLine(LineReader *reader)
 		++reader->lineNumber;
 		line.chars = (char *)(reader->data.memory + reader->pos);
 		line.length = 0;
-		while (!isNewline(reader->data.memory[reader->pos]) && (reader->pos < reader->data.size))
+		while ((reader->pos < reader->data.size) && !isNewline(reader->data.memory[reader->pos]))
 		{
 			++reader->pos;
 			++line.length;
