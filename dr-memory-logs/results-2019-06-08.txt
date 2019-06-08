@@ -1,0 +1,499 @@
+Dr. Memory version 1.11.0 build 2 built on Aug 29 2016 02:41:18
+Dr. Memory results for pid 21324: "main.exe"
+Application cmdline: "C:\Users\msn\Documents\under-london\build\main.exe"
+Recorded 115 suppression(s) from default C:\Program Files (x86)\Dr. Memory\bin64\suppress-default.txt
+
+Error #1: UNADDRESSABLE ACCESS beyond heap bounds: reading 0x0000025f64f8a4c7-0x0000025f64f8a4c8 1 byte(s)
+# 0 nextLine                                   [c:\users\msn\documents\under-london\src\data_file.cpp:41]
+# 1 appendBlank<>                              [c:\users\msn\documents\under-london\src\chunked_array.h:77]
+# 2 loadConsoleKeyboardShortcuts               [c:\users\msn\documents\under-london\src\console.cpp:302]
+# 3 findEntryInternal<>                        [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 4 allocateRaw                                [c:\users\msn\documents\under-london\src\memory.h:67]
+# 5 loadAsset                                  [c:\users\msn\documents\under-london\src\assets.cpp:199]
+# 6 findEntryInternal<>                        [c:\users\msn\documents\under-london\src\hash_table.cpp:58]
+# 7 findOrAdd<>                                [c:\users\msn\documents\under-london\src\hash_table.cpp:104]
+# 8 loadAssets                                 [c:\users\msn\documents\under-london\src\assets.cpp:407]
+# 9 SDL_main                                   [c:\users\msn\documents\under-london\src\main.cpp:189]
+#10 SDL_main                                   [c:\users\msn\documents\under-london\src\main.cpp:154]
+#11 main_utf8                                  [c:\projects\sdl\src\main\windows\sdl_windows_main.c:126]
+#12 WinMain                                    [c:\projects\sdl\src\main\windows\sdl_windows_main.c:189]
+Note: @0:00:05.162 in thread 17528
+Note: refers to 0 byte(s) beyond last valid byte in prior malloc
+Note: prev lower malloc:  0x0000025f64f8a3c0-0x0000025f64f8a4c7
+Note: allocated here:
+Note: # 0 replace_calloc                    [d:\drmemory_package\common\alloc_replace.c:2616]
+Note: # 1 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+Note: # 2 allocateRaw                       [c:\users\msn\documents\under-london\src\memory.h:66]
+Note: # 3 debugTrackCodeCall                [c:\users\msn\documents\under-london\src\debug.cpp:472]
+Note: # 4 allocate                          [c:\users\msn\documents\under-london\src\assets.cpp:61]
+Note: # 5 copyFileIntoAsset                 [c:\users\msn\documents\under-london\src\assets.cpp:93]
+Note: # 6 loadAsset                         [c:\users\msn\documents\under-london\src\assets.cpp:198]
+Note: # 7 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:58]
+Note: # 8 findOrAdd<>                       [c:\users\msn\documents\under-london\src\hash_table.cpp:104]
+Note: # 9 loadAssets                        [c:\users\msn\documents\under-london\src\assets.cpp:407]
+Note: #10 SDL_main                          [c:\users\msn\documents\under-london\src\main.cpp:189]
+Note: #11 SDL_main                          [c:\users\msn\documents\under-london\src\main.cpp:154]
+Note: instruction: movzx  (%rcx,%rax) -> %ecx
+
+Error #2: UNADDRESSABLE ACCESS beyond heap bounds: reading 0x0000025f64f259f7-0x0000025f64f259f8 1 byte(s)
+# 0 nextLine                                   [c:\users\msn\documents\under-london\src\data_file.cpp:41]
+# 1 appendBlank<>                              [c:\users\msn\documents\under-london\src\chunked_array.h:77]
+# 2 loadConsoleKeyboardShortcuts               [c:\users\msn\documents\under-london\src\console.cpp:302]
+# 3 findEntryInternal<>                        [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 4 allocateRaw                                [c:\users\msn\documents\under-london\src\memory.h:67]
+# 5 loadAsset                                  [c:\users\msn\documents\under-london\src\assets.cpp:199]
+# 6 copyString                                 [c:\users\msn\documents\under-london\src\string.cpp:42]
+# 7 findEntryInternal<>                        [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 8 findOrAdd<>                                [c:\users\msn\documents\under-london\src\hash_table.cpp:99]
+# 9 iterate<>                                  [c:\users\msn\documents\under-london\src\chunked_array.cpp:440]
+#10 loadAssets                                 [c:\users\msn\documents\under-london\src\assets.cpp:407]
+#11 reloadAssets                               [c:\users\msn\documents\under-london\src\assets.cpp:518]
+#12 cmd_reload_assets                          [c:\users\msn\documents\under-london\src\commands.cpp:67]
+#13 consoleHandleCommand                       [c:\users\msn\documents\under-london\src\console.cpp:170]
+#14 FencesExt.DLL!StartFencesSync             +0x6ee    (0x00007fffd6b0de8f <FencesExt.DLL+0xde8f>)
+#15 KERNEL32.dll!GlobalFindAtomW              +0xd8     (0x00007ff80f9303a9 <KERNEL32.dll+0x103a9>)
+#16 USER32.dll!CheckDBCSEnabledExt            +0xe2     (0x00007ff80fa119c3 <USER32.dll+0x219c3>)
+#17 USER32.dll!DispatchMessageW               +0x9d2    (0x00007ff80f9fcd93 <USER32.dll+0xcd93>)
+#18 USER32.dll!DispatchMessageW               +0x578    (0x00007ff80f9fc939 <USER32.dll+0xc939>)
+#19 USER32.dll!DispatchMessageW               +0x9d2    (0x00007ff80f9fcd93 <USER32.dll+0xcd93>)
+Note: @0:00:46.113 in thread 17528
+Note: refers to 0 byte(s) beyond last valid byte in prior malloc
+Note: prev lower malloc:  0x0000025f64f258f0-0x0000025f64f259f7
+Note: allocated here:
+Note: # 0 replace_calloc                    [d:\drmemory_package\common\alloc_replace.c:2616]
+Note: # 1 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+Note: # 2 allocateRaw                       [c:\users\msn\documents\under-london\src\memory.h:66]
+Note: # 3 debugTrackCodeCall                [c:\users\msn\documents\under-london\src\debug.cpp:472]
+Note: # 4 allocate                          [c:\users\msn\documents\under-london\src\assets.cpp:61]
+Note: # 5 copyFileIntoAsset                 [c:\users\msn\documents\under-london\src\assets.cpp:93]
+Note: # 6 loadAsset                         [c:\users\msn\documents\under-london\src\assets.cpp:198]
+Note: # 7 copyString                        [c:\users\msn\documents\under-london\src\string.cpp:42]
+Note: # 8 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+Note: # 9 findOrAdd<>                       [c:\users\msn\documents\under-london\src\hash_table.cpp:99]
+Note: #10 iterate<>                         [c:\users\msn\documents\under-london\src\chunked_array.cpp:440]
+Note: #11 loadAssets                        [c:\users\msn\documents\under-london\src\assets.cpp:407]
+Note: instruction: movzx  (%rcx,%rax) -> %ecx
+
+Error #3: UNADDRESSABLE ACCESS of freed memory: reading 0x0000025f64faab44-0x0000025f64faab45 1 byte(s)
+# 0 countGlyphs                       [c:\users\msn\documents\under-london\src\unicode.cpp:146]
+# 1 drawTextToCache                   [c:\users\msn\documents\under-london\src\font.cpp:225]
+# 2 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 3 findOrAdd<>                       [c:\users\msn\documents\under-london\src\hash_table.cpp:99]
+# 4 debugTrackCodeCall                [c:\users\msn\documents\under-london\src\debug.cpp:472]
+# 5 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 6 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 7 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 8 KERNELBASE.dll!OpenThreadToken   +0x4c     (0x00007ff80e12f3bd <KERNELBASE.dll+0x1f3bd>)
+# 9 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#10 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#11 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#12 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#13 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#14 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#15 SDL2.dll!?                       +0x0      (0x000000006c743bad <SDL2.dll+0x3bad>)
+#16 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#17 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#18 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#19 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+Note: @0:00:46.270 in thread 17528
+Note: 0x0000025f64faab44-0x0000025f64faab45 overlaps memory 0x0000025f64faa840-0x0000025f64faab54 that was freed here:
+Note: # 0 replace_free                         [d:\drmemory_package\common\alloc_replace.c:2706]
+Note: # 1 truncate32                           [c:\users\msn\documents\under-london\src\types.h:200]
+Note: # 2 makeString                           [c:\users\msn\documents\under-london\src\string.h:26]
+Note: # 3 SDL2.dll!?                          +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+Note: # 4 DebugBlock::DebugBlock               [c:\users\msn\documents\under-london\src\debug.h:171]
+Note: # 5 _Init_thread_notify                  [f:\dd\vctools\crt\vcstartup\src\misc\thread_safe_statics.cpp:15732480]
+Note: instruction: movzx  (%rax) -> %ecx
+
+Error #4: UNADDRESSABLE ACCESS of freed memory: reading 0x0000025f64faab45-0x0000025f64faab46 1 byte(s)
+# 0 findStartOfNextGlyph               [c:\users\msn\documents\under-london\src\unicode.cpp:98]
+# 1 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 2 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 3 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 4 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 5 KERNELBASE.dll!OpenThreadToken    +0x4c     (0x00007ff80e12f3bd <KERNELBASE.dll+0x1f3bd>)
+# 6 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 7 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 8 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 9 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#10 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#11 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#12 SDL2.dll!?                        +0x0      (0x000000006c743bad <SDL2.dll+0x3bad>)
+#13 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#14 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#15 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#16 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#17 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#18 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#19 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+Note: @0:00:46.278 in thread 17528
+Note: 0x0000025f64faab45-0x0000025f64faab46 overlaps memory 0x0000025f64faa840-0x0000025f64faab54 that was freed here:
+Note: # 0 replace_free                         [d:\drmemory_package\common\alloc_replace.c:2706]
+Note: # 1 truncate32                           [c:\users\msn\documents\under-london\src\types.h:200]
+Note: # 2 makeString                           [c:\users\msn\documents\under-london\src\string.h:26]
+Note: # 3 SDL2.dll!?                          +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+Note: # 4 DebugBlock::DebugBlock               [c:\users\msn\documents\under-london\src\debug.h:171]
+Note: # 5 _Init_thread_notify                  [f:\dd\vctools\crt\vcstartup\src\misc\thread_safe_statics.cpp:15732480]
+Note: instruction: movzx  (%rcx,%rax) -> %ecx
+
+Error #5: UNADDRESSABLE ACCESS of freed memory: reading 0x0000025f64faab52-0x0000025f64faab53 1 byte(s)
+# 0 findStartOfNextGlyph               [c:\users\msn\documents\under-london\src\unicode.cpp:103]
+# 1 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 2 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 3 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 4 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 5 KERNELBASE.dll!OpenThreadToken    +0x4c     (0x00007ff80e12f3bd <KERNELBASE.dll+0x1f3bd>)
+# 6 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 7 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 8 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 9 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#10 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#11 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#12 SDL2.dll!?                        +0x0      (0x000000006c743bad <SDL2.dll+0x3bad>)
+#13 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#14 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#15 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#16 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#17 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#18 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#19 SDL2.dll!?                        +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+Note: @0:00:46.290 in thread 17528
+Note: 0x0000025f64faab52-0x0000025f64faab53 overlaps memory 0x0000025f64faa840-0x0000025f64faab54 that was freed here:
+Note: # 0 replace_free                         [d:\drmemory_package\common\alloc_replace.c:2706]
+Note: # 1 truncate32                           [c:\users\msn\documents\under-london\src\types.h:200]
+Note: # 2 makeString                           [c:\users\msn\documents\under-london\src\string.h:26]
+Note: # 3 SDL2.dll!?                          +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+Note: # 4 DebugBlock::DebugBlock               [c:\users\msn\documents\under-london\src\debug.h:171]
+Note: # 5 _Init_thread_notify                  [f:\dd\vctools\crt\vcstartup\src\misc\thread_safe_statics.cpp:15732480]
+Note: instruction: movzx  (%rcx,%rax) -> %ecx
+
+Error #6: UNADDRESSABLE ACCESS: reading 0x00007ffe3de37860-0x00007ffe3de37861 1 byte(s)
+# 0 renderConsole                        [c:\users\msn\documents\under-london\src\console.cpp:114]
+# 1 updateAndRenderConsole               [c:\users\msn\documents\under-london\src\console.cpp:290]
+# 2 SDL2.dll!?                          +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 3 SDL2.dll!?                          +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 4 KERNEL32.dll!BaseThreadInitThunk    +0x13     (0x00007ff80f937974 <KERNEL32.dll+0x17974>)
+Note: @0:00:49.769 in thread 17528
+Note: instruction: rep movs %ds:(%rsi) %rsi %rdi %rcx -> %es:(%rdi) %rsi %rdi %rcx
+
+Error #7: POSSIBLE LEAK 24 direct bytes 0x0000025f64dc6af0-0x0000025f64dc6b08 + 0 indirect bytes
+# 0 replace_RtlAllocateHeap               [d:\drmemory_package\common\alloc_replace.c:3770]
+# 1 atcuf64.dll!AtcQueryRegion           +0xb3d1   (0x00007ffff0099962 <atcuf64.dll+0x19962>)
+# 2 IMM32.dll!ImmReleaseContext          +0x70     (0x00007ff80f275051 <IMM32.dll+0x5051>)
+# 3 IMM32.dll!ImmDisableIME              +0x6d5    (0x00007ff80f2758a6 <IMM32.dll+0x58a6>)
+# 4 USER32.dll!InvertRect                +0x5f     (0x00007ff80fa17330 <USER32.dll+0x27330>)
+# 5 USER32.dll!CheckDBCSEnabledExt       +0x128    (0x00007ff80fa11a09 <USER32.dll+0x21a09>)
+# 6 USER32.dll!CheckDBCSEnabledExt       +0x3d     (0x00007ff80fa1191e <USER32.dll+0x2191e>)
+# 7 USER32.dll!CreateWindowExW           +0x64e    (0x00007ff80fa015df <USER32.dll+0x115df>)
+# 8 USER32.dll!InitDManipHook            +0x6c0    (0x00007ff80fa14bb1 <USER32.dll+0x24bb1>)
+# 9 UxTheme.dll!GetThemeAppProperties    +0x15bb   (0x00007ff80b91f49c <UxTheme.dll+0x1f49c>)
+#10 USER32.dll!GetSystemMetricsForDpi    +0x77     (0x00007ff80fa04be8 <USER32.dll+0x14be8>)
+#11 USER32.dll!LoadImageW                +0x677    (0x00007ff80fa02b38 <USER32.dll+0x12b38>)
+
+Error #8: LEAK 256 direct bytes 0x0000025f64dca870-0x0000025f64dca970 + 0 indirect bytes
+# 0 replace_RtlAllocateHeap                   [d:\drmemory_package\common\alloc_replace.c:3770]
+# 1 ntdll.dll!RtlHashUnicodeString           +0x4fb    (0x00007ff8114bb35c <ntdll.dll+0x4b35c>)
+# 2 ntdll.dll!RtlQueryHeapInformation        +0xa68    (0x00007ff8114e8039 <ntdll.dll+0x78039>)
+# 3 ntdll.dll!RtlQueryHeapInformation        +0xa12    (0x00007ff8114e7fe3 <ntdll.dll+0x77fe3>)
+# 4 atcuf64.dll!?                            +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+# 5 ucrtbase.dll!malloc_base                 +0x35     (0x00007ff80d54ca26 <ucrtbase.dll+0xca26>)
+# 6 ucrtbase.dll!realloc_base                +0x54     (0x00007ff80d54dce5 <ucrtbase.dll+0xdce5>)
+# 7 ucrtbase.dll!Getdays                     +0x55     (0x00007ff80d5504f6 <ucrtbase.dll+0x104f6>)
+# 8 ucrtbase.dll!register_onexit_function    +0x253    (0x00007ff80d5508b4 <ucrtbase.dll+0x108b4>)
+# 9 ucrtbase.dll!register_onexit_function    +0xea     (0x00007ff80d55074b <ucrtbase.dll+0x1074b>)
+#10 ucrtbase.dll!register_onexit_function    +0x9f     (0x00007ff80d550700 <ucrtbase.dll+0x10700>)
+#11 ucrtbase.dll!o__register_onexit_function +0x34     (0x00007ff80d552465 <ucrtbase.dll+0x12465>)
+
+Error #9: LEAK 314 direct bytes 0x0000025f64e57a40-0x0000025f64e57b7a + 0 indirect bytes
+# 0 replace_calloc                    [d:\drmemory_package\common\alloc_replace.c:2616]
+# 1 findOrAdd<>                       [c:\users\msn\documents\under-london\src\hash_table.cpp:99]
+# 2 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 3 debugTrackCodeCall                [c:\users\msn\documents\under-london\src\debug.cpp:472]
+# 4 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+# 5 allocateRaw                       [c:\users\msn\documents\under-london\src\memory.h:66]
+# 6 debugTrackCodeCall                [c:\users\msn\documents\under-london\src\debug.cpp:472]
+# 7 allocate                          [c:\users\msn\documents\under-london\src\assets.cpp:61]
+# 8 copyFileIntoAsset                 [c:\users\msn\documents\under-london\src\assets.cpp:93]
+# 9 loadUITheme                       [c:\users\msn\documents\under-london\src\uitheme.cpp:17]
+#10 loadAsset                         [c:\users\msn\documents\under-london\src\assets.cpp:206]
+#11 copyString                        [c:\users\msn\documents\under-london\src\string.cpp:42]
+
+Error #10: LEAK 96 direct bytes 0x0000025f64e7d1e0-0x0000025f64e7d240 + 0 indirect bytes
+# 0 replace_calloc                    [d:\drmemory_package\common\alloc_replace.c:2616]
+# 1 pushString                        [c:\users\msn\documents\under-london\src\string.h:72]
+# 2 put<>                             [c:\users\msn\documents\under-london\src\hash_table.cpp:131]
+# 3 addAsset                          [c:\users\msn\documents\under-london\src\assets.cpp:86]
+# 4 copyString                        [c:\users\msn\documents\under-london\src\string.cpp:42]
+# 5 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 6 addSpriteGroup                    [c:\users\msn\documents\under-london\src\assets.cpp:352]
+# 7 nextToken                         [c:\users\msn\documents\under-london\src\string.cpp:279]
+# 8 addTiledSprites                   [c:\users\msn\documents\under-london\src\assets.cpp:375]
+# 9 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#10 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+#11 atcuf64.dll!AtcQueryRegion       +0xf074   (0x00007ffff009d605 <atcuf64.dll+0x1d605>)
+
+Error #11: LEAK 122 direct bytes 0x0000025f64e90a50-0x0000025f64e90aca + 0 indirect bytes
+# 0 replace_calloc                    [d:\drmemory_package\common\alloc_replace.c:2616]
+# 1 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 2 allocateRaw                       [c:\users\msn\documents\under-london\src\memory.h:66]
+# 3 debugTrackCodeCall                [c:\users\msn\documents\under-london\src\debug.cpp:472]
+# 4 allocate                          [c:\users\msn\documents\under-london\src\assets.cpp:61]
+# 5 copyFileIntoAsset                 [c:\users\msn\documents\under-london\src\assets.cpp:93]
+# 6 loadAsset                         [c:\users\msn\documents\under-london\src\assets.cpp:296]
+# 7 copyString                        [c:\users\msn\documents\under-london\src\string.cpp:42]
+# 8 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 9 findOrAdd<>                       [c:\users\msn\documents\under-london\src\hash_table.cpp:99]
+#10 iterate<>                         [c:\users\msn\documents\under-london\src\chunked_array.cpp:440]
+#11 loadAssets                        [c:\users\msn\documents\under-london\src\assets.cpp:407]
+
+Error #12: LEAK 96 direct bytes 0x0000025f64eaaf10-0x0000025f64eaaf70 + 0 indirect bytes
+# 0 replace_calloc                    [d:\drmemory_package\common\alloc_replace.c:2616]
+# 1 pushString                        [c:\users\msn\documents\under-london\src\string.h:72]
+# 2 put<>                             [c:\users\msn\documents\under-london\src\hash_table.cpp:131]
+# 3 addAsset                          [c:\users\msn\documents\under-london\src\assets.cpp:86]
+# 4 copyString                        [c:\users\msn\documents\under-london\src\string.cpp:42]
+# 5 allocateRaw                       [c:\users\msn\documents\under-london\src\memory.h:66]
+# 6 allocate                          [c:\users\msn\documents\under-london\src\assets.cpp:61]
+# 7 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 8 addSpriteGroup                    [c:\users\msn\documents\under-london\src\assets.cpp:352]
+# 9 nextToken                         [c:\users\msn\documents\under-london\src\string.cpp:279]
+#10 addTiledSprites                   [c:\users\msn\documents\under-london\src\assets.cpp:375]
+#11 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+
+Error #13: LEAK 256 direct bytes 0x0000025f64ec3250-0x0000025f64ec3350 + 0 indirect bytes
+# 0 replace_RtlAllocateHeap                   [d:\drmemory_package\common\alloc_replace.c:3770]
+# 1 atcuf64.dll!AtcQueryRegion               +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+# 2 atcuf64.dll!AtcQueryRegion               +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+# 3 atcuf64.dll!?                            +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+# 4 atcuf64.dll!?                            +0x0      (0x00007ffff0083a06 <atcuf64.dll+0x3a06>)
+# 5 ucrtbase.dll!malloc_base                 +0x35     (0x00007ff80d54ca26 <ucrtbase.dll+0xca26>)
+# 6 ucrtbase.dll!realloc_base                +0x54     (0x00007ff80d54dce5 <ucrtbase.dll+0xdce5>)
+# 7 ucrtbase.dll!Getdays                     +0x55     (0x00007ff80d5504f6 <ucrtbase.dll+0x104f6>)
+# 8 ucrtbase.dll!register_onexit_function    +0x253    (0x00007ff80d5508b4 <ucrtbase.dll+0x108b4>)
+# 9 ucrtbase.dll!register_onexit_function    +0xea     (0x00007ff80d55074b <ucrtbase.dll+0x1074b>)
+#10 ucrtbase.dll!register_onexit_function    +0x9f     (0x00007ff80d550700 <ucrtbase.dll+0x10700>)
+#11 ucrtbase.dll!o__register_onexit_function +0x34     (0x00007ff80d552465 <ucrtbase.dll+0x12465>)
+
+Error #14: POSSIBLE LEAK 263 direct bytes 0x0000025f64f258f0-0x0000025f64f259f7 + 0 indirect bytes
+# 0 replace_calloc                    [d:\drmemory_package\common\alloc_replace.c:2616]
+# 1 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 2 allocateRaw                       [c:\users\msn\documents\under-london\src\memory.h:66]
+# 3 debugTrackCodeCall                [c:\users\msn\documents\under-london\src\debug.cpp:472]
+# 4 allocate                          [c:\users\msn\documents\under-london\src\assets.cpp:61]
+# 5 copyFileIntoAsset                 [c:\users\msn\documents\under-london\src\assets.cpp:93]
+# 6 loadAsset                         [c:\users\msn\documents\under-london\src\assets.cpp:198]
+# 7 copyString                        [c:\users\msn\documents\under-london\src\string.cpp:42]
+# 8 findEntryInternal<>               [c:\users\msn\documents\under-london\src\hash_table.cpp:67]
+# 9 findOrAdd<>                       [c:\users\msn\documents\under-london\src\hash_table.cpp:99]
+#10 iterate<>                         [c:\users\msn\documents\under-london\src\chunked_array.cpp:440]
+#11 loadAssets                        [c:\users\msn\documents\under-london\src\assets.cpp:407]
+
+Reached maximum leak report limit (-report_leak_max). No further leaks will be reported.
+
+Error #15: HANDLE LEAK: KERNEL handle 0x00000000000012e0 and 3 similar handle(s) were opened but not closed:
+# 0 system call NtDuplicateObject
+# 1 atcuf64.dll!AtcQueryRegion                 +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+# 2 atcuf64.dll!AtcQueryRegion                 +0xb539   (0x00007ffff0099aca <atcuf64.dll+0x19aca>)
+# 3 atcuf64.dll!?                              +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+# 4 atcuf64.dll!?                              +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+# 5 atcuf64.dll!?                              +0x0      (0x00007ffff0083a06 <atcuf64.dll+0x3a06>)
+# 6 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 7 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 8 atio6axx.dll!DllMain                       +0x350    (0x00007fffc86c9681 <atio6axx.dll+0x6d9681>)
+# 9 atio6axx.dll!?                             +0x0      (0x00007fffc802adc6 <atio6axx.dll+0x3adc6>)
+#10 atio6axx.dll!DrvPresentBuffers             +0xfd95fe (0x00007fffc96f506f <atio6axx.dll+0x170506f>)
+#11 atio6axx.dll!DrvPresentBuffers             +0xfba634 (0x00007fffc96d60a5 <atio6axx.dll+0x16e60a5>)
+#12 atio6axx.dll!DrvPresentBuffers             +0x102f2a4 (0x00007fffc974ad15 <atio6axx.dll+0x175ad15>)
+#13 atio6axx.dll!DrvPresentBuffers             +0x1029722 (0x00007fffc9745193 <atio6axx.dll+0x1755193>)
+#14 atio6axx.dll!DrvPresentBuffers             +0xe6e7ca (0x00007fffc958a23b <atio6axx.dll+0x159a23b>)
+#15 atio6axx.dll!DrvPresentBuffers             +0xfd994d (0x00007fffc96f53be <atio6axx.dll+0x17053be>)
+#16 atio6axx.dll!DrvPresentBuffers             +0xfd9bb4 (0x00007fffc96f5625 <atio6axx.dll+0x1705625>)
+#17 atio6axx.dll!DrvPresentBuffers             +0xe6e9e4 (0x00007fffc958a455 <atio6axx.dll+0x159a455>)
+#18 atio6axx.dll!DrvPresentBuffers             +0xb74f   (0x00007fffc87271c0 <atio6axx.dll+0x7371c0>)
+#19 atcuf64.dll!AtcQueryRegion                 +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: @0:00:57.310 in thread 17528
+Note: handles created with the same callstack are closed here:
+Note: # 0 system call NtClose
+Note: # 1 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 2 SDL2.dll!?                       +0x0      (0x000000006c8314e3 <SDL2.dll+0xf14e3>)
+Note: # 3 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: # 4 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: # 5 atcuf64.dll!AtcQueryRegion       +0x2309   (0x00007ffff009089a <atcuf64.dll+0x1089a>)
+Note: # 6 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 7 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 8 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 9 atcuf64.dll!?                    +0x0      (0x00007ffff0083a06 <atcuf64.dll+0x3a06>)
+Note: #10 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: #11 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: #12 atio6axx.dll!?                   +0x0      (0x00007fffc802adb1 <atio6axx.dll+0x3adb1>)
+Note: #13 atio6axx.dll!?                   +0x0      (0x00007fffc802adb1 <atio6axx.dll+0x3adb1>)
+Note: #14 atio6axx.dll!DrvPresentBuffers   +0xfd95fe (0x00007fffc96f506f <atio6axx.dll+0x170506f>)
+Note: #15 atio6axx.dll!DrvPresentBuffers   +0xfba634 (0x00007fffc96d60a5 <atio6axx.dll+0x16e60a5>)
+Note: #16 atio6axx.dll!DrvPresentBuffers   +0x102f2a4 (0x00007fffc974ad15 <atio6axx.dll+0x175ad15>)
+Note: #17 atio6axx.dll!DrvPresentBuffers   +0x1029722 (0x00007fffc9745193 <atio6axx.dll+0x1755193>)
+Note: #18 atio6axx.dll!DrvPresentBuffers   +0xe6e7ca (0x00007fffc958a23b <atio6axx.dll+0x159a23b>)
+Note: #19 atio6axx.dll!DrvPresentBuffers   +0xfd994d (0x00007fffc96f53be <atio6axx.dll+0x17053be>)
+
+Error #16: HANDLE LEAK: KERNEL handle 0x00000000000012e4 and 3 similar handle(s) were opened but not closed:
+# 0 system call NtDuplicateObject
+# 1 atcuf64.dll!AtcQueryRegion                 +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+# 2 atcuf64.dll!AtcQueryRegion                 +0xb539   (0x00007ffff0099aca <atcuf64.dll+0x19aca>)
+# 3 atcuf64.dll!?                              +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+# 4 atcuf64.dll!?                              +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+# 5 atcuf64.dll!?                              +0x0      (0x00007ffff0083a06 <atcuf64.dll+0x3a06>)
+# 6 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 7 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 8 atio6axx.dll!DllMain                       +0x350    (0x00007fffc86c9681 <atio6axx.dll+0x6d9681>)
+# 9 atio6axx.dll!?                             +0x0      (0x00007fffc802adc6 <atio6axx.dll+0x3adc6>)
+#10 atio6axx.dll!DrvPresentBuffers             +0xfd95fe (0x00007fffc96f506f <atio6axx.dll+0x170506f>)
+#11 atio6axx.dll!DrvPresentBuffers             +0x102f1eb (0x00007fffc974ac5c <atio6axx.dll+0x175ac5c>)
+#12 atio6axx.dll!DrvPresentBuffers             +0x102925d (0x00007fffc9744cce <atio6axx.dll+0x1754cce>)
+#13 atio6axx.dll!DrvPresentBuffers             +0xe6e7ca (0x00007fffc958a23b <atio6axx.dll+0x159a23b>)
+#14 atio6axx.dll!DrvPresentBuffers             +0xfd994d (0x00007fffc96f53be <atio6axx.dll+0x17053be>)
+#15 atio6axx.dll!DrvPresentBuffers             +0xfd9bb4 (0x00007fffc96f5625 <atio6axx.dll+0x1705625>)
+#16 atio6axx.dll!DrvPresentBuffers             +0xe6e9e4 (0x00007fffc958a455 <atio6axx.dll+0x159a455>)
+#17 atio6axx.dll!DrvPresentBuffers             +0xb74f   (0x00007fffc87271c0 <atio6axx.dll+0x7371c0>)
+#18 atcuf64.dll!AtcQueryRegion                 +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+#19 atcuf64.dll!AtcQueryRegion                 +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: @0:00:57.318 in thread 17528
+Note: handles created with the same callstack are closed here:
+Note: # 0 system call NtClose
+Note: # 1 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 2 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: # 3 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: # 4 atcuf64.dll!AtcQueryRegion       +0x2309   (0x00007ffff009089a <atcuf64.dll+0x1089a>)
+Note: # 5 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 6 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 7 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 8 atcuf64.dll!?                    +0x0      (0x00007ffff0083a06 <atcuf64.dll+0x3a06>)
+Note: # 9 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: #10 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: #11 atio6axx.dll!?                   +0x0      (0x00007fffc802adb1 <atio6axx.dll+0x3adb1>)
+Note: #12 atio6axx.dll!DrvPresentBuffers   +0x1037f3b (0x00007fffc97539ac <atio6axx.dll+0x17639ac>)
+Note: #13 atio6axx.dll!?                   +0x0      (0x00007fffc802adb1 <atio6axx.dll+0x3adb1>)
+Note: #14 atio6axx.dll!DrvPresentBuffers   +0xfd95fe (0x00007fffc96f506f <atio6axx.dll+0x170506f>)
+Note: #15 atio6axx.dll!DrvPresentBuffers   +0x102f1eb (0x00007fffc974ac5c <atio6axx.dll+0x175ac5c>)
+Note: #16 atio6axx.dll!DrvPresentBuffers   +0x102925d (0x00007fffc9744cce <atio6axx.dll+0x1754cce>)
+Note: #17 atio6axx.dll!DrvPresentBuffers   +0xe6e7ca (0x00007fffc958a23b <atio6axx.dll+0x159a23b>)
+Note: #18 atio6axx.dll!DrvPresentBuffers   +0xfd994d (0x00007fffc96f53be <atio6axx.dll+0x17053be>)
+Note: #19 atio6axx.dll!DrvPresentBuffers   +0xfd9bb4 (0x00007fffc96f5625 <atio6axx.dll+0x1705625>)
+
+Error #17: HANDLE LEAK: KERNEL handle 0x000000000000134c and 5 similar handle(s) were opened but not closed:
+# 0 system call NtDuplicateObject
+# 1 atcuf64.dll!AtcQueryRegion                 +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+# 2 atcuf64.dll!?                              +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+# 3 atcuf64.dll!?                              +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+# 4 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 5 atio6axx.dll!DrvPresentBuffers             +0x104d80b (0x00007fffc976927c <atio6axx.dll+0x177927c>)
+# 6 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 7 atio6axx.dll!DllMain                       +0x350    (0x00007fffc86c9681 <atio6axx.dll+0x6d9681>)
+# 8 atio6axx.dll!?                             +0x0      (0x00007fffc802adc6 <atio6axx.dll+0x3adc6>)
+# 9 atio6axx.dll!DrvPresentBuffers             +0xfd95fe (0x00007fffc96f506f <atio6axx.dll+0x170506f>)
+#10 atio6axx.dll!DrvPresentBuffers             +0x102f2a4 (0x00007fffc974ad15 <atio6axx.dll+0x175ad15>)
+#11 atio6axx.dll!DrvPresentBuffers             +0x1029722 (0x00007fffc9745193 <atio6axx.dll+0x1755193>)
+#12 atio6axx.dll!DrvPresentBuffers             +0xedcd5b (0x00007fffc95f87cc <atio6axx.dll+0x16087cc>)
+#13 atio6axx.dll!DrvPresentBuffers             +0xfd994d (0x00007fffc96f53be <atio6axx.dll+0x17053be>)
+#14 atio6axx.dll!DrvPresentBuffers             +0xfd9bb4 (0x00007fffc96f5625 <atio6axx.dll+0x1705625>)
+#15 atio6axx.dll!DrvPresentBuffers             +0xff6b06 (0x00007fffc9712577 <atio6axx.dll+0x1722577>)
+#16 atio6axx.dll!DrvPresentBuffers             +0x10011e1 (0x00007fffc971cc52 <atio6axx.dll+0x172cc52>)
+#17 atio6axx.dll!DrvPresentBuffers             +0xfdf6a9 (0x00007fffc96fb11a <atio6axx.dll+0x170b11a>)
+#18 atio6axx.dll!DrvPresentBuffers             +0xc3557a (0x00007fffc9350feb <atio6axx.dll+0x1360feb>)
+#19 atio6axx.dll!DrvPresentBuffers             +0x140a3d3 (0x00007fffc9b25e44 <atio6axx.dll+0x1b35e44>)
+Note: @0:00:57.327 in thread 17528
+Note: handles created with the same callstack are closed here:
+Note: # 0 system call NtClose
+Note: # 1 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 2 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: # 3 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: # 4 atcuf64.dll!AtcQueryRegion       +0x2309   (0x00007ffff009089a <atcuf64.dll+0x1089a>)
+Note: # 5 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 6 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 7 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 8 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: # 9 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: #10 atio6axx.dll!DrvPresentBuffers   +0xfd6646 (0x00007fffc96f20b7 <atio6axx.dll+0x17020b7>)
+Note: #11 atio6axx.dll!DrvPresentBuffers   +0xfd6646 (0x00007fffc96f20b7 <atio6axx.dll+0x17020b7>)
+Note: #12 atio6axx.dll!DrvPresentBuffers   +0xfd66dd (0x00007fffc96f214e <atio6axx.dll+0x170214e>)
+Note: #13 atio6axx.dll!DrvPresentBuffers   +0xc33772 (0x00007fffc934f1e3 <atio6axx.dll+0x135f1e3>)
+Note: #14 atio6axx.dll!DrvPresentBuffers   +0x1004d3d (0x00007fffc97207ae <atio6axx.dll+0x17307ae>)
+Note: #15 atio6axx.dll!DrvPresentBuffers   +0xfeac19 (0x00007fffc970668a <atio6axx.dll+0x171668a>)
+Note: #16 atio6axx.dll!DrvPresentBuffers   +0xc32676 (0x00007fffc934e0e7 <atio6axx.dll+0x135e0e7>)
+Note: #17 atio6axx.dll!DrvPresentBuffers   +0xc21c44 (0x00007fffc933d6b5 <atio6axx.dll+0x134d6b5>)
+Note: #18 atio6axx.dll!DrvPresentBuffers   +0xc3318b (0x00007fffc934ebfc <atio6axx.dll+0x135ebfc>)
+Note: #19 atio6axx.dll!DrvPresentBuffers   +0xc3463b (0x00007fffc93500ac <atio6axx.dll+0x13600ac>)
+
+Error #18: HANDLE LEAK: KERNEL handle 0x00000000000013fc and 5 similar handle(s) were opened but not closed:
+# 0 system call NtDuplicateObject
+# 1 atcuf64.dll!AtcQueryRegion                 +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+# 2 atio6axx.dll!DrvPresentBuffers             +0xfd8da1 (0x00007fffc96f4812 <atio6axx.dll+0x1704812>)
+# 3 atcuf64.dll!?                              +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+# 4 atcuf64.dll!?                              +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+# 5 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 6 KERNELBASE.dll!DuplicateHandle             +0x4b     (0x00007ff80e17428c <KERNELBASE.dll+0x6428c>)
+# 7 atio6axx.dll!DrvPresentBuffers             +0xfd8da1 (0x00007fffc96f4812 <atio6axx.dll+0x1704812>)
+# 8 atio6axx.dll!DllMain                       +0x350    (0x00007fffc86c9681 <atio6axx.dll+0x6d9681>)
+# 9 atio6axx.dll!?                             +0x0      (0x00007fffc802adc6 <atio6axx.dll+0x3adc6>)
+#10 atio6axx.dll!DrvPresentBuffers             +0xfd95fe (0x00007fffc96f506f <atio6axx.dll+0x170506f>)
+#11 atio6axx.dll!DrvPresentBuffers             +0x102f1eb (0x00007fffc974ac5c <atio6axx.dll+0x175ac5c>)
+#12 atio6axx.dll!DrvPresentBuffers             +0x102925d (0x00007fffc9744cce <atio6axx.dll+0x1754cce>)
+#13 atio6axx.dll!DrvPresentBuffers             +0xedcd5b (0x00007fffc95f87cc <atio6axx.dll+0x16087cc>)
+#14 atio6axx.dll!DrvPresentBuffers             +0xfd994d (0x00007fffc96f53be <atio6axx.dll+0x17053be>)
+#15 atio6axx.dll!DrvPresentBuffers             +0xfd9bb4 (0x00007fffc96f5625 <atio6axx.dll+0x1705625>)
+#16 atio6axx.dll!DrvPresentBuffers             +0xff6b06 (0x00007fffc9712577 <atio6axx.dll+0x1722577>)
+#17 atio6axx.dll!DrvPresentBuffers             +0x10011e1 (0x00007fffc971cc52 <atio6axx.dll+0x172cc52>)
+#18 atio6axx.dll!DrvPresentBuffers             +0xfdf6a9 (0x00007fffc96fb11a <atio6axx.dll+0x170b11a>)
+#19 atio6axx.dll!DrvPresentBuffers             +0xc3557a (0x00007fffc9350feb <atio6axx.dll+0x1360feb>)
+Note: @0:00:57.335 in thread 17528
+Note: handles created with the same callstack are closed here:
+Note: # 0 system call NtClose
+Note: # 1 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 2 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: # 3 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: # 4 atcuf64.dll!AtcQueryRegion       +0x2309   (0x00007ffff009089a <atcuf64.dll+0x1089a>)
+Note: # 5 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 6 KERNELBASE.dll!CloseHandle       +0x44     (0x00007ff80e12ea05 <KERNELBASE.dll+0x1ea05>)
+Note: # 7 atcuf64.dll!AtcQueryRegion       +0x10042  (0x00007ffff009e5d3 <atcuf64.dll+0x1e5d3>)
+Note: # 8 atcuf64.dll!?                    +0x0      (0x00007ffff0088b4b <atcuf64.dll+0x8b4b>)
+Note: # 9 atcuf64.dll!?                    +0x0      (0x00007ffff008376b <atcuf64.dll+0x376b>)
+Note: #10 atio6axx.dll!DrvPresentBuffers   +0xfd6646 (0x00007fffc96f20b7 <atio6axx.dll+0x17020b7>)
+Note: #11 atio6axx.dll!DrvPresentBuffers   +0xfd6646 (0x00007fffc96f20b7 <atio6axx.dll+0x17020b7>)
+Note: #12 atio6axx.dll!DrvPresentBuffers   +0xfd66dd (0x00007fffc96f214e <atio6axx.dll+0x170214e>)
+Note: #13 atio6axx.dll!DrvPresentBuffers   +0xc33772 (0x00007fffc934f1e3 <atio6axx.dll+0x135f1e3>)
+Note: #14 atio6axx.dll!DrvPresentBuffers   +0x1004d3d (0x00007fffc97207ae <atio6axx.dll+0x17307ae>)
+Note: #15 atio6axx.dll!DrvPresentBuffers   +0xfeac19 (0x00007fffc970668a <atio6axx.dll+0x171668a>)
+Note: #16 atio6axx.dll!DrvPresentBuffers   +0xc32676 (0x00007fffc934e0e7 <atio6axx.dll+0x135e0e7>)
+Note: #17 atio6axx.dll!DrvPresentBuffers   +0xc21c44 (0x00007fffc933d6b5 <atio6axx.dll+0x134d6b5>)
+Note: #18 atio6axx.dll!DrvPresentBuffers   +0xc3318b (0x00007fffc934ebfc <atio6axx.dll+0x135ebfc>)
+Note: #19 atio6axx.dll!DrvPresentBuffers   +0xc3463b (0x00007fffc93500ac <atio6axx.dll+0x13600ac>)
+
+===========================================================================
+FINAL SUMMARY:
+
+DUPLICATE ERROR COUNTS:
+	Error #   4:     13
+	Error #  12:      5
+	Error #  13:      2
+	Error #  15:      4
+	Error #  16:      4
+	Error #  17:      6
+	Error #  18:      6
+
+SUPPRESSIONS USED:
+
+ERRORS FOUND:
+      6 unique,    18 total unaddressable access(es)
+      0 unique,     0 total invalid heap argument(s)
+      0 unique,     0 total GDI usage error(s)
+      4 unique,    20 total handle leak(s)
+      0 unique,     0 total warning(s)
+      6 unique,    11 total,   1876 byte(s) of leak(s)
+      2 unique,     2 total,    287 byte(s) of possible leak(s)
+ERRORS IGNORED:
+    162 potential error(s) (suspected false positives)
+         (details: C:\Users\msn\AppData\Roaming\Dr. Memory\DrMemory-main.exe.21324.000\potential_errors.txt)
+     42 potential leak(s) (suspected false positives)
+         (details: C:\Users\msn\AppData\Roaming\Dr. Memory\DrMemory-main.exe.21324.000\potential_errors.txt)
+   1582 unique,  9905 total, 1993083 byte(s) of still-reachable allocation(s)
+         (re-run with "-show_reachable" for details)
+   6030 leak(s) beyond -report_leak_max
+Details: C:\Users\msn\AppData\Roaming\Dr. Memory\DrMemory-main.exe.21324.000\results.txt
