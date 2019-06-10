@@ -11,8 +11,8 @@ Handy emojis: ✔ ✖ ™
 SECTORS:
 - Sector info debug window!
 - Power network
-	- Power groups
-	- tile-to-power-group array
+	✔ Power groups
+	✔ tile-to-power-group array
 	- THINK: Somehow connect sector power groups to whole-city ones?
 - Road network
 	- Similar stuff to how power works, so figure that out first

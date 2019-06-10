@@ -148,7 +148,7 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 		Building *building = get(it);
 		BuildingDef *def = get(&buildingDefs, building->typeID);
 
-		if (def->carriesPower && def->power != 0)
+		if (def->power != 0)
 		{
 			u8 powerGroupIndex = sector->tilePowerGroup[building->footprint.y - sector->bounds.y][building->footprint.x - sector->bounds.x];
 			PowerGroup *powerGroup = get(&sector->powerGroups, powerGroupIndex-1);

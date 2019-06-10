@@ -217,10 +217,6 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		}
 	}
 
-	// TODO: Properly calculate occupancy!
-	building->currentResidents = def->residents;
-	building->currentJobs = def->jobs;
-
 	city->totalResidents += def->residents;
 	city->totalJobs += def->jobs;
 

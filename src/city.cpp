@@ -61,6 +61,10 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	building->typeID = def->typeID;
 	building->footprint = footprint;
 
+	// TODO: Properly calculate occupancy!
+	building->currentResidents = def->residents;
+	building->currentJobs = def->jobs;
+
 	// TODO: Optimise this per-sector!
 	for (s32 y=0; y<footprint.h; y++)
 	{

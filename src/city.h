@@ -136,7 +136,6 @@ inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 	return result;
 }
 
-
 inline Terrain *terrainAt(City *city, s32 x, s32 y)
 {
 	Terrain *result = &invalidTerrain;
