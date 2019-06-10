@@ -8,6 +8,35 @@ Handy emojis: ✔ ✖ ™
 
 ------------------------------------------------
 
+SECTORS:
+- Sector info debug window!
+- Power network
+	- Power groups
+	- tile-to-power-group array
+	- THINK: Somehow connect sector power groups to whole-city ones?
+- Road network
+	- Similar stuff to how power works, so figure that out first
+- Terrain
+	- Terrain mesh? That's kind of a side issue
+✔ Buildings
+- Zones
+	- Desirability per zone type
+		- (later, make this per *spawn* type, which is more specific)
+	- Desirability is used to prioritise new developments
+- Statistics
+	- Jobs
+	- Population
+- Data
+	- Land value
+	- Pollution
+	- Fire
+	- Crime
+	- Fire coverage
+	- Police coverage
+	- Traffic density
+
+------------------------------------------------
+
 Things to work on next maybe:
 - Power stations and connectivity and consumption?
 - Zones actually spawn stuff

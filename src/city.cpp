@@ -159,9 +159,9 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 
 	// Check terrain is buildable and empty
 	// TODO: Optimise this per-sector!
-	for (s32 y=0; y<def->height; y++)
+	for (s32 y=footprint.y; y<footprint.y + footprint.h; y++)
 	{
-		for (s32 x=0; x<def->width; x++)
+		for (s32 x=footprint.x; x<footprint.x + footprint.w; x++)
 		{
 			Terrain *terrain = terrainAt(city, x, y);
 			TerrainDef *terrainDef = get(&terrainDefs, terrain->type);
@@ -175,7 +175,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 				return false;
 			}
 
-			Building *buildingAtPos = getBuildingAtPosition(city, footprint.x + x, footprint.y + y);
+			Building *buildingAtPos = getBuildingAtPosition(city, x, y);
 			if (buildingAtPos != null)
 			{
 				// Check if we can combine this with the building that's already there
