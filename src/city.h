@@ -44,6 +44,8 @@ enum SectorFlags
 
 };
 
+const u8 POWER_GROUP_UNKNOWN = 255;
+
 #define SECTOR_SIZE 16
 struct Sector
 {
@@ -55,9 +57,15 @@ struct Sector
 	TileBuildingRef tileBuilding[SECTOR_SIZE][SECTOR_SIZE];
 	ZoneType tileZone[SECTOR_SIZE][SECTOR_SIZE];
 	s32 tilePathGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = unpathable, >0 = any tile with the same value is connected
-	s32 tilePowerGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = none, >0 = any tile with the same value is connected
 
-	ChunkedArray<Building> buildings; // A building is owned by a Sector if its top-left corner tile is inside that Sector.
+	// 0 = none, >0 = any tile with the same value is connected
+	// POWER_GROUP_UNKNOWN is used as a temporary value while recalculating
+	u8 tilePowerGroup[SECTOR_SIZE][SECTOR_SIZE];
+
+	// NB: A building is owned by a Sector if its top-left corner tile is inside that Sector.
+	ChunkedArray<Building>   buildings;
+	// NB: Power groups start at 1, (0 means "none") so subtract 1 from the value in tilePowerGroup to get the index!
+	ChunkedArray<PowerGroup> powerGroups;
 };
 
 struct City
@@ -81,7 +89,8 @@ struct City
 
 	struct ZoneLayer zoneLayer;
 
-	ChunkPool<Building> sectorBuildingsChunkPool;
+	ChunkPool<Building>   sectorBuildingsChunkPool;
+	ChunkPool<PowerGroup> sectorPowerGroupsChunkPool;
 
 	s32 totalResidents;
 	s32 totalJobs;
@@ -95,6 +104,12 @@ struct City
 inline s32 tileIndex(City *city, s32 x, s32 y)
 {
 	return (y * city->width) + x;
+}
+
+inline bool tileExists(City *city, s32 x, s32 y)
+{
+	return (x >= 0) && (x < city->width)
+		&& (y >= 0) && (y < city->height);
 }
 
 inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
@@ -111,14 +126,16 @@ inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
 
 inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 {
-	return getSector(city, x / SECTOR_SIZE, y / SECTOR_SIZE);
+	Sector *result = null;
+
+	if (tileExists(city, x, y))
+	{
+		result = getSector(city, x / SECTOR_SIZE, y / SECTOR_SIZE);
+	}
+
+	return result;
 }
 
-inline bool tileExists(City *city, s32 x, s32 y)
-{
-	return (x >= 0) && (x < city->width)
-		&& (y >= 0) && (y < city->height);
-}
 
 inline Terrain *terrainAt(City *city, s32 x, s32 y)
 {

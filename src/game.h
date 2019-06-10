@@ -79,3 +79,13 @@ struct GameState
 	// - Sam, 11/2/2019
 	V2I inspectedTilePosition;
 };
+
+const V4 genericDataLayerColors[] = {
+	color255(  0,   0, 255, 63),
+	color255(  0, 255,   0, 63),
+	color255(255,   0,   0, 63),
+	color255(  0, 255, 255, 63),
+	color255(255, 255,   0, 63),
+	color255(255,   0, 255, 63)
+};
+const s32 genericDataLayerColorCount = 6;

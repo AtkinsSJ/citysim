@@ -295,12 +295,19 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	V2I tilePos = gameState->inspectedTilePosition;
 	context->window->title = myprintf(LOCAL("title_inspect"), {formatInt(tilePos.x), formatInt(tilePos.y)});
 
+	// Sector
+	Sector *sector = getSectorAtTilePos(city, tilePos.x, tilePos.y);
+	s32 relX = tilePos.x - sector->bounds.x;
+	s32 relY = tilePos.y - sector->bounds.y;
+
+	window_label(context, myprintf("Sector: x={0} y={1} w={2} h={3}", {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
+
 	// Terrain
-	String terrainName = get(&terrainDefs, terrainAt(city, tilePos.x, tilePos.y)->type)->name;
+	String terrainName = get(&terrainDefs, sector->terrain[relY][relX].type)->name;
 	window_label(context, myprintf("Terrain: {0}", {terrainName}));
 
 	// Zone
-	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
+	ZoneType zone = sector->tileZone[relY][relX];
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
 
 	// Building
@@ -321,8 +328,8 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	s32 powerGroupIndex = powerGroupAt(city, tilePos.x, tilePos.y);
 	if (powerGroupIndex != 0)
 	{
-		PowerGroup *powerGroup = get(&city->powerLayer.groups, powerGroupIndex);
-		window_label(context, myprintf("Power Group: #{0}\n- Production: {1}\n- Consumption: {2}", {formatInt(powerGroupIndex), formatInt(powerGroup->production), formatInt(powerGroup->consumption)}));
+		PowerGroup *powerGroup = get(&sector->powerGroups, powerGroupIndex - 1);
+		window_label(context, myprintf("Power Group: #{0}/{1} within sector\n- Production: {2}\n- Consumption: {3}", {formatInt(powerGroupIndex), formatInt(sector->powerGroups.count), formatInt(powerGroup->production), formatInt(powerGroup->consumption)}));
 	}
 	else
 	{
@@ -984,17 +991,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						s32 pathGroup = pathGroupAt(city, x, y);
 						if (pathGroup > 0)
 						{
-							switch (pathGroup)
-							{
-								case 1:  color = color255(  0,   0, 255, 63); break;
-								case 2:  color = color255(  0, 255,   0, 63); break;
-								case 3:  color = color255(255,   0,   0, 63); break;
-								case 4:  color = color255(  0, 255, 255, 63); break;
-								case 5:  color = color255(255, 255,   0, 63); break;
-								case 6:  color = color255(255,   0, 255, 63); break;
-
-								default: color = color255(255, 255, 255, 63); break;
-							}
+							color = genericDataLayerColors[pathGroup % genericDataLayerColorCount];
 							tileHasData = true;
 						}
 					} break;
@@ -1004,17 +1001,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						s32 powerGroup = powerGroupAt(city, x, y);
 						if (powerGroup > 0)
 						{
-							switch (powerGroup)
-							{
-								case 1:  color = color255(  0,   0, 255, 63); break;
-								case 2:  color = color255(  0, 255,   0, 63); break;
-								case 3:  color = color255(255,   0,   0, 63); break;
-								case 4:  color = color255(  0, 255, 255, 63); break;
-								case 5:  color = color255(255, 255,   0, 63); break;
-								case 6:  color = color255(255,   0, 255, 63); break;
-
-								default: color = color255(255, 255, 255, 63); break;
-							}
+							color = genericDataLayerColors[powerGroup % genericDataLayerColorCount];
 							tileHasData = true;
 						}
 					} break;
