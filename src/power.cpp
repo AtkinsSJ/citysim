@@ -50,6 +50,23 @@ void floodFillSectorPowerGroup(Sector *sector, s32 x, s32 y, u8 fillValue)
 	}
 }
 
+inline void setRectPowerGroupUnknown(Sector *sector, Rect2I area)
+{
+	Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
+
+	for (s32 relY=relArea.y;
+		relY < relArea.y + relArea.h;
+		relY++)
+	{
+		for (s32 relX=relArea.x;
+			relX < relArea.x + relArea.w;
+			relX++)
+		{
+			sector->tilePowerGroup[relY][relX] = POWER_GROUP_UNKNOWN;
+		}
+	}
+}
+
 void recalculateSectorPowerGroups(City *city, Sector *sector)
 {
 	DEBUG_FUNCTION();
@@ -72,19 +89,7 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 		if (def->carriesPower)
 		{
-			Rect2I relArea = cropRectangleToRelativeWithinSector(building->footprint, sector);
-
-			for (s32 relY=relArea.y;
-				relY < relArea.y + relArea.h;
-				relY++)
-			{
-				for (s32 relX=relArea.x;
-					relX < relArea.x + relArea.w;
-					relX++)
-				{
-					sector->tilePowerGroup[relY][relX] = POWER_GROUP_UNKNOWN;
-				}
-			}
+			setRectPowerGroupUnknown(sector, building->footprint);
 		}
 	}
 
@@ -108,14 +113,11 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 			}
 			else
 			{
-				// TODO: Look up each Building once, and mark its whole footprint, like in step 1.1
 				Building *building = getBuildingAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);
-				if (building != null)
+				if (building != null && get(&buildingDefs, building->typeID)->carriesPower)
 				{
-					if (get(&buildingDefs, building->typeID)->carriesPower)
-					{
-						sector->tilePowerGroup[relY][relX] = POWER_GROUP_UNKNOWN;
-					}
+					// Set the building's whole area, so we only do 1 getBuildingAtPosition() lookup per building
+					setRectPowerGroupUnknown(sector, building->footprint);
 				}
 			}
 		}
@@ -163,7 +165,8 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 		}
 	}
 
-	// Step 4: Somehow we also need to figure-out which city-wide network each PowerGroup is part of, and tell it!
+	// Step 4: Find and store the PowerGroup boundaries along the sector's edges
+	// 💡 Do we want to store the tiles IN the PowerGroup, or the ones OUTSIDE the PowerGroup?
 }
 
 /*
@@ -174,6 +177,7 @@ void recalculatePowerConnectivity(City *city)
 {
 	DEBUG_FUNCTION();
 
+	// Recalculate each sector
 	for (s32 sectorIndex = 0;
 		sectorIndex < city->sectorCount;
 		sectorIndex++)
@@ -182,6 +186,10 @@ void recalculatePowerConnectivity(City *city)
 
 		recalculateSectorPowerGroups(city, sector);
 	}
+
+	// Flood-fill networks of PowerGroups by walking the boundaries
+
+#if 0 // Old code
 
 	// This is a flood fill.
 	// First, normalise things so path tiles are -1, others are 0
@@ -282,4 +290,5 @@ void recalculatePowerConnectivity(City *city)
 	// 	city->powerLayer.combined.production  += group->production;
 	// 	city->powerLayer.combined.consumption += group->consumption;
 	// }
+#endif
 }
