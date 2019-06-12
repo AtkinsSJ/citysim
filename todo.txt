@@ -9,6 +9,7 @@ Handy emojis: ✔ ✖ ™ 💡
 Notes for searching:
 	@Speed - Thing could be faster
 	@Size - Thing could use less memory
+	@Copypasta - Copy-pasted code, should probably be factored together
 
 ------------------------------------------------
 

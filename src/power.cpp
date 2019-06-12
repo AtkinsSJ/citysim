@@ -178,6 +178,8 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	}
 
 	// Step 4: Find and store the PowerGroup boundaries along the sector's edges, on the OUTSIDE
+	// @Copypasta The code for all this is really repetitive, but I'm not sure how to factor it together nicely.
+
 	// - Step 4.1: Left edge
 	if (sector->bounds.x > 0)
 	{
@@ -193,7 +195,6 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 			if (tilePGId == 0)
 			{
-				currentBoundary = null;
 				currentPGId = 0;
 			}
 			else if (tilePGId == currentPGId)
@@ -230,7 +231,6 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 			if (tilePGId == 0)
 			{
-				currentBoundary = null;
 				currentPGId = 0;
 			}
 			else if (tilePGId == currentPGId)
@@ -267,7 +267,6 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 			if (tilePGId == 0)
 			{
-				currentBoundary = null;
 				currentPGId = 0;
 			}
 			else if (tilePGId == currentPGId)
@@ -304,7 +303,6 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 			if (tilePGId == 0)
 			{
-				currentBoundary = null;
 				currentPGId = 0;
 			}
 			else if (tilePGId == currentPGId)
@@ -326,7 +324,22 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 		}
 	}
 
-	int foo = 18762781;
+	//
+	// Step 5? Could now store a list of direct pointers or indices to connected power groups in other sectors.
+	// We'd need to then clean those references up in step 0, but it could make things faster - no need to
+	// query for the (0 to many) power groups covered by the boundaries whenever we need to walk the graph.
+	// However, we probably don't need to walk it very often! Right now, I can only think of the "assign each
+	// power group to a global network" procedure as needing to do this. (I guess when calculating which sectors
+	// get power if the power prod < consumption, that also requires a walk? But maybe not. I really don't know
+	// how I want that to work.)
+	//
+	// So, yeah! Could be useful or could not, but THIS is the place to do that work. (Or maybe directly in step 4?)
+	// Though, we'd need to make sure we add the references on both sides, because otherwise things could go out
+	// of sync, because we'd be building those links before some sectors have been calculated. UGH. Maybe it IS
+	// better to just do that walk after we're all done!
+	//
+	// Sam, 12/06/2019
+	//
 }
 
 /*
