@@ -17,6 +17,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
 	initChunkPool(&city->sectorPowerGroupsChunkPool, gameArena, 4);
+	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena, 8);
 
 	s32 remainderWidth  = width % SECTOR_SIZE;
 	s32 remainderHeight = height % SECTOR_SIZE;

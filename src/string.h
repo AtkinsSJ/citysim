@@ -3,7 +3,7 @@
 struct String
 {
 	s32 length;
-	s32 maxLength; // TODO: @Performance Maybe we should have a separate struct for editable Strings? That way String itself can be small, PLUS we'd know that the hash value was correct.
+	s32 maxLength; // TODO: @Size Maybe we should have a separate struct for editable Strings? That way String itself can be small, PLUS we'd know that the hash value was correct.
 	char *chars;
 
 	bool hasHash;

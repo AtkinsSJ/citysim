@@ -76,6 +76,13 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	// Meaning, if a city-wide power network knows that PowerGroup 3 in this sector is part of it,
 	// we need to tell it that PowerGroup 3 is being destroyed!
 
+
+	// Step 0: Remove the old PowerGroups.
+	for (auto it = iterate(&sector->powerGroups); !it.isDone; next(&it))
+	{
+		PowerGroup *powerGroup = get(it);
+		clear(&powerGroup->sectorBoundaries);
+	}
 	clear(&sector->powerGroups);
 	memset(&sector->tilePowerGroup, 0, sizeof(sector->tilePowerGroup));
 
@@ -137,12 +144,17 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 			PowerGroup *newGroup = appendBlank(&sector->powerGroups);
 
+			initChunkedArray(&newGroup->sectorBoundaries, &city->sectorBoundariesChunkPool);
+
 			u8 powerGroupID = (u8)sector->powerGroups.count;
 			newGroup->production = 0;
 			newGroup->consumption = 0;
 			floodFillSectorPowerGroup(sector, relX, relY, powerGroupID);
 		}
 	}
+
+	// At this point, if there are no power groups we can just stop.
+	if (sector->powerGroups.count == 0) return;
 
 	// Step 3: Calculate power production/consumption for OWNED buildings, and add to their PowerGroups
 	for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
@@ -165,8 +177,156 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 		}
 	}
 
-	// Step 4: Find and store the PowerGroup boundaries along the sector's edges
-	// 💡 Do we want to store the tiles IN the PowerGroup, or the ones OUTSIDE the PowerGroup?
+	// Step 4: Find and store the PowerGroup boundaries along the sector's edges, on the OUTSIDE
+	// - Step 4.1: Left edge
+	if (sector->bounds.x > 0)
+	{
+		u8 currentPGId = 0;
+		Rect2I *currentBoundary = null;
+
+		s32 relX = 0;
+		for (s32 relY = 0;
+			relY < sector->bounds.h;
+			relY++)
+		{
+			u8 tilePGId = sector->tilePowerGroup[relY][relX];
+
+			if (tilePGId == 0)
+			{
+				currentBoundary = null;
+				currentPGId = 0;
+			}
+			else if (tilePGId == currentPGId)
+			{
+				// Extend it
+				currentBoundary->h++;
+			}
+			else
+			{
+				currentPGId = tilePGId;
+
+				// Start a new boundary
+				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
+				currentBoundary->x = sector->bounds.x - 1;
+				currentBoundary->y = sector->bounds.y + relY;
+				currentBoundary->w = 1;
+				currentBoundary->h = 1;
+			}
+		}
+	}
+
+	// - Step 4.2: Right edge
+	if (sector->bounds.x + sector->bounds.w < city->width)
+	{
+		u8 currentPGId = 0;
+		Rect2I *currentBoundary = null;
+
+		s32 relX = sector->bounds.w-1;
+		for (s32 relY = 0;
+			relY < sector->bounds.h;
+			relY++)
+		{
+			u8 tilePGId = sector->tilePowerGroup[relY][relX];
+
+			if (tilePGId == 0)
+			{
+				currentBoundary = null;
+				currentPGId = 0;
+			}
+			else if (tilePGId == currentPGId)
+			{
+				// Extend it
+				currentBoundary->h++;
+			}
+			else
+			{
+				currentPGId = tilePGId;
+
+				// Start a new boundary
+				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
+				currentBoundary->x = sector->bounds.x + sector->bounds.w;
+				currentBoundary->y = sector->bounds.y + relY;
+				currentBoundary->w = 1;
+				currentBoundary->h = 1;
+			}
+		}
+	}
+
+	// - Step 4.3: Top edge
+	if (sector->bounds.y > 0)
+	{
+		u8 currentPGId = 0;
+		Rect2I *currentBoundary = null;
+
+		s32 relY = 0;
+		for (s32 relX = 0;
+			relX < sector->bounds.w;
+			relX++)
+		{
+			u8 tilePGId = sector->tilePowerGroup[relY][relX];
+
+			if (tilePGId == 0)
+			{
+				currentBoundary = null;
+				currentPGId = 0;
+			}
+			else if (tilePGId == currentPGId)
+			{
+				// Extend it
+				currentBoundary->w++;
+			}
+			else
+			{
+				currentPGId = tilePGId;
+
+				// Start a new boundary
+				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
+				currentBoundary->x = sector->bounds.x + relX;
+				currentBoundary->y = sector->bounds.y - 1;
+				currentBoundary->w = 1;
+				currentBoundary->h = 1;
+			}
+		}
+	}
+
+	// - Step 4.4: Bottom edge
+	if (sector->bounds.y + sector->bounds.h < city->height)
+	{
+		u8 currentPGId = 0;
+		Rect2I *currentBoundary = null;
+
+		s32 relY = sector->bounds.h-1;
+		for (s32 relX = 0;
+			relX < sector->bounds.w;
+			relX++)
+		{
+			u8 tilePGId = sector->tilePowerGroup[relY][relX];
+
+			if (tilePGId == 0)
+			{
+				currentBoundary = null;
+				currentPGId = 0;
+			}
+			else if (tilePGId == currentPGId)
+			{
+				// Extend it
+				currentBoundary->w++;
+			}
+			else
+			{
+				currentPGId = tilePGId;
+
+				// Start a new boundary
+				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
+				currentBoundary->x = sector->bounds.x + relX;
+				currentBoundary->y = sector->bounds.y + sector->bounds.h;
+				currentBoundary->w = 1;
+				currentBoundary->h = 1;
+			}
+		}
+	}
+
+	int foo = 18762781;
 }
 
 /*

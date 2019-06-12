@@ -6,6 +6,10 @@ Trello is nice, but it's ALL THE WAY OVER THERE in a different program! (Which r
 
 Handy emojis: ✔ ✖ ™ 💡
 
+Notes for searching:
+	@Speed - Thing could be faster
+	@Size - Thing could use less memory
+
 ------------------------------------------------
 
 SECTORS:

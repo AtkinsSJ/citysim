@@ -1026,7 +1026,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	clear(&gameState->overlayRenderItems);
 
 	{
-		// DEBUG draw the sectors
+		// Draw sector
 		#if 0
 		for (s32 y = 0; y < city->sectorsY; y++)
 		{
@@ -1053,6 +1053,20 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		if (cursorSector != null)
 		{
 			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, rectangleShaderID, color255(255, 255, 255, 63));
+
+			// Draw PowerGroup boundaries
+			for (auto itPG = iterate(&cursorSector->powerGroups); !itPG.isDone; next(&itPG))
+			{
+				PowerGroup *pg = get(itPG);
+				V4 color = genericDataLayerColors[getIndex(itPG) % genericDataLayerColorCount];
+
+				for (auto itBoundary = iterate(&pg->sectorBoundaries); !itBoundary.isDone; next(&itBoundary))
+				{
+					Rect2I bounds = getValue(itBoundary);
+
+					drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, rectangleShaderID, color);
+				}
+			}
 		}
 	}
 

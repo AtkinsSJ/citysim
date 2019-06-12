@@ -19,6 +19,9 @@ struct PowerGroup
 {
 	s32 production;
 	s32 consumption;
+
+	// TODO: @Size These are always either 1-wide or 1-tall, and up to SECTOR_SIZE in the other direction, so we could use a much smaller struct than Rect2I!
+	ChunkedArray<Rect2I> sectorBoundaries; // Places in nighbouring sectors that are adjacent to this PowerGroup
 };
 
 struct PowerLayer
@@ -91,6 +94,7 @@ struct City
 
 	ChunkPool<Building>   sectorBuildingsChunkPool;
 	ChunkPool<PowerGroup> sectorPowerGroupsChunkPool;
+	ChunkPool<Rect2I>     sectorBoundariesChunkPool;
 
 	s32 totalResidents;
 	s32 totalJobs;
