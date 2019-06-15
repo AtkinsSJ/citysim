@@ -164,6 +164,21 @@ void stopDirectoryListing(DirectoryListingHandle *handle)
 	}
 }
 
+inline bool hasNextFile(iterateDirectoryListing *iterator)
+{
+	return iterator->handle.isValid;
+}
+
+inline void findNextFile(iterateDirectoryListing *iterator)
+{
+	nextFileInDirectory(&iterator->handle, &iterator->fileInfo);
+}
+
+inline FileInfo *getFileInfo(iterateDirectoryListing *iterator)
+{
+	return &iterator->fileInfo;
+}
+
 
 DirectoryChangeWatchingHandle beginWatchingDirectory(String path)
 {

@@ -10,6 +10,7 @@ Notes for searching:
 	@Speed - Thing could be faster
 	@Size - Thing could use less memory
 	@Copypasta - Copy-pasted code, should probably be factored together
+	@Cleanup - Stuff that needs investigating/organising, when it's convenient
 
 ------------------------------------------------
 
@@ -20,7 +21,7 @@ SECTORS:
 	✔ Power groups
 	✔ tile-to-power-group array
 	💡 THINK: Somehow connect sector power groups to whole-city ones?
-		- Groups store a list of their edge-of-sector borders
+		✔ Groups store a list of their edge-of-sector borders
 		- Build a network graph by setting all sectors' power-groups' parents to null, then flood-filling by starting at the first sector's first one, and testing its edge-of-sector borders for connected ones.
 		💡 THINK: Is there some way of making the network graph calculation work by making small changes instead of having to recompute the whole thing?
 			- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
@@ -116,6 +117,7 @@ Split the game code from the platform code
 - Compile win32_main.cpp rather than main.cpp
 - platform handles the renderer, input and memory.
 - game has a single entry point function that's run once per frame.
+- Related, we could do with more clearly separating the various systems, it's all a confusing, coupled, spaghetti mess right now.
 
 GUI
 - BUG: Text alignment doesn't work when the text wraps onto multiple lines! Each line should align itself horizontally. (So, a multi-line wrapped text with ALIGN_H_CENTRE should have each line centred!)

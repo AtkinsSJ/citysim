@@ -83,7 +83,7 @@ bool platform_nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *resu
 	}
 	else
 	{
-		platform_stopDirectoryListing(handle);
+		stopDirectoryListing(handle);
 	}
 
 	return succeeded;

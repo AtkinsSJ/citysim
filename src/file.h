@@ -105,6 +105,43 @@ bool nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result);
 void stopDirectoryListing(DirectoryListingHandle *handle);
 
 /*
+ * Lists the files and folders in a directory, one at a time. This is NOT recursive!
+ * Iterator-style interface for directory listing, because that better fits my mental model for how
+ * it should work. I'm now wondering if we even need the "original" one, above?
+ * Use:
+
+	for (auto it = iterateDirectoryListing(pathToScan);
+		hasNextFile(&it);
+		findNextFile(&it))
+	{
+		FileInfo *fileInfo = getFileInfo(&it);
+	}
+
+ * The handle and related stuff is closed and cleaned-up automatically at the end of scope.
+ * (So, whenever the for-loop ends, however that happens.)
+ * NB: The pointer returned by getFileInfo() is only valid until the next call to findNextFile() or
+ * the iterator goes out of scope!
+ */ 
+struct iterateDirectoryListing
+{
+	DirectoryListingHandle handle;
+	FileInfo fileInfo;
+
+	iterateDirectoryListing(String path)
+	{
+		handle = beginDirectoryListing(path, &fileInfo);
+	}
+
+	~iterateDirectoryListing()
+	{
+		stopDirectoryListing(&handle);
+	}
+};
+bool hasNextFile(iterateDirectoryListing *iterator);
+void findNextFile(iterateDirectoryListing *iterator);
+FileInfo *getFileInfo(iterateDirectoryListing *iterator);
+
+/*
  * Watch for file changes within a specific directory.
  * Right now, this watches for any file or directory changes within that directory, recursively.
  * Call beginWatchingDirectory() with the path, then hasDirectoryChanged() to see if anything has

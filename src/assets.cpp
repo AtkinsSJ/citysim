@@ -11,15 +11,15 @@ void initAssetManager(AssetManager *assets)
 	// - Sam, 19/05/2019
 	initHashTable(&assets->fileExtensionToType);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "buildings"), AssetType_BuildingDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"), AssetType_TerrainDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"), AssetType_DevKeymap);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"), AssetType_UITheme);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"),   AssetType_TerrainDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"),    AssetType_DevKeymap);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"),     AssetType_UITheme);
 
 	initHashTable(&assets->directoryNameToType);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "cursors"), AssetType_Cursor);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"), AssetType_BitmapFont);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"), AssetType_Shader);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"), AssetType_Texture);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "cursors"),   AssetType_Cursor);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"),     AssetType_BitmapFont);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"),   AssetType_Shader);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"),  AssetType_Texture);
 
 
 	// NB: This has to happen just after the last addition to the AssetArena which should remain
@@ -422,41 +422,35 @@ void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType
 		pathToScan = constructPath({assets->assetsPath, subDirectory}, true);
 	}
 
-	FileInfo fileInfo;
-	DirectoryListingHandle handle = beginDirectoryListing(pathToScan, &fileInfo);
-	if (!handle.isValid)
+	for (auto it = iterateDirectoryListing(pathToScan);
+		hasNextFile(&it);
+		findNextFile(&it))
 	{
-		logError("Failed to read directory listing '{0}' (error {1})", {pathToScan, formatInt(handle.errorCode)});
-	}
-	else
-	{
-		do
+		FileInfo *fileInfo = getFileInfo(&it);
+
+		if ((fileInfo->flags & (FileFlag_Hidden | FileFlag_Directory))
+			|| (fileInfo->filename.chars[0] == '.'))
 		{
-			if ((fileInfo.flags & (FileFlag_Hidden | FileFlag_Directory))
-				|| (fileInfo.filename.chars[0] == '.'))
-			{
-				 continue;
-			}
-
-			String filename = pushString(&assets->assetArena, fileInfo.filename);
-			AssetType assetType = manualAssetType;
-
-			// Attempt to categorise the asset based on file extension
-			if (assetType == AssetType_Unknown)
-			{
-				String fileExtension = getFileExtension(filename);
-				AssetType *foundAssetType = find(&assets->fileExtensionToType, fileExtension);
-				assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
-				logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
-			}
-			else
-			{
-				logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
-			}
-
-			addAsset(assets, assetType, filename);
+			 continue;
 		}
-		while (nextFileInDirectory(&handle, &fileInfo));
+
+		String filename = pushString(&assets->assetArena, fileInfo->filename);
+		AssetType assetType = manualAssetType;
+
+		// Attempt to categorise the asset based on file extension
+		if (assetType == AssetType_Unknown)
+		{
+			String fileExtension = getFileExtension(filename);
+			AssetType *foundAssetType = find(&assets->fileExtensionToType, fileExtension);
+			assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
+			logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
+		}
+		else
+		{
+			logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
+		}
+
+		addAsset(assets, assetType, filename);
 	}
 }
 
