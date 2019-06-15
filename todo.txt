@@ -14,6 +14,17 @@ Notes for searching:
 
 ------------------------------------------------
 
+BuildingCatalogue:
+✔ lists of buildings per zone type
+✔ list of player-constructable buildings
+	- categorised?
+	- Check we didn't break the button selection/actual build code!
+- get def by name
+- get def by index
+- get rid of the "null" def
+- max-size info for categories of building that we care about!
+	- (per zone type, and an overall "biggest possible building")
+
 SECTORS:
 - Sector info debug window!
 - OK, new plan: Rather than have Sectors contain everything, it's easier to reason about things if we split everything into Layers like we already were doing, and then individual layers can organise their data into sectors or however they want, and their sectors can be different sizes or whatever. This means we can pick and choose where sectors do or don't make the most sense, and stick to a simpler flat 2D where we can.

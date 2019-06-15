@@ -314,7 +314,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	Building *building = getBuildingAtPosition(city, tilePos.x, tilePos.y);
 	if (building != null)
 	{
-		BuildingDef *def = get(&buildingDefs, building->typeID);
+		BuildingDef *def = getBuildingDef(building->typeID);
 		window_label(context, myprintf("Building: {0} (ID {1})", {def->name, formatInt(building->id)}));
 		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building->currentJobs), formatInt(def->jobs)}));
@@ -470,16 +470,18 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
 
-			for (s32 i=0; i < buildingDefs.count; i++)
+			for (auto it = iterate(getConstructibleBuildings());
+				!it.isDone;
+				next(&it))
 			{
-				BuildingDef *buildingDef = get(&buildingDefs, i);
-				if (!buildingDef->buildMethod) continue;
+				BuildingDef *buildingDef = getValue(it);
+				ASSERT(buildingDef->buildMethod != BuildMethod_None, "We somehow got an un-constructible building in our constructible buildings list!");
 
 				if (uiButton(uiState, buildingDef->name, menuButtonRect, 1,
-						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == i)))
+						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);
-					gameState->selectedBuildingTypeID = i;
+					gameState->selectedBuildingTypeID = buildingDef->typeID;
 					gameState->actionMode = ActionMode_Build;
 					setCursor(uiState, "build.png");
 				}
@@ -550,7 +552,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		appState->gameState = initialiseGameState();
 		renderer->worldBuffer.camera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
 
-		refreshBuildingSpriteCache(&buildingDefs, assets);
+		refreshBuildingSpriteCache(&buildingCatalogue, assets);
 		refreshTerrainSpriteCache(&terrainDefs, assets);
 	}
 
@@ -558,10 +560,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	City *city = &gameState->city;
 
 	if (assets->assetReloadHasJustHappened)
-	{	
-		refreshZoneGrowableBuildingLists(&city->zoneLayer);
-
-		refreshBuildingSpriteCache(&buildingDefs, assets);
+	{
+		refreshBuildingSpriteCache(&buildingCatalogue, assets);
 		refreshTerrainSpriteCache(&terrainDefs, assets);
 	}
 
@@ -602,7 +602,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		{
 			case ActionMode_Build:
 			{
-				BuildingDef *buildingDef = get(&buildingDefs, gameState->selectedBuildingTypeID);
+				BuildingDef *buildingDef = getBuildingDef(gameState->selectedBuildingTypeID);
 
 				switch (buildingDef->buildMethod)
 				{
@@ -956,7 +956,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						if (typeID != building->typeID)
 						{
 							typeID = building->typeID;
-							sprites = get(&buildingDefs, typeID)->sprites;
+							sprites = getBuildingDef(typeID)->sprites;
 						}
 
 						V4 drawColor = drawColorNormal;

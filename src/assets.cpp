@@ -176,7 +176,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_BuildingDefs:
 		{
-			loadBuildingDefs(&buildingDefs, assets, fileData, asset);
+			loadBuildingDefs(assets, fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 

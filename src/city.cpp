@@ -97,7 +97,8 @@ void generateTerrain(City *city)
 	u32 tGround = findTerrainTypeByName(makeString("Ground"));
 	u32 tWater  = findTerrainTypeByName(makeString("Water"));
 
-	BuildingDef *bTree = get(&buildingDefs, findBuildingTypeByName(makeString("Tree")));
+	// TODO: Replace this with a direct lookup!
+	BuildingDef *bTree = getBuildingDef(findBuildingTypeByName(makeString("Tree")));
 
 	for (s32 y = 0; y < city->height; y++) {
 		for (s32 x = 0; x < city->width; x++) {
@@ -186,7 +187,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 			if (buildingAtPos != null)
 			{
 				// Check if we can combine this with the building that's already there
-				if (get(&buildingDefs, buildingAtPos->typeID)->canBeBuiltOnID == def->typeID)
+				if (getBuildingDef(buildingAtPos->typeID)->canBeBuiltOnID == def->typeID)
 				{
 					// We can!
 				}
@@ -223,10 +224,10 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 	{
 		// Do a quick replace! We already established in canPlaceBuilding() that we match.
 		// NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
-		BuildingDef *oldDef = get(&buildingDefs, building->typeID);
+		BuildingDef *oldDef = getBuildingDef(building->typeID);
 
 		building->typeID = def->buildOverResult;
-		def = get(&buildingDefs, def->buildOverResult);
+		def = getBuildingDef(def->buildOverResult);
 
 		needToRecalcPaths = (oldDef->isPath != def->isPath);
 		needToRecalcPower = (oldDef->carriesPower != def->carriesPower);
@@ -335,7 +336,7 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 		}
 
 		Building *buildingToDemolish = get(&buildingOwnerSector->buildings, tileBuildingRef->localIndex);
-		BuildingDef *def = get(&buildingDefs, buildingToDemolish->typeID);
+		BuildingDef *def = getBuildingDef(buildingToDemolish->typeID);
 
 		// Can we afford to demolish this?
 		if (!canAfford(city, def->demolishCost))
@@ -406,47 +407,6 @@ bool demolishTile(UIState *uiState, City *city, V2I position)
 
 		// Update sprites for the building's neighbours.
 		updateAdjacentBuildingTextures(city, buildingFootprint);
-
-
-		// Overwrite the building record with the highest one
-		// Unless it *IS* the highest one!
-		// TODO: REPLACE THIS with a system that has consistent IDs!
-		// if (buildingID != (city->buildings.count-1))
-		// {
-		// 	Building *highest = getBuildingByID(city, truncate32(city->buildings.count - 1));
-		// 	Sector *highestBuildingSector = getSectorAtTilePos(city, highest->footprint.x, highest->footprint.y);
-
-		// 	// Change all references to highest building
-		// 	// TODO: Optimise this per-sector!
-		// 	for (s32 y = highest->footprint.y;
-		// 		y < highest->footprint.y + highest->footprint.h;
-		// 		y++)
-		// 	{
-		// 		for (s32 x = highest->footprint.x;
-		// 			x < highest->footprint.x + highest->footprint.w;
-		// 			x++)
-		// 		{
-		// 			Sector *sector = getSectorAtTilePos(city, x, y);
-		// 			s32 relX = x - sector->bounds.x;
-		// 			s32 relY = y - sector->bounds.y;
-
-		// 			TileBuildingRef *ref = &sector->tileBuilding[relY][relX];
-		// 			ref->isOccupied = true;
-		// 			ref->buildingID = buildingID;
-		// 			ref->originX = highest->footprint.x;
-		// 			ref->originY = highest->footprint.y;
-		// 			ref->isLocal = (sector == highestBuildingSector);
-		// 		}
-		// 	}
-
-		// 	// Move it!
-		// 	*building = *highest;
-
-		// 	*highest = {};
-		// }
-		// removeIndex(&city->buildings, city->buildings.count-1, false);
-
-		// findAndRemove(&buildingOwnerSector->buildings, building);
 
 		return true;
 	}
@@ -532,7 +492,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 
 				if (rectsOverlap(building->footprint, area))
 				{
-					total += get(&buildingDefs, building->typeID)->demolishCost;
+					total += getBuildingDef(building->typeID)->demolishCost;
 				}
 			}
 		}

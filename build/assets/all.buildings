@@ -69,4 +69,5 @@ power_use 20
 :Building Tree
 size 1 1
 texture forest forest.png 16 16
+build paint 100
 demolish_cost 100

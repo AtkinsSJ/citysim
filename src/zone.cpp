@@ -1,24 +1,17 @@
 #pragma once
 
-void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer);
-
 void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer)
 {
 	initChunkPool(&zoneLayer->zoneLocationsChunkPool, memoryArena, 256);
 
-	initChunkedArray(&zoneLayer->rGrowableBuildings, memoryArena, 256);
 	initChunkedArray(&zoneLayer->emptyRZones,        &zoneLayer->zoneLocationsChunkPool);
 	initChunkedArray(&zoneLayer->filledRZones,       &zoneLayer->zoneLocationsChunkPool);
 
-	initChunkedArray(&zoneLayer->cGrowableBuildings, memoryArena, 256);
 	initChunkedArray(&zoneLayer->emptyCZones,        &zoneLayer->zoneLocationsChunkPool);
 	initChunkedArray(&zoneLayer->filledCZones,       &zoneLayer->zoneLocationsChunkPool);
 
-	initChunkedArray(&zoneLayer->iGrowableBuildings, memoryArena, 256);
 	initChunkedArray(&zoneLayer->emptyIZones,        &zoneLayer->zoneLocationsChunkPool);
 	initChunkedArray(&zoneLayer->filledIZones,       &zoneLayer->zoneLocationsChunkPool);
-
-	refreshZoneGrowableBuildingLists(zoneLayer);
 }
 
 bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
@@ -262,7 +255,7 @@ void growSomeZoneBuildings(City *city)
 		s32 remainingDemand = city->residentialDemand;
 		s32 minimumDemand = city->residentialDemand / 20; // Stop when we're below 20% of the original demand
 
-		s32 maxRBuildingDim = layer->maxRBuildingDim;
+		s32 maxRBuildingDim = buildingCatalogue.maxRBuildingDim;
 
 		while ((layer->emptyRZones.count > 0) && (remainingDemand > minimumDemand))
 		{
@@ -369,11 +362,12 @@ void growSomeZoneBuildings(City *city)
 				DEBUG_BLOCK("growSomeZoneBuildings - pick a building def");
 
 				// Choose a random building, then carry on checking buildings until one is acceptable
-				for (auto it = iterate(&layer->rGrowableBuildings, randomInRange(random, truncate32(layer->rGrowableBuildings.count)));
+				ChunkedArray<BuildingDef *> *rGrowableBuildings = getRGrowableBuildings();
+				for (auto it = iterate(rGrowableBuildings, randomInRange(random, truncate32(rGrowableBuildings->count)));
 					!it.isDone;
 					next(&it))
 				{
-					BuildingDef *aDef = get(&buildingDefs, getValue(it));
+					BuildingDef *aDef = getValue(it);
 
 					// Cap residents
 					if (aDef->residents > maximumResidents) continue;
@@ -408,46 +402,4 @@ void growSomeZoneBuildings(City *city)
 	// TODO: Industrial
 
 	// TODO: Other zones maybe???
-}
-
-void refreshZoneGrowableBuildingLists(ZoneLayer *zoneLayer)
-{
-	DEBUG_FUNCTION();
-
-	clear(&zoneLayer->rGrowableBuildings);
-	clear(&zoneLayer->cGrowableBuildings);
-	clear(&zoneLayer->iGrowableBuildings);
-
-	zoneLayer->maxRBuildingDim = 0;
-	zoneLayer->maxCBuildingDim = 0;
-	zoneLayer->maxIBuildingDim = 0;
-
-	for (auto it = iterate(&buildingDefs); !it.isDone; next(&it))
-	{
-		BuildingDef *def = get(it);
-
-		switch(def->growsInZone)
-		{
-			case Zone_Residential: {
-				append(&zoneLayer->rGrowableBuildings, def->typeID);
-				zoneLayer->maxRBuildingDim = max(zoneLayer->maxRBuildingDim, max(def->width, def->height));
-			} break;
-
-			case Zone_Commercial: {
-				append(&zoneLayer->cGrowableBuildings, def->typeID);
-				zoneLayer->maxCBuildingDim = max(zoneLayer->maxCBuildingDim, max(def->width, def->height));
-			} break;
-
-			case Zone_Industrial: {
-				append(&zoneLayer->iGrowableBuildings, def->typeID);
-				zoneLayer->maxIBuildingDim = max(zoneLayer->maxIBuildingDim, max(def->width, def->height));
-			} break;
-		}
-	}
-
-	logInfo("Loaded {0} R, {1} C and {2} I growable buildings.", {
-		formatInt(zoneLayer->rGrowableBuildings.count),
-		formatInt(zoneLayer->cGrowableBuildings.count),
-		formatInt(zoneLayer->iGrowableBuildings.count)
-	});
 }

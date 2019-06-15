@@ -1,13 +1,54 @@
 #pragma once
 
-void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Blob data, Asset *asset)
+void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
+{
+	if (def->buildMethod != BuildMethod_None)
+	{
+		append(&catalogue->constructibleBuildings, def);
+	}
+
+	switch(def->growsInZone)
+	{
+		case Zone_Residential: {
+			append(&catalogue->rGrowableBuildings, def);
+			catalogue->maxRBuildingDim = max(catalogue->maxRBuildingDim, max(def->width, def->height));
+		} break;
+
+		case Zone_Commercial: {
+			append(&catalogue->cGrowableBuildings, def);
+			catalogue->maxCBuildingDim = max(catalogue->maxCBuildingDim, max(def->width, def->height));
+		} break;
+
+		case Zone_Industrial: {
+			append(&catalogue->iGrowableBuildings, def);
+			catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->width, def->height));
+		} break;
+	}
+}
+
+void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 
 	LineReader reader = readLines(asset->shortName, data);
 
+	BuildingCatalogue *catalogue = &buildingCatalogue;
+
+	// @Cleanup DANGER! Currently, the asset system resets the assetarena, so we have to re-init these arrays every time.
+	// That's gross, and if we ever DON'T reset that, this will be a leak! But oh well.
+	ChunkedArray<BuildingDef> *buildings = &catalogue->buildingDefs;
 	initChunkedArray(buildings, &assets->assetArena, 64);
 	appendBlank(buildings);
+
+	initChunkedArray(&catalogue->constructibleBuildings, &assets->assetArena, 64);
+	initChunkedArray(&catalogue->rGrowableBuildings, &assets->assetArena, 64);
+	initChunkedArray(&catalogue->cGrowableBuildings, &assets->assetArena, 64);
+	initChunkedArray(&catalogue->iGrowableBuildings, &assets->assetArena, 64);
+
+	catalogue->maxRBuildingDim = 0;
+	catalogue->maxCBuildingDim = 0;
+	catalogue->maxIBuildingDim = 0;
+
 
 	BuildingDef *def = null;
 
@@ -34,6 +75,12 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 			}
 			else
 			{
+				if (def != null)
+				{
+					// Now that the previous building is done, we can categorise it
+					_assignBuildingCategories(catalogue, def);
+				}
+
 				def = appendBlank(buildings);
 				def->name = pushString(&assets->assetArena, trimEnd(remainder));
 				def->typeID = truncate32(buildings->count - 1);
@@ -230,8 +277,45 @@ void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets
 			}
 		}
 	}
+	
+	if (def != null)
+	{
+		// Categorise the last building
+		_assignBuildingCategories(catalogue, def);
+	}
 
-	return;
+	catalogue->isInitialised = true;
+
+	logInfo("Loaded {0} buildings: {1} R, {2} C and {3} I growable, and {4} player-constructible", {
+		formatInt(catalogue->buildingDefs.count),
+		formatInt(catalogue->rGrowableBuildings.count),
+		formatInt(catalogue->cGrowableBuildings.count),
+		formatInt(catalogue->iGrowableBuildings.count),
+		formatInt(catalogue->constructibleBuildings.count)
+	});
+}
+
+inline BuildingDef *getBuildingDef(s32 buildingTypeID)
+{
+	return get(&buildingCatalogue.buildingDefs, buildingTypeID);
+}
+
+inline ChunkedArray<BuildingDef *> *getConstructibleBuildings()
+{
+	return &buildingCatalogue.constructibleBuildings;
+}
+
+inline ChunkedArray<BuildingDef *> *getRGrowableBuildings()
+{
+	return &buildingCatalogue.rGrowableBuildings;
+}
+inline ChunkedArray<BuildingDef *> *getCGrowableBuildings()
+{
+	return &buildingCatalogue.cGrowableBuildings;
+}
+inline ChunkedArray<BuildingDef *> *getIGrowableBuildings()
+{
+	return &buildingCatalogue.iGrowableBuildings;
 }
 
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
@@ -242,7 +326,7 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 
 	if (def == null)
 	{
-		def = get(&buildingDefs, building->typeID);
+		def = getBuildingDef(building->typeID);
 	}
 
 	if (def->linkTexturesLayer)
@@ -264,10 +348,10 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 				Building *buildingL = getBuildingAtPosition(city, x-1, y  );
 				Building *buildingR = getBuildingAtPosition(city, x+1, y  );
 
-				bool linkU = buildingU && get(&buildingDefs, buildingU->typeID)->isPath;
-				bool linkD = buildingD && get(&buildingDefs, buildingD->typeID)->isPath;
-				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->isPath;
-				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->isPath;
+				bool linkU = buildingU && getBuildingDef(buildingU->typeID)->isPath;
+				bool linkD = buildingD && getBuildingDef(buildingD->typeID)->isPath;
+				bool linkL = buildingL && getBuildingDef(buildingL->typeID)->isPath;
+				bool linkR = buildingR && getBuildingDef(buildingR->typeID)->isPath;
 
 				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
@@ -279,10 +363,10 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 				Building *buildingL = getBuildingAtPosition(city, x-1, y  );
 				Building *buildingR = getBuildingAtPosition(city, x+1, y  );
 
-				bool linkU = buildingU && get(&buildingDefs, buildingU->typeID)->carriesPower;
-				bool linkD = buildingD && get(&buildingDefs, buildingD->typeID)->carriesPower;
-				bool linkL = buildingL && get(&buildingDefs, buildingL->typeID)->carriesPower;
-				bool linkR = buildingR && get(&buildingDefs, buildingR->typeID)->carriesPower;
+				bool linkU = buildingU && getBuildingDef(buildingU->typeID)->carriesPower;
+				bool linkD = buildingD && getBuildingDef(buildingD->typeID)->carriesPower;
+				bool linkL = buildingL && getBuildingDef(buildingL->typeID)->carriesPower;
+				bool linkR = buildingR && getBuildingDef(buildingR->typeID)->carriesPower;
 
 				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;
@@ -306,14 +390,14 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 		Building *buildingL = getBuildingAtPosition(city, footprint.x - 1, y);
 		if (buildingL)
 		{
-			BuildingDef *defU = get(&buildingDefs, buildingL->typeID);
+			BuildingDef *defU = getBuildingDef(buildingL->typeID);
 			if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingL, defU);
 		}
 
 		Building *buildingR = getBuildingAtPosition(city, footprint.x + footprint.w, y);
 		if (buildingR)
 		{
-			BuildingDef *defD = get(&buildingDefs, buildingR->typeID);
+			BuildingDef *defD = getBuildingDef(buildingR->typeID);
 			if (defD->linkTexturesLayer) updateBuildingTexture(city, buildingR, defD);
 		}
 	}
@@ -326,22 +410,22 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 		Building *buildingD = getBuildingAtPosition(city, x, footprint.y + footprint.h);
 		if (buildingU)
 		{
-			BuildingDef *defL = get(&buildingDefs, buildingU->typeID);
+			BuildingDef *defL = getBuildingDef(buildingU->typeID);
 			if (defL->linkTexturesLayer) updateBuildingTexture(city, buildingU, defL);
 		}
 		if (buildingD)
 		{
-			BuildingDef *defR = get(&buildingDefs, buildingD->typeID);
+			BuildingDef *defR = getBuildingDef(buildingD->typeID);
 			if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingD, defR);
 		}
 	}
 }
 
-void refreshBuildingSpriteCache(ChunkedArray<BuildingDef> *buildings, AssetManager *assets)
+void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(buildings); !it.isDone; next(&it))
+	for (auto it = iterate(&catalogue->buildingDefs); !it.isDone; next(&it))
 	{
 		BuildingDef *def = get(it);
 

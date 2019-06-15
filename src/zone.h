@@ -34,20 +34,14 @@ struct ZoneLayer
 {
 	ChunkPool<V2I> zoneLocationsChunkPool;
 
-	ChunkedArray<s32> rGrowableBuildings;
 	ChunkedArray<V2I> emptyRZones;
 	ChunkedArray<V2I> filledRZones;
-	s32 maxRBuildingDim;
 
-	ChunkedArray<s32> cGrowableBuildings;
 	ChunkedArray<V2I> emptyCZones;
 	ChunkedArray<V2I> filledCZones;
-	s32 maxCBuildingDim;
 
-	ChunkedArray<s32> iGrowableBuildings;
 	ChunkedArray<V2I> emptyIZones;
 	ChunkedArray<V2I> filledIZones;
-	s32 maxIBuildingDim;
 };
 
 void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer);

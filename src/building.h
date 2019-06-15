@@ -52,7 +52,22 @@ struct BuildingDef
 	s32 power; // Positive for production, negative for consumption
 };
 
-ChunkedArray<BuildingDef> buildingDefs = {};
+struct BuildingCatalogue
+{
+	bool isInitialised;
+	ChunkedArray<BuildingDef> buildingDefs;
+
+	ChunkedArray<BuildingDef *> constructibleBuildings;
+	ChunkedArray<BuildingDef *> rGrowableBuildings;
+	ChunkedArray<BuildingDef *> cGrowableBuildings;
+	ChunkedArray<BuildingDef *> iGrowableBuildings;
+
+	s32 maxRBuildingDim;
+	s32 maxCBuildingDim;
+	s32 maxIBuildingDim;
+};
+
+BuildingCatalogue buildingCatalogue = {};
 
 struct Building
 {
@@ -65,10 +80,23 @@ struct Building
 	s32 currentJobs;
 };
 
-struct City;
 
-void loadBuildingDefs(ChunkedArray<BuildingDef> *buildings, AssetManager *assets, Blob data, Asset *asset);
-void refreshBuildingSpriteCache(ChunkedArray<BuildingDef> *buildings, AssetManager *assets);
+void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset);
+void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *assets);
+BuildingDef *getBuildingDef(s32 buildingTypeID);
+
+// TODO: These are a bit hacky... I want to hide the implementation details of the catalogue, but
+// creating a whole set of iterator stuff which is almost identical to the regular iterators seems
+// a bit excessive?
+// I guess maybe I could use one that would work for all of these. eh, maybe worth trying later.
+// - Sam, 15/06/2019
+ChunkedArray<BuildingDef *> *getConstructibleBuildings();
+ChunkedArray<BuildingDef *> *getRGrowableBuildings();
+ChunkedArray<BuildingDef *> *getCGrowableBuildings();
+ChunkedArray<BuildingDef *> *getIGrowableBuildings();
+
+
+struct City;
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);
 void updateAdjacentBuildingTextures(City *city, Rect2I footprint);
 
@@ -81,9 +109,9 @@ s32 findBuildingTypeByName(String name)
 	s32 result = 0;
 
 	// TODO: Use an iterator instead, it's faster!
-	for (s32 buildingType = 1; buildingType < buildingDefs.count; buildingType++)
+	for (s32 buildingType = 1; buildingType < buildingCatalogue.buildingDefs.count; buildingType++)
 	{
-		BuildingDef *def = get(&buildingDefs, buildingType);
+		BuildingDef *def = get(&buildingCatalogue.buildingDefs, buildingType);
 		if (equals(def->name, name))
 		{
 			result = buildingType;

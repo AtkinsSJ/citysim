@@ -40,7 +40,7 @@ void updateSectorPowerValues(Sector *sector)
 		next(&it))
 	{
 		Building *building = get(it);
-		BuildingDef *def = get(&buildingDefs, building->typeID);
+		BuildingDef *def = getBuildingDef(building->typeID);
 
 		if (def->power != 0)
 		{
@@ -145,7 +145,7 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
 	{
 		Building *building = get(it);
-		BuildingDef *def = get(&buildingDefs, building->typeID);
+		BuildingDef *def = getBuildingDef(building->typeID);
 
 		if (def->carriesPower)
 		{
@@ -174,7 +174,7 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 			else
 			{
 				Building *building = getBuildingAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);
-				if (building != null && get(&buildingDefs, building->typeID)->carriesPower)
+				if (building != null && getBuildingDef(building->typeID)->carriesPower)
 				{
 					// Set the building's whole area, so we only do 1 getBuildingAtPosition() lookup per building
 					setRectPowerGroupUnknown(sector, building->footprint);
