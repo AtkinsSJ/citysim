@@ -15,20 +15,6 @@ struct PathLayer
 	s32 pathGroupCount;
 };
 
-struct PowerGroup
-{
-	s32 production;
-	s32 consumption;
-
-	// TODO: @Size These are always either 1-wide or 1-tall, and up to SECTOR_SIZE in the other direction, so we could use a much smaller struct than Rect2I!
-	ChunkedArray<Rect2I> sectorBoundaries; // Places in nighbouring sectors that are adjacent to this PowerGroup
-};
-
-struct PowerLayer
-{
-	PowerGroup combined;
-	ChunkedArray<PowerGroup> groups;
-};
 
 struct TileBuildingRef
 {
@@ -42,18 +28,11 @@ struct TileBuildingRef
 	s32 localIndex;
 };
 
-enum SectorFlags
-{
-
-};
-
-const u8 POWER_GROUP_UNKNOWN = 255;
 
 #define SECTOR_SIZE 16
 struct Sector
 {
 	Rect2I bounds;
-	u32 flags;
 
 	// All of these are in [y][x] order!
 	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
@@ -93,7 +72,6 @@ struct City
 	struct ZoneLayer zoneLayer;
 
 	ChunkPool<Building>   sectorBuildingsChunkPool;
-	ChunkPool<PowerGroup> sectorPowerGroupsChunkPool;
 	ChunkPool<Rect2I>     sectorBoundariesChunkPool;
 
 	s32 totalResidents;
@@ -227,6 +205,26 @@ inline s32 powerGroupAt(City *city, s32 x, s32 y)
 		s32 relY = y - sector->bounds.y;
 
 		result = sector->tilePowerGroup[relY][relX];
+	}
+
+	return result;
+}
+
+inline PowerGroup *getPowerGroupAt(City *city, s32 x, s32 y)
+{
+	PowerGroup *result = null;
+	Sector *sector = getSectorAtTilePos(city, x, y);
+
+	if (sector != null)
+	{
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		s32 powerGroupIndex = sector->tilePowerGroup[relY][relX];
+		if (powerGroupIndex != 0)
+		{
+			result = get(&sector->powerGroups, powerGroupIndex - 1);
+		}
 	}
 
 	return result;

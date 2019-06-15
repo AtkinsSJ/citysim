@@ -34,6 +34,14 @@ void clear(ChunkedArray<T> *array)
 	{
 		chunk->count = 0;
 	}
+
+	if (array->chunkPool != null)
+	{
+		while (array->chunkCount > 0)
+		{
+			returnLastChunkToPool(array);
+		}
+	}
 }
 
 template<typename T>

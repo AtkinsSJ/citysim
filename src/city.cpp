@@ -16,8 +16,9 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->sectors = PushArray(gameArena, Sector, city->sectorCount);
 
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
-	initChunkPool(&city->sectorPowerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena, 8);
+
+	initPowerLayer(gameArena, &city->powerLayer);
 
 	s32 remainderWidth  = width % SECTOR_SIZE;
 	s32 remainderHeight = height % SECTOR_SIZE;
@@ -40,11 +41,10 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 			}
 
 			initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
-			initChunkedArray(&sector->powerGroups, &city->sectorPowerGroupsChunkPool);
+			initChunkedArray(&sector->powerGroups, &city->powerLayer.powerGroupsChunkPool);
 		}
 	}
 
-	initialisePowerLayer(gameArena, &city->powerLayer);
 	initZoneLayer(gameArena, &city->zoneLayer);
 
 	city->highestBuildingID = 0;

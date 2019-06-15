@@ -64,7 +64,7 @@ void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize)
 template<typename T>
 void initChunkedArray(ChunkedArray<T> *array, ChunkPool<T> *pool);
 
-// Doesn't free any memory, just marks all the chunks as empty.
+// Marks all the chunks as empty. Returns them to a chunkpool if there is one.
 template<typename T>
 void clear(ChunkedArray<T> *array);
 

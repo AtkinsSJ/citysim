@@ -1,8 +1,61 @@
 #pragma once
 
-void initialisePowerLayer(MemoryArena *gameArena, PowerLayer *layer)
+void initPowerLayer(MemoryArena *gameArena, PowerLayer *layer)
 {
-	initChunkedArray(&layer->groups, gameArena, 64);
+	initChunkedArray(&layer->networks, gameArena, 64);
+	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
+	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
+}
+
+PowerNetwork *newPowerNetwork(PowerLayer *layer)
+{
+	PowerNetwork *network = appendBlank(&layer->networks);
+	network->id = (s32) layer->networks.count;
+	initChunkedArray(&network->groups, &layer->powerGroupPointersChunkPool);
+
+	return network;
+}
+
+void freePowerNetwork(PowerNetwork *network)
+{
+	network->id = 0;
+	clear(&network->groups);
+}
+
+void updateSectorPowerValues(Sector *sector)
+{
+	// Reset each to 0
+	for (auto it = iterate(&sector->powerGroups);
+		!it.isDone;
+		next(&it))
+	{
+		PowerGroup *powerGroup = get(it);
+		powerGroup->production = 0;
+		powerGroup->consumption = 0;
+	}
+
+	// Count power from buildings
+	for (auto it = iterate(&sector->buildings);
+		!it.isDone;
+		next(&it))
+	{
+		Building *building = get(it);
+		BuildingDef *def = get(&buildingDefs, building->typeID);
+
+		if (def->power != 0)
+		{
+			u8 powerGroupIndex = sector->tilePowerGroup[building->footprint.y - sector->bounds.y][building->footprint.x - sector->bounds.x];
+			PowerGroup *powerGroup = get(&sector->powerGroups, powerGroupIndex-1);
+			if (def->power > 0)
+			{
+				powerGroup->production += def->power;
+			}
+			else
+			{
+				powerGroup->consumption -= def->power;
+			}
+		}
+	}
 }
 
 void floodFillSectorPowerGroup(Sector *sector, s32 x, s32 y, u8 fillValue)
@@ -157,25 +210,7 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	if (sector->powerGroups.count == 0) return;
 
 	// Step 3: Calculate power production/consumption for OWNED buildings, and add to their PowerGroups
-	for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
-	{
-		Building *building = get(it);
-		BuildingDef *def = get(&buildingDefs, building->typeID);
-
-		if (def->power != 0)
-		{
-			u8 powerGroupIndex = sector->tilePowerGroup[building->footprint.y - sector->bounds.y][building->footprint.x - sector->bounds.x];
-			PowerGroup *powerGroup = get(&sector->powerGroups, powerGroupIndex-1);
-			if (def->power > 0)
-			{
-				powerGroup->production += def->power;
-			}
-			else
-			{
-				powerGroup->consumption -= def->power;
-			}
-		}
-	}
+	updateSectorPowerValues(sector);
 
 	// Step 4: Find and store the PowerGroup boundaries along the sector's edges, on the OUTSIDE
 	// @Copypasta The code for all this is really repetitive, but I'm not sure how to factor it together nicely.
@@ -342,6 +377,31 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	//
 }
 
+void floodFillCityPowerNetwork(City *city, PowerGroup *powerGroup, PowerNetwork *network)
+{
+	powerGroup->networkID = network->id;
+	append(&network->groups, powerGroup);
+
+	for (auto it = iterate(&powerGroup->sectorBoundaries);
+		!it.isDone;
+		next(&it))
+	{
+		Rect2I bounds = getValue(it);
+
+		for (s32 y = bounds.y; y < bounds.y + bounds.h; y++)
+		{
+			for (s32 x = bounds.x; x < bounds.x + bounds.w; x++)
+			{
+				PowerGroup *group = getPowerGroupAt(city, x, y);
+				if (group != null && group->networkID != network->id)
+				{
+					floodFillCityPowerNetwork(city, group, network);
+				}
+			}
+		}
+	}
+}
+
 /*
  * TODO: Recalculate individual Sectors as needed, instead of recalculating EVERY ONE whenever anything changes!
  * Still need to recalculate the city-wide networks though.
@@ -349,6 +409,18 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 void recalculatePowerConnectivity(City *city)
 {
 	DEBUG_FUNCTION();
+
+	PowerLayer *powerLayer = &city->powerLayer;
+
+	// Clean up networks
+	for (auto it = iterate(&powerLayer->networks);
+		!it.isDone;
+		next(&it))
+	{
+		PowerNetwork *powerNetwork = get(it);
+		freePowerNetwork(powerNetwork);
+	}
+	clear(&powerLayer->networks);
 
 	// Recalculate each sector
 	for (s32 sectorIndex = 0;
@@ -360,7 +432,29 @@ void recalculatePowerConnectivity(City *city)
 		recalculateSectorPowerGroups(city, sector);
 	}
 
+	// NB: All power groups are on networkID=0 right now, because they all got reconstructed in the above loop.
+	// At some point we'll have to manually set that to 0, if we want to recalculate the global networks without
+	// recalculating every individual sector.
+
 	// Flood-fill networks of PowerGroups by walking the boundaries
+	for (s32 sectorIndex = 0;
+		sectorIndex < city->sectorCount;
+		sectorIndex++)
+	{
+		Sector *sector = city->sectors + sectorIndex;
+
+		for (auto it = iterate(&sector->powerGroups);
+			!it.isDone;
+			next(&it))
+		{
+			PowerGroup *powerGroup = get(it);
+			if (powerGroup->networkID == 0)
+			{
+				PowerNetwork *network = newPowerNetwork(powerLayer);
+				floodFillCityPowerNetwork(city, powerGroup, network);
+			}
+		}
+	}
 
 #if 0 // Old code
 
@@ -464,4 +558,44 @@ void recalculatePowerConnectivity(City *city)
 	// 	city->powerLayer.combined.consumption += group->consumption;
 	// }
 #endif
+}
+
+void updatePowerLayer(City *city, PowerLayer *layer)
+{
+	DEBUG_FUNCTION();
+
+	layer->cachedCombinedProduction = 0;
+	layer->cachedCombinedConsumption = 0;
+
+	// Update each PowerGroup's power
+	for (s32 sectorIndex = 0;
+		sectorIndex < city->sectorCount;
+		sectorIndex++)
+	{
+		Sector *sector = city->sectors + sectorIndex;
+		updateSectorPowerValues(sector);
+	}
+
+	// Sum each PowerGroup's power into its Network
+	for (auto networkIt = iterate(&layer->networks);
+		!networkIt.isDone;
+		next(&networkIt))
+	{
+		PowerNetwork *network = get(networkIt);
+		network->cachedProduction = 0;
+		network->cachedConsumption = 0;
+
+		for (auto groupIt = iterate(&network->groups);
+			!groupIt.isDone;
+			next(&groupIt))
+		{
+			PowerGroup *powerGroup = getValue(groupIt);
+			network->cachedProduction += powerGroup->production;
+			network->cachedConsumption += powerGroup->consumption;
+		}
+
+		// City-wide power totals
+		layer->cachedCombinedProduction  += network->cachedProduction;
+		layer->cachedCombinedConsumption += network->cachedConsumption;
+	}
 }

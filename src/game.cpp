@@ -330,7 +330,8 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	if (powerGroupIndex != 0)
 	{
 		PowerGroup *powerGroup = get(&sector->powerGroups, powerGroupIndex - 1);
-		window_label(context, myprintf("Power Group: #{0}/{1} within sector\n- Production: {2}\n- Consumption: {3}", {formatInt(powerGroupIndex), formatInt(sector->powerGroups.count), formatInt(powerGroup->production), formatInt(powerGroup->consumption)}));
+		PowerNetwork *network = get(&city->powerLayer.networks, powerGroup->networkID - 1);
+		window_label(context, myprintf("Power Group: #{0}/{1} within sector\n- Production: {2}\n- Consumption: {3}\n(Part of network #{4})", {formatInt(powerGroupIndex), formatInt(sector->powerGroups.count), formatInt(powerGroup->production), formatInt(powerGroup->consumption), formatInt(network->id)}));
 	}
 	else
 	{
@@ -417,7 +418,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	uiText(uiState, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.combined.consumption), formatInt(city->powerLayer.combined.production)}),
+	uiText(uiState, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, 1, labelStyle->textColor);
 
 	uiText(uiState, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
@@ -565,6 +566,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		DEBUG_BLOCK_T("Update simulation", DCDT_GameUpdate);
 		calculateDemand(city);
 		growSomeZoneBuildings(city);
+
+		updatePowerLayer(city, &city->powerLayer);
 	}
 
 

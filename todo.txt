@@ -16,6 +16,8 @@ Notes for searching:
 
 SECTORS:
 - Sector info debug window!
+- OK, new plan: Rather than have Sectors contain everything, it's easier to reason about things if we split everything into Layers like we already were doing, and then individual layers can organise their data into sectors or however they want, and their sectors can be different sizes or whatever. This means we can pick and choose where sectors do or don't make the most sense, and stick to a simpler flat 2D where we can.
+	- I do think we want a standard set of tools for dealing with sector data, because connectivity and stuff is going to be similar in several cases.
 - Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index.
 - Power network
 	✔ Power groups
