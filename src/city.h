@@ -194,22 +194,6 @@ inline bool isPathable(City *city, s32 x, s32 y)
 	return pathGroupAt(city, x, y) > 0;
 }
 
-inline s32 powerGroupAt(City *city, s32 x, s32 y)
-{
-	s32 result = 0;
-	Sector *sector = getSectorAtTilePos(city, x, y);
-
-	if (sector != null)
-	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
-
-		result = sector->tilePowerGroup[relY][relX];
-	}
-
-	return result;
-}
-
 inline PowerGroup *getPowerGroupAt(City *city, s32 x, s32 y)
 {
 	PowerGroup *result = null;
@@ -246,7 +230,7 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 	return result;
 }
 
-Rect2I cropRectangleToRelativeWithinSector(Rect2I area, Sector *sector)
+inline Rect2I cropRectangleToRelativeWithinSector(Rect2I area, Sector *sector)
 {
 	Rect2I result = cropRectangle(area, sector->bounds);
 	result.x -= sector->bounds.x;

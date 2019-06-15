@@ -20,16 +20,11 @@ SECTORS:
 	- I do think we want a standard set of tools for dealing with sector data, because connectivity and stuff is going to be similar in several cases.
 - Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index.
 - Power network
-	✔ Power groups
-	✔ tile-to-power-group array
-	💡 THINK: Somehow connect sector power groups to whole-city ones?
-		✔ Groups store a list of their edge-of-sector borders
-		✔ Build a network graph by setting all sectors' power-groups' parents to null, then flood-filling by starting at the first sector's first one, and testing its edge-of-sector borders for connected ones.
-		💡 THINK: Is there some way of making the network graph calculation work by making small changes instead of having to recompute the whole thing?
-			- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
-			- RESEARCH GRAPH THEORY STUFF!
-				- An edge that will split the graph in two is called a "bridge". https://stackoverflow.com/questions/1566967/checking-if-removing-an-edge-in-a-graph-will-result-in-the-graph-splitting
-				- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
+	💡 THINK: Is there some way of making the network graph calculation work by making small changes instead of having to recompute the whole thing?
+		- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
+		- RESEARCH GRAPH THEORY STUFF!
+			- An edge that will split the graph in two is called a "bridge". https://stackoverflow.com/questions/1566967/checking-if-removing-an-edge-in-a-graph-will-result-in-the-graph-splitting
+			- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
 - Road network
 	- Similar stuff to how power works, so figure that out first
 - Terrain

@@ -326,12 +326,17 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 
 	// Power group
-	s32 powerGroupIndex = powerGroupAt(city, tilePos.x, tilePos.y);
-	if (powerGroupIndex != 0)
+	PowerGroup *powerGroup = getPowerGroupAt(city, tilePos.x, tilePos.y);
+	if (powerGroup != null)
 	{
-		PowerGroup *powerGroup = get(&sector->powerGroups, powerGroupIndex - 1);
 		PowerNetwork *network = get(&city->powerLayer.networks, powerGroup->networkID - 1);
-		window_label(context, myprintf("Power Group: #{0}/{1} within sector\n- Production: {2}\n- Consumption: {3}\n(Part of network #{4})", {formatInt(powerGroupIndex), formatInt(sector->powerGroups.count), formatInt(powerGroup->production), formatInt(powerGroup->consumption), formatInt(network->id)}));
+		window_label(context, myprintf("Power Group:\n- Production: {0}\n- Consumption: {1}\n... in power network #{2}\n- P production: {3}\n- N consumption: {4}", {
+			formatInt(powerGroup->production),
+			formatInt(powerGroup->consumption),
+			formatInt(network->id),
+			formatInt(network->cachedProduction),
+			formatInt(network->cachedConsumption)
+		}));
 	}
 	else
 	{
@@ -1002,10 +1007,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 					case DataLayer_Power:
 					{
-						s32 powerGroup = powerGroupAt(city, x, y);
-						if (powerGroup > 0)
+						PowerGroup *powerGroup = getPowerGroupAt(city, x, y);
+						if (powerGroup != null)
 						{
-							color = genericDataLayerColors[powerGroup % genericDataLayerColorCount];
+							color = genericDataLayerColors[powerGroup->networkID % genericDataLayerColorCount];
 							tileHasData = true;
 						}
 					} break;
