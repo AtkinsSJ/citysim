@@ -47,12 +47,16 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 
 	// @Cleanup DANGER! Currently, the asset system resets the assetarena, so we have to re-init these arrays every time.
 	// That's gross, and if we ever DON'T reset that, this will be a leak! But oh well.
-	initChunkedArray(buildings, &assets->assetArena, 64);
-	appendBlank(buildings);
 	initChunkedArray(&catalogue->constructibleBuildings, &assets->assetArena, 64);
 	initChunkedArray(&catalogue->rGrowableBuildings, &assets->assetArena, 64);
 	initChunkedArray(&catalogue->cGrowableBuildings, &assets->assetArena, 64);
 	initChunkedArray(&catalogue->iGrowableBuildings, &assets->assetArena, 64);
+
+	initChunkedArray(buildings, &assets->assetArena, 64);
+	// NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
+	// So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
+	// and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
+	appendBlank(buildings);
 
 	catalogue->maxRBuildingDim = 0;
 	catalogue->maxCBuildingDim = 0;
