@@ -55,7 +55,8 @@ struct BuildingDef
 struct BuildingCatalogue
 {
 	bool isInitialised;
-	ChunkedArray<BuildingDef> buildingDefs;
+	ChunkedArray<BuildingDef> allBuildings;
+	HashTable<BuildingDef *> buildingsByName;
 
 	ChunkedArray<BuildingDef *> constructibleBuildings;
 	ChunkedArray<BuildingDef *> rGrowableBuildings;
@@ -84,6 +85,7 @@ struct Building
 void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset);
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *assets);
 BuildingDef *getBuildingDef(s32 buildingTypeID);
+BuildingDef *findBuildingDef(String name);
 
 // TODO: These are a bit hacky... I want to hide the implementation details of the catalogue, but
 // creating a whole set of iterator stuff which is almost identical to the regular iterators seems
@@ -99,25 +101,3 @@ ChunkedArray<BuildingDef *> *getIGrowableBuildings();
 struct City;
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);
 void updateAdjacentBuildingTextures(City *city, Rect2I footprint);
-
-// Returns 0 if not found
-// TODO: use a hashmap!
-s32 findBuildingTypeByName(String name)
-{
-	DEBUG_FUNCTION();
-	
-	s32 result = 0;
-
-	// TODO: Use an iterator instead, it's faster!
-	for (s32 buildingType = 1; buildingType < buildingCatalogue.buildingDefs.count; buildingType++)
-	{
-		BuildingDef *def = get(&buildingCatalogue.buildingDefs, buildingType);
-		if (equals(def->name, name))
-		{
-			result = buildingType;
-			break;
-		}
-	}
-
-	return result;
-}

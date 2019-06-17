@@ -28,6 +28,12 @@ struct HashTableIterator
 };
 
 template<typename T>
+inline bool isHashTableInitialised(HashTable<T> *table)
+{
+	return (table->entries != null);
+}
+
+template<typename T>
 void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, s32 initialCapacity=0);
 
 template<typename T>

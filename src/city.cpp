@@ -98,7 +98,7 @@ void generateTerrain(City *city)
 	u32 tWater  = findTerrainTypeByName(makeString("Water"));
 
 	// TODO: Replace this with a direct lookup!
-	BuildingDef *bTree = getBuildingDef(findBuildingTypeByName(makeString("Tree")));
+	BuildingDef *bTree = findBuildingDef(makeString("Tree"));
 
 	for (s32 y = 0; y < city->height; y++) {
 		for (s32 x = 0; x < city->width; x++) {

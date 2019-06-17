@@ -19,8 +19,8 @@ BuildingCatalogue:
 ✔ list of player-constructable buildings
 	- categorised?
 	- Check we didn't break the button selection/actual build code!
-- get def by name
-- get def by index
+✔ get def by name
+✔ get def by index
 - get rid of the "null" def
 - max-size info for categories of building that we care about!
 	- (per zone type, and an overall "biggest possible building")

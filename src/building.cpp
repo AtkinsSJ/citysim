@@ -2,6 +2,8 @@
 
 void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 {
+	put(&catalogue->buildingsByName, def->name, def);
+
 	if (def->buildMethod != BuildMethod_None)
 	{
 		append(&catalogue->constructibleBuildings, def);
@@ -33,13 +35,20 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 	LineReader reader = readLines(asset->shortName, data);
 
 	BuildingCatalogue *catalogue = &buildingCatalogue;
+	ChunkedArray<BuildingDef> *buildings = &catalogue->allBuildings;
+	HashTable<BuildingDef *> *buildingNames = &catalogue->buildingsByName;
+
+	if (!isHashTableInitialised(buildingNames))
+	{
+		initHashTable(buildingNames, 0.75f, 128);
+	}
+
+	clear(buildingNames);
 
 	// @Cleanup DANGER! Currently, the asset system resets the assetarena, so we have to re-init these arrays every time.
 	// That's gross, and if we ever DON'T reset that, this will be a leak! But oh well.
-	ChunkedArray<BuildingDef> *buildings = &catalogue->buildingDefs;
 	initChunkedArray(buildings, &assets->assetArena, 64);
 	appendBlank(buildings);
-
 	initChunkedArray(&catalogue->constructibleBuildings, &assets->assetArena, 64);
 	initChunkedArray(&catalogue->rGrowableBuildings, &assets->assetArena, 64);
 	initChunkedArray(&catalogue->cGrowableBuildings, &assets->assetArena, 64);
@@ -222,46 +231,44 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "combination_of"))
 				{
-					String ingredient1;
-					String ingredient2;
+					String ingredientName1;
+					String ingredientName2;
 
-					if (splitInTwo(remainder, '|', &ingredient1, &ingredient2))
+					if (splitInTwo(remainder, '|', &ingredientName1, &ingredientName2))
 					{
-						ingredient1 = trim(ingredient1);
-						ingredient2 = trim(ingredient2);
+						ingredientName1 = trim(ingredientName1);
+						ingredientName2 = trim(ingredientName2);
 
 						// Now, find the buildings so we can link it up!
-						u32 ingredient1type = findBuildingTypeByName(ingredient1);
-						u32 ingredient2type = findBuildingTypeByName(ingredient2);
+						BuildingDef *ingredient1 = findBuildingDef(ingredientName1);
+						BuildingDef *ingredient2 = findBuildingDef(ingredientName2);
 
-						if (ingredient1type == 0)
+						if (ingredient1 == null)
 						{
-							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!", {ingredient1});
+							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!", {ingredientName1});
 							return;
 						}
-						else if (ingredient2type == 0)
+						else if (ingredient2 == null)
 						{
-							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!", {ingredient2});
+							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!", {ingredientName2});
 							return;
 						}
 						else
 						{
 							// We found them, yay!
-							BuildingDef *b1 = get(buildings, ingredient1type);
-							BuildingDef *b2 = get(buildings, ingredient2type);
-							if (b1->canBeBuiltOnID)
+							if (ingredient1->canBeBuiltOnID)
 							{
-								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one.", {ingredient1});
+								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one.", {ingredientName1});
 								return;
 							}
-							if (b2->canBeBuiltOnID)
+							if (ingredient2->canBeBuiltOnID)
 							{
-								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one.", {ingredient2});
+								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one.", {ingredientName2});
 								return;
 							}
-							b1->canBeBuiltOnID = ingredient2type;
-							b2->canBeBuiltOnID = ingredient1type;
-							b1->buildOverResult = b2->buildOverResult = def->typeID;
+							ingredient1->canBeBuiltOnID = ingredient2->typeID;
+							ingredient2->canBeBuiltOnID = ingredient1->typeID;
+							ingredient1->buildOverResult = ingredient2->buildOverResult = def->typeID;
 						}
 					}
 					else
@@ -287,7 +294,7 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 	catalogue->isInitialised = true;
 
 	logInfo("Loaded {0} buildings: {1} R, {2} C and {3} I growable, and {4} player-constructible", {
-		formatInt(catalogue->buildingDefs.count),
+		formatInt(catalogue->allBuildings.count),
 		formatInt(catalogue->rGrowableBuildings.count),
 		formatInt(catalogue->cGrowableBuildings.count),
 		formatInt(catalogue->iGrowableBuildings.count),
@@ -297,7 +304,21 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 
 inline BuildingDef *getBuildingDef(s32 buildingTypeID)
 {
-	return get(&buildingCatalogue.buildingDefs, buildingTypeID);
+	return get(&buildingCatalogue.allBuildings, buildingTypeID);
+}
+
+inline BuildingDef *findBuildingDef(String name)
+{
+	BuildingDef *result = null;
+
+
+	BuildingDef **findResult = find(&buildingCatalogue.buildingsByName, name);
+	if (findResult != null)
+	{
+		result = *findResult;
+	}
+
+	return result;
 }
 
 inline ChunkedArray<BuildingDef *> *getConstructibleBuildings()
@@ -425,7 +446,7 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *asse
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(&catalogue->buildingDefs); !it.isDone; next(&it))
+	for (auto it = iterate(&catalogue->allBuildings); !it.isDone; next(&it))
 	{
 		BuildingDef *def = get(it);
 
