@@ -18,12 +18,12 @@ BuildingCatalogue:
 ✔ lists of buildings per zone type
 ✔ list of player-constructable buildings
 	- categorised?
-	- Check we didn't break the button selection/actual build code!
+	✔ Check we didn't break the button selection/actual build code!
 ✔ get def by name
 ✔ get def by index
 ✖ get rid of the "null" def      <- Still needed!
-- max-size info for categories of building that we care about!
-	- (per zone type, and an overall "biggest possible building")
+✔ max-size info for categories of building that we care about!
+	✔ (per zone type, and an overall "biggest possible building")
 
 SECTORS:
 - Sector info debug window!

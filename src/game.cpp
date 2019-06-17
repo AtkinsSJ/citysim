@@ -933,16 +933,20 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		V4 drawColorNormal = makeWhite();
 		V4 drawColorDemolish = color255(255,128,128,255);
 
-		// TODO: If we knew the largest building size, we could speed this up a lot by only
-		// iterating through Sectors that could possibly contain visible buildings, instead
-		// of all the ones that are up or left from the camera.
-		// Then again, buildings that visually extend up above their footprint would need
-		// a similar thing for down/right directions probably.
-		for (s32 sY = 0;
+
+		// We only scan the sectors whose buildings could conceivably be visible.
+		// TODO: Once buildings have "height" that extends above their footprint, we'll need to know
+		// the maximum height, and go a corresponding number of sectors down to ensure they're drawn.
+		//
+		// - Sam, 17/06/2019
+		//
+		s32 minSX = ((visibleSectors.x * SECTOR_SIZE) - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
+		s32 minSY = ((visibleSectors.y * SECTOR_SIZE) - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
+		for (s32 sY = minSY;
 			sY < visibleSectors.y + visibleSectors.h;
 			sY++)
 		{
-			for (s32 sX = 0;
+			for (s32 sX = minSX;
 				sX < visibleSectors.x + visibleSectors.w;
 				sX++)
 			{

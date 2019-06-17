@@ -66,6 +66,7 @@ struct BuildingCatalogue
 	s32 maxRBuildingDim;
 	s32 maxCBuildingDim;
 	s32 maxIBuildingDim;
+	s32 overallMaxBuildingDim;
 };
 
 BuildingCatalogue buildingCatalogue = {};

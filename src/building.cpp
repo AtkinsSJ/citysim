@@ -4,6 +4,8 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 {
 	put(&catalogue->buildingsByName, def->name, def);
 
+	catalogue->overallMaxBuildingDim = max(catalogue->overallMaxBuildingDim, max(def->width, def->height));
+
 	if (def->buildMethod != BuildMethod_None)
 	{
 		append(&catalogue->constructibleBuildings, def);
@@ -61,6 +63,7 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 	catalogue->maxRBuildingDim = 0;
 	catalogue->maxCBuildingDim = 0;
 	catalogue->maxIBuildingDim = 0;
+	catalogue->overallMaxBuildingDim = 0;
 
 
 	BuildingDef *def = null;

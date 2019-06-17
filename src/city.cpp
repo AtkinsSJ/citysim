@@ -470,17 +470,20 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	// without counting any twice, and without missing any. We used to have a big Buildings array
 	// and just check every one, but now that we have sectors it's not quite so simple.
 	// (Well, I guess we could still check every one, but that's wasteful!)
-	// For starters, a Building's origin is its top-left corner, so it can only be in the current
-	// Sector, or one that is left and/or up from it. So, we don't need to check any to the right
-	// or below the ones covered by `area`.
-	// If we knew the maximum building size, we could limit how far left and up we need to check
-	// too, but right now we don't have that information.
-	// TODO: Record the largest building w/h so we can speed up queries like this!
-	for (s32 sX = 0;
+	// A Building's origin is its top-left corner, so it can only be in the current Sector,
+	// or one that is left and/or up from it. So, we don't need to check any to the right or
+	// below the ones covered by `area`. Also a building can only be up to `overallMaxBuildingDim`
+	// tiles to the left or top of the `area` rect.
+	//
+	// - Sam, 17/06/2019
+	//
+	s32 minSX = (area.x - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
+	s32 minSY = (area.y - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
+	for (s32 sX = minSX;
 		sX <= (area.x + area.w) / SECTOR_SIZE;
 		sX++)
 	{
-		for (s32 sY = 0;
+		for (s32 sY = minSY;
 			sY <= (area.y + area.h) / SECTOR_SIZE;
 			sY++)
 		{
