@@ -14,6 +14,16 @@ Notes for searching:
 
 ------------------------------------------------
 
+Tidy up the types/maths files, so that I can ACTUALLY FIND THINGS.
+- eg, lengthOf() instead of multiple names per vector type.
+- centreOf() instead of centre()
+- Clean up the 50-million rect constructors
+- intersect()/union() for rectangles instead of whatever weird names I have currently
+- more lerp() functions for other types
+- Maybe color/v4 should be separate types?
+- Should probably get rid of the MIN/MAX/WRAP macros and just use functions
+- I'm sure I can think of other things too!
+
 BuildingCatalogue:
 - Store which menu a building is in, in a queryable way
 
