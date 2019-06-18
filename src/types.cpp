@@ -425,6 +425,16 @@ inline Rect2I expand(Rect2I rect, s32 addRadius)
 	);
 }
 
+inline Rect2I expand(Rect2I rect, s32 left, s32 right, s32 top, s32 bottom)
+{
+	return irectXYWH(
+		rect.x - left,
+		rect.y - top,
+		rect.w + left + right,
+		rect.h + top + bottom
+	);
+}
+
 inline bool rectsOverlap(Rect2I a, Rect2I b)
 {
 	return (a.x < b.x + b.w)

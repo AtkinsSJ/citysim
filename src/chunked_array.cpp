@@ -490,6 +490,10 @@ void next(ChunkedArrayIterator<T> *iterator)
 					iterator->isDone = true;
 				}
 			}
+			else
+			{
+				iterator->indexInChunk = iterator->currentChunk->count - 1;
+			}
 		}
 	}
 	else
@@ -519,6 +523,8 @@ void next(ChunkedArrayIterator<T> *iterator)
 			}
 		}
 	}
+
+	ASSERT(iterator->isDone || iterator->indexInChunk >= 0 && iterator->indexInChunk < iterator->currentChunk->count, "Bounds check");
 }
 
 template<typename T>

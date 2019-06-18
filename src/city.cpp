@@ -439,25 +439,38 @@ void demolishRect(City *city, Rect2I area)
 			building = null; // For safety, because we just deleted the Building!
 
 			// Clear all references to this building
-			// TODO: Optimise this per-sector!
-			for (s32 y = buildingFootprint.y;
-				y < buildingFootprint.y + buildingFootprint.h;
-				y++)
+			Rect2I sectorsArea = getSectorsCovered(city, area);
+			for (s32 sY = sectorsArea.y;
+				sY < sectorsArea.y + sectorsArea.h;
+				sY++)
 			{
-				for (s32 x = buildingFootprint.x;
-					x < buildingFootprint.x + buildingFootprint.w;
-					x++)
+				for (s32 sX = sectorsArea.x;
+					sX < sectorsArea.x + sectorsArea.w;
+					sX++)
 				{
-					Sector *sector = getSectorAtTilePos(city, x, y);
-					s32 relX = x - sector->bounds.x;
-					s32 relY = y - sector->bounds.y;
-					TileBuildingRef *tileBuilding = getSectorBuildingRefAtWorldPosition(sector, x, y);
-					tileBuilding->isOccupied = false;
-
-					if (def->isPath)
+					Sector *sector = getSector(city, sX, sY);
+					Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
+					for (s32 y = relArea.y;
+						y < relArea.y + relArea.h;
+						y++)
 					{
-						// Remove from the pathing layer
-						sector->tilePathGroup[relY][relX] = 0;
+						for (s32 x = relArea.x;
+							x < relArea.x + relArea.w;
+							x++)
+						{
+							TileBuildingRef *tileBuilding = &sector->tileBuilding[y][x];
+							tileBuilding->isOccupied = false;
+
+							// Oh wow, we're 5 loops deep. Cool? Coolcoolcoolcoolcoolcoolcoolcococococooolnodoubtnodoubtnodoubt
+
+							if (def->isPath)
+							{
+								// Remove from the pathing layer
+								s32 relX = x - sector->bounds.x;
+								s32 relY = y - sector->bounds.y;
+								sector->tilePathGroup[relY][relX] = 0;
+							}
+						}
 					}
 				}
 			}
@@ -467,12 +480,7 @@ void demolishRect(City *city, Rect2I area)
 		}
 
 		// Expand the area to account for buildings to the left or up from it
-		Rect2I expandedArea = area;
-		s32 maxBuildingDim = buildingCatalogue.overallMaxBuildingDim;
-		expandedArea.x -= maxBuildingDim;
-		expandedArea.w += maxBuildingDim;
-		expandedArea.y -= maxBuildingDim;
-		expandedArea.h += maxBuildingDim;
+		Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, buildingCatalogue.overallMaxBuildingDim, 0);
 		Rect2I sectorsArea = getSectorsCovered(city, expandedArea);
 
 		for (s32 sY = sectorsArea.y;
@@ -522,13 +530,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area)
 	initChunkedArray(&result, globalFrameTempArena, 64);
 
 	// Expand the area to account for buildings to the left or up from it
-	Rect2I expandedArea = area;
-	s32 maxBuildingDim = buildingCatalogue.overallMaxBuildingDim;
-	expandedArea.x -= maxBuildingDim;
-	expandedArea.w += maxBuildingDim;
-	expandedArea.y -= maxBuildingDim;
-	expandedArea.h += maxBuildingDim;
-
+	Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, buildingCatalogue.overallMaxBuildingDim, 0);
 	Rect2I sectorsArea = getSectorsCovered(city, expandedArea);
 
 	for (s32 sY = sectorsArea.y;
