@@ -312,128 +312,13 @@ void placeBuildingRect(UIState *uiState, City *city, BuildingDef *def, Rect2I ar
 	}
 }
 
-// NB: Only for use withing demolishRect()!
-bool demolishTile(UIState *uiState, City *city, V2I position)
-{
-	DEBUG_FUNCTION();
-	
-	if (!tileExists(city, position.x, position.y)) return true;
-
-	Sector *sectorAtPos = getSectorAtTilePos(city, position.x, position.y);
-	TileBuildingRef *tileBuildingRef = getSectorBuildingRefAtWorldPosition(sectorAtPos, position.x, position.y);
-
-	if (tileBuildingRef->isOccupied)
-	{
-		Sector *buildingOwnerSector = null;
-		if (tileBuildingRef->isLocal)
-		{
-			buildingOwnerSector = sectorAtPos;
-		}
-		else
-		{
-			buildingOwnerSector = getSectorAtTilePos(city, tileBuildingRef->originX, tileBuildingRef->originY);
-			tileBuildingRef = getSectorBuildingRefAtWorldPosition(buildingOwnerSector, tileBuildingRef->originX, tileBuildingRef->originY);
-		}
-
-		Building *buildingToDemolish = get(&buildingOwnerSector->buildings, tileBuildingRef->localIndex);
-		BuildingDef *def = getBuildingDef(buildingToDemolish->typeID);
-
-		// Can we afford to demolish this?
-		if (!canAfford(city, def->demolishCost))
-		{
-			pushUiMessage(uiState, makeString("Not enough money to demolish this."));
-			return false;
-		}
-
-		spend(city, def->demolishCost);
-
-		city->totalResidents -= def->residents;
-		city->totalJobs -= def->jobs;
-
-		Rect2I buildingFootprint = buildingToDemolish->footprint;
-
-		removeIndex(&buildingOwnerSector->buildings, tileBuildingRef->localIndex, false);
-		buildingToDemolish = null; // For safety, because we just deleted the Building!
-
-		// Clear all references to this building
-		// TODO: Optimise this per-sector!
-		for (s32 y = buildingFootprint.y;
-			y < buildingFootprint.y + buildingFootprint.h;
-			y++)
-		{
-			for (s32 x = buildingFootprint.x;
-				x < buildingFootprint.x + buildingFootprint.w;
-				x++)
-			{
-				Sector *sector = getSectorAtTilePos(city, x, y);
-				s32 relX = x - sector->bounds.x;
-				s32 relY = y - sector->bounds.y;
-				TileBuildingRef *tileBuilding = getSectorBuildingRefAtWorldPosition(sector, x, y);
-				tileBuilding->isOccupied = false;
-
-				ASSERT(getSectorBuildingRefAtWorldPosition(sector, x, y)->isOccupied == false, "Test");
-
-				if (def->isPath)
-				{
-					// Remove from the pathing layer
-					sector->tilePathGroup[relY][relX] = 0;
-				}
-			}
-		}
-		
-		// Recalculate the localIndex info for each local building in the buildingOwnerSector, because
-		// removing a building from it changes the indices.
-		for (auto it = iterate(&buildingOwnerSector->buildings); !it.isDone; next(&it))
-		{
-			Building *building = get(it);
-			s32 buildingIndex = (s32) getIndex(it);
-
-			Rect2I relArea = cropRectangleToRelativeWithinSector(building->footprint, buildingOwnerSector);
-			for (s32 relY=relArea.y;
-				relY < relArea.y + relArea.h;
-				relY++)
-			{
-				for (s32 relX=relArea.x;
-					relX < relArea.x + relArea.w;
-					relX++)
-				{
-					buildingOwnerSector->tileBuilding[relY][relX].localIndex = buildingIndex;
-				}
-			}
-		}
-
-		// Need to update the filled/empty zone lists
-		markZonesAsEmpty(city, buildingFootprint);
-
-		// Update sprites for the building's neighbours.
-		updateAdjacentBuildingTextures(city, buildingFootprint);
-
-		return true;
-	}
-	else
-	{
-		Terrain *terrain = terrainAt(city, position.x, position.y);
-		TerrainDef *def = get(&terrainDefs, terrain->type);
-		if (def->canDemolish)
-		{
-			// Tear down all the trees!
-			spend(city, def->demolishCost);
-			terrain->type = findTerrainTypeByName(makeString("Ground"));
-			return true;
-		}
-		else
-		{
-			return true;
-		}
-	}
-}
-
 s32 calculateDemolitionCost(City *city, Rect2I area)
 {
 	DEBUG_FUNCTION();
 	
 	s32 total = 0;
 
+	// Terrain demolition cost
 	Rect2I sectorsArea = getSectorsCovered(city, area);
 	for (s32 sY = sectorsArea.y;
 		sY < sectorsArea.y + sectorsArea.h;
@@ -446,7 +331,6 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 			Sector *sector = getSector(city, sX, sY);
 			Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
 
-			// Terrain clearing cost
 			for (s32 y=relArea.y;
 				y < relArea.y + relArea.h;
 				y++)
@@ -477,26 +361,159 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	return total;
 }
 
-bool demolishRect(UIState *uiState, City *city, Rect2I area)
+void demolishRect(City *city, Rect2I area)
 {
 	DEBUG_FUNCTION();
 
-	for (s32 y=0; y<area.h; y++)
+	// NB: We assume that we've already checked we can afford this!
+
+	// Terrain demolition
 	{
-		for (s32 x=0; x<area.w; x++)
+		// TODO: @Cleanup Probably we want to specify what terrain something becomes per-terrain-type,
+		// and maybe link it directly instead of by name?
+		s32 groundTerrainType = findTerrainTypeByName(makeString("Ground"));
+
+		Rect2I sectorsArea = getSectorsCovered(city, area);
+		for (s32 sY = sectorsArea.y;
+			sY < sectorsArea.y + sectorsArea.h;
+			sY++)
 		{
-			if (!demolishTile(uiState, city, v2i(area.x + x, area.y + y)))
+			for (s32 sX = sectorsArea.x;
+				sX < sectorsArea.x + sectorsArea.w;
+				sX++)
 			{
-				return false;
+				Sector *sector = getSector(city, sX, sY);
+				Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
+
+				for (s32 y=relArea.y;
+					y < relArea.y + relArea.h;
+					y++)
+				{
+					for (s32 x=relArea.x;
+						x < relArea.x + relArea.w;
+						x++)
+					{
+						Terrain *terrain = &sector->terrain[y][x];
+						TerrainDef *tDef = get(&terrainDefs, terrain->type);
+
+						if (tDef->canDemolish)
+						{
+							terrain->type = groundTerrainType;
+						}
+					}
+				}
 			}
 		}
 	}
 
-	// TODO: Local recalculation!
-	recalculatePathingConnectivity(city);
-	recalculatePowerConnectivity(city);
+	// Building demolition
+	{
+		// NB: This is a little hacky... inside this loop, we remove Buildings from their Sectors.
+		// Each time this happens, the buildings array in that sector gets re-ordered. This would
+		// mess everything up, BUT we iterate the array in reverse, relying on the (current) fact
+		// that findBuildingsOverlappingArea() returns each sector's buildings in the same order
+		// they exist in that sector's buildings array. Meaning, deleting a building only affects
+		// the ones AFTER it (which we've already handled!)
+		// That's an implementation detail, so this could break pretty badly at some point, but
+		// I think it's really unlikely that will happen?
+		// Famous last words...
+		// 
+		// - Sam, 18/06/2019
+		//
+		ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
+		for (auto it = iterate(&buildingsToDemolish, buildingsToDemolish.count-1, false, true);
+			!it.isDone;
+			next(&it))
+		{
+			Building *building = getValue(it);
+			BuildingDef *def = getBuildingDef(building->typeID);
 
-	return true;
+			city->totalResidents -= def->residents;
+			city->totalJobs -= def->jobs;
+
+			Rect2I buildingFootprint = building->footprint;
+			Sector *buildingOwnerSector = getSectorAtTilePos(city, buildingFootprint.x, buildingFootprint.y);
+
+			TileBuildingRef *tileBuildingRef = getSectorBuildingRefAtWorldPosition(buildingOwnerSector, buildingFootprint.x, buildingFootprint.y);
+			removeIndex(&buildingOwnerSector->buildings, tileBuildingRef->localIndex, false);
+			building = null; // For safety, because we just deleted the Building!
+
+			// Clear all references to this building
+			// TODO: Optimise this per-sector!
+			for (s32 y = buildingFootprint.y;
+				y < buildingFootprint.y + buildingFootprint.h;
+				y++)
+			{
+				for (s32 x = buildingFootprint.x;
+					x < buildingFootprint.x + buildingFootprint.w;
+					x++)
+				{
+					Sector *sector = getSectorAtTilePos(city, x, y);
+					s32 relX = x - sector->bounds.x;
+					s32 relY = y - sector->bounds.y;
+					TileBuildingRef *tileBuilding = getSectorBuildingRefAtWorldPosition(sector, x, y);
+					tileBuilding->isOccupied = false;
+
+					if (def->isPath)
+					{
+						// Remove from the pathing layer
+						sector->tilePathGroup[relY][relX] = 0;
+					}
+				}
+			}
+
+			// Need to update the filled/empty zone lists
+			markZonesAsEmpty(city, buildingFootprint);
+		}
+
+		// Expand the area to account for buildings to the left or up from it
+		Rect2I expandedArea = area;
+		s32 maxBuildingDim = buildingCatalogue.overallMaxBuildingDim;
+		expandedArea.x -= maxBuildingDim;
+		expandedArea.w += maxBuildingDim;
+		expandedArea.y -= maxBuildingDim;
+		expandedArea.h += maxBuildingDim;
+		Rect2I sectorsArea = getSectorsCovered(city, expandedArea);
+
+		for (s32 sY = sectorsArea.y;
+			sY < sectorsArea.y + sectorsArea.h;
+			sY++)
+		{
+			for (s32 sX = sectorsArea.x;
+				sX < sectorsArea.x + sectorsArea.w;
+				sX++)
+			{
+				Sector *sector = getSector(city, sX, sY);
+				
+				// Recalculate the tile-building refs for possibly-affected sectors
+				for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
+				{
+					Building *building = get(it);
+					s32 buildingIndex = (s32) getIndex(it);
+
+					Rect2I relArea = cropRectangleToRelativeWithinSector(building->footprint, sector);
+					for (s32 relY=relArea.y;
+						relY < relArea.y + relArea.h;
+						relY++)
+					{
+						for (s32 relX=relArea.x;
+							relX < relArea.x + relArea.w;
+							relX++)
+						{
+							sector->tileBuilding[relY][relX].localIndex = buildingIndex;
+						}
+					}
+				}
+			}
+		}
+
+		// Any buildings that would have connected with something that just got demolished need to refresh!
+		updateAdjacentBuildingTextures(city, area);
+
+		// TODO: Local recalculation!
+		recalculatePathingConnectivity(city);
+		recalculatePowerConnectivity(city);
+	}
 }
 
 ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area)

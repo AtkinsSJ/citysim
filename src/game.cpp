@@ -760,7 +760,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					{
 						if (canAfford(city, demolishCost))
 						{
-							demolishRect(uiState, city, dragResult.dragRect);
+							demolishRect(city, dragResult.dragRect);
+							spend(city, demolishCost);
 						}
 						else
 						{
