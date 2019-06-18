@@ -434,13 +434,14 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	
 	s32 total = 0;
 
-	for (s32 sX = (area.x / SECTOR_SIZE);
-		sX <= (area.x + area.w) / SECTOR_SIZE;
-		sX++)
+	Rect2I sectorsArea = getSectorsCovered(city, area);
+	for (s32 sY = sectorsArea.y;
+		sY < sectorsArea.y + sectorsArea.h;
+		sY++)
 	{
-		for (s32 sY = (area.y / SECTOR_SIZE);
-			sY <= (area.y + area.h) / SECTOR_SIZE;
-			sY++)
+		for (s32 sX = sectorsArea.x;
+			sX < sectorsArea.x + sectorsArea.w;
+			sX++)
 		{
 			Sector *sector = getSector(city, sX, sY);
 			Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
@@ -466,39 +467,11 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	}
 
 	// Building demolition cost
-	// This is trickier. We want to make sure we check all the buildings that could overlap,
-	// without counting any twice, and without missing any. We used to have a big Buildings array
-	// and just check every one, but now that we have sectors it's not quite so simple.
-	// (Well, I guess we could still check every one, but that's wasteful!)
-	// A Building's origin is its top-left corner, so it can only be in the current Sector,
-	// or one that is left and/or up from it. So, we don't need to check any to the right or
-	// below the ones covered by `area`. Also a building can only be up to `overallMaxBuildingDim`
-	// tiles to the left or top of the `area` rect.
-	//
-	// - Sam, 17/06/2019
-	//
-	s32 minSX = (area.x - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
-	s32 minSY = (area.y - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
-	for (s32 sX = minSX;
-		sX <= (area.x + area.w) / SECTOR_SIZE;
-		sX++)
+	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
+	for (auto it = iterate(&buildingsToDemolish); !it.isDone; next(&it))
 	{
-		for (s32 sY = minSY;
-			sY <= (area.y + area.h) / SECTOR_SIZE;
-			sY++)
-		{
-			Sector *sector = getSector(city, sX, sY);
-
-			for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
-			{
-				Building *building = get(it);
-
-				if (rectsOverlap(building->footprint, area))
-				{
-					total += getBuildingDef(building->typeID)->demolishCost;
-				}
-			}
-		}
+		Building *building = getValue(it);
+		total += getBuildingDef(building->typeID)->demolishCost;
 	}
 
 	return total;
@@ -524,6 +497,45 @@ bool demolishRect(UIState *uiState, City *city, Rect2I area)
 	recalculatePowerConnectivity(city);
 
 	return true;
+}
+
+ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area)
+{
+	ChunkedArray<Building *> result = {};
+	initChunkedArray(&result, globalFrameTempArena, 64);
+
+	// Expand the area to account for buildings to the left or up from it
+	Rect2I expandedArea = area;
+	s32 maxBuildingDim = buildingCatalogue.overallMaxBuildingDim;
+	expandedArea.x -= maxBuildingDim;
+	expandedArea.w += maxBuildingDim;
+	expandedArea.y -= maxBuildingDim;
+	expandedArea.h += maxBuildingDim;
+
+	Rect2I sectorsArea = getSectorsCovered(city, expandedArea);
+
+	for (s32 sY = sectorsArea.y;
+		sY < sectorsArea.y + sectorsArea.h;
+		sY++)
+	{
+		for (s32 sX = sectorsArea.x;
+			sX < sectorsArea.x + sectorsArea.w;
+			sX++)
+		{
+			Sector *sector = getSector(city, sX, sY);
+
+			for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
+			{
+				Building *building = get(it);
+				if (rectsOverlap(building->footprint, area))
+				{
+					append(&result, building);
+				}
+			}
+		}
+	}
+
+	return result;
 }
 
 void calculateDemand(City *city)

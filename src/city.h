@@ -88,6 +88,21 @@ inline s32 tileIndex(City *city, s32 x, s32 y)
 	return (y * city->width) + x;
 }
 
+inline Rect2I getSectorsCovered(City *city, Rect2I area)
+{
+	area = cropRectangle(area, irectXYWH(0, 0, city->width, city->height));
+
+	Rect2I result = irectMinMax(
+		area.x / SECTOR_SIZE,
+		area.y / SECTOR_SIZE,
+
+		(area.x + area.w) / SECTOR_SIZE,
+		(area.y + area.h) / SECTOR_SIZE
+	);
+
+	return result;
+}
+
 inline bool tileExists(City *city, s32 x, s32 y)
 {
 	return (x >= 0) && (x < city->width)
@@ -172,6 +187,10 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 
 	return result;
 }
+
+// Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
+// each building is only listed once. No guarantees are made about the order.
+ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area);
 
 inline s32 pathGroupAt(City *city, s32 x, s32 y)
 {

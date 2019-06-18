@@ -15,15 +15,7 @@ Notes for searching:
 ------------------------------------------------
 
 BuildingCatalogue:
-✔ lists of buildings per zone type
-✔ list of player-constructable buildings
-	- categorised?
-	✔ Check we didn't break the button selection/actual build code!
-✔ get def by name
-✔ get def by index
-✖ get rid of the "null" def      <- Still needed!
-✔ max-size info for categories of building that we care about!
-	✔ (per zone type, and an overall "biggest possible building")
+- Store which menu a building is in, in a queryable way
 
 SECTORS:
 - Sector info debug window!
@@ -41,6 +33,7 @@ SECTORS:
 - Terrain
 	- Terrain mesh? That's kind of a side issue
 ✔ Buildings
+	✔ findBuildingsInRectangle(), which returns some kind of temporary, iterable array.
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)

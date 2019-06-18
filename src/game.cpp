@@ -821,13 +821,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		(s32) (worldCamera->size.y / worldCamera->zoom) + 3
 	);
 	visibleTileBounds = cropRectangle(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
-	Rect2I visibleSectors = irectXYWH(
-		visibleTileBounds.x / SECTOR_SIZE,
-		visibleTileBounds.y / SECTOR_SIZE,
-		(visibleTileBounds.w / SECTOR_SIZE) + 2,
-		(visibleTileBounds.h / SECTOR_SIZE) + 2
-	);
-	visibleSectors = cropRectangle(visibleSectors, irectXYWH(0, 0, city->sectorsX, city->sectorsY));
+	Rect2I visibleSectors = getSectorsCovered(city, visibleTileBounds);
 
 	// Draw terrain
 	{
