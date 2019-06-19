@@ -438,7 +438,7 @@ void demolishRect(City *city, Rect2I area)
 			building = null; // For safety, because we just deleted the Building!
 
 			// Clear all references to this building
-			Rect2I sectorsArea = getSectorsCovered(city, area);
+			Rect2I sectorsArea = getSectorsCovered(city, buildingFootprint);
 			for (s32 sY = sectorsArea.y;
 				sY < sectorsArea.y + sectorsArea.h;
 				sY++)
@@ -448,16 +448,16 @@ void demolishRect(City *city, Rect2I area)
 					sX++)
 				{
 					Sector *sector = getSector(city, sX, sY);
-					Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
-					for (s32 y = relArea.y;
-						y < relArea.y + relArea.h;
-						y++)
+					Rect2I relArea = cropRectangleToRelativeWithinSector(buildingFootprint, sector);
+					for (s32 relY = relArea.y;
+						relY < relArea.y + relArea.h;
+						relY++)
 					{
-						for (s32 x = relArea.x;
-							x < relArea.x + relArea.w;
-							x++)
+						for (s32 relX = relArea.x;
+							relX < relArea.x + relArea.w;
+							relX++)
 						{
-							TileBuildingRef *tileBuilding = &sector->tileBuilding[y][x];
+							TileBuildingRef *tileBuilding = &sector->tileBuilding[relY][relX];
 							tileBuilding->isOccupied = false;
 
 							// Oh wow, we're 5 loops deep. Cool? Coolcoolcoolcoolcoolcoolcoolcococococooolnodoubtnodoubtnodoubt
@@ -465,8 +465,6 @@ void demolishRect(City *city, Rect2I area)
 							if (def->isPath)
 							{
 								// Remove from the pathing layer
-								s32 relX = x - sector->bounds.x;
-								s32 relY = y - sector->bounds.y;
 								sector->tilePathGroup[relY][relX] = 0;
 							}
 						}
