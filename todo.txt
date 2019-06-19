@@ -23,18 +23,22 @@ SECTORS:
 	- I do think we want a standard set of tools for dealing with sector data, because connectivity and stuff is going to be similar in several cases.
 - Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index. OR, we could union{} it maybe?
 - Power network
+	✔ Move power-network stuff out of City.h entirely? Put everything in PowerLayer, and make it manage its own sectors? Separating the different systems would be nice, though at the same time it might make it more awkward/less efficient to access stuff. Not sure... I think I'm going to try it though.
+		✔ Related, we can probably take the City* arg out of a lot of the internal PowerLayer functions.
+		- Maybe we should even go oop-style and make things member functions? IDK.
 	✔ Rather than users calling recalculatePowerConnectivity(), have them mark a world area as dirty, and then the next time power updates, it checks for dirty regions and recalculates as necessary. At first it'll just be a "somethingIsDirty" bool or something, but later if we add local recalculation, we don't need to change the user code!
-	💡 THINK: Is there some way of making the network graph calculation work by making small changes instead of having to recompute the whole thing?
-		- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
-		- RESEARCH GRAPH THEORY STUFF!
-			- An edge that will split the graph in two is called a "bridge". https://stackoverflow.com/questions/1566967/checking-if-removing-an-edge-in-a-graph-will-result-in-the-graph-splitting
-			- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
+💡 THINK: Is there some way of making the network graph calculation work by making small changes instead of having to recompute the whole thing?
+	- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
+	- RESEARCH GRAPH THEORY STUFF!
+		- An edge that will split the graph in two is called a "bridge". https://stackoverflow.com/questions/1566967/checking-if-removing-an-edge-in-a-graph-will-result-in-the-graph-splitting
+		- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
 - Road network
 	- Similar stuff to how power works, so figure that out first
 - Terrain
 	- Terrain mesh? That's kind of a side issue
 ✔ Buildings
 	✔ findBuildingsInRectangle(), which returns some kind of temporary, iterable array.
+	- Add flags to ^ so we can request buildings whose ORIGIN is in the rectangle, and maybe some other requirements (eg, must carry power)
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)

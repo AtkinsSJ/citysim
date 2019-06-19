@@ -1,10 +1,28 @@
 #pragma once
 
-void initPowerLayer(MemoryArena *gameArena, PowerLayer *layer)
+void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 {
 	initChunkedArray(&layer->networks, gameArena, 64);
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
+
+	layer->sectorsX = divideCeil(city->width,  SECTOR_SIZE);
+	layer->sectorsY = divideCeil(city->height, SECTOR_SIZE);
+	layer->sectorCount = layer->sectorsX * layer->sectorsY;
+	layer->sectors = PushArray(gameArena, PowerSector, layer->sectorCount);
+
+	for (s32 y = 0; y < layer->sectorsY; y++)
+	{
+		for (s32 x = 0; x < layer->sectorsX; x++)
+		{
+			PowerSector *sector = layer->sectors + (layer->sectorsX * y) + x;
+
+			*sector = {};
+			sector->base = getSector(city, x, y);
+
+			initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
+		}
+	}
 }
 
 PowerNetwork *newPowerNetwork(PowerLayer *layer)
@@ -22,7 +40,7 @@ void freePowerNetwork(PowerNetwork *network)
 	clear(&network->groups);
 }
 
-void updateSectorPowerValues(Sector *sector)
+void updateSectorPowerValues(PowerSector *sector)
 {
 	// Reset each to 0
 	for (auto it = iterate(&sector->powerGroups);
@@ -35,7 +53,7 @@ void updateSectorPowerValues(Sector *sector)
 	}
 
 	// Count power from buildings
-	for (auto it = iterate(&sector->buildings);
+	for (auto it = iterate(&sector->base->buildings);
 		!it.isDone;
 		next(&it))
 	{
@@ -44,7 +62,7 @@ void updateSectorPowerValues(Sector *sector)
 
 		if (def->power != 0)
 		{
-			u8 powerGroupIndex = sector->tilePowerGroup[building->footprint.y - sector->bounds.y][building->footprint.x - sector->bounds.x];
+			u8 powerGroupIndex = sector->tilePowerGroup[building->footprint.y - sector->base->bounds.y][building->footprint.x - sector->base->bounds.x];
 			PowerGroup *powerGroup = get(&sector->powerGroups, powerGroupIndex-1);
 			if (def->power > 0)
 			{
@@ -58,7 +76,30 @@ void updateSectorPowerValues(Sector *sector)
 	}
 }
 
-void floodFillSectorPowerGroup(Sector *sector, s32 x, s32 y, u8 fillValue)
+PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y)
+{
+	PowerNetwork *result = null;
+
+	if (tileExists(city, x, y))
+	{
+		PowerLayer *powerLayer = &city->powerLayer;
+		PowerSector *sector = powerLayer->sectors + getSectorIndexAtTilePos(x, y, city->sectorsX);
+
+		s32 relX = x - sector->base->bounds.x;
+		s32 relY = y - sector->base->bounds.y;
+
+		s32 powerGroupIndex = sector->tilePowerGroup[relY][relX];
+		if (powerGroupIndex != 0)
+		{
+			PowerGroup *group = get(&sector->powerGroups, powerGroupIndex - 1);
+			result = get(&powerLayer->networks, group->networkID - 1);
+		}
+	}
+
+	return result;
+}
+
+void floodFillSectorPowerGroup(PowerSector *sector, s32 x, s32 y, u8 fillValue)
 {
 	// Theoretically, the only place we non-recursively call this is in recalculateSectorPowerGroups(),
 	// where we go top-left to bottom-right, so we only need to flood fill right and down from the
@@ -87,7 +128,7 @@ void floodFillSectorPowerGroup(Sector *sector, s32 x, s32 y, u8 fillValue)
 		floodFillSectorPowerGroup(sector, x-1, y, fillValue);
 	}
 
-	if ((x < sector->bounds.w-1) && (sector->tilePowerGroup[y][x+1] == POWER_GROUP_UNKNOWN))
+	if ((x < sector->base->bounds.w-1) && (sector->tilePowerGroup[y][x+1] == POWER_GROUP_UNKNOWN))
 	{
 		floodFillSectorPowerGroup(sector, x+1, y, fillValue);
 	}
@@ -97,15 +138,15 @@ void floodFillSectorPowerGroup(Sector *sector, s32 x, s32 y, u8 fillValue)
 		floodFillSectorPowerGroup(sector, x, y-1, fillValue);
 	}
 	
-	if ((y < sector->bounds.h-1) && (sector->tilePowerGroup[y+1][x] == POWER_GROUP_UNKNOWN))
+	if ((y < sector->base->bounds.h-1) && (sector->tilePowerGroup[y+1][x] == POWER_GROUP_UNKNOWN))
 	{
 		floodFillSectorPowerGroup(sector, x, y+1, fillValue);
 	}
 }
 
-inline void setRectPowerGroupUnknown(Sector *sector, Rect2I area)
+inline void setRectPowerGroupUnknown(PowerSector *sector, Rect2I area)
 {
-	Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
+	Rect2I relArea = intersectRelative(area, sector->base->bounds);
 
 	for (s32 relY=relArea.y;
 		relY < relArea.y + relArea.h;
@@ -128,7 +169,7 @@ void markPowerLayerDirty(PowerLayer *layer, Rect2I area)
 	layer->isDirty = true;
 }
 
-void recalculateSectorPowerGroups(City *city, Sector *sector)
+void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 {
 	DEBUG_FUNCTION();
 
@@ -150,7 +191,7 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	// Step 1: Set all power-carrying tiles to -1 (everything was set to 0 in the above memset())
 
 	// - Step 1.1, iterate through our owned buildings and mark their tiles if they carry power
-	for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
+	for (auto it = iterate(&sector->base->buildings); !it.isDone; next(&it))
 	{
 		Building *building = get(it);
 		BuildingDef *def = getBuildingDef(building->typeID);
@@ -164,24 +205,24 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	// - Step 1.2, go through each tile that hasn't already been marked, and check it.
 	//   (eg, zones and non-local buildings can carry power)
 	for (s32 relY = 0;
-		relY < sector->bounds.h;
+		relY < sector->base->bounds.h;
 		relY++)
 	{
 		for (s32 relX = 0;
-			relX < sector->bounds.w;
+			relX < sector->base->bounds.w;
 			relX++)
 		{
 			// Skip any that have already been set (by step 1.1)
 			if (sector->tilePowerGroup[relY][relX] == POWER_GROUP_UNKNOWN) continue;
 
-			ZoneType zone = sector->tileZone[relY][relX];
+			ZoneType zone = sector->base->tileZone[relY][relX];
 			if (zoneDefs[zone].carriesPower)
 			{
 				sector->tilePowerGroup[relY][relX] = POWER_GROUP_UNKNOWN;
 			}
 			else
 			{
-				Building *building = getBuildingAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);
+				Building *building = getBuildingAtPosition(city, sector->base->bounds.x + relX, sector->base->bounds.y + relY);
 				if (building != null && getBuildingDef(building->typeID)->carriesPower)
 				{
 					// Set the building's whole area, so we only do 1 getBuildingAtPosition() lookup per building
@@ -193,11 +234,11 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 	// Step 2: Flood fill each -1 tile as a local PowerGroup
 	for (s32 relY = 0;
-		relY < sector->bounds.h;
+		relY < sector->base->bounds.h;
 		relY++)
 	{
 		for (s32 relX = 0;
-			relX < sector->bounds.w;
+			relX < sector->base->bounds.w;
 			relX++)
 		{
 			// Skip tiles that have already been added to a PowerGroup
@@ -224,14 +265,14 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	// @Copypasta The code for all this is really repetitive, but I'm not sure how to factor it together nicely.
 
 	// - Step 4.1: Left edge
-	if (sector->bounds.x > 0)
+	if (sector->base->bounds.x > 0)
 	{
 		u8 currentPGId = 0;
 		Rect2I *currentBoundary = null;
 
 		s32 relX = 0;
 		for (s32 relY = 0;
-			relY < sector->bounds.h;
+			relY < sector->base->bounds.h;
 			relY++)
 		{
 			u8 tilePGId = sector->tilePowerGroup[relY][relX];
@@ -251,8 +292,8 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 				// Start a new boundary
 				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
-				currentBoundary->x = sector->bounds.x - 1;
-				currentBoundary->y = sector->bounds.y + relY;
+				currentBoundary->x = sector->base->bounds.x - 1;
+				currentBoundary->y = sector->base->bounds.y + relY;
 				currentBoundary->w = 1;
 				currentBoundary->h = 1;
 			}
@@ -260,14 +301,14 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	}
 
 	// - Step 4.2: Right edge
-	if (sector->bounds.x + sector->bounds.w < city->width)
+	if (sector->base->bounds.x + sector->base->bounds.w < city->width)
 	{
 		u8 currentPGId = 0;
 		Rect2I *currentBoundary = null;
 
-		s32 relX = sector->bounds.w-1;
+		s32 relX = sector->base->bounds.w-1;
 		for (s32 relY = 0;
-			relY < sector->bounds.h;
+			relY < sector->base->bounds.h;
 			relY++)
 		{
 			u8 tilePGId = sector->tilePowerGroup[relY][relX];
@@ -287,8 +328,8 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 				// Start a new boundary
 				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
-				currentBoundary->x = sector->bounds.x + sector->bounds.w;
-				currentBoundary->y = sector->bounds.y + relY;
+				currentBoundary->x = sector->base->bounds.x + sector->base->bounds.w;
+				currentBoundary->y = sector->base->bounds.y + relY;
 				currentBoundary->w = 1;
 				currentBoundary->h = 1;
 			}
@@ -296,14 +337,14 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	}
 
 	// - Step 4.3: Top edge
-	if (sector->bounds.y > 0)
+	if (sector->base->bounds.y > 0)
 	{
 		u8 currentPGId = 0;
 		Rect2I *currentBoundary = null;
 
 		s32 relY = 0;
 		for (s32 relX = 0;
-			relX < sector->bounds.w;
+			relX < sector->base->bounds.w;
 			relX++)
 		{
 			u8 tilePGId = sector->tilePowerGroup[relY][relX];
@@ -323,8 +364,8 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 				// Start a new boundary
 				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
-				currentBoundary->x = sector->bounds.x + relX;
-				currentBoundary->y = sector->bounds.y - 1;
+				currentBoundary->x = sector->base->bounds.x + relX;
+				currentBoundary->y = sector->base->bounds.y - 1;
 				currentBoundary->w = 1;
 				currentBoundary->h = 1;
 			}
@@ -332,14 +373,14 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	}
 
 	// - Step 4.4: Bottom edge
-	if (sector->bounds.y + sector->bounds.h < city->height)
+	if (sector->base->bounds.y + sector->base->bounds.h < city->height)
 	{
 		u8 currentPGId = 0;
 		Rect2I *currentBoundary = null;
 
-		s32 relY = sector->bounds.h-1;
+		s32 relY = sector->base->bounds.h-1;
 		for (s32 relX = 0;
-			relX < sector->bounds.w;
+			relX < sector->base->bounds.w;
 			relX++)
 		{
 			u8 tilePGId = sector->tilePowerGroup[relY][relX];
@@ -359,8 +400,8 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 
 				// Start a new boundary
 				currentBoundary = appendBlank(&get(&sector->powerGroups, currentPGId-1)->sectorBoundaries);
-				currentBoundary->x = sector->bounds.x + relX;
-				currentBoundary->y = sector->bounds.y + sector->bounds.h;
+				currentBoundary->x = sector->base->bounds.x + relX;
+				currentBoundary->y = sector->base->bounds.y + sector->base->bounds.h;
 				currentBoundary->w = 1;
 				currentBoundary->h = 1;
 			}
@@ -385,7 +426,7 @@ void recalculateSectorPowerGroups(City *city, Sector *sector)
 	//
 }
 
-void floodFillCityPowerNetwork(City *city, PowerGroup *powerGroup, PowerNetwork *network)
+void floodFillCityPowerNetwork(PowerLayer *powerLayer, PowerGroup *powerGroup, PowerNetwork *network)
 {
 	powerGroup->networkID = network->id;
 	append(&network->groups, powerGroup);
@@ -395,15 +436,25 @@ void floodFillCityPowerNetwork(City *city, PowerGroup *powerGroup, PowerNetwork 
 		next(&it))
 	{
 		Rect2I bounds = getValue(it);
+		PowerSector *sector = powerLayer->sectors + getSectorIndexAtTilePos(bounds.x, bounds.y, powerLayer->sectorsX);
+		bounds = intersectRelative(bounds, sector->base->bounds);
 
-		for (s32 y = bounds.y; y < bounds.y + bounds.h; y++)
+		s32 lastPowerGroupIndex = -1;
+
+		// TODO: @Speed We could probably just do 1 loop because the bounds rect is only 1-wide in one dimension!
+		for (s32 relY = bounds.y; relY < bounds.y + bounds.h; relY++)
 		{
-			for (s32 x = bounds.x; x < bounds.x + bounds.w; x++)
+			for (s32 relX = bounds.x; relX < bounds.x + bounds.w; relX++)
 			{
-				PowerGroup *group = getPowerGroupAt(city, x, y);
-				if (group != null && group->networkID != network->id)
+				s32 powerGroupIndex = sector->tilePowerGroup[relY][relX];
+				if (powerGroupIndex != 0 && powerGroupIndex != lastPowerGroupIndex)
 				{
-					floodFillCityPowerNetwork(city, group, network);
+					lastPowerGroupIndex = powerGroupIndex;
+					PowerGroup *group = get(&sector->powerGroups, powerGroupIndex - 1);
+					if (group->networkID != network->id)
+					{
+						floodFillCityPowerNetwork(powerLayer, group, network);
+					}
 				}
 			}
 		}
@@ -414,11 +465,9 @@ void floodFillCityPowerNetwork(City *city, PowerGroup *powerGroup, PowerNetwork 
  * TODO: Recalculate individual Sectors as needed, instead of recalculating EVERY ONE whenever anything changes!
  * Still need to recalculate the city-wide networks though.
  */
-void recalculatePowerConnectivity(City *city)
+void recalculatePowerConnectivity(City *city, PowerLayer *powerLayer)
 {
 	DEBUG_FUNCTION();
-
-	PowerLayer *powerLayer = &city->powerLayer;
 
 	// Clean up networks
 	for (auto it = iterate(&powerLayer->networks);
@@ -432,10 +481,10 @@ void recalculatePowerConnectivity(City *city)
 
 	// Recalculate each sector
 	for (s32 sectorIndex = 0;
-		sectorIndex < city->sectorCount;
+		sectorIndex < powerLayer->sectorCount;
 		sectorIndex++)
 	{
-		Sector *sector = city->sectors + sectorIndex;
+		PowerSector *sector = powerLayer->sectors + sectorIndex;
 
 		recalculateSectorPowerGroups(city, sector);
 	}
@@ -446,10 +495,10 @@ void recalculatePowerConnectivity(City *city)
 
 	// Flood-fill networks of PowerGroups by walking the boundaries
 	for (s32 sectorIndex = 0;
-		sectorIndex < city->sectorCount;
+		sectorIndex < powerLayer->sectorCount;
 		sectorIndex++)
 	{
-		Sector *sector = city->sectors + sectorIndex;
+		PowerSector *sector = powerLayer->sectors + sectorIndex;
 
 		for (auto it = iterate(&sector->powerGroups);
 			!it.isDone;
@@ -459,7 +508,7 @@ void recalculatePowerConnectivity(City *city)
 			if (powerGroup->networkID == 0)
 			{
 				PowerNetwork *network = newPowerNetwork(powerLayer);
-				floodFillCityPowerNetwork(city, powerGroup, network);
+				floodFillCityPowerNetwork(powerLayer, powerGroup, network);
 			}
 		}
 	}
@@ -472,7 +521,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 	if (layer->isDirty)
 	{
 		// TODO: Only update the parts that need updating
-		recalculatePowerConnectivity(city);
+		recalculatePowerConnectivity(city, layer);
 		layer->isDirty = false;
 	}
 
@@ -481,10 +530,10 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 	// Update each PowerGroup's power
 	for (s32 sectorIndex = 0;
-		sectorIndex < city->sectorCount;
+		sectorIndex < layer->sectorCount;
 		sectorIndex++)
 	{
-		Sector *sector = city->sectors + sectorIndex;
+		PowerSector *sector = layer->sectors + sectorIndex;
 		updateSectorPowerValues(sector);
 	}
 

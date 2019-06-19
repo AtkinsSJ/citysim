@@ -10,17 +10,15 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->width = width;
 	city->height = height;
 
-	city->sectorsX = ceil_s32((f32)width  / (f32)SECTOR_SIZE);
-	city->sectorsY = ceil_s32((f32)height / (f32)SECTOR_SIZE);
+	city->sectorsX = divideCeil(width,  SECTOR_SIZE);
+	city->sectorsY = divideCeil(height, SECTOR_SIZE);
 	city->sectorCount = city->sectorsX * city->sectorsY;
 	city->sectors = PushArray(gameArena, Sector, city->sectorCount);
 
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena, 8);
 
-	initPowerLayer(gameArena, &city->powerLayer);
-
-	s32 remainderWidth  = width % SECTOR_SIZE;
+	s32 remainderWidth  = width  % SECTOR_SIZE;
 	s32 remainderHeight = height % SECTOR_SIZE;
 	for (s32 y = 0; y < city->sectorsY; y++)
 	{
@@ -41,9 +39,10 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 			}
 
 			initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
-			initChunkedArray(&sector->powerGroups, &city->powerLayer.powerGroupsChunkPool);
 		}
 	}
+
+	initPowerLayer(&city->powerLayer, city, gameArena);
 
 	initZoneLayer(gameArena, &city->zoneLayer);
 
@@ -328,7 +327,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 			sX++)
 		{
 			Sector *sector = getSector(city, sX, sY);
-			Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
+			Rect2I relArea = intersectRelative(area, sector->bounds);
 
 			for (s32 y=relArea.y;
 				y < relArea.y + relArea.h;
@@ -382,7 +381,7 @@ void demolishRect(City *city, Rect2I area)
 				sX++)
 			{
 				Sector *sector = getSector(city, sX, sY);
-				Rect2I relArea = cropRectangleToRelativeWithinSector(area, sector);
+				Rect2I relArea = intersectRelative(area, sector->bounds);
 
 				for (s32 y=relArea.y;
 					y < relArea.y + relArea.h;
@@ -448,7 +447,7 @@ void demolishRect(City *city, Rect2I area)
 					sX++)
 				{
 					Sector *sector = getSector(city, sX, sY);
-					Rect2I relArea = cropRectangleToRelativeWithinSector(buildingFootprint, sector);
+					Rect2I relArea = intersectRelative(buildingFootprint, sector->bounds);
 					for (s32 relY = relArea.y;
 						relY < relArea.y + relArea.h;
 						relY++)
@@ -462,6 +461,7 @@ void demolishRect(City *city, Rect2I area)
 
 							// Oh wow, we're 5 loops deep. Cool? Coolcoolcoolcoolcoolcoolcoolcococococooolnodoubtnodoubtnodoubt
 
+							// TODO: Remove this! Put recalculation in the pathlayer instead, like for power
 							if (def->isPath)
 							{
 								// Remove from the pathing layer
@@ -496,7 +496,7 @@ void demolishRect(City *city, Rect2I area)
 					Building *building = get(it);
 					s32 buildingIndex = (s32) getIndex(it);
 
-					Rect2I relArea = cropRectangleToRelativeWithinSector(building->footprint, sector);
+					Rect2I relArea = intersectRelative(building->footprint, sector->bounds);
 					for (s32 relY=relArea.y;
 						relY < relArea.y + relArea.h;
 						relY++)

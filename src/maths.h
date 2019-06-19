@@ -3,6 +3,11 @@
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 
+inline s32 divideCeil(s32 numerator, s32 denominator)
+{
+	return (numerator + denominator - 1) / denominator;
+}
+
 // How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
 inline s32 manhattanDistance(Rect2I rect, V2I point)
 {
@@ -86,39 +91,6 @@ inline f32 moveTowards(f32 currentValue, f32 targetValue, f32 distance)
 	else
 	{
 		result = MIN(currentValue + distance, targetValue);
-	}
-
-	return result;
-}
-
-inline Rect2I cropRectangle(Rect2I inner, Rect2I outer)
-{
-	Rect2I result = inner;
-
-	// X
-	s32 rightExtension = (result.x + result.w) - (outer.x + outer.w);
-	if (rightExtension > 0)
-	{
-		result.w -= rightExtension;
-	}
-	if (result.x < outer.x)
-	{
-		s32 leftExtension = outer.x - result.x;
-		result.x += leftExtension;
-		result.w -= leftExtension;
-	}
-
-	// Y
-	s32 bottomExtension = (result.y + result.h) - (outer.y + outer.h);
-	if (bottomExtension > 0)
-	{
-		result.h -= bottomExtension;
-	}
-	if (result.y < outer.y)
-	{
-		s32 topExtension = outer.y - result.y;
-		result.y += topExtension;
-		result.h -= topExtension;
 	}
 
 	return result;

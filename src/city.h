@@ -28,8 +28,15 @@ struct TileBuildingRef
 	s32 localIndex;
 };
 
+struct Sector;
+struct City;
 
 #define SECTOR_SIZE 16
+#include "building.h"
+#include "power.h"
+#include "terrain.h"
+#include "zone.h"
+
 struct Sector
 {
 	Rect2I bounds;
@@ -40,15 +47,10 @@ struct Sector
 	ZoneType tileZone[SECTOR_SIZE][SECTOR_SIZE];
 	s32 tilePathGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = unpathable, >0 = any tile with the same value is connected
 
-	// 0 = none, >0 = any tile with the same value is connected
-	// POWER_GROUP_UNKNOWN is used as a temporary value while recalculating
-	u8 tilePowerGroup[SECTOR_SIZE][SECTOR_SIZE];
-
 	// NB: A building is owned by a Sector if its top-left corner tile is inside that Sector.
 	ChunkedArray<Building>   buildings;
-	// NB: Power groups start at 1, (0 means "none") so subtract 1 from the value in tilePowerGroup to get the index!
-	ChunkedArray<PowerGroup> powerGroups;
 };
+
 
 struct City
 {
@@ -90,7 +92,7 @@ inline s32 tileIndex(City *city, s32 x, s32 y)
 
 inline Rect2I getSectorsCovered(City *city, Rect2I area)
 {
-	area = cropRectangle(area, irectXYWH(0, 0, city->width, city->height));
+	area = intersect(area, irectXYWH(0, 0, city->width, city->height));
 
 	Rect2I result = irectMinMax(
 		area.x / SECTOR_SIZE,
@@ -121,13 +123,18 @@ inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
 	return result;
 }
 
+inline s32 getSectorIndexAtTilePos(s32 x, s32 y, s32 sectorsX)
+{
+	return (sectorsX * (y / SECTOR_SIZE)) + (x / SECTOR_SIZE);
+}
+
 inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 {
 	Sector *result = null;
 
 	if (tileExists(city, x, y))
 	{
-		result = getSector(city, x / SECTOR_SIZE, y / SECTOR_SIZE);
+		result = city->sectors + getSectorIndexAtTilePos(x, y, city->sectorsX);
 	}
 
 	return result;
@@ -213,26 +220,6 @@ inline bool isPathable(City *city, s32 x, s32 y)
 	return pathGroupAt(city, x, y) > 0;
 }
 
-inline PowerGroup *getPowerGroupAt(City *city, s32 x, s32 y)
-{
-	PowerGroup *result = null;
-	Sector *sector = getSectorAtTilePos(city, x, y);
-
-	if (sector != null)
-	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
-
-		s32 powerGroupIndex = sector->tilePowerGroup[relY][relX];
-		if (powerGroupIndex != 0)
-		{
-			result = get(&sector->powerGroups, powerGroupIndex - 1);
-		}
-	}
-
-	return result;
-}
-
 inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 {
 	ZoneType result = Zone_None;
@@ -245,15 +232,6 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 
 		result = sector->tileZone[relY][relX];
 	}
-
-	return result;
-}
-
-inline Rect2I cropRectangleToRelativeWithinSector(Rect2I area, Sector *sector)
-{
-	Rect2I result = cropRectangle(area, sector->bounds);
-	result.x -= sector->bounds.x;
-	result.y -= sector->bounds.y;
 
 	return result;
 }

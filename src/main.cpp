@@ -51,10 +51,6 @@ struct MemoryArena *globalFrameTempArena;
 #include "render.h"
 #include "font.cpp"
 #include "ui.h"
-#include "building.h"
-#include "terrain.h"
-#include "zone.h"
-#include "power.h"
 #include "city.h"
 #include "game.h"
 

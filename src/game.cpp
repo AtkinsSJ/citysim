@@ -326,21 +326,15 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 
 	// Power group
-	PowerGroup *powerGroup = getPowerGroupAt(city, tilePos.x, tilePos.y);
-	if (powerGroup != null)
+	PowerNetwork *powerNetwork = getPowerNetworkAt(city, tilePos.x, tilePos.y);
+	if (powerNetwork != null)
 	{
-		PowerNetwork *network = get(&city->powerLayer.networks, powerGroup->networkID - 1);
-		window_label(context, myprintf("Power Group:\n- Production: {0}\n- Consumption: {1}\n... in power network #{2}\n- P production: {3}\n- N consumption: {4}", {
-			formatInt(powerGroup->production),
-			formatInt(powerGroup->consumption),
-			formatInt(network->id),
-			formatInt(network->cachedProduction),
-			formatInt(network->cachedConsumption)
+		window_label(context, myprintf("Power Network {0}:\n- Production: {1}\n- Consumption: {2}\n- Contained groups: {3}", {
+			formatInt(powerNetwork->id),
+			formatInt(powerNetwork->cachedProduction),
+			formatInt(powerNetwork->cachedConsumption),
+			formatInt(powerNetwork->groups.count)
 		}));
-	}
-	else
-	{
-		window_label(context, makeString("Power Group: None"));
 	}
 }
 
@@ -821,7 +815,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		(s32) (worldCamera->size.x / worldCamera->zoom) + 3,
 		(s32) (worldCamera->size.y / worldCamera->zoom) + 3
 	);
-	visibleTileBounds = cropRectangle(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
+	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 	Rect2I visibleSectors = getSectorsCovered(city, visibleTileBounds);
 
 	// Draw terrain
@@ -843,7 +837,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				sX++)
 			{
 				Sector *sector = getSector(city, sX, sY);
-				Rect2I relArea = cropRectangleToRelativeWithinSector(visibleTileBounds, sector);
+				Rect2I relArea = intersectRelative(visibleTileBounds, sector->bounds);
 				for (s32 relY=relArea.y;
 					relY < relArea.y + relArea.h;
 					relY++)
@@ -890,7 +884,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			{
 				Sector *sector = getSector(city, sX, sY);
 
-				Rect2I relArea = cropRectangleToRelativeWithinSector(visibleTileBounds, sector);
+				Rect2I relArea = intersectRelative(visibleTileBounds, sector->bounds);
 				for (s32 relY=relArea.y;
 					relY < relArea.y + relArea.h;
 					relY++)
@@ -1006,10 +1000,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 					case DataLayer_Power:
 					{
-						PowerGroup *powerGroup = getPowerGroupAt(city, x, y);
-						if (powerGroup != null)
+						PowerNetwork *powerNetwork = getPowerNetworkAt(city, x, y);
+						if (powerNetwork != null)
 						{
-							color = genericDataLayerColors[powerGroup->networkID % genericDataLayerColorCount];
+							color = genericDataLayerColors[powerNetwork->id % genericDataLayerColorCount];
 							tileHasData = true;
 						}
 					} break;
@@ -1062,18 +1056,18 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, rectangleShaderID, color255(255, 255, 255, 63));
 
 			// Draw PowerGroup boundaries
-			for (auto itPG = iterate(&cursorSector->powerGroups); !itPG.isDone; next(&itPG))
-			{
-				PowerGroup *pg = get(itPG);
-				V4 color = genericDataLayerColors[getIndex(itPG) % genericDataLayerColorCount];
+			// for (auto itPG = iterate(&cursorSector->powerGroups); !itPG.isDone; next(&itPG))
+			// {
+			// 	PowerGroup *pg = get(itPG);
+			// 	V4 color = genericDataLayerColors[getIndex(itPG) % genericDataLayerColorCount];
 
-				for (auto itBoundary = iterate(&pg->sectorBoundaries); !itBoundary.isDone; next(&itBoundary))
-				{
-					Rect2I bounds = getValue(itBoundary);
+			// 	for (auto itBoundary = iterate(&pg->sectorBoundaries); !itBoundary.isDone; next(&itBoundary))
+			// 	{
+			// 		Rect2I bounds = getValue(itBoundary);
 
-					drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, rectangleShaderID, color);
-				}
-			}
+			// 		drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, rectangleShaderID, color);
+			// 	}
+			// }
 		}
 	}
 

@@ -464,6 +464,49 @@ inline bool contains(Rect2I rect, s32 x, s32 y)
 		&& (y < rect.y + rect.h);
 }
 
+inline Rect2I intersect(Rect2I inner, Rect2I outer)
+{
+	Rect2I result = inner;
+
+	// X
+	s32 rightExtension = (result.x + result.w) - (outer.x + outer.w);
+	if (rightExtension > 0)
+	{
+		result.w -= rightExtension;
+	}
+	if (result.x < outer.x)
+	{
+		s32 leftExtension = outer.x - result.x;
+		result.x += leftExtension;
+		result.w -= leftExtension;
+	}
+
+	// Y
+	s32 bottomExtension = (result.y + result.h) - (outer.y + outer.h);
+	if (bottomExtension > 0)
+	{
+		result.h -= bottomExtension;
+	}
+	if (result.y < outer.y)
+	{
+		s32 topExtension = outer.y - result.y;
+		result.y += topExtension;
+		result.h -= topExtension;
+	}
+
+	return result;
+}
+
+// Takes the intersection of inner and outer, and then converts it to being relative to outer.
+// (Originally used to take a world-space rectangle and put it into a cropped, sector-space one.)
+inline Rect2I intersectRelative(Rect2I inner, Rect2I outer)
+{
+	Rect2I result = intersect(inner, outer);
+	result.pos -= outer.pos;
+
+	return result;
+}
+
 /**********************************************
 	Rect2
  **********************************************/
