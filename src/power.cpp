@@ -120,6 +120,14 @@ inline void setRectPowerGroupUnknown(Sector *sector, Rect2I area)
 	}
 }
 
+void markPowerLayerDirty(PowerLayer *layer, Rect2I area)
+{
+	// TODO: Somehow store the area that needs updating, so we don't have to recalculate the whole thing
+	
+	area = area; // Ignore unused
+	layer->isDirty = true;
+}
+
 void recalculateSectorPowerGroups(City *city, Sector *sector)
 {
 	DEBUG_FUNCTION();
@@ -460,6 +468,13 @@ void recalculatePowerConnectivity(City *city)
 void updatePowerLayer(City *city, PowerLayer *layer)
 {
 	DEBUG_FUNCTION();
+
+	if (layer->isDirty)
+	{
+		// TODO: Only update the parts that need updating
+		recalculatePowerConnectivity(city);
+		layer->isDirty = false;
+	}
 
 	layer->cachedCombinedProduction = 0;
 	layer->cachedCombinedConsumption = 0;

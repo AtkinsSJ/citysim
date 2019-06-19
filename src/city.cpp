@@ -271,8 +271,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 
 	if (needToRecalcPower)
 	{
-		// TODO: Local recalculation instead of completely starting over
-		recalculatePowerConnectivity(city);
+		markPowerLayerDirty(&city->powerLayer, footprint);
 	}
 
 
@@ -520,7 +519,8 @@ void demolishRect(City *city, Rect2I area)
 
 		// TODO: Local recalculation!
 		recalculatePathingConnectivity(city);
-		recalculatePowerConnectivity(city);
+
+		markPowerLayerDirty(&city->powerLayer, area);
 	}
 }
 

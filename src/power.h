@@ -22,6 +22,8 @@ struct PowerNetwork
 
 struct PowerLayer
 {
+	bool isDirty;
+	
 	s32 cachedCombinedProduction;
 	s32 cachedCombinedConsumption;
 
@@ -35,3 +37,4 @@ const u8 POWER_GROUP_UNKNOWN = 255;
 
 void initPowerLayer(MemoryArena *gameArena, PowerLayer *layer);
 void updatePowerLayer(struct City *city, PowerLayer *layer);
+void markPowerLayerDirty(PowerLayer *layer, Rect2I area);

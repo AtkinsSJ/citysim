@@ -146,7 +146,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 	}
 
 	// Zones carry power!
-	recalculatePowerConnectivity(city);
+	markPowerLayerDirty(&city->powerLayer, area);
 }
 
 void markZonesAsEmpty(City *city, Rect2I footprint)
