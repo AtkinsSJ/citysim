@@ -34,12 +34,12 @@ void freePowerNetwork(PowerNetwork *network)
 
 inline u8 getPowerGroupID(PowerSector *sector, s32 x, s32 y)
 {
-	return sector->tilePowerGroup[(y * sector->bounds.w) + x];
+	return *getSectorTile(sector, sector->tilePowerGroup, x, y);
 }
 
 inline void setPowerGroupID(PowerSector *sector, s32 x, s32 y, u8 value)
 {
-	sector->tilePowerGroup[(y * sector->bounds.w) + x] = value;
+	setSectorTile(sector, sector->tilePowerGroup, x, y, value);
 }
 
 void updateSectorPowerValues(City *city, PowerSector *sector)

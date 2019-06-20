@@ -7,7 +7,7 @@ void setPathGroup(City *city, s32 x, s32 y, s32 value)
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		sector->tilePathGroup[relY][relX] = value;
+		setSectorTile(sector, sector->tilePathGroup, relX, relY, value);
 	}
 }
 
@@ -63,9 +63,9 @@ void recalculatePathingConnectivity(City *city)
 					relX < sector->bounds.w;
 					relX++)
 				{
-					if (sector->tilePathGroup[relY][relX] > 0)
+					if (*getSectorTile(sector, sector->tilePathGroup, relX, relY) > 0)
 					{
-						sector->tilePathGroup[relY][relX] = -1;
+						setSectorTile(sector, sector->tilePathGroup, relX, relY, -1);
 					}
 				}
 			}

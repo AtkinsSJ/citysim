@@ -54,7 +54,18 @@ SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y);
 template<typename SectorType>
 Rect2I getSectorsCovered(SectorGrid<SectorType> *grid, Rect2I area);
 
-#define SECTOR_SIZE 16
+template<typename SectorType, typename T>
+inline T *getSectorTile(SectorType *sector, T *tiles, s32 x, s32 y)
+{
+	return tiles + (y * sector->bounds.w) + x;
+}
+
+template<typename SectorType, typename T>
+inline void setSectorTile(SectorType *sector, T *tiles, s32 x, s32 y, T value)
+{
+	tiles[(y * sector->bounds.w) + x] = value;
+}
+
 #include "building.h"
 #include "power.h"
 #include "terrain.h"
@@ -65,10 +76,10 @@ struct Sector
 	Rect2I bounds;
 
 	// All of these are in [y][x] order!
-	Terrain terrain[SECTOR_SIZE][SECTOR_SIZE];
-	TileBuildingRef tileBuilding[SECTOR_SIZE][SECTOR_SIZE];
-	ZoneType tileZone[SECTOR_SIZE][SECTOR_SIZE];
-	s32 tilePathGroup[SECTOR_SIZE][SECTOR_SIZE]; // 0 = unpathable, >0 = any tile with the same value is connected
+	Terrain         *terrain;
+	TileBuildingRef *tileBuilding;
+	ZoneType        *tileZone;
+	s32             *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
 
 	// NB: A building is owned by a Sector if its top-left corner tile is inside that Sector.
 	ChunkedArray<Building>   buildings;
@@ -126,17 +137,12 @@ inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
 	return getSector(&city->sectors, sectorX, sectorY);
 }
 
-inline s32 getSectorIndexAtTilePos(s32 x, s32 y, s32 sectorsX)
-{
-	return (sectorsX * (y / SECTOR_SIZE)) + (x / SECTOR_SIZE);
-}
-
 inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 {
 	return getSectorAtTilePos(&city->sectors, x, y);
 }
 
-inline Terrain *terrainAt(City *city, s32 x, s32 y)
+inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
 {
 	Terrain *result = &invalidTerrain;
 	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
@@ -146,7 +152,7 @@ inline Terrain *terrainAt(City *city, s32 x, s32 y)
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		return &sector->terrain[relY][relX];
+		return getSectorTile(sector, sector->terrain, relX, relY);
 	}
 
 	return result;
@@ -159,7 +165,7 @@ TileBuildingRef *getSectorBuildingRefAtWorldPosition(Sector *sector, s32 x, s32 
 	s32 relX = x - sector->bounds.x;
 	s32 relY = y - sector->bounds.y;
 
-	return &sector->tileBuilding[relY][relX];
+	return getSectorTile(sector, sector->tileBuilding, relX, relY);
 }
 
 Building* getBuildingAtPosition(City *city, s32 x, s32 y)
@@ -210,7 +216,7 @@ inline s32 pathGroupAt(City *city, s32 x, s32 y)
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		result = sector->tilePathGroup[relY][relX];
+		result = *getSectorTile(sector, sector->tilePathGroup, relX, relY);
 	}
 
 	return result;
@@ -231,7 +237,7 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
 
-		result = sector->tileZone[relY][relX];
+		result = *getSectorTile(sector, sector->tileZone, relX, relY);
 	}
 
 	return result;

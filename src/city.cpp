@@ -13,10 +13,16 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena, 8);
 
-	initSectorGrid(&city->sectors, gameArena, width, height, SECTOR_SIZE);
+	initSectorGrid(&city->sectors, gameArena, width, height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < city->sectors.count; sectorIndex++)
 	{
 		Sector *sector = city->sectors.sectors + sectorIndex;
+
+		sector->terrain       = PushArray(gameArena, Terrain,         sector->bounds.w * sector->bounds.h);
+		sector->tileBuilding  = PushArray(gameArena, TileBuildingRef, sector->bounds.w * sector->bounds.h);
+		sector->tileZone      = PushArray(gameArena, ZoneType,        sector->bounds.w * sector->bounds.h);
+		sector->tilePathGroup = PushArray(gameArena, s32,             sector->bounds.w * sector->bounds.h);
+
 		initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
 	}
 
@@ -44,12 +50,19 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	building->currentJobs = def->jobs;
 
 	// TODO: Optimise this per-sector!
-	for (s32 y=0; y<footprint.h; y++)
+	for (s32 y = footprint.y;
+		y < footprint.y + footprint.h;
+		y++)
 	{
-		for (s32 x=0; x<footprint.w; x++)
+		for (s32 x = footprint.x;
+			x < footprint.x + footprint.w;
+			x++)
 		{
-			Sector *sector = getSectorAtTilePos(&city->sectors, footprint.x+x, footprint.y+y);
-			TileBuildingRef *ref = &sector->tileBuilding[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x];
+			Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
+			s32 relX = x - sector->bounds.x;
+			s32 relY = y - sector->bounds.y;
+
+			TileBuildingRef *ref = getSectorTile(sector, sector->tileBuilding, relX, relY);
 			ref->isOccupied = true;
 			ref->originX = footprint.x;
 			ref->originY = footprint.y;
@@ -85,7 +98,7 @@ void generateTerrain(City *city)
 
 			f32 perlinValue = stb_perlin_noise3(px, py, 0);
 
-			Terrain *terrain = terrainAt(city, x, y);
+			Terrain *terrain = getTerrainAt(city, x, y);
 			bool isGround = (perlinValue > 0.1f);
 			if (isGround)
 			{
@@ -148,7 +161,7 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 	{
 		for (s32 x=footprint.x; x<footprint.x + footprint.w; x++)
 		{
-			Terrain *terrain = terrainAt(city, x, y);
+			Terrain *terrain = getTerrainAt(city, x, y);
 			TerrainDef *terrainDef = get(&terrainDefs, terrain->type);
 
 			if (!terrainDef->canBuildOn)
@@ -315,7 +328,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 					x < relArea.x + relArea.w;
 					x++)
 				{
-					TerrainDef *tDef = get(&terrainDefs, sector->terrain[y][x].type);
+					TerrainDef *tDef = get(&terrainDefs, getSectorTile(sector, sector->terrain, x, y)->type);
 
 					if (tDef->canDemolish)
 					{
@@ -369,7 +382,7 @@ void demolishRect(City *city, Rect2I area)
 						x < relArea.x + relArea.w;
 						x++)
 					{
-						Terrain *terrain = &sector->terrain[y][x];
+						Terrain *terrain = getSectorTile(sector, sector->terrain, x, y);
 						TerrainDef *tDef = get(&terrainDefs, terrain->type);
 
 						if (tDef->canDemolish)
@@ -434,7 +447,7 @@ void demolishRect(City *city, Rect2I area)
 							relX < relArea.x + relArea.w;
 							relX++)
 						{
-							TileBuildingRef *tileBuilding = &sector->tileBuilding[relY][relX];
+							TileBuildingRef *tileBuilding = getSectorTile(sector, sector->tileBuilding, relX, relY);
 							tileBuilding->isOccupied = false;
 
 							// Oh wow, we're 5 loops deep. Cool? Coolcoolcoolcoolcoolcoolcoolcococococooolnodoubtnodoubtnodoubt
@@ -443,7 +456,7 @@ void demolishRect(City *city, Rect2I area)
 							if (def->isPath)
 							{
 								// Remove from the pathing layer
-								sector->tilePathGroup[relY][relX] = 0;
+								setSectorTile(sector, sector->tilePathGroup, relX, relY, 0);
 							}
 						}
 					}
@@ -483,7 +496,8 @@ void demolishRect(City *city, Rect2I area)
 							relX < relArea.x + relArea.w;
 							relX++)
 						{
-							sector->tileBuilding[relY][relX].localIndex = buildingIndex;
+							TileBuildingRef *ref = getSectorTile(sector, sector->tileBuilding, relX, relY);
+							ref->localIndex = buildingIndex;
 						}
 					}
 				}

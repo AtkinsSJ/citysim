@@ -297,17 +297,15 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Sector
 	Sector *sector = getSectorAtTilePos(city, tilePos.x, tilePos.y);
-	s32 relX = tilePos.x - sector->bounds.x;
-	s32 relY = tilePos.y - sector->bounds.y;
-
 	window_label(context, myprintf("Sector: x={0} y={1} w={2} h={3}", {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
 
 	// Terrain
-	String terrainName = get(&terrainDefs, sector->terrain[relY][relX].type)->name;
+	Terrain *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
+	String terrainName = get(&terrainDefs, terrain->type)->name;
 	window_label(context, myprintf("Terrain: {0}", {terrainName}));
 
 	// Zone
-	ZoneType zone = sector->tileZone[relY][relX];
+	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
 
 	// Building
@@ -848,15 +846,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						relX < relArea.x + relArea.w;
 						relX++)
 					{
-						Terrain terrain = sector->terrain[relY][relX];
+						Terrain *terrain = getSectorTile(sector, sector->terrain, relX, relY);
 
-						if (terrain.type != terrainType)
+						if (terrain->type != terrainType)
 						{
-							terrainType = terrain.type;
+							terrainType = terrain->type;
 							terrainSprites = get(&terrainDefs, terrainType)->sprites;
 						}
 
-						Sprite *sprite = getSprite(terrainSprites, terrain.spriteOffset);
+						Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
 						spriteBounds.x = (f32)(sector->bounds.x + relX);
 
 						drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
@@ -895,7 +893,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						relX < relArea.x + relArea.w;
 						relX++)
 					{
-						ZoneType zone = sector->tileZone[relY][relX];
+						ZoneType zone = *getSectorTile(sector, sector->tileZone, relX, relY);
 						if (zone != Zone_None)
 						{
 							if (zone != zoneType)

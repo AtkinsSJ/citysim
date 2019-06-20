@@ -20,7 +20,7 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 	
 	if (!tileExists(city, x, y)) return false;
 
-	TerrainDef *tDef = get(&terrainDefs, terrainAt(city, x, y)->type);
+	TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
 	if (!tDef->canBuildOn) return false;
 
 	if (getBuildingAtPosition(city, x, y) != null) return false;
@@ -117,7 +117,9 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 			if (canZoneTile(city, zoneType, pos.x, pos.y))
 			{
 				Sector *sector = getSectorAtTilePos(city, pos.x, pos.y);
-				ZoneType oldZone = sector->tileZone[pos.y - sector->bounds.y][pos.x - sector->bounds.x];
+				s32 relX = pos.x - sector->bounds.x;
+				s32 relY = pos.y - sector->bounds.y;
+				ZoneType oldZone = *getSectorTile(sector, sector->tileZone, relX, relY);
 
 				// URGHGGHGHHH THIS IS HORRRRRIBLE!
 				// We're doing a linear search through the chunked array for EVERY TILE that's changed!
@@ -140,7 +142,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 					append(emptyZonesArray, pos);
 				}
 
-				sector->tileZone[pos.y - sector->bounds.y][pos.x - sector->bounds.x] = zoneType;
+				setSectorTile(sector, sector->tileZone, relX, relY, zoneType);
 			}
 		}
 	}
