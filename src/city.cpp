@@ -618,3 +618,53 @@ s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 
 	return result;
 }
+
+void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderID)
+{
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	s32 terrainType = -1;
+	SpriteGroup *terrainSprites = null;
+
+	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+	V4 terrainColor = makeWhite();
+
+	Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleArea);
+
+	for (s32 sY = visibleSectors.y;
+		sY < visibleSectors.y + visibleSectors.h;
+		sY++)
+	{
+		for (s32 sX = visibleSectors.x;
+			sX < visibleSectors.x + visibleSectors.w;
+			sX++)
+		{
+			CitySector *sector = getSector(&city->sectors, sX, sY);
+			Rect2I relArea = intersectRelative(visibleArea, sector->bounds);
+			for (s32 relY=relArea.y;
+				relY < relArea.y + relArea.h;
+				relY++)
+			{
+				spriteBounds.y = (f32)(sector->bounds.y + relY);
+
+				for (s32 relX=relArea.x;
+					relX < relArea.x + relArea.w;
+					relX++)
+				{
+					Terrain *terrain = getSectorTile(sector, sector->terrain, relX, relY);
+
+					if (terrain->type != terrainType)
+					{
+						terrainType = terrain->type;
+						terrainSprites = get(&terrainDefs, terrainType)->sprites;
+					}
+
+					Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
+					spriteBounds.x = (f32)(sector->bounds.x + relX);
+
+					drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, shaderID, terrainColor);
+				}
+			}
+		}
+	}
+}

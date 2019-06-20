@@ -69,25 +69,10 @@ struct City
 	s32 industrialDemand;
 };
 
-inline Rect2I getSectorsCovered(City *city, Rect2I area)
-{
-	return getSectorsCovered(&city->sectors, area);
-}
-
 inline bool tileExists(City *city, s32 x, s32 y)
 {
 	return (x >= 0) && (x < city->width)
 		&& (y >= 0) && (y < city->height);
-}
-
-inline CitySector *getSector(City *city, s32 sectorX, s32 sectorY)
-{
-	return getSector(&city->sectors, sectorX, sectorY);
-}
-
-inline CitySector *getSectorAtTilePos(City *city, s32 x, s32 y)
-{
-	return getSectorAtTilePos(&city->sectors, x, y);
 }
 
 inline Terrain *getTerrainAt(City *city, s32 x, s32 y)

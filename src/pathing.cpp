@@ -1,7 +1,7 @@
 
 void setPathGroup(City *city, s32 x, s32 y, s32 value)
 {
-	CitySector *sector = getSectorAtTilePos(city, x, y);
+	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
 	if (sector != null)
 	{
 		s32 relX = x - sector->bounds.x;
@@ -53,7 +53,7 @@ void recalculatePathingConnectivity(City *city)
 			sX < city->sectors.sectorsX;
 			sX++)
 		{
-			CitySector *sector = getSector(city, sX, sY);
+			CitySector *sector = getSector(&city->sectors, sX, sY);
 
 			for (s32 relY = 0;
 				relY < sector->bounds.h;

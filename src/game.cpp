@@ -296,7 +296,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	context->window->title = myprintf(LOCAL("title_inspect"), {formatInt(tilePos.x), formatInt(tilePos.y)});
 
 	// CitySector
-	CitySector *sector = getSectorAtTilePos(city, tilePos.x, tilePos.y);
+	CitySector *sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
 	window_label(context, myprintf("CitySector: x={0} y={1} w={2} h={3}", {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
 
 	// Terrain
@@ -797,55 +797,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		(s32) (worldCamera->size.y / worldCamera->zoom) + 3
 	);
 	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
-	Rect2I visibleSectors = getSectorsCovered(city, visibleTileBounds);
 
 	// Draw terrain
-	{
-		DEBUG_BLOCK_T("Draw terrain", DCDT_GameUpdate);
-
-		s32 terrainType = -1;
-		SpriteGroup *terrainSprites = null;
-
-		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-		V4 terrainColor = makeWhite();
-
-		for (s32 sY = visibleSectors.y;
-			sY < visibleSectors.y + visibleSectors.h;
-			sY++)
-		{
-			for (s32 sX = visibleSectors.x;
-				sX < visibleSectors.x + visibleSectors.w;
-				sX++)
-			{
-				CitySector *sector = getSector(city, sX, sY);
-				Rect2I relArea = intersectRelative(visibleTileBounds, sector->bounds);
-				for (s32 relY=relArea.y;
-					relY < relArea.y + relArea.h;
-					relY++)
-				{
-					spriteBounds.y = (f32)(sector->bounds.y + relY);
-
-					for (s32 relX=relArea.x;
-						relX < relArea.x + relArea.w;
-						relX++)
-					{
-						Terrain *terrain = getSectorTile(sector, sector->terrain, relX, relY);
-
-						if (terrain->type != terrainType)
-						{
-							terrainType = terrain->type;
-							terrainSprites = get(&terrainDefs, terrainType)->sprites;
-						}
-
-						Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
-						spriteBounds.x = (f32)(sector->bounds.x + relX);
-
-						drawSprite(&renderer->worldBuffer, sprite, spriteBounds, -1000.0f, pixelArtShaderID, terrainColor);
-					}
-				}
-			}
-		}
-	}
+	drawTerrain(city, renderer, visibleTileBounds, pixelArtShaderID);
 
 	// Draw zones
 	drawZones(&city->zoneLayer, renderer, visibleTileBounds, rectangleShaderID);
@@ -948,6 +902,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 	clear(&gameState->overlayRenderItems);
 
+#if 0
 	{
 		// Draw sector
 		#if 0
@@ -992,6 +947,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			// }
 		}
 	}
+#endif
 
 	if (gameState->status == GameStatus_Quit)
 	{
