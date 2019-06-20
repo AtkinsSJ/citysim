@@ -54,7 +54,7 @@ struct ZoneLayer
 };
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
-void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney=true);
+void placeZone(City *city, ZoneType zoneType, Rect2I area);
 void markZonesAsEmpty(City *city, Rect2I footprint);
 ZoneType getZoneAt(City *city, s32 x, s32 y);
 void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32 shaderID);

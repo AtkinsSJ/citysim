@@ -160,22 +160,9 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32
 	}
 }
 
-void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney)
+void placeZone(City *city, ZoneType zoneType, Rect2I area)
 {
 	DEBUG_FUNCTION();
-	if (chargeMoney)
-	{
-		s32 cost = calculateZoneCost(city, zoneType, area);
-		if (!canAfford(city, cost))
-		{
-			pushUiMessage(uiState, makeString("Not enough money to zone this."));
-			return;
-		}
-		else
-		{
-			spend(city, cost);
-		}
-	}
 
 	ZoneLayer *zoneLayer = &city->zoneLayer;
 	

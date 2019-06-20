@@ -36,7 +36,7 @@ jobs 7
 :Building Power Station
 size 4 4
 texture power-plant power-plant.png 64 64
-build rect 1000
+build plop 1000
 demolish_cost 200
 carries_power true
 power_gen 4000

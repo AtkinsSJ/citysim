@@ -598,41 +598,24 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				switch (buildingDef->buildMethod)
 				{
-					case BuildMethod_Paint:
-					{
-						if (!mouseIsOverUI)
-						{
-							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
-							if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT))
-							{
-								placeBuilding(uiState, city, buildingDef, footprint.x, footprint.y, true);
-							}
-
-							s32 buildCost = buildingDef->buildCost;
-							showCostTooltip(uiState, buildCost);
-
-							V4 ghostColor = color255(128,255,128,255);
-							if (!canPlaceBuilding(uiState, &gameState->city, buildingDef, footprint.x, footprint.y))
-							{
-								ghostColor = color255(255,0,0,128);
-							}
-
-							Sprite *sprite = getSprite(buildingDef->sprites, 0);
-							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
-						}
-					} break;
-
+					case BuildMethod_Paint: // Fallthrough
 					case BuildMethod_Plop:
 					{
 						if (!mouseIsOverUI)
 						{
 							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
-							if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+							s32 buildCost = buildingDef->buildCost;
+
+							if ((buildingDef->buildMethod == BuildMethod_Plop && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+							|| (buildingDef->buildMethod == BuildMethod_Paint && mouseButtonPressed(inputState, SDL_BUTTON_LEFT)))
 							{
-								placeBuilding(uiState, city, buildingDef, footprint.x, footprint.y, true);
+								if (canAfford(city, buildCost))
+								{
+									placeBuilding(uiState, city, buildingDef, footprint.x, footprint.y, true);
+									spend(city, buildCost);
+								}
 							}
 
-							s32 buildCost = buildingDef->buildCost;
 							showCostTooltip(uiState, buildCost);
 
 							V4 ghostColor = color255(128,255,128,255);
@@ -640,7 +623,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							{
 								ghostColor = color255(255,0,0,128);
 							}
-							
+
 							Sprite *sprite = getSprite(buildingDef->sprites, 0);
 							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
 						}
@@ -661,6 +644,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 								if (canAfford(city, buildCost))
 								{
 									placeBuildingRect(uiState, city, buildingDef, dragResult.dragRect);
+									spend(city, buildCost);
 								}
 								else
 								{
@@ -711,7 +695,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					{
 						if (canAfford(city, zoneCost))
 						{
-							placeZone(uiState, city, gameState->selectedZoneID, dragResult.dragRect);
+							placeZone(city, gameState->selectedZoneID, dragResult.dragRect);
+							spend(city, zoneCost);
 						}
 					} break;
 

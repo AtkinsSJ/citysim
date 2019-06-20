@@ -192,17 +192,16 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 /**
  * Attempt to place a building. Returns whether successful.
  */
-bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32 top, bool showBuildErrors)
+void placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32 top, bool showBuildErrors)
 {
 	DEBUG_FUNCTION();
 	
 	if (!canPlaceBuilding(uiState, city, def, left, top, showBuildErrors))
 	{
-		return false;
+		return;
 	}
 
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
-	spend(city, def->buildCost);
 
 	bool needToRecalcPaths = def->isPath;
 	bool needToRecalcPower = def->carriesPower;
@@ -226,7 +225,7 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 	else
 	{
 		// Remove zones
-		placeZone(uiState, city, Zone_None, footprint, false);
+		placeZone(city, Zone_None, footprint);
 
 		building = addBuilding(city, def, footprint);
 	}
@@ -261,9 +260,6 @@ bool placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32
 	{
 		markPowerLayerDirty(&city->powerLayer, footprint);
 	}
-
-
-	return true;
 }
 
 s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area)
