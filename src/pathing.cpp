@@ -15,22 +15,22 @@ void floodFillPathingConnectivity(City *city, s32 x, s32 y, s32 fillValue)
 {
 	setPathGroup(city, x, y, fillValue);
 
-	if (pathGroupAt(city, x-1, y) == -1)
+	if (getPathGroupAt(city, x-1, y) == -1)
 	{
 		floodFillPathingConnectivity(city, x-1, y, fillValue);
 	}
 	
-	if (pathGroupAt(city, x+1, y) == -1)
+	if (getPathGroupAt(city, x+1, y) == -1)
 	{
 		floodFillPathingConnectivity(city, x+1, y, fillValue);
 	}
 
-	if (pathGroupAt(city, x, y+1) == -1)
+	if (getPathGroupAt(city, x, y+1) == -1)
 	{
 		floodFillPathingConnectivity(city, x, y+1, fillValue);
 	}
 
-	if (pathGroupAt(city, x, y-1) == -1)
+	if (getPathGroupAt(city, x, y-1) == -1)
 	{
 		floodFillPathingConnectivity(city, x, y-1, fillValue);
 	}
@@ -80,7 +80,7 @@ void recalculatePathingConnectivity(City *city)
 	{
 		for (s32 x=0; x<city->width; x++, tileIndex++)
 		{
-			if (pathGroupAt(city, x, y) == -1)
+			if (getPathGroupAt(city, x, y) == -1)
 			{
 				// Flood fill from here!
 				floodFillPathingConnectivity(city, x, y, ++city->pathLayer.pathGroupCount);
@@ -135,21 +135,21 @@ bool canPathTo(City *city, Rect2I target, V2I from)
 		// Horizontals
 		for (int x=fromRect.x; x<fromRect.x + fromRect.w; x++)
 		{
-			_addPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, x, fromRect.y-1));
-			_addPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, x, fromRect.y + fromRect.h));
+			_addPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, x, fromRect.y-1));
+			_addPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, x, fromRect.y + fromRect.h));
 		}
 		// Verticals
 		for (int y=fromRect.y; y<fromRect.y + fromRect.h; y++)
 		{
-			_addPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, fromRect.x-1, y));
-			_addPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, fromRect.x + fromRect.w, y));
+			_addPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, fromRect.x-1, y));
+			_addPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, fromRect.x + fromRect.w, y));
 		}
 	}
 	else
 	{
 		// Right now, paths are only created by buildings, but we might as well
 		// handle non-buildings too.
-		s32 pathGroup = pathGroupAt(city, from.x, from.y);
+		s32 pathGroup = getPathGroupAt(city, from.x, from.y);
 		if (pathGroup)
 		{
 			pathGroupCount = 1;
@@ -164,8 +164,8 @@ bool canPathTo(City *city, Rect2I target, V2I from)
 		// Horizontals
 		for (int x=target.x; x<target.x + target.w; x++)
 		{
-			if (_findPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, x, target.y-1))
-			 || _findPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, x, target.y + target.h)))
+			if (_findPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, x, target.y-1))
+			 || _findPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, x, target.y + target.h)))
 			{
 				result = true;
 				break;
@@ -178,8 +178,8 @@ bool canPathTo(City *city, Rect2I target, V2I from)
 			for (int y=target.y; y<target.y + target.h; y++)
 			{
 
-				if (_findPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, target.x-1, y))
-				 || _findPathGroup(&pathGroupCount, &pathGroups, pathGroupAt(city, target.x + target.w, y)))
+				if (_findPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, target.x-1, y))
+				 || _findPathGroup(&pathGroupCount, &pathGroups, getPathGroupAt(city, target.x + target.w, y)))
 				{
 					result = true;
 					break;

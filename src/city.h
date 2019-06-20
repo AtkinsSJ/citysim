@@ -69,93 +69,44 @@ struct City
 	s32 industrialDemand;
 };
 
-inline bool tileExists(City *city, s32 x, s32 y)
-{
-	return (x >= 0) && (x < city->width)
-		&& (y >= 0) && (y < city->height);
-}
+//
+// Public API
+//
+void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds);
 
-inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
-{
-	Terrain *result = &invalidTerrain;
-	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
+void calculateDemand(City *city);
 
-	if (sector != null)
-	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
+void generateTerrain(City *city);
+void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderID);
+Terrain *getTerrainAt(City *city, s32 x, s32 y);
 
-		return getSectorTile(sector, sector->terrain, relX, relY);
-	}
+bool tileExists(City *city, s32 x, s32 y);
+bool canAfford(City *city, s32 cost);
+void spend(City *city, s32 cost);
 
-	return result;
-}
-
-TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y)
-{
-	ASSERT(contains(sector->bounds, x, y), "getSectorBuildingRefAtWorldPosition() passed a coordinate that is outside of the sector!");
-
-	s32 relX = x - sector->bounds.x;
-	s32 relY = y - sector->bounds.y;
-
-	return getSectorTile(sector, sector->tileBuilding, relX, relY);
-}
-
-Building* getBuildingAtPosition(City *city, s32 x, s32 y)
-{
-	Building *result = null;
-
-	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
-	if (sector != null)
-	{
-		TileBuildingRef *ref = getSectorBuildingRefAtWorldPosition(sector, x, y);
-		if (ref->isOccupied)
-		{
-			if (ref->isLocal)
-			{
-				result = get(&sector->buildings, ref->localIndex);
-			}
-			else
-			{
-				// Decided that recursion is the easiest option here to avoid a whole load of
-				// duplicate code with slightly different variable names. (Which sounds like a
-				// recipe for a whole load of subtle bugs.)
-				// We SHOULD only be recursing once, if it's more than once that's a bug. But IDK.
-				// - Sam, 05/06/2019
-				result = getBuildingAtPosition(city, ref->originX, ref->originY);
-			}
-		}
-	}
-
-	return result;
-}
-
+Building* getBuildingAtPosition(City *city, s32 x, s32 y);
+// Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
+// each building is only listed once. No guarantees are made about the order.
 enum BuildingQueryFlags
 {
 	BQF_RequireOriginInArea = 1 << 0, // Only return buildings whose origin (top-left corner) is within the given area.
 };
-// Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
-// each building is only listed once. No guarantees are made about the order.
-// Flags are BuildingQueryFlags
 ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u32 flags=0);
+bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top);
+s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area);
+void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top);
+void placeBuildingRect(City *city, BuildingDef *def, Rect2I area);
 
-inline s32 pathGroupAt(City *city, s32 x, s32 y)
-{
-	s32 result = 0;
-	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
+s32 calculateDemolitionCost(City *city, Rect2I area);
+void demolishRect(City *city, Rect2I area);
 
-	if (sector != null)
-	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
+// Pathing-related stuff, which will be moved out into a TransportLayer at some point
+s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck);
+s32 getPathGroupAt(City *city, s32 x, s32 y);
+bool isPathable(City *city, s32 x, s32 y);
 
-		result = *getSectorTile(sector, sector->tilePathGroup, relX, relY);
-	}
-
-	return result;
-}
-
-inline bool isPathable(City *city, s32 x, s32 y)
-{
-	return pathGroupAt(city, x, y) > 0;
-}
+//
+// Private API
+//
+Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint);
+TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y);

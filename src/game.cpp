@@ -866,7 +866,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				{
 					case DataLayer_Paths:
 					{
-						s32 pathGroup = pathGroupAt(city, x, y);
+						s32 pathGroup = getPathGroupAt(city, x, y);
 						if (pathGroup > 0)
 						{
 							color = genericDataLayerColors[pathGroup % genericDataLayerColorCount];

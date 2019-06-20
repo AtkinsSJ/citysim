@@ -72,12 +72,6 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	return building;
 }
 
-void generatorPlaceBuilding(City *city, BuildingDef *buildingDef, s32 left, s32 top)
-{
-	Building *building = addBuilding(city, buildingDef, irectXYWH(left, top, buildingDef->width, buildingDef->height));
-	building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
-}
-
 void generateTerrain(City *city)
 {
 	DEBUG_FUNCTION();
@@ -108,7 +102,8 @@ void generateTerrain(City *city)
 
 				if (stb_perlin_noise3(px, py, 1) > 0.2f)
 				{
-					generatorPlaceBuilding(city, bTree, x, y);
+					Building *building = addBuilding(city, bTree, irectXYWH(x, y, bTree->width, bTree->height));
+					building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
 				}
 			}
 
@@ -117,12 +112,18 @@ void generateTerrain(City *city)
 	}
 }
 
-bool canAfford(City *city, s32 cost)
+inline bool tileExists(City *city, s32 x, s32 y)
+{
+	return (x >= 0) && (x < city->width)
+		&& (y >= 0) && (y < city->height);
+}
+
+inline bool canAfford(City *city, s32 cost)
 {
 	return city->funds >= cost;
 }
 
-void spend(City *city, s32 cost)
+inline void spend(City *city, s32 cost)
 {
 	city->funds -= cost;
 }
@@ -177,9 +178,6 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	return true;
 }
 
-/**
- * Attempt to place a building. Returns whether successful.
- */
 void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 {
 	DEBUG_FUNCTION();
@@ -619,6 +617,22 @@ s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 	return result;
 }
 
+inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
+{
+	Terrain *result = &invalidTerrain;
+	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
+
+	if (sector != null)
+	{
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		return getSectorTile(sector, sector->terrain, relX, relY);
+	}
+
+	return result;
+}
+
 void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
@@ -667,4 +681,64 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 			}
 		}
 	}
+}
+
+TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y)
+{
+	ASSERT(contains(sector->bounds, x, y), "getSectorBuildingRefAtWorldPosition() passed a coordinate that is outside of the sector!");
+
+	s32 relX = x - sector->bounds.x;
+	s32 relY = y - sector->bounds.y;
+
+	return getSectorTile(sector, sector->tileBuilding, relX, relY);
+}
+
+Building* getBuildingAtPosition(City *city, s32 x, s32 y)
+{
+	Building *result = null;
+
+	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
+	if (sector != null)
+	{
+		TileBuildingRef *ref = getSectorBuildingRefAtWorldPosition(sector, x, y);
+		if (ref->isOccupied)
+		{
+			if (ref->isLocal)
+			{
+				result = get(&sector->buildings, ref->localIndex);
+			}
+			else
+			{
+				// Decided that recursion is the easiest option here to avoid a whole load of
+				// duplicate code with slightly different variable names. (Which sounds like a
+				// recipe for a whole load of subtle bugs.)
+				// We SHOULD only be recursing once, if it's more than once that's a bug. But IDK.
+				// - Sam, 05/06/2019
+				result = getBuildingAtPosition(city, ref->originX, ref->originY);
+			}
+		}
+	}
+
+	return result;
+}
+
+inline s32 getPathGroupAt(City *city, s32 x, s32 y)
+{
+	s32 result = 0;
+	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
+
+	if (sector != null)
+	{
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		result = *getSectorTile(sector, sector->tilePathGroup, relX, relY);
+	}
+
+	return result;
+}
+
+inline bool isPathable(City *city, s32 x, s32 y)
+{
+	return getPathGroupAt(city, x, y) > 0;
 }
