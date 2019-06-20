@@ -6,7 +6,7 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
 
-	initSectorGrid(&layer->sectors, gameArena, city->width, city->height, SECTOR_SIZE);
+	initSectorGrid(&layer->sectors, gameArena, city->width, city->height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < layer->sectors.count; sectorIndex++)
 	{
 		PowerSector *sector = layer->sectors.sectors + sectorIndex;
@@ -55,7 +55,7 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 	}
 
 	// Count power from buildings
-	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds);
+	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds, BQF_RequireOriginInArea);
 	for (auto it = iterate(&sectorBuildings);
 		!it.isDone;
 		next(&it))

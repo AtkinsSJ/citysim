@@ -295,7 +295,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	s32 total = 0;
 
 	// Terrain demolition cost
-	Rect2I sectorsArea = getSectorsCovered(city, area);
+	Rect2I sectorsArea = getSectorsCovered(&city->sectors, area);
 	for (s32 sY = sectorsArea.y;
 		sY < sectorsArea.y + sectorsArea.h;
 		sY++)
@@ -349,7 +349,7 @@ void demolishRect(City *city, Rect2I area)
 		// and maybe link it directly instead of by name?
 		s32 groundTerrainType = findTerrainTypeByName(makeString("Ground"));
 
-		Rect2I sectorsArea = getSectorsCovered(city, area);
+		Rect2I sectorsArea = getSectorsCovered(&city->sectors, area);
 		for (s32 sY = sectorsArea.y;
 			sY < sectorsArea.y + sectorsArea.h;
 			sY++)
@@ -415,7 +415,7 @@ void demolishRect(City *city, Rect2I area)
 			building = null; // For safety, because we just deleted the Building!
 
 			// Clear all references to this building
-			Rect2I sectorsArea = getSectorsCovered(city, buildingFootprint);
+			Rect2I sectorsArea = getSectorsCovered(&city->sectors, buildingFootprint);
 			for (s32 sY = sectorsArea.y;
 				sY < sectorsArea.y + sectorsArea.h;
 				sY++)
@@ -456,7 +456,7 @@ void demolishRect(City *city, Rect2I area)
 
 		// Expand the area to account for buildings to the left or up from it
 		Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, buildingCatalogue.overallMaxBuildingDim, 0);
-		Rect2I sectorsArea = getSectorsCovered(city, expandedArea);
+		Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
 		for (s32 sY = sectorsArea.y;
 			sY < sectorsArea.y + sectorsArea.h;
@@ -511,7 +511,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 	// (but don't do that if we only care about origins)
 	s32 expansion = requireOriginInArea ? 0 : buildingCatalogue.overallMaxBuildingDim;
 	Rect2I expandedArea = expand(area, expansion, 0, expansion, 0);
-	Rect2I sectorsArea = getSectorsCovered(city, expandedArea);
+	Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
 	for (s32 sY = sectorsArea.y;
 		sY < sectorsArea.y + sectorsArea.h;
@@ -689,6 +689,22 @@ inline SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y
 	{
 		result = getSector(grid, x / grid->sectorSize, y / grid->sectorSize);
 	}
+
+	return result;
+}
+
+template<typename SectorType>
+inline Rect2I getSectorsCovered(SectorGrid<SectorType> *grid, Rect2I area)
+{
+	area = intersect(area, irectXYWH(0, 0, grid->width, grid->height));
+
+	Rect2I result = irectMinMax(
+		area.x / grid->sectorSize,
+		area.y / grid->sectorSize,
+
+		(area.x + area.w) / grid->sectorSize,
+		(area.y + area.h) / grid->sectorSize
+	);
 
 	return result;
 }

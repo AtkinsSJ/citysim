@@ -922,51 +922,37 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		V4 drawColorNormal = makeWhite();
 		V4 drawColorDemolish = color255(255,128,128,255);
 
-
-		// We only scan the sectors whose buildings could conceivably be visible.
+		//
 		// TODO: Once buildings have "height" that extends above their footprint, we'll need to know
 		// the maximum height, and go a corresponding number of sectors down to ensure they're drawn.
 		//
 		// - Sam, 17/06/2019
 		//
-		s32 minSX = ((visibleSectors.x * SECTOR_SIZE) - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
-		s32 minSY = ((visibleSectors.y * SECTOR_SIZE) - buildingCatalogue.overallMaxBuildingDim) / SECTOR_SIZE;
-		for (s32 sY = minSY;
-			sY < visibleSectors.y + visibleSectors.h;
-			sY++)
+		ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
+		for (auto it = iterate(&visibleBuildings);
+			!it.isDone;
+			next(&it))
 		{
-			for (s32 sX = minSX;
-				sX < visibleSectors.x + visibleSectors.w;
-				sX++)
+			Building *building = getValue(it);
+
+			if (typeID != building->typeID)
 			{
-				Sector *sector = getSector(city, sX, sY);
-
-				for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
-				{
-					Building *building = get(it);
-					if (rectsOverlap(building->footprint, visibleTileBounds))
-					{
-						if (typeID != building->typeID)
-						{
-							typeID = building->typeID;
-							sprites = getBuildingDef(typeID)->sprites;
-						}
-
-						V4 drawColor = drawColorNormal;
-
-						if (gameState->actionMode == ActionMode_Demolish
-							&& gameState->worldDragState.isDragging
-							&& rectsOverlap(building->footprint, demolitionRect))
-						{
-							// Draw building red to preview demolition
-							drawColor = drawColorDemolish;
-						}
-
-						Sprite *sprite = getSprite(sprites, building->spriteOffset);
-						drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), 0, pixelArtShaderID, drawColor);
-					}
-				}
+				typeID = building->typeID;
+				sprites = getBuildingDef(typeID)->sprites;
 			}
+
+			V4 drawColor = drawColorNormal;
+
+			if (gameState->actionMode == ActionMode_Demolish
+				&& gameState->worldDragState.isDragging
+				&& rectsOverlap(building->footprint, demolitionRect))
+			{
+				// Draw building red to preview demolition
+				drawColor = drawColorDemolish;
+			}
+
+			Sprite *sprite = getSprite(sprites, building->spriteOffset);
+			drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), 0, pixelArtShaderID, drawColor);
 		}
 	}
 

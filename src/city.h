@@ -46,10 +46,13 @@ template<typename SectorType>
 void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize);
 
 template<typename SectorType>
-inline SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sectorY);
+SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sectorY);
 
 template<typename SectorType>
-inline SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y);
+SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y);
+
+template<typename SectorType>
+Rect2I getSectorsCovered(SectorGrid<SectorType> *grid, Rect2I area);
 
 #define SECTOR_SIZE 16
 #include "building.h"
@@ -109,17 +112,7 @@ inline s32 tileIndex(City *city, s32 x, s32 y)
 
 inline Rect2I getSectorsCovered(City *city, Rect2I area)
 {
-	area = intersect(area, irectXYWH(0, 0, city->width, city->height));
-
-	Rect2I result = irectMinMax(
-		area.x / SECTOR_SIZE,
-		area.y / SECTOR_SIZE,
-
-		(area.x + area.w) / SECTOR_SIZE,
-		(area.y + area.h) / SECTOR_SIZE
-	);
-
-	return result;
+	return getSectorsCovered(&city->sectors, area);
 }
 
 inline bool tileExists(City *city, s32 x, s32 y)
