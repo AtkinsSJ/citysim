@@ -46,11 +46,11 @@ void recalculatePathingConnectivity(City *city)
 
 	// Reset things to 0/-1
 	for (s32 sY = 0;
-		sY < city->sectorsY;
+		sY < city->sectors.sectorsY;
 		sY++)
 	{
 		for (s32 sX = 0;
-			sX < city->sectorsX;
+			sX < city->sectors.sectorsX;
 			sX++)
 		{
 			Sector *sector = getSector(city, sX, sY);

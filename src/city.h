@@ -37,6 +37,26 @@ struct City;
 #include "terrain.h"
 #include "zone.h"
 
+template<typename SectorType>
+struct SectorGrid
+{
+	s32 width, height; // world size
+	s32 sectorSize;
+	s32 sectorsX, sectorsY;
+
+	s32 count;
+	SectorType *sectors;
+};
+
+template<typename SectorType>
+void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize);
+
+template<typename SectorType>
+inline SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sectorY);
+
+template<typename SectorType>
+inline SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y);
+
 struct Sector
 {
 	Rect2I bounds;
@@ -62,9 +82,7 @@ struct City
 	s32 monthlyExpenditure;
 
 	s32 width, height;
-	s32 sectorsX, sectorsY;
-	s32 sectorCount;
-	Sector *sectors;
+	SectorGrid<Sector> sectors;
 
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
@@ -113,14 +131,7 @@ inline bool tileExists(City *city, s32 x, s32 y)
 
 inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
 {
-	Sector *result = null;
-
-	if (sectorX >= 0 && sectorX < city->sectorsX && sectorY >= 0 && sectorY < city->sectorsY)
-	{
-		result = city->sectors + (sectorY * city->sectorsX) + sectorX;
-	}
-
-	return result;
+	return getSector(&city->sectors, sectorX, sectorY);
 }
 
 inline s32 getSectorIndexAtTilePos(s32 x, s32 y, s32 sectorsX)
@@ -130,14 +141,7 @@ inline s32 getSectorIndexAtTilePos(s32 x, s32 y, s32 sectorsX)
 
 inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 {
-	Sector *result = null;
-
-	if (tileExists(city, x, y))
-	{
-		result = city->sectors + getSectorIndexAtTilePos(x, y, city->sectorsX);
-	}
-
-	return result;
+	return getSectorAtTilePos(&city->sectors, x, y);
 }
 
 inline Terrain *terrainAt(City *city, s32 x, s32 y)

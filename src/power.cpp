@@ -84,7 +84,7 @@ PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y)
 	if (tileExists(city, x, y))
 	{
 		PowerLayer *powerLayer = &city->powerLayer;
-		PowerSector *sector = powerLayer->sectors + getSectorIndexAtTilePos(x, y, city->sectorsX);
+		PowerSector *sector = powerLayer->sectors + getSectorIndexAtTilePos(x, y, city->sectors.sectorsX);
 
 		s32 relX = x - sector->base->bounds.x;
 		s32 relY = y - sector->base->bounds.y;
