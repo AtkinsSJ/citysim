@@ -298,8 +298,6 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 		_assignBuildingCategories(catalogue, def);
 	}
 
-	catalogue->isInitialised = true;
-
 	logInfo("Loaded {0} buildings: {1} R, {2} C and {3} I growable, and {4} player-constructible", {
 		formatInt(catalogue->allBuildings.count),
 		formatInt(catalogue->rGrowableBuildings.count),

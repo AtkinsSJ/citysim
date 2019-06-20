@@ -54,7 +54,6 @@ struct BuildingDef
 
 struct BuildingCatalogue
 {
-	bool isInitialised;
 	ChunkedArray<BuildingDef> allBuildings;
 	HashTable<BuildingDef *> buildingsByName;
 

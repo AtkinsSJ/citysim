@@ -261,9 +261,10 @@ String nextToken(String input, String *remainder, char splitChar = 0)
 
 	if (remainder)
 	{
-		remainder->chars = firstWord.chars + firstWord.length;
-		remainder->length = input.length - firstWord.length;
-		*remainder = trimStart(*remainder);
+		// NB: We have to make sure we properly initialise remainder here, because we had a bug before
+		// where we didn't, and it sometimes had old data in the "hasHash" field, which was causing all
+		// kinds of weird stuff to happen!
+		*remainder = trimStart(makeString(firstWord.chars + firstWord.length, input.length - firstWord.length));
 
 		// Skip the split char
 		if (splitChar != 0 && remainder->length > 0)
