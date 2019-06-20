@@ -295,9 +295,9 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	V2I tilePos = gameState->inspectedTilePosition;
 	context->window->title = myprintf(LOCAL("title_inspect"), {formatInt(tilePos.x), formatInt(tilePos.y)});
 
-	// Sector
-	Sector *sector = getSectorAtTilePos(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Sector: x={0} y={1} w={2} h={3}", {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
+	// CitySector
+	CitySector *sector = getSectorAtTilePos(city, tilePos.x, tilePos.y);
+	window_label(context, myprintf("CitySector: x={0} y={1} w={2} h={3}", {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
 
 	// Terrain
 	Terrain *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
@@ -817,7 +817,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				sX < visibleSectors.x + visibleSectors.w;
 				sX++)
 			{
-				Sector *sector = getSector(city, sX, sY);
+				CitySector *sector = getSector(city, sX, sY);
 				Rect2I relArea = intersectRelative(visibleTileBounds, sector->bounds);
 				for (s32 relY=relArea.y;
 					relY < relArea.y + relArea.h;
@@ -955,7 +955,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		{
 			for (s32 x = 0; x < city->sectorsX; x++)
 			{
-				Sector *sector = city->sectors + (city->sectorsX * y) + x;
+				CitySector *sector = city->sectors + (city->sectorsX * y) + x;
 
 				V4 color;
 				if ((x + y) % 2 == 1)
@@ -972,7 +972,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 		#endif
 
-		Sector *cursorSector = getSectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
+		CitySector *cursorSector = getSectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
 		if (cursorSector != null)
 		{
 			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, rectangleShaderID, color255(255, 255, 255, 63));

@@ -48,6 +48,7 @@ struct PowerLayer
 };
 
 const u8 POWER_GROUP_UNKNOWN = 255;
+struct City;
 
 // Public API
 void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena);

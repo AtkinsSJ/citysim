@@ -1,7 +1,7 @@
 
 void setPathGroup(City *city, s32 x, s32 y, s32 value)
 {
-	Sector *sector = getSectorAtTilePos(city, x, y);
+	CitySector *sector = getSectorAtTilePos(city, x, y);
 	if (sector != null)
 	{
 		s32 relX = x - sector->bounds.x;
@@ -53,7 +53,7 @@ void recalculatePathingConnectivity(City *city)
 			sX < city->sectors.sectorsX;
 			sX++)
 		{
-			Sector *sector = getSector(city, sX, sY);
+			CitySector *sector = getSector(city, sX, sY);
 
 			for (s32 relY = 0;
 				relY < sector->bounds.h;
@@ -201,6 +201,11 @@ struct PathingNode
 
 	PathingNode *next, *prev;
 };
+
+inline s32 tileIndex(City *city, s32 x, s32 y)
+{
+	return (y * city->width) + x;
+}
 
 void _addPathNodeToQueue(City *city, PathingNode *nodes, V2I pos, PathingNode *parentNode, PathingNode **openQueue, Rect2I target)
 {

@@ -15,7 +15,6 @@ struct PathLayer
 	s32 pathGroupCount;
 };
 
-
 struct TileBuildingRef
 {
 	bool isOccupied;
@@ -28,50 +27,7 @@ struct TileBuildingRef
 	s32 localIndex;
 };
 
-struct Sector;
-struct City;
-
-template<typename SectorType>
-struct SectorGrid
-{
-	s32 width, height; // world size
-	s32 sectorSize;
-	s32 sectorsX, sectorsY;
-
-	s32 count;
-	SectorType *sectors;
-};
-
-template<typename SectorType>
-void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize);
-
-template<typename SectorType>
-SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sectorY);
-
-template<typename SectorType>
-SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y);
-
-template<typename SectorType>
-Rect2I getSectorsCovered(SectorGrid<SectorType> *grid, Rect2I area);
-
-template<typename SectorType, typename T>
-inline T *getSectorTile(SectorType *sector, T *tiles, s32 x, s32 y)
-{
-	return tiles + (y * sector->bounds.w) + x;
-}
-
-template<typename SectorType, typename T>
-inline void setSectorTile(SectorType *sector, T *tiles, s32 x, s32 y, T value)
-{
-	tiles[(y * sector->bounds.w) + x] = value;
-}
-
-#include "building.h"
-#include "power.h"
-#include "terrain.h"
-#include "zone.h"
-
-struct Sector
+struct CitySector
 {
 	Rect2I bounds;
 
@@ -79,10 +35,9 @@ struct Sector
 	TileBuildingRef *tileBuilding;
 	s32             *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
 
-	// NB: A building is owned by a Sector if its top-left corner tile is inside that Sector.
+	// NB: A building is owned by a CitySector if its top-left corner tile is inside that CitySector.
 	ChunkedArray<Building>   buildings;
 };
-
 
 struct City
 {
@@ -94,7 +49,7 @@ struct City
 	s32 monthlyExpenditure;
 
 	s32 width, height;
-	SectorGrid<Sector> sectors;
+	SectorGrid<CitySector> sectors;
 
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
@@ -114,11 +69,6 @@ struct City
 	s32 industrialDemand;
 };
 
-inline s32 tileIndex(City *city, s32 x, s32 y)
-{
-	return (y * city->width) + x;
-}
-
 inline Rect2I getSectorsCovered(City *city, Rect2I area)
 {
 	return getSectorsCovered(&city->sectors, area);
@@ -130,12 +80,12 @@ inline bool tileExists(City *city, s32 x, s32 y)
 		&& (y >= 0) && (y < city->height);
 }
 
-inline Sector *getSector(City *city, s32 sectorX, s32 sectorY)
+inline CitySector *getSector(City *city, s32 sectorX, s32 sectorY)
 {
 	return getSector(&city->sectors, sectorX, sectorY);
 }
 
-inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
+inline CitySector *getSectorAtTilePos(City *city, s32 x, s32 y)
 {
 	return getSectorAtTilePos(&city->sectors, x, y);
 }
@@ -143,7 +93,7 @@ inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
 {
 	Terrain *result = &invalidTerrain;
-	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
+	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
 
 	if (sector != null)
 	{
@@ -156,7 +106,7 @@ inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
 	return result;
 }
 
-TileBuildingRef *getSectorBuildingRefAtWorldPosition(Sector *sector, s32 x, s32 y)
+TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y)
 {
 	ASSERT(contains(sector->bounds, x, y), "getSectorBuildingRefAtWorldPosition() passed a coordinate that is outside of the sector!");
 
@@ -170,7 +120,7 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
 	Building *result = null;
 
-	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
+	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
 	if (sector != null)
 	{
 		TileBuildingRef *ref = getSectorBuildingRefAtWorldPosition(sector, x, y);
@@ -207,7 +157,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 inline s32 pathGroupAt(City *city, s32 x, s32 y)
 {
 	s32 result = 0;
-	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
+	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
 
 	if (sector != null)
 	{
