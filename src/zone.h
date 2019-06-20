@@ -30,8 +30,17 @@ ZoneDef zoneDefs[] = {
 	{Zone_Industrial,  makeString("Industrial"),  color255(255, 255,   0, 128), 20, true,  4},
 };
 
+struct ZoneSector
+{
+	Rect2I bounds;
+
+	ZoneType *tileZone;
+};
+
 struct ZoneLayer
 {
+	SectorGrid<ZoneSector> sectors;
+
 	ChunkPool<V2I> zoneLocationsChunkPool;
 
 	ChunkedArray<V2I> emptyRZones;
@@ -44,6 +53,8 @@ struct ZoneLayer
 	ChunkedArray<V2I> filledIZones;
 };
 
-void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer);
+void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
 void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney=true);
 void markZonesAsEmpty(City *city, Rect2I footprint);
+ZoneType getZoneAt(City *city, s32 x, s32 y);
+void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32 shaderID);

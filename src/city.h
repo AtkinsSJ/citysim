@@ -75,10 +75,8 @@ struct Sector
 {
 	Rect2I bounds;
 
-	// All of these are in [y][x] order!
 	Terrain         *terrain;
 	TileBuildingRef *tileBuilding;
-	ZoneType        *tileZone;
 	s32             *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
 
 	// NB: A building is owned by a Sector if its top-left corner tile is inside that Sector.
@@ -225,20 +223,4 @@ inline s32 pathGroupAt(City *city, s32 x, s32 y)
 inline bool isPathable(City *city, s32 x, s32 y)
 {
 	return pathGroupAt(city, x, y) > 0;
-}
-
-inline ZoneType getZoneAt(City *city, s32 x, s32 y)
-{
-	ZoneType result = Zone_None;
-	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
-
-	if (sector != null)
-	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
-
-		result = *getSectorTile(sector, sector->tileZone, relX, relY);
-	}
-
-	return result;
 }

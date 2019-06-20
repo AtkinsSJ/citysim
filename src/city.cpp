@@ -20,15 +20,13 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 		sector->terrain       = PushArray(gameArena, Terrain,         sector->bounds.w * sector->bounds.h);
 		sector->tileBuilding  = PushArray(gameArena, TileBuildingRef, sector->bounds.w * sector->bounds.h);
-		sector->tileZone      = PushArray(gameArena, ZoneType,        sector->bounds.w * sector->bounds.h);
 		sector->tilePathGroup = PushArray(gameArena, s32,             sector->bounds.w * sector->bounds.h);
 
 		initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
 	}
 
 	initPowerLayer(&city->powerLayer, city, gameArena);
-
-	initZoneLayer(gameArena, &city->zoneLayer);
+	initZoneLayer(&city->zoneLayer, city, gameArena);
 
 	city->highestBuildingID = 0;
 }

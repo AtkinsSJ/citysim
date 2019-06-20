@@ -1,17 +1,41 @@
 #pragma once
 
-void initZoneLayer(MemoryArena *memoryArena, ZoneLayer *zoneLayer)
+void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
-	initChunkPool(&zoneLayer->zoneLocationsChunkPool, memoryArena, 256);
+	initChunkPool(&zoneLayer->zoneLocationsChunkPool, gameArena, 256);
 
-	initChunkedArray(&zoneLayer->emptyRZones,        &zoneLayer->zoneLocationsChunkPool);
-	initChunkedArray(&zoneLayer->filledRZones,       &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->emptyRZones,  &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->filledRZones, &zoneLayer->zoneLocationsChunkPool);
 
-	initChunkedArray(&zoneLayer->emptyCZones,        &zoneLayer->zoneLocationsChunkPool);
-	initChunkedArray(&zoneLayer->filledCZones,       &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->emptyCZones,  &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->filledCZones, &zoneLayer->zoneLocationsChunkPool);
 
-	initChunkedArray(&zoneLayer->emptyIZones,        &zoneLayer->zoneLocationsChunkPool);
-	initChunkedArray(&zoneLayer->filledIZones,       &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->emptyIZones,  &zoneLayer->zoneLocationsChunkPool);
+	initChunkedArray(&zoneLayer->filledIZones, &zoneLayer->zoneLocationsChunkPool);
+
+	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
+	for (s32 sectorIndex = 0; sectorIndex < zoneLayer->sectors.count; sectorIndex++)
+	{
+		ZoneSector *sector = zoneLayer->sectors.sectors + sectorIndex;
+
+		sector->tileZone = PushArray(gameArena, ZoneType, sector->bounds.w * sector->bounds.h);
+	}
+}
+
+inline ZoneType getZoneAt(City *city, s32 x, s32 y)
+{
+	ZoneType result = Zone_None;
+	ZoneSector *sector = getSectorAtTilePos(&city->zoneLayer.sectors, x, y);
+
+	if (sector != null)
+	{
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		result = *getSectorTile(sector, sector->tileZone, relX, relY);
+	}
+
+	return result;
 }
 
 bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
@@ -87,6 +111,55 @@ static ChunkedArray<V2I> *getFilledZonesArray(ZoneLayer *layer, ZoneType zoneTyp
 	return filledZonesArray;
 }
 
+void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32 shaderID)
+{
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+	s32 zoneType = -1;
+	V4 zoneColor = {};
+
+	Rect2I visibleSectors = getSectorsCovered(&zoneLayer->sectors, visibleArea);
+	for (s32 sY = visibleSectors.y;
+		sY < visibleSectors.y + visibleSectors.h;
+		sY++)
+	{
+		for (s32 sX = visibleSectors.x;
+			sX < visibleSectors.x + visibleSectors.w;
+			sX++)
+		{
+			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
+
+			Rect2I relArea = intersectRelative(visibleArea, sector->bounds);
+			for (s32 relY=relArea.y;
+				relY < relArea.y + relArea.h;
+				relY++)
+			{
+				spriteBounds.y = (f32)(sector->bounds.y + relY);
+
+				for (s32 relX=relArea.x;
+					relX < relArea.x + relArea.w;
+					relX++)
+				{
+					ZoneType zone = *getSectorTile(sector, sector->tileZone, relX, relY);
+					if (zone != Zone_None)
+					{
+						if (zone != zoneType)
+						{
+							zoneType = zone;
+							zoneColor = zoneDefs[zoneType].color;
+						}
+
+						spriteBounds.x = (f32)(sector->bounds.x + relX);
+
+						drawRect(&renderer->worldBuffer, spriteBounds, -900.0f, shaderID, zoneColor);
+					}
+				}
+			}
+		}
+	}
+}
+
 void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, bool chargeMoney)
 {
 	DEBUG_FUNCTION();
@@ -103,8 +176,10 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 			spend(city, cost);
 		}
 	}
+
+	ZoneLayer *zoneLayer = &city->zoneLayer;
 	
-	ChunkedArray<V2I> *emptyZonesArray = getEmptyZonesArray(&city->zoneLayer, zoneType);
+	ChunkedArray<V2I> *emptyZonesArray = getEmptyZonesArray(zoneLayer, zoneType);
 
 	// TODO: @Speed Invert how zone location removal is done.
 	// Rather than doing a linear search for each tile, we could instead loop once through the zones
@@ -116,7 +191,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 			V2I pos = v2i(area.x + x, area.y + y);
 			if (canZoneTile(city, zoneType, pos.x, pos.y))
 			{
-				Sector *sector = getSectorAtTilePos(city, pos.x, pos.y);
+				ZoneSector *sector = getSectorAtTilePos(&zoneLayer->sectors, pos.x, pos.y);
 				s32 relX = pos.x - sector->bounds.x;
 				s32 relY = pos.y - sector->bounds.y;
 				ZoneType oldZone = *getSectorTile(sector, sector->tileZone, relX, relY);
@@ -130,7 +205,7 @@ void placeZone(UIState *uiState, City *city, ZoneType zoneType, Rect2I area, boo
 				// sections that manage their own caches.
 				// - Sam, 03/06/2019
 
-				ChunkedArray<V2I> *oldEmptyZonesArray = getEmptyZonesArray(&city->zoneLayer, oldZone);
+				ChunkedArray<V2I> *oldEmptyZonesArray = getEmptyZonesArray(zoneLayer, oldZone);
 				if (oldEmptyZonesArray)
 				{
 					// We need to *remove* the position

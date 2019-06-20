@@ -865,52 +865,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// Draw zones
-	{
-		DEBUG_BLOCK_T("Draw zones", DCDT_GameUpdate);
-
-		Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-		s32 zoneType = -1;
-		V4 zoneColor = {};
-
-		for (s32 sY = visibleSectors.y;
-			sY < visibleSectors.y + visibleSectors.h;
-			sY++)
-		{
-			for (s32 sX = visibleSectors.x;
-				sX < visibleSectors.x + visibleSectors.w;
-				sX++)
-			{
-				Sector *sector = getSector(city, sX, sY);
-
-				Rect2I relArea = intersectRelative(visibleTileBounds, sector->bounds);
-				for (s32 relY=relArea.y;
-					relY < relArea.y + relArea.h;
-					relY++)
-				{
-					spriteBounds.y = (f32)(sector->bounds.y + relY);
-
-					for (s32 relX=relArea.x;
-						relX < relArea.x + relArea.w;
-						relX++)
-					{
-						ZoneType zone = *getSectorTile(sector, sector->tileZone, relX, relY);
-						if (zone != Zone_None)
-						{
-							if (zone != zoneType)
-							{
-								zoneType = zone;
-								zoneColor = zoneDefs[zoneType].color;
-							}
-
-							spriteBounds.x = (f32)(sector->bounds.x + relX);
-
-							drawRect(&renderer->worldBuffer, spriteBounds, -900.0f, rectangleShaderID, zoneColor);
-						}
-					}
-				}
-			}
-		}
-	}
+	drawZones(&city->zoneLayer, renderer, visibleTileBounds, rectangleShaderID);
 	
 	{
 		DEBUG_BLOCK_T("Draw buildings", DCDT_GameUpdate);

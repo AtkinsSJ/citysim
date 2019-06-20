@@ -19,9 +19,9 @@ BuildingCatalogue:
 
 SECTORS:
 - Sector info debug window!
-- OK, new plan: Rather than have Sectors contain everything, it's easier to reason about things if we split everything into Layers like we already were doing, and then individual layers can organise their data into sectors or however they want, and their sectors can be different sizes or whatever. This means we can pick and choose where sectors do or don't make the most sense, and stick to a simpler flat 2D where we can.
+✔ OK, new plan: Rather than have Sectors contain everything, it's easier to reason about things if we split everything into Layers like we already were doing, and then individual layers can organise their data into sectors or however they want, and their sectors can be different sizes or whatever. This means we can pick and choose where sectors do or don't make the most sense, and stick to a simpler flat 2D where we can.
 	- I do think we want a standard set of tools for dealing with sector data, because connectivity and stuff is going to be similar in several cases.
-- Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index. OR, we could union{} it maybe?
+✔ Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index. OR, we could union{} it maybe?
 - Power network
 	✔ Move power-network stuff out of City.h entirely? Put everything in PowerLayer, and make it manage its own sectors? Separating the different systems would be nice, though at the same time it might make it more awkward/less efficient to access stuff. Not sure... I think I'm going to try it though.
 		✔ Related, we can probably take the City* arg out of a lot of the internal PowerLayer functions.
@@ -38,7 +38,7 @@ SECTORS:
 	- Terrain mesh? That's kind of a side issue
 ✔ Buildings
 	✔ findBuildingsInRectangle(), which returns some kind of temporary, iterable array.
-	- Add flags to ^ so we can request buildings whose ORIGIN is in the rectangle, and maybe some other requirements (eg, must carry power)
+	✔ Add flags to ^ so we can request buildings whose ORIGIN is in the rectangle, and maybe some other requirements (eg, must carry power)
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)
