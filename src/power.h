@@ -16,7 +16,7 @@ struct PowerSector
 
 	// 0 = none, >0 = any tile with the same value is connected
 	// POWER_GROUP_UNKNOWN is used as a temporary value while recalculating
-	u8 tilePowerGroup[SECTOR_SIZE][SECTOR_SIZE];
+	u8 *tilePowerGroup;
 
 	// NB: Power groups start at 1, (0 means "none") so subtract 1 from the value in tilePowerGroup to get the index!
 	ChunkedArray<PowerGroup> powerGroups;
@@ -59,6 +59,9 @@ PowerNetwork *getPowerNetworkAt(PowerLayer *powerLayer, s32 x, s32 y);
 // Private-but-actually-still-accessible API
 PowerNetwork *newPowerNetwork(PowerLayer *layer);
 void freePowerNetwork(PowerNetwork *network);
+
+u8 getPowerGroupID(PowerSector *sector, s32 x, s32 y);
+void setPowerGroupID(PowerSector *sector, s32 x, s32 y, u8 value);
 
 void updateSectorPowerValues(City *city, PowerSector *sector);
 

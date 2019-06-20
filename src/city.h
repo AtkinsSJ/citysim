@@ -86,13 +86,12 @@ struct City
 
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
-
-	u32 highestBuildingID;
-
-	struct ZoneLayer zoneLayer;
+	ZoneLayer zoneLayer;
 
 	ChunkPool<Building>   sectorBuildingsChunkPool;
 	ChunkPool<Rect2I>     sectorBoundariesChunkPool;
+
+	u32 highestBuildingID;
 
 	s32 totalResidents;
 	s32 totalJobs;
