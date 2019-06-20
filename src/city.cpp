@@ -31,7 +31,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
-	Sector *ownerSector = getSectorAtTilePos(city, footprint.x, footprint.y);
+	Sector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
 	
 	s32 localIndex = (s32) ownerSector->buildings.count;
 	Building *building = appendBlank(&ownerSector->buildings);
@@ -48,7 +48,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	{
 		for (s32 x=0; x<footprint.w; x++)
 		{
-			Sector *sector = getSectorAtTilePos(city, footprint.x+x, footprint.y+y);
+			Sector *sector = getSectorAtTilePos(&city->sectors, footprint.x+x, footprint.y+y);
 			TileBuildingRef *ref = &sector->tileBuilding[footprint.y + y - sector->bounds.y][footprint.x + x - sector->bounds.x];
 			ref->isOccupied = true;
 			ref->originX = footprint.x;
@@ -304,7 +304,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 			sX < sectorsArea.x + sectorsArea.w;
 			sX++)
 		{
-			Sector *sector = getSector(city, sX, sY);
+			Sector *sector = getSector(&city->sectors, sX, sY);
 			Rect2I relArea = intersectRelative(area, sector->bounds);
 
 			for (s32 y=relArea.y;
@@ -358,7 +358,7 @@ void demolishRect(City *city, Rect2I area)
 				sX < sectorsArea.x + sectorsArea.w;
 				sX++)
 			{
-				Sector *sector = getSector(city, sX, sY);
+				Sector *sector = getSector(&city->sectors, sX, sY);
 				Rect2I relArea = intersectRelative(area, sector->bounds);
 
 				for (s32 y=relArea.y;
@@ -408,7 +408,7 @@ void demolishRect(City *city, Rect2I area)
 			city->totalJobs -= def->jobs;
 
 			Rect2I buildingFootprint = building->footprint;
-			Sector *buildingOwnerSector = getSectorAtTilePos(city, buildingFootprint.x, buildingFootprint.y);
+			Sector *buildingOwnerSector = getSectorAtTilePos(&city->sectors, buildingFootprint.x, buildingFootprint.y);
 
 			TileBuildingRef *tileBuildingRef = getSectorBuildingRefAtWorldPosition(buildingOwnerSector, buildingFootprint.x, buildingFootprint.y);
 			removeIndex(&buildingOwnerSector->buildings, tileBuildingRef->localIndex, false);
@@ -424,7 +424,7 @@ void demolishRect(City *city, Rect2I area)
 					sX < sectorsArea.x + sectorsArea.w;
 					sX++)
 				{
-					Sector *sector = getSector(city, sX, sY);
+					Sector *sector = getSector(&city->sectors, sX, sY);
 					Rect2I relArea = intersectRelative(buildingFootprint, sector->bounds);
 					for (s32 relY = relArea.y;
 						relY < relArea.y + relArea.h;
@@ -466,7 +466,7 @@ void demolishRect(City *city, Rect2I area)
 				sX < sectorsArea.x + sectorsArea.w;
 				sX++)
 			{
-				Sector *sector = getSector(city, sX, sY);
+				Sector *sector = getSector(&city->sectors, sX, sY);
 				
 				// Recalculate the tile-building refs for possibly-affected sectors
 				for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
@@ -521,7 +521,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 			sX < sectorsArea.x + sectorsArea.w;
 			sX++)
 		{
-			Sector *sector = getSector(city, sX, sY);
+			Sector *sector = getSector(&city->sectors, sX, sY);
 
 			for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
 			{

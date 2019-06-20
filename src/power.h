@@ -12,7 +12,7 @@ struct PowerGroup
 
 struct PowerSector
 {
-	Sector *base;
+	Rect2I bounds;
 
 	// 0 = none, >0 = any tile with the same value is connected
 	// POWER_GROUP_UNKNOWN is used as a temporary value while recalculating
@@ -36,10 +36,7 @@ struct PowerLayer
 {
 	bool isDirty;
 
-	// We probably don't want these here, we probably want some kind of templatey thing that gives us sectors.
-	s32 sectorsX, sectorsY;
-	s32 sectorCount;
-	PowerSector *sectors;
+	SectorGrid<PowerSector> sectors;
 
 	ChunkedArray<PowerNetwork> networks;
 

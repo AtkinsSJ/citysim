@@ -31,12 +31,6 @@ struct TileBuildingRef
 struct Sector;
 struct City;
 
-#define SECTOR_SIZE 16
-#include "building.h"
-#include "power.h"
-#include "terrain.h"
-#include "zone.h"
-
 template<typename SectorType>
 struct SectorGrid
 {
@@ -56,6 +50,12 @@ inline SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sect
 
 template<typename SectorType>
 inline SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y);
+
+#define SECTOR_SIZE 16
+#include "building.h"
+#include "power.h"
+#include "terrain.h"
+#include "zone.h"
 
 struct Sector
 {
@@ -147,7 +147,7 @@ inline Sector *getSectorAtTilePos(City *city, s32 x, s32 y)
 inline Terrain *terrainAt(City *city, s32 x, s32 y)
 {
 	Terrain *result = &invalidTerrain;
-	Sector *sector = getSectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
 
 	if (sector != null)
 	{
@@ -174,7 +174,7 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
 	Building *result = null;
 
-	Sector *sector = getSectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
 	if (sector != null)
 	{
 		TileBuildingRef *ref = getSectorBuildingRefAtWorldPosition(sector, x, y);
@@ -211,7 +211,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 inline s32 pathGroupAt(City *city, s32 x, s32 y)
 {
 	s32 result = 0;
-	Sector *sector = getSectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
 
 	if (sector != null)
 	{
@@ -232,7 +232,7 @@ inline bool isPathable(City *city, s32 x, s32 y)
 inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 {
 	ZoneType result = Zone_None;
-	Sector *sector = getSectorAtTilePos(city, x, y);
+	Sector *sector = getSectorAtTilePos(&city->sectors, x, y);
 
 	if (sector != null)
 	{
