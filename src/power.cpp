@@ -40,7 +40,7 @@ void freePowerNetwork(PowerNetwork *network)
 	clear(&network->groups);
 }
 
-void updateSectorPowerValues(PowerSector *sector)
+void updateSectorPowerValues(City *city, PowerSector *sector)
 {
 	// Reset each to 0
 	for (auto it = iterate(&sector->powerGroups);
@@ -53,11 +53,12 @@ void updateSectorPowerValues(PowerSector *sector)
 	}
 
 	// Count power from buildings
-	for (auto it = iterate(&sector->base->buildings);
+	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->base->bounds);
+	for (auto it = iterate(&sectorBuildings);
 		!it.isDone;
 		next(&it))
 	{
-		Building *building = get(it);
+		Building *building = getValue(it);
 		BuildingDef *def = getBuildingDef(building->typeID);
 
 		if (def->power != 0)
@@ -191,9 +192,12 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	// Step 1: Set all power-carrying tiles to -1 (everything was set to 0 in the above memset())
 
 	// - Step 1.1, iterate through our owned buildings and mark their tiles if they carry power
-	for (auto it = iterate(&sector->base->buildings); !it.isDone; next(&it))
+	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->base->bounds);
+	for (auto it = iterate(&sectorBuildings);
+		!it.isDone;
+		next(&it))
 	{
-		Building *building = get(it);
+		Building *building = getValue(it);
 		BuildingDef *def = getBuildingDef(building->typeID);
 
 		if (def->carriesPower)
@@ -259,7 +263,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	if (sector->powerGroups.count == 0) return;
 
 	// Step 3: Calculate power production/consumption for OWNED buildings, and add to their PowerGroups
-	updateSectorPowerValues(sector);
+	updateSectorPowerValues(city, sector);
 
 	// Step 4: Find and store the PowerGroup boundaries along the sector's edges, on the OUTSIDE
 	// @Copypasta The code for all this is really repetitive, but I'm not sure how to factor it together nicely.
@@ -534,7 +538,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		sectorIndex++)
 	{
 		PowerSector *sector = layer->sectors + sectorIndex;
-		updateSectorPowerValues(sector);
+		updateSectorPowerValues(city, sector);
 	}
 
 	// Sum each PowerGroup's power into its Network

@@ -63,7 +63,7 @@ PowerNetwork *getPowerNetworkAt(PowerLayer *powerLayer, s32 x, s32 y);
 PowerNetwork *newPowerNetwork(PowerLayer *layer);
 void freePowerNetwork(PowerNetwork *network);
 
-void updateSectorPowerValues(PowerSector *sector);
+void updateSectorPowerValues(City *city, PowerSector *sector);
 
 void floodFillSectorPowerGroup(PowerSector *sector, s32 x, s32 y, u8 fillValue);
 void setRectPowerGroupUnknown(PowerSector *sector, Rect2I area);

@@ -522,13 +522,17 @@ void demolishRect(City *city, Rect2I area)
 	}
 }
 
-ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area)
+ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u32 flags)
 {
 	ChunkedArray<Building *> result = {};
 	initChunkedArray(&result, globalFrameTempArena, 64);
 
+	bool requireOriginInArea = (flags & BQF_RequireOriginInArea) != 0;
+
 	// Expand the area to account for buildings to the left or up from it
-	Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, buildingCatalogue.overallMaxBuildingDim, 0);
+	// (but don't do that if we only care about origins)
+	s32 expansion = requireOriginInArea ? 0 : buildingCatalogue.overallMaxBuildingDim;
+	Rect2I expandedArea = expand(area, expansion, 0, expansion, 0);
 	Rect2I sectorsArea = getSectorsCovered(city, expandedArea);
 
 	for (s32 sY = sectorsArea.y;

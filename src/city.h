@@ -195,9 +195,14 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 	return result;
 }
 
+enum BuildingQueryFlags
+{
+	BQF_RequireOriginInArea = 1 << 0, // Only return buildings whose origin (top-left corner) is within the given area.
+};
 // Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
 // each building is only listed once. No guarantees are made about the order.
-ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area);
+// Flags are BuildingQueryFlags
+ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u32 flags=0);
 
 inline s32 pathGroupAt(City *city, s32 x, s32 y)
 {
