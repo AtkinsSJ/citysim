@@ -606,23 +606,21 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
 							s32 buildCost = buildingDef->buildCost;
 
+							bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x, footprint.y);
+
 							if ((buildingDef->buildMethod == BuildMethod_Plop && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
 							|| (buildingDef->buildMethod == BuildMethod_Paint && mouseButtonPressed(inputState, SDL_BUTTON_LEFT)))
 							{
-								if (canAfford(city, buildCost))
+								if (canPlace && canAfford(city, buildCost))
 								{
-									placeBuilding(uiState, city, buildingDef, footprint.x, footprint.y, true);
+									placeBuilding(city, buildingDef, footprint.x, footprint.y);
 									spend(city, buildCost);
 								}
 							}
 
-							showCostTooltip(uiState, buildCost);
+							if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
 
-							V4 ghostColor = color255(128,255,128,255);
-							if (!canPlaceBuilding(uiState, &gameState->city, buildingDef, footprint.x, footprint.y))
-							{
-								ghostColor = color255(255,0,0,128);
-							}
+							V4 ghostColor = canPlace ? color255(128,255,128,255) : color255(255,0,0,128);
 
 							Sprite *sprite = getSprite(buildingDef->sprites, 0);
 							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
@@ -643,7 +641,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							{
 								if (canAfford(city, buildCost))
 								{
-									placeBuildingRect(uiState, city, buildingDef, dragResult.dragRect);
+									placeBuildingRect(city, buildingDef, dragResult.dragRect);
 									spend(city, buildCost);
 								}
 								else
@@ -664,7 +662,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
 										{
 											V4 ghostColor = color255(128,255,128,255);
-											if (!canPlaceBuilding(uiState, city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
+											if (!canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
 											{
 												ghostColor = color255(255,0,0,128);
 											}

@@ -127,17 +127,13 @@ void spend(City *city, s32 cost)
 	city->funds -= cost;
 }
 
-bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32 top, bool isAttemptingToBuild = false)
+bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 {
 	DEBUG_FUNCTION();
 
 	// Can we afford to build this?
 	if (!canAfford(city, def->buildCost))
 	{
-		if (isAttemptingToBuild)
-		{
-			pushUiMessage(uiState, makeString("Not enough money to build this."));
-		}
 		return false;
 	}
 
@@ -146,10 +142,6 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 	// Are we in bounds?
 	if (!rectInRect2I(irectXYWH(0,0, city->width, city->height), footprint))
 	{
-		if (isAttemptingToBuild)
-		{
-			pushUiMessage(uiState, makeString("You cannot build off the map edge."));
-		}
 		return false;
 	}
 
@@ -164,10 +156,6 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 
 			if (!terrainDef->canBuildOn)
 			{
-				if (isAttemptingToBuild)
-				{
-					pushUiMessage(uiState, makeString("You cannot build there."));
-				}
 				return false;
 			}
 
@@ -192,14 +180,9 @@ bool canPlaceBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, 
 /**
  * Attempt to place a building. Returns whether successful.
  */
-void placeBuilding(UIState *uiState, City *city, BuildingDef *def, s32 left, s32 top, bool showBuildErrors)
+void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 {
 	DEBUG_FUNCTION();
-	
-	if (!canPlaceBuilding(uiState, city, def, left, top, showBuildErrors))
-	{
-		return;
-	}
 
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
@@ -272,7 +255,7 @@ s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area)
 	{
 		for (s32 x=0; x + def->width <= area.w; x += def->width)
 		{
-			if (canPlaceBuilding(null, city, def, area.x + x, area.y + y))
+			if (canPlaceBuilding(city, def, area.x + x, area.y + y))
 			{
 				totalCost += def->buildCost;
 			}
@@ -282,7 +265,7 @@ s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area)
 	return totalCost;
 }
 
-void placeBuildingRect(UIState *uiState, City *city, BuildingDef *def, Rect2I area)
+void placeBuildingRect(City *city, BuildingDef *def, Rect2I area)
 {
 	DEBUG_FUNCTION();
 
@@ -290,7 +273,10 @@ void placeBuildingRect(UIState *uiState, City *city, BuildingDef *def, Rect2I ar
 	{
 		for (s32 x=0; x + def->width <= area.w; x += def->width)
 		{
-			placeBuilding(uiState, city, def, area.x + x, area.y + y, false);
+			if (canPlaceBuilding(city, def, area.x + x, area.y + y))
+			{
+				placeBuilding(city, def, area.x + x, area.y + y);
+			}
 		}
 	}
 }
