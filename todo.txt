@@ -18,11 +18,10 @@ BuildingCatalogue:
 - Store which menu a building is in, in a queryable way
 
 SECTORS:
-- Sector info debug window!
 ✔ OK, new plan: Rather than have Sectors contain everything, it's easier to reason about things if we split everything into Layers like we already were doing, and then individual layers can organise their data into sectors or however they want, and their sectors can be different sizes or whatever. This means we can pick and choose where sectors do or don't make the most sense, and stick to a simpler flat 2D where we can.
 	- I do think we want a standard set of tools for dealing with sector data, because connectivity and stuff is going to be similar in several cases.
 ✔ Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index. OR, we could union{} it maybe?
-- Power network
+✔ Power network
 	✔ Move power-network stuff out of City.h entirely? Put everything in PowerLayer, and make it manage its own sectors? Separating the different systems would be nice, though at the same time it might make it more awkward/less efficient to access stuff. Not sure... I think I'm going to try it though.
 		✔ Related, we can probably take the City* arg out of a lot of the internal PowerLayer functions.
 		- Maybe we should even go oop-style and make things member functions? IDK.
@@ -72,7 +71,12 @@ Tidy up the types/maths files, so that I can ACTUALLY FIND THINGS.
 Things to work on next maybe:
 - Power stations and connectivity and consumption?
 - Zones actually spawn stuff
-- Rather than directly recalculating power/pathing when we make a change, mark them as "dirty" and then recalculate at an appropriate moment.
+- Maintain a graph of the power network, so we can recalculate a small portion when things change instead of rebuilding the whole thing
+	- I think we already have enough information actually? PowerNetwork keeps a list of its Groups, and when we change a sector, only 3 things can happen: 1) nothing, 2) splitting a network into multiple parts, or 3) merging networks.
+		Detecting 3) is easy - just see if all the boundaries of the group are the same network. If not, it's a merge!
+		Detecting 2) is harder, not sure about that.
+		Detecting 1) is just a case of realising neither 2 or 3 happened!
+	- Related to this, we'd want to put networks in a structure that keeps their indices rather than rearranging them when adding/removing networks. (Because merging networks simply would involve moving all the groups from B into A, which would leave a gap at B's index.) I'm starting to want this structure more and more so I'd better implement it!
 - Break the world into Sectors, each of which handles local information. (Power, path connectivity etc)
 	- Transport, power, water, and probably other things, all rely heavily on a flood-fill connectivity check to know what parts of the city are relevant, and it's expensive to recalculate the entire map any time something changes. If we break this into two parts, within-chunk and between-chunks, we'd only need to recalculate at most a single chunk, and then the sectors graph itself. The downside is this is more complicated.
 	- This means each sector would have its own list of PowerGroups, etc. That starts to get messy memory-wise, I don't think something like that would work with our MemoryArena approach. IDK, maybe we could be really sloppy and allocate tons of them? Or put all those things in a central place? Actually that makes more sense.
