@@ -14,6 +14,8 @@ Notes for searching:
 
 ------------------------------------------------
 
+Speed up debug system?
+
 BuildingCatalogue:
 - Store which menu a building is in, in a queryable way
 
@@ -35,6 +37,7 @@ SECTORS:
 	- Similar stuff to how power works, so figure that out first
 - Terrain
 	- Terrain mesh? That's kind of a side issue
+	- Also a side-issue, but combine all terrain into a single texture! That'll dramatically reduce draw calls.
 ✔ Buildings
 	✔ findBuildingsInRectangle(), which returns some kind of temporary, iterable array.
 	✔ Add flags to ^ so we can request buildings whose ORIGIN is in the rectangle, and maybe some other requirements (eg, must carry power)

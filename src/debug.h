@@ -157,6 +157,11 @@ void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugStartTrackingRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer);
 
+// TODO: @Speed I think we could dramatically speed this up by moving the findOrAdd() call into a
+// static variable, so all instances of the "same" DebugBlock use the same lookup, instead of
+// doing a lookup every time. Especially in tight loops with 10ks of calls, it's too much overhead,
+// and means we can't really use this as a useful profiler! I dropped something from 4ms to under 2
+// just by removing the DEBUG_BLOCK() line. It's a mess.
 struct DebugBlock
 {
 	DebugCodeData *codeData;
