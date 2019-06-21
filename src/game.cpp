@@ -579,8 +579,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	UIState *uiState = &globalAppState.uiState;
 	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState);
 
+	// This stuff should probably be organised but I don't know where to put it. @Cleanup
 	s32 pixelArtShaderID  = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
 	s32 rectangleShaderID = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
+	V4 ghostColorValid    = color255(128,255,128,255);
+	V4 ghostColorInvalid  = color255(255,0,0,128);
 
 	// CAMERA!
 	Camera *worldCamera = &renderer->worldBuffer.camera;
@@ -596,9 +599,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	{
 		DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
-
-		V4 ghostColorValid = color255(128,255,128,255);
-		V4 ghostColorInvalid = color255(255,0,0,128);
 
 		switch (gameState->actionMode)
 		{

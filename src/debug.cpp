@@ -467,18 +467,6 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 	assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
 }
 
-void debugTrackCodeCall(DebugState *debugState, String name, DebugCodeDataTag tag, u64 cycleCount)
-{
-	DebugCodeData *codeData = findOrAdd(&debugState->codeData, name);
-
-	codeData->name = name;
-	codeData->tag = tag;
-
-	u32 frameIndex = debugState->writingFrameIndex;
-	codeData->callCount[frameIndex]++;
-	codeData->totalCycleCount[frameIndex] += cycleCount;
-}
-
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn)
 {
 	DebugRenderBufferData *renderBufferData = debugState->currentRenderBuffer;

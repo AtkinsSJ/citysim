@@ -154,26 +154,27 @@ struct DebugState
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
-void debugTrackCodeCall(DebugState *debugState, String name, DebugCodeDataTag tag, u64 cycleCount);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugStartTrackingRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer);
 
 struct DebugBlock
 {
-	String name;
-	DebugCodeDataTag tag;
+	DebugCodeData *codeData;
 	u64 startTime;
 
 	DebugBlock(String name, DebugCodeDataTag tag)
 	{
-		this->name = name;
-		this->tag = tag;
+		this->codeData = findOrAdd(&globalDebugState->codeData, name);
+		this->codeData->name = name;
+		this->codeData->tag = tag;
 		this->startTime = SDL_GetPerformanceCounter();
 	}
 
 	~DebugBlock()
 	{
 		u64 cycleCount = SDL_GetPerformanceCounter() - this->startTime;
-		debugTrackCodeCall(globalDebugState, this->name, this->tag, cycleCount);
+		u32 frameIndex = globalDebugState->writingFrameIndex;
+		codeData->callCount[frameIndex]++;
+		codeData->totalCycleCount[frameIndex] += cycleCount;
 	}
 };
