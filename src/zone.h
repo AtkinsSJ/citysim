@@ -30,9 +30,20 @@ ZoneDef zoneDefs[] = {
 	{Zone_Industrial,  makeString("Industrial"),  color255(255, 255,   0, 128), 20, true,  4},
 };
 
+enum ZoneSectorFlags
+{
+	ZoneSector_HasResZones      = 1 << 0,
+	ZoneSector_HasComZones      = 1 << 1,
+	ZoneSector_HasIndZones      = 1 << 2,
+	ZoneSector_HasEmptyResZones = 1 << 3,
+	ZoneSector_HasEmptyComZones = 1 << 4,
+	ZoneSector_HasEmptyIndZones = 1 << 5,
+};
+
 struct ZoneSector
 {
 	Rect2I bounds;
+	u32 zoneSectorFlags;
 
 	ZoneType *tileZone;
 };
@@ -41,20 +52,21 @@ struct ZoneLayer
 {
 	SectorGrid<ZoneSector> sectors;
 
-	ChunkPool<V2I> zoneLocationsChunkPool;
+	s32 sectorsWithResZonesCount;
+	s32 sectorsWithEmptyResZonesCount;
 
-	ChunkedArray<V2I> emptyRZones;
-	ChunkedArray<V2I> filledRZones;
+	s32 sectorsWithComZonesCount;
+	s32 sectorsWithEmptyComZonesCount;
 
-	ChunkedArray<V2I> emptyCZones;
-	ChunkedArray<V2I> filledCZones;
-
-	ChunkedArray<V2I> emptyIZones;
-	ChunkedArray<V2I> filledIZones;
+	s32 sectorsWithIndZonesCount;
+	s32 sectorsWithEmptyIndZonesCount;
 };
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
+void updateZoneLayer(City *city, ZoneLayer *layer);
+
 void placeZone(City *city, ZoneType zoneType, Rect2I area);
 void markZonesAsEmpty(City *city, Rect2I footprint);
 ZoneType getZoneAt(City *city, s32 x, s32 y);
+
 void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32 shaderID);

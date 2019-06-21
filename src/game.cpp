@@ -561,8 +561,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// Update the simulation... need a smarter way of doing this!
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_GameUpdate);
+
 		calculateDemand(city);
 		growSomeZoneBuildings(city);
+
+		updateZoneLayer(city, &city->zoneLayer);
 
 		updatePowerLayer(city, &city->powerLayer);
 	}

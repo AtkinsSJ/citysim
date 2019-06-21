@@ -2,21 +2,19 @@
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
-	initChunkPool(&zoneLayer->zoneLocationsChunkPool, gameArena, 256);
-
-	initChunkedArray(&zoneLayer->emptyRZones,  &zoneLayer->zoneLocationsChunkPool);
-	initChunkedArray(&zoneLayer->filledRZones, &zoneLayer->zoneLocationsChunkPool);
-
-	initChunkedArray(&zoneLayer->emptyCZones,  &zoneLayer->zoneLocationsChunkPool);
-	initChunkedArray(&zoneLayer->filledCZones, &zoneLayer->zoneLocationsChunkPool);
-
-	initChunkedArray(&zoneLayer->emptyIZones,  &zoneLayer->zoneLocationsChunkPool);
-	initChunkedArray(&zoneLayer->filledIZones, &zoneLayer->zoneLocationsChunkPool);
+	zoneLayer->sectorsWithResZonesCount      = 0;
+	zoneLayer->sectorsWithEmptyResZonesCount = 0;
+	zoneLayer->sectorsWithComZonesCount      = 0;
+	zoneLayer->sectorsWithEmptyComZonesCount = 0;
+	zoneLayer->sectorsWithIndZonesCount      = 0;
+	zoneLayer->sectorsWithEmptyIndZonesCount = 0;
 
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < zoneLayer->sectors.count; sectorIndex++)
 	{
 		ZoneSector *sector = zoneLayer->sectors.sectors + sectorIndex;
+
+		sector->zoneSectorFlags = 0;
 
 		sector->tileZone = PushArray(gameArena, ZoneType, sector->bounds.w * sector->bounds.h);
 	}
@@ -85,32 +83,6 @@ s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 	return total;
 }
 
-static ChunkedArray<V2I> *getEmptyZonesArray(ZoneLayer *layer, ZoneType zoneType)
-{
-	ChunkedArray<V2I> *emptyZonesArray = null;
-	switch (zoneType)
-	{
-		case Zone_Residential:  emptyZonesArray = &layer->emptyRZones; break;
-		case Zone_Commercial:   emptyZonesArray = &layer->emptyCZones; break;
-		case Zone_Industrial:   emptyZonesArray = &layer->emptyIZones; break;
-	}
-
-	return emptyZonesArray;
-}
-
-static ChunkedArray<V2I> *getFilledZonesArray(ZoneLayer *layer, ZoneType zoneType)
-{
-	ChunkedArray<V2I> *filledZonesArray = null;
-	switch (zoneType)
-	{
-		case Zone_Residential:  filledZonesArray = &layer->filledRZones; break;
-		case Zone_Commercial:   filledZonesArray = &layer->filledCZones; break;
-		case Zone_Industrial:   filledZonesArray = &layer->filledIZones; break;
-	}
-
-	return filledZonesArray;
-}
-
 void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
@@ -165,14 +137,8 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 	DEBUG_FUNCTION();
 
 	ZoneLayer *zoneLayer = &city->zoneLayer;
-	
-	ChunkedArray<V2I> *emptyZonesArray = getEmptyZonesArray(zoneLayer, zoneType);
 
-	// TODO: @Speed Invert how zone location removal is done.
-	// Rather than doing a linear search for each tile, we could instead loop once through the zones
-	// list and remove any that are within the rectangle. (If we can edit an array while iterating it...)
-	// Once we have sectors, changes like this can be done by looping through the affected sectors and
-	// then doing the check in each one.
+// TODO: SECTORS!
 	for (int y=0; y<area.h; y++) {
 		for (int x=0; x<area.w; x++) {
 			V2I pos = v2i(area.x + x, area.y + y);
@@ -181,28 +147,6 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 				ZoneSector *sector = getSectorAtTilePos(&zoneLayer->sectors, pos.x, pos.y);
 				s32 relX = pos.x - sector->bounds.x;
 				s32 relY = pos.y - sector->bounds.y;
-				ZoneType oldZone = *getSectorTile(sector, sector->tileZone, relX, relY);
-
-				// URGHGGHGHHH THIS IS HORRRRRIBLE!
-				// We're doing a linear search through the chunked array for EVERY TILE that's changed!
-				// Then again, I'm not sure there's a good way to *not* do that while still having a
-				// list of locations by zone type, which we use for spawning buildings. Maybe this is
-				// actually slower overall than not having the empty-zones list at all.
-				// In any case, it'll be a lot better once we have the city divided up into smaller
-				// sections that manage their own caches.
-				// - Sam, 03/06/2019
-
-				ChunkedArray<V2I> *oldEmptyZonesArray = getEmptyZonesArray(zoneLayer, oldZone);
-				if (oldEmptyZonesArray)
-				{
-					// We need to *remove* the position
-					findAndRemove(oldEmptyZonesArray, pos);
-				}
-
-				if (emptyZonesArray)
-				{
-					append(emptyZonesArray, pos);
-				}
 
 				setSectorTile(sector, sector->tileZone, relX, relY, zoneType);
 			}
@@ -216,68 +160,67 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 void markZonesAsEmpty(City *city, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
-	// NB: We're assuming there's only one zone type within the footprint,
-	// because we don't support buildings that can grow in multiple different zones.
-	ZoneType zoneType = getZoneAt(city, footprint.x, footprint.y);
-	ChunkedArray<V2I> *emptyZonesArray  = getEmptyZonesArray( &city->zoneLayer, zoneType);
-
-	if (emptyZonesArray)
-	{
-		ChunkedArray<V2I> *filledZonesArray = getFilledZonesArray(&city->zoneLayer, zoneType);
-
-		for (s32 y=0; y < footprint.h; y++)
-		{
-			for (s32 x=0; x < footprint.w; x++)
-			{
-				// Mark the zone as empty
-				V2I pos = v2i(footprint.x+x, footprint.y+y);
-				findAndRemove(filledZonesArray, pos);
-				append(emptyZonesArray, pos);
-			}
-		}
-	}
+	
+	// This now doesn't do anything but I'm keeping it because we probably want dirty rects/local updates later.
 }
 
-void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
+void updateZoneLayer(City *city, ZoneLayer *layer)
 {
-	DEBUG_FUNCTION();
-	
-	/* 
-		We make some assumptions here, because some building features don't make sense
-		for zoned buildings, and we already checked the footprint with isZoneAcceptable().
-		The assumptions are:
-		 - There is no building or other obstacle already overlapping the footprint
-		 - There is only one zone type across the entire footprint
-		 - This building doesn't affect the paths layer
-		 - This building doesn't affect the power layer (because power is carried by the zone)
-		 - This building doesn't remove the existing zone
-		 - This building doesn't need to affect adjacent building textures
-	 */
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-	Building *building = addBuilding(city, def, footprint);
+	layer->sectorsWithResZonesCount      = 0;
+	layer->sectorsWithEmptyResZonesCount = 0;
+	layer->sectorsWithComZonesCount      = 0;
+	layer->sectorsWithEmptyComZonesCount = 0;
+	layer->sectorsWithIndZonesCount      = 0;
+	layer->sectorsWithEmptyIndZonesCount = 0;
 
-	ZoneType zoneType = getZoneAt(city, footprint.x, footprint.y);
-	ChunkedArray<V2I> *emptyZonesArray  = getEmptyZonesArray( &city->zoneLayer, zoneType);
-	ChunkedArray<V2I> *filledZonesArray = getFilledZonesArray(&city->zoneLayer, zoneType);
-
-	ASSERT(emptyZonesArray && filledZonesArray, "Attempting to grow a building in a zone with no empty/filled zones arrays.");
-
-	for (s32 y=0; y<building->footprint.h; y++)
+	for (s32 sectorIndex = 0;
+		sectorIndex < layer->sectors.count;
+		sectorIndex++)
 	{
-		for (s32 x=0; x<building->footprint.w; x++)
+		ZoneSector *sector = layer->sectors.sectors + sectorIndex;
+
+		sector->zoneSectorFlags = 0;
+
+		for (s32 relY=0; relY < sector->bounds.h; relY++)
 		{
-			V2I pos = v2i(building->footprint.x+x, building->footprint.y+y);
+			for (s32 relX=0; relX < sector->bounds.w; relX++)
+			{
+				ZoneType zone = *getSectorTile(sector, sector->tileZone, relX, relY);
+				if (zone == Zone_None) continue;
 
-			// Mark the zone as filled
-			findAndRemove(emptyZonesArray, pos);
-			append(filledZonesArray, pos);
+				bool isFilled = buildingExistsAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);
+				switch (zone)
+				{
+					case Zone_Residential:
+					{
+						sector->zoneSectorFlags |= ZoneSector_HasResZones;
+						if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyResZones;
+					} break;
+
+					case Zone_Commercial:
+					{
+						sector->zoneSectorFlags |= ZoneSector_HasComZones;
+						if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyComZones;
+					} break;
+
+					case Zone_Industrial:
+					{
+						sector->zoneSectorFlags |= ZoneSector_HasIndZones;
+						if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyIndZones;
+					} break;
+				}
+			}
 		}
+
+		if (sector->zoneSectorFlags & ZoneSector_HasResZones)       layer->sectorsWithResZonesCount++;
+		if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)  layer->sectorsWithEmptyResZonesCount++;
+		if (sector->zoneSectorFlags & ZoneSector_HasComZones)       layer->sectorsWithComZonesCount++;
+		if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones)  layer->sectorsWithEmptyComZonesCount++;
+		if (sector->zoneSectorFlags & ZoneSector_HasIndZones)       layer->sectorsWithIndZonesCount++;
+		if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones)  layer->sectorsWithEmptyIndZonesCount++;
 	}
-
-	city->totalResidents += building->currentResidents;
-	city->totalJobs += building->currentJobs;
-
-	updateBuildingTexture(city, building, def);
 }
 
 static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
@@ -292,7 +235,7 @@ static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 	{
 		isAcceptable = false;
 	}
-	else if (getBuildingAtPosition(city, x, y) != null)
+	else if (buildingExistsAtPosition(city, x, y))
 	{
 		isAcceptable = false;
 	}
@@ -321,25 +264,45 @@ void growSomeZoneBuildings(City *city)
 
 		s32 maxRBuildingDim = buildingCatalogue.maxRBuildingDim;
 
-		while ((layer->emptyRZones.count > 0) && (remainingDemand > minimumDemand))
+		while ((layer->sectorsWithEmptyResZonesCount > 0) && (remainingDemand > minimumDemand))
 		{
 			// Find a valid res zone
 			// TODO: Better selection than just a random one
 			bool foundAZone = false;
+			s32 randomSectorOffset = randomNext(random);
+			s32 randomXOffset = randomNext(random);
+			s32 randomYOffset = randomNext(random);
 			V2I zonePos = {};
 			{
 				DEBUG_BLOCK("growSomeZoneBuildings - find a valid zone");
-				for (auto it = iterate(&layer->emptyRZones, randomInRange(random, truncate32(layer->emptyRZones.count)));
-					!it.isDone;
-					next(&it))
+				for (s32 sectorIndex = 0;
+					!foundAZone && sectorIndex < layer->sectors.count;
+					sectorIndex++)
 				{
-					V2I aPos = getValue(it);
+					ZoneSector *sector = layer->sectors.sectors + ((sectorIndex + randomSectorOffset) % layer->sectors.count);
 
-					if (isZoneAcceptable(city, Zone_Residential, aPos.x, aPos.y))
+					if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
 					{
-						zonePos = aPos;
-						foundAZone = true;
-						break;
+						for (s32 relY=0;
+							!foundAZone && relY < sector->bounds.h;
+							relY++)
+						{
+							for (s32 relX=0;
+								!foundAZone && relX < sector->bounds.w;
+								relX++)
+							{
+								s32 tileX = (relX + randomXOffset) % sector->bounds.w;
+								s32 tileY = (relY + randomYOffset) % sector->bounds.h;
+								s32 x = sector->bounds.x + tileX;
+								s32 y = sector->bounds.y + tileY;
+								// ZoneType zone = *getSectorTile(sector, sector->tileZone, tileX, tileY);
+								if (isZoneAcceptable(city, Zone_Residential, x, y))
+								{
+									zonePos = v2i(x, y);
+									foundAZone = true;
+								}
+							}
+						}
 					}
 				}
 			}
@@ -449,7 +412,12 @@ void growSomeZoneBuildings(City *city)
 				// Place it!
 				// TODO: Right now this places at the top-left of the zoneFootprint... probably want to be better than that.
 				Rect2I footprint = irectPosDim(zoneFootprint.pos, buildingDef->size);
-				growZoneBuilding(city, buildingDef, footprint);
+
+				Building *building = addBuilding(city, buildingDef, footprint);
+				city->totalResidents += building->currentResidents;
+				city->totalJobs += building->currentJobs;
+				updateBuildingTexture(city, building, buildingDef);
+
 				remainingDemand -= buildingDef->residents;
 			}
 			else
