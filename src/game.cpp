@@ -597,6 +597,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
 
+		V4 ghostColorValid = color255(128,255,128,255);
+		V4 ghostColorInvalid = color255(255,0,0,128);
+
 		switch (gameState->actionMode)
 		{
 			case ActionMode_Build:
@@ -627,10 +630,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 							if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
 
-							V4 ghostColor = canPlace ? color255(128,255,128,255) : color255(255,0,0,128);
-
 							Sprite *sprite = getSprite(buildingDef->sprites, 0);
-							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100, ghostColor, pixelArtShaderID, sprite);
+							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100,
+													canPlace ? ghostColorValid : ghostColorInvalid,
+													pixelArtShaderID, sprite);
 						}
 					} break;
 
@@ -668,14 +671,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									{
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
 										{
-											V4 ghostColor = color255(128,255,128,255);
-											if (!canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y))
-											{
-												ghostColor = color255(255,0,0,128);
-											}
+											bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y);
 
 											Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
-											pushOverlayRenderItem(gameState, rect, depthFromY(dragResult.dragRect.y + y) + 100, ghostColor, pixelArtShaderID, sprite);
+											pushOverlayRenderItem(gameState, rect, depthFromY(dragResult.dragRect.y + y) + 100, canPlace ? ghostColorValid : ghostColorInvalid, pixelArtShaderID, sprite);
 										}
 									}
 								}
@@ -725,13 +724,17 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							//
 							// - Sam, 21/06/2019
 							//
+							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
+							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
+								zoneRect.y = (f32) y;
 								for (s32 x = dragResult.dragRect.x; x < dragResult.dragRect.x+dragResult.dragRect.w; x++)
 								{
+									zoneRect.x = (f32) x;
 									if (canZoneTile(city, gameState->selectedZoneID, x, y))
 									{
-										pushOverlayRenderItem(gameState, rectXYWHi(x, y, 1, 1), 0, zoneDefs[gameState->selectedZoneID].color, rectangleShaderID);
+										pushOverlayRenderItem(gameState, zoneRect, 0, zoneColor, rectangleShaderID);
 									}
 								}
 							}

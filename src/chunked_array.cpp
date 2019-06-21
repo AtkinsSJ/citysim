@@ -363,7 +363,7 @@ void reserve(ChunkedArray<T> *array, smm desiredSize)
 {
 	DEBUG_FUNCTION();
 	
-	while ((array->chunkSize * array->chunkCount) < desiredSize)
+	while (((array->chunkSize * array->chunkCount) - array->count) < desiredSize)
 	{
 		appendChunk(array);
 	}

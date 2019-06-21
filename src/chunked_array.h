@@ -72,7 +72,7 @@ template<typename T>
 T *append(ChunkedArray<T> *array, T item);
 
 template<typename T>
-T *appendBlank(ChunkedArray<T> *array)
+inline T *appendBlank(ChunkedArray<T> *array)
 {
 	T *result = append(array, {});
 	return result;
