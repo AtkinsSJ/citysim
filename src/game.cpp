@@ -17,6 +17,8 @@ GameState *initialiseGameState()
 
 	initChunkedArray(&result->overlayRenderItems, &result->gameArena, 512);
 
+	result->worldDragState.citySize = v2i(result->city.width, result->city.height);
+
 	return result;
 }
 
@@ -234,6 +236,8 @@ Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
 
 			INVALID_DEFAULT_CASE;
 		}
+
+		result = intersect(result, irectXYWH(0,0, dragState->citySize.x, dragState->citySize.y));
 	}
 
 	return result;

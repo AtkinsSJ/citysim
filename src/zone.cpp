@@ -38,28 +38,26 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 
 bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 {
-	DEBUG_FUNCTION();
-	
-	if (!tileExists(city, x, y)) return false;
+	DEBUG_FUNCTION_T(DCDT_Debugging);
+
+	// Ignore tiles that are already this zone!
+	if (getZoneAt(city, x, y) == zoneType) return false;
 
 	TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
 	if (!tDef->canBuildOn) return false;
 
 	if (buildingExistsAtPosition(city, x, y)) return false;
 
-	// Ignore tiles that are already this zone!
-	if (getZoneAt(city, x, y) == zoneType) return false;
-
 	return true;
 }
 
 s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Debugging);
 
-	ZoneDef zoneDef = zoneDefs[zoneType];
+	ZoneLayer *zoneLayer = &city->zoneLayer;
 
-	s32 total = 0;
+	s32 tilesToZoneCount = 0;
 
 	// For now, you can only zone free tiles, where there are no buildings or obstructions.
 	// You CAN zone over other zones though. Just, not if something has already grown in that
@@ -69,16 +67,45 @@ s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 	// switching to the de-zone tool before something else pops up in the free space!
 	// - Sam, 13/12/2018
 
-	for (int y=0; y<area.h; y++)
+	Rect2I sectorsCovered = getSectorsCovered(&zoneLayer->sectors, area);
+	for (s32 sY = sectorsCovered.y;
+		sY < sectorsCovered.y + sectorsCovered.h;
+		sY++)
 	{
-		for (int x=0; x<area.w; x++)
+		for (s32 sX = sectorsCovered.x;
+			sX < sectorsCovered.x + sectorsCovered.w;
+			sX++)
 		{
-			if (canZoneTile(city, zoneType, area.x + x, area.y + y))
+			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
+			Rect2I relArea = intersectRelative(area, sector->bounds);
+
+			for (s32 relY=relArea.y;
+				relY < relArea.y + relArea.h;
+				relY++)
 			{
-				total += zoneDef.costPerTile;
+				for (s32 relX=relArea.x;
+					relX < relArea.x + relArea.w;
+					relX++)
+				{
+					// Ignore tiles that are already this zone!
+					if (*getSectorTile(sector, sector->tileZone, relX, relY) != zoneType)
+					{
+						s32 x = sector->bounds.x + relX;
+						s32 y = sector->bounds.y + relY;
+						
+						// Tile must be buildable and empty
+						TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
+						if (tDef->canBuildOn && !buildingExistsAtPosition(city, x, y))
+						{
+							tilesToZoneCount++;
+						}
+					}
+				}
 			}
 		}
 	}
+
+	s32 total = tilesToZoneCount * zoneDefs[zoneType].costPerTile;
 
 	return total;
 }
@@ -134,7 +161,7 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32
 
 void placeZone(City *city, ZoneType zoneType, Rect2I area)
 {
-	DEBUG_FUNCTION_T(DCDT_Debugging);
+	DEBUG_FUNCTION();
 
 	ZoneLayer *zoneLayer = &city->zoneLayer;
 

@@ -26,7 +26,9 @@ enum ActionMode {
 	ActionMode_Count,
 };
 
-struct DragState {
+struct DragState
+{
+	V2I citySize;
 	bool isDragging;
 	V2I mouseDragStartWorldPos;
 	V2I mouseDragEndWorldPos;
