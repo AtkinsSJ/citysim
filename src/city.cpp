@@ -200,8 +200,8 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 		needToRecalcPaths = (oldDef->isPath != def->isPath);
 		needToRecalcPower = (oldDef->carriesPower != def->carriesPower);
 
-		city->totalResidents -= oldDef->residents;
-		city->totalJobs -= oldDef->jobs;
+		city->totalResidents -= building->currentResidents;
+		city->totalJobs -= building->currentJobs;
 	}
 	else
 	{
@@ -225,8 +225,8 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 
 	building->currentResidents = 0;
 	building->currentJobs = 0;
-	city->totalResidents += def->residents;
-	city->totalJobs += def->jobs;
+	city->totalResidents += building->currentResidents;
+	city->totalJobs += building->currentJobs;
 
 	updateBuildingTexture(city, building, def);
 	updateAdjacentBuildingTextures(city, footprint);

@@ -274,8 +274,8 @@ void growZoneBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		}
 	}
 
-	city->totalResidents += def->residents;
-	city->totalJobs += def->jobs;
+	city->totalResidents += building->currentResidents;
+	city->totalJobs += building->currentJobs;
 
 	updateBuildingTexture(city, building, def);
 }
