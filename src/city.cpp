@@ -693,7 +693,7 @@ TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, 
 	return getSectorTile(sector, sector->tileBuilding, relX, relY);
 }
 
-bool buildingExistsAtPosition(City *city, s32 x, s32 y)
+inline bool buildingExistsAtPosition(City *city, s32 x, s32 y)
 {
 	bool result = false;
 

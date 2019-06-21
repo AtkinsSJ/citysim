@@ -45,28 +45,10 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 	TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
 	if (!tDef->canBuildOn) return false;
 
-	if (getBuildingAtPosition(city, x, y) != null) return false;
+	if (buildingExistsAtPosition(city, x, y)) return false;
 
 	// Ignore tiles that are already this zone!
 	if (getZoneAt(city, x, y) == zoneType) return false;
-
-	return true;
-}
-
-bool canZoneTileLocal(City *city, ZoneSector *sector, ZoneType zoneType, s32 relX, s32 relY)
-{
-	DEBUG_FUNCTION();
-
-	s32 x = sector->bounds.x + relX;
-	s32 y = sector->bounds.y + relY;
-	
-	TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
-	if (!tDef->canBuildOn) return false;
-
-	if (getBuildingAtPosition(city, x, y) != null) return false;
-
-	// Ignore tiles that are already this zone!
-	if (*getSectorTile(sector, sector->tileZone, relX, relY) == zoneType) return false;
 
 	return true;
 }
@@ -152,7 +134,7 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32
 
 void placeZone(City *city, ZoneType zoneType, Rect2I area)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Debugging);
 
 	ZoneLayer *zoneLayer = &city->zoneLayer;
 
@@ -176,14 +158,25 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 					relX < relArea.x + relArea.w;
 					relX++)
 				{
-					if (canZoneTileLocal(city, sector, zoneType, relX, relY))
+					// Ignore tiles that are already this zone!
+					if (*getSectorTile(sector, sector->tileZone, relX, relY) != zoneType)
 					{
-						setSectorTile(sector, sector->tileZone, relX, relY, zoneType);
+						s32 x = sector->bounds.x + relX;
+						s32 y = sector->bounds.y + relY;
+						
+						// Tile must be buildable and empty
+						TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
+						if (tDef->canBuildOn && !buildingExistsAtPosition(city, x, y))
+						{
+							setSectorTile(sector, sector->tileZone, relX, relY, zoneType);
+						}
 					}
 				}
 			}
 		}
 	}
+
+	// TODO: mark the affected zone sectors as dirty
 
 	// Zones carry power!
 	markPowerLayerDirty(&city->powerLayer, area);
