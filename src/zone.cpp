@@ -53,6 +53,24 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 	return true;
 }
 
+bool canZoneTileLocal(City *city, ZoneSector *sector, ZoneType zoneType, s32 relX, s32 relY)
+{
+	DEBUG_FUNCTION();
+
+	s32 x = sector->bounds.x + relX;
+	s32 y = sector->bounds.y + relY;
+	
+	TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
+	if (!tDef->canBuildOn) return false;
+
+	if (getBuildingAtPosition(city, x, y) != null) return false;
+
+	// Ignore tiles that are already this zone!
+	if (*getSectorTile(sector, sector->tileZone, relX, relY) == zoneType) return false;
+
+	return true;
+}
+
 s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 {
 	DEBUG_FUNCTION();
@@ -138,17 +156,31 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 
 	ZoneLayer *zoneLayer = &city->zoneLayer;
 
-// TODO: SECTORS!
-	for (int y=0; y<area.h; y++) {
-		for (int x=0; x<area.w; x++) {
-			V2I pos = v2i(area.x + x, area.y + y);
-			if (canZoneTile(city, zoneType, pos.x, pos.y))
-			{
-				ZoneSector *sector = getSectorAtTilePos(&zoneLayer->sectors, pos.x, pos.y);
-				s32 relX = pos.x - sector->bounds.x;
-				s32 relY = pos.y - sector->bounds.y;
+	Rect2I sectorsCovered = getSectorsCovered(&zoneLayer->sectors, area);
+	for (s32 sY = sectorsCovered.y;
+		sY < sectorsCovered.y + sectorsCovered.h;
+		sY++)
+	{
+		for (s32 sX = sectorsCovered.x;
+			sX < sectorsCovered.x + sectorsCovered.w;
+			sX++)
+		{
+			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
+			Rect2I relArea = intersectRelative(area, sector->bounds);
 
-				setSectorTile(sector, sector->tileZone, relX, relY, zoneType);
+			for (s32 relY=relArea.y;
+				relY < relArea.y + relArea.h;
+				relY++)
+			{
+				for (s32 relX=relArea.x;
+					relX < relArea.x + relArea.w;
+					relX++)
+				{
+					if (canZoneTileLocal(city, sector, zoneType, relX, relY))
+					{
+						setSectorTile(sector, sector->tileZone, relX, relY, zoneType);
+					}
+				}
 			}
 		}
 	}
