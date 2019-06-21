@@ -248,13 +248,15 @@ inline V4 v4(f32 x, f32 y, f32 z, f32 w)
 
 inline V4 color255(u8 r, u8 g, u8 b, u8 a)
 {
+	static const f32 inv255 = 1.0f / 255.0f;
+	
 	V4 v = {};
-	v.a = (f32)a / 255.0f;
+	v.a = (f32)a * inv255;
 
 	// NB: Premultiplied alpha!
-	v.r = v.a * ((f32)r / 255.0f);
-	v.g = v.a * ((f32)g / 255.0f);
-	v.b = v.a * ((f32)b / 255.0f);
+	v.r = v.a * ((f32)r * inv255);
+	v.g = v.a * ((f32)g * inv255);
+	v.b = v.a * ((f32)b * inv255);
 
 	return v;
 }

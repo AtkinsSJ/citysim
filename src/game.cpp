@@ -711,6 +711,20 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 						if (canAfford(city, zoneCost))
 						{
+							//
+							// TODO: @Speed We're redundantly doing a canZoneTile() check for the entire area, when we
+							// already did the EXACT SAME CHECK to calculate the zone cost! It seems silly that we're
+							// doing all that twice.
+							//
+							// Maybe we could return an array of can/can't zone for each tile, and then iterate that twice?
+							// Or just calculate the cost as we go through this loop and then throwing out the previously-drawn
+							// rectangles if it becomes too expensive... we'd still need to go on to fully calculate the
+							// cost so we can show it to the player though.
+							//
+							// I guess the same could work for placing buildings too.
+							//
+							// - Sam, 21/06/2019
+							//
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
 								for (s32 x = dragResult.dragRect.x; x < dragResult.dragRect.x+dragResult.dragRect.w; x++)
