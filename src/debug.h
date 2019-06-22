@@ -18,8 +18,8 @@
 	}
 
 	#define DEBUG_BLOCK_T(name, tag) \
-			static String GLUE(debugBlockName____, __LINE__) = makeString(name, true); \
-			DebugBlock GLUE(debugBlock____, __LINE__) (GLUE(debugBlockName____, __LINE__), tag)
+			static DebugCodeData *GLUE(debugBlockData____, __LINE__) = debugFindOrAddCodeData(makeString(name, true), tag); \
+			DebugBlock GLUE(debugBlock____, __LINE__) (GLUE(debugBlockData____, __LINE__))
 	#define DEBUG_FUNCTION_T(tag) DEBUG_BLOCK_T(__FUNCTION__, tag)
 
 	#define DEBUG_BLOCK(name) DEBUG_BLOCK_T(name, DCDT_Misc)
@@ -156,22 +156,23 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaNam
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugStartTrackingRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer);
+DebugCodeData *debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
+{
+	DebugCodeData *result = findOrAdd(&globalDebugState->codeData, name);
+	result->name = name;
+	result->tag = tag;
 
-// TODO: @Speed I think we could dramatically speed this up by moving the findOrAdd() call into a
-// static variable, so all instances of the "same" DebugBlock use the same lookup, instead of
-// doing a lookup every time. Especially in tight loops with 10ks of calls, it's too much overhead,
-// and means we can't really use this as a useful profiler! I dropped something from 4ms to under 2
-// just by removing the DEBUG_BLOCK() line. It's a mess.
+	return result;
+}
+
 struct DebugBlock
 {
 	DebugCodeData *codeData;
 	u64 startTime;
 
-	DebugBlock(String name, DebugCodeDataTag tag)
+	DebugBlock(DebugCodeData *codeData)
 	{
-		this->codeData = findOrAdd(&globalDebugState->codeData, name);
-		this->codeData->name = name;
-		this->codeData->tag = tag;
+		this->codeData = codeData;
 		this->startTime = SDL_GetPerformanceCounter();
 	}
 
