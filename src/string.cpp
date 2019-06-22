@@ -291,16 +291,18 @@ bool splitInTwo(String input, char divider, String *leftResult, String *rightRes
 	{
 		if (input.chars[i] == divider)
 		{
+			// NB: We have to make sure we properly initialise leftResult/rightResult here, because we had a
+			// bug before where we didn't, and it sometimes had old data in the "hasHash" field, which was
+			// causing all kinds of weird stuff to happen!
+			// Literally the exact same issue I fixed in nextToken() yesterday. /fp
 			if (leftResult != null)
 			{
-				leftResult->chars = input.chars;
-				leftResult->length = i;
+				*leftResult = makeString(input.chars, i);
 			}
 
 			if (rightResult != null)
 			{
-				rightResult->chars = input.chars + i + 1;
-				rightResult->length = input.length - i - 1;
+				*rightResult = makeString(input.chars + i + 1, input.length - i - 1);
 			}
 
 			foundDivider = true;

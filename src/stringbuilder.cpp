@@ -47,12 +47,8 @@ void append(StringBuilder *stb, char *source, s32 length)
 	}
 }
 
-String getString(StringBuilder *stb)
+inline String getString(StringBuilder *stb)
 {
-	String result = {};
-	result.chars = stb->buffer;
-	result.length = stb->length;
-	result.maxLength = stb->length;
-
+	String result = makeString(stb->buffer, stb->length);
 	return result;
 }

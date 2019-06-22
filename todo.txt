@@ -16,6 +16,8 @@ Notes for searching:
 
 Speed up debug system?
 
+Maybe String should use a constructor, so I stop making uninitialised-string-memory mistakes?
+
 BuildingCatalogue:
 - Store which menu a building is in, in a queryable way
 

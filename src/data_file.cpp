@@ -26,6 +26,7 @@ void error(LineReader *reader, char *message, std::initializer_list<String> args
 {
 	String text = myprintf(message, args, false);
 	logError("{0}:{1} - {2}", {reader->filename, formatInt(reader->lineNumber), text});
+	DEBUG_BREAK();
 }
 
 String nextLine(LineReader *reader)
