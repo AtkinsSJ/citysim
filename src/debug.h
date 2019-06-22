@@ -86,6 +86,9 @@ struct DebugCodeData
 	String name;
 	DebugCodeDataTag tag;
 
+	u32 workingCallCount;
+	u64 workingTotalCycleCount;
+
 	u32 callCount[DEBUG_FRAMES_COUNT];
 	u64 totalCycleCount[DEBUG_FRAMES_COUNT];
 };
@@ -179,8 +182,7 @@ struct DebugBlock
 	~DebugBlock()
 	{
 		u64 cycleCount = SDL_GetPerformanceCounter() - this->startTime;
-		u32 frameIndex = globalDebugState->writingFrameIndex;
-		codeData->callCount[frameIndex]++;
-		codeData->totalCycleCount[frameIndex] += cycleCount;
+		codeData->workingCallCount++;
+		codeData->workingTotalCycleCount += cycleCount;
 	}
 };

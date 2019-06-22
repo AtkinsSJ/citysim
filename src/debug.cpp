@@ -21,20 +21,11 @@ void debugInit()
 	}
 }
 
-void clearDebugFrame(DebugState *debugState, s32 frameIndex)
-{
-	for (auto it = iterate(&debugState->codeData); !it.isDone; next(&it))
-	{
-		DebugCodeData *codeData = get(it);
-		codeData->callCount[frameIndex] = 0;
-		codeData->totalCycleCount[frameIndex] = 0;
-	}
-}
-
 void processDebugData(DebugState *debugState)
 {
 	DEBUG_FUNCTION();
 	
+	u32 oldWritingFrameIndex = debugState->writingFrameIndex;
 	debugState->frameEndCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
 	if (debugState->captureDebugData)
 	{
@@ -46,10 +37,19 @@ void processDebugData(DebugState *debugState)
 	moveAllNodes(&debugState->topCodeBlocksSentinel, &debugState->topCodeBlocksFreeListSentinel);
 	ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel), "List we just freed is not empty!");
 
-	// Calculate new top blocks list
 	for (auto it = iterate(&debugState->codeData); !it.isDone; next(&it))
 	{
 		DebugCodeData *code = get(it);
+
+		// Move the `working` stuff into the correct frame
+		code->callCount[oldWritingFrameIndex] = code->workingCallCount;
+		code->totalCycleCount[oldWritingFrameIndex] = code->workingTotalCycleCount;
+		code->workingCallCount = 0;
+		code->workingTotalCycleCount = 0;
+
+		//
+		// Calculate new top blocks list
+		//
 
 		// Find spot on list. If we fail, target is the sentinel so it all still works!
 		DebugCodeDataWrapper *target = debugState->topCodeBlocksSentinel.nextNode;
@@ -94,9 +94,6 @@ void processDebugData(DebugState *debugState)
 
 		ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT, "We lost a top code blocks node!");
 	}
-
-	// Zero-out new writing frame.
-	clearDebugFrame(debugState, debugState->writingFrameIndex);
 }
 
 struct DebugTextState
