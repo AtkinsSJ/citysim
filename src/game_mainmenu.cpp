@@ -56,5 +56,9 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 		result = AppStatus_Quit;
 	}
 
+	UILabelStyle *liLabelStyle = findLabelStyle(theme, makeString("small"));
+	position.y += (uiText(uiState, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
+			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
+
 	appState->appStatus = result;
 }
