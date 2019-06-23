@@ -101,9 +101,8 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color)
+inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color)
 {
-	*result = {};
 	result->rect = rect;
 	result->depth = depth;
 	result->color = color;
