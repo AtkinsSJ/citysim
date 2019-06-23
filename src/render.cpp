@@ -125,10 +125,9 @@ inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *tex
 #endif
 }
 
-void drawRenderItem(RenderBuffer *buffer, RenderItem *item)
+inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item)
 {
-	ASSERT(item != null, "Attempted to draw a null RenderItem!");
-	*appendBlank(&buffer->items) = *item;
+	append(&buffer->items, *item);
 }
 
 int compareRenderItems(const void *a, const void *b)
