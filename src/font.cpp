@@ -53,25 +53,7 @@ BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
-struct DrawTextState
-{
-	bool doWrap;
-	f32 maxWidth;
-	f32 lineHeight;
-	s32 lineCount;
-
-	V2 position;
-
-	RenderItem *firstRenderItem;
-	s32 startOfCurrentWord;
-	s32 endOfCurrentWord;
-	f32 currentWordWidth;
-
-	f32 currentLineWidth;
-	f32 longestLineWidth;
-};
-
-static DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem *firstRenderItem=null)
+DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem *firstRenderItem)
 {
 	DrawTextState result = {};
 
@@ -85,7 +67,7 @@ static DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem 
 	return result;
 }
 
-static inline void nextLine(DrawTextState *state)
+inline void nextLine(DrawTextState *state)
 {
 	state->longestLineWidth = state->maxWidth;
 	state->position.y += state->lineHeight;
@@ -164,7 +146,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 	state->longestLineWidth = max(state->longestLineWidth, state->currentLineWidth);
 }
 
-V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
+V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 	
@@ -212,7 +194,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 	return result;
 }
 
-BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth=0)
+BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 	
@@ -276,12 +258,6 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	}
 
 	return result;
-}
-
-BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, char *text, f32 maxWidth=0)
-{
-	String string = makeString(text);
-	return drawTextToCache(memory, font, string, maxWidth);
 }
 
 V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)

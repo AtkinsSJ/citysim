@@ -47,3 +47,37 @@ struct BitmapFontCachedText
 	struct RenderItem *renderItems;
 	struct BitmapFontGlyph **glyphs; 
 };
+
+// PUBLIC
+
+BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar);
+BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar);
+
+V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0);
+V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align);
+BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth=0);
+void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color, s32 shaderID);
+
+// INTERNAL
+
+BitmapFontGlyphEntry *findGlyphInternal(BitmapFont *font, unichar targetChar);
+struct DrawTextState
+{
+	bool doWrap;
+	f32 maxWidth;
+	f32 lineHeight;
+	s32 lineCount;
+
+	V2 position;
+
+	RenderItem *firstRenderItem;
+	s32 startOfCurrentWord;
+	s32 endOfCurrentWord;
+	f32 currentWordWidth;
+
+	f32 currentLineWidth;
+	f32 longestLineWidth;
+};
+DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem *firstRenderItem=null);
+void nextLine(DrawTextState *state);
+void handleWrapping(DrawTextState *state, BitmapFontGlyph *c);

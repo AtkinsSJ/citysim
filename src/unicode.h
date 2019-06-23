@@ -7,8 +7,6 @@ bool byteIsStartOfGlyph(char b);
 // returns 0 for an invalid start byte
 s32 lengthOfGlyph(char startByte);
 
-bool isFullGlyph(char *buffer, s32 glyphStartPos, s32 bufferByteLength);
-
 // returns 0 (start of the buffer) if can't find the start of the glyph
 s32 findStartOfGlyph(char *buffer, s32 byteOffset);
 

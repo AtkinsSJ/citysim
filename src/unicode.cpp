@@ -1,7 +1,7 @@
 #pragma once
 #pragma once
 
-bool byteIsStartOfGlyph(char b)
+inline bool byteIsStartOfGlyph(char b)
 {
 	// continuation bytes always start with 10xxxxxx
 	// So if it doesn't, it must be the start byte!
@@ -21,7 +21,7 @@ inline s32 lengthOfGlyph(char startByte)
 	{
 		result = 1;
 	}
-	else if (startByte & 0b11000000)
+	else if ((startByte & 0b11000000) == 0b11000000)
 	{
 		result = 2;
 
@@ -42,27 +42,6 @@ inline s32 lengthOfGlyph(char startByte)
 					}
 				}
 			}
-		}
-	}
-
-	return result;
-}
-
-inline bool isFullGlyph(char *buffer, s32 glyphStartPos, s32 bufferByteLength)
-{
-	bool result = false;
-
-	if (byteIsStartOfGlyph(buffer[glyphStartPos]))
-	{
-		s32 glyphLength = lengthOfGlyph(buffer[glyphStartPos]);
-
-		if (glyphLength == 0)
-		{
-			result = false;
-		}
-		else
-		{
-			result = (glyphStartPos + glyphLength - 1) < bufferByteLength;
 		}
 	}
 
@@ -141,20 +120,25 @@ s32 countGlyphs(char *startByte, s32 byteLength)
 
 	if (byteLength > 0)
 	{
-		// Check that the byte we start on is actually a glyph start byte!
-		// Otherwise our result will be meaningless.
-		ASSERT(byteIsStartOfGlyph(*startByte), "Can't count glyphs starting part-way through a glyph!");
-
 		s32 pos = 0;
-		while (pos != -1)
-		{
-			if (!isFullGlyph(startByte, pos, byteLength))
-			{
-				break;
-			}
 
-			glyphCount++;
-			pos = findStartOfNextGlyph(startByte, pos, byteLength);
+		while (pos < byteLength)
+		{
+			if (byteIsStartOfGlyph(startByte[pos]))
+			{
+				s32 glyphLength = lengthOfGlyph(startByte[pos]);
+
+				if (glyphLength == 0)
+				{
+					logError("Invalid unicode codepoint at pos {0} of string '{1}'", {formatInt(pos), makeString(startByte, byteLength)});
+					break;
+				}
+				else
+				{
+					glyphCount++;
+					pos += glyphLength;
+				}
+			}
 		}
 	}
 
@@ -174,7 +158,7 @@ unichar readUnicodeChar(char *firstChar)
 			// 7-bit ASCII, so just pass through
 			result = (u32) b1;
 		}
-		else if (b1 & 0b11000000)
+		else if ((b1 & 0b11000000) == 0b11000000)
 		{
 			// Start of a multibyte codepoint!
 			s32 extraBytes = 1;
