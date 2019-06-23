@@ -41,7 +41,7 @@ bool resize(Array<T> *a, s32 newSize)
 }
 
 template<typename T>
-T *append(Array<T> *a, T item)
+T *appendUninitialised(Array<T> *a)
 {
 	if (a->count >= a->maxCount)
 	{
@@ -51,8 +51,22 @@ T *append(Array<T> *a, T item)
 
 	T *result = a->items + a->count++;
 
-	*result = item;
+	return result;
+}
 
+template<typename T>
+inline T *append(Array<T> *a, T item)
+{
+	T *result = appendUninitialised(a);
+	*result = item;
+	return result;
+}
+
+template<typename T>
+inline T *appendBlank(Array<T> *a)
+{
+	T *result = appendUninitialised(a);
+	*result = {};
 	return result;
 }
 

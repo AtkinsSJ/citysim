@@ -88,19 +88,19 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
 
 inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
 {
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, null, {}, shaderID, color);
+	makeRenderItem(appendUninitialised(&buffer->items), rect, depth, null, {}, shaderID, color);
 }
 
 inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
 {
 	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
-	makeRenderItem(appendBlank(&buffer->items), rect, depth, sprite->texture, sprite->uv, shaderID, color);
+	makeRenderItem(appendUninitialised(&buffer->items), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
 
 inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color, s32 shaderID)
 {
 	ASSERT(item != null, "Attempted to draw a null RenderItem!");
-	makeRenderItem(appendBlank(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
+	makeRenderItem(appendUninitialised(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
 }
 
 // TODO: Some kind of switch to determine which renderer we want to load.

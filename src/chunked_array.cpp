@@ -88,7 +88,7 @@ void appendChunk(ChunkedArray<T> *array)
 }
 
 template<typename T>
-T *append(ChunkedArray<T> *array, T item)
+T *appendUninitialised(ChunkedArray<T> *array)
 {
 	bool useLastChunk = (array->count >= array->chunkSize * (array->chunkCount-1));
 	if (array->count >= (array->chunkSize * array->chunkCount))
@@ -117,8 +117,23 @@ T *append(ChunkedArray<T> *array, T item)
 	array->count++;
 
 	T *result = chunk->items + chunk->count++;
-	*result = item;
 
+	return result;
+}
+
+template<typename T>
+inline T *append(ChunkedArray<T> *array, T item)
+{
+	T *result = appendUninitialised(array);
+	*result = item;
+	return result;
+}
+
+template<typename T>
+inline T *appendBlank(ChunkedArray<T> *array)
+{
+	T *result = appendUninitialised(array);
+	*result = {};
 	return result;
 }
 

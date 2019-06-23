@@ -536,7 +536,7 @@ void pushOverlayRenderItem(GameState *gameState, Rect2 rect, f32 depth, V4 color
 		texture = sprite->texture;
 		uv = sprite->uv;
 	}
-	makeRenderItem(appendBlank(&gameState->overlayRenderItems), rect, depth, texture, uv, shaderID, color);
+	makeRenderItem(appendUninitialised(&gameState->overlayRenderItems), rect, depth, texture, uv, shaderID, color);
 }
 
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)

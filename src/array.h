@@ -37,10 +37,10 @@ template<typename T>
 T *append(Array<T> *a, T item);
 
 template<typename T>
-inline T *appendBlank(Array<T> *a)
-{
-	return append(a, {});
-}
+T *appendBlank(Array<T> *a);
+
+template<typename T>
+T *appendUninitialised(Array<T> *a);
 
 template<typename T>
 T * pointerTo(Array<T> *a, s32 index);
