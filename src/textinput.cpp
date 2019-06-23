@@ -100,7 +100,7 @@ void moveCaretLeft(TextInput *textInput, s32 count = 1)
 
 	if (textInput->caretGlyphPos > 0)
 	{
-		s32 toMove = MIN(count, textInput->caretGlyphPos);
+		s32 toMove = min(count, textInput->caretGlyphPos);
 
 		while (toMove--)
 		{
@@ -116,7 +116,7 @@ void moveCaretRight(TextInput *textInput, s32 count = 1)
 
 	if (textInput->caretGlyphPos < textInput->glyphLength)
 	{
-		s32 toMove = MIN(count, textInput->glyphLength - textInput->caretGlyphPos);
+		s32 toMove = min(count, textInput->glyphLength - textInput->caretGlyphPos);
 
 		while (toMove--)
 		{

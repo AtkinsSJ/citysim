@@ -33,7 +33,7 @@ void copyString(char *src, s32 srcLength, String *dest)
 {
 	DEBUG_FUNCTION();
 	
-	s32 copyLength = MIN(srcLength, dest->maxLength);
+	s32 copyLength = min(srcLength, dest->maxLength);
 	for (s32 i=0; i<copyLength; i++)
 	{
 		dest->chars[i] = src[i];
@@ -466,7 +466,7 @@ String formatFloat(f64 value, s32 decimalPlaces)
 	char *buffer = PushArray(globalFrameTempArena, char, length);
 	s32 written = snprintf(buffer, length, formatString.chars, value);
 
-	return makeString(buffer, MIN(written, length));
+	return makeString(buffer, min(written, length));
 }
 
 String formatString(String value, s32 length, bool alignLeft, char paddingChar)

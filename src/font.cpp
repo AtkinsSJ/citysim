@@ -161,7 +161,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 	state->position.x       += c->xAdvance;
 	state->currentWordWidth += c->xAdvance;
 	state->currentLineWidth += c->xAdvance;
-	state->longestLineWidth = MAX(state->longestLineWidth, state->currentLineWidth);
+	state->longestLineWidth = max(state->longestLineWidth, state->currentLineWidth);
 }
 
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
@@ -206,7 +206,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0)
 		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 	}
 
-	result.x = MAX(state.longestLineWidth, state.currentLineWidth);
+	result.x = max(state.longestLineWidth, state.currentLineWidth);
 	result.y = (f32)(font->lineHeight * state.lineCount);
 
 	return result;
@@ -271,7 +271,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 			bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 		}
 
-		result->bounds.x = MAX(state.longestLineWidth, state.currentLineWidth);
+		result->bounds.x = max(state.longestLineWidth, state.currentLineWidth);
 		result->bounds.y = (f32)(font->lineHeight * state.lineCount);
 	}
 

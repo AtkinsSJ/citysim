@@ -32,7 +32,7 @@ void *allocate(MemoryArena *arena, smm size)
 	if ((arena->currentBlock == 0)
 		|| (arena->currentBlock->used + size > arena->currentBlock->size))
 	{
-		smm newBlockSize = MAX(size, arena->minimumBlockSize);
+		smm newBlockSize = max(size, arena->minimumBlockSize);
 		arena->currentBlock = addMemoryBlock(arena, newBlockSize);
 	}
 

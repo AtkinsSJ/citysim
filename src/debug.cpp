@@ -182,7 +182,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	DebugTextState textState;
 	initDebugTextState(&textState, uiState, font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
 
-	u32 framesAgo = WRAP(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
+	u32 framesAgo = wrap(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 	debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
 
 	// Asset system
@@ -278,7 +278,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	u32 barIndex = 0;
 	for (u32 fi = debugState->writingFrameIndex + 1;
 			 fi != debugState->writingFrameIndex;
-			 fi = WRAP(fi + 1, DEBUG_FRAMES_COUNT))
+			 fi = wrap(fi + 1, DEBUG_FRAMES_COUNT))
 		{
 		u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
 		f32 barHeight = barHeightPerCycle * (f32)frameCycles;
@@ -300,7 +300,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		{
 			f32 msForFrame = (f32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond/1000);
 			smsForFrame = formatFloat(msForFrame, 2);
-			sfps = formatFloat(1000.0f / MAX(msForFrame, 1), 2);
+			sfps = formatFloat(1000.0f / max(msForFrame, 1), 2);
 		}
 		debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)", {sfps, smsForFrame}));
 	}
@@ -320,11 +320,11 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	if (keyJustPressed(inputState, SDLK_PAGEDOWN))
 	{
-		debugState->readingFrameIndex = WRAP(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
+		debugState->readingFrameIndex = wrap(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
 	}
 	else if (keyJustPressed(inputState, SDLK_PAGEUP))
 	{
-		debugState->readingFrameIndex = WRAP(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
+		debugState->readingFrameIndex = wrap(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
 	}
 
 	if (keyJustPressed(inputState, SDLK_INSERT))

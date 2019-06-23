@@ -251,7 +251,7 @@ void drawUiMessage(UIState *uiState)
 
 void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, f32 depth, V4 knobColor, s32 shaderID)
 {
-	knobSize.y = MIN(knobSize.y, height); // force knob to fit
+	knobSize.y = min(knobSize.y, height); // force knob to fit
 	f32 knobTravelableH = height - knobSize.y;
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);

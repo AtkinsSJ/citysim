@@ -37,7 +37,7 @@ void append(StringBuilder *stb, char *source, s32 length)
 	s32 lengthToCopy = length;
 	if ((stb->length + length) > stb->currentMaxLength)
 	{
-		s32 newMaxLength = MAX(stb->length + length, stb->currentMaxLength * 2);
+		s32 newMaxLength = max(stb->length + length, stb->currentMaxLength * 2);
 		expand(stb, newMaxLength);
 	}
 

@@ -16,6 +16,31 @@ inline f32 clamp(f32 value, f32 min, f32 max)
 	return value;
 }
 
+inline s32 min(s32 a, s32 b)
+{
+	return (a < b) ? a : b;
+}
+
+inline f32 min(f32 a, f32 b)
+{
+	return (a < b) ? a : b;
+}
+
+inline s32 max(s32 a, s32 b)
+{
+	return (a > b) ? a : b;
+}
+
+inline f32 max(f32 a, f32 b)
+{
+	return (a > b) ? a : b;
+}
+
+inline u32 wrap(u32 value, u32 max)
+{
+	return (value + max) % max;
+}
+
 inline s32 truncate32(s64 in)
 {
 	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");

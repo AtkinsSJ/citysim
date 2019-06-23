@@ -86,11 +86,11 @@ inline f32 moveTowards(f32 currentValue, f32 targetValue, f32 distance)
 
 	if (targetValue < currentValue)
 	{
-		result = MAX(currentValue - distance, targetValue);
+		result = max(currentValue - distance, targetValue);
 	}
 	else
 	{
-		result = MIN(currentValue + distance, targetValue);
+		result = min(currentValue + distance, targetValue);
 	}
 
 	return result;
