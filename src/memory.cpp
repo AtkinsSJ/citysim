@@ -52,6 +52,13 @@ void *allocate(MemoryArena *arena, smm size)
 	return result;
 }
 
+u8 *allocateRaw(smm size)
+{
+	u8 *result = (u8*) calloc(size, 1);
+	ASSERT(result != null, "calloc() failed!!! I don't think there's anything reasonable we can do here.");
+	return result;
+}
+
 void freeCurrentBlock(MemoryArena *arena)
 {
 	MemoryBlock *block = arena->currentBlock;

@@ -1,5 +1,4 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#pragma once
 
 #include <stdlib.h> // For calloc
 #include <string.h> // For memset
@@ -56,16 +55,9 @@ struct MemoryArena
 #define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))
 #define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
 
-Blob allocateBlob(MemoryArena *arena, smm size);
-
 bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1));
 void markResetPosition(MemoryArena *arena);
-void *allocate(MemoryArena *arena, smm size);
-u8 *allocateRaw(smm size)
-{
-	u8 *result = (u8*) calloc(size, 1);
-	ASSERT(result != null, "calloc() failed!!! I don't think there's anything reasonable we can do here.");
-	return result;
-}
 
-#endif
+void *allocate(MemoryArena *arena, smm size);
+Blob allocateBlob(MemoryArena *arena, smm size);
+u8 *allocateRaw(smm size);

@@ -403,7 +403,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 String formatInt(u64 value, u8 base)
 {
-	// DEBUG_FUNCTION();
+	DEBUG_FUNCTION();
 	
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	s32 arraySize = 64;
@@ -425,7 +425,7 @@ String formatInt(u64 value, u8 base)
 
 String formatInt(s64 value, u8 base)
 {
-	// DEBUG_FUNCTION();
+	DEBUG_FUNCTION();
 	
 	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
 	s32 arraySize = 65;
@@ -458,7 +458,7 @@ String formatInt(s64 value, u8 base)
 // TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
 String formatFloat(f64 value, s32 decimalPlaces)
 {
-	// DEBUG_FUNCTION();
+	DEBUG_FUNCTION();
 	
 	String formatString = myprintf("%.{0}f\0", {formatInt(decimalPlaces)});
 
@@ -471,7 +471,7 @@ String formatFloat(f64 value, s32 decimalPlaces)
 
 String formatString(String value, s32 length, bool alignLeft, char paddingChar)
 {
-	// DEBUG_FUNCTION();
+	DEBUG_FUNCTION();
 	
 	if ((value.length == length) || (length == -1)) return value;
 

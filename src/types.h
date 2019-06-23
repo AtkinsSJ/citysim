@@ -39,7 +39,7 @@ I will create shorter versions of the basic types though.
 #define STRVAL(a) STRVAL_(a)
 
 // Defined in debug.h
-void ASSERT(bool expr, char *format, std::initializer_list<String> args = {});
+// void ASSERT(bool expr, char *format, std::initializer_list<String> args = {});
 
 #define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
 
@@ -195,42 +195,18 @@ struct Matrix4 {
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define WRAP(value, max) (((value) + (max)) % (max))
 
-inline s32 truncate32(s64 in)
-{
-	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");
-	return (s32) in;
-}
+s32 truncate32(s64 in);
 
 // Standard rounding functions return doubles, so here's some int ones.
-inline s32 round_s32(f32 in)
-{
-	return (s32) round(in);
-}
+s32 round_s32(f32 in);
+s32 floor_s32(f32 in);
+s32 ceil_s32(f32 in);
+f32 round_f32(f32 in);
+f32 floor_f32(f32 in);
+f32 ceil_f32(f32 in);
 
-inline s32 floor_s32(f32 in)
-{
-	return (s32) floor(in);
-}
-
-inline s32 ceil_s32(f32 in)
-{
-	return (s32) ceil(in);
-}
-
-inline f32 round_f32(f32 in)
-{
-	return (f32) round(in);
-}
-
-inline f32 floor_f32(f32 in)
-{
-	return (f32) floor(in);
-}
-
-inline f32 ceil_f32(f32 in)
-{
-	return (f32) ceil(in);
-}
+s32 clamp(s32 value, s32 min, s32 max);
+f32 clamp(f32 value, f32 min, f32 max);
 
 // Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
 // In other cases, you'll want to write a type-specific function.

@@ -8,14 +8,7 @@
 		#define DEBUG_BREAK() {*(int *)0 = 0;}
 	#endif
 
-	void ASSERT(bool expr, char *format, std::initializer_list<String> args)
-	{
-		if(!(expr))
-		{
-			logError(format, args);
-			DEBUG_BREAK();
-		}
-	}
+	#define ASSERT(expr, format, ...) if(!(expr)) { logError(format, __VA_ARGS__); DEBUG_BREAK(); }
 
 	#define DEBUG_BLOCK_T(name, tag) \
 			static DebugCodeData *GLUE(debugBlockData____, __LINE__) = debugFindOrAddCodeData(makeString(name, true), tag); \

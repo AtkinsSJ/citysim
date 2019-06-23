@@ -16,6 +16,43 @@ inline f32 clamp(f32 value, f32 min, f32 max)
 	return value;
 }
 
+inline s32 truncate32(s64 in)
+{
+	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");
+	return (s32) in;
+}
+
+// Standard rounding functions return doubles, so here's some int ones.
+inline s32 round_s32(f32 in)
+{
+	return (s32) round(in);
+}
+
+inline s32 floor_s32(f32 in)
+{
+	return (s32) floor(in);
+}
+
+inline s32 ceil_s32(f32 in)
+{
+	return (s32) ceil(in);
+}
+
+inline f32 round_f32(f32 in)
+{
+	return (f32) round(in);
+}
+
+inline f32 floor_f32(f32 in)
+{
+	return (f32) floor(in);
+}
+
+inline f32 ceil_f32(f32 in)
+{
+	return (f32) ceil(in);
+}
+
 /**********************************************
 	COORD
  **********************************************/
