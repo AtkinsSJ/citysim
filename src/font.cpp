@@ -292,13 +292,13 @@ void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topL
 	
 	if (cache == null) return;
 
-	// Make sure we're on whole-pixel boundaries for nicer text rendering
-	V2 origin = v2(round_f32(topLeft.x), round_f32(topLeft.y));
+	// NB: No need to round topLeft to a whole number position, because we always get it from calculateTextPosition()
+	// which does the work for us!
 	
 	for (u32 renderItemIndex=0;
 		renderItemIndex < cache->glyphCount;
 		renderItemIndex++)
 	{
-		drawRenderItem(uiBuffer, cache->renderItems + renderItemIndex, origin, depth, color, shaderID);
+		drawRenderItem(uiBuffer, cache->renderItems + renderItemIndex, topLeft, depth, color, shaderID);
 	}
 }
