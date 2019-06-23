@@ -209,6 +209,8 @@ Return false for isKeyPressed() etc, when the key is a printable character and w
 
 Unicode stuff:
 - 2-stage table for properties, will save space! Not sure if I need that, but thought it was sensible to put the link here in case I do. https://www.strchr.com/multi-stage_tables
+- Check text is valid utf8 as it enters the program (so, when user enters it, or we read it from a file.)
+	- Could maybe convert it to utf32 while we're at it? Would save time on lookups...
 
 BUGS:
 - Unloading Fraps does something funny with our Window reference, causing a crash.

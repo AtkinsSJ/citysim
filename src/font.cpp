@@ -207,8 +207,8 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
 	// Memory management witchcraft
-	smm baseStructSize = sizeof(BitmapFontCachedText);
-	smm renderItemsSize = sizeof(RenderItem) * glyphsToOutput;
+	smm baseStructSize    = sizeof(BitmapFontCachedText);
+	smm renderItemsSize   = sizeof(RenderItem) * glyphsToOutput;
 	smm glyphPointersSize = sizeof(BitmapFontGlyph*) * glyphsToOutput;
 
 	u8 *data = (u8 *) allocate(memory, baseStructSize + renderItemsSize + glyphPointersSize);

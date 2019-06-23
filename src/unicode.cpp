@@ -116,6 +116,7 @@ s32 floorToWholeGlyphs(char *startByte, s32 byteLength)
 // Counts how many full glyphs are in the buffer
 s32 countGlyphs(char *startByte, s32 byteLength)
 {
+	DEBUG_FUNCTION();
 	s32 glyphCount = 0;
 
 	if (byteLength > 0)
@@ -158,41 +159,45 @@ unichar readUnicodeChar(char *firstChar)
 			// 7-bit ASCII, so just pass through
 			result = (u32) b1;
 		}
-		else if ((b1 & 0b11000000) == 0b11000000)
+		// NB: I disabled the extra checks for valid utf8, we're just going to assume it's valid because
+		// that's faster and this gets called a lot. If we really care about possibly-malformed utf8, we
+		// can just check any user or file input as it comes in.
+		// - Sam, 23/06/2019
+		else // if ((b1 & 0b11000000) == 0b11000000)
 		{
 			// Start of a multibyte codepoint!
 			s32 extraBytes = 1;
 			result = b1 & 0b00011111;
-			if (b1 & 0b00100000) {
+
+			if (b1 & 0b00100000)
+			{
 				extraBytes++; // 3 total
-				result = b1 & 0b00001111;
-				if (b1 & 0b00010000) {
+				result &= 0b00001111;
+
+				if (b1 & 0b00010000)
+				{
 					extraBytes++; // 4 total
-					result = b1 & 0b00000111;
-					if (b1 & 0b00001000) {
+					result &= 0b00000111;
+
+					if (b1 & 0b00001000)
+					{
 						extraBytes++; // 5 total
-						result = b1 & 0b00000011;
-						if (b1 & 0b00000100) {
+						result &= 0b00000011;
+
+						if (b1 & 0b00000100)
+						{
 							extraBytes++; // 6 total
-							result = b1 & 0b00000001;
+							result &= 0b00000001;
 						}
 					}
 				}
 			}
 
-			for (s32 pos = 0; pos < extraBytes; pos++)
+			for (s32 pos = 1; pos <= extraBytes; pos++)
 			{
-				result = result << 6;
-
-				u8 bn = firstChar[pos+1];
-
-				if (!(bn & 0b10000000)
-					|| (bn & 0b01000000))
-				{
-					ASSERT(false, "Unicode codepoint continuation byte is invalid! D:");
-				}
-
-				result |= (bn & 0b00111111);
+				u8 bn = firstChar[pos];
+				// ASSERT((bn & 0b11000000) == 0b10000000, "Unicode codepoint continuation byte is invalid! D:");
+				result = (result << 6) | (bn & 0b00111111);
 			}
 		}
 	}
