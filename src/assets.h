@@ -139,7 +139,7 @@ struct AssetManager
 
 	Much later...
 	- audio! (sfx/music as separate things probably)
-	- localised text
+	✔ localised text
 
 	Other changes:
 	✔ lookup by name

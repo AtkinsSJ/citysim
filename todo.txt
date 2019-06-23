@@ -16,6 +16,17 @@ Notes for searching:
 
 Speed up debug system?
 
+Speed up text rendering!
+- Switch to unichar strings for all rendererd text, so we only have to parse the utf8 once!
+	- Probably do this gradually, with a unichar-string ("Text"?) version of uiText(), and then gradually convert everything over.
+	- Input.textEntered
+	- LOCAL()/getText()
+	- TextInput
+- Get rid of BitmapFontCachedText, just render it straight up, and if we need the size in advance, use calculateTextSize().
+- Review logic in handleWrapping.
+- Maybe try that crazy "pass text as a single renderitem" idea?
+	- Maybe that should be abstracted a little into a "draw a bunch of stuff together" feature. eg, Terrain could use something similar
+
 Maybe String should use a constructor, so I stop making uninitialised-string-memory mistakes?
 
 BuildingCatalogue:

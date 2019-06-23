@@ -78,6 +78,8 @@ inline void nextLine(DrawTextState *state)
 
 void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 {
+	DEBUG_FUNCTION();
+	
 	if (state->startOfCurrentWord == 0)
 	{
 		state->startOfCurrentWord = state->endOfCurrentWord;
@@ -269,7 +271,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 		case ALIGN_H_CENTRE:  offset.x = origin.x - (cache->bounds.x / 2.0f);  break;
 		case ALIGN_RIGHT:     offset.x = origin.x - cache->bounds.x;           break;
 		case ALIGN_LEFT:      // Left is default
-		default:              offset.x = origin.x;                           break;
+		default:              offset.x = origin.x;                             break;
 	}
 
 	switch (align & ALIGN_V)
@@ -277,7 +279,7 @@ V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
 		case ALIGN_V_CENTRE:  offset.y = origin.y - (cache->bounds.y / 2.0f);  break;
 		case ALIGN_BOTTOM:    offset.y = origin.y - cache->bounds.y;           break;
 		case ALIGN_TOP:       // Top is default
-		default:              offset.y = origin.y;                           break;
+		default:              offset.y = origin.y;                             break;
 	}
 
 	offset.x = round_f32(offset.x);

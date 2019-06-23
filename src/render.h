@@ -93,13 +93,11 @@ inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, 
 
 inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
 {
-	ASSERT(sprite != null, "Attempted to draw a null Sprite!");
 	makeRenderItem(appendUninitialised(&buffer->items), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
 
 inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color, s32 shaderID)
 {
-	ASSERT(item != null, "Attempted to draw a null RenderItem!");
 	makeRenderItem(appendUninitialised(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
 }
 
