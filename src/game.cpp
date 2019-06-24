@@ -843,6 +843,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		// - Sam, 17/06/2019
 		//
 		ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
+		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, visibleBuildings.count);
+		s32 buildingsDrawn = 0;
 		for (auto it = iterate(&visibleBuildings);
 			!it.isDone;
 			next(&it))
@@ -866,8 +868,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 
 			Sprite *sprite = getSprite(sprites, building->spriteOffset);
-			drawSprite(&renderer->worldBuffer, sprite, rect2(building->footprint), 0, pixelArtShaderID, drawColor);
+			makeRenderItem(firstRenderItem + buildingsDrawn++, rect2(building->footprint), 0, sprite->texture, sprite->uv, pixelArtShaderID, drawColor);
 		}
+		finishReservedRenderItemRange(&renderer->worldBuffer, buildingsDrawn);
 	}
 
 	// Data layer rendering
