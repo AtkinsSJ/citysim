@@ -209,7 +209,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 	markPowerLayerDirty(&city->powerLayer, area);
 }
 
-void markZonesAsEmpty(City *city, Rect2I footprint)
+void markZonesAsEmpty(City * /*city*/, Rect2I /*footprint*/)
 {
 	DEBUG_FUNCTION();
 	

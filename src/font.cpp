@@ -262,7 +262,7 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	return result;
 }
 
-void drawText(RenderBuffer *renderBuffer, String text, BitmapFont *font, V2 topLeft, f32 maxWidth, f32 depth, V4 color, s32 shaderID)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topLeft, f32 maxWidth, f32 depth, V4 color, s32 shaderID)
 {
 	DEBUG_FUNCTION();
 

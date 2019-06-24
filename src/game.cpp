@@ -385,7 +385,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 		showAboutWindow(context->uiState);
 	}
 
-	window_label(context, makeString("Test text"));
+	window_label(context, LOCAL("button_resume"));
 
 	if (window_button(context, exit, maxButtonTextWidth))
 	{
@@ -843,7 +843,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		// - Sam, 17/06/2019
 		//
 		ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
-		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, visibleBuildings.count);
+		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(visibleBuildings.count));
 		s32 buildingsDrawn = 0;
 		for (auto it = iterate(&visibleBuildings);
 			!it.isDone;
@@ -921,7 +921,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// Draw the things we prepared in overlayRenderItems earlier
-	RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, (s32)gameState->overlayRenderItems.count);
+	RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
 	s32 overlayRenderItemsDrawn = 0;
 	for (auto it = iterate(&gameState->overlayRenderItems);
 		!it.isDone;

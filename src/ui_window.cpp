@@ -97,48 +97,31 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			maxWidth = (f32) textWidth;
 		}
 
-		V2 buttonSize = {};
-
-		if (context->measureOnly)
+		V2 textSize = calculateTextSize(font, text, maxWidth);
+		Rect2 buttonBounds;
+		if (textWidth == -1)
 		{
-			V2 textSize = calculateTextSize(font, text, maxWidth);
-			Rect2 bounds;
-			if (textWidth == -1)
-			{
-	 			bounds = rectAligned(origin, textSize + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
-			}
-			else
-			{
-				bounds = rectAligned(origin, v2((f32)textWidth, textSize.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
-			}
-			buttonSize = bounds.size;
+ 			buttonBounds = rectAligned(origin, textSize + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
 		}
 		else
 		{
-			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, maxWidth);
+			buttonBounds = rectAligned(origin, v2((f32)textWidth, textSize.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+		}
 
-			Rect2 bounds;
-			if (textWidth == -1)
-			{
-	 			bounds = rectAligned(origin, textCache->bounds + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
-			}
-			else
-			{
-				bounds = rectAligned(origin, v2((f32)textWidth, textCache->bounds.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
-			}
-			buttonSize = bounds.size;
+		if (!context->measureOnly)
+		{
+			V2 textOrigin = originWithinRectangle(buttonBounds, textAlignment, buttonPadding);
+			V2 textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
 
-			V2 textOrigin = originWithinRectangle(bounds, textAlignment, buttonPadding);
-			V2 textTopLeft = calculateTextPosition(textOrigin, textCache->bounds, textAlignment);
-			drawCachedText(context->uiState->uiBuffer, textCache, textTopLeft, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, textTopLeft, maxWidth, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
-			if (!context->uiState->mouseInputHandled && inRect(bounds, mousePos))
+			if (!context->uiState->mouseInputHandled && inRect(buttonBounds, mousePos))
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
 				if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
 				{
-					if (inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					if (inRect(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
 					{
 						backColor = style->pressedColor;
 					}
@@ -146,7 +129,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				else
 				{
 					if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
-					 && inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					 && inRect(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
 					{
 						buttonClicked = true;
 						context->uiState->mouseInputHandled = true;
@@ -156,14 +139,13 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				}
 			}
 
-			drawRect(context->uiState->uiBuffer, bounds, context->renderDepth, context->uiState->untexturedShaderID,backColor);
+			drawRect(context->uiState->uiBuffer, buttonBounds, context->renderDepth, context->uiState->untexturedShaderID,backColor);
 		}
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
-		context->currentOffset.y += buttonSize.y;
-
-		context->largestItemWidth = max(buttonSize.x, context->largestItemWidth);
+		context->currentOffset.y += buttonBounds.h;
+		context->largestItemWidth = max(buttonBounds.w, context->largestItemWidth);
 	}
 
 	return buttonClicked;
