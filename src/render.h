@@ -46,6 +46,9 @@ struct RenderBuffer
 	String name;
 	Camera camera;
 	Array<RenderItem> items;
+
+	bool hasRangeReserved;
+	s32 reservedRangeSize;
 };
 
 struct Renderer
@@ -80,6 +83,7 @@ inline f32 depthFromY(s32 y)
 }
 
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize);
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void sortRenderBuffer(RenderBuffer *buffer);
 
@@ -88,6 +92,7 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
 
 inline RenderItem *appendRenderItem(RenderBuffer *buffer)
 {
+	ASSERT(!buffer->hasRangeReserved, "Can't append renderitems while a range is reserved!");
 	RenderItem *result = appendUninitialised(&buffer->items);
 	return result;
 }
@@ -107,13 +112,24 @@ inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f
 	makeRenderItem(appendRenderItem(buffer), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
 }
 
+//
 // NB: Some operations are massively sped up if we can ensure there is space up front,
-// and then just write them with a pointer offset. The downside is we need to be more
-// careful that no *other* RenderItems are appended in the middle of this!
-// Makes sure there is a enough free space for `count` new items.
+// and then just write them with a pointer offset. The downside is we then can't add
+// any other RenderItems until the reserved range is finished with.
+//
+// Usage:
+// 		RenderItem *firstItem = reserveRenderItemRange(buffer, itemsToReserve);
+// 		... write to firstItem, firstItem + 1, ... firstItem + (itemsToReserve - 1)
+// 		finishReservedRenderItemRange(buffer, numberOfItemsWeActuallyAdded);
+//
+// `numberOfItemsWeActuallyAdded` needs to be <= `itemsToReserve`.
+// There are a bunch of asserts and checks to (hopefully) prevent any mistakes when
+// using this, but hey, I'm great at inventing exciting new ways to mess up!
+//
+// - Sam, 24/06/2019
+//
 RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
-// Actually makes them used. Be VERY CAREFUL about using this!
-void markRenderItemsUsed(RenderBuffer *buffer, s32 count);
+void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
 
 // TODO: Some kind of switch to determine which renderer we want to load.
 #include "render_gl.h"

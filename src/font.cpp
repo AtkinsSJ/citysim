@@ -304,7 +304,7 @@ void drawText(RenderBuffer *renderBuffer, String text, BitmapFont *font, V2 topL
 		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 	}
 
-	markRenderItemsUsed(renderBuffer, glyphCount);
+	finishReservedRenderItemRange(renderBuffer, glyphCount);
 }
 
 V2 calculateTextPosition(V2 origin, V2 size, u32 align)

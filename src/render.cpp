@@ -25,6 +25,7 @@ void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingP
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize)
 {
 	buffer->name = pushString(arena, name);
+	buffer->hasRangeReserved = false;
 	initialiseArray(&buffer->items, initialSize);
 }
 
@@ -125,22 +126,33 @@ inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *tex
 #endif
 }
 
+// Deprecated! @Cleanup Everywhere that calls this could just use reserveRenderItemRange() and direct pointer access 
 inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item)
 {
+	ASSERT(!buffer->hasRangeReserved, "Can't append renderitems while a range is reserved!");
 	append(&buffer->items, *item);
 }
 
 RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
 {
+	ASSERT(!buffer->hasRangeReserved, "Can't reserve a range while a range is already reserved!");
+
 	reserve(&buffer->items, count);
+	buffer->hasRangeReserved = true;
+	buffer->reservedRangeSize = count;
+
 	RenderItem *result = buffer->items.items + buffer->items.count;
 
 	return result;
 }
 
-void markRenderItemsUsed(RenderBuffer *buffer, s32 count)
+void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
 {
-	buffer->items.count += count;
+	ASSERT(buffer->hasRangeReserved, "Attempted to finish a range while a range is not reserved!");
+	ASSERT(itemsAdded <= buffer->reservedRangeSize, "You drew {0} items but only reserved room for {1}!!! This is really bad.", {formatInt(itemsAdded), formatInt(buffer->reservedRangeSize)});
+	
+	buffer->hasRangeReserved = false;
+	buffer->items.count += itemsAdded;
 }
 
 int compareRenderItems(const void *a, const void *b)
