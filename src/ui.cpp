@@ -35,20 +35,16 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	setCursorVisible(uiState, false);
 }
 
-Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align,
-				 f32 depth, V4 color, f32 maxWidth = 0)
+Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0)
 {
 	DEBUG_FUNCTION();
 
-	Rect2 bounds = rect2(origin, 0, 0);
+	V2 textSize = calculateTextSize(font, text, maxWidth);
+	V2 topLeft  = calculateTextPosition(origin, textSize, align);
 
-	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, text, maxWidth);
-	if (textCache)
-	{
-		V2 topLeft = calculateTextPosition(textCache, origin, align);
-		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color, uiState->textShaderID);
-		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->bounds.x, textCache->bounds.y);
-	}
+	Rect2 bounds = rectPosSize(topLeft, textSize);
+
+	drawText(uiState->uiBuffer, text, font, topLeft, maxWidth, depth, color, uiState->textShaderID);
 
 	return bounds;
 }
@@ -62,7 +58,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, makeString(textInput->buffer, textInput->byteLength), maxWidth);
 	if (textCache)
 	{
-		V2 topLeft = calculateTextPosition(textCache, origin, align);
+		V2 topLeft = calculateTextPosition(origin, textCache->bounds, align);
 		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color, uiState->textShaderID);
 		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->bounds.x, textCache->bounds.y);
 

@@ -143,7 +143,7 @@ struct AssetManager
 
 	Other changes:
 	✔ lookup by name
-	- reload individual files
+	✔ reload individual files (We can... sort-of. Dependence on other assets isn't handled, so most of the time we just reload everything at once.)
 	✔ automated reloading
 	✔ automated cataloguing
 

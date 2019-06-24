@@ -86,20 +86,34 @@ void sortRenderBuffer(RenderBuffer *buffer);
 void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
 
+inline RenderItem *appendRenderItem(RenderBuffer *buffer)
+{
+	RenderItem *result = appendUninitialised(&buffer->items);
+	return result;
+}
+
 inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
 {
-	makeRenderItem(appendUninitialised(&buffer->items), rect, depth, null, {}, shaderID, color);
+	makeRenderItem(appendRenderItem(buffer), rect, depth, null, {}, shaderID, color);
 }
 
 inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
 {
-	makeRenderItem(appendUninitialised(&buffer->items), rect, depth, sprite->texture, sprite->uv, shaderID, color);
+	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
 
 inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color, s32 shaderID)
 {
-	makeRenderItem(appendUninitialised(&buffer->items), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
+	makeRenderItem(appendRenderItem(buffer), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
 }
+
+// NB: Some operations are massively sped up if we can ensure there is space up front,
+// and then just write them with a pointer offset. The downside is we need to be more
+// careful that no *other* RenderItems are appended in the middle of this!
+// Makes sure there is a enough free space for `count` new items.
+RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
+// Actually makes them used. Be VERY CAREFUL about using this!
+void markRenderItemsUsed(RenderBuffer *buffer, s32 count);
 
 // TODO: Some kind of switch to determine which renderer we want to load.
 #include "render_gl.h"

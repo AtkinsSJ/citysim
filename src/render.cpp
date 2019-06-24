@@ -130,6 +130,19 @@ inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item)
 	append(&buffer->items, *item);
 }
 
+RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
+{
+	reserve(&buffer->items, count);
+	RenderItem *result = buffer->items.items + buffer->items.count;
+
+	return result;
+}
+
+void markRenderItemsUsed(RenderBuffer *buffer, s32 count)
+{
+	buffer->items.count += count;
+}
+
 int compareRenderItems(const void *a, const void *b)
 {
 	f32 depthA = ((RenderItem*)a)->depth;

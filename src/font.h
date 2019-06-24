@@ -54,7 +54,7 @@ BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar);
 BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar);
 
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0);
-V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align);
+V2 calculateTextPosition(V2 origin, V2 size, u32 align);
 BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth=0);
 void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color, s32 shaderID);
 

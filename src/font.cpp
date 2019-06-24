@@ -262,24 +262,69 @@ BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, Str
 	return result;
 }
 
-V2 calculateTextPosition(BitmapFontCachedText *cache, V2 origin, u32 align)
+void drawText(RenderBuffer *renderBuffer, String text, BitmapFont *font, V2 topLeft, f32 maxWidth, f32 depth, V4 color, s32 shaderID)
+{
+	DEBUG_FUNCTION();
+
+	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
+
+	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
+
+	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight, firstRenderItem);
+
+	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
+	s32 bytePos = 0;
+	for (s32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
+	{
+		unichar glyph = readUnicodeChar(text.chars + bytePos);
+
+		if (glyph == '\n')
+		{
+			nextLine(&state);
+		}
+		else
+		{
+			BitmapFontGlyph *c = findChar(font, glyph);
+			if (c)
+			{
+				state.endOfCurrentWord = glyphCount;
+				makeRenderItem(firstRenderItem + glyphCount, 
+					rectXYWH(topLeft.x + state.position.x + (f32)c->xOffset,
+							 topLeft.y + state.position.y + (f32)c->yOffset,
+							 (f32)c->size.w, (f32)c->size.h),
+					depth, font->pageTextures[c->page], c->uv, shaderID, color
+				);
+
+				glyphCount++;
+
+				handleWrapping(&state, c);
+			}
+		}
+
+		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
+	}
+
+	markRenderItemsUsed(renderBuffer, glyphCount);
+}
+
+V2 calculateTextPosition(V2 origin, V2 size, u32 align)
 {
 	V2 offset;
 
 	switch (align & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE:  offset.x = origin.x - (cache->bounds.x / 2.0f);  break;
-		case ALIGN_RIGHT:     offset.x = origin.x - cache->bounds.x;           break;
+		case ALIGN_H_CENTRE:  offset.x = origin.x - (size.x / 2.0f);  break;
+		case ALIGN_RIGHT:     offset.x = origin.x - size.x;           break;
 		case ALIGN_LEFT:      // Left is default
-		default:              offset.x = origin.x;                             break;
+		default:              offset.x = origin.x;                    break;
 	}
 
 	switch (align & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE:  offset.y = origin.y - (cache->bounds.y / 2.0f);  break;
-		case ALIGN_BOTTOM:    offset.y = origin.y - cache->bounds.y;           break;
+		case ALIGN_V_CENTRE:  offset.y = origin.y - (size.y / 2.0f);  break;
+		case ALIGN_BOTTOM:    offset.y = origin.y - size.y;           break;
 		case ALIGN_TOP:       // Top is default
-		default:              offset.y = origin.y;                             break;
+		default:              offset.y = origin.y;                    break;
 	}
 
 	offset.x = round_f32(offset.x);

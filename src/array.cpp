@@ -41,6 +41,17 @@ bool resize(Array<T> *a, s32 newSize)
 }
 
 template<typename T>
+void reserve(Array<T> *a, s32 freeSlots)
+{
+	s32 desiredSize = a->count + freeSlots;
+	if (desiredSize > a->maxCount)
+	{
+		s32 newSize = max(desiredSize, a->maxCount * 2);
+		resize(a, newSize);
+	}
+}
+
+template<typename T>
 T *appendUninitialised(Array<T> *a)
 {
 	if (a->count >= a->maxCount)

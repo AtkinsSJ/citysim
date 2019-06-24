@@ -33,6 +33,10 @@ void clear(Array<T> *a);
 template<typename T>
 bool resize(Array<T> *a, s32 newSize);
 
+// Makes sure that there are at least `freeSlots` free spaces at the end of the array
+template<typename T>
+void reserve(Array<T> *a, s32 freeSlots);
+
 template<typename T>
 T *append(Array<T> *a, T item);
 
