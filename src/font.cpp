@@ -342,10 +342,13 @@ void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topL
 	// NB: No need to round topLeft to a whole number position, because we always get it from calculateTextPosition()
 	// which does the work for us!
 	
+	RenderItem *firstRenderItem = reserveRenderItemRange(uiBuffer, cache->glyphCount);
 	for (u32 renderItemIndex=0;
 		renderItemIndex < cache->glyphCount;
 		renderItemIndex++)
 	{
-		drawRenderItem(uiBuffer, cache->renderItems + renderItemIndex, topLeft, depth, color, shaderID);
+		RenderItem *item = cache->renderItems + renderItemIndex;
+		makeRenderItem(firstRenderItem + renderItemIndex, offset(item->rect, topLeft), item->depth + depth, item->texture, item->uv, shaderID, color);
 	}
+	finishReservedRenderItemRange(uiBuffer, cache->glyphCount);
 }

@@ -107,11 +107,6 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
 
-inline void drawRenderItem(RenderBuffer *buffer, RenderItem *item, V2 offsetP, f32 depthOffset, V4 color, s32 shaderID)
-{
-	makeRenderItem(appendRenderItem(buffer), offset(item->rect, offsetP), item->depth + depthOffset, item->texture, item->uv, shaderID, color);
-}
-
 //
 // NB: Some operations are massively sped up if we can ensure there is space up front,
 // and then just write them with a pointer offset. The downside is we then can't add

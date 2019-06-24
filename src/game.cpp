@@ -918,12 +918,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// Draw the things we prepared in overlayRenderItems earlier
+	RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, (s32)gameState->overlayRenderItems.count);
+	s32 overlayRenderItemsDrawn = 0;
 	for (auto it = iterate(&gameState->overlayRenderItems);
 		!it.isDone;
 		next(&it))
 	{
-		drawRenderItem(&renderer->worldBuffer, get(it));
+		firstRenderItem[overlayRenderItemsDrawn++] = *get(it);
 	}
+	finishReservedRenderItemRange(&renderer->worldBuffer, overlayRenderItemsDrawn);
 	clear(&gameState->overlayRenderItems);
 
 #if 0
