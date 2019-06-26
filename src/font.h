@@ -68,6 +68,7 @@ struct DrawTextState
 	f32 lineHeight;
 	s32 lineCount;
 
+	V2 origin;
 	V2 position;
 
 	RenderItem *firstRenderItem;

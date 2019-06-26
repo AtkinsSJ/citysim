@@ -113,8 +113,8 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 				if (state->firstRenderItem)
 				{
 					RenderItem *firstItemInWord = state->firstRenderItem + state->startOfCurrentWord;
-					firstItemInWord->rect.pos.x = state->position.x;
-					firstItemInWord->rect.pos.y = state->position.y + (f32)c->yOffset;
+					firstItemInWord->rect.pos.x = state->origin.x + state->position.x;
+					firstItemInWord->rect.pos.y = state->origin.y + state->position.y + (f32)c->yOffset;
 				}
 			}
 			else
@@ -122,12 +122,14 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 				// Wrap the whole word onto a new line
 				nextLine(state);
 
+				// Set the current position to where the next word will start
 				state->position.x = state->currentWordWidth;
 				state->currentLineWidth = state->currentWordWidth;
 
 				if (state->firstRenderItem)
 				{
-					V2 offset = v2(-state->firstRenderItem[state->startOfCurrentWord].rect.x, state->lineHeight);
+					// Offset from where the word was, to its new position
+					V2 offset = v2(state->origin.x - state->firstRenderItem[state->startOfCurrentWord].rect.x, state->lineHeight);
 					while (state->startOfCurrentWord <= state->endOfCurrentWord)
 					{
 						state->firstRenderItem[state->startOfCurrentWord].rect.pos += offset;
@@ -271,6 +273,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
 
 	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight, firstRenderItem);
+	state.origin = topLeft;
 
 	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
 	s32 bytePos = 0;
