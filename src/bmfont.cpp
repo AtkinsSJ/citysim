@@ -107,7 +107,8 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				f32 textureHeight = (f32) pageTexture->texture.surface->h;
 
 				dest->codepoint = src->id;
-				dest->size = irectXYWH(src->x, src->y, src->w, src->h);
+				dest->width  = src->w;
+				dest->height = src->h;
 				dest->xOffset = src->xOffset;
 				dest->yOffset = src->yOffset;
 				dest->xAdvance = src->xAdvance;

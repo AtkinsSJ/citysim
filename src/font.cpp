@@ -210,7 +210,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 			{
 				state.endOfCurrentWord = glyphCount;
 				makeRenderItem(firstRenderItem + glyphCount,
-					rectPosSize(topLeft + state.currentPositionRelative + v2(c->xOffset, c->yOffset), v2(c->size.dim)),
+					rectPosSize(topLeft + state.currentPositionRelative + v2(c->xOffset, c->yOffset), v2(c->width, c->height)),
 					depth, font->pageTextures[c->page], c->uv, shaderID, color
 				);
 

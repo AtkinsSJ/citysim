@@ -3,7 +3,7 @@
 struct BitmapFontGlyph
 {
 	unichar codepoint;
-	Rect2I size; // @Cleanup Why is size a rectangle???
+	s16 width, height;
 	s16 xOffset, yOffset; // Offset when rendering to the screen
 	s16 xAdvance; // How far to move after rendering this character
 

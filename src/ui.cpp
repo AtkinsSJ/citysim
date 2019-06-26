@@ -67,8 +67,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 
 	if (showCaret)
 	{
-		// Shifted 1px left for better legibility of text
-		Rect2 caretRect = rectXYWH(topLeft.x - 1.0f, topLeft.y, 2, font->lineHeight);
+		Rect2 caretRect = rectXYWH(topLeft.x, topLeft.y, 2, font->lineHeight);
 
 		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
 		{
@@ -76,6 +75,9 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 			caretRect.x = drawTextResult.renderItemAtPosition->rect.x + drawTextResult.glyphAtPosition->xAdvance;
 			caretRect.y = drawTextResult.renderItemAtPosition->rect.y - drawTextResult.glyphAtPosition->yOffset;
 		}
+		
+		// Shifted 1px left for better legibility of text
+		caretRect.x -= 1.0f;
 
 		drawRect(uiState->uiBuffer, caretRect, depth + 10, uiState->untexturedShaderID, color);
 	}
