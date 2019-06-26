@@ -53,45 +53,31 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 {
 	DEBUG_FUNCTION();
 
-	Rect2 bounds = rect2(origin, 0, 0);
+	String text = makeString(textInput->buffer, textInput->byteLength);
 
-	BitmapFontCachedText *textCache = drawTextToCache(&globalAppState.globalTempArena, font, makeString(textInput->buffer, textInput->byteLength), maxWidth);
-	if (textCache)
+	V2 textSize  = calculateTextSize(font, text, maxWidth);
+	V2 topLeft   = calculateTextPosition(origin, textSize, align);
+	Rect2 bounds = rectPosSize(topLeft, textSize);
+
+	DrawTextResult drawTextResult = {};
+	drawText(uiState->uiBuffer, font, text, topLeft, maxWidth, depth, color, uiState->textShaderID, textInput->caretGlyphPos, &drawTextResult);
+
+	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
+	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
+
+	if (showCaret)
 	{
-		V2 topLeft = calculateTextPosition(origin, textCache->bounds, align);
-		drawCachedText(uiState->uiBuffer, textCache, topLeft, depth, color, uiState->textShaderID);
-		bounds = rectXYWH(topLeft.x, topLeft.y, textCache->bounds.x, textCache->bounds.y);
+		// Shifted 1px left for better legibility of text
+		Rect2 caretRect = rectXYWH(topLeft.x - 1.0f, topLeft.y, 2, font->lineHeight);
 
-		textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
-		bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
-
-		if (showCaret)
+		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
 		{
-			// Shifted 1px left for better legibility of text
-			Rect2 caretRect = rectXYWH(topLeft.x - 1.0f, topLeft.y, 2, font->lineHeight);
-
-			if ((u32) textInput->caretGlyphPos < textCache->glyphCount)
-			{
-				RenderItem *charCaretIsBefore = &textCache->renderItems[textInput->caretGlyphPos];
-				BitmapFontGlyph *glyphCaretIsBefore = textCache->glyphs[textInput->caretGlyphPos];
-
-				caretRect.x += charCaretIsBefore->rect.x;
-				caretRect.y += charCaretIsBefore->rect.y - glyphCaretIsBefore->yOffset;
-			}
-			else if (textCache->glyphCount > 0)
-			{
-				// we've overrun. Could mean we're just after the last char.
-				// So, we grab the last char and then add its width.
-
-				RenderItem *charCaretIsAfter = &textCache->renderItems[textCache->glyphCount - 1];
-				BitmapFontGlyph *glyphCaretIsAfter = textCache->glyphs[textCache->glyphCount - 1];
-
-				caretRect.x += charCaretIsAfter->rect.x + glyphCaretIsAfter->xAdvance;
-				caretRect.y += charCaretIsAfter->rect.y - glyphCaretIsAfter->yOffset;
-			}
-
-			drawRect(uiState->uiBuffer, caretRect, depth + 10, uiState->untexturedShaderID, color);
+			// Draw it to the right of the glyph
+			caretRect.x = drawTextResult.renderItemAtPosition->rect.x + drawTextResult.glyphAtPosition->xAdvance;
+			caretRect.y = drawTextResult.renderItemAtPosition->rect.y - drawTextResult.glyphAtPosition->yOffset;
 		}
+
+		drawRect(uiState->uiBuffer, caretRect, depth + 10, uiState->untexturedShaderID, color);
 	}
 
 	return bounds;

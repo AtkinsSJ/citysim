@@ -198,73 +198,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	return result;
 }
 
-BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth)
-{
-	DEBUG_FUNCTION();
-	
-	if (font == null)
-	{
-		logError("Attempted to display text with a null font: {0}", {text});
-		return null;
-	}
-
-	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
-
-	// Memory management witchcraft
-	smm baseStructSize    = sizeof(BitmapFontCachedText);
-	smm renderItemsSize   = sizeof(RenderItem) * glyphsToOutput;
-	smm glyphPointersSize = sizeof(BitmapFontGlyph*) * glyphsToOutput;
-
-	u8 *data = (u8 *) allocate(memory, baseStructSize + renderItemsSize + glyphPointersSize);
-	BitmapFontCachedText *result = (BitmapFontCachedText *) data;
-	result->renderItems = (RenderItem *)(data + baseStructSize);
-	result->glyphs = (BitmapFontGlyph **)(data + baseStructSize + renderItemsSize);
-	result->bounds = v2(0, font->lineHeight);
-
-	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight, result->renderItems);
-
-	if (result)
-	{
-		s32 bytePos = 0;
-		for (s32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
-		{
-			unichar glyph = readUnicodeChar(text.chars + bytePos);
-
-			if (glyph == '\n')
-			{
-				nextLine(&state);
-			}
-			else
-			{
-				BitmapFontGlyph *c = findChar(font, glyph);
-				if (c)
-				{
-					state.endOfCurrentWord = result->glyphCount;
-					makeRenderItem(result->renderItems + result->glyphCount, 
-						rectXYWH(state.position.x + (f32)c->xOffset, state.position.y + (f32)c->yOffset,
-								 (f32)c->size.w, (f32)c->size.h),
-						0.0f, font->pageTextures[c->page], c->uv, -1
-					);
-
-					result->glyphs[result->glyphCount] = c;
-
-					result->glyphCount++;
-
-					handleWrapping(&state, c);
-				}
-			}
-
-			bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
-		}
-
-		result->bounds.x = max(state.longestLineWidth, state.currentLineWidth);
-		result->bounds.y = (f32)(font->lineHeight * state.lineCount);
-	}
-
-	return result;
-}
-
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topLeft, f32 maxWidth, f32 depth, V4 color, s32 shaderID)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topLeft, f32 maxWidth, f32 depth, V4 color, s32 shaderID, s32 caretPosition, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
 
@@ -298,9 +232,17 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 					depth, font->pageTextures[c->page], c->uv, shaderID, color
 				);
 
-				glyphCount++;
-
 				handleWrapping(&state, c);
+
+				// Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
+				if (caretInfoResult && glyphCount < caretPosition)
+				{
+					caretInfoResult->isValid = true;
+					caretInfoResult->renderItemAtPosition = firstRenderItem + glyphCount;
+					caretInfoResult->glyphAtPosition = c;
+				}
+
+				glyphCount++;
 			}
 		}
 
@@ -334,24 +276,4 @@ V2 calculateTextPosition(V2 origin, V2 size, u32 align)
 	offset.y = round_f32(offset.y);
 
 	return offset;
-}
-
-void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color, s32 shaderID)
-{
-	DEBUG_FUNCTION();
-	
-	if (cache == null) return;
-
-	// NB: No need to round topLeft to a whole number position, because we always get it from calculateTextPosition()
-	// which does the work for us!
-	
-	RenderItem *firstRenderItem = reserveRenderItemRange(uiBuffer, cache->glyphCount);
-	for (u32 renderItemIndex=0;
-		renderItemIndex < cache->glyphCount;
-		renderItemIndex++)
-	{
-		RenderItem *item = cache->renderItems + renderItemIndex;
-		makeRenderItem(firstRenderItem + renderItemIndex, offset(item->rect, topLeft), item->depth + depth, item->texture, item->uv, shaderID, color);
-	}
-	finishReservedRenderItemRange(uiBuffer, cache->glyphCount);
 }

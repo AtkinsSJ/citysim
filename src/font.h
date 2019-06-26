@@ -38,14 +38,11 @@ struct BitmapFont
 	struct Asset **pageTextures;
 };
 
-struct BitmapFontCachedText
+struct DrawTextResult
 {
-	V2 bounds;
-	
-	// These are parallel arrays. renderItems for the render items, glyphs for the font glyph info
-	u32 glyphCount;
-	struct RenderItem *renderItems;
-	struct BitmapFontGlyph **glyphs; 
+	bool isValid;
+	struct RenderItem *renderItemAtPosition;
+	BitmapFontGlyph *glyphAtPosition;
 };
 
 // PUBLIC
@@ -55,8 +52,13 @@ BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar);
 
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0);
 V2 calculateTextPosition(V2 origin, V2 size, u32 align);
-BitmapFontCachedText *drawTextToCache(MemoryArena *memory, BitmapFont *font, String text, f32 maxWidth=0);
-void drawCachedText(RenderBuffer *uiBuffer, BitmapFontCachedText *cache, V2 topLeft, f32 depth, V4 color, s32 shaderID);
+
+// NB: If caretPosition is not -1, and caretInfoResult is non-null, caretInfoResult is filled with the data
+// for the glyph at that position. (Intended use is so TextInput knows where its caret should appear.)
+// Note that if there are no glyphs rendered (either because `text` is empty, or none of its characters
+// were found in `font`) that no caretInfoResult data will be provided. You can check DrawTextResult.isValid
+// to see if it has been filled in or not.
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topLeft, f32 maxWidth, f32 depth, V4 color, s32 shaderID, s32 caretPosition=-1, DrawTextResult *caretInfoResult=null);
 
 // INTERNAL
 
