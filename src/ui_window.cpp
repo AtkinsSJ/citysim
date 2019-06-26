@@ -31,18 +31,12 @@ void window_label(WindowContext *context, String text, char *styleName)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
-		V2 size = {};
+		V2 size = calculateTextSize(font, text, maxWidth);
 
-		if (context->measureOnly)
+		if (!context->measureOnly)
 		{
-			size = calculateTextSize(font, text, maxWidth);
-		}
-		else
-		{
-			BitmapFontCachedText *textCache = drawTextToCache(context->temporaryMemory, font, text, maxWidth);
-			V2 topLeft = calculateTextPosition(origin, textCache->bounds, alignment);
-			drawCachedText(context->uiState->uiBuffer, textCache, topLeft, context->renderDepth, style->textColor, context->uiState->textShaderID);
-			size = textCache->bounds;
+			V2 topLeft = calculateTextPosition(origin, size, alignment);
+			drawText(context->uiState->uiBuffer, font, text, topLeft, maxWidth, context->renderDepth, style->textColor, context->uiState->textShaderID);
 		}
 
 		// For now, we'll always just start a new line.
