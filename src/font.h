@@ -3,7 +3,7 @@
 struct BitmapFontGlyph
 {
 	unichar codepoint;
-	Rect2I size;
+	Rect2I size; // @Cleanup Why is size a rectangle???
 	s16 xOffset, yOffset; // Offset when rendering to the screen
 	s16 xAdvance; // How far to move after rendering this character
 
@@ -68,19 +68,22 @@ struct DrawTextState
 	bool doWrap;
 	f32 maxWidth;
 	f32 lineHeight;
-	s32 lineCount;
+	s32 lineCount = 1;
 
 	V2 origin;
-	V2 position;
+	V2 currentPositionRelative = v2(0,0);
 
 	RenderItem *firstRenderItem;
-	s32 startOfCurrentWord;
-	s32 endOfCurrentWord;
-	f32 currentWordWidth;
+	s32 startOfCurrentWord = 0;
+	s32 endOfCurrentWord = 0;
+	f32 currentWordWidth = 0;
 
-	f32 currentLineWidth;
-	f32 longestLineWidth;
+	f32 currentLineWidth = 0;
+	f32 longestLineWidth = 0;
+
+	DrawTextState(f32 maxWidth, f32 lineHeight, V2 origin=v2(0,0), RenderItem *firstRenderItem=null)
+		: maxWidth(maxWidth), doWrap(maxWidth > 0), lineHeight(lineHeight), origin(origin), firstRenderItem(firstRenderItem)
+	{}
 };
-DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem *firstRenderItem=null);
 void nextLine(DrawTextState *state);
 void handleWrapping(DrawTextState *state, BitmapFontGlyph *c);

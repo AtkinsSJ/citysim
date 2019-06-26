@@ -53,25 +53,11 @@ BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
-DrawTextState makeDrawTextState(f32 maxWidth, f32 lineHeight, RenderItem *firstRenderItem)
-{
-	DrawTextState result = {};
-
-	result.doWrap = (maxWidth > 0);
-	result.maxWidth = maxWidth;
-	result.lineHeight = lineHeight;
-	result.lineCount = 1;
-
-	result.firstRenderItem = firstRenderItem;
-
-	return result;
-}
-
 inline void nextLine(DrawTextState *state)
 {
 	state->longestLineWidth = state->maxWidth;
-	state->position.y += state->lineHeight;
-	state->position.x = 0;
+	state->currentPositionRelative.y += state->lineHeight;
+	state->currentPositionRelative.x = 0;
 	state->currentLineWidth = 0;
 	state->lineCount++;
 }
@@ -113,8 +99,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 				if (state->firstRenderItem)
 				{
 					RenderItem *firstItemInWord = state->firstRenderItem + state->startOfCurrentWord;
-					firstItemInWord->rect.pos.x = state->origin.x + state->position.x;
-					firstItemInWord->rect.pos.y = state->origin.y + state->position.y + (f32)c->yOffset;
+					firstItemInWord->rect.pos = state->origin + state->currentPositionRelative + v2(0, c->yOffset);
 				}
 			}
 			else
@@ -123,7 +108,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 				nextLine(state);
 
 				// Set the current position to where the next word will start
-				state->position.x = state->currentWordWidth;
+				state->currentPositionRelative.x = state->currentWordWidth;
 				state->currentLineWidth = state->currentWordWidth;
 
 				if (state->firstRenderItem)
@@ -144,7 +129,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 		}
 	}
 
-	state->position.x       += c->xAdvance;
+	state->currentPositionRelative.x += c->xAdvance;
 	state->currentWordWidth += c->xAdvance;
 	state->currentLineWidth += c->xAdvance;
 	state->longestLineWidth = max(state->longestLineWidth, state->currentLineWidth);
@@ -163,7 +148,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	}
 
 	// COPIED from drawTextToCache() - maybe we want these to both be the same code path?
-	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight);
+	DrawTextState state(maxWidth, font->lineHeight);
 
 	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 
@@ -206,8 +191,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
 
-	DrawTextState state = makeDrawTextState(maxWidth, font->lineHeight, firstRenderItem);
-	state.origin = topLeft;
+	DrawTextState state(maxWidth, font->lineHeight, topLeft, firstRenderItem);
 
 	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
 	s32 bytePos = 0;
@@ -225,10 +209,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 			if (c)
 			{
 				state.endOfCurrentWord = glyphCount;
-				makeRenderItem(firstRenderItem + glyphCount, 
-					rectXYWH(topLeft.x + state.position.x + (f32)c->xOffset,
-							 topLeft.y + state.position.y + (f32)c->yOffset,
-							 (f32)c->size.w, (f32)c->size.h),
+				makeRenderItem(firstRenderItem + glyphCount,
+					rectPosSize(topLeft + state.currentPositionRelative + v2(c->xOffset, c->yOffset), v2(c->size.dim)),
 					depth, font->pageTextures[c->page], c->uv, shaderID, color
 				);
 
