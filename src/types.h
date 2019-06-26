@@ -115,23 +115,12 @@ enum Alignment {
 	ALIGN_CENTRE = ALIGN_H_CENTRE | ALIGN_V_CENTRE,
 };
 
-struct V2I {
-	s32 x,y;
-};
-
-struct Rect2I {
-	union {
-		V2I pos;
-		struct {s32 x, y;};
-	};
-	union {
-		V2I dim;
-		struct {s32 w, h;};
-	};
-};
-
 struct V2 {
 	f32 x,y;
+};
+
+struct V2I {
+	s32 x,y;
 };
 
 struct V3 {
@@ -176,6 +165,17 @@ struct Rect2 {
 	};
 };
 
+struct Rect2I {
+	union {
+		V2I pos;
+		struct {s32 x, y;};
+	};
+	union {
+		V2I size;
+		struct {s32 w, h;};
+	};
+};
+
 struct Matrix4 {
 	union {
 		f32 v[4][4]; // Column-major order, so [COLUMN][ROW]
@@ -208,6 +208,53 @@ s32 max(s32 a, s32 b);
 f32 max(f32 a, f32 b);
 
 u32 wrap(u32 value, u32 max);
+
+//
+// Rect2
+//
+Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h);
+Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h);
+Rect2 rectPosSize(V2 pos, V2 size);
+Rect2 rectCentreSize(V2 centre, V2 size);
+Rect2 rectAligned(V2 origin, V2 size, u32 alignment);
+Rect2 rect2(Rect2I source);
+
+bool contains(Rect2 rect, f32 x, f32 y);
+bool contains(Rect2 rect, V2 pos);
+bool contains(Rect2 outer, Rect2 inner);
+bool overlaps(Rect2 outer, Rect2 inner);
+
+Rect2 expand(Rect2 rect, f32 radius);
+Rect2 expand(Rect2 rect, f32 top, f32 right, f32 bottom, f32 left);
+Rect2 intersect(Rect2 a, Rect2 b);
+Rect2 intersectRelative(Rect2 outer, Rect2 inner);
+
+V2 centreOf(Rect2 rect);
+f32 areaOf(Rect2 rect);
+
+V2 originWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0);
+
+//
+// Rect2I
+//
+Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h);
+Rect2I irectNegativeInfinity();
+Rect2I irectPosSize(V2I position, V2I size);
+Rect2I irectCentreSize(V2I position, V2I size);
+Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax);
+
+bool contains(Rect2I rect, s32 x, s32 y);
+bool contains(Rect2I rect, V2I pos);
+bool contains(Rect2I outer, Rect2I inner);
+bool overlaps(Rect2I outer, Rect2I inner);
+
+Rect2I expand(Rect2I rect, s32 radius);
+Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
+Rect2I intersect(Rect2I a, Rect2I b);
+Rect2I intersectRelative(Rect2I outer, Rect2I inner);
+
+V2I centreOf(Rect2I rect);
+s32 areaOf(Rect2I rect);
 
 // Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
 // In other cases, you'll want to write a type-specific function.

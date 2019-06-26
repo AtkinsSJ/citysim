@@ -302,7 +302,7 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from)
 	else if (distance == 1)
 	{
 		// Just walk right in
-		result = iCentre(target);
+		result = centreOf(target);
 		// if (from.x < target.x) result.x = from.x + 1;
 		// else if (from.x >= (target.x + target.w)) result.x = from.x - 1;
 		// else if (from.y < target.y) result.y = from.y + 1;

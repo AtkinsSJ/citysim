@@ -16,7 +16,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 
 		sector->zoneSectorFlags = 0;
 
-		sector->tileZone = PushArray(gameArena, ZoneType, sector->bounds.w * sector->bounds.h);
+		sector->tileZone = PushArray(gameArena, ZoneType, areaOf(sector->bounds));
 	}
 }
 
@@ -77,7 +77,7 @@ s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 			sX++)
 		{
 			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(area, sector->bounds);
+			Rect2I relArea = intersectRelative(sector->bounds, area);
 
 			for (s32 relY=relArea.y;
 				relY < relArea.y + relArea.h;
@@ -129,7 +129,7 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32
 		{
 			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
 
-			Rect2I relArea = intersectRelative(visibleArea, sector->bounds);
+			Rect2I relArea = intersectRelative(sector->bounds, visibleArea);
 			for (s32 relY=relArea.y;
 				relY < relArea.y + relArea.h;
 				relY++)
@@ -175,7 +175,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 			sX++)
 		{
 			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(area, sector->bounds);
+			Rect2I relArea = intersectRelative(sector->bounds, area);
 
 			for (s32 relY=relArea.y;
 				relY < relArea.y + relArea.h;
@@ -463,7 +463,7 @@ void growSomeZoneBuildings(City *city)
 			{
 				// Place it!
 				// TODO: Right now this places at the top-left of the zoneFootprint... probably want to be better than that.
-				Rect2I footprint = irectPosDim(zoneFootprint.pos, buildingDef->size);
+				Rect2I footprint = irectPosSize(zoneFootprint.pos, buildingDef->size);
 
 				Building *building = addBuilding(city, buildingDef, footprint);
 				city->totalResidents += building->currentResidents;

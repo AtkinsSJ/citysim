@@ -594,7 +594,19 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
-	bool mouseIsOverUI = uiState->mouseInputHandled || inRects(uiState->uiRects.items, uiState->uiRects.count, uiCamera->mousePos);
+	bool mouseIsOverUI = uiState->mouseInputHandled;
+	if (!mouseIsOverUI)
+	{
+		for (int i=0; i < uiState->uiRects.count; i++)
+		{
+			if (contains(uiState->uiRects.items[i], uiCamera->mousePos))
+			{
+				mouseIsOverUI = true;
+				break;
+			}
+		}
+	} 
+
 	Rect2I demolitionRect = {0,0,-1,-1};
 
 	{
@@ -613,7 +625,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					{
 						if (!mouseIsOverUI)
 						{
-							Rect2I footprint = irectCentreDim(mouseTilePos, buildingDef->size);
+							Rect2I footprint = irectCentreSize(mouseTilePos, buildingDef->size);
 							s32 buildCost = buildingDef->buildCost;
 
 							bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x, footprint.y);
@@ -815,10 +827,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	// RENDERING
 	// Pre-calculate the tile area that's visible to the player.
 	// We err on the side of drawing too much, rather than risking having holes in the world.
-	Rect2I visibleTileBounds = irectCentreWH(
-		v2i((s32)worldCamera->pos.x, (s32)worldCamera->pos.y),
-		(s32) (worldCamera->size.x / worldCamera->zoom) + 3,
-		(s32) (worldCamera->size.y / worldCamera->zoom) + 3
+	Rect2I visibleTileBounds = irectCentreSize(
+		v2i(worldCamera->pos), v2i(worldCamera->size / worldCamera->zoom) + v2i(3, 3)
 	);
 	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 
@@ -861,7 +871,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			if (gameState->actionMode == ActionMode_Demolish
 				&& gameState->worldDragState.isDragging
-				&& rectsOverlap(building->footprint, demolitionRect))
+				&& overlaps(building->footprint, demolitionRect))
 			{
 				// Draw building red to preview demolition
 				drawColor = drawColorDemolish;

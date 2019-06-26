@@ -11,7 +11,7 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	{
 		PowerSector *sector = layer->sectors.sectors + sectorIndex;
 
-		sector->tilePowerGroup = PushArray(gameArena, u8, sector->bounds.w * sector->bounds.h);
+		sector->tilePowerGroup = PushArray(gameArena, u8, areaOf(sector->bounds));
 
 		initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
 	}
@@ -149,7 +149,7 @@ void floodFillSectorPowerGroup(PowerSector *sector, s32 x, s32 y, u8 fillValue)
 
 inline void setRectPowerGroupUnknown(PowerSector *sector, Rect2I area)
 {
-	Rect2I relArea = intersectRelative(area, sector->bounds);
+	Rect2I relArea = intersectRelative(sector->bounds, area);
 
 	for (s32 relY=relArea.y;
 		relY < relArea.y + relArea.h;
@@ -189,7 +189,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 		clear(&powerGroup->sectorBoundaries);
 	}
 	clear(&sector->powerGroups);
-	memset(sector->tilePowerGroup, 0, sizeof(sector->tilePowerGroup[0]) * sector->bounds.w * sector->bounds.h);
+	memset(sector->tilePowerGroup, 0, sizeof(sector->tilePowerGroup[0]) * areaOf(sector->bounds));
 
 	// Step 1: Set all power-carrying tiles to -1 (everything was set to 0 in the above memset())
 
@@ -443,7 +443,7 @@ void floodFillCityPowerNetwork(PowerLayer *powerLayer, PowerGroup *powerGroup, P
 	{
 		Rect2I bounds = getValue(it);
 		PowerSector *sector = getSectorAtTilePos(&powerLayer->sectors, bounds.x, bounds.y);
-		bounds = intersectRelative(bounds, sector->bounds);
+		bounds = intersectRelative(sector->bounds, bounds);
 
 		s32 lastPowerGroupIndex = -1;
 

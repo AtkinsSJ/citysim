@@ -162,7 +162,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 		textState->pos.y += resultRect.h;
 	}
 
-	if (doHighlight && inRect(resultRect, textState->uiState->uiBuffer->camera.mousePos))
+	if (doHighlight && contains(resultRect, textState->uiState->uiBuffer->camera.mousePos))
 	{
 		drawRect(textState->uiState->uiBuffer, resultRect, 300 - 10, textState->uiState->untexturedShaderID, color255(255, 255, 255, 48));
 	}

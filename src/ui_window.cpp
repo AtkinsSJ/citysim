@@ -109,13 +109,13 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 			drawText(context->uiState->uiBuffer, font, text, textTopLeft, maxWidth, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
-			if (!context->uiState->mouseInputHandled && inRect(buttonBounds, mousePos))
+			if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
 				if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
 				{
-					if (inRect(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					if (contains(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
 					{
 						backColor = style->pressedColor;
 					}
@@ -123,7 +123,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				else
 				{
 					if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
-					 && inRect(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					 && contains(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
 					{
 						buttonClicked = true;
 						context->uiState->mouseInputHandled = true;
@@ -170,7 +170,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 	newWindow.styleName = styleName;
 
 	V2 windowOrigin = uiState->uiBuffer->camera.pos;
-	newWindow.area = irectCentreWH(v2i(windowOrigin), width, height);
+	newWindow.area = irectCentreSize(v2i(windowOrigin), v2i(width, height));
 	
 	newWindow.windowProc = windowProc;
 	newWindow.userData = userData;
@@ -233,7 +233,7 @@ void updateAndRenderWindows(UIState *uiState)
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	s32 newActiveWindow = -1;
 	s32 closeWindow = -1;
-	Rect2I validWindowArea = irectCentreDim(uiState->uiBuffer->camera.pos, uiState->uiBuffer->camera.size);
+	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiBuffer->camera.pos), v2i(uiState->uiBuffer->camera.size));
 
 	s32 windowIndex = 0;
 	bool isActive = true;
@@ -359,10 +359,10 @@ void updateAndRenderWindows(UIState *uiState)
 		Rect2 closeButtonRect = rectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
 		Rect2 contentArea = getWindowContentArea(window->area, barHeight, 0);
 
-		bool hoveringOverCloseButton = inRect(closeButtonRect, mousePos);
+		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
 		if (!uiState->mouseInputHandled
-			 && inRect(wholeWindowArea, mousePos)
+			 && contains(wholeWindowArea, mousePos)
 			 && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
 		{
 			if (hoveringOverCloseButton)
@@ -372,7 +372,7 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 			else
 			{
-				if (!isModal && inRect(barArea, mousePos))
+				if (!isModal && contains(barArea, mousePos))
 				{
 					// If we're inside the title bar, start dragging!
 					uiState->isDraggingWindow = true;
@@ -406,7 +406,7 @@ void updateAndRenderWindows(UIState *uiState)
 			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
 			if (hoveringOverCloseButton && !uiState->mouseInputHandled)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
-			uiText(uiState, titleFont, closeButtonString, centre(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
+			uiText(uiState, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
 		}
 
 		if (isModal)
@@ -415,7 +415,7 @@ void updateAndRenderWindows(UIState *uiState)
 			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, uiState->untexturedShaderID, color255(64, 64, 64, 128)); 
 		}
 
-		if (inRect(wholeWindowArea, mousePos))
+		if (contains(wholeWindowArea, mousePos))
 		{
 			// Tooltips don't take mouse input
 			if (!isTooltip)

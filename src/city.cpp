@@ -18,9 +18,9 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	{
 		CitySector *sector = city->sectors.sectors + sectorIndex;
 
-		sector->terrain       = PushArray(gameArena, Terrain,         sector->bounds.w * sector->bounds.h);
-		sector->tileBuilding  = PushArray(gameArena, TileBuildingRef, sector->bounds.w * sector->bounds.h);
-		sector->tilePathGroup = PushArray(gameArena, s32,             sector->bounds.w * sector->bounds.h);
+		sector->terrain       = PushArray(gameArena, Terrain,         areaOf(sector->bounds));
+		sector->tileBuilding  = PushArray(gameArena, TileBuildingRef, areaOf(sector->bounds));
+		sector->tilePathGroup = PushArray(gameArena, s32,             areaOf(sector->bounds));
 
 		initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
 	}
@@ -141,7 +141,7 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
 	// Are we in bounds?
-	if (!rectInRect2I(irectXYWH(0,0, city->width, city->height), footprint))
+	if (!contains(irectXYWH(0,0, city->width, city->height), footprint))
 	{
 		return false;
 	}
@@ -296,7 +296,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 			sX++)
 		{
 			CitySector *sector = getSector(&city->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(area, sector->bounds);
+			Rect2I relArea = intersectRelative(sector->bounds, area);
 
 			for (s32 y=relArea.y;
 				y < relArea.y + relArea.h;
@@ -350,7 +350,7 @@ void demolishRect(City *city, Rect2I area)
 				sX++)
 			{
 				CitySector *sector = getSector(&city->sectors, sX, sY);
-				Rect2I relArea = intersectRelative(area, sector->bounds);
+				Rect2I relArea = intersectRelative(sector->bounds, area);
 
 				for (s32 y=relArea.y;
 					y < relArea.y + relArea.h;
@@ -416,7 +416,7 @@ void demolishRect(City *city, Rect2I area)
 					sX++)
 				{
 					CitySector *sector = getSector(&city->sectors, sX, sY);
-					Rect2I relArea = intersectRelative(buildingFootprint, sector->bounds);
+					Rect2I relArea = intersectRelative(sector->bounds, buildingFootprint);
 					for (s32 relY = relArea.y;
 						relY < relArea.y + relArea.h;
 						relY++)
@@ -446,7 +446,7 @@ void demolishRect(City *city, Rect2I area)
 		}
 
 		// Expand the area to account for buildings to the left or up from it
-		Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, buildingCatalogue.overallMaxBuildingDim, 0);
+		Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);
 		Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
 		for (s32 sY = sectorsArea.y;
@@ -465,7 +465,7 @@ void demolishRect(City *city, Rect2I area)
 					Building *building = get(it);
 					s32 buildingIndex = (s32) getIndex(it);
 
-					Rect2I relArea = intersectRelative(building->footprint, sector->bounds);
+					Rect2I relArea = intersectRelative(sector->bounds, building->footprint);
 					for (s32 relY=relArea.y;
 						relY < relArea.y + relArea.h;
 						relY++)
@@ -518,7 +518,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 			for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
 			{
 				Building *building = get(it);
-				if (rectsOverlap(building->footprint, area))
+				if (overlaps(building->footprint, area))
 				{
 					append(&result, building);
 				}
@@ -643,7 +643,7 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 	V4 terrainColor = makeWhite();
 
-	s32 tilesToDraw = visibleArea.w * visibleArea.h;
+	s32 tilesToDraw = areaOf(visibleArea);
 	RenderItem *firstItem = reserveRenderItemRange(&renderer->worldBuffer, tilesToDraw);
 	s32 tilesDrawn = 0;
 
@@ -657,7 +657,7 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 			sX++)
 		{
 			CitySector *sector = getSector(&city->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(visibleArea, sector->bounds);
+			Rect2I relArea = intersectRelative(sector->bounds, visibleArea);
 			for (s32 relY=relArea.y;
 				relY < relArea.y + relArea.h;
 				relY++)

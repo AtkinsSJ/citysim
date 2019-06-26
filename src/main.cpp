@@ -35,7 +35,7 @@ struct MemoryArena *globalFrameTempArena;
 #include "hash_table.h"
 #include "input.h"
 #include "debug.h"
-#include "types.cpp"
+#include "types.cpp" // TODO: Properly header-ify things so we can move this below!
 #include "textinput.h"
 #include "console.h"
 #include "random.h"
@@ -49,7 +49,7 @@ struct MemoryArena *globalFrameTempArena;
 #include "assets.h"
 #include "data_file.h"
 #include "render.h"
-#include "font.cpp"
+#include "font.cpp" // TODO: Properly header-ify things so we can move this below!
 #include "ui.h"
 #include "sector.h"
 #include "building.h"

@@ -75,7 +75,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 			caretRect.x = drawTextResult.renderItemAtPosition->rect.x + drawTextResult.glyphAtPosition->xAdvance;
 			caretRect.y = drawTextResult.renderItemAtPosition->rect.y - drawTextResult.glyphAtPosition->yOffset;
 		}
-		
+
 		// Shifted 1px left for better legibility of text
 		caretRect.x -= 1.0f;
 
@@ -109,7 +109,7 @@ bool uiButton(UIState *uiState,
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
-	if (!uiState->mouseInputHandled && inRect(bounds, mousePos))
+	if (!uiState->mouseInputHandled && contains(bounds, mousePos))
 	{
 		uiState->mouseInputHandled = true;
 
@@ -117,7 +117,7 @@ bool uiButton(UIState *uiState,
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
 		{
-			if (inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)))
+			if (contains(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)))
 			{
 				backColor = style->pressedColor;
 			}
@@ -125,7 +125,7 @@ bool uiButton(UIState *uiState,
 		else
 		{
 			if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
-			 && inRect(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)))
+			 && contains(bounds, getClickStartPos(input, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)))
 			{
 				buttonClicked = true;
 			}
