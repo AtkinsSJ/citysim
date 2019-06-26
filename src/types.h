@@ -197,6 +197,8 @@ f32 round_f32(f32 in);
 f32 floor_f32(f32 in);
 f32 ceil_f32(f32 in);
 
+s32 divideCeil(s32 numerator, s32 denominator);
+
 s32 truncate32(s64 in);
 
 s32 clamp(s32 value, s32 min, s32 max);
@@ -213,6 +215,9 @@ f32 max(f32 a, f32 b);
 
 u32 wrap(u32 value, u32 max);
 
+f32 lerp(f32 a, f32 b, f32 position);
+f32 approach(f32 currentValue, f32 targetValue, f32 distance);
+
 //
 // V2
 //
@@ -222,6 +227,7 @@ V2 v2(V2I source);
 
 f32 lengthOf(V2 v);
 V2 limit(V2 vector, f32 maxLength);
+V2 lerp(V2 a, V2 b, f32 position);
 
 V2 operator+(V2 lhs, V2 rhs);
 V2 operator+=(V2 &lhs, V2 rhs);

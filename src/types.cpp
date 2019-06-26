@@ -51,6 +51,27 @@ inline u32 wrap(u32 value, u32 max)
 	return (value + max) % max;
 }
 
+inline f32 lerp(f32 a, f32 b, f32 position)
+{
+	return a + (b-a)*position;
+}
+
+inline f32 approach(f32 currentValue, f32 targetValue, f32 distance)
+{
+	f32 result = currentValue;
+
+	if (targetValue < currentValue)
+	{
+		result = max(currentValue - distance, targetValue);
+	}
+	else
+	{
+		result = min(currentValue + distance, targetValue);
+	}
+
+	return result;
+}
+
 inline s32 truncate32(s64 in)
 {
 	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");
@@ -88,6 +109,11 @@ inline f32 ceil_f32(f32 in)
 	return (f32) ceil(in);
 }
 
+inline s32 divideCeil(s32 numerator, s32 denominator)
+{
+	return (numerator + denominator - 1) / denominator;
+}
+
 /**********************************************
 	V2
  **********************************************/
@@ -113,6 +139,21 @@ inline V2 v2(V2I source)
 inline f32 lengthOf(V2 v)
 {
 	return (f32) sqrt(v.x*v.x + v.y*v.y);
+}
+
+inline V2 limit(V2 vector, f32 maxLength)
+{
+	f32 length = lengthOf(vector);
+	if (length > maxLength)
+	{
+		vector *= maxLength / length;
+	}
+	return vector;
+}
+
+inline V2 lerp(V2 a, V2 b, f32 position)
+{
+	return a + (b-a)*position;
 }
 
 inline V2 operator+(V2 lhs, V2 rhs)
@@ -162,16 +203,6 @@ inline V2 operator/=(V2 &v, f32 s)
 {
 	v = v / s;
 	return v;
-}
-
-inline V2 limit(V2 vector, f32 maxLength)
-{
-	f32 length = lengthOf(vector);
-	if (length > maxLength)
-	{
-		vector *= maxLength / length;
-	}
-	return vector;
 }
 
 /**********************************************

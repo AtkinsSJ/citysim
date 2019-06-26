@@ -48,7 +48,6 @@ struct MemoryArena *globalFrameTempArena;
 #include "assets.h"
 #include "data_file.h"
 #include "render.h"
-#include "font.cpp" // TODO: Properly header-ify things so we can move this below!
 #include "ui.h"
 #include "sector.h"
 #include "building.h"
@@ -74,7 +73,7 @@ struct AppState
 };
 AppState globalAppState;
 
-#include "types.cpp" // TODO: Properly header-ify things so we can move this below!
+#include "types.cpp"
 #include "memory.cpp"
 #include "array.cpp"
 #include "linked_list.cpp"
@@ -86,6 +85,7 @@ AppState globalAppState;
 #include "hash_table.cpp"
 #include "file.cpp"
 #include "data_file.cpp"
+#include "font.cpp"
 #include "assets.cpp"
 #include "render.cpp"
 #include "input.cpp"

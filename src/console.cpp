@@ -232,7 +232,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 
 	if (console->currentHeight != console->targetHeight)
 	{
-		console->currentHeight = moveTowards(console->currentHeight, console->targetHeight, console->openSpeed * SECONDS_PER_FRAME);
+		console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * SECONDS_PER_FRAME);
 	}
 
 	if (console->currentHeight > 0)

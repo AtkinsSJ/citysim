@@ -3,11 +3,6 @@
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 
-inline s32 divideCeil(s32 numerator, s32 denominator)
-{
-	return (numerator + denominator - 1) / denominator;
-}
-
 // How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
 inline s32 manhattanDistance(Rect2I rect, V2I point)
 {
@@ -56,43 +51,6 @@ inline s32 manhattanDistance(Rect2I a, Rect2I b)
 		result += 1 + a.y - (b.y + b.h);
 	}
 	
-	return result;
-}
-
-inline f32 lerp(f32 a, f32 b, f32 position)
-{
-	return a + (b-a)*position;
-}
-
-inline V2 lerp(V2 a, V2 b, f32 position)
-{
-	return a + (b-a)*position;
-}
-
-inline s32 clampToRangeWrapping(s32 minInclusive, s32 maxInclusive, s32 offset)
-{
-	s32 t = offset % (maxInclusive - minInclusive + 1);
-	return minInclusive + t;
-}
-inline u32 clampToRangeWrapping(u32 minInclusive, u32 maxInclusive, u32 offset)
-{
-	u32 t = offset % (maxInclusive - minInclusive + 1);
-	return minInclusive + t;
-}
-
-inline f32 moveTowards(f32 currentValue, f32 targetValue, f32 distance)
-{
-	f32 result = currentValue;
-
-	if (targetValue < currentValue)
-	{
-		result = max(currentValue - distance, targetValue);
-	}
-	else
-	{
-		result = min(currentValue + distance, targetValue);
-	}
-
 	return result;
 }
 
