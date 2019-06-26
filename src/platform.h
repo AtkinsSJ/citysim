@@ -4,6 +4,7 @@
 #ifdef __linux__
 // stuff
 #else // Windows
+#define NOMINMAX
 #include <windows.h>
 #include <shellapi.h>
 #endif

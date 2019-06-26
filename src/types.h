@@ -203,11 +203,88 @@ s32 clamp(s32 value, s32 min, s32 max);
 f32 clamp(f32 value, f32 min, f32 max);
 
 s32 min(s32 a, s32 b);
-f32 min(f32 a, f32 b);
 s32 max(s32 a, s32 b);
+
+s32 min(smm a, s32 b);
+s32 max(smm a, s32 b);
+
+f32 min(f32 a, f32 b);
 f32 max(f32 a, f32 b);
 
 u32 wrap(u32 value, u32 max);
+
+//
+// V2
+//
+V2 v2(f32 x, f32 y);
+V2 v2(s32 x, s32 y);
+V2 v2(V2I source);
+
+f32 lengthOf(V2 v);
+V2 limit(V2 vector, f32 maxLength);
+
+V2 operator+(V2 lhs, V2 rhs);
+V2 operator+=(V2 &lhs, V2 rhs);
+V2 operator-(V2 lhs, V2 rhs);
+V2 operator-=(V2 &lhs, V2 rhs);
+V2 operator*(V2 v, f32 s);
+V2 operator*=(V2 &v, f32 s);
+V2 operator/(V2 v, f32 s);
+V2 operator/=(V2 &v, f32 s);
+
+//
+// V2I
+//
+V2I v2i(s32 x, s32 y);
+V2I v2i(V2 source);
+
+f32 lengthOf(V2I v);
+
+V2I operator+(V2I lhs, V2I rhs);
+V2I operator+=(V2I &lhs, V2I rhs);
+V2I operator-(V2I lhs, V2I rhs);
+V2I operator-=(V2I &lhs, V2I rhs);
+V2I operator*(V2I v, f32 s);
+V2I operator*=(V2I &v, f32 s);
+V2I operator/(V2I v, f32 s);
+V2I operator/=(V2I &v, f32 s);
+
+//
+// V3
+//
+V3 v3(f32 x, f32 y, f32 z);
+V3 v3(s32 x, s32 y, s32 z);
+
+f32 lengthOf(V3 v);
+
+V3 operator+(V3 lhs, V3 rhs);
+V3 operator+=(V3 &lhs, V3 rhs);
+V3 operator-(V3 lhs, V3 rhs);
+V3 operator-=(V3 &lhs, V3 rhs);
+V3 operator*(V3 v, f32 s);
+V3 operator*=(V3 &v, f32 s);
+V3 operator/(V3 v, f32 s);
+V3 operator/=(V3 &v, f32 s);
+
+//
+// V4
+//
+V4 v4(f32 x, f32 y, f32 z, f32 w);
+V4 v4(s32 x, s32 y, s32 z, s32 w);
+
+f32 lengthOf(V4 v);
+
+V4 operator+(V4 lhs, V4 rhs);
+V4 operator+=(V4 &lhs, V4 rhs);
+V4 operator-(V4 lhs, V4 rhs);
+V4 operator-=(V4 &lhs, V4 rhs);
+V4 operator*(V4 v, f32 s);
+V4 operator*=(V4 &v, f32 s);
+V4 operator/(V4 v, f32 s);
+V4 operator/=(V4 &v, f32 s);
+
+V4 color255(u8 r, u8 g, u8 b, u8 a);
+V4 makeWhite();
 
 //
 // Rect2
@@ -284,5 +361,3 @@ bool equals(f32 a, f32 b, f32 epsilon)
 {
 	return (fabs(a-b) < epsilon);
 }
-
-V4 color255(u8 r, u8 g, u8 b, u8 a);

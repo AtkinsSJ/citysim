@@ -21,14 +21,24 @@ inline s32 min(s32 a, s32 b)
 	return (a < b) ? a : b;
 }
 
-inline f32 min(f32 a, f32 b)
+inline s32 max(s32 a, s32 b)
+{
+	return (a > b) ? a : b;
+}
+
+inline smm min(smm a, smm b)
 {
 	return (a < b) ? a : b;
 }
 
-inline s32 max(s32 a, s32 b)
+inline smm max(smm a, smm b)
 {
 	return (a > b) ? a : b;
+}
+
+inline f32 min(f32 a, f32 b)
+{
+	return (a < b) ? a : b;
 }
 
 inline f32 max(f32 a, f32 b)
@@ -79,85 +89,28 @@ inline f32 ceil_f32(f32 in)
 }
 
 /**********************************************
-	COORD
- **********************************************/
-
-inline V2I v2i(s32 x, s32 y)
-{
-	return {x,y};
-}
-inline V2I v2i(V2 v2)
-{
-	return {(s32)v2.x, (s32)v2.y};
-}
-
-inline V2I operator+(V2I lhs, V2I rhs)
-{
-	V2I result;
-	result.x = lhs.x + rhs.x;
-	result.y = lhs.y + rhs.y;
-	return result;
-}
-inline V2I operator+=(V2I &lhs, V2I rhs)
-{
-	lhs = lhs + rhs;
-	return lhs;
-}
-inline V2I operator-(V2I lhs, V2I rhs)
-{
-	V2I result;
-	result.x = lhs.x - rhs.x;
-	result.y = lhs.y - rhs.y;
-	return result;
-}
-inline V2I operator-=(V2I &lhs, V2I rhs)
-{
-	lhs = lhs - rhs;
-	return lhs;
-}
-inline V2I operator*(V2I v, s32 s)
-{
-	V2I result;
-	result.x = v.x * s;
-	result.y = v.y * s;
-	return result;
-}
-inline V2I operator*=(V2I &v, s32 s)
-{
-	v = v * s;
-	return v;
-}
-inline V2I operator/(V2I v, s32 s)
-{
-	V2I result;
-	result.x = v.x / s;
-	result.y = v.y / s;
-	return result;
-}
-inline V2I operator/=(V2I &v, s32 s)
-{
-	v = v / s;
-	return v;
-}
-
-/**********************************************
 	V2
  **********************************************/
 
-inline V2 v2(V2I coord)
-{
-	return {(f32)coord.x, (f32)coord.y};
-}
 inline V2 v2(f32 x, f32 y)
 {
-	return {x,y};
-}
-inline V2 v2(int x, int y)
-{
-	return {(f32)x, (f32)y};
+	V2 result = {};
+	result.x = x;
+	result.y = y;
+	return result;
 }
 
-inline f32 v2Length(V2 v)
+inline V2 v2(s32 x, s32 y)
+{
+	return v2((f32)x, (f32)y);
+}
+
+inline V2 v2(V2I source)
+{
+	return v2(source.x, source.y);
+}
+
+inline f32 lengthOf(V2 v)
 {
 	return (f32) sqrt(v.x*v.x + v.y*v.y);
 }
@@ -213,12 +166,83 @@ inline V2 operator/=(V2 &v, f32 s)
 
 inline V2 limit(V2 vector, f32 maxLength)
 {
-	f32 length = v2Length(vector);
+	f32 length = lengthOf(vector);
 	if (length > maxLength)
 	{
 		vector *= maxLength / length;
 	}
 	return vector;
+}
+
+/**********************************************
+	V2I
+ **********************************************/
+
+inline V2I v2i(s32 x, s32 y)
+{
+	V2I result = {};
+	result.x = x;
+	result.y = y;
+	return result;
+}
+
+inline V2I v2i(V2 source)
+{
+	return v2i((s32)source.x, (s32)source.y);
+}
+
+f32 lengthOf(V2I v)
+{
+	return (f32) sqrt(v.x*v.x + v.y*v.y);
+}
+
+inline V2I operator+(V2I lhs, V2I rhs)
+{
+	V2I result;
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+	return result;
+}
+inline V2I operator+=(V2I &lhs, V2I rhs)
+{
+	lhs = lhs + rhs;
+	return lhs;
+}
+inline V2I operator-(V2I lhs, V2I rhs)
+{
+	V2I result;
+	result.x = lhs.x - rhs.x;
+	result.y = lhs.y - rhs.y;
+	return result;
+}
+inline V2I operator-=(V2I &lhs, V2I rhs)
+{
+	lhs = lhs - rhs;
+	return lhs;
+}
+inline V2I operator*(V2I v, s32 s)
+{
+	V2I result;
+	result.x = v.x * s;
+	result.y = v.y * s;
+	return result;
+}
+inline V2I operator*=(V2I &v, s32 s)
+{
+	v = v * s;
+	return v;
+}
+inline V2I operator/(V2I v, s32 s)
+{
+	V2I result;
+	result.x = v.x / s;
+	result.y = v.y / s;
+	return result;
+}
+inline V2I operator/=(V2I &v, s32 s)
+{
+	v = v / s;
+	return v;
 }
 
 /**********************************************
@@ -235,7 +259,12 @@ inline V3 v3(f32 x, f32 y, f32 z)
 	return v;
 }
 
-inline f32 v3Length(V3 v)
+inline V3 v3(s32 x, s32 y, s32 z)
+{
+	return v3((f32) x, (f32) y, (f32) z);
+}
+
+inline f32 lengthOf(V3 v)
 {
 	return (f32) sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
@@ -308,6 +337,11 @@ inline V4 v4(f32 x, f32 y, f32 z, f32 w)
 	return v;
 }
 
+inline V4 v4(s32 x, s32 y, s32 z, s32 w)
+{
+	return v4((f32) x, (f32) y, (f32) z, (f32) w);
+}
+
 inline V4 color255(u8 r, u8 g, u8 b, u8 a)
 {
 	static const f32 inv255 = 1.0f / 255.0f;
@@ -322,12 +356,13 @@ inline V4 color255(u8 r, u8 g, u8 b, u8 a)
 
 	return v;
 }
+
 inline V4 makeWhite()
 {
 	return v4(1.0f,1.0f,1.0f,1.0f);
 }
 
-inline f32 v4Length(V4 v)
+inline f32 lengthOf(V4 v)
 {
 	return (f32) sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }

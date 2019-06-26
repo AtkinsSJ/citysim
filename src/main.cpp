@@ -35,7 +35,6 @@ struct MemoryArena *globalFrameTempArena;
 #include "hash_table.h"
 #include "input.h"
 #include "debug.h"
-#include "types.cpp" // TODO: Properly header-ify things so we can move this below!
 #include "textinput.h"
 #include "console.h"
 #include "random.h"
@@ -75,6 +74,7 @@ struct AppState
 };
 AppState globalAppState;
 
+#include "types.cpp" // TODO: Properly header-ify things so we can move this below!
 #include "memory.cpp"
 #include "array.cpp"
 #include "linked_list.cpp"

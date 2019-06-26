@@ -300,7 +300,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		{
 			f32 msForFrame = (f32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond/1000);
 			smsForFrame = formatFloat(msForFrame, 2);
-			sfps = formatFloat(1000.0f / max(msForFrame, 1), 2);
+			sfps = formatFloat(1000.0f / max(msForFrame, 1.0f), 2);
 		}
 		debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)", {sfps, smsForFrame}));
 	}

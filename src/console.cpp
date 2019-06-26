@@ -271,7 +271,7 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 					}
 					else
 					{
-						console->inputHistoryCursor = truncate32(min(console->inputHistoryCursor + 1, console->inputHistory.count - 1));
+						console->inputHistoryCursor = truncate32(min(console->inputHistoryCursor + 1, (s32)console->inputHistory.count - 1));
 					}
 
 					clear(&console->input);
