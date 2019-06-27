@@ -22,10 +22,12 @@ Speed up text rendering!
 	- Input.textEntered
 	- LOCAL()/getText()
 	- TextInput
+	- As part of this, convert all newline characters (or \r\n sequences) into \n characters, so we just have one to deal with!
 ✔ Get rid of BitmapFontCachedText, just render it straight up, and if we need the size in advance, use calculateTextSize().
 - Review logic in handleWrapping.
 - Maybe try that crazy "pass text as a single renderitem" idea?
 	- Maybe that should be abstracted a little into a "draw a bunch of stuff together" feature. eg, Terrain could use something similar
+- Could maybe enforce that each font has a single texture page? That's currently the case.
 
 Maybe String should use a constructor, so I stop making uninitialised-string-memory mistakes?
 

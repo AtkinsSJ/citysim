@@ -21,3 +21,5 @@ s32 countGlyphs(char *startByte, s32 byteLength);
 
 // If the first char is not a start byte, we return 0.
 unichar readUnicodeChar(char *firstChar);
+
+bool isWhitespace(unichar uChar, bool countNewlines=true);

@@ -41,7 +41,6 @@ String trimEnd(String input);
 bool asInt(String string, s64 *result);
 bool asBool(String string, bool *result);
 
-bool isWhitespace(unichar uChar, bool countNewlines=true);
 bool isNewline(char c);
 bool isNullTerminated(String s);
 

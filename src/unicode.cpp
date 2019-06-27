@@ -204,3 +204,30 @@ unichar readUnicodeChar(char *firstChar)
 	
 	return result;
 }
+
+inline bool isWhitespace(unichar uChar, bool countNewlines)
+{
+	// TODO: There's probably more whitespace characters somewhere.
+
+	bool result = false;
+
+	// Feels like I'm misusing a switch, but I can't think of any better ways of writing this!
+	switch (uChar)
+	{
+	case 0:
+	case ' ':
+	case '\t':
+		result = true;
+		break;
+
+	case '\n':
+	case '\r':
+		result = countNewlines;
+		break;
+
+	default:
+		result = false;
+	}
+
+	return result;
+}

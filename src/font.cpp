@@ -58,7 +58,6 @@ inline void goToNewLine(DrawTextState *state)
 	state->longestLineWidth = state->maxWidth;
 	state->currentPositionRelative.y += state->lineHeight;
 	state->currentPositionRelative.x = 0;
-	state->currentLineWidth = 0;
 	state->lineCount++;
 }
 
@@ -77,7 +76,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 		state->startOfCurrentWord = 0;
 		state->currentWordWidth = 0;
 	}
-	else if (state->doWrap && ((state->currentLineWidth + c->xAdvance) > state->maxWidth))
+	else if (state->doWrap && ((state->currentPositionRelative.x + c->xAdvance) > state->maxWidth))
 	{
 		if (state->currentWordWidth + c->xAdvance > state->maxWidth)
 		{
@@ -90,6 +89,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 			state->startOfCurrentWord = state->endOfCurrentWord;
 			state->currentWordWidth = 0;
 
+			// Move render items if we have them
 			if (state->firstRenderItem)
 			{
 				RenderItem *firstItemInWord = state->firstRenderItem + state->startOfCurrentWord;
@@ -103,7 +103,6 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 
 			// Set the current position to where the next word will start
 			state->currentPositionRelative.x = state->currentWordWidth;
-			state->currentLineWidth = state->currentWordWidth;
 
 			if (state->firstRenderItem)
 			{
@@ -124,8 +123,7 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 
 	state->currentPositionRelative.x += c->xAdvance;
 	state->currentWordWidth += c->xAdvance;
-	state->currentLineWidth += c->xAdvance;
-	state->longestLineWidth = max(state->longestLineWidth, state->currentLineWidth);
+	state->longestLineWidth = max(state->longestLineWidth, state->currentPositionRelative.x);
 }
 
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
@@ -170,7 +168,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
 	}
 
-	result.x = max(state.longestLineWidth, state.currentLineWidth);
+	result.x = max(state.longestLineWidth, state.currentPositionRelative.x);
 	result.y = (f32)(font->lineHeight * state.lineCount);
 
 	return result;

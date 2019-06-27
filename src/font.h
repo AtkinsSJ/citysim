@@ -78,7 +78,6 @@ struct DrawTextState
 	s32 endOfCurrentWord = 0;
 	f32 currentWordWidth = 0;
 
-	f32 currentLineWidth = 0;
 	f32 longestLineWidth = 0;
 
 	DrawTextState(f32 maxWidth, f32 lineHeight, V2 origin=v2(0,0), RenderItem *firstRenderItem=null)
