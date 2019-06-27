@@ -141,10 +141,9 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	// COPIED from drawTextToCache() - maybe we want these to both be the same code path?
 	DrawTextState state(maxWidth, font->lineHeight);
 
-	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
-
 	s32 bytePos = 0;
-	for (s32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
+	s32 glyphIndex = 0;
+	while (bytePos < text.length)
 	{
 		unichar glyph = readUnicodeChar(text.chars + bytePos);
 
@@ -200,6 +199,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 		}
 
 		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
+		glyphIndex++;
 	}
 
 	result.x = max(state.longestLineWidth, state.currentPositionRelative.x);
