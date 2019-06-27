@@ -140,9 +140,9 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	{
 		s32 lineCount = 1;
 		bool doWrap = (maxWidth > 0);
-		f32 currentX = 0;
-		f32 currentWordWidth = 0;
-		f32 longestLineWidth = 0;
+		s32 currentX = 0;
+		s32 currentWordWidth = 0;
+		s32 longestLineWidth = 0;
 
 		s32 bytePos = 0;
 		while (bytePos < text.length)
@@ -160,16 +160,17 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 				BitmapFontGlyph *c = findChar(font, glyph);
 				if (c)
 				{
+					s32 xAdvance = c->xAdvance;
 					if (isWhitespace(glyph))
 					{
 						currentWordWidth = 0;
 					}
-					else if (doWrap && ((currentX + c->xAdvance) > maxWidth))
+					else if (doWrap && ((currentX + xAdvance) > maxWidth))
 					{
 						longestLineWidth = max(longestLineWidth, currentX);
 						lineCount++;
 
-						if ((currentWordWidth + c->xAdvance) > maxWidth)
+						if ((currentWordWidth + xAdvance) > maxWidth)
 						{
 							// The current word is longer than will fit on an entire line!
 							// So, split it at the maximum line length.
@@ -186,15 +187,15 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 						}
 					}
 
-					currentX += c->xAdvance;
-					currentWordWidth += c->xAdvance;
+					currentX += xAdvance;
+					currentWordWidth += xAdvance;
 				}
 			}
 
 			bytePos += lengthOfGlyph(text.chars[bytePos]);
 		}
 
-		result.x = max(longestLineWidth, currentX);
+		result.x = (f32)max(longestLineWidth, currentX);
 		result.y = (f32)(font->lineHeight * lineCount);
 	}
 
