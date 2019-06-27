@@ -1,5 +1,22 @@
 // ui.cpp
 
+void setCursor(UIState *uiState, String cursorName)
+{
+	DEBUG_FUNCTION();
+	
+	Asset *newCursorAsset = getAsset(uiState->assets, AssetType_Cursor, cursorName);
+	if (newCursorAsset != null)
+	{
+		uiState->currentCursor = cursorName;
+		SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
+	}
+}
+
+inline void setCursor(UIState *uiState, char *cursorName)
+{
+	setCursor(uiState, makeString(cursorName));
+}
+
 void setCursorVisible(UIState *uiState, bool visible)
 {
 	uiState->cursorIsVisible = visible;
@@ -35,7 +52,7 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	setCursorVisible(uiState, false);
 }
 
-Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0)
+Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
@@ -60,9 +77,7 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
-bool uiButton(UIState *uiState,
-	          String text, Rect2 bounds, f32 depth, bool active=false,
-	          SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
+bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool active, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
@@ -122,9 +137,7 @@ bool uiButton(UIState *uiState,
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState,
-	              String text, Rect2 bounds, f32 depth, s32 menuID,
-	              SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString)
+bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, f32 depth, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	

@@ -43,18 +43,23 @@ struct UIState
 	V2 windowDragWindowStartPos;
 };
 
-void setCursor(UIState *uiState, String cursorName)
-{
-	DEBUG_FUNCTION();
-	
-	Asset *newCursorAsset = getAsset(uiState->assets, AssetType_Cursor, cursorName);
-	if (newCursorAsset != null)
-	{
-		uiState->currentCursor = cursorName;
-		SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
-	}
-}
-inline void setCursor(UIState *uiState, char *cursorName)
-{
-	setCursor(uiState, makeString(cursorName));
-}
+void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input);
+void cacheUIShaders(UIState *uiState, AssetManager *assets);
+
+void setCursor(UIState *uiState, String cursorName);
+void setCursor(UIState *uiState, char *cursorName);
+void setCursorVisible(UIState *uiState, bool visible);
+
+Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0);
+bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, f32 depth, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+void uiCloseMenus(UIState *uiState);
+
+void pushUiMessage(UIState *uiState, String message);
+void drawUiMessage(UIState *uiState);
+
+void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, f32 depth, V4 knobColor, s32 shaderID);
+
+void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
+// Is this something we should actually expose??? IDK
+void basicTooltipWindowProc(WindowContext *context, void *userData);
