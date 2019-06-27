@@ -144,7 +144,7 @@ bool uiButton(UIState *uiState,
 	}
 
 	drawRect(uiState->uiBuffer, bounds, depth, uiState->untexturedShaderID, backColor);
-	V2 textOrigin = originWithinRectangle(bounds, textAlignment, style->padding);
+	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(uiState, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, depth + 1,
 			style->textColor);
 

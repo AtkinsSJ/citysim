@@ -104,7 +104,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 		if (!context->measureOnly)
 		{
-			V2 textOrigin = originWithinRectangle(buttonBounds, textAlignment, buttonPadding);
+			V2 textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
 			V2 textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
 
 			drawText(context->uiState->uiBuffer, font, text, textTopLeft, maxWidth, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
@@ -289,7 +289,7 @@ void updateAndRenderWindows(UIState *uiState)
 		if (isModal)
 		{
 			// Modal windows can't be moved, they just auto-centre
-			window->area = centreRectangle(window->area, validWindowArea);
+			window->area = centreWithin(validWindowArea, window->area);
 		}
 		else if (isActive && uiState->isDraggingWindow)
 		{

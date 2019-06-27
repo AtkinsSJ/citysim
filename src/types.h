@@ -218,6 +218,10 @@ u32 wrap(u32 value, u32 max);
 f32 lerp(f32 a, f32 b, f32 position);
 f32 approach(f32 currentValue, f32 targetValue, f32 distance);
 
+// How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
+s32 manhattanDistance(Rect2I rect, V2I point);
+s32 manhattanDistance(Rect2I a, Rect2I b);
+
 //
 // V2
 //
@@ -315,7 +319,7 @@ Rect2 intersectRelative(Rect2 outer, Rect2 inner);
 V2 centreOf(Rect2 rect);
 f32 areaOf(Rect2 rect);
 
-V2 originWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0);
+V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0);
 
 //
 // Rect2I
@@ -338,6 +342,31 @@ Rect2I intersectRelative(Rect2I outer, Rect2I inner);
 
 V2I centreOf(Rect2I rect);
 s32 areaOf(Rect2I rect);
+
+Rect2I centreWithin(Rect2I outer, Rect2I inner);
+
+//
+// Matrix4
+//
+// Matrices! Pretty sure I'm only going to use this for the camera projection,
+// so certain things are missing - notably, we can only rotate in the z-axis
+// because (for now) the game will be in 2D.
+//
+// TODO: When I move to 3D, implement full rotation of matrices!
+//
+Matrix4 identityMatrix4();
+Matrix4 orthographicMatrix4(f32 left, f32 right, f32 top, f32 bottom, f32 nearClip, f32 farClip);
+Matrix4 inverse(Matrix4 *source);
+void translate(Matrix4 *matrix, V3 translation);
+void scale(Matrix4 *matrix, V3 scale);
+void rotateZ(Matrix4 *matrix, f32 radians);
+
+Matrix4 operator+(Matrix4 a, Matrix4 b);
+Matrix4 operator+=(Matrix4 &a, Matrix4 b);
+Matrix4 operator*(Matrix4 m, f32 f);
+Matrix4 operator*(Matrix4 a, Matrix4 b);
+Matrix4 operator*=(Matrix4 &a, Matrix4 b);
+V4 operator*(Matrix4 m, V4 v);
 
 // Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
 // In other cases, you'll want to write a type-specific function.

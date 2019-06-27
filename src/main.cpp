@@ -24,7 +24,6 @@ struct MemoryArena *globalFrameTempArena;
 
 #include "log.h"
 #include "types.h"
-#include "matrix4.h"
 #include "array.h"
 #include "memory.h"
 #include "chunked_array.h"
@@ -38,7 +37,8 @@ struct MemoryArena *globalFrameTempArena;
 #include "textinput.h"
 #include "console.h"
 #include "random.h"
-#include "maths.h"
+#define STB_PERLIN_IMPLEMENTATION
+#include "stb_perlin.h"
 #include "platform.h"
 #include "file.h"
 #include "settings.h"
@@ -77,7 +77,6 @@ AppState globalAppState;
 #include "memory.cpp"
 #include "array.cpp"
 #include "linked_list.cpp"
-#include "maths.cpp"
 #include "unicode.cpp"
 #include "string.cpp"
 #include "stringbuilder.cpp"
