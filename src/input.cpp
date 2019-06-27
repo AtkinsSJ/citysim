@@ -1,35 +1,139 @@
 #pragma once
 
+inline u32 keycodeToIndex(u32 key)
+{
+	return key & ~SDLK_SCANCODE_MASK;
+}
 
+void initInput(InputState *inputState)
+{
+	*inputState = {};
+	inputState->textEntered = makeString(&inputState->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
+}
+
+void updateInput(InputState *inputState)
+{
+	DEBUG_FUNCTION();
+	
+	// Clear mouse state
+	inputState->wheelX = 0;
+	inputState->wheelY = 0;
+
+	for (s32 i = 1; i < MouseButtonCount; i++)
+	{
+		inputState->mouseWasDown[i] = inputState->mouseDown[i];
+	}
+
+	for (s32 i=0; i < KEYBOARD_KEY_COUNT; i++)
+	{
+		inputState->_keyWasDown[i] = inputState->_keyDown[i];
+	}
+
+	inputState->hasUnhandledTextEntered = false;
+	inputState->textEntered.length = 0;
+
+	inputState->receivedQuitSignal = false;
+	inputState->wasWindowResized = false;
+
+	SDL_Event event = {};
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			// WINDOW EVENTS
+			case SDL_QUIT: {
+				inputState->receivedQuitSignal = true;
+			} break;
+			case SDL_WINDOWEVENT: {
+				switch (event.window.event) {
+					case SDL_WINDOWEVENT_RESIZED: {
+						inputState->wasWindowResized = true;
+						inputState->windowWidth = event.window.data1;
+						inputState->windowHeight = event.window.data2;
+					} break;
+				}
+			} break;
+
+			// MOUSE EVENTS
+			// NB: If we later handle TOUCH events, then we need to discard mouse events where event.X.which = SDL_TOUCH_MOUSEID
+			case SDL_MOUSEMOTION: {
+				// Mouse pos in screen coordinates
+				inputState->mousePosRaw.x = event.motion.x;
+				inputState->mousePosRaw.y = event.motion.y;
+			} break;
+			case SDL_MOUSEBUTTONDOWN: {
+				u8 buttonIndex = event.button.button;
+				inputState->mouseDown[buttonIndex] = true;
+			} break;
+			case SDL_MOUSEBUTTONUP: {
+				u8 buttonIndex = event.button.button;
+				inputState->mouseDown[buttonIndex] = false;
+			} break;
+			case SDL_MOUSEWHEEL: {
+				if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
+					inputState->wheelX = -event.wheel.x;
+					inputState->wheelY = -event.wheel.y;
+				} else {
+					inputState->wheelX = event.wheel.x;
+					inputState->wheelY = event.wheel.y;
+				}
+			} break;
+
+			// KEYBOARD EVENTS
+			case SDL_KEYDOWN: {
+				s32 keycode = keycodeToIndex(event.key.keysym.sym);
+				inputState->_keyDown[keycode] = true;
+				if (event.key.repeat)
+				{
+					// This is a hack! Well, our whole concept of input handling is weird, so not really.
+					// We pretend that we had released the key so that we notice the repeat.
+					inputState->_keyWasDown[keycode] = false;
+				}
+			} break;
+			case SDL_KEYUP: {
+				s32 keycode = keycodeToIndex(event.key.keysym.sym);
+				inputState->_keyDown[keycode] = false;
+			} break;
+			case SDL_TEXTINPUT: {
+				inputState->hasUnhandledTextEntered = true;
+				copyString(event.text.text, truncate32(strlen(event.text.text)), &inputState->textEntered);
+			} break;
+		}
+	}
+
+	inputState->mousePosNormalised.x = ((inputState->mousePosRaw.x * 2.0f) / inputState->windowWidth) - 1.0f;
+	inputState->mousePosNormalised.y = ((inputState->mousePosRaw.y * -2.0f) + inputState->windowHeight) / inputState->windowHeight;
+
+	for (s32 i = 1; i < MouseButtonCount; i++)
+	{
+		MouseButton button = MouseButton(i);
+		if (mouseButtonJustPressed(inputState, button))
+		{
+			// Store the initial click position
+			inputState->clickStartPosNormalised[button] = inputState->mousePosNormalised;
+		}
+	}
+}
 
 /**
  * MOUSE INPUT
  */
-inline u8 mouseButtonIndex(u8 sdlMouseButton) {
-	return sdlMouseButton - 1;
+inline bool mouseButtonJustPressed(InputState *input, MouseButton mouseButton) {
+	return input->mouseDown[mouseButton] && !input->mouseWasDown[mouseButton];
 }
-inline bool mouseButtonJustPressed(InputState *input, u8 mouseButton) {
-	u8 buttonIndex = mouseButtonIndex(mouseButton);
-	return input->mouseDown[buttonIndex] && !input->mouseWasDown[buttonIndex];
+inline bool mouseButtonJustReleased(InputState *input, MouseButton mouseButton) {
+	return !input->mouseDown[mouseButton] && input->mouseWasDown[mouseButton];
 }
-inline bool mouseButtonJustReleased(InputState *input, u8 mouseButton) {
-	u8 buttonIndex = mouseButtonIndex(mouseButton);
-	return !input->mouseDown[buttonIndex] && input->mouseWasDown[buttonIndex];
-}
-inline bool mouseButtonPressed(InputState *input, u8 mouseButton) {
-	return input->mouseDown[mouseButtonIndex(mouseButton)];
+inline bool mouseButtonPressed(InputState *input, MouseButton mouseButton) {
+	return input->mouseDown[mouseButton];
 }
 
-inline V2 getClickStartPos(InputState *input, u8 mouseButton, struct Camera *camera)
+inline V2 getClickStartPos(InputState *input, MouseButton mouseButton, struct Camera *camera)
 {
-	u8 buttonIndex = mouseButtonIndex(mouseButton);
-	return unproject(camera, input->clickStartPosNormalised[buttonIndex]);
+	return unproject(camera, input->clickStartPosNormalised[mouseButton]);
 }
 
 /**
  * KEYBOARD INPUT
  */
-#define keycodeToIndex(key) ((key) & ~SDLK_SCANCODE_MASK)
 
 inline bool modifierKeyIsPressed(InputState *input, ModifierKey modifier)
 {
@@ -93,7 +197,7 @@ inline bool modifierKeysArePressed(InputState *input, u8 modifiers)
 	return result;
 }
 
-inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
+inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers)
 {
 	s32 keycode = keycodeToIndex(key);
 
@@ -107,7 +211,7 @@ inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 	return result;
 }
 
-inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
+inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers)
 {
 	s32 keycode = keycodeToIndex(key);
 
@@ -136,7 +240,7 @@ inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
 	return result;
 }
 
-inline bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers=0)
+inline bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers)
 {
 	return keyIsPressed(input, key, modifiers) && !keyWasPressed(input, key);
 }
@@ -174,109 +278,6 @@ inline String getClipboardText()
 	}
 	
 	return result;
-}
-
-void initInput(InputState *inputState)
-{
-	*inputState = {};
-	inputState->textEntered = makeString(&inputState->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
-}
-
-void updateInput(InputState *inputState)
-{
-	DEBUG_FUNCTION();
-	
-	// Clear mouse state
-	inputState->wheelX = 0;
-	inputState->wheelY = 0;
-
-	for (int i = 0; i < MOUSE_BUTTON_COUNT; i++) {
-		inputState->mouseWasDown[i] = inputState->mouseDown[i];
-	}
-
-	for (int i=0; i < KEYBOARD_KEY_COUNT; i++) {
-		inputState->_keyWasDown[i] = inputState->_keyDown[i];
-	}
-
-	inputState->hasUnhandledTextEntered = false;
-	inputState->textEntered.length = 0;
-
-	inputState->receivedQuitSignal = false;
-	inputState->wasWindowResized = false;
-
-	SDL_Event event = {};
-	while (SDL_PollEvent(&event)) {
-		switch (event.type) {
-			// WINDOW EVENTS
-			case SDL_QUIT: {
-				inputState->receivedQuitSignal = true;
-			} break;
-			case SDL_WINDOWEVENT: {
-				switch (event.window.event) {
-					case SDL_WINDOWEVENT_RESIZED: {
-						inputState->wasWindowResized = true;
-						inputState->windowWidth = event.window.data1;
-						inputState->windowHeight = event.window.data2;
-					} break;
-				}
-			} break;
-
-			// MOUSE EVENTS
-			// NB: If we later handle TOUCH events, then we need to discard mouse events where event.X.which = SDL_TOUCH_MOUSEID
-			case SDL_MOUSEMOTION: {
-				// Mouse pos in screen coordinates
-				inputState->mousePosRaw.x = event.motion.x;
-				inputState->mousePosRaw.y = event.motion.y;
-			} break;
-			case SDL_MOUSEBUTTONDOWN: {
-				u8 buttonIndex = event.button.button - 1;
-				inputState->mouseDown[buttonIndex] = true;
-			} break;
-			case SDL_MOUSEBUTTONUP: {
-				u8 buttonIndex = event.button.button - 1;
-				inputState->mouseDown[buttonIndex] = false;
-			} break;
-			case SDL_MOUSEWHEEL: {
-				if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
-					inputState->wheelX = -event.wheel.x;
-					inputState->wheelY = -event.wheel.y;
-				} else {
-					inputState->wheelX = event.wheel.x;
-					inputState->wheelY = event.wheel.y;
-				}
-			} break;
-
-			// KEYBOARD EVENTS
-			case SDL_KEYDOWN: {
-				s32 keycode = keycodeToIndex(event.key.keysym.sym);
-				inputState->_keyDown[keycode] = true;
-				if (event.key.repeat)
-				{
-					// This is a hack! Well, our whole concept of input handling is weird, so not really.
-					// We pretend that we had released the key so that we notice the repeat.
-					inputState->_keyWasDown[keycode] = false;
-				}
-			} break;
-			case SDL_KEYUP: {
-				s32 keycode = keycodeToIndex(event.key.keysym.sym);
-				inputState->_keyDown[keycode] = false;
-			} break;
-			case SDL_TEXTINPUT: {
-				inputState->hasUnhandledTextEntered = true;
-				copyString(event.text.text, truncate32(strlen(event.text.text)), &inputState->textEntered);
-			} break;
-		}
-	}
-
-	inputState->mousePosNormalised.x = ((inputState->mousePosRaw.x * 2.0f) / inputState->windowWidth) - 1.0f;
-	inputState->mousePosNormalised.y = ((inputState->mousePosRaw.y * -2.0f) + inputState->windowHeight) / inputState->windowHeight;
-
-	for (u8 i = 1; i <= MOUSE_BUTTON_COUNT; ++i) {
-		if (mouseButtonJustPressed(inputState, i)) {
-			// Store the initial click position
-			inputState->clickStartPosNormalised[mouseButtonIndex(i)] = inputState->mousePosNormalised;
-		}
-	}
 }
 
 /**

@@ -54,13 +54,12 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 	f32 cameraEdgeScrollMarginX = cameraEdgeScrollPixelMargin / windowSize.x;
 	f32 cameraEdgeScrollMarginY = cameraEdgeScrollPixelMargin / windowSize.y;
 
-	if (mouseButtonPressed(inputState, SDL_BUTTON_MIDDLE))
+	if (mouseButtonPressed(inputState, MouseButton_Middle))
 	{
 		// Click-panning!
-		float scale = scrollSpeed * 5.0f;
-		V2 clickStartPos = inputState->clickStartPosNormalised[mouseButtonIndex(SDL_BUTTON_MIDDLE)];
-		camera->pos.x += (inputState->mousePosNormalised.x - clickStartPos.x) * scale;
-		camera->pos.y += (inputState->mousePosNormalised.y - clickStartPos.y) * -scale;
+		float scale = scrollSpeed * 1.0f;
+		V2 clickStartPos = getClickStartPos(inputState, MouseButton_Middle, camera);
+		camera->pos += (camera->mousePos - clickStartPos) * scale;
 	}
 	else
 	{
@@ -249,7 +248,7 @@ DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mou
 
 	DragResult result = {};
 
-	if (dragState->isDragging && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	if (dragState->isDragging && mouseButtonJustReleased(inputState, MouseButton_Left))
 	{
 		result.operation = DragResult_DoAction;
 		result.dragRect = getDragArea(dragState, dragType, itemSize);
@@ -259,13 +258,13 @@ DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mou
 	else
 	{
 		// Update the dragging state
-		if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+		if (!mouseIsOverUI && mouseButtonJustPressed(inputState, MouseButton_Left))
 		{
 			dragState->isDragging = true;
 			dragState->mouseDragStartWorldPos = dragState->mouseDragEndWorldPos = mouseTilePos;
 		}
 
-		if (mouseButtonPressed(inputState, SDL_BUTTON_LEFT) && dragState->isDragging)
+		if (mouseButtonPressed(inputState, MouseButton_Left) && dragState->isDragging)
 		{
 			dragState->mouseDragEndWorldPos = mouseTilePos;
 			result.dragRect = getDragArea(dragState, dragType, itemSize);
@@ -630,8 +629,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 							bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x, footprint.y);
 
-							if ((buildingDef->buildMethod == BuildMethod_Plop && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
-							|| (buildingDef->buildMethod == BuildMethod_Paint && mouseButtonPressed(inputState, SDL_BUTTON_LEFT)))
+							if ((buildingDef->buildMethod == BuildMethod_Plop && mouseButtonJustReleased(inputState, MouseButton_Left))
+							|| (buildingDef->buildMethod == BuildMethod_Paint && mouseButtonPressed(inputState, MouseButton_Left)))
 							{
 								if (canPlace && canAfford(city, buildCost))
 								{
@@ -799,7 +798,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 			case ActionMode_None:
 			{
-				if (!mouseIsOverUI && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+				if (!mouseIsOverUI && mouseButtonJustPressed(inputState, MouseButton_Left))
 				{
 					if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
 					{
@@ -811,13 +810,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 	}
 
-	if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+	if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, MouseButton_Left))
 	{
 		// Not sure if this is the best idea, but it's the best I can come up with.
 		gameState->worldDragState.isDragging = false;
 	}
 
-	if (mouseButtonJustPressed(inputState, SDL_BUTTON_RIGHT))
+	if (mouseButtonJustPressed(inputState, MouseButton_Right))
 	{
 		// Unselect current thing
 		gameState->actionMode = ActionMode_None;

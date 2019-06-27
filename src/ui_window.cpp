@@ -113,17 +113,17 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
-				if (mouseButtonPressed(input, SDL_BUTTON_LEFT))
+				if (mouseButtonPressed(input, MouseButton_Left))
 				{
-					if (contains(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					if (contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->uiState->uiBuffer->camera)))
 					{
 						backColor = style->pressedColor;
 					}
 				}
 				else
 				{
-					if (mouseButtonJustReleased(input, SDL_BUTTON_LEFT)
-					 && contains(buttonBounds, getClickStartPos(input, SDL_BUTTON_LEFT, &context->uiState->uiBuffer->camera)))
+					if (mouseButtonJustReleased(input, MouseButton_Left)
+					 && contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->uiState->uiBuffer->camera)))
 					{
 						buttonClicked = true;
 						context->uiState->mouseInputHandled = true;
@@ -293,13 +293,13 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 		else if (isActive && uiState->isDraggingWindow)
 		{
-			if (mouseButtonJustReleased(inputState, SDL_BUTTON_LEFT))
+			if (mouseButtonJustReleased(inputState, MouseButton_Left))
 			{
 				uiState->isDraggingWindow = false;
 			}
 			else
 			{
-				window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(inputState, SDL_BUTTON_LEFT, &uiState->uiBuffer->camera)));
+				window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(inputState, MouseButton_Left, &uiState->uiBuffer->camera)));
 			}
 			
 			uiState->mouseInputHandled = true;
@@ -363,7 +363,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		if (!uiState->mouseInputHandled
 			 && contains(wholeWindowArea, mousePos)
-			 && mouseButtonJustPressed(inputState, SDL_BUTTON_LEFT))
+			 && mouseButtonJustPressed(inputState, MouseButton_Left))
 		{
 			if (hoveringOverCloseButton)
 			{

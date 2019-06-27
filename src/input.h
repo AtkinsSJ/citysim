@@ -1,7 +1,20 @@
 #pragma once
 
-const int MOUSE_BUTTON_COUNT = SDL_BUTTON_X2;
 const int KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
+
+enum MouseButton
+{
+	// NB: There is no button for 0, so any arrays of foo[MouseButtonCount] never use the first element.
+	// I figure this is more straightforward than having to remember to subtract 1 from the button index,
+	// or using different values than SDL does. "Wasting" one element is no big deal.
+	// - Sam, 27/06/2019
+	MouseButton_Left   = SDL_BUTTON_LEFT,
+	MouseButton_Middle = SDL_BUTTON_MIDDLE,
+	MouseButton_Right  = SDL_BUTTON_RIGHT,
+	MouseButton_X1     = SDL_BUTTON_X1,
+	MouseButton_X2     = SDL_BUTTON_X2,
+	MouseButtonCount
+};
 
 enum ModifierKey
 {
@@ -22,9 +35,9 @@ struct InputState
 	// Mouse
 	V2I mousePosRaw;
 	V2 mousePosNormalised; // In normalised (-1 to 1) coordinates
-	bool mouseDown[MOUSE_BUTTON_COUNT];
-	bool mouseWasDown[MOUSE_BUTTON_COUNT];
-	V2 clickStartPosNormalised[MOUSE_BUTTON_COUNT]; // In normalised (-1 to 1) coordinates
+	bool mouseDown[MouseButtonCount];
+	bool mouseWasDown[MouseButtonCount];
+	V2 clickStartPosNormalised[MouseButtonCount]; // In normalised (-1 to 1) coordinates
 	s32 wheelX, wheelY;
 
 	// Keyboard
@@ -42,3 +55,36 @@ struct InputState
 		struct{s32 windowWidth, windowHeight;};
 	};
 };
+
+//
+// PUBLIC
+//
+void initInput(InputState *inputState);
+void updateInput(InputState *inputState);
+
+bool mouseButtonJustPressed(InputState *input, MouseButton mouseButton);
+bool mouseButtonJustReleased(InputState *input, MouseButton mouseButton);
+bool mouseButtonPressed(InputState *input, MouseButton mouseButton);
+
+V2 getClickStartPos(InputState *input, MouseButton mouseButton, struct Camera *camera);
+
+bool modifierKeyIsPressed(InputState *input, ModifierKey modifier);
+bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0);
+bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0);
+bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers=0);
+
+KeyboardShortcut parseKeyboardShortcut(String input);
+bool wasShortcutJustPressed(InputState *input, KeyboardShortcut shortcut);
+
+bool wasTextEntered(InputState *input);
+String getEnteredText(InputState *input);
+
+String getClipboardText();
+
+//
+// INTERNAL
+//
+
+u32 keycodeToIndex(u32 key);
+u8 getPressedModifierKeys(InputState *input);
+bool modifierKeysArePressed(InputState *input, u8 modifiers);
