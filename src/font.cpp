@@ -135,62 +135,68 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	if (font == null)
 	{
 		logError("Attempted to display text with a null font: {0}", {text});
-		return result;
 	}
-
-	// COPIED from drawTextToCache() - maybe we want these to both be the same code path?
-	DrawTextState state(maxWidth, font->lineHeight);
-
-	s32 bytePos = 0;
-	s32 glyphIndex = 0;
-	while (bytePos < text.length)
+	else
 	{
-		unichar glyph = readUnicodeChar(text.chars + bytePos);
+		s32 lineCount = 1;
+		bool doWrap = (maxWidth > 0);
+		f32 currentX = 0;
+		f32 currentWordWidth = 0;
+		f32 longestLineWidth = 0;
 
-		if (glyph == '\n')
+		s32 bytePos = 0;
+		while (bytePos < text.length)
 		{
-			goToNewLine(&state);
-		}
-		else
-		{
-			BitmapFontGlyph *c = findChar(font, glyph);
-			if (c)
+			unichar glyph = readUnicodeChar(text.chars + bytePos);
+
+			if (glyph == '\n')
 			{
-				if (isWhitespace(glyph))
-				{
-					state.currentWordWidth = 0;
-				}
-				else if (state.doWrap && ((state.currentPositionRelative.x + c->xAdvance) > state.maxWidth))
-				{
-					goToNewLine(&state);
-
-					if ((state.currentWordWidth + c->xAdvance) > state.maxWidth)
-					{
-						// The current word is longer than will fit on an entire line!
-						// So, split it at the maximum line length.
-
-						// This should mean just wrapping the final character
-						state.currentWordWidth = 0;
-					}
-					else
-					{
-						// Wrapping the whole word onto a new line
-						// Set the current position to where the next word will start
-						state.currentPositionRelative.x = state.currentWordWidth;
-					}
-				}
-
-				state.currentPositionRelative.x += c->xAdvance;
-				state.currentWordWidth += c->xAdvance;
+				longestLineWidth = max(longestLineWidth, currentX);
+				currentX = 0;
+				lineCount++;
 			}
+			else
+			{
+				BitmapFontGlyph *c = findChar(font, glyph);
+				if (c)
+				{
+					if (isWhitespace(glyph))
+					{
+						currentWordWidth = 0;
+					}
+					else if (doWrap && ((currentX + c->xAdvance) > maxWidth))
+					{
+						longestLineWidth = max(longestLineWidth, currentX);
+						lineCount++;
+
+						if ((currentWordWidth + c->xAdvance) > maxWidth)
+						{
+							// The current word is longer than will fit on an entire line!
+							// So, split it at the maximum line length.
+
+							// This should mean just wrapping the final character
+							currentWordWidth = 0;
+							currentX = 0;
+						}
+						else
+						{
+							// Wrapping the whole word onto a new line
+							// Set the current position to where the next word will start
+							currentX = currentWordWidth;
+						}
+					}
+
+					currentX += c->xAdvance;
+					currentWordWidth += c->xAdvance;
+				}
+			}
+
+			bytePos += lengthOfGlyph(text.chars[bytePos]);
 		}
 
-		bytePos += lengthOfGlyph(text.chars[bytePos]);
-		glyphIndex++;
+		result.x = max(longestLineWidth, currentX);
+		result.y = (f32)(font->lineHeight * lineCount);
 	}
-
-	result.x = max(state.longestLineWidth, state.currentPositionRelative.x);
-	result.y = (f32)(font->lineHeight * state.lineCount);
 
 	return result;
 }
