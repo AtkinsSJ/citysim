@@ -83,9 +83,14 @@ inline f32 depthFromY(s32 y)
 }
 
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
+void freeRenderer(Renderer *renderer);
+
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize);
-void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void sortRenderBuffer(RenderBuffer *buffer);
+
+void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
+void updateCameraMatrix(Camera *camera);
+V2 unproject(Camera *camera, V2 screenPos);
 
 void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
 void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
@@ -125,6 +130,11 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 //
 RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
 void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
+
+void sortRenderBuffer(RenderBuffer *buffer);
+
+void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen);
+void onWindowResized(Renderer *renderer, s32 w, s32 h);
 
 // TODO: Some kind of switch to determine which renderer we want to load.
 #include "render_gl.h"

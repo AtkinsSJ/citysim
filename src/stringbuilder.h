@@ -26,25 +26,9 @@ StringBuilder newStringBuilder(s32 initialSize, MemoryArena *arena=globalFrameTe
 void expand(StringBuilder *stb, s32 newSize=-1);
 
 void append(StringBuilder *stb, char *source, s32 length);
-
-inline void append(StringBuilder *stringBuilder, String source)
-{
-	append(stringBuilder, source.chars, source.length);
-}
-
-inline void append(StringBuilder *stringBuilder, char *source)
-{
-	append(stringBuilder, source, truncate32(strlen(source)));
-}
-
-inline void append(StringBuilder *stringBuilder, char source)
-{
-	append(stringBuilder, &source, 1);
-}
-
-inline void append(StringBuilder *stringBuilder, StringBuilder *source)
-{
-	append(stringBuilder, source->buffer, source->length);
-}
+void append(StringBuilder *stringBuilder, String source);
+void append(StringBuilder *stringBuilder, char *source);
+void append(StringBuilder *stringBuilder, char source);
+void append(StringBuilder *stringBuilder, StringBuilder *source);
 
 String getString(StringBuilder *stb);

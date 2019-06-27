@@ -108,3 +108,22 @@ void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager 
 		}
 	}
 }
+
+s32 findTerrainTypeByName(String name)
+{
+	DEBUG_FUNCTION();
+	
+	s32 result = 0;
+
+	for (s32 terrainID = 1; terrainID < terrainDefs.count; terrainID++)
+	{
+		TerrainDef *def = get(&terrainDefs, terrainID);
+		if (equals(def->name, name))
+		{
+			result = terrainID;
+			break;
+		}
+	}
+
+	return result;
+}

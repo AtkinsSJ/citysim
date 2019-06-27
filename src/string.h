@@ -12,117 +12,46 @@ struct String
 
 const String nullString = {};
 
-u32 hashString(String *s);
-
-inline String makeString(char *chars, s32 length, bool hash=false)
-{
-	String result = {};
-	result.chars = chars;
-	result.length = length;
-	result.maxLength = result.length;
-	result.hasHash = false;
-	result.hash = 0;
-
-	if (hash)
-	{
-		hashString(&result); // NB: Sets the hash and hasHash.
-	}
-
-	return result;
-}
-inline String makeString(char *chars, bool hash=false)
-{
-	return makeString(chars, truncate32(strlen(chars)), hash);
-}
-// const is a huge pain in the bum
-inline String makeString(const char *chars, bool hash=false)
-{
-	return makeString((char*)chars, truncate32(strlen(chars)), hash);
-}
-
-inline String stringFromBlob(Blob blob, bool hash=false)
-{
-	return makeString((char*)blob.memory, truncate32(blob.size), hash);
-}
+String makeString(char *chars, s32 length, bool hash=false);
+String makeString(char *chars, bool hash=false);
+String makeString(const char *chars, bool hash=false);
+String stringFromBlob(Blob blob, bool hash=false);
+String repeatChar(char c, s32 length);
 
 void copyString(char *src, s32 srcLength, String *dest);
-inline void copyString(String src, String *dest)
-{
-	copyString(src.chars, src.length, dest);
-}
+void copyString(String src, String *dest);
 
-String pushString(MemoryArena *arena, s32 length)
-{
-	String s = {};
-	s.chars = PushArray(arena, char, length);
-	s.length = 0;
-	s.maxLength = length;
+String pushString(MemoryArena *arena, s32 length);
+String pushString(MemoryArena *arena, char *src);
+String pushString(MemoryArena *arena, String src);
 
-	return s;
-}
-String pushString(MemoryArena *arena, char *src)
-{
-	s32 len = truncate32(strlen(src));
-
-	String s = pushString(arena, len);
-	copyString(src, len, &s);
-	return s;
-}
-String pushString(MemoryArena *arena, String src)
-{
-	String s = pushString(arena, src.length);
-	copyString(src, &s);
-	return s;
-}
+u32 hashString(String *s);
 
 bool equals(String a, String b);
-inline bool equals(String a, char *b)
-{
-	return equals(a, makeString(b));
-}
+bool equals(String a, char *b);
 
 // Like strcmp()
 s32 compare(String a, String b);
 
-inline bool isWhitespace(unichar uChar, bool countNewlines=true)
-{
-	// TODO: There's probably more whitespace characters somewhere.
+void reverse(char* first, u32 length);
+String trim(String input);
+String trimStart(String input);
+String trimEnd(String input);
 
-	bool result = false;
+bool asInt(String string, s64 *result);
+bool asBool(String string, bool *result);
 
-	// Feels like I'm misusing a switch, but I can't think of any better ways of writing this!
-	switch (uChar)
-	{
-	case 0:
-	case ' ':
-	case '\t':
-		result = true;
-		break;
+bool isWhitespace(unichar uChar, bool countNewlines=true);
+bool isNewline(char c);
+bool isNullTerminated(String s);
 
-	case '\n':
-	case '\r':
-		result = countNewlines;
-		break;
-
-	default:
-		result = false;
-	}
-
-	return result;
-}
-
-inline bool isNewline(char c)
-{
-	bool result = (c == '\n') || (c == '\r');
-	return result;
-}
-
-inline bool isNullTerminated(String s)
-{
-	// A 0-length string, by definition, can't have a null terminator
-	bool result = (s.length > 0) && (s.chars[s.length-1] == 0);
-	return result;
-}
+// TODO: Add "splitchar" support to countTokens() as well
+s32 countTokens(String input);
+// If splitChar is provided, the token ends before that, and it is skipped.
+// Otherwise, we stop at the first whitespace character, determined by isWhitespace()
+String nextToken(String input, String *remainder, char splitChar = 0);
+// NB: You can pass null for leftResult or rightResult to ignore that part.
+bool splitInTwo(String input, char divider, String *leftResult, String *rightResult);
 
 String formatInt(u64 value, u8 base=10);
 inline String formatInt(u32 value, u8 base=10) {return formatInt((u64)value, base);}

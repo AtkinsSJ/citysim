@@ -47,6 +47,26 @@ void append(StringBuilder *stb, char *source, s32 length)
 	}
 }
 
+inline void append(StringBuilder *stringBuilder, String source)
+{
+	append(stringBuilder, source.chars, source.length);
+}
+
+inline void append(StringBuilder *stringBuilder, char *source)
+{
+	append(stringBuilder, makeString(source));
+}
+
+inline void append(StringBuilder *stringBuilder, char source)
+{
+	append(stringBuilder, &source, 1);
+}
+
+inline void append(StringBuilder *stringBuilder, StringBuilder *source)
+{
+	append(stringBuilder, source->buffer, source->length);
+}
+
 inline String getString(StringBuilder *stb)
 {
 	String result = makeString(stb->buffer, stb->length);

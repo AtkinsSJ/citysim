@@ -29,6 +29,20 @@ struct Settings
 	String locale;
 };
 
+//
+// PUBLIC
+//
+void initSettings(Settings *settings);
 void loadSettings(Settings *settings);
 void applySettings(Settings *settings);
 void saveSettings(Settings *settings);
+
+void updateAndRenderSettingsMenu(struct AppState *appState, struct Renderer *renderer, struct AssetManager *assets);
+
+//
+// INTERNAL
+//
+void registerSetting(Settings *settings, String settingName, smm offset, Type type, s32 count);
+void loadDefaultSettings(Settings *settings);
+void loadSettingsFile(Settings *settings, String name, Blob settingsData);
+String getUserSettingsPath(Settings *settings);

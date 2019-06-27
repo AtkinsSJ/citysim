@@ -10,3 +10,5 @@ inline void logInfo    (char *format, std::initializer_list<String> args = {}) {
 inline void logWarn    (char *format, std::initializer_list<String> args = {}) {log(SDL_LOG_PRIORITY_WARN, format, args);}
 inline void logError   (char *format, std::initializer_list<String> args = {}) {log(SDL_LOG_PRIORITY_ERROR, format, args);}
 inline void logCritical(char *format, std::initializer_list<String> args = {}) {log(SDL_LOG_PRIORITY_CRITICAL, format, args);}
+
+void enableCustomLogger();

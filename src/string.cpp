@@ -1,32 +1,35 @@
 #pragma once
 #include <stdio.h> // For snprintf
 
-String trimStart(String input)
+inline String makeString(char *chars, s32 length, bool hash)
 {
-	String result = input;
-	while ((input.length > 0) && isWhitespace(result.chars[0], false))
+	String result = {};
+	result.chars = chars;
+	result.length = length;
+	result.maxLength = result.length;
+	result.hasHash = false;
+	result.hash = 0;
+
+	if (hash)
 	{
-		++result.chars;
-		--result.length;
+		hashString(&result); // NB: Sets the hash and hasHash.
 	}
 
 	return result;
 }
-
-String trimEnd(String input)
+inline String makeString(char *chars, bool hash)
 {
-	String result = input;
-	while ((input.length > 0) && isWhitespace(result.chars[result.length-1], false))
-	{
-		--result.length;
-	}
-
-	return result;
+	return makeString(chars, truncate32(strlen(chars)), hash);
+}
+// const is a huge pain in the bum
+inline String makeString(const char *chars, bool hash)
+{
+	return makeString((char*)chars, truncate32(strlen(chars)), hash);
 }
 
-inline String trim(String input)
+inline String stringFromBlob(Blob blob, bool hash)
 {
-	return trimStart(trimEnd(input));
+	return makeString((char*)blob.memory, truncate32(blob.size), hash);
 }
 
 void copyString(char *src, s32 srcLength, String *dest)
@@ -41,16 +44,35 @@ void copyString(char *src, s32 srcLength, String *dest)
 	dest->length = copyLength;
 }
 
-void reverseString(char* first, u32 length)
+inline void copyString(String src, String *dest)
 {
-	u32 flips = length / 2;
-	char temp;
-	for (u32 n=0; n < flips; n++)
-	{
-		temp = first[n];
-		first[n] = first[length-1-n];
-		first[length-1-n] = temp;
-	}
+	copyString(src.chars, src.length, dest);
+}
+
+inline String pushString(MemoryArena *arena, s32 length)
+{
+	String s = {};
+	s.chars = PushArray(arena, char, length);
+	s.length = 0;
+	s.maxLength = length;
+
+	return s;
+}
+
+inline String pushString(MemoryArena *arena, char *src)
+{
+	s32 len = truncate32(strlen(src));
+
+	String s = pushString(arena, len);
+	copyString(src, len, &s);
+	return s;
+}
+
+inline String pushString(MemoryArena *arena, String src)
+{
+	String s = pushString(arena, src.length);
+	copyString(src, &s);
+	return s;
 }
 
 bool equals(String a, String b)
@@ -78,6 +100,11 @@ bool equals(String a, String b)
 	}
 
 	return result;
+}
+
+inline bool equals(String a, char *b)
+{
+	return equals(a, makeString(b));
 }
 
 s32 compare(String a, String b)
@@ -127,6 +154,46 @@ u32 hashString(String *s)
 	}
 
 	return result;
+}
+
+void reverse(char* first, u32 length)
+{
+	u32 flips = length / 2;
+	char temp;
+	for (u32 n=0; n < flips; n++)
+	{
+		temp = first[n];
+		first[n] = first[length-1-n];
+		first[length-1-n] = temp;
+	}
+}
+
+String trimStart(String input)
+{
+	String result = input;
+	while ((input.length > 0) && isWhitespace(result.chars[0], false))
+	{
+		++result.chars;
+		--result.length;
+	}
+
+	return result;
+}
+
+String trimEnd(String input)
+{
+	String result = input;
+	while ((input.length > 0) && isWhitespace(result.chars[result.length-1], false))
+	{
+		--result.length;
+	}
+
+	return result;
+}
+
+inline String trim(String input)
+{
+	return trimStart(trimEnd(input));
 }
 
 bool asInt(String string, s64 *result)
@@ -199,6 +266,46 @@ bool asBool(String string, bool *result)
 	return succeeded;
 }
 
+inline bool isWhitespace(unichar uChar, bool countNewlines)
+{
+	// TODO: There's probably more whitespace characters somewhere.
+
+	bool result = false;
+
+	// Feels like I'm misusing a switch, but I can't think of any better ways of writing this!
+	switch (uChar)
+	{
+	case 0:
+	case ' ':
+	case '\t':
+		result = true;
+		break;
+
+	case '\n':
+	case '\r':
+		result = countNewlines;
+		break;
+
+	default:
+		result = false;
+	}
+
+	return result;
+}
+
+inline bool isNewline(char c)
+{
+	bool result = (c == '\n') || (c == '\r');
+	return result;
+}
+
+inline bool isNullTerminated(String s)
+{
+	// A 0-length string, by definition, can't have a null terminator
+	bool result = (s.length > 0) && (s.chars[s.length-1] == 0);
+	return result;
+}
+
 s32 countTokens(String input)
 {
 	DEBUG_FUNCTION();
@@ -231,7 +338,7 @@ s32 countTokens(String input)
 
 // If splitChar is provided, the token ends before that, and it is skipped.
 // Otherwise, we stop at the first whitespace character, determined by isWhitespace()
-String nextToken(String input, String *remainder, char splitChar = 0)
+String nextToken(String input, String *remainder, char splitChar)
 {
 	DEBUG_FUNCTION();
 	

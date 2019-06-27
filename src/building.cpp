@@ -316,7 +316,6 @@ inline BuildingDef *findBuildingDef(String name)
 {
 	BuildingDef *result = null;
 
-
 	BuildingDef **findResult = find(&buildingCatalogue.buildingsByName, name);
 	if (findResult != null)
 	{

@@ -1,6 +1,6 @@
 
 
-TextInput newTextInput(MemoryArena *arena, s32 length, f32 caretFlashCycleDuration=1.0f)
+TextInput newTextInput(MemoryArena *arena, s32 length, f32 caretFlashCycleDuration)
 {
 	TextInput b = {};
 	b.buffer = PushArray(arena, char, length + 1);
@@ -17,6 +17,42 @@ String textInputToString(TextInput *textInput)
 	result.length = textInput->byteLength;
 
 	return result;
+}
+
+Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth)
+{
+	DEBUG_FUNCTION();
+
+	String text = makeString(textInput->buffer, textInput->byteLength);
+
+	V2 textSize  = calculateTextSize(font, text, maxWidth);
+	V2 topLeft   = calculateTextPosition(origin, textSize, align);
+	Rect2 bounds = rectPosSize(topLeft, textSize);
+
+	DrawTextResult drawTextResult = {};
+	drawText(uiState->uiBuffer, font, text, topLeft, maxWidth, depth, color, uiState->textShaderID, textInput->caretGlyphPos, &drawTextResult);
+
+	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
+	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
+
+	if (showCaret)
+	{
+		Rect2 caretRect = rectXYWH(topLeft.x, topLeft.y, 2, font->lineHeight);
+
+		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
+		{
+			// Draw it to the right of the glyph
+			caretRect.x = drawTextResult.renderItemAtPosition->rect.x + drawTextResult.glyphAtPosition->xAdvance;
+			caretRect.y = drawTextResult.renderItemAtPosition->rect.y - drawTextResult.glyphAtPosition->yOffset;
+		}
+
+		// Shifted 1px left for better legibility of text
+		caretRect.x -= 1.0f;
+
+		drawRect(uiState->uiBuffer, caretRect, depth + 10, uiState->untexturedShaderID, color);
+	}
+
+	return bounds;
 }
 
 void append(TextInput *textInput, char *source, s32 length)
@@ -50,11 +86,6 @@ void append(TextInput *textInput, String source)
 void append(TextInput *textInput, char *source)
 {
 	append(textInput, makeString(source));
-}
-
-void append(TextInput *textInput, TextInput *source)
-{
-	append(textInput, source->buffer, source->byteLength);
 }
 
 void insert(TextInput *textInput, String source)
@@ -94,7 +125,7 @@ void insert(TextInput *textInput, String source)
 	textInput->caretGlyphPos += glyphsToCopy;
 }
 
-void moveCaretLeft(TextInput *textInput, s32 count = 1)
+void moveCaretLeft(TextInput *textInput, s32 count)
 {
 	if (count < 1) return;
 
@@ -110,7 +141,7 @@ void moveCaretLeft(TextInput *textInput, s32 count = 1)
 	}
 }
 
-void moveCaretRight(TextInput *textInput, s32 count = 1)
+void moveCaretRight(TextInput *textInput, s32 count)
 {
 	if (count < 1) return;
 

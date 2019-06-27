@@ -49,42 +49,6 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 ali
 	return bounds;
 }
 
-Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0)
-{
-	DEBUG_FUNCTION();
-
-	String text = makeString(textInput->buffer, textInput->byteLength);
-
-	V2 textSize  = calculateTextSize(font, text, maxWidth);
-	V2 topLeft   = calculateTextPosition(origin, textSize, align);
-	Rect2 bounds = rectPosSize(topLeft, textSize);
-
-	DrawTextResult drawTextResult = {};
-	drawText(uiState->uiBuffer, font, text, topLeft, maxWidth, depth, color, uiState->textShaderID, textInput->caretGlyphPos, &drawTextResult);
-
-	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
-	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
-
-	if (showCaret)
-	{
-		Rect2 caretRect = rectXYWH(topLeft.x, topLeft.y, 2, font->lineHeight);
-
-		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
-		{
-			// Draw it to the right of the glyph
-			caretRect.x = drawTextResult.renderItemAtPosition->rect.x + drawTextResult.glyphAtPosition->xAdvance;
-			caretRect.y = drawTextResult.renderItemAtPosition->rect.y - drawTextResult.glyphAtPosition->yOffset;
-		}
-
-		// Shifted 1px left for better legibility of text
-		caretRect.x -= 1.0f;
-
-		drawRect(uiState->uiBuffer, caretRect, depth + 10, uiState->untexturedShaderID, color);
-	}
-
-	return bounds;
-}
-
 void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 {
 	window_label(context, context->uiState->tooltipText);
