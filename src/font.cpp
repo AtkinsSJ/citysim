@@ -156,26 +156,13 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 			BitmapFontGlyph *c = findChar(font, glyph);
 			if (c)
 			{
-				// NB: the actual VALUE of endOfCurrentWord doesn't matter here, it just needs to be
-				// *something* that isn't the default 0 value.
-				// This whole thing is hacks on top of hacks, and I really don't like it.
-				state.endOfCurrentWord = glyphIndex;
-
-				if (state.startOfCurrentWord == 0)
+				if (isWhitespace(glyph))
 				{
-					state.startOfCurrentWord = state.endOfCurrentWord;
-					state.currentWordWidth = 0;
-				}
-
-				if (isWhitespace(c->codepoint))
-				{
-					state.startOfCurrentWord = 0;
 					state.currentWordWidth = 0;
 				}
 				else if (state.doWrap && ((state.currentPositionRelative.x + c->xAdvance) > state.maxWidth))
 				{
 					goToNewLine(&state);
-					state.startOfCurrentWord = state.endOfCurrentWord;
 
 					if ((state.currentWordWidth + c->xAdvance) > state.maxWidth)
 					{
@@ -198,7 +185,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 			}
 		}
 
-		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
+		bytePos += lengthOfGlyph(text.chars[bytePos]);
 		glyphIndex++;
 	}
 
