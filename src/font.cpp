@@ -55,7 +55,7 @@ BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 
 inline void goToNewLine(DrawTextState *state)
 {
-	state->longestLineWidth = state->maxWidth;
+	state->longestLineWidth = max(state->longestLineWidth, state->currentPositionRelative.x);
 	state->currentPositionRelative.y += state->lineHeight;
 	state->currentPositionRelative.x = 0;
 	state->lineCount++;
@@ -175,32 +175,27 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 				}
 				else if (state.doWrap && ((state.currentPositionRelative.x + c->xAdvance) > state.maxWidth))
 				{
+					goToNewLine(&state);
+					state.startOfCurrentWord = state.endOfCurrentWord;
+
 					if ((state.currentWordWidth + c->xAdvance) > state.maxWidth)
 					{
 						// The current word is longer than will fit on an entire line!
 						// So, split it at the maximum line length.
 
 						// This should mean just wrapping the final character
-						goToNewLine(&state);
-
-						state.startOfCurrentWord = state.endOfCurrentWord;
 						state.currentWordWidth = 0;
 					}
 					else
 					{
-						// Wrap the whole word onto a new line
-						goToNewLine(&state);
-
+						// Wrapping the whole word onto a new line
 						// Set the current position to where the next word will start
 						state.currentPositionRelative.x = state.currentWordWidth;
-
-						state.startOfCurrentWord = state.endOfCurrentWord;
 					}
 				}
 
 				state.currentPositionRelative.x += c->xAdvance;
 				state.currentWordWidth += c->xAdvance;
-				state.longestLineWidth = max(state.longestLineWidth, state.currentPositionRelative.x);
 			}
 		}
 
