@@ -158,10 +158,49 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 			if (c)
 			{
 				// NB: the actual VALUE of endOfCurrentWord doesn't matter here, it just needs to be
-				// *something* that isn't the default -1 value.
+				// *something* that isn't the default 0 value.
 				// This whole thing is hacks on top of hacks, and I really don't like it.
 				state.endOfCurrentWord = glyphIndex;
-				handleWrapping(&state, c);
+
+				if (state.startOfCurrentWord == 0)
+				{
+					state.startOfCurrentWord = state.endOfCurrentWord;
+					state.currentWordWidth = 0;
+				}
+
+				if (isWhitespace(c->codepoint))
+				{
+					state.startOfCurrentWord = 0;
+					state.currentWordWidth = 0;
+				}
+				else if (state.doWrap && ((state.currentPositionRelative.x + c->xAdvance) > state.maxWidth))
+				{
+					if ((state.currentWordWidth + c->xAdvance) > state.maxWidth)
+					{
+						// The current word is longer than will fit on an entire line!
+						// So, split it at the maximum line length.
+
+						// This should mean just wrapping the final character
+						goToNewLine(&state);
+
+						state.startOfCurrentWord = state.endOfCurrentWord;
+						state.currentWordWidth = 0;
+					}
+					else
+					{
+						// Wrap the whole word onto a new line
+						goToNewLine(&state);
+
+						// Set the current position to where the next word will start
+						state.currentPositionRelative.x = state.currentWordWidth;
+
+						state.startOfCurrentWord = state.endOfCurrentWord;
+					}
+				}
+
+				state.currentPositionRelative.x += c->xAdvance;
+				state.currentWordWidth += c->xAdvance;
+				state.longestLineWidth = max(state.longestLineWidth, state.currentPositionRelative.x);
 			}
 		}
 

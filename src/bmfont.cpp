@@ -75,7 +75,7 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 			font->glyphCount = 0;
 
 			smm pageMemorySize = common->pageCount * sizeof(font->pageTextures[0]);
-			font->glyphCapacity = charCount * fontGlyphCapacityMultiplier;
+			font->glyphCapacity = ceil_s32(charCount * 2.0f);
 			smm glyphEntryMemorySize = font->glyphCapacity * sizeof(BitmapFontGlyphEntry);
 			asset->data = allocate(assets, pageMemorySize + glyphEntryMemorySize);
 

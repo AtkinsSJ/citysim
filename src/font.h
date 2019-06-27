@@ -18,8 +18,6 @@ struct BitmapFontGlyphEntry
 	BitmapFontGlyph glyph;
 };
 
-const s32 fontGlyphCapacityMultiplier = 2;
-
 struct BitmapFont
 {
 	String name;
