@@ -81,6 +81,7 @@ struct DebugCodeData
 
 	u32 workingCallCount;
 	u64 workingTotalCycleCount;
+	u64 averageTotalCycleCount;
 
 	u32 callCount[DEBUG_FRAMES_COUNT];
 	u64 totalCycleCount[DEBUG_FRAMES_COUNT];

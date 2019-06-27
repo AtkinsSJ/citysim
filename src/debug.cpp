@@ -42,10 +42,20 @@ void processDebugData(DebugState *debugState)
 		DebugCodeData *code = get(it);
 
 		// Move the `working` stuff into the correct frame
-		code->callCount[oldWritingFrameIndex] = code->workingCallCount;
-		code->totalCycleCount[oldWritingFrameIndex] = code->workingTotalCycleCount;
+		if (debugState->captureDebugData)
+		{
+			code->callCount[oldWritingFrameIndex] = code->workingCallCount;
+			code->totalCycleCount[oldWritingFrameIndex] = code->workingTotalCycleCount;
+			code->averageTotalCycleCount = 0;
+			for (s32 frameIndex = 0; frameIndex < DEBUG_FRAMES_COUNT; frameIndex++)
+			{
+				code->averageTotalCycleCount += code->totalCycleCount[frameIndex];
+			}
+			code->averageTotalCycleCount /= DEBUG_FRAMES_COUNT;
+		}
 		code->workingCallCount = 0;
 		code->workingTotalCycleCount = 0;
+
 
 		//
 		// Calculate new top blocks list
@@ -242,9 +252,12 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 
 	// Top code blocks
 	{
-		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}", {
-			formatString("Code", 40), formatString("Total cycles", 26, false),
-			formatString("Calls", 10, false), formatString("Avg Cycles", 26, false)
+		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}", {
+			formatString("Code", 40),
+			formatString("Total cycles", 26, false),
+			formatString("Calls", 10, false),
+			formatString("Avg Cycles", 26, false),
+			formatString("2-second average cycles", 26, false)
 		}));
 
 		debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
@@ -255,13 +268,15 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 			DebugCodeData *code = topBlock->data;
 			f32 totalCycles = (f32)code->totalCycleCount[rfi];
 			f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
-			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)", {
+			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)", {
 				formatString(code->name, 40),
 				formatString(formatInt(code->totalCycleCount[rfi]), 16, false),
 				formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
 				formatString(formatInt(code->callCount[rfi]), 10, false),
 				formatString(formatInt((s32)averageCycles), 16, false),
 				formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
+				formatString(formatInt(code->averageTotalCycleCount), 10, false),
+				formatString(formatFloat(code->averageTotalCycleCount * msPerCycle, 2), 5, false),
 			}), true, debugCodeDataTagColors + code->tag);
 			topBlock = topBlock->nextNode;
 		}

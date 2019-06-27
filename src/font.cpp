@@ -53,7 +53,7 @@ BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
-inline void nextLine(DrawTextState *state)
+inline void goToNewLine(DrawTextState *state)
 {
 	state->longestLineWidth = state->maxWidth;
 	state->currentPositionRelative.y += state->lineHeight;
@@ -77,54 +77,47 @@ void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 		state->startOfCurrentWord = 0;
 		state->currentWordWidth = 0;
 	}
-	else if (state->doWrap)
+	else if (state->doWrap && ((state->currentLineWidth + c->xAdvance) > state->maxWidth))
 	{
-		// check possible reasons for wrapping.
-		// actually, that's always because we're too wide
-
-		if ((state->currentLineWidth + c->xAdvance) > state->maxWidth)
+		if (state->currentWordWidth + c->xAdvance > state->maxWidth)
 		{
-			f32 newWordWidth = state->currentWordWidth + c->xAdvance;
-			if (newWordWidth > state->maxWidth)
+			// The current word is longer than will fit on an entire line!
+			// So, split it at the maximum line length.
+
+			// This should mean just wrapping the final character
+			goToNewLine(state);
+
+			state->startOfCurrentWord = state->endOfCurrentWord;
+			state->currentWordWidth = 0;
+
+			if (state->firstRenderItem)
 			{
-				// The current word is longer than will fit on an entire line!
-				// So, split it at the maximum line length.
+				RenderItem *firstItemInWord = state->firstRenderItem + state->startOfCurrentWord;
+				firstItemInWord->rect.pos = state->origin + state->currentPositionRelative + v2(0, c->yOffset);
+			}
+		}
+		else
+		{
+			// Wrap the whole word onto a new line
+			goToNewLine(state);
 
-				// This should mean just wrapping the final character
-				nextLine(state);
+			// Set the current position to where the next word will start
+			state->currentPositionRelative.x = state->currentWordWidth;
+			state->currentLineWidth = state->currentWordWidth;
 
-				state->startOfCurrentWord = state->endOfCurrentWord;
-				state->currentWordWidth = 0;
-
-				if (state->firstRenderItem)
+			if (state->firstRenderItem)
+			{
+				// Offset from where the word was, to its new position
+				V2 offset = v2(state->origin.x - state->firstRenderItem[state->startOfCurrentWord].rect.x, state->lineHeight);
+				while (state->startOfCurrentWord <= state->endOfCurrentWord)
 				{
-					RenderItem *firstItemInWord = state->firstRenderItem + state->startOfCurrentWord;
-					firstItemInWord->rect.pos = state->origin + state->currentPositionRelative + v2(0, c->yOffset);
+					state->firstRenderItem[state->startOfCurrentWord].rect.pos += offset;
+					state->startOfCurrentWord++;
 				}
 			}
 			else
 			{
-				// Wrap the whole word onto a new line
-				nextLine(state);
-
-				// Set the current position to where the next word will start
-				state->currentPositionRelative.x = state->currentWordWidth;
-				state->currentLineWidth = state->currentWordWidth;
-
-				if (state->firstRenderItem)
-				{
-					// Offset from where the word was, to its new position
-					V2 offset = v2(state->origin.x - state->firstRenderItem[state->startOfCurrentWord].rect.x, state->lineHeight);
-					while (state->startOfCurrentWord <= state->endOfCurrentWord)
-					{
-						state->firstRenderItem[state->startOfCurrentWord].rect.pos += offset;
-						state->startOfCurrentWord++;
-					}
-				}
-				else
-				{
-					state->startOfCurrentWord = state->endOfCurrentWord;
-				}
+				state->startOfCurrentWord = state->endOfCurrentWord;
 			}
 		}
 	}
@@ -159,7 +152,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 
 		if (glyph == '\n')
 		{
-			nextLine(&state);
+			goToNewLine(&state);
 		}
 		else
 		{
@@ -201,7 +194,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 		if (glyph == '\n')
 		{
-			nextLine(&state);
+			goToNewLine(&state);
 		}
 		else
 		{
