@@ -30,6 +30,7 @@ Speed up text rendering!
 	- Maybe that should be abstracted a little into a "draw a bunch of stuff together" feature. eg, Terrain could use something similar
 - Could maybe enforce that each font has a single texture page? That's currently the case.
 - Possibly replace all floats in text-rendering with integers, and just produce floats at the very end for the actual renderitems. Everything is always done in whole-pixels anyway, and that should be a chunk faster.
+	- calculateTextSize() could return V2I, etc. That's quite a deep rabbit hole though!
 
 Maybe String should use a constructor, so I stop making uninitialised-string-memory mistakes?
 

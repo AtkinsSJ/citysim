@@ -214,7 +214,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
 	s32 bytePos = 0;
-	for (s32 glyphIndex = 0; glyphIndex < glyphsToOutput; glyphIndex++)
+	while (bytePos < text.length)
 	{
 		unichar glyph = readUnicodeChar(text.chars + bytePos);
 
@@ -247,7 +247,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 			}
 		}
 
-		bytePos = findStartOfNextGlyph(text.chars, bytePos, text.length);
+		bytePos += lengthOfGlyph(text.chars[bytePos]);
 	}
 
 	finishReservedRenderItemRange(renderBuffer, glyphCount);
