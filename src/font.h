@@ -61,26 +61,3 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 // INTERNAL
 
 BitmapFontGlyphEntry *findGlyphInternal(BitmapFont *font, unichar targetChar);
-struct DrawTextState
-{
-	bool doWrap;
-	f32 maxWidth;
-	f32 lineHeight;
-	s32 lineCount = 1;
-
-	V2 origin;
-	V2 currentPositionRelative = v2(0,0);
-
-	RenderItem *firstRenderItem;
-	s32 startOfCurrentWord = 0;
-	s32 endOfCurrentWord = 0;
-	f32 currentWordWidth = 0;
-
-	f32 longestLineWidth = 0;
-
-	DrawTextState(f32 maxWidth, f32 lineHeight, V2 origin=v2(0,0), RenderItem *firstRenderItem=null)
-		: maxWidth(maxWidth), doWrap(maxWidth > 0), lineHeight(lineHeight), origin(origin), firstRenderItem(firstRenderItem)
-	{}
-};
-void nextLine(DrawTextState *state);
-void handleWrapping(DrawTextState *state, BitmapFontGlyph *c);

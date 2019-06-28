@@ -135,7 +135,11 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
 
-	DrawTextState state(maxWidth, font->lineHeight, topLeft, firstRenderItem);
+	f32 currentX = 0, currentY = 0;
+	bool doWrap = (maxWidth > 0);
+	s32 startOfCurrentWord = 0;
+	s32 endOfCurrentWord = 0;
+	s32 currentWordWidth = 0;
 
 	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
 	s32 bytePos = 0;
@@ -145,70 +149,69 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 		if (glyph == '\n')
 		{
-			state.currentPositionRelative.y += state.lineHeight;
-			state.currentPositionRelative.x = 0;
+			currentY += font->lineHeight;
+			currentX = 0;
 		}
 		else
 		{
 			BitmapFontGlyph *c = findChar(font, glyph);
 			if (c)
 			{
-				state.endOfCurrentWord = glyphCount;
+				endOfCurrentWord = glyphCount;
 				makeRenderItem(firstRenderItem + glyphCount,
-					rectPosSize(topLeft + state.currentPositionRelative + v2(c->xOffset, c->yOffset), v2(c->width, c->height)),
+					rectXYWH(topLeft.x + currentX + c->xOffset, topLeft.y + currentY + c->yOffset, c->width, c->height),
 					depth, font->pageTextures[c->page], c->uv, shaderID, color
 				);
 
+				if (startOfCurrentWord == 0)
 				{
-				if (state.startOfCurrentWord == 0)
-				{
-					state.startOfCurrentWord = state.endOfCurrentWord;
-					state.currentWordWidth = 0;
+					startOfCurrentWord = endOfCurrentWord;
+					currentWordWidth = 0;
 				}
 
 				if (isWhitespace(glyph))
 				{
-					state.startOfCurrentWord = 0;
-					state.currentWordWidth = 0;
+					startOfCurrentWord = 0;
+					currentWordWidth = 0;
 				}
-				else if (state.doWrap && ((state.currentPositionRelative.x + c->xAdvance) > state.maxWidth))
+				else if (doWrap && ((currentX + c->xAdvance) > maxWidth))
 				{
-					if (state.currentWordWidth + c->xAdvance > state.maxWidth)
+					if (currentWordWidth + c->xAdvance > maxWidth)
 					{
 						// The current word is longer than will fit on an entire line!
 						// So, split it at the maximum line length.
 
 						// This should mean just wrapping the final character
-						state.currentPositionRelative.x = 0;
-						state.currentPositionRelative.y += state.lineHeight;
+						currentX = 0;
+						currentY += font->lineHeight;
 
-						state.startOfCurrentWord = state.endOfCurrentWord;
-						state.currentWordWidth = 0;
+						startOfCurrentWord = endOfCurrentWord;
+						currentWordWidth = 0;
 
-						RenderItem *firstItemInWord = state.firstRenderItem + state.startOfCurrentWord;
-						firstItemInWord->rect.pos = state.origin + state.currentPositionRelative + v2(0, c->yOffset);
+						RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
+						firstItemInWord->rect.x = topLeft.x + currentX;
+						firstItemInWord->rect.y = topLeft.y + currentY + c->yOffset;
 					}
 					else
 					{
 						// Wrap the whole word onto a new line
 
 						// Set the current position to where the next word will start
-						state.currentPositionRelative.x = state.currentWordWidth;
-						state.currentPositionRelative.y += state.lineHeight;
+						currentX = currentWordWidth;
+						currentY += font->lineHeight;
 
 						// Offset from where the word was, to its new position
-						V2 offset = v2(state.origin.x - state.firstRenderItem[state.startOfCurrentWord].rect.x, state.lineHeight);
-						while (state.startOfCurrentWord <= state.endOfCurrentWord)
+						V2 offset = v2(topLeft.x - firstRenderItem[startOfCurrentWord].rect.x, (f32)font->lineHeight);
+						while (startOfCurrentWord <= endOfCurrentWord)
 						{
-							state.firstRenderItem[state.startOfCurrentWord].rect.pos += offset;
-							state.startOfCurrentWord++;
+							firstRenderItem[startOfCurrentWord].rect.pos += offset;
+							startOfCurrentWord++;
 						}
 					}
 				}
 
-				state.currentPositionRelative.x += c->xAdvance;
-				state.currentWordWidth += c->xAdvance;
-			}
+				currentX += c->xAdvance;
+				currentWordWidth += c->xAdvance;
 
 				// Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
 				if (caretInfoResult && glyphCount < caretPosition)
