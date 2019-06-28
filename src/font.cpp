@@ -51,14 +51,6 @@ BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
-inline void goToNewLine(DrawTextState *state)
-{
-	state->longestLineWidth = max(state->longestLineWidth, state->currentPositionRelative.x);
-	state->currentPositionRelative.y += state->lineHeight;
-	state->currentPositionRelative.x = 0;
-	state->lineCount++;
-}
-
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
@@ -153,7 +145,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 		if (glyph == '\n')
 		{
-			goToNewLine(&state);
+			state.currentPositionRelative.y += state.lineHeight;
+			state.currentPositionRelative.x = 0;
 		}
 		else
 		{
@@ -186,7 +179,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 						// So, split it at the maximum line length.
 
 						// This should mean just wrapping the final character
-						goToNewLine(&state);
+						state.currentPositionRelative.x = 0;
+						state.currentPositionRelative.y += state.lineHeight;
 
 						state.startOfCurrentWord = state.endOfCurrentWord;
 						state.currentWordWidth = 0;
@@ -197,10 +191,11 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 					else
 					{
 						// Wrap the whole word onto a new line
-						goToNewLine(&state);
 
 						// Set the current position to where the next word will start
 						state.currentPositionRelative.x = state.currentWordWidth;
+						state.currentPositionRelative.y += state.lineHeight;
+
 						// Offset from where the word was, to its new position
 						V2 offset = v2(state.origin.x - state.firstRenderItem[state.startOfCurrentWord].rect.x, state.lineHeight);
 						while (state.startOfCurrentWord <= state.endOfCurrentWord)
@@ -213,7 +208,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 				state.currentPositionRelative.x += c->xAdvance;
 				state.currentWordWidth += c->xAdvance;
-				state.longestLineWidth = max(state.longestLineWidth, state.currentPositionRelative.x);
 			}
 
 				// Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
