@@ -16,9 +16,16 @@ void expand(StringBuilder *stb, s32 newSize)
 	DEBUG_FUNCTION();
 	
 	s32 targetSize = newSize;
-	if (targetSize == -1) targetSize = stb->currentMaxLength * 2;
 
-	ASSERT(targetSize > stb->currentMaxLength, "OOPS");
+	if (targetSize == -1) 
+	{
+		targetSize = stb->currentMaxLength * 2;
+	}
+	else if (targetSize < stb->currentMaxLength)
+	{
+		DEBUG_BREAK();
+		return;
+	}
 
 	char *newBuffer = PushArray(stb->arena, char, targetSize);
 	for (s32 i=0; i<stb->currentMaxLength; i++)
@@ -32,8 +39,6 @@ void expand(StringBuilder *stb, s32 newSize)
 
 void append(StringBuilder *stb, char *source, s32 length)
 {
-	DEBUG_FUNCTION();
-	
 	s32 lengthToCopy = length;
 	if ((stb->length + length) > stb->currentMaxLength)
 	{

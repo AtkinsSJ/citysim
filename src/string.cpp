@@ -406,7 +406,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 	
 	String result;
 
-	StringBuilder stb = newStringBuilder(format.length * 2);
+	StringBuilder stb = newStringBuilder(format.length * 4);
 
 	s32 startOfNumber = s32Max;
 	bool isReadingNumber = false;
