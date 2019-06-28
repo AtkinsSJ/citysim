@@ -59,69 +59,6 @@ inline void goToNewLine(DrawTextState *state)
 	state->lineCount++;
 }
 
-void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
-{
-	if (state->startOfCurrentWord == 0)
-	{
-		state->startOfCurrentWord = state->endOfCurrentWord;
-		state->currentWordWidth = 0;
-	}
-
-	if (isWhitespace(c->codepoint))
-	{
-		state->startOfCurrentWord = 0;
-		state->currentWordWidth = 0;
-	}
-	else if (state->doWrap && ((state->currentPositionRelative.x + c->xAdvance) > state->maxWidth))
-	{
-		if (state->currentWordWidth + c->xAdvance > state->maxWidth)
-		{
-			// The current word is longer than will fit on an entire line!
-			// So, split it at the maximum line length.
-
-			// This should mean just wrapping the final character
-			goToNewLine(state);
-
-			state->startOfCurrentWord = state->endOfCurrentWord;
-			state->currentWordWidth = 0;
-
-			// Move render items if we have them
-			if (state->firstRenderItem)
-			{
-				RenderItem *firstItemInWord = state->firstRenderItem + state->startOfCurrentWord;
-				firstItemInWord->rect.pos = state->origin + state->currentPositionRelative + v2(0, c->yOffset);
-			}
-		}
-		else
-		{
-			// Wrap the whole word onto a new line
-			goToNewLine(state);
-
-			// Set the current position to where the next word will start
-			state->currentPositionRelative.x = state->currentWordWidth;
-
-			if (state->firstRenderItem)
-			{
-				// Offset from where the word was, to its new position
-				V2 offset = v2(state->origin.x - state->firstRenderItem[state->startOfCurrentWord].rect.x, state->lineHeight);
-				while (state->startOfCurrentWord <= state->endOfCurrentWord)
-				{
-					state->firstRenderItem[state->startOfCurrentWord].rect.pos += offset;
-					state->startOfCurrentWord++;
-				}
-			}
-			else
-			{
-				state->startOfCurrentWord = state->endOfCurrentWord;
-			}
-		}
-	}
-
-	state->currentPositionRelative.x += c->xAdvance;
-	state->currentWordWidth += c->xAdvance;
-	state->longestLineWidth = max(state->longestLineWidth, state->currentPositionRelative.x);
-}
-
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
@@ -229,7 +166,55 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 					depth, font->pageTextures[c->page], c->uv, shaderID, color
 				);
 
-				handleWrapping(&state, c);
+				{
+				if (state.startOfCurrentWord == 0)
+				{
+					state.startOfCurrentWord = state.endOfCurrentWord;
+					state.currentWordWidth = 0;
+				}
+
+				if (isWhitespace(glyph))
+				{
+					state.startOfCurrentWord = 0;
+					state.currentWordWidth = 0;
+				}
+				else if (state.doWrap && ((state.currentPositionRelative.x + c->xAdvance) > state.maxWidth))
+				{
+					if (state.currentWordWidth + c->xAdvance > state.maxWidth)
+					{
+						// The current word is longer than will fit on an entire line!
+						// So, split it at the maximum line length.
+
+						// This should mean just wrapping the final character
+						goToNewLine(&state);
+
+						state.startOfCurrentWord = state.endOfCurrentWord;
+						state.currentWordWidth = 0;
+
+						RenderItem *firstItemInWord = state.firstRenderItem + state.startOfCurrentWord;
+						firstItemInWord->rect.pos = state.origin + state.currentPositionRelative + v2(0, c->yOffset);
+					}
+					else
+					{
+						// Wrap the whole word onto a new line
+						goToNewLine(&state);
+
+						// Set the current position to where the next word will start
+						state.currentPositionRelative.x = state.currentWordWidth;
+						// Offset from where the word was, to its new position
+						V2 offset = v2(state.origin.x - state.firstRenderItem[state.startOfCurrentWord].rect.x, state.lineHeight);
+						while (state.startOfCurrentWord <= state.endOfCurrentWord)
+						{
+							state.firstRenderItem[state.startOfCurrentWord].rect.pos += offset;
+							state.startOfCurrentWord++;
+						}
+					}
+				}
+
+				state.currentPositionRelative.x += c->xAdvance;
+				state.currentWordWidth += c->xAdvance;
+				state.longestLineWidth = max(state.longestLineWidth, state.currentPositionRelative.x);
+			}
 
 				// Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
 				if (caretInfoResult && glyphCount < caretPosition)
