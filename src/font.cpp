@@ -131,7 +131,23 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 {
 	DEBUG_FUNCTION();
 
-	s32 glyphsToOutput = countGlyphs(text.chars, text.length);
+	//
+	// NB: We *could* just use text.length here. That will over-estimate how many RenderItems to reserve,
+	// which is fine if we're sticking with mostly English text, but in languages with a lot of multi-byte
+	// characters, could involve reserving 2 or 3 times what we actually need.
+	// countGlyphs() is not very fast, though it's less bad than I thought once I take the profiling out
+	// of it. It accounts for about 4% of the time for drawText(), which is 0.1ms in my stress-test.
+	// Also, the over-estimate will only boost the size of the renderitems array *once* as it never shrinks.
+	// We could end up with one that's, I dunno, twice the size it needs to be... RenderItem is 64 bytes
+	// right now, so 20,000 of them is around 1.25MB, which isn't a big deal.
+	//
+	// I think I'm going to go with the faster option for now, and maybe revisit this in the future.
+	// Eventually we'll switch to unichar-strings, so all of this will be irrelevant anyway!
+	//
+	// - Sam, 28/06/2019
+	//
+	// s32 glyphsToOutput = countGlyphs(text.chars, text.length);
+	s32 glyphsToOutput = text.length;
 
 	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
 
@@ -197,7 +213,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 						// Wrap the whole word onto a new line
 
 						// Set the current position to where the next word will start
-						currentX = currentWordWidth;
+						currentX = (f32) currentWordWidth;
 						currentY += font->lineHeight;
 
 						// Offset from where the word was, to its new position

@@ -116,7 +116,6 @@ s32 floorToWholeGlyphs(char *startByte, s32 byteLength)
 // Counts how many full glyphs are in the buffer
 s32 countGlyphs(char *startByte, s32 byteLength)
 {
-	DEBUG_FUNCTION();
 	s32 glyphCount = 0;
 
 	if (byteLength > 0)
