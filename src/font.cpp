@@ -36,8 +36,6 @@ BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar)
 
 BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
 {
-	DEBUG_FUNCTION();
-
 	BitmapFontGlyph *result = null;
 	BitmapFontGlyphEntry *entry = findGlyphInternal(font, targetChar);
 
@@ -63,8 +61,6 @@ inline void goToNewLine(DrawTextState *state)
 
 void handleWrapping(DrawTextState *state, BitmapFontGlyph *c)
 {
-	DEBUG_FUNCTION();
-	
 	if (state->startOfCurrentWord == 0)
 	{
 		state->startOfCurrentWord = state->endOfCurrentWord;
