@@ -75,7 +75,7 @@ inline String pushString(MemoryArena *arena, String src)
 	return s;
 }
 
-bool equals(String a, String b)
+inline bool equals(String a, String b)
 {
 	bool result = true;
 
@@ -89,14 +89,7 @@ bool equals(String a, String b)
 	}
 	else
 	{
-		for (s32 i = 0; i<b.length; i++)
-		{
-			if (a.chars[i] != b.chars[i])
-			{
-				result = false;
-				break;
-			}
-		}
+		result = isMemoryEqual(a.chars, b.chars, a.length);
 	}
 
 	return result;
@@ -105,31 +98,6 @@ bool equals(String a, String b)
 inline bool equals(String a, char *b)
 {
 	return equals(a, makeString(b));
-}
-
-s32 compare(String a, String b)
-{
-	DEBUG_FUNCTION();
-	
-	bool foundDifference = false;
-	s32 result = 0;
-	for (s32 i = 0; i<b.length; i++)
-	{
-		s32 diff = a.chars[i] - b.chars[i];
-		if (diff != 0)
-		{
-			result = diff;
-			foundDifference = true;
-			break;
-		}
-	}
-
-	if (!foundDifference && a.length != b.length)
-	{
-		result = a.length - b.length;
-	}
-
-	return result;
 }
 
 u32 hashString(String *s)

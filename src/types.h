@@ -369,31 +369,4 @@ T approach(T currentValue, T targetValue, T distance);
 s32 manhattanDistance(Rect2I rect, V2I point);
 s32 manhattanDistance(Rect2I a, Rect2I b);
 
-// Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
-// In other cases, you'll want to write a type-specific function.
-// I'm not entirely confident this will work for all types, so make sure to TEST with any types you use it for!
-template<typename T>
-bool equals(T a, T b)
-{
-	bool areEqual = true;
-
-	u8 *pA = (u8*)(&a);
-	u8 *pB = (u8*)(&b);
-	smm byteSize = sizeof(T);
-
-	for (smm i=0; i<byteSize; i++, pA++, pB++)
-	{
-		if (*pA != *pB)
-		{
-			areEqual = false;
-			break;
-		}
-	}
-
-	return areEqual;
-}
-
-bool equals(f32 a, f32 b, f32 epsilon)
-{
-	return (fabs(a-b) < epsilon);
-}
+bool equals(f32 a, f32 b, f32 epsilon);

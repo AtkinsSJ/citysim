@@ -42,6 +42,11 @@ inline s32 truncate32(s64 in)
 	return (s32) in;
 }
 
+inline bool equals(f32 a, f32 b, f32 epsilon)
+{
+	return (fabs(a-b) < epsilon);
+}
+
 template<typename T>
 inline T clamp(T value, T min, T max)
 {

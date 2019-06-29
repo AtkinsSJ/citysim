@@ -146,3 +146,9 @@ inline void copyMemory(T *source, T *dest, smm length)
 {
 	memcpy(dest, source, length * sizeof(T));
 }
+
+template<typename T>
+inline bool isMemoryEqual(T *a, T *b, smm length)
+{
+	return (memcmp(a, b, sizeof(T) * length) == 0);
+}
