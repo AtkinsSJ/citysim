@@ -61,3 +61,6 @@ void markResetPosition(MemoryArena *arena);
 void *allocate(MemoryArena *arena, smm size);
 Blob allocateBlob(MemoryArena *arena, smm size);
 u8 *allocateRaw(smm size);
+
+template<typename T>
+void copyMemory(T *source, T *dest, smm length);

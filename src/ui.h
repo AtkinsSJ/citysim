@@ -2,7 +2,7 @@
 // ui.h
 
 const f32 uiMessageDisplayTime = 2.0f;
-struct UiMessage
+struct UIMessage
 {
 	String text;
 	f32 countdown; // In seconds
@@ -23,7 +23,7 @@ struct UIState
 	f32 closestDepth;
 
 	String tooltipText;
-	UiMessage message;
+	UIMessage message;
 
 	// TODO: Replace this with better "this input has already been used" code!
 	Array<Rect2> uiRects;
@@ -55,6 +55,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool activ
 bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, f32 depth, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 void uiCloseMenus(UIState *uiState);
 
+// NB: `message` is copied into the UIState, so it can be a temporary allocation
 void pushUiMessage(UIState *uiState, String message);
 void drawUiMessage(UIState *uiState);
 

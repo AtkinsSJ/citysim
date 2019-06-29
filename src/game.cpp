@@ -371,12 +371,12 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 
 	if (window_button(context, save, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, makeString("Saving isn't implemented yet!"));
+		pushUiMessage(context->uiState, LOCAL("debug_msg_unimplemented"));
 	}
 
 	if (window_button(context, load, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, makeString("Loading isn't implemented yet!"));
+		pushUiMessage(context->uiState, LOCAL("debug_msg_unimplemented"));
 	}
 
 	if (window_button(context, about, maxButtonTextWidth))
@@ -667,7 +667,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 								}
 								else
 								{
-									pushUiMessage(uiState, makeString("Not enough money for construction."));
+									pushUiMessage(uiState, LOCAL("msg_cannot_afford_construction"));
 								}
 							} break;
 
@@ -775,7 +775,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						}
 						else
 						{
-							pushUiMessage(uiState, makeString("Not enough money for demolition."));
+							pushUiMessage(uiState, LOCAL("msg_cannot_afford_demolition"));
 						}
 					} break;
 

@@ -128,3 +128,9 @@ bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize)
 	
 	return succeeded;
 }
+
+template<typename T>
+inline void copyMemory(T *source, T *dest, smm length)
+{
+	memcpy(dest, source, length * sizeof(T));
+}

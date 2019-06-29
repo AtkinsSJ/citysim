@@ -535,7 +535,10 @@ String formatInt(s64 value, u8 base)
 	return makeString(temp + (arraySize - count), count);
 }
 
-// TODO: Maybe do this properly ourselves rather than calling printf() internally? It's a bit janky.
+// TODO: formatFloat() is a total trainwreck, we should really do this a lot better!
+// Whether we use our own float-to-string routine or not, we definitely don't want to
+// continue calling myprintf() to produce a string for snprintf() and then pass that
+// on to myprintf() again! Like, that's super dumb.
 String formatFloat(f64 value, s32 decimalPlaces)
 {
 	DEBUG_FUNCTION();
