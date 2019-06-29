@@ -183,45 +183,6 @@ struct Matrix4 {
 	};
 };
 
-
-/**********************************************
-	General
- **********************************************/
-
-
-// Standard rounding functions return doubles, so here's some int ones.
-s32 round_s32(f32 in);
-s32 floor_s32(f32 in);
-s32 ceil_s32(f32 in);
-f32 round_f32(f32 in);
-f32 floor_f32(f32 in);
-f32 ceil_f32(f32 in);
-
-s32 divideCeil(s32 numerator, s32 denominator);
-
-s32 truncate32(s64 in);
-
-s32 clamp(s32 value, s32 min, s32 max);
-f32 clamp(f32 value, f32 min, f32 max);
-
-s32 min(s32 a, s32 b);
-s32 max(s32 a, s32 b);
-
-s32 min(smm a, s32 b);
-s32 max(smm a, s32 b);
-
-f32 min(f32 a, f32 b);
-f32 max(f32 a, f32 b);
-
-u32 wrap(u32 value, u32 max);
-
-f32 lerp(f32 a, f32 b, f32 position);
-f32 approach(f32 currentValue, f32 targetValue, f32 distance);
-
-// How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
-s32 manhattanDistance(Rect2I rect, V2I point);
-s32 manhattanDistance(Rect2I a, Rect2I b);
-
 //
 // V2
 //
@@ -367,6 +328,46 @@ Matrix4 operator*(Matrix4 m, f32 f);
 Matrix4 operator*(Matrix4 a, Matrix4 b);
 Matrix4 operator*=(Matrix4 &a, Matrix4 b);
 V4 operator*(Matrix4 m, V4 v);
+
+
+/**********************************************
+	General
+ **********************************************/
+
+
+// Standard rounding functions return doubles, so here's some int ones.
+s32 round_s32(f32 in);
+s32 floor_s32(f32 in);
+s32 ceil_s32(f32 in);
+f32 round_f32(f32 in);
+f32 floor_f32(f32 in);
+f32 ceil_f32(f32 in);
+
+s32 divideCeil(s32 numerator, s32 denominator);
+
+s32 truncate32(s64 in);
+
+template<typename T>
+T clamp(T value, T min, T max);
+
+template<typename T>
+T min(T a, T b);
+
+template<typename T>
+T max(T a, T b);
+
+template<typename T>
+T wrap(T value, T max);
+
+template<typename T>
+T lerp(T a, T b, f32 position);
+
+template<typename T>
+T approach(T currentValue, T targetValue, T distance);
+
+// How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.
+s32 manhattanDistance(Rect2I rect, V2I point);
+s32 manhattanDistance(Rect2I a, Rect2I b);
 
 // Does a byte-by-byte comparison of the two structs, so ANY difference will show up!
 // In other cases, you'll want to write a type-specific function.

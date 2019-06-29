@@ -1,83 +1,5 @@
 #pragma once
 
-inline s32 clamp(s32 value, s32 min, s32 max)
-{
-	ASSERT(min <= max, "min > max in clamp()!");
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
-}
-
-inline f32 clamp(f32 value, f32 min, f32 max)
-{
-	ASSERT(min <= max, "min > max in clamp()!");
-	if (value < min) return min;
-	if (value > max) return max;
-	return value;
-}
-
-inline s32 min(s32 a, s32 b)
-{
-	return (a < b) ? a : b;
-}
-
-inline s32 max(s32 a, s32 b)
-{
-	return (a > b) ? a : b;
-}
-
-inline smm min(smm a, smm b)
-{
-	return (a < b) ? a : b;
-}
-
-inline smm max(smm a, smm b)
-{
-	return (a > b) ? a : b;
-}
-
-inline f32 min(f32 a, f32 b)
-{
-	return (a < b) ? a : b;
-}
-
-inline f32 max(f32 a, f32 b)
-{
-	return (a > b) ? a : b;
-}
-
-inline u32 wrap(u32 value, u32 max)
-{
-	return (value + max) % max;
-}
-
-inline f32 lerp(f32 a, f32 b, f32 position)
-{
-	return a + (b-a)*position;
-}
-
-inline f32 approach(f32 currentValue, f32 targetValue, f32 distance)
-{
-	f32 result = currentValue;
-
-	if (targetValue < currentValue)
-	{
-		result = max(currentValue - distance, targetValue);
-	}
-	else
-	{
-		result = min(currentValue + distance, targetValue);
-	}
-
-	return result;
-}
-
-inline s32 truncate32(s64 in)
-{
-	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");
-	return (s32) in;
-}
-
 // Standard rounding functions return doubles, so here's some int ones.
 inline s32 round_s32(f32 in)
 {
@@ -112,6 +34,62 @@ inline f32 ceil_f32(f32 in)
 inline s32 divideCeil(s32 numerator, s32 denominator)
 {
 	return (numerator + denominator - 1) / denominator;
+}
+
+inline s32 truncate32(s64 in)
+{
+	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");
+	return (s32) in;
+}
+
+template<typename T>
+inline T clamp(T value, T min, T max)
+{
+	ASSERT(min <= max, "min > max in clamp()!");
+	if (value < min) return min;
+	if (value > max) return max;
+	return value;
+}
+
+template<typename T>
+inline T min(T a, T b)
+{
+	return (a < b) ? a : b;
+}
+
+template<typename T>
+inline T max(T a, T b)
+{
+	return (a > b) ? a : b;
+}
+
+template<typename T>
+inline T wrap(T value, T max)
+{
+	return (value + max) % max;
+}
+
+template<typename T>
+inline T lerp(T a, T b, f32 position)
+{
+	return a + (b-a)*position;
+}
+
+template<typename T>
+inline T approach(T currentValue, T targetValue, T distance)
+{
+	T result = currentValue;
+
+	if (targetValue < currentValue)
+	{
+		result = max(currentValue - distance, targetValue);
+	}
+	else
+	{
+		result = min(currentValue + distance, targetValue);
+	}
+
+	return result;
 }
 
 // How far is the point from the rectangle? Returns 0 if the point is inside the rectangle.

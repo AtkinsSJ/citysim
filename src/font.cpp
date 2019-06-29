@@ -72,7 +72,8 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 		s32 bytePos = 0;
 		while (bytePos < text.length)
 		{
-			unichar glyph = readUnicodeChar(text.chars + bytePos);
+			char *currentChar = text.chars + bytePos;
+			unichar glyph = readUnicodeChar(currentChar);
 
 			if (glyph == '\n')
 			{
@@ -117,7 +118,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 				}
 			}
 
-			bytePos += lengthOfGlyph(text.chars[bytePos]);
+			bytePos += lengthOfGlyph(*currentChar);
 		}
 
 		result.x = (f32)max(longestLineWidth, currentX);

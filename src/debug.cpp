@@ -192,7 +192,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	DebugTextState textState;
 	initDebugTextState(&textState, uiState, font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
 
-	u32 framesAgo = wrap(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
+	u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 	debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
 
 	// Asset system
@@ -293,7 +293,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	u32 barIndex = 0;
 	for (u32 fi = debugState->writingFrameIndex + 1;
 			 fi != debugState->writingFrameIndex;
-			 fi = wrap(fi + 1, DEBUG_FRAMES_COUNT))
+			 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
 		{
 		u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
 		f32 barHeight = barHeightPerCycle * (f32)frameCycles;
@@ -335,11 +335,11 @@ void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiStat
 
 	if (keyJustPressed(inputState, SDLK_PAGEDOWN))
 	{
-		debugState->readingFrameIndex = wrap(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
+		debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
 	}
 	else if (keyJustPressed(inputState, SDLK_PAGEUP))
 	{
-		debugState->readingFrameIndex = wrap(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
+		debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
 	}
 
 	if (keyJustPressed(inputState, SDLK_INSERT))

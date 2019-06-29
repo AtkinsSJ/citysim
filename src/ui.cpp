@@ -186,15 +186,15 @@ void drawUiMessage(UIState *uiState)
 			{
 				// Fade out
 				f32 tt = t / 0.2f;
-				backgroundColor *= lerp(0, backgroundColor.a, tt);
-				textColor *= lerp(0, textColor.a, tt);
+				backgroundColor *= lerp<f32>(0, backgroundColor.a, tt);
+				textColor *= lerp<f32>(0, textColor.a, tt);
 			}
 			else if (t > 0.8f)
 			{
 				// Fade in
 				f32 tt = (t - 0.8f) / 0.2f;
-				backgroundColor *= lerp(backgroundColor.a, 0, tt);
-				textColor *= lerp(textColor.a, 0, tt);
+				backgroundColor *= lerp<f32>(backgroundColor.a, 0, tt);
+				textColor *= lerp<f32>(textColor.a, 0, tt);
 			}
 
 			f32 depth = uiState->closestDepth - 100.0f;

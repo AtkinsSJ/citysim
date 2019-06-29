@@ -223,9 +223,6 @@ inline bool isWhitespace(unichar uChar, bool countNewlines)
 	case '\r':
 		result = countNewlines;
 		break;
-
-	default:
-		result = false;
 	}
 
 	return result;
