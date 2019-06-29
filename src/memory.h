@@ -52,6 +52,37 @@ struct MemoryArena
 	markResetPosition(&containerName->arenaVarName);                                  \
 }
 
+//
+// Creates a struct T whose member at offsetOfArenaMember is a MemoryArena which will contain
+// the memory for T. So, it kind of contains itself.
+// Usage:
+// Blah *blah = bootstrapMemoryArena<Blah>(offsetof(Blah, nameOfArenaInBlah));
+// Because of the limitations of templates, there's no way to do this in a checked way...
+// if you pass the wrong offset, it has no way of knowing and will still run, but in a subtly-buggy,
+// memory-corrupting way. So, I've decided it's better to stick with the macro version above!
+// Keeping this here for posterity though. Maybe one day I'll figure out a better way of doing it.
+// My template-fu is still quite lacking.
+//
+// - Sam, 29/06/2019
+//
+/*
+template<typename T>
+T *bootstrapMemoryArena(smm offsetOfArenaMember)
+{
+	T *result = null;
+
+	MemoryArena bootstrap;
+	initMemoryArena(&bootstrap, sizeof(T));
+	result = allocateStruct<T>(&bootstrap);
+
+	MemoryArena *arena = (MemoryArena *)((u8*)result + offsetOfArenaMember);
+	*arena = bootstrap;
+	markResetPosition(arena);
+
+	return result;
+}
+*/
+
 bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1));
 void markResetPosition(MemoryArena *arena);
 
