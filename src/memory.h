@@ -47,20 +47,23 @@ struct MemoryArena
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
 	ASSERT(initMemoryArena(&bootstrap, sizeof(containerType)),"Failed to allocate memory for {0} arena!", {makeString(#containerType)});\
-	containerName = PushStruct(&bootstrap, containerType);                            \
+	containerName = allocateStruct<containerType>(&bootstrap);                            \
 	containerName->arenaVarName = bootstrap;                                          \
 	markResetPosition(&containerName->arenaVarName);                                  \
 }
 
-#define PushStruct(Arena, Struct) ((Struct*)allocate(Arena, sizeof(Struct)))
-#define PushArray(Arena, Type, Count) ((Type*)allocate(Arena, sizeof(Type) * Count))
-
 bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1));
 void markResetPosition(MemoryArena *arena);
 
+u8 *allocateRaw(smm size);
 void *allocate(MemoryArena *arena, smm size);
 Blob allocateBlob(MemoryArena *arena, smm size);
-u8 *allocateRaw(smm size);
+
+template<typename T>
+T *allocateStruct(MemoryArena *arena);
+
+template<typename T>
+T *allocateArray(MemoryArena *arena, smm count);
 
 template<typename T>
 void copyMemory(T *source, T *dest, smm length);

@@ -10,7 +10,7 @@ void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWi
 	grid->sectorsY = divideCeil(cityHeight, sectorSize);
 	grid->count = grid->sectorsX * grid->sectorsY;
 
-	grid->sectors = PushArray(arena, SectorType, grid->count);
+	grid->sectors = allocateArray<SectorType>(arena, grid->count);
 
 	s32 remainderWidth  = cityWidth  % sectorSize;
 	s32 remainderHeight = cityHeight % sectorSize;

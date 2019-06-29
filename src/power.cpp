@@ -11,7 +11,7 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	{
 		PowerSector *sector = layer->sectors.sectors + sectorIndex;
 
-		sector->tilePowerGroup = PushArray(gameArena, u8, areaOf(sector->bounds));
+		sector->tilePowerGroup = allocateArray<u8>(gameArena, areaOf(sector->bounds));
 
 		initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
 	}

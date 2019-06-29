@@ -16,7 +16,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 
 		sector->zoneSectorFlags = 0;
 
-		sector->tileZone = PushArray(gameArena, ZoneType, areaOf(sector->bounds));
+		sector->tileZone = allocateArray<ZoneType>(gameArena, areaOf(sector->bounds));
 	}
 }
 

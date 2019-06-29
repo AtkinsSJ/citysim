@@ -4,7 +4,7 @@ StringBuilder newStringBuilder(s32 initialSize, MemoryArena *arena)
 {
 	StringBuilder b = {};
 	b.arena = arena;
-	b.buffer = PushArray(arena, char, initialSize);
+	b.buffer = allocateArray<char>(arena, initialSize);
 	b.currentMaxLength = initialSize;
 	b.length = 0;
 
@@ -27,7 +27,7 @@ void expand(StringBuilder *stb, s32 newSize)
 		return;
 	}
 
-	char *newBuffer = PushArray(stb->arena, char, targetSize);
+	char *newBuffer = allocateArray<char>(stb->arena, targetSize);
 	for (s32 i=0; i<stb->currentMaxLength; i++)
 	{
 		newBuffer[i] = stb->buffer[i];

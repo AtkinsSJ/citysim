@@ -16,7 +16,7 @@ void debugInit()
 	initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
 	for (u32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
 	{
-		DebugCodeDataWrapper *item = PushStruct(&globalDebugState->debugArena, DebugCodeDataWrapper);
+		DebugCodeDataWrapper *item = allocateStruct<DebugCodeDataWrapper>(&globalDebugState->debugArena);
 		addToLinkedList(item, &globalDebugState->topCodeBlocksFreeListSentinel);
 	}
 }
@@ -387,7 +387,7 @@ T *findOrCreateDebugData(DebugState *debugState, String name, T *sentinel)
 
 	if (result == null)
 	{
-		result = PushStruct(&debugState->debugArena, T);
+		result = allocateStruct<T>(&debugState->debugArena);
 		addToLinkedList(result, sentinel);
 		result->name = name;
 	}

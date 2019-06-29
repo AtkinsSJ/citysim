@@ -124,7 +124,7 @@ bool canPathTo(City *city, Rect2I target, V2I from)
 
 	// First, determine all path groups that are adjacent to the buiding 'from' is in, if any.
 	s32 pathGroupCount = 0;
-	s32 *pathGroups = PushArray(&globalAppState.globalTempArena, s32, city->pathLayer.pathGroupCount);
+	s32 *pathGroups = allocateArray<s32>(&globalAppState.globalTempArena, city->pathLayer.pathGroupCount);
 	Building *building = getBuildingAtPosition(city, from.x, from.y);
 	if (building
 		&& !getBuildingDef(building->typeID)->isPath)
@@ -311,7 +311,7 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from)
 	else
 	{
 		// A-star!
-		PathingNode *nodes = PushArray(&globalAppState.globalTempArena, PathingNode, city->width * city->height);
+		PathingNode *nodes = allocateArray<PathingNode>(&globalAppState.globalTempArena, city->width * city->height);
 		PathingNode *startNode = nodes + tileIndex(city, from.x, from.y);
 		*startNode = {true, from, 0, distance, 0, 0};
 		PathingNode *openQueue = null;

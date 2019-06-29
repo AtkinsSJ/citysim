@@ -52,6 +52,18 @@ void *allocate(MemoryArena *arena, smm size)
 	return result;
 }
 
+template<typename T>
+inline T *allocateStruct(MemoryArena *arena)
+{
+	return (T*) allocate(arena, sizeof(T));
+}
+
+template<typename T>
+inline T *allocateArray(MemoryArena *arena, smm count)
+{
+	return (T*) allocate(arena, sizeof(T) * count);
+}
+
 u8 *allocateRaw(smm size)
 {
 	u8 *result = (u8*) calloc(size, 1);
