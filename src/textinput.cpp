@@ -30,7 +30,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
 	DrawTextResult drawTextResult = {};
-	drawText(uiState->uiBuffer, font, text, topLeft, maxWidth, depth, color, uiState->textShaderID, textInput->caretGlyphPos, &drawTextResult);
+	drawText(uiState->uiBuffer, font, text, bounds, depth, color, uiState->textShaderID, textInput->caretGlyphPos, &drawTextResult);
 
 	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
 	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));

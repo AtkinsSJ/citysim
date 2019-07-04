@@ -31,19 +31,20 @@ void window_label(WindowContext *context, String text, char *styleName)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
-		V2 size = calculateTextSize(font, text, maxWidth);
+		V2 textSize = calculateTextSize(font, text, maxWidth);
+		V2 topLeft = calculateTextPosition(origin, textSize, alignment);
 
 		if (!context->measureOnly)
 		{
-			V2 topLeft = calculateTextPosition(origin, size, alignment);
-			drawText(context->uiState->uiBuffer, font, text, topLeft, maxWidth, context->renderDepth, style->textColor, context->uiState->textShaderID);
+			Rect2 bounds = rectPosSize(topLeft, textSize);
+			drawText(context->uiState->uiBuffer, font, text, bounds, context->renderDepth, style->textColor, context->uiState->textShaderID);
 		}
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
-		context->currentOffset.y += size.y;
+		context->currentOffset.y += textSize.y;
 		
-		context->largestItemWidth = max(size.x, context->largestItemWidth);
+		context->largestItemWidth = max(textSize.x, context->largestItemWidth);
 	}
 }
 
@@ -106,8 +107,9 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		{
 			V2 textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
 			V2 textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
+			Rect2 bounds = rectPosSize(textTopLeft, textSize);
 
-			drawText(context->uiState->uiBuffer, font, text, textTopLeft, maxWidth, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
 			if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 			{

@@ -17,18 +17,10 @@ Notes for searching:
 Speed up debug system?
 
 Speed up text rendering!
-✖ Switch to unichar strings for all rendererd text, so we only have to parse the utf8 once!
-	- Probably do this gradually, with a unichar-string ("Text"?) version of uiText(), and then gradually convert everything over.
-	- Input.textEntered
-	- LOCAL()/getText()
-	- TextInput
-	- As part of this, convert all newline characters (or \r\n sequences) into \n characters, so we just have one to deal with!
-✔ Get rid of BitmapFontCachedText, just render it straight up, and if we need the size in advance, use calculateTextSize().
-✔ Review logic in handleWrapping().
-	✔ Inline it into both calculateTextSize() and drawText(), because a lot of the work it does is unnecessary for calculateTextSize()!
+- As a side-point, finally fix the alignment for multi-line text!
+	(Probably store a "startOfCurrentLine" index, and then when the line ends, move all the items for that line by the same offset. Will need to pass-in the calculated size and the alignment. None of this needs to happen in calculateTextSize though!)
 - Maybe try that crazy "pass text as a single renderitem" idea?
 	- Maybe that should be abstracted a little into a "draw a bunch of stuff together" feature. eg, Terrain could use something similar
-✔ Could maybe enforce that each font has a single texture page? That's currently the case.
 - Possibly replace all floats in text-rendering with integers, and just produce floats at the very end for the actual renderitems. Everything is always done in whole-pixels anyway, and that should be a chunk faster.
 	- calculateTextSize() could return V2I, etc. That's quite a deep rabbit hole though!
 - Use u8s for RenderItem colours instead of V4? That'd divide the memory requirements for a colour by 4! Though, it's a bit tricky to know how that'll affect everything.

@@ -127,10 +127,13 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	return result;
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topLeft, f32 maxWidth, f32 depth, V4 color, s32 shaderID, s32 caretPosition, DrawTextResult *caretInfoResult)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, f32 depth, V4 color, s32 shaderID, s32 caretPosition, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
 
+	V2 topLeft = bounds.pos;
+	f32 maxWidth = bounds.w;
+	
 	//
 	// NB: We *could* just use text.length here. That will over-estimate how many RenderItems to reserve,
 	// which is fine if we're sticking with mostly English text, but in languages with a lot of multi-byte
