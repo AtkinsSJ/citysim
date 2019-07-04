@@ -133,6 +133,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 	V2 topLeft = bounds.pos;
 	f32 maxWidth = bounds.w;
+	V4 debugColor = color255(255, 0, 255, 255);
+	V4 debugColor2 = color255(0, 255, 255, 255);
 	
 	//
 	// NB: We *could* just use text.length here. That will over-estimate how many RenderItems to reserve,
@@ -159,6 +161,9 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	s32 startOfCurrentWord = 0;
 	s32 currentWordWidth = 0;
 
+	s32 startOfCurrentLine = 0;
+	s32 currentLineWidth = 0;
+
 	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
 	s32 bytePos = 0;
 	while (bytePos < text.length)
@@ -171,6 +176,15 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 			currentX = 0;
 			startOfCurrentWord = 0;
 			currentWordWidth = 0;
+
+			// Do line-alignment stuff
+			{
+				s32 endOfCurrentLine = glyphCount - 1;
+				(firstRenderItem + startOfCurrentLine)->color = debugColor;
+				(firstRenderItem + endOfCurrentLine)->color = debugColor2;
+			}
+			startOfCurrentLine = glyphCount;
+			currentLineWidth = 0;
 		}
 		else
 		{
@@ -210,6 +224,15 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 						RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
 						firstItemInWord->rect.x = topLeft.x + currentX;
 						firstItemInWord->rect.y = topLeft.y + currentY + c->yOffset;
+
+						// Do line-alignment stuff
+						{
+							s32 endOfCurrentLine = glyphCount;
+							(firstRenderItem + startOfCurrentLine)->color = debugColor;
+							(firstRenderItem + endOfCurrentLine - 1)->color = debugColor2;
+						}
+						startOfCurrentLine = glyphCount;
+						currentLineWidth = 0;
 					}
 					else
 					{
@@ -222,17 +245,26 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 						// Offset from where the word was, to its new position
 						f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
 						f32 offsetY = (f32)font->lineHeight;
-						while (startOfCurrentWord <= glyphCount)
+						for (s32 itemInWord = startOfCurrentWord; itemInWord <= glyphCount; itemInWord++)
 						{
-							firstRenderItem[startOfCurrentWord].rect.x += offsetX;
-							firstRenderItem[startOfCurrentWord].rect.y += offsetY;
-							startOfCurrentWord++;
+							firstRenderItem[itemInWord].rect.x += offsetX;
+							firstRenderItem[itemInWord].rect.y += offsetY;
 						}
+
+						// Do line-alignment stuff
+						{
+							s32 endOfCurrentLine = startOfCurrentWord - 2;
+							(firstRenderItem + startOfCurrentLine)->color = debugColor;
+							(firstRenderItem + endOfCurrentLine)->color = debugColor2;
+						}
+						startOfCurrentLine = startOfCurrentWord;
+						currentLineWidth = currentWordWidth;
 					}
 				}
 
 				currentX += c->xAdvance;
 				currentWordWidth += c->xAdvance;
+				currentLineWidth += c->xAdvance;
 
 				// Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
 				if (caretInfoResult && glyphCount < caretPosition)
@@ -247,6 +279,14 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		}
 
 		bytePos += lengthOfUnichar(glyph);
+	}
+
+
+	// Do line-alignment stuff
+	{
+		s32 endOfCurrentLine = glyphCount-1;
+		(firstRenderItem + startOfCurrentLine)->color = debugColor;
+		(firstRenderItem + endOfCurrentLine)->color = debugColor2;
 	}
 
 	finishReservedRenderItemRange(renderBuffer, glyphCount);
