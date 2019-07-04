@@ -496,7 +496,7 @@ inline V4 operator/=(V4 &v, f32 s)
 
 inline Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h)
 {
-	Rect2 rect = {};
+	Rect2 rect;
 	rect.x = x;
 	rect.y = y;
 	rect.w = w;
@@ -511,7 +511,7 @@ inline Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h)
 
 inline Rect2 rectPosSize(V2 pos, V2 size)
 {
-	Rect2 rect = {};
+	Rect2 rect;
 	rect.pos  = pos;
 	rect.size = size;
 	return rect;
@@ -519,10 +519,7 @@ inline Rect2 rectPosSize(V2 pos, V2 size)
 
 inline Rect2 rectCentreSize(V2 centre, V2 size)
 {
-	Rect2 rect = {};
-	rect.pos = centre - (size * 0.5f);
-	rect.size = size;
-	return rect;
+	return rectPosSize(centre - (size * 0.5f), size);
 }
 
 inline Rect2 rect2(Rect2I source)
