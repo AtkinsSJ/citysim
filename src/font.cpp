@@ -78,6 +78,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 			{
 				longestLineWidth = max(longestLineWidth, currentX);
 				currentX = 0;
+				currentWordWidth = 0;
 				lineCount++;
 			}
 			else
@@ -85,17 +86,16 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 				BitmapFontGlyph *c = findChar(font, glyph);
 				if (c)
 				{
-					s32 xAdvance = c->xAdvance;
 					if (isWhitespace(glyph))
 					{
 						currentWordWidth = 0;
 					}
-					else if (doWrap && ((currentX + xAdvance) > maxWidth))
+					else if (doWrap && ((currentX + c->xAdvance) > maxWidth))
 					{
 						longestLineWidth = max(longestLineWidth, currentX);
 						lineCount++;
 
-						if ((currentWordWidth + xAdvance) > maxWidth)
+						if ((currentWordWidth + c->xAdvance) > maxWidth)
 						{
 							// The current word is longer than will fit on an entire line!
 							// So, split it at the maximum line length.
@@ -112,8 +112,8 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 						}
 					}
 
-					currentX += xAdvance;
-					currentWordWidth += xAdvance;
+					currentX += c->xAdvance;
+					currentWordWidth += c->xAdvance;
 				}
 			}
 
@@ -154,7 +154,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 	f32 currentX = 0, currentY = 0;
 	bool doWrap = (maxWidth > 0);
 	s32 startOfCurrentWord = 0;
-	s32 endOfCurrentWord = 0;
 	s32 currentWordWidth = 0;
 
 	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
@@ -167,13 +166,14 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 		{
 			currentY += font->lineHeight;
 			currentX = 0;
+			startOfCurrentWord = 0;
+			currentWordWidth = 0;
 		}
 		else
 		{
 			BitmapFontGlyph *c = findChar(font, glyph);
 			if (c)
 			{
-				endOfCurrentWord = glyphCount;
 				makeRenderItem(firstRenderItem + glyphCount,
 					rectXYWH(topLeft.x + currentX + c->xOffset, topLeft.y + currentY + c->yOffset, c->width, c->height),
 					depth, font->texture, c->uv, shaderID, color
@@ -181,7 +181,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 
 				if (startOfCurrentWord == 0)
 				{
-					startOfCurrentWord = endOfCurrentWord;
+					startOfCurrentWord = glyphCount;
 					currentWordWidth = 0;
 				}
 
@@ -201,7 +201,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 						currentX = 0;
 						currentY += font->lineHeight;
 
-						startOfCurrentWord = endOfCurrentWord;
+						startOfCurrentWord = glyphCount;
 						currentWordWidth = 0;
 
 						RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
@@ -217,10 +217,12 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 						currentY += font->lineHeight;
 
 						// Offset from where the word was, to its new position
-						V2 offset = v2(topLeft.x - firstRenderItem[startOfCurrentWord].rect.x, (f32)font->lineHeight);
-						while (startOfCurrentWord <= endOfCurrentWord)
+						f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
+						f32 offsetY = (f32)font->lineHeight;
+						while (startOfCurrentWord <= glyphCount)
 						{
-							firstRenderItem[startOfCurrentWord].rect.pos += offset;
+							firstRenderItem[startOfCurrentWord].rect.x += offsetX;
+							firstRenderItem[startOfCurrentWord].rect.y += offsetY;
 							startOfCurrentWord++;
 						}
 					}
