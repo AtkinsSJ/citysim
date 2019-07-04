@@ -177,7 +177,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 topL
 				endOfCurrentWord = glyphCount;
 				makeRenderItem(firstRenderItem + glyphCount,
 					rectXYWH(topLeft.x + currentX + c->xOffset, topLeft.y + currentY + c->yOffset, c->width, c->height),
-					depth, font->pageTextures[c->page], c->uv, shaderID, color
+					depth, font->texture, c->uv, shaderID, color
 				);
 
 				if (startOfCurrentWord == 0)

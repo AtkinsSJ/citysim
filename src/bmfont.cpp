@@ -66,34 +66,28 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 			// Something didn't load correctly!
 			logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!", {asset->fullName});
 		}
+		else if (common->pageCount != 1)
+		{
+			logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1.", {asset->fullName, formatInt(common->pageCount)});
+		}
 		else
 		{
 			BitmapFont *font = &asset->bitmapFont;
 			font->lineHeight = common->lineHeight;
 			font->baseY = common->base;
-			font->nullGlyph = {};
 			font->glyphCount = 0;
 
-			smm pageMemorySize = common->pageCount * sizeof(font->pageTextures[0]);
 			font->glyphCapacity = ceil_s32(charCount * 2.0f);
 			smm glyphEntryMemorySize = font->glyphCapacity * sizeof(BitmapFontGlyphEntry);
-			asset->data = allocate(assets, pageMemorySize + glyphEntryMemorySize);
+			asset->data = allocate(assets, glyphEntryMemorySize);
+			font->glyphEntries = (BitmapFontGlyphEntry *)(asset->data.memory);
 
-			font->pageTextures = (Asset **)(asset->data.memory);
-			font->glyphEntries = (BitmapFontGlyphEntry *)(asset->data.memory + pageMemorySize);
+			String textureName = pushString(&assets->assetArena, (char *) pages);
+			font->texture = addTexture(assets, textureName, false);
+			ensureAssetIsLoaded(assets, font->texture);
 
-			font->pageCount = common->pageCount;
-			char *pageStart = (char *) pages;
-			for (u32 pageIndex = 0;
-				pageIndex < common->pageCount;
-				pageIndex++)
-			{
-				String textureName = pushString(&assets->assetArena, pageStart);
-				Asset *textureAsset = addTexture(assets, textureName, false);
-				font->pageTextures[pageIndex] = textureAsset;
-				ensureAssetIsLoaded(assets, textureAsset);
-				pageStart += strlen(pageStart) + 1;
-			}
+			f32 textureWidth  = (f32) font->texture->texture.surface->w;
+			f32 textureHeight = (f32) font->texture->texture.surface->h;
 
 			for (u32 charIndex = 0;
 				charIndex < charCount;
@@ -102,9 +96,6 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				BMFont_Char *src = chars + charIndex;
 
 				BitmapFontGlyph *dest = addGlyph(font, src->id);
-				Asset *pageTexture = font->pageTextures[src->page];
-				f32 textureWidth  = (f32) pageTexture->texture.surface->w;
-				f32 textureHeight = (f32) pageTexture->texture.surface->h;
 
 				dest->codepoint = src->id;
 				dest->width  = src->w;
@@ -112,7 +103,6 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 				dest->xOffset = src->xOffset;
 				dest->yOffset = src->yOffset;
 				dest->xAdvance = src->xAdvance;
-				dest->page = src->page;
 				dest->uv = rectXYWH(
 					(f32)src->x / textureWidth,
 					(f32)src->y / textureHeight,

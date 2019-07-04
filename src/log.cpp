@@ -6,6 +6,32 @@ void log(SDL_LogPriority priority, char *format, std::initializer_list<String> a
 	SDL_LogMessage(SDL_LOG_CATEGORY_CUSTOM, priority, "%s", text.chars);
 }
 
+inline void logVerbose (char *format, std::initializer_list<String> args)
+{
+	log(SDL_LOG_PRIORITY_VERBOSE, format, args);
+}
+inline void logDebug   (char *format, std::initializer_list<String> args)
+{
+	log(SDL_LOG_PRIORITY_DEBUG, format, args);
+}
+inline void logInfo    (char *format, std::initializer_list<String> args)
+{
+	log(SDL_LOG_PRIORITY_INFO, format, args);
+}
+inline void logWarn    (char *format, std::initializer_list<String> args)
+{
+	log(SDL_LOG_PRIORITY_WARN, format, args);
+}
+inline void logError   (char *format, std::initializer_list<String> args)
+{
+	log(SDL_LOG_PRIORITY_ERROR, format, args);
+	DEBUG_BREAK();
+}
+inline void logCritical(char *format, std::initializer_list<String> args)
+{
+	log(SDL_LOG_PRIORITY_CRITICAL, format, args);
+}
+
 /*
  * Our custom logger posts the message into the built-in console, AND then sends it off to SDL's
  * usual logger. This way it's still useful even if our console is broken. (Which will happen!)

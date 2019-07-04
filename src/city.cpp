@@ -494,6 +494,8 @@ void demolishRect(City *city, Rect2I area)
 
 ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u32 flags)
 {
+	DEBUG_FUNCTION();
+	
 	ChunkedArray<Building *> result = {};
 	initChunkedArray(&result, globalFrameTempArena, 64);
 

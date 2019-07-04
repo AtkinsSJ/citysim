@@ -44,6 +44,8 @@ inline void setPowerGroupID(PowerSector *sector, s32 x, s32 y, u8 value)
 
 void updateSectorPowerValues(City *city, PowerSector *sector)
 {
+	DEBUG_FUNCTION();
+
 	// Reset each to 0
 	for (auto it = iterate(&sector->powerGroups);
 		!it.isDone;
@@ -104,6 +106,8 @@ PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y)
 
 void floodFillSectorPowerGroup(PowerSector *sector, s32 x, s32 y, u8 fillValue)
 {
+	DEBUG_FUNCTION();
+
 	// Theoretically, the only place we non-recursively call this is in recalculateSectorPowerGroups(),
 	// where we go top-left to bottom-right, so we only need to flood fill right and down from the
 	// initial point!
@@ -149,6 +153,8 @@ void floodFillSectorPowerGroup(PowerSector *sector, s32 x, s32 y, u8 fillValue)
 
 inline void setRectPowerGroupUnknown(PowerSector *sector, Rect2I area)
 {
+	DEBUG_FUNCTION();
+
 	Rect2I relArea = intersectRelative(sector->bounds, area);
 
 	for (s32 relY=relArea.y;
@@ -434,6 +440,8 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 
 void floodFillCityPowerNetwork(PowerLayer *powerLayer, PowerGroup *powerGroup, PowerNetwork *network)
 {
+	DEBUG_FUNCTION();
+
 	powerGroup->networkID = network->id;
 	append(&network->groups, powerGroup);
 

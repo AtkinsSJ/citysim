@@ -17,7 +17,7 @@ Notes for searching:
 Speed up debug system?
 
 Speed up text rendering!
-- Switch to unichar strings for all rendererd text, so we only have to parse the utf8 once!
+✖ Switch to unichar strings for all rendererd text, so we only have to parse the utf8 once!
 	- Probably do this gradually, with a unichar-string ("Text"?) version of uiText(), and then gradually convert everything over.
 	- Input.textEntered
 	- LOCAL()/getText()
@@ -28,7 +28,7 @@ Speed up text rendering!
 	✔ Inline it into both calculateTextSize() and drawText(), because a lot of the work it does is unnecessary for calculateTextSize()!
 - Maybe try that crazy "pass text as a single renderitem" idea?
 	- Maybe that should be abstracted a little into a "draw a bunch of stuff together" feature. eg, Terrain could use something similar
-- Could maybe enforce that each font has a single texture page? That's currently the case.
+✔ Could maybe enforce that each font has a single texture page? That's currently the case.
 - Possibly replace all floats in text-rendering with integers, and just produce floats at the very end for the actual renderitems. Everything is always done in whole-pixels anyway, and that should be a chunk faster.
 	- calculateTextSize() could return V2I, etc. That's quite a deep rabbit hole though!
 - Use u8s for RenderItem colours instead of V4? That'd divide the memory requirements for a colour by 4! Though, it's a bit tricky to know how that'll affect everything.
@@ -212,6 +212,10 @@ Asset system:
 	- This could then be used for assets tied to a specific game level, if we *have* levels, or similar things like if you can have cities in different regions or planets with different terrain art, etc.
 	- If we're going to evict assets at the end of a level though, we'd need to track which assets are associated with each pack - and some assets could be in multiple ones, potentially. Unless we make it a requirement that each asset only goes in one pack somehow? IDK.
 	- A pack would probably just be defined in a text file. Lines of `type shortname.blah`
+
+Better profiling
+- If we record start/end events instead of just execution-durations, then we can reconstruct the stack. That would let us see which function CALLS are taking the most time, instead of just "function X takes a while".
+- Maybe put the analysis system on a separate thread so that it doesn't disturb the game so much?
 
 String HashTable!
 - MeowHash???
