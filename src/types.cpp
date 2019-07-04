@@ -154,7 +154,7 @@ inline s32 manhattanDistance(Rect2I a, Rect2I b)
 
 inline V2 v2(f32 x, f32 y)
 {
-	V2 result = {};
+	V2 result;
 	result.x = x;
 	result.y = y;
 	return result;
@@ -192,10 +192,7 @@ inline V2 lerp(V2 a, V2 b, f32 position)
 
 inline V2 operator+(V2 lhs, V2 rhs)
 {
-	V2 result;
-	result.x = lhs.x + rhs.x;
-	result.y = lhs.y + rhs.y;
-	return result;
+	return v2(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 inline V2 operator+=(V2 &lhs, V2 rhs)
 {
@@ -204,10 +201,7 @@ inline V2 operator+=(V2 &lhs, V2 rhs)
 }
 inline V2 operator-(V2 lhs, V2 rhs)
 {
-	V2 result;
-	result.x = lhs.x - rhs.x;
-	result.y = lhs.y - rhs.y;
-	return result;
+	return v2(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 inline V2 operator-=(V2 &lhs, V2 rhs)
 {
@@ -216,10 +210,7 @@ inline V2 operator-=(V2 &lhs, V2 rhs)
 }
 inline V2 operator*(V2 v, f32 s)
 {
-	V2 result;
-	result.x = v.x * s;
-	result.y = v.y * s;
-	return result;
+	return v2(v.x * s, v.y * s);
 }
 inline V2 operator*=(V2 &v, f32 s)
 {
@@ -228,10 +219,7 @@ inline V2 operator*=(V2 &v, f32 s)
 }
 inline V2 operator/(V2 v, f32 s)
 {
-	V2 result;
-	result.x = v.x / s;
-	result.y = v.y / s;
-	return result;
+	return v2(v.x / s, v.y / s);
 }
 inline V2 operator/=(V2 &v, f32 s)
 {
@@ -245,7 +233,7 @@ inline V2 operator/=(V2 &v, f32 s)
 
 inline V2I v2i(s32 x, s32 y)
 {
-	V2I result = {};
+	V2I result;
 	result.x = x;
 	result.y = y;
 	return result;
@@ -263,10 +251,7 @@ f32 lengthOf(V2I v)
 
 inline V2I operator+(V2I lhs, V2I rhs)
 {
-	V2I result;
-	result.x = lhs.x + rhs.x;
-	result.y = lhs.y + rhs.y;
-	return result;
+	return v2i(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 inline V2I operator+=(V2I &lhs, V2I rhs)
 {
@@ -275,10 +260,7 @@ inline V2I operator+=(V2I &lhs, V2I rhs)
 }
 inline V2I operator-(V2I lhs, V2I rhs)
 {
-	V2I result;
-	result.x = lhs.x - rhs.x;
-	result.y = lhs.y - rhs.y;
-	return result;
+	return v2i(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 inline V2I operator-=(V2I &lhs, V2I rhs)
 {
@@ -287,10 +269,7 @@ inline V2I operator-=(V2I &lhs, V2I rhs)
 }
 inline V2I operator*(V2I v, s32 s)
 {
-	V2I result;
-	result.x = v.x * s;
-	result.y = v.y * s;
-	return result;
+	return v2i(v.x * s, v.y * s);
 }
 inline V2I operator*=(V2I &v, s32 s)
 {
@@ -299,10 +278,7 @@ inline V2I operator*=(V2I &v, s32 s)
 }
 inline V2I operator/(V2I v, s32 s)
 {
-	V2I result;
-	result.x = v.x / s;
-	result.y = v.y / s;
-	return result;
+	return v2i(v.x / s, v.y / s);
 }
 inline V2I operator/=(V2I &v, s32 s)
 {
@@ -316,7 +292,7 @@ inline V2I operator/=(V2I &v, s32 s)
 
 inline V3 v3(f32 x, f32 y, f32 z)
 {
-	V3 v = {};
+	V3 v;
 	v.x = x;
 	v.y = y;
 	v.z = z;
@@ -336,11 +312,7 @@ inline f32 lengthOf(V3 v)
 
 inline V3 operator+(V3 lhs, V3 rhs)
 {
-	V3 result;
-	result.x = lhs.x + rhs.x;
-	result.y = lhs.y + rhs.y;
-	result.z = lhs.z + rhs.z;
-	return result;
+	return v3(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 inline V3 operator+=(V3 &lhs, V3 rhs)
 {
@@ -349,11 +321,7 @@ inline V3 operator+=(V3 &lhs, V3 rhs)
 }
 inline V3 operator-(V3 lhs, V3 rhs)
 {
-	V3 result;
-	result.x = lhs.x - rhs.x;
-	result.y = lhs.y - rhs.y;
-	result.z = lhs.z - rhs.z;
-	return result;
+	return v3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 inline V3 operator-=(V3 &lhs, V3 rhs)
 {
@@ -362,11 +330,7 @@ inline V3 operator-=(V3 &lhs, V3 rhs)
 }
 inline V3 operator*(V3 v, f32 s)
 {
-	V3 result;
-	result.x = v.x * s;
-	result.y = v.y * s;
-	result.z = v.z * s;
-	return result;
+	return v3(v.x * s, v.y * s, v.z * s);
 }
 inline V3 operator*=(V3 &v, f32 s)
 {
@@ -375,11 +339,7 @@ inline V3 operator*=(V3 &v, f32 s)
 }
 inline V3 operator/(V3 v, f32 s)
 {
-	V3 result;
-	result.x = v.x / s;
-	result.y = v.y / s;
-	result.z = v.z / s;
-	return result;
+	return v3(v.x / s, v.y / s, v.z / s);
 }
 inline V3 operator/=(V3 &v, f32 s)
 {
@@ -393,7 +353,7 @@ inline V3 operator/=(V3 &v, f32 s)
 
 inline V4 v4(f32 x, f32 y, f32 z, f32 w)
 {
-	V4 v = {};
+	V4 v;
 	v.x = x;
 	v.y = y;
 	v.z = z;
@@ -411,7 +371,7 @@ inline V4 color255(u8 r, u8 g, u8 b, u8 a)
 {
 	static const f32 inv255 = 1.0f / 255.0f;
 	
-	V4 v = {};
+	V4 v;
 	v.a = (f32)a * inv255;
 
 	// NB: Premultiplied alpha!
@@ -434,12 +394,7 @@ inline f32 lengthOf(V4 v)
 
 inline V4 operator+(V4 lhs, V4 rhs)
 {
-	V4 result;
-	result.x = lhs.x + rhs.x;
-	result.y = lhs.y + rhs.y;
-	result.z = lhs.z + rhs.z;
-	result.w = lhs.w + rhs.w;
-	return result;
+	return v4(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
 inline V4 operator+=(V4 &lhs, V4 rhs)
 {
@@ -448,12 +403,7 @@ inline V4 operator+=(V4 &lhs, V4 rhs)
 }
 inline V4 operator-(V4 lhs, V4 rhs)
 {
-	V4 result;
-	result.x = lhs.x - rhs.x;
-	result.y = lhs.y - rhs.y;
-	result.z = lhs.z - rhs.z;
-	result.w = lhs.w - rhs.w;
-	return result;
+	return v4(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
 inline V4 operator-=(V4 &lhs, V4 rhs)
 {
@@ -462,12 +412,7 @@ inline V4 operator-=(V4 &lhs, V4 rhs)
 }
 inline V4 operator*(V4 v, f32 s)
 {
-	V4 result;
-	result.x = v.x * s;
-	result.y = v.y * s;
-	result.z = v.z * s;
-	result.w = v.w * s;
-	return result;
+	return v4(v.x * s, v.y * s, v.z * s, v.w * s);
 }
 inline V4 operator*=(V4 &v, f32 s)
 {
@@ -476,12 +421,7 @@ inline V4 operator*=(V4 &v, f32 s)
 }
 inline V4 operator/(V4 v, f32 s)
 {
-	V4 result;
-	result.x = v.x / s;
-	result.y = v.y / s;
-	result.z = v.z / s;
-	result.w = v.w / s;
-	return result;
+	return v4(v.x / s, v.y / s, v.z / s, v.w / s);
 }
 inline V4 operator/=(V4 &v, f32 s)
 {
@@ -647,7 +587,7 @@ inline f32 areaOf(Rect2 rect)
 
 inline V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding)
 {
-	V2 result = v2(0,0);
+	V2 result;
 
 	switch (alignment & ALIGN_H)
 	{
@@ -674,7 +614,7 @@ inline V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding)
 
 inline Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h)
 {
-	Rect2I rect = {};
+	Rect2I rect;
 	rect.x = x;
 	rect.y = y;
 	rect.w = w;
@@ -683,18 +623,14 @@ inline Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h)
 }
 
 // Rectangle that is guaranteed to not contain anything, because it's inside-out
-inline Rect2I irectNegativeInfinity() {
-	Rect2I rect = {};
-	rect.x = s32Max;
-	rect.y = s32Max;
-	rect.w = s32Min;
-	rect.h = s32Min;
-	return rect;
+inline Rect2I irectNegativeInfinity()
+{
+	return irectXYWH(s32Max, s32Max, s32Min, s32Min);
 }
 
 inline Rect2I irectPosSize(V2I position, V2I size)
 {
-	Rect2I rect = {};
+	Rect2I rect;
 	rect.pos = position;
 	rect.size = size;
 	return rect;
@@ -702,10 +638,7 @@ inline Rect2I irectPosSize(V2I position, V2I size)
 
 inline Rect2I irectCentreSize(V2I position, V2I size)
 {
-	Rect2I rect = {};
-	rect.pos = position - (size / 2);
-	rect.size = size;
-	return rect;
+	return irectPosSize(position - (size / 2), size);
 }
 
 inline Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax)
@@ -861,7 +794,7 @@ Matrix4 inverse(Matrix4 *source)
   
 	// Shamelessly copied from http://stackoverflow.com/a/1148405/1178345
 	// This is complicated! *_*
-	Matrix4 result = {};
+	Matrix4 result;
 
 	result.flat[0] = source->flat[5]  * source->flat[10] * source->flat[15] - 
 	                  source->flat[5]  * source->flat[11] * source->flat[14] - 
@@ -1014,7 +947,7 @@ void rotateZ(Matrix4 *matrix, f32 radians)
 }
 
 inline Matrix4 operator+(Matrix4 a, Matrix4 b) {
-	Matrix4 result = {};
+	Matrix4 result;
 	
 	for (int i=0; i<16; i++) {
 		result.flat[i] = a.flat[i] + b.flat[i];
@@ -1029,7 +962,7 @@ inline Matrix4 operator+=(Matrix4 &a, Matrix4 b) {
 
 // Scalar multiplication
 inline Matrix4 operator*(Matrix4 m, f32 f) {
-	Matrix4 result = {};
+	Matrix4 result;
 
 	for (int i=0; i<16; i++) {
 		result.flat[i] = m.flat[i] * f;
@@ -1040,7 +973,7 @@ inline Matrix4 operator*(Matrix4 m, f32 f) {
 
 // Matrix multiplication
 inline Matrix4 operator*(Matrix4 a, Matrix4 b) {
-	Matrix4 result = {};
+	Matrix4 result;
 
 	for (int col=0; col<4; col++) {
 		for (int row=0; row<4; row++) {
@@ -1062,7 +995,7 @@ inline Matrix4 operator*=(Matrix4 &a, Matrix4 b) {
 
 inline V4 operator*(Matrix4 m, V4 v)
 {
-	V4 result = {};
+	V4 result;
 
 	result.x = v.x * m.v[0][0]
 			 + v.y * m.v[1][0]
