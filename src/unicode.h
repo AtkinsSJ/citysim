@@ -7,6 +7,9 @@ bool byteIsStartOfGlyph(char b);
 // returns 0 for an invalid start byte
 s32 lengthOfGlyph(char startByte);
 
+// Determines how many utf8 bytes are required to store the given unichar
+s32 lengthOfUnichar(unichar c);
+
 // returns 0 (start of the buffer) if can't find the start of the glyph
 s32 findStartOfGlyph(char *buffer, s32 byteOffset);
 

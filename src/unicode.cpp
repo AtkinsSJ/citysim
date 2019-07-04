@@ -48,6 +48,26 @@ inline s32 lengthOfGlyph(char startByte)
 	return result;
 }
 
+inline s32 lengthOfUnichar(unichar c)
+{
+	if (c <= 0x7F)
+	{
+		return 1;
+	}
+	else if (c <= 0x7FF)
+	{
+		return 2;
+	}
+	else if (c <= 0xFFFF)
+	{
+		return 3;
+	}
+	else
+	{
+		return 4;
+	}
+}
+
 // returns 0 (start of the buffer) if can't find the start of the glyph
 s32 findStartOfGlyph(char *buffer, s32 byteOffset)
 {
