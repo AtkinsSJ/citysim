@@ -109,7 +109,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			V2 textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
 			Rect2 bounds = rectPosSize(textTopLeft, textSize);
 
-			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
 			if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 			{
