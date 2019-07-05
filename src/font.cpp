@@ -127,14 +127,36 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	return result;
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, f32 depth, V4 color, s32 shaderID, s32 caretPosition, DrawTextResult *caretInfoResult)
+void _alignText(RenderItem *startOfLine, RenderItem *endOfLine, s32 lineWidth, f32 boundsWidth, u32 align)
+{
+	switch (align & ALIGN_H)
+	{
+		case ALIGN_RIGHT:
+		{
+			f32 offsetX = boundsWidth - lineWidth;
+			applyOffsetToRenderItems(startOfLine, endOfLine, offsetX, 0);
+		} break;
+
+		case ALIGN_H_CENTRE:
+		{
+			f32 offsetX = (boundsWidth - lineWidth) / 2;
+			applyOffsetToRenderItems(startOfLine, endOfLine, offsetX, 0);
+		} break;
+
+		case ALIGN_LEFT:
+		default:
+		{
+			// Nothing to do!
+		} break;
+	}
+}
+
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, f32 depth, V4 color, s32 shaderID, s32 caretPosition, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
 
 	V2 topLeft = bounds.pos;
 	f32 maxWidth = bounds.w;
-	V4 debugColor = color255(255, 0, 255, 255);
-	V4 debugColor2 = color255(0, 255, 255, 255);
 	
 	//
 	// NB: We *could* just use text.length here. That will over-estimate how many RenderItems to reserve,
@@ -179,12 +201,10 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 			// Do line-alignment stuff
 			{
-				s32 endOfCurrentLine = glyphCount - 1;
-				(firstRenderItem + startOfCurrentLine)->color = debugColor;
-				(firstRenderItem + endOfCurrentLine)->color = debugColor2;
+				_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount - 1, currentLineWidth, bounds.w, align);
+				startOfCurrentLine = glyphCount;
+				currentLineWidth = 0;
 			}
-			startOfCurrentLine = glyphCount;
-			currentLineWidth = 0;
 		}
 		else
 		{
@@ -227,12 +247,10 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 						// Do line-alignment stuff
 						{
-							s32 endOfCurrentLine = glyphCount;
-							(firstRenderItem + startOfCurrentLine)->color = debugColor;
-							(firstRenderItem + endOfCurrentLine - 1)->color = debugColor2;
+							_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount - 1, currentLineWidth, bounds.w, align);
+							startOfCurrentLine = glyphCount;
+							currentLineWidth = 0;
 						}
-						startOfCurrentLine = glyphCount;
-						currentLineWidth = 0;
 					}
 					else
 					{
@@ -245,20 +263,16 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 						// Offset from where the word was, to its new position
 						f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
 						f32 offsetY = (f32)font->lineHeight;
-						for (s32 itemInWord = startOfCurrentWord; itemInWord <= glyphCount; itemInWord++)
-						{
-							firstRenderItem[itemInWord].rect.x += offsetX;
-							firstRenderItem[itemInWord].rect.y += offsetY;
-						}
+						applyOffsetToRenderItems(firstRenderItem + startOfCurrentWord, firstRenderItem + glyphCount, offsetX, offsetY);
 
 						// Do line-alignment stuff
 						{
-							s32 endOfCurrentLine = startOfCurrentWord - 2;
-							(firstRenderItem + startOfCurrentLine)->color = debugColor;
-							(firstRenderItem + endOfCurrentLine)->color = debugColor2;
+							// NB: startOfCurrentWord-2 points at the character before the space before the current word. There could be several spaces in a row but that doesn't actually matter - we only care here because we want to colour a printable character, but actually moving whitespace RenderItems doesn't matter much, though it may be faster to skip them.
+							// Then again, I'm realising that trailing whitespace does get included in the line width, so that's a problem!
+							_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + startOfCurrentWord - 2, currentLineWidth, bounds.w, align);
+							startOfCurrentLine = startOfCurrentWord;
+							currentLineWidth = currentWordWidth;
 						}
-						startOfCurrentLine = startOfCurrentWord;
-						currentLineWidth = currentWordWidth;
 					}
 				}
 
@@ -282,12 +296,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	}
 
 
-	// Do line-alignment stuff
-	{
-		s32 endOfCurrentLine = glyphCount-1;
-		(firstRenderItem + startOfCurrentLine)->color = debugColor;
-		(firstRenderItem + endOfCurrentLine)->color = debugColor2;
-	}
+	// Align the final line
+	_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount-1, currentLineWidth, bounds.w, align);
 
 	finishReservedRenderItemRange(renderBuffer, glyphCount);
 }

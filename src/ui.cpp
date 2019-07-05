@@ -52,7 +52,7 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	setCursorVisible(uiState, false);
 }
 
-Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth)
+Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 align, f32 depth, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
@@ -61,7 +61,7 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 ali
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	drawText(uiState->uiBuffer, font, text, bounds, depth, color, uiState->textShaderID);
+	drawText(uiState->uiBuffer, font, text, bounds, align, depth, color, uiState->textShaderID);
 
 	return bounds;
 }

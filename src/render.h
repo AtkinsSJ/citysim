@@ -131,6 +131,8 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
 void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
 
+void applyOffsetToRenderItems(RenderItem *firstItem, RenderItem *lastItem, f32 offsetX, f32 offsetY);
+
 void sortRenderBuffer(RenderBuffer *buffer);
 
 void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen);

@@ -148,6 +148,15 @@ void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
 	buffer->items.count += itemsAdded;
 }
 
+void applyOffsetToRenderItems(RenderItem *firstItem, RenderItem *lastItem, f32 offsetX, f32 offsetY)
+{
+	for (RenderItem *it = firstItem; it <= lastItem; it++)
+	{
+		it->rect.x += offsetX;
+		it->rect.y += offsetY;
+	}
+}
+
 int compareRenderItems(const void *a, const void *b)
 {
 	f32 depthA = ((RenderItem*)a)->depth;

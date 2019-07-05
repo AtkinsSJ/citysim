@@ -50,7 +50,7 @@ void setCursor(UIState *uiState, String cursorName);
 void setCursor(UIState *uiState, char *cursorName);
 void setCursorVisible(UIState *uiState, bool visible);
 
-Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0);
+Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 align, f32 depth, V4 color, f32 maxWidth = 0);
 bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, f32 depth, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 void uiCloseMenus(UIState *uiState);

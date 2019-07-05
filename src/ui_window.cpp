@@ -14,7 +14,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 		context->currentOffset.y += context->perItemPadding;
 	}
 
-	s32 alignment = context->alignment;
+	u32 alignment = context->alignment;
 	V2 origin = context->contentArea.pos + context->currentOffset;
 
 	if (alignment & ALIGN_RIGHT)
@@ -37,7 +37,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 		if (!context->measureOnly)
 		{
 			Rect2 bounds = rectPosSize(topLeft, textSize);
-			drawText(context->uiState->uiBuffer, font, text, bounds, context->renderDepth, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, context->renderDepth, style->textColor, context->uiState->textShaderID);
 		}
 
 		// For now, we'll always just start a new line.
@@ -109,7 +109,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			V2 textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
 			Rect2 bounds = rectPosSize(textTopLeft, textSize);
 
-			drawText(context->uiState->uiBuffer, font, text, bounds, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
 			if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 			{

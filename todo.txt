@@ -19,6 +19,7 @@ Speed up debug system?
 Speed up text rendering!
 - As a side-point, finally fix the alignment for multi-line text!
 	(Probably store a "startOfCurrentLine" index, and then when the line ends, move all the items for that line by the same offset. Will need to pass-in the calculated size and the alignment. None of this needs to happen in calculateTextSize though!)
+	- To be correct, we need to track the whitespace width after a word separately, and only include it in the line width if the next word is definitely on this line! Trailing whitespace should be ignored. That's complicated though, so I'll do that as a separate task after this.
 - Maybe try that crazy "pass text as a single renderitem" idea?
 	- Maybe that should be abstracted a little into a "draw a bunch of stuff together" feature. eg, Terrain could use something similar
 - Possibly replace all floats in text-rendering with integers, and just produce floats at the very end for the actual renderitems. Everything is always done in whole-pixels anyway, and that should be a chunk faster.
