@@ -34,7 +34,7 @@ BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar)
 	return &result->glyph;
 }
 
-BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar)
+BitmapFontGlyph *findGlyph(BitmapFont *font, unichar targetChar)
 {
 	BitmapFontGlyph *result = null;
 	BitmapFontGlyphEntry *entry = findGlyphInternal(font, targetChar);
@@ -72,9 +72,9 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 		s32 bytePos = 0;
 		while (bytePos < text.length)
 		{
-			unichar glyph = readUnicodeChar(text.chars + bytePos);
+			unichar c = readUnicodeChar(text.chars + bytePos);
 
-			if (glyph == '\n')
+			if (c == '\n')
 			{
 				longestLineWidth = max(longestLineWidth, currentX);
 				currentX = 0;
@@ -83,19 +83,19 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 			}
 			else
 			{
-				BitmapFontGlyph *c = findChar(font, glyph);
-				if (c)
+				BitmapFontGlyph *glyph = findGlyph(font, c);
+				if (glyph)
 				{
-					if (isWhitespace(glyph))
+					if (isWhitespace(c))
 					{
 						currentWordWidth = 0;
 					}
-					else if (doWrap && ((currentX + c->xAdvance) > maxWidth))
+					else if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
 					{
 						longestLineWidth = max(longestLineWidth, currentX);
 						lineCount++;
 
-						if ((currentWordWidth + c->xAdvance) > maxWidth)
+						if ((currentWordWidth + glyph->xAdvance) > maxWidth)
 						{
 							// The current word is longer than will fit on an entire line!
 							// So, split it at the maximum line length.
@@ -112,12 +112,12 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 						}
 					}
 
-					currentX += c->xAdvance;
-					currentWordWidth += c->xAdvance;
+					currentX += glyph->xAdvance;
+					currentWordWidth += glyph->xAdvance;
 				}
 			}
 
-			bytePos += lengthOfUnichar(glyph);
+			bytePos += lengthOfUnichar(c);
 		}
 
 		result.x = max(maxWidth, (f32)max(longestLineWidth, currentX));
@@ -190,13 +190,12 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	s32 startOfCurrentLine = 0;
 	s32 currentLineWidth = 0;
 
-	s32 glyphCount = 0; // Not the same as glyphIndex, because some glyphs are non-printing!
+	s32 glyphCount = 0;
 	s32 bytePos = 0;
-	while (bytePos < text.length)
+	unichar c = 0;
+	while (getNextUnichar(text, &bytePos, &c))
 	{
-		unichar glyph = readUnicodeChar(text.chars + bytePos);
-
-		if (glyph == '\n')
+		if (c == '\n')
 		{
 			currentY += font->lineHeight;
 			currentX = 0;
@@ -212,12 +211,12 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		}
 		else
 		{
-			BitmapFontGlyph *c = findChar(font, glyph);
-			if (c)
+			BitmapFontGlyph *glyph = findGlyph(font, c);
+			if (glyph)
 			{
 				makeRenderItem(firstRenderItem + glyphCount,
-					rectXYWH(topLeft.x + currentX + c->xOffset, topLeft.y + currentY + c->yOffset, c->width, c->height),
-					depth, font->texture, c->uv, shaderID, color
+					rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
+					depth, font->texture, glyph->uv, shaderID, color
 				);
 
 				if (startOfCurrentWord == 0)
@@ -226,14 +225,14 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 					currentWordWidth = 0;
 				}
 
-				if (isWhitespace(glyph))
+				if (isWhitespace(c))
 				{
 					startOfCurrentWord = 0;
 					currentWordWidth = 0;
 				}
-				else if (doWrap && ((currentX + c->xAdvance) > maxWidth))
+				else if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
 				{
-					if (currentWordWidth + c->xAdvance > maxWidth)
+					if (currentWordWidth + glyph->xAdvance > maxWidth)
 					{
 						// The current word is longer than will fit on an entire line!
 						// So, split it at the maximum line length.
@@ -247,7 +246,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 						RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
 						firstItemInWord->rect.x = topLeft.x + currentX;
-						firstItemInWord->rect.y = topLeft.y + currentY + c->yOffset;
+						firstItemInWord->rect.y = topLeft.y + currentY + glyph->yOffset;
 
 						// Do line-alignment stuff
 						{
@@ -292,23 +291,21 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 					}
 				}
 
-				currentX += c->xAdvance;
-				currentWordWidth += c->xAdvance;
-				currentLineWidth += c->xAdvance;
+				currentX += glyph->xAdvance;
+				currentWordWidth += glyph->xAdvance;
+				currentLineWidth += glyph->xAdvance;
 
 				// Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
 				if (caretInfoResult && glyphCount < caretPosition)
 				{
 					caretInfoResult->isValid = true;
 					caretInfoResult->renderItemAtPosition = firstRenderItem + glyphCount;
-					caretInfoResult->glyphAtPosition = c;
+					caretInfoResult->glyphAtPosition = glyph;
 				}
 
 				glyphCount++;
 			}
 		}
-
-		bytePos += lengthOfUnichar(glyph);
 	}
 
 

@@ -26,3 +26,6 @@ s32 countGlyphs(char *startByte, s32 byteLength);
 unichar readUnicodeChar(char *firstChar);
 
 bool isWhitespace(unichar uChar, bool countNewlines=true);
+
+// Byte pos is read and written to.
+bool getNextUnichar(String string, s32 *bytePos, unichar *result);

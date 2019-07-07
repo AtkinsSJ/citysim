@@ -247,3 +247,22 @@ inline bool isWhitespace(unichar uChar, bool countNewlines)
 
 	return result;
 }
+
+bool getNextUnichar(String string, s32 *bytePos, unichar *result)
+{
+	bool foundResult = false;
+
+	if (*bytePos < string.length)
+	{
+		unichar c = readUnicodeChar(string.chars + *bytePos);
+
+		*result = c;
+
+		*bytePos += lengthOfUnichar(c);
+
+		foundResult = true;
+	}
+
+
+	return foundResult;
+}
