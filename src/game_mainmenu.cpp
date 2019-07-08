@@ -27,7 +27,7 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	position.y += (uiText(uiState, font, LOCAL("game_subtitle"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, font, makeString("This is a non-localised test string.\nIt has multiple lines, of\ndifferent length\nto test\nthe alignment on multi-line strings."),
+	position.y += (uiText(uiState, font, makeString("This\nis\na\nnon-localised\ntest\nstring.\nIt has multiple lines, of\ndifferent length\nto test\nthe alignment on multi-line strings."),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
@@ -60,7 +60,7 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	uiText(uiState, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
 			v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,
-			1, color255(255, 255, 255, 24), windowWidth);
+			1, color255(255, 255, 255, 60), windowWidth);
 
 	appState->appStatus = result;
 }

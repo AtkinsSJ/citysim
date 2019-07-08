@@ -27,6 +27,8 @@ Speed up text rendering!
 	- calculateTextSize() could return V2I, etc. That's quite a deep rabbit hole though!
 - Use u8s for RenderItem colours instead of V4? That'd divide the memory requirements for a colour by 4! Though, it's a bit tricky to know how that'll affect everything.
 
+Add newline support to .text files!
+
 Maybe String should use a constructor, so I stop making uninitialised-string-memory mistakes?
 
 BuildingCatalogue:
