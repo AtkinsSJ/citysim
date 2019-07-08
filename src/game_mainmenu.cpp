@@ -58,8 +58,9 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 
 	UILabelStyle *liLabelStyle = findLabelStyle(theme, makeString("small"));
 	uiText(uiState, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
+			v2(0.0f,0.0f), ALIGN_LEFT | ALIGN_TOP,
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
-			v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,
+			// v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,
 			1, color255(255, 255, 255, 60), windowWidth);
 
 	appState->appStatus = result;

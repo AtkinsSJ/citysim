@@ -109,10 +109,12 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 							// Wrapping the whole word onto a new line
 							// Set the current position to where the next word will start
 							currentX = currentWordWidth;
+							ASSERT(maxWidth < 1 || maxWidth >= currentX, "TOO BIG");
 						}
 					}
 
 					currentX += glyph->xAdvance;
+					ASSERT(maxWidth < 1 || maxWidth >= currentX, "TOO BIG");
 					currentWordWidth += glyph->xAdvance;
 				}
 			}
@@ -121,6 +123,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 		}
 
 		result.x = max(maxWidth, (f32)max(longestLineWidth, currentX));
+		ASSERT(maxWidth < 1 || maxWidth >= result.x, "Somehow we measured text that's too wide!");
 		result.y = (f32)(font->lineHeight * lineCount);
 	}
 
@@ -187,7 +190,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
 
-	f32 currentX = 0, currentY = 0;
+	s32 currentX = 0, currentY = 0;
 	bool doWrap = (maxWidth > 0);
 	s32 startOfCurrentWord = 0;
 	s32 currentWordWidth = 0;
@@ -242,19 +245,11 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 				if (c != prevC)
 				{
 					glyph = findGlyph(font, c);
+					prevC = c;
 				}
 
 				if (glyph)
 				{
-					// TODO: @Speed The point of whitespace is it's non-visible, so it would make sense to not generate
-					// RenderItems for these! But I think we currently rely on there being a RenderItem for every char
-					// that takes up space... if we removed that requirement we could save around 15% of text RenderItems!
-					// makeRenderItem(firstRenderItem + glyphCount,
-					// 	rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
-					// 	depth, font->texture, glyph->uv, shaderID, color
-					// );
-
-					currentX += glyph->xAdvance;
 					whitespaceWidthBeforeCurrentWord += glyph->xAdvance;
 
 					// // Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
@@ -267,12 +262,12 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 					// glyphCount++;
 				}
-				prevC = c;
 				foundNext = getNextUnichar(text, &bytePos, &c);
 			}
 			while (foundNext && isWhitespace(c));
 
 			startOfCurrentWord = glyphCount;
+			currentX += whitespaceWidthBeforeCurrentWord;
 
 			continue;
 		}
@@ -281,11 +276,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 			BitmapFontGlyph *glyph = findGlyph(font, c);
 			if (glyph)
 			{
-				makeRenderItem(firstRenderItem + glyphCount,
-					rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
-					depth, font->texture, glyph->uv, shaderID, color
-				);
-
 				if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
 				{
 					if (currentWordWidth + glyph->xAdvance > maxWidth)
@@ -317,10 +307,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 					{
 						// Wrap the whole word onto a new line
 
-						// Set the current position to where the next word will start
-						currentX = (f32) currentWordWidth;
-						currentY += font->lineHeight;
-
 						// Offset from where the word was, to its new position
 						f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
 						f32 offsetY = (f32)font->lineHeight;
@@ -328,27 +314,25 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 						// Do line-alignment stuff
 						{
-							// TODO: This is very much not complete. In particular, we don't handle trailing whitespace
-							// correctly, so it's still included in the line's width and causes it to be one space-worth
-							// too far left when aligned centre or right.
-
 							RenderItem *startOfLine = firstRenderItem + startOfCurrentLine;
 							RenderItem *endOfLine = firstRenderItem + startOfCurrentWord - 1;
 
-							// static V4 debugColor = color255(255, 0, 255, 255);
-							// static V4 debugColor2 = color255(0, 255, 255, 255);
-							// startOfLine->color = debugColor;
-							// endOfLine->color = debugColor2;
-
-							// NB: startOfCurrentWord-2 points at the character before the space before the current word. There could be several spaces in a row but that doesn't actually matter - we only care here because we want to colour a printable character, but actually moving whitespace RenderItems doesn't matter much, though it may be faster to skip them.
-							// Then again, I'm realising that trailing whitespace does get included in the line width, so that's a problem!
 							_alignText(startOfLine, endOfLine, currentLineWidth, maxWidth, align);
 							startOfCurrentLine = startOfCurrentWord;
 							currentLineWidth = 0;
 							whitespaceWidthBeforeCurrentWord = 0;
 						}
+
+						// Set the current position to where the next word will start
+						currentX = currentWordWidth;
+						currentY += font->lineHeight;
 					}
 				}
+
+				makeRenderItem(firstRenderItem + glyphCount,
+					rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
+					depth, font->texture, glyph->uv, shaderID, color
+				);
 
 				currentX += glyph->xAdvance;
 				currentWordWidth += glyph->xAdvance;
