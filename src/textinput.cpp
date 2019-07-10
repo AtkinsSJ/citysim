@@ -44,8 +44,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
 		{
 			// Draw it to the right of the glyph
-			caretRect.x = drawTextResult.renderItemAtPosition->rect.x + drawTextResult.glyphAtPosition->xAdvance;
-			caretRect.y = drawTextResult.renderItemAtPosition->rect.y - drawTextResult.glyphAtPosition->yOffset;
+			caretRect.pos = drawTextResult.caretPosition;
 		}
 
 		// Shifted 1px left for better legibility of text

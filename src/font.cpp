@@ -219,7 +219,7 @@ void _alignText(RenderItem *startOfLine, RenderItem *endOfLine, s32 lineWidth, s
 	}
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, f32 depth, V4 color, s32 shaderID, s32 caretPosition, DrawTextResult *caretInfoResult)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, f32 depth, V4 color, s32 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
 
@@ -253,6 +253,12 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	s32 currentY = 0;
 	bool doWrap = (maxWidth > 0);
 
+	if (caretInfoResult && caretIndex == 0)
+	{
+		caretInfoResult->isValid = true;
+		caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
+	}
+
 	s32 startOfCurrentLine = 0;
 	s32 currentLineWidth = 0;
 
@@ -260,9 +266,13 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 	s32 glyphCount = 0;
 	s32 bytePos = 0;
-	unichar c = 0;
-	bool foundNext = getNextUnichar(text, &bytePos, &c);
+	s32 currentChar = 0;
 
+	unichar c = 0;
+	unichar prevC = 0;
+	BitmapFontGlyph *glyph = null;
+
+	bool foundNext = getNextUnichar(text, &bytePos, &c);
 	while (foundNext)
 	{
 		if (isNewline(c))
@@ -285,6 +295,13 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 				}
 				else
 				{
+					currentChar++;
+					if (caretInfoResult && currentChar == caretIndex)
+					{
+						caretInfoResult->isValid = true;
+						caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
+					}
+
 					currentY += font->lineHeight;
 				}
 
@@ -295,10 +312,12 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		}
 		else if (isWhitespace(c))
 		{
-			// WHITESPACE LOOP
-
-			unichar prevC = 0;
-			BitmapFontGlyph *glyph = null;
+			// NB: We don't handle whitespace characters that actually print something visibly.
+			// Despite being an oxymoron, they do actually exist, but the chance of me actually
+			// needing to use the "Ogham space mark" is rather slim, though I did add support
+			// for it to isWhitespace() for the sake of correctness. I am strange.
+			// But anyway, the additional complexity, as well as speed reduction, are not worth it.
+			// - Sam, 10/07/2019
 
 			do
 			{
@@ -312,15 +331,12 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 				{
 					whitespaceWidthBeforeCurrentWord += glyph->xAdvance;
 
-					// // Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
-					// if (caretInfoResult && glyphCount < caretPosition)
-					// {
-					// 	caretInfoResult->isValid = true;
-					// 	caretInfoResult->renderItemAtPosition = firstRenderItem + glyphCount;
-					// 	caretInfoResult->glyphAtPosition = glyph;
-					// }
-
-					// glyphCount++;
+					currentChar++;
+					if (caretInfoResult && currentChar == caretIndex)
+					{
+						caretInfoResult->isValid = true;
+						caretInfoResult->caretPosition = bounds.pos + v2(currentX + whitespaceWidthBeforeCurrentWord, currentY);
+					}
 				}
 				foundNext = getNextUnichar(text, &bytePos, &c);
 			}
@@ -330,9 +346,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		}
 		else
 		{
-			unichar prevC = 0;
-			BitmapFontGlyph *glyph = null;
-
 			s32 startOfCurrentWord = glyphCount;
 			s32 currentWordWidth = 0;
 
@@ -391,16 +404,15 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 						depth, font->texture, glyph->uv, shaderID, color
 					);
 
+					currentChar++;
+					if (caretInfoResult && currentChar == caretIndex)
+					{
+						caretInfoResult->isValid = true;
+						caretInfoResult->caretPosition = bounds.pos + v2(currentX + glyph->xAdvance, currentY);
+					}
+
 					currentX += glyph->xAdvance;
 					currentWordWidth += glyph->xAdvance;
-
-					// // Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
-					// if (caretInfoResult && glyphCount < caretPosition)
-					// {
-					// 	caretInfoResult->isValid = true;
-					// 	caretInfoResult->renderItemAtPosition = firstRenderItem + glyphCount;
-					// 	caretInfoResult->glyphAtPosition = glyph;
-					// }
 
 					glyphCount++;
 				}
@@ -413,9 +425,14 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		}
 	}
 
-
 	// Align the final line
 	_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount-1, currentLineWidth, maxWidth, align);
+
+	if (caretInfoResult && currentChar < caretIndex)
+	{
+		caretInfoResult->isValid = true;
+		caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
+	}
 
 	finishReservedRenderItemRange(renderBuffer, glyphCount);
 }

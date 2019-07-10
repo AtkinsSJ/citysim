@@ -35,8 +35,7 @@ struct BitmapFont
 struct DrawTextResult
 {
 	bool isValid;
-	struct RenderItem *renderItemAtPosition;
-	BitmapFontGlyph *glyphAtPosition;
+	V2 caretPosition;
 };
 
 // PUBLIC
@@ -52,7 +51,7 @@ V2 calculateTextPosition(V2 origin, V2 size, u32 align);
 // Note that if there are no glyphs rendered (either because `text` is empty, or none of its characters
 // were found in `font`) that no caretInfoResult data will be provided. You can check DrawTextResult.isValid
 // to see if it has been filled in or not.
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, f32 depth, V4 color, s32 shaderID, s32 caretPosition=-1, DrawTextResult *caretInfoResult=null);
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, f32 depth, V4 color, s32 shaderID, s32 caretIndex=-1, DrawTextResult *caretInfoResult=null);
 
 // INTERNAL
 
