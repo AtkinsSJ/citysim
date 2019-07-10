@@ -14,8 +14,8 @@ void initInput(InputState *inputState)
 
 void updateInput(InputState *inputState)
 {
-	DEBUG_FUNCTION();
-	
+	DEBUG_FUNCTION_T(DCDT_Input);
+
 	// Clear mouse state
 	inputState->wheelX = 0;
 	inputState->wheelY = 0;
@@ -33,8 +33,15 @@ void updateInput(InputState *inputState)
 	inputState->receivedQuitSignal = false;
 	inputState->wasWindowResized = false;
 
-	SDL_Event event = {};
-	while (SDL_PollEvent(&event)) {
+	{
+		DEBUG_BLOCK_T("updateInput: Pump", DCDT_Input);
+		SDL_PumpEvents();
+	}
+	SDL_Event event;
+	while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) > 0)
+	{
+		DEBUG_BLOCK_T("updateInput: Event", DCDT_Input);
+
 		switch (event.type) {
 			// WINDOW EVENTS
 			case SDL_QUIT: {

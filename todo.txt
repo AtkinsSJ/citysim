@@ -123,7 +123,7 @@ Arrays stuff
 
 BUG: We get frame hitching at almost regular intervals. Profiling says it's caused by renderBuffer() sometimes taking twice as long. Need to identify this!
 	It's not just rendering code taking twice as long, it's some other seemingly random (but consistent) functions too. I really don't know why.
-	Possibly it's updateInput() now?
+	Possibly it's updateInput() now? OK yeah it's SDL_PumpEvents() which takes ages sometimes because of polling joysticks. It's fixed for SDL 2.0.10 which isn't out yet. 2.0.10 is going to fix ALL my problems, apparently.
 
 Problem: The new pixel-art shader is great, but the edges of coloured rectangles (and possibly textured ones though it's harder to tell?) still flicker because they're always full pixels. Ideally we'd be able to smooth those out too. Maybe just switch to MSAA to fix that if I can't find/figure-out a shader solution. (It seems like we can't determine from a shader whether a fragment is on the edge or not.)
 	Maybe we could draw coloured rectangles by using a plain white texture with a 1px transparent border, then doing funky things with the UVs??? So that the edge of the polygon isn't coloured, and the visible edge is handled by the awesome shader. That could be cool.
