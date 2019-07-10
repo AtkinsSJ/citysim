@@ -1,12 +1,16 @@
 #pragma once
 
 #define DEBUG_BREAK() SDL_TriggerBreakpoint()
-#define ASSERT(expr) SDL_assert(expr)
-#define ASSERT_PARANOID(expr) SDL_assert_paranoid(expr)
-#define ASSERT_RELEASE(expr) SDL_assert_release(expr)
+
+// SDL already does work to avoid MSVC warnings, but we still get them!
+// So, I've added what SHOULD be a no-op wrapper around it, using the (a,b) comma trick.
+// (Well, it's not a no-op in debug builds, but the release optimiser does make it a no-op!)
+// - Sam, 10/07/2019
+#define ASSERT(expr) if ((expr),true) {SDL_assert(expr);} else {}
+#define ASSERT_PARANOID(expr) if ((expr),true) {SDL_assert_paranoid(expr);} else {}
+#define ASSERT_RELEASE(expr) if ((expr),true) {SDL_assert_release(expr);} else {}
 
 #if BUILD_DEBUG
-	// #define ASSERT(expr, format, ...) if(!(expr)) { logError(format, __VA_ARGS__); DEBUG_BREAK(); }
 
 	#define DEBUG_BLOCK_T(name, tag) \
 			static DebugCodeData *GLUE(debugBlockData____, __LINE__) = debugFindOrAddCodeData(makeString(name, true), tag); \
@@ -23,12 +27,8 @@
 	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
 	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
 	#define DEBUG_BEGIN_RENDER_BUFFER(buffer) debugStartTrackingRenderBuffer(globalDebugState, buffer)
-#else
 
-	// We put a dummy thing here to stop the compiler complaining
-	// "local variable is initialized but not referenced"
-	// if a variable is only used in expr.
-	// #define ASSERT(expr, ...) if (expr) {};
+#else
 
 	#define DEBUG_BLOCK(...)
 	#define DEBUG_FUNCTION(...)

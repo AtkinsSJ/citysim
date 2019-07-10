@@ -5,6 +5,8 @@
 #include <stdlib.h> // For qsort()
 
 #if BUILD_DEBUG
+	// 3 is the max level.
+	// https://wiki.libsdl.org/CategoryAssertions
 	#define SDL_ASSERT_LEVEL 3
 #else
 	#define SDL_ASSERT_LEVEL 1
