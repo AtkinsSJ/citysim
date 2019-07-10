@@ -38,7 +38,6 @@ String trimEnd(String input);
 bool asInt(String string, s64 *result);
 bool asBool(String string, bool *result);
 
-bool isNewline(char c);
 bool isNullTerminated(String s);
 
 // TODO: Add "splitchar" support to countTokens() as well

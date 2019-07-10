@@ -27,7 +27,7 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	position.y += (uiText(uiState, font, LOCAL("game_subtitle"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, font, makeString("This\nis\na\nnon-localised\ntest\nstring.\nIt has multiple lines, of\ndifferent length\nto test\nthe alignment on multi-line strings."),
+	position.y += (uiText(uiState, font, makeString("This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
 
 	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);

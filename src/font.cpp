@@ -75,8 +75,10 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 
 	while (foundNext)
 	{
-		if (c == '\n')
+		if (isNewline(c))
 		{
+			bool prevWasCR = false;
+
 			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
 			longestLineWidth = max(longestLineWidth, currentLineWidth);
 			ASSERT(maxWidth < 1 || maxWidth >= longestLineWidth, "TOO BIG");
@@ -86,7 +88,22 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 			currentLineWidth = 0;
 
 			currentX = 0;
-			lineCount++;
+
+			do
+			{
+				if (c == '\n' && prevWasCR)
+				{
+					// It's a windows newline, and we already moved down one line, so skip it
+				}
+				else
+				{
+					lineCount++;
+				}
+
+				prevWasCR = (c == '\r');
+				foundNext = getNextUnichar(text, &bytePos, &c);
+			}
+			while (foundNext && isNewline(c));
 		}
 		else if (isWhitespace(c))
 		{
@@ -158,9 +175,8 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 				currentX += glyph->xAdvance;
 				currentWordWidth += glyph->xAdvance;
 			}
+			foundNext = getNextUnichar(text, &bytePos, &c);
 		}
-
-		foundNext = getNextUnichar(text, &bytePos, &c);
 	}
 
 	result.x = max(maxWidth, (f32)max(longestLineWidth, currentX));
@@ -249,20 +265,33 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 	while (foundNext)
 	{
-		if (c == '\n')
+		if (isNewline(c))
 		{
-			currentY += font->lineHeight;
-			currentX = 0;
-
-			// TODO: @Speed Could optimise consecutive newline characters by looping here, like with whitespace.
-			// We only need to do the alignment once, for the line before the newlines!
+			bool prevWasCR = false;
 
 			// Do line-alignment stuff
+			// (This only has to happen for the first newline in a series of newlines!)
+			_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount - 1, currentLineWidth, maxWidth, align);
+			startOfCurrentLine = glyphCount;
+			currentLineWidth = 0;
+
+			currentX = 0;
+
+			do
 			{
-				_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount - 1, currentLineWidth, maxWidth, align);
-				startOfCurrentLine = glyphCount;
-				currentLineWidth = 0;
+				if (c == '\n' && prevWasCR)
+				{
+					// It's a windows newline, and we already moved down one line, so skip it
+				}
+				else
+				{
+					currentY += font->lineHeight;
+				}
+
+				prevWasCR = (c == '\r');
+				foundNext = getNextUnichar(text, &bytePos, &c);
 			}
+			while (foundNext && isNewline(c));
 		}
 		else if (isWhitespace(c))
 		{
@@ -298,8 +327,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 			while (foundNext && isWhitespace(c));
 
 			currentX += whitespaceWidthBeforeCurrentWord;
-
-			continue;
 		}
 		else
 		{
@@ -383,11 +410,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
 			whitespaceWidthBeforeCurrentWord = 0;
-
-			continue;
 		}
-
-		foundNext = getNextUnichar(text, &bytePos, &c);
 	}
 
 

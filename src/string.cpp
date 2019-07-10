@@ -234,12 +234,6 @@ bool asBool(String string, bool *result)
 	return succeeded;
 }
 
-inline bool isNewline(char c)
-{
-	bool result = (c == '\n') || (c == '\r');
-	return result;
-}
-
 inline bool isNullTerminated(String s)
 {
 	// A 0-length string, by definition, can't have a null terminator

@@ -228,27 +228,32 @@ inline bool isWhitespace(unichar uChar, bool countNewlines)
 {
 	// TODO: There's probably more whitespace characters somewhere.
 
-	bool result = false;
+	bool result = (uChar == ' ')
+	           || (uChar == '\t')
+	           || (uChar == 0);
 
-	// Feels like I'm misusing a switch, but I can't think of any better ways of writing this!
-	switch (uChar)
+	if (countNewlines)
 	{
-	case 0:
-	case ' ':
-	case '\t':
-		result = true;
-		break;
-
-	case '\n':
-	case '\r':
-		result = countNewlines;
-		break;
+		result = result || isNewline(uChar);
 	}
 
 	return result;
 }
 
-bool getNextUnichar(String string, s32 *bytePos, unichar *result)
+inline bool isNewline(unichar uChar)
+{
+	bool result = (uChar == '\n')
+	           || (uChar == '\r')
+	           || (uChar == '\v')      // Vertical tab
+	           || (uChar == '\f')      // Form feed
+	           || (uChar == L'\u0085')  // Unicode NEL (next line)
+	           || (uChar == L'\u2028')  // Unicode LS (line separator)
+	           || (uChar == L'\u2029'); // Unicode PS (paragraph separator)
+
+	return result;
+}
+
+inline bool getNextUnichar(String string, s32 *bytePos, unichar *result)
 {
 	bool foundResult = false;
 
