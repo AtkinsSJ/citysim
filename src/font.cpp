@@ -54,79 +54,119 @@ BitmapFontGlyph *findGlyph(BitmapFont *font, unichar targetChar)
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
+
+	ASSERT(renderBuffer != null, "RenderBuffer must be provided!");
+	ASSERT(font != null, "Font must be provided!");
 	
 	V2 result = v2(maxWidth, (f32)font->lineHeight);
 
-	if (font == null)
-	{
-		logError("Attempted to display text with a null font: {0}", {text});
-	}
-	else
-	{
-		s32 lineCount = 1;
-		bool doWrap = (maxWidth > 0);
-		s32 currentX = 0;
-		s32 currentWordWidth = 0;
-		s32 longestLineWidth = 0;
+	bool doWrap = (maxWidth > 0);
+	s32 currentX = 0;
+	s32 currentWordWidth = 0;
+	s32 whitespaceWidthBeforeCurrentWord = 0;
 
-		s32 bytePos = 0;
-		while (bytePos < text.length)
+	s32 lineCount = 1;
+	s32 currentLineWidth = 0;
+	s32 longestLineWidth = 0;
+
+	s32 bytePos = 0;
+	unichar c = 0;
+	bool foundNext = getNextUnichar(text, &bytePos, &c);
+
+	while (foundNext)
+	{
+		if (c == '\n')
 		{
-			unichar c = readUnicodeChar(text.chars + bytePos);
+			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
+			longestLineWidth = max(longestLineWidth, currentLineWidth);
+			ASSERT(maxWidth < 1 || maxWidth >= longestLineWidth, "TOO BIG");
 
-			if (c == '\n')
+			whitespaceWidthBeforeCurrentWord = 0;
+			currentWordWidth = 0;
+			currentLineWidth = 0;
+
+			currentX = 0;
+			lineCount++;
+		}
+		else if (isWhitespace(c))
+		{
+			// WHITESPACE LOOP
+
+			// If we had a previous word, we know that it must have just finished, so add the whitespace!
+			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
+			whitespaceWidthBeforeCurrentWord = 0;
+			currentWordWidth = 0;
+
+			unichar prevC = 0;
+			BitmapFontGlyph *glyph = null;
+
+			do
 			{
-				longestLineWidth = max(longestLineWidth, currentX);
-				currentX = 0;
-				currentWordWidth = 0;
-				lineCount++;
-			}
-			else
-			{
-				BitmapFontGlyph *glyph = findGlyph(font, c);
+				if (c != prevC)
+				{
+					glyph = findGlyph(font, c);
+					prevC = c;
+				}
+
 				if (glyph)
 				{
-					if (isWhitespace(c))
-					{
-						currentWordWidth = 0;
-					}
-					else if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
-					{
-						longestLineWidth = max(longestLineWidth, currentX);
-						lineCount++;
-
-						if ((currentWordWidth + glyph->xAdvance) > maxWidth)
-						{
-							// The current word is longer than will fit on an entire line!
-							// So, split it at the maximum line length.
-
-							// This should mean just wrapping the final character
-							currentWordWidth = 0;
-							currentX = 0;
-						}
-						else
-						{
-							// Wrapping the whole word onto a new line
-							// Set the current position to where the next word will start
-							currentX = currentWordWidth;
-							ASSERT(maxWidth < 1 || maxWidth >= currentX, "TOO BIG");
-						}
-					}
-
-					currentX += glyph->xAdvance;
-					ASSERT(maxWidth < 1 || maxWidth >= currentX, "TOO BIG");
-					currentWordWidth += glyph->xAdvance;
+					whitespaceWidthBeforeCurrentWord += glyph->xAdvance;
 				}
-			}
 
-			bytePos += lengthOfUnichar(c);
+				foundNext = getNextUnichar(text, &bytePos, &c);
+			}
+			while (foundNext && isWhitespace(c));
+
+			currentX += whitespaceWidthBeforeCurrentWord;
+
+			continue;
+		}
+		else
+		{
+			BitmapFontGlyph *glyph = findGlyph(font, c);
+			if (glyph)
+			{
+				if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
+				{
+					longestLineWidth = max(longestLineWidth, currentLineWidth);
+
+					lineCount++;
+
+					if ((currentWordWidth + glyph->xAdvance) > maxWidth)
+					{
+						// The current word is longer than will fit on an entire line!
+						// So, split it at the maximum line length.
+
+						// This should mean just wrapping the final character
+						currentWordWidth = 0;
+						currentX = 0;
+
+						currentLineWidth = 0;
+						whitespaceWidthBeforeCurrentWord = 0;
+					}
+					else
+					{
+						// Wrapping the whole word onto a new line
+						// Set the current position to where the next word will start
+						currentLineWidth = 0;
+						whitespaceWidthBeforeCurrentWord = 0;
+
+						currentX = currentWordWidth;
+					}
+				}
+
+				currentX += glyph->xAdvance;
+				currentWordWidth += glyph->xAdvance;
+			}
 		}
 
-		result.x = max(maxWidth, (f32)max(longestLineWidth, currentX));
-		ASSERT(maxWidth < 1 || maxWidth >= result.x, "Somehow we measured text that's too wide!");
-		result.y = (f32)(font->lineHeight * lineCount);
+		foundNext = getNextUnichar(text, &bytePos, &c);
 	}
 
+	result.x = max(maxWidth, (f32)max(longestLineWidth, currentX));
+	result.y = (f32)(font->lineHeight * lineCount);
+
+	ASSERT(maxWidth < 1 || maxWidth >= result.x, "Somehow we measured text that's too wide!");
 	return result;
 }
 
@@ -167,6 +207,9 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 {
 	DEBUG_FUNCTION();
 
+	ASSERT(renderBuffer != null, "RenderBuffer must be provided!");
+	ASSERT(font != null, "Font must be provided!");
+
 	V2 topLeft = bounds.pos;
 	s32 maxWidth = (s32) bounds.w;
 	
@@ -190,7 +233,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
 
-	s32 currentX = 0, currentY = 0;
+	s32 currentX = 0;
+	s32 currentY = 0;
 	bool doWrap = (maxWidth > 0);
 	s32 startOfCurrentWord = 0;
 	s32 currentWordWidth = 0;
@@ -348,6 +392,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 				glyphCount++;
 			}
 		}
+		
 		foundNext = getNextUnichar(text, &bytePos, &c);
 	}
 
