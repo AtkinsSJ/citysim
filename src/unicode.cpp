@@ -226,15 +226,47 @@ unichar readUnicodeChar(char *firstChar)
 
 inline bool isWhitespace(unichar uChar, bool countNewlines)
 {
-	// TODO: There's probably more whitespace characters somewhere.
+	// NB: See note in isNewline() about why we use a switch. (Basically, it's faster!)
 
-	bool result = (uChar == ' ')
-	           || (uChar == '\t')
-	           || (uChar == 0);
+	bool result = false;
 
-	if (countNewlines)
+	switch (uChar)
 	{
-		result = result || isNewline(uChar);
+		// TODO: @Cleanup We handle null as a whitespace, but it's not actually one.
+		// Keeping this here for now to avoid breaking stuff, but should check and remove if
+		// it's not useful, and correct places we do need it.
+		case 0:
+		case ' ':
+		case '\t':
+		case L'\u00A0': // Non-breaking space
+		case L'\u1680': // Ogham space mark
+		case L'\u2000': // En quad
+		case L'\u2001': // Em quad
+		case L'\u2002': // En space
+		case L'\u2003': // Em space
+		case L'\u2004': // Three-per-em space
+		case L'\u2005': // Four-per-em space
+		case L'\u2006': // Six-per-em space
+		case L'\u2007': // Figure space
+		case L'\u2008': // Punctuation space
+		case L'\u2009': // Thin space
+		case L'\u200A': // Hair space
+		case L'\u202F': // Narrow no-break space
+		case L'\u205F': // Medium mathematical space
+		case L'\u3000': // Ideographic space
+			result = true;
+			break;
+
+		// NB: Copied from isNewline(), so we can have this as a single switch
+		case '\n':
+		case '\r':
+		case '\v':      // Vertical tab
+		case '\f':      // Form feed
+		case L'\u0085':  // Unicode NEL (next line)
+		case L'\u2028':  // Unicode LS (line separator)
+		case L'\u2029': // Unicode PS (paragraph separator)
+			result = countNewlines;
+			break;
 	}
 
 	return result;
@@ -242,13 +274,36 @@ inline bool isWhitespace(unichar uChar, bool countNewlines)
 
 inline bool isNewline(unichar uChar)
 {
-	bool result = (uChar == '\n')
-	           || (uChar == '\r')
-	           || (uChar == '\v')      // Vertical tab
-	           || (uChar == '\f')      // Form feed
-	           || (uChar == L'\u0085')  // Unicode NEL (next line)
-	           || (uChar == L'\u2028')  // Unicode LS (line separator)
-	           || (uChar == L'\u2029'); // Unicode PS (paragraph separator)
+	bool result = false;
+
+	//
+	// In testing, the switch below was significantly faster than doing a chain of comparissons like:
+	//
+	// bool result = (uChar == '\n')
+	//            || (uChar == '\r')
+	//            || (uChar == '\v')      // Vertical tab
+	//            || (uChar == '\f')      // Form feed
+	//            || (uChar == L'\u0085')  // Unicode NEL (next line)
+	//            || (uChar == L'\u2028')  // Unicode LS (line separator)
+	//            || (uChar == L'\u2029'); // Unicode PS (paragraph separator)
+	//
+	// (Text rendering was about 5% faster this way. (3.0ms to 2.9ms) That's not a direct measurement of
+	// isNewLine(), but for such a small function, it obviously has a big effect!)
+	//
+	// - Sam, 10/07/2019
+	//
+	switch (uChar)
+	{
+		case '\n':
+		case '\r':
+		case '\v':      // Vertical tab
+		case '\f':      // Form feed
+		case L'\u0085':  // Unicode NEL (next line)
+		case L'\u2028':  // Unicode LS (line separator)
+		case L'\u2029': // Unicode PS (paragraph separator)
+			result = true;
+			break;
+	}
 
 	return result;
 }
