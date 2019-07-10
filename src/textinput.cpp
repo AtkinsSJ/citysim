@@ -165,11 +165,11 @@ void moveCaretLeftWholeWord(TextInput *textInput)
 	{
 		moveCaretLeft(textInput, 1);
 		unichar glyph = readUnicodeChar(textInput->buffer + textInput->caretBytePos);
-		if (isWhitespace(glyph))
+		if (textInput->caretBytePos == 0)
 		{
 			done = true;
 		}
-		else if (textInput->caretBytePos == 0)
+		else if (isWhitespace(glyph))
 		{
 			done = true;
 		}
@@ -183,11 +183,11 @@ void moveCaretRightWholeWord(TextInput *textInput)
 	{
 		moveCaretRight(textInput, 1);
 		unichar glyph = readUnicodeChar(textInput->buffer + textInput->caretBytePos);
-		if (isWhitespace(glyph))
+		if (textInput->caretGlyphPos >= textInput->glyphLength)
 		{
 			done = true;
 		}
-		else if (textInput->caretGlyphPos >= (textInput->glyphLength - 1))
+		else if (isWhitespace(glyph))
 		{
 			done = true;
 		}

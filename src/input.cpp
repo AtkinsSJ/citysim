@@ -19,6 +19,7 @@ void updateInput(InputState *inputState)
 	inputState->wheelX = 0;
 	inputState->wheelY = 0;
 
+	// TODO: @Speed Could replace these with a flat memory-copy?
 	for (s32 i = 1; i < MouseButtonCount; i++)
 	{
 		inputState->mouseWasDown[i] = inputState->mouseDown[i];
