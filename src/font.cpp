@@ -236,8 +236,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	s32 currentX = 0;
 	s32 currentY = 0;
 	bool doWrap = (maxWidth > 0);
-	s32 startOfCurrentWord = 0;
-	s32 currentWordWidth = 0;
 
 	s32 startOfCurrentLine = 0;
 	s32 currentLineWidth = 0;
@@ -253,11 +251,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	{
 		if (c == '\n')
 		{
-			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
-			whitespaceWidthBeforeCurrentWord = 0;
-			currentWordWidth = 0;
-			startOfCurrentWord = 0;
-
 			currentY += font->lineHeight;
 			currentX = 0;
 
@@ -274,12 +267,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		else if (isWhitespace(c))
 		{
 			// WHITESPACE LOOP
-
-			// If we had a previous word, we know that it must have just finished, so add the whitespace!
-			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
-			whitespaceWidthBeforeCurrentWord = 0;
-			currentWordWidth = 0;
-			startOfCurrentWord = 0;
 
 			unichar prevC = 0;
 			BitmapFontGlyph *glyph = null;
@@ -310,95 +297,101 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 			}
 			while (foundNext && isWhitespace(c));
 
-			startOfCurrentWord = glyphCount;
 			currentX += whitespaceWidthBeforeCurrentWord;
 
 			continue;
 		}
 		else
 		{
-			BitmapFontGlyph *glyph = findGlyph(font, c);
-			if (glyph)
+			unichar prevC = 0;
+			BitmapFontGlyph *glyph = null;
+
+			s32 startOfCurrentWord = glyphCount;
+			s32 currentWordWidth = 0;
+
+			do
 			{
-				if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
+				if (c != prevC)
 				{
-					if (currentWordWidth + glyph->xAdvance > maxWidth)
-					{
-						// The current word is longer than will fit on an entire line!
-						// So, split it at the maximum line length.
-
-						// This should mean just wrapping the final character
-						currentX = 0;
-						currentY += font->lineHeight;
-
-						startOfCurrentWord = glyphCount;
-						currentLineWidth = currentWordWidth;
-						currentWordWidth = 0;
-
-						RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
-						firstItemInWord->rect.x = topLeft.x;
-						firstItemInWord->rect.y = topLeft.y + currentY + glyph->yOffset;
-
-						// Do line-alignment stuff
-						{
-							_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount - 1, currentLineWidth, maxWidth, align);
-							startOfCurrentLine = glyphCount;
-							currentLineWidth = 0;
-							whitespaceWidthBeforeCurrentWord = 0;
-						}
-					}
-					else
-					{
-						// Wrap the whole word onto a new line
-
-						// Offset from where the word was, to its new position
-						f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
-						f32 offsetY = (f32)font->lineHeight;
-						applyOffsetToRenderItems(firstRenderItem + startOfCurrentWord, firstRenderItem + glyphCount, offsetX, offsetY);
-
-						// Do line-alignment stuff
-						{
-							RenderItem *startOfLine = firstRenderItem + startOfCurrentLine;
-							RenderItem *endOfLine = firstRenderItem + startOfCurrentWord - 1;
-
-							_alignText(startOfLine, endOfLine, currentLineWidth, maxWidth, align);
-							startOfCurrentLine = startOfCurrentWord;
-							currentLineWidth = 0;
-							whitespaceWidthBeforeCurrentWord = 0;
-						}
-
-						// Set the current position to where the next word will start
-						currentX = currentWordWidth;
-						currentY += font->lineHeight;
-					}
+					glyph = findGlyph(font, c);
+					prevC = c;
 				}
 
-				makeRenderItem(firstRenderItem + glyphCount,
-					rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
-					depth, font->texture, glyph->uv, shaderID, color
-				);
+				if (glyph)
+				{
+					if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
+					{
+						if (currentWordWidth + glyph->xAdvance > maxWidth)
+						{
+							// The current word is longer than will fit on an entire line!
+							// So, split it at the maximum line length.
 
-				currentX += glyph->xAdvance;
-				currentWordWidth += glyph->xAdvance;
+							// This should mean just wrapping the final character
+							currentX = 0;
+							currentY += font->lineHeight;
 
-				// // Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
-				// if (caretInfoResult && glyphCount < caretPosition)
-				// {
-				// 	caretInfoResult->isValid = true;
-				// 	caretInfoResult->renderItemAtPosition = firstRenderItem + glyphCount;
-				// 	caretInfoResult->glyphAtPosition = glyph;
-				// }
+							startOfCurrentWord = glyphCount;
+							currentLineWidth = currentWordWidth;
+							currentWordWidth = 0;
 
-				glyphCount++;
+							RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
+							firstItemInWord->rect.x = topLeft.x;
+							firstItemInWord->rect.y = topLeft.y + currentY + glyph->yOffset;
+						}
+						else
+						{
+							// Wrap the whole word onto a new line
+
+							// Offset from where the word was, to its new position
+							f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
+							f32 offsetY = (f32)font->lineHeight;
+							applyOffsetToRenderItems(firstRenderItem + startOfCurrentWord, firstRenderItem + glyphCount, offsetX, offsetY);
+
+							// Set the current position to where the next word will start
+							currentX = currentWordWidth;
+							currentY += font->lineHeight;
+						}
+
+						// Do line-alignment stuff
+						_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
+						startOfCurrentLine = startOfCurrentWord;
+						currentLineWidth = 0;
+						whitespaceWidthBeforeCurrentWord = 0;
+					}
+
+					makeRenderItem(firstRenderItem + glyphCount,
+						rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
+						depth, font->texture, glyph->uv, shaderID, color
+					);
+
+					currentX += glyph->xAdvance;
+					currentWordWidth += glyph->xAdvance;
+
+					// // Using < so that in the case of caretPosition being > glyphCount, we just get the data for the last glyph!
+					// if (caretInfoResult && glyphCount < caretPosition)
+					// {
+					// 	caretInfoResult->isValid = true;
+					// 	caretInfoResult->renderItemAtPosition = firstRenderItem + glyphCount;
+					// 	caretInfoResult->glyphAtPosition = glyph;
+					// }
+
+					glyphCount++;
+				}
+				foundNext = getNextUnichar(text, &bytePos, &c);
 			}
+			while (foundNext && !isWhitespace(c, true));
+
+			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
+			whitespaceWidthBeforeCurrentWord = 0;
+
+			continue;
 		}
-		
+
 		foundNext = getNextUnichar(text, &bytePos, &c);
 	}
 
 
 	// Align the final line
-	currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
 	_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount-1, currentLineWidth, maxWidth, align);
 
 	finishReservedRenderItemRange(renderBuffer, glyphCount);
