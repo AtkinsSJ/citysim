@@ -140,7 +140,7 @@ inline T *appendBlank(ChunkedArray<T> *array)
 template<typename T>
 T *get(ChunkedArray<T> *array, smm index)
 {
-	ASSERT(index < array->count, "Index out of array bounds!");
+	ASSERT(index < array->count); //Index out of array bounds!
 
 	T *result = null;
 
@@ -176,7 +176,7 @@ T *get(ChunkedArray<T> *array, smm index)
 template<typename T>
 Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 {
-	ASSERT(chunkIndex < array->chunkCount, "chunkIndex is out of range!");
+	ASSERT(chunkIndex < array->chunkCount); //chunkIndex is out of range!
 
 	Chunk<T> *chunk = null;
 
@@ -326,7 +326,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 {
 	DEBUG_FUNCTION();
 
-	ASSERT(indexToRemove >= 0 && indexToRemove < array->count, "indexToRemove is out of range!");
+	ASSERT(indexToRemove >= 0 && indexToRemove < array->count); //indexToRemove is out of range!
 
 	T result;
 	
@@ -426,7 +426,7 @@ void returnLastChunkToPool(ChunkedArray<T> *array)
 	Chunk<T> *chunk = array->lastChunk;
 	ChunkPool<T> *pool = array->chunkPool;
 
-	ASSERT(chunk->count == 0, "Attempting to return a non-empty chunk to the chunk pool!");
+	ASSERT(chunk->count == 0); //Attempting to return a non-empty chunk to the chunk pool!
 	array->lastChunk = array->lastChunk->prevChunk;
 	if (array->firstChunk == chunk) array->firstChunk = array->lastChunk;
 	array->chunkCount--;
@@ -539,7 +539,7 @@ void next(ChunkedArrayIterator<T> *iterator)
 		}
 	}
 
-	ASSERT(iterator->isDone || iterator->indexInChunk >= 0 && iterator->indexInChunk < iterator->currentChunk->count, "Bounds check");
+	ASSERT(iterator->isDone || iterator->indexInChunk >= 0 && iterator->indexInChunk < iterator->currentChunk->count); //Bounds check
 }
 
 template<typename T>

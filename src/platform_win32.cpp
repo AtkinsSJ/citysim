@@ -30,7 +30,7 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
 	String result = getString(&stb);
 
-	ASSERT(isNullTerminated(result), "Path strings must be null-terminated!");
+	ASSERT(isNullTerminated(result)); //Path strings must be null-terminated!
 
 	return result;
 }

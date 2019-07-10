@@ -97,7 +97,7 @@ void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
 
 inline RenderItem *appendRenderItem(RenderBuffer *buffer)
 {
-	ASSERT(!buffer->hasRangeReserved, "Can't append renderitems while a range is reserved!");
+	ASSERT(!buffer->hasRangeReserved); //Can't append renderitems while a range is reserved!
 	RenderItem *result = appendUninitialised(&buffer->items);
 	return result;
 }

@@ -30,7 +30,7 @@ bool linkedListIsEmpty(LinkedListNode<T> *sentinel)
 {
 	bool hasNext = (sentinel->nextNode != sentinel);
 	bool hasPrev = (sentinel->prevNode != sentinel);
-	ASSERT(hasNext == hasPrev, "Linked list is corrupted!");
+	ASSERT(hasNext == hasPrev); //Linked list is corrupted!
 	return !hasNext;
 }
 
@@ -62,7 +62,7 @@ s32 countNodes(T *sentinel)
 
 		while (cursor != sentinel)
 		{
-			ASSERT(cursor != null, "null node in linked list");
+			ASSERT(cursor != null); //null node in linked list
 			cursor = cursor->nextNode;
 			result++;
 		}

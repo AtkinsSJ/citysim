@@ -359,7 +359,7 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 		// Sprite id is 0 to 15, depending on connecting neighbours.
 		// 1 = up, 2 = right, 4 = down, 8 = left
 		// For now, we'll decide that off-the-map does NOT connect
-		ASSERT(def->width == 1 && def->height == 1, "We only support texture-linking for 1x1 buildings!");
+		ASSERT(def->width == 1 && def->height == 1); //We only support texture-linking for 1x1 buildings!
 		
 		s32 x = building->footprint.x;
 		s32 y = building->footprint.y;

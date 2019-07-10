@@ -24,9 +24,9 @@ BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar)
 {
 	BitmapFontGlyphEntry *result = findGlyphInternal(font, targetChar);
 
-	ASSERT(result != null, "Failed to add a glyph to font '{0}'!", {font->name});
+	ASSERT_PARANOID(result != null);//, "Failed to add a glyph to font '{0}'!", {font->name});
 	result->codepoint = targetChar;
-	ASSERT(result->isOccupied == false, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
+	ASSERT_PARANOID(result->isOccupied == false);//, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
 	result->isOccupied = true;
 
 	font->glyphCount++;
@@ -55,8 +55,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
-	ASSERT(renderBuffer != null, "RenderBuffer must be provided!");
-	ASSERT(font != null, "Font must be provided!");
+	ASSERT(font != null); //Font must be provided!
 	
 	V2 result = v2(maxWidth, (f32)font->lineHeight);
 
@@ -81,7 +80,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 
 			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
 			longestLineWidth = max(longestLineWidth, currentLineWidth);
-			ASSERT(maxWidth < 1 || maxWidth >= longestLineWidth, "TOO BIG");
+			ASSERT(maxWidth < 1 || maxWidth >= longestLineWidth); //TOO BIG
 
 			whitespaceWidthBeforeCurrentWord = 0;
 			currentWordWidth = 0;
@@ -182,7 +181,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	result.x = max(maxWidth, (f32)max(longestLineWidth, currentX));
 	result.y = (f32)(font->lineHeight * lineCount);
 
-	ASSERT(maxWidth < 1 || maxWidth >= result.x, "Somehow we measured text that's too wide!");
+	ASSERT(maxWidth < 1 || maxWidth >= result.x); //Somehow we measured text that's too wide!
 	return result;
 }
 
@@ -223,8 +222,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 {
 	DEBUG_FUNCTION();
 
-	ASSERT(renderBuffer != null, "RenderBuffer must be provided!");
-	ASSERT(font != null, "Font must be provided!");
+	ASSERT(renderBuffer != null); //RenderBuffer must be provided!
+	ASSERT(font != null); //Font must be provided!
 
 	V2 topLeft = bounds.pos;
 	s32 maxWidth = (s32) bounds.w;

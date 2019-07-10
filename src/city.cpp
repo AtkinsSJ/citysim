@@ -691,7 +691,7 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 
 TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y)
 {
-	ASSERT(contains(sector->bounds, x, y), "getSectorBuildingRefAtWorldPosition() passed a coordinate that is outside of the sector!");
+	ASSERT_PARANOID(contains(sector->bounds, x, y));//, "getSectorBuildingRefAtWorldPosition() passed a coordinate that is outside of the sector!");
 
 	s32 relX = x - sector->bounds.x;
 	s32 relY = y - sector->bounds.y;

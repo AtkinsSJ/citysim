@@ -1,14 +1,12 @@
 #pragma once
 
-#if BUILD_DEBUG
-	#if defined(_MSC_VER)
-		// Pauses the MS debugger
-		#define DEBUG_BREAK() __debugbreak()
-	#else
-		#define DEBUG_BREAK() {*(int *)0 = 0;}
-	#endif
+#define DEBUG_BREAK() SDL_TriggerBreakpoint()
+#define ASSERT(expr) SDL_assert(expr)
+#define ASSERT_PARANOID(expr) SDL_assert_paranoid(expr)
+#define ASSERT_RELEASE(expr) SDL_assert_release(expr)
 
-	#define ASSERT(expr, format, ...) if(!(expr)) { logError(format, __VA_ARGS__); DEBUG_BREAK(); }
+#if BUILD_DEBUG
+	// #define ASSERT(expr, format, ...) if(!(expr)) { logError(format, __VA_ARGS__); DEBUG_BREAK(); }
 
 	#define DEBUG_BLOCK_T(name, tag) \
 			static DebugCodeData *GLUE(debugBlockData____, __LINE__) = debugFindOrAddCodeData(makeString(name, true), tag); \
@@ -26,12 +24,11 @@
 	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
 	#define DEBUG_BEGIN_RENDER_BUFFER(buffer) debugStartTrackingRenderBuffer(globalDebugState, buffer)
 #else
-	#define DEBUG_BREAK()
 
 	// We put a dummy thing here to stop the compiler complaining
 	// "local variable is initialized but not referenced"
 	// if a variable is only used in expr.
-	#define ASSERT(expr, ...) if (expr) {};
+	// #define ASSERT(expr, ...) if (expr) {};
 
 	#define DEBUG_BLOCK(...)
 	#define DEBUG_FUNCTION(...)

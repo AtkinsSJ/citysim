@@ -25,7 +25,7 @@ void clear(Array<T> *a)
 template<typename T>
 bool resize(Array<T> *a, s32 newSize)
 {
-	ASSERT(newSize > a->count, "Shrinking an Array is not supported!");
+	ASSERT(newSize > a->count); //Shrinking an Array is not supported!
 	logInfo("Resizing an array.");
 
 	T *newItems = (T*) realloc(a->items, newSize * sizeof(T));
@@ -57,7 +57,8 @@ T *appendUninitialised(Array<T> *a)
 	if (a->count >= a->maxCount)
 	{
 		s32 newSize = (a->maxCount == 0) ? 16 : (a->maxCount * 2);
-		ASSERT(resize(a, newSize), "Failed to make room in array!");
+		bool succeeded = resize(a, newSize);
+		ASSERT(succeeded); //Failed to make room in array!
 	}
 
 	T *result = a->items + a->count++;
@@ -84,6 +85,6 @@ inline T *appendBlank(Array<T> *a)
 template<typename T>
 T * pointerTo(Array<T> *a, s32 index)
 {
-	ASSERT(index >=0 && index < a->count, "Index out of range!");
+	ASSERT(index >=0 && index < a->count); //Index out of range!
 	return a->items + index;
 }

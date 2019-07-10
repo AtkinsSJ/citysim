@@ -35,7 +35,7 @@ void processDebugData(DebugState *debugState)
 	debugState->frameStartCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
 
 	moveAllNodes(&debugState->topCodeBlocksSentinel, &debugState->topCodeBlocksFreeListSentinel);
-	ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel), "List we just freed is not empty!");
+	ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel)); //List we just freed is not empty!
 
 	for (auto it = iterate(&debugState->codeData); !it.isDone; next(&it))
 	{
@@ -102,7 +102,7 @@ void processDebugData(DebugState *debugState)
 			item->data = code;
 		}
 
-		ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT, "We lost a top code blocks node!");
+		ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT); //We lost a top code blocks node!
 	}
 }
 

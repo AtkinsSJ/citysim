@@ -470,7 +470,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				next(&it))
 			{
 				BuildingDef *buildingDef = getValue(it);
-				ASSERT(buildingDef->buildMethod != BuildMethod_None, "We somehow got an un-constructible building in our constructible buildings list!");
+				ASSERT(buildingDef->buildMethod != BuildMethod_None); //We somehow got an un-constructible building in our constructible buildings list!
 
 				if (uiButton(uiState, buildingDef->name, menuButtonRect, 1,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
@@ -1037,7 +1037,7 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		
 		default:
 		{
-			ASSERT(false, "Not implemented this AppStatus yet!");
+			ASSERT(false); //Not implemented this AppStatus yet!
 		} break;
 	}
 

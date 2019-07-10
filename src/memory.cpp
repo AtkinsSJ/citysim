@@ -15,7 +15,7 @@ MemoryBlock *addMemoryBlock(MemoryArena *arena, smm size)
 	smm totalSize = size + sizeof(MemoryBlock);
 	u8* memory = allocateRaw(totalSize);
 
-	ASSERT(memory != null, "Failed to allocate memory block!");
+	ASSERT(memory != null); //Failed to allocate memory block!
 
 	MemoryBlock *block = (MemoryBlock*) memory;
 	block->memory = memory + sizeof(MemoryBlock);
@@ -36,13 +36,13 @@ void *allocate(MemoryArena *arena, smm size)
 		arena->currentBlock = addMemoryBlock(arena, newBlockSize);
 	}
 
-	ASSERT(arena->currentBlock != null, "No memory in arena!");
+	ASSERT(arena->currentBlock != null); //No memory in arena!
 
 	// TODO: Prevent normal allocations while temp mem is open, and vice versa
 	// We tried passing an isTempAllocation bool, but code that just takes a MemoryArena doesn't know
 	// what kind of memory it's allocating from so it fails.
 	// For it to work we'd have to duplicate every function that takes an arena eg readFile()
-	// ASSERT(isTempAllocation == arena->hasTemporaryArenaOpen, "Mixing temporary and regular allocations!");
+	// ASSERT(isTempAllocation == arena->hasTemporaryArenaOpen); //Mixing temporary and regular allocations!
 	
 	void *result = arena->currentBlock->memory + arena->currentBlock->used;
 	memset(result, 0, size);
@@ -67,14 +67,14 @@ inline T *allocateArray(MemoryArena *arena, smm count)
 u8 *allocateRaw(smm size)
 {
 	u8 *result = (u8*) calloc(size, 1);
-	ASSERT(result != null, "calloc() failed!!! I don't think there's anything reasonable we can do here.");
+	ASSERT(result != null); //calloc() failed!!! I don't think there's anything reasonable we can do here.
 	return result;
 }
 
 void freeCurrentBlock(MemoryArena *arena)
 {
 	MemoryBlock *block = arena->currentBlock;
-	ASSERT(block != null, "Attempting to free non-existent block");
+	ASSERT(block != null); //Attempting to free non-existent block
 	arena->currentBlock = block->prevBlock;
 	free(block);
 }

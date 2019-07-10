@@ -447,7 +447,7 @@ String formatInt(u64 value, u8 base)
 {
 	DEBUG_FUNCTION();
 	
-	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
+	ASSERT((base > 1) && (base <= 36)); //formatInt() only handles base 2 to base 36.
 	s32 arraySize = 64;
 	char *temp = allocateArray<char>(globalFrameTempArena, arraySize); // Worst case is base 1, which is 64 characters!
 	s32 count = 0;
@@ -469,7 +469,7 @@ String formatInt(s64 value, u8 base)
 {
 	DEBUG_FUNCTION();
 	
-	ASSERT((base > 1) && (base <= 36), "formatInt() only handles base 2 to base 36.");
+	ASSERT((base > 1) && (base <= 36)); //formatInt() only handles base 2 to base 36.
 	s32 arraySize = 65;
 	char *temp = allocateArray<char>(globalFrameTempArena, arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
 	bool isNegative = (value < 0);

@@ -4,6 +4,13 @@
 #include <time.h> // For seeding RNGs
 #include <stdlib.h> // For qsort()
 
+#if BUILD_DEBUG
+	#define SDL_ASSERT_LEVEL 3
+#else
+	#define SDL_ASSERT_LEVEL 1
+#endif
+
+
 #ifdef __linux__
 #	include <SDL2/SDL.h>
 #	include <SDL2/SDL_image.h>
@@ -184,7 +191,7 @@ int main(int argc, char *argv[])
 	loadSettings(settings);
 
 	SDL_Window *window = initSDL(settings, "Some kind of city builder");
-	ASSERT(window != null, "Failed to initialise SDL.");
+	ASSERT(window != null); //Failed to initialise SDL.
 
 	AssetManager *assets = createAssetManager();
 	addAssets(assets);
@@ -192,7 +199,7 @@ int main(int argc, char *argv[])
 	appState->assets = assets;
 
 	Renderer *renderer = platform_initializeRenderer(window);
-	ASSERT(renderer->platformRenderer != null, "Failed to initialize renderer.");
+	ASSERT(renderer->platformRenderer != null); //Failed to initialize renderer.
 	renderer->loadAssets(renderer, assets);
 	appState->renderer = renderer;
 

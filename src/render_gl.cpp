@@ -219,7 +219,10 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 		asset->shader.rendererShaderID = shaderIndex;
 
 		loadShaderProgram(asset, shader);
-		ASSERT(shader->isValid, "Failed to load shader '{0}' into OpenGL.", {asset->shortName});
+		if(!shader->isValid)
+		{
+			logError("Failed to load shader '{0}' into OpenGL.", {asset->shortName});
+		}
 	}
 }
 
@@ -259,7 +262,7 @@ static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s32 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
-	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count, "Invalid shader!");
+	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count); //Invalid shader!
 
 
 	if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
@@ -277,7 +280,7 @@ inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s32 shaderID)
 	renderer->currentShader = shaderID;
 	GL_ShaderProgram *activeShader = renderer->shaders.items + renderer->currentShader;
 
-	ASSERT(activeShader->isValid, "Attempting to use a shader that isn't loaded!");
+	ASSERT(activeShader->isValid); //Attempting to use a shader that isn't loaded!
 	glUseProgram(activeShader->shaderProgramID);
 
 	// Initialise the new shader's stuff
@@ -299,7 +302,8 @@ inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s32 shaderID)
 void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
-	ASSERT(asset != null, "Attempted to bind a null texture asset!");
+	ASSERT(asset != null); //Attempted to bind a null texture asset!
+	ASSERT(asset->state == AssetState_Loaded);
 
 	Texture *texture = &asset->texture;
 
@@ -315,7 +319,6 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		// Upload texture
-		ASSERT(asset->state == AssetState_Loaded, "Attempted to bind an unloaded texture '{0}'!", {asset->shortName});
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
 		texture->gl.isLoaded = true;
 	}
@@ -328,12 +331,12 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 
 	// Fill VBO
-	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT, "Tried to render too many vertices at once!");
+	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT); //Tried to render too many vertices at once!
 	GLint vBufferSizeNeeded = vertexCount * sizeof(renderer->vertices[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, renderer->vertices);
 
 	// Fill IBO
-	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT, "Tried to render too many indices at once!");
+	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
 	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
 
@@ -465,8 +468,8 @@ static void GL_render(Renderer *renderer)
 
 #if CHECK_BUFFERS_SORTED
 	// Check buffers are sorted
-	ASSERT(isBufferSorted(&renderer->worldBuffer), "World sprites are out of order!");
-	ASSERT(isBufferSorted(&renderer->uiBuffer), "UI sprites are out of order!");
+	ASSERT(isBufferSorted(&renderer->worldBuffer)); //World sprites are out of order!
+	ASSERT(isBufferSorted(&renderer->uiBuffer)); //UI sprites are out of order!
 #endif
 
 	glClear(GL_COLOR_BUFFER_BIT);

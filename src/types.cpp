@@ -38,7 +38,7 @@ inline s32 divideCeil(s32 numerator, s32 denominator)
 
 inline s32 truncate32(s64 in)
 {
-	ASSERT(in <= s32Max, "Value is too large to truncate to s32!");
+	ASSERT(in <= s32Max); //Value is too large to truncate to s32!
 	return (s32) in;
 }
 
@@ -50,7 +50,7 @@ inline bool equals(f32 a, f32 b, f32 epsilon)
 template<typename T>
 inline T clamp(T value, T min, T max)
 {
-	ASSERT(min <= max, "min > max in clamp()!");
+	ASSERT(min <= max); //min > max in clamp()!
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;

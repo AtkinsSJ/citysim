@@ -215,7 +215,7 @@ unichar readUnicodeChar(char *firstChar)
 			for (s32 pos = 1; pos <= extraBytes; pos++)
 			{
 				u8 bn = firstChar[pos];
-				// ASSERT((bn & 0b11000000) == 0b10000000, "Unicode codepoint continuation byte is invalid! D:");
+				// ASSERT((bn & 0b11000000) == 0b10000000); //Unicode codepoint continuation byte is invalid! D:
 				result = (result << 6) | (bn & 0b00111111);
 			}
 		}

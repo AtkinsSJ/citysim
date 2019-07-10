@@ -38,7 +38,7 @@ I will create shorter versions of the basic types though.
 #define STRVAL_(a) #a
 #define STRVAL(a) STRVAL_(a)
 
-#define INVALID_DEFAULT_CASE default: ASSERT(false, "Invalid default case."); break;
+#define INVALID_DEFAULT_CASE default: ASSERT(false); //Invalid default case. break;
 
 /*
 	Defer macro, to run code at the end of a scope.

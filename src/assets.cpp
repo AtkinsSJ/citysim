@@ -2,7 +2,7 @@
 
 void initAssetManager(AssetManager *assets)
 {
-	ASSERT(assets->assetArena.currentBlock != null, "initAssetManager() called with uninitialised/corrupted memory arena!");
+	ASSERT(assets->assetArena.currentBlock != null); //initAssetManager() called with uninitialised/corrupted memory arena!
 	char *basePath = SDL_GetBasePath();
 	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), makeString("assets")}));
 
@@ -102,17 +102,20 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 {
 	SDL_Surface *result = null;
 
-	ASSERT(fileData.size > 0, "Attempted to create a surface from an unloaded asset! ({0})", {name});
-	ASSERT(fileData.size < s32Max, "File '{0}' is too big for SDL's RWOps!", {name});
+	ASSERT(fileData.size > 0);//, "Attempted to create a surface from an unloaded asset! ({0})", {name});
+	ASSERT(fileData.size < s32Max);//, "File '{0}' is too big for SDL's RWOps!", {name});
 
 	SDL_RWops *rw = SDL_RWFromConstMem(fileData.memory, truncate32(fileData.size));
 	if (rw)
 	{
 		result = IMG_Load_RW(rw, 0);
 
-		ASSERT(result != null, "Failed to create SDL_Surface from asset '{0}'!\n{1}", {
-			name, makeString(IMG_GetError())
-		});
+		if (result == null)
+		{
+			logError("Failed to create SDL_Surface from asset '{0}'!\n{1}", {
+				name, makeString(IMG_GetError())
+			});
+		}
 
 		SDL_RWclose(rw);
 	}
@@ -132,7 +135,10 @@ void ensureAssetIsLoaded(AssetManager *assets, Asset *asset)
 
 	loadAsset(assets, asset);
 
-	ASSERT(asset->state == AssetState_Loaded, "Failed to load asset '{0}'", {asset->shortName});
+	if (asset->state != AssetState_Loaded)
+	{
+		logError("Failed to load asset '{0}'", {asset->shortName});
+	}
 }
 
 void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
@@ -247,7 +253,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 		case AssetType_Texture:
 		{
 			SDL_Surface *surface = createSurfaceFromFileData(fileData, asset->fullName);
-			ASSERT(surface->format->BytesPerPixel == 4, "We only handle 32-bit colour images!");
+			ASSERT(surface->format->BytesPerPixel == 4); //We only handle 32-bit colour images!
 
 			if (!asset->texture.isFileAlphaPremultiplied)
 			{
@@ -346,7 +352,7 @@ Asset *addTexture(AssetManager *assets, String filename, bool isAlphaPremultipli
 
 Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount)
 {
-	ASSERT(spriteCount > 0, "Must have a positive number of sprites in a Sprite Group!");
+	ASSERT(spriteCount > 0); //Must have a positive number of sprites in a Sprite Group!
 
 	Asset *spriteGroup = addAsset(assets, AssetType_Sprite, name, false);
 	spriteGroup->data = allocate(assets, spriteCount * sizeof(Sprite));
@@ -370,7 +376,7 @@ void addTiledSprites(AssetManager *assets, String name, String textureFilename, 
 		textureAsset = *findResult;
 	}
 
-	ASSERT(textureAsset != null, "Failed to find/create texture for Sprite!");
+	ASSERT(textureAsset != null); //Failed to find/create texture for Sprite!
 
 	Asset *spriteGroup = addSpriteGroup(assets, name, tilesAcross * tilesDown);
 	Rect2 uv = rectXYWH(0, 0, (f32)tileWidth, (f32)tileHeight);

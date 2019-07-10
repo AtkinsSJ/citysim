@@ -103,7 +103,7 @@ void loadSettingsFile(Settings *settings, String name, Blob settingsData)
 						((String *)firstItem)[i] = pushString(&globalAppState.systemArena, sValue);
 					} break;
 
-					default: ASSERT(false, "Unhandled setting type!");
+					default: ASSERT(false); //Unhandled setting type!
 				}
 			}
 		}
@@ -171,7 +171,7 @@ void saveSettings(Settings *settings)
 					append(&stb, ((String *)firstItem)[i]);
 				} break;
 
-				default: ASSERT(false, "Unhandled setting type!");
+				default: ASSERT(false); //Unhandled setting type!
 			}
 		}
 

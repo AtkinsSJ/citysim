@@ -3,8 +3,8 @@
 template<typename T>
 void expandHashTable(HashTable<T> *table, s32 newCapacity)
 {
-	ASSERT(newCapacity > 0, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
-	ASSERT(newCapacity > table->capacity, "Attempted to shrink a hash table from {0} to {1}", {formatInt(table->capacity), formatInt(newCapacity)});
+	ASSERT(newCapacity > 0); //, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
+	ASSERT(newCapacity > table->capacity); //, "Attempted to shrink a hash table from {0} to {1}", {formatInt(table->capacity), formatInt(newCapacity)});
 
 	s32 oldCount = table->count;
 	s32 oldCapacity = table->capacity;
@@ -30,7 +30,7 @@ void expandHashTable(HashTable<T> *table, s32 newCapacity)
 		free(oldItems);
 	}
 
-	ASSERT(oldCount == table->count, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
+	ASSERT_PARANOID(oldCount == table->count);//, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
 }
 
 template<typename T>

@@ -121,14 +121,14 @@ inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *tex
 
 		Asset *min = globalAppState.assets->allAssets.firstChunk.items;
 		Asset *max = globalAppState.assets->allAssets.lastChunk->items + globalAppState.assets->allAssets.chunkSize;
-		ASSERT(texture >= min && texture <= max, "Attempted to draw using an invalid texture asset pointer!");
+		ASSERT(texture >= min && texture <= max); //Attempted to draw using an invalid texture asset pointer!
 	}
 #endif
 }
 
 RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
 {
-	ASSERT(!buffer->hasRangeReserved, "Can't reserve a range while a range is already reserved!");
+	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
 
 	reserve(&buffer->items, count);
 	buffer->hasRangeReserved = true;
@@ -141,8 +141,12 @@ RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
 
 void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
 {
-	ASSERT(buffer->hasRangeReserved, "Attempted to finish a range while a range is not reserved!");
-	ASSERT(itemsAdded <= buffer->reservedRangeSize, "You drew {0} items but only reserved room for {1}!!! This is really bad.", {formatInt(itemsAdded), formatInt(buffer->reservedRangeSize)});
+	ASSERT(buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	if (itemsAdded > buffer->reservedRangeSize)
+	{
+		logError("You drew {0} items but only reserved room for {1}!!! This is really bad.", {formatInt(itemsAdded), formatInt(buffer->reservedRangeSize)});
+		ASSERT_RELEASE(false);
+	}
 
 	buffer->hasRangeReserved = false;
 	buffer->items.count += itemsAdded;
