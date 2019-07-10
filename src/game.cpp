@@ -930,16 +930,20 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 
 	// Draw the things we prepared in overlayRenderItems earlier
-	RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
-	s32 overlayRenderItemsDrawn = 0;
-	for (auto it = iterate(&gameState->overlayRenderItems);
-		!it.isDone;
-		next(&it))
 	{
-		firstRenderItem[overlayRenderItemsDrawn++] = *get(it);
+		DEBUG_BLOCK_T("Transfer overlayRenderItems", DCDT_GameUpdate);
+
+		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
+		s32 overlayRenderItemsDrawn = 0;
+		for (auto it = iterate(&gameState->overlayRenderItems);
+			!it.isDone;
+			next(&it))
+		{
+			firstRenderItem[overlayRenderItemsDrawn++] = *get(it);
+		}
+		finishReservedRenderItemRange(&renderer->worldBuffer, overlayRenderItemsDrawn);
+		clear(&gameState->overlayRenderItems);
 	}
-	finishReservedRenderItemRange(&renderer->worldBuffer, overlayRenderItemsDrawn);
-	clear(&gameState->overlayRenderItems);
 
 #if 0
 	{

@@ -43,6 +43,7 @@ struct InputState
 	// Keyboard
 	bool _keyWasDown[KEYBOARD_KEY_COUNT];
 	bool _keyDown[KEYBOARD_KEY_COUNT];
+
 	bool hasUnhandledTextEntered; // Has anyone requested the _textEntered?
 	String textEntered;
 	char _textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];

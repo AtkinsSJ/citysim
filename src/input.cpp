@@ -8,6 +8,7 @@ inline u32 keycodeToIndex(u32 key)
 void initInput(InputState *inputState)
 {
 	*inputState = {};
+
 	inputState->textEntered = makeString(&inputState->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
 }
 
@@ -19,16 +20,12 @@ void updateInput(InputState *inputState)
 	inputState->wheelX = 0;
 	inputState->wheelY = 0;
 
-	// TODO: @Speed Could replace these with a flat memory-copy?
-	for (s32 i = 1; i < MouseButtonCount; i++)
-	{
-		inputState->mouseWasDown[i] = inputState->mouseDown[i];
-	}
-
-	for (s32 i=0; i < KEYBOARD_KEY_COUNT; i++)
-	{
-		inputState->_keyWasDown[i] = inputState->_keyDown[i];
-	}
+	// Fill-in "was down" info.
+	copyMemory(inputState->mouseDown, inputState->mouseWasDown, MouseButtonCount);
+	// NB: We don't want to simply ping-pong buffers here, because keyDown records whether it's down NOW,
+	// and NOT whether it changed! I wasted some time doing ping-pong and being confused about it. /fp
+	// - Sam, 10/07/2019
+	copyMemory(inputState->_keyDown, inputState->_keyWasDown, KEYBOARD_KEY_COUNT);
 
 	inputState->hasUnhandledTextEntered = false;
 	inputState->textEntered.length = 0;
