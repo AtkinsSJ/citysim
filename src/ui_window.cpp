@@ -112,7 +112,12 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
-			if ((!context->uiState->mouseInputHandled || context->windowIndex == 0)
+			// NB: Windows are assumed to be on top of any other UI, so if this window was active, we know it was
+			// what handled the mouse input!
+			// So, I'm not sure what we'll do with stuff that goes on top of it, like the console and debug overlay...
+			// Oh dear.
+			// - Sam, 11/07/2019
+			if ((!context->uiState->mouseInputHandled || context->window->wasActiveLastUpdate)
 				&& contains(buttonBounds, mousePos))
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
@@ -229,13 +234,12 @@ Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
 					windowArea.h - barHeight - (contentPadding * 2.0f));
 }
 
-WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle, s32 windowIndex)
+WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle)
 {
 	WindowContext context = {};
 	context.uiState = uiState;
 	context.temporaryMemory = &globalAppState.globalTempArena;
 	context.window = window;
-	context.windowIndex = windowIndex;
 	context.windowStyle = windowStyle;
 	context.contentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);
 	context.currentOffset = v2(0,0);
@@ -387,7 +391,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		f32 contentPadding = windowStyle->contentPadding;
 
-		WindowContext context = makeWindowContext(uiState, window, windowStyle, windowIndex);
+		WindowContext context = makeWindowContext(uiState, window, windowStyle);
 
 		// Run the WindowProc once first so we can measure its size
 		if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
@@ -596,7 +600,7 @@ void updateWindows(UIState *uiState)
 		Window *window = get(it);
 		s32 windowIndex = (s32) getIndex(it);
 
-		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
+		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
 
@@ -604,7 +608,7 @@ void updateWindows(UIState *uiState)
 
 		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		WindowContext context = makeWindowContext(uiState, window, windowStyle, windowIndex);
+		WindowContext context = makeWindowContext(uiState, window, windowStyle);
 
 		// Run the WindowProc once first so we can measure its size
 		updateWindow(uiState, window, &context, isActive);
@@ -664,7 +668,7 @@ void updateWindows(UIState *uiState)
 			}
 		}
 
-		window->isActive = isActive;
+		window->wasActiveLastUpdate = isActive;
 
 		//
 		// NB: This is a little confusing, so some explanation:
@@ -712,11 +716,11 @@ void renderWindows(UIState *uiState)
 		Window *window = get(it);
 		s32 windowIndex = (s32) getIndex(it);
 
-		bool isActive = window->isActive;
+		bool isActive = window->wasActiveLastUpdate;
 
 
 		f32 depth = 2000.0f;
-		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
+		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 
 		if (isModal)
@@ -725,7 +729,7 @@ void renderWindows(UIState *uiState)
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
-		WindowContext context = makeWindowContext(uiState, window, windowStyle, windowIndex);
+		WindowContext context = makeWindowContext(uiState, window, windowStyle);
 
 		if (!window->isInitialised)
 		{
