@@ -200,12 +200,15 @@ void drawUiMessage(UIState *uiState)
 			f32 depth = uiState->closestDepth - 100.0f;
 
 			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
+
+			RenderItem *backgroundRI = appendRenderItem(uiState->uiBuffer);
+
 			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1.0f, textColor);
 
 			labelRect = expand(labelRect, style->padding);
 
-			drawRect(uiState->uiBuffer, labelRect, depth, uiState->untexturedShaderID, backgroundColor);
+			drawRect(backgroundRI, labelRect, depth, uiState->untexturedShaderID, backgroundColor);
 		}
 	}
 }

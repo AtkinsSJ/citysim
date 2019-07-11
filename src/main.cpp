@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 			
 			if (globalConsole)
 			{
-				updateAndRenderConsole(globalConsole, &inputState, uiState);
+				updateConsole(globalConsole, &inputState);
 			}
 
 			if (haveAssetFilesChanged(assets))
@@ -278,6 +278,11 @@ int main(int argc, char *argv[])
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
 				debugUpdate(globalDebugState, &inputState, uiState);
+			}
+
+			if (globalConsole)
+			{
+				renderConsole(globalConsole, uiState);
 			}
 
 			// Actually draw things!

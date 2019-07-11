@@ -461,10 +461,10 @@ static void GL_render(Renderer *renderer)
 	// 	DEBUG_BLOCK_T("SORT WORLD BUFFER", DCDT_Renderer);
 	// 	sortRenderBuffer(&renderer->worldBuffer);
 	// }
-	{
-		DEBUG_BLOCK_T("sortRenderBuffer(ui)", DCDT_Renderer);
-		sortRenderBuffer(&renderer->uiBuffer);
-	}
+	// {
+	// 	DEBUG_BLOCK_T("sortRenderBuffer(ui)", DCDT_Renderer);
+	// 	sortRenderBuffer(&renderer->uiBuffer);
+	// }
 
 #if CHECK_BUFFERS_SORTED
 	// Check buffers are sorted

@@ -105,6 +105,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 		if (!context->measureOnly)
 		{
+			RenderItem *background = appendRenderItem(context->uiState->uiBuffer);
 			V2 textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
 			V2 textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
 			Rect2 bounds = rectPosSize(textTopLeft, textSize);
@@ -135,7 +136,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				}
 			}
 
-			drawRect(context->uiState->uiBuffer, buttonBounds, context->renderDepth, context->uiState->untexturedShaderID,backColor);
+			drawRect(background, buttonBounds, context->renderDepth, context->uiState->untexturedShaderID,backColor);
 		}
 
 		// For now, we'll always just start a new line.
@@ -250,6 +251,11 @@ void updateAndRenderWindows(UIState *uiState)
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
 
+		if (isModal)
+		{
+			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, uiState->untexturedShaderID, color255(64, 64, 64, 128)); 
+		}
+
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
 
 		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
@@ -344,6 +350,8 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 		}
 
+		RenderItem *contentBackground = appendRenderItem(uiState->uiBuffer);
+
 		// Run the window proc FOR REALZ
 		context.measureOnly = false;
 		context.alignment = ALIGN_TOP | ALIGN_LEFT;
@@ -392,7 +400,7 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 		}
 
-		drawRect(uiState->uiBuffer, contentArea, depth, uiState->untexturedShaderID, backColor);
+		drawRect(contentBackground, contentArea, depth, uiState->untexturedShaderID, backColor);
 
 		if (hasTitleBar)
 		{
@@ -413,8 +421,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		if (isModal)
 		{
-			uiState->mouseInputHandled = true;
-			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, uiState->untexturedShaderID, color255(64, 64, 64, 128)); 
+			uiState->mouseInputHandled = true; 
 		}
 
 		if (contains(wholeWindowArea, mousePos))

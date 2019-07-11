@@ -432,6 +432,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		// The "ZONE" menu
 		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, 1, Menu_Zone))
 		{
+			RenderItem *background = appendRenderItem(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			
@@ -453,13 +454,14 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(uiBuffer, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+			drawRect(background, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, 1, Menu_Build))
 		{
+			RenderItem *background = appendRenderItem(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
@@ -486,7 +488,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(uiBuffer, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+			drawRect(background, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 

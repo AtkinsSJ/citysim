@@ -12,14 +12,6 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 	}
 }
 
-struct ConsoleTextState
-{
-	V2 pos;
-	f32 maxWidth;
-
-	UIState *uiState;
-	RenderBuffer *uiBuffer;
-};
 inline ConsoleTextState initConsoleTextState(UIState *uiState, V2 screenSize, f32 screenEdgePadding, f32 height)
 {
 	// Prevent weird artifacts from fractional sizes
@@ -88,6 +80,9 @@ void renderConsole(Console *console, UIState *uiState)
 
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
+	RenderItem *consoleBackground = appendRenderItem(uiState->uiBuffer);
+	RenderItem *inputBackground   = appendRenderItem(uiState->uiBuffer);
+
 	Rect2 textInputRect = drawTextInput(uiState, consoleFont, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
 	textState.pos.y -= textInputRect.h;
 
@@ -95,9 +90,9 @@ void renderConsole(Console *console, UIState *uiState)
 
 	// draw backgrounds now we know size of input area
 	Rect2 inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
-	drawRect(uiBuffer, inputBackRect, 100, uiState->untexturedShaderID, color255(64,64,64,245));
+	drawRect(inputBackground, inputBackRect, 100, uiState->untexturedShaderID, color255(64,64,64,245));
 	Rect2 consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
-	drawRect(uiBuffer, consoleBackRect, 100, uiState->untexturedShaderID, color255(0,0,0,245));
+	drawRect(consoleBackground, consoleBackRect, 100, uiState->untexturedShaderID, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
@@ -185,7 +180,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 	}
 }
 
-void updateAndRenderConsole(Console *console, InputState *inputState, UIState *uiState)
+void updateConsole(Console *console, InputState *inputState)
 {
 	// Keyboard shortcuts for commands
 	for (auto it = iterate(&console->commandShortcuts);
@@ -286,8 +281,6 @@ void updateAndRenderConsole(Console *console, InputState *inputState, UIState *u
 		{
 			console->scrollPos = clamp(console->scrollPos + (inputState->wheelY * 3), 0, consoleMaxScrollPos(console));
 		}
-
-		renderConsole(console, uiState);
 	}
 }
 

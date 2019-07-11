@@ -71,6 +71,14 @@ struct Console
 Console *globalConsole;
 const s32 consoleLineLength = 255;
 
+void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed);
+void updateConsole(Console *console, InputState *inputState);
+void renderConsole(Console *console, UIState *uiState);
+
+void initCommands(Console *console); // Implementation in commands.cpp
+void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);
+void consoleHandleCommand(Console *console, String commandInput);
+
 void consoleWriteLine(String text, ConsoleLineStyleID style=CLS_Default);
 inline void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
 {
@@ -82,6 +90,12 @@ inline s32 consoleMaxScrollPos(Console *console)
 	return truncate32(console->outputLines.count - 1);
 }
 
-void initCommands(Console *console); // Implementation in commands.cpp
+struct ConsoleTextState
+{
+	V2 pos;
+	f32 maxWidth;
 
-void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);
+	UIState *uiState;
+	RenderBuffer *uiBuffer;
+};
+Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style);

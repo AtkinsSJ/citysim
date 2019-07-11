@@ -102,9 +102,13 @@ inline RenderItem *appendRenderItem(RenderBuffer *buffer)
 	return result;
 }
 
+inline void drawRect(RenderItem *renderItem, Rect2 rect, f32 depth, s32 shaderID, V4 color)
+{
+	makeRenderItem(renderItem, rect, depth, null, {}, shaderID, color);
+}
 inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
 {
-	makeRenderItem(appendRenderItem(buffer), rect, depth, null, {}, shaderID, color);
+	drawRect(appendRenderItem(buffer), rect, depth, shaderID, color);
 }
 
 inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
