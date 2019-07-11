@@ -112,7 +112,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
-			if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
+			if ((!context->uiState->mouseInputHandled || context->uiState->mouseHandledByWindowWithIndex == context->windowIndex)
+				&& contains(buttonBounds, mousePos))
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
@@ -130,6 +131,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 					{
 						buttonClicked = true;
 						context->uiState->mouseInputHandled = true;
+						context->uiState->mouseHandledByWindowWithIndex = context->windowIndex;
 					}
 
 					backColor = style->hoverColor;
@@ -228,12 +230,13 @@ Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
 					windowArea.h - barHeight - (contentPadding * 2.0f));
 }
 
-WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle)
+WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle, s32 windowIndex)
 {
 	WindowContext context = {};
 	context.uiState = uiState;
 	context.temporaryMemory = &globalAppState.globalTempArena;
 	context.window = window;
+	context.windowIndex = windowIndex;
 	context.windowStyle = windowStyle;
 	context.contentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);
 	context.currentOffset = v2(0,0);
@@ -269,6 +272,87 @@ void prepareForRender(WindowContext *context)
 	context->perItemPadding = 4.0f;
 }
 
+void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
+{
+	V2 mousePos = uiState->uiBuffer->camera.mousePos;
+	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiBuffer->camera.pos), v2i(uiState->uiBuffer->camera.size));
+
+	if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
+	{
+		prepareForUpdate(context);
+		window->windowProc(context, window->userData);
+
+		if (window->flags & WinFlag_AutomaticHeight)
+		{
+			f32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
+			window->area.h = round_s32(barHeight + context->currentOffset.y + (context->windowStyle->contentPadding * 2.0f));
+		}
+
+		if (window->flags & WinFlag_ShrinkWidth)
+		{
+			window->area.w = round_s32(context->largestItemWidth + (context->windowStyle->contentPadding * 2.0f));
+		}
+	}
+
+	// Handle dragging/position first, BEFORE we use the window rect anywhere
+	if (window->flags & WinFlag_Modal)
+	{
+		// Modal windows can't be moved, they just auto-centre
+		window->area = centreWithin(validWindowArea, window->area);
+	}
+	else if (isActive && uiState->isDraggingWindow)
+	{
+		if (mouseButtonJustReleased(uiState->input, MouseButton_Left))
+		{
+			uiState->isDraggingWindow = false;
+		}
+		else
+		{
+			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(uiState->input, MouseButton_Left, &uiState->uiBuffer->camera)));
+		}
+		
+		uiState->mouseInputHandled = true;
+		context->uiState->mouseHandledByWindowWithIndex = context->windowIndex;
+	}
+	else if (window->flags & WinFlag_Tooltip)
+	{
+		window->area.pos = v2i(uiState->uiBuffer->camera.mousePos) + context->windowStyle->offsetFromMouse;
+	}
+
+	// Keep window on screen
+	{
+		// X
+		if (window->area.w > validWindowArea.w)
+		{
+			// If it's too big, centre it.
+			window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
+		}
+		else if (window->area.x < validWindowArea.x)
+		{
+			window->area.x = validWindowArea.x;
+		}
+		else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
+		{
+			window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
+		}
+
+		// Y
+		if (window->area.h > validWindowArea.h)
+		{
+			// If it's too big, centre it.
+			window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
+		}
+		else if (window->area.y < validWindowArea.y)
+		{
+			window->area.y = validWindowArea.y;
+		}
+		else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
+		{
+			window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
+		}
+	}
+}
+
 void updateAndRenderWindows(UIState *uiState)
 {
 	DEBUG_FUNCTION();
@@ -279,13 +363,13 @@ void updateAndRenderWindows(UIState *uiState)
 	s32 closeWindow = -1;
 	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiBuffer->camera.pos), v2i(uiState->uiBuffer->camera.size));
 
-	s32 windowIndex = 0;
 	bool isActive = true;
 	for (auto it = iterate(&uiState->openWindows);
 		!it.isDone;
-		next(&it), windowIndex++)
+		next(&it))
 	{
 		Window *window = get(it);
+		s32 windowIndex = (s32) getIndex(it);
 
 		f32 depth = 2000.0f - (20.0f * windowIndex);
 		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
@@ -305,7 +389,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		f32 contentPadding = windowStyle->contentPadding;
 
-		WindowContext context = makeWindowContext(uiState, window, windowStyle);
+		WindowContext context = makeWindowContext(uiState, window, windowStyle, windowIndex);
 
 		// Run the WindowProc once first so we can measure its size
 		if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
@@ -342,6 +426,7 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 			
 			uiState->mouseInputHandled = true;
+			uiState->mouseHandledByWindowWithIndex = windowIndex;
 		}
 		else if (isTooltip)
 		{
@@ -398,7 +483,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
-		if (!uiState->mouseInputHandled
+		if ((!uiState->mouseInputHandled || uiState->mouseHandledByWindowWithIndex == windowIndex)
 			 && contains(wholeWindowArea, mousePos)
 			 && mouseButtonJustPressed(inputState, MouseButton_Left))
 		{
@@ -424,6 +509,7 @@ void updateAndRenderWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
+				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
@@ -448,7 +534,8 @@ void updateAndRenderWindows(UIState *uiState)
 
 		if (isModal)
 		{
-			uiState->mouseInputHandled = true; 
+			uiState->mouseInputHandled = true;
+			uiState->mouseHandledByWindowWithIndex = windowIndex;
 		}
 
 		if (contains(wholeWindowArea, mousePos))
@@ -457,6 +544,7 @@ void updateAndRenderWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
+				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
@@ -506,13 +594,13 @@ void updateWindows(UIState *uiState)
 	s32 closeWindow = -1;
 	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiBuffer->camera.pos), v2i(uiState->uiBuffer->camera.size));
 
-	s32 windowIndex = 0;
 	bool isActive = true;
 	for (auto it = iterate(&uiState->openWindows);
 		!it.isDone;
-		next(&it), windowIndex++)
+		next(&it))
 	{
 		Window *window = get(it);
+		s32 windowIndex = (s32) getIndex(it);
 
 		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
@@ -520,87 +608,12 @@ void updateWindows(UIState *uiState)
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
 
-		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
-
 		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		f32 contentPadding = windowStyle->contentPadding;
-
-		WindowContext context = makeWindowContext(uiState, window, windowStyle);
+		WindowContext context = makeWindowContext(uiState, window, windowStyle, windowIndex);
 
 		// Run the WindowProc once first so we can measure its size
-		if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
-		{
-			prepareForUpdate(&context);
-			window->windowProc(&context, window->userData);
-
-			if (window->flags & WinFlag_AutomaticHeight)
-			{
-				window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
-			}
-
-			if (window->flags & WinFlag_ShrinkWidth)
-			{
-				window->area.w = round_s32(context.largestItemWidth + (contentPadding * 2.0f));
-			}
-		}
-
-		// Handle dragging/position first, BEFORE we use the window rect anywhere
-		if (isModal)
-		{
-			// Modal windows can't be moved, they just auto-centre
-			window->area = centreWithin(validWindowArea, window->area);
-		}
-		else if (isActive && uiState->isDraggingWindow)
-		{
-			if (mouseButtonJustReleased(inputState, MouseButton_Left))
-			{
-				uiState->isDraggingWindow = false;
-			}
-			else
-			{
-				window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(inputState, MouseButton_Left, &uiState->uiBuffer->camera)));
-			}
-			
-			uiState->mouseInputHandled = true;
-		}
-		else if (isTooltip)
-		{
-			window->area.pos = v2i(uiState->uiBuffer->camera.mousePos) + windowStyle->offsetFromMouse;
-		}
-
-		// Keep window on screen
-		{
-			// X
-			if (window->area.w > validWindowArea.w)
-			{
-				// If it's too big, centre it.
-				window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
-			}
-			else if (window->area.x < validWindowArea.x)
-			{
-				window->area.x = validWindowArea.x;
-			}
-			else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
-			{
-				window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
-			}
-
-			// Y
-			if (window->area.h > validWindowArea.h)
-			{
-				// If it's too big, centre it.
-				window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
-			}
-			else if (window->area.y < validWindowArea.y)
-			{
-				window->area.y = validWindowArea.y;
-			}
-			else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
-			{
-				window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
-			}
-		}
+		updateWindow(uiState, window, &context, isActive);
 
 		if (context.closeRequested || isTooltip)
 		{
@@ -614,7 +627,7 @@ void updateWindows(UIState *uiState)
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
-		if (!uiState->mouseInputHandled
+		if ((!uiState->mouseInputHandled || uiState->mouseHandledByWindowWithIndex == windowIndex)
 			 && contains(wholeWindowArea, mousePos)
 			 && mouseButtonJustPressed(inputState, MouseButton_Left))
 		{
@@ -640,12 +653,14 @@ void updateWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
+				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
 		if (isModal)
 		{
 			uiState->mouseInputHandled = true; 
+			uiState->mouseHandledByWindowWithIndex = windowIndex;
 		}
 
 		if (contains(wholeWindowArea, mousePos))
@@ -654,6 +669,7 @@ void updateWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
+				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
@@ -701,13 +717,13 @@ void renderWindows(UIState *uiState)
 		next(&it))
 	{
 		Window *window = get(it);
+		s32 windowIndex = (s32) getIndex(it);
 
 		bool isActive = true; // TODO: Need to fix this!!!
 
 		f32 depth = 2000.0f;
 		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
-		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
 
 		if (isModal)
 		{
@@ -715,49 +731,27 @@ void renderWindows(UIState *uiState)
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
-
-		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
-
-		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
-
-		f32 contentPadding = windowStyle->contentPadding;
-
-
-		RenderItem *contentBackground = appendRenderItem(uiState->uiBuffer);
-
-		// Run the window proc FOR REALZ
-		WindowContext context = makeWindowContext(uiState, window, windowStyle);
+		WindowContext context = makeWindowContext(uiState, window, windowStyle, windowIndex);
 
 		if (!window->isInitialised)
 		{
-			if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
-			{
-				prepareForUpdate(&context);
-				window->windowProc(&context, window->userData);
-
-				if (window->flags & WinFlag_AutomaticHeight)
-				{
-					window->area.h = round_s32(barHeight + context.currentOffset.y + (contentPadding * 2.0f));
-				}
-
-				if (window->flags & WinFlag_ShrinkWidth)
-				{
-					window->area.w = round_s32(context.largestItemWidth + (contentPadding * 2.0f));
-				}
-			}
+			updateWindow(uiState, window, &context, isActive);
 			window->isInitialised = true;
 		}
 
+		RenderItem *contentBackground = appendRenderItem(uiState->uiBuffer);
 		prepareForRender(&context);
 		window->windowProc(&context, window->userData);
 
 		Rect2 wholeWindowArea = rect2(window->area);
+		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 		Rect2 barArea = rectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
 		Rect2 closeButtonRect = rectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
 		Rect2 contentArea = getWindowContentArea(window->area, barHeight, 0);
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
+		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
 		drawRect(contentBackground, contentArea, depth, uiState->untexturedShaderID, backColor);
 
 		if (hasTitleBar)
@@ -773,7 +767,11 @@ void renderWindows(UIState *uiState)
 			drawRect(uiState->uiBuffer, barArea, depth, uiState->untexturedShaderID, barColor);
 			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
-			if (hoveringOverCloseButton && !uiState->mouseInputHandled)  drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
+			if (hoveringOverCloseButton
+			 && (!uiState->mouseInputHandled || uiState->mouseHandledByWindowWithIndex == windowIndex))
+			{
+				drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
+			}
 			uiText(uiState, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
 		}
 	}

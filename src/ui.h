@@ -41,6 +41,7 @@ struct UIState
 	ChunkedArray<Window> openWindows;
 	bool isDraggingWindow;
 	V2 windowDragWindowStartPos;
+	s32 mouseHandledByWindowWithIndex;
 };
 
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input);

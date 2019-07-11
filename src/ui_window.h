@@ -6,6 +6,7 @@ struct WindowContext
 	MemoryArena *temporaryMemory;
 	struct Window *window;
 	UIWindowStyle *windowStyle;
+	s32 windowIndex;
 
 	bool measureOnly; // Whether we're actually displaying/updating the window contents, or just measuring it
 
@@ -69,6 +70,6 @@ void renderWindows(UIState *uiState);
 static void makeWindowActive(UIState *uiState, s32 windowIndex);
 static Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding);
 
-WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle);
+WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle, s32 windowIndex);
 void prepareForUpdate(WindowContext *context);
 void prepareForRender(WindowContext *context);
