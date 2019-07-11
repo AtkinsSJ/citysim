@@ -41,7 +41,7 @@ struct UIState
 	ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
 	bool isDraggingWindow;
 	V2 windowDragWindowStartPos;
-	s32 mouseHandledByWindowWithIndex;
+	// s32 mouseHandledByWindowWithIndex;
 };
 
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input);

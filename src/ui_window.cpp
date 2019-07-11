@@ -112,7 +112,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
-			if ((!context->uiState->mouseInputHandled || context->uiState->mouseHandledByWindowWithIndex == context->windowIndex)
+			if ((!context->uiState->mouseInputHandled || context->windowIndex == 0)
 				&& contains(buttonBounds, mousePos))
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
@@ -131,7 +131,6 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 					{
 						buttonClicked = true;
 						context->uiState->mouseInputHandled = true;
-						context->uiState->mouseHandledByWindowWithIndex = context->windowIndex;
 					}
 
 					backColor = style->hoverColor;
@@ -312,7 +311,6 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 		}
 		
 		uiState->mouseInputHandled = true;
-		context->uiState->mouseHandledByWindowWithIndex = context->windowIndex;
 	}
 	else if (window->flags & WinFlag_Tooltip)
 	{
@@ -426,7 +424,6 @@ void updateAndRenderWindows(UIState *uiState)
 			}
 			
 			uiState->mouseInputHandled = true;
-			uiState->mouseHandledByWindowWithIndex = windowIndex;
 		}
 		else if (isTooltip)
 		{
@@ -483,7 +480,7 @@ void updateAndRenderWindows(UIState *uiState)
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
-		if ((!uiState->mouseInputHandled || uiState->mouseHandledByWindowWithIndex == windowIndex)
+		if ((!uiState->mouseInputHandled || windowIndex == 0)
 			 && contains(wholeWindowArea, mousePos)
 			 && mouseButtonJustPressed(inputState, MouseButton_Left))
 		{
@@ -509,7 +506,6 @@ void updateAndRenderWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
-				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
@@ -535,7 +531,6 @@ void updateAndRenderWindows(UIState *uiState)
 		if (isModal)
 		{
 			uiState->mouseInputHandled = true;
-			uiState->mouseHandledByWindowWithIndex = windowIndex;
 		}
 
 		if (contains(wholeWindowArea, mousePos))
@@ -544,7 +539,6 @@ void updateAndRenderWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
-				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
@@ -627,7 +621,7 @@ void updateWindows(UIState *uiState)
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
-		if ((!uiState->mouseInputHandled || uiState->mouseHandledByWindowWithIndex == windowIndex)
+		if ((!uiState->mouseInputHandled || windowIndex == 0)
 			 && contains(wholeWindowArea, mousePos)
 			 && mouseButtonJustPressed(inputState, MouseButton_Left))
 		{
@@ -653,14 +647,12 @@ void updateWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
-				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
 		if (isModal)
 		{
 			uiState->mouseInputHandled = true; 
-			uiState->mouseHandledByWindowWithIndex = windowIndex;
 		}
 
 		if (contains(wholeWindowArea, mousePos))
@@ -669,7 +661,6 @@ void updateWindows(UIState *uiState)
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
-				uiState->mouseHandledByWindowWithIndex = windowIndex;
 			}
 		}
 
@@ -698,7 +689,6 @@ void updateWindows(UIState *uiState)
 	{
 		uiState->isDraggingWindow = false;
 		removeIndex(&uiState->openWindows, closeWindow, true);
-		uiState->mouseHandledByWindowWithIndex = -1;
 	}
 	/*
 	 * NB: This is an imaginary else-if, because if we try to set a new active window, AND close one,
@@ -709,7 +699,6 @@ void updateWindows(UIState *uiState)
 	if (newActiveWindow != -1)
 	{
 		makeWindowActive(uiState, newActiveWindow);
-		uiState->mouseHandledByWindowWithIndex = -1;
 	}
 }
 
@@ -773,7 +762,7 @@ void renderWindows(UIState *uiState)
 			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
 			if (hoveringOverCloseButton
-			 && (!uiState->mouseInputHandled || uiState->mouseHandledByWindowWithIndex == windowIndex))
+			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
 				drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
 			}
