@@ -42,6 +42,8 @@ struct Window
 
 	WindowProc windowProc;
 	void *userData;
+
+	bool isInitialised;
 };
 
 //
@@ -58,9 +60,15 @@ void window_label(WindowContext *context, String text, char *styleName=null);
 bool window_button(WindowContext *context, String text, s32 textWidth=-1);
 
 void updateAndRenderWindows(UIState *uiState);
+void updateWindows(UIState *uiState);
+void renderWindows(UIState *uiState);
 
 //
 // INTERNAL
 //
 static void makeWindowActive(UIState *uiState, s32 windowIndex);
 static Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding);
+
+WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle);
+void prepareForUpdate(WindowContext *context);
+void prepareForRender(WindowContext *context);

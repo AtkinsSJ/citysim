@@ -128,6 +128,12 @@ template<typename T>
 ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true, bool goBackwards = false);
 
 template<typename T>
+inline ChunkedArrayIterator<T> iterateBackwards(ChunkedArray<T> *array)
+{
+	return iterate(array, array->count - 1, false, true);
+}
+
+template<typename T>
 void next(ChunkedArrayIterator<T> *iterator);
 
 template<typename T>

@@ -1011,7 +1011,7 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 	UIState *uiState = &appState->uiState;
 	uiState->uiRects.count = 0;
 	uiState->mouseInputHandled = false;
-	updateAndRenderWindows(uiState);
+	updateWindows(uiState);
 	
 	switch (appState->appStatus)
 	{
@@ -1043,6 +1043,8 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		} break;
 	}
 
+	renderWindows(uiState);
+	
 	if (appState->appStatus != oldAppStatus)
 	{
 		clear(&uiState->openWindows);
