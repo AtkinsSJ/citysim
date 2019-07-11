@@ -38,7 +38,7 @@ struct UIState
 	bool mouseInputHandled;
 
 	// Window stuff
-	ChunkedArray<Window> openWindows;
+	ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
 	bool isDraggingWindow;
 	V2 windowDragWindowStartPos;
 	s32 mouseHandledByWindowWithIndex;

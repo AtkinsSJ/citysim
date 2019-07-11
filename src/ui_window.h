@@ -8,7 +8,7 @@ struct WindowContext
 	UIWindowStyle *windowStyle;
 	s32 windowIndex;
 
-	bool measureOnly; // Whether we're actually displaying/updating the window contents, or just measuring it
+	bool doRender;
 
 	Rect2 contentArea;
 	V2 currentOffset;
@@ -45,6 +45,7 @@ struct Window
 	void *userData;
 
 	bool isInitialised;
+	bool isActive;
 };
 
 //

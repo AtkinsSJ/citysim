@@ -34,7 +34,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 		V2 textSize = calculateTextSize(font, text, maxWidth);
 		V2 topLeft = calculateTextPosition(origin, textSize, alignment);
 
-		if (!context->measureOnly)
+		if (context->doRender)
 		{
 			Rect2 bounds = rectPosSize(topLeft, textSize);
 			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, context->renderDepth, style->textColor, context->uiState->textShaderID);
@@ -103,7 +103,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			buttonBounds = rectAligned(origin, v2((f32)textWidth, textSize.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
 		}
 
-		if (!context->measureOnly)
+		if (context->doRender)
 		{
 			RenderItem *background = appendRenderItem(context->uiState->uiBuffer);
 			V2 textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
@@ -250,7 +250,7 @@ WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle 
 
 void prepareForUpdate(WindowContext *context)
 {
-	context->measureOnly = true;
+	context->doRender = false;
 
 	context->contentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
 	context->currentOffset = v2(0,0);
@@ -262,7 +262,7 @@ void prepareForUpdate(WindowContext *context)
 
 void prepareForRender(WindowContext *context)
 {
-	context->measureOnly = false;
+	context->doRender = true;
 	
 	context->contentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
 	context->currentOffset = v2(0,0);
@@ -673,6 +673,8 @@ void updateWindows(UIState *uiState)
 			}
 		}
 
+		window->isActive = isActive;
+
 		//
 		// NB: This is a little confusing, so some explanation:
 		// Tooltips are windows, theoretically the front-most window, because they're shown fresh each frame.
@@ -696,6 +698,7 @@ void updateWindows(UIState *uiState)
 	{
 		uiState->isDraggingWindow = false;
 		removeIndex(&uiState->openWindows, closeWindow, true);
+		uiState->mouseHandledByWindowWithIndex = -1;
 	}
 	/*
 	 * NB: This is an imaginary else-if, because if we try to set a new active window, AND close one,
@@ -706,6 +709,7 @@ void updateWindows(UIState *uiState)
 	if (newActiveWindow != -1)
 	{
 		makeWindowActive(uiState, newActiveWindow);
+		uiState->mouseHandledByWindowWithIndex = -1;
 	}
 }
 
@@ -719,7 +723,8 @@ void renderWindows(UIState *uiState)
 		Window *window = get(it);
 		s32 windowIndex = (s32) getIndex(it);
 
-		bool isActive = true; // TODO: Need to fix this!!!
+		bool isActive = window->isActive;
+
 
 		f32 depth = 2000.0f;
 		bool isModal     = isActive && (window->flags & WinFlag_Modal) != 0;
