@@ -7,14 +7,7 @@ const f32 TILE_SIZE = ITILE_SIZE;
 const f32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 const bool canZoom = true;
 
-const int FRAMES_PER_SECOND = 60;
 const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
-const int MS_PER_FRAME = (1000 / 60); // 60 frames per second
-
-inline V2I tilePosition(V2 worldPos) {
-	return {floor_s32(worldPos.x),
-			floor_s32(worldPos.y)};
-}
 
 struct Camera
 {

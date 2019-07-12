@@ -241,7 +241,7 @@ inline V2I v2i(s32 x, s32 y)
 
 inline V2I v2i(V2 source)
 {
-	return v2i((s32)source.x, (s32)source.y);
+	return v2i(floor_s32(source.x), floor_s32(source.y));
 }
 
 f32 lengthOf(V2I v)

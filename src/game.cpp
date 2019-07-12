@@ -594,7 +594,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		inputMoveCamera(worldCamera, inputState, uiCamera->size, gameState->city.width, gameState->city.height);
 	}
 
-	V2I mouseTilePos = tilePosition(worldCamera->mousePos);
+	V2I mouseTilePos = v2i(worldCamera->mousePos);
 	bool mouseIsOverUI = uiState->mouseInputHandled;
 	if (!mouseIsOverUI)
 	{
