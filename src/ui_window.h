@@ -60,7 +60,6 @@ void window_label(WindowContext *context, String text, char *styleName=null);
  */
 bool window_button(WindowContext *context, String text, s32 textWidth=-1);
 
-void updateAndRenderWindows(UIState *uiState);
 void updateWindows(UIState *uiState);
 void renderWindows(UIState *uiState);
 
