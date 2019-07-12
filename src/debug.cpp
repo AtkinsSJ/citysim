@@ -321,7 +321,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	}
 }
 
-void debugUpdate(DebugState *debugState, InputState *inputState, UIState *uiState)
+void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, UIState *uiState)
 {
 	if (keyJustPressed(inputState, SDLK_F2))
 	{

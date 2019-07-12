@@ -260,8 +260,12 @@ int main(int argc, char *argv[])
 			worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 			uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
-
 			updateAndRender(appState, &inputState, renderer, assets);
+
+			if (globalConsole)
+			{
+				renderConsole(globalConsole, uiState);
+			}
 
 			// Update camera matrices here
 			updateCameraMatrix(worldCamera);
@@ -277,12 +281,7 @@ int main(int argc, char *argv[])
 				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-				debugUpdate(globalDebugState, &inputState, uiState);
-			}
-
-			if (globalConsole)
-			{
-				renderConsole(globalConsole, uiState);
+				updateAndRenderDebugData(globalDebugState, &inputState, uiState);
 			}
 
 			// Actually draw things!

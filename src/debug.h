@@ -148,6 +148,9 @@ struct DebugState
 	DebugCodeDataWrapper topCodeBlocksSentinel;
 };
 
+
+void updateAndRenderDebugData(DebugState *debugState, struct InputState *inputState, struct UIState *uiState);
+
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
