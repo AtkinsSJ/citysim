@@ -280,7 +280,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 			// Do line-alignment stuff
 			// (This only has to happen for the first newline in a series of newlines!)
-			_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount - 1, currentLineWidth, maxWidth, align);
+			_alignText(getItemInRange(firstRenderItem, startOfCurrentLine), getItemInRange(firstRenderItem, glyphCount - 1), currentLineWidth, maxWidth, align);
 			startOfCurrentLine = glyphCount;
 			currentLineWidth = 0;
 
@@ -373,7 +373,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 							currentLineWidth = currentWordWidth;
 							currentWordWidth = 0;
 
-							RenderItem_DrawThing *firstItemInWord = firstRenderItem + startOfCurrentWord;
+							RenderItem_DrawThing *firstItemInWord = getItemInRange(firstRenderItem, startOfCurrentWord);
 							firstItemInWord->rect.x = topLeft.x;
 							firstItemInWord->rect.y = topLeft.y + currentY + glyph->yOffset;
 						}
@@ -382,9 +382,10 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 							// Wrap the whole word onto a new line
 
 							// Offset from where the word was, to its new position
-							f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
+							RenderItem_DrawThing *firstInWord = getItemInRange(firstRenderItem, startOfCurrentWord);
+							f32 offsetX = topLeft.x - firstInWord->rect.x;
 							f32 offsetY = (f32)font->lineHeight;
-							applyOffsetToRenderItems(firstRenderItem + startOfCurrentWord, firstRenderItem + glyphCount, offsetX, offsetY);
+							applyOffsetToRenderItems(firstInWord, getItemInRange(firstRenderItem, glyphCount), offsetX, offsetY);
 
 							// Set the current position to where the next word will start
 							currentX = currentWordWidth;
@@ -392,13 +393,13 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 						}
 
 						// Do line-alignment stuff
-						_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
+						_alignText(getItemInRange(firstRenderItem, startOfCurrentLine), getItemInRange(firstRenderItem, startOfCurrentWord - 1), currentLineWidth, maxWidth, align);
 						startOfCurrentLine = startOfCurrentWord;
 						currentLineWidth = 0;
 						whitespaceWidthBeforeCurrentWord = 0;
 					}
 
-					makeRenderItem(firstRenderItem + glyphCount,
+					makeRenderItem(getItemInRange(firstRenderItem, glyphCount),
 						rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
 						depth, font->texture, glyph->uv, shaderID, color
 					);
@@ -425,7 +426,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	}
 
 	// Align the final line
-	_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount-1, currentLineWidth, maxWidth, align);
+	_alignText(getItemInRange(firstRenderItem, startOfCurrentLine), getItemInRange(firstRenderItem, glyphCount-1), currentLineWidth, maxWidth, align);
 
 	if (caretInfoResult && currentChar < caretIndex)
 	{

@@ -170,10 +170,15 @@ void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
 
 void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY)
 {
-	for (RenderItem_DrawThing *it = firstItem; it <= lastItem; it++)
+	smm stride = sizeof(RenderItem_DrawThing) + sizeof(RenderItemType);
+
+	RenderItem_DrawThing *it = firstItem;
+	while (it <= lastItem)
 	{
 		it->rect.x += offsetX;
 		it->rect.y += offsetY;
+
+		it = (RenderItem_DrawThing *)( (u8*)it + stride );
 	}
 }
 

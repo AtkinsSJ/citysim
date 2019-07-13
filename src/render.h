@@ -153,6 +153,12 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 // - Sam, 24/06/2019
 //
 RenderItem_DrawThing *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
+RenderItem_DrawThing *getItemInRange(RenderItem_DrawThing *first, s32 index)
+{
+	u8 *start = (u8*)first;
+	smm stride = sizeof(RenderItem_DrawThing) + sizeof(RenderItemType);
+	return (RenderItem_DrawThing *)(start + (stride * index));
+}
 void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
 
 void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY);

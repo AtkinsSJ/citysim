@@ -854,7 +854,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		// - Sam, 17/06/2019
 		//
 		ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
-		RenderItem_DrawThing *renderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(visibleBuildings.count));
+		RenderItem_DrawThing *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(visibleBuildings.count));
 		s32 buildingsDrawn = 0;
 		for (auto it = iterate(&visibleBuildings);
 			!it.isDone;
@@ -879,9 +879,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 
 			Sprite *sprite = getSprite(sprites, building->spriteOffset);
-			makeRenderItem(renderItem, rect2(building->footprint), 0, sprite->texture, sprite->uv, pixelArtShaderID, drawColor);
-			renderItem = (RenderItem_DrawThing *)(((u8*)renderItem) + sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
-			buildingsDrawn++;
+			RenderItem_DrawThing *item = getItemInRange(firstRenderItem, buildingsDrawn++);
+			makeRenderItem(item, rect2(building->footprint), 0, sprite->texture, sprite->uv, pixelArtShaderID, drawColor);
 		}
 		finishReservedRenderItemRange(&renderer->worldBuffer, buildingsDrawn);
 	}
@@ -937,16 +936,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		DEBUG_BLOCK_T("Transfer overlayRenderItems", DCDT_GameUpdate);
 
-		RenderItem_DrawThing *renderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
+		RenderItem_DrawThing *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
 		s32 overlayRenderItemsDrawn = 0;
 		for (auto it = iterate(&gameState->overlayRenderItems);
 			!it.isDone;
 			next(&it))
 		{
-			*renderItem = *get(it);
-
-			renderItem = (RenderItem_DrawThing *)(((u8*)renderItem) + sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
-			overlayRenderItemsDrawn++;
+			*getItemInRange(firstRenderItem, overlayRenderItemsDrawn++) = *get(it);
 		}
 		finishReservedRenderItemRange(&renderer->worldBuffer, overlayRenderItemsDrawn);
 		clear(&gameState->overlayRenderItems);
