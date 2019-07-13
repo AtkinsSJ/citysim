@@ -361,24 +361,20 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 				{
 					if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
 					{
+						currentX = 0;
+						currentY += font->lineHeight;
+
 						if (currentWordWidth + glyph->xAdvance > maxWidth)
 						{
 							// The current word is longer than will fit on an entire line!
 							// So, split it at the maximum line length.
 
 							// This should mean just wrapping the final character
-							currentX = 0;
-							currentY += font->lineHeight;
-
 							startOfCurrentWord = glyphCount;
 							currentLineWidth = currentWordWidth;
 							currentWordWidth = 0;
-
-							RenderItem_DrawText_Item *firstItemInWord = getTextItem(&state, startOfCurrentWord);
-							firstItemInWord->bounds.x = topLeft.x;
-							firstItemInWord->bounds.y = topLeft.y + currentY + glyph->yOffset;
 						}
-						else
+						else if (currentWordWidth > 0)
 						{
 							// Wrap the whole word onto a new line
 
@@ -390,7 +386,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 							// Set the current position to where the next word will start
 							currentX = currentWordWidth;
-							currentY += font->lineHeight;
 						}
 
 						// Do line-alignment stuff

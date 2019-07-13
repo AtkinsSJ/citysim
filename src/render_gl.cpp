@@ -387,6 +387,16 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 				for (s32 rectIndex = 0; rectIndex < header->count; rectIndex++)
 				{
+					if (vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+					{
+						drawCallCount++;
+						renderPartOfBuffer(renderer, vertexCount, indexCount);
+						DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+
+						vertexCount = 0;
+						indexCount = 0;
+					}
+
 					RenderItem_DrawRectangles_Item *rect = readRenderItem<RenderItem_DrawRectangles_Item>(renderBufferChunk, &pos);
 					u32 firstVertex = vertexCount;
 					renderer->vertices[vertexCount++] = {
@@ -418,9 +428,78 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 					renderer->indices[indexCount++] = firstVertex + 3;
 				}
 
-				drawCallCount++;
-				renderPartOfBuffer(renderer, vertexCount, indexCount);
-				DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+				if (vertexCount > 0)
+				{
+					drawCallCount++;
+					renderPartOfBuffer(renderer, vertexCount, indexCount);
+					DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+				}
+
+			} break;
+
+			case RenderItemType_DrawText:
+			{
+				RenderItem_DrawText *header = readRenderItem<RenderItem_DrawText>(renderBufferChunk, &pos);
+
+				GL_ShaderProgram *activeShader = useShader(renderer, header->shaderID);
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+
+				bindTexture(header->texture, activeShader->uTextureLoc, 0);
+
+				s32 vertexCount = 0;
+				s32 indexCount = 0;
+
+				for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++)
+				{
+					if (vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+					{
+						drawCallCount++;
+						renderPartOfBuffer(renderer, vertexCount, indexCount);
+						DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+
+						vertexCount = 0;
+						indexCount = 0;
+					}
+
+					RenderItem_DrawText_Item *item = readRenderItem<RenderItem_DrawText_Item>(renderBufferChunk, &pos);
+					u32 firstVertex = vertexCount;
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x, item->bounds.y, 0.0f),
+						item->color,
+						v2(item->uv.x, item->uv.y)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
+						item->color,
+						v2(item->uv.x + item->uv.w, item->uv.y)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
+						item->color,
+						v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
+						item->color,
+						v2(item->uv.x, item->uv.y + item->uv.h)
+					};
+
+					renderer->indices[indexCount++] = firstVertex + 0;
+					renderer->indices[indexCount++] = firstVertex + 1;
+					renderer->indices[indexCount++] = firstVertex + 2;
+					renderer->indices[indexCount++] = firstVertex + 0;
+					renderer->indices[indexCount++] = firstVertex + 2;
+					renderer->indices[indexCount++] = firstVertex + 3;
+
+				}
+
+				if (vertexCount > 0)
+				{
+					drawCallCount++;
+					renderPartOfBuffer(renderer, vertexCount, indexCount);
+					DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+				}
 
 			} break;
 
