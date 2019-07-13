@@ -188,11 +188,14 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm 
 	buffer->firstFreeChunk = null;
 }
 
-u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size)
+// NB: reservedSize is for extra data that you want to make sure there is room for,
+// but you're not allocating it right away. Make sure not to do any other allocations
+// in between, and make sure to allocate the space you used when you're done!
+u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't append renderitems while a range is reserved!
 
-	if ((buffer->currentChunk->size - buffer->currentChunk->used) <= (smm)(sizeof(RenderItemType) + size + sizeof(RenderItemType)))
+	if ((buffer->currentChunk->size - buffer->currentChunk->used) <= (smm)(sizeof(RenderItemType) + size + reservedSize + sizeof(RenderItemType)))
 	{
 		// Out of room! Push a "go to next chunk" item and append some more memory
 		
@@ -209,7 +212,7 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 			buffer->firstFreeChunk = buffer->firstFreeChunk->next;
 
 			// We'd BETTER have space to actually allocate this thing in the new chunk!
-			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) <= (smm)(sizeof(RenderItemType) + size + sizeof(RenderItemType)));
+			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) <= (smm)(sizeof(RenderItemType) + size + reservedSize + sizeof(RenderItemType)));
 		}
 		else
 		{
@@ -273,3 +276,41 @@ bool isBufferSorted(RenderBuffer *buffer)
 	return isSorted;
 }
 #endif
+
+DrawRectanglesState startDrawingRectangles(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
+{
+	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
+
+	DrawRectanglesState result = {};
+
+	result.buffer = buffer;
+
+	smm reservedSize = sizeof(RenderItem_DrawRectangles_Data) * maxCount;
+	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawRectangles, sizeof(RenderItem_DrawRectangles), reservedSize);
+	buffer->hasRangeReserved = true;
+
+	result.header = (RenderItem_DrawRectangles *) data;
+	result.first  = (RenderItem_DrawRectangles_Data *) (data + sizeof(RenderItem_DrawRectangles));
+	result.maxCount = maxCount;
+
+	result.header->shaderID = shaderID;
+	result.header->count = 0;
+
+	return result;
+}
+
+void drawRectangle(DrawRectanglesState *state, Rect2 bounds, V4 color)
+{
+	ASSERT(state->header->count < state->maxCount);
+	RenderItem_DrawRectangles_Data *rectangle = state->first + state->header->count++;
+	rectangle->bounds = bounds;
+	rectangle->color = color;
+}
+
+void finishRectangles(DrawRectanglesState *state)
+{
+	ASSERT(state->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	state->buffer->hasRangeReserved = false;
+
+	state->buffer->currentChunk->used += state->header->count * sizeof(RenderItem_DrawRectangles_Data);
+}

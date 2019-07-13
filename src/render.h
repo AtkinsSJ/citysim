@@ -27,6 +27,8 @@ enum RenderItemType
 {
 	RenderItemType_NextMemoryChunk,
 	RenderItemType_DrawThing, // @Cleanup DEPRECATED!!!
+
+	RenderItemType_DrawRectangles,
 };
 
 // @Cleanup DEPRECATED!!!
@@ -39,6 +41,18 @@ struct RenderItem_DrawThing
 
 	Asset *texture;
 	Rect2 uv; // in (0 to 1) space
+};
+
+struct RenderItem_DrawRectangles
+{
+	s32 shaderID;
+	s32 count;
+};
+
+struct RenderItem_DrawRectangles_Data
+{
+	Rect2 bounds;
+	V4 color;
 };
 
 struct RenderBufferChunk
@@ -109,10 +123,10 @@ V2 unproject(Camera *camera, V2 screenPos);
 void makeRenderItem(RenderItem_DrawThing *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
 void drawRenderItem(RenderBuffer *buffer, RenderItem_DrawThing *item);
 
-u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size);
+u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
 inline RenderItem_DrawThing *appendRenderItem(RenderBuffer *buffer)
 {
-	return (RenderItem_DrawThing *)appendRenderItemInternal(buffer, RenderItemType_DrawThing, sizeof(RenderItem_DrawThing));
+	return (RenderItem_DrawThing *)appendRenderItemInternal(buffer, RenderItemType_DrawThing, sizeof(RenderItem_DrawThing), 0);
 }
 
 inline void drawRect(RenderItem_DrawThing *renderItem, Rect2 rect, f32 depth, s32 shaderID, V4 color)
@@ -128,6 +142,18 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 {
 	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
+
+struct DrawRectanglesState
+{
+	RenderBuffer *buffer;
+
+	RenderItem_DrawRectangles *header;
+	RenderItem_DrawRectangles_Data *first;
+	s32 maxCount;
+};
+DrawRectanglesState startDrawingRectangles(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
+void drawRectangle(DrawRectanglesState *state, Rect2 bounds, V4 color);
+void finishRectangles(DrawRectanglesState *state);
 
 //
 // NB: Some operations are massively sped up if we can ensure there is space up front,

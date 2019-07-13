@@ -485,10 +485,10 @@ void debugTrackDrawCall(DebugState *debugState, String shaderName, String textur
 
 	u32 frameIndex = debugState->writingFrameIndex;
 
-	u32 drawCallCount = renderBufferData->drawCallCount[frameIndex];
-	if (drawCallCount + 1 < DEBUG_DRAW_CALLS_RECORDED_PER_FRAME)
+	u32 drawCallIndex = ++renderBufferData->drawCallCount[frameIndex];
+	if (drawCallIndex < DEBUG_DRAW_CALLS_RECORDED_PER_FRAME)
 	{
-		DebugDrawCallData *drawCall = &renderBufferData->drawCalls[frameIndex][renderBufferData->drawCallCount[frameIndex]++];
+		DebugDrawCallData *drawCall = &renderBufferData->drawCalls[frameIndex][drawCallIndex];
 		drawCall->shaderName = shaderName;
 		drawCall->textureName = textureName;
 		drawCall->itemsDrawn = itemsDrawn;

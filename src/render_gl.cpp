@@ -343,6 +343,14 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
 }
 
+template<typename T>
+T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos)
+{
+	T *item = (T *)(renderBufferChunk->memory + *pos);
+	*pos += sizeof(T);
+	return item;
+}
+
 static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
@@ -366,10 +374,59 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				pos = 0;
 			} break;
 
+			case RenderItemType_DrawRectangles:
+			{
+				RenderItem_DrawRectangles *header = readRenderItem<RenderItem_DrawRectangles>(renderBufferChunk, &pos);
+
+				GL_ShaderProgram *activeShader = useShader(renderer, header->shaderID);
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+
+				s32 vertexCount = 0;
+				s32 indexCount = 0;
+
+				for (s32 rectIndex = 0; rectIndex < header->count; rectIndex++)
+				{
+					RenderItem_DrawRectangles_Data *rect = readRenderItem<RenderItem_DrawRectangles_Data>(renderBufferChunk, &pos);
+					u32 firstVertex = vertexCount;
+					renderer->vertices[vertexCount++] = {
+						v3(rect->bounds.x, rect->bounds.y, 0.0f),
+						rect->color,
+						v2(0,0)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(rect->bounds.x + rect->bounds.size.x, rect->bounds.y, 0.0f),
+						rect->color,
+						v2(0,0)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(rect->bounds.x + rect->bounds.size.x, rect->bounds.y + rect->bounds.size.y, 0.0f),
+						rect->color,
+						v2(0,0)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(rect->bounds.x, rect->bounds.y + rect->bounds.size.y, 0.0f),
+						rect->color,
+						v2(0,0)
+					};
+
+					renderer->indices[indexCount++] = firstVertex + 0;
+					renderer->indices[indexCount++] = firstVertex + 1;
+					renderer->indices[indexCount++] = firstVertex + 2;
+					renderer->indices[indexCount++] = firstVertex + 0;
+					renderer->indices[indexCount++] = firstVertex + 2;
+					renderer->indices[indexCount++] = firstVertex + 3;
+				}
+
+				drawCallCount++;
+				renderPartOfBuffer(renderer, vertexCount, indexCount);
+				DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+
+			} break;
+
 			case RenderItemType_DrawThing:
 			{
-				RenderItem_DrawThing *item = (RenderItem_DrawThing *)(renderBufferChunk->memory + pos);
-				pos += sizeof(RenderItem_DrawThing);
+				RenderItem_DrawThing *item = readRenderItem<RenderItem_DrawThing>(renderBufferChunk, &pos);
 
 				GL_ShaderProgram *activeShader = useShader(renderer, item->shaderID);
 
