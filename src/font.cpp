@@ -185,7 +185,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	return result;
 }
 
-void _alignText(RenderItem *startOfLine, RenderItem *endOfLine, s32 lineWidth, s32 boundsWidth, u32 align)
+void _alignText(RenderItem_DrawThing *startOfLine, RenderItem_DrawThing *endOfLine, s32 lineWidth, s32 boundsWidth, u32 align)
 {
 	if (lineWidth == 0)
 	{
@@ -235,7 +235,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	// countGlyphs() is not very fast, though it's less bad than I thought once I take the profiling out
 	// of it. It accounts for about 4% of the time for drawText(), which is 0.1ms in my stress-test.
 	// Also, the over-estimate will only boost the size of the renderitems array *once* as it never shrinks.
-	// We could end up with one that's, I dunno, twice the size it needs to be... RenderItem is 64 bytes
+	// We could end up with one that's, I dunno, twice the size it needs to be... RenderItem_DrawThing is 64 bytes
 	// right now, so 20,000 of them is around 1.25MB, which isn't a big deal.
 	//
 	// I think I'm going to go with the faster option for now, and maybe revisit this in the future.
@@ -246,7 +246,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	// s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 	s32 glyphsToOutput = text.length;
 
-	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
+	RenderItem_DrawThing *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
 
 	s32 currentX = 0;
 	s32 currentY = 0;
@@ -373,7 +373,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 							currentLineWidth = currentWordWidth;
 							currentWordWidth = 0;
 
-							RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
+							RenderItem_DrawThing *firstItemInWord = firstRenderItem + startOfCurrentWord;
 							firstItemInWord->rect.x = topLeft.x;
 							firstItemInWord->rect.y = topLeft.y + currentY + glyph->yOffset;
 						}

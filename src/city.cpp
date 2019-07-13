@@ -646,7 +646,7 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 	V4 terrainColor = makeWhite();
 
 	s32 tilesToDraw = areaOf(visibleArea);
-	RenderItem *firstItem = reserveRenderItemRange(&renderer->worldBuffer, tilesToDraw);
+	RenderItem_DrawThing *item = reserveRenderItemRange(&renderer->worldBuffer, tilesToDraw);
 	s32 tilesDrawn = 0;
 
 	Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleArea);
@@ -681,7 +681,8 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 					Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
 					spriteBounds.x = (f32)(sector->bounds.x + relX);
 
-					makeRenderItem(firstItem + tilesDrawn++, spriteBounds, -1000.0f, sprite->texture, sprite->uv, shaderID, terrainColor);
+					makeRenderItem(item, spriteBounds, -1000.0f, sprite->texture, sprite->uv, shaderID, terrainColor);
+					item = (RenderItem_DrawThing *)(((u8*)item) + sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
 				}
 			}
 		}

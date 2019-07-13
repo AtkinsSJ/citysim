@@ -432,7 +432,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		// The "ZONE" menu
 		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, 1, Menu_Zone))
 		{
-			RenderItem *background = appendRenderItem(uiBuffer);
+			RenderItem_DrawThing *background = appendRenderItem(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			
@@ -461,7 +461,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, 1, Menu_Build))
 		{
-			RenderItem *background = appendRenderItem(uiBuffer);
+			RenderItem_DrawThing *background = appendRenderItem(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
@@ -854,7 +854,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		// - Sam, 17/06/2019
 		//
 		ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
-		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(visibleBuildings.count));
+		RenderItem_DrawThing *renderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(visibleBuildings.count));
 		s32 buildingsDrawn = 0;
 		for (auto it = iterate(&visibleBuildings);
 			!it.isDone;
@@ -879,7 +879,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 
 			Sprite *sprite = getSprite(sprites, building->spriteOffset);
-			makeRenderItem(firstRenderItem + buildingsDrawn++, rect2(building->footprint), 0, sprite->texture, sprite->uv, pixelArtShaderID, drawColor);
+			makeRenderItem(renderItem, rect2(building->footprint), 0, sprite->texture, sprite->uv, pixelArtShaderID, drawColor);
+			renderItem = (RenderItem_DrawThing *)(((u8*)renderItem) + sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
+			buildingsDrawn++;
 		}
 		finishReservedRenderItemRange(&renderer->worldBuffer, buildingsDrawn);
 	}
@@ -935,13 +937,16 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		DEBUG_BLOCK_T("Transfer overlayRenderItems", DCDT_GameUpdate);
 
-		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
+		RenderItem_DrawThing *renderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
 		s32 overlayRenderItemsDrawn = 0;
 		for (auto it = iterate(&gameState->overlayRenderItems);
 			!it.isDone;
 			next(&it))
 		{
-			firstRenderItem[overlayRenderItemsDrawn++] = *get(it);
+			*renderItem = *get(it);
+
+			renderItem = (RenderItem_DrawThing *)(((u8*)renderItem) + sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
+			overlayRenderItemsDrawn++;
 		}
 		finishReservedRenderItemRange(&renderer->worldBuffer, overlayRenderItemsDrawn);
 		clear(&gameState->overlayRenderItems);

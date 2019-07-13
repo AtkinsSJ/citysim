@@ -22,19 +22,22 @@ void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingP
 	updateCameraMatrix(camera);
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize)
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
 {
 	buffer->name = pushString(arena, name);
 	buffer->hasRangeReserved = false;
-	initialiseArray(&buffer->items, initialSize);
+
+	buffer->data.size = initialSize;
+	buffer->data.used = 0;
+	buffer->data.memory = allocateArray<u8>(arena, buffer->data.size);
 }
 
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window)
 {
 	renderer->window = window;
 
-	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", 16384);
-	initRenderBuffer(renderArena, &renderer->uiBuffer,    "UIBuffer",    16384);
+	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", MB(4));
+	initRenderBuffer(renderArena, &renderer->uiBuffer,    "UIBuffer",    MB(4));
 }
 
 void freeRenderer(Renderer *renderer)
@@ -102,7 +105,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color)
+inline void makeRenderItem(RenderItem_DrawThing *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color)
 {
 	result->rect = rect;
 	result->depth = depth;
@@ -126,15 +129,28 @@ inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *tex
 #endif
 }
 
-RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
+RenderItem_DrawThing *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
 {
+	// TODO: This all needs a real go-over!
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
 
-	reserve(&buffer->items, count);
-	buffer->hasRangeReserved = true;
-	buffer->reservedRangeSize = count;
+	smm size = count * (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
 
-	RenderItem *result = buffer->items.items + buffer->items.count;
+	// TODO: Expand to make room.
+	// Make sure there's space for the item range and a "go to next thing" item
+	ASSERT(buffer->data.size - buffer->data.used >= size + (smm)sizeof(RenderItemType));
+
+	buffer->hasRangeReserved = true;
+	buffer->reservedRangeSize = size;
+
+	smm stride = sizeof(RenderItemType) + sizeof(RenderItem_DrawThing);
+	u8 *base = buffer->data.memory + buffer->data.used;
+	for (s32 i = 0; i < count; i++)
+	{
+		*(RenderItemType *)(base + (i * stride)) = RenderItemType_DrawThing;
+	}
+
+	RenderItem_DrawThing *result = (RenderItem_DrawThing *)(buffer->data.memory + buffer->data.used + sizeof(RenderItemType));
 
 	return result;
 }
@@ -149,12 +165,12 @@ void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
 	}
 
 	buffer->hasRangeReserved = false;
-	buffer->items.count += itemsAdded;
+	buffer->data.used += itemsAdded * (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
 }
 
-void applyOffsetToRenderItems(RenderItem *firstItem, RenderItem *lastItem, f32 offsetX, f32 offsetY)
+void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY)
 {
-	for (RenderItem *it = firstItem; it <= lastItem; it++)
+	for (RenderItem_DrawThing *it = firstItem; it <= lastItem; it++)
 	{
 		it->rect.x += offsetX;
 		it->rect.y += offsetY;
@@ -163,8 +179,8 @@ void applyOffsetToRenderItems(RenderItem *firstItem, RenderItem *lastItem, f32 o
 
 int compareRenderItems(const void *a, const void *b)
 {
-	f32 depthA = ((RenderItem*)a)->depth;
-	f32 depthB = ((RenderItem*)b)->depth;
+	f32 depthA = ((RenderItem_DrawThing*)a)->depth;
+	f32 depthB = ((RenderItem_DrawThing*)b)->depth;
 
 	if (depthA < depthB) return -1;
 	if (depthA > depthB) return 1;
@@ -175,7 +191,7 @@ void sortRenderBuffer(RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 
-	qsort(buffer->items.items, buffer->items.count, sizeof(RenderItem), compareRenderItems);
+	// qsort(buffer->items.items, buffer->items.count, sizeof(RenderItem_DrawThing), compareRenderItems);
 }
 
 #if CHECK_BUFFERS_SORTED

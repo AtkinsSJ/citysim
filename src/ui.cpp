@@ -201,7 +201,7 @@ void drawUiMessage(UIState *uiState)
 
 			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
 
-			RenderItem *backgroundRI = appendRenderItem(uiState->uiBuffer);
+			RenderItem_DrawThing *backgroundRI = appendRenderItem(uiState->uiBuffer);
 
 			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1.0f, textColor);

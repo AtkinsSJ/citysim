@@ -17,6 +17,7 @@ Notes for searching:
 Renderer optimisation!
 ✔ Remove the need for sorting, push draw everything in order
 - Switch to a flat memory push-buffer instead of an array of RenderItems
+	- reserveRange() needs work
 - Things other than RenderItems!
 	- Set the shader/texture/whatever
 	- Can we combine the world/ui buffers too???? probably not but maybe.

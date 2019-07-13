@@ -109,7 +109,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		if (context->doRender)
 		{
 			V4 backColor = style->backgroundColor;
-			RenderItem *background = appendRenderItem(context->uiState->uiBuffer);
+			RenderItem_DrawThing *background = appendRenderItem(context->uiState->uiBuffer);
 
 			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
 
@@ -508,7 +508,7 @@ void renderWindows(UIState *uiState)
 			window->isInitialised = true;
 		}
 
-		RenderItem *contentBackground = appendRenderItem(uiState->uiBuffer);
+		RenderItem_DrawThing *contentBackground = appendRenderItem(uiState->uiBuffer);
 		prepareForRender(&context);
 		window->windowProc(&context, window->userData);
 

@@ -23,7 +23,14 @@ struct Camera
 };
 const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 
-struct RenderItem
+enum RenderItemType
+{
+	RenderItemType_NextMemoryChunk,
+	RenderItemType_DrawThing, // @Cleanup DEPRECATED!!!
+};
+
+// @Cleanup DEPRECATED!!!
+struct RenderItem_DrawThing
 {
 	Rect2 rect;
 	f32 depth; // Positive is towards the player
@@ -34,14 +41,23 @@ struct RenderItem
 	Rect2 uv; // in (0 to 1) space
 };
 
+struct RenderBufferChunk
+{
+	smm size;
+	smm used;
+	u8 *memory;
+};
+
 struct RenderBuffer
 {
 	String name;
 	Camera camera;
-	Array<RenderItem> items;
+	
+	RenderBufferChunk data;
+	// Array<RenderItem_DrawThing> items;
 
 	bool hasRangeReserved;
-	s32 reservedRangeSize;
+	smm reservedRangeSize;
 };
 
 struct Renderer
@@ -78,24 +94,35 @@ inline f32 depthFromY(s32 y)
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
 void freeRenderer(Renderer *renderer);
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize);
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize);
 void sortRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
 
-void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
-void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
+void makeRenderItem(RenderItem_DrawThing *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
+void drawRenderItem(RenderBuffer *buffer, RenderItem_DrawThing *item);
 
-inline RenderItem *appendRenderItem(RenderBuffer *buffer)
+inline RenderItem_DrawThing *appendRenderItem(RenderBuffer *buffer)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't append renderitems while a range is reserved!
-	RenderItem *result = appendUninitialised(&buffer->items);
+
+	if ((buffer->data.size - buffer->data.used) <= (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing) + sizeof(RenderItemType)))
+	{
+		ASSERT(false); // Push a "go to next chunk" item and append some more memory
+	}
+
+	RenderItemType *type = (RenderItemType *)(buffer->data.memory + buffer->data.used);
+	*type = RenderItemType_DrawThing;
+	buffer->data.used += sizeof(RenderItemType);
+
+	RenderItem_DrawThing *result = (RenderItem_DrawThing *)(buffer->data.memory + buffer->data.used);
+	buffer->data.used += sizeof(RenderItem_DrawThing);
 	return result;
 }
 
-inline void drawRect(RenderItem *renderItem, Rect2 rect, f32 depth, s32 shaderID, V4 color)
+inline void drawRect(RenderItem_DrawThing *renderItem, Rect2 rect, f32 depth, s32 shaderID, V4 color)
 {
 	makeRenderItem(renderItem, rect, depth, null, {}, shaderID, color);
 }
@@ -115,7 +142,7 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 // any other RenderItems until the reserved range is finished with.
 //
 // Usage:
-// 		RenderItem *firstItem = reserveRenderItemRange(buffer, itemsToReserve);
+// 		RenderItem_DrawThing *firstItem = reserveRenderItemRange(buffer, itemsToReserve);
 // 		... write to firstItem, firstItem + 1, ... firstItem + (itemsToReserve - 1)
 // 		finishReservedRenderItemRange(buffer, numberOfItemsWeActuallyAdded);
 //
@@ -125,10 +152,10 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 //
 // - Sam, 24/06/2019
 //
-RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
+RenderItem_DrawThing *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
 void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
 
-void applyOffsetToRenderItems(RenderItem *firstItem, RenderItem *lastItem, f32 offsetX, f32 offsetY);
+void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY);
 
 void sortRenderBuffer(RenderBuffer *buffer);
 
