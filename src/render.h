@@ -46,6 +46,8 @@ struct RenderBufferChunk
 	smm size;
 	smm used;
 	u8 *memory;
+
+	RenderBufferChunk *next;
 };
 
 struct RenderBuffer
@@ -53,8 +55,11 @@ struct RenderBuffer
 	String name;
 	Camera camera;
 	
-	RenderBufferChunk data;
-	// Array<RenderItem_DrawThing> items;
+	MemoryArena *arena;
+	RenderBufferChunk firstChunk;
+	RenderBufferChunk *currentChunk;
+	RenderBufferChunk *firstFreeChunk;
+	smm minimumChunkSize;
 
 	bool hasRangeReserved;
 	smm reservedRangeSize;
@@ -104,22 +109,10 @@ V2 unproject(Camera *camera, V2 screenPos);
 void makeRenderItem(RenderItem_DrawThing *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
 void drawRenderItem(RenderBuffer *buffer, RenderItem_DrawThing *item);
 
+u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size);
 inline RenderItem_DrawThing *appendRenderItem(RenderBuffer *buffer)
 {
-	ASSERT(!buffer->hasRangeReserved); //Can't append renderitems while a range is reserved!
-
-	if ((buffer->data.size - buffer->data.used) <= (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing) + sizeof(RenderItemType)))
-	{
-		ASSERT(false); // Push a "go to next chunk" item and append some more memory
-	}
-
-	RenderItemType *type = (RenderItemType *)(buffer->data.memory + buffer->data.used);
-	*type = RenderItemType_DrawThing;
-	buffer->data.used += sizeof(RenderItemType);
-
-	RenderItem_DrawThing *result = (RenderItem_DrawThing *)(buffer->data.memory + buffer->data.used);
-	buffer->data.used += sizeof(RenderItem_DrawThing);
-	return result;
+	return (RenderItem_DrawThing *)appendRenderItemInternal(buffer, RenderItemType_DrawThing, sizeof(RenderItem_DrawThing));
 }
 
 inline void drawRect(RenderItem_DrawThing *renderItem, Rect2 rect, f32 depth, s32 shaderID, V4 color)
@@ -162,8 +155,6 @@ RenderItem_DrawThing *getItemInRange(RenderItem_DrawThing *first, s32 index)
 void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
 
 void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY);
-
-void sortRenderBuffer(RenderBuffer *buffer);
 
 void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen);
 void onWindowResized(Renderer *renderer, s32 w, s32 h);

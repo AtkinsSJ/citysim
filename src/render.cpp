@@ -22,16 +22,6 @@ void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingP
 	updateCameraMatrix(camera);
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
-{
-	buffer->name = pushString(arena, name);
-	buffer->hasRangeReserved = false;
-
-	buffer->data.size = initialSize;
-	buffer->data.used = 0;
-	buffer->data.memory = allocateArray<u8>(arena, buffer->data.size);
-}
-
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window)
 {
 	renderer->window = window;
@@ -138,19 +128,19 @@ RenderItem_DrawThing *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
 
 	// TODO: Expand to make room.
 	// Make sure there's space for the item range and a "go to next thing" item
-	ASSERT(buffer->data.size - buffer->data.used >= size + (smm)sizeof(RenderItemType));
+	ASSERT(buffer->currentChunk->size - buffer->currentChunk->used >= size + (smm)sizeof(RenderItemType));
 
 	buffer->hasRangeReserved = true;
 	buffer->reservedRangeSize = size;
 
 	smm stride = sizeof(RenderItemType) + sizeof(RenderItem_DrawThing);
-	u8 *base = buffer->data.memory + buffer->data.used;
+	u8 *base = buffer->currentChunk->memory + buffer->currentChunk->used;
 	for (s32 i = 0; i < count; i++)
 	{
 		*(RenderItemType *)(base + (i * stride)) = RenderItemType_DrawThing;
 	}
 
-	RenderItem_DrawThing *result = (RenderItem_DrawThing *)(buffer->data.memory + buffer->data.used + sizeof(RenderItemType));
+	RenderItem_DrawThing *result = (RenderItem_DrawThing *)(buffer->currentChunk->memory + buffer->currentChunk->used + sizeof(RenderItemType));
 
 	return result;
 }
@@ -165,7 +155,7 @@ void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
 	}
 
 	buffer->hasRangeReserved = false;
-	buffer->data.used += itemsAdded * (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
+	buffer->currentChunk->used += itemsAdded * (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
 }
 
 void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY)
@@ -182,6 +172,79 @@ void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawTh
 	}
 }
 
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
+{
+	buffer->name = pushString(arena, name);
+	buffer->hasRangeReserved = false;
+
+	buffer->arena = arena;
+	buffer->minimumChunkSize = initialSize;
+
+	buffer->firstChunk.size = initialSize;
+	buffer->firstChunk.used = 0;
+	buffer->firstChunk.memory = (u8*)allocate(arena, buffer->firstChunk.size);
+
+	buffer->currentChunk = &buffer->firstChunk;
+	buffer->firstFreeChunk = null;
+}
+
+u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size)
+{
+	ASSERT(!buffer->hasRangeReserved); //Can't append renderitems while a range is reserved!
+
+	if ((buffer->currentChunk->size - buffer->currentChunk->used) <= (smm)(sizeof(RenderItemType) + size + sizeof(RenderItemType)))
+	{
+		// Out of room! Push a "go to next chunk" item and append some more memory
+		
+		ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) < sizeof(RenderItemType)); // Need space for the next-chunk message
+
+		*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = RenderItemType_NextMemoryChunk;
+		buffer->currentChunk->used += sizeof(RenderItemType);
+
+		if (buffer->firstFreeChunk != null)
+		{
+			buffer->currentChunk->next = buffer->firstFreeChunk;
+			buffer->currentChunk = buffer->firstFreeChunk;
+			buffer->currentChunk->used = 0;
+			buffer->firstFreeChunk = buffer->firstFreeChunk->next;
+
+			// We'd BETTER have space to actually allocate this thing in the new chunk!
+			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) <= (smm)(sizeof(RenderItemType) + size + sizeof(RenderItemType)));
+		}
+		else
+		{
+			// ALLOCATE
+			RenderBufferChunk *newChunk = null;
+			// The *2 is somewhat arbitrary, but we want to avoid chunks that are only large enough for this item,
+			// because that could lead to fragmentation issues, or getting a chunk out of the free list which is
+			// too small to hold whatever we want to put in it!
+			// - Sam, 13/07/2019
+			smm newChunkSize = max(size * 2, buffer->minimumChunkSize);
+			newChunk = (RenderBufferChunk *)allocate(buffer->arena, newChunkSize + sizeof(RenderBufferChunk));
+			newChunk->size = newChunkSize;
+			newChunk->used = 0;
+			newChunk->memory = (u8*)(newChunk + 1);
+
+			buffer->currentChunk->next = newChunk;
+			buffer->currentChunk = newChunk;
+		}
+	}
+
+	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
+	buffer->currentChunk->used += sizeof(RenderItemType);
+
+	u8 *result = (buffer->currentChunk->memory + buffer->currentChunk->used);
+	buffer->currentChunk->used += size;
+	return result;
+}
+
+void sortRenderBuffer(RenderBuffer *buffer)
+{
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+
+	// qsort(buffer->items.items, buffer->items.count, sizeof(RenderItem_DrawThing), compareRenderItems);
+}
+
 int compareRenderItems(const void *a, const void *b)
 {
 	f32 depthA = ((RenderItem_DrawThing*)a)->depth;
@@ -190,13 +253,6 @@ int compareRenderItems(const void *a, const void *b)
 	if (depthA < depthB) return -1;
 	if (depthA > depthB) return 1;
 	return 0;
-}
-
-void sortRenderBuffer(RenderBuffer *buffer)
-{
-	DEBUG_FUNCTION_T(DCDT_Renderer);
-
-	// qsort(buffer->items.items, buffer->items.count, sizeof(RenderItem_DrawThing), compareRenderItems);
 }
 
 #if CHECK_BUFFERS_SORTED

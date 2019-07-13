@@ -351,80 +351,98 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 	u32 drawCallCount = 0;
 
+	RenderBufferChunk *renderBufferChunk = &buffer->firstChunk;
 	smm pos = 0;
-	if (buffer->data.used > 0)
+	while ((renderBufferChunk != null) && (pos < renderBufferChunk->used))
 	{
-		while (pos < buffer->data.used)
+		RenderItemType itemType = *((RenderItemType *)(renderBufferChunk->memory + pos));
+		pos += sizeof(RenderItemType);
+
+		switch (itemType)
 		{
-			RenderItemType itemType = *((RenderItemType *)(buffer->data.memory + pos));
-			pos += sizeof(RenderItemType);
-
-			switch (itemType)
+			case RenderItemType_NextMemoryChunk:
 			{
-				case RenderItemType_NextMemoryChunk:
+				renderBufferChunk = renderBufferChunk->next;
+				pos = 0;
+			} break;
+
+			case RenderItemType_DrawThing:
+			{
+				RenderItem_DrawThing *item = (RenderItem_DrawThing *)(renderBufferChunk->memory + pos);
+				pos += sizeof(RenderItem_DrawThing);
+
+				GL_ShaderProgram *activeShader = useShader(renderer, item->shaderID);
+
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+
+				if ((activeShader->uTextureLoc != -1) && (item->texture != null))
 				{
-					// TODO: Unimplemented
-				} break;
+					bindTexture(item->texture, activeShader->uTextureLoc, 0);
+				}
 
-				case RenderItemType_DrawThing:
-				{
-					RenderItem_DrawThing *item = (RenderItem_DrawThing *)(buffer->data.memory + pos);
-					pos += sizeof(RenderItem_DrawThing);
+				u32 vertexCount = 0;
+				u32 indexCount = 0;
 
-					GL_ShaderProgram *activeShader = useShader(renderer, item->shaderID);
+				u32 firstVertex = vertexCount;
+				renderer->vertices[vertexCount++] = {
+					v3(item->rect.x, item->rect.y, item->depth),
+					item->color,
+					v2(item->uv.x, item->uv.y)
+				};
+				renderer->vertices[vertexCount++] = {
+					v3(item->rect.x + item->rect.size.x, item->rect.y, item->depth),
+					item->color,
+					v2(item->uv.x + item->uv.w, item->uv.y)
+				};
+				renderer->vertices[vertexCount++] = {
+					v3(item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
+					item->color,
+					v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
+				};
+				renderer->vertices[vertexCount++] = {
+					v3(item->rect.x, item->rect.y + item->rect.size.y, item->depth),
+					item->color,
+					v2(item->uv.x, item->uv.y + item->uv.h)
+				};
 
-					glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-					glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+				renderer->indices[indexCount++] = firstVertex + 0;
+				renderer->indices[indexCount++] = firstVertex + 1;
+				renderer->indices[indexCount++] = firstVertex + 2;
+				renderer->indices[indexCount++] = firstVertex + 0;
+				renderer->indices[indexCount++] = firstVertex + 2;
+				renderer->indices[indexCount++] = firstVertex + 3;
 
-					if ((activeShader->uTextureLoc != -1) && (item->texture != null))
-					{
-						bindTexture(item->texture, activeShader->uTextureLoc, 0);
-					}
+				drawCallCount++;
+				renderPartOfBuffer(renderer, vertexCount, indexCount);
+				DEBUG_DRAW_CALL(activeShader->asset->shortName, (item->texture == null) ? nullString : item->texture->shortName,(vertexCount >> 2));
+			} break;
 
-					u32 vertexCount = 0;
-					u32 indexCount = 0;
-
-					u32 firstVertex = vertexCount;
-					renderer->vertices[vertexCount++] = {
-						v3(item->rect.x, item->rect.y, item->depth),
-						item->color,
-						v2(item->uv.x, item->uv.y)
-					};
-					renderer->vertices[vertexCount++] = {
-						v3(item->rect.x + item->rect.size.x, item->rect.y, item->depth),
-						item->color,
-						v2(item->uv.x + item->uv.w, item->uv.y)
-					};
-					renderer->vertices[vertexCount++] = {
-						v3(item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
-						item->color,
-						v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
-					};
-					renderer->vertices[vertexCount++] = {
-						v3(item->rect.x, item->rect.y + item->rect.size.y, item->depth),
-						item->color,
-						v2(item->uv.x, item->uv.y + item->uv.h)
-					};
-
-					renderer->indices[indexCount++] = firstVertex + 0;
-					renderer->indices[indexCount++] = firstVertex + 1;
-					renderer->indices[indexCount++] = firstVertex + 2;
-					renderer->indices[indexCount++] = firstVertex + 0;
-					renderer->indices[indexCount++] = firstVertex + 2;
-					renderer->indices[indexCount++] = firstVertex + 3;
-
-					drawCallCount++;
-					renderPartOfBuffer(renderer, vertexCount, indexCount);
-					DEBUG_DRAW_CALL(activeShader->asset->shortName, (item->texture == null) ? nullString : item->texture->shortName,(vertexCount >> 2));
-				} break;
-
-				INVALID_DEFAULT_CASE;
-			}
+			INVALID_DEFAULT_CASE;
 		}
-
-		// TODO: Properly clear this once we have multiple chunks!
-		buffer->data.used = 0;
 	}
+
+	// Clear it!
+	RenderBufferChunk *lastChunk = null;
+	for (RenderBufferChunk *chunk = &buffer->firstChunk;
+		chunk != null;
+		chunk = chunk->next)
+	{
+		chunk->used = 0;
+
+		lastChunk = chunk;
+	}
+
+	// Free list!
+	if (lastChunk != &buffer->firstChunk)
+	{
+		lastChunk->next = buffer->firstFreeChunk;
+		buffer->firstFreeChunk = buffer->firstChunk.next;
+	}
+
+	buffer->firstChunk.next = null;
+	buffer->currentChunk = &buffer->firstChunk;
+
 	#if 0
 		// Initialise stuff using the first item...
 		RenderItem_DrawThing *firstItem = buffer->items.items + 0;

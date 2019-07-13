@@ -98,7 +98,7 @@ struct DebugDrawCallData
 	u32 itemsDrawn;
 };
 
-#define DEBUG_DRAW_CALLS_RECORDED_PER_FRAME 16384
+#define DEBUG_DRAW_CALLS_RECORDED_PER_FRAME 8192
 struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData>
 {
 	String name;
