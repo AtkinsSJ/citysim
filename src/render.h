@@ -29,6 +29,7 @@ enum RenderItemType
 	RenderItemType_DrawThing, // @Cleanup DEPRECATED!!!
 
 	RenderItemType_DrawRectangles,
+	RenderItemType_DrawText,
 };
 
 // @Cleanup DEPRECATED!!!
@@ -49,10 +50,24 @@ struct RenderItem_DrawRectangles
 	s32 count;
 };
 
-struct RenderItem_DrawRectangles_Data
+struct RenderItem_DrawRectangles_Item
 {
 	Rect2 bounds;
 	V4 color;
+};
+
+struct RenderItem_DrawText
+{
+	s32 shaderID;
+	Asset *texture;
+	s32 count;
+};
+
+struct RenderItem_DrawText_Item
+{
+	Rect2 bounds;
+	V4 color;
+	Rect2 uv;
 };
 
 struct RenderBufferChunk
@@ -148,12 +163,26 @@ struct DrawRectanglesState
 	RenderBuffer *buffer;
 
 	RenderItem_DrawRectangles *header;
-	RenderItem_DrawRectangles_Data *first;
+	RenderItem_DrawRectangles_Item *first;
 	s32 maxCount;
 };
 DrawRectanglesState startDrawingRectangles(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
 void drawRectangle(DrawRectanglesState *state, Rect2 bounds, V4 color);
 void finishRectangles(DrawRectanglesState *state);
+
+struct DrawTextState
+{
+	RenderBuffer *buffer;
+
+	RenderItem_DrawText *header;
+	RenderItem_DrawText_Item *first;
+	s32 maxCount;
+};
+DrawTextState startDrawingText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
+void drawTextItem(DrawTextState *state, BitmapFontGlyph *glyph, V2 position, V4 color);
+RenderItem_DrawText_Item *getTextItem(DrawTextState *state, s32 index);
+void offsetRange(DrawTextState *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
+void finishText(DrawTextState *state);
 
 //
 // NB: Some operations are massively sped up if we can ensure there is space up front,

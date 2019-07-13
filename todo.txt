@@ -22,9 +22,11 @@ Renderer optimisation!
 	- Set the shader/texture/whatever
 	- Can we combine the world/ui buffers too???? probably not but maybe.
 	- Text, which has setup data and then a stream of chars & locations
+		- Break _alignText() into a more general "get offset for alignment" function
 	- We deal with grids a lot, some kind of sped-up thing for that would be good,
 		either as "define a grid and then the colours of the cells" or "here is a mesh with a bunch of vertices". The latter is more general (and works for terrain!) but the former is simpler. Maybe both though!
 	- Put all terrain in a single texture and set up a texture mesh per chunk!
+	- Factor down the "define the start of a range, add stuff to it, manipulate existing items in that range, and then say how much was used" code into a generic system.
 - Maybe get rid of the overlayRenderItems thing, if we can
 
 Speed up debug system?

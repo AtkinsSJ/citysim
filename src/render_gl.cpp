@@ -387,7 +387,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 				for (s32 rectIndex = 0; rectIndex < header->count; rectIndex++)
 				{
-					RenderItem_DrawRectangles_Data *rect = readRenderItem<RenderItem_DrawRectangles_Data>(renderBufferChunk, &pos);
+					RenderItem_DrawRectangles_Item *rect = readRenderItem<RenderItem_DrawRectangles_Item>(renderBufferChunk, &pos);
 					u32 firstVertex = vertexCount;
 					renderer->vertices[vertexCount++] = {
 						v3(rect->bounds.x, rect->bounds.y, 0.0f),

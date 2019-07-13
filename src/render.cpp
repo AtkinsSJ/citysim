@@ -285,12 +285,12 @@ DrawRectanglesState startDrawingRectangles(RenderBuffer *buffer, s32 shaderID, s
 
 	result.buffer = buffer;
 
-	smm reservedSize = sizeof(RenderItem_DrawRectangles_Data) * maxCount;
+	smm reservedSize = sizeof(RenderItem_DrawRectangles_Item) * maxCount;
 	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawRectangles, sizeof(RenderItem_DrawRectangles), reservedSize);
 	buffer->hasRangeReserved = true;
 
 	result.header = (RenderItem_DrawRectangles *) data;
-	result.first  = (RenderItem_DrawRectangles_Data *) (data + sizeof(RenderItem_DrawRectangles));
+	result.first  = (RenderItem_DrawRectangles_Item *) (data + sizeof(RenderItem_DrawRectangles));
 	result.maxCount = maxCount;
 
 	result.header->shaderID = shaderID;
@@ -302,7 +302,7 @@ DrawRectanglesState startDrawingRectangles(RenderBuffer *buffer, s32 shaderID, s
 void drawRectangle(DrawRectanglesState *state, Rect2 bounds, V4 color)
 {
 	ASSERT(state->header->count < state->maxCount);
-	RenderItem_DrawRectangles_Data *rectangle = state->first + state->header->count++;
+	RenderItem_DrawRectangles_Item *rectangle = state->first + state->header->count++;
 	rectangle->bounds = bounds;
 	rectangle->color = color;
 }
@@ -312,5 +312,68 @@ void finishRectangles(DrawRectanglesState *state)
 	ASSERT(state->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
 	state->buffer->hasRangeReserved = false;
 
-	state->buffer->currentChunk->used += state->header->count * sizeof(RenderItem_DrawRectangles_Data);
+	state->buffer->currentChunk->used += state->header->count * sizeof(RenderItem_DrawRectangles_Item);
+}
+
+DrawTextState startDrawingText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
+{
+	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
+
+	DrawTextState result = {};
+
+	result.buffer = buffer;
+
+	smm reservedSize = sizeof(RenderItem_DrawText_Item) * maxCount;
+	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawText, sizeof(RenderItem_DrawText), reservedSize);
+	buffer->hasRangeReserved = true;
+
+	result.header = (RenderItem_DrawText *) data;
+	result.first  = (RenderItem_DrawText_Item *) (data + sizeof(RenderItem_DrawText));
+	result.maxCount = maxCount;
+
+	result.header->shaderID = shaderID;
+	result.header->texture = font->texture;
+	result.header->count = 0;
+
+	return result;
+}
+
+void drawTextItem(DrawTextState *state, BitmapFontGlyph *glyph, V2 position, V4 color)
+{
+	ASSERT(state->header->count < state->maxCount);
+	RenderItem_DrawText_Item *item = state->first + state->header->count++;
+	item->bounds = rectXYWH(position.x + glyph->xOffset, position.y + glyph->yOffset, glyph->width, glyph->height);
+	item->color = color;
+	item->uv = glyph->uv;
+}
+
+// @Cleanup: I want to avoid exposing the _Item struct to user code!
+RenderItem_DrawText_Item *getTextItem(DrawTextState *state, s32 index)
+{
+	ASSERT(index >= 0 && index < state->header->count);
+
+	return state->first + index;
+}
+
+void offsetRange(DrawTextState *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY)
+{
+	ASSERT(startIndex >= 0 && startIndex < state->header->count);
+	ASSERT(endIndexInclusive >= 0 && endIndexInclusive < state->header->count);
+	ASSERT(startIndex <= endIndexInclusive);
+
+	for (RenderItem_DrawText_Item *item = state->first + startIndex;
+		item <= state->first + endIndexInclusive;
+		item++)
+	{
+		item->bounds.x += offsetX;
+		item->bounds.y += offsetY;
+	}
+}
+
+void finishText(DrawTextState *state)
+{
+	ASSERT(state->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	state->buffer->hasRangeReserved = false;
+
+	state->buffer->currentChunk->used += state->header->count * sizeof(RenderItem_DrawText_Item);
 }
