@@ -397,6 +397,31 @@ void addTiledSprites(AssetManager *assets, String name, String textureFilename, 
 	}
 }
 
+void addTiledSprites(AssetManager *assets, String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles)
+{
+	ASSERT(texture->type == AssetType_Texture);
+
+	Asset *spriteGroup = addSpriteGroup(assets, name, selectedTiles.w * selectedTiles.h);
+
+	s32 strideX = tileSize.x + (tileBorder.x * 2);
+	s32 strideY = tileSize.y + (tileBorder.y * 2);
+
+	s32 spriteIndex = 0;
+	for (s32 y = selectedTiles.y; y < selectedTiles.y + selectedTiles.h; y++)
+	{
+		for (s32 x = selectedTiles.x; x < selectedTiles.x + selectedTiles.w; x++)
+		{
+			Sprite *sprite = spriteGroup->spriteGroup.sprites + spriteIndex++;
+			sprite->texture = texture;
+			sprite->uv = rectXYWHi(
+				(x * strideX) + tileBorder.x,
+				(y * strideY) + tileBorder.y,
+				tileSize.x, tileSize.y
+			);
+		}
+	}
+}
+
 void addFont(AssetManager *assets, String name, String filename)
 {
 	addAsset(assets, AssetType_BitmapFont, filename);

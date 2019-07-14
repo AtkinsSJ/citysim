@@ -9,6 +9,17 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 	initChunkedArray(terrains, &assets->assetArena, 16);
 	appendBlank(terrains);
 
+	enum Mode
+	{
+		Mode_None = 0,
+		Mode_Terrain,
+		Mode_Texture,
+	} mode = Mode_None;
+
+	Asset *textureAsset = null;
+	V2I spriteSize = v2i(0,0);
+	V2I spriteBorder = v2i(0,0);
+
 	TerrainDef *def = null;
 
 	while (!isDone(&reader))
@@ -28,66 +39,142 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 			firstWord.length--;
 
 			String defType = firstWord;
-			if (!equals(firstWord, "Terrain"))
+			if (equals(firstWord, "Terrain"))
 			{
-				warn(&reader, "Only Terrain definitions are supported right now.");
-			}
-			else
-			{
+				mode = Mode_Terrain;
 				def = appendBlank(terrains);
 				
 				String name = trim(remainder);
 				if (name.length == 0)
 				{
-					error(&reader, "Couldn't parse TerrainType. Expected: ':Terrain name'");
+					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain name'");
 					return;
 				}
 				def->name = pushString(&assets->assetArena, name);
 			}
-		}
-		else // Properties!
-		{
-			if (def == null)
+			else if (equals(firstWord, "Texture"))
 			{
-				error(&reader, "Found a property before starting a :Terrain!");
-				return;
+				mode = Mode_Texture;
+				
+				String filename = trim(remainder);
+				if (filename.length == 0)
+				{
+					error(&reader, "Couldn't parse Texture. Expected: ':Terrain filename'");
+					return;
+				}
+				textureAsset = addTexture(assets, filename, false);
 			}
 			else
 			{
-				if (equals(firstWord, "texture"))
-				{
-					def->spriteName = readTextureDefinition(&reader, assets, remainder);
-				}
-				else if (equals(firstWord, "can_build_on"))
-				{
-					def->canBuildOn = readBool(&reader, firstWord, remainder);
-				}
-				else if (equals(firstWord, "can_demolish"))
-				{
-					bool canDemolish;
-					if (asBool(nextToken(remainder, &remainder), &canDemolish))
+				error(&reader, "Unrecognised command: '{0}'", {firstWord});
+			}
+		}
+		else // Properties!
+		{
+			switch (mode)
+			{
+				case Mode_Texture: {
+					if (equals(firstWord, "sprite_size"))
 					{
-						def->canDemolish = canDemolish;
-						if (canDemolish)
+						s64 spriteW;
+						s64 spriteH;
+						if (asInt(nextToken(remainder, &remainder), &spriteW)
+							&& asInt(nextToken(remainder, &remainder), &spriteH))
 						{
-							s64 demolishCost;
-							if (asInt(nextToken(remainder, &remainder), &demolishCost))
-							{
-								def->demolishCost = (s32) demolishCost;
-							}
-							else
-							{
-								error(&reader, "Couldn't parse can_demolish. Expected 'can_demolish true/false [cost]'.");
-								return;
-							}
+							spriteSize = v2i(truncate32(spriteW), truncate32(spriteH));
+						}
+						else
+						{
+							error(&reader, "Couldn't parse sprite_size. Expected 'sprite_size width height'.");
+							return;
+						}
+					}
+					else if (equals(firstWord, "sprite_border"))
+					{
+						s64 borderW;
+						s64 borderH;
+						if (asInt(nextToken(remainder, &remainder), &borderW)
+							&& asInt(nextToken(remainder, &remainder), &borderH))
+						{
+							spriteBorder = v2i(truncate32(borderW), truncate32(borderH));
+						}
+						else
+						{
+							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'.");
+							return;
+						}
+					}
+					else if (equals(firstWord, "sprite"))
+					{
+						String spriteName = pushString(&assets->assetArena, nextToken(remainder, &remainder));
+						s64 x;
+						s64 y;
+						s64 w;
+						s64 h;
+						if (asInt(nextToken(remainder, &remainder), &x)
+							&& asInt(nextToken(remainder, &remainder), &y)
+							&& asInt(nextToken(remainder, &remainder), &w)
+							&& asInt(nextToken(remainder, &remainder), &h))
+						{
+							Rect2I selectedSprites = irectXYWH(truncate32(x), truncate32(y), truncate32(w), truncate32(h));
+							addTiledSprites(assets, spriteName, textureAsset, spriteSize, spriteBorder, selectedSprites);
+						}
+						else
+						{
+							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'.");
+							return;
 						}
 					}
 					else
 					{
-						error(&reader, "Couldn't parse can_demolish. Expected 'can_demolish true/false [cost]'.");
-						return;
+						warn(&reader, "Unrecognised property '{0}' inside command ':Texture'", {firstWord});
 					}
-				}
+				} break;
+
+				case Mode_Terrain: {
+					if (equals(firstWord, "uses_sprite"))
+					{
+						def->spriteName = pushString(&assets->assetArena, remainder);
+					}
+					else if (equals(firstWord, "can_build_on"))
+					{
+						def->canBuildOn = readBool(&reader, firstWord, remainder);
+					}
+					else if (equals(firstWord, "can_demolish"))
+					{
+						bool canDemolish;
+						if (asBool(nextToken(remainder, &remainder), &canDemolish))
+						{
+							def->canDemolish = canDemolish;
+							if (canDemolish)
+							{
+								s64 demolishCost;
+								if (asInt(nextToken(remainder, &remainder), &demolishCost))
+								{
+									def->demolishCost = (s32) demolishCost;
+								}
+								else
+								{
+									error(&reader, "Couldn't parse can_demolish. Expected 'can_demolish true/false [cost]'.");
+									return;
+								}
+							}
+						}
+						else
+						{
+							error(&reader, "Couldn't parse can_demolish. Expected 'can_demolish true/false [cost]'.");
+							return;
+						}
+					}
+					else
+					{
+						warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'", {firstWord});
+					}
+				} break;
+
+				default: {
+					error(&reader, "Found a property '{0}' before a :command!", {firstWord});
+				} break;
 			}
 		}
 	}
