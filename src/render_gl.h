@@ -10,8 +10,6 @@
 
 // render_gl.h
 
-#define CHECK_BUFFERS_SORTED 0
-
 struct GL_VertexData
 {
 	V3 pos;

@@ -30,6 +30,7 @@ enum RenderItemType
 
 	RenderItemType_DrawRectangles,
 	RenderItemType_DrawText,
+	RenderItemType_DrawSprites,
 };
 
 // @Cleanup DEPRECATED!!!
@@ -49,7 +50,6 @@ struct RenderItem_DrawRectangles
 	s32 shaderID;
 	s32 count;
 };
-
 struct RenderItem_DrawRectangles_Item
 {
 	Rect2 bounds;
@@ -62,8 +62,20 @@ struct RenderItem_DrawText
 	Asset *texture;
 	s32 count;
 };
-
 struct RenderItem_DrawText_Item
+{
+	Rect2 bounds;
+	V4 color;
+	Rect2 uv;
+};
+
+struct RenderItem_DrawSprites
+{
+	s32 shaderID;
+	Asset *texture;
+	s32 count;
+};
+struct RenderItem_DrawSprites_Item
 {
 	Rect2 bounds;
 	V4 color;
@@ -129,7 +141,6 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 void freeRenderer(Renderer *renderer);
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize);
-void sortRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);
@@ -183,6 +194,19 @@ void drawTextItem(DrawTextState *state, BitmapFontGlyph *glyph, V2 position, V4 
 RenderItem_DrawText_Item *getTextItem(DrawTextState *state, s32 index);
 void offsetRange(DrawTextState *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
 void finishText(DrawTextState *state);
+
+struct DrawSpritesState
+{
+	RenderBuffer *buffer;
+
+	RenderItem_DrawSprites *header;
+	RenderItem_DrawSprites_Item *first;
+	s32 maxCount;
+};
+// NB: The Sprites drawn must all have the same Texture! This is asserted in drawSpritesItem().
+DrawSpritesState startDrawingSprites(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
+void drawSpritesItem(DrawSpritesState *state, Sprite *sprite, Rect2 bounds, V4 color);
+void finishSprites(DrawSpritesState *state);
 
 //
 // NB: Some operations are massively sped up if we can ensure there is space up front,

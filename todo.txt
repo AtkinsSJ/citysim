@@ -27,6 +27,7 @@ Renderer optimisation!
 		either as "define a grid and then the colours of the cells" or "here is a mesh with a bunch of vertices". The latter is more general (and works for terrain!) but the former is simpler. Maybe both though!
 	- Put all terrain in a single texture and set up a texture mesh per chunk!
 	- Factor down the "define the start of a range, add stuff to it, manipulate existing items in that range, and then say how much was used" code into a generic system.
+		- DrawText and DrawSprites have a LOT in common, the structs and the GL_Render() code are identical!
 	- Maybe send data to the renderer in a more render-friendly form? (ie, send vertex data instead of the renderer having to construct it.) Then again, that could cause problems if we use multiple renderers? IDK, probably not. It might be more awkward for user code to manipulate things it's submitted already though. IDK.
 - Maybe get rid of the overlayRenderItems thing, if we can
 
@@ -64,7 +65,7 @@ SECTORS:
 	- Similar stuff to how power works, so figure that out first
 - Terrain
 	- Terrain mesh? That's kind of a side issue
-	- Also a side-issue, but combine all terrain into a single texture! That'll dramatically reduce draw calls.
+	✔ Also a side-issue, but combine all terrain into a single texture! That'll dramatically reduce draw calls.
 ✔ Buildings
 	✔ findBuildingsInRectangle(), which returns some kind of temporary, iterable array.
 	✔ Add flags to ^ so we can request buildings whose ORIGIN is in the rectangle, and maybe some other requirements (eg, must carry power)

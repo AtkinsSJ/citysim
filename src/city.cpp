@@ -223,8 +223,9 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 		}
 	}
 
-	building->currentResidents = 0;
-	building->currentJobs = 0;
+	// TODO: Calculate residents/jobs properly!
+	building->currentResidents = def->residents;
+	building->currentJobs = def->jobs;
 	city->totalResidents += building->currentResidents;
 	city->totalJobs += building->currentJobs;
 
@@ -646,8 +647,7 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 	V4 terrainColor = makeWhite();
 
 	s32 tilesToDraw = areaOf(visibleArea);
-	RenderItem_DrawThing *firstItem = reserveRenderItemRange(&renderer->worldBuffer, tilesToDraw);
-	s32 tilesDrawn = 0;
+	DrawSpritesState state = startDrawingSprites(&renderer->worldBuffer, shaderID, tilesToDraw);
 
 	Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleArea);
 	for (s32 sY = visibleSectors.y;
@@ -681,13 +681,12 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 					Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
 					spriteBounds.x = (f32)(sector->bounds.x + relX);
 
-					RenderItem_DrawThing *item = getItemInRange(firstItem, tilesDrawn++);
-					makeRenderItem(item, spriteBounds, -1000.0f, sprite->texture, sprite->uv, shaderID, terrainColor);
+					drawSpritesItem(&state, sprite, spriteBounds, terrainColor);
 				}
 			}
 		}
 	}
-	finishReservedRenderItemRange(&renderer->worldBuffer, tilesDrawn);
+	finishSprites(&state);
 }
 
 TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y)
@@ -741,6 +740,85 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 	}
 
 	return result;
+}
+
+void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s32 shaderID, Rect2I demolitionRect)
+{
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	s32 typeID = -1;
+	SpriteGroup *sprites = null;
+	V4 drawColorNormal = makeWhite();
+	V4 drawColorDemolish = color255(255,128,128,255);
+	bool isDemolitionHappening = areaOf(demolitionRect) > 0;
+
+	//
+	// TODO: Once buildings have "height" that extends above their footprint, we'll need to know
+	// the maximum height, and go a corresponding number of sectors down to ensure they're drawn.
+	//
+	// - Sam, 17/06/2019
+	//
+
+	// TODO: @Speed: Maybe do the iteration on sectors directly, instead of producing this
+	// array and then iterating it? Or some other smarter way.
+	ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
+
+	if (visibleBuildings.count == 0) return;
+
+	//
+	// NB: We don't know how many of the buildings will be in each batch, because a batch can
+	// only have a single texture. So we track how many buildings HAVEN'T been drawn yet, and
+	// each time we start a batch we set it to that size. That way it's always large enough,
+	// without being TOO excessive.
+	// Theoretically later we could smush things into fewer textures, and that would speed
+	// this up, but I think we'll always need the "is the texture different?" check in the loop.
+	//
+	// - Sam, 16/07/2019
+	// 
+	s32 buildingsRemaining = truncate32(visibleBuildings.count);
+	DrawSpritesState state = startDrawingSprites(&renderer->worldBuffer, shaderID, buildingsRemaining);
+
+	Asset *texture = null;
+
+	for (auto it = iterate(&visibleBuildings);
+		!it.isDone;
+		next(&it))
+	{
+		Building *building = getValue(it);
+
+		if (typeID != building->typeID)
+		{
+			typeID = building->typeID;
+			sprites = getBuildingDef(typeID)->sprites;
+		}
+
+		V4 drawColor = drawColorNormal;
+
+		if (isDemolitionHappening && overlaps(building->footprint, demolitionRect))
+		{
+			// Draw building red to preview demolition
+			drawColor = drawColorDemolish;
+		}
+
+		Sprite *sprite = getSprite(sprites, building->spriteOffset);
+
+		if (texture == null)
+		{
+			texture = sprite->texture;
+		}
+		else if (texture != sprite->texture)
+		{
+			// Finish the current group and start a new one
+			finishSprites(&state);
+			state = startDrawingSprites(&renderer->worldBuffer, shaderID, buildingsRemaining);
+
+			texture = sprite->texture;
+		}
+
+		drawSpritesItem(&state, sprite, rect2(building->footprint), drawColor);
+		buildingsRemaining--;
+	}
+	finishSprites(&state);
 }
 
 inline s32 getPathGroupAt(City *city, s32 x, s32 y)

@@ -608,7 +608,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 	} 
 
-	Rect2I demolitionRect = {0,0,-1,-1};
+	Rect2I demolitionRect = irectNegativeInfinity();
 
 	{
 		DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
@@ -833,57 +833,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	);
 	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 
-	// Draw terrain
 	drawTerrain(city, renderer, visibleTileBounds, pixelArtShaderID);
 
-	// Draw zones
 	drawZones(&city->zoneLayer, renderer, visibleTileBounds, rectangleShaderID);
-	
-	{
-		DEBUG_BLOCK_T("Draw buildings", DCDT_GameUpdate);
 
-		s32 typeID = -1;
-		SpriteGroup *sprites = null;
-		V4 drawColorNormal = makeWhite();
-		V4 drawColorDemolish = color255(255,128,128,255);
-
-		//
-		// TODO: Once buildings have "height" that extends above their footprint, we'll need to know
-		// the maximum height, and go a corresponding number of sectors down to ensure they're drawn.
-		//
-		// - Sam, 17/06/2019
-		//
-		ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
-		RenderItem_DrawThing *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(visibleBuildings.count));
-		s32 buildingsDrawn = 0;
-		for (auto it = iterate(&visibleBuildings);
-			!it.isDone;
-			next(&it))
-		{
-			Building *building = getValue(it);
-
-			if (typeID != building->typeID)
-			{
-				typeID = building->typeID;
-				sprites = getBuildingDef(typeID)->sprites;
-			}
-
-			V4 drawColor = drawColorNormal;
-
-			if (gameState->actionMode == ActionMode_Demolish
-				&& gameState->worldDragState.isDragging
-				&& overlaps(building->footprint, demolitionRect))
-			{
-				// Draw building red to preview demolition
-				drawColor = drawColorDemolish;
-			}
-
-			Sprite *sprite = getSprite(sprites, building->spriteOffset);
-			RenderItem_DrawThing *item = getItemInRange(firstRenderItem, buildingsDrawn++);
-			makeRenderItem(item, rect2(building->footprint), 0, sprite->texture, sprite->uv, pixelArtShaderID, drawColor);
-		}
-		finishReservedRenderItemRange(&renderer->worldBuffer, buildingsDrawn);
-	}
+	drawBuildings(city, renderer, visibleTileBounds, pixelArtShaderID, demolitionRect);
 
 	// Data layer rendering
 	if (gameState->dataLayerToDraw)

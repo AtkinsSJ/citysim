@@ -241,42 +241,6 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 	return result;
 }
 
-void sortRenderBuffer(RenderBuffer *buffer)
-{
-	DEBUG_FUNCTION_T(DCDT_Renderer);
-
-	// qsort(buffer->items.items, buffer->items.count, sizeof(RenderItem_DrawThing), compareRenderItems);
-}
-
-int compareRenderItems(const void *a, const void *b)
-{
-	f32 depthA = ((RenderItem_DrawThing*)a)->depth;
-	f32 depthB = ((RenderItem_DrawThing*)b)->depth;
-
-	if (depthA < depthB) return -1;
-	if (depthA > depthB) return 1;
-	return 0;
-}
-
-#if CHECK_BUFFERS_SORTED
-bool isBufferSorted(RenderBuffer *buffer)
-{
-	DEBUG_FUNCTION_T(DCDT_Debugging);
-	bool isSorted = true;
-	f32 lastDepth = f32Min;
-	for (u32 i=0; i < buffer->itemCount; i++)
-	{
-		if (lastDepth > buffer->items[i].depth)
-		{
-			isSorted = false;
-			break;
-		}
-		lastDepth = buffer->items[i].depth;
-	}
-	return isSorted;
-}
-#endif
-
 DrawRectanglesState startDrawingRectangles(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
@@ -376,4 +340,56 @@ void finishText(DrawTextState *state)
 	state->buffer->hasRangeReserved = false;
 
 	state->buffer->currentChunk->used += state->header->count * sizeof(RenderItem_DrawText_Item);
+}
+
+// @Copypasta!!!
+
+DrawSpritesState startDrawingSprites(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
+{
+	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
+
+	DrawSpritesState result = {};
+
+	result.buffer = buffer;
+
+	smm reservedSize = sizeof(RenderItem_DrawSprites_Item) * maxCount;
+	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawSprites, sizeof(RenderItem_DrawSprites), reservedSize);
+	buffer->hasRangeReserved = true;
+
+	result.header = (RenderItem_DrawSprites *) data;
+	result.first  = (RenderItem_DrawSprites_Item *) (data + sizeof(RenderItem_DrawSprites));
+	result.maxCount = maxCount;
+
+	result.header->shaderID = shaderID;
+	result.header->texture = null;
+	result.header->count = 0;
+
+	return result;
+}
+
+void drawSpritesItem(DrawSpritesState *state, Sprite *sprite, Rect2 bounds, V4 color)
+{
+	ASSERT(state->header->count < state->maxCount);
+
+	if (state->header->count == 0)
+	{
+		state->header->texture = sprite->texture;
+	}
+	else
+	{
+		ASSERT(state->header->texture == sprite->texture);
+	}
+
+	RenderItem_DrawSprites_Item *item = state->first + state->header->count++;
+	item->bounds = bounds;
+	item->color = color;
+	item->uv = sprite->uv;
+}
+
+void finishSprites(DrawSpritesState *state)
+{
+	ASSERT(state->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	state->buffer->hasRangeReserved = false;
+
+	state->buffer->currentChunk->used += state->header->count * sizeof(RenderItem_DrawSprites_Item);
 }
