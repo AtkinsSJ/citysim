@@ -56,6 +56,7 @@ struct RenderItem_DrawRects_Item
 	Rect2 uv;
 };
 
+// Think of this like a "handle". It has data inside but you shouldn't touch it from user code!
 struct DrawRectsGroup
 {
 	RenderBuffer *buffer;
@@ -152,14 +153,13 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
 
-// NB: The Rects drawn must all have the same Texture! This is asserted in addSpriteRect().
+// NB: The Rects drawn must all have the same Texture!
 DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
-DrawRectsGroup beginRectsGroupText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
+DrawRectsGroup beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
 void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);
 void addSpriteRect(DrawRectsGroup *state, Sprite *sprite, Rect2 bounds, V4 color);
 void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color);
-RenderItem_DrawRects_Item *getRectAt(DrawRectsGroup *state, s32 index);
 void offsetRange(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
 void endRectsGroup(DrawRectsGroup *group);
 

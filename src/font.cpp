@@ -246,8 +246,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	// s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 	s32 glyphsToOutput = text.length;
 
-	DrawRectsGroup group = beginRectsGroupText(renderBuffer, shaderID, font, glyphsToOutput);
-	// RenderItem_DrawThing *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
+	DrawRectsGroup group = beginRectsGroupForText(renderBuffer, shaderID, font, glyphsToOutput);
 
 	s32 currentX = 0;
 	s32 currentY = 0;
@@ -379,8 +378,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 							// Wrap the whole word onto a new line
 
 							// Offset from where the word was, to its new position
-							RenderItem_DrawRects_Item *firstItemInWord = getRectAt(&group, startOfCurrentWord);
-							f32 offsetX = topLeft.x - firstItemInWord->bounds.x;
+							f32 offsetX = topLeft.x - currentLineWidth;
 							f32 offsetY = (f32)font->lineHeight;
 							offsetRange(&group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
 
@@ -396,11 +394,6 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 					}
 
 					addGlyphRect(&group, glyph, topLeft + v2(currentX, currentY), color);
-
-					// makeRenderItem(getItemInRange(firstRenderItem, glyphCount),
-					// 	rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
-					// 	depth, font->texture, glyph->uv, shaderID, color
-					// );
 
 					currentChar++;
 					if (caretInfoResult && currentChar == caretIndex)

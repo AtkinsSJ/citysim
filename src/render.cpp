@@ -269,7 +269,7 @@ DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
 	return result;
 }
 
-DrawRectsGroup beginRectsGroupText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
+DrawRectsGroup beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
 
@@ -325,14 +325,6 @@ inline void addSpriteRect(DrawRectsGroup *group, Sprite *sprite, Rect2 bounds, V
 	}
 
 	addRectInternal(group, bounds, color, sprite->uv);
-}
-
-// @Cleanup: I want to avoid exposing the _Item struct to user code!
-RenderItem_DrawRects_Item *getRectAt(DrawRectsGroup *group, s32 index)
-{
-	ASSERT(index >= 0 && index < group->header->count);
-
-	return group->first + index;
 }
 
 void offsetRange(DrawRectsGroup *group, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY)
