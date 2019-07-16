@@ -26,8 +26,8 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 {
 	renderer->window = window;
 
-	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", MB(1));
-	initRenderBuffer(renderArena, &renderer->uiBuffer,    "UIBuffer",    MB(1));
+	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", KB(64));
+	initRenderBuffer(renderArena, &renderer->uiBuffer,    "UIBuffer",    KB(64));
 }
 
 void freeRenderer(Renderer *renderer)
@@ -246,7 +246,7 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 	return result;
 }
 
-DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
+DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
 
@@ -263,37 +263,31 @@ DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
 	result.maxCount = maxCount;
 
 	*result.header = {};
+	result.header->texture = texture;
 	result.header->shaderID = shaderID;
 	result.header->count = 0;
 
 	return result;
 }
 
-DrawRectsGroup beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
+inline DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
 {
-	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
+	return beginRectsGroup(buffer, shaderID, null, maxCount);
+}
 
-	DrawRectsGroup result = {};
-
-	result.buffer = buffer;
-
-	smm reservedSize = sizeof(RenderItem_DrawRects_Item) * maxCount;
-	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
-	buffer->hasRangeReserved = true;
-
-	result.header = (RenderItem_DrawRects *) data;
-	result.first  = (RenderItem_DrawRects_Item *) (data + sizeof(RenderItem_DrawRects));
-	result.maxCount = maxCount;
-
-	result.header->shaderID = shaderID;
-	result.header->texture = font->texture;
-	result.header->count = 0;
-
-	return result;
+inline DrawRectsGroup beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
+{
+	return beginRectsGroup(buffer, shaderID, font->texture, maxCount);
 }
 
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)
 {
+	if (group->header->count == maxRenderItemsPerGroup)
+	{
+		endRectsGroup(group);
+		*group = beginRectsGroup(group->buffer, group->header->shaderID, group->header->texture, group->maxCount - maxRenderItemsPerGroup);
+	}
+
 	ASSERT(group->header->count < group->maxCount);
 
 	RenderItem_DrawRects_Item *item = group->first + group->header->count++;

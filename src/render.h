@@ -43,6 +43,7 @@ struct RenderItem_DrawThing
 	Rect2 uv; // in (0 to 1) space
 };
 
+const s32 maxRenderItemsPerGroup = 255;
 struct RenderItem_DrawRects
 {
 	s32 count;
@@ -154,6 +155,7 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 }
 
 // NB: The Rects drawn must all have the same Texture!
+DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount);
 DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
 DrawRectsGroup beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
