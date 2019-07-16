@@ -647,7 +647,7 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 	V4 terrainColor = makeWhite();
 
 	s32 tilesToDraw = areaOf(visibleArea);
-	DrawSpritesState state = startDrawingSprites(&renderer->worldBuffer, shaderID, tilesToDraw);
+	DrawRectsGroup group = beginRectsGroup(&renderer->worldBuffer, shaderID, tilesToDraw);
 
 	Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleArea);
 	for (s32 sY = visibleSectors.y;
@@ -681,12 +681,12 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderI
 					Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
 					spriteBounds.x = (f32)(sector->bounds.x + relX);
 
-					drawSpritesItem(&state, sprite, spriteBounds, terrainColor);
+					addSpriteRect(&group, sprite, spriteBounds, terrainColor);
 				}
 			}
 		}
 	}
-	finishSprites(&state);
+	endRectsGroup(&group);
 }
 
 TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y)
@@ -776,7 +776,7 @@ void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s32
 	// - Sam, 16/07/2019
 	// 
 	s32 buildingsRemaining = truncate32(visibleBuildings.count);
-	DrawSpritesState state = startDrawingSprites(&renderer->worldBuffer, shaderID, buildingsRemaining);
+	DrawRectsGroup group = beginRectsGroup(&renderer->worldBuffer, shaderID, buildingsRemaining);
 
 	Asset *texture = null;
 
@@ -809,16 +809,16 @@ void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s32
 		else if (texture != sprite->texture)
 		{
 			// Finish the current group and start a new one
-			finishSprites(&state);
-			state = startDrawingSprites(&renderer->worldBuffer, shaderID, buildingsRemaining);
+			endRectsGroup(&group);
+			group = beginRectsGroup(&renderer->worldBuffer, shaderID, buildingsRemaining);
 
 			texture = sprite->texture;
 		}
 
-		drawSpritesItem(&state, sprite, rect2(building->footprint), drawColor);
+		addSpriteRect(&group, sprite, rect2(building->footprint), drawColor);
 		buildingsRemaining--;
 	}
-	finishSprites(&state);
+	endRectsGroup(&group);
 }
 
 inline s32 getPathGroupAt(City *city, s32 x, s32 y)

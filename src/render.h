@@ -28,9 +28,7 @@ enum RenderItemType
 	RenderItemType_NextMemoryChunk,
 	RenderItemType_DrawThing, // @Cleanup DEPRECATED!!!
 
-	RenderItemType_DrawRectangles,
-	RenderItemType_DrawText,
-	RenderItemType_DrawSprites,
+	RenderItemType_DrawRects,
 };
 
 // @Cleanup DEPRECATED!!!
@@ -45,41 +43,26 @@ struct RenderItem_DrawThing
 	Rect2 uv; // in (0 to 1) space
 };
 
-struct RenderItem_DrawRectangles
+struct RenderItem_DrawRects
 {
-	s32 shaderID;
 	s32 count;
-};
-struct RenderItem_DrawRectangles_Item
-{
-	Rect2 bounds;
-	V4 color;
-};
-
-struct RenderItem_DrawText
-{
 	s32 shaderID;
 	Asset *texture;
-	s32 count;
 };
-struct RenderItem_DrawText_Item
+struct RenderItem_DrawRects_Item
 {
 	Rect2 bounds;
 	V4 color;
 	Rect2 uv;
 };
 
-struct RenderItem_DrawSprites
+struct DrawRectsGroup
 {
-	s32 shaderID;
-	Asset *texture;
-	s32 count;
-};
-struct RenderItem_DrawSprites_Item
-{
-	Rect2 bounds;
-	V4 color;
-	Rect2 uv;
+	RenderBuffer *buffer;
+
+	RenderItem_DrawRects *header;
+	RenderItem_DrawRects_Item *first;
+	s32 maxCount;
 };
 
 struct RenderBufferChunk
@@ -169,44 +152,16 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
 
-struct DrawRectanglesState
-{
-	RenderBuffer *buffer;
-
-	RenderItem_DrawRectangles *header;
-	RenderItem_DrawRectangles_Item *first;
-	s32 maxCount;
-};
-DrawRectanglesState startDrawingRectangles(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
-void drawRectangle(DrawRectanglesState *state, Rect2 bounds, V4 color);
-void finishRectangles(DrawRectanglesState *state);
-
-struct DrawTextState
-{
-	RenderBuffer *buffer;
-
-	RenderItem_DrawText *header;
-	RenderItem_DrawText_Item *first;
-	s32 maxCount;
-};
-DrawTextState startDrawingText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
-void drawTextItem(DrawTextState *state, BitmapFontGlyph *glyph, V2 position, V4 color);
-RenderItem_DrawText_Item *getTextItem(DrawTextState *state, s32 index);
-void offsetRange(DrawTextState *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
-void finishText(DrawTextState *state);
-
-struct DrawSpritesState
-{
-	RenderBuffer *buffer;
-
-	RenderItem_DrawSprites *header;
-	RenderItem_DrawSprites_Item *first;
-	s32 maxCount;
-};
-// NB: The Sprites drawn must all have the same Texture! This is asserted in drawSpritesItem().
-DrawSpritesState startDrawingSprites(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
-void drawSpritesItem(DrawSpritesState *state, Sprite *sprite, Rect2 bounds, V4 color);
-void finishSprites(DrawSpritesState *state);
+// NB: The Rects drawn must all have the same Texture! This is asserted in addSpriteRect().
+DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
+DrawRectsGroup beginRectsGroupText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
+void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
+void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);
+void addSpriteRect(DrawRectsGroup *state, Sprite *sprite, Rect2 bounds, V4 color);
+void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color);
+RenderItem_DrawRects_Item *getRectAt(DrawRectsGroup *state, s32 index);
+void offsetRange(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
+void endRectsGroup(DrawRectsGroup *group);
 
 //
 // NB: Some operations are massively sped up if we can ensure there is space up front,
