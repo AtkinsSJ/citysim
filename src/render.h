@@ -28,6 +28,7 @@ enum RenderItemType
 	RenderItemType_NextMemoryChunk,
 	RenderItemType_DrawThing, // @Cleanup DEPRECATED!!!
 
+	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
 };
 
@@ -36,6 +37,16 @@ struct RenderItem_DrawThing
 {
 	Rect2 rect;
 	f32 depth; // Positive is towards the player
+	V4 color;
+	s32 shaderID;
+
+	Asset *texture;
+	Rect2 uv; // in (0 to 1) space
+};
+
+struct RenderItem_DrawSingleRect
+{
+	Rect2 bounds;
 	V4 color;
 	s32 shaderID;
 
@@ -113,6 +124,7 @@ struct Renderer
 	SDL_Window *window;
 
 	RenderBuffer worldBuffer;
+	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
 
 	void *platformRenderer;
@@ -168,6 +180,9 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 {
 	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
 }
+
+void drawSingleSprite(RenderBuffer *buffer, s32 shaderID, Sprite *sprite, Rect2 bounds, V4 color);
+void drawSingleRect(RenderBuffer *buffer, s32 shaderID, Rect2 bounds, V4 color);
 
 // NB: The Rects drawn must all have the same Texture!
 DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount);

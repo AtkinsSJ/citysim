@@ -16,7 +16,7 @@ Notes for searching:
 
 Renderer optimisation!
 ✔ Remove the need for sorting, push draw everything in order
-- Switch to a flat memory push-buffer instead of an array of RenderItems
+✔ Switch to a flat memory push-buffer instead of an array of RenderItems
 	- reserveRange() needs work!!!
 - Things other than RenderItems!
 	- Set the shader/texture/whatever
@@ -29,7 +29,8 @@ Renderer optimisation!
 	- Factor down the "define the start of a range, add stuff to it, manipulate existing items in that range, and then say how much was used" code into a generic system.
 		- DrawText and DrawSprites have a LOT in common, the structs and the GL_Render() code are identical!
 	- Maybe send data to the renderer in a more render-friendly form? (ie, send vertex data instead of the renderer having to construct it.) Then again, that could cause problems if we use multiple renderers? IDK, probably not. It might be more awkward for user code to manipulate things it's submitted already though. IDK.
-- Maybe get rid of the overlayRenderItems thing, if we can
+✔ Maybe get rid of the overlayRenderItems thing, if we can
+	- Should be able to merge worldOverlayBuffer with worldBuffer, and just have a set of overlay RenderBufferChunks - they can use the same free list as the regular chunks do, so the only difference is we make sure to tack the list on the end of the main list just before rendering.
 
 Speed up debug system?
 

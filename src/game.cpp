@@ -15,8 +15,6 @@ GameState *initialiseGameState()
 
 	result->actionMode = ActionMode_None;
 
-	initChunkedArray(&result->overlayRenderItems, &result->gameArena, 512);
-
 	result->worldDragState.citySize = v2i(result->city.width, result->city.height);
 
 	return result;
@@ -528,18 +526,6 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
-void pushOverlayRenderItem(GameState *gameState, Rect2 rect, f32 depth, V4 color, s32 shaderID, Sprite *sprite = null)
-{
-	Asset *texture = null;
-	Rect2 uv = {};
-	if (sprite != null)
-	{
-		texture = sprite->texture;
-		uv = sprite->uv;
-	}
-	makeRenderItem(appendUninitialised(&gameState->overlayRenderItems), rect, depth, texture, uv, shaderID, color);
-}
-
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
@@ -644,9 +630,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
 
 							Sprite *sprite = getSprite(buildingDef->sprites, 0);
-							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100,
-													canPlace ? ghostColorValid : ghostColorInvalid,
-													pixelArtShaderID, sprite);
+							V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
+							drawSingleSprite(&renderer->worldOverlayBuffer, pixelArtShaderID, sprite, rect2(footprint), color);
 						}
 					} break;
 
@@ -680,6 +665,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 								if (canAfford(city, buildCost))
 								{
 									Sprite *sprite = getSprite(buildingDef->sprites, 0);
+									// TODO: @Speed: Render this as a batch!
 									for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
 									{
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
@@ -687,13 +673,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 											bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y);
 
 											Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
-											pushOverlayRenderItem(gameState, rect, depthFromY(dragResult.dragRect.y + y) + 100, canPlace ? ghostColorValid : ghostColorInvalid, pixelArtShaderID, sprite);
+
+											V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
+											drawSingleSprite(&renderer->worldOverlayBuffer, pixelArtShaderID, sprite, rect, color);
 										}
 									}
 								}
 								else
 								{
-									pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+									drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(255, 64, 64, 128));
 								}
 							} break;
 						}
@@ -739,6 +727,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							//
 							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
 							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
+							// TODO: @Speed: Render this as a batch!
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
 								zoneRect.y = (f32) y;
@@ -747,14 +736,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									zoneRect.x = (f32) x;
 									if (canZoneTile(city, gameState->selectedZoneID, x, y))
 									{
-										pushOverlayRenderItem(gameState, zoneRect, 0, zoneColor, rectangleShaderID);
+										drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, zoneRect, zoneColor);
 									}
 								}
 							}
 						}
 						else
 						{
-							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+							drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -788,11 +777,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						if (canAfford(city, demolishCost))
 						{
 							// Demolition outline
-							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(128, 0, 0, 128), rectangleShaderID);
+							drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(128, 0, 0, 128));
 						}
 						else
 						{
-							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+							drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -884,22 +873,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 				}
 			}
 		}
-	}
-
-	// Draw the things we prepared in overlayRenderItems earlier
-	{
-		DEBUG_BLOCK_T("Transfer overlayRenderItems", DCDT_GameUpdate);
-
-		RenderItem_DrawThing *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
-		s32 overlayRenderItemsDrawn = 0;
-		for (auto it = iterate(&gameState->overlayRenderItems);
-			!it.isDone;
-			next(&it))
-		{
-			*getItemInRange(firstRenderItem, overlayRenderItemsDrawn++) = *get(it);
-		}
-		finishReservedRenderItemRange(&renderer->worldBuffer, overlayRenderItemsDrawn);
-		clear(&gameState->overlayRenderItems);
 	}
 
 #if 0

@@ -26,8 +26,9 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 {
 	renderer->window = window;
 
-	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", KB(64));
-	initRenderBuffer(renderArena, &renderer->uiBuffer,    "UIBuffer",    KB(64));
+	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        KB(64));
+	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", KB(64));
+	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer",           KB(64));
 }
 
 void freeRenderer(Renderer *renderer)
@@ -247,35 +248,30 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 	return result;
 }
 
-DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)
+void drawSingleSprite(RenderBuffer *buffer, s32 shaderID, Sprite *sprite, Rect2 bounds, V4 color)
 {
-	DrawRectsSubGroup result = {};
+	ASSERT(!buffer->hasRangeReserved);
 
-	s32 subGroupItemCount = min(group->maxCount - group->count, maxRenderItemsPerGroup);
-	ASSERT(subGroupItemCount > 0);
+	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
 
-	smm reservedSize = sizeof(RenderItem_DrawRects_Item) * subGroupItemCount;
-	u8 *data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
-	group->buffer->hasRangeReserved = true;
-
-	result.header = (RenderItem_DrawRects *) data;
-	result.first  = (RenderItem_DrawRects_Item *) (data + sizeof(RenderItem_DrawRects));
-	result.maxCount = subGroupItemCount;
-
-	*result.header = {};
-	result.header->texture = group->texture;
-	result.header->shaderID = group->shaderID;
-	result.header->count = 0;
-
-	return result;
+	rect->bounds = bounds;
+	rect->color = color;
+	rect->shaderID = shaderID;
+	rect->texture = sprite->texture;
+	rect->uv = sprite->uv;
 }
 
-void endCurrentSubGroup(DrawRectsGroup *group)
+void drawSingleRect(RenderBuffer *buffer, s32 shaderID, Rect2 bounds, V4 color)
 {
-	ASSERT(group->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
-	group->buffer->hasRangeReserved = false;
+	ASSERT(!buffer->hasRangeReserved);
 
-	group->buffer->currentChunk->used += group->currentSubGroup->header->count * sizeof(RenderItem_DrawRects_Item);
+	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+
+	rect->bounds = bounds;
+	rect->color = color;
+	rect->shaderID = shaderID;
+	rect->texture = null;
+	rect->uv = {};
 }
 
 DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount)
@@ -305,6 +301,37 @@ inline DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 m
 inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
 {
 	return beginRectsGroup(buffer, shaderID, font->texture, maxCount);
+}
+
+DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)
+{
+	DrawRectsSubGroup result = {};
+
+	s32 subGroupItemCount = min(group->maxCount - group->count, maxRenderItemsPerGroup);
+	ASSERT(subGroupItemCount > 0);
+
+	smm reservedSize = sizeof(RenderItem_DrawRects_Item) * subGroupItemCount;
+	u8 *data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
+	group->buffer->hasRangeReserved = true;
+
+	result.header = (RenderItem_DrawRects *) data;
+	result.first  = (RenderItem_DrawRects_Item *) (data + sizeof(RenderItem_DrawRects));
+	result.maxCount = subGroupItemCount;
+
+	*result.header = {};
+	result.header->texture = group->texture;
+	result.header->shaderID = group->shaderID;
+	result.header->count = 0;
+
+	return result;
+}
+
+void endCurrentSubGroup(DrawRectsGroup *group)
+{
+	ASSERT(group->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	group->buffer->hasRangeReserved = false;
+
+	group->buffer->currentChunk->used += group->currentSubGroup->header->count * sizeof(RenderItem_DrawRects_Item);
 }
 
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)

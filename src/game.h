@@ -62,10 +62,6 @@ struct GameState
 
 	// Rendering-related stuff
 	u32 dataLayerToDraw;
-	// Things we want to draw in world-space, over the top of the world, but which we know about before rendering.
-	// eg, ghost building previews are calculated early in the game loop, but we want them drawn at the end.
-	// 
-	ChunkedArray<RenderItem_DrawThing> overlayRenderItems;
 
 	DragState worldDragState;
 	ActionMode actionMode;
