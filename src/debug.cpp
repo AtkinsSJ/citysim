@@ -174,7 +174,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 
 	if (doHighlight && contains(resultRect, textState->uiState->uiBuffer->camera.mousePos))
 	{
-		drawRect(textState->uiState->uiBuffer, resultRect, 300 - 10, textState->uiState->untexturedShaderID, color255(255, 255, 255, 48));
+		drawSingleRect(textState->uiState->uiBuffer, textState->uiState->untexturedShaderID, resultRect, color255(255, 255, 255, 48));
 	}
 }
 
@@ -186,8 +186,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 	u32 rfi = debugState->readingFrameIndex;
-	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
-		     100, uiState->untexturedShaderID, color255(0,0,0,128));
+	drawSingleRect(uiBuffer, uiState->untexturedShaderID, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y), color255(0,0,0,128));
 
 	DebugTextState textState;
 	initDebugTextState(&textState, uiState, font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
@@ -297,13 +296,10 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		{
 		u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
 		f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-			drawRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), 200, uiState->untexturedShaderID,
-				     fi == rfi ? activeBarColor : barColor);
+			drawSingleRect(uiBuffer, uiState->untexturedShaderID, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
 		}
-		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight, uiBuffer->camera.size.x, 1),
-		         201, uiState->untexturedShaderID, color255(255, 255, 255, 128));
-		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1),
-		         201, uiState->untexturedShaderID, color255(255, 255, 255, 128));
+		drawSingleRect(uiBuffer, uiState->untexturedShaderID, rectXYWH(0, uiBuffer->camera.size.y - graphHeight, uiBuffer->camera.size.x, 1), color255(255, 255, 255, 128));
+		drawSingleRect(uiBuffer, uiState->untexturedShaderID, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1), color255(255, 255, 255, 128));
 	}
 
 	// Put FPS in top right

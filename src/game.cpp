@@ -407,7 +407,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
-	drawRect(uiBuffer, uiRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+	drawSingleRect(uiBuffer, uiState->untexturedShaderID, uiRect, theme->overlayColor);
 
 	uiText(uiState, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, 1, labelStyle->textColor);
@@ -869,7 +869,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				if (tileHasData)
 				{
-					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 9999.0f, rectangleShaderID, color);
+					drawSingleRect(&renderer->worldBuffer, rectangleShaderID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), color);
 				}
 			}
 		}

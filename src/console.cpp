@@ -83,7 +83,7 @@ void renderConsole(Console *console, UIState *uiState)
 	RenderItem_DrawThing *consoleBackground = appendRenderItem(uiState->uiBuffer);
 	RenderItem_DrawThing *inputBackground   = appendRenderItem(uiState->uiBuffer);
 
-	Rect2 textInputRect = drawTextInput(uiState, consoleFont, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
+	Rect2 textInputRect = drawTextInput(uiState, consoleFont, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textState.maxWidth);
 	textState.pos.y -= textInputRect.h;
 
 	textState.pos.y -= 8.0f;

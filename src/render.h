@@ -171,10 +171,6 @@ inline void drawRect(RenderItem_DrawThing *renderItem, Rect2 rect, f32 depth, s3
 {
 	makeRenderItem(renderItem, rect, depth, null, {}, shaderID, color);
 }
-inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
-{
-	drawRect(appendRenderItem(buffer), rect, depth, shaderID, color);
-}
 
 void drawSingleSprite(RenderBuffer *buffer, s32 shaderID, Sprite *sprite, Rect2 bounds, V4 color);
 void drawSingleRect(RenderBuffer *buffer, s32 shaderID, Rect2 bounds, V4 color);

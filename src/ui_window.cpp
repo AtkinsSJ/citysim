@@ -496,7 +496,7 @@ void renderWindows(UIState *uiState)
 
 		if (isModal)
 		{
-			drawRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), depth - 1.0f, uiState->untexturedShaderID, color255(64, 64, 64, 128)); 
+			drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), color255(64, 64, 64, 128)); 
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
@@ -533,13 +533,13 @@ void renderWindows(UIState *uiState)
 
 			BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontName);
 
-			drawRect(uiState->uiBuffer, barArea, depth, uiState->untexturedShaderID, barColor);
+			drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, barArea, barColor);
 			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
-				drawRect(uiState->uiBuffer, closeButtonRect, depth + 1.0f, uiState->untexturedShaderID, closeButtonColorHover);
+				drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, closeButtonRect, closeButtonColorHover);
 			}
 			uiText(uiState, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
 		}

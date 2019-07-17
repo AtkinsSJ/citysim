@@ -122,7 +122,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool activ
 		backColor = style->hoverColor;
 	}
 
-	drawRect(uiState->uiBuffer, bounds, depth, uiState->untexturedShaderID, backColor);
+	drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, bounds, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(uiState, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, depth + 1,
 			style->textColor);
@@ -219,7 +219,7 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 	f32 knobTravelableH = height - knobSize.y;
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
-	drawRect(uiBuffer, knobRect, depth, shaderID, knobColor);
+	drawSingleRect(uiBuffer, shaderID, knobRect, knobColor);
 }
 
 inline void uiCloseMenus(UIState *uiState)

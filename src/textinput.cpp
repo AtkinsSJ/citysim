@@ -19,7 +19,7 @@ String textInputToString(TextInput *textInput)
 	return result;
 }
 
-Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth)
+Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
@@ -50,7 +50,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 		// Shifted 1px left for better legibility of text
 		caretRect.x -= 1.0f;
 
-		drawRect(uiState->uiBuffer, caretRect, depth + 10, uiState->untexturedShaderID, color);
+		drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, caretRect, color);
 	}
 
 	return bounds;
