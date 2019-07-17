@@ -362,6 +362,8 @@ void offsetRange(DrawRectsGroup *group, s32 startIndex, s32 endIndexInclusive, f
 	ASSERT(endIndexInclusive >= 0 && endIndexInclusive < group->count);
 	ASSERT(startIndex <= endIndexInclusive);
 
+	s32 debugItemsUpdated = 0;
+
 	DrawRectsSubGroup *subGroup = &group->firstSubGroup;
 	s32 firstIndexInSubGroup = 0;
 	// Find the first subgroup that's involved
@@ -372,27 +374,25 @@ void offsetRange(DrawRectsGroup *group, s32 startIndex, s32 endIndexInclusive, f
 	}
 
 	// Update the items in the range
-	while (true)
+	while (firstIndexInSubGroup <= endIndexInclusive)
 	{
-		for (s32 index = startIndex - firstIndexInSubGroup;
+		s32 index = startIndex - firstIndexInSubGroup;
+		if (index < 0) index = 0;
+		for (;
 			(index <= endIndexInclusive - firstIndexInSubGroup) && (index < subGroup->header->count);
 			index++)
 		{
 			RenderItem_DrawRects_Item *item = subGroup->first + index;
 			item->bounds.x += offsetX;
 			item->bounds.y += offsetY;
+			debugItemsUpdated++;
 		}
 
-		if (firstIndexInSubGroup + subGroup->header->count < endIndexInclusive)
-		{
-			firstIndexInSubGroup += subGroup->header->count;
-			subGroup = subGroup->next;
-		}
-		else
-		{
-			break;
-		}
+		firstIndexInSubGroup += subGroup->header->count;
+		subGroup = subGroup->next;
 	}
+
+	ASSERT(debugItemsUpdated == (endIndexInclusive - startIndex) + 1);
 }
 
 void endRectsGroup(DrawRectsGroup *group)
