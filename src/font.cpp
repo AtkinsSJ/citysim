@@ -380,8 +380,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 							// Wrap the whole word onto a new line
 
 							// Offset from where the word was, to its new position
-							f32 offsetX = topLeft.x - currentLineWidth - whitespaceWidthBeforeCurrentWord;
-							f32 offsetY = (f32)font->lineHeight;
+							f32 offsetX = (f32) -(currentLineWidth + whitespaceWidthBeforeCurrentWord);
+							f32 offsetY = (f32) font->lineHeight;
 							offsetRange(group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
 
 							// Set the current position to where the next word will start
