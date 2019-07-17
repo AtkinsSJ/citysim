@@ -120,59 +120,6 @@ inline void makeRenderItem(RenderItem_DrawThing *result, Rect2 rect, f32 depth, 
 #endif
 }
 
-RenderItem_DrawThing *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
-{
-	// TODO: This all needs a real go-over!
-	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
-
-	smm size = count * (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
-
-	// TODO: Expand to make room.
-	// Make sure there's space for the item range and a "go to next thing" item
-	ASSERT(buffer->currentChunk->size - buffer->currentChunk->used >= size + (smm)sizeof(RenderItemType));
-
-	buffer->hasRangeReserved = true;
-	buffer->reservedRangeSize = size;
-
-	smm stride = sizeof(RenderItemType) + sizeof(RenderItem_DrawThing);
-	u8 *base = buffer->currentChunk->memory + buffer->currentChunk->used;
-	for (s32 i = 0; i < count; i++)
-	{
-		*(RenderItemType *)(base + (i * stride)) = RenderItemType_DrawThing;
-	}
-
-	RenderItem_DrawThing *result = (RenderItem_DrawThing *)(buffer->currentChunk->memory + buffer->currentChunk->used + sizeof(RenderItemType));
-
-	return result;
-}
-
-void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
-{
-	ASSERT(buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
-	if (itemsAdded > buffer->reservedRangeSize)
-	{
-		logError("You drew {0} items but only reserved room for {1}!!! This is really bad.", {formatInt(itemsAdded), formatInt(buffer->reservedRangeSize)});
-		ASSERT_RELEASE(false);
-	}
-
-	buffer->hasRangeReserved = false;
-	buffer->currentChunk->used += itemsAdded * (sizeof(RenderItemType) + sizeof(RenderItem_DrawThing));
-}
-
-void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY)
-{
-	smm stride = sizeof(RenderItem_DrawThing) + sizeof(RenderItemType);
-
-	RenderItem_DrawThing *it = firstItem;
-	while (it <= lastItem)
-	{
-		it->rect.x += offsetX;
-		it->rect.y += offsetY;
-
-		it = (RenderItem_DrawThing *)( (u8*)it + stride );
-	}
-}
-
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
 {
 	buffer->name = pushString(arena, name);

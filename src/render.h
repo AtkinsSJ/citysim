@@ -176,11 +176,6 @@ inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, 
 	drawRect(appendRenderItem(buffer), rect, depth, shaderID, color);
 }
 
-inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
-{
-	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
-}
-
 void drawSingleSprite(RenderBuffer *buffer, s32 shaderID, Sprite *sprite, Rect2 bounds, V4 color);
 void drawSingleRect(RenderBuffer *buffer, s32 shaderID, Rect2 bounds, V4 color);
 
@@ -197,33 +192,6 @@ void endRectsGroup(DrawRectsGroup *group);
 
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group);
 void endCurrentSubGroup(DrawRectsGroup *group);
-
-//
-// NB: Some operations are massively sped up if we can ensure there is space up front,
-// and then just write them with a pointer offset. The downside is we then can't add
-// any other RenderItems until the reserved range is finished with.
-//
-// Usage:
-// 		RenderItem_DrawThing *firstItem = reserveRenderItemRange(buffer, itemsToReserve);
-// 		... write to firstItem, firstItem + 1, ... firstItem + (itemsToReserve - 1)
-// 		finishReservedRenderItemRange(buffer, numberOfItemsWeActuallyAdded);
-//
-// `numberOfItemsWeActuallyAdded` needs to be <= `itemsToReserve`.
-// There are a bunch of asserts and checks to (hopefully) prevent any mistakes when
-// using this, but hey, I'm great at inventing exciting new ways to mess up!
-//
-// - Sam, 24/06/2019
-//
-RenderItem_DrawThing *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
-RenderItem_DrawThing *getItemInRange(RenderItem_DrawThing *first, s32 index)
-{
-	u8 *start = (u8*)first;
-	smm stride = sizeof(RenderItem_DrawThing) + sizeof(RenderItemType);
-	return (RenderItem_DrawThing *)(start + (stride * index));
-}
-void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
-
-void applyOffsetToRenderItems(RenderItem_DrawThing *firstItem, RenderItem_DrawThing *lastItem, f32 offsetX, f32 offsetY);
 
 void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen);
 void onWindowResized(Renderer *renderer, s32 w, s32 h);
