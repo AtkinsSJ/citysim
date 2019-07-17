@@ -218,9 +218,11 @@ void _alignText(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, s3
 	}
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, f32 depth, V4 color, s32 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, V4 color, s32 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
+
+	if (text.length <= 0) return;
 
 	ASSERT(renderBuffer != null); //RenderBuffer must be provided!
 	ASSERT(font != null); //Font must be provided!
@@ -246,7 +248,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	// s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 	s32 glyphsToOutput = text.length;
 
-	DrawRectsGroup group = beginRectsGroupForText(renderBuffer, shaderID, font, glyphsToOutput);
+	DrawRectsGroup *group = beginRectsGroupForText(renderBuffer, shaderID, font, glyphsToOutput);
 
 	s32 currentX = 0;
 	s32 currentY = 0;
@@ -280,7 +282,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 			// Do line-alignment stuff
 			// (This only has to happen for the first newline in a series of newlines!)
-			_alignText(&group, startOfCurrentLine, glyphCount - 1, currentLineWidth, maxWidth, align);
+			_alignText(group, startOfCurrentLine, glyphCount - 1, currentLineWidth, maxWidth, align);
 			startOfCurrentLine = glyphCount;
 			currentLineWidth = 0;
 
@@ -380,20 +382,20 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 							// Offset from where the word was, to its new position
 							f32 offsetX = topLeft.x - currentLineWidth;
 							f32 offsetY = (f32)font->lineHeight;
-							offsetRange(&group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
+							offsetRange(group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
 
 							// Set the current position to where the next word will start
 							currentX = currentWordWidth;
 						}
 
 						// Do line-alignment stuff
-						_alignText(&group, startOfCurrentLine, startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
+						_alignText(group, startOfCurrentLine, startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
 						startOfCurrentLine = startOfCurrentWord;
 						currentLineWidth = 0;
 						whitespaceWidthBeforeCurrentWord = 0;
 					}
 
-					addGlyphRect(&group, glyph, topLeft + v2(currentX, currentY), color);
+					addGlyphRect(group, glyph, topLeft + v2(currentX, currentY), color);
 
 					currentChar++;
 					if (caretInfoResult && currentChar == caretIndex)
@@ -417,7 +419,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	}
 
 	// Align the final line
-	_alignText(&group, startOfCurrentLine, glyphCount-1, currentLineWidth, maxWidth, align);
+	_alignText(group, startOfCurrentLine, glyphCount-1, currentLineWidth, maxWidth, align);
 
 	if (caretInfoResult && currentChar < caretIndex)
 	{
@@ -425,8 +427,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
 	}
 
-	ASSERT(glyphCount == group.header->count);
-	endRectsGroup(&group);
+	ASSERT(glyphCount == group->count);
+	endRectsGroup(group);
 }
 
 V2 calculateTextPosition(V2 origin, V2 size, u32 align)

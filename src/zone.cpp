@@ -120,7 +120,7 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32
 
 	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
-	DrawRectsGroup group = beginRectsGroup(&renderer->worldBuffer, shaderID, areaOf(visibleArea));
+	DrawRectsGroup *group = beginRectsGroup(&renderer->worldBuffer, shaderID, areaOf(visibleArea));
 
 	Rect2I visibleSectors = getSectorsCovered(&zoneLayer->sectors, visibleArea);
 	for (s32 sY = visibleSectors.y;
@@ -155,15 +155,14 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32
 
 						spriteBounds.x = (f32)(sector->bounds.x + relX);
 
-						addUntexturedRect(&group, spriteBounds, zoneColor);
-						// drawRect(&renderer->worldBuffer, spriteBounds, -900.0f, shaderID, zoneColor);
+						addUntexturedRect(group, spriteBounds, zoneColor);
 					}
 				}
 			}
 		}
 	}
 
-	endRectsGroup(&group);
+	endRectsGroup(group);
 }
 
 void placeZone(City *city, ZoneType zoneType, Rect2I area)

@@ -57,14 +57,29 @@ struct RenderItem_DrawRects_Item
 	Rect2 uv;
 };
 
+struct DrawRectsSubGroup
+{
+	RenderItem_DrawRects *header;
+	RenderItem_DrawRects_Item *first;
+	s32 maxCount;
+
+	DrawRectsSubGroup *prev;
+	DrawRectsSubGroup *next;
+};
+
 // Think of this like a "handle". It has data inside but you shouldn't touch it from user code!
 struct DrawRectsGroup
 {
 	RenderBuffer *buffer;
 
-	RenderItem_DrawRects *header;
-	RenderItem_DrawRects_Item *first;
+	DrawRectsSubGroup firstSubGroup;
+	DrawRectsSubGroup *currentSubGroup;
+
+	s32 count;
 	s32 maxCount;
+
+	Asset *texture;
+	s32 shaderID;
 };
 
 struct RenderBufferChunk
@@ -155,15 +170,18 @@ inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 dep
 }
 
 // NB: The Rects drawn must all have the same Texture!
-DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount);
-DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
-DrawRectsGroup beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount);
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
+DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
 void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);
 void addSpriteRect(DrawRectsGroup *state, Sprite *sprite, Rect2 bounds, V4 color);
 void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color);
 void offsetRange(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
 void endRectsGroup(DrawRectsGroup *group);
+
+DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group);
+void endCurrentSubGroup(DrawRectsGroup *group);
 
 //
 // NB: Some operations are massively sped up if we can ensure there is space up front,

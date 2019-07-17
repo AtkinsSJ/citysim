@@ -246,54 +246,87 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 	return result;
 }
 
-DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount)
+DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)
 {
-	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
+	DrawRectsSubGroup result = {};
 
-	DrawRectsGroup result = {};
+	s32 subGroupItemCount = min(group->maxCount - group->count, maxRenderItemsPerGroup);
+	ASSERT(subGroupItemCount > 0);
 
-	result.buffer = buffer;
-
-	smm reservedSize = sizeof(RenderItem_DrawRects_Item) * maxCount;
-	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
-	buffer->hasRangeReserved = true;
+	smm reservedSize = sizeof(RenderItem_DrawRects_Item) * subGroupItemCount;
+	u8 *data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
+	group->buffer->hasRangeReserved = true;
 
 	result.header = (RenderItem_DrawRects *) data;
 	result.first  = (RenderItem_DrawRects_Item *) (data + sizeof(RenderItem_DrawRects));
-	result.maxCount = maxCount;
+	result.maxCount = subGroupItemCount;
 
 	*result.header = {};
-	result.header->texture = texture;
-	result.header->shaderID = shaderID;
+	result.header->texture = group->texture;
+	result.header->shaderID = group->shaderID;
 	result.header->count = 0;
 
 	return result;
 }
 
-inline DrawRectsGroup beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
+void endCurrentSubGroup(DrawRectsGroup *group)
+{
+	ASSERT(group->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	group->buffer->hasRangeReserved = false;
+
+	group->buffer->currentChunk->used += group->currentSubGroup->header->count * sizeof(RenderItem_DrawRects_Item);
+}
+
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount)
+{
+	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
+
+	DrawRectsGroup *result = allocateStruct<DrawRectsGroup>(globalFrameTempArena);
+	*result = {};
+
+	result->buffer = buffer;
+	result->count = 0;
+	result->maxCount = maxCount;
+	result->shaderID = shaderID;
+	result->texture = texture;
+
+	result->firstSubGroup = beginRectsSubGroup(result);
+	result->currentSubGroup = &result->firstSubGroup;
+
+	return result;
+}
+
+inline DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
 {
 	return beginRectsGroup(buffer, shaderID, null, maxCount);
 }
 
-inline DrawRectsGroup beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
+inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
 {
 	return beginRectsGroup(buffer, shaderID, font->texture, maxCount);
 }
 
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)
 {
-	if (group->header->count == maxRenderItemsPerGroup)
+	group->count++;
+	ASSERT(group->count <= group->maxCount);
+
+	if (group->currentSubGroup->header->count == group->currentSubGroup->maxCount)
 	{
-		endRectsGroup(group);
-		*group = beginRectsGroup(group->buffer, group->header->shaderID, group->header->texture, group->maxCount - maxRenderItemsPerGroup);
+		endCurrentSubGroup(group);
+		DrawRectsSubGroup *prevSubGroup = group->currentSubGroup;
+		group->currentSubGroup = allocateStruct<DrawRectsSubGroup>(globalFrameTempArena);
+		*group->currentSubGroup = beginRectsSubGroup(group);
+		prevSubGroup->next = group->currentSubGroup;
+		group->currentSubGroup->prev = prevSubGroup;
 	}
+	ASSERT(group->currentSubGroup->header->count < group->currentSubGroup->maxCount);
 
-	ASSERT(group->header->count < group->maxCount);
-
-	RenderItem_DrawRects_Item *item = group->first + group->header->count++;
+	RenderItem_DrawRects_Item *item = group->currentSubGroup->first + group->currentSubGroup->header->count++;
 	item->bounds = bounds;
 	item->color = color;
 	item->uv = uv;
+
 }
 
 inline void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color)
@@ -309,13 +342,14 @@ inline void addGlyphRect(DrawRectsGroup *group, BitmapFontGlyph *glyph, V2 posit
 
 inline void addSpriteRect(DrawRectsGroup *group, Sprite *sprite, Rect2 bounds, V4 color)
 {
-	if (group->header->count == 0)
+	if (group->count == 0)
 	{
-		group->header->texture = sprite->texture;
+		group->texture = sprite->texture;
+		group->currentSubGroup->header->texture = group->texture;
 	}
 	else
 	{
-		ASSERT(group->header->texture == sprite->texture);
+		ASSERT(group->currentSubGroup->header->texture == sprite->texture);
 	}
 
 	addRectInternal(group, bounds, color, sprite->uv);
@@ -323,23 +357,44 @@ inline void addSpriteRect(DrawRectsGroup *group, Sprite *sprite, Rect2 bounds, V
 
 void offsetRange(DrawRectsGroup *group, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY)
 {
-	ASSERT(startIndex >= 0 && startIndex < group->header->count);
-	ASSERT(endIndexInclusive >= 0 && endIndexInclusive < group->header->count);
+	ASSERT(startIndex >= 0 && startIndex < group->count);
+	ASSERT(endIndexInclusive >= 0 && endIndexInclusive < group->count);
 	ASSERT(startIndex <= endIndexInclusive);
 
-	for (RenderItem_DrawRects_Item *item = group->first + startIndex;
-		item <= group->first + endIndexInclusive;
-		item++)
+	DrawRectsSubGroup *subGroup = &group->firstSubGroup;
+	s32 firstIndexInSubGroup = 0;
+	// Find the first subgroup that's involved
+	while (firstIndexInSubGroup + subGroup->header->count < startIndex)
 	{
-		item->bounds.x += offsetX;
-		item->bounds.y += offsetY;
+		firstIndexInSubGroup += subGroup->header->count;
+		subGroup = subGroup->next;
+	}
+
+	// Update the items in the range
+	while (true)
+	{
+		for (s32 index = startIndex - firstIndexInSubGroup;
+			(index <= endIndexInclusive - firstIndexInSubGroup) && (index < subGroup->header->count);
+			index++)
+		{
+			RenderItem_DrawRects_Item *item = subGroup->first + index;
+			item->bounds.x += offsetX;
+			item->bounds.y += offsetY;
+		}
+
+		if (firstIndexInSubGroup + subGroup->header->count < endIndexInclusive)
+		{
+			firstIndexInSubGroup += subGroup->header->count;
+			subGroup = subGroup->next;
+		}
+		else
+		{
+			break;
+		}
 	}
 }
 
 void endRectsGroup(DrawRectsGroup *group)
 {
-	ASSERT(group->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
-	group->buffer->hasRangeReserved = false;
-
-	group->buffer->currentChunk->used += group->header->count * sizeof(RenderItem_DrawRects_Item);
+	endCurrentSubGroup(group);
 }

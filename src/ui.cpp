@@ -61,7 +61,7 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 ali
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	drawText(uiState->uiBuffer, font, text, bounds, align, depth, color, uiState->textShaderID);
+	drawText(uiState->uiBuffer, font, text, bounds, align, color, uiState->textShaderID);
 
 	return bounds;
 }

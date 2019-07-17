@@ -37,7 +37,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 
 		if (context->doRender)
 		{
-			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, context->renderDepth, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, style->textColor, context->uiState->textShaderID);
 		}
 
 		// For now, we'll always just start a new line.
@@ -111,7 +111,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			V4 backColor = style->backgroundColor;
 			RenderItem_DrawThing *background = appendRenderItem(context->uiState->uiBuffer);
 
-			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, context->renderDepth + 1.0f, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, style->textColor, context->uiState->textShaderID);
 
 			if (context->window->wasActiveLastUpdate && contains(buttonBounds, mousePos))
 			{
