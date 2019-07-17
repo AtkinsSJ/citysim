@@ -212,6 +212,7 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 			buffer->currentChunk = buffer->firstFreeChunk;
 			buffer->currentChunk->used = 0;
 			buffer->firstFreeChunk = buffer->firstFreeChunk->next;
+			buffer->currentChunk->next = null;
 
 			// We'd BETTER have space to actually allocate this thing in the chunk!
 			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
@@ -308,8 +309,7 @@ inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID
 
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)
 {
-	group->count++;
-	ASSERT(group->count <= group->maxCount);
+	ASSERT(group->count < group->maxCount);
 
 	if (group->currentSubGroup->header->count == group->currentSubGroup->maxCount)
 	{
@@ -327,6 +327,7 @@ void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)
 	item->color = color;
 	item->uv = uv;
 
+	group->count++;
 }
 
 inline void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color)

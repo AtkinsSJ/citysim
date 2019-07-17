@@ -514,6 +514,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	{
 		lastChunk->next = buffer->firstFreeChunk;
 		buffer->firstFreeChunk = buffer->firstChunk.next;
+		buffer->firstChunk.next = null;
 	}
 
 	buffer->firstChunk.next = null;
