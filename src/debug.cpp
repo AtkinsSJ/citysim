@@ -289,15 +289,17 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 		f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
 		V4 barColor = color255(255, 0, 0, 128);
 		V4 activeBarColor = color255(255, 255, 0, 128);
-	u32 barIndex = 0;
-	for (u32 fi = debugState->writingFrameIndex + 1;
-			 fi != debugState->writingFrameIndex;
-			 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
+		u32 barIndex = 0;
+		DrawRectsGroup *rectsGroup = beginRectsGroup(uiBuffer, uiState->untexturedShaderID, DEBUG_FRAMES_COUNT);
+		for (u32 fi = debugState->writingFrameIndex + 1;
+				 fi != debugState->writingFrameIndex;
+				 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
 		{
-		u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
-		f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-			drawSingleRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), uiState->untexturedShaderID, fi == rfi ? activeBarColor : barColor);
+			u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
+			f32 barHeight = barHeightPerCycle * (f32)frameCycles;
+			addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
 		}
+		endRectsGroup(rectsGroup);
 		drawSingleRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight, uiBuffer->camera.size.x, 1), uiState->untexturedShaderID, color255(255, 255, 255, 128));
 		drawSingleRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1), uiState->untexturedShaderID, color255(255, 255, 255, 128));
 	}
