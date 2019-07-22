@@ -665,7 +665,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 								if (canAfford(city, buildCost))
 								{
 									Sprite *sprite = getSprite(buildingDef->sprites, 0);
-									// TODO: @Speed: Render this as a batch!
+									s32 maxGhosts = (dragResult.dragRect.w / buildingDef->width) * (dragResult.dragRect.h / buildingDef->height);
+									// TODO: If maxGhosts is 1, just draw 1!
+									DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, sprite->texture, pixelArtShaderID, maxGhosts);
 									for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
 									{
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
@@ -675,9 +677,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 											Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
 
 											V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
-											drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect, pixelArtShaderID, color);
+											// TODO: All the sprites are the same, so we could optimise this!
+											addSpriteRect(rectsGroup, sprite, rect, color);
 										}
 									}
+									endRectsGroup(rectsGroup);
 								}
 								else
 								{
@@ -833,6 +837,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	if (gameState->dataLayerToDraw)
 	{
 		DEBUG_BLOCK_T("Draw data layer", DCDT_GameUpdate);
+
+		//
+		// TODO: @Speed: Render in a batch - but I think we want to treat whole-map per-tile grids as a special
+		// case for rendering. Instead of allocating a batch for possibly the whole map, then filling in part,
+		// we could just upload the data grid as a texture. Or maybe embed a 2d array inside the RenderItem.
+		// Lots of possibilities! But right now this is temporary code really, so I'll avoid optimising it.
+		//
+		// - Sam, 22/07/2019
+		//
 
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
