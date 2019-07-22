@@ -410,17 +410,17 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 	drawSingleRect(uiBuffer, uiRect, uiState->untexturedShaderID, theme->overlayColor);
 
 	uiText(uiState, font, city->name,
-	       v2(left, uiPadding), ALIGN_LEFT, 1, labelStyle->textColor);
+	       v2(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, 1, labelStyle->textColor);
+	uiText(uiState, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, labelStyle->textColor);
+	uiText(uiState, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
 	uiText(uiState, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
-	       v2(right, uiPadding), ALIGN_RIGHT, 1, labelStyle->textColor);
+	       v2(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 	uiText(uiState, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
-	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, 1, labelStyle->textColor);
+	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 
 	// Build UI
@@ -428,7 +428,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, 1, Menu_Zone))
+		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, Menu_Zone))
 		{
 			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
@@ -438,7 +438,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (uiButton(uiState, zoneDefs[zoneIndex].name, menuButtonRect, 1,
+				if (uiButton(uiState, zoneDefs[zoneIndex].name, menuButtonRect,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -457,7 +457,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, 1, Menu_Build))
+		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build))
 		{
 			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
@@ -472,7 +472,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				BuildingDef *buildingDef = getValue(it);
 				ASSERT(buildingDef->buildMethod != BuildMethod_None); //We somehow got an un-constructible building in our constructible buildings list!
 
-				if (uiButton(uiState, buildingDef->name, menuButtonRect, 1,
+				if (uiButton(uiState, buildingDef->name, menuButtonRect,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);
@@ -490,7 +490,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect, 1,
+		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect,
 					(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, makeString("(X)")))
 		{
@@ -501,7 +501,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiButton(uiState, LOCAL("button_menu"), buttonRect, 1))
+		if (uiButton(uiState, LOCAL("button_menu"), buttonRect))
 		{
 			showWindow(uiState, LOCAL("title_menu"), 200, 200, makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
@@ -678,6 +678,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 											V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
 											// TODO: All the sprites are the same, so we could optimise this!
+											// Then again, eventually we might want ghosts to not be identical, eg ghost roads that visually connect.
 											addSpriteRect(rectsGroup, sprite, rect, color);
 										}
 									}

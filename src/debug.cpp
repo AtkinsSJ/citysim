@@ -161,7 +161,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 	textState->charsLastPrinted = text.length;
 	V4 textColor = (color != null) ? *color : textState->color;
 	Rect2 resultRect = uiText(textState->uiState, textState->font, text, textState->pos,
-	                             align, 300, textColor, textState->maxWidth);
+	                             align, textColor, textState->maxWidth);
 
 	if (textState->progressUpwards)
 	{

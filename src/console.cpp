@@ -31,7 +31,7 @@ Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font,
 {
 	s32 align = ALIGN_LEFT | ALIGN_BOTTOM;
 
-	Rect2 resultRect = uiText(textState->uiState, font, text, textState->pos, align, 300, style.textColor, textState->maxWidth);
+	Rect2 resultRect = uiText(textState->uiState, font, text, textState->pos, align, style.textColor, textState->maxWidth);
 	textState->pos.y -= resultRect.h;
 
 	return resultRect;
@@ -96,7 +96,7 @@ void renderConsole(Console *console, UIState *uiState)
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, 200, color255(48, 48, 48, 245), uiState->untexturedShaderID);
+	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, color255(48, 48, 48, 245), uiState->untexturedShaderID);
 
 	textState.pos.y -= 8.0f;
 

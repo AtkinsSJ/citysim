@@ -208,14 +208,14 @@ void updateAndRenderSettingsMenu(AppState *appState, Renderer *renderer, AssetMa
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
 	position.y += (uiText(uiState, font, LOCAL("title_settings"),
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
+			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	// position.y += (uiText(uiState, font, LocalString("There are no settings yet, soz."),
-	// 		position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
+	// 		position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	f32 uiBorderPadding = 4;
 	Rect2 buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, LOCAL("button_back"), buttonRect, 1, false, SDLK_ESCAPE))
+	if (uiButton(uiState, LOCAL("button_back"), buttonRect, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

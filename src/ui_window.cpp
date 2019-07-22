@@ -488,9 +488,6 @@ void renderWindows(UIState *uiState)
 		s32 windowIndex = (s32) getIndex(it);
 
 		bool isActive = window->wasActiveLastUpdate;
-
-
-		f32 depth = 2000.0f;
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 
@@ -534,14 +531,14 @@ void renderWindows(UIState *uiState)
 			BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontName);
 
 			drawSingleRect(uiState->uiBuffer, barArea, uiState->untexturedShaderID, barColor);
-			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
+			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
 				drawSingleRect(uiState->uiBuffer, closeButtonRect, uiState->untexturedShaderID, closeButtonColorHover);
 			}
-			uiText(uiState, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
+			uiText(uiState, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, titleColor);
 		}
 	}
 }
