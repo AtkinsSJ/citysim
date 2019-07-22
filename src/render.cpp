@@ -96,30 +96,6 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline void makeRenderItem(RenderItem_DrawThing *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color)
-{
-	result->rect = rect;
-	result->depth = depth;
-	result->color = color;
-
-	result->texture = texture;
-	result->uv = uv;
-	result->shaderID = shaderID;
-
-	// DEBUG STUFF
-#if 0
-	if (result->shaderID == 0 && texture != null)
-	{
-		// We had a weird issue where invalid textures are sometimes reaching the renderer, so we'll try to
-		// catch them here instead.
-
-		Asset *min = globalAppState.assets->allAssets.firstChunk.items;
-		Asset *max = globalAppState.assets->allAssets.lastChunk->items + globalAppState.assets->allAssets.chunkSize;
-		ASSERT(texture >= min && texture <= max); //Attempted to draw using an invalid texture asset pointer!
-	}
-#endif
-}
-
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
 {
 	buffer->name = pushString(arena, name);
@@ -195,7 +171,7 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 	return result;
 }
 
-void drawSingleSprite(RenderBuffer *buffer, s32 shaderID, Sprite *sprite, Rect2 bounds, V4 color)
+void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s32 shaderID, V4 color)
 {
 	ASSERT(!buffer->hasRangeReserved);
 
@@ -208,7 +184,7 @@ void drawSingleSprite(RenderBuffer *buffer, s32 shaderID, Sprite *sprite, Rect2 
 	rect->uv = sprite->uv;
 }
 
-void drawSingleRect(RenderBuffer *buffer, s32 shaderID, Rect2 bounds, V4 color)
+void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s32 shaderID, V4 color)
 {
 	ASSERT(!buffer->hasRangeReserved);
 
@@ -221,7 +197,25 @@ void drawSingleRect(RenderBuffer *buffer, s32 shaderID, Rect2 bounds, V4 color)
 	rect->uv = {};
 }
 
-DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount)
+RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer)
+{
+	ASSERT(!buffer->hasRangeReserved);
+
+	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+
+	return rect;
+}
+
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s32 shaderID, V4 color)
+{
+	placeholder->bounds = bounds;
+	placeholder->color = color;
+	placeholder->shaderID = shaderID;
+	placeholder->texture = null;
+	placeholder->uv = {};
+}
+
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s32 shaderID, s32 maxCount)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
 
@@ -242,12 +236,12 @@ DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *textu
 
 inline DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
 {
-	return beginRectsGroup(buffer, shaderID, null, maxCount);
+	return beginRectsGroup(buffer, null, shaderID, maxCount);
 }
 
-inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount)
+inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s32 shaderID, s32 maxCount)
 {
-	return beginRectsGroup(buffer, shaderID, font->texture, maxCount);
+	return beginRectsGroup(buffer, font->texture, shaderID, maxCount);
 }
 
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)

@@ -122,7 +122,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool activ
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, bounds, backColor);
+	drawSingleRect(uiState->uiBuffer, bounds, uiState->untexturedShaderID, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(uiState, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, depth + 1,
 			style->textColor);
@@ -201,14 +201,14 @@ void drawUiMessage(UIState *uiState)
 
 			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
 
-			RenderItem_DrawThing *backgroundRI = appendRenderItem(uiState->uiBuffer);
+			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(uiState->uiBuffer);
 
 			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1.0f, textColor);
 
 			labelRect = expand(labelRect, style->padding);
 
-			drawRect(backgroundRI, labelRect, depth, uiState->untexturedShaderID, backgroundColor);
+			fillDrawRectPlaceholder(backgroundRI, labelRect, uiState->untexturedShaderID, backgroundColor);
 		}
 	}
 }
@@ -219,7 +219,7 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 	f32 knobTravelableH = height - knobSize.y;
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
-	drawSingleRect(uiBuffer, shaderID, knobRect, knobColor);
+	drawSingleRect(uiBuffer, knobRect, shaderID, knobColor);
 }
 
 inline void uiCloseMenus(UIState *uiState)

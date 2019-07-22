@@ -50,7 +50,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 		// Shifted 1px left for better legibility of text
 		caretRect.x -= 1.0f;
 
-		drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, caretRect, color);
+		drawSingleRect(uiState->uiBuffer, caretRect, uiState->untexturedShaderID, color);
 	}
 
 	return bounds;

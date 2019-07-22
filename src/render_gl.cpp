@@ -499,57 +499,6 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				DEBUG_DRAW_CALL(activeShader->asset->shortName, (item->texture == null) ? nullString : item->texture->shortName,(vertexCount >> 2));
 			} break;
 
-			case RenderItemType_DrawThing:
-			{
-				RenderItem_DrawThing *item = readRenderItem<RenderItem_DrawThing>(renderBufferChunk, &pos);
-
-				GL_ShaderProgram *activeShader = useShader(renderer, item->shaderID);
-
-				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
-
-				if ((activeShader->uTextureLoc != -1) && (item->texture != null))
-				{
-					bindTexture(item->texture, activeShader->uTextureLoc, 0);
-				}
-
-				u32 vertexCount = 0;
-				u32 indexCount = 0;
-
-				u32 firstVertex = vertexCount;
-				renderer->vertices[vertexCount++] = {
-					v3(item->rect.x, item->rect.y, item->depth),
-					item->color,
-					v2(item->uv.x, item->uv.y)
-				};
-				renderer->vertices[vertexCount++] = {
-					v3(item->rect.x + item->rect.size.x, item->rect.y, item->depth),
-					item->color,
-					v2(item->uv.x + item->uv.w, item->uv.y)
-				};
-				renderer->vertices[vertexCount++] = {
-					v3(item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
-					item->color,
-					v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
-				};
-				renderer->vertices[vertexCount++] = {
-					v3(item->rect.x, item->rect.y + item->rect.size.y, item->depth),
-					item->color,
-					v2(item->uv.x, item->uv.y + item->uv.h)
-				};
-
-				renderer->indices[indexCount++] = firstVertex + 0;
-				renderer->indices[indexCount++] = firstVertex + 1;
-				renderer->indices[indexCount++] = firstVertex + 2;
-				renderer->indices[indexCount++] = firstVertex + 0;
-				renderer->indices[indexCount++] = firstVertex + 2;
-				renderer->indices[indexCount++] = firstVertex + 3;
-
-				drawCallCount++;
-				renderPartOfBuffer(renderer, vertexCount, indexCount);
-				DEBUG_DRAW_CALL(activeShader->asset->shortName, (item->texture == null) ? nullString : item->texture->shortName,(vertexCount >> 2));
-			} break;
-
 			INVALID_DEFAULT_CASE;
 		}
 	}

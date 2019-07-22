@@ -109,7 +109,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		if (context->doRender)
 		{
 			V4 backColor = style->backgroundColor;
-			RenderItem_DrawThing *background = appendRenderItem(context->uiState->uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(context->uiState->uiBuffer);
 
 			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, style->textColor, context->uiState->textShaderID);
 
@@ -130,7 +130,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				}
 			}
 
-			drawRect(background, buttonBounds, context->renderDepth, context->uiState->untexturedShaderID, backColor);
+			fillDrawRectPlaceholder(background, buttonBounds, context->uiState->untexturedShaderID, backColor);
 		}
 
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
@@ -496,7 +496,7 @@ void renderWindows(UIState *uiState)
 
 		if (isModal)
 		{
-			drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), color255(64, 64, 64, 128)); 
+			drawSingleRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), uiState->untexturedShaderID, color255(64, 64, 64, 128)); 
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
@@ -508,7 +508,7 @@ void renderWindows(UIState *uiState)
 			window->isInitialised = true;
 		}
 
-		RenderItem_DrawThing *contentBackground = appendRenderItem(uiState->uiBuffer);
+		RenderItem_DrawSingleRect *contentBackground = appendDrawRectPlaceholder(uiState->uiBuffer);
 		prepareForRender(&context);
 		window->windowProc(&context, window->userData);
 
@@ -521,7 +521,7 @@ void renderWindows(UIState *uiState)
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
 		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
-		drawRect(contentBackground, contentArea, depth, uiState->untexturedShaderID, backColor);
+		fillDrawRectPlaceholder(contentBackground, contentArea, uiState->untexturedShaderID, backColor);
 
 		if (hasTitleBar)
 		{
@@ -533,13 +533,13 @@ void renderWindows(UIState *uiState)
 
 			BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontName);
 
-			drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, barArea, barColor);
+			drawSingleRect(uiState->uiBuffer, barArea, uiState->untexturedShaderID, barColor);
 			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, depth + 1.0f, titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
-				drawSingleRect(uiState->uiBuffer, uiState->untexturedShaderID, closeButtonRect, closeButtonColorHover);
+				drawSingleRect(uiState->uiBuffer, closeButtonRect, uiState->untexturedShaderID, closeButtonColorHover);
 			}
 			uiText(uiState, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, depth + 2.0f, titleColor);
 		}

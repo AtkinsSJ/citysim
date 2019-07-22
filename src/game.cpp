@@ -407,7 +407,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
-	drawSingleRect(uiBuffer, uiState->untexturedShaderID, uiRect, theme->overlayColor);
+	drawSingleRect(uiBuffer, uiRect, uiState->untexturedShaderID, theme->overlayColor);
 
 	uiText(uiState, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, 1, labelStyle->textColor);
@@ -430,7 +430,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		// The "ZONE" menu
 		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, 1, Menu_Zone))
 		{
-			RenderItem_DrawThing *background = appendRenderItem(uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			
@@ -452,14 +452,14 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(background, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, uiState->untexturedShaderID, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, 1, Menu_Build))
 		{
-			RenderItem_DrawThing *background = appendRenderItem(uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
@@ -486,7 +486,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(background, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, uiState->untexturedShaderID, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -631,7 +631,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 							Sprite *sprite = getSprite(buildingDef->sprites, 0);
 							V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
-							drawSingleSprite(&renderer->worldOverlayBuffer, pixelArtShaderID, sprite, rect2(footprint), color);
+							drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect2(footprint), pixelArtShaderID, color);
 						}
 					} break;
 
@@ -675,13 +675,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 											Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
 
 											V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
-											drawSingleSprite(&renderer->worldOverlayBuffer, pixelArtShaderID, sprite, rect, color);
+											drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect, pixelArtShaderID, color);
 										}
 									}
 								}
 								else
 								{
-									drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(255, 64, 64, 128));
+									drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), rectangleShaderID, color255(255, 64, 64, 128));
 								}
 							} break;
 						}
@@ -736,14 +736,14 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									zoneRect.x = (f32) x;
 									if (canZoneTile(city, gameState->selectedZoneID, x, y))
 									{
-										drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, zoneRect, zoneColor);
+										drawSingleRect(&renderer->worldOverlayBuffer, zoneRect, rectangleShaderID, zoneColor);
 									}
 								}
 							}
 						}
 						else
 						{
-							drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(255, 64, 64, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), rectangleShaderID, color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -777,11 +777,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						if (canAfford(city, demolishCost))
 						{
 							// Demolition outline
-							drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(128, 0, 0, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), rectangleShaderID, color255(128, 0, 0, 128));
 						}
 						else
 						{
-							drawSingleRect(&renderer->worldOverlayBuffer, rectangleShaderID, rect2(dragResult.dragRect), color255(255, 64, 64, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), rectangleShaderID, color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -869,7 +869,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				if (tileHasData)
 				{
-					drawSingleRect(&renderer->worldBuffer, rectangleShaderID, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), color);
+					drawSingleRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), rectangleShaderID, color);
 				}
 			}
 		}

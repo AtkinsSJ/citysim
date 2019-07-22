@@ -26,22 +26,9 @@ const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 enum RenderItemType
 {
 	RenderItemType_NextMemoryChunk,
-	RenderItemType_DrawThing, // @Cleanup DEPRECATED!!!
 
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
-};
-
-// @Cleanup DEPRECATED!!!
-struct RenderItem_DrawThing
-{
-	Rect2 rect;
-	f32 depth; // Positive is towards the player
-	V4 color;
-	s32 shaderID;
-
-	Asset *texture;
-	Rect2 uv; // in (0 to 1) space
 };
 
 struct RenderItem_DrawSingleRect
@@ -158,27 +145,19 @@ void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingP
 void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
 
-void makeRenderItem(RenderItem_DrawThing *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
-void drawRenderItem(RenderBuffer *buffer, RenderItem_DrawThing *item);
-
 u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
-inline RenderItem_DrawThing *appendRenderItem(RenderBuffer *buffer)
-{
-	return (RenderItem_DrawThing *)appendRenderItemInternal(buffer, RenderItemType_DrawThing, sizeof(RenderItem_DrawThing), 0);
-}
 
-inline void drawRect(RenderItem_DrawThing *renderItem, Rect2 rect, f32 depth, s32 shaderID, V4 color)
-{
-	makeRenderItem(renderItem, rect, depth, null, {}, shaderID, color);
-}
+void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s32 shaderID, V4 color);
+void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s32 shaderID, V4 color);
 
-void drawSingleSprite(RenderBuffer *buffer, s32 shaderID, Sprite *sprite, Rect2 bounds, V4 color);
-void drawSingleRect(RenderBuffer *buffer, s32 shaderID, Rect2 bounds, V4 color);
+// For when you want something to appear NOW in the render-order, but you don't know its details until later
+RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer);
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s32 shaderID, V4 color);
 
 // NB: The Rects drawn must all have the same Texture!
-DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, Asset *texture, s32 maxCount);
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s32 shaderID, s32 maxCount);
 DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
-DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, s32 shaderID, BitmapFont *font, s32 maxCount);
+DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s32 shaderID, s32 maxCount);
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
 void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);
 void addSpriteRect(DrawRectsGroup *state, Sprite *sprite, Rect2 bounds, V4 color);

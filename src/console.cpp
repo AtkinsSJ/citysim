@@ -80,8 +80,8 @@ void renderConsole(Console *console, UIState *uiState)
 
 	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
 
-	RenderItem_DrawThing *consoleBackground = appendRenderItem(uiState->uiBuffer);
-	RenderItem_DrawThing *inputBackground   = appendRenderItem(uiState->uiBuffer);
+	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(uiState->uiBuffer);
+	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(uiState->uiBuffer);
 
 	Rect2 textInputRect = drawTextInput(uiState, consoleFont, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textState.maxWidth);
 	textState.pos.y -= textInputRect.h;
@@ -90,9 +90,9 @@ void renderConsole(Console *console, UIState *uiState)
 
 	// draw backgrounds now we know size of input area
 	Rect2 inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
-	drawRect(inputBackground, inputBackRect, 100, uiState->untexturedShaderID, color255(64,64,64,245));
+	fillDrawRectPlaceholder(inputBackground, inputBackRect, uiState->untexturedShaderID, color255(64,64,64,245));
 	Rect2 consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
-	drawRect(consoleBackground, consoleBackRect, 100, uiState->untexturedShaderID, color255(0,0,0,245));
+	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, uiState->untexturedShaderID, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));

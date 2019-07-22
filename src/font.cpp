@@ -248,7 +248,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	// s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 	s32 glyphsToOutput = text.length;
 
-	DrawRectsGroup *group = beginRectsGroupForText(renderBuffer, shaderID, font, glyphsToOutput);
+	DrawRectsGroup *group = beginRectsGroupForText(renderBuffer, font, shaderID, glyphsToOutput);
 
 	s32 currentX = 0;
 	s32 currentY = 0;
