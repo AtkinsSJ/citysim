@@ -727,7 +727,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							//
 							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
 							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
-							// TODO: @Speed: Render this as a batch!
+							DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, rectangleShaderID, areaOf(dragResult.dragRect));
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
 								zoneRect.y = (f32) y;
@@ -736,10 +736,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									zoneRect.x = (f32) x;
 									if (canZoneTile(city, gameState->selectedZoneID, x, y))
 									{
-										drawSingleRect(&renderer->worldOverlayBuffer, zoneRect, rectangleShaderID, zoneColor);
+										addUntexturedRect(rectsGroup, zoneRect, zoneColor);
 									}
 								}
 							}
+							endRectsGroup(rectsGroup);
 						}
 						else
 						{
