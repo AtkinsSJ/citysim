@@ -13,7 +13,7 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	UITheme *theme = &assets->theme;
 	UIState *uiState = &appState->uiState;
 
-	drawSingleRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), uiState->untexturedShaderID, theme->overlayColor);
+	drawSingleRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), renderer->shaderIdCache.untextured, theme->overlayColor);
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
@@ -21,43 +21,43 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	UILabelStyle *labelStyle = findLabelStyle(theme, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
-	position.y += (uiText(uiState, font, LOCAL("game_title"),
+	position.y += (uiText(renderer, uiState->uiBuffer, font, LOCAL("game_title"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, font, LOCAL("game_subtitle"),
+	position.y += (uiText(renderer, uiState->uiBuffer, font, LOCAL("game_subtitle"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(uiState, font, makeString("This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."),
+	position.y += (uiText(renderer, uiState->uiBuffer, font, makeString("This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
-	if (uiButton(uiState, LOCAL("button_play"), buttonRect)) // , SDLK_RETURN
+	if (uiButton(uiState, renderer, LOCAL("button_play"), buttonRect)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LOCAL("button_credits"), buttonRect))
+	if (uiButton(uiState, renderer, LOCAL("button_credits"), buttonRect))
 	{
 		result = AppStatus_Credits;
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LOCAL("button_settings"), buttonRect))
+	if (uiButton(uiState, renderer, LOCAL("button_settings"), buttonRect))
 	{
 		result = AppStatus_SettingsMenu;
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LOCAL("button_about"), buttonRect))
+	if (uiButton(uiState, renderer, LOCAL("button_about"), buttonRect))
 	{
 		showAboutWindow(uiState);
 	}
 	buttonRect.y += 32;
-	if (uiButton(uiState, LOCAL("button_exit"), buttonRect))
+	if (uiButton(uiState, renderer, LOCAL("button_exit"), buttonRect))
 	{
 		result = AppStatus_Quit;
 	}
 
 	UILabelStyle *liLabelStyle = findLabelStyle(theme, makeString("small"));
-	uiText(uiState, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
+	uiText(renderer, uiState->uiBuffer, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
 			v2(0.0f,0.0f), ALIGN_LEFT | ALIGN_TOP,
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
 			// v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,

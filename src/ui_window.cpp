@@ -37,7 +37,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 
 		if (context->doRender)
 		{
-			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, alignment, style->textColor, context->renderer->shaderIdCache.text);
 		}
 
 		// For now, we'll always just start a new line.
@@ -111,7 +111,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			V4 backColor = style->backgroundColor;
 			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(context->uiState->uiBuffer);
 
-			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, style->textColor, context->uiState->textShaderID);
+			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, style->textColor, context->renderer->shaderIdCache.text);
 
 			if (context->window->wasActiveLastUpdate && contains(buttonBounds, mousePos))
 			{
@@ -130,7 +130,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				}
 			}
 
-			fillDrawRectPlaceholder(background, buttonBounds, context->uiState->untexturedShaderID, backColor);
+			fillDrawRectPlaceholder(background, buttonBounds, context->renderer->shaderIdCache.untextured, backColor);
 		}
 
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
@@ -232,10 +232,11 @@ Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
 					windowArea.h - barHeight - (contentPadding * 2.0f));
 }
 
-WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle)
+WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, Renderer *renderer, UIState *uiState)
 {
 	WindowContext context = {};
 	context.uiState = uiState;
+	context.renderer = renderer;
 	context.temporaryMemory = &globalAppState.globalTempArena;
 	context.window = window;
 	context.windowStyle = windowStyle;
@@ -243,7 +244,6 @@ WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle 
 	context.currentOffset = v2(0,0);
 	context.largestItemWidth = 0;
 	context.alignment = ALIGN_TOP | ALIGN_LEFT;
-	context.renderDepth = 0;
 	context.perItemPadding = 4.0f;
 
 	return context;
@@ -257,7 +257,6 @@ void prepareForUpdate(WindowContext *context)
 	context->currentOffset = v2(0,0);
 	context->largestItemWidth = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
-	context->renderDepth = 0;
 	context->perItemPadding = 4.0f;
 }
 
@@ -269,7 +268,6 @@ void prepareForRender(WindowContext *context)
 	context->currentOffset = v2(0,0);
 	context->largestItemWidth = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
-	context->renderDepth = 0;
 	context->perItemPadding = 4.0f;
 }
 
@@ -379,7 +377,7 @@ void updateWindows(UIState *uiState)
 
 		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		WindowContext context = makeWindowContext(uiState, window, windowStyle);
+		WindowContext context = makeWindowContext(window, windowStyle, null, uiState);
 
 		// Run the WindowProc once first so we can measure its size
 		updateWindow(uiState, window, &context, isActive);
@@ -477,7 +475,7 @@ void updateWindows(UIState *uiState)
 	}
 }
 
-void renderWindows(UIState *uiState)
+void renderWindows(Renderer *renderer, UIState *uiState)
 {
 	V2 mousePos = uiState->uiBuffer->camera.mousePos;
 	for (auto it = iterateBackwards(&uiState->openWindows);
@@ -493,11 +491,11 @@ void renderWindows(UIState *uiState)
 
 		if (isModal)
 		{
-			drawSingleRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), uiState->untexturedShaderID, color255(64, 64, 64, 128)); 
+			drawSingleRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), renderer->shaderIdCache.untextured, color255(64, 64, 64, 128)); 
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
-		WindowContext context = makeWindowContext(uiState, window, windowStyle);
+		WindowContext context = makeWindowContext(window, windowStyle, renderer, uiState);
 
 		if (!window->isInitialised)
 		{
@@ -518,7 +516,7 @@ void renderWindows(UIState *uiState)
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
 		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
-		fillDrawRectPlaceholder(contentBackground, contentArea, uiState->untexturedShaderID, backColor);
+		fillDrawRectPlaceholder(contentBackground, contentArea, renderer->shaderIdCache.untextured, backColor);
 
 		if (hasTitleBar)
 		{
@@ -530,15 +528,15 @@ void renderWindows(UIState *uiState)
 
 			BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontName);
 
-			drawSingleRect(uiState->uiBuffer, barArea, uiState->untexturedShaderID, barColor);
-			uiText(uiState, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
+			drawSingleRect(uiState->uiBuffer, barArea, renderer->shaderIdCache.untextured, barColor);
+			uiText(renderer, uiState->uiBuffer, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
-				drawSingleRect(uiState->uiBuffer, closeButtonRect, uiState->untexturedShaderID, closeButtonColorHover);
+				drawSingleRect(uiState->uiBuffer, closeButtonRect, renderer->shaderIdCache.untextured, closeButtonColorHover);
 			}
-			uiText(uiState, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, titleColor);
+			uiText(renderer, uiState->uiBuffer, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, titleColor);
 		}
 	}
 }

@@ -73,7 +73,7 @@ const s32 consoleLineLength = 255;
 
 void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed);
 void updateConsole(Console *console, InputState *inputState);
-void renderConsole(Console *console, UIState *uiState);
+void renderConsole(Console *console, Renderer *renderer);
 
 void initCommands(Console *console); // Implementation in commands.cpp
 void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);
@@ -89,13 +89,3 @@ inline s32 consoleMaxScrollPos(Console *console)
 {
 	return truncate32(console->outputLines.count - 1);
 }
-
-struct ConsoleTextState
-{
-	V2 pos;
-	f32 maxWidth;
-
-	UIState *uiState;
-	RenderBuffer *uiBuffer;
-};
-Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style);

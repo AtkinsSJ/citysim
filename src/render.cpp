@@ -32,6 +32,16 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        KB(64));
 }
 
+void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
+{
+	renderer->loadAssets(renderer, assets);
+
+	// Cache the shader IDs so we don't have to do so many hash lookups
+	renderer->shaderIdCache.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
+	renderer->shaderIdCache.text       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
+	renderer->shaderIdCache.untextured = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
+}
+
 void freeRenderer(Renderer *renderer)
 {
 	renderer->free(renderer);

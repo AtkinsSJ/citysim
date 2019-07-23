@@ -23,12 +23,6 @@ void setCursorVisible(UIState *uiState, bool visible)
 	SDL_ShowCursor(visible ? 1 : 0);
 }
 
-void cacheUIShaders(UIState *uiState, AssetManager *assets)
-{
-	uiState->textShaderID       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
-	uiState->untexturedShaderID = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
-}
-
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input)
 {
 	*uiState = {};
@@ -50,7 +44,7 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	setCursorVisible(uiState, false);
 }
 
-Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)
+Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
@@ -59,7 +53,7 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 ali
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	drawText(uiState->uiBuffer, font, text, bounds, align, color, uiState->textShaderID);
+	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIdCache.text);
 
 	return bounds;
 }
@@ -75,7 +69,7 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
-bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
+bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
@@ -120,9 +114,9 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(uiState->uiBuffer, bounds, uiState->untexturedShaderID, backColor);
+	drawSingleRect(uiState->uiBuffer, bounds, renderer->shaderIdCache.untextured, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(uiState, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, style->textColor);
+	uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
@@ -134,12 +128,12 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
+bool uiMenuButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, text, bounds, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, renderer, text, bounds, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -162,7 +156,7 @@ void pushUiMessage(UIState *uiState, String message)
 	uiState->message.countdown = uiMessageDisplayTime;
 }
 
-void drawUiMessage(UIState *uiState)
+void drawUiMessage(UIState *uiState, Renderer *renderer)
 {
 	DEBUG_FUNCTION();
 	
@@ -198,12 +192,12 @@ void drawUiMessage(UIState *uiState)
 
 			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(uiState->uiBuffer);
 
-			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
+			Rect2 labelRect = uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);
 
-			fillDrawRectPlaceholder(backgroundRI, labelRect, uiState->untexturedShaderID, backgroundColor);
+			fillDrawRectPlaceholder(backgroundRI, labelRect, renderer->shaderIdCache.untextured, backgroundColor);
 		}
 	}
 }

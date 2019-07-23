@@ -115,6 +115,18 @@ struct Renderer
 	RenderBuffer uiBuffer;
 	RenderBuffer debugBuffer;
 
+	// Not convinced this is the best way of doing it, but it's better than what we had before!
+	// Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
+	// want to be doing a million hashtable lookups all the time. It does feel like a hack, but
+	// practicality is more important than perfection!
+	// - Sam, 23/07/2019
+	struct
+	{
+		s32 pixelArt;
+		s32 text;
+		s32 untextured;
+	} shaderIdCache;
+
 	void *platformRenderer;
 
 	void (*windowResized)(s32, s32);
@@ -138,6 +150,7 @@ inline f32 depthFromY(s32 y)
 }
 
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
+void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
 void freeRenderer(Renderer *renderer);
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize);
@@ -156,8 +169,10 @@ RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer);
 void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s32 shaderID, V4 color);
 
 // NB: The Rects drawn must all have the same Texture!
+// TODO: Have the shaderID default to a sensible value for these like beginRectsGroupForText
 DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s32 shaderID, s32 maxCount);
 DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
+// TODO: Have the shaderID be last and default to the standard text shader, so I don't have to always pass it
 DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s32 shaderID, s32 maxCount);
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
 void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);

@@ -17,9 +17,6 @@ struct UIState
 	AssetManager *assets;
 	InputState *input;
 
-	s32 textShaderID;
-	s32 untexturedShaderID;
-
 	String tooltipText;
 	UIMessage message;
 
@@ -42,20 +39,19 @@ struct UIState
 };
 
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input);
-void cacheUIShaders(UIState *uiState, AssetManager *assets);
 
 void setCursor(UIState *uiState, String cursorName);
 void setCursor(UIState *uiState, char *cursorName);
 void setCursorVisible(UIState *uiState, bool visible);
 
-Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
-bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
+bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+bool uiMenuButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 void uiCloseMenus(UIState *uiState);
 
 // NB: `message` is copied into the UIState, so it can be a temporary allocation
 void pushUiMessage(UIState *uiState, String message);
-void drawUiMessage(UIState *uiState);
+void drawUiMessage(UIState *uiState, Renderer *renderer);
 
 void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s32 shaderID);
 

@@ -19,7 +19,7 @@ String textInputToString(TextInput *textInput)
 	return result;
 }
 
-Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth)
+Rect2 drawTextInput(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
@@ -32,7 +32,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 	// TODO: @Cleanup I really don't like DrawTextResult as it is now. This is the ONLY place we need it, and we keep
 	// a bunch of data in it that we don't really need - we just want to know the top-left corner of where the caret should be.
 	DrawTextResult drawTextResult = {};
-	drawText(uiState->uiBuffer, font, text, bounds, align, color, uiState->textShaderID, textInput->caretGlyphPos, &drawTextResult);
+	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIdCache.text, textInput->caretGlyphPos, &drawTextResult);
 
 	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
 	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
@@ -50,7 +50,7 @@ Rect2 drawTextInput(UIState *uiState, BitmapFont *font, TextInput *textInput, V2
 		// Shifted 1px left for better legibility of text
 		caretRect.x -= 1.0f;
 
-		drawSingleRect(uiState->uiBuffer, caretRect, uiState->untexturedShaderID, color);
+		drawSingleRect(renderBuffer, caretRect, renderer->shaderIdCache.untextured, color);
 	}
 
 	return bounds;

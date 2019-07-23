@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 
 	Renderer *renderer = platform_initializeRenderer(window);
 	ASSERT(renderer->platformRenderer != null); //Failed to initialize renderer.
-	renderer->loadAssets(renderer, assets);
+	rendererLoadAssets(renderer, assets);
 	appState->renderer = renderer;
 
 	InputState inputState;
@@ -241,11 +241,6 @@ int main(int argc, char *argv[])
 				reloadAssets(assets, renderer, uiState);
 			}
 
-			if (assets->assetReloadHasJustHappened)
-			{
-				cacheUIShaders(uiState, assets);
-			}
-
 			if (inputState.receivedQuitSignal)
 			{
 				appState->appStatus = AppStatus_Quit;
@@ -264,7 +259,7 @@ int main(int argc, char *argv[])
 
 			if (globalConsole)
 			{
-				renderConsole(globalConsole, uiState);
+				renderConsole(globalConsole, renderer);
 			}
 
 			// Update camera matrices here
@@ -281,7 +276,7 @@ int main(int argc, char *argv[])
 				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-				updateAndRenderDebugData(globalDebugState, &inputState, &renderer->debugBuffer, uiState);
+				updateAndRenderDebugData(globalDebugState, &inputState, renderer);
 			}
 
 			// Actually draw things!
