@@ -550,6 +550,12 @@ static void GL_render(Renderer *renderer)
 		DEBUG_BLOCK_T("renderBuffer(ui)", DCDT_Renderer);
 		renderBuffer(gl, &renderer->uiBuffer);
 	}
+	{
+		DEBUG_BLOCK_T("renderBuffer(debug)", DCDT_Renderer);
+		// NB: Hack! See above
+		renderer->debugBuffer.camera = renderer->uiBuffer.camera;
+		renderBuffer(gl, &renderer->debugBuffer);
+	}
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)

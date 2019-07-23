@@ -29,6 +29,7 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        KB(64));
 	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", KB(64));
 	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer",           KB(64));
+	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        KB(64));
 }
 
 void freeRenderer(Renderer *renderer)

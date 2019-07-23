@@ -20,8 +20,6 @@ struct UIState
 	s32 textShaderID;
 	s32 untexturedShaderID;
 
-	f32 closestDepth;
-
 	String tooltipText;
 	UIMessage message;
 

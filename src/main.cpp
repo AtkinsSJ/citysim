@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
 				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-				updateAndRenderDebugData(globalDebugState, &inputState, uiState);
+				updateAndRenderDebugData(globalDebugState, &inputState, &renderer->debugBuffer, uiState);
 			}
 
 			// Actually draw things!

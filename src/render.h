@@ -113,6 +113,7 @@ struct Renderer
 	RenderBuffer worldBuffer;
 	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
+	RenderBuffer debugBuffer;
 
 	void *platformRenderer;
 

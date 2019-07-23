@@ -37,8 +37,6 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	uiState->assets = assets;
 	uiState->input = input;
 
-	uiState->closestDepth = uiBuffer->camera.nearClippingPlane;
-
 	initMemoryArena(&uiState->arena, MB(1));
 
 	uiState->message = {};
