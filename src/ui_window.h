@@ -7,13 +7,13 @@ struct WindowContext
 	struct Window *window;
 	UIWindowStyle *windowStyle;
 
-	bool doRender;
+	Renderer *renderer;
+	bool doRender; // NB: Can't just replace this with (renderer == null) because sometimes we have a non-null renderer but want to skip rendering anyway!
 
 	Rect2 contentArea;
 	V2 currentOffset;
 	f32 largestItemWidth;
 	u32 alignment;
-	f32 renderDepth;
 	f32 perItemPadding;
 
 	// Results
@@ -61,7 +61,7 @@ void window_label(WindowContext *context, String text, char *styleName=null);
 bool window_button(WindowContext *context, String text, s32 textWidth=-1);
 
 void updateWindows(UIState *uiState);
-void renderWindows(UIState *uiState);
+void renderWindows(Renderer *renderer, UIState *uiState);
 
 //
 // INTERNAL
@@ -69,6 +69,6 @@ void renderWindows(UIState *uiState);
 static void makeWindowActive(UIState *uiState, s32 windowIndex);
 static Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding);
 
-WindowContext makeWindowContext(UIState *uiState, Window *window, UIWindowStyle *windowStyle);
+WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, Renderer *renderer, UIState *uiState);
 void prepareForUpdate(WindowContext *context);
 void prepareForRender(WindowContext *context);

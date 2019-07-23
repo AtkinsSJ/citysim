@@ -12,31 +12,6 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 	}
 }
 
-inline ConsoleTextState initConsoleTextState(UIState *uiState, V2 screenSize, f32 screenEdgePadding, f32 height)
-{
-	// Prevent weird artifacts from fractional sizes
-	screenEdgePadding = round_f32(screenEdgePadding);
-	height = round_f32(height);
-
-	ConsoleTextState textState = {};
-	textState.pos = v2(screenEdgePadding, height - screenEdgePadding);
-	textState.maxWidth = screenSize.x - (2*screenEdgePadding);
-
-	textState.uiState = uiState;
-
-	return textState;
-}
-
-Rect2 consoleTextOut(ConsoleTextState *textState, String text, BitmapFont *font, ConsoleLineStyle style)
-{
-	s32 align = ALIGN_LEFT | ALIGN_BOTTOM;
-
-	Rect2 resultRect = uiText(textState->uiState, font, text, textState->pos, align, 300, style.textColor, textState->maxWidth);
-	textState->pos.y -= resultRect.h;
-
-	return resultRect;
-}
-
 void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed)
 {
 	Console *console = &theConsole;
@@ -70,46 +45,51 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?");
 }
 
-void renderConsole(Console *console, UIState *uiState)
+void renderConsole(Console *console, Renderer *renderer)
 {
 	BitmapFont *consoleFont = getFont(globalAppState.assets, makeString("debug"));
+	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
-	RenderBuffer *uiBuffer = uiState->uiBuffer;
+	f32 actualConsoleHeight = console->currentHeight * renderBuffer->camera.size.y;
 
-	f32 actualConsoleHeight = console->currentHeight * uiBuffer->camera.size.y;
+	f32 screenEdgePadding = 8.0f;
+	V2 textPos = v2(screenEdgePadding, round_f32(actualConsoleHeight - screenEdgePadding));
+	f32 textMaxWidth = renderBuffer->camera.size.x - (2*screenEdgePadding);
 
-	ConsoleTextState textState = initConsoleTextState(uiState, uiBuffer->camera.size, 8.0f, actualConsoleHeight);
+	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer);
+	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer);
 
-	RenderItem *consoleBackground = appendRenderItem(uiState->uiBuffer);
-	RenderItem *inputBackground   = appendRenderItem(uiState->uiBuffer);
+	Rect2 textInputRect = drawTextInput(renderer, renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
+	textPos.y -= textInputRect.h;
 
-	Rect2 textInputRect = drawTextInput(uiState, consoleFont, &console->input, textState.pos, ALIGN_LEFT | ALIGN_BOTTOM, 300, console->styles[CLS_Input].textColor, textState.maxWidth);
-	textState.pos.y -= textInputRect.h;
-
-	textState.pos.y -= 8.0f;
+	textPos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
-	Rect2 inputBackRect = rectXYWH(0,textState.pos.y,uiBuffer->camera.size.x, actualConsoleHeight - textState.pos.y);
-	drawRect(inputBackground, inputBackRect, 100, uiState->untexturedShaderID, color255(64,64,64,245));
-	Rect2 consoleBackRect = rectXYWH(0,0,uiBuffer->camera.size.x, textState.pos.y);
-	drawRect(consoleBackground, consoleBackRect, 100, uiState->untexturedShaderID, color255(0,0,0,245));
+	Rect2 inputBackRect = rectXYWH(0,textPos.y,renderBuffer->camera.size.x, actualConsoleHeight - textPos.y);
+	fillDrawRectPlaceholder(inputBackground, inputBackRect, renderer->shaderIdCache.untextured, color255(64,64,64,245));
+	Rect2 consoleBackRect = rectXYWH(0,0,renderBuffer->camera.size.x, textPos.y);
+	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, renderer->shaderIdCache.untextured, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(uiBuffer, v2(uiBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, 200, color255(48, 48, 48, 245), uiState->untexturedShaderID);
+	drawScrollBar(renderBuffer, v2(renderBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, color255(48, 48, 48, 245), renderer->shaderIdCache.untextured);
 
-	textState.pos.y -= 8.0f;
+	textPos.y -= 8.0f;
 
 	// print output lines
+	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
 	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
 		!it.isDone;
 		next(&it))
 	{
 		ConsoleOutputLine *line = get(it);
-		consoleTextOut(&textState, line->text, consoleFont, console->styles[line->style]);
+		ConsoleLineStyle style = console->styles[line->style];
+
+		Rect2 resultRect = uiText(renderer, renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, style.textColor, textMaxWidth);
+		textPos.y -= resultRect.h;
 
 		// If we've gone off the screen, stop!
-		if ((textState.pos.y < 0) || (textState.pos.y > uiBuffer->camera.size.y))
+		if ((textPos.y < 0) || (textPos.y > renderBuffer->camera.size.y))
 		{
 			break;
 		}

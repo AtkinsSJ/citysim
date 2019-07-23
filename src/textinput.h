@@ -19,7 +19,7 @@ TextInput newTextInput(MemoryArena *arena, s32 length, f32 caretFlashCycleDurati
 // Returns true if pressed RETURN
 bool updateTextInput(TextInput *textInput, InputState *inputState);
 String textInputToString(TextInput *textInput);
-Rect2 drawTextInput(struct UIState *uiState, struct BitmapFont *font, TextInput *textInput, V2 origin, s32 align, f32 depth, V4 color, f32 maxWidth = 0);
+Rect2 drawTextInput(struct Renderer *renderer, struct RenderBuffer *renderBuffer, struct BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth = 0);
 
 void append(TextInput *textInput, char *source, s32 length);
 void append(TextInput *textInput, String source);

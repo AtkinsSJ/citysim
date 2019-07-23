@@ -15,8 +15,6 @@ GameState *initialiseGameState()
 
 	result->actionMode = ActionMode_None;
 
-	initChunkedArray(&result->overlayRenderItems, &result->gameArena, 512);
-
 	result->worldDragState.citySize = v2i(result->city.width, result->city.height);
 
 	return result;
@@ -393,10 +391,11 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState *uiState, GameState *gameState)
+void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState)
 {
 	DEBUG_FUNCTION();
 	
+	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 	f32 windowWidth = (f32) uiBuffer->camera.size.x;
 	V2 centre = uiBuffer->camera.pos;
 	UITheme *theme = &assets->theme;
@@ -409,20 +408,20 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
-	drawRect(uiBuffer, uiRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+	drawSingleRect(uiBuffer, uiRect, renderer->shaderIdCache.untextured, theme->overlayColor);
 
-	uiText(uiState, font, city->name,
-	       v2(left, uiPadding), ALIGN_LEFT, 1, labelStyle->textColor);
+	uiText(renderer, uiState->uiBuffer, font, city->name,
+	       v2(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, 1, labelStyle->textColor);
+	uiText(renderer, uiState->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, 1, labelStyle->textColor);
+	uiText(renderer, uiState->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
-	       v2(right, uiPadding), ALIGN_RIGHT, 1, labelStyle->textColor);
+	uiText(renderer, uiState->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
+	       v2(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-	uiText(uiState, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
-	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, 1, labelStyle->textColor);
+	uiText(renderer, uiState->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
+	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 
 	// Build UI
@@ -430,9 +429,9 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, 1, Menu_Zone))
+		if (uiMenuButton(uiState, renderer, LOCAL("button_zone"), buttonRect, Menu_Zone))
 		{
-			RenderItem *background = appendRenderItem(uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			
@@ -440,7 +439,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (uiButton(uiState, zoneDefs[zoneIndex].name, menuButtonRect, 1,
+				if (uiButton(uiState, renderer, zoneDefs[zoneIndex].name, menuButtonRect,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -454,14 +453,14 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(background, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIdCache.untextured, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, 1, Menu_Build))
+		if (uiMenuButton(uiState, renderer, LOCAL("button_build"), buttonRect, Menu_Build))
 		{
-			RenderItem *background = appendRenderItem(uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
@@ -474,7 +473,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 				BuildingDef *buildingDef = getValue(it);
 				ASSERT(buildingDef->buildMethod != BuildMethod_None); //We somehow got an un-constructible building in our constructible buildings list!
 
-				if (uiButton(uiState, buildingDef->name, menuButtonRect, 1,
+				if (uiButton(uiState, renderer, buildingDef->name, menuButtonRect,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);
@@ -488,11 +487,11 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 			}
 
 			append(&uiState->uiRects, menuRect);
-			drawRect(background, menuRect, 0, uiState->untexturedShaderID, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIdCache.untextured, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect, 1,
+		if (uiButton(uiState, renderer, LOCAL("button_demolish"), buttonRect,
 					(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, makeString("(X)")))
 		{
@@ -503,7 +502,7 @@ void updateAndRenderGameUI(RenderBuffer *uiBuffer, AssetManager *assets, UIState
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiButton(uiState, LOCAL("button_menu"), buttonRect, 1))
+		if (uiButton(uiState, renderer, LOCAL("button_menu"), buttonRect))
 		{
 			showWindow(uiState, LOCAL("title_menu"), 200, 200, makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
@@ -526,18 +525,6 @@ void costTooltipWindowProc(WindowContext *context, void *userData)
 void showCostTooltip(UIState *uiState, s32 buildCost)
 {
 	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
-}
-
-void pushOverlayRenderItem(GameState *gameState, Rect2 rect, f32 depth, V4 color, s32 shaderID, Sprite *sprite = null)
-{
-	Asset *texture = null;
-	Rect2 uv = {};
-	if (sprite != null)
-	{
-		texture = sprite->texture;
-		uv = sprite->uv;
-	}
-	makeRenderItem(appendUninitialised(&gameState->overlayRenderItems), rect, depth, texture, uv, shaderID, color);
 }
 
 void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
@@ -578,11 +565,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// UI!
 	UIState *uiState = &globalAppState.uiState;
-	updateAndRenderGameUI(&renderer->uiBuffer, assets, uiState, gameState);
+	updateAndRenderGameUI(renderer, assets, uiState, gameState);
 
-	// This stuff should probably be organised but I don't know where to put it. @Cleanup
-	s32 pixelArtShaderID  = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
-	s32 rectangleShaderID = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
 	V4 ghostColorValid    = color255(128,255,128,255);
 	V4 ghostColorInvalid  = color255(255,0,0,128);
 
@@ -608,7 +592,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		}
 	} 
 
-	Rect2I demolitionRect = {0,0,-1,-1};
+	Rect2I demolitionRect = irectNegativeInfinity();
 
 	{
 		DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
@@ -644,9 +628,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
 
 							Sprite *sprite = getSprite(buildingDef->sprites, 0);
-							pushOverlayRenderItem(gameState, rect2(footprint), depthFromY(mouseTilePos.y) + 100,
-													canPlace ? ghostColorValid : ghostColorInvalid,
-													pixelArtShaderID, sprite);
+							V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
+							drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect2(footprint), renderer->shaderIdCache.pixelArt, color);
 						}
 					} break;
 
@@ -680,6 +663,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 								if (canAfford(city, buildCost))
 								{
 									Sprite *sprite = getSprite(buildingDef->sprites, 0);
+									s32 maxGhosts = (dragResult.dragRect.w / buildingDef->width) * (dragResult.dragRect.h / buildingDef->height);
+									// TODO: If maxGhosts is 1, just draw 1!
+									DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, sprite->texture, renderer->shaderIdCache.pixelArt, maxGhosts);
 									for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
 									{
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
@@ -687,13 +673,18 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 											bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y);
 
 											Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
-											pushOverlayRenderItem(gameState, rect, depthFromY(dragResult.dragRect.y + y) + 100, canPlace ? ghostColorValid : ghostColorInvalid, pixelArtShaderID, sprite);
+
+											V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
+											// TODO: All the sprites are the same, so we could optimise this!
+											// Then again, eventually we might want ghosts to not be identical, eg ghost roads that visually connect.
+											addSpriteRect(rectsGroup, sprite, rect, color);
 										}
 									}
+									endRectsGroup(rectsGroup);
 								}
 								else
 								{
-									pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+									drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(255, 64, 64, 128));
 								}
 							} break;
 						}
@@ -739,6 +730,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							//
 							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
 							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
+							DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, renderer->shaderIdCache.untextured, areaOf(dragResult.dragRect));
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
 								zoneRect.y = (f32) y;
@@ -747,14 +739,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									zoneRect.x = (f32) x;
 									if (canZoneTile(city, gameState->selectedZoneID, x, y))
 									{
-										pushOverlayRenderItem(gameState, zoneRect, 0, zoneColor, rectangleShaderID);
+										addUntexturedRect(rectsGroup, zoneRect, zoneColor);
 									}
 								}
 							}
+							endRectsGroup(rectsGroup);
 						}
 						else
 						{
-							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -788,11 +781,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						if (canAfford(city, demolishCost))
 						{
 							// Demolition outline
-							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(128, 0, 0, 128), rectangleShaderID);
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(128, 0, 0, 128));
 						}
 						else
 						{
-							pushOverlayRenderItem(gameState, rect2(dragResult.dragRect), 0, color255(255, 64, 64, 128), rectangleShaderID);
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -833,61 +826,25 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	);
 	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 
-	// Draw terrain
-	drawTerrain(city, renderer, visibleTileBounds, pixelArtShaderID);
+	drawTerrain(city, renderer, visibleTileBounds, renderer->shaderIdCache.pixelArt);
 
-	// Draw zones
-	drawZones(&city->zoneLayer, renderer, visibleTileBounds, rectangleShaderID);
-	
-	{
-		DEBUG_BLOCK_T("Draw buildings", DCDT_GameUpdate);
+	drawZones(&city->zoneLayer, renderer, visibleTileBounds, renderer->shaderIdCache.untextured);
 
-		s32 typeID = -1;
-		SpriteGroup *sprites = null;
-		V4 drawColorNormal = makeWhite();
-		V4 drawColorDemolish = color255(255,128,128,255);
-
-		//
-		// TODO: Once buildings have "height" that extends above their footprint, we'll need to know
-		// the maximum height, and go a corresponding number of sectors down to ensure they're drawn.
-		//
-		// - Sam, 17/06/2019
-		//
-		ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
-		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(visibleBuildings.count));
-		s32 buildingsDrawn = 0;
-		for (auto it = iterate(&visibleBuildings);
-			!it.isDone;
-			next(&it))
-		{
-			Building *building = getValue(it);
-
-			if (typeID != building->typeID)
-			{
-				typeID = building->typeID;
-				sprites = getBuildingDef(typeID)->sprites;
-			}
-
-			V4 drawColor = drawColorNormal;
-
-			if (gameState->actionMode == ActionMode_Demolish
-				&& gameState->worldDragState.isDragging
-				&& overlaps(building->footprint, demolitionRect))
-			{
-				// Draw building red to preview demolition
-				drawColor = drawColorDemolish;
-			}
-
-			Sprite *sprite = getSprite(sprites, building->spriteOffset);
-			makeRenderItem(firstRenderItem + buildingsDrawn++, rect2(building->footprint), 0, sprite->texture, sprite->uv, pixelArtShaderID, drawColor);
-		}
-		finishReservedRenderItemRange(&renderer->worldBuffer, buildingsDrawn);
-	}
+	drawBuildings(city, renderer, visibleTileBounds, renderer->shaderIdCache.pixelArt, demolitionRect);
 
 	// Data layer rendering
 	if (gameState->dataLayerToDraw)
 	{
 		DEBUG_BLOCK_T("Draw data layer", DCDT_GameUpdate);
+
+		//
+		// TODO: @Speed: Render in a batch - but I think we want to treat whole-map per-tile grids as a special
+		// case for rendering. Instead of allocating a batch for possibly the whole map, then filling in part,
+		// we could just upload the data grid as a texture. Or maybe embed a 2d array inside the RenderItem.
+		// Lots of possibilities! But right now this is temporary code really, so I'll avoid optimising it.
+		//
+		// - Sam, 22/07/2019
+		//
 
 		for (s32 y = visibleTileBounds.y;
 			y < visibleTileBounds.y + visibleTileBounds.h;
@@ -925,26 +882,10 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				if (tileHasData)
 				{
-					drawRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), 9999.0f, rectangleShaderID, color);
+					drawSingleRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), renderer->shaderIdCache.untextured, color);
 				}
 			}
 		}
-	}
-
-	// Draw the things we prepared in overlayRenderItems earlier
-	{
-		DEBUG_BLOCK_T("Transfer overlayRenderItems", DCDT_GameUpdate);
-
-		RenderItem *firstRenderItem = reserveRenderItemRange(&renderer->worldBuffer, truncate32(gameState->overlayRenderItems.count));
-		s32 overlayRenderItemsDrawn = 0;
-		for (auto it = iterate(&gameState->overlayRenderItems);
-			!it.isDone;
-			next(&it))
-		{
-			firstRenderItem[overlayRenderItemsDrawn++] = *get(it);
-		}
-		finishReservedRenderItemRange(&renderer->worldBuffer, overlayRenderItemsDrawn);
-		clear(&gameState->overlayRenderItems);
 	}
 
 #if 0
@@ -967,7 +908,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					color = color255(255,   0,   0, 63);
 				}
 
-				drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, rectangleShaderID, color);
+				drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, renderer->shaderIdCache.untextured, color);
 			}
 		}
 		#endif
@@ -975,7 +916,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		CitySector *cursorSector = getSectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
 		if (cursorSector != null)
 		{
-			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, rectangleShaderID, color255(255, 255, 255, 63));
+			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, renderer->shaderIdCache.untextured, color255(255, 255, 255, 63));
 
 			// Draw PowerGroup boundaries
 			// for (auto itPG = iterate(&cursorSector->powerGroups); !itPG.isDone; next(&itPG))
@@ -987,7 +928,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			// 	{
 			// 		Rect2I bounds = getValue(itBoundary);
 
-			// 		drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, rectangleShaderID, color);
+			// 		drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, renderer->shaderIdCache.untextured, color);
 			// 	}
 			// }
 		}
@@ -1043,12 +984,12 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		} break;
 	}
 
-	renderWindows(uiState);
+	renderWindows(renderer, uiState);
 	
 	if (appState->appStatus != oldAppStatus)
 	{
 		clear(&uiState->openWindows);
 	}
 
-	drawUiMessage(uiState);
+	drawUiMessage(uiState, renderer);
 }

@@ -116,14 +116,18 @@ struct DebugTextState
 	f32 maxWidth;
 	bool progressUpwards;
 
-	UIState *uiState;
+	RenderBuffer *renderBuffer;
+	s32 textShaderID;
+	s32 untexturedShaderID;
 
 	u32 charsLastPrinted;
 };
 
-void initDebugTextState(DebugTextState *textState, UIState *uiState, BitmapFont *font, V4 textColor, V2 screenSize, f32 screenEdgePadding, bool upwards, bool alignLeft)
+void initDebugTextState(DebugTextState *textState, Renderer *renderer, BitmapFont *font, V4 textColor, f32 screenEdgePadding, bool upwards, bool alignLeft)
 {
 	*textState = {};
+
+	textState->renderBuffer = &renderer->debugBuffer;
 
 	textState->progressUpwards = upwards;
 	if (alignLeft)
@@ -134,12 +138,12 @@ void initDebugTextState(DebugTextState *textState, UIState *uiState, BitmapFont 
 	else
 	{
 		textState->hAlign = ALIGN_RIGHT;
-		textState->pos.x = screenSize.x - screenEdgePadding;
+		textState->pos.x = textState->renderBuffer->camera.size.x - screenEdgePadding;
 	}
 
 	if (upwards) 
 	{
-		textState->pos.y = screenSize.y - screenEdgePadding;
+		textState->pos.y = textState->renderBuffer->camera.size.y - screenEdgePadding;
 	}
 	else
 	{
@@ -147,9 +151,10 @@ void initDebugTextState(DebugTextState *textState, UIState *uiState, BitmapFont 
 	}
 	textState->font = font;
 	textState->color = textColor;
-	textState->maxWidth = screenSize.x - (2*screenEdgePadding);
+	textState->maxWidth = textState->renderBuffer->camera.size.x - (2*screenEdgePadding);
 
-	textState->uiState = uiState;
+	textState->textShaderID = renderer->shaderIdCache.text;
+	textState->untexturedShaderID = renderer->shaderIdCache.untextured;
 }
 
 void debugTextOut(DebugTextState *textState, String text, bool doHighlight = false, V4 *color = null)
@@ -160,37 +165,43 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 
 	textState->charsLastPrinted = text.length;
 	V4 textColor = (color != null) ? *color : textState->color;
-	Rect2 resultRect = uiText(textState->uiState, textState->font, text, textState->pos,
-	                             align, 300, textColor, textState->maxWidth);
 
-	if (textState->progressUpwards)
+	V2 textSize = calculateTextSize(textState->font, text, textState->maxWidth);
+	V2 topLeft  = calculateTextPosition(textState->pos, textSize, align);
+
+	Rect2 bounds = rectPosSize(topLeft, textSize);
+
+	if (doHighlight && contains(bounds, textState->renderBuffer->camera.mousePos))
 	{
-		textState->pos.y -= resultRect.h;
+		drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
+		drawText(textState->renderBuffer, textState->font, text, bounds, align, color255(0, 0, 0, 255), textState->textShaderID);
 	}
 	else
 	{
-		textState->pos.y += resultRect.h;
+		drawText(textState->renderBuffer, textState->font, text, bounds, align, textColor, textState->textShaderID);
 	}
 
-	if (doHighlight && contains(resultRect, textState->uiState->uiBuffer->camera.mousePos))
+	if (textState->progressUpwards)
 	{
-		drawRect(textState->uiState->uiBuffer, resultRect, 300 - 10, textState->uiState->untexturedShaderID, color255(255, 255, 255, 48));
+		textState->pos.y -= bounds.h;
+	}
+	else
+	{
+		textState->pos.y += bounds.h;
 	}
 }
 
-void renderDebugData(DebugState *debugState, UIState *uiState)
+void renderDebugData(DebugState *debugState, Renderer *renderer)
 {
 	BitmapFont *font = getFont(globalAppState.assets, makeString("debug"));
-
-	RenderBuffer *uiBuffer = uiState->uiBuffer;
+	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 	u32 rfi = debugState->readingFrameIndex;
-	drawRect(uiBuffer, rectXYWH(0,0,uiBuffer->camera.size.x, uiBuffer->camera.size.y),
-		     100, uiState->untexturedShaderID, color255(0,0,0,128));
+	drawSingleRect(renderBuffer, rectXYWH(0,0,renderBuffer->camera.size.x, renderBuffer->camera.size.y), renderer->shaderIdCache.untextured, color255(0,0,0,128));
 
 	DebugTextState textState;
-	initDebugTextState(&textState, uiState, font, makeWhite(), uiBuffer->camera.size, 16.0f, false, true);
+	initDebugTextState(&textState, renderer, font, makeWhite(), 16.0f, false, true);
 
 	u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 	debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
@@ -230,21 +241,21 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 
 	// Render buffers
 	{
-		DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.nextNode;
-		while (renderBuffer != &debugState->renderBufferDataSentinel)
+		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
+		while (renderBufferData != &debugState->renderBufferDataSentinel)
 		{
-			s32 drawCallCount = renderBuffer->drawCallCount[rfi];
+			s32 drawCallCount = renderBufferData->drawCallCount[rfi];
 			s32 itemsDrawn = 0;
 			for (s32 i=0; i<drawCallCount; i++)
 			{
-				itemsDrawn += renderBuffer->drawCalls[rfi][i].itemsDrawn;
+				itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
 			}
 			debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches", {
-				renderBuffer->name,
+				renderBufferData->name,
 				formatInt(itemsDrawn),
 				formatInt(drawCallCount)
 			}));
-			renderBuffer = renderBuffer->nextNode;
+			renderBufferData = renderBufferData->nextNode;
 		}
 	}
 
@@ -286,28 +297,27 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	{
 		f32 graphHeight = 150.0f;
 		f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-		f32 barWidth = uiBuffer->camera.size.x / (f32)DEBUG_FRAMES_COUNT;
+		f32 barWidth = renderBuffer->camera.size.x / (f32)DEBUG_FRAMES_COUNT;
 		f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
 		V4 barColor = color255(255, 0, 0, 128);
 		V4 activeBarColor = color255(255, 255, 0, 128);
-	u32 barIndex = 0;
-	for (u32 fi = debugState->writingFrameIndex + 1;
-			 fi != debugState->writingFrameIndex;
-			 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
+		u32 barIndex = 0;
+		DrawRectsGroup *rectsGroup = beginRectsGroup(renderBuffer, renderer->shaderIdCache.untextured, DEBUG_FRAMES_COUNT);
+		for (u32 fi = debugState->writingFrameIndex + 1;
+				 fi != debugState->writingFrameIndex;
+				 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
 		{
-		u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
-		f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-			drawRect(uiBuffer, rectXYWH(barWidth * barIndex++, uiBuffer->camera.size.y - barHeight, barWidth, barHeight), 200, uiState->untexturedShaderID,
-				     fi == rfi ? activeBarColor : barColor);
+			u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
+			f32 barHeight = barHeightPerCycle * (f32)frameCycles;
+			addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderBuffer->camera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
 		}
-		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight, uiBuffer->camera.size.x, 1),
-		         201, uiState->untexturedShaderID, color255(255, 255, 255, 128));
-		drawRect(uiBuffer, rectXYWH(0, uiBuffer->camera.size.y - graphHeight*2, uiBuffer->camera.size.x, 1),
-		         201, uiState->untexturedShaderID, color255(255, 255, 255, 128));
+		endRectsGroup(rectsGroup);
+		drawSingleRect(renderBuffer, rectXYWH(0, renderBuffer->camera.size.y - graphHeight, renderBuffer->camera.size.x, 1), renderer->shaderIdCache.untextured, color255(255, 255, 255, 128));
+		drawSingleRect(renderBuffer, rectXYWH(0, renderBuffer->camera.size.y - graphHeight*2, renderBuffer->camera.size.x, 1), renderer->shaderIdCache.untextured, color255(255, 255, 255, 128));
 	}
 
 	// Put FPS in top right
-	initDebugTextState(&textState, uiState, font, makeWhite(), uiBuffer->camera.size, 16.0f, false, false);
+	initDebugTextState(&textState, renderer, font, makeWhite(), 16.0f, false, false);
 	{
 		String smsForFrame = makeString("???");
 		String sfps = makeString("???");
@@ -321,7 +331,7 @@ void renderDebugData(DebugState *debugState, UIState *uiState)
 	}
 }
 
-void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, UIState *uiState)
+void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, Renderer *renderer)
 {
 	if (keyJustPressed(inputState, SDLK_F2))
 	{
@@ -346,18 +356,18 @@ void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, UI
 	{
 		// Output draw call data
 		logDebug("****************** DRAW CALLS ******************");
-		DebugRenderBufferData *renderBuffer = debugState->renderBufferDataSentinel.nextNode;
+		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
 		u32 rfi = debugState->readingFrameIndex;
-		while (renderBuffer != &debugState->renderBufferDataSentinel)
+		while (renderBufferData != &debugState->renderBufferDataSentinel)
 		{
-			s32 drawCallCount = renderBuffer->drawCallCount[rfi];
-			logDebug("Buffer {0} ({1} calls)\n-------------------------------", {renderBuffer->name, formatInt(drawCallCount)});
+			s32 drawCallCount = renderBufferData->drawCallCount[rfi];
+			logDebug("Buffer {0} ({1} calls)\n-------------------------------", {renderBufferData->name, formatInt(drawCallCount)});
 			for (s32 i=0; i<drawCallCount; i++)
 			{
-				DebugDrawCallData *drawCall = renderBuffer->drawCalls[rfi] + i;
+				DebugDrawCallData *drawCall = renderBufferData->drawCalls[rfi] + i;
 				logDebug("{0}: {1} item(s), shader '{2}', texture '{3}'", {formatInt(i), formatInt(drawCall->itemsDrawn), drawCall->shaderName, drawCall->textureName});
 			}
-			renderBuffer = renderBuffer->nextNode;
+			renderBufferData = renderBufferData->nextNode;
 		}
 	}
 
@@ -365,7 +375,7 @@ void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, UI
 
 	if (debugState->showDebugData)
 	{
-		renderDebugData(debugState, uiState);
+		renderDebugData(debugState, renderer);
 	}
 }
 
@@ -485,10 +495,14 @@ void debugTrackDrawCall(DebugState *debugState, String shaderName, String textur
 
 	u32 frameIndex = debugState->writingFrameIndex;
 
-	DebugDrawCallData *drawCall = &renderBufferData->drawCalls[frameIndex][renderBufferData->drawCallCount[frameIndex]++];
-	drawCall->shaderName = shaderName;
-	drawCall->textureName = textureName;
-	drawCall->itemsDrawn = itemsDrawn;
+	u32 drawCallIndex = renderBufferData->drawCallCount[frameIndex]++;
+	if (drawCallIndex < DEBUG_DRAW_CALLS_RECORDED_PER_FRAME)
+	{
+		DebugDrawCallData *drawCall = &renderBufferData->drawCalls[frameIndex][drawCallIndex];
+		drawCall->shaderName = shaderName;
+		drawCall->textureName = textureName;
+		drawCall->itemsDrawn = itemsDrawn;
+	}
 }
 
 void debugStartTrackingRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer)

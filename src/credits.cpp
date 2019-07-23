@@ -20,13 +20,13 @@ void updateAndRenderCredits(AppState *appState, Renderer *renderer, AssetManager
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		position.y += (uiText(uiState, font, line,
-			position, ALIGN_H_CENTRE | ALIGN_TOP, 1, labelStyle->textColor, maxLabelWidth)).h;
+		position.y += (uiText(renderer, uiState->uiBuffer, font, line,
+			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
 
 	f32 uiBorderPadding = 4;
 	Rect2 buttonRect = rectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, LOCAL("button_back"), buttonRect, 1, false, SDLK_ESCAPE))
+	if (uiButton(uiState, renderer, LOCAL("button_back"), buttonRect, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

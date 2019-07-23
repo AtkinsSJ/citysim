@@ -23,12 +23,6 @@ void setCursorVisible(UIState *uiState, bool visible)
 	SDL_ShowCursor(visible ? 1 : 0);
 }
 
-void cacheUIShaders(UIState *uiState, AssetManager *assets)
-{
-	uiState->textShaderID       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
-	uiState->untexturedShaderID = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
-}
-
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input)
 {
 	*uiState = {};
@@ -36,8 +30,6 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	uiState->uiBuffer = uiBuffer;
 	uiState->assets = assets;
 	uiState->input = input;
-
-	uiState->closestDepth = uiBuffer->camera.nearClippingPlane;
 
 	initMemoryArena(&uiState->arena, MB(1));
 
@@ -52,7 +44,7 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets,
 	setCursorVisible(uiState, false);
 }
 
-Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 align, f32 depth, V4 color, f32 maxWidth)
+Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
@@ -61,7 +53,7 @@ Rect2 uiText(UIState *uiState, BitmapFont *font, String text, V2 origin, u32 ali
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	drawText(uiState->uiBuffer, font, text, bounds, align, depth, color, uiState->textShaderID);
+	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIdCache.text);
 
 	return bounds;
 }
@@ -77,7 +69,7 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
-bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool active, SDL_Keycode shortcutKey, String tooltip)
+bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
@@ -122,10 +114,9 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool activ
 		backColor = style->hoverColor;
 	}
 
-	drawRect(uiState->uiBuffer, bounds, depth, uiState->untexturedShaderID, backColor);
+	drawSingleRect(uiState->uiBuffer, bounds, renderer->shaderIdCache.untextured, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(uiState, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, depth + 1,
-			style->textColor);
+	uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
@@ -137,12 +128,12 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, f32 depth, bool activ
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, f32 depth, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
+bool uiMenuButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, text, bounds, depth, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, renderer, text, bounds, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -165,7 +156,7 @@ void pushUiMessage(UIState *uiState, String message)
 	uiState->message.countdown = uiMessageDisplayTime;
 }
 
-void drawUiMessage(UIState *uiState)
+void drawUiMessage(UIState *uiState, Renderer *renderer)
 {
 	DEBUG_FUNCTION();
 	
@@ -197,29 +188,27 @@ void drawUiMessage(UIState *uiState)
 				textColor *= lerp<f32>(textColor.a, 0, tt);
 			}
 
-			f32 depth = uiState->closestDepth - 100.0f;
-
 			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
 
-			RenderItem *backgroundRI = appendRenderItem(uiState->uiBuffer);
+			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(uiState->uiBuffer);
 
-			Rect2 labelRect = uiText(uiState, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
-										 ALIGN_H_CENTRE | ALIGN_BOTTOM, depth + 1.0f, textColor);
+			Rect2 labelRect = uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
+										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);
 
-			drawRect(backgroundRI, labelRect, depth, uiState->untexturedShaderID, backgroundColor);
+			fillDrawRectPlaceholder(backgroundRI, labelRect, renderer->shaderIdCache.untextured, backgroundColor);
 		}
 	}
 }
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, f32 depth, V4 knobColor, s32 shaderID)
+void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s32 shaderID)
 {
 	knobSize.y = min(knobSize.y, height); // force knob to fit
 	f32 knobTravelableH = height - knobSize.y;
 	f32 scrollY = scrollPercent * knobTravelableH;
 	Rect2 knobRect = rectXYWH(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
-	drawRect(uiBuffer, knobRect, depth, shaderID, knobColor);
+	drawSingleRect(uiBuffer, knobRect, shaderID, knobColor);
 }
 
 inline void uiCloseMenus(UIState *uiState)

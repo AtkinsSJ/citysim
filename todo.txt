@@ -15,22 +15,15 @@ Notes for searching:
 ------------------------------------------------
 
 Renderer optimisation!
-✔ Remove the need for sorting, push draw everything in order
-- Switch to a flat memory push-buffer instead of an array of RenderItems
-- Things other than RenderItems!
-	- Set the shader/texture/whatever
-	- Can we combine the world/ui buffers too???? probably not but maybe.
-	- Text, which has setup data and then a stream of chars & locations
-	- We deal with grids a lot, some kind of sped-up thing for that would be good,
-		either as "define a grid and then the colours of the cells" or "here is a mesh with a bunch of vertices". The latter is more general (and works for terrain!) but the former is simpler. Maybe both though!
-	- Put all terrain in a single texture and set up a texture mesh per chunk!
-- Maybe get rid of the overlayRenderItems thing, if we can
+- Break _alignText() into a more general "get offset for alignment" function
+- We deal with grids a lot, some kind of sped-up thing for that would be good,
+	either as "define a grid and then the colours of the cells" or "here is a mesh with a bunch of vertices". The latter is more general (and works for terrain!) but the former is simpler. Maybe both though!
+- Set up a texture mesh per chunk!
+- Maybe send data to the renderer in a more render-friendly form? (ie, send vertex data instead of the renderer having to construct it.) Then again, that could cause problems if we use multiple renderers? IDK, probably not. It might be more awkward for user code to manipulate things it's submitted already though. IDK.
 
 Speed up debug system?
 
 Speed up text rendering!
-- Maybe try that crazy "pass text as a single renderitem" idea?
-	- Maybe that should be abstracted a little into a "draw a bunch of stuff together" feature. eg, Terrain could use something similar
 - Possibly replace all floats in text-rendering with integers, and just produce floats at the very end for the actual renderitems. Everything is always done in whole-pixels anyway, and that should be a chunk faster.
 	- calculateTextSize() could return V2I, etc. That's quite a deep rabbit hole though!
 - Use u8s for RenderItem colours instead of V4? That'd divide the memory requirements for a colour by 4! Though, it's a bit tricky to know how that'll affect everything.
@@ -60,7 +53,7 @@ SECTORS:
 	- Similar stuff to how power works, so figure that out first
 - Terrain
 	- Terrain mesh? That's kind of a side issue
-	- Also a side-issue, but combine all terrain into a single texture! That'll dramatically reduce draw calls.
+	✔ Also a side-issue, but combine all terrain into a single texture! That'll dramatically reduce draw calls.
 ✔ Buildings
 	✔ findBuildingsInRectangle(), which returns some kind of temporary, iterable array.
 	✔ Add flags to ^ so we can request buildings whose ORIGIN is in the rectangle, and maybe some other requirements (eg, must carry power)

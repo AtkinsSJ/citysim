@@ -185,7 +185,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	return result;
 }
 
-void _alignText(RenderItem *startOfLine, RenderItem *endOfLine, s32 lineWidth, s32 boundsWidth, u32 align)
+void _alignText(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, u32 align)
 {
 	if (lineWidth == 0)
 	{
@@ -197,13 +197,13 @@ void _alignText(RenderItem *startOfLine, RenderItem *endOfLine, s32 lineWidth, s
 		case ALIGN_RIGHT:
 		{
 			s32 offsetX = boundsWidth - lineWidth;
-			applyOffsetToRenderItems(startOfLine, endOfLine, (f32) offsetX, 0);
+			offsetRange(state, startIndex, endIndexInclusive, (f32) offsetX, 0);
 		} break;
 
 		case ALIGN_H_CENTRE:
 		{
 			s32 offsetX = (boundsWidth - lineWidth) / 2;
-			applyOffsetToRenderItems(startOfLine, endOfLine, (f32) offsetX, 0);
+			offsetRange(state, startIndex, endIndexInclusive, (f32) offsetX, 0);
 		} break;
 
 		case ALIGN_LEFT:
@@ -218,9 +218,11 @@ void _alignText(RenderItem *startOfLine, RenderItem *endOfLine, s32 lineWidth, s
 	}
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, f32 depth, V4 color, s32 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, V4 color, s32 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
+
+	if (text.length <= 0) return;
 
 	ASSERT(renderBuffer != null); //RenderBuffer must be provided!
 	ASSERT(font != null); //Font must be provided!
@@ -235,7 +237,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	// countGlyphs() is not very fast, though it's less bad than I thought once I take the profiling out
 	// of it. It accounts for about 4% of the time for drawText(), which is 0.1ms in my stress-test.
 	// Also, the over-estimate will only boost the size of the renderitems array *once* as it never shrinks.
-	// We could end up with one that's, I dunno, twice the size it needs to be... RenderItem is 64 bytes
+	// We could end up with one that's, I dunno, twice the size it needs to be... RenderItem_DrawThing is 64 bytes
 	// right now, so 20,000 of them is around 1.25MB, which isn't a big deal.
 	//
 	// I think I'm going to go with the faster option for now, and maybe revisit this in the future.
@@ -246,7 +248,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	// s32 glyphsToOutput = countGlyphs(text.chars, text.length);
 	s32 glyphsToOutput = text.length;
 
-	RenderItem *firstRenderItem = reserveRenderItemRange(renderBuffer, glyphsToOutput);
+	DrawRectsGroup *group = beginRectsGroupForText(renderBuffer, font, shaderID, glyphsToOutput);
 
 	s32 currentX = 0;
 	s32 currentY = 0;
@@ -280,7 +282,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 
 			// Do line-alignment stuff
 			// (This only has to happen for the first newline in a series of newlines!)
-			_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount - 1, currentLineWidth, maxWidth, align);
+			_alignText(group, startOfCurrentLine, glyphCount - 1, currentLineWidth, maxWidth, align);
 			startOfCurrentLine = glyphCount;
 			currentLineWidth = 0;
 
@@ -360,48 +362,40 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 				{
 					if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
 					{
+						currentX = 0;
+						currentY += font->lineHeight;
+
 						if (currentWordWidth + glyph->xAdvance > maxWidth)
 						{
 							// The current word is longer than will fit on an entire line!
 							// So, split it at the maximum line length.
 
 							// This should mean just wrapping the final character
-							currentX = 0;
-							currentY += font->lineHeight;
-
 							startOfCurrentWord = glyphCount;
 							currentLineWidth = currentWordWidth;
 							currentWordWidth = 0;
-
-							RenderItem *firstItemInWord = firstRenderItem + startOfCurrentWord;
-							firstItemInWord->rect.x = topLeft.x;
-							firstItemInWord->rect.y = topLeft.y + currentY + glyph->yOffset;
 						}
-						else
+						else if (currentWordWidth > 0)
 						{
 							// Wrap the whole word onto a new line
 
 							// Offset from where the word was, to its new position
-							f32 offsetX = topLeft.x - firstRenderItem[startOfCurrentWord].rect.x;
-							f32 offsetY = (f32)font->lineHeight;
-							applyOffsetToRenderItems(firstRenderItem + startOfCurrentWord, firstRenderItem + glyphCount, offsetX, offsetY);
+							f32 offsetX = (f32) -(currentLineWidth + whitespaceWidthBeforeCurrentWord);
+							f32 offsetY = (f32) font->lineHeight;
+							offsetRange(group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
 
 							// Set the current position to where the next word will start
 							currentX = currentWordWidth;
-							currentY += font->lineHeight;
 						}
 
 						// Do line-alignment stuff
-						_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
+						_alignText(group, startOfCurrentLine, startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
 						startOfCurrentLine = startOfCurrentWord;
 						currentLineWidth = 0;
 						whitespaceWidthBeforeCurrentWord = 0;
 					}
 
-					makeRenderItem(firstRenderItem + glyphCount,
-						rectXYWH(topLeft.x + currentX + glyph->xOffset, topLeft.y + currentY + glyph->yOffset, glyph->width, glyph->height),
-						depth, font->texture, glyph->uv, shaderID, color
-					);
+					addGlyphRect(group, glyph, topLeft + v2(currentX, currentY), color);
 
 					currentChar++;
 					if (caretInfoResult && currentChar == caretIndex)
@@ -425,7 +419,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	}
 
 	// Align the final line
-	_alignText(firstRenderItem + startOfCurrentLine, firstRenderItem + glyphCount-1, currentLineWidth, maxWidth, align);
+	_alignText(group, startOfCurrentLine, glyphCount-1, currentLineWidth, maxWidth, align);
 
 	if (caretInfoResult && currentChar < caretIndex)
 	{
@@ -433,7 +427,8 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 		caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
 	}
 
-	finishReservedRenderItemRange(renderBuffer, glyphCount);
+	ASSERT(glyphCount == group->count);
+	endRectsGroup(group);
 }
 
 V2 calculateTextPosition(V2 origin, V2 size, u32 align)

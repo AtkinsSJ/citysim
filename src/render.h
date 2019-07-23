@@ -23,10 +23,17 @@ struct Camera
 };
 const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 
-struct RenderItem
+enum RenderItemType
 {
-	Rect2 rect;
-	f32 depth; // Positive is towards the player
+	RenderItemType_NextMemoryChunk,
+
+	RenderItemType_DrawSingleRect,
+	RenderItemType_DrawRects,
+};
+
+struct RenderItem_DrawSingleRect
+{
+	Rect2 bounds;
 	V4 color;
 	s32 shaderID;
 
@@ -34,14 +41,67 @@ struct RenderItem
 	Rect2 uv; // in (0 to 1) space
 };
 
+const s32 maxRenderItemsPerGroup = 255;
+struct RenderItem_DrawRects
+{
+	s32 count;
+	s32 shaderID;
+	Asset *texture;
+};
+struct RenderItem_DrawRects_Item
+{
+	Rect2 bounds;
+	V4 color;
+	Rect2 uv;
+};
+
+struct DrawRectsSubGroup
+{
+	RenderItem_DrawRects *header;
+	RenderItem_DrawRects_Item *first;
+	s32 maxCount;
+
+	DrawRectsSubGroup *prev;
+	DrawRectsSubGroup *next;
+};
+
+// Think of this like a "handle". It has data inside but you shouldn't touch it from user code!
+struct DrawRectsGroup
+{
+	RenderBuffer *buffer;
+
+	DrawRectsSubGroup firstSubGroup;
+	DrawRectsSubGroup *currentSubGroup;
+
+	s32 count;
+	s32 maxCount;
+
+	Asset *texture;
+	s32 shaderID;
+};
+
+struct RenderBufferChunk
+{
+	smm size;
+	smm used;
+	u8 *memory;
+
+	RenderBufferChunk *next;
+};
+
 struct RenderBuffer
 {
 	String name;
 	Camera camera;
-	Array<RenderItem> items;
+	
+	MemoryArena *arena;
+	RenderBufferChunk firstChunk;
+	RenderBufferChunk *currentChunk;
+	RenderBufferChunk *firstFreeChunk;
+	smm minimumChunkSize;
 
 	bool hasRangeReserved;
-	s32 reservedRangeSize;
+	smm reservedRangeSize;
 };
 
 struct Renderer
@@ -51,7 +111,21 @@ struct Renderer
 	SDL_Window *window;
 
 	RenderBuffer worldBuffer;
+	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
+	RenderBuffer debugBuffer;
+
+	// Not convinced this is the best way of doing it, but it's better than what we had before!
+	// Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
+	// want to be doing a million hashtable lookups all the time. It does feel like a hack, but
+	// practicality is more important than perfection!
+	// - Sam, 23/07/2019
+	struct
+	{
+		s32 pixelArt;
+		s32 text;
+		s32 untextured;
+	} shaderIdCache;
 
 	void *platformRenderer;
 
@@ -76,61 +150,39 @@ inline f32 depthFromY(s32 y)
 }
 
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
+void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
 void freeRenderer(Renderer *renderer);
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize);
-void sortRenderBuffer(RenderBuffer *buffer);
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
 
-void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color=makeWhite());
-void drawRenderItem(RenderBuffer *buffer, RenderItem *item);
+u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
 
-inline RenderItem *appendRenderItem(RenderBuffer *buffer)
-{
-	ASSERT(!buffer->hasRangeReserved); //Can't append renderitems while a range is reserved!
-	RenderItem *result = appendUninitialised(&buffer->items);
-	return result;
-}
+void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s32 shaderID, V4 color);
+void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s32 shaderID, V4 color);
 
-inline void drawRect(RenderItem *renderItem, Rect2 rect, f32 depth, s32 shaderID, V4 color)
-{
-	makeRenderItem(renderItem, rect, depth, null, {}, shaderID, color);
-}
-inline void drawRect(RenderBuffer *buffer, Rect2 rect, f32 depth, s32 shaderID, V4 color)
-{
-	drawRect(appendRenderItem(buffer), rect, depth, shaderID, color);
-}
+// For when you want something to appear NOW in the render-order, but you don't know its details until later
+RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer);
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s32 shaderID, V4 color);
 
-inline void drawSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 rect, f32 depth, s32 shaderID, V4 color=makeWhite())
-{
-	makeRenderItem(appendRenderItem(buffer), rect, depth, sprite->texture, sprite->uv, shaderID, color);
-}
+// NB: The Rects drawn must all have the same Texture!
+// TODO: Have the shaderID default to a sensible value for these like beginRectsGroupForText
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s32 shaderID, s32 maxCount);
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount);
+// TODO: Have the shaderID be last and default to the standard text shader, so I don't have to always pass it
+DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s32 shaderID, s32 maxCount);
+void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
+void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);
+void addSpriteRect(DrawRectsGroup *state, Sprite *sprite, Rect2 bounds, V4 color);
+void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color);
+void offsetRange(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
+void endRectsGroup(DrawRectsGroup *group);
 
-//
-// NB: Some operations are massively sped up if we can ensure there is space up front,
-// and then just write them with a pointer offset. The downside is we then can't add
-// any other RenderItems until the reserved range is finished with.
-//
-// Usage:
-// 		RenderItem *firstItem = reserveRenderItemRange(buffer, itemsToReserve);
-// 		... write to firstItem, firstItem + 1, ... firstItem + (itemsToReserve - 1)
-// 		finishReservedRenderItemRange(buffer, numberOfItemsWeActuallyAdded);
-//
-// `numberOfItemsWeActuallyAdded` needs to be <= `itemsToReserve`.
-// There are a bunch of asserts and checks to (hopefully) prevent any mistakes when
-// using this, but hey, I'm great at inventing exciting new ways to mess up!
-//
-// - Sam, 24/06/2019
-//
-RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count);
-void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded);
-
-void applyOffsetToRenderItems(RenderItem *firstItem, RenderItem *lastItem, f32 offsetX, f32 offsetY);
-
-void sortRenderBuffer(RenderBuffer *buffer);
+DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group);
+void endCurrentSubGroup(DrawRectsGroup *group);
 
 void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen);
 void onWindowResized(Renderer *renderer, s32 w, s32 h);

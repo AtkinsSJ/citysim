@@ -22,19 +22,24 @@ void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingP
 	updateCameraMatrix(camera);
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, u32 initialSize)
-{
-	buffer->name = pushString(arena, name);
-	buffer->hasRangeReserved = false;
-	initialiseArray(&buffer->items, initialSize);
-}
-
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window)
 {
 	renderer->window = window;
 
-	initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer", 16384);
-	initRenderBuffer(renderArena, &renderer->uiBuffer,    "UIBuffer",    16384);
+	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        KB(64));
+	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", KB(64));
+	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer",           KB(64));
+	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        KB(64));
+}
+
+void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
+{
+	renderer->loadAssets(renderer, assets);
+
+	// Cache the shader IDs so we don't have to do so many hash lookups
+	renderer->shaderIdCache.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
+	renderer->shaderIdCache.text       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
+	renderer->shaderIdCache.untextured = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
 }
 
 void freeRenderer(Renderer *renderer)
@@ -102,97 +107,274 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-inline void makeRenderItem(RenderItem *result, Rect2 rect, f32 depth, Asset *texture, Rect2 uv, s32 shaderID, V4 color)
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
 {
-	result->rect = rect;
-	result->depth = depth;
-	result->color = color;
+	buffer->name = pushString(arena, name);
+	buffer->hasRangeReserved = false;
 
-	result->texture = texture;
-	result->uv = uv;
-	result->shaderID = shaderID;
+	buffer->arena = arena;
+	buffer->minimumChunkSize = initialSize;
 
-	// DEBUG STUFF
-#if 0
-	if (result->shaderID == 0 && texture != null)
-	{
-		// We had a weird issue where invalid textures are sometimes reaching the renderer, so we'll try to
-		// catch them here instead.
+	buffer->firstChunk.size = initialSize;
+	buffer->firstChunk.used = 0;
+	buffer->firstChunk.memory = (u8*)allocate(arena, buffer->firstChunk.size);
 
-		Asset *min = globalAppState.assets->allAssets.firstChunk.items;
-		Asset *max = globalAppState.assets->allAssets.lastChunk->items + globalAppState.assets->allAssets.chunkSize;
-		ASSERT(texture >= min && texture <= max); //Attempted to draw using an invalid texture asset pointer!
-	}
-#endif
+	buffer->currentChunk = &buffer->firstChunk;
+	buffer->firstFreeChunk = null;
 }
 
-RenderItem *reserveRenderItemRange(RenderBuffer *buffer, s32 count)
+// NB: reservedSize is for extra data that you want to make sure there is room for,
+// but you're not allocating it right away. Make sure not to do any other allocations
+// in between, and make sure to allocate the space you used when you're done!
+u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize)
+{
+	ASSERT(!buffer->hasRangeReserved); //Can't append renderitems while a range is reserved!
+
+	smm totalSizeRequired = (smm)(sizeof(RenderItemType) + size + reservedSize + sizeof(RenderItemType));
+
+	if ((buffer->currentChunk->size - buffer->currentChunk->used) <= totalSizeRequired)
+	{
+		// Out of room! Push a "go to next chunk" item and append some more memory
+		
+		ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
+
+		*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = RenderItemType_NextMemoryChunk;
+		buffer->currentChunk->used += sizeof(RenderItemType);
+
+		if (buffer->firstFreeChunk != null)
+		{
+			buffer->currentChunk->next = buffer->firstFreeChunk;
+			buffer->currentChunk = buffer->firstFreeChunk;
+			buffer->currentChunk->used = 0;
+			buffer->firstFreeChunk = buffer->firstFreeChunk->next;
+			buffer->currentChunk->next = null;
+
+			// We'd BETTER have space to actually allocate this thing in the chunk!
+			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+		}
+		else
+		{
+			// ALLOCATE
+			RenderBufferChunk *newChunk = null;
+			// The *2 is somewhat arbitrary, but we want to avoid chunks that are only large enough for this item,
+			// because that could lead to fragmentation issues, or getting a chunk out of the free list which is
+			// too small to hold whatever we want to put in it!
+			// - Sam, 13/07/2019
+			smm newChunkSize = max(totalSizeRequired * 2, buffer->minimumChunkSize);
+			newChunk = (RenderBufferChunk *)allocate(buffer->arena, newChunkSize + sizeof(RenderBufferChunk));
+			newChunk->size = newChunkSize;
+			newChunk->used = 0;
+			newChunk->memory = (u8*)(newChunk + 1);
+
+			buffer->currentChunk->next = newChunk;
+			buffer->currentChunk = newChunk;
+
+			// We'd BETTER have space to actually allocate this thing in the chunk!
+			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+		}
+	}
+
+	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
+	buffer->currentChunk->used += sizeof(RenderItemType);
+
+	u8 *result = (buffer->currentChunk->memory + buffer->currentChunk->used);
+	buffer->currentChunk->used += size;
+	return result;
+}
+
+void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s32 shaderID, V4 color)
+{
+	ASSERT(!buffer->hasRangeReserved);
+
+	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+
+	rect->bounds = bounds;
+	rect->color = color;
+	rect->shaderID = shaderID;
+	rect->texture = sprite->texture;
+	rect->uv = sprite->uv;
+}
+
+void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s32 shaderID, V4 color)
+{
+	ASSERT(!buffer->hasRangeReserved);
+
+	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+
+	rect->bounds = bounds;
+	rect->color = color;
+	rect->shaderID = shaderID;
+	rect->texture = null;
+	rect->uv = {};
+}
+
+RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer)
+{
+	ASSERT(!buffer->hasRangeReserved);
+
+	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+
+	return rect;
+}
+
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s32 shaderID, V4 color)
+{
+	placeholder->bounds = bounds;
+	placeholder->color = color;
+	placeholder->shaderID = shaderID;
+	placeholder->texture = null;
+	placeholder->uv = {};
+}
+
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s32 shaderID, s32 maxCount)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
 
-	reserve(&buffer->items, count);
-	buffer->hasRangeReserved = true;
-	buffer->reservedRangeSize = count;
+	DrawRectsGroup *result = allocateStruct<DrawRectsGroup>(globalFrameTempArena);
+	*result = {};
 
-	RenderItem *result = buffer->items.items + buffer->items.count;
+	result->buffer = buffer;
+	result->count = 0;
+	result->maxCount = maxCount;
+	result->shaderID = shaderID;
+	result->texture = texture;
+
+	result->firstSubGroup = beginRectsSubGroup(result);
+	result->currentSubGroup = &result->firstSubGroup;
 
 	return result;
 }
 
-void finishReservedRenderItemRange(RenderBuffer *buffer, s32 itemsAdded)
+inline DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
 {
-	ASSERT(buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
-	if (itemsAdded > buffer->reservedRangeSize)
+	return beginRectsGroup(buffer, null, shaderID, maxCount);
+}
+
+inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s32 shaderID, s32 maxCount)
+{
+	return beginRectsGroup(buffer, font->texture, shaderID, maxCount);
+}
+
+DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)
+{
+	DrawRectsSubGroup result = {};
+
+	s32 subGroupItemCount = min(group->maxCount - group->count, maxRenderItemsPerGroup);
+	ASSERT(subGroupItemCount > 0);
+
+	smm reservedSize = sizeof(RenderItem_DrawRects_Item) * subGroupItemCount;
+	u8 *data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
+	group->buffer->hasRangeReserved = true;
+
+	result.header = (RenderItem_DrawRects *) data;
+	result.first  = (RenderItem_DrawRects_Item *) (data + sizeof(RenderItem_DrawRects));
+	result.maxCount = subGroupItemCount;
+
+	*result.header = {};
+	result.header->texture = group->texture;
+	result.header->shaderID = group->shaderID;
+	result.header->count = 0;
+
+	return result;
+}
+
+void endCurrentSubGroup(DrawRectsGroup *group)
+{
+	ASSERT(group->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	group->buffer->hasRangeReserved = false;
+
+	group->buffer->currentChunk->used += group->currentSubGroup->header->count * sizeof(RenderItem_DrawRects_Item);
+}
+
+void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)
+{
+	ASSERT(group->count < group->maxCount);
+
+	if (group->currentSubGroup->header->count == group->currentSubGroup->maxCount)
 	{
-		logError("You drew {0} items but only reserved room for {1}!!! This is really bad.", {formatInt(itemsAdded), formatInt(buffer->reservedRangeSize)});
-		ASSERT_RELEASE(false);
+		endCurrentSubGroup(group);
+		DrawRectsSubGroup *prevSubGroup = group->currentSubGroup;
+		group->currentSubGroup = allocateStruct<DrawRectsSubGroup>(globalFrameTempArena);
+		*group->currentSubGroup = beginRectsSubGroup(group);
+		prevSubGroup->next = group->currentSubGroup;
+		group->currentSubGroup->prev = prevSubGroup;
+	}
+	ASSERT(group->currentSubGroup->header->count < group->currentSubGroup->maxCount);
+
+	RenderItem_DrawRects_Item *item = group->currentSubGroup->first + group->currentSubGroup->header->count++;
+	item->bounds = bounds;
+	item->color = color;
+	item->uv = uv;
+
+	group->count++;
+}
+
+inline void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color)
+{
+	addRectInternal(group, bounds, color, rectXYWH(0,0,0,0));
+}
+
+inline void addGlyphRect(DrawRectsGroup *group, BitmapFontGlyph *glyph, V2 position, V4 color)
+{
+	Rect2 bounds = rectXYWH(position.x + glyph->xOffset, position.y + glyph->yOffset, glyph->width, glyph->height);
+	addRectInternal(group, bounds, color, glyph->uv);
+}
+
+inline void addSpriteRect(DrawRectsGroup *group, Sprite *sprite, Rect2 bounds, V4 color)
+{
+	if (group->count == 0)
+	{
+		group->texture = sprite->texture;
+		group->currentSubGroup->header->texture = group->texture;
+	}
+	else
+	{
+		ASSERT(group->currentSubGroup->header->texture == sprite->texture);
 	}
 
-	buffer->hasRangeReserved = false;
-	buffer->items.count += itemsAdded;
+	addRectInternal(group, bounds, color, sprite->uv);
 }
 
-void applyOffsetToRenderItems(RenderItem *firstItem, RenderItem *lastItem, f32 offsetX, f32 offsetY)
+void offsetRange(DrawRectsGroup *group, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY)
 {
-	for (RenderItem *it = firstItem; it <= lastItem; it++)
+	ASSERT(startIndex >= 0 && startIndex < group->count);
+	ASSERT(endIndexInclusive >= 0 && endIndexInclusive < group->count);
+	ASSERT(startIndex <= endIndexInclusive);
+
+	s32 debugItemsUpdated = 0;
+
+	DrawRectsSubGroup *subGroup = &group->firstSubGroup;
+	s32 firstIndexInSubGroup = 0;
+	// Find the first subgroup that's involved
+	while (firstIndexInSubGroup + subGroup->header->count < startIndex)
 	{
-		it->rect.x += offsetX;
-		it->rect.y += offsetY;
+		firstIndexInSubGroup += subGroup->header->count;
+		subGroup = subGroup->next;
 	}
-}
 
-int compareRenderItems(const void *a, const void *b)
-{
-	f32 depthA = ((RenderItem*)a)->depth;
-	f32 depthB = ((RenderItem*)b)->depth;
-
-	if (depthA < depthB) return -1;
-	if (depthA > depthB) return 1;
-	return 0;
-}
-
-void sortRenderBuffer(RenderBuffer *buffer)
-{
-	DEBUG_FUNCTION_T(DCDT_Renderer);
-
-	qsort(buffer->items.items, buffer->items.count, sizeof(RenderItem), compareRenderItems);
-}
-
-#if CHECK_BUFFERS_SORTED
-bool isBufferSorted(RenderBuffer *buffer)
-{
-	DEBUG_FUNCTION_T(DCDT_Debugging);
-	bool isSorted = true;
-	f32 lastDepth = f32Min;
-	for (u32 i=0; i < buffer->itemCount; i++)
+	// Update the items in the range
+	while (firstIndexInSubGroup <= endIndexInclusive)
 	{
-		if (lastDepth > buffer->items[i].depth)
+		s32 index = startIndex - firstIndexInSubGroup;
+		if (index < 0) index = 0;
+		for (;
+			(index <= endIndexInclusive - firstIndexInSubGroup) && (index < subGroup->header->count);
+			index++)
 		{
-			isSorted = false;
-			break;
+			RenderItem_DrawRects_Item *item = subGroup->first + index;
+			item->bounds.x += offsetX;
+			item->bounds.y += offsetY;
+			debugItemsUpdated++;
 		}
-		lastDepth = buffer->items[i].depth;
+
+		firstIndexInSubGroup += subGroup->header->count;
+		subGroup = subGroup->next;
 	}
-	return isSorted;
+
+	ASSERT(debugItemsUpdated == (endIndexInclusive - startIndex) + 1);
 }
-#endif
+
+void endRectsGroup(DrawRectsGroup *group)
+{
+	endCurrentSubGroup(group);
+}

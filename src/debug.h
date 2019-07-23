@@ -98,7 +98,7 @@ struct DebugDrawCallData
 	u32 itemsDrawn;
 };
 
-#define DEBUG_DRAW_CALLS_RECORDED_PER_FRAME 2048
+#define DEBUG_DRAW_CALLS_RECORDED_PER_FRAME 8192
 struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData>
 {
 	String name;
@@ -148,8 +148,8 @@ struct DebugState
 	DebugCodeDataWrapper topCodeBlocksSentinel;
 };
 
-
-void updateAndRenderDebugData(DebugState *debugState, struct InputState *inputState, struct UIState *uiState);
+void debugInit();
+void updateAndRenderDebugData(DebugState *debugState, struct InputState *inputState, struct Renderer *renderer);
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);

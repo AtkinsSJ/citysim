@@ -159,6 +159,7 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 Asset *addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied);
 Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount);
 void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false);
+void addTiledSprites(AssetManager *assets, String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles);
 void addFont(AssetManager *assets, String name, String filename);
 
 void loadAsset(AssetManager *assets, Asset *asset);

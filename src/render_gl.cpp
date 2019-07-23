@@ -264,6 +264,11 @@ inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s32 shaderID)
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count); //Invalid shader!
 
+	// Early-out if nothing is changing!
+	if (shaderID == renderer->currentShader)
+	{
+		return renderer->shaders.items + renderer->currentShader;
+	}
 
 	if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
 	{
@@ -343,111 +348,182 @@ void renderPartOfBuffer(GL_Renderer *renderer, u32 vertexCount, u32 indexCount)
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
 }
 
+template<typename T>
+T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos)
+{
+	T *item = (T *)(renderBufferChunk->memory + *pos);
+	*pos += sizeof(T);
+	return item;
+}
+
 static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 
 	DEBUG_BEGIN_RENDER_BUFFER(buffer);
 
-	// Fill VBO
-	u32 vertexCount = 0;
-	u32 indexCount = 0;
 	u32 drawCallCount = 0;
 
-	if (buffer->items.count > 0)
+	RenderBufferChunk *renderBufferChunk = &buffer->firstChunk;
+	smm pos = 0;
+	while ((renderBufferChunk != null) && (pos < renderBufferChunk->used))
 	{
-		// Initialise stuff using the first item...
-		RenderItem *firstItem = buffer->items.items + 0;
-		GL_ShaderProgram *activeShader = useShader(renderer, firstItem->shaderID);
+		RenderItemType itemType = *((RenderItemType *)(renderBufferChunk->memory + pos));
+		pos += sizeof(RenderItemType);
 
-		glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-		glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
-
-		Asset *texture = firstItem->texture;
-		if ((activeShader->uTextureLoc != -1) && (texture != null))
+		switch (itemType)
 		{
-			bindTexture(texture, activeShader->uTextureLoc, 0);
-		}
-
-		// ...but we still draw the first item in this loop!
-		for (s32 i=0; i < buffer->items.count; i++)
-		{
-			RenderItem *item = buffer->items.items + i;
-
-			bool shaderChanged = (item->shaderID != renderer->currentShader);
-			bool textureChanged = (item->texture != texture);
-
-			// Check to see if we need to start a new batch.
-			if (shaderChanged || textureChanged || (vertexCount == RENDER_BATCH_VERTEX_COUNT))
+			case RenderItemType_NextMemoryChunk:
 			{
-				// Render existing buffer contents
+				renderBufferChunk = renderBufferChunk->next;
+				pos = 0;
+			} break;
+
+			case RenderItemType_DrawRects:
+			{
+				RenderItem_DrawRects *header = readRenderItem<RenderItem_DrawRects>(renderBufferChunk, &pos);
+
+				GL_ShaderProgram *activeShader = useShader(renderer, header->shaderID);
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+
+				if (header->texture != null)
+				{
+					bindTexture(header->texture, activeShader->uTextureLoc, 0);
+				}
+
+				s32 vertexCount = 0;
+				s32 indexCount = 0;
+
+				for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++)
+				{
+					if (vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+					{
+						drawCallCount++;
+						renderPartOfBuffer(renderer, vertexCount, indexCount);
+						DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+
+						vertexCount = 0;
+						indexCount = 0;
+					}
+
+					RenderItem_DrawRects_Item *item = readRenderItem<RenderItem_DrawRects_Item>(renderBufferChunk, &pos);
+					u32 firstVertex = vertexCount;
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x, item->bounds.y, 0.0f),
+						item->color,
+						v2(item->uv.x, item->uv.y)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
+						item->color,
+						v2(item->uv.x + item->uv.w, item->uv.y)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
+						item->color,
+						v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
+					};
+					renderer->vertices[vertexCount++] = {
+						v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
+						item->color,
+						v2(item->uv.x, item->uv.y + item->uv.h)
+					};
+
+					renderer->indices[indexCount++] = firstVertex + 0;
+					renderer->indices[indexCount++] = firstVertex + 1;
+					renderer->indices[indexCount++] = firstVertex + 2;
+					renderer->indices[indexCount++] = firstVertex + 0;
+					renderer->indices[indexCount++] = firstVertex + 2;
+					renderer->indices[indexCount++] = firstVertex + 3;
+
+				}
+
+				if (vertexCount > 0)
+				{
+					drawCallCount++;
+					renderPartOfBuffer(renderer, vertexCount, indexCount);
+					DEBUG_DRAW_CALL(activeShader->asset->shortName, nullString, (vertexCount >> 2));
+				}
+
+			} break;
+
+			case RenderItemType_DrawSingleRect:
+			{
+				RenderItem_DrawSingleRect *item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
+
+				GL_ShaderProgram *activeShader = useShader(renderer, item->shaderID);
+
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+
+				if ((activeShader->uTextureLoc != -1) && (item->texture != null))
+				{
+					bindTexture(item->texture, activeShader->uTextureLoc, 0);
+				}
+
+				u32 vertexCount = 0;
+				u32 indexCount = 0;
+
+				u32 firstVertex = vertexCount;
+				renderer->vertices[vertexCount++] = {
+					v3(item->bounds.x, item->bounds.y, 0.0f),
+					item->color,
+					v2(item->uv.x, item->uv.y)
+				};
+				renderer->vertices[vertexCount++] = {
+					v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
+					item->color,
+					v2(item->uv.x + item->uv.w, item->uv.y)
+				};
+				renderer->vertices[vertexCount++] = {
+					v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
+					item->color,
+					v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
+				};
+				renderer->vertices[vertexCount++] = {
+					v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
+					item->color,
+					v2(item->uv.x, item->uv.y + item->uv.h)
+				};
+
+				renderer->indices[indexCount++] = firstVertex + 0;
+				renderer->indices[indexCount++] = firstVertex + 1;
+				renderer->indices[indexCount++] = firstVertex + 2;
+				renderer->indices[indexCount++] = firstVertex + 0;
+				renderer->indices[indexCount++] = firstVertex + 2;
+				renderer->indices[indexCount++] = firstVertex + 3;
+
 				drawCallCount++;
 				renderPartOfBuffer(renderer, vertexCount, indexCount);
-				DEBUG_DRAW_CALL(activeShader->asset->shortName, (texture == null) ? nullString : texture->shortName, (vertexCount >> 2));
+				DEBUG_DRAW_CALL(activeShader->asset->shortName, (item->texture == null) ? nullString : item->texture->shortName,(vertexCount >> 2));
+			} break;
 
-				{
-					DEBUG_BLOCK_T("Start new batch", DCDT_Renderer);
-
-					if (shaderChanged)
-					{
-						activeShader = useShader(renderer, item->shaderID);
-
-						glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-						glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
-					}
-
-					texture = item->texture; // We need this set whether we bind the texture or not, otherwise it never gets nulled and we use a separate batch for every zone tile, for example!
-					// Bind new texture if this shader uses textures
-
-					if ((textureChanged || shaderChanged)
-						&& (activeShader->uTextureLoc != -1)
-						&& (texture != null))
-					{
-						bindTexture(texture, activeShader->uTextureLoc, 0);
-					}
-
-					vertexCount = 0;
-					indexCount = 0;
-				}
-			}
-
-			u32 firstVertex = vertexCount;
-			renderer->vertices[vertexCount++] = {
-				v3(item->rect.x, item->rect.y, item->depth),
-				item->color,
-				v2(item->uv.x, item->uv.y)
-			};
-			renderer->vertices[vertexCount++] = {
-				v3(item->rect.x + item->rect.size.x, item->rect.y, item->depth),
-				item->color,
-				v2(item->uv.x + item->uv.w, item->uv.y)
-			};
-			renderer->vertices[vertexCount++] = {
-				v3(item->rect.x + item->rect.size.x, item->rect.y + item->rect.size.y, item->depth),
-				item->color,
-				v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
-			};
-			renderer->vertices[vertexCount++] = {
-				v3(item->rect.x, item->rect.y + item->rect.size.y, item->depth),
-				item->color,
-				v2(item->uv.x, item->uv.y + item->uv.h)
-			};
-
-			renderer->indices[indexCount++] = firstVertex + 0;
-			renderer->indices[indexCount++] = firstVertex + 1;
-			renderer->indices[indexCount++] = firstVertex + 2;
-			renderer->indices[indexCount++] = firstVertex + 0;
-			renderer->indices[indexCount++] = firstVertex + 2;
-			renderer->indices[indexCount++] = firstVertex + 3;
+			INVALID_DEFAULT_CASE;
 		}
-
-		// Do one final draw for remaining items
-		drawCallCount++;
-		renderPartOfBuffer(renderer, vertexCount, indexCount);
-		DEBUG_DRAW_CALL(activeShader->asset->shortName, (texture == null) ? nullString : texture->shortName,(vertexCount >> 2));
 	}
 
-	clear(&buffer->items);
+	// Clear it!
+	RenderBufferChunk *lastChunk = null;
+	for (RenderBufferChunk *chunk = &buffer->firstChunk;
+		chunk != null;
+		chunk = chunk->next)
+	{
+		chunk->used = 0;
+
+		lastChunk = chunk;
+	}
+
+	// Free list!
+	if (lastChunk != &buffer->firstChunk)
+	{
+		lastChunk->next = buffer->firstFreeChunk;
+		buffer->firstFreeChunk = buffer->firstChunk.next;
+		buffer->firstChunk.next = null;
+	}
+
+	buffer->firstChunk.next = null;
+	buffer->currentChunk = &buffer->firstChunk;
 }
 
 static void GL_render(Renderer *renderer)
@@ -455,22 +531,6 @@ static void GL_render(Renderer *renderer)
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
-	
-	// Sort sprites
-	// {
-	// 	DEBUG_BLOCK_T("SORT WORLD BUFFER", DCDT_Renderer);
-	// 	sortRenderBuffer(&renderer->worldBuffer);
-	// }
-	// {
-	// 	DEBUG_BLOCK_T("sortRenderBuffer(ui)", DCDT_Renderer);
-	// 	sortRenderBuffer(&renderer->uiBuffer);
-	// }
-
-#if CHECK_BUFFERS_SORTED
-	// Check buffers are sorted
-	ASSERT(isBufferSorted(&renderer->worldBuffer)); //World sprites are out of order!
-	ASSERT(isBufferSorted(&renderer->uiBuffer)); //UI sprites are out of order!
-#endif
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -479,8 +539,22 @@ static void GL_render(Renderer *renderer)
 		renderBuffer(gl, &renderer->worldBuffer);
 	}
 	{
+		DEBUG_BLOCK_T("renderBuffer(worldOverlay)", DCDT_Renderer);
+		// NB: This is kind of a hack! At some point we'll probably merge the different buffers
+		// together maybe? But until then, we need the camera toi be updated so we can see things!
+		// - Sam, 17/07/2019
+		renderer->worldOverlayBuffer.camera = renderer->worldBuffer.camera;
+		renderBuffer(gl, &renderer->worldOverlayBuffer);
+	}
+	{
 		DEBUG_BLOCK_T("renderBuffer(ui)", DCDT_Renderer);
 		renderBuffer(gl, &renderer->uiBuffer);
+	}
+	{
+		DEBUG_BLOCK_T("renderBuffer(debug)", DCDT_Renderer);
+		// NB: Hack! See above
+		renderer->debugBuffer.camera = renderer->uiBuffer.camera;
+		renderBuffer(gl, &renderer->debugBuffer);
 	}
 }
 
