@@ -7,14 +7,14 @@
  */
 
 template<typename T>
-struct Chunk
+struct ArrayChunk
 {
 	smm count;
 	smm maxCount;
 	T *items;
 
-	Chunk<T> *prevChunk;
-	Chunk<T> *nextChunk;
+	ArrayChunk<T> *prevChunk;
+	ArrayChunk<T> *nextChunk;
 };
 
 template<typename T>
@@ -24,7 +24,7 @@ struct ChunkPool
 	smm chunkSize;
 
 	smm count;
-	Chunk<T> *firstChunk;
+	ArrayChunk<T> *firstChunk;
 };
 
 template<typename T>
@@ -37,8 +37,8 @@ struct ChunkedArray
 	smm chunkCount;
 	smm count;
 
-	Chunk<T> *firstChunk;
-	Chunk<T> *lastChunk;
+	ArrayChunk<T> *firstChunk;
+	ArrayChunk<T> *lastChunk;
 };
 
 template<typename T>
@@ -48,7 +48,7 @@ struct ChunkedArrayIterator
 	bool wrapAround;
 	bool goBackwards;
 
-	Chunk<T> *currentChunk;
+	ArrayChunk<T> *currentChunk;
 	smm chunkIndex;
 	smm indexInChunk;
 
@@ -100,7 +100,7 @@ template<typename T>
 void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize);
 
 template<typename T>
-Chunk<T> *getChunkFromPool(ChunkPool<T> *pool);
+ArrayChunk<T> *getChunkFromPool(ChunkPool<T> *pool);
 
 template<typename T>
 void returnLastChunkToPool(ChunkedArray<T> *array);

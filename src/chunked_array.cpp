@@ -30,7 +30,7 @@ template<typename T>
 void clear(ChunkedArray<T> *array)
 {
 	array->count = 0;
-	for (Chunk<T> *chunk = array->firstChunk; chunk; chunk = chunk->nextChunk)
+	for (ArrayChunk<T> *chunk = array->firstChunk; chunk; chunk = chunk->nextChunk)
 	{
 		chunk->count = 0;
 	}
@@ -45,15 +45,15 @@ void clear(ChunkedArray<T> *array)
 }
 
 template<typename T>
-Chunk<T> *allocateChunk(MemoryArena *arena, smm chunkSize)
+ArrayChunk<T> *allocateChunk(MemoryArena *arena, smm chunkSize)
 {
 	// Rolled into a single allocation
-	Blob blob = allocateBlob(arena, sizeof(Chunk<T>) + (sizeof(T) * chunkSize));
-	Chunk<T> *newChunk = (Chunk<T> *)blob.memory;
+	Blob blob = allocateBlob(arena, sizeof(ArrayChunk<T>) + (sizeof(T) * chunkSize));
+	ArrayChunk<T> *newChunk = (ArrayChunk<T> *)blob.memory;
 	*newChunk = {};
 	newChunk->count = 0;
 	newChunk->maxCount = chunkSize;
-	newChunk->items = (T *)(blob.memory + sizeof(Chunk<T>));
+	newChunk->items = (T *)(blob.memory + sizeof(ArrayChunk<T>));
 
 	return newChunk;
 }
@@ -61,7 +61,7 @@ Chunk<T> *allocateChunk(MemoryArena *arena, smm chunkSize)
 template<typename T>
 void appendChunk(ChunkedArray<T> *array)
 {
-	Chunk<T> *newChunk = null;
+	ArrayChunk<T> *newChunk = null;
 	
 	// Attempt to get a chunk from the pool if we can
 	if (array->chunkPool != null)
@@ -98,7 +98,7 @@ T *appendUninitialised(ChunkedArray<T> *array)
 	}
 
 	// Shortcut to the last chunk, because that's what we want 99% of the time!
-	Chunk<T> *chunk = null;
+	ArrayChunk<T> *chunk = null;
 	if (useLastChunk)
 	{
 		chunk = array->lastChunk;
@@ -160,7 +160,7 @@ T *get(ChunkedArray<T> *array, smm index)
 	else
 	{
 		// Walk the chunk chain
-		Chunk<T> *chunk = array->firstChunk;
+		ArrayChunk<T> *chunk = array->firstChunk;
 		while (chunkIndex > 0)
 		{
 			chunkIndex--;
@@ -174,11 +174,11 @@ T *get(ChunkedArray<T> *array, smm index)
 }
 
 template<typename T>
-Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
+ArrayChunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 {
 	ASSERT(chunkIndex < array->chunkCount); //chunkIndex is out of range!
 
-	Chunk<T> *chunk = null;
+	ArrayChunk<T> *chunk = null;
 
 	if (chunkIndex == 0)
 	{
@@ -203,9 +203,9 @@ Chunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
 }
 
 template<typename T>
-Chunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
+ArrayChunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
 {
-	Chunk<T> *lastNonEmptyChunk = array->lastChunk;
+	ArrayChunk<T> *lastNonEmptyChunk = array->lastChunk;
 
 	if (array->count > 0)
 	{
@@ -231,7 +231,7 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 		// Moving >, so move each item in the range left 1
 		smm chunkIndex = fromIndex / array->chunkSize;
 		smm itemIndex  = fromIndex % array->chunkSize;
-		Chunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 
 		T movingItem = chunk->items[itemIndex];
 
@@ -258,7 +258,7 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 		// Moving <, so move each item in the range right 1
 		smm chunkIndex = fromIndex / array->chunkSize;
 		smm itemIndex  = fromIndex % array->chunkSize;
-		Chunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 		
 		T movingItem = chunk->items[itemIndex];
 
@@ -287,7 +287,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 
 	bool found = false;
 
-	for (Chunk<T> *chunk = array->firstChunk;
+	for (ArrayChunk<T> *chunk = array->firstChunk;
 		chunk != null;
 		chunk = chunk->nextChunk)
 	{
@@ -298,7 +298,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 				// FOUND IT!
 				found = true;
 
-				Chunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
+				ArrayChunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
 
 				// Now, to copy the last element in the array to this position
 				chunk->items[i] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
@@ -330,7 +330,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 
 	T result;
 	
-	Chunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
+	ArrayChunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
 
 	if (keepItemOrder)
 	{
@@ -349,7 +349,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 		smm chunkIndex = indexToRemove / array->chunkSize;
 		smm itemIndex  = indexToRemove % array->chunkSize;
 
-		Chunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 
 		result = chunk->items[itemIndex];
 
@@ -398,9 +398,9 @@ void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize)
 }
 
 template<typename T>
-Chunk<T> *getChunkFromPool(ChunkPool<T> *pool)
+ArrayChunk<T> *getChunkFromPool(ChunkPool<T> *pool)
 {
-	Chunk<T> *newChunk = null;
+	ArrayChunk<T> *newChunk = null;
 
 	if (pool->count > 0)
 	{
@@ -423,7 +423,7 @@ Chunk<T> *getChunkFromPool(ChunkPool<T> *pool)
 template<typename T>
 void returnLastChunkToPool(ChunkedArray<T> *array)
 {
-	Chunk<T> *chunk = array->lastChunk;
+	ArrayChunk<T> *chunk = array->lastChunk;
 	ChunkPool<T> *pool = array->chunkPool;
 
 	ASSERT(chunk->count == 0); //Attempting to return a non-empty chunk to the chunk pool!
