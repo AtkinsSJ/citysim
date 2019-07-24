@@ -505,26 +505,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	}
 
 	// Clear it!
-	RenderBufferChunk *lastChunk = null;
-	for (RenderBufferChunk *chunk = &buffer->firstChunk;
-		chunk != null;
-		chunk = chunk->next)
-	{
-		chunk->used = 0;
-
-		lastChunk = chunk;
-	}
-
-	// Free list!
-	if (lastChunk != &buffer->firstChunk)
-	{
-		lastChunk->next = buffer->firstFreeChunk;
-		buffer->firstFreeChunk = buffer->firstChunk.next;
-		buffer->firstChunk.next = null;
-	}
-
-	buffer->firstChunk.next = null;
-	buffer->currentChunk = &buffer->firstChunk;
+	clearRenderBuffer(buffer);
 }
 
 static void GL_render(Renderer *renderer)

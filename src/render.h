@@ -107,8 +107,12 @@ struct RenderBuffer
 	RenderBufferChunk *firstFreeChunk;
 	smm minimumChunkSize;
 
+	// Transient stuff
 	bool hasRangeReserved;
 	smm reservedRangeSize;
+
+	s8 currentShader;
+	Asset *currentTexture;
 };
 
 struct Renderer
@@ -161,6 +165,7 @@ void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
 void freeRenderer(Renderer *renderer);
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize);
+void clearRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);

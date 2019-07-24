@@ -121,6 +121,36 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm 
 
 	buffer->currentChunk = &buffer->firstChunk;
 	buffer->firstFreeChunk = null;
+
+	buffer->currentShader = -1;
+	buffer->currentTexture = null;
+}
+
+void clearRenderBuffer(RenderBuffer *buffer)
+{
+	buffer->currentShader = -1;
+	buffer->currentTexture = null;
+
+	RenderBufferChunk *lastChunk = null;
+	for (RenderBufferChunk *chunk = &buffer->firstChunk;
+		chunk != null;
+		chunk = chunk->next)
+	{
+		chunk->used = 0;
+
+		lastChunk = chunk;
+	}
+
+	// Free list!
+	if (lastChunk != &buffer->firstChunk)
+	{
+		lastChunk->next = buffer->firstFreeChunk;
+		buffer->firstFreeChunk = buffer->firstChunk.next;
+		buffer->firstChunk.next = null;
+	}
+
+	buffer->firstChunk.next = null;
+	buffer->currentChunk = &buffer->firstChunk;
 }
 
 // NB: reservedSize is for extra data that you want to make sure there is room for,
@@ -191,16 +221,30 @@ inline T *appendRenderItem(RenderBuffer *buffer, RenderItemType type)
 
 void addSetShader(RenderBuffer *buffer, s8 shaderID)
 {
-	RenderItem_SetShader *shaderItem = appendRenderItem<RenderItem_SetShader>(buffer, RenderItemType_SetShader);
-	*shaderItem = {};
-	shaderItem->shaderID = shaderID;
+	if (buffer->currentShader != shaderID)
+	{
+		RenderItem_SetShader *shaderItem = appendRenderItem<RenderItem_SetShader>(buffer, RenderItemType_SetShader);
+		*shaderItem = {};
+		shaderItem->shaderID = shaderID;
+
+		buffer->currentShader = shaderID;
+		// NB: Setting the opengl shader loses the texture, so we replicate that here.
+		// I suppose in the future we could make sure to bind the texture when the shader changes, but
+		// most of the time we want to set a new texture anyway, so that would be a waste of cpu time.
+		buffer->currentTexture = null;
+	}
 }
 
 void addSetTexture(RenderBuffer *buffer, Asset *texture)
 {
-	RenderItem_SetTexture *textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture);
-	*textureItem = {};
-	textureItem->texture = texture;
+	if (buffer->currentTexture != texture)
+	{
+		RenderItem_SetTexture *textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture);
+		*textureItem = {};
+		textureItem->texture = texture;
+
+		buffer->currentTexture = texture;
+	}
 }
 
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color)
