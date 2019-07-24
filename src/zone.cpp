@@ -120,7 +120,7 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 
 
 	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
-	DrawRectsGroup *group = beginRectsGroup(&renderer->worldBuffer, shaderID, areaOf(visibleArea));
+	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldBuffer, shaderID, areaOf(visibleArea));
 
 	Rect2I visibleSectors = getSectorsCovered(&zoneLayer->sectors, visibleArea);
 	for (s32 sY = visibleSectors.y;

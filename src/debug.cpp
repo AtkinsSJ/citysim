@@ -302,7 +302,7 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 		V4 barColor = color255(255, 0, 0, 128);
 		V4 activeBarColor = color255(255, 255, 0, 128);
 		u32 barIndex = 0;
-		DrawRectsGroup *rectsGroup = beginRectsGroup(renderBuffer, renderer->shaderIds.untextured, DEBUG_FRAMES_COUNT);
+		DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer->shaderIds.untextured, DEBUG_FRAMES_COUNT);
 		for (u32 fi = debugState->writingFrameIndex + 1;
 				 fi != debugState->writingFrameIndex;
 				 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))

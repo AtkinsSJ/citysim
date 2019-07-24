@@ -364,6 +364,8 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	DEBUG_BEGIN_RENDER_BUFFER(buffer);
 
 	u32 drawCallCount = 0;
+	GL_ShaderProgram *activeShader = null;
+	Asset *currentTexture = null;
 
 	RenderBufferChunk *renderBufferChunk = &buffer->firstChunk;
 	smm pos = 0;
@@ -380,18 +382,26 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				pos = 0;
 			} break;
 
+			case RenderItemType_SetShader:
+			{
+				RenderItem_SetShader *header = readRenderItem<RenderItem_SetShader>(renderBufferChunk, &pos);
+
+				activeShader = useShader(renderer, header->shaderID);
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+			} break;
+
+			case RenderItemType_SetTexture:
+			{
+				RenderItem_SetTexture *header = readRenderItem<RenderItem_SetTexture>(renderBufferChunk, &pos);
+
+				bindTexture(header->texture, activeShader->uTextureLoc, 0);
+				currentTexture = header->texture;
+			} break;
+
 			case RenderItemType_DrawRects:
 			{
 				RenderItem_DrawRects *header = readRenderItem<RenderItem_DrawRects>(renderBufferChunk, &pos);
-
-				GL_ShaderProgram *activeShader = useShader(renderer, header->shaderID);
-				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
-
-				if (header->texture != null)
-				{
-					bindTexture(header->texture, activeShader->uTextureLoc, 0);
-				}
 
 				s32 vertexCount = 0;
 				s32 indexCount = 0;
@@ -453,16 +463,6 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			{
 				RenderItem_DrawSingleRect *item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
-				GL_ShaderProgram *activeShader = useShader(renderer, item->shaderID);
-
-				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
-				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
-
-				if ((activeShader->uTextureLoc != -1) && (item->texture != null))
-				{
-					bindTexture(item->texture, activeShader->uTextureLoc, 0);
-				}
-
 				u32 vertexCount = 0;
 				u32 indexCount = 0;
 
@@ -497,7 +497,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 				drawCallCount++;
 				renderPartOfBuffer(renderer, vertexCount, indexCount);
-				DEBUG_DRAW_CALL(activeShader->asset->shortName, (item->texture == null) ? nullString : item->texture->shortName,(vertexCount >> 2));
+				DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName,(vertexCount >> 2));
 			} break;
 
 			INVALID_DEFAULT_CASE;

@@ -647,7 +647,8 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID
 	V4 terrainColor = makeWhite();
 
 	s32 tilesToDraw = areaOf(visibleArea);
-	DrawRectsGroup *group = beginRectsGroup(&renderer->worldBuffer, shaderID, tilesToDraw);
+	Asset *terrainTexture = getSprite(get(&terrainDefs, 1)->sprites, 0)->texture;
+	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
 
 	Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleArea);
 	for (s32 sY = visibleSectors.y;
@@ -776,9 +777,9 @@ void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s8 
 	// - Sam, 16/07/2019
 	// 
 	s32 buildingsRemaining = truncate32(visibleBuildings.count);
-	DrawRectsGroup *group = beginRectsGroup(&renderer->worldBuffer, shaderID, buildingsRemaining);
-
-	Asset *texture = null;
+	Building *firstBuilding = *get(&visibleBuildings, 0);
+	Asset *texture = getSprite(getBuildingDef(firstBuilding->typeID)->sprites, firstBuilding->spriteOffset)->texture;
+	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
 
 	for (auto it = iterate(&visibleBuildings);
 		!it.isDone;
@@ -810,9 +811,8 @@ void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s8 
 		{
 			// Finish the current group and start a new one
 			endRectsGroup(group);
-			group = beginRectsGroup(&renderer->worldBuffer, shaderID, buildingsRemaining);
-
 			texture = sprite->texture;
+			group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
 		}
 
 		addSpriteRect(group, sprite, rect2(building->footprint), drawColor);

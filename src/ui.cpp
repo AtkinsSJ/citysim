@@ -190,14 +190,14 @@ void drawUiMessage(UIState *uiState, Renderer *renderer)
 
 			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
 
-			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(uiState->uiBuffer);
+			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(uiState->uiBuffer, renderer->shaderIds.untextured);
 
 			Rect2 labelRect = uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);
 
-			fillDrawRectPlaceholder(backgroundRI, labelRect, renderer->shaderIds.untextured, backgroundColor);
+			fillDrawRectPlaceholder(backgroundRI, labelRect, backgroundColor);
 		}
 	}
 }

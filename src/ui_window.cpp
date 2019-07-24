@@ -109,7 +109,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		if (context->doRender)
 		{
 			V4 backColor = style->backgroundColor;
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(context->uiState->uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(context->uiState->uiBuffer, context->renderer->shaderIds.untextured);
 
 			drawText(context->uiState->uiBuffer, font, text, bounds, textAlignment, style->textColor, context->renderer->shaderIds.text);
 
@@ -130,7 +130,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				}
 			}
 
-			fillDrawRectPlaceholder(background, buttonBounds, context->renderer->shaderIds.untextured, backColor);
+			fillDrawRectPlaceholder(background, buttonBounds, backColor);
 		}
 
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
@@ -503,7 +503,7 @@ void renderWindows(Renderer *renderer, UIState *uiState)
 			window->isInitialised = true;
 		}
 
-		RenderItem_DrawSingleRect *contentBackground = appendDrawRectPlaceholder(uiState->uiBuffer);
+		RenderItem_DrawSingleRect *contentBackground = appendDrawRectPlaceholder(uiState->uiBuffer, renderer->shaderIds.untextured);
 		prepareForRender(&context);
 		window->windowProc(&context, window->userData);
 
@@ -516,7 +516,7 @@ void renderWindows(Renderer *renderer, UIState *uiState)
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
 		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
-		fillDrawRectPlaceholder(contentBackground, contentArea, renderer->shaderIds.untextured, backColor);
+		fillDrawRectPlaceholder(contentBackground, contentArea, backColor);
 
 		if (hasTitleBar)
 		{

@@ -182,16 +182,38 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 	return result;
 }
 
+template<typename T>
+inline T *appendRenderItem(RenderBuffer *buffer, RenderItemType type)
+{
+	u8 *data = appendRenderItemInternal(buffer, type, sizeof(T), 0);
+	return (T*) data;
+}
+
+void addSetShader(RenderBuffer *buffer, s8 shaderID)
+{
+	RenderItem_SetShader *shaderItem = appendRenderItem<RenderItem_SetShader>(buffer, RenderItemType_SetShader);
+	*shaderItem = {};
+	shaderItem->shaderID = shaderID;
+}
+
+void addSetTexture(RenderBuffer *buffer, Asset *texture)
+{
+	RenderItem_SetTexture *textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture);
+	*textureItem = {};
+	textureItem->texture = texture;
+}
+
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color)
 {
 	ASSERT(!buffer->hasRangeReserved);
 
-	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+	addSetShader(buffer, shaderID);
+	addSetTexture(buffer, sprite->texture);
+
+	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
 
 	rect->bounds = bounds;
 	rect->color = color;
-	rect->shaderID = shaderID;
-	rect->texture = sprite->texture;
 	rect->uv = sprite->uv;
 }
 
@@ -199,36 +221,39 @@ void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color)
 {
 	ASSERT(!buffer->hasRangeReserved);
 
-	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+	addSetShader(buffer, shaderID);
+
+	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
 
 	rect->bounds = bounds;
 	rect->color = color;
-	rect->shaderID = shaderID;
-	rect->texture = null;
 	rect->uv = {};
 }
 
-RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer)
+RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID)
 {
 	ASSERT(!buffer->hasRangeReserved);
+
+	addSetShader(buffer, shaderID);
 
 	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
 
 	return rect;
 }
 
-void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s8 shaderID, V4 color)
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color)
 {
 	placeholder->bounds = bounds;
 	placeholder->color = color;
-	placeholder->shaderID = shaderID;
-	placeholder->texture = null;
 	placeholder->uv = {};
 }
 
-DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)
+DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
+
+	addSetShader(buffer, shaderID);
+	if (texture != null) addSetTexture(buffer, texture);
 
 	DrawRectsGroup *result = allocateStruct<DrawRectsGroup>(globalFrameTempArena);
 	*result = {};
@@ -236,7 +261,6 @@ DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s8 shaderI
 	result->buffer = buffer;
 	result->count = 0;
 	result->maxCount = maxCount;
-	result->shaderID = shaderID;
 	result->texture = texture;
 
 	result->firstSubGroup = beginRectsSubGroup(result);
@@ -245,14 +269,19 @@ DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s8 shaderI
 	return result;
 }
 
-inline DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s8 shaderID, s32 maxCount)
+DrawRectsGroup *beginRectsGroupTextured(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)
 {
-	return beginRectsGroup(buffer, null, shaderID, maxCount);
+	return beginRectsGroupInternal(buffer, texture, shaderID, maxCount);
+}
+
+inline DrawRectsGroup *beginRectsGroupUntextured(RenderBuffer *buffer, s8 shaderID, s32 maxCount)
+{
+	return beginRectsGroupInternal(buffer, null, shaderID, maxCount);
 }
 
 inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s8 shaderID, s32 maxCount)
 {
-	return beginRectsGroup(buffer, font->texture, shaderID, maxCount);
+	return beginRectsGroupInternal(buffer, font->texture, shaderID, maxCount);
 }
 
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)
@@ -271,8 +300,6 @@ DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)
 	result.maxCount = subGroupItemCount;
 
 	*result.header = {};
-	result.header->texture = group->texture;
-	result.header->shaderID = group->shaderID;
 	result.header->count = 0;
 
 	return result;
@@ -322,15 +349,7 @@ inline void addGlyphRect(DrawRectsGroup *group, BitmapFontGlyph *glyph, V2 posit
 
 inline void addSpriteRect(DrawRectsGroup *group, Sprite *sprite, Rect2 bounds, V4 color)
 {
-	if (group->count == 0)
-	{
-		group->texture = sprite->texture;
-		group->currentSubGroup->header->texture = group->texture;
-	}
-	else
-	{
-		ASSERT(group->currentSubGroup->header->texture == sprite->texture);
-	}
+	ASSERT(group->texture == sprite->texture);
 
 	addRectInternal(group, bounds, color, sprite->uv);
 }

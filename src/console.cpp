@@ -56,8 +56,8 @@ void renderConsole(Console *console, Renderer *renderer)
 	V2 textPos = v2(screenEdgePadding, round_f32(actualConsoleHeight - screenEdgePadding));
 	f32 textMaxWidth = renderBuffer->camera.size.x - (2*screenEdgePadding);
 
-	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer);
-	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer);
+	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
+	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 
 	Rect2 textInputRect = drawTextInput(renderer, renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
 	textPos.y -= textInputRect.h;
@@ -66,9 +66,9 @@ void renderConsole(Console *console, Renderer *renderer)
 
 	// draw backgrounds now we know size of input area
 	Rect2 inputBackRect = rectXYWH(0,textPos.y,renderBuffer->camera.size.x, actualConsoleHeight - textPos.y);
-	fillDrawRectPlaceholder(inputBackground, inputBackRect, renderer->shaderIds.untextured, color255(64,64,64,245));
+	fillDrawRectPlaceholder(inputBackground, inputBackRect, color255(64,64,64,245));
 	Rect2 consoleBackRect = rectXYWH(0,0,renderBuffer->camera.size.x, textPos.y);
-	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, renderer->shaderIds.untextured, color255(0,0,0,245));
+	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));

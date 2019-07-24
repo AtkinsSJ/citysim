@@ -27,26 +27,34 @@ enum RenderItemType
 {
 	RenderItemType_NextMemoryChunk,
 
+	RenderItemType_SetShader,
+	RenderItemType_SetTexture,
+
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
+};
+
+struct RenderItem_SetShader
+{
+	s8 shaderID;
+};
+
+struct RenderItem_SetTexture
+{
+	Asset *texture;
 };
 
 struct RenderItem_DrawSingleRect
 {
 	Rect2 bounds;
 	V4 color;
-	s8 shaderID;
-
-	Asset *texture;
 	Rect2 uv; // in (0 to 1) space
 };
 
 const u8 maxRenderItemsPerGroup = u8Max;
 struct RenderItem_DrawRects
 {
-	Asset *texture;
 	u8 count;
-	s8 shaderID;
 };
 struct RenderItem_DrawRects_Item
 {
@@ -77,7 +85,6 @@ struct DrawRectsGroup
 	s32 maxCount;
 
 	Asset *texture;
-	s8 shaderID;
 };
 
 struct RenderBufferChunk
@@ -161,17 +168,24 @@ V2 unproject(Camera *camera, V2 screenPos);
 
 u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
 
+template<typename T>
+T *appendRenderItem(RenderBuffer *buffer, RenderItemType type);
+
+void addSetShader(RenderBuffer *buffer, s8 shaderID);
+void addSetTexture(RenderBuffer *buffer, Asset *texture);
+
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color);
 void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color);
 
 // For when you want something to appear NOW in the render-order, but you don't know its details until later
-RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer);
-void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s8 shaderID, V4 color);
+RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID);
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color);
 
 // NB: The Rects drawn must all have the same Texture!
+DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);
 // TODO: Have the shaderID default to a sensible value for these like beginRectsGroupForText
-DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);
-DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s8 shaderID, s32 maxCount);
+DrawRectsGroup *beginRectsGroupTextured(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);
+DrawRectsGroup *beginRectsGroupUntextured(RenderBuffer *buffer, s8 shaderID, s32 maxCount);
 // TODO: Have the shaderID be last and default to the standard text shader, so I don't have to always pass it
 DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s8 shaderID, s32 maxCount);
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);

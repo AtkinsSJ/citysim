@@ -431,7 +431,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		// The "ZONE" menu
 		if (uiMenuButton(uiState, renderer, LOCAL("button_zone"), buttonRect, Menu_Zone))
 		{
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 			
@@ -453,14 +453,14 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 			}
 
 			append(&uiState->uiRects, menuRect);
-			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIds.untextured, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, renderer, LOCAL("button_build"), buttonRect, Menu_Build))
 		{
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
 			Rect2 menuButtonRect = buttonRect;
 			menuButtonRect.y += menuButtonRect.h + uiPadding;
 
@@ -487,7 +487,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 			}
 
 			append(&uiState->uiRects, menuRect);
-			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIds.untextured, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -665,7 +665,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									Sprite *sprite = getSprite(buildingDef->sprites, 0);
 									s32 maxGhosts = (dragResult.dragRect.w / buildingDef->width) * (dragResult.dragRect.h / buildingDef->height);
 									// TODO: If maxGhosts is 1, just draw 1!
-									DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, sprite->texture, renderer->shaderIds.pixelArt, maxGhosts);
+									DrawRectsGroup *rectsGroup = beginRectsGroupTextured(&renderer->worldOverlayBuffer, sprite->texture, renderer->shaderIds.pixelArt, maxGhosts);
 									for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
 									{
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
@@ -730,7 +730,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							//
 							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
 							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
-							DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(dragResult.dragRect));
+							DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(dragResult.dragRect));
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
 								zoneRect.y = (f32) y;
