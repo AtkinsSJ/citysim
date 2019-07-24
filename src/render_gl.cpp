@@ -370,7 +370,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 	Asset *currentTexture = null;
 	Camera *currentCamera = null;
 
-	RenderBufferChunk *renderBufferChunk = &buffer->firstChunk;
+	RenderBufferChunk *renderBufferChunk = buffer->firstChunk;
 	smm pos = 0;
 	while ((renderBufferChunk != null) && (pos < renderBufferChunk->used))
 	{
@@ -381,7 +381,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		{
 			case RenderItemType_NextMemoryChunk:
 			{
-				renderBufferChunk = renderBufferChunk->next;
+				renderBufferChunk = renderBufferChunk->nextChunk;
 				pos = 0;
 			} break;
 

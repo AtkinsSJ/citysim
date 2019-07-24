@@ -26,10 +26,18 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 {
 	renderer->window = window;
 
-	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        KB(64));
-	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", KB(64));
-	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer",           KB(64));
-	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        KB(64));
+	// @Copypasta initChunkPool
+	{
+		renderer->chunkPool.memoryArena = renderArena;
+		renderer->chunkPool.chunkSize = KB(64);
+		renderer->chunkPool.count = 0;
+		renderer->chunkPool.firstChunk = null;
+	}
+
+	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        &renderer->chunkPool);
+	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", &renderer->chunkPool);
+	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer",           &renderer->chunkPool);
+	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        &renderer->chunkPool);
 }
 
 void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
@@ -107,25 +115,24 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, RenderBufferChunkPool *chunkPool)
 {
 	buffer->name = pushString(arena, name);
 	hashString(&buffer->name);
 	buffer->hasRangeReserved = false;
 
-	buffer->arena = arena;
-	buffer->minimumChunkSize = initialSize;
+	buffer->arena = arena; // @Cleanup: Don't need this now we're using the pool?
+	buffer->chunkPool = chunkPool;
 
-	buffer->firstChunk.size = initialSize;
-	buffer->firstChunk.used = 0;
-	buffer->firstChunk.memory = (u8*)allocate(arena, buffer->firstChunk.size);
-
-	buffer->currentChunk = &buffer->firstChunk;
-	buffer->firstFreeChunk = null;
+	buffer->firstChunk = null;
+	buffer->currentChunk = null;
 
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
 
+	// TODO: @Speed: This should probably be delayed until we first try to append an item to this buffer.
+	// Right now, we're reallocating a chunk we just freed, and (potentially) only to hold this one marker!
+	// See also below
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
 }
@@ -135,27 +142,21 @@ void clearRenderBuffer(RenderBuffer *buffer)
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
 
-	RenderBufferChunk *lastChunk = null;
-	for (RenderBufferChunk *chunk = &buffer->firstChunk;
-		chunk != null;
-		chunk = chunk->next)
+	RenderBufferChunk *lastChunk = buffer->currentChunk;
+	while (lastChunk != null)
 	{
-		chunk->used = 0;
+		lastChunk->used = 0;
+		lastChunk->nextChunk = buffer->chunkPool->firstChunk;
+		buffer->chunkPool->firstChunk = lastChunk;
+		buffer->chunkPool->count++;
 
-		lastChunk = chunk;
+		lastChunk = lastChunk->nextChunk;
 	}
 
-	// Free list!
-	if (lastChunk != &buffer->firstChunk)
-	{
-		lastChunk->next = buffer->firstFreeChunk;
-		buffer->firstFreeChunk = buffer->firstChunk.next;
-		buffer->firstChunk.next = null;
-	}
-
-	buffer->firstChunk.next = null;
-	buffer->currentChunk = &buffer->firstChunk;
+	buffer->firstChunk = null;
+	buffer->currentChunk = null;
 	
+	// TODO: @Speed: See above
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
 }
@@ -169,46 +170,83 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 
 	smm totalSizeRequired = (smm)(sizeof(RenderItemType) + size + reservedSize + sizeof(RenderItemType));
 
-	if ((buffer->currentChunk->size - buffer->currentChunk->used) <= totalSizeRequired)
+	if (buffer->currentChunk == null || ((buffer->currentChunk->size - buffer->currentChunk->used) <= totalSizeRequired))
 	{
 		// Out of room! Push a "go to next chunk" item and append some more memory
-		
-		ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
-
-		*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = RenderItemType_NextMemoryChunk;
-		buffer->currentChunk->used += sizeof(RenderItemType);
-
-		if (buffer->firstFreeChunk != null)
+		if (buffer->currentChunk != null)
 		{
-			buffer->currentChunk->next = buffer->firstFreeChunk;
-			buffer->currentChunk = buffer->firstFreeChunk;
-			buffer->currentChunk->used = 0;
-			buffer->firstFreeChunk = buffer->firstFreeChunk->next;
-			buffer->currentChunk->next = null;
-
-			// We'd BETTER have space to actually allocate this thing in the chunk!
-			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
+			*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = RenderItemType_NextMemoryChunk;
+			buffer->currentChunk->used += sizeof(RenderItemType);
 		}
-		else
+
 		{
-			// ALLOCATE
 			RenderBufferChunk *newChunk = null;
-			// The *2 is somewhat arbitrary, but we want to avoid chunks that are only large enough for this item,
-			// because that could lead to fragmentation issues, or getting a chunk out of the free list which is
-			// too small to hold whatever we want to put in it!
-			// - Sam, 13/07/2019
-			smm newChunkSize = max(totalSizeRequired * 2, buffer->minimumChunkSize);
-			newChunk = (RenderBufferChunk *)allocate(buffer->arena, newChunkSize + sizeof(RenderBufferChunk));
-			newChunk->size = newChunkSize;
-			newChunk->used = 0;
-			newChunk->memory = (u8*)(newChunk + 1);
 
-			buffer->currentChunk->next = newChunk;
-			buffer->currentChunk = newChunk;
+			if (buffer->chunkPool->count > 0)
+			{
+				newChunk = buffer->chunkPool->firstChunk;
+				buffer->chunkPool->firstChunk = newChunk->nextChunk;
+				buffer->chunkPool->count--;
+				if (buffer->chunkPool->firstChunk != null)
+				{
+					buffer->chunkPool->firstChunk->prevChunk = null;
+				}
 
-			// We'd BETTER have space to actually allocate this thing in the chunk!
-			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+				// We'd BETTER have space to actually allocate this thing in the chunk!
+				ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+			}
+			else
+			{
+				// ALLOCATE
+				smm newChunkSize = buffer->chunkPool->chunkSize;
+				newChunk = (RenderBufferChunk *)allocate(buffer->arena, newChunkSize + sizeof(RenderBufferChunk));
+				newChunk->size = newChunkSize;
+				newChunk->used = 0;
+				newChunk->memory = (u8*)(newChunk + 1);
+
+				// buffer->currentChunk->next = newChunk;
+				// buffer->currentChunk = newChunk;
+
+				// We'd BETTER have space to actually allocate this thing in the chunk!
+				ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+			}
 		}
+
+		// // We'd BETTER have space to actually allocate this thing in the chunk!
+		// ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+
+		// if (buffer->firstFreeChunk != null)
+		// {
+		// 	buffer->currentChunk->next = buffer->firstFreeChunk;
+		// 	buffer->currentChunk = buffer->firstFreeChunk;
+		// 	buffer->currentChunk->used = 0;
+		// 	buffer->firstFreeChunk = buffer->firstFreeChunk->next;
+		// 	buffer->currentChunk->next = null;
+
+		// 	// We'd BETTER have space to actually allocate this thing in the chunk!
+		// 	ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+		// }
+		// else
+		// {
+		// 	// ALLOCATE
+		// 	RenderBufferChunk *newChunk = null;
+		// 	// The *2 is somewhat arbitrary, but we want to avoid chunks that are only large enough for this item,
+		// 	// because that could lead to fragmentation issues, or getting a chunk out of the free list which is
+		// 	// too small to hold whatever we want to put in it!
+		// 	// - Sam, 13/07/2019
+		// 	smm newChunkSize = max(totalSizeRequired * 2, buffer->minimumChunkSize);
+		// 	newChunk = (RenderBufferChunk *)allocate(buffer->arena, newChunkSize + sizeof(RenderBufferChunk));
+		// 	newChunk->size = newChunkSize;
+		// 	newChunk->used = 0;
+		// 	newChunk->memory = (u8*)(newChunk + 1);
+
+		// 	buffer->currentChunk->next = newChunk;
+		// 	buffer->currentChunk = newChunk;
+
+		// 	// We'd BETTER have space to actually allocate this thing in the chunk!
+		// 	ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) >= totalSizeRequired);
+		// }
 	}
 
 	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;

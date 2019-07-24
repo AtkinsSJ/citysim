@@ -106,7 +106,17 @@ struct RenderBufferChunk
 	smm used;
 	u8 *memory;
 
-	RenderBufferChunk *next;
+	RenderBufferChunk *prevChunk;
+	RenderBufferChunk *nextChunk;
+};
+
+struct RenderBufferChunkPool
+{
+	MemoryArena *memoryArena;
+	smm chunkSize;
+
+	smm count;
+	RenderBufferChunk *firstChunk;
 };
 
 struct RenderBuffer
@@ -114,10 +124,9 @@ struct RenderBuffer
 	String name;
 	
 	MemoryArena *arena;
-	RenderBufferChunk firstChunk;
+	RenderBufferChunk *firstChunk;
 	RenderBufferChunk *currentChunk;
-	RenderBufferChunk *firstFreeChunk;
-	smm minimumChunkSize;
+	RenderBufferChunkPool *chunkPool;
 
 	// Transient stuff
 	bool hasRangeReserved;
@@ -140,6 +149,8 @@ struct Renderer
 	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
 	RenderBuffer debugBuffer;
+
+	RenderBufferChunkPool chunkPool;
 
 	// Not convinced this is the best way of doing it, but it's better than what we had before!
 	// Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
@@ -179,7 +190,7 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
 void freeRenderer(Renderer *renderer);
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize);
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, RenderBufferChunkPool *chunkPool);
 void clearRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
