@@ -128,7 +128,7 @@ ConsoleCommand(window_size)
 	}
 	else if (argumentsCount == 0)
 	{
-		V2 screenSize = globalAppState.renderer->uiBuffer.camera.size;
+		V2 screenSize = globalAppState.renderer->uiCamera.size;
 		consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
 
 		succeeded = true;
@@ -148,7 +148,7 @@ ConsoleCommand(zoom)
 	if (argumentsCount == 0)
 	{
 		// list the zoom
-		f32 zoom = globalAppState.renderer->worldBuffer.camera.zoom;
+		f32 zoom = globalAppState.renderer->worldCamera.zoom;
 		consoleWriteLine(myprintf("Current zoom is {0}", {formatFloat(zoom, 3)}), CLS_Success);
 		succeeded = true;
 	}
@@ -160,7 +160,7 @@ ConsoleCommand(zoom)
 		if (asInt(nextToken(remainder, &remainder), &requestedZoom))
 		{
 			f32 newZoom = (f32) requestedZoom;
-			globalAppState.renderer->worldBuffer.camera.zoom = newZoom;
+			globalAppState.renderer->worldCamera.zoom = newZoom;
 			consoleWriteLine(myprintf("Set zoom to {0}", {formatFloat(newZoom, 3)}), CLS_Success);
 			succeeded = true;
 		}

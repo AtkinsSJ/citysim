@@ -13,6 +13,7 @@ struct UIMessage
 struct UIState
 {
 	MemoryArena arena;
+	Camera *uiCamera;
 	RenderBuffer *uiBuffer;
 	AssetManager *assets;
 	InputState *input;
@@ -38,7 +39,7 @@ struct UIState
 	V2 windowDragWindowStartPos;
 };
 
-void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input);
+void initUiState(UIState *uiState, RenderBuffer *uiBuffer, Camera *uiCamera, AssetManager *assets, InputState *input);
 
 void setCursor(UIState *uiState, String cursorName);
 void setCursor(UIState *uiState, char *cursorName);

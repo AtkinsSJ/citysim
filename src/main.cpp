@@ -210,12 +210,12 @@ int main(int argc, char *argv[])
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
 	UIState *uiState = &appState->uiState;
-	initUiState(uiState, &renderer->uiBuffer, assets, &inputState);
+	initUiState(uiState, &renderer->uiBuffer, &renderer->uiCamera, assets, &inputState);
 	setCursor(uiState, "default.png");
 	setCursorVisible(uiState, true);
 
-	Camera *worldCamera = &renderer->worldBuffer.camera;
-	Camera *uiCamera = &renderer->uiBuffer.camera;
+	Camera *worldCamera = &renderer->worldCamera;
+	Camera *uiCamera = &renderer->uiCamera;
 	V2 windowSize = v2(inputState.windowSize);
 	initCamera(worldCamera, windowSize * (1.0f/TILE_SIZE), 10000.0f, -10000.0f);
 	initCamera(uiCamera, windowSize, 10000.0f, -10000.0f, windowSize * 0.5f);
@@ -255,10 +255,11 @@ int main(int argc, char *argv[])
 			worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 			uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
-			addSetCamera(&renderer->worldBuffer, &renderer->worldBuffer.camera);
-			addSetCamera(&renderer->worldOverlayBuffer, &renderer->worldBuffer.camera);
-			addSetCamera(&renderer->uiBuffer, &renderer->uiBuffer.camera);
-			addSetCamera(&renderer->debugBuffer, &renderer->uiBuffer.camera);
+			// TODO: Won't need to set these twice once we have combined render buffers!
+			addSetCamera(&renderer->worldBuffer, worldCamera);
+			addSetCamera(&renderer->worldOverlayBuffer, worldCamera);
+			addSetCamera(&renderer->uiBuffer, uiCamera);
+			addSetCamera(&renderer->debugBuffer, uiCamera);
 
 			updateAndRender(appState, &inputState, renderer, assets);
 

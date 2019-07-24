@@ -396,8 +396,8 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	f32 windowWidth = (f32) uiBuffer->camera.size.x;
-	V2 centre = uiBuffer->camera.pos;
+	f32 windowWidth = (f32) renderer->uiCamera.size.x;
+	V2 centre = renderer->uiCamera.pos;
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
@@ -504,7 +504,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, renderer, LOCAL("button_menu"), buttonRect))
 		{
-			showWindow(uiState, LOCAL("title_menu"), 200, 200, makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }
@@ -534,7 +534,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	if (appState->gameState == null)
 	{
 		appState->gameState = initialiseGameState();
-		renderer->worldBuffer.camera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
+		renderer->worldCamera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
 
 		refreshBuildingSpriteCache(&buildingCatalogue, assets);
 		refreshTerrainSpriteCache(&terrainDefs, assets);
@@ -571,8 +571,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	V4 ghostColorInvalid  = color255(255,0,0,128);
 
 	// CAMERA!
-	Camera *worldCamera = &renderer->worldBuffer.camera;
-	Camera *uiCamera    = &renderer->uiBuffer.camera;
+	Camera *worldCamera = &renderer->worldCamera;
+	Camera *uiCamera    = &renderer->uiCamera;
 	if (gameState->status == GameStatus_Playing)
 	{
 		inputMoveCamera(worldCamera, inputState, uiCamera->size, gameState->city.width, gameState->city.height);
@@ -798,7 +798,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
-						showWindow(uiState, makeString("Inspect tile"), 250, 200, makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						showWindow(uiState, makeString("Inspect tile"), 250, 200, v2i(0,0), makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;

@@ -196,9 +196,8 @@ void updateAndRenderSettingsMenu(AppState *appState, Renderer *renderer, AssetMa
 {
 	AppStatus result = appState->appStatus;
 
-	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	f32 windowWidth = (f32) uiBuffer->camera.size.x;
-	f32 windowHeight = (f32) uiBuffer->camera.size.y;
+	f32 windowWidth = (f32) renderer->uiCamera.size.x;
+	f32 windowHeight = (f32) renderer->uiCamera.size.y;
 	UIState *uiState = &appState->uiState;
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
@@ -207,7 +206,7 @@ void updateAndRenderSettingsMenu(AppState *appState, Renderer *renderer, AssetMa
 	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
-	position.y += (uiText(renderer, uiState->uiBuffer, font, LOCAL("title_settings"),
+	position.y += (uiText(renderer, &renderer->uiBuffer, font, LOCAL("title_settings"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	// position.y += (uiText(uiState, font, LocalString("There are no settings yet, soz."),

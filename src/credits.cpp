@@ -4,9 +4,8 @@ void updateAndRenderCredits(AppState *appState, Renderer *renderer, AssetManager
 {
 	AppStatus result = appState->appStatus;
 
-	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	f32 windowWidth = (f32) uiBuffer->camera.size.x;
-	f32 windowHeight = (f32) uiBuffer->camera.size.y;
+	f32 windowWidth = (f32) renderer->uiCamera.size.x;
+	f32 windowHeight = (f32) renderer->uiCamera.size.y;
 	UIState *uiState = &appState->uiState;
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
@@ -20,7 +19,7 @@ void updateAndRenderCredits(AppState *appState, Renderer *renderer, AssetManager
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		position.y += (uiText(renderer, uiState->uiBuffer, font, line,
+		position.y += (uiText(renderer, &renderer->uiBuffer, font, line,
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
 

@@ -23,11 +23,12 @@ void setCursorVisible(UIState *uiState, bool visible)
 	SDL_ShowCursor(visible ? 1 : 0);
 }
 
-void initUiState(UIState *uiState, RenderBuffer *uiBuffer, AssetManager *assets, InputState *input)
+void initUiState(UIState *uiState, RenderBuffer *uiBuffer, Camera *uiCamera, AssetManager *assets, InputState *input)
 {
 	*uiState = {};
 
 	uiState->uiBuffer = uiBuffer;
+	uiState->uiCamera = uiCamera;
 	uiState->assets = assets;
 	uiState->input = input;
 
@@ -66,7 +67,7 @@ void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 {
 	static String styleName = makeString("tooltip");
-	showWindow(uiState, nullString, 300, 0, styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
+	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
 bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
@@ -74,7 +75,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	V2 mousePos = uiState->uiBuffer->camera.mousePos;
+	V2 mousePos = renderer->uiCamera.mousePos;
 	InputState *input = uiState->input;
 	UIButtonStyle *style = findButtonStyle(&uiState->assets->theme, makeString("general"));
 	V4 backColor = style->backgroundColor;
@@ -88,7 +89,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(input, MouseButton_Left))
 		{
-			if (contains(bounds, getClickStartPos(input, MouseButton_Left, &uiState->uiBuffer->camera)))
+			if (contains(bounds, getClickStartPos(input, MouseButton_Left, &renderer->uiCamera)))
 			{
 				backColor = style->pressedColor;
 			}
@@ -96,7 +97,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 		else
 		{
 			if (mouseButtonJustReleased(input, MouseButton_Left)
-			 && contains(bounds, getClickStartPos(input, MouseButton_Left, &uiState->uiBuffer->camera)))
+			 && contains(bounds, getClickStartPos(input, MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 			}
@@ -188,7 +189,7 @@ void drawUiMessage(UIState *uiState, Renderer *renderer)
 				textColor *= lerp<f32>(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(uiState->uiBuffer->camera.size.x * 0.5f, uiState->uiBuffer->camera.size.y - 8.0f);
+			V2 origin = v2(renderer->uiCamera.size.x * 0.5f, renderer->uiCamera.size.y - 8.0f);
 
 			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(uiState->uiBuffer, renderer->shaderIds.untextured);
 

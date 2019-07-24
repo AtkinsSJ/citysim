@@ -8,8 +8,8 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 
-	f32 windowWidth  = (f32) uiBuffer->camera.size.x;
-	f32 windowHeight = (f32) uiBuffer->camera.size.y;
+	f32 windowWidth  = (f32) renderer->uiCamera.size.x;
+	f32 windowHeight = (f32) renderer->uiCamera.size.y;
 	UITheme *theme = &assets->theme;
 	UIState *uiState = &appState->uiState;
 

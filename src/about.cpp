@@ -17,5 +17,5 @@ void aboutWindowProc(WindowContext *context, void *userData)
 
 void showAboutWindow(UIState *uiState)
 {
-	showWindow(uiState, LOCAL("title_about"), 300, 200, makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, aboutWindowProc, null);
+	showWindow(uiState, LOCAL("title_about"), 300, 200, v2i(0,0), makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, aboutWindowProc, null);
 }

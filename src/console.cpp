@@ -50,11 +50,11 @@ void renderConsole(Console *console, Renderer *renderer)
 	BitmapFont *consoleFont = getFont(globalAppState.assets, makeString("debug"));
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
-	f32 actualConsoleHeight = console->currentHeight * renderBuffer->camera.size.y;
+	f32 actualConsoleHeight = console->currentHeight * renderer->uiCamera.size.y;
 
 	f32 screenEdgePadding = 8.0f;
 	V2 textPos = v2(screenEdgePadding, round_f32(actualConsoleHeight - screenEdgePadding));
-	f32 textMaxWidth = renderBuffer->camera.size.x - (2*screenEdgePadding);
+	f32 textMaxWidth = renderer->uiCamera.size.x - (2*screenEdgePadding);
 
 	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
@@ -65,14 +65,14 @@ void renderConsole(Console *console, Renderer *renderer)
 	textPos.y -= 8.0f;
 
 	// draw backgrounds now we know size of input area
-	Rect2 inputBackRect = rectXYWH(0,textPos.y,renderBuffer->camera.size.x, actualConsoleHeight - textPos.y);
+	Rect2 inputBackRect = rectXYWH(0,textPos.y,renderer->uiCamera.size.x, actualConsoleHeight - textPos.y);
 	fillDrawRectPlaceholder(inputBackground, inputBackRect, color255(64,64,64,245));
-	Rect2 consoleBackRect = rectXYWH(0,0,renderBuffer->camera.size.x, textPos.y);
+	Rect2 consoleBackRect = rectXYWH(0,0,renderer->uiCamera.size.x, textPos.y);
 	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(renderBuffer, v2(renderBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, color255(48, 48, 48, 245), renderer->shaderIds.untextured);
+	drawScrollBar(renderBuffer, v2(renderer->uiCamera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, color255(48, 48, 48, 245), renderer->shaderIds.untextured);
 
 	textPos.y -= 8.0f;
 
@@ -89,7 +89,7 @@ void renderConsole(Console *console, Renderer *renderer)
 		textPos.y -= resultRect.h;
 
 		// If we've gone off the screen, stop!
-		if ((textPos.y < 0) || (textPos.y > renderBuffer->camera.size.y))
+		if ((textPos.y < 0) || (textPos.y > renderer->uiCamera.size.y))
 		{
 			break;
 		}

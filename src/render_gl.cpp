@@ -365,7 +365,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 	GL_ShaderProgram *activeShader = null;
 	Asset *currentTexture = null;
-	Matrix4 cameraMatrix;
+	Camera *currentCamera = null;
 
 	s32 drawCallCount = 0;
 	s32 vertexCount = 0;
@@ -389,7 +389,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			case RenderItemType_SetCamera:
 			{
 				RenderItem_SetCamera *header = readRenderItem<RenderItem_SetCamera>(renderBufferChunk, &pos);
-				cameraMatrix = header->camera->projectionMatrix;
+				currentCamera = header->camera;
 			} break;
 
 			case RenderItemType_SetShader:
@@ -407,8 +407,8 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				}
 
 				activeShader = useShader(renderer, header->shaderID);
-				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, cameraMatrix.flat);
-				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, currentCamera->projectionMatrix.flat);
+				glUniform1f(activeShader->uScaleLoc, currentCamera->zoom);
 			} break;
 
 			case RenderItemType_SetTexture:

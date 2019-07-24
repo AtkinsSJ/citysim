@@ -50,10 +50,10 @@ void freeRenderer(Renderer *renderer)
 void onWindowResized(Renderer *renderer, s32 w, s32 h)
 {
 	renderer->windowResized(w, h);
-	renderer->worldBuffer.camera.size = v2((f32)w / TILE_SIZE, (f32)h / TILE_SIZE);
+	renderer->worldCamera.size = v2((f32)w / TILE_SIZE, (f32)h / TILE_SIZE);
 
-	renderer->uiBuffer.camera.size = v2(w, h);
-	renderer->uiBuffer.camera.pos = renderer->uiBuffer.camera.size * 0.5f;
+	renderer->uiCamera.size = v2(w, h);
+	renderer->uiCamera.pos = renderer->uiCamera.size * 0.5f;
 }
 
 void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen)

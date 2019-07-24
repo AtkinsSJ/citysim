@@ -105,7 +105,6 @@ struct RenderBufferChunk
 struct RenderBuffer
 {
 	String name;
-	Camera camera;
 	
 	MemoryArena *arena;
 	RenderBufferChunk firstChunk;
@@ -126,6 +125,9 @@ struct Renderer
 	MemoryArena renderArena;
 	
 	SDL_Window *window;
+
+	Camera worldCamera;
+	Camera uiCamera;
 
 	RenderBuffer worldBuffer;
 	RenderBuffer worldOverlayBuffer;

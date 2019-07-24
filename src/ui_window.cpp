@@ -58,7 +58,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 	u32 textAlignment = style->textAlignment;
 	f32 buttonPadding = style->padding;
-	V2 mousePos = context->uiState->uiBuffer->camera.mousePos;
+	V2 mousePos = context->renderer->uiCamera.mousePos;
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -119,7 +119,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				// Mouse unpressed: show hover if in bounds
 				if (mouseButtonPressed(input, MouseButton_Left))
 				{
-					if (contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->uiState->uiBuffer->camera)))
+					if (contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->renderer->uiCamera)))
 					{
 						backColor = style->pressedColor;
 					}
@@ -136,7 +136,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 		{
 			if (mouseButtonJustReleased(input, MouseButton_Left)
-			 && contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->uiState->uiBuffer->camera)))
+			 && contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->renderer->uiCamera)))
 			{
 				buttonClicked = true;
 				context->uiState->mouseInputHandled = true;
@@ -163,7 +163,7 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  */
-void showWindow(UIState *uiState, String title, s32 width, s32 height, String styleName, u32 flags, WindowProc windowProc, void *userData)
+void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData)
 {
 	if (windowProc == null)
 	{
@@ -176,8 +176,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, String st
 	newWindow.flags = flags;
 	newWindow.styleName = styleName;
 
-	V2 windowOrigin = uiState->uiBuffer->camera.pos;
-	newWindow.area = irectCentreSize(v2i(windowOrigin), v2i(width, height));
+	newWindow.area = irectCentreSize(position, v2i(width, height));
 	
 	newWindow.windowProc = windowProc;
 	newWindow.userData = userData;
@@ -273,8 +272,8 @@ void prepareForRender(WindowContext *context)
 
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
 {
-	V2 mousePos = uiState->uiBuffer->camera.mousePos;
-	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiBuffer->camera.pos), v2i(uiState->uiBuffer->camera.size));
+	V2 mousePos = uiState->uiCamera->mousePos;
+	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiCamera->pos), v2i(uiState->uiCamera->size));
 
 	if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
 	{
@@ -307,14 +306,14 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 		}
 		else
 		{
-			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(uiState->input, MouseButton_Left, &uiState->uiBuffer->camera)));
+			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(uiState->input, MouseButton_Left, uiState->uiCamera)));
 		}
 		
 		uiState->mouseInputHandled = true;
 	}
 	else if (window->flags & WinFlag_Tooltip)
 	{
-		window->area.pos = v2i(uiState->uiBuffer->camera.mousePos) + context->windowStyle->offsetFromMouse;
+		window->area.pos = v2i(uiState->uiCamera->mousePos) + context->windowStyle->offsetFromMouse;
 	}
 
 	// Keep window on screen
@@ -356,10 +355,10 @@ void updateWindows(UIState *uiState)
 	DEBUG_FUNCTION();
 
 	InputState *inputState = uiState->input;
-	V2 mousePos = uiState->uiBuffer->camera.mousePos;
+	V2 mousePos = uiState->uiCamera->mousePos;
 	s32 newActiveWindow = -1;
 	s32 closeWindow = -1;
-	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiBuffer->camera.pos), v2i(uiState->uiBuffer->camera.size));
+	Rect2I validWindowArea = irectCentreSize(v2i(uiState->uiCamera->pos), v2i(uiState->uiCamera->size));
 
 	bool isActive = true;
 	for (auto it = iterate(&uiState->openWindows);
@@ -477,7 +476,7 @@ void updateWindows(UIState *uiState)
 
 void renderWindows(Renderer *renderer, UIState *uiState)
 {
-	V2 mousePos = uiState->uiBuffer->camera.mousePos;
+	V2 mousePos = renderer->uiCamera.mousePos;
 	for (auto it = iterateBackwards(&uiState->openWindows);
 		!it.isDone;
 		next(&it))
@@ -491,7 +490,7 @@ void renderWindows(Renderer *renderer, UIState *uiState)
 
 		if (isModal)
 		{
-			drawSingleRect(uiState->uiBuffer, rectPosSize(v2(0,0), uiState->uiBuffer->camera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
+			drawSingleRect(uiState->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);

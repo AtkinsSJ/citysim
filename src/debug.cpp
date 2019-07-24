@@ -117,6 +117,7 @@ struct DebugTextState
 	bool progressUpwards;
 
 	RenderBuffer *renderBuffer;
+	Camera *camera;
 	s8 textShaderID;
 	s8 untexturedShaderID;
 
@@ -128,6 +129,7 @@ void initDebugTextState(DebugTextState *textState, Renderer *renderer, BitmapFon
 	*textState = {};
 
 	textState->renderBuffer = &renderer->debugBuffer;
+	textState->camera = &renderer->uiCamera;
 
 	textState->progressUpwards = upwards;
 	if (alignLeft)
@@ -138,12 +140,12 @@ void initDebugTextState(DebugTextState *textState, Renderer *renderer, BitmapFon
 	else
 	{
 		textState->hAlign = ALIGN_RIGHT;
-		textState->pos.x = textState->renderBuffer->camera.size.x - screenEdgePadding;
+		textState->pos.x = renderer->uiCamera.size.x - screenEdgePadding;
 	}
 
 	if (upwards) 
 	{
-		textState->pos.y = textState->renderBuffer->camera.size.y - screenEdgePadding;
+		textState->pos.y = renderer->uiCamera.size.y - screenEdgePadding;
 	}
 	else
 	{
@@ -151,7 +153,7 @@ void initDebugTextState(DebugTextState *textState, Renderer *renderer, BitmapFon
 	}
 	textState->font = font;
 	textState->color = textColor;
-	textState->maxWidth = textState->renderBuffer->camera.size.x - (2*screenEdgePadding);
+	textState->maxWidth = renderer->uiCamera.size.x - (2*screenEdgePadding);
 
 	textState->textShaderID = renderer->shaderIds.text;
 	textState->untexturedShaderID = renderer->shaderIds.untextured;
@@ -171,7 +173,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	if (doHighlight && contains(bounds, textState->renderBuffer->camera.mousePos))
+	if (doHighlight && contains(bounds, textState->camera->mousePos))
 	{
 		drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
 		drawText(textState->renderBuffer, textState->font, text, bounds, align, color255(0, 0, 0, 255), textState->textShaderID);
@@ -198,7 +200,7 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 	u32 rfi = debugState->readingFrameIndex;
-	drawSingleRect(renderBuffer, rectXYWH(0,0,renderBuffer->camera.size.x, renderBuffer->camera.size.y), renderer->shaderIds.untextured, color255(0,0,0,128));
+	drawSingleRect(renderBuffer, rectXYWH(0,0,renderer->uiCamera.size.x, renderer->uiCamera.size.y), renderer->shaderIds.untextured, color255(0,0,0,128));
 
 	DebugTextState textState;
 	initDebugTextState(&textState, renderer, font, makeWhite(), 16.0f, false, true);
@@ -297,7 +299,7 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 	{
 		f32 graphHeight = 150.0f;
 		f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-		f32 barWidth = renderBuffer->camera.size.x / (f32)DEBUG_FRAMES_COUNT;
+		f32 barWidth = renderer->uiCamera.size.x / (f32)DEBUG_FRAMES_COUNT;
 		f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
 		V4 barColor = color255(255, 0, 0, 128);
 		V4 activeBarColor = color255(255, 255, 0, 128);
@@ -309,11 +311,11 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 		{
 			u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
 			f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-			addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderBuffer->camera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
+			addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
 		}
 		endRectsGroup(rectsGroup);
-		drawSingleRect(renderBuffer, rectXYWH(0, renderBuffer->camera.size.y - graphHeight, renderBuffer->camera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
-		drawSingleRect(renderBuffer, rectXYWH(0, renderBuffer->camera.size.y - graphHeight*2, renderBuffer->camera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight*2, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
 	}
 
 	// Put FPS in top right

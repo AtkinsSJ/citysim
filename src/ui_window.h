@@ -50,7 +50,7 @@ struct Window
 //
 // PUBLIC
 //
-void showWindow(UIState *uiState, String title, s32 width, s32 height, String styleName, u32 flags, WindowProc windowProc, void *userData);
+void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData);
 
 void window_label(WindowContext *context, String text, char *styleName=null);
 /*
