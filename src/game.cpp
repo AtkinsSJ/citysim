@@ -408,7 +408,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
-	drawSingleRect(uiBuffer, uiRect, renderer->shaderIdCache.untextured, theme->overlayColor);
+	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
 
 	uiText(renderer, uiState->uiBuffer, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
@@ -453,7 +453,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 			}
 
 			append(&uiState->uiRects, menuRect);
-			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIdCache.untextured, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIds.untextured, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -487,7 +487,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 			}
 
 			append(&uiState->uiRects, menuRect);
-			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIdCache.untextured, theme->overlayColor);
+			fillDrawRectPlaceholder(background, menuRect, renderer->shaderIds.untextured, theme->overlayColor);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -629,7 +629,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 							Sprite *sprite = getSprite(buildingDef->sprites, 0);
 							V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
-							drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect2(footprint), renderer->shaderIdCache.pixelArt, color);
+							drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect2(footprint), renderer->shaderIds.pixelArt, color);
 						}
 					} break;
 
@@ -665,7 +665,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 									Sprite *sprite = getSprite(buildingDef->sprites, 0);
 									s32 maxGhosts = (dragResult.dragRect.w / buildingDef->width) * (dragResult.dragRect.h / buildingDef->height);
 									// TODO: If maxGhosts is 1, just draw 1!
-									DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, sprite->texture, renderer->shaderIdCache.pixelArt, maxGhosts);
+									DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, sprite->texture, renderer->shaderIds.pixelArt, maxGhosts);
 									for (s32 y=0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height)
 									{
 										for (s32 x=0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width)
@@ -684,7 +684,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 								}
 								else
 								{
-									drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(255, 64, 64, 128));
+									drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 								}
 							} break;
 						}
@@ -730,7 +730,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 							//
 							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
 							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
-							DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, renderer->shaderIdCache.untextured, areaOf(dragResult.dragRect));
+							DrawRectsGroup *rectsGroup = beginRectsGroup(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(dragResult.dragRect));
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
 								zoneRect.y = (f32) y;
@@ -747,7 +747,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						}
 						else
 						{
-							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(255, 64, 64, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -781,11 +781,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 						if (canAfford(city, demolishCost))
 						{
 							// Demolition outline
-							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(128, 0, 0, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(128, 0, 0, 128));
 						}
 						else
 						{
-							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIdCache.untextured, color255(255, 64, 64, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -826,11 +826,11 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	);
 	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 
-	drawTerrain(city, renderer, visibleTileBounds, renderer->shaderIdCache.pixelArt);
+	drawTerrain(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt);
 
-	drawZones(&city->zoneLayer, renderer, visibleTileBounds, renderer->shaderIdCache.untextured);
+	drawZones(&city->zoneLayer, renderer, visibleTileBounds, renderer->shaderIds.untextured);
 
-	drawBuildings(city, renderer, visibleTileBounds, renderer->shaderIdCache.pixelArt, demolitionRect);
+	drawBuildings(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
 
 	// Data layer rendering
 	if (gameState->dataLayerToDraw)
@@ -882,7 +882,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 				if (tileHasData)
 				{
-					drawSingleRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), renderer->shaderIdCache.untextured, color);
+					drawSingleRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), renderer->shaderIds.untextured, color);
 				}
 			}
 		}
@@ -908,7 +908,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					color = color255(255,   0,   0, 63);
 				}
 
-				drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, renderer->shaderIdCache.untextured, color);
+				drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, renderer->shaderIds.untextured, color);
 			}
 		}
 		#endif
@@ -916,7 +916,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 		CitySector *cursorSector = getSectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
 		if (cursorSector != null)
 		{
-			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, renderer->shaderIdCache.untextured, color255(255, 255, 255, 63));
+			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, renderer->shaderIds.untextured, color255(255, 255, 255, 63));
 
 			// Draw PowerGroup boundaries
 			// for (auto itPG = iterate(&cursorSector->powerGroups); !itPG.isDone; next(&itPG))
@@ -928,7 +928,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			// 	{
 			// 		Rect2I bounds = getValue(itBoundary);
 
-			// 		drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, renderer->shaderIdCache.untextured, color);
+			// 		drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, renderer->shaderIds.untextured, color);
 			// 	}
 			// }
 		}

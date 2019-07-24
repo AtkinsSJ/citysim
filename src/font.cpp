@@ -218,7 +218,7 @@ void _alignText(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, s3
 	}
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, V4 color, s32 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, V4 color, s8 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
 

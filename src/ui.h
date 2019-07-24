@@ -53,7 +53,7 @@ void uiCloseMenus(UIState *uiState);
 void pushUiMessage(UIState *uiState, String message);
 void drawUiMessage(UIState *uiState, Renderer *renderer);
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s32 shaderID);
+void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s8 shaderID);
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK

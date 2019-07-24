@@ -207,13 +207,14 @@ static void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Shaders
 	clear(&gl->shaders); // Just in case
+	ASSERT(assets->assetsByType[AssetType_Shader].count <= s8Max);
 	for (auto it = iterate(&assets->assetsByType[AssetType_Shader]);
 		!it.isDone;
 		next(&it))
 	{
 		Asset *asset = *get(it);
 
-		s32 shaderIndex = gl->shaders.count;
+		s8 shaderIndex = (s8) gl->shaders.count;
 		GL_ShaderProgram *shader = appendBlank(&gl->shaders);
 		shader->asset = asset;
 		asset->shader.rendererShaderID = shaderIndex;
@@ -250,7 +251,7 @@ static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 
 	// Shaders
 	gl->currentShader = -1;
-	for (s32 shaderID=0; shaderID < gl->shaders.count; shaderID++)
+	for (s8 shaderID=0; shaderID < gl->shaders.count; shaderID++)
 	{
 		GL_ShaderProgram *shader = pointerTo(&gl->shaders, shaderID);
 		glDeleteProgram(shader->shaderProgramID);
@@ -259,7 +260,7 @@ static void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 	clear(&gl->shaders);
 }
 
-inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s32 shaderID)
+inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count); //Invalid shader!

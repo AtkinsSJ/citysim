@@ -53,7 +53,7 @@ Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, S
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIdCache.text);
+	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text);
 
 	return bounds;
 }
@@ -114,7 +114,7 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(uiState->uiBuffer, bounds, renderer->shaderIdCache.untextured, backColor);
+	drawSingleRect(uiState->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, style->textColor);
 
@@ -197,12 +197,12 @@ void drawUiMessage(UIState *uiState, Renderer *renderer)
 
 			labelRect = expand(labelRect, style->padding);
 
-			fillDrawRectPlaceholder(backgroundRI, labelRect, renderer->shaderIdCache.untextured, backgroundColor);
+			fillDrawRectPlaceholder(backgroundRI, labelRect, renderer->shaderIds.untextured, backgroundColor);
 		}
 	}
 }
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s32 shaderID)
+void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s8 shaderID)
 {
 	knobSize.y = min(knobSize.y, height); // force knob to fit
 	f32 knobTravelableH = height - knobSize.y;

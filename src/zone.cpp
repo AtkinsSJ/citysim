@@ -110,7 +110,7 @@ s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 	return total;
 }
 
-void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32 shaderID)
+void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

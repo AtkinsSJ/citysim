@@ -13,7 +13,7 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	UITheme *theme = &assets->theme;
 	UIState *uiState = &appState->uiState;
 
-	drawSingleRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), renderer->shaderIdCache.untextured, theme->overlayColor);
+	drawSingleRect(uiBuffer, rectXYWH(0, 0, windowWidth, windowHeight), renderer->shaderIds.untextured, theme->overlayColor);
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;

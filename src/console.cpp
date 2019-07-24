@@ -66,13 +66,13 @@ void renderConsole(Console *console, Renderer *renderer)
 
 	// draw backgrounds now we know size of input area
 	Rect2 inputBackRect = rectXYWH(0,textPos.y,renderBuffer->camera.size.x, actualConsoleHeight - textPos.y);
-	fillDrawRectPlaceholder(inputBackground, inputBackRect, renderer->shaderIdCache.untextured, color255(64,64,64,245));
+	fillDrawRectPlaceholder(inputBackground, inputBackRect, renderer->shaderIds.untextured, color255(64,64,64,245));
 	Rect2 consoleBackRect = rectXYWH(0,0,renderBuffer->camera.size.x, textPos.y);
-	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, renderer->shaderIdCache.untextured, color255(0,0,0,245));
+	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, renderer->shaderIds.untextured, color255(0,0,0,245));
 
 	V2 knobSize = v2(12.0f, 64.0f);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(renderBuffer, v2(renderBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, color255(48, 48, 48, 245), renderer->shaderIdCache.untextured);
+	drawScrollBar(renderBuffer, v2(renderBuffer->camera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, color255(48, 48, 48, 245), renderer->shaderIds.untextured);
 
 	textPos.y -= 8.0f;
 

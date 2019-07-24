@@ -77,7 +77,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 void calculateDemand(City *city);
 
 void generateTerrain(City *city);
-void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s32 shaderID);
+void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID);
 Terrain *getTerrainAt(City *city, s32 x, s32 y);
 
 bool tileExists(City *city, s32 x, s32 y);
@@ -97,7 +97,7 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top);
 s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area);
 void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top);
 void placeBuildingRect(City *city, BuildingDef *def, Rect2I area);
-void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s32 shaderID, Rect2I demolitionRect);
+void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s8 shaderID, Rect2I demolitionRect);
 
 s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);

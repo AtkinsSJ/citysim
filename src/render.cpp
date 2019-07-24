@@ -37,9 +37,9 @@ void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
 	renderer->loadAssets(renderer, assets);
 
 	// Cache the shader IDs so we don't have to do so many hash lookups
-	renderer->shaderIdCache.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
-	renderer->shaderIdCache.text       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
-	renderer->shaderIdCache.untextured = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
+	renderer->shaderIds.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
+	renderer->shaderIds.text       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
+	renderer->shaderIds.untextured = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
 }
 
 void freeRenderer(Renderer *renderer)
@@ -182,7 +182,7 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 	return result;
 }
 
-void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s32 shaderID, V4 color)
+void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color)
 {
 	ASSERT(!buffer->hasRangeReserved);
 
@@ -195,7 +195,7 @@ void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s32 sh
 	rect->uv = sprite->uv;
 }
 
-void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s32 shaderID, V4 color)
+void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color)
 {
 	ASSERT(!buffer->hasRangeReserved);
 
@@ -217,7 +217,7 @@ RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer)
 	return rect;
 }
 
-void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s32 shaderID, V4 color)
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, s8 shaderID, V4 color)
 {
 	placeholder->bounds = bounds;
 	placeholder->color = color;
@@ -226,7 +226,7 @@ void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bound
 	placeholder->uv = {};
 }
 
-DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s32 shaderID, s32 maxCount)
+DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)
 {
 	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
 
@@ -245,12 +245,12 @@ DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, Asset *texture, s32 shader
 	return result;
 }
 
-inline DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s32 shaderID, s32 maxCount)
+inline DrawRectsGroup *beginRectsGroup(RenderBuffer *buffer, s8 shaderID, s32 maxCount)
 {
 	return beginRectsGroup(buffer, null, shaderID, maxCount);
 }
 
-inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s32 shaderID, s32 maxCount)
+inline DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s8 shaderID, s32 maxCount)
 {
 	return beginRectsGroup(buffer, font->texture, shaderID, maxCount);
 }
@@ -259,8 +259,8 @@ DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group)
 {
 	DrawRectsSubGroup result = {};
 
-	s32 subGroupItemCount = min(group->maxCount - group->count, maxRenderItemsPerGroup);
-	ASSERT(subGroupItemCount > 0);
+	s32 subGroupItemCount = min(group->maxCount - group->count, (s32) maxRenderItemsPerGroup);
+	ASSERT(subGroupItemCount > 0 && subGroupItemCount <= maxRenderItemsPerGroup);
 
 	smm reservedSize = sizeof(RenderItem_DrawRects_Item) * subGroupItemCount;
 	u8 *data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);

@@ -69,4 +69,4 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area);
 void markZonesAsEmpty(City *city, Rect2I footprint);
 ZoneType getZoneAt(City *city, s32 x, s32 y);
 
-void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s32 shaderID);
+void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 shaderID);

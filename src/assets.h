@@ -32,7 +32,7 @@ struct Cursor
 
 struct Shader
 {
-	s32 rendererShaderID;
+	s8 rendererShaderID;
 
 	String vertexShader;
 	String fragmentShader;
