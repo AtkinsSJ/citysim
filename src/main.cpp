@@ -255,6 +255,11 @@ int main(int argc, char *argv[])
 			worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 			uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
+			addSetCamera(&renderer->worldBuffer, &renderer->worldBuffer.camera);
+			addSetCamera(&renderer->worldOverlayBuffer, &renderer->worldBuffer.camera);
+			addSetCamera(&renderer->uiBuffer, &renderer->uiBuffer.camera);
+			addSetCamera(&renderer->debugBuffer, &renderer->uiBuffer.camera);
+
 			updateAndRender(appState, &inputState, renderer, assets);
 
 			if (globalConsole)

@@ -219,6 +219,12 @@ inline T *appendRenderItem(RenderBuffer *buffer, RenderItemType type)
 	return (T*) data;
 }
 
+void addSetCamera(RenderBuffer *buffer, Camera *camera)
+{
+	RenderItem_SetCamera *cameraItem = appendRenderItem<RenderItem_SetCamera>(buffer, RenderItemType_SetCamera);
+	cameraItem->camera = camera;
+}
+
 void addSetShader(RenderBuffer *buffer, s8 shaderID)
 {
 	if (buffer->currentShader != shaderID)

@@ -27,11 +27,17 @@ enum RenderItemType
 {
 	RenderItemType_NextMemoryChunk,
 
+	RenderItemType_SetCamera,
 	RenderItemType_SetShader,
 	RenderItemType_SetTexture,
 
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
+};
+
+struct RenderItem_SetCamera
+{
+	Camera *camera;
 };
 
 struct RenderItem_SetShader
@@ -176,6 +182,7 @@ u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 template<typename T>
 T *appendRenderItem(RenderBuffer *buffer, RenderItemType type);
 
+void addSetCamera(RenderBuffer *buffer, Camera *camera);
 void addSetShader(RenderBuffer *buffer, s8 shaderID);
 void addSetTexture(RenderBuffer *buffer, Asset *texture);
 

@@ -365,6 +365,8 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 	GL_ShaderProgram *activeShader = null;
 	Asset *currentTexture = null;
+	Matrix4 cameraMatrix;
+
 	s32 drawCallCount = 0;
 	s32 vertexCount = 0;
 	s32 indexCount = 0;
@@ -384,6 +386,12 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				pos = 0;
 			} break;
 
+			case RenderItemType_SetCamera:
+			{
+				RenderItem_SetCamera *header = readRenderItem<RenderItem_SetCamera>(renderBufferChunk, &pos);
+				cameraMatrix = header->camera->projectionMatrix;
+			} break;
+
 			case RenderItemType_SetShader:
 			{
 				RenderItem_SetShader *header = readRenderItem<RenderItem_SetShader>(renderBufferChunk, &pos);
@@ -399,7 +407,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				}
 
 				activeShader = useShader(renderer, header->shaderID);
-				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, buffer->camera.projectionMatrix.flat);
+				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, cameraMatrix.flat);
 				glUniform1f(activeShader->uScaleLoc, buffer->camera.zoom);
 			} break;
 
@@ -545,10 +553,6 @@ static void GL_render(Renderer *renderer)
 	}
 	{
 		DEBUG_BLOCK_T("renderBuffer(worldOverlay)", DCDT_Renderer);
-		// NB: This is kind of a hack! At some point we'll probably merge the different buffers
-		// together maybe? But until then, we need the camera toi be updated so we can see things!
-		// - Sam, 17/07/2019
-		renderer->worldOverlayBuffer.camera = renderer->worldBuffer.camera;
 		renderBuffer(gl, &renderer->worldOverlayBuffer);
 	}
 	{
@@ -557,8 +561,6 @@ static void GL_render(Renderer *renderer)
 	}
 	{
 		DEBUG_BLOCK_T("renderBuffer(debug)", DCDT_Renderer);
-		// NB: Hack! See above
-		renderer->debugBuffer.camera = renderer->uiBuffer.camera;
 		renderBuffer(gl, &renderer->debugBuffer);
 	}
 }
