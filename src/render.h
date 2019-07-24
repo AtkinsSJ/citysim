@@ -27,12 +27,19 @@ enum RenderItemType
 {
 	RenderItemType_NextMemoryChunk,
 
+	RenderItemType_SectionMarker,
+
 	RenderItemType_SetCamera,
 	RenderItemType_SetShader,
 	RenderItemType_SetTexture,
 
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
+};
+
+struct RenderItem_SectionMarker
+{
+	String name;
 };
 
 struct RenderItem_SetCamera

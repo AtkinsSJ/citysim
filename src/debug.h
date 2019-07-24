@@ -26,7 +26,7 @@
 
 	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
 	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
-	#define DEBUG_BEGIN_RENDER_BUFFER(buffer) debugStartTrackingRenderBuffer(globalDebugState, buffer)
+	#define DEBUG_BEGIN_RENDER_BUFFER(bufferName) debugStartTrackingRenderBuffer(globalDebugState, bufferName)
 
 #else
 
@@ -154,7 +154,7 @@ void updateAndRenderDebugData(DebugState *debugState, struct InputState *inputSt
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
-void debugStartTrackingRenderBuffer(DebugState *debugState, struct RenderBuffer *renderBuffer);
+void debugStartTrackingRenderBuffer(DebugState *debugState, struct String renderBufferName);
 DebugCodeData *debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {
 	DebugCodeData *result = findOrAdd(&globalDebugState->codeData, name);

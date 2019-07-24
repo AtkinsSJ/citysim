@@ -56,11 +56,16 @@ struct GL_Renderer
 	Array<GL_ShaderProgram> shaders;
 	s32 currentShader;
 
+
 	GLuint VBO;
 	GLuint IBO;
 
+	s32 vertexCount;
+	s32 indexCount;
 	GL_VertexData vertices[RENDER_BATCH_VERTEX_COUNT];
-	GLuint indices[RENDER_BATCH_INDEX_COUNT];
+	GLuint        indices [RENDER_BATCH_INDEX_COUNT];
 };
+
+void flushVertices(GL_Renderer *renderer);
 
 #include "render_gl.cpp"

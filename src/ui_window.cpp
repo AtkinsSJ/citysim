@@ -58,7 +58,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 	u32 textAlignment = style->textAlignment;
 	f32 buttonPadding = style->padding;
-	V2 mousePos = context->renderer->uiCamera.mousePos;
+	V2 mousePos = context->uiState->uiCamera->mousePos;
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -119,7 +119,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				// Mouse unpressed: show hover if in bounds
 				if (mouseButtonPressed(input, MouseButton_Left))
 				{
-					if (contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->renderer->uiCamera)))
+					if (contains(buttonBounds, getClickStartPos(input, MouseButton_Left, context->uiState->uiCamera)))
 					{
 						backColor = style->pressedColor;
 					}
@@ -136,7 +136,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 		{
 			if (mouseButtonJustReleased(input, MouseButton_Left)
-			 && contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->renderer->uiCamera)))
+			 && contains(buttonBounds, getClickStartPos(input, MouseButton_Left, context->uiState->uiCamera)))
 			{
 				buttonClicked = true;
 				context->uiState->mouseInputHandled = true;

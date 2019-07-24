@@ -507,9 +507,9 @@ void debugTrackDrawCall(DebugState *debugState, String shaderName, String textur
 	}
 }
 
-void debugStartTrackingRenderBuffer(DebugState *debugState, RenderBuffer *renderBuffer)
+void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName)
 {
-	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBuffer->name, &debugState->renderBufferDataSentinel);
+	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBufferName, &debugState->renderBufferDataSentinel);
 	u32 frameIndex = debugState->writingFrameIndex;
 
 	debugState->currentRenderBuffer = renderBufferData;

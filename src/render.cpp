@@ -110,6 +110,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm initialSize)
 {
 	buffer->name = pushString(arena, name);
+	hashString(&buffer->name);
 	buffer->hasRangeReserved = false;
 
 	buffer->arena = arena;
@@ -124,6 +125,9 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, smm 
 
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
+
+	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
+	bufferStart->name = buffer->name;
 }
 
 void clearRenderBuffer(RenderBuffer *buffer)
@@ -151,6 +155,9 @@ void clearRenderBuffer(RenderBuffer *buffer)
 
 	buffer->firstChunk.next = null;
 	buffer->currentChunk = &buffer->firstChunk;
+	
+	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
+	bufferStart->name = buffer->name;
 }
 
 // NB: reservedSize is for extra data that you want to make sure there is room for,

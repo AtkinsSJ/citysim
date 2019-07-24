@@ -332,21 +332,26 @@ void bindTexture(Asset *asset, s32 uniformID, u32 textureSlot=0)
 	glUniform1i(uniformID, textureSlot);
 }
 
-void renderPartOfBuffer(GL_Renderer *renderer, s32 vertexCount, s32 indexCount)
+void flushVertices(GL_Renderer *renderer, GL_ShaderProgram *activeShader, Asset *currentTexture)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 
 	// Fill VBO
-	ASSERT(vertexCount <= RENDER_BATCH_VERTEX_COUNT); //Tried to render too many vertices at once!
-	GLint vBufferSizeNeeded = vertexCount * sizeof(renderer->vertices[0]);
+	ASSERT(renderer->vertexCount <= RENDER_BATCH_VERTEX_COUNT); //Tried to render too many vertices at once!
+	GLint vBufferSizeNeeded = renderer->vertexCount * sizeof(renderer->vertices[0]);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, renderer->vertices);
 
 	// Fill IBO
-	ASSERT(indexCount <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
-	GLint iBufferSizeNeeded = indexCount * sizeof(renderer->indices[0]);
+	ASSERT(renderer->indexCount <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
+	GLint iBufferSizeNeeded = renderer->indexCount * sizeof(renderer->indices[0]);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
 
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, renderer->indexCount, GL_UNSIGNED_INT, NULL);
+
+	DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName, (renderer->vertexCount >> 2));
+
+	renderer->vertexCount = 0;
+	renderer->indexCount = 0;
 }
 
 template<typename T>
@@ -361,15 +366,9 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 
-	DEBUG_BEGIN_RENDER_BUFFER(buffer);
-
 	GL_ShaderProgram *activeShader = null;
 	Asset *currentTexture = null;
 	Camera *currentCamera = null;
-
-	s32 drawCallCount = 0;
-	s32 vertexCount = 0;
-	s32 indexCount = 0;
 
 	RenderBufferChunk *renderBufferChunk = &buffer->firstChunk;
 	smm pos = 0;
@@ -386,6 +385,12 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 				pos = 0;
 			} break;
 
+			case RenderItemType_SectionMarker:
+			{
+				RenderItem_SectionMarker *header = readRenderItem<RenderItem_SectionMarker>(renderBufferChunk, &pos);
+				DEBUG_BEGIN_RENDER_BUFFER(header->name);
+			} break;
+
 			case RenderItemType_SetCamera:
 			{
 				RenderItem_SetCamera *header = readRenderItem<RenderItem_SetCamera>(renderBufferChunk, &pos);
@@ -396,14 +401,9 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			{
 				RenderItem_SetShader *header = readRenderItem<RenderItem_SetShader>(renderBufferChunk, &pos);
 
-				if (vertexCount > 0)
+				if (renderer->vertexCount > 0)
 				{
-					renderPartOfBuffer(renderer, vertexCount, indexCount);
-					DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName, (vertexCount >> 2));
-
-					drawCallCount++;
-					vertexCount = 0;
-					indexCount = 0;
+					flushVertices(renderer, activeShader, currentTexture);
 				}
 
 				activeShader = useShader(renderer, header->shaderID);
@@ -415,14 +415,9 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			{
 				RenderItem_SetTexture *header = readRenderItem<RenderItem_SetTexture>(renderBufferChunk, &pos);
 
-				if (vertexCount > 0)
+				if (renderer->vertexCount > 0)
 				{
-					renderPartOfBuffer(renderer, vertexCount, indexCount);
-					DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName, (vertexCount >> 2));
-
-					drawCallCount++;
-					vertexCount = 0;
-					indexCount = 0;
+					flushVertices(renderer, activeShader, currentTexture);
 				}
 
 				bindTexture(header->texture, activeShader->uTextureLoc, 0);
@@ -435,45 +430,40 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 				for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++)
 				{
-					if (vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+					if (renderer->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
 					{
-						renderPartOfBuffer(renderer, vertexCount, indexCount);
-						DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName, (vertexCount >> 2));
-
-						drawCallCount++;
-						vertexCount = 0;
-						indexCount = 0;
+						flushVertices(renderer, activeShader, currentTexture);
 					}
 
 					RenderItem_DrawRects_Item *item = readRenderItem<RenderItem_DrawRects_Item>(renderBufferChunk, &pos);
-					s32 firstVertex = vertexCount;
-					renderer->vertices[vertexCount++] = {
+					s32 firstVertex = renderer->vertexCount;
+					renderer->vertices[renderer->vertexCount++] = {
 						v3(item->bounds.x, item->bounds.y, 0.0f),
 						item->color,
 						v2(item->uv.x, item->uv.y)
 					};
-					renderer->vertices[vertexCount++] = {
+					renderer->vertices[renderer->vertexCount++] = {
 						v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
 						item->color,
 						v2(item->uv.x + item->uv.w, item->uv.y)
 					};
-					renderer->vertices[vertexCount++] = {
+					renderer->vertices[renderer->vertexCount++] = {
 						v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
 						item->color,
 						v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
 					};
-					renderer->vertices[vertexCount++] = {
+					renderer->vertices[renderer->vertexCount++] = {
 						v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
 						item->color,
 						v2(item->uv.x, item->uv.y + item->uv.h)
 					};
 
-					renderer->indices[indexCount++] = firstVertex + 0;
-					renderer->indices[indexCount++] = firstVertex + 1;
-					renderer->indices[indexCount++] = firstVertex + 2;
-					renderer->indices[indexCount++] = firstVertex + 0;
-					renderer->indices[indexCount++] = firstVertex + 2;
-					renderer->indices[indexCount++] = firstVertex + 3;
+					renderer->indices[renderer->indexCount++] = firstVertex + 0;
+					renderer->indices[renderer->indexCount++] = firstVertex + 1;
+					renderer->indices[renderer->indexCount++] = firstVertex + 2;
+					renderer->indices[renderer->indexCount++] = firstVertex + 0;
+					renderer->indices[renderer->indexCount++] = firstVertex + 2;
+					renderer->indices[renderer->indexCount++] = firstVertex + 3;
 				}
 			} break;
 
@@ -481,43 +471,38 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			{
 				RenderItem_DrawSingleRect *item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
-				s32 firstVertex = vertexCount;
-				renderer->vertices[vertexCount++] = {
+				s32 firstVertex = renderer->vertexCount;
+				renderer->vertices[renderer->vertexCount++] = {
 					v3(item->bounds.x, item->bounds.y, 0.0f),
 					item->color,
 					v2(item->uv.x, item->uv.y)
 				};
-				renderer->vertices[vertexCount++] = {
+				renderer->vertices[renderer->vertexCount++] = {
 					v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
 					item->color,
 					v2(item->uv.x + item->uv.w, item->uv.y)
 				};
-				renderer->vertices[vertexCount++] = {
+				renderer->vertices[renderer->vertexCount++] = {
 					v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
 					item->color,
 					v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
 				};
-				renderer->vertices[vertexCount++] = {
+				renderer->vertices[renderer->vertexCount++] = {
 					v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
 					item->color,
 					v2(item->uv.x, item->uv.y + item->uv.h)
 				};
 
-				renderer->indices[indexCount++] = firstVertex + 0;
-				renderer->indices[indexCount++] = firstVertex + 1;
-				renderer->indices[indexCount++] = firstVertex + 2;
-				renderer->indices[indexCount++] = firstVertex + 0;
-				renderer->indices[indexCount++] = firstVertex + 2;
-				renderer->indices[indexCount++] = firstVertex + 3;
+				renderer->indices[renderer->indexCount++] = firstVertex + 0;
+				renderer->indices[renderer->indexCount++] = firstVertex + 1;
+				renderer->indices[renderer->indexCount++] = firstVertex + 2;
+				renderer->indices[renderer->indexCount++] = firstVertex + 0;
+				renderer->indices[renderer->indexCount++] = firstVertex + 2;
+				renderer->indices[renderer->indexCount++] = firstVertex + 3;
 
-				if (vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+				if (renderer->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
 				{
-					renderPartOfBuffer(renderer, vertexCount, indexCount);
-					DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName, (vertexCount >> 2));
-
-					drawCallCount++;
-					vertexCount = 0;
-					indexCount = 0;
+					flushVertices(renderer, activeShader, currentTexture);
 				}
 			} break;
 
@@ -525,14 +510,9 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		}
 	}
 
-	if (vertexCount > 0)
+	if (renderer->vertexCount > 0)
 	{
-		renderPartOfBuffer(renderer, vertexCount, indexCount);
-		DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName, (vertexCount >> 2));
-
-		drawCallCount++;
-		vertexCount = 0;
-		indexCount = 0;
+		flushVertices(renderer, activeShader, currentTexture);
 	}
 
 	// Clear it!
@@ -656,6 +636,8 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->indices[0]);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, null, GL_STATIC_DRAW);
 
+			gl->vertexCount = 0;
+			gl->indexCount = 0;
 		}
 		else
 		{
