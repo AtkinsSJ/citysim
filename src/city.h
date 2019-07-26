@@ -55,8 +55,8 @@ struct City
 	PowerLayer powerLayer;
 	ZoneLayer zoneLayer;
 
-	ChunkPool<Building>   sectorBuildingsChunkPool;
-	ChunkPool<Rect2I>     sectorBoundariesChunkPool;
+	ArrayChunkPool<Building>   sectorBuildingsChunkPool;
+	ArrayChunkPool<Rect2I>     sectorBoundariesChunkPool;
 
 	u32 highestBuildingID;
 

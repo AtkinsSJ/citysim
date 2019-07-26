@@ -11,7 +11,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->height = height;
 
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
-	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena, 8);
+	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,  8);
 
 	initSectorGrid(&city->sectors, gameArena, width, height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < city->sectors.count; sectorIndex++)

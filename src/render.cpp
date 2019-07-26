@@ -26,7 +26,8 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 {
 	renderer->window = window;
 
-	initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk);
+	renderer->renderBufferChunkSize = KB(64);
+	initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk, renderer);
 
 	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", &renderer->chunkPool);
@@ -131,9 +132,9 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 	bufferStart->name = buffer->name;
 }
 
-RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena)
+RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData)
 {
-	smm newChunkSize = KB(64);//buffer->chunkPool->chunkSize;
+	smm newChunkSize = ((Renderer*)userData)->renderBufferChunkSize;
 	RenderBufferChunk *result = (RenderBufferChunk *)allocate(arena, newChunkSize + sizeof(RenderBufferChunk));
 	result->size = newChunkSize;
 	result->used = 0;

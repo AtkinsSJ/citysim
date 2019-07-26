@@ -1,11 +1,11 @@
 #pragma once
 
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize)
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm itemsPerChunk)
 {
 	array->memoryArena = arena;
 	array->chunkPool = null;
-	array->chunkSize = chunkSize;
+	array->itemsPerChunk = itemsPerChunk;
 	array->chunkCount = 0;
 	array->count = 0;
 	array->firstChunk = null;
@@ -15,11 +15,11 @@ void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize)
 }
 
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, ChunkPool<T> *pool)
+void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool)
 {
 	array->memoryArena = null;
 	array->chunkPool = pool;
-	array->chunkSize = pool->chunkSize;
+	array->itemsPerChunk = pool->itemsPerChunk;
 	array->chunkCount = 0;
 	array->count = 0;
 	array->firstChunk = null;
@@ -45,14 +45,14 @@ void clear(ChunkedArray<T> *array)
 }
 
 template<typename T>
-ArrayChunk<T> *allocateChunk(MemoryArena *arena, smm chunkSize)
+ArrayChunk<T> *allocateChunk(MemoryArena *arena, smm itemsPerChunk)
 {
 	// Rolled into a single allocation
-	Blob blob = allocateBlob(arena, sizeof(ArrayChunk<T>) + (sizeof(T) * chunkSize));
+	Blob blob = allocateBlob(arena, sizeof(ArrayChunk<T>) + (sizeof(T) * itemsPerChunk));
 	ArrayChunk<T> *newChunk = (ArrayChunk<T> *)blob.memory;
 	*newChunk = {};
 	newChunk->count = 0;
-	newChunk->maxCount = chunkSize;
+	newChunk->maxCount = itemsPerChunk;
 	newChunk->items = (T *)(blob.memory + sizeof(ArrayChunk<T>));
 
 	return newChunk;
@@ -66,11 +66,11 @@ void appendChunk(ChunkedArray<T> *array)
 	// Attempt to get a chunk from the pool if we can
 	if (array->chunkPool != null)
 	{
-		newChunk = getChunkFromPool(array->chunkPool);
+		newChunk = getItemFromPool(array->chunkPool);
 	}
 	else
 	{
-		newChunk = allocateChunk<T>(array->memoryArena, array->chunkSize);
+		newChunk = allocateChunk<T>(array->memoryArena, array->itemsPerChunk);
 	}
 	newChunk->prevChunk = array->lastChunk;
 	newChunk->nextChunk = null;
@@ -90,8 +90,8 @@ void appendChunk(ChunkedArray<T> *array)
 template<typename T>
 T *appendUninitialised(ChunkedArray<T> *array)
 {
-	bool useLastChunk = (array->count >= array->chunkSize * (array->chunkCount-1));
-	if (array->count >= (array->chunkSize * array->chunkCount))
+	bool useLastChunk = (array->count >= array->itemsPerChunk * (array->chunkCount-1));
+	if (array->count >= (array->itemsPerChunk * array->chunkCount))
 	{
 		appendChunk(array);
 		useLastChunk = true;
@@ -107,10 +107,10 @@ T *appendUninitialised(ChunkedArray<T> *array)
 	{
 		chunk = array->firstChunk;
 		smm indexWithinChunk = array->count;
-		while (indexWithinChunk >= array->chunkSize)
+		while (indexWithinChunk >= array->itemsPerChunk)
 		{
 			chunk = chunk->nextChunk;
-			indexWithinChunk -= array->chunkSize;
+			indexWithinChunk -= array->itemsPerChunk;
 		}
 	}
 
@@ -144,8 +144,8 @@ T *get(ChunkedArray<T> *array, smm index)
 
 	T *result = null;
 
-	smm chunkIndex = index / array->chunkSize;
-	smm itemIndex  = index % array->chunkSize;
+	smm chunkIndex = index / array->itemsPerChunk;
+	smm itemIndex  = index % array->itemsPerChunk;
 
 	if (chunkIndex == 0)
 	{
@@ -229,8 +229,8 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 	if (fromIndex < toIndex)
 	{
 		// Moving >, so move each item in the range left 1
-		smm chunkIndex = fromIndex / array->chunkSize;
-		smm itemIndex  = fromIndex % array->chunkSize;
+		smm chunkIndex = fromIndex / array->itemsPerChunk;
+		smm itemIndex  = fromIndex % array->itemsPerChunk;
 		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 
 		T movingItem = chunk->items[itemIndex];
@@ -240,7 +240,7 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 			T *dest = &chunk->items[itemIndex];
 
 			itemIndex++;
-			if (itemIndex >= array->chunkSize)
+			if (itemIndex >= array->itemsPerChunk)
 			{
 				chunk = chunk->nextChunk;
 				itemIndex = 0;
@@ -256,8 +256,8 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 	else
 	{
 		// Moving <, so move each item in the range right 1
-		smm chunkIndex = fromIndex / array->chunkSize;
-		smm itemIndex  = fromIndex % array->chunkSize;
+		smm chunkIndex = fromIndex / array->itemsPerChunk;
+		smm itemIndex  = fromIndex % array->itemsPerChunk;
 		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 		
 		T movingItem = chunk->items[itemIndex];
@@ -269,7 +269,7 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 			if (itemIndex < 0)
 			{
 				chunk = chunk->prevChunk;
-				itemIndex = array->chunkSize - 1;
+				itemIndex = array->itemsPerChunk - 1;
 			}
 			T *src = &chunk->items[itemIndex];
 
@@ -346,8 +346,8 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 	}
 	else
 	{
-		smm chunkIndex = indexToRemove / array->chunkSize;
-		smm itemIndex  = indexToRemove % array->chunkSize;
+		smm chunkIndex = indexToRemove / array->itemsPerChunk;
+		smm itemIndex  = indexToRemove % array->itemsPerChunk;
 
 		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 
@@ -378,7 +378,7 @@ void reserve(ChunkedArray<T> *array, smm desiredSize)
 {
 	DEBUG_FUNCTION();
 	
-	while (((array->chunkSize * array->chunkCount) - array->count) < desiredSize)
+	while (((array->itemsPerChunk * array->chunkCount) - array->count) < desiredSize)
 	{
 		appendChunk(array);
 	}
@@ -389,56 +389,30 @@ void reserve(ChunkedArray<T> *array, smm desiredSize)
 //////////////////////////////////////////////////
 
 template<typename T>
-void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize)
+void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, smm itemsPerChunk)
 {
-	pool->memoryArena = arena;
-	pool->chunkSize = chunkSize;
-	pool->count = 0;
-	pool->firstChunk = null;
+	pool->itemsPerChunk = itemsPerChunk;
+	initPool<ArrayChunk<T>>(pool, arena, &allocateChunkFromPool, &pool->itemsPerChunk);
 }
 
 template<typename T>
-ArrayChunk<T> *getChunkFromPool(ChunkPool<T> *pool)
+ArrayChunk<T> *allocateChunkFromPool(MemoryArena *arena, void *userData)
 {
-	ArrayChunk<T> *newChunk = null;
-
-	if (pool->count > 0)
-	{
-		newChunk = pool->firstChunk;
-		pool->firstChunk = newChunk->nextChunk;
-		pool->count--;
-		if (pool->firstChunk != null)
-		{
-			pool->firstChunk->prevChunk = null;
-		}
-	}
-	else
-	{
-		newChunk = allocateChunk<T>(pool->memoryArena, pool->chunkSize);
-	}
-
-	return newChunk;
+	smm itemsPerChunk = *((smm*)userData);
+	return allocateChunk<T>(arena, itemsPerChunk);
 }
 
 template<typename T>
 void returnLastChunkToPool(ChunkedArray<T> *array)
 {
 	ArrayChunk<T> *chunk = array->lastChunk;
-	ChunkPool<T> *pool = array->chunkPool;
 
 	ASSERT(chunk->count == 0); //Attempting to return a non-empty chunk to the chunk pool!
 	array->lastChunk = array->lastChunk->prevChunk;
 	if (array->firstChunk == chunk) array->firstChunk = array->lastChunk;
 	array->chunkCount--;
 
-	chunk->prevChunk = null;
-	chunk->nextChunk = pool->firstChunk;
-	if (pool->firstChunk != null)
-	{
-		pool->firstChunk->prevChunk = chunk;
-	}
-	pool->firstChunk = chunk;
-	pool->count++;
+	addItemToPool<ArrayChunk<T>>(chunk, array->chunkPool);
 }
 
 //////////////////////////////////////////////////
@@ -459,9 +433,9 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex, bool w
 
 	if (!iterator.isDone)
 	{
-		iterator.chunkIndex   = initialIndex / array->chunkSize;
+		iterator.chunkIndex   = initialIndex / array->itemsPerChunk;
 		iterator.currentChunk = getChunkByIndex(array, iterator.chunkIndex);
-		iterator.indexInChunk = initialIndex % array->chunkSize;
+		iterator.indexInChunk = initialIndex % array->itemsPerChunk;
 	}
 
 	return iterator;
@@ -551,7 +525,7 @@ inline T *get(ChunkedArrayIterator<T> iterator)
 template<typename T>
 smm getIndex(ChunkedArrayIterator<T> iterator)
 {
-	return (iterator.chunkIndex * iterator.array->chunkSize) + iterator.indexInChunk;
+	return (iterator.chunkIndex * iterator.array->itemsPerChunk) + iterator.indexInChunk;
 }
 
 template<typename T>

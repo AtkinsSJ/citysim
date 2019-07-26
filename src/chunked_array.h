@@ -7,7 +7,7 @@
  */
 
 template<typename T>
-struct ArrayChunk
+struct ArrayChunk : PoolItem
 {
 	smm count;
 	smm maxCount;
@@ -18,22 +18,18 @@ struct ArrayChunk
 };
 
 template<typename T>
-struct ChunkPool
+struct ArrayChunkPool : Pool<ArrayChunk<T>>
 {
-	MemoryArena *memoryArena;
-	smm chunkSize;
-
-	smm count;
-	ArrayChunk<T> *firstChunk;
+	smm itemsPerChunk;
 };
 
 template<typename T>
 struct ChunkedArray
 {
-	ChunkPool<T> *chunkPool;
+	ArrayChunkPool<T> *chunkPool;
 	MemoryArena *memoryArena;
 
-	smm chunkSize;
+	smm itemsPerChunk;
 	smm chunkCount;
 	smm count;
 
@@ -59,10 +55,13 @@ struct ChunkedArrayIterator
 };
 
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm chunkSize);
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm itemsPerChunk);
 
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, ChunkPool<T> *pool);
+void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool);
+
+template<typename T>
+ArrayChunk<T> *allocateChunk(MemoryArena *arena, smm itemsPerChunk);
 
 // Marks all the chunks as empty. Returns them to a chunkpool if there is one.
 template<typename T>
@@ -97,10 +96,11 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex);
 //////////////////////////////////////////////////
 
 template<typename T>
-void initChunkPool(ChunkPool<T> *pool, MemoryArena *arena, smm chunkSize);
+void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, smm itemsPerChunk);
 
+// Used as Pool's allocateItem() function pointer
 template<typename T>
-ArrayChunk<T> *getChunkFromPool(ChunkPool<T> *pool);
+ArrayChunk<T> *allocateChunkFromPool(MemoryArena *arena, void *userData);
 
 template<typename T>
 void returnLastChunkToPool(ChunkedArray<T> *array);

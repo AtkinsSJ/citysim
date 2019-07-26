@@ -142,6 +142,7 @@ struct Renderer
 	RenderBuffer uiBuffer;
 	RenderBuffer debugBuffer;
 
+	smm renderBufferChunkSize;
 	Pool<RenderBufferChunk> chunkPool;
 
 	// Not convinced this is the best way of doing it, but it's better than what we had before!
@@ -183,7 +184,7 @@ void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
 void freeRenderer(Renderer *renderer);
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool);
-RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena);
+RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
 void clearRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));

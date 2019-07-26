@@ -40,8 +40,8 @@ struct PowerLayer
 
 	ChunkedArray<PowerNetwork> networks;
 
-	ChunkPool<PowerGroup> powerGroupsChunkPool;
-	ChunkPool<PowerGroup *> powerGroupPointersChunkPool;
+	ArrayChunkPool<PowerGroup> powerGroupsChunkPool;
+	ArrayChunkPool<PowerGroup *> powerGroupPointersChunkPool;
 	
 	s32 cachedCombinedProduction;
 	s32 cachedCombinedConsumption;
