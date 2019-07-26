@@ -26,13 +26,7 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 {
 	renderer->window = window;
 
-	// @Copypasta initChunkPool
-	{
-		renderer->chunkPool.memoryArena = renderArena;
-		renderer->chunkPool.chunkSize = KB(64);
-		renderer->chunkPool.count = 0;
-		renderer->chunkPool.firstChunk = null;
-	}
+	initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk);
 
 	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", &renderer->chunkPool);
@@ -115,7 +109,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, RenderBufferChunkPool *chunkPool)
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool)
 {
 	buffer->name = pushString(arena, name);
 	hashString(&buffer->name);
@@ -137,12 +131,23 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Rend
 	bufferStart->name = buffer->name;
 }
 
+RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena)
+{
+	smm newChunkSize = KB(64);//buffer->chunkPool->chunkSize;
+	RenderBufferChunk *result = (RenderBufferChunk *)allocate(arena, newChunkSize + sizeof(RenderBufferChunk));
+	result->size = newChunkSize;
+	result->used = 0;
+	result->memory = (u8*)(result + 1);
+
+	return result;
+}
+
 void clearRenderBuffer(RenderBuffer *buffer)
 {
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
 
-	RenderBufferChunkPool *pool = buffer->chunkPool;
+	Pool<RenderBufferChunk> *pool = buffer->chunkPool;
 	while (buffer->currentChunk != null)
 	{
 		RenderBufferChunk *lastChunk = buffer->currentChunk;
@@ -150,14 +155,7 @@ void clearRenderBuffer(RenderBuffer *buffer)
 
 		lastChunk->used = 0;
 
-		lastChunk->prevChunk = null;
-		lastChunk->nextChunk = pool->firstChunk;
-		if (pool->firstChunk != null)
-		{
-			pool->firstChunk->prevChunk = lastChunk;
-		}
-		pool->firstChunk = lastChunk;
-		pool->count++;
+		addItemToPool<RenderBufferChunk>(lastChunk, pool);
 	}
 
 	buffer->firstChunk = null;
@@ -187,59 +185,25 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 			buffer->currentChunk->used += sizeof(RenderItemType);
 		}
 
+		RenderBufferChunk *newChunk = getItemFromPool(buffer->chunkPool);
+
+		// Add to the renderbuffer
+		if (buffer->currentChunk == null)
 		{
-			RenderBufferChunk *newChunk = null;
-
-			ASSERT(buffer->chunkPool->count >= 0);
-
-			if (buffer->chunkPool->count > 0)
-			{
-				newChunk = buffer->chunkPool->firstChunk;
-				newChunk->used = 0;
-
-				// We'd BETTER have space to actually allocate this thing in the chunk!
-				ASSERT(newChunk->size >= totalSizeRequired);
-
-				// Remove from pool
-				buffer->chunkPool->firstChunk = newChunk->nextChunk;
-				buffer->chunkPool->count--;
-				if (buffer->chunkPool->firstChunk != null)
-				{
-					buffer->chunkPool->firstChunk->prevChunk = null;
-				}
-			}
-			else
-			{
-				// ALLOCATE
-				smm newChunkSize = buffer->chunkPool->chunkSize;
-				newChunk = (RenderBufferChunk *)allocate(buffer->arena, newChunkSize + sizeof(RenderBufferChunk));
-				newChunk->size = newChunkSize;
-				newChunk->used = 0;
-				newChunk->memory = (u8*)(newChunk + 1);
-
-				// We'd BETTER have space to actually allocate this thing in the chunk!
-				ASSERT(newChunk->size >= totalSizeRequired);
-
-			}
-
-			// Add to the renderbuffer
-			if (buffer->currentChunk == null)
-			{
-				buffer->firstChunk = newChunk;
-				buffer->currentChunk = newChunk;
-
-				newChunk->prevChunk = null;
-				newChunk->nextChunk = null;
-			}
-			else
-			{
-				buffer->currentChunk->nextChunk = newChunk;
-				newChunk->prevChunk = buffer->currentChunk;
-				newChunk->nextChunk = null;
-			}
-
+			buffer->firstChunk = newChunk;
 			buffer->currentChunk = newChunk;
+
+			newChunk->prevChunk = null;
+			newChunk->nextChunk = null;
 		}
+		else
+		{
+			buffer->currentChunk->nextChunk = newChunk;
+			newChunk->prevChunk = buffer->currentChunk;
+			newChunk->nextChunk = null;
+		}
+
+		buffer->currentChunk = newChunk;
 	}
 
 	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;

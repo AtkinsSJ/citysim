@@ -100,23 +100,15 @@ struct DrawRectsGroup
 	Asset *texture;
 };
 
-struct RenderBufferChunk
+struct RenderBufferChunk : PoolItem
 {
 	smm size;
 	smm used;
 	u8 *memory;
 
+	// TODO: @Size: Could potentially re-use the pointers from the PoolItem, if we wanted.
 	RenderBufferChunk *prevChunk;
 	RenderBufferChunk *nextChunk;
-};
-
-struct RenderBufferChunkPool
-{
-	MemoryArena *memoryArena;
-	smm chunkSize;
-
-	smm count;
-	RenderBufferChunk *firstChunk;
 };
 
 struct RenderBuffer
@@ -126,7 +118,7 @@ struct RenderBuffer
 	MemoryArena *arena;
 	RenderBufferChunk *firstChunk;
 	RenderBufferChunk *currentChunk;
-	RenderBufferChunkPool *chunkPool;
+	Pool<RenderBufferChunk> *chunkPool;
 
 	// Transient stuff
 	bool hasRangeReserved;
@@ -150,7 +142,7 @@ struct Renderer
 	RenderBuffer uiBuffer;
 	RenderBuffer debugBuffer;
 
-	RenderBufferChunkPool chunkPool;
+	Pool<RenderBufferChunk> chunkPool;
 
 	// Not convinced this is the best way of doing it, but it's better than what we had before!
 	// Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
@@ -190,7 +182,8 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
 void freeRenderer(Renderer *renderer);
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, RenderBufferChunkPool *chunkPool);
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool);
+RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena);
 void clearRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));

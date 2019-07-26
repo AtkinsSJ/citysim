@@ -35,6 +35,7 @@ struct MemoryArena *globalFrameTempArena;
 #include "types.h"
 #include "array.h"
 #include "memory.h"
+#include "pool.h"
 #include "chunked_array.h"
 #include "linked_list.h"
 #include "string.h"
