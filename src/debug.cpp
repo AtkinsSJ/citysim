@@ -492,14 +492,32 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 	assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
 }
 
-void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName)
+void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName, String renderProfileName)
 {
-	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBufferName, &debugState->renderBufferDataSentinel);
 	u32 frameIndex = debugState->writingFrameIndex;
 
+	if (debugState->currentRenderBuffer != null)
+	{
+		debugEndTrackingRenderBuffer(debugState);
+	}
+
+	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBufferName, &debugState->renderBufferDataSentinel);
+
 	debugState->currentRenderBuffer = renderBufferData;
+	renderBufferData->renderProfileName = renderProfileName;
 	renderBufferData->drawCallCount[frameIndex] = 0;
 	renderBufferData->chunkCount[frameIndex] = 1; // Start at 1 because we're already inside a chunk when this is called
+	renderBufferData->startTime[frameIndex] = SDL_GetPerformanceCounter();
+}
+
+void debugEndTrackingRenderBuffer(DebugState *debugState)
+{
+	u32 frameIndex = debugState->writingFrameIndex;
+
+	debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
+	debugTrackProfile(debugState, debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
+
+	debugState->currentRenderBuffer = null;
 }
 
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn)
@@ -525,4 +543,11 @@ void debugTrackRenderBufferChunk(DebugState *debugState)
 	u32 frameIndex = debugState->writingFrameIndex;
 
 	renderBufferData->chunkCount[frameIndex]++;
+}
+
+void debugTrackProfile(DebugState *debugState, String name, u64 cycleCount, DebugCodeDataTag tag)
+{
+	DebugCodeData *data = debugFindOrAddCodeData(name, tag);
+	data->workingCallCount++;
+	data->workingTotalCycleCount += cycleCount;
 }

@@ -391,7 +391,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 			case RenderItemType_SectionMarker:
 			{
 				RenderItem_SectionMarker *header = readRenderItem<RenderItem_SectionMarker>(renderBufferChunk, &pos);
-				DEBUG_BEGIN_RENDER_BUFFER(header->name);
+				DEBUG_BEGIN_RENDER_BUFFER(header->name, header->renderProfileName);
 			} break;
 
 			case RenderItemType_SetCamera:
@@ -525,6 +525,8 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 	{
 		flushVertices(gl, activeShader, currentTexture);
 	}
+
+	DEBUG_END_RENDER_BUFFER();
 }
 
 Renderer *GL_initializeRenderer(SDL_Window *window)

@@ -152,6 +152,10 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 {
 	buffer->name = pushString(arena, name);
 	hashString(&buffer->name);
+
+	buffer->renderProfileName = pushString(arena, myprintf("render({0})", {buffer->name}));
+	hashString(&buffer->renderProfileName);
+
 	buffer->hasRangeReserved = false;
 
 	buffer->arena = arena; // @Cleanup: Don't need this now we're using the pool?
@@ -168,6 +172,7 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 	// See also below
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
+	bufferStart->renderProfileName = buffer->renderProfileName;
 }
 
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData)
@@ -195,6 +200,7 @@ void clearRenderBuffer(RenderBuffer *buffer)
 	// TODO: @Speed: See above
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
+	bufferStart->renderProfileName = buffer->renderProfileName;
 }
 
 inline void appendRenderItemType(RenderBuffer *buffer, RenderItemType type)

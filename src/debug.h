@@ -25,9 +25,10 @@
 			debugTrackArena(globalDebugState, arena, GLUE(debugArenaName____, __LINE__))
 
 	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
-	#define DEBUG_BEGIN_RENDER_BUFFER(bufferName) debugStartTrackingRenderBuffer(globalDebugState, bufferName)
+	#define DEBUG_BEGIN_RENDER_BUFFER(bufferName, profileName) debugStartTrackingRenderBuffer(globalDebugState, bufferName, profileName)
 	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
 	#define DEBUG_TRACK_RENDER_BUFFER_CHUNK() debugTrackRenderBufferChunk(globalDebugState)
+	#define DEBUG_END_RENDER_BUFFER() debugEndTrackingRenderBuffer(globalDebugState)
 
 #else
 
@@ -41,6 +42,7 @@
 	#define DEBUG_BEGIN_RENDER_BUFFER(...)
 	#define DEBUG_DRAW_CALL(...)
 	#define DEBUG_TRACK_RENDER_BUFFER_CHUNK(...)
+	#define DEBUG_END_RENDER_BUFFER(...)
 #endif
 
 struct DebugState *globalDebugState = 0;
@@ -104,11 +106,14 @@ struct DebugDrawCallData
 struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData>
 {
 	String name;
+	String renderProfileName;
 
-	u64 timeToSort[DEBUG_FRAMES_COUNT];
 	u32 drawCallCount[DEBUG_FRAMES_COUNT];
 	DebugDrawCallData drawCalls[DEBUG_FRAMES_COUNT][DEBUG_DRAW_CALLS_RECORDED_PER_FRAME];
 	u32 chunkCount[DEBUG_FRAMES_COUNT];
+
+	u64 startTime[DEBUG_FRAMES_COUNT];
+	u64 endTime[DEBUG_FRAMES_COUNT];
 };
 
 struct DebugAssetData // Not a linked list because there's only one asset system!
@@ -156,9 +161,11 @@ void updateAndRenderDebugData(DebugState *debugState, struct InputState *inputSt
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
-void debugStartTrackingRenderBuffer(DebugState *debugState, struct String renderBufferName);
+void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName, String renderProfileName);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugTrackRenderBufferChunk(DebugState *debugState);
+void debugEndTrackingRenderBuffer(DebugState *debugState);
+void debugTrackProfile(DebugState *debugState, String name, u64 cycleCount, DebugCodeDataTag tag=DCDT_Misc);
 
 DebugCodeData *debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {

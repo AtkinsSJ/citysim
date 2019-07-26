@@ -42,6 +42,7 @@ enum RenderItemType
 struct RenderItem_SectionMarker
 {
 	String name;
+	String renderProfileName;
 };
 
 struct RenderItem_SetCamera
@@ -121,6 +122,7 @@ struct RenderBufferChunk : PoolItem
 struct RenderBuffer
 {
 	String name;
+	String renderProfileName;
 	
 	MemoryArena *arena;
 	RenderBufferChunk *firstChunk;
