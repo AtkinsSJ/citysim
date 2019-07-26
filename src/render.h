@@ -2,26 +2,23 @@
 
 // General rendering code.
 
-const s32 ITILE_SIZE = 16;
-const f32 TILE_SIZE = ITILE_SIZE;
-const f32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
-const bool canZoom = true;
-
 const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 
 struct Camera
 {
 	V2 pos; // Centre of camera, in camera units
 	V2 size; // Size of camera, in camera units
+	f32 sizeRatio; // Size of window is multiplied by this to produce the camera's size
 	f32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
 	Matrix4 projectionMatrix;
 
+	// NB: We don't use depth anywhere any more, but these do get used in generating the
+	// projection matrix. - Sam, 26/07/2019
 	f32 nearClippingPlane;
 	f32 farClippingPlane;
 
 	V2 mousePos;
 };
-const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 
 enum RenderItemType
 {
@@ -175,19 +172,6 @@ struct Renderer
 	void (*free)(Renderer *);
 };
 
-inline f32 depthFromY(f32 y)
-{
-	return (y * 0.1f);
-}
-inline f32 depthFromY(u32 y)
-{
-	return depthFromY((f32)y);
-}
-inline f32 depthFromY(s32 y)
-{
-	return depthFromY((f32)y);
-}
-
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
 void render(Renderer *renderer);
 void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
@@ -199,7 +183,7 @@ RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData)
 void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer);
 void clearRenderBuffer(RenderBuffer *buffer);
 
-void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
+void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
 

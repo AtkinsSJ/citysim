@@ -11,9 +11,10 @@ void updateCameraMatrix(Camera *camera)
 	);
 }
 
-void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position)
+void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position)
 {
-	camera->size = size;
+	camera->sizeRatio = sizeRatio;
+	camera->size = size * sizeRatio;
 	camera->pos = position;
 	camera->zoom = 1.0f;
 	camera->nearClippingPlane = nearClippingPlane;
@@ -91,9 +92,11 @@ void freeRenderer(Renderer *renderer)
 void onWindowResized(Renderer *renderer, s32 w, s32 h)
 {
 	renderer->windowResized(w, h);
-	renderer->worldCamera.size = v2((f32)w / TILE_SIZE, (f32)h / TILE_SIZE);
+	V2 windowSize = v2(w, h);
 
-	renderer->uiCamera.size = v2(w, h);
+	renderer->worldCamera.size = windowSize * renderer->worldCamera.sizeRatio;
+
+	renderer->uiCamera.size = windowSize * renderer->uiCamera.sizeRatio;
 	renderer->uiCamera.pos = renderer->uiCamera.size * 0.5f;
 }
 

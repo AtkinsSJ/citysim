@@ -218,8 +218,9 @@ int main(int argc, char *argv[])
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;
 	V2 windowSize = v2(inputState.windowSize);
-	initCamera(worldCamera, windowSize * (1.0f/TILE_SIZE), 10000.0f, -10000.0f);
-	initCamera(uiCamera, windowSize, 10000.0f, -10000.0f, windowSize * 0.5f);
+	const f32 TILE_SIZE = 16.0f;
+	initCamera(worldCamera, windowSize, 1.0f/TILE_SIZE, 10000.0f, -10000.0f);
+	initCamera(uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
 	u32 initFinishedTicks = SDL_GetTicks();
 	logInfo("Game initialised in {0} milliseconds.", {formatInt(initFinishedTicks - initStartTicks)});

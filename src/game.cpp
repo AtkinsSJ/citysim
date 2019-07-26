@@ -23,27 +23,27 @@ GameState *initialiseGameState()
 void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 cityWidth, s32 cityHeight)
 { 
 	DEBUG_FUNCTION();
+	
+	const f32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
+	const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 
 	// Zooming
-	if (canZoom)
+	s32 zoomDelta = inputState->wheelY;
+
+	// Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
+	// if (keyJustPressed(inputState, SDLK_PAGEUP))
+	// {
+	// 	zoomDelta++;
+	// }
+	// else if (keyJustPressed(inputState, SDLK_PAGEDOWN))
+	// {
+	// 	zoomDelta--;
+	// }
+
+	if (zoomDelta)
 	{
-		s32 zoomDelta = inputState->wheelY;
-
-		// Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
-		// if (keyJustPressed(inputState, SDLK_PAGEUP))
-		// {
-		// 	zoomDelta++;
-		// }
-		// else if (keyJustPressed(inputState, SDLK_PAGEDOWN))
-		// {
-		// 	zoomDelta--;
-		// }
-
-		if (zoomDelta)
-		{
-			// round()ing the zoom so it doesn't gradually drift due to float imprecision
-			camera->zoom = (f32) clamp(round_f32(10 * camera->zoom + zoomDelta) * 0.1f, 0.1f, 10.0f);
-		}
+		// round()ing the zoom so it doesn't gradually drift due to float imprecision
+		camera->zoom = (f32) clamp(round_f32(10 * camera->zoom + zoomDelta) * 0.1f, 0.1f, 10.0f);
 	}
 
 	// Panning
