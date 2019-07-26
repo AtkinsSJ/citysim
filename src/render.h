@@ -208,6 +208,9 @@ u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 template<typename T>
 T *appendRenderItem(RenderBuffer *buffer, RenderItemType type);
 
+template<typename T>
+T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos);
+
 void addSetCamera(RenderBuffer *buffer, Camera *camera);
 void addSetShader(RenderBuffer *buffer, s8 shaderID);
 void addSetTexture(RenderBuffer *buffer, Asset *texture);

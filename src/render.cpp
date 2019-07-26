@@ -277,6 +277,14 @@ inline T *appendRenderItem(RenderBuffer *buffer, RenderItemType type)
 	return (T*) data;
 }
 
+template<typename T>
+inline T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos)
+{
+	T *item = (T *)(renderBufferChunk->memory + *pos);
+	*pos += sizeof(T);
+	return item;
+}
+
 void addSetCamera(RenderBuffer *buffer, Camera *camera)
 {
 	RenderItem_SetCamera *cameraItem = appendRenderItem<RenderItem_SetCamera>(buffer, RenderItemType_SetCamera);

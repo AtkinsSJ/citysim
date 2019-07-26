@@ -515,7 +515,7 @@ void debugEndTrackingRenderBuffer(DebugState *debugState)
 	u32 frameIndex = debugState->writingFrameIndex;
 
 	debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
-	debugTrackProfile(debugState, debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
+	debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
 
 	debugState->currentRenderBuffer = null;
 }
@@ -545,7 +545,7 @@ void debugTrackRenderBufferChunk(DebugState *debugState)
 	renderBufferData->chunkCount[frameIndex]++;
 }
 
-void debugTrackProfile(DebugState *debugState, String name, u64 cycleCount, DebugCodeDataTag tag)
+void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag)
 {
 	DebugCodeData *data = debugFindOrAddCodeData(name, tag);
 	data->workingCallCount++;

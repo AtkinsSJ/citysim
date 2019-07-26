@@ -165,7 +165,7 @@ void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferN
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugTrackRenderBufferChunk(DebugState *debugState);
 void debugEndTrackingRenderBuffer(DebugState *debugState);
-void debugTrackProfile(DebugState *debugState, String name, u64 cycleCount, DebugCodeDataTag tag=DCDT_Misc);
+void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag=DCDT_Misc);
 
 DebugCodeData *debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {
