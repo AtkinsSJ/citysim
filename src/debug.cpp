@@ -252,10 +252,11 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 			{
 				itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
 			}
-			debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches", {
+			debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)", {
 				renderBufferData->name,
 				formatInt(itemsDrawn),
-				formatInt(drawCallCount)
+				formatInt(drawCallCount),
+				formatInt(renderBufferData->chunkCount[rfi])
 			}));
 			renderBufferData = renderBufferData->nextNode;
 		}
@@ -491,6 +492,16 @@ void debugTrackAssets(DebugState *debugState, AssetManager *assets)
 	assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
 }
 
+void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName)
+{
+	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBufferName, &debugState->renderBufferDataSentinel);
+	u32 frameIndex = debugState->writingFrameIndex;
+
+	debugState->currentRenderBuffer = renderBufferData;
+	renderBufferData->drawCallCount[frameIndex] = 0;
+	renderBufferData->chunkCount[frameIndex] = 1; // Start at 1 because we're already inside a chunk when this is called
+}
+
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn)
 {
 	DebugRenderBufferData *renderBufferData = debugState->currentRenderBuffer;
@@ -507,11 +518,11 @@ void debugTrackDrawCall(DebugState *debugState, String shaderName, String textur
 	}
 }
 
-void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName)
+void debugTrackRenderBufferChunk(DebugState *debugState)
 {
-	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBufferName, &debugState->renderBufferDataSentinel);
+	DebugRenderBufferData *renderBufferData = debugState->currentRenderBuffer;
+
 	u32 frameIndex = debugState->writingFrameIndex;
 
-	debugState->currentRenderBuffer = renderBufferData;
-	renderBufferData->drawCallCount[frameIndex] = 0;
+	renderBufferData->chunkCount[frameIndex]++;
 }

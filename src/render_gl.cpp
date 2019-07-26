@@ -381,6 +381,7 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		{
 			case RenderItemType_NextMemoryChunk:
 			{
+				DEBUG_TRACK_RENDER_BUFFER_CHUNK();
 				renderBufferChunk = renderBufferChunk->nextChunk;
 				pos = 0;
 			} break;
