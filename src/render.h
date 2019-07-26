@@ -33,6 +33,8 @@ enum RenderItemType
 	RenderItemType_SetShader,
 	RenderItemType_SetTexture,
 
+	RenderItemType_Clear,
+
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
 };
@@ -55,6 +57,11 @@ struct RenderItem_SetShader
 struct RenderItem_SetTexture
 {
 	Asset *texture;
+};
+
+struct RenderItem_Clear
+{
+	V4 clearColor;
 };
 
 struct RenderItem_DrawSingleRect
@@ -157,10 +164,10 @@ struct Renderer
 		s8 untextured;
 	} shaderIds;
 
+	// Don't access these directly!
 	void *platformRenderer;
-
 	void (*windowResized)(s32, s32);
-	void (*render)(Renderer *);
+	void (*render)(Renderer *, RenderBufferChunk *);
 	void (*loadAssets)(Renderer *, AssetManager *);
 	void (*unloadAssets)(Renderer *, AssetManager *);
 	void (*free)(Renderer *);
@@ -180,11 +187,14 @@ inline f32 depthFromY(s32 y)
 }
 
 void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
+void render(Renderer *renderer);
 void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
+void rendererUnloadAssets(Renderer *renderer, AssetManager *assets);
 void freeRenderer(Renderer *renderer);
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool);
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
+void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer);
 void clearRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
@@ -199,6 +209,8 @@ T *appendRenderItem(RenderBuffer *buffer, RenderItemType type);
 void addSetCamera(RenderBuffer *buffer, Camera *camera);
 void addSetShader(RenderBuffer *buffer, s8 shaderID);
 void addSetTexture(RenderBuffer *buffer, Asset *texture);
+
+void addClear(RenderBuffer *buffer, V4 clearColor = {});
 
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color);
 void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color);

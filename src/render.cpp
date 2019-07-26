@@ -35,6 +35,39 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        &renderer->chunkPool);
 }
 
+void render(Renderer *renderer)
+{
+	linkRenderBufferToNext(&renderer->worldBuffer, &renderer->worldOverlayBuffer);
+	linkRenderBufferToNext(&renderer->worldOverlayBuffer, &renderer->uiBuffer);
+	linkRenderBufferToNext(&renderer->uiBuffer, &renderer->debugBuffer);
+
+	renderer->render(renderer, renderer->worldBuffer.firstChunk);
+
+	// Return the chunks to the pool
+	// NB: We can't easily shortcut this by just modifying the first/last pointers,
+	// because the nextChunk list is different from the pool's list!
+	// Originally I thought it's simpler to keep them separate, but that's actually making
+	// me more confused.
+	// Anyway, the number of RenderBufferChunks is quite low, so for now this isn't a real bottleneck.
+	// - Sam, 26/07/2019
+	if (renderer->worldBuffer.currentChunk != null)
+	{
+		for (RenderBufferChunk *chunk = renderer->worldBuffer.firstChunk;
+			chunk != null;
+			chunk = chunk->nextChunk)
+		{
+			chunk->used = 0;
+			addItemToPool(chunk, &renderer->chunkPool);
+		}
+	}
+
+	// Individual clean-up
+	clearRenderBuffer(&renderer->worldBuffer);
+	clearRenderBuffer(&renderer->worldOverlayBuffer);
+	clearRenderBuffer(&renderer->uiBuffer);
+	clearRenderBuffer(&renderer->debugBuffer);
+}
+
 void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
 {
 	renderer->loadAssets(renderer, assets);
@@ -43,6 +76,11 @@ void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
 	renderer->shaderIds.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
 	renderer->shaderIds.text       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
 	renderer->shaderIds.untextured = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
+}
+
+void rendererUnloadAssets(Renderer *renderer, AssetManager *assets)
+{
+	renderer->unloadAssets(renderer, assets);
 }
 
 void freeRenderer(Renderer *renderer)
@@ -148,23 +186,36 @@ void clearRenderBuffer(RenderBuffer *buffer)
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
 
-	Pool<RenderBufferChunk> *pool = buffer->chunkPool;
-	while (buffer->currentChunk != null)
+	if (buffer->firstChunk != null)
 	{
-		RenderBufferChunk *lastChunk = buffer->currentChunk;
-		buffer->currentChunk = lastChunk->prevChunk;
-
-		lastChunk->used = 0;
-
-		addItemToPool<RenderBufferChunk>(lastChunk, pool);
+		buffer->firstChunk = null;
+		buffer->currentChunk = null;
 	}
-
-	buffer->firstChunk = null;
-	buffer->currentChunk = null;
 	
 	// TODO: @Speed: See above
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
+}
+
+inline void appendRenderItemType(RenderBuffer *buffer, RenderItemType type)
+{
+	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
+	buffer->currentChunk->used += sizeof(RenderItemType);
+}
+
+void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer)
+{
+	// TODO: @Speed: Could optimise this by skipping empty buffers, so we just jump straight
+	// to the nextBuffer. However, right now every buffer has a chunk in which contains its name,
+	// so currentChunk is never null anyway.
+	// - Sam, 26/07/2019
+	ASSERT(buffer->currentChunk != null);
+	ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
+	appendRenderItemType(buffer, RenderItemType_NextMemoryChunk);
+
+	// Add to the renderbuffer
+	buffer->currentChunk->nextChunk = nextBuffer->firstChunk;
+	nextBuffer->firstChunk->prevChunk = buffer->currentChunk;
 }
 
 // NB: reservedSize is for extra data that you want to make sure there is room for,
@@ -182,11 +233,11 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 		if (buffer->currentChunk != null)
 		{
 			ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
-			*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = RenderItemType_NextMemoryChunk;
-			buffer->currentChunk->used += sizeof(RenderItemType);
+			appendRenderItemType(buffer, RenderItemType_NextMemoryChunk);
 		}
 
 		RenderBufferChunk *newChunk = getItemFromPool(buffer->chunkPool);
+		newChunk->used = 0;
 
 		// Add to the renderbuffer
 		if (buffer->currentChunk == null)
@@ -207,9 +258,7 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 		buffer->currentChunk = newChunk;
 	}
 
-	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
-	buffer->currentChunk->used += sizeof(RenderItemType);
-
+	appendRenderItemType(buffer, type);
 	u8 *result = (buffer->currentChunk->memory + buffer->currentChunk->used);
 	buffer->currentChunk->used += size;
 	return result;
@@ -254,6 +303,12 @@ void addSetTexture(RenderBuffer *buffer, Asset *texture)
 
 		buffer->currentTexture = texture;
 	}
+}
+
+void addClear(RenderBuffer *buffer, V4 clearColor)
+{
+	RenderItem_Clear *clear = appendRenderItem<RenderItem_Clear>(buffer, RenderItemType_Clear);
+	clear->clearColor = clearColor;
 }
 
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color)

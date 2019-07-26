@@ -362,15 +362,17 @@ inline T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos)
 	return item;
 }
 
-static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
+void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
+
+	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	GL_ShaderProgram *activeShader = null;
 	Asset *currentTexture = null;
 	Camera *currentCamera = null;
 
-	RenderBufferChunk *renderBufferChunk = buffer->firstChunk;
+	RenderBufferChunk *renderBufferChunk = firstChunk;
 	smm pos = 0;
 	while ((renderBufferChunk != null) && (pos < renderBufferChunk->used))
 	{
@@ -402,12 +404,12 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			{
 				RenderItem_SetShader *header = readRenderItem<RenderItem_SetShader>(renderBufferChunk, &pos);
 
-				if (renderer->vertexCount > 0)
+				if (gl->vertexCount > 0)
 				{
-					flushVertices(renderer, activeShader, currentTexture);
+					flushVertices(gl, activeShader, currentTexture);
 				}
 
-				activeShader = useShader(renderer, header->shaderID);
+				activeShader = useShader(gl, header->shaderID);
 				glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, currentCamera->projectionMatrix.flat);
 				glUniform1f(activeShader->uScaleLoc, currentCamera->zoom);
 			} break;
@@ -416,13 +418,21 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			{
 				RenderItem_SetTexture *header = readRenderItem<RenderItem_SetTexture>(renderBufferChunk, &pos);
 
-				if (renderer->vertexCount > 0)
+				if (gl->vertexCount > 0)
 				{
-					flushVertices(renderer, activeShader, currentTexture);
+					flushVertices(gl, activeShader, currentTexture);
 				}
 
 				bindTexture(header->texture, activeShader->uTextureLoc, 0);
 				currentTexture = header->texture;
+			} break;
+
+			case RenderItemType_Clear:
+			{
+				RenderItem_Clear *header = readRenderItem<RenderItem_Clear>(renderBufferChunk, &pos);
+
+				glClearColor(header->clearColor.r, header->clearColor.g, header->clearColor.b, header->clearColor.a);
+				glClear(GL_COLOR_BUFFER_BIT);
 			} break;
 
 			case RenderItemType_DrawRects:
@@ -431,40 +441,40 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 
 				for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++)
 				{
-					if (renderer->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+					if (gl->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
 					{
-						flushVertices(renderer, activeShader, currentTexture);
+						flushVertices(gl, activeShader, currentTexture);
 					}
 
 					RenderItem_DrawRects_Item *item = readRenderItem<RenderItem_DrawRects_Item>(renderBufferChunk, &pos);
-					s32 firstVertex = renderer->vertexCount;
-					renderer->vertices[renderer->vertexCount++] = {
+					s32 firstVertex = gl->vertexCount;
+					gl->vertices[gl->vertexCount++] = {
 						v3(item->bounds.x, item->bounds.y, 0.0f),
 						item->color,
 						v2(item->uv.x, item->uv.y)
 					};
-					renderer->vertices[renderer->vertexCount++] = {
+					gl->vertices[gl->vertexCount++] = {
 						v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
 						item->color,
 						v2(item->uv.x + item->uv.w, item->uv.y)
 					};
-					renderer->vertices[renderer->vertexCount++] = {
+					gl->vertices[gl->vertexCount++] = {
 						v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
 						item->color,
 						v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
 					};
-					renderer->vertices[renderer->vertexCount++] = {
+					gl->vertices[gl->vertexCount++] = {
 						v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
 						item->color,
 						v2(item->uv.x, item->uv.y + item->uv.h)
 					};
 
-					renderer->indices[renderer->indexCount++] = firstVertex + 0;
-					renderer->indices[renderer->indexCount++] = firstVertex + 1;
-					renderer->indices[renderer->indexCount++] = firstVertex + 2;
-					renderer->indices[renderer->indexCount++] = firstVertex + 0;
-					renderer->indices[renderer->indexCount++] = firstVertex + 2;
-					renderer->indices[renderer->indexCount++] = firstVertex + 3;
+					gl->indices[gl->indexCount++] = firstVertex + 0;
+					gl->indices[gl->indexCount++] = firstVertex + 1;
+					gl->indices[gl->indexCount++] = firstVertex + 2;
+					gl->indices[gl->indexCount++] = firstVertex + 0;
+					gl->indices[gl->indexCount++] = firstVertex + 2;
+					gl->indices[gl->indexCount++] = firstVertex + 3;
 				}
 			} break;
 
@@ -472,38 +482,38 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 			{
 				RenderItem_DrawSingleRect *item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
-				s32 firstVertex = renderer->vertexCount;
-				renderer->vertices[renderer->vertexCount++] = {
+				s32 firstVertex = gl->vertexCount;
+				gl->vertices[gl->vertexCount++] = {
 					v3(item->bounds.x, item->bounds.y, 0.0f),
 					item->color,
 					v2(item->uv.x, item->uv.y)
 				};
-				renderer->vertices[renderer->vertexCount++] = {
+				gl->vertices[gl->vertexCount++] = {
 					v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
 					item->color,
 					v2(item->uv.x + item->uv.w, item->uv.y)
 				};
-				renderer->vertices[renderer->vertexCount++] = {
+				gl->vertices[gl->vertexCount++] = {
 					v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
 					item->color,
 					v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
 				};
-				renderer->vertices[renderer->vertexCount++] = {
+				gl->vertices[gl->vertexCount++] = {
 					v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
 					item->color,
 					v2(item->uv.x, item->uv.y + item->uv.h)
 				};
 
-				renderer->indices[renderer->indexCount++] = firstVertex + 0;
-				renderer->indices[renderer->indexCount++] = firstVertex + 1;
-				renderer->indices[renderer->indexCount++] = firstVertex + 2;
-				renderer->indices[renderer->indexCount++] = firstVertex + 0;
-				renderer->indices[renderer->indexCount++] = firstVertex + 2;
-				renderer->indices[renderer->indexCount++] = firstVertex + 3;
+				gl->indices[gl->indexCount++] = firstVertex + 0;
+				gl->indices[gl->indexCount++] = firstVertex + 1;
+				gl->indices[gl->indexCount++] = firstVertex + 2;
+				gl->indices[gl->indexCount++] = firstVertex + 0;
+				gl->indices[gl->indexCount++] = firstVertex + 2;
+				gl->indices[gl->indexCount++] = firstVertex + 3;
 
-				if (renderer->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+				if (gl->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
 				{
-					flushVertices(renderer, activeShader, currentTexture);
+					flushVertices(gl, activeShader, currentTexture);
 				}
 			} break;
 
@@ -511,38 +521,9 @@ static void renderBuffer(GL_Renderer *renderer, RenderBuffer *buffer)
 		}
 	}
 
-	if (renderer->vertexCount > 0)
+	if (gl->vertexCount > 0)
 	{
-		flushVertices(renderer, activeShader, currentTexture);
-	}
-
-	// Clear it!
-	clearRenderBuffer(buffer);
-}
-
-static void GL_render(Renderer *renderer)
-{
-	DEBUG_FUNCTION_T(DCDT_Renderer);
-
-	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
-
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	{
-		DEBUG_BLOCK_T("renderBuffer(world)", DCDT_Renderer);
-		renderBuffer(gl, &renderer->worldBuffer);
-	}
-	{
-		DEBUG_BLOCK_T("renderBuffer(worldOverlay)", DCDT_Renderer);
-		renderBuffer(gl, &renderer->worldOverlayBuffer);
-	}
-	{
-		DEBUG_BLOCK_T("renderBuffer(ui)", DCDT_Renderer);
-		renderBuffer(gl, &renderer->uiBuffer);
-	}
-	{
-		DEBUG_BLOCK_T("renderBuffer(debug)", DCDT_Renderer);
-		renderBuffer(gl, &renderer->debugBuffer);
+		flushVertices(gl, activeShader, currentTexture);
 	}
 }
 
@@ -624,8 +605,6 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			glEnable(GL_TEXTURE_2D);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 			glGenBuffers(1, &gl->VBO);
 			glBindBuffer(GL_ARRAY_BUFFER, gl->VBO);

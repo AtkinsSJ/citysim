@@ -256,11 +256,9 @@ int main(int argc, char *argv[])
 			worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 			uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
-			// TODO: Won't need to set these twice once we have combined render buffers!
 			addSetCamera(&renderer->worldBuffer, worldCamera);
-			addSetCamera(&renderer->worldOverlayBuffer, worldCamera);
+			addClear(&renderer->worldBuffer);
 			addSetCamera(&renderer->uiBuffer, uiCamera);
-			addSetCamera(&renderer->debugBuffer, uiCamera);
 
 			updateAndRender(appState, &inputState, renderer, assets);
 
@@ -287,7 +285,7 @@ int main(int argc, char *argv[])
 			}
 
 			// Actually draw things!
-			renderer->render(renderer);
+			render(renderer);
 
 			resetMemoryArena(&appState->globalTempArena);
 		}
