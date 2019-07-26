@@ -38,7 +38,7 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 
 bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 {
-	DEBUG_FUNCTION_T(DCDT_Debugging);
+	DEBUG_FUNCTION_T(DCDT_Highlight);
 
 	// Ignore tiles that are already this zone!
 	if (getZoneAt(city, x, y) == zoneType) return false;
@@ -53,7 +53,7 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 
 s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 {
-	DEBUG_FUNCTION_T(DCDT_Debugging);
+	DEBUG_FUNCTION_T(DCDT_Highlight);
 
 	ZoneLayer *zoneLayer = &city->zoneLayer;
 

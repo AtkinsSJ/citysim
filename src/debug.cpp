@@ -23,7 +23,7 @@ void debugInit()
 
 void processDebugData(DebugState *debugState)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Debug);
 	
 	u32 oldWritingFrameIndex = debugState->writingFrameIndex;
 	debugState->frameEndCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
@@ -195,6 +195,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 
 void renderDebugData(DebugState *debugState, Renderer *renderer)
 {
+	DEBUG_FUNCTION_T(DCDT_Debug);
 	BitmapFont *font = getFont(globalAppState.assets, makeString("debug"));
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
@@ -336,6 +337,7 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 
 void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, Renderer *renderer)
 {
+	DEBUG_FUNCTION_T(DCDT_Debug);
 	if (keyJustPressed(inputState, SDLK_F2))
 	{
 		debugState->showDebugData = !debugState->showDebugData;

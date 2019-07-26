@@ -15,7 +15,6 @@ Notes for searching:
 ------------------------------------------------
 
 Renderer optimisation!
-- Break _alignText() into a more general "get offset for alignment" function
 - We deal with grids a lot, some kind of sped-up thing for that would be good,
 	either as "define a grid and then the colours of the cells" or "here is a mesh with a bunch of vertices". The latter is more general (and works for terrain!) but the former is simpler. Maybe both though!
 - Set up a texture mesh per chunk!
