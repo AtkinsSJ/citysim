@@ -695,7 +695,9 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			case ActionMode_Zone:
 			{
 				DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
-				s32 zoneCost = calculateZoneCost(city, gameState->selectedZoneID, dragResult.dragRect);
+
+				CanZoneQuery *canZoneQuery = queryCanZoneTiles(city, gameState->selectedZoneID, dragResult.dragRect);
+				s32 zoneCost = calculateZoneCost(canZoneQuery);
 
 				switch (dragResult.operation)
 				{
@@ -711,23 +713,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					case DragResult_ShowPreview:
 					{
 						if (!mouseIsOverUI) showCostTooltip(uiState, zoneCost);
-
 						if (canAfford(city, zoneCost))
 						{
-							//
-							// TODO: @Speed We're redundantly doing a canZoneTile() check for the entire area, when we
-							// already did the EXACT SAME CHECK to calculate the zone cost! It seems silly that we're
-							// doing all that twice.
-							//
-							// Maybe we could return an array of can/can't zone for each tile, and then iterate that twice?
-							// Or just calculate the cost as we go through this loop and then throwing out the previously-drawn
-							// rectangles if it becomes too expensive... we'd still need to go on to fully calculate the
-							// cost so we can show it to the player though.
-							//
-							// I guess the same could work for placing buildings too.
-							//
-							// - Sam, 21/06/2019
-							//
 							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
 							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
 							DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(dragResult.dragRect));
@@ -737,7 +724,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 								for (s32 x = dragResult.dragRect.x; x < dragResult.dragRect.x+dragResult.dragRect.w; x++)
 								{
 									zoneRect.x = (f32) x;
-									if (canZoneTile(city, gameState->selectedZoneID, x, y))
+									if (canZoneTile(canZoneQuery, x, y))
 									{
 										addUntexturedRect(rectsGroup, zoneRect, zoneColor);
 									}

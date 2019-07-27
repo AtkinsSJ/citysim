@@ -51,6 +51,102 @@ bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y)
 	return true;
 }
 
+inline s32 calculateZoneCost(CanZoneQuery *query)
+{
+	return query->zoneableTilesCount * query->zoneDef->costPerTile;
+}
+
+CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
+{
+	DEBUG_FUNCTION_T(DCDT_Highlight);
+	// Assumption made: `bounds` is a valid rectangle within the city's bounds
+
+	// Allocate the Query struct
+	CanZoneQuery *query = null;
+	s32 tileCount = areaOf(bounds);
+	smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
+	u8 *memory = (u8*) allocate(globalFrameTempArena, structSize);
+	query = (CanZoneQuery *) memory;
+	query->tileCanBeZoned = (bool *) (memory + sizeof(CanZoneQuery));
+	query->bounds = bounds;
+	query->zoneDef = &zoneDefs[zoneType];
+
+	// Actually do the calculation
+
+	// For now, you can only zone free tiles, where there are no buildings or obstructions.
+	// You CAN zone over other zones though. Just, not if something has already grown in that
+	// zone tile.
+	// At some point we'll probably want to change this, because my least-favourite thing
+	// about SC3K is that clearing a built-up zone means demolishing the buildings then quickly
+	// switching to the de-zone tool before something else pops up in the free space!
+	// - Sam, 13/12/2018
+
+	ZoneLayer *zoneLayer = &city->zoneLayer;
+	Rect2I sectorsCovered = getSectorsCovered(&zoneLayer->sectors, bounds);
+	for (s32 sY = sectorsCovered.y;
+		sY < sectorsCovered.y + sectorsCovered.h;
+		sY++)
+	{
+		for (s32 sX = sectorsCovered.x;
+			sX < sectorsCovered.x + sectorsCovered.w;
+			sX++)
+		{
+			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
+			Rect2I relArea = intersectRelative(sector->bounds, bounds);
+
+			for (s32 relY=relArea.y;
+				relY < relArea.y + relArea.h;
+				relY++)
+			{
+				for (s32 relX=relArea.x;
+					relX < relArea.x + relArea.w;
+					relX++)
+				{
+					// Global pos
+					s32 x = sector->bounds.x + relX;
+					s32 y = sector->bounds.y + relY;
+
+					bool canZone = true;
+
+					// Ignore tiles that are already this zone!
+					if (*getSectorTile(sector, sector->tileZone, relX, relY) == zoneType)
+					{
+						canZone = false;
+					}
+					// Terrain must be buildable
+					// @Speed: URGH this terrain lookup for every tile is nasty!
+					else if (!get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)
+					{
+						canZone = false;
+					}
+					// Tile must be empty
+					else if (buildingExistsAtPosition(city, x, y))
+					{
+						canZone = false;
+					}
+
+					// Pos relative to our query
+					s32 qX = x - bounds.x;
+					s32 qY = y - bounds.y;
+					query->tileCanBeZoned[(qY * bounds.w) + qX] = canZone;
+					if (canZone) query->zoneableTilesCount++;
+				}
+			}
+		}
+	}
+
+	return query;
+}
+
+inline bool canZoneTile(CanZoneQuery *query, s32 x, s32 y)
+{
+	ASSERT(contains(query->bounds, x, y));
+	s32 qX = x - query->bounds.x;
+	s32 qY = y - query->bounds.y;
+
+	return query->tileCanBeZoned[(qY * query->bounds.w) + qX];
+}
+
 s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area)
 {
 	DEBUG_FUNCTION_T(DCDT_Highlight);
@@ -281,7 +377,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 	}
 }
 
-static bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
+bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 {
 	DEBUG_FUNCTION();
 	

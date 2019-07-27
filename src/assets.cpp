@@ -617,8 +617,6 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 	return result;
 }
 
-#define LOCAL(str) getText(globalAppState.assets, makeString(str))
-
 inline String getText(AssetManager *assets, String name)
 {
 	DEBUG_FUNCTION();

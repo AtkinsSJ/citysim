@@ -62,11 +62,29 @@ struct ZoneLayer
 	s32 sectorsWithEmptyIndZonesCount;
 };
 
+struct CanZoneQuery
+{
+	Rect2I bounds;
+	ZoneDef *zoneDef;
+
+	s32 zoneableTilesCount;
+	bool *tileCanBeZoned;
+};
+
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
 void updateZoneLayer(City *city, ZoneLayer *layer);
+
+bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y);
+CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds);
+bool canZoneTile(CanZoneQuery *query, s32 x, s32 y);
+s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area);
+s32 calculateZoneCost(CanZoneQuery *query);
 
 void placeZone(City *city, ZoneType zoneType, Rect2I area);
 void markZonesAsEmpty(City *city, Rect2I footprint);
 ZoneType getZoneAt(City *city, s32 x, s32 y);
 
 void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 shaderID);
+
+void growSomeZoneBuildings(City *city);
+bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y);
