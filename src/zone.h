@@ -74,10 +74,8 @@ struct CanZoneQuery
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
 void updateZoneLayer(City *city, ZoneLayer *layer);
 
-bool canZoneTile(City *city, ZoneType zoneType, s32 x, s32 y);
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds);
 bool canZoneTile(CanZoneQuery *query, s32 x, s32 y);
-s32 calculateZoneCost(City *city, ZoneType zoneType, Rect2I area);
 s32 calculateZoneCost(CanZoneQuery *query);
 
 void placeZone(City *city, ZoneType zoneType, Rect2I area);

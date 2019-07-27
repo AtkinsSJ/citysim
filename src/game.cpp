@@ -713,11 +713,15 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					case DragResult_ShowPreview:
 					{
 						if (!mouseIsOverUI) showCostTooltip(uiState, zoneCost);
-						if (canAfford(city, zoneCost))
+						if (canZoneQuery->zoneableTilesCount == 0)
+						{
+							// Nothing to draw!
+						}
+						else if (canAfford(city, zoneCost))
 						{
 							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
 							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
-							DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(dragResult.dragRect));
+							DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, canZoneQuery->zoneableTilesCount);
 							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
 							{
 								zoneRect.y = (f32) y;
