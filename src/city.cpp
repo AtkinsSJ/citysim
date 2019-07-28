@@ -10,6 +10,8 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->width = width;
 	city->height = height;
 
+	city->terrain = allocateArray<Terrain>(gameArena, width * height);
+
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,  8);
 
@@ -18,7 +20,6 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	{
 		CitySector *sector = city->sectors.sectors + sectorIndex;
 
-		sector->terrain       = allocateArray<Terrain>        (gameArena, areaOf(sector->bounds));
 		sector->tileBuilding  = allocateArray<TileBuildingRef>(gameArena, areaOf(sector->bounds));
 		sector->tilePathGroup = allocateArray<s32>            (gameArena, areaOf(sector->bounds));
 
@@ -116,6 +117,18 @@ inline bool tileExists(City *city, s32 x, s32 y)
 {
 	return (x >= 0) && (x < city->width)
 		&& (y >= 0) && (y < city->height);
+}
+
+template<typename T>
+inline T *getTile(City *city, T *tiles, s32 x, s32 y)
+{
+	return tiles + ((y * city->width) + x);
+}
+
+template<typename T>
+inline void setTile(City *city, T *tiles, s32 x, s32 y, T value)
+{
+	tiles[(y * city->width) + x] = value;
 }
 
 inline bool canAfford(City *city, s32 cost)
@@ -287,33 +300,19 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	s32 total = 0;
 
 	// Terrain demolition cost
-	Rect2I sectorsArea = getSectorsCovered(&city->sectors, area);
-	for (s32 sY = sectorsArea.y;
-		sY < sectorsArea.y + sectorsArea.h;
-		sY++)
+	for (s32 y=area.y;
+		y < area.y + area.h;
+		y++)
 	{
-		for (s32 sX = sectorsArea.x;
-			sX < sectorsArea.x + sectorsArea.w;
-			sX++)
+		for (s32 x=area.x;
+			x < area.x + area.w;
+			x++)
 		{
-			CitySector *sector = getSector(&city->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(sector->bounds, area);
+			TerrainDef *tDef = get(&terrainDefs, getTile(city, city->terrain, x, y)->type);
 
-			for (s32 y=relArea.y;
-				y < relArea.y + relArea.h;
-				y++)
+			if (tDef->canDemolish)
 			{
-				for (s32 x=relArea.x;
-					x < relArea.x + relArea.w;
-					x++)
-				{
-					TerrainDef *tDef = get(&terrainDefs, getSectorTile(sector, sector->terrain, x, y)->type);
-
-					if (tDef->canDemolish)
-					{
-						total += tDef->demolishCost;
-					}
-				}
+				total += tDef->demolishCost;
 			}
 		}
 	}
@@ -336,39 +335,24 @@ void demolishRect(City *city, Rect2I area)
 	// NB: We assume that we've already checked we can afford this!
 
 	// Terrain demolition
+	// TODO: @Cleanup: Terrain shouldn't be demolishable, I think!
 	{
-		// TODO: @Cleanup Probably we want to specify what terrain something becomes per-terrain-type,
-		// and maybe link it directly instead of by name?
 		s32 groundTerrainType = findTerrainTypeByName(makeString("Ground"));
 
-		Rect2I sectorsArea = getSectorsCovered(&city->sectors, area);
-		for (s32 sY = sectorsArea.y;
-			sY < sectorsArea.y + sectorsArea.h;
-			sY++)
+		for (s32 y=area.y;
+			y < area.y + area.h;
+			y++)
 		{
-			for (s32 sX = sectorsArea.x;
-				sX < sectorsArea.x + sectorsArea.w;
-				sX++)
+			for (s32 x=area.x;
+				x < area.x + area.w;
+				x++)
 			{
-				CitySector *sector = getSector(&city->sectors, sX, sY);
-				Rect2I relArea = intersectRelative(sector->bounds, area);
+				Terrain *terrain = getTile(city, city->terrain, x, y);
+				TerrainDef *tDef = get(&terrainDefs, terrain->type);
 
-				for (s32 y=relArea.y;
-					y < relArea.y + relArea.h;
-					y++)
+				if (tDef->canDemolish)
 				{
-					for (s32 x=relArea.x;
-						x < relArea.x + relArea.w;
-						x++)
-					{
-						Terrain *terrain = getSectorTile(sector, sector->terrain, x, y);
-						TerrainDef *tDef = get(&terrainDefs, terrain->type);
-
-						if (tDef->canDemolish)
-						{
-							terrain->type = groundTerrainType;
-						}
-					}
+					terrain->type = groundTerrainType;
 				}
 			}
 		}
@@ -623,17 +607,21 @@ s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
 {
 	Terrain *result = &invalidTerrain;
-	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
-
-	if (sector != null)
+	if (tileExists(city, x, y))
 	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
-
-		return getSectorTile(sector, sector->terrain, relX, relY);
+		result = getTile(city, city->terrain, x, y);
 	}
 
 	return result;
+}
+
+void drawCity(City *city, Renderer *renderer, Rect2I visibleTileBounds, Rect2I demolitionRect)
+{
+	drawTerrain(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt);
+
+	drawZones(city, renderer, visibleTileBounds, renderer->shaderIds.untextured);
+
+	drawBuildings(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
 }
 
 void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID)
@@ -650,41 +638,28 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID
 	Asset *terrainTexture = getSprite(get(&terrainDefs, 1)->sprites, 0)->texture;
 	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
 
-	Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleArea);
-	for (s32 sY = visibleSectors.y;
-		sY < visibleSectors.y + visibleSectors.h;
-		sY++)
+	for (s32 y=visibleArea.y;
+		y < visibleArea.y + visibleArea.h;
+		y++)
 	{
-		for (s32 sX = visibleSectors.x;
-			sX < visibleSectors.x + visibleSectors.w;
-			sX++)
+		spriteBounds.y = (f32) y;
+
+		for (s32 x=visibleArea.x;
+			x < visibleArea.x + visibleArea.w;
+			x++)
 		{
-			CitySector *sector = getSector(&city->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(sector->bounds, visibleArea);
-			for (s32 relY=relArea.y;
-				relY < relArea.y + relArea.h;
-				relY++)
+			Terrain *terrain = getTile(city, city->terrain, x, y);
+
+			if (terrain->type != terrainType)
 			{
-				spriteBounds.y = (f32)(sector->bounds.y + relY);
-
-				for (s32 relX=relArea.x;
-					relX < relArea.x + relArea.w;
-					relX++)
-				{
-					Terrain *terrain = getSectorTile(sector, sector->terrain, relX, relY);
-
-					if (terrain->type != terrainType)
-					{
-						terrainType = terrain->type;
-						terrainSprites = get(&terrainDefs, terrainType)->sprites;
-					}
-
-					Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
-					spriteBounds.x = (f32)(sector->bounds.x + relX);
-
-					addSpriteRect(group, sprite, spriteBounds, terrainColor);
-				}
+				terrainType = terrain->type;
+				terrainSprites = get(&terrainDefs, terrainType)->sprites;
 			}
+
+			Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
+			spriteBounds.x = (f32) x;
+
+			addSpriteRect(group, sprite, spriteBounds, terrainColor);
 		}
 	}
 	endRectsGroup(group);

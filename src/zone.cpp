@@ -9,28 +9,25 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 	zoneLayer->sectorsWithIndZonesCount      = 0;
 	zoneLayer->sectorsWithEmptyIndZonesCount = 0;
 
+	zoneLayer->width = city->width;
+	zoneLayer->height = city->height;
+	zoneLayer->tileZone = allocateArray<ZoneType>(gameArena, city->width * city->height);
+
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < zoneLayer->sectors.count; sectorIndex++)
 	{
 		ZoneSector *sector = zoneLayer->sectors.sectors + sectorIndex;
 
 		sector->zoneSectorFlags = 0;
-
-		sector->tileZone = allocateArray<ZoneType>(gameArena, areaOf(sector->bounds));
 	}
 }
 
 inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 {
 	ZoneType result = Zone_None;
-	ZoneSector *sector = getSectorAtTilePos(&city->zoneLayer.sectors, x, y);
-
-	if (sector != null)
+	if (tileExists(city, x, y))
 	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
-
-		result = *getSectorTile(sector, sector->tileZone, relX, relY);
+		result = *getTile(city, city->zoneLayer.tileZone, x, y);
 	}
 
 	return result;
@@ -66,57 +63,38 @@ CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
 	// switching to the de-zone tool before something else pops up in the free space!
 	// - Sam, 13/12/2018
 
-	ZoneLayer *zoneLayer = &city->zoneLayer;
-	Rect2I sectorsCovered = getSectorsCovered(&zoneLayer->sectors, bounds);
-	for (s32 sY = sectorsCovered.y;
-		sY < sectorsCovered.y + sectorsCovered.h;
-		sY++)
+	for (s32 y = bounds.y;
+		y < bounds.y + bounds.h;
+		y++)
 	{
-		for (s32 sX = sectorsCovered.x;
-			sX < sectorsCovered.x + sectorsCovered.w;
-			sX++)
+		for (s32 x = bounds.x;
+			x < bounds.x + bounds.w;
+			x++)
 		{
-			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(sector->bounds, bounds);
+			bool canZone = true;
 
-			for (s32 relY=relArea.y;
-				relY < relArea.y + relArea.h;
-				relY++)
+			// Ignore tiles that are already this zone!
+			if (getZoneAt(city, x, y) == zoneType)
 			{
-				for (s32 relX=relArea.x;
-					relX < relArea.x + relArea.w;
-					relX++)
-				{
-					// Global pos
-					s32 x = sector->bounds.x + relX;
-					s32 y = sector->bounds.y + relY;
-
-					bool canZone = true;
-
-					// Ignore tiles that are already this zone!
-					if (*getSectorTile(sector, sector->tileZone, relX, relY) == zoneType)
-					{
-						canZone = false;
-					}
-					// Terrain must be buildable
-					// @Speed: URGH this terrain lookup for every tile is nasty!
-					else if (!get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)
-					{
-						canZone = false;
-					}
-					// Tile must be empty
-					else if (buildingExistsAtPosition(city, x, y))
-					{
-						canZone = false;
-					}
-
-					// Pos relative to our query
-					s32 qX = x - bounds.x;
-					s32 qY = y - bounds.y;
-					query->tileCanBeZoned[(qY * bounds.w) + qX] = canZone ? 1 : 0;
-					if (canZone) query->zoneableTilesCount++;
-				}
+				canZone = false;
 			}
+			// Terrain must be buildable
+			// @Speed: URGH this terrain lookup for every tile is nasty!
+			else if (!get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)
+			{
+				canZone = false;
+			}
+			// Tile must be empty
+			else if (buildingExistsAtPosition(city, x, y))
+			{
+				canZone = false;
+			}
+
+			// Pos relative to our query
+			s32 qX = x - bounds.x;
+			s32 qY = y - bounds.y;
+			query->tileCanBeZoned[(qY * bounds.w) + qX] = canZone ? 1 : 0;
+			if (canZone) query->zoneableTilesCount++;
 		}
 	}
 
@@ -132,7 +110,7 @@ inline bool canZoneTile(CanZoneQuery *query, s32 x, s32 y)
 	return query->tileCanBeZoned[(qY * query->bounds.w) + qX] != 0;
 }
 
-void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 shaderID)
+void drawZones(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
@@ -144,42 +122,27 @@ void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
 	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldBuffer, shaderID, areaOf(visibleArea));
 
-	Rect2I visibleSectors = getSectorsCovered(&zoneLayer->sectors, visibleArea);
-	for (s32 sY = visibleSectors.y;
-		sY < visibleSectors.y + visibleSectors.h;
-		sY++)
+	for (s32 y = visibleArea.y;
+		y < visibleArea.y + visibleArea.h;
+		y++)
 	{
-		for (s32 sX = visibleSectors.x;
-			sX < visibleSectors.x + visibleSectors.w;
-			sX++)
+		spriteBounds.y = (f32) y;
+		for (s32 x = visibleArea.x;
+			x < visibleArea.x + visibleArea.w;
+			x++)
 		{
-			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
-
-			Rect2I relArea = intersectRelative(sector->bounds, visibleArea);
-			for (s32 relY=relArea.y;
-				relY < relArea.y + relArea.h;
-				relY++)
+			ZoneType zone = getZoneAt(city, x, y);
+			if (zone != Zone_None)
 			{
-				spriteBounds.y = (f32)(sector->bounds.y + relY);
-
-				for (s32 relX=relArea.x;
-					relX < relArea.x + relArea.w;
-					relX++)
+				if (zone != zoneType)
 				{
-					ZoneType zone = *getSectorTile(sector, sector->tileZone, relX, relY);
-					if (zone != Zone_None)
-					{
-						if (zone != zoneType)
-						{
-							zoneType = zone;
-							zoneColor = zoneDefs[zoneType].color;
-						}
-
-						spriteBounds.x = (f32)(sector->bounds.x + relX);
-
-						addUntexturedRect(group, spriteBounds, zoneColor);
-					}
+					zoneType = zone;
+					zoneColor = zoneDefs[zoneType].color;
 				}
+
+				spriteBounds.x = (f32) x;
+
+				addUntexturedRect(group, spriteBounds, zoneColor);
 			}
 		}
 	}
@@ -193,40 +156,22 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 
 	ZoneLayer *zoneLayer = &city->zoneLayer;
 
-	Rect2I sectorsCovered = getSectorsCovered(&zoneLayer->sectors, area);
-	for (s32 sY = sectorsCovered.y;
-		sY < sectorsCovered.y + sectorsCovered.h;
-		sY++)
+	for (s32 y = area.y;
+		y < area.y + area.h;
+		y++)
 	{
-		for (s32 sX = sectorsCovered.x;
-			sX < sectorsCovered.x + sectorsCovered.w;
-			sX++)
+		for (s32 x = area.x;
+			x < area.x + area.w;
+			x++)
 		{
-			ZoneSector *sector = getSector(&zoneLayer->sectors, sX, sY);
-			Rect2I relArea = intersectRelative(sector->bounds, area);
-
-			for (s32 relY=relArea.y;
-				relY < relArea.y + relArea.h;
-				relY++)
+			// Ignore tiles that are already this zone!
+			if ((*getTile(city, zoneLayer->tileZone, x, y) != zoneType)
+			// Terrain must be buildable
+			// @Speed: URGH this terrain lookup for every tile is nasty!
+			&& (get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)
+			&& (!buildingExistsAtPosition(city, x, y)))
 			{
-				for (s32 relX=relArea.x;
-					relX < relArea.x + relArea.w;
-					relX++)
-				{
-					// Ignore tiles that are already this zone!
-					if (*getSectorTile(sector, sector->tileZone, relX, relY) != zoneType)
-					{
-						s32 x = sector->bounds.x + relX;
-						s32 y = sector->bounds.y + relY;
-						
-						// Tile must be buildable and empty
-						TerrainDef *tDef = get(&terrainDefs, getTerrainAt(city, x, y)->type);
-						if (tDef->canBuildOn && !buildingExistsAtPosition(city, x, y))
-						{
-							setSectorTile(sector, sector->tileZone, relX, relY, zoneType);
-						}
-					}
-				}
+				setTile(city, zoneLayer->tileZone, x, y, zoneType);
 			}
 		}
 	}
@@ -267,7 +212,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 		{
 			for (s32 relX=0; relX < sector->bounds.w; relX++)
 			{
-				ZoneType zone = *getSectorTile(sector, sector->tileZone, relX, relY);
+				ZoneType zone = getZoneAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
 				if (zone == Zone_None) continue;
 
 				bool isFilled = buildingExistsAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);

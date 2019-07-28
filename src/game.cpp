@@ -802,11 +802,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	);
 	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 
-	drawTerrain(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt);
-
-	drawZones(&city->zoneLayer, renderer, visibleTileBounds, renderer->shaderIds.untextured);
-
-	drawBuildings(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
+	drawCity(city, renderer, visibleTileBounds, demolitionRect);
 
 	// Data layer rendering
 	if (gameState->dataLayerToDraw)
@@ -863,53 +859,6 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 			}
 		}
 	}
-
-#if 0
-	{
-		// Draw sector
-		#if 0
-		for (s32 y = 0; y < city->sectorsY; y++)
-		{
-			for (s32 x = 0; x < city->sectorsX; x++)
-			{
-				CitySector *sector = city->sectors + (city->sectorsX * y) + x;
-
-				V4 color;
-				if ((x + y) % 2 == 1)
-				{
-					color = color255(  0,   0, 255, 63);
-				}
-				else
-				{
-					color = color255(255,   0,   0, 63);
-				}
-
-				drawRect(&renderer->worldBuffer, rect2(sector->bounds), 9999.0f, renderer->shaderIds.untextured, color);
-			}
-		}
-		#endif
-
-		CitySector *cursorSector = getSectorAtTilePos(city, mouseTilePos.x, mouseTilePos.y);
-		if (cursorSector != null)
-		{
-			drawRect(&renderer->worldBuffer, rect2(cursorSector->bounds), 9999.0f, renderer->shaderIds.untextured, color255(255, 255, 255, 63));
-
-			// Draw PowerGroup boundaries
-			// for (auto itPG = iterate(&cursorSector->powerGroups); !itPG.isDone; next(&itPG))
-			// {
-			// 	PowerGroup *pg = get(itPG);
-			// 	V4 color = genericDataLayerColors[getIndex(itPG) % genericDataLayerColorCount];
-
-			// 	for (auto itBoundary = iterate(&pg->sectorBoundaries); !itBoundary.isDone; next(&itBoundary))
-			// 	{
-			// 		Rect2I bounds = getValue(itBoundary);
-
-			// 		drawRect(&renderer->worldBuffer, rect2(bounds), 9999.0f, renderer->shaderIds.untextured, color);
-			// 	}
-			// }
-		}
-	}
-#endif
 
 	if (gameState->status == GameStatus_Quit)
 	{

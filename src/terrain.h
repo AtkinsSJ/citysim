@@ -8,6 +8,8 @@ struct TerrainDef
 	SpriteGroup *sprites;
 
 	bool canBuildOn;
+
+	// TODO: @Cleanup: Remove terrain demolition, and just use buildings for things that can be demolished!
 	bool canDemolish;
 	s32 demolishCost;
 };

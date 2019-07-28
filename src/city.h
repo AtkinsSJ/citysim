@@ -31,7 +31,6 @@ struct CitySector
 {
 	Rect2I bounds;
 
-	Terrain         *terrain;
 	TileBuildingRef *tileBuilding;
 	s32             *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
 
@@ -49,6 +48,7 @@ struct City
 	s32 monthlyExpenditure;
 
 	s32 width, height;
+	Terrain *terrain;
 	SectorGrid<CitySector> sectors;
 
 	PathLayer pathLayer;
@@ -73,6 +73,7 @@ struct City
 // Public API
 //
 void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds);
+void drawCity(City *city, Renderer *renderer, Rect2I visibleTileBounds, Rect2I demolitionRect);
 
 void calculateDemand(City *city);
 
@@ -81,6 +82,11 @@ void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID
 Terrain *getTerrainAt(City *city, s32 x, s32 y);
 
 bool tileExists(City *city, s32 x, s32 y);
+template<typename T>
+T *getTile(City *city, T *tiles, s32 x, s32 y);
+template<typename T>
+void setTile(City *city, T *tiles, s32 x, s32 y, T value);
+
 bool canAfford(City *city, s32 cost);
 void spend(City *city, s32 cost);
 

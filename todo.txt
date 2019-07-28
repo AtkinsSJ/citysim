@@ -43,6 +43,15 @@ BuildingCatalogue:
 - Store which menu a building is in, in a queryable way
 
 SECTORS:
+- After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)
+	- Sectors are supposed to *speed up* things, not slow them down!
+	- Good uses:
+		- Power network information
+		- Querying buildings in an area (I think? It's still a bit unwieldy, but I don't know a better way of avoiding hitting the same building multiple times.)
+		- The ZoneSectorFlags and similar, for recording metadata about an area, for faster checking
+		- Statistics maybe
+	- Stick to flat arrays instead:
+		- Terrain, Zones, and any other kind of per-tile data that doesn't need to be dealt with in aggregate.
 ✔ OK, new plan: Rather than have Sectors contain everything, it's easier to reason about things if we split everything into Layers like we already were doing, and then individual layers can organise their data into sectors or however they want, and their sectors can be different sizes or whatever. This means we can pick and choose where sectors do or don't make the most sense, and stick to a simpler flat 2D where we can.
 	- I do think we want a standard set of tools for dealing with sector data, because connectivity and stuff is going to be similar in several cases.
 ✔ Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index. OR, we could union{} it maybe?

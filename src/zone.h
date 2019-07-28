@@ -44,12 +44,13 @@ struct ZoneSector
 {
 	Rect2I bounds;
 	u32 zoneSectorFlags;
-
-	ZoneType *tileZone;
 };
 
 struct ZoneLayer
 {
+	s32 width, height; // world size
+	ZoneType *tileZone;
+
 	SectorGrid<ZoneSector> sectors;
 
 	s32 sectorsWithResZonesCount;
@@ -82,7 +83,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area);
 void markZonesAsEmpty(City *city, Rect2I footprint);
 ZoneType getZoneAt(City *city, s32 x, s32 y);
 
-void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 shaderID);
+void drawZones(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID);
 
 void growSomeZoneBuildings(City *city);
 bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y);
