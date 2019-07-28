@@ -713,28 +713,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 					case DragResult_ShowPreview:
 					{
 						if (!mouseIsOverUI) showCostTooltip(uiState, zoneCost);
-						if (canZoneQuery->zoneableTilesCount == 0)
+						if (canAfford(city, zoneCost))
 						{
-							// Nothing to draw!
-						}
-						else if (canAfford(city, zoneCost))
-						{
-							V4 zoneColor = zoneDefs[gameState->selectedZoneID].color;
-							Rect2 zoneRect = rectXYWHi(0, 0, 1, 1);
-							DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, canZoneQuery->zoneableTilesCount);
-							for (s32 y = dragResult.dragRect.y; y < dragResult.dragRect.y+dragResult.dragRect.h; y++)
-							{
-								zoneRect.y = (f32) y;
-								for (s32 x = dragResult.dragRect.x; x < dragResult.dragRect.x+dragResult.dragRect.w; x++)
-								{
-									zoneRect.x = (f32) x;
-									if (canZoneTile(canZoneQuery, x, y))
-									{
-										addUntexturedRect(rectsGroup, zoneRect, zoneColor);
-									}
-								}
-							}
-							endRectsGroup(rectsGroup);
+							V4 palette[] = {
+								color255(255, 0, 0, 16),
+								zoneDefs[gameState->selectedZoneID].color
+							};
+							drawGrid(&renderer->worldOverlayBuffer, rect2(canZoneQuery->bounds), renderer->shaderIds.untextured, canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
 						}
 						else
 						{

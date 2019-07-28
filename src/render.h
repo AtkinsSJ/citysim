@@ -34,6 +34,7 @@ enum RenderItemType
 
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
+	RenderItemType_DrawGrid,
 };
 
 struct RenderItem_SectionMarker
@@ -79,6 +80,13 @@ struct RenderItem_DrawRects_Item
 	Rect2 bounds;
 	V4 color;
 	Rect2 uv;
+};
+
+struct RenderItem_DrawGrid
+{
+	Rect2 bounds; // Rendering position of the grid as a whole
+	u8 paletteSize;
+	s32 gridW, gridH; // Dimensions of the array
 };
 
 struct DrawRectsSubGroup
@@ -224,6 +232,8 @@ void endRectsGroup(DrawRectsGroup *group);
 
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group);
 void endCurrentSubGroup(DrawRectsGroup *group);
+
+void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u8 paletteSize, V4 *palette);
 
 void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen);
 void onWindowResized(Renderer *renderer, s32 w, s32 h);

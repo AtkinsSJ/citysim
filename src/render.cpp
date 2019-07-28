@@ -330,8 +330,6 @@ void addClear(RenderBuffer *buffer, V4 clearColor)
 
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color)
 {
-	ASSERT(!buffer->hasRangeReserved);
-
 	addSetShader(buffer, shaderID);
 	addSetTexture(buffer, sprite->texture);
 
@@ -344,8 +342,6 @@ void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 sha
 
 void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color)
 {
-	ASSERT(!buffer->hasRangeReserved);
-
 	addSetShader(buffer, shaderID);
 
 	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
@@ -357,8 +353,6 @@ void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color)
 
 RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID)
 {
-	ASSERT(!buffer->hasRangeReserved);
-
 	addSetShader(buffer, shaderID);
 
 	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
@@ -375,8 +369,6 @@ void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bound
 
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)
 {
-	ASSERT(!buffer->hasRangeReserved); //Can't reserve a range while a range is already reserved!
-
 	addSetShader(buffer, shaderID);
 	if (texture != null) addSetTexture(buffer, texture);
 
@@ -521,4 +513,29 @@ void offsetRange(DrawRectsGroup *group, s32 startIndex, s32 endIndexInclusive, f
 void endRectsGroup(DrawRectsGroup *group)
 {
 	endCurrentSubGroup(group);
+}
+
+void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u8 paletteSize, V4 *palette)
+{
+	addSetShader(buffer, shaderID);
+
+	smm size = sizeof(RenderItem_DrawGrid)
+			 + (gridW * gridH * sizeof(grid[0]))
+			 + (paletteSize * sizeof(palette[0]));
+
+	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawGrid, size, 0);
+
+	RenderItem_DrawGrid *gridItem = (RenderItem_DrawGrid *) data;
+	data += sizeof(RenderItem_DrawGrid);
+	gridItem->bounds = bounds;
+	gridItem->paletteSize = paletteSize;
+	gridItem->gridW = gridW;
+	gridItem->gridH = gridH;
+
+	u8 *gridData = (u8 *) data;
+	data += (gridW * gridH * sizeof(grid[0]));
+	copyMemory(grid, gridData, (gridW * gridH));
+
+	V4 *paletteData = (V4 *) data;
+	copyMemory(palette, paletteData, paletteSize);
 }

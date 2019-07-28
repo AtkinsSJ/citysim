@@ -56,7 +56,6 @@ struct GL_Renderer
 	Array<GL_ShaderProgram> shaders;
 	s32 currentShader;
 
-
 	GLuint VBO;
 	GLuint IBO;
 
@@ -64,6 +63,9 @@ struct GL_Renderer
 	s32 indexCount;
 	GL_VertexData vertices[RENDER_BATCH_VERTEX_COUNT];
 	GLuint        indices [RENDER_BATCH_INDEX_COUNT];
+
+	// For debugging only
+	Asset *currentTexture; 
 };
 
 Renderer *GL_initializeRenderer(SDL_Window *window);
@@ -82,6 +84,7 @@ void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribL
 void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation);
 GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID);
 
-void flushVertices(GL_Renderer *renderer);
+void renderQuad(GL_Renderer *gl, Rect2 bounds, Rect2 uv, V4 color);
+void flushVertices(GL_Renderer *gl);
 
 #include "render_gl.cpp"

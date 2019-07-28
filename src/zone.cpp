@@ -52,7 +52,7 @@ CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
 	smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
 	u8 *memory = (u8*) allocate(globalFrameTempArena, structSize);
 	query = (CanZoneQuery *) memory;
-	query->tileCanBeZoned = (bool *) (memory + sizeof(CanZoneQuery));
+	query->tileCanBeZoned = (u8 *) (memory + sizeof(CanZoneQuery));
 	query->bounds = bounds;
 	query->zoneDef = &zoneDefs[zoneType];
 
@@ -113,7 +113,7 @@ CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
 					// Pos relative to our query
 					s32 qX = x - bounds.x;
 					s32 qY = y - bounds.y;
-					query->tileCanBeZoned[(qY * bounds.w) + qX] = canZone;
+					query->tileCanBeZoned[(qY * bounds.w) + qX] = canZone ? 1 : 0;
 					if (canZone) query->zoneableTilesCount++;
 				}
 			}
@@ -129,7 +129,7 @@ inline bool canZoneTile(CanZoneQuery *query, s32 x, s32 y)
 	s32 qX = x - query->bounds.x;
 	s32 qY = y - query->bounds.y;
 
-	return query->tileCanBeZoned[(qY * query->bounds.w) + qX];
+	return query->tileCanBeZoned[(qY * query->bounds.w) + qX] != 0;
 }
 
 void drawZones(ZoneLayer *zoneLayer, Renderer *renderer, Rect2I visibleArea, s8 shaderID)

@@ -410,28 +410,6 @@ inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID)
 	return activeShader;
 }
 
-void flushVertices(GL_Renderer *renderer, GL_ShaderProgram *activeShader, Asset *currentTexture)
-{
-	DEBUG_FUNCTION_T(DCDT_Renderer);
-
-	// Fill VBO
-	ASSERT(renderer->vertexCount <= RENDER_BATCH_VERTEX_COUNT); //Tried to render too many vertices at once!
-	GLint vBufferSizeNeeded = renderer->vertexCount * sizeof(renderer->vertices[0]);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, renderer->vertices);
-
-	// Fill IBO
-	ASSERT(renderer->indexCount <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
-	GLint iBufferSizeNeeded = renderer->indexCount * sizeof(renderer->indices[0]);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, renderer->indices);
-
-	glDrawElements(GL_TRIANGLES, renderer->indexCount, GL_UNSIGNED_INT, NULL);
-
-	DEBUG_DRAW_CALL(activeShader->asset->shortName, (currentTexture == null) ? nullString : currentTexture->shortName, (renderer->vertexCount >> 2));
-
-	renderer->vertexCount = 0;
-	renderer->indexCount = 0;
-}
-
 void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
@@ -439,7 +417,6 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	GL_ShaderProgram *activeShader = null;
-	Asset *currentTexture = null;
 	Camera *currentCamera = null;
 
 	RenderBufferChunk *renderBufferChunk = firstChunk;
@@ -476,7 +453,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 
 				if (gl->vertexCount > 0)
 				{
-					flushVertices(gl, activeShader, currentTexture);
+					flushVertices(gl);
 				}
 
 				activeShader = useShader(gl, header->shaderID);
@@ -490,7 +467,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 
 				if (gl->vertexCount > 0)
 				{
-					flushVertices(gl, activeShader, currentTexture);
+					flushVertices(gl);
 				}
 
 				{
@@ -517,7 +494,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 					}
 
 					glUniform1i(activeShader->uTextureLoc, 0);
-					currentTexture = header->texture;
+					gl->currentTexture = header->texture;
 				}
 			} break;
 
@@ -535,40 +512,9 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 
 				for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++)
 				{
-					if (gl->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
-					{
-						flushVertices(gl, activeShader, currentTexture);
-					}
-
 					RenderItem_DrawRects_Item *item = readRenderItem<RenderItem_DrawRects_Item>(renderBufferChunk, &pos);
-					s32 firstVertex = gl->vertexCount;
-					gl->vertices[gl->vertexCount++] = {
-						v3(item->bounds.x, item->bounds.y, 0.0f),
-						item->color,
-						v2(item->uv.x, item->uv.y)
-					};
-					gl->vertices[gl->vertexCount++] = {
-						v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
-						item->color,
-						v2(item->uv.x + item->uv.w, item->uv.y)
-					};
-					gl->vertices[gl->vertexCount++] = {
-						v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
-						item->color,
-						v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
-					};
-					gl->vertices[gl->vertexCount++] = {
-						v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
-						item->color,
-						v2(item->uv.x, item->uv.y + item->uv.h)
-					};
 
-					gl->indices[gl->indexCount++] = firstVertex + 0;
-					gl->indices[gl->indexCount++] = firstVertex + 1;
-					gl->indices[gl->indexCount++] = firstVertex + 2;
-					gl->indices[gl->indexCount++] = firstVertex + 0;
-					gl->indices[gl->indexCount++] = firstVertex + 2;
-					gl->indices[gl->indexCount++] = firstVertex + 3;
+					renderQuad(gl, item->bounds, item->uv, item->color);
 				}
 			} break;
 
@@ -576,38 +522,44 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 			{
 				RenderItem_DrawSingleRect *item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
-				s32 firstVertex = gl->vertexCount;
-				gl->vertices[gl->vertexCount++] = {
-					v3(item->bounds.x, item->bounds.y, 0.0f),
-					item->color,
-					v2(item->uv.x, item->uv.y)
-				};
-				gl->vertices[gl->vertexCount++] = {
-					v3(item->bounds.x + item->bounds.size.x, item->bounds.y, 0.0f),
-					item->color,
-					v2(item->uv.x + item->uv.w, item->uv.y)
-				};
-				gl->vertices[gl->vertexCount++] = {
-					v3(item->bounds.x + item->bounds.size.x, item->bounds.y + item->bounds.size.y, 0.0f),
-					item->color,
-					v2(item->uv.x + item->uv.w, item->uv.y + item->uv.h)
-				};
-				gl->vertices[gl->vertexCount++] = {
-					v3(item->bounds.x, item->bounds.y + item->bounds.size.y, 0.0f),
-					item->color,
-					v2(item->uv.x, item->uv.y + item->uv.h)
-				};
+				renderQuad(gl, item->bounds, item->uv, item->color);
 
-				gl->indices[gl->indexCount++] = firstVertex + 0;
-				gl->indices[gl->indexCount++] = firstVertex + 1;
-				gl->indices[gl->indexCount++] = firstVertex + 2;
-				gl->indices[gl->indexCount++] = firstVertex + 0;
-				gl->indices[gl->indexCount++] = firstVertex + 2;
-				gl->indices[gl->indexCount++] = firstVertex + 3;
+			} break;
 
-				if (gl->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+			case RenderItemType_DrawGrid:
+			{
+				RenderItem_DrawGrid *header = readRenderItem<RenderItem_DrawGrid>(renderBufferChunk, &pos);
+
+				u8 *gridData = (u8 *)(renderBufferChunk->memory + pos);
+				pos += (header->gridW * header->gridH * sizeof(u8));
+
+				V4 *paletteData = (V4 *)(renderBufferChunk->memory + pos);
+				pos += (header->paletteSize * sizeof(V4));
+
+				// For now, we'll do the easy/lazy thing of just outputting the grid as a series of quads.
+				// We could probably send it as a texture or something, IDK.
+
+				Rect2 bounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+				f32 gridWf = (f32) header->gridW;
+				f32 gridHf = (f32) header->gridH;
+				if (!equals(header->bounds.w, gridWf, 0.01f))
 				{
-					flushVertices(gl, activeShader, currentTexture);
+					bounds.w = header->bounds.w / gridWf;
+				}
+				if (!equals(header->bounds.h, gridHf, 0.01f))
+				{
+					bounds.h = header->bounds.h / gridHf;
+				}
+
+				Rect2 fakeUV = {};
+				for (s32 y = 0; y < header->gridH; y++)
+				{
+					bounds.y = header->bounds.y + (y * bounds.h);
+					for (s32 x = 0; x < header->gridW; x++, gridData++)
+					{
+						bounds.x = header->bounds.x + (x * bounds.w);
+						renderQuad(gl, bounds, fakeUV, paletteData[*gridData]);
+					}
 				}
 			} break;
 
@@ -617,8 +569,68 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 
 	if (gl->vertexCount > 0)
 	{
-		flushVertices(gl, activeShader, currentTexture);
+		flushVertices(gl);
 	}
 
 	DEBUG_END_RENDER_BUFFER();
+}
+
+inline void renderQuad(GL_Renderer *gl, Rect2 bounds, Rect2 uv, V4 color)
+{
+	if (gl->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
+	{
+		flushVertices(gl);
+	}
+
+	s32 firstVertex = gl->vertexCount;
+	gl->vertices[gl->vertexCount++] = {
+		v3(bounds.x, bounds.y, 0.0f),
+		color,
+		v2(uv.x, uv.y)
+	};
+	gl->vertices[gl->vertexCount++] = {
+		v3(bounds.x + bounds.size.x, bounds.y, 0.0f),
+		color,
+		v2(uv.x + uv.w, uv.y)
+	};
+	gl->vertices[gl->vertexCount++] = {
+		v3(bounds.x + bounds.size.x, bounds.y + bounds.size.y, 0.0f),
+		color,
+		v2(uv.x + uv.w, uv.y + uv.h)
+	};
+	gl->vertices[gl->vertexCount++] = {
+		v3(bounds.x, bounds.y + bounds.size.y, 0.0f),
+		color,
+		v2(uv.x, uv.y + uv.h)
+	};
+
+	gl->indices[gl->indexCount++] = firstVertex + 0;
+	gl->indices[gl->indexCount++] = firstVertex + 1;
+	gl->indices[gl->indexCount++] = firstVertex + 2;
+	gl->indices[gl->indexCount++] = firstVertex + 0;
+	gl->indices[gl->indexCount++] = firstVertex + 2;
+	gl->indices[gl->indexCount++] = firstVertex + 3;
+}
+
+void flushVertices(GL_Renderer *gl)
+{
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+
+	// Fill VBO
+	ASSERT(gl->vertexCount <= RENDER_BATCH_VERTEX_COUNT); //Tried to render too many vertices at once!
+	GLint vBufferSizeNeeded = gl->vertexCount * sizeof(gl->vertices[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, gl->vertices);
+
+	// Fill IBO
+	ASSERT(gl->indexCount <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
+	GLint iBufferSizeNeeded = gl->indexCount * sizeof(gl->indices[0]);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, gl->indices);
+
+	glDrawElements(GL_TRIANGLES, gl->indexCount, GL_UNSIGNED_INT, NULL);
+
+	GL_ShaderProgram *activeShader = gl->shaders.items + gl->currentShader;
+	DEBUG_DRAW_CALL(activeShader->asset->shortName, (gl->currentTexture == null) ? nullString : gl->currentTexture->shortName, (gl->vertexCount >> 2));
+
+	gl->vertexCount = 0;
+	gl->indexCount = 0;
 }

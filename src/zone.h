@@ -68,7 +68,7 @@ struct CanZoneQuery
 	ZoneDef *zoneDef;
 
 	s32 zoneableTilesCount;
-	bool *tileCanBeZoned;
+	u8 *tileCanBeZoned; // NB: is either 0 or 1
 };
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
