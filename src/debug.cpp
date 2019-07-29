@@ -202,6 +202,29 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
 	u32 rfi = debugState->readingFrameIndex;
 	drawSingleRect(renderBuffer, rectXYWH(0,0,renderer->uiCamera.size.x, renderer->uiCamera.size.y), renderer->shaderIds.untextured, color255(0,0,0,128));
+	
+	// Draw a "nice" chart!
+	{
+		f32 graphHeight = 150.0f;
+		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight*2, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+		f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
+		f32 barWidth = renderer->uiCamera.size.x / (f32)DEBUG_FRAMES_COUNT;
+		f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
+		V4 barColor = color255(255, 0, 0, 128);
+		V4 activeBarColor = color255(255, 255, 0, 128);
+		u32 barIndex = 0;
+		DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer->shaderIds.untextured, DEBUG_FRAMES_COUNT);
+		for (u32 fi = debugState->writingFrameIndex + 1;
+				 fi != debugState->writingFrameIndex;
+				 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
+		{
+			u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
+			f32 barHeight = barHeightPerCycle * (f32)frameCycles;
+			addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
+		}
+		endRectsGroup(rectsGroup);
+	}
 
 	DebugTextState textState;
 	initDebugTextState(&textState, renderer, font, makeWhite(), 16.0f, false, true);
@@ -295,29 +318,6 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 			}), true, debugCodeDataTagColors + code->tag);
 			topBlock = topBlock->nextNode;
 		}
-	}
-
-	// Draw a "nice" chart!
-	{
-		f32 graphHeight = 150.0f;
-		f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-		f32 barWidth = renderer->uiCamera.size.x / (f32)DEBUG_FRAMES_COUNT;
-		f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
-		V4 barColor = color255(255, 0, 0, 128);
-		V4 activeBarColor = color255(255, 255, 0, 128);
-		u32 barIndex = 0;
-		DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer->shaderIds.untextured, DEBUG_FRAMES_COUNT);
-		for (u32 fi = debugState->writingFrameIndex + 1;
-				 fi != debugState->writingFrameIndex;
-				 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
-		{
-			u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
-			f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-			addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
-		}
-		endRectsGroup(rectsGroup);
-		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
-		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight*2, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
 	}
 
 	// Put FPS in top right

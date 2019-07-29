@@ -684,7 +684,7 @@ void flushVertices(GL_Renderer *gl)
 
 	// Fill VBO
 	{
-		DEBUG_BLOCK_T("flushVertices - Fill VBO", DCDT_Renderer);
+		// DEBUG_BLOCK_T("flushVertices - Fill VBO", DCDT_Renderer);
 		ASSERT(gl->vertexCount <= RENDER_BATCH_VERTEX_COUNT); //Tried to render too many vertices at once!
 		GLint vBufferSizeNeeded = gl->vertexCount * sizeof(gl->vertices[0]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, gl->vertices);
@@ -703,7 +703,7 @@ void flushVertices(GL_Renderer *gl)
 	#endif
 
 	{
-		DEBUG_BLOCK_T("flushVertices - glDrawElements", DCDT_Renderer);
+		// DEBUG_BLOCK_T("flushVertices - glDrawElements", DCDT_Renderer);
 		glDrawElements(GL_TRIANGLES, gl->indexCount, GL_UNSIGNED_INT, NULL);
 	}
 
