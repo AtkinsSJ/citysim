@@ -12,7 +12,7 @@
 
 struct GL_VertexData
 {
-	V3 pos;
+	V2 pos;
 	V4 color;
 	V2 uv;
 };

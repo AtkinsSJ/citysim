@@ -1,6 +1,6 @@
 #version 150
 
-in vec3 aPosition;
+in vec2 aPosition;
 in vec4 aColor;
 
 out vec4 vColor;
@@ -9,7 +9,7 @@ uniform mat4 uProjectionMatrix;
 
 void main()
 {
-	gl_Position = uProjectionMatrix * vec4(aPosition.xyz, 1);
+	gl_Position = uProjectionMatrix * vec4(aPosition.xy, 0, 1);
 	vColor = aColor;
 }
 
