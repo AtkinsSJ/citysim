@@ -88,7 +88,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 			// If that every changes, we'll have to go back to assigning indices as we add vertices to the
 			// VBO, instead of always reusing them like this. But for now, this lets us skip the (slow)
 			// call to send the indices to the GPU every draw call.
-			// If you want to change back, see the #ifdef'd out code in flushVertices() and renderQuad().
+			// If you want to change back, see the #ifdef'd out code in flushVertices() and pushQuad().
 			//
 			// - Sam, 29/07/2019
 			//
@@ -546,7 +546,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 					{
 						flushVertices(gl);
 					}
-					renderQuad(gl, item->bounds, item->uv, item->color);
+					pushQuadWithUV(gl, item->bounds, item->color, item->uv);
 				}
 			} break;
 
@@ -559,7 +559,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 				{
 					flushVertices(gl);
 				}
-				renderQuad(gl, item->bounds, item->uv, item->color);
+				pushQuadWithUV(gl, item->bounds, item->color, item->uv);
 
 			} break;
 
@@ -589,7 +589,6 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 					bounds.h = header->bounds.h / gridHf;
 				}
 
-				Rect2 fakeUV = {};
 				for (s32 y = 0; y < header->gridH; y++)
 				{
 					bounds.y = header->bounds.y + (y * bounds.h);
@@ -601,7 +600,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 						{
 							flushVertices(gl);
 						}
-						renderQuad(gl, bounds, fakeUV, paletteData[*gridData]);
+						pushQuad(gl, bounds, paletteData[*gridData]);
 					}
 				}
 			} break;
@@ -618,7 +617,54 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 	DEBUG_END_RENDER_BUFFER();
 }
 
-inline void renderQuad(GL_Renderer *gl, Rect2 bounds, Rect2 uv, V4 color)
+inline void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color)
+{
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+	// s32 firstVertex = gl->vertexCount;
+
+	GL_VertexData *vertex = gl->vertices + gl->vertexCount;
+
+	f32 minX = bounds.x;
+	f32 maxX = bounds.x + bounds.w;
+	f32 minY = bounds.y;
+	f32 maxY = bounds.y + bounds.h;
+
+	vertex->pos.x = minX;
+	vertex->pos.y = minY;
+	vertex->color = color;
+	vertex++;
+
+	vertex->pos.x = maxX;
+	vertex->pos.y = minY;
+	vertex->color = color;
+	vertex++;
+
+	vertex->pos.x = maxX;
+	vertex->pos.y = maxY;
+	vertex->color = color;
+	vertex++;
+
+	vertex->pos.x = minX;
+	vertex->pos.y = maxY;
+	vertex->color = color;
+
+	gl->vertexCount += 4;
+
+	// NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
+	// always, as long as we only render quads.
+	#if 0
+	GLuint *index = gl->indices + gl->indexCount;
+	index[0] = firstVertex + 0;
+	index[1] = firstVertex + 1;
+	index[2] = firstVertex + 2;
+	index[3] = firstVertex + 0;
+	index[4] = firstVertex + 2;
+	index[5] = firstVertex + 3;
+	#endif
+	gl->indexCount += 6;
+}
+
+inline void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	// s32 firstVertex = gl->vertexCount;

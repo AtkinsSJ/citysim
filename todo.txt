@@ -14,21 +14,9 @@ Notes for searching:
 
 ------------------------------------------------
 
-Speed up zoning
-- Maximum size for drag rect
-	Make this fairly large, so it's not inconvenient, but we do need *some* kind of limit because otherwise it'll get slower and slower.
-	(Do this change after the below optimisation, so we can measure that better!)
-✔ Remove duplicate canZoneTile() calls in calculating the cost and displaying the ghost rects
-	✖ Idea 1) Calculate the cost as part of the ghost-preview code, then go back and remove the previews if you can't afford it
-	✔ Idea 2) Calculate and return a grid of which tiles can be zoned and a total count, and then use that for seeing if we can afford it and for generating the ghosts
-		✔ Related, this might be a good use-case for that "RenderItem_DrawGrid" idea! We could then draw the returned grid directly!
-
 Renderer optimisation!
-✔ We deal with grids a lot, some kind of sped-up thing for that would be good, either as "define a grid and then the colours of the cells" or "here is a mesh with a bunch of vertices". The latter is more general (and works for terrain!) but the former is simpler. Maybe both though!
 - Set up a texture mesh per chunk!
 - Maybe send data to the renderer in a more render-friendly form? (ie, send vertex data instead of the renderer having to construct it.) Then again, that could cause problems if we use multiple renderers? IDK, probably not. It might be more awkward for user code to manipulate things it's submitted already though. IDK.
-
-Speed up debug system?
 
 Speed up text rendering!
 - Possibly replace all floats in text-rendering with integers, and just produce floats at the very end for the actual renderitems. Everything is always done in whole-pixels anyway, and that should be a chunk faster.
@@ -36,8 +24,6 @@ Speed up text rendering!
 - Use u8s for RenderItem colours instead of V4? That'd divide the memory requirements for a colour by 4! Though, it's a bit tricky to know how that'll affect everything.
 
 Add newline support to .text files!
-
-Maybe String should use a constructor, so I stop making uninitialised-string-memory mistakes?
 
 BuildingCatalogue:
 - Store which menu a building is in, in a queryable way
@@ -52,14 +38,6 @@ SECTORS:
 		- Statistics maybe
 	- Stick to flat arrays instead:
 		- Terrain, Zones, and any other kind of per-tile data that doesn't need to be dealt with in aggregate.
-✔ OK, new plan: Rather than have Sectors contain everything, it's easier to reason about things if we split everything into Layers like we already were doing, and then individual layers can organise their data into sectors or however they want, and their sectors can be different sizes or whatever. This means we can pick and choose where sectors do or don't make the most sense, and stick to a simpler flat 2D where we can.
-	✔ I do think we want a standard set of tools for dealing with sector data, because connectivity and stuff is going to be similar in several cases.
-✔ Should we make sector internal data 1D arrays instead of 2D? Would make iterating the whole thing easier, but we'd want a helper function for getting the correct index. OR, we could union{} it maybe?
-✔ Power network
-	✔ Move power-network stuff out of City.h entirely? Put everything in PowerLayer, and make it manage its own sectors? Separating the different systems would be nice, though at the same time it might make it more awkward/less efficient to access stuff. Not sure... I think I'm going to try it though.
-		✔ Related, we can probably take the City* arg out of a lot of the internal PowerLayer functions.
-		✖ Maybe we should even go oop-style and make things member functions? IDK.
-	✔ Rather than users calling recalculatePowerConnectivity(), have them mark a world area as dirty, and then the next time power updates, it checks for dirty regions and recalculates as necessary. At first it'll just be a "somethingIsDirty" bool or something, but later if we add local recalculation, we don't need to change the user code!
 💡 THINK: Is there some way of making the network graph calculation work by making small changes instead of having to recompute the whole thing?
 	- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
 	- RESEARCH GRAPH THEORY STUFF!
@@ -67,12 +45,6 @@ SECTORS:
 		- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
 - Road network
 	- Similar stuff to how power works, so figure that out first
-- Terrain
-	- Terrain mesh? That's kind of a side issue
-	✔ Also a side-issue, but combine all terrain into a single texture! That'll dramatically reduce draw calls.
-✔ Buildings
-	✔ findBuildingsInRectangle(), which returns some kind of temporary, iterable array.
-	✔ Add flags to ^ so we can request buildings whose ORIGIN is in the rectangle, and maybe some other requirements (eg, must carry power)
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)
@@ -164,6 +136,8 @@ Zoning
 - Every so often, pump the "spawn buildings" function that places a number of zoned buildings within zones, to approximately match what is demanded.
 - Spawning buildings looks for empty zones that match criteria like distance to roads, and prioritises highly-desirable places.
 	- Eventually we'd probably want a more efficient way to find those zones. Maybe keep a list of empty zone coordinates and their land value, or something like that.
+- Maximum size for drag rect
+	Make this fairly large, so it's not inconvenient, but we do need *some* kind of limit because otherwise it'll get slower and slower.
 
 Split the game code from the platform code
 - Compile win32_main.cpp rather than main.cpp
@@ -172,7 +146,6 @@ Split the game code from the platform code
 - Related, we could do with more clearly separating the various systems, it's all a confusing, coupled, spaghetti mess right now.
 
 GUI
-- BUG: Text alignment doesn't work when the text wraps onto multiple lines! Each line should align itself horizontally. (So, a multi-line wrapped text with ALIGN_H_CENTRE should have each line centred!)
 ✔ Convert Tooltips to a special kind of Window, so that we can reuse the fancy window code.
 	✔ Window flag for following the mouse
 	✔ Remove Tooltip style

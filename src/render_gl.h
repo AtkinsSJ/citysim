@@ -84,7 +84,8 @@ void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribL
 void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation);
 GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID);
 
-void renderQuad(GL_Renderer *gl, Rect2 bounds, Rect2 uv, V4 color);
+void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color);
+void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv);
 void flushVertices(GL_Renderer *gl);
 
 #include "render_gl.cpp"
