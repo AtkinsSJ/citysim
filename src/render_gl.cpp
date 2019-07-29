@@ -639,23 +639,14 @@ inline void renderQuad(GL_Renderer *gl, Rect2 bounds, Rect2 uv, V4 color)
 
 	gl->vertexCount += 4;
 
-#if 0
 	GLuint *index = gl->indices + gl->indexCount;
-	*index++ = firstVertex + 0;
-	*index++ = firstVertex + 1;
-	*index++ = firstVertex + 2;
-	*index++ = firstVertex + 0;
-	*index++ = firstVertex + 2;
-	*index++ = firstVertex + 3;
+	index[0] = firstVertex + 0;
+	index[1] = firstVertex + 1;
+	index[2] = firstVertex + 2;
+	index[3] = firstVertex + 0;
+	index[4] = firstVertex + 2;
+	index[5] = firstVertex + 3;
 	gl->indexCount += 6;
-#else
-	gl->indices[gl->indexCount++] = firstVertex + 0;
-	gl->indices[gl->indexCount++] = firstVertex + 1;
-	gl->indices[gl->indexCount++] = firstVertex + 2;
-	gl->indices[gl->indexCount++] = firstVertex + 0;
-	gl->indices[gl->indexCount++] = firstVertex + 2;
-	gl->indices[gl->indexCount++] = firstVertex + 3;
-#endif
 }
 
 void flushVertices(GL_Renderer *gl)
