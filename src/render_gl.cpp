@@ -508,6 +508,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 
 			case RenderItemType_DrawRects:
 			{
+				DEBUG_BLOCK_T("render: RenderItemType_DrawRects", DCDT_Renderer);
 				RenderItem_DrawRects *header = readRenderItem<RenderItem_DrawRects>(renderBufferChunk, &pos);
 
 				for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++)
@@ -520,6 +521,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 
 			case RenderItemType_DrawSingleRect:
 			{
+				DEBUG_BLOCK_T("render: RenderItemType_DrawSingleRect", DCDT_Renderer);
 				RenderItem_DrawSingleRect *item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
 				renderQuad(gl, item->bounds, item->uv, item->color);
@@ -528,6 +530,7 @@ void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
 
 			case RenderItemType_DrawGrid:
 			{
+				DEBUG_BLOCK_T("render: RenderItemType_DrawGrid", DCDT_Renderer);
 				RenderItem_DrawGrid *header = readRenderItem<RenderItem_DrawGrid>(renderBufferChunk, &pos);
 
 				u8 *gridData = (u8 *)(renderBufferChunk->memory + pos);

@@ -1,13 +1,12 @@
 #pragma once
 
-const f32 uiPadding = 4; // TODO: Move this somewhere sensible!
-
 GameState *initialiseGameState()
 {
 	GameState *result;
 	bootstrapArena(GameState, result, gameArena);
 	randomSeed(&result->gameRandom, 12345);
 
+	s32 gameStartFunds = 1000000;
 	initCity(&result->gameArena, &result->gameRandom, &result->city, 133, 117, LOCAL("city_default_name"), gameStartFunds);
 	generateTerrain(&result->city);
 
@@ -403,6 +402,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 	City *city = &gameState->city;
 
+	const f32 uiPadding = 4; // TODO: Move this somewhere sensible!
 	f32 left = uiPadding;
 	f32 right = windowWidth - uiPadding;
 

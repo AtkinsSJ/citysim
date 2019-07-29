@@ -1,7 +1,5 @@
 #pragma once
 
-const int gameStartFunds = 1000000;
-
 enum GameStatus
 {
 	GameStatus_Playing,
