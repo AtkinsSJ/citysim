@@ -245,36 +245,36 @@ void clear(TextInput *textInput)
 }
 
 // Returns true if pressed RETURN
-bool updateTextInput(TextInput *textInput, InputState *inputState)
+bool updateTextInput(TextInput *textInput)
 {
 	bool pressedReturn = false;
 
-	if (keyJustPressed(inputState, SDLK_BACKSPACE, KeyMod_Ctrl))
+	if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
 	{
 		clear(textInput);
 		textInput->caretFlashCounter = 0;
 	}
-	else if (keyJustPressed(inputState, SDLK_BACKSPACE))
+	else if (keyJustPressed(SDLK_BACKSPACE))
 	{
 		backspace(textInput);
 		textInput->caretFlashCounter = 0;
 	}
 
-	if (keyJustPressed(inputState, SDLK_DELETE))
+	if (keyJustPressed(SDLK_DELETE))
 	{
 		deleteChar(textInput);
 		textInput->caretFlashCounter = 0;
 	}
 
-	if (keyJustPressed(inputState, SDLK_RETURN))
+	if (keyJustPressed(SDLK_RETURN))
 	{
 		pressedReturn = true;
 		textInput->caretFlashCounter = 0;
 	}
 
-	if (keyJustPressed(inputState, SDLK_LEFT))
+	if (keyJustPressed(SDLK_LEFT))
 	{
-		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
+		if (modifierKeyIsPressed(KeyMod_Ctrl))
 		{
 			moveCaretLeftWholeWord(textInput);
 		}
@@ -284,9 +284,9 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 		}
 		textInput->caretFlashCounter = 0;
 	}
-	else if (keyJustPressed(inputState, SDLK_RIGHT))
+	else if (keyJustPressed(SDLK_RIGHT))
 	{
-		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
+		if (modifierKeyIsPressed(KeyMod_Ctrl))
 		{
 			moveCaretRightWholeWord(textInput);
 		}
@@ -297,27 +297,27 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 		textInput->caretFlashCounter = 0;
 	}
 
-	if (keyJustPressed(inputState, SDLK_HOME))
+	if (keyJustPressed(SDLK_HOME))
 	{
 		textInput->caretBytePos = 0;
 		textInput->caretGlyphPos = 0;
 		textInput->caretFlashCounter = 0;
 	}
 
-	if (keyJustPressed(inputState, SDLK_END))
+	if (keyJustPressed(SDLK_END))
 	{
 		textInput->caretBytePos = textInput->byteLength;
 		textInput->caretGlyphPos = textInput->glyphLength;
 		textInput->caretFlashCounter = 0;
 	}
 
-	if (wasTextEntered(inputState))
+	if (wasTextEntered())
 	{
-		insert(textInput, getEnteredText(inputState));
+		insert(textInput, getEnteredText());
 		textInput->caretFlashCounter = 0;
 	}
 
-	if (keyJustPressed(inputState, SDLK_v, KeyMod_Ctrl))
+	if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
 	{
 		String clipboard = getClipboardText();
 		if (!isEmpty(clipboard))

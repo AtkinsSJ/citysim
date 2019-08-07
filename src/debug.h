@@ -159,7 +159,7 @@ struct DebugState
 };
 
 void debugInit();
-void updateAndRenderDebugData(DebugState *debugState, struct InputState *inputState);
+void updateAndRenderDebugData(DebugState *debugState);
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
 void debugTrackAssets(DebugState *debugState);

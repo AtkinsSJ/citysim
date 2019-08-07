@@ -335,29 +335,29 @@ void renderDebugData(DebugState *debugState)
 	}
 }
 
-void updateAndRenderDebugData(DebugState *debugState, InputState *inputState)
+void updateAndRenderDebugData(DebugState *debugState)
 {
 	DEBUG_FUNCTION_T(DCDT_Debug);
-	if (keyJustPressed(inputState, SDLK_F2))
+	if (keyJustPressed(SDLK_F2))
 	{
 		debugState->showDebugData = !debugState->showDebugData;
 	}
 	
-	if (keyJustPressed(inputState, SDLK_PAUSE))
+	if (keyJustPressed(SDLK_PAUSE))
 	{
 		debugState->captureDebugData = !debugState->captureDebugData;
 	}
 
-	if (keyJustPressed(inputState, SDLK_PAGEDOWN))
+	if (keyJustPressed(SDLK_PAGEDOWN))
 	{
 		debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
 	}
-	else if (keyJustPressed(inputState, SDLK_PAGEUP))
+	else if (keyJustPressed(SDLK_PAGEUP))
 	{
 		debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
 	}
 
-	if (keyJustPressed(inputState, SDLK_INSERT))
+	if (keyJustPressed(SDLK_INSERT))
 	{
 		// Output draw call data
 		logDebug("****************** DRAW CALLS ******************");

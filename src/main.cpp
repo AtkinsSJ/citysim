@@ -33,7 +33,7 @@ enum AppStatus
 struct MemoryArena  *globalFrameTempArena;
 struct Renderer     *renderer;
 struct Assets       *assets;
-struct InputState   *theInput;
+struct InputState   *inputState;
 
 #include "log.h"
 #include "types.h"
@@ -208,16 +208,16 @@ int main(int argc, char *argv[])
 	setCursor("default");
 	setCursorVisible(true);
 
-	InputState inputState;
-	initInput(&inputState);
-	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
-	theInput = &inputState;
+	InputState input;
+	initInput(&input);
+	SDL_GetWindowSize(window, &input.windowWidth, &input.windowHeight);
+	inputState = &input;
 
 	initUiState(&appState->uiState, &appState->systemArena);
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;
-	V2 windowSize = v2(inputState.windowSize);
+	V2 windowSize = v2(input.windowSize);
 	const f32 TILE_SIZE = 16.0f;
 	initCamera(worldCamera, windowSize, 1.0f/TILE_SIZE, 10000.0f, -10000.0f);
 	initCamera(uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
@@ -231,11 +231,11 @@ int main(int argc, char *argv[])
 		{
 			DEBUG_BLOCK("Game loop");
 
-			updateInput(&inputState);
+			updateInput();
 			
 			if (globalConsole)
 			{
-				updateConsole(globalConsole, &inputState);
+				updateConsole(globalConsole);
 			}
 
 			if (haveAssetFilesChanged())
@@ -243,25 +243,25 @@ int main(int argc, char *argv[])
 				reloadAssets();
 			}
 
-			if (inputState.receivedQuitSignal)
+			if (input.receivedQuitSignal)
 			{
 				appState->appStatus = AppStatus_Quit;
 				break;
 			}
 
-			if (inputState.wasWindowResized)
+			if (input.wasWindowResized)
 			{
-				onWindowResized(inputState.windowWidth, inputState.windowHeight);
+				onWindowResized(input.windowWidth, input.windowHeight);
 			}
 
-			worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
-			uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
+			worldCamera->mousePos = unproject(worldCamera, input.mousePosNormalised);
+			uiCamera->mousePos = unproject(uiCamera, input.mousePosNormalised);
 
 			addSetCamera(&renderer->worldBuffer, worldCamera);
 			addClear(&renderer->worldBuffer);
 			addSetCamera(&renderer->uiBuffer, uiCamera);
 
-			updateAndRender(appState, &inputState);
+			updateAndRender(appState);
 
 			if (globalConsole)
 			{
@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
 				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-				updateAndRenderDebugData(globalDebugState, &inputState);
+				updateAndRenderDebugData(globalDebugState);
 			}
 
 			// Actually draw things!

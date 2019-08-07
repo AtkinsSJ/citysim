@@ -61,24 +61,24 @@ struct InputState
 // PUBLIC
 //
 void initInput(InputState *inputState);
-void updateInput(InputState *inputState);
+void updateInput();
 
-bool mouseButtonJustPressed(InputState *input, MouseButton mouseButton);
-bool mouseButtonJustReleased(InputState *input, MouseButton mouseButton);
-bool mouseButtonPressed(InputState *input, MouseButton mouseButton);
+bool mouseButtonJustPressed(MouseButton mouseButton);
+bool mouseButtonJustReleased(MouseButton mouseButton);
+bool mouseButtonPressed(MouseButton mouseButton);
 
-V2 getClickStartPos(InputState *input, MouseButton mouseButton, struct Camera *camera);
+V2 getClickStartPos(MouseButton mouseButton, struct Camera *camera);
 
-bool modifierKeyIsPressed(InputState *input, ModifierKey modifier);
-bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers=0);
-bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers=0);
-bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers=0);
+bool modifierKeyIsPressed(ModifierKey modifier);
+bool keyIsPressed(SDL_Keycode key, u8 modifiers=0);
+bool keyWasPressed(SDL_Keycode key, u8 modifiers=0);
+bool keyJustPressed(SDL_Keycode key, u8 modifiers=0);
 
-KeyboardShortcut parseKeyboardShortcut(String input);
-bool wasShortcutJustPressed(InputState *input, KeyboardShortcut shortcut);
+KeyboardShortcut parseKeyboardShortcut(String shortcutString);
+bool wasShortcutJustPressed(KeyboardShortcut shortcut);
 
-bool wasTextEntered(InputState *input);
-String getEnteredText(InputState *input);
+bool wasTextEntered();
+String getEnteredText();
 
 String getClipboardText();
 
@@ -87,5 +87,5 @@ String getClipboardText();
 //
 
 u32 keycodeToIndex(u32 key);
-u8 getPressedModifierKeys(InputState *input);
-bool modifierKeysArePressed(InputState *input, u8 modifiers);
+u8 getPressedModifierKeys();
+bool modifierKeysArePressed(u8 modifiers);

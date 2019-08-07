@@ -116,9 +116,9 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
-				if (mouseButtonPressed(theInput, MouseButton_Left))
+				if (mouseButtonPressed(MouseButton_Left))
 				{
-					if (contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
+					if (contains(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 					{
 						backColor = style->pressedColor;
 					}
@@ -134,8 +134,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 		{
-			if (mouseButtonJustReleased(theInput, MouseButton_Left)
-			 && contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
+			if (mouseButtonJustReleased(MouseButton_Left)
+			 && contains(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 				context->uiState->mouseInputHandled = true;
@@ -298,13 +298,13 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	}
 	else if (isActive && uiState->isDraggingWindow)
 	{
-		if (mouseButtonJustReleased(theInput, MouseButton_Left))
+		if (mouseButtonJustReleased(MouseButton_Left))
 		{
 			uiState->isDraggingWindow = false;
 		}
 		else
 		{
-			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)));
+			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(MouseButton_Left, &renderer->uiCamera)));
 		}
 		
 		uiState->mouseInputHandled = true;
@@ -352,7 +352,6 @@ void updateWindows(UIState *uiState)
 {
 	DEBUG_FUNCTION();
 
-	InputState *inputState = theInput;
 	V2 mousePos = renderer->uiCamera.mousePos;
 	s32 newActiveWindow = -1;
 	s32 closeWindow = -1;
@@ -393,7 +392,7 @@ void updateWindows(UIState *uiState)
 
 		if ((!uiState->mouseInputHandled || windowIndex == 0)
 			 && contains(wholeWindowArea, mousePos)
-			 && mouseButtonJustPressed(inputState, MouseButton_Left))
+			 && mouseButtonJustPressed(MouseButton_Left))
 		{
 			if (hoveringOverCloseButton)
 			{
@@ -413,7 +412,7 @@ void updateWindows(UIState *uiState)
 				newActiveWindow = windowIndex;
 			}
 
-			// Tooltips don't take mouse theInput
+			// Tooltips don't take mouse inputState
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
@@ -427,7 +426,7 @@ void updateWindows(UIState *uiState)
 
 		if (contains(wholeWindowArea, mousePos))
 		{
-			// Tooltips don't take mouse theInput
+			// Tooltips don't take mouse inputState
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;

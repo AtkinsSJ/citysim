@@ -5,14 +5,14 @@ inline u32 keycodeToIndex(u32 key)
 	return key & ~SDLK_SCANCODE_MASK;
 }
 
-void initInput(InputState *inputState)
+void initInput(InputState *theInput)
 {
-	*inputState = {};
+	*theInput = {};
 
-	inputState->textEntered = makeString(&inputState->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
+	theInput->textEntered = makeString(&theInput->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
 }
 
-void updateInput(InputState *inputState)
+void updateInput()
 {
 	DEBUG_FUNCTION_T(DCDT_Input);
 
@@ -88,7 +88,7 @@ void updateInput(InputState *inputState)
 				inputState->_keyDown[keycode] = true;
 				if (event.key.repeat)
 				{
-					// This is a hack! Well, our whole concept of input handling is weird, so not really.
+					// This is a hack! Well, our whole concept of inputState handling is weird, so not really.
 					// We pretend that we had released the key so that we notice the repeat.
 					inputState->_keyWasDown[keycode] = false;
 				}
@@ -110,7 +110,7 @@ void updateInput(InputState *inputState)
 	for (s32 i = 1; i < MouseButtonCount; i++)
 	{
 		MouseButton button = MouseButton(i);
-		if (mouseButtonJustPressed(inputState, button))
+		if (mouseButtonJustPressed(button))
 		{
 			// Store the initial click position
 			inputState->clickStartPosNormalised[button] = inputState->mousePosNormalised;
@@ -121,61 +121,61 @@ void updateInput(InputState *inputState)
 /**
  * MOUSE INPUT
  */
-inline bool mouseButtonJustPressed(InputState *input, MouseButton mouseButton) {
-	return input->mouseDown[mouseButton] && !input->mouseWasDown[mouseButton];
+inline bool mouseButtonJustPressed(MouseButton mouseButton) {
+	return inputState->mouseDown[mouseButton] && !inputState->mouseWasDown[mouseButton];
 }
-inline bool mouseButtonJustReleased(InputState *input, MouseButton mouseButton) {
-	return !input->mouseDown[mouseButton] && input->mouseWasDown[mouseButton];
+inline bool mouseButtonJustReleased(MouseButton mouseButton) {
+	return !inputState->mouseDown[mouseButton] && inputState->mouseWasDown[mouseButton];
 }
-inline bool mouseButtonPressed(InputState *input, MouseButton mouseButton) {
-	return input->mouseDown[mouseButton];
+inline bool mouseButtonPressed(MouseButton mouseButton) {
+	return inputState->mouseDown[mouseButton];
 }
 
-inline V2 getClickStartPos(InputState *input, MouseButton mouseButton, struct Camera *camera)
+inline V2 getClickStartPos(MouseButton mouseButton, struct Camera *camera)
 {
-	return unproject(camera, input->clickStartPosNormalised[mouseButton]);
+	return unproject(camera, inputState->clickStartPosNormalised[mouseButton]);
 }
 
 /**
  * KEYBOARD INPUT
  */
 
-inline bool modifierKeyIsPressed(InputState *input, ModifierKey modifier)
+inline bool modifierKeyIsPressed(ModifierKey modifier)
 {
 	bool result = false;
 
 	switch (modifier)
 	{
 	case KeyMod_Alt:
-		result = (input->_keyDown[keycodeToIndex(SDLK_LALT)] || input->_keyDown[keycodeToIndex(SDLK_RALT)]);
+		result = (inputState->_keyDown[keycodeToIndex(SDLK_LALT)] || inputState->_keyDown[keycodeToIndex(SDLK_RALT)]);
 		break;
 	case KeyMod_Ctrl:
-		result = (input->_keyDown[keycodeToIndex(SDLK_LCTRL)] || input->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
+		result = (inputState->_keyDown[keycodeToIndex(SDLK_LCTRL)] || inputState->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
 		break;
 	case KeyMod_Shift:
-		result = (input->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || input->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
+		result = (inputState->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || inputState->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
 		break;
 	case KeyMod_Super:
-		result = (input->_keyDown[keycodeToIndex(SDLK_LGUI)] || input->_keyDown[keycodeToIndex(SDLK_RGUI)]);
+		result = (inputState->_keyDown[keycodeToIndex(SDLK_LGUI)] || inputState->_keyDown[keycodeToIndex(SDLK_RGUI)]);
 		break;
 	}
 
 	return result;
 }
 
-inline u8 getPressedModifierKeys(InputState *input)
+inline u8 getPressedModifierKeys()
 {
 	u8 result = 0;
 
-	if (modifierKeyIsPressed(input, KeyMod_Alt))    result |= KeyMod_Alt;
-	if (modifierKeyIsPressed(input, KeyMod_Ctrl))   result |= KeyMod_Ctrl;
-	if (modifierKeyIsPressed(input, KeyMod_Shift))  result |= KeyMod_Shift;
-	if (modifierKeyIsPressed(input, KeyMod_Super))  result |= KeyMod_Super;
+	if (modifierKeyIsPressed(KeyMod_Alt))    result |= KeyMod_Alt;
+	if (modifierKeyIsPressed(KeyMod_Ctrl))   result |= KeyMod_Ctrl;
+	if (modifierKeyIsPressed(KeyMod_Shift))  result |= KeyMod_Shift;
+	if (modifierKeyIsPressed(KeyMod_Super))  result |= KeyMod_Super;
 
 	return result;
 }
 
-inline bool modifierKeysArePressed(InputState *input, u8 modifiers)
+inline bool modifierKeysArePressed(u8 modifiers)
 {
 	bool result = true;
 
@@ -183,88 +183,88 @@ inline bool modifierKeysArePressed(InputState *input, u8 modifiers)
 	{
 		if (modifiers & KeyMod_Alt)
 		{
-			result = result && (input->_keyDown[keycodeToIndex(SDLK_LALT)] || input->_keyDown[keycodeToIndex(SDLK_RALT)]);
+			result = result && (inputState->_keyDown[keycodeToIndex(SDLK_LALT)] || inputState->_keyDown[keycodeToIndex(SDLK_RALT)]);
 		}
 		if (modifiers & KeyMod_Ctrl)
 		{
-			result = result && (input->_keyDown[keycodeToIndex(SDLK_LCTRL)] || input->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
+			result = result && (inputState->_keyDown[keycodeToIndex(SDLK_LCTRL)] || inputState->_keyDown[keycodeToIndex(SDLK_RCTRL)]);
 		}
 		if (modifiers & KeyMod_Shift)
 		{
-			result = result && (input->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || input->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
+			result = result && (inputState->_keyDown[keycodeToIndex(SDLK_LSHIFT)] || inputState->_keyDown[keycodeToIndex(SDLK_RSHIFT)]);
 		}
 		if (modifiers & KeyMod_Super)
 		{
-			result = result && (input->_keyDown[keycodeToIndex(SDLK_LGUI)] || input->_keyDown[keycodeToIndex(SDLK_RGUI)]);
+			result = result && (inputState->_keyDown[keycodeToIndex(SDLK_LGUI)] || inputState->_keyDown[keycodeToIndex(SDLK_RGUI)]);
 		}
 	}
 
 	return result;
 }
 
-inline bool keyIsPressed(InputState *input, SDL_Keycode key, u8 modifiers)
+inline bool keyIsPressed(SDL_Keycode key, u8 modifiers)
 {
 	s32 keycode = keycodeToIndex(key);
 
-	bool result = input->_keyDown[keycode];
+	bool result = inputState->_keyDown[keycode];
 
 	if (modifiers)
 	{
-		result = result && modifierKeysArePressed(input, modifiers);
+		result = result && modifierKeysArePressed(modifiers);
 	}
 
 	return result;
 }
 
-inline bool keyWasPressed(InputState *input, SDL_Keycode key, u8 modifiers)
+inline bool keyWasPressed(SDL_Keycode key, u8 modifiers)
 {
 	s32 keycode = keycodeToIndex(key);
 
-	bool result = input->_keyWasDown[keycode];
+	bool result = inputState->_keyWasDown[keycode];
 
 	if (modifiers)
 	{
 		if (modifiers & KeyMod_Alt)
 		{
-			result = result && (keyWasPressed(input, SDLK_LALT) || keyWasPressed(input, SDLK_RALT));
+			result = result && (keyWasPressed(SDLK_LALT) || keyWasPressed(SDLK_RALT));
 		}
 		if (modifiers & KeyMod_Ctrl)
 		{
-			result = result && (keyWasPressed(input, SDLK_LCTRL) || keyWasPressed(input, SDLK_RCTRL));
+			result = result && (keyWasPressed(SDLK_LCTRL) || keyWasPressed(SDLK_RCTRL));
 		}
 		if (modifiers & KeyMod_Shift)
 		{
-			result = result && (keyWasPressed(input, SDLK_LSHIFT) || keyWasPressed(input, SDLK_RSHIFT));
+			result = result && (keyWasPressed(SDLK_LSHIFT) || keyWasPressed(SDLK_RSHIFT));
 		}
 		if (modifiers & KeyMod_Super)
 		{
-			result = result && (keyWasPressed(input, SDLK_LGUI) || keyWasPressed(input, SDLK_RGUI));
+			result = result && (keyWasPressed(SDLK_LGUI) || keyWasPressed(SDLK_RGUI));
 		}
 	}
 
 	return result;
 }
 
-inline bool keyJustPressed(InputState *input, SDL_Keycode key, u8 modifiers)
+inline bool keyJustPressed(SDL_Keycode key, u8 modifiers)
 {
-	return keyIsPressed(input, key, modifiers) && !keyWasPressed(input, key);
+	return keyIsPressed(key, modifiers) && !keyWasPressed(key);
 }
 
-inline bool wasShortcutJustPressed(InputState *input, KeyboardShortcut shortcut)
+inline bool wasShortcutJustPressed(KeyboardShortcut shortcut)
 {
-	return input->_keyDown[keycodeToIndex(shortcut.key)]
-		&& (getPressedModifierKeys(input) == shortcut.modifiers);
+	return inputState->_keyDown[keycodeToIndex(shortcut.key)]
+		&& (getPressedModifierKeys() == shortcut.modifiers);
 }
 
-inline bool wasTextEntered(InputState *input)
+inline bool wasTextEntered()
 {
-	return input->hasUnhandledTextEntered;
+	return inputState->hasUnhandledTextEntered;
 }
 
-inline String getEnteredText(InputState *input)
+inline String getEnteredText()
 {
-	input->hasUnhandledTextEntered = false;
-	return input->textEntered;
+	inputState->hasUnhandledTextEntered = false;
+	return inputState->textEntered;
 }
 
 inline String getClipboardText()
@@ -298,14 +298,14 @@ inline String getClipboardText()
  * Note that this means you can't bind something to just pressing a modifier key!
  */
 
-KeyboardShortcut parseKeyboardShortcut(String input)
+KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 {
 	DEBUG_FUNCTION();
 
 	KeyboardShortcut result = {};
 
 	String keyName, remainder;
-	keyName = nextToken(input, &remainder, '+');
+	keyName = nextToken(shortcutString, &remainder, '+');
 
 	while (!isEmpty(keyName))
 	{

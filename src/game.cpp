@@ -19,7 +19,7 @@ GameState *initialiseGameState()
 	return result;
 }
 
-void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 cityWidth, s32 cityHeight)
+void inputMoveCamera(Camera *camera, V2 windowSize, s32 cityWidth, s32 cityHeight)
 { 
 	DEBUG_FUNCTION();
 	
@@ -30,11 +30,11 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 	s32 zoomDelta = inputState->wheelY;
 
 	// Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
-	// if (keyJustPressed(inputState, SDLK_PAGEUP))
+	// if (keyJustPressed(SDLK_PAGEUP))
 	// {
 	// 	zoomDelta++;
 	// }
-	// else if (keyJustPressed(inputState, SDLK_PAGEDOWN))
+	// else if (keyJustPressed(SDLK_PAGEDOWN))
 	// {
 	// 	zoomDelta--;
 	// }
@@ -51,36 +51,36 @@ void inputMoveCamera(Camera *camera, InputState *inputState, V2 windowSize, s32 
 	f32 cameraEdgeScrollMarginX = cameraEdgeScrollPixelMargin / windowSize.x;
 	f32 cameraEdgeScrollMarginY = cameraEdgeScrollPixelMargin / windowSize.y;
 
-	if (mouseButtonPressed(inputState, MouseButton_Middle))
+	if (mouseButtonPressed(MouseButton_Middle))
 	{
 		// Click-panning!
 		float scale = scrollSpeed * 1.0f;
-		V2 clickStartPos = getClickStartPos(inputState, MouseButton_Middle, camera);
+		V2 clickStartPos = getClickStartPos(MouseButton_Middle, camera);
 		camera->pos += (camera->mousePos - clickStartPos) * scale;
 	}
 	else
 	{
-		if (keyIsPressed(inputState, SDLK_LEFT)
-			|| keyIsPressed(inputState, SDLK_a)
+		if (keyIsPressed(SDLK_LEFT)
+			|| keyIsPressed(SDLK_a)
 			|| (inputState->mousePosNormalised.x < (-1.0f + cameraEdgeScrollMarginX)))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
-		else if (keyIsPressed(inputState, SDLK_RIGHT)
-			|| keyIsPressed(inputState, SDLK_d)
+		else if (keyIsPressed(SDLK_RIGHT)
+			|| keyIsPressed(SDLK_d)
 			|| (inputState->mousePosNormalised.x > (1.0f - cameraEdgeScrollMarginX)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
-		if (keyIsPressed(inputState, SDLK_UP)
-			|| keyIsPressed(inputState, SDLK_w)
+		if (keyIsPressed(SDLK_UP)
+			|| keyIsPressed(SDLK_w)
 			|| (inputState->mousePosNormalised.y > (1.0f - cameraEdgeScrollMarginY)))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
-		else if (keyIsPressed(inputState, SDLK_DOWN)
-			|| keyIsPressed(inputState, SDLK_s)
+		else if (keyIsPressed(SDLK_DOWN)
+			|| keyIsPressed(SDLK_s)
 			|| (inputState->mousePosNormalised.y < (-1.0f + cameraEdgeScrollMarginY)))
 		{
 			camera->pos.y += scrollSpeed;
@@ -239,13 +239,13 @@ Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
 	return result;
 }
 
-DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1})
+DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1})
 {
 	DEBUG_FUNCTION();
 
 	DragResult result = {};
 
-	if (dragState->isDragging && mouseButtonJustReleased(inputState, MouseButton_Left))
+	if (dragState->isDragging && mouseButtonJustReleased(MouseButton_Left))
 	{
 		result.operation = DragResult_DoAction;
 		result.dragRect = getDragArea(dragState, dragType, itemSize);
@@ -255,13 +255,13 @@ DragResult updateDragState(DragState *dragState, InputState *inputState, V2I mou
 	else
 	{
 		// Update the dragging state
-		if (!mouseIsOverUI && mouseButtonJustPressed(inputState, MouseButton_Left))
+		if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left))
 		{
 			dragState->isDragging = true;
 			dragState->mouseDragStartWorldPos = dragState->mouseDragEndWorldPos = mouseTilePos;
 		}
 
-		if (mouseButtonPressed(inputState, MouseButton_Left) && dragState->isDragging)
+		if (mouseButtonPressed(MouseButton_Left) && dragState->isDragging)
 		{
 			dragState->mouseDragEndWorldPos = mouseTilePos;
 			result.dragRect = getDragArea(dragState, dragType, itemSize);
@@ -529,7 +529,7 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
-void updateAndRenderGame(AppState *appState, InputState *inputState)
+void updateAndRenderGame(AppState *appState)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 	
@@ -577,7 +577,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 	Camera *uiCamera    = &renderer->uiCamera;
 	if (gameState->status == GameStatus_Playing)
 	{
-		inputMoveCamera(worldCamera, inputState, uiCamera->size, gameState->city.width, gameState->city.height);
+		inputMoveCamera(worldCamera, uiCamera->size, gameState->city.width, gameState->city.height);
 	}
 
 	V2I mouseTilePos = v2i(worldCamera->mousePos);
@@ -617,8 +617,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 
 							bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x, footprint.y);
 
-							if ((buildingDef->buildMethod == BuildMethod_Plop && mouseButtonJustReleased(inputState, MouseButton_Left))
-							|| (buildingDef->buildMethod == BuildMethod_Paint && mouseButtonPressed(inputState, MouseButton_Left)))
+							if ((buildingDef->buildMethod == BuildMethod_Plop && mouseButtonJustReleased(MouseButton_Left))
+							|| (buildingDef->buildMethod == BuildMethod_Paint && mouseButtonPressed(MouseButton_Left)))
 							{
 								if (canPlace && canAfford(city, buildCost))
 								{
@@ -640,7 +640,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 					{
 						DragType dragType = (buildingDef->buildMethod == BuildMethod_DragLine) ? DragLine : DragRect;
 
-						DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
+						DragResult dragResult = updateDragState(&gameState->worldDragState, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
 						s32 buildCost = calculateBuildCost(city, buildingDef, dragResult.dragRect);
 
 						switch (dragResult.operation)
@@ -696,7 +696,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 
 			case ActionMode_Zone:
 			{
-				DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
+				DragResult dragResult = updateDragState(&gameState->worldDragState, mouseTilePos, mouseIsOverUI, DragRect);
 
 				CanZoneQuery *canZoneQuery = queryCanZoneTiles(city, gameState->selectedZoneID, dragResult.dragRect);
 				s32 zoneCost = calculateZoneCost(canZoneQuery);
@@ -733,7 +733,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 
 			case ActionMode_Demolish:
 			{
-				DragResult dragResult = updateDragState(&gameState->worldDragState, inputState, mouseTilePos, mouseIsOverUI, DragRect);
+				DragResult dragResult = updateDragState(&gameState->worldDragState, mouseTilePos, mouseIsOverUI, DragRect);
 				s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
 				demolitionRect = dragResult.dragRect;
 
@@ -771,7 +771,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 
 			case ActionMode_None:
 			{
-				if (!mouseIsOverUI && mouseButtonJustPressed(inputState, MouseButton_Left))
+				if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left))
 				{
 					if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
 					{
@@ -783,13 +783,13 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 		}
 	}
 
-	if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(inputState, MouseButton_Left))
+	if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(MouseButton_Left))
 	{
 		// Not sure if this is the best idea, but it's the best I can come up with.
 		gameState->worldDragState.isDragging = false;
 	}
 
-	if (mouseButtonJustPressed(inputState, MouseButton_Right))
+	if (mouseButtonJustPressed(MouseButton_Right))
 	{
 		// Unselect current thing
 		gameState->actionMode = ActionMode_None;
@@ -870,7 +870,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState)
 	}
 }
 
-void updateAndRender(AppState *appState, InputState *inputState)
+void updateAndRender(AppState *appState)
 {
 	DEBUG_FUNCTION();
 
@@ -900,7 +900,7 @@ void updateAndRender(AppState *appState, InputState *inputState)
 
 		case AppStatus_Game:
 		{
-			updateAndRenderGame(appState, inputState);
+			updateAndRenderGame(appState);
 		} break;
 
 		case AppStatus_Quit: break;

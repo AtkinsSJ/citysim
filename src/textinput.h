@@ -17,7 +17,7 @@ struct TextInput
 
 TextInput newTextInput(MemoryArena *arena, s32 length, f32 caretFlashCycleDuration=1.0f);
 // Returns true if pressed RETURN
-bool updateTextInput(TextInput *textInput, InputState *inputState);
+bool updateTextInput(TextInput *textInput);
 String textInputToString(TextInput *textInput);
 Rect2 drawTextInput(struct RenderBuffer *renderBuffer, struct BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth = 0);
 

@@ -160,7 +160,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 	}
 }
 
-void updateConsole(Console *console, InputState *inputState)
+void updateConsole(Console *console)
 {
 	// Keyboard shortcuts for commands
 	for (auto it = iterate(&console->commandShortcuts);
@@ -169,7 +169,7 @@ void updateConsole(Console *console, InputState *inputState)
 	{
 		CommandShortcut *shortcut = get(it);
 
-		if (wasShortcutJustPressed(inputState, shortcut->shortcut))
+		if (wasShortcutJustPressed(shortcut->shortcut))
 		{
 			consoleHandleCommand(console, shortcut->command);
 			console->scrollPos = 0;
@@ -177,9 +177,9 @@ void updateConsole(Console *console, InputState *inputState)
 	}
 
 	// Show/hide the console
-	if (keyJustPressed(inputState, SDLK_TAB))
+	if (keyJustPressed(SDLK_TAB))
 	{
-		if (modifierKeyIsPressed(inputState, KeyMod_Ctrl))
+		if (modifierKeyIsPressed(KeyMod_Ctrl))
 		{
 			if (console->targetHeight == console->maximisedHeight)
 			{
@@ -212,7 +212,7 @@ void updateConsole(Console *console, InputState *inputState)
 
 	if (console->currentHeight > 0)
 	{
-		if (updateTextInput(&console->input, inputState))
+		if (updateTextInput(&console->input))
 		{
 			consoleHandleCommand(console, textInputToString(&console->input));
 			console->scrollPos = 0;
@@ -223,7 +223,7 @@ void updateConsole(Console *console, InputState *inputState)
 			// Command history
 			if (console->inputHistory.count > 0)
 			{
-				if (keyJustPressed(inputState, SDLK_UP))
+				if (keyJustPressed(SDLK_UP))
 				{
 					if (console->inputHistoryCursor == -1)
 					{
@@ -238,7 +238,7 @@ void updateConsole(Console *console, InputState *inputState)
 					String oldInput = *get(&console->inputHistory, console->inputHistoryCursor);
 					append(&console->input, oldInput);
 				}
-				else if (keyJustPressed(inputState, SDLK_DOWN))
+				else if (keyJustPressed(SDLK_DOWN))
 				{
 					if (console->inputHistoryCursor == -1)
 					{

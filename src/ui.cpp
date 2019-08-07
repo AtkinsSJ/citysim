@@ -54,17 +54,17 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 
 		// Mouse pressed: must have started and currently be inside the bounds to show anything
 		// Mouse unpressed: show hover if in bounds
-		if (mouseButtonPressed(theInput, MouseButton_Left))
+		if (mouseButtonPressed(MouseButton_Left))
 		{
-			if (contains(bounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
+			if (contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				backColor = style->pressedColor;
 			}
 		}
 		else
 		{
-			if (mouseButtonJustReleased(theInput, MouseButton_Left)
-			 && contains(bounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
+			if (mouseButtonJustReleased(MouseButton_Left)
+			 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 			}
@@ -88,7 +88,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
-	&& keyJustPressed(theInput, shortcutKey))
+	&& keyJustPressed(shortcutKey))
 	{
 		buttonClicked = true;
 	}
