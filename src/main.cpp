@@ -86,6 +86,7 @@ AppState globalAppState;
 #include "types.cpp"
 #include "memory.cpp"
 #include "array.cpp"
+#include "random.cpp"
 #include "linked_list.cpp"
 #include "unicode.cpp"
 #include "string.cpp"
@@ -187,7 +188,7 @@ int main(int argc, char *argv[])
 	globalDebugState->showDebugData = false;
 #endif
 
-	randomSeed(&globalAppState.cosmeticRandom, (s32)time(null));
+	initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(null));
 
 	Settings *settings = &globalAppState.settings;
 	initSettings(settings);

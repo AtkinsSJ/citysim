@@ -1,25 +1,35 @@
 #pragma once
 
-#include "random_mt.h"
-
-typedef RandomMT Random;
-#define randomSeed(...) MT_randomSeed(__VA_ARGS__)
-#define randomNext(...) MT_randomNext(__VA_ARGS__)
-
-s32 randomInRange(Random *random, s32 maxExclusive)
+enum RandomType
 {
-	s32 result = 0;
+	Random_MT,
+};
 
-	// 0 or negative max values don't make sense, so we return a 0 for those.
-	if (maxExclusive > 0)
+// Mersenne Twister
+struct RandomMT
+{
+	s32 mt[624];
+	s32 index;
+};
+
+struct Random
+{
+	RandomType type;
+	union
 	{
-		result = randomNext(random) % maxExclusive;
-	}
+		RandomMT mt;
+	};
+};
 
-	return result;
-}
+void initRandom(Random *random, RandomType type, s32 seed);
 
-bool randomBool(Random *random)
-{
-	return (randomNext(random) % 2) != 0;
-}
+s32 randomNext(Random *random);
+s32 randomInRange(Random *random, s32 maxExclusive);
+bool randomBool(Random *random);
+
+//
+// Internal
+//
+void MT_randomSeed(RandomMT *random, s32 seed);
+void MT_randomTwist(RandomMT *random);
+s32 MT_randomNext(RandomMT *random);

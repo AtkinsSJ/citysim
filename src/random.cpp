@@ -1,16 +1,55 @@
-// Mersenne Twister!
 
-#pragma once
-
-/**
- *	Don't include this directly, include random.h which wraps this or any other random number generator.
- */
-
-struct RandomMT
+void initRandom(Random *random, RandomType type, s32 seed)
 {
-	s32 mt[624];
-	s32 index;
-};
+	random->type = type;
+
+	switch (type)
+	{
+		case Random_MT: {
+			MT_randomSeed(&random->mt, seed);
+		} break;
+
+		INVALID_DEFAULT_CASE;
+	}
+}
+
+s32 randomNext(Random *random)
+{
+	s32 result = 0;
+
+	switch (random->type)
+	{
+		case Random_MT: {
+			result = MT_randomNext(&random->mt);
+		} break;
+
+		INVALID_DEFAULT_CASE;
+	}
+
+	return result;
+}
+
+s32 randomInRange(Random *random, s32 maxExclusive)
+{
+	s32 result = 0;
+
+	// 0 or negative max values don't make sense, so we return a 0 for those.
+	if (maxExclusive > 0)
+	{
+		result = randomNext(random) % maxExclusive;
+	}
+
+	return result;
+}
+
+inline bool randomBool(Random *random)
+{
+	return (randomNext(random) % 2) != 0;
+}
+
+//
+// Mersenne Twister
+//
 
 void MT_randomSeed(RandomMT *random, s32 seed)
 {
