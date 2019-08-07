@@ -18,9 +18,9 @@ void loadDefaultSettings()
 	settings->locale = makeString("en");
 }
 
-void initSettings(MemoryArena *arena)
+void initSettings()
 {
-	settings = allocateStruct<Settings>(arena);
+	bootstrapArena(Settings, settings, settingsArena);
 	initHashTable(&settings->defs);
 
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
@@ -98,7 +98,7 @@ void loadSettingsFile(String name, Blob settingsData)
 
 					case Type_String:
 					{
-						((String *)firstItem)[i] = pushString(&globalAppState.systemArena, sValue);
+						((String *)firstItem)[i] = pushString(&settings->settingsArena, sValue);
 					} break;
 
 					default: ASSERT(false); //Unhandled setting type!
@@ -110,6 +110,7 @@ void loadSettingsFile(String name, Blob settingsData)
 
 void loadSettings()
 {
+	resetMemoryArena(&settings->settingsArena);
 	loadDefaultSettings();
 
 	File userSettingsFile = readFile(tempArena, getUserSettingsPath());

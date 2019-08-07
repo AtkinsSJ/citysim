@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 
 	initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(null));
 
-	initSettings(&globalAppState.systemArena);
+	initSettings();
 	loadSettings();
 
 	SDL_Window *window = initSDL(getWindowSettings(), "Some kind of city builder");
@@ -331,10 +331,14 @@ int main(int argc, char *argv[])
 			if (globalDebugState)
 			{
 				DEBUG_ASSETS();
+
+				// TODO: Maybe automatically register arenas with the debug system?
+				// Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
 				DEBUG_ARENA(&appState->systemArena, "System");
 				DEBUG_ARENA(tempArena, "Global Temp Arena");
 				DEBUG_ARENA(&renderer->renderArena, "Renderer");
-				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
+				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : null, "GameState");
+				DEBUG_ARENA(&settings->settingsArena, "Settings");
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
 				updateAndRenderDebugData(globalDebugState);

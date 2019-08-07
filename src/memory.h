@@ -86,6 +86,9 @@ T *bootstrapMemoryArena(smm offsetOfArenaMember)
 
 bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1));
 void markResetPosition(MemoryArena *arena);
+void resetMemoryArena(MemoryArena *arena);
+void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState);
+void freeMemoryArena(MemoryArena *arena);
 
 u8 *allocateRaw(smm size);
 void *allocate(MemoryArena *arena, smm size);

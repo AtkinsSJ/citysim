@@ -244,7 +244,7 @@ void loadAsset(Asset *asset)
 
 		case AssetType_Texts:
 		{
-			fileData = readTempFile(getAssetPath(AssetType_Texts, myprintf("{0}.text", {assets->locale})));
+			fileData = readTempFile(getAssetPath(AssetType_Texts, myprintf("{0}.text", {getLocale()})));
 			copyFileIntoAsset(&fileData, asset);
 			loadTexts(&assets->texts, asset, fileData);
 			asset->state = AssetState_Loaded;
@@ -488,7 +488,6 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 void addAssets()
 {
 	// Manually add the texts asset, because it's special.
-	assets->locale = getLocale();
 	addAsset(AssetType_Texts, makeString("LOCALE.text"), false);
 
 	{
@@ -626,7 +625,7 @@ inline String getText(String name)
 	}
 	else
 	{
-		logWarn("Locale {0} is missing text for '{1}'.", {assets->locale, name});
+		logWarn("Locale {0} is missing text for '{1}'.", {getLocale(), name});
 		put(&assets->texts, name, name);
 	}
 
@@ -664,14 +663,9 @@ String getAssetPath(AssetType type, String shortName)
 
 void reloadLocaleSpecificAssets(String newLocale)
 {
-	if (!equals(newLocale, assets->locale))
-	{
-		assets->locale = newLocale;
-
-		// Text
-		Asset *textAsset = getAsset(AssetType_Texts, makeString("LOCALE.text"));
-		reloadAsset(textAsset);
-	}
+	// Text
+	Asset *textAsset = getAsset(AssetType_Texts, makeString("LOCALE.text"));
+	reloadAsset(textAsset);
 }
 
 void loadCursorDefs(Blob data, Asset *asset)

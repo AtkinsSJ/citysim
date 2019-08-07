@@ -17,6 +17,7 @@ struct SettingDef
 
 struct Settings
 {
+	MemoryArena settingsArena;
 	HashTable<SettingDef> defs;
 
 	String userDataPath;
@@ -33,7 +34,7 @@ struct Settings
 //
 // PUBLIC
 //
-void initSettings(MemoryArena *arena);
+void initSettings();
 void loadSettings();
 void applySettings();
 void saveSettings();

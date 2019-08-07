@@ -123,7 +123,6 @@ struct Assets
 	// TODO: this probably belongs somewhere else? IDK.
 	// It feels icky having parts of assets directly in this struct, but when there's only 1, and you
 	// have to do a hashtable lookup inside it, it makes more sense to avoid the "find the asset" lookup.
-	String locale;
 	HashTable<String> texts;
 
 	/*
