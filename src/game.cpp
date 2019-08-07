@@ -410,17 +410,17 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 	append(&uiState->uiRects, uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
 
-	uiText(renderer, uiState->uiBuffer, font, city->name,
+	uiText(renderer, &renderer->uiBuffer, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
 
-	uiText(renderer, uiState->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(renderer, &renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(renderer, uiState->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(renderer, &renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(renderer, uiState->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
+	uiText(renderer, &renderer->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-	uiText(renderer, uiState->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
+	uiText(renderer, &renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
 	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 

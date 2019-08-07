@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
 	UIState *uiState = &appState->uiState;
-	initUiState(uiState, &renderer->uiBuffer, &renderer->uiCamera, assets, &inputState);
+	initUiState(uiState, &renderer->uiCamera, assets, &inputState);
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;

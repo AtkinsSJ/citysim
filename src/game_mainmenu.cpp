@@ -12,7 +12,7 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 
 	// Debug text for profiling text rendering
 	UILabelStyle *liLabelStyle = findLabelStyle(theme, makeString("small"));
-	uiText(renderer, uiState->uiBuffer, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
+	uiText(renderer, &renderer->uiBuffer, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
 			v2(0.0f,0.0f), ALIGN_LEFT | ALIGN_TOP,
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
 			// v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,
@@ -24,13 +24,13 @@ void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManage
 	UILabelStyle *labelStyle = findLabelStyle(theme, makeString("title"));
 	BitmapFont *font = getFont(assets, labelStyle->fontName);
 
-	position.y += (uiText(renderer, uiState->uiBuffer, font, LOCAL("game_title"),
+	position.y += (uiText(renderer, &renderer->uiBuffer, font, LOCAL("game_title"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(renderer, uiState->uiBuffer, font, LOCAL("game_subtitle"),
+	position.y += (uiText(renderer, &renderer->uiBuffer, font, LOCAL("game_subtitle"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(renderer, uiState->uiBuffer, font, makeString("This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."),
+	position.y += (uiText(renderer, &renderer->uiBuffer, font, makeString("This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);

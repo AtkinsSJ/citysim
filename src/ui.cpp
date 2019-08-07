@@ -1,10 +1,9 @@
 // ui.cpp
 
-void initUiState(UIState *uiState, RenderBuffer *uiBuffer, Camera *uiCamera, AssetManager *assets, InputState *input)
+void initUiState(UIState *uiState, Camera *uiCamera, AssetManager *assets, InputState *input)
 {
 	*uiState = {};
 
-	uiState->uiBuffer = uiBuffer;
 	uiState->uiCamera = uiCamera;
 	uiState->assets = assets;
 	uiState->input = input;
@@ -90,9 +89,9 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(uiState->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
+	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, style->textColor);
+	uiText(renderer, &renderer->uiBuffer, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
@@ -166,9 +165,9 @@ void drawUiMessage(UIState *uiState, Renderer *renderer)
 
 			V2 origin = v2(renderer->uiCamera.size.x * 0.5f, renderer->uiCamera.size.y - 8.0f);
 
-			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(uiState->uiBuffer, renderer->shaderIds.untextured);
+			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-			Rect2 labelRect = uiText(renderer, uiState->uiBuffer, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
+			Rect2 labelRect = uiText(renderer, &renderer->uiBuffer, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);
