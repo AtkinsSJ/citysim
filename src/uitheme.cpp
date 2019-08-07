@@ -53,7 +53,7 @@ void loadUITheme(Blob data, Asset *asset)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (isEmpty(line)) break;
+		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String firstWord, remainder;
 		firstWord = nextToken(line, &remainder);

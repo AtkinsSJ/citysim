@@ -142,6 +142,7 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
+		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String key, value;
 		key = nextToken(line, &value);
@@ -487,7 +488,7 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 void addAssets()
 {
 	// Manually add the texts asset, because it's special.
-	assets->locale = globalAppState.settings.locale;
+	assets->locale = getLocale();
 	addAsset(AssetType_Texts, makeString("LOCALE.text"), false);
 
 	{
@@ -625,7 +626,7 @@ inline String getText(String name)
 	}
 	else
 	{
-		logError("Locale {0} is missing text for '{1}'.", {globalAppState.settings.locale, name});
+		logWarn("Locale {0} is missing text for '{1}'.", {assets->locale, name});
 		put(&assets->texts, name, name);
 	}
 
@@ -661,11 +662,11 @@ String getAssetPath(AssetType type, String shortName)
 	return result;
 }
 
-void setLocale(String locale)
+void reloadLocaleSpecificAssets(String newLocale)
 {
-	if (!equals(locale, assets->locale))
+	if (!equals(newLocale, assets->locale))
 	{
-		assets->locale = locale;
+		assets->locale = newLocale;
 
 		// Text
 		Asset *textAsset = getAsset(AssetType_Texts, makeString("LOCALE.text"));
@@ -682,6 +683,8 @@ void loadCursorDefs(Blob data, Asset *asset)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
+		if (isEmpty(line)) break; // @BlankLastLineBug
+
 		String remainder;
 
 		String name     = pushString(&assets->assetArena, nextToken(line, &remainder));

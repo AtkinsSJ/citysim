@@ -64,8 +64,8 @@ ConsoleCommand(reload_assets)
 
 ConsoleCommand(reload_settings)
 {
-	loadSettings(&globalAppState.settings);
-	applySettings(&globalAppState.settings);
+	loadSettings();
+	applySettings();
 }
 
 ConsoleCommand(show_layer)

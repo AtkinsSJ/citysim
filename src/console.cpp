@@ -273,6 +273,7 @@ void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
+		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String shortcutString, command;
 

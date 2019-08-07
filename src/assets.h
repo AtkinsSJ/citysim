@@ -155,7 +155,7 @@ struct Assets
 
 void initAssets();
 
-void setLocale(String locale);
+void reloadLocaleSpecificAssets(String newLocale);
 
 Asset *addAsset(AssetType type, String shortName, bool isAFile=true);
 Asset *addTexture(String filename, bool isAlphaPremultiplied);

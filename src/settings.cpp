@@ -1,6 +1,6 @@
 #pragma once
 
-void registerSetting(Settings *settings, String settingName, smm offset, Type type, s32 count)
+void registerSetting(String settingName, smm offset, Type type, s32 count)
 {
 	SettingDef def = {};
 	def.name = settingName;
@@ -11,46 +11,44 @@ void registerSetting(Settings *settings, String settingName, smm offset, Type ty
 	put(&settings->defs, settingName, def);
 }
 
-void loadDefaultSettings(Settings *settings)
+void loadDefaultSettings()
 {
 	settings->windowed = true;
 	settings->resolution = v2i(1024, 768);
 	settings->locale = makeString("en");
 }
 
-void initSettings(Settings *settings)
+void initSettings(MemoryArena *arena)
 {
-	*settings = {};
+	settings = allocateStruct<Settings>(arena);
 	initHashTable(&settings->defs);
 
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
 	settings->userSettingsFilename = makeString("settings.cnf");
 	settings->defaultSettingsFilename = makeString("default-settings.cnf");
 
-#define REGISTER_SETTING(settingName, type, count) registerSetting(settings, makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
+#define REGISTER_SETTING(settingName, type, count) registerSetting(makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
 
 	REGISTER_SETTING(windowed,   bool,   1);
 	REGISTER_SETTING(resolution, s32,    2);
 	REGISTER_SETTING(locale,     String, 1);
 
 #undef REGISTER_SETTING
-
-	loadDefaultSettings(settings);
 }
 
-inline String getUserSettingsPath(Settings *settings)
+inline String getUserSettingsPath()
 {
 	return myprintf("{0}{1}", {settings->userDataPath, settings->userSettingsFilename}, true);
 }
 
-void loadSettingsFile(Settings *settings, String name, Blob settingsData)
+void loadSettingsFile(String name, Blob settingsData)
 {
 	LineReader reader = readLines(name, settingsData);
 
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (isEmpty(line)) break; // Is this necessary? It shouldn't be!
+		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String settingName;
 		String remainder;
@@ -110,28 +108,28 @@ void loadSettingsFile(Settings *settings, String name, Blob settingsData)
 	}
 }
 
-void loadSettings(Settings *settings)
+void loadSettings()
 {
-	loadDefaultSettings(settings);
+	loadDefaultSettings();
 
-	File userSettingsFile = readFile(tempArena, getUserSettingsPath(settings));
+	File userSettingsFile = readFile(tempArena, getUserSettingsPath());
 	// User settings might not exist
 	if (userSettingsFile.isLoaded)
 	{
-		loadSettingsFile(settings, userSettingsFile.name, userSettingsFile.data);
+		loadSettingsFile(userSettingsFile.name, userSettingsFile.data);
 	}
 
 	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}", {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y), settings->locale});
 }
 
-void applySettings(Settings *settings)
+void applySettings()
 {
 	resizeWindow(settings->resolution.x, settings->resolution.y, !settings->windowed);
 
-	setLocale(settings->locale);
+	reloadLocaleSpecificAssets(settings->locale);
 }
 
-void saveSettings(Settings *settings)
+void saveSettings()
 {
 	StringBuilder stb = newStringBuilder(2048);
 	append(&stb, "# User-specific settings file.\n#\n");
@@ -178,7 +176,7 @@ void saveSettings(Settings *settings)
 		append(&stb, '\n');
 	}
 
-	String userSettingsPath = getUserSettingsPath(settings);
+	String userSettingsPath = getUserSettingsPath();
 	String fileData = getString(&stb);
 
 	if (writeFile(userSettingsPath, fileData))
@@ -190,6 +188,21 @@ void saveSettings(Settings *settings)
 		// TODO: Really really really need to display an error window to the user!
 		logError("Failed to save user settings to {0}.", {userSettingsPath});
 	}
+}
+
+WindowSettings getWindowSettings()
+{
+	WindowSettings result = {};
+	result.width      = settings->resolution.x;
+	result.height     = settings->resolution.y;
+	result.isWindowed = settings->windowed;
+
+	return result;
+}
+
+String getLocale()
+{
+	return settings->locale;
 }
 
 AppStatus updateAndRenderSettingsMenu(UIState *uiState)

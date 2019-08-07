@@ -18,6 +18,7 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
+		if (isEmpty(line)) break; // @BlankLastLineBug
 		position.y += (uiText(&renderer->uiBuffer, font, line,
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}

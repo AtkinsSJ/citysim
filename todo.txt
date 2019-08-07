@@ -14,11 +14,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Cursor update
-✔ Cursor should be a property of the Renderer, not the UiState.
-	✔ Remember to re-implement the "show the wait cursor" stuff!
-✔ Config file that defines cursor assets by image filename and "hot" coordinate, so we don't have to refer to a cursor as eg "build.png"
-
 Renderer optimisation!
 - Set up a texture mesh per chunk!
 - Maybe send data to the renderer in a more render-friendly form? (ie, send vertex data instead of the renderer having to construct it.) Then again, that could cause problems if we use multiple renderers? IDK, probably not. It might be more awkward for user code to manipulate things it's submitted already though. IDK.
@@ -72,6 +67,9 @@ SECTORS:
 Tidy up the types/maths files, so that I can ACTUALLY FIND THINGS.
 - Maybe color/v4 should be separate types?
 - I'm sure I can think of other things too!
+
+@BlankLastLineBug
+- Right now, our data file reading doesn't properly handle trailing blank lines, including ones which are comments. This is because we only move forward to see if there is a next line when it's requested, so isDone(&reader) doesn't know yet if there really is a valid next line! To fix this we'd need to switch to doing that read up front.
 
 ------------------------------------------------
 

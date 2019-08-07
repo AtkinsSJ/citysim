@@ -24,6 +24,7 @@ struct Settings
 	String defaultSettingsFilename;
 
 	// The actual settings
+	// You shouldn't access these directly! Use the getters below.
 	bool windowed;
 	V2I resolution;
 	String locale;
@@ -32,17 +33,27 @@ struct Settings
 //
 // PUBLIC
 //
-void initSettings(Settings *settings);
-void loadSettings(Settings *settings);
-void applySettings(Settings *settings);
-void saveSettings(Settings *settings);
+void initSettings(MemoryArena *arena);
+void loadSettings();
+void applySettings();
+void saveSettings();
+
+struct WindowSettings
+{
+	s32 width;
+	s32 height;
+	bool isWindowed;
+};
+WindowSettings getWindowSettings();
+
+String getLocale();
 
 AppStatus updateAndRenderSettingsMenu(struct UIState *uiState);
 
 //
 // INTERNAL
 //
-void registerSetting(Settings *settings, String settingName, smm offset, Type type, s32 count);
-void loadDefaultSettings(Settings *settings);
-void loadSettingsFile(Settings *settings, String name, Blob settingsData);
-String getUserSettingsPath(Settings *settings);
+void registerSetting(String settingName, smm offset, Type type, s32 count);
+void loadDefaultSettings();
+void loadSettingsFile(String name, Blob settingsData);
+String getUserSettingsPath();

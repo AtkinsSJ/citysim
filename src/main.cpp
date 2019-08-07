@@ -31,9 +31,10 @@ enum AppStatus
 };
 
 struct MemoryArena  *tempArena;
-struct Renderer     *renderer;
 struct Assets       *assets;
 struct InputState   *inputState;
+struct Renderer     *renderer;
+struct Settings     *settings;
 
 #include "log.h"
 #include "types.h"
@@ -75,8 +76,6 @@ struct AppState
 {
 	AppStatus appStatus;
 	MemoryArena systemArena;
-
-	Settings settings;
 
 	GameState *gameState;
 	Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
@@ -127,7 +126,7 @@ AppState globalAppState;
 #include "platform_win32.cpp"
 #endif
 
-SDL_Window *initSDL(Settings *settings, const char *windowTitle)
+SDL_Window *initSDL(WindowSettings windowSettings, const char *windowTitle)
 {
 	SDL_Window *window = null;
 
@@ -147,11 +146,11 @@ SDL_Window *initSDL(Settings *settings, const char *windowTitle)
 		{
 			// Window
 			u32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-			if (!settings->windowed)
+			if (!windowSettings.isWindowed)
 			{
 				windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 			}
-			window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, settings->resolution.x, settings->resolution.y, windowFlags);
+			window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSettings.width, windowSettings.height, windowFlags);
 
 			if (!window)
 			{
@@ -191,11 +190,10 @@ int main(int argc, char *argv[])
 
 	initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(null));
 
-	Settings *settings = &globalAppState.settings;
-	initSettings(settings);
-	loadSettings(settings);
+	initSettings(&globalAppState.systemArena);
+	loadSettings();
 
-	SDL_Window *window = initSDL(settings, "Some kind of city builder");
+	SDL_Window *window = initSDL(getWindowSettings(), "Some kind of city builder");
 	ASSERT(window != null); //Failed to initialise SDL.
 
 	initAssets();
