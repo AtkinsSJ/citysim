@@ -114,7 +114,7 @@ void loadSettings(Settings *settings)
 {
 	loadDefaultSettings(settings);
 
-	File userSettingsFile = readFile(globalFrameTempArena, getUserSettingsPath(settings));
+	File userSettingsFile = readFile(tempArena, getUserSettingsPath(settings));
 	// User settings might not exist
 	if (userSettingsFile.isLoaded)
 	{
@@ -192,13 +192,12 @@ void saveSettings(Settings *settings)
 	}
 }
 
-void updateAndRenderSettingsMenu(AppState *appState)
+AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 {
-	AppStatus result = appState->appStatus;
+	AppStatus result = AppStatus_SettingsMenu;
 
 	f32 windowWidth = (f32) renderer->uiCamera.size.x;
 	f32 windowHeight = (f32) renderer->uiCamera.size.y;
-	UIState *uiState = &appState->uiState;
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
@@ -219,5 +218,5 @@ void updateAndRenderSettingsMenu(AppState *appState)
 		result = AppStatus_MainMenu;
 	}
 
-	appState->appStatus = result;
+	return result;
 }

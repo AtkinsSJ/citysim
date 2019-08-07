@@ -413,7 +413,7 @@ DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8
 	addSetShader(buffer, shaderID);
 	if (texture != null) addSetTexture(buffer, texture);
 
-	DrawRectsGroup *result = allocateStruct<DrawRectsGroup>(globalFrameTempArena);
+	DrawRectsGroup *result = allocateStruct<DrawRectsGroup>(tempArena);
 	*result = {};
 
 	result->buffer = buffer;
@@ -479,7 +479,7 @@ void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)
 	{
 		endCurrentSubGroup(group);
 		DrawRectsSubGroup *prevSubGroup = group->currentSubGroup;
-		group->currentSubGroup = allocateStruct<DrawRectsSubGroup>(globalFrameTempArena);
+		group->currentSubGroup = allocateStruct<DrawRectsSubGroup>(tempArena);
 		*group->currentSubGroup = beginRectsSubGroup(group);
 		prevSubGroup->next = group->currentSubGroup;
 		group->currentSubGroup->prev = prevSubGroup;

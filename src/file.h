@@ -85,7 +85,7 @@ smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory);
 // If you want to refer to parts of it later, you need to copy the data somewhere else!
 inline Blob readTempFile(String filePath)
 {
-	return readFile(globalFrameTempArena, filePath).data;
+	return readFile(tempArena, filePath).data;
 }
 
 bool writeFile(String filePath, String contents);

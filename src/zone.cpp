@@ -47,7 +47,7 @@ CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
 	CanZoneQuery *query = null;
 	s32 tileCount = areaOf(bounds);
 	smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
-	u8 *memory = (u8*) allocate(globalFrameTempArena, structSize);
+	u8 *memory = (u8*) allocate(tempArena, structSize);
 	query = (CanZoneQuery *) memory;
 	query->tileCanBeZoned = (u8 *) (memory + sizeof(CanZoneQuery));
 	query->bounds = bounds;

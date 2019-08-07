@@ -3,7 +3,6 @@
 struct WindowContext
 {
 	struct UIState *uiState;
-	MemoryArena *temporaryMemory;
 	struct Window *window;
 	UIWindowStyle *windowStyle;
 

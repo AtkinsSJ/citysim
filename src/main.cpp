@@ -30,7 +30,7 @@ enum AppStatus
 	AppStatus_Quit,
 };
 
-struct MemoryArena  *globalFrameTempArena;
+struct MemoryArena  *tempArena;
 struct Renderer     *renderer;
 struct Assets       *assets;
 struct InputState   *inputState;
@@ -75,7 +75,6 @@ struct AppState
 {
 	AppStatus appStatus;
 	MemoryArena systemArena;
-	MemoryArena globalTempArena;
 
 	UIState uiState;
 	Settings settings;
@@ -180,8 +179,9 @@ int main(int argc, char *argv[])
 
 	initMemoryArena(&globalAppState.systemArena, MB(1));
 
-	globalFrameTempArena = &globalAppState.globalTempArena;
-	initMemoryArena(&globalAppState.globalTempArena, MB(4));
+	MemoryArena globalFrameTempArena;
+	initMemoryArena(&globalFrameTempArena, MB(4));
+	tempArena = &globalFrameTempArena;
 
 #if BUILD_DEBUG
 	debugInit();
@@ -261,7 +261,65 @@ int main(int argc, char *argv[])
 			addClear(&renderer->worldBuffer);
 			addSetCamera(&renderer->uiBuffer, uiCamera);
 
-			updateAndRender(appState);
+			{
+				UIState *uiState = &appState->uiState;
+				uiState->uiRects.count = 0;
+				uiState->mouseInputHandled = false;
+				updateWindows(uiState);
+				
+				AppStatus newAppStatus = appState->appStatus;
+
+				switch (appState->appStatus)
+				{
+					case AppStatus_MainMenu:
+					{
+						newAppStatus = updateAndRenderMainMenu(uiState);
+					} break;
+
+					case AppStatus_Credits:
+					{
+						newAppStatus = updateAndRenderCredits(uiState);
+					} break;
+
+					case AppStatus_SettingsMenu:
+					{
+						newAppStatus = updateAndRenderSettingsMenu(uiState);
+					} break;
+
+					case AppStatus_Game:
+					{
+						newAppStatus = updateAndRenderGame(appState->gameState, uiState);
+					} break;
+
+					case AppStatus_Quit: break;
+					
+					INVALID_DEFAULT_CASE;
+				}
+
+				renderWindows(uiState);
+
+				if (newAppStatus != appState->appStatus)
+				{
+					if (appState->appStatus == AppStatus_Game)
+					{
+						freeGameState(appState->gameState);
+						appState->gameState = null;
+					}
+
+					appState->appStatus = newAppStatus;
+					clear(&uiState->openWindows);
+
+					if (newAppStatus == AppStatus_Game)
+					{
+						appState->gameState = beginNewGame();
+						refreshBuildingSpriteCache(&buildingCatalogue);
+						refreshTerrainSpriteCache(&terrainDefs);
+					}
+				}
+
+				drawUiMessage(uiState);
+			}
+
 
 			if (globalConsole)
 			{
@@ -277,7 +335,7 @@ int main(int argc, char *argv[])
 			{
 				DEBUG_ASSETS();
 				DEBUG_ARENA(&appState->systemArena, "System");
-				DEBUG_ARENA(&appState->globalTempArena, "Global Temp Arena");
+				DEBUG_ARENA(tempArena, "Global Temp Arena");
 				DEBUG_ARENA(&renderer->renderArena, "Renderer");
 				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
@@ -288,7 +346,7 @@ int main(int argc, char *argv[])
 			// Actually draw things!
 			render();
 
-			resetMemoryArena(&appState->globalTempArena);
+			resetMemoryArena(tempArena);
 		}
 
 		// FRAMERATE MONITORING AND CAPPING

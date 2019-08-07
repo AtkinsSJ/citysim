@@ -85,3 +85,21 @@ const V4 genericDataLayerColors[] = {
 	color255(255,   0, 255, 63)
 };
 const s32 genericDataLayerColorCount = 6;
+
+GameState *beginNewGame();
+AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState);
+void freeGameState(GameState *gameState);
+
+void inputMoveCamera(Camera *camera, V2 windowSize, s32 cityWidth, s32 cityHeight);
+void updateAndRenderGameUI(UIState *uiState, GameState *gameState);
+void showCostTooltip(UIState *uiState, s32 buildCost);
+
+Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize);
+DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1});
+
+//
+// Internal
+//
+void inspectTileWindowProc(WindowContext *context, void *userData);
+void pauseMenuWindowProc(WindowContext *context, void *userData);
+void costTooltipWindowProc(WindowContext *context, void *userData);

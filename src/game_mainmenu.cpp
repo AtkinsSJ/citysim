@@ -1,14 +1,13 @@
 #pragma once
 
-void updateAndRenderMainMenu(AppState *appState)
+AppStatus updateAndRenderMainMenu(UIState *uiState)
 {
 	DEBUG_FUNCTION();
 	
-	AppStatus result = appState->appStatus;
+	AppStatus result = AppStatus_MainMenu;
 
 	f32 windowWidth  = (f32) renderer->uiCamera.size.x;
 	UITheme *theme = &assets->theme;
-	UIState *uiState = &appState->uiState;
 
 	// Debug text for profiling text rendering
 	UILabelStyle *liLabelStyle = findLabelStyle(theme, makeString("small"));
@@ -59,5 +58,5 @@ void updateAndRenderMainMenu(AppState *appState)
 		result = AppStatus_Quit;
 	}
 
-	appState->appStatus = result;
+	return result;
 }

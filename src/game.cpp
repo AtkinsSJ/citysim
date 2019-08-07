@@ -1,6 +1,6 @@
 #pragma once
 
-GameState *initialiseGameState()
+GameState *beginNewGame()
 {
 	GameState *result;
 	bootstrapArena(GameState, result, gameArena);
@@ -16,7 +16,14 @@ GameState *initialiseGameState()
 
 	result->worldDragState.citySize = v2i(result->city.width, result->city.height);
 
+	renderer->worldCamera.pos = v2(result->city.width/2, result->city.height/2);
+
 	return result;
+}
+
+void freeGameState(GameState *gameState)
+{
+	freeMemoryArena(&gameState->gameArena);
 }
 
 void inputMoveCamera(Camera *camera, V2 windowSize, s32 cityWidth, s32 cityHeight)
@@ -239,7 +246,7 @@ Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
 	return result;
 }
 
-DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1})
+DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize)
 {
 	DEBUG_FUNCTION();
 
@@ -529,20 +536,12 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
-void updateAndRenderGame(AppState *appState)
+AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-	
-	if (appState->gameState == null)
-	{
-		appState->gameState = initialiseGameState();
-		renderer->worldCamera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
 
-		refreshBuildingSpriteCache(&buildingCatalogue);
-		refreshTerrainSpriteCache(&terrainDefs);
-	}
+	AppStatus result = AppStatus_Game;
 
-	GameState *gameState = appState->gameState;
 	City *city = &gameState->city;
 
 	if (assets->assetReloadHasJustHappened)
@@ -566,7 +565,6 @@ void updateAndRenderGame(AppState *appState)
 
 
 	// UI!
-	UIState *uiState = &globalAppState.uiState;
 	updateAndRenderGameUI(uiState, gameState);
 
 	V4 ghostColorValid    = color255(128,255,128,255);
@@ -864,56 +862,8 @@ void updateAndRenderGame(AppState *appState)
 
 	if (gameState->status == GameStatus_Quit)
 	{
-		freeMemoryArena(&gameState->gameArena);
-		appState->gameState = null;
-		appState->appStatus = AppStatus_MainMenu;
-	}
-}
-
-void updateAndRender(AppState *appState)
-{
-	DEBUG_FUNCTION();
-
-	AppStatus oldAppStatus = appState->appStatus;
-
-	UIState *uiState = &appState->uiState;
-	uiState->uiRects.count = 0;
-	uiState->mouseInputHandled = false;
-	updateWindows(uiState);
-	
-	switch (appState->appStatus)
-	{
-		case AppStatus_MainMenu:
-		{
-			updateAndRenderMainMenu(appState);
-		} break;
-
-		case AppStatus_Credits:
-		{
-			updateAndRenderCredits(appState);
-		} break;
-
-		case AppStatus_SettingsMenu:
-		{
-			updateAndRenderSettingsMenu(appState);
-		} break;
-
-		case AppStatus_Game:
-		{
-			updateAndRenderGame(appState);
-		} break;
-
-		case AppStatus_Quit: break;
-		
-		INVALID_DEFAULT_CASE;
+		result = AppStatus_MainMenu;
 	}
 
-	renderWindows(uiState);
-
-	if (appState->appStatus != oldAppStatus)
-	{
-		clear(&uiState->openWindows);
-	}
-
-	drawUiMessage(uiState);
+	return result;
 }

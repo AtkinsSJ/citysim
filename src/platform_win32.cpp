@@ -37,7 +37,7 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
 inline void fillFileInfo(WIN32_FIND_DATA *findFileData, FileInfo *result)
 {
-	result->filename = pushString(globalFrameTempArena, findFileData->cFileName);
+	result->filename = pushString(tempArena, findFileData->cFileName);
 	u64 fileSize = ((u64)findFileData->nFileSizeHigh << 32) + findFileData->nFileSizeLow;
 	result->size = (smm)fileSize; // NB: Theoretically it could be more than s64Max, but that seems unlikely?
 

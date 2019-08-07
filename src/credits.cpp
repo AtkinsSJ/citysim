@@ -1,12 +1,11 @@
 #pragma once
 
-void updateAndRenderCredits(AppState *appState)
+AppStatus updateAndRenderCredits(UIState *uiState)
 {
-	AppStatus result = appState->appStatus;
+	AppStatus result = AppStatus_Credits;
 
 	f32 windowWidth = (f32) renderer->uiCamera.size.x;
 	f32 windowHeight = (f32) renderer->uiCamera.size.y;
-	UIState *uiState = &appState->uiState;
 
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
@@ -30,5 +29,5 @@ void updateAndRenderCredits(AppState *appState)
 		result = AppStatus_MainMenu;
 	}
 
-	appState->appStatus = result;
+	return result;
 }

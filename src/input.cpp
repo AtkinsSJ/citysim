@@ -277,7 +277,7 @@ inline String getClipboardText()
 
 		if (clipboard)
 		{
-			result = pushString(globalFrameTempArena, clipboard);
+			result = pushString(tempArena, clipboard);
 			SDL_free(clipboard);
 		}
 	}

@@ -234,7 +234,6 @@ WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UISt
 {
 	WindowContext context = {};
 	context.uiState = uiState;
-	context.temporaryMemory = &globalAppState.globalTempArena;
 	context.window = window;
 	context.windowStyle = windowStyle;
 	context.contentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);

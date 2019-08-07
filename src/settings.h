@@ -37,7 +37,7 @@ void loadSettings(Settings *settings);
 void applySettings(Settings *settings);
 void saveSettings(Settings *settings);
 
-void updateAndRenderSettingsMenu(struct AppState *appState);
+AppStatus updateAndRenderSettingsMenu(struct UIState *uiState);
 
 //
 // INTERNAL
