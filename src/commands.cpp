@@ -64,7 +64,7 @@ ConsoleCommand(message)
 
 ConsoleCommand(reload_assets)
 {
-	reloadAssets(globalAppState.assets, globalAppState.renderer, &globalAppState.uiState);
+	reloadAssets(globalAppState.assets, globalAppState.renderer);
 }
 
 ConsoleCommand(reload_settings)

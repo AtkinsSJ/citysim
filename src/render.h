@@ -151,6 +151,11 @@ struct Renderer
 	Camera worldCamera;
 	Camera uiCamera;
 
+	// Cursor stuff
+	String currentCursorName;
+	bool cursorIsVisible;
+	SDL_Cursor *systemWaitCursor;
+
 	RenderBuffer worldBuffer;
 	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
@@ -194,6 +199,10 @@ void clearRenderBuffer(RenderBuffer *buffer);
 void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
+
+void setCursor(Renderer *uiState, String cursorName);
+void setCursor(Renderer *uiState, char *cursorName);
+void setCursorVisible(Renderer *uiState, bool visible);
 
 u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
 

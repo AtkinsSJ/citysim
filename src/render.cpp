@@ -34,6 +34,9 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer",           &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        &renderer->chunkPool);
+
+	// Hide cursor until stuff loads
+	setCursorVisible(renderer, false);
 }
 
 void render(Renderer *renderer)
@@ -77,15 +80,30 @@ void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
 	renderer->shaderIds.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
 	renderer->shaderIds.text       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
 	renderer->shaderIds.untextured = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
+
+	if (!isEmpty(renderer->currentCursorName))
+	{
+		setCursor(renderer, renderer->currentCursorName);
+	}
 }
 
 void rendererUnloadAssets(Renderer *renderer, AssetManager *assets)
 {
+	if (renderer->systemWaitCursor == null)
+	{
+		renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+	}
+	SDL_SetCursor(renderer->systemWaitCursor);
 	renderer->unloadAssets(renderer, assets);
 }
 
 void freeRenderer(Renderer *renderer)
 {
+	if (renderer->systemWaitCursor != null)
+	{
+		SDL_FreeCursor(renderer->systemWaitCursor);
+		renderer->systemWaitCursor = null;
+	}
 	renderer->free(renderer);
 }
 
@@ -149,6 +167,29 @@ V2 unproject(Camera *camera, V2 screenPos)
 	result = unprojected.xy;
 
 	return result;
+}
+
+void setCursor(Renderer *renderer, String cursorName)
+{
+	DEBUG_FUNCTION();
+	
+	Asset *newCursorAsset = getAsset(globalAppState.assets, AssetType_Cursor, cursorName);
+	if (newCursorAsset != null)
+	{
+		renderer->currentCursorName = cursorName;
+		SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
+	}
+}
+
+inline void setCursor(Renderer *renderer, char *cursorName)
+{
+	setCursor(renderer, makeString(cursorName));
+}
+
+void setCursorVisible(Renderer *renderer, bool visible)
+{
+	renderer->cursorIsVisible = visible;
+	SDL_ShowCursor(visible ? 1 : 0);
 }
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool)

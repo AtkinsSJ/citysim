@@ -510,16 +510,13 @@ bool haveAssetFilesChanged(AssetManager *assets)
 	return hasDirectoryChanged(&assets->assetChangeHandle);
 }
 
-void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
+void reloadAssets(AssetManager *assets, Renderer *renderer)
 {
 	DEBUG_FUNCTION();
 
 	// Preparation
 	consoleWriteLine("Reloading assets...");
 	rendererUnloadAssets(renderer, assets);
-	SDL_Cursor *systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-	SDL_SetCursor(systemWaitCursor);
-	defer { SDL_FreeCursor(systemWaitCursor); };
 
 	// Clear managed assets
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
@@ -543,7 +540,6 @@ void reloadAssets(AssetManager *assets, Renderer *renderer, UIState *uiState)
 	loadAssets(assets);
 
 	// After stuff
-	setCursor(uiState, uiState->currentCursor);
 	rendererLoadAssets(renderer, assets);
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }

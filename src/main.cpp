@@ -206,6 +206,8 @@ int main(int argc, char *argv[])
 	ASSERT(renderer->platformRenderer != null); //Failed to initialize renderer.
 	rendererLoadAssets(renderer, assets);
 	appState->renderer = renderer;
+	setCursor(renderer, "default.png");
+	setCursorVisible(renderer, true);
 
 	InputState inputState;
 	initInput(&inputState);
@@ -213,8 +215,6 @@ int main(int argc, char *argv[])
 
 	UIState *uiState = &appState->uiState;
 	initUiState(uiState, &renderer->uiBuffer, &renderer->uiCamera, assets, &inputState);
-	setCursor(uiState, "default.png");
-	setCursorVisible(uiState, true);
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 
 			if (haveAssetFilesChanged(assets))
 			{
-				reloadAssets(assets, renderer, uiState);
+				reloadAssets(assets, renderer);
 			}
 
 			if (inputState.receivedQuitSignal)

@@ -39,6 +39,7 @@ bool asInt(String string, s64 *result);
 bool asBool(String string, bool *result);
 
 bool isNullTerminated(String s);
+bool isEmpty(String s);
 
 // TODO: Add "splitchar" support to countTokens() as well
 s32 countTokens(String input);

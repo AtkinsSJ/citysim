@@ -26,9 +26,6 @@ struct UIState
 
 	s32 openMenu;
 
-	String currentCursor;
-	bool cursorIsVisible;
-
 	// UI elements that react to the mouse should only do so if this is false - and then
 	// they should set it to true. 
 	bool mouseInputHandled;
@@ -40,10 +37,6 @@ struct UIState
 };
 
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, Camera *uiCamera, AssetManager *assets, InputState *input);
-
-void setCursor(UIState *uiState, String cursorName);
-void setCursor(UIState *uiState, char *cursorName);
-void setCursorVisible(UIState *uiState, bool visible);
 
 Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
 bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);

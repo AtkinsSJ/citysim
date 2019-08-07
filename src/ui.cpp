@@ -1,28 +1,5 @@
 // ui.cpp
 
-void setCursor(UIState *uiState, String cursorName)
-{
-	DEBUG_FUNCTION();
-	
-	Asset *newCursorAsset = getAsset(uiState->assets, AssetType_Cursor, cursorName);
-	if (newCursorAsset != null)
-	{
-		uiState->currentCursor = cursorName;
-		SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
-	}
-}
-
-inline void setCursor(UIState *uiState, char *cursorName)
-{
-	setCursor(uiState, makeString(cursorName));
-}
-
-void setCursorVisible(UIState *uiState, bool visible)
-{
-	uiState->cursorIsVisible = visible;
-	SDL_ShowCursor(visible ? 1 : 0);
-}
-
 void initUiState(UIState *uiState, RenderBuffer *uiBuffer, Camera *uiCamera, AssetManager *assets, InputState *input)
 {
 	*uiState = {};
@@ -41,8 +18,6 @@ void initUiState(UIState *uiState, RenderBuffer *uiBuffer, Camera *uiCamera, Ass
 	initialiseArray(&uiState->uiRects, 16);
 
 	initChunkedArray(&uiState->openWindows, &uiState->arena, 16);
-
-	setCursorVisible(uiState, false);
 }
 
 Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)

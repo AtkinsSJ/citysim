@@ -170,7 +170,7 @@ void reloadAsset(AssetManager *assets, Asset *asset);
 void addAssets(AssetManager *assets);
 void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType=AssetType_Unknown);
 bool haveAssetFilesChanged(AssetManager *assets);
-void reloadAssets(AssetManager *assets, struct Renderer *renderer, struct UIState *uiState);
+void reloadAssets(AssetManager *assets, struct Renderer *renderer);
 
 String getAssetPath(AssetManager *assets, AssetType type, String shortName);
 

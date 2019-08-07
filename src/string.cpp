@@ -241,6 +241,11 @@ inline bool isNullTerminated(String s)
 	return result;
 }
 
+inline bool isEmpty(String s)
+{
+	return (s.length == 0);
+}
+
 s32 countTokens(String input)
 {
 	DEBUG_FUNCTION();
