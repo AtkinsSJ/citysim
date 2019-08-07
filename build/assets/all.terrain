@@ -10,9 +10,7 @@ sprite grass 0 1 4 1
 :Terrain Ground
 uses_sprite grass
 can_build_on true
-can_demolish false
 
 :Terrain Water
 uses_sprite water
 can_build_on false
-can_demolish false

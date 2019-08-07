@@ -299,24 +299,6 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 	
 	s32 total = 0;
 
-	// Terrain demolition cost
-	for (s32 y=area.y;
-		y < area.y + area.h;
-		y++)
-	{
-		for (s32 x=area.x;
-			x < area.x + area.w;
-			x++)
-		{
-			TerrainDef *tDef = get(&terrainDefs, getTile(city, city->terrain, x, y)->type);
-
-			if (tDef->canDemolish)
-			{
-				total += tDef->demolishCost;
-			}
-		}
-	}
-
 	// Building demolition cost
 	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
 	for (auto it = iterate(&buildingsToDemolish); !it.isDone; next(&it))
@@ -333,30 +315,6 @@ void demolishRect(City *city, Rect2I area)
 	DEBUG_FUNCTION();
 
 	// NB: We assume that we've already checked we can afford this!
-
-	// Terrain demolition
-	// TODO: @Cleanup: Terrain shouldn't be demolishable, I think!
-	{
-		s32 groundTerrainType = findTerrainTypeByName(makeString("Ground"));
-
-		for (s32 y=area.y;
-			y < area.y + area.h;
-			y++)
-		{
-			for (s32 x=area.x;
-				x < area.x + area.w;
-				x++)
-			{
-				Terrain *terrain = getTile(city, city->terrain, x, y);
-				TerrainDef *tDef = get(&terrainDefs, terrain->type);
-
-				if (tDef->canDemolish)
-				{
-					terrain->type = groundTerrainType;
-				}
-			}
-		}
-	}
 
 	// Building demolition
 	{

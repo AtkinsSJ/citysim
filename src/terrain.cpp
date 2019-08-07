@@ -140,32 +140,6 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 					{
 						def->canBuildOn = readBool(&reader, firstWord, remainder);
 					}
-					else if (equals(firstWord, "can_demolish"))
-					{
-						bool canDemolish;
-						if (asBool(nextToken(remainder, &remainder), &canDemolish))
-						{
-							def->canDemolish = canDemolish;
-							if (canDemolish)
-							{
-								s64 demolishCost;
-								if (asInt(nextToken(remainder, &remainder), &demolishCost))
-								{
-									def->demolishCost = (s32) demolishCost;
-								}
-								else
-								{
-									error(&reader, "Couldn't parse can_demolish. Expected 'can_demolish true/false [cost]'.");
-									return;
-								}
-							}
-						}
-						else
-						{
-							error(&reader, "Couldn't parse can_demolish. Expected 'can_demolish true/false [cost]'.");
-							return;
-						}
-					}
 					else
 					{
 						warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'", {firstWord});
