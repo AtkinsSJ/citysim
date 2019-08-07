@@ -1,6 +1,6 @@
 #pragma once
 
-void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
+void loadBMFont(Blob data, Asset *asset)
 {
 	smm pos = 0;
 	BMFontHeader *header = (BMFontHeader *)(data.memory + pos);
@@ -83,8 +83,8 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 			font->glyphEntries = (BitmapFontGlyphEntry *)(asset->data.memory);
 
 			String textureName = pushString(&assets->assetArena, (char *) pages);
-			font->texture = addTexture(assets, textureName, false);
-			ensureAssetIsLoaded(assets, font->texture);
+			font->texture = addTexture(textureName, false);
+			ensureAssetIsLoaded(font->texture);
 
 			f32 textureWidth  = (f32) font->texture->texture.surface->w;
 			f32 textureHeight = (f32) font->texture->texture.surface->h;

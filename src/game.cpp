@@ -336,17 +336,15 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-void pauseMenuWindowProc(WindowContext *context, void *userData)
+void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 {
 	DEBUG_FUNCTION();
-
-	userData = userData; // Prevent the dumb warning
 
 	// Centred, with equal button sizes
 	context->alignment = ALIGN_H_CENTRE;
 
-	UIButtonStyle *buttonStyle = findButtonStyle(&theAssets->theme, context->windowStyle->buttonStyleName);
-	BitmapFont *buttonFont = getFont(theAssets, buttonStyle->fontName);
+	UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
+	BitmapFont *buttonFont = getFont(buttonStyle->fontName);
 	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
 	s32 maxButtonTextWidth = 0;
 
@@ -394,7 +392,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-void updateAndRenderGameUI(AssetManager *assets, UIState *uiState, GameState *gameState)
+void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 {
 	DEBUG_FUNCTION();
 	
@@ -403,7 +401,7 @@ void updateAndRenderGameUI(AssetManager *assets, UIState *uiState, GameState *ga
 	V2 centre = renderer->uiCamera.pos;
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, makeString("title"));
-	BitmapFont *font = getFont(assets, labelStyle->fontName);
+	BitmapFont *font = getFont(labelStyle->fontName);
 	City *city = &gameState->city;
 
 	const f32 uiPadding = 4; // TODO: Move this somewhere sensible!
@@ -531,7 +529,7 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
-void updateAndRenderGame(AppState *appState, InputState *inputState, AssetManager *assets)
+void updateAndRenderGame(AppState *appState, InputState *inputState)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 	
@@ -540,8 +538,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, AssetManage
 		appState->gameState = initialiseGameState();
 		renderer->worldCamera.pos = v2(appState->gameState->city.width/2, appState->gameState->city.height/2);
 
-		refreshBuildingSpriteCache(&buildingCatalogue, assets);
-		refreshTerrainSpriteCache(&terrainDefs, assets);
+		refreshBuildingSpriteCache(&buildingCatalogue);
+		refreshTerrainSpriteCache(&terrainDefs);
 	}
 
 	GameState *gameState = appState->gameState;
@@ -549,8 +547,8 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, AssetManage
 
 	if (assets->assetReloadHasJustHappened)
 	{
-		refreshBuildingSpriteCache(&buildingCatalogue, assets);
-		refreshTerrainSpriteCache(&terrainDefs, assets);
+		refreshBuildingSpriteCache(&buildingCatalogue);
+		refreshTerrainSpriteCache(&terrainDefs);
 	}
 
 
@@ -569,7 +567,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, AssetManage
 
 	// UI!
 	UIState *uiState = &globalAppState.uiState;
-	updateAndRenderGameUI(assets, uiState, gameState);
+	updateAndRenderGameUI(uiState, gameState);
 
 	V4 ghostColorValid    = color255(128,255,128,255);
 	V4 ghostColorInvalid  = color255(255,0,0,128);
@@ -872,7 +870,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, AssetManage
 	}
 }
 
-void updateAndRender(AppState *appState, InputState *inputState, AssetManager *assets)
+void updateAndRender(AppState *appState, InputState *inputState)
 {
 	DEBUG_FUNCTION();
 
@@ -887,22 +885,22 @@ void updateAndRender(AppState *appState, InputState *inputState, AssetManager *a
 	{
 		case AppStatus_MainMenu:
 		{
-			updateAndRenderMainMenu(appState, assets);
+			updateAndRenderMainMenu(appState);
 		} break;
 
 		case AppStatus_Credits:
 		{
-			updateAndRenderCredits(appState, assets);
+			updateAndRenderCredits(appState);
 		} break;
 
 		case AppStatus_SettingsMenu:
 		{
-			updateAndRenderSettingsMenu(appState, assets);
+			updateAndRenderSettingsMenu(appState);
 		} break;
 
 		case AppStatus_Game:
 		{
-			updateAndRenderGame(appState, inputState, assets);
+			updateAndRenderGame(appState, inputState);
 		} break;
 
 		case AppStatus_Quit: break;

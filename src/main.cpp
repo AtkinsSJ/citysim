@@ -32,7 +32,7 @@ enum AppStatus
 
 struct MemoryArena  *globalFrameTempArena;
 struct Renderer     *renderer;
-struct AssetManager *theAssets;
+struct Assets       *assets;
 struct InputState   *theInput;
 
 #include "log.h"
@@ -199,13 +199,12 @@ int main(int argc, char *argv[])
 	SDL_Window *window = initSDL(settings, "Some kind of city builder");
 	ASSERT(window != null); //Failed to initialise SDL.
 
-	AssetManager *assets = createAssetManager();
-	addAssets(assets);
-	loadAssets(assets);
-	theAssets = assets;
+	initAssets();
+	addAssets();
+	loadAssets();
 
 	ASSERT(platform_initializeRenderer(window)); //Failed to initialize renderer.
-	rendererLoadAssets(assets);
+	rendererLoadAssets();
 	setCursor("default");
 	setCursorVisible(true);
 
@@ -239,9 +238,9 @@ int main(int argc, char *argv[])
 				updateConsole(globalConsole, &inputState);
 			}
 
-			if (haveAssetFilesChanged(assets))
+			if (haveAssetFilesChanged())
 			{
-				reloadAssets(assets);
+				reloadAssets();
 			}
 
 			if (inputState.receivedQuitSignal)
@@ -262,7 +261,7 @@ int main(int argc, char *argv[])
 			addClear(&renderer->worldBuffer);
 			addSetCamera(&renderer->uiBuffer, uiCamera);
 
-			updateAndRender(appState, &inputState, assets);
+			updateAndRender(appState, &inputState);
 
 			if (globalConsole)
 			{
@@ -276,7 +275,7 @@ int main(int argc, char *argv[])
 			// Debug stuff
 			if (globalDebugState)
 			{
-				DEBUG_ASSETS(assets);
+				DEBUG_ASSETS();
 				DEBUG_ARENA(&appState->systemArena, "System");
 				DEBUG_ARENA(&appState->globalTempArena, "Global Temp Arena");
 				DEBUG_ARENA(&renderer->renderArena, "Renderer");

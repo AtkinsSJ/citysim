@@ -196,7 +196,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 void renderDebugData(DebugState *debugState)
 {
 	DEBUG_FUNCTION_T(DCDT_Debug);
-	BitmapFont *font = getFont(theAssets, makeString("debug"));
+	BitmapFont *font = getFont(makeString("debug"));
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
@@ -234,18 +234,18 @@ void renderDebugData(DebugState *debugState)
 
 	// Asset system
 	{
-		DebugAssetData *assets = &debugState->assetData;
-		smm totalAssetMemory = assets->assetMemoryAllocated[rfi] + assets->assetsByNameSize[rfi] + assets->arenaTotalSize[rfi];
-		smm usedAssetMemory = assets->assetMemoryAllocated[rfi] + assets->assetsByNameSize[rfi] + assets->arenaUsedSize[rfi];
+		DebugAssetData *assetData = &debugState->assetData;
+		smm totalAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaTotalSize[rfi];
+		smm usedAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaUsedSize[rfi];
 		debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables", {
-			formatInt(assets->loadedAssetCount[rfi]),
-			formatInt(assets->assetCount[rfi]),
+			formatInt(assetData->loadedAssetCount[rfi]),
+			formatInt(assetData->assetCount[rfi]),
 			formatInt(usedAssetMemory),
 			formatInt(totalAssetMemory),
 
-			formatInt(assets->arenaTotalSize[rfi]),
-			formatInt(assets->assetMemoryAllocated[rfi]),
-			formatInt(assets->assetsByNameSize[rfi])
+			formatInt(assetData->arenaTotalSize[rfi]),
+			formatInt(assetData->assetMemoryAllocated[rfi]),
+			formatInt(assetData->assetsByNameSize[rfi])
 		}));
 	}
 
@@ -441,7 +441,7 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 	}
 }
 
-void debugTrackAssets(DebugState *debugState, AssetManager *assets)
+void debugTrackAssets(DebugState *debugState)
 {
 	DebugAssetData *assetData = &debugState->assetData;
 	u32 frameIndex = debugState->writingFrameIndex;

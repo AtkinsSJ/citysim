@@ -128,7 +128,7 @@ void applySettings(Settings *settings)
 {
 	resizeWindow(settings->resolution.x, settings->resolution.y, !settings->windowed);
 
-	setLocale(theAssets, settings->locale);
+	setLocale(settings->locale);
 }
 
 void saveSettings(Settings *settings)
@@ -192,7 +192,7 @@ void saveSettings(Settings *settings)
 	}
 }
 
-void updateAndRenderSettingsMenu(AppState *appState, AssetManager *assets)
+void updateAndRenderSettingsMenu(AppState *appState)
 {
 	AppStatus result = appState->appStatus;
 
@@ -204,7 +204,7 @@ void updateAndRenderSettingsMenu(AppState *appState, AssetManager *assets)
 	f32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, makeString("title"));
-	BitmapFont *font = getFont(assets, labelStyle->fontName);
+	BitmapFont *font = getFont(labelStyle->fontName);
 
 	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("title_settings"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;

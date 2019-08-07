@@ -1,6 +1,6 @@
 #pragma once
 
-void updateAndRenderMainMenu(AppState *appState, AssetManager *assets)
+void updateAndRenderMainMenu(AppState *appState)
 {
 	DEBUG_FUNCTION();
 	
@@ -12,7 +12,7 @@ void updateAndRenderMainMenu(AppState *appState, AssetManager *assets)
 
 	// Debug text for profiling text rendering
 	UILabelStyle *liLabelStyle = findLabelStyle(theme, makeString("small"));
-	uiText(&renderer->uiBuffer, getFont(assets, liLabelStyle->fontName), LOCAL("lorem_ipsum"),
+	uiText(&renderer->uiBuffer, getFont(liLabelStyle->fontName), LOCAL("lorem_ipsum"),
 			v2(0.0f,0.0f), ALIGN_LEFT | ALIGN_TOP,
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
 			// v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,
@@ -22,7 +22,7 @@ void updateAndRenderMainMenu(AppState *appState, AssetManager *assets)
 	f32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(theme, makeString("title"));
-	BitmapFont *font = getFont(assets, labelStyle->fontName);
+	BitmapFont *font = getFont(labelStyle->fontName);
 
 	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("game_title"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;

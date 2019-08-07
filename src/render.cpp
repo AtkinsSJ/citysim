@@ -72,14 +72,14 @@ void render()
 	clearRenderBuffer(&renderer->debugBuffer);
 }
 
-void rendererLoadAssets(AssetManager *assets)
+void rendererLoadAssets()
 {
-	renderer->loadAssets(assets);
+	renderer->loadAssets();
 
 	// Cache the shader IDs so we don't have to do so many hash lookups
-	renderer->shaderIds.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
-	renderer->shaderIds.text       = getShader(assets, makeString("textured.glsl"  ))->rendererShaderID;
-	renderer->shaderIds.untextured = getShader(assets, makeString("untextured.glsl"))->rendererShaderID;
+	renderer->shaderIds.pixelArt   = getShader(makeString("pixelart.glsl"  ))->rendererShaderID;
+	renderer->shaderIds.text       = getShader(makeString("textured.glsl"  ))->rendererShaderID;
+	renderer->shaderIds.untextured = getShader(makeString("untextured.glsl"))->rendererShaderID;
 
 	if (!isEmpty(renderer->currentCursorName))
 	{
@@ -87,14 +87,14 @@ void rendererLoadAssets(AssetManager *assets)
 	}
 }
 
-void rendererUnloadAssets(AssetManager *assets)
+void rendererUnloadAssets()
 {
 	if (renderer->systemWaitCursor == null)
 	{
 		renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	}
 	SDL_SetCursor(renderer->systemWaitCursor);
-	renderer->unloadAssets(assets);
+	renderer->unloadAssets();
 }
 
 void freeRenderer()
@@ -173,7 +173,7 @@ void setCursor(String cursorName)
 {
 	DEBUG_FUNCTION();
 	
-	Asset *newCursorAsset = getAsset(theAssets, AssetType_Cursor, cursorName);
+	Asset *newCursorAsset = getAsset(AssetType_Cursor, cursorName);
 	if (newCursorAsset != null)
 	{
 		renderer->currentCursorName = cursorName;

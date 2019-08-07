@@ -64,7 +64,7 @@ ConsoleCommand(message)
 
 ConsoleCommand(reload_assets)
 {
-	reloadAssets(theAssets);
+	reloadAssets();
 }
 
 ConsoleCommand(reload_settings)

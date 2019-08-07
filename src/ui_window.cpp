@@ -5,8 +5,8 @@ void window_label(WindowContext *context, String text, char *styleName)
 	DEBUG_FUNCTION();
 
 	UILabelStyle *style = null;
-	if (styleName)      style = findLabelStyle(&theAssets->theme, makeString(styleName));
-	if (style == null)  style = findLabelStyle(&theAssets->theme, context->windowStyle->labelStyleName);
+	if (styleName)      style = findLabelStyle(&assets->theme, makeString(styleName));
+	if (style == null)  style = findLabelStyle(&assets->theme, context->windowStyle->labelStyleName);
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -26,7 +26,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
 	}
 
-	BitmapFont *font = getFont(theAssets, style->fontName);
+	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
@@ -53,7 +53,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	UIButtonStyle *style = findButtonStyle(&theAssets->theme, context->windowStyle->buttonStyleName);
+	UIButtonStyle *style = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
 
 	u32 textAlignment = style->textAlignment;
 	f32 buttonPadding = style->padding;
@@ -77,7 +77,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
 	}
 
-	BitmapFont *font = getFont(theAssets, style->fontName);
+	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
 		f32 maxWidth;
@@ -370,7 +370,7 @@ void updateWindows(UIState *uiState)
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
 
-		UIWindowStyle *windowStyle = findWindowStyle(&theAssets->theme, window->styleName);
+		UIWindowStyle *windowStyle = findWindowStyle(&assets->theme, window->styleName);
 
 		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
@@ -491,7 +491,7 @@ void renderWindows(UIState *uiState)
 			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
 		}
 
-		UIWindowStyle *windowStyle = findWindowStyle(&theAssets->theme, window->styleName);
+		UIWindowStyle *windowStyle = findWindowStyle(&assets->theme, window->styleName);
 		WindowContext context = makeWindowContext(window, windowStyle, uiState);
 
 		if (!window->isInitialised)
@@ -523,7 +523,7 @@ void renderWindows(UIState *uiState)
 			String closeButtonString = makeString("X");
 			V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
-			BitmapFont *titleFont = getFont(theAssets, windowStyle->titleFontName);
+			BitmapFont *titleFont = getFont(windowStyle->titleFontName);
 
 			drawSingleRect(&renderer->uiBuffer, barArea, renderer->shaderIds.untextured, barColor);
 			uiText(&renderer->uiBuffer, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);

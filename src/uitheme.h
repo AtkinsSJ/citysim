@@ -70,7 +70,7 @@ struct UITheme
 };
 
 void initUITheme(UITheme *theme);
-void loadUITheme(struct AssetManager *assets, Blob data, struct Asset *asset);
+void loadUITheme(Blob data, struct Asset *asset);
 
 inline UIButtonStyle *findButtonStyle(UITheme *theme, String name)
 {

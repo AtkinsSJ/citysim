@@ -1,7 +1,9 @@
 #pragma once
 
-void initAssetManager(AssetManager *assets)
+void initAssets()
 {
+	bootstrapArena(Assets, assets, assetArena);
+
 	ASSERT(assets->assetArena.currentBlock != null); //initAssetManager() called with uninitialised/corrupted memory arena!
 	char *basePath = SDL_GetBasePath();
 	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), makeString("assets")}));
@@ -44,31 +46,21 @@ void initAssetManager(AssetManager *assets)
 	assets->assetChangeHandle = beginWatchingDirectory(assets->assetsPath);
 }
 
-AssetManager *createAssetManager()
-{
-	AssetManager *assets;
-	bootstrapArena(AssetManager, assets, assetArena);
-
-	initAssetManager(assets);
-
-	return assets;
-}
-
-Blob allocate(AssetManager *assets, smm size)
+Blob allocate(Assets *theAssets, smm size)
 {
 	Blob result = {};
 	result.size = size;
 	result.memory = allocateRaw(size);
 
-	assets->assetMemoryAllocated += size;
-	assets->maxAssetMemoryAllocated = max(assets->assetMemoryAllocated, assets->maxAssetMemoryAllocated);
+	theAssets->assetMemoryAllocated += size;
+	theAssets->maxAssetMemoryAllocated = max(theAssets->assetMemoryAllocated, theAssets->maxAssetMemoryAllocated);
 
 	return result;
 }
 
-Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isAFile)
+Asset *addAsset(AssetType type, String shortName, bool isAFile)
 {
-	Asset *existing = getAssetIfExists(assets, type, shortName);
+	Asset *existing = getAssetIfExists(type, shortName);
 	if (existing) return existing;
 
 	Asset *asset = appendBlank(&assets->allAssets);
@@ -76,7 +68,7 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 	asset->shortName = shortName;
 	if (isAFile)
 	{
-		asset->fullName = pushString(&assets->assetArena, getAssetPath(assets, asset->type, shortName));
+		asset->fullName = pushString(&assets->assetArena, getAssetPath(asset->type, shortName));
 	}
 	asset->state = AssetState_Unloaded;
 	asset->data.size = 0;
@@ -88,7 +80,7 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 	return asset;
 }
 
-void copyFileIntoAsset(AssetManager *assets, Blob *fileData, Asset *asset)
+void copyFileIntoAsset(Blob *fileData, Asset *asset)
 {
 	asset->data = allocate(assets, fileData->size);
 	memcpy(asset->data.memory, fileData->memory, fileData->size);
@@ -129,11 +121,11 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 	return result;
 }
 
-void ensureAssetIsLoaded(AssetManager *assets, Asset *asset)
+void ensureAssetIsLoaded(Asset *asset)
 {
 	if (asset->state == AssetState_Loaded) return;
 
-	loadAsset(assets, asset);
+	loadAsset(asset);
 
 	if (asset->state != AssetState_Loaded)
 	{
@@ -158,7 +150,7 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 	}
 }
 
-void loadAsset(AssetManager *assets, Asset *asset)
+void loadAsset(Asset *asset)
 {
 	DEBUG_FUNCTION();
 	if (asset->state != AssetState_Unloaded) return;
@@ -176,13 +168,13 @@ void loadAsset(AssetManager *assets, Asset *asset)
 	{
 		case AssetType_BitmapFont:
 		{
-			loadBMFont(assets, fileData, asset);
+			loadBMFont(fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
 		case AssetType_BuildingDefs:
 		{
-			loadBuildingDefs(assets, fileData, asset);
+			loadBuildingDefs(fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -197,7 +189,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_CursorDefs:
 		{
-			loadCursorDefs(assets, fileData, asset);
+			loadCursorDefs(fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -208,7 +200,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 				// NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
 				// directly refer to the string data from the file, instead of having to allocate a copy
 				// and not be able to free it ever. This is more memory efficient.
-				copyFileIntoAsset(assets, &fileData, asset);
+				copyFileIntoAsset(&fileData, asset);
 				loadConsoleKeyboardShortcuts(globalConsole, fileData, asset->shortName);
 			}
 			asset->state = AssetState_Loaded;
@@ -216,7 +208,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_Shader:
 		{
-			copyFileIntoAsset(assets, &fileData, asset);
+			copyFileIntoAsset(&fileData, asset);
 			splitInTwo(stringFromBlob(fileData), '$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
 			asset->state = AssetState_Loaded;
 		} break;
@@ -228,7 +220,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 			{
 				Sprite *sprite = asset->spriteGroup.sprites + i;
 				Asset *t = sprite->texture;
-				ensureAssetIsLoaded(assets, t);
+				ensureAssetIsLoaded(t);
 				f32 textureWidth  = (f32) t->texture.surface->w;
 				f32 textureHeight = (f32) t->texture.surface->h;
 
@@ -245,14 +237,14 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_TerrainDefs:
 		{
-			loadTerrainDefs(&terrainDefs, assets, fileData, asset);
+			loadTerrainDefs(&terrainDefs, fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
 		case AssetType_Texts:
 		{
-			fileData = readTempFile(getAssetPath(assets, AssetType_Texts, myprintf("{0}.text", {assets->locale})));
-			copyFileIntoAsset(assets, &fileData, asset);
+			fileData = readTempFile(getAssetPath(AssetType_Texts, myprintf("{0}.text", {assets->locale})));
+			copyFileIntoAsset(&fileData, asset);
 			loadTexts(&assets->texts, asset, fileData);
 			asset->state = AssetState_Loaded;
 		} break;
@@ -300,19 +292,19 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_UITheme:
 		{
-			loadUITheme(assets, fileData, asset);
+			loadUITheme(fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
 		default:
 		{
-			copyFileIntoAsset(assets, &fileData, asset);
+			copyFileIntoAsset(&fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 	}
 }
 
-void unloadAsset(AssetManager *assets, Asset *asset)
+void unloadAsset(Asset *asset)
 {
 	DEBUG_FUNCTION();
 	
@@ -349,19 +341,19 @@ void unloadAsset(AssetManager *assets, Asset *asset)
 	asset->state = AssetState_Unloaded;
 }
 
-Asset *addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied)
+Asset *addTexture(String filename, bool isAlphaPremultiplied)
 {
-	Asset *asset = addAsset(assets, AssetType_Texture, filename);
+	Asset *asset = addAsset(AssetType_Texture, filename);
 	asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
 
 	return asset;
 }
 
-Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount)
+Asset *addSpriteGroup(String name, s32 spriteCount)
 {
 	ASSERT(spriteCount > 0); //Must have a positive number of sprites in a Sprite Group!
 
-	Asset *spriteGroup = addAsset(assets, AssetType_Sprite, name, false);
+	Asset *spriteGroup = addAsset(AssetType_Sprite, name, false);
 	spriteGroup->data = allocate(assets, spriteCount * sizeof(Sprite));
 	spriteGroup->spriteGroup.count = spriteCount;
 	spriteGroup->spriteGroup.sprites = (Sprite*) spriteGroup->data.memory;
@@ -369,14 +361,14 @@ Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount)
 	return spriteGroup;
 }
 
-void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied)
+void addTiledSprites(String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied)
 {
 	String textureName = pushString(&assets->assetArena, textureFilename);
 	Asset **findResult = find(&assets->assetsByType[AssetType_Texture], textureName);
 	Asset *textureAsset;
 	if (findResult == null)
 	{
-		textureAsset = addTexture(assets, textureName, isAlphaPremultiplied);
+		textureAsset = addTexture(textureName, isAlphaPremultiplied);
 	}
 	else
 	{
@@ -385,7 +377,7 @@ void addTiledSprites(AssetManager *assets, String name, String textureFilename, 
 
 	ASSERT(textureAsset != null); //Failed to find/create texture for Sprite!
 
-	Asset *spriteGroup = addSpriteGroup(assets, name, tilesAcross * tilesDown);
+	Asset *spriteGroup = addSpriteGroup(name, tilesAcross * tilesDown);
 	Rect2 uv = rectXYWH(0, 0, (f32)tileWidth, (f32)tileHeight);
 
 	s32 spriteIndex = 0;
@@ -404,11 +396,11 @@ void addTiledSprites(AssetManager *assets, String name, String textureFilename, 
 	}
 }
 
-void addTiledSprites(AssetManager *assets, String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles)
+void addTiledSprites(String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles)
 {
 	ASSERT(texture->type == AssetType_Texture);
 
-	Asset *spriteGroup = addSpriteGroup(assets, name, selectedTiles.w * selectedTiles.h);
+	Asset *spriteGroup = addSpriteGroup(name, selectedTiles.w * selectedTiles.h);
 
 	s32 strideX = tileSize.x + (tileBorder.x * 2);
 	s32 strideY = tileSize.y + (tileBorder.y * 2);
@@ -429,26 +421,26 @@ void addTiledSprites(AssetManager *assets, String name, Asset *texture, V2I tile
 	}
 }
 
-void addFont(AssetManager *assets, String name, String filename)
+void addFont(String name, String filename)
 {
-	addAsset(assets, AssetType_BitmapFont, filename);
+	addAsset(AssetType_BitmapFont, filename);
 	put(&assets->theme.fontNamesToAssetNames, name, filename);
 }
 
-void loadAssets(AssetManager *assets)
+void loadAssets()
 {
 	DEBUG_FUNCTION();
 
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
 		Asset *asset = get(it);
-		loadAsset(assets, asset);
+		loadAsset(asset);
 	}
 
 	assets->assetReloadHasJustHappened = true;
 }
 
-void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType)
+void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 {
 	String pathToScan;
 	if (isEmpty(subDirectory))
@@ -488,48 +480,48 @@ void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType
 			logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
 		}
 
-		addAsset(assets, assetType, filename);
+		addAsset(assetType, filename);
 	}
 }
 
-void addAssets(AssetManager *assets)
+void addAssets()
 {
 	// Manually add the texts asset, because it's special.
 	assets->locale = globalAppState.settings.locale;
-	addAsset(assets, AssetType_Texts, makeString("LOCALE.text"), false);
+	addAsset(AssetType_Texts, makeString("LOCALE.text"), false);
 
 	{
 		DEBUG_BLOCK("Read asset directories");
-		addAssetsFromDirectory(assets, nullString);
+		addAssetsFromDirectory(nullString);
 
 		for (auto it = iterate(&assets->directoryNameToType);
 			!it.isDone;
 			next(&it))
 		{
 			auto entry = getEntry(it);
-			addAssetsFromDirectory(assets, entry->key, entry->value);
+			addAssetsFromDirectory(entry->key, entry->value);
 		}
 	}
 }
 
-bool haveAssetFilesChanged(AssetManager *assets)
+bool haveAssetFilesChanged()
 {
 	return hasDirectoryChanged(&assets->assetChangeHandle);
 }
 
-void reloadAssets(AssetManager *assets)
+void reloadAssets()
 {
 	DEBUG_FUNCTION();
 
 	// Preparation
 	consoleWriteLine("Reloading assets...");
-	rendererUnloadAssets(assets);
+	rendererUnloadAssets();
 
 	// Clear managed assets
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
 		Asset *asset = get(it);
-		unloadAsset(assets, asset);
+		unloadAsset(asset);
 	}
 
 	// Clear the hash tables
@@ -543,31 +535,31 @@ void reloadAssets(AssetManager *assets)
 	// We're now not *quite* throwing everything away.
 	resetMemoryArena(&assets->assetArena);
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
-	addAssets(assets);
-	loadAssets(assets);
+	addAssets();
+	loadAssets();
 
 	// After stuff
-	rendererLoadAssets(assets);
+	rendererLoadAssets();
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }
 
-void reloadAsset(AssetManager *assets, Asset *asset)
+void reloadAsset(Asset *asset)
 {
-	unloadAsset(assets, asset);
-	loadAsset(assets, asset);
+	unloadAsset(asset);
+	loadAsset(asset);
 }
 
-Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName)
+Asset *getAssetIfExists(AssetType type, String shortName)
 {
 	Asset **result = find(&assets->assetsByType[type], shortName);
 
 	return (result == null) ? null : *result;
 }
 
-Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
+Asset *getAsset(AssetType type, String shortName)
 {
 	DEBUG_FUNCTION();
-	Asset *result = getAssetIfExists(assets, type, shortName);
+	Asset *result = getAssetIfExists(type, shortName);
 
 	if (result == null)
 	{
@@ -578,9 +570,9 @@ Asset *getAsset(AssetManager *assets, AssetType type, String shortName)
 	return result;
 }
 
-inline SpriteGroup *getSpriteGroup(AssetManager *assets, String name)
+inline SpriteGroup *getSpriteGroup(String name)
 {
-	return &getAsset(assets, AssetType_Sprite, name)->spriteGroup;
+	return &getAsset(AssetType_Sprite, name)->spriteGroup;
 }
 
 inline Sprite *getSprite(SpriteGroup *group, s32 offset)
@@ -588,12 +580,12 @@ inline Sprite *getSprite(SpriteGroup *group, s32 offset)
 	return group->sprites + (offset % group->count);
 }
 
-inline Shader *getShader(AssetManager *assets, String shaderName)
+inline Shader *getShader(String shaderName)
 {
-	return &getAsset(assets, AssetType_Shader, shaderName)->shader;
+	return &getAsset(AssetType_Shader, shaderName)->shader;
 }
 
-BitmapFont *getFont(AssetManager *assets, String fontName)
+BitmapFont *getFont(String fontName)
 {
 	BitmapFont *result = null;
 
@@ -601,7 +593,7 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 	if (fontFilename == null)
 	{
 		// Fall back to treating it as a filename
-		Asset *fontAsset = getAsset(assets, AssetType_BitmapFont, fontName);
+		Asset *fontAsset = getAsset(AssetType_BitmapFont, fontName);
 		if (fontAsset != null)
 		{
 			result = &fontAsset->bitmapFont;
@@ -610,7 +602,7 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 	}
 	else
 	{
-		Asset *fontAsset = getAsset(assets, AssetType_BitmapFont, *fontFilename);
+		Asset *fontAsset = getAsset(AssetType_BitmapFont, *fontFilename);
 		if (fontAsset != null)
 		{
 			result = &fontAsset->bitmapFont;
@@ -620,7 +612,7 @@ BitmapFont *getFont(AssetManager *assets, String fontName)
 	return result;
 }
 
-inline String getText(AssetManager *assets, String name)
+inline String getText(String name)
 {
 	DEBUG_FUNCTION();
 
@@ -640,7 +632,7 @@ inline String getText(AssetManager *assets, String name)
 	return result;
 }
 
-String getAssetPath(AssetManager *assets, AssetType type, String shortName)
+String getAssetPath(AssetType type, String shortName)
 {
 	String result = shortName;
 
@@ -669,19 +661,19 @@ String getAssetPath(AssetManager *assets, AssetType type, String shortName)
 	return result;
 }
 
-void setLocale(AssetManager *assets, String locale)
+void setLocale(String locale)
 {
 	if (!equals(locale, assets->locale))
 	{
 		assets->locale = locale;
 
 		// Text
-		Asset *textAsset = getAsset(assets, AssetType_Texts, makeString("LOCALE.text"));
-		reloadAsset(assets, textAsset);
+		Asset *textAsset = getAsset(AssetType_Texts, makeString("LOCALE.text"));
+		reloadAsset(textAsset);
 	}
 }
 
-void loadCursorDefs(AssetManager *assets, Blob data, Asset *asset)
+void loadCursorDefs(Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 
@@ -700,8 +692,8 @@ void loadCursorDefs(AssetManager *assets, Blob data, Asset *asset)
 			&& asInt(nextToken(remainder, &remainder), &hotY))
 		{
 			// Add the cursor
-			Asset *cursorAsset = addAsset(assets, AssetType_Cursor, name, false);
-			cursorAsset->cursor.imageFilePath = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Cursor, filename));
+			Asset *cursorAsset = addAsset(AssetType_Cursor, name, false);
+			cursorAsset->cursor.imageFilePath = pushString(&assets->assetArena, getAssetPath(AssetType_Cursor, filename));
 			cursorAsset->cursor.hotspot = v2i(truncate32(hotX), truncate32(hotY));
 		}
 		else

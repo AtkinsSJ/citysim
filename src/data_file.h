@@ -31,4 +31,4 @@ s64 readInt(LineReader *reader, String command, String arguments);
 bool readBool(LineReader *reader, String command, String arguments);
 V4 readColor255(LineReader *reader, String command, String arguments);
 u32 readAlignment(LineReader *reader, String command, String arguments);
-String readTextureDefinition(LineReader *reader, AssetManager *assets, String tokens);
+String readTextureDefinition(LineReader *reader, String tokens);

@@ -1,6 +1,6 @@
 #pragma once
 
-void updateAndRenderCredits(AppState *appState, AssetManager *assets)
+void updateAndRenderCredits(AppState *appState)
 {
 	AppStatus result = appState->appStatus;
 
@@ -12,9 +12,9 @@ void updateAndRenderCredits(AppState *appState, AssetManager *assets)
 	f32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, makeString("title"));
-	BitmapFont *font = getFont(assets, labelStyle->fontName);
+	BitmapFont *font = getFont(labelStyle->fontName);
 
-	Asset *creditsText = getAsset(assets, AssetType_Misc, makeString("credits.txt"));
+	Asset *creditsText = getAsset(AssetType_Misc, makeString("credits.txt"));
 	LineReader reader = readLines(creditsText->shortName, creditsText->data, false, false);
 	while (!isDone(&reader))
 	{

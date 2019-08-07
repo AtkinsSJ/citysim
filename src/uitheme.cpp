@@ -13,7 +13,7 @@ void initUITheme(UITheme *theme)
 
 #define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name})
 
-void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
+void loadUITheme(Blob data, Asset *asset)
 {
 	LineReader reader = readLines(asset->shortName, data, true, true, '#');
 
@@ -74,7 +74,7 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 
 				if (!isEmpty(fontName) && !isEmpty(fontFilename))
 				{
-					addFont(assets, pushString(&assets->assetArena, fontName), pushString(&assets->assetArena, fontFilename));
+					addFont(pushString(&assets->assetArena, fontName), pushString(&assets->assetArena, fontFilename));
 				}
 				else
 				{

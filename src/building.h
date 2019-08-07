@@ -82,8 +82,8 @@ struct Building
 };
 
 
-void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset);
-void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *assets);
+void loadBuildingDefs(Blob data, Asset *asset);
+void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
 BuildingDef *getBuildingDef(s32 buildingTypeID);
 BuildingDef *findBuildingDef(String name);
 

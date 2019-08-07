@@ -96,7 +96,7 @@ struct Asset
 	};
 };
 
-struct AssetManager
+struct Assets
 {
 	MemoryArena assetArena;
 	DirectoryChangeWatchingHandle assetChangeHandle;
@@ -153,43 +153,42 @@ struct AssetManager
 	*/
 };
 
-AssetManager *createAssetManager();
-void initAssetManager(AssetManager *assets);
+void initAssets();
 
-void setLocale(AssetManager *assets, String locale);
+void setLocale(String locale);
 
-Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isAFile=true);
-Asset *addTexture(AssetManager *assets, String filename, bool isAlphaPremultiplied);
-Asset *addSpriteGroup(AssetManager *assets, String name, s32 spriteCount);
-void addTiledSprites(AssetManager *assets, String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false);
-void addTiledSprites(AssetManager *assets, String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles);
-void addFont(AssetManager *assets, String name, String filename);
+Asset *addAsset(AssetType type, String shortName, bool isAFile=true);
+Asset *addTexture(String filename, bool isAlphaPremultiplied);
+Asset *addSpriteGroup(String name, s32 spriteCount);
+void addTiledSprites(String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false);
+void addTiledSprites(String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles);
+void addFont(String name, String filename);
 
-void loadAsset(AssetManager *assets, Asset *asset);
-void ensureAssetIsLoaded(AssetManager *assets, Asset *asset);
-void unloadAsset(AssetManager *assets, Asset *asset);
-void reloadAsset(AssetManager *assets, Asset *asset);
+void loadAsset(Asset *asset);
+void ensureAssetIsLoaded(Asset *asset);
+void unloadAsset(Asset *asset);
+void reloadAsset(Asset *asset);
 
-void addAssets(AssetManager *assets);
-void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType=AssetType_Unknown);
-bool haveAssetFilesChanged(AssetManager *assets);
-void reloadAssets(AssetManager *assets);
+void addAssets();
+void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType=AssetType_Unknown);
+bool haveAssetFilesChanged();
+void reloadAssets();
 
-String getAssetPath(AssetManager *assets, AssetType type, String shortName);
+String getAssetPath(AssetType type, String shortName);
 
-Asset *getAsset(AssetManager *assets, AssetType type, String shortName);
-Asset *getAssetIfExists(AssetManager *assets, AssetType type, String shortName);
+Asset *getAsset(AssetType type, String shortName);
+Asset *getAssetIfExists(AssetType type, String shortName);
 
-SpriteGroup *getSpriteGroup(AssetManager *assets, String name);
+SpriteGroup *getSpriteGroup(String name);
 Sprite *getSprite(SpriteGroup *group, s32 offset);
-Shader *getShader(AssetManager *assets, String shaderName);
-BitmapFont *getFont(AssetManager *assets, String fontName);
+Shader *getShader(String shaderName);
+BitmapFont *getFont(String fontName);
 
-#define LOCAL(str) getText(theAssets, makeString(str))
-String getText(AssetManager *assets, String name);
+#define LOCAL(str) getText(makeString(str))
+String getText(String name);
 
 //
 // Internal
 //
 
-void loadCursorDefs(AssetManager *assets, Blob data, Asset *asset);
+void loadCursorDefs(Blob data, Asset *asset);

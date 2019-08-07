@@ -24,7 +24,7 @@
 			static String GLUE(debugArenaName____, __LINE__) = makeString(name, true); \
 			debugTrackArena(globalDebugState, arena, GLUE(debugArenaName____, __LINE__))
 
-	#define DEBUG_ASSETS(assets) debugTrackAssets(globalDebugState, assets)
+	#define DEBUG_ASSETS() debugTrackAssets(globalDebugState)
 	#define DEBUG_BEGIN_RENDER_BUFFER(bufferName, profileName) debugStartTrackingRenderBuffer(globalDebugState, bufferName, profileName)
 	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
 	#define DEBUG_TRACK_RENDER_BUFFER_CHUNK() debugTrackRenderBufferChunk(globalDebugState)
@@ -162,7 +162,7 @@ void debugInit();
 void updateAndRenderDebugData(DebugState *debugState, struct InputState *inputState);
 
 void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
-void debugTrackAssets(DebugState *debugState, struct AssetManager *assets);
+void debugTrackAssets(DebugState *debugState);
 void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName, String renderProfileName);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugTrackRenderBufferChunk(DebugState *debugState);

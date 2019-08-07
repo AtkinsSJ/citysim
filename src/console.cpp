@@ -47,7 +47,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 
 void renderConsole(Console *console)
 {
-	BitmapFont *consoleFont = getFont(theAssets, makeString("debug"));
+	BitmapFont *consoleFont = getFont(makeString("debug"));
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
 	f32 actualConsoleHeight = console->currentHeight * renderer->uiCamera.size.y;

@@ -317,7 +317,7 @@ void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 	}
 }
 
-void GL_loadAssets(AssetManager *assets)
+void GL_loadAssets()
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	
@@ -357,7 +357,7 @@ void GL_loadAssets(AssetManager *assets)
 	}
 }
 
-void GL_unloadAssets(AssetManager *assets)
+void GL_unloadAssets()
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	

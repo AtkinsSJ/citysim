@@ -44,7 +44,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 	
 	bool buttonClicked = false;
 	V2 mousePos = renderer->uiCamera.mousePos;
-	UIButtonStyle *style = findButtonStyle(&theAssets->theme, makeString("general"));
+	UIButtonStyle *style = findButtonStyle(&assets->theme, makeString("general"));
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
@@ -84,7 +84,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 
 	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(&renderer->uiBuffer, getFont(theAssets, style->fontName), text, textOrigin, textAlignment, style->textColor);
+	uiText(&renderer->uiBuffer, getFont(style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
@@ -134,7 +134,7 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = findMessageStyle(&theAssets->theme, makeString("general"));
+			UIMessageStyle *style = findMessageStyle(&assets->theme, makeString("general"));
 
 			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 
@@ -160,7 +160,7 @@ void drawUiMessage(UIState *uiState)
 
 			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-			Rect2 labelRect = uiText(&renderer->uiBuffer, getFont(theAssets, style->fontName), uiState->message.text, origin,
+			Rect2 labelRect = uiText(&renderer->uiBuffer, getFont(style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);

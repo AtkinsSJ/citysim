@@ -30,7 +30,7 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 	}
 }
 
-void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
+void loadBuildingDefs(Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 
@@ -130,7 +130,7 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "texture"))
 				{
-					def->spriteName = readTextureDefinition(&reader, assets, remainder);
+					def->spriteName = readTextureDefinition(&reader, remainder);
 				}
 				else if (equals(firstWord, "link_textures"))
 				{
@@ -446,7 +446,7 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 	}
 }
 
-void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *assets)
+void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 {
 	DEBUG_FUNCTION();
 
@@ -457,7 +457,7 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *asse
 		// Account for the "null" building
 		if (!isEmpty(def->spriteName))
 		{
-			def->sprites = getSpriteGroup(assets, def->spriteName);
+			def->sprites = getSpriteGroup(def->spriteName);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset)
+void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 
@@ -62,7 +62,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, B
 					error(&reader, "Couldn't parse Texture. Expected: ':Terrain filename'");
 					return;
 				}
-				textureAsset = addTexture(assets, filename, false);
+				textureAsset = addTexture(filename, false);
 			}
 			else
 			{
@@ -117,7 +117,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, B
 							&& asInt(nextToken(remainder, &remainder), &h))
 						{
 							Rect2I selectedSprites = irectXYWH(truncate32(x), truncate32(y), truncate32(w), truncate32(h));
-							addTiledSprites(assets, spriteName, textureAsset, spriteSize, spriteBorder, selectedSprites);
+							addTiledSprites(spriteName, textureAsset, spriteSize, spriteBorder, selectedSprites);
 						}
 						else
 						{
@@ -154,7 +154,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, B
 	}
 }
 
-void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager *assets)
+void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains)
 {
 	DEBUG_FUNCTION();
 
@@ -165,7 +165,7 @@ void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager 
 		// Account for the "null" terrain
 		if (!isEmpty(def->spriteName))
 		{
-			def->sprites = getSpriteGroup(assets, def->spriteName);
+			def->sprites = getSpriteGroup(def->spriteName);
 		}
 	}
 }

@@ -205,7 +205,7 @@ u32 readAlignment(LineReader *reader, String command, String arguments)
 	return result;
 }
 
-String readTextureDefinition(LineReader *reader, AssetManager *assets, String tokens)
+String readTextureDefinition(LineReader *reader, String tokens)
 {
 	String result = nullString;
 
@@ -226,7 +226,7 @@ String readTextureDefinition(LineReader *reader, AssetManager *assets, String to
 			regionsDown = 1;
 		}
 
-		addTiledSprites(assets, spriteName, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
+		addTiledSprites(spriteName, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
 
 		hashString(&spriteName);
 

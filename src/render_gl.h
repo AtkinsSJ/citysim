@@ -71,8 +71,8 @@ struct GL_Renderer
 bool GL_initializeRenderer(SDL_Window *window);
 void GL_render(RenderBufferChunk *firstChunk);
 void GL_windowResized(s32 newWidth, s32 newHeight);
-void GL_loadAssets(AssetManager *assets);
-void GL_unloadAssets(AssetManager *assets);
+void GL_loadAssets();
+void GL_unloadAssets();
 void GL_freeRenderer();
 
 void logGLError(GLenum errorCode);

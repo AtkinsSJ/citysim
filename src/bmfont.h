@@ -60,4 +60,4 @@ struct BMFont_Char
 
 #pragma pack(pop)
 
-void loadBMFont(struct AssetManager *assets, Blob data, struct Asset *asset);
+void loadBMFont(Blob data, struct Asset *asset);

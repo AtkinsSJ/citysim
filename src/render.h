@@ -180,15 +180,15 @@ struct Renderer
 	void *platformRenderer;
 	void (*windowResized)(s32, s32);
 	void (*render)(RenderBufferChunk *);
-	void (*loadAssets)(AssetManager *);
-	void (*unloadAssets)(AssetManager *);
+	void (*loadAssets)();
+	void (*unloadAssets)();
 	void (*free)();
 };
 
 void initRenderer(MemoryArena *renderArena, SDL_Window *window);
 void render();
-void rendererLoadAssets(AssetManager *assets);
-void rendererUnloadAssets(AssetManager *assets);
+void rendererLoadAssets();
+void rendererUnloadAssets();
 void freeRenderer();
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool);
