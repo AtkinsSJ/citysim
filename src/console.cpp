@@ -47,7 +47,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 
 void renderConsole(Console *console, Renderer *renderer)
 {
-	BitmapFont *consoleFont = getFont(globalAppState.assets, makeString("debug"));
+	BitmapFont *consoleFont = getFont(theAssets, makeString("debug"));
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
 	f32 actualConsoleHeight = console->currentHeight * renderer->uiCamera.size.y;
@@ -85,7 +85,7 @@ void renderConsole(Console *console, Renderer *renderer)
 		ConsoleOutputLine *line = get(it);
 		ConsoleLineStyle style = console->styles[line->style];
 
-		Rect2 resultRect = uiText(renderer, renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, style.textColor, textMaxWidth);
+		Rect2 resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, style.textColor, textMaxWidth);
 		textPos.y -= resultRect.h;
 
 		// If we've gone off the screen, stop!

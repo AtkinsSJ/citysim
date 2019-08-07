@@ -12,9 +12,6 @@ struct UIMessage
 
 struct UIState
 {
-	AssetManager *assets;
-	InputState *input;
-
 	String tooltipText;
 	UIMessage message;
 
@@ -33,16 +30,16 @@ struct UIState
 	V2 windowDragWindowStartPos;
 };
 
-void initUiState(UIState *uiState, AssetManager *assets, InputState *input, MemoryArena *arena);
+void initUiState(UIState *uiState, MemoryArena *arena);
 
-Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
-bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-bool uiMenuButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+Rect2 uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
+bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 void uiCloseMenus(UIState *uiState);
 
 // NB: `message` is copied into the UIState, so it can be a temporary allocation
 void pushUiMessage(UIState *uiState, String message);
-void drawUiMessage(UIState *uiState, Renderer *renderer);
+void drawUiMessage(UIState *uiState);
 
 void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s8 shaderID);
 

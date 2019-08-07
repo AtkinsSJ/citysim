@@ -173,7 +173,7 @@ void setCursor(Renderer *renderer, String cursorName)
 {
 	DEBUG_FUNCTION();
 	
-	Asset *newCursorAsset = getAsset(globalAppState.assets, AssetType_Cursor, cursorName);
+	Asset *newCursorAsset = getAsset(theAssets, AssetType_Cursor, cursorName);
 	if (newCursorAsset != null)
 	{
 		renderer->currentCursorName = cursorName;

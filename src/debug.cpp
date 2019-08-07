@@ -196,7 +196,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 void renderDebugData(DebugState *debugState, Renderer *renderer)
 {
 	DEBUG_FUNCTION_T(DCDT_Debug);
-	BitmapFont *font = getFont(globalAppState.assets, makeString("debug"));
+	BitmapFont *font = getFont(theAssets, makeString("debug"));
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();

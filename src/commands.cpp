@@ -64,7 +64,7 @@ ConsoleCommand(message)
 
 ConsoleCommand(reload_assets)
 {
-	reloadAssets(globalAppState.assets, globalAppState.renderer);
+	reloadAssets(theAssets, theRenderer);
 }
 
 ConsoleCommand(reload_settings)
@@ -123,12 +123,12 @@ ConsoleCommand(window_size)
 			consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
 
 			succeeded = true;
-			resizeWindow(globalAppState.renderer, (s32)width, (s32)height, false);
+			resizeWindow(theRenderer, (s32)width, (s32)height, false);
 		}
 	}
 	else if (argumentsCount == 0)
 	{
-		V2 screenSize = globalAppState.renderer->uiCamera.size;
+		V2 screenSize = theRenderer->uiCamera.size;
 		consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
 
 		succeeded = true;
@@ -148,7 +148,7 @@ ConsoleCommand(zoom)
 	if (argumentsCount == 0)
 	{
 		// list the zoom
-		f32 zoom = globalAppState.renderer->worldCamera.zoom;
+		f32 zoom = theRenderer->worldCamera.zoom;
 		consoleWriteLine(myprintf("Current zoom is {0}", {formatFloat(zoom, 3)}), CLS_Success);
 		succeeded = true;
 	}
@@ -160,7 +160,7 @@ ConsoleCommand(zoom)
 		if (asInt(nextToken(remainder, &remainder), &requestedZoom))
 		{
 			f32 newZoom = (f32) requestedZoom;
-			globalAppState.renderer->worldCamera.zoom = newZoom;
+			theRenderer->worldCamera.zoom = newZoom;
 			consoleWriteLine(myprintf("Set zoom to {0}", {formatFloat(newZoom, 3)}), CLS_Success);
 			succeeded = true;
 		}

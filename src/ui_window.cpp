@@ -5,8 +5,8 @@ void window_label(WindowContext *context, String text, char *styleName)
 	DEBUG_FUNCTION();
 
 	UILabelStyle *style = null;
-	if (styleName)      style = findLabelStyle(&context->uiState->assets->theme, makeString(styleName));
-	if (style == null)  style = findLabelStyle(&context->uiState->assets->theme, context->windowStyle->labelStyleName);
+	if (styleName)      style = findLabelStyle(&theAssets->theme, makeString(styleName));
+	if (style == null)  style = findLabelStyle(&theAssets->theme, context->windowStyle->labelStyleName);
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -26,7 +26,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
 	}
 
-	BitmapFont *font = getFont(context->uiState->assets, style->fontName);
+	BitmapFont *font = getFont(theAssets, style->fontName);
 	if (font)
 	{
 		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
@@ -53,8 +53,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	UIButtonStyle *style = findButtonStyle(&context->uiState->assets->theme, context->windowStyle->buttonStyleName);
-	InputState *input = context->uiState->input;
+	UIButtonStyle *style = findButtonStyle(&theAssets->theme, context->windowStyle->buttonStyleName);
 
 	u32 textAlignment = style->textAlignment;
 	f32 buttonPadding = style->padding;
@@ -78,7 +77,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
 	}
 
-	BitmapFont *font = getFont(context->uiState->assets, style->fontName);
+	BitmapFont *font = getFont(theAssets, style->fontName);
 	if (font)
 	{
 		f32 maxWidth;
@@ -117,9 +116,9 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
-				if (mouseButtonPressed(input, MouseButton_Left))
+				if (mouseButtonPressed(theInput, MouseButton_Left))
 				{
-					if (contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->renderer->uiCamera)))
+					if (contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &context->renderer->uiCamera)))
 					{
 						backColor = style->pressedColor;
 					}
@@ -135,8 +134,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 		{
-			if (mouseButtonJustReleased(input, MouseButton_Left)
-			 && contains(buttonBounds, getClickStartPos(input, MouseButton_Left, &context->renderer->uiCamera)))
+			if (mouseButtonJustReleased(theInput, MouseButton_Left)
+			 && contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &context->renderer->uiCamera)))
 			{
 				buttonClicked = true;
 				context->uiState->mouseInputHandled = true;
@@ -300,13 +299,13 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	}
 	else if (isActive && uiState->isDraggingWindow)
 	{
-		if (mouseButtonJustReleased(uiState->input, MouseButton_Left))
+		if (mouseButtonJustReleased(theInput, MouseButton_Left))
 		{
 			uiState->isDraggingWindow = false;
 		}
 		else
 		{
-			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(uiState->input, MouseButton_Left, &context->renderer->uiCamera)));
+			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(theInput, MouseButton_Left, &context->renderer->uiCamera)));
 		}
 		
 		uiState->mouseInputHandled = true;
@@ -354,7 +353,7 @@ void updateWindows(UIState *uiState, Renderer *renderer)
 {
 	DEBUG_FUNCTION();
 
-	InputState *inputState = uiState->input;
+	InputState *inputState = theInput;
 	V2 mousePos = renderer->uiCamera.mousePos;
 	s32 newActiveWindow = -1;
 	s32 closeWindow = -1;
@@ -372,7 +371,7 @@ void updateWindows(UIState *uiState, Renderer *renderer)
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
 
-		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
+		UIWindowStyle *windowStyle = findWindowStyle(&theAssets->theme, window->styleName);
 
 		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
@@ -415,7 +414,7 @@ void updateWindows(UIState *uiState, Renderer *renderer)
 				newActiveWindow = windowIndex;
 			}
 
-			// Tooltips don't take mouse input
+			// Tooltips don't take mouse theInput
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
@@ -429,7 +428,7 @@ void updateWindows(UIState *uiState, Renderer *renderer)
 
 		if (contains(wholeWindowArea, mousePos))
 		{
-			// Tooltips don't take mouse input
+			// Tooltips don't take mouse theInput
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
@@ -493,7 +492,7 @@ void renderWindows(Renderer *renderer, UIState *uiState)
 			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
 		}
 
-		UIWindowStyle *windowStyle = findWindowStyle(&uiState->assets->theme, window->styleName);
+		UIWindowStyle *windowStyle = findWindowStyle(&theAssets->theme, window->styleName);
 		WindowContext context = makeWindowContext(window, windowStyle, renderer, uiState);
 
 		if (!window->isInitialised)
@@ -525,17 +524,17 @@ void renderWindows(Renderer *renderer, UIState *uiState)
 			String closeButtonString = makeString("X");
 			V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
-			BitmapFont *titleFont = getFont(uiState->assets, windowStyle->titleFontName);
+			BitmapFont *titleFont = getFont(theAssets, windowStyle->titleFontName);
 
 			drawSingleRect(&renderer->uiBuffer, barArea, renderer->shaderIds.untextured, barColor);
-			uiText(renderer, &renderer->uiBuffer, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
+			uiText(&renderer->uiBuffer, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
 				drawSingleRect(&renderer->uiBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
 			}
-			uiText(renderer, &renderer->uiBuffer, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, titleColor);
+			uiText(&renderer->uiBuffer, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, titleColor);
 		}
 	}
 }

@@ -1,11 +1,8 @@
 // ui.cpp
 
-void initUiState(UIState *uiState, AssetManager *assets, InputState *input, MemoryArena *arena)
+void initUiState(UIState *uiState, MemoryArena *arena)
 {
 	*uiState = {};
-
-	uiState->assets = assets;
-	uiState->input = input;
 
 	uiState->message = {};
 	uiState->message.text = pushString(arena, 256);
@@ -16,7 +13,7 @@ void initUiState(UIState *uiState, AssetManager *assets, InputState *input, Memo
 	initChunkedArray(&uiState->openWindows, arena, 16);
 }
 
-Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)
+Rect2 uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
@@ -25,7 +22,7 @@ Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, S
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text);
+	drawText(renderBuffer, font, text, bounds, align, color, theRenderer->shaderIds.text);
 
 	return bounds;
 }
@@ -41,14 +38,13 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
-bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
+bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	V2 mousePos = renderer->uiCamera.mousePos;
-	InputState *input = uiState->input;
-	UIButtonStyle *style = findButtonStyle(&uiState->assets->theme, makeString("general"));
+	V2 mousePos = theRenderer->uiCamera.mousePos;
+	UIButtonStyle *style = findButtonStyle(&theAssets->theme, makeString("general"));
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
@@ -58,17 +54,17 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 
 		// Mouse pressed: must have started and currently be inside the bounds to show anything
 		// Mouse unpressed: show hover if in bounds
-		if (mouseButtonPressed(input, MouseButton_Left))
+		if (mouseButtonPressed(theInput, MouseButton_Left))
 		{
-			if (contains(bounds, getClickStartPos(input, MouseButton_Left, &renderer->uiCamera)))
+			if (contains(bounds, getClickStartPos(theInput, MouseButton_Left, &theRenderer->uiCamera)))
 			{
 				backColor = style->pressedColor;
 			}
 		}
 		else
 		{
-			if (mouseButtonJustReleased(input, MouseButton_Left)
-			 && contains(bounds, getClickStartPos(input, MouseButton_Left, &renderer->uiCamera)))
+			if (mouseButtonJustReleased(theInput, MouseButton_Left)
+			 && contains(bounds, getClickStartPos(theInput, MouseButton_Left, &theRenderer->uiCamera)))
 			{
 				buttonClicked = true;
 			}
@@ -86,13 +82,13 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
+	drawSingleRect(&theRenderer->uiBuffer, bounds, theRenderer->shaderIds.untextured, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(renderer, &renderer->uiBuffer, getFont(uiState->assets, style->fontName), text, textOrigin, textAlignment, style->textColor);
+	uiText(&theRenderer->uiBuffer, getFont(theAssets, style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
-	&& keyJustPressed(input, shortcutKey))
+	&& keyJustPressed(theInput, shortcutKey))
 	{
 		buttonClicked = true;
 	}
@@ -100,12 +96,12 @@ bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, b
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
+bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, renderer, text, bounds, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, text, bounds, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -128,7 +124,7 @@ void pushUiMessage(UIState *uiState, String message)
 	uiState->message.countdown = uiMessageDisplayTime;
 }
 
-void drawUiMessage(UIState *uiState, Renderer *renderer)
+void drawUiMessage(UIState *uiState)
 {
 	DEBUG_FUNCTION();
 	
@@ -138,7 +134,7 @@ void drawUiMessage(UIState *uiState, Renderer *renderer)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = findMessageStyle(&uiState->assets->theme, makeString("general"));
+			UIMessageStyle *style = findMessageStyle(&theAssets->theme, makeString("general"));
 
 			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 
@@ -160,11 +156,11 @@ void drawUiMessage(UIState *uiState, Renderer *renderer)
 				textColor *= lerp<f32>(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(renderer->uiCamera.size.x * 0.5f, renderer->uiCamera.size.y - 8.0f);
+			V2 origin = v2(theRenderer->uiCamera.size.x * 0.5f, theRenderer->uiCamera.size.y - 8.0f);
 
-			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
+			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&theRenderer->uiBuffer, theRenderer->shaderIds.untextured);
 
-			Rect2 labelRect = uiText(renderer, &renderer->uiBuffer, getFont(uiState->assets, style->fontName), uiState->message.text, origin,
+			Rect2 labelRect = uiText(&theRenderer->uiBuffer, getFont(theAssets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);

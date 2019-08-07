@@ -185,7 +185,7 @@ Sprite *getSprite(SpriteGroup *group, s32 offset);
 Shader *getShader(AssetManager *assets, String shaderName);
 BitmapFont *getFont(AssetManager *assets, String fontName);
 
-#define LOCAL(str) getText(globalAppState.assets, makeString(str))
+#define LOCAL(str) getText(theAssets, makeString(str))
 String getText(AssetManager *assets, String name);
 
 //

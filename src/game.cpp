@@ -345,8 +345,8 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	// Centred, with equal button sizes
 	context->alignment = ALIGN_H_CENTRE;
 
-	UIButtonStyle *buttonStyle = findButtonStyle(&context->uiState->assets->theme, context->windowStyle->buttonStyleName);
-	BitmapFont *buttonFont = getFont(context->uiState->assets, buttonStyle->fontName);
+	UIButtonStyle *buttonStyle = findButtonStyle(&theAssets->theme, context->windowStyle->buttonStyleName);
+	BitmapFont *buttonFont = getFont(theAssets, buttonStyle->fontName);
 	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
 	s32 maxButtonTextWidth = 0;
 
@@ -414,17 +414,17 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 	append(&uiState->uiRects, uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
 
-	uiText(renderer, &renderer->uiBuffer, font, city->name,
+	uiText(&renderer->uiBuffer, font, city->name,
 	       v2(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
 
-	uiText(renderer, &renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(&renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(renderer, &renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(&renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(renderer, &renderer->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
+	uiText(&renderer->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-	uiText(renderer, &renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
+	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
 	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 
@@ -433,7 +433,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, renderer, LOCAL("button_zone"), buttonRect, Menu_Zone))
+		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, Menu_Zone))
 		{
 			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
 			Rect2 menuButtonRect = buttonRect;
@@ -443,7 +443,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (uiButton(uiState, renderer, zoneDefs[zoneIndex].name, menuButtonRect,
+				if (uiButton(uiState, zoneDefs[zoneIndex].name, menuButtonRect,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -462,7 +462,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, renderer, LOCAL("button_build"), buttonRect, Menu_Build))
+		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build))
 		{
 			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
 			Rect2 menuButtonRect = buttonRect;
@@ -477,7 +477,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 				BuildingDef *buildingDef = getValue(it);
 				ASSERT(buildingDef->buildMethod != BuildMethod_None); //We somehow got an un-constructible building in our constructible buildings list!
 
-				if (uiButton(uiState, renderer, buildingDef->name, menuButtonRect,
+				if (uiButton(uiState, buildingDef->name, menuButtonRect,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);
@@ -495,7 +495,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		if (uiButton(uiState, renderer, LOCAL("button_demolish"), buttonRect,
+		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect,
 					(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, makeString("(X)")))
 		{
@@ -506,7 +506,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiButton(uiState, renderer, LOCAL("button_menu"), buttonRect))
+		if (uiButton(uiState, LOCAL("button_menu"), buttonRect))
 		{
 			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
@@ -917,5 +917,5 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		clear(&uiState->openWindows);
 	}
 
-	drawUiMessage(uiState, renderer);
+	drawUiMessage(uiState);
 }
