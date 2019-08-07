@@ -127,7 +127,7 @@ void applySettings()
 {
 	resizeWindow(settings->resolution.x, settings->resolution.y, !settings->windowed);
 
-	reloadLocaleSpecificAssets(settings->locale);
+	reloadLocaleSpecificAssets();
 }
 
 void saveSettings()

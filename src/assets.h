@@ -67,6 +67,14 @@ struct Texture
 	};
 };
 
+enum AssetFlags
+{
+	Asset_IsAFile          = 1 << 0, // The file at Asset.fullName should be loaded into memory when loading this Asset
+	Asset_IsLocaleSpecific = 1 << 1, // File path has a {0} in it which should be filled in with the current locale
+
+	AssetDefaultFlags = Asset_IsAFile,
+};
+
 struct Asset
 {
 	AssetType type;
@@ -74,8 +82,8 @@ struct Asset
 	// shortName = "foo.png", fullName = "c:/mygame/assets/textures/foo.png"
 	String shortName;
 	String fullName;
-	bool isAFile; // Whether the file at fullName should be loaded into memory when loading this Asset
 
+	u32 flags; // AssetFlags
 	AssetState state;
 
 	// Depending on the AssetType, this could be the file contents, or something else!
@@ -124,39 +132,13 @@ struct Assets
 	// It feels icky having parts of assets directly in this struct, but when there's only 1, and you
 	// have to do a hashtable lookup inside it, it makes more sense to avoid the "find the asset" lookup.
 	HashTable<String> texts;
-
-	/*
-
-	TODO
-	----
-
-	Our current Asset struct, which keeps a copy of the file contents in memory, is not actually what we want!
-	A bunch of assets actually want the file to be loaded, then processed, and the result should be what's
-	kept in the Asset, because we never look at the source file's data ever again!
-	eg, for Fonts, we probably want the memory* pointer to be to the glyph data so it's easy to locate.
-
-	Asset types:
-	✔ texture assets
-	✔ sprites somehow??? There are thousands of them, because of fonts... maybe font glyphs should use a different, more specialised system?
-
-	Much later...
-	- audio! (sfx/music as separate things probably)
-	✔ localised text
-
-	Other changes:
-	✔ lookup by name
-	✔ reload individual files (We can... sort-of. Dependence on other assets isn't handled, so most of the time we just reload everything at once.)
-	✔ automated reloading
-	✔ automated cataloguing
-
-	*/
 };
 
 void initAssets();
 
-void reloadLocaleSpecificAssets(String newLocale);
+void reloadLocaleSpecificAssets();
 
-Asset *addAsset(AssetType type, String shortName, bool isAFile=true);
+Asset *addAsset(AssetType type, String shortName, u32 flags = AssetDefaultFlags);
 Asset *addTexture(String filename, bool isAlphaPremultiplied);
 Asset *addSpriteGroup(String name, s32 spriteCount);
 void addTiledSprites(String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false);

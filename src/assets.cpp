@@ -58,7 +58,7 @@ Blob allocate(Assets *theAssets, smm size)
 	return result;
 }
 
-Asset *addAsset(AssetType type, String shortName, bool isAFile)
+Asset *addAsset(AssetType type, String shortName, u32 flags)
 {
 	Asset *existing = getAssetIfExists(type, shortName);
 	if (existing) return existing;
@@ -66,14 +66,14 @@ Asset *addAsset(AssetType type, String shortName, bool isAFile)
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
 	asset->shortName = shortName;
-	if (isAFile)
+	if (flags & Asset_IsAFile)
 	{
 		asset->fullName = pushString(&assets->assetArena, getAssetPath(asset->type, shortName));
 	}
 	asset->state = AssetState_Unloaded;
 	asset->data.size = 0;
 	asset->data.memory = null;
-	asset->isAFile = isAFile;
+	asset->flags = flags;
 
 	put(&assets->assetsByType[type], shortName, asset);
 
@@ -156,12 +156,18 @@ void loadAsset(Asset *asset)
 	DEBUG_FUNCTION();
 	if (asset->state != AssetState_Unloaded) return;
 
+	String assetFileName = asset->fullName;
+	if (asset->flags & Asset_IsLocaleSpecific)
+	{
+		assetFileName = myprintf(asset->fullName, {getLocale()}, true);
+	}
+
 	Blob fileData = {};
 	// Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.
 	// eg, ShaderPrograms are made of several ShaderParts.
-	if (asset->isAFile)
+	if (asset->flags & Asset_IsAFile)
 	{
-		fileData = readTempFile(asset->fullName);
+		fileData = readTempFile(assetFileName);
 	}
 
 	// Type-specific loading
@@ -252,7 +258,7 @@ void loadAsset(Asset *asset)
 
 		case AssetType_Texture:
 		{
-			SDL_Surface *surface = createSurfaceFromFileData(fileData, asset->fullName);
+			SDL_Surface *surface = createSurfaceFromFileData(fileData, assetFileName);
 			ASSERT(surface->format->BytesPerPixel == 4); //We only handle 32-bit colour images!
 
 			if (!asset->texture.isFileAlphaPremultiplied)
@@ -354,7 +360,7 @@ Asset *addSpriteGroup(String name, s32 spriteCount)
 {
 	ASSERT(spriteCount > 0); //Must have a positive number of sprites in a Sprite Group!
 
-	Asset *spriteGroup = addAsset(AssetType_Sprite, name, false);
+	Asset *spriteGroup = addAsset(AssetType_Sprite, name, 0);
 	spriteGroup->data = allocate(assets, spriteCount * sizeof(Sprite));
 	spriteGroup->spriteGroup.count = spriteCount;
 	spriteGroup->spriteGroup.sprites = (Sprite*) spriteGroup->data.memory;
@@ -488,7 +494,7 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 void addAssets()
 {
 	// Manually add the texts asset, because it's special.
-	addAsset(AssetType_Texts, makeString("LOCALE.text"), false);
+	addAsset(AssetType_Texts, makeString("{0}.text"), AssetDefaultFlags | Asset_IsLocaleSpecific);
 
 	{
 		DEBUG_BLOCK("Read asset directories");
@@ -661,11 +667,18 @@ String getAssetPath(AssetType type, String shortName)
 	return result;
 }
 
-void reloadLocaleSpecificAssets(String newLocale)
+void reloadLocaleSpecificAssets()
 {
-	// Text
-	Asset *textAsset = getAsset(AssetType_Texts, makeString("LOCALE.text"));
-	reloadAsset(textAsset);
+	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	{
+		Asset *asset = get(it);
+		if (asset->flags & Asset_IsLocaleSpecific)
+		{
+			reloadAsset(asset);
+		}
+	}
+
+	assets->assetReloadHasJustHappened = true;
 }
 
 void loadCursorDefs(Blob data, Asset *asset)
@@ -689,7 +702,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 			&& asInt(nextToken(remainder, &remainder), &hotY))
 		{
 			// Add the cursor
-			Asset *cursorAsset = addAsset(AssetType_Cursor, name, false);
+			Asset *cursorAsset = addAsset(AssetType_Cursor, name, 0);
 			cursorAsset->cursor.imageFilePath = pushString(&assets->assetArena, getAssetPath(AssetType_Cursor, filename));
 			cursorAsset->cursor.hotspot = v2i(truncate32(hotX), truncate32(hotY));
 		}
