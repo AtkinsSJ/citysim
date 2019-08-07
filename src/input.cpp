@@ -307,7 +307,7 @@ KeyboardShortcut parseKeyboardShortcut(String input)
 	String keyName, remainder;
 	keyName = nextToken(input, &remainder, '+');
 
-	while (keyName.length > 0)
+	while (!isEmpty(keyName))
 	{
 		// 
 		// MODIFIERS

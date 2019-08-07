@@ -71,7 +71,7 @@ void loadBuildingDefs(AssetManager *assets, Blob data, Asset *asset)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (line.length == 0) break;
+		if (isEmpty(line)) break;
 
 		String firstWord;
 		String remainder;
@@ -455,7 +455,7 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue, AssetManager *asse
 		BuildingDef *def = get(it);
 
 		// Account for the "null" building
-		if (def->spriteName.length > 0)
+		if (!isEmpty(def->spriteName))
 		{
 			def->sprites = getSpriteGroup(assets, def->spriteName);
 		}

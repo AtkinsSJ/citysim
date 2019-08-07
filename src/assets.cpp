@@ -73,7 +73,7 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
-	if (shortName.length != 0)
+	if (!isEmpty(shortName))
 	{
 		asset->shortName = shortName;
 		asset->fullName = pushString(&assets->assetArena, getAssetPath(assets, asset->type, shortName));
@@ -444,7 +444,7 @@ void loadAssets(AssetManager *assets)
 void addAssetsFromDirectory(AssetManager *assets, String subDirectory, AssetType manualAssetType)
 {
 	String pathToScan;
-	if (subDirectory.length == 0)
+	if (isEmpty(subDirectory))
 	{
 		pathToScan = constructPath({assets->assetsPath}, true);
 	}

@@ -53,7 +53,7 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (line.length == 0) break;
+		if (isEmpty(line)) break;
 
 		String firstWord, remainder;
 		firstWord = nextToken(line, &remainder);
@@ -72,7 +72,7 @@ void loadUITheme(AssetManager *assets, Blob data, Asset *asset)
 				fontName = nextToken(remainder, &fontFilename);
 				fontFilename = trimStart(fontFilename);
 
-				if (fontName.length && fontFilename.length)
+				if (!isEmpty(fontName) && !isEmpty(fontFilename))
 				{
 					addFont(assets, pushString(&assets->assetArena, fontName), pushString(&assets->assetArena, fontFilename));
 				}

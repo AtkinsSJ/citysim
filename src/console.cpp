@@ -101,7 +101,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 	// copy input to output, for readability
 	consoleWriteLine(myprintf("> {0}", {commandInput}), CLS_InputEcho);
 
-	if (commandInput.length > 0)
+	if (!isEmpty(commandInput))
 	{
 		// Add to history
 		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, commandInput));

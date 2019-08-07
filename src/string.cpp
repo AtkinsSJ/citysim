@@ -139,7 +139,7 @@ void reverse(char* first, u32 length)
 String trimStart(String input)
 {
 	String result = input;
-	while ((input.length > 0) && isWhitespace(result.chars[0], false))
+	while (!isEmpty(input) && isWhitespace(result.chars[0], false))
 	{
 		++result.chars;
 		--result.length;
@@ -151,7 +151,7 @@ String trimStart(String input)
 String trimEnd(String input)
 {
 	String result = input;
-	while ((input.length > 0) && isWhitespace(result.chars[result.length-1], false))
+	while (!isEmpty(input) && isWhitespace(result.chars[result.length-1], false))
 	{
 		--result.length;
 	}
@@ -237,13 +237,13 @@ bool asBool(String string, bool *result)
 inline bool isNullTerminated(String s)
 {
 	// A 0-length string, by definition, can't have a null terminator
-	bool result = (s.length > 0) && (s.chars[s.length-1] == 0);
+	bool result = !isEmpty(s) && (s.chars[s.length-1] == 0);
 	return result;
 }
 
 inline bool isEmpty(String s)
 {
-	return (s.length == 0);
+	return (s.length <= 0);
 }
 
 s32 countTokens(String input)

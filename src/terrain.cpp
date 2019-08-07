@@ -25,7 +25,7 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (line.length == 0) break;
+		if (isEmpty(line)) break;
 		
 		String firstWord;
 		String remainder;
@@ -45,7 +45,7 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 				def = appendBlank(terrains);
 				
 				String name = trim(remainder);
-				if (name.length == 0)
+				if (isEmpty(name))
 				{
 					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain name'");
 					return;
@@ -57,7 +57,7 @@ void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *as
 				mode = Mode_Texture;
 				
 				String filename = trim(remainder);
-				if (filename.length == 0)
+				if (isEmpty(filename))
 				{
 					error(&reader, "Couldn't parse Texture. Expected: ':Terrain filename'");
 					return;
@@ -163,7 +163,7 @@ void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager 
 		TerrainDef *def = get(it);
 
 		// Account for the "null" terrain
-		if (def->spriteName.length > 0)
+		if (!isEmpty(def->spriteName))
 		{
 			def->sprites = getSpriteGroup(assets, def->spriteName);
 		}

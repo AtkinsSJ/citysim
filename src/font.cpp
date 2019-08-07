@@ -222,7 +222,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 {
 	DEBUG_FUNCTION();
 
-	if (text.length <= 0) return;
+	if (isEmpty(text)) return;
 
 	ASSERT(renderBuffer != null); //RenderBuffer must be provided!
 	ASSERT(font != null); //Font must be provided!

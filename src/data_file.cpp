@@ -74,7 +74,7 @@ String nextLine(LineReader *reader)
 		// This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
 		if (!reader->skipBlankLines) break;
 	}
-	while ((line.length <= 0) && !isDone(reader));
+	while (isEmpty(line) && !isDone(reader));
 
 	return line;
 }
@@ -137,7 +137,7 @@ u32 readAlignment(LineReader *reader, String command, String arguments)
 	u32 result = 0;
 
 	String token = nextToken(arguments, &arguments);
-	while (token.length > 0)
+	while (!isEmpty(token))
 	{
 		if (equals(token, "LEFT"))
 		{

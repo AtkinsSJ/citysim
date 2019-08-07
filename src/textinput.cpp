@@ -320,7 +320,7 @@ bool updateTextInput(TextInput *textInput, InputState *inputState)
 	if (keyJustPressed(inputState, SDLK_v, KeyMod_Ctrl))
 	{
 		String clipboard = getClipboardText();
-		if (clipboard.length > 0)
+		if (!isEmpty(clipboard))
 		{
 			insert(textInput, clipboard);
 		}
