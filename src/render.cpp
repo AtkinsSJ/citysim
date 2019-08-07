@@ -23,7 +23,7 @@ void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f
 	updateCameraMatrix(camera);
 }
 
-void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window)
+void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 {
 	renderer->window = window;
 
@@ -36,16 +36,16 @@ void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *wind
 	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        &renderer->chunkPool);
 
 	// Hide cursor until stuff loads
-	setCursorVisible(renderer, false);
+	setCursorVisible(false);
 }
 
-void render(Renderer *renderer)
+void render()
 {
 	linkRenderBufferToNext(&renderer->worldBuffer, &renderer->worldOverlayBuffer);
 	linkRenderBufferToNext(&renderer->worldOverlayBuffer, &renderer->uiBuffer);
 	linkRenderBufferToNext(&renderer->uiBuffer, &renderer->debugBuffer);
 
-	renderer->render(renderer, renderer->worldBuffer.firstChunk);
+	renderer->render(renderer->worldBuffer.firstChunk);
 
 	// Return the chunks to the pool
 	// NB: We can't easily shortcut this by just modifying the first/last pointers,
@@ -72,9 +72,9 @@ void render(Renderer *renderer)
 	clearRenderBuffer(&renderer->debugBuffer);
 }
 
-void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
+void rendererLoadAssets(AssetManager *assets)
 {
-	renderer->loadAssets(renderer, assets);
+	renderer->loadAssets(assets);
 
 	// Cache the shader IDs so we don't have to do so many hash lookups
 	renderer->shaderIds.pixelArt   = getShader(assets, makeString("pixelart.glsl"  ))->rendererShaderID;
@@ -83,31 +83,31 @@ void rendererLoadAssets(Renderer *renderer, AssetManager *assets)
 
 	if (!isEmpty(renderer->currentCursorName))
 	{
-		setCursor(renderer, renderer->currentCursorName);
+		setCursor(renderer->currentCursorName);
 	}
 }
 
-void rendererUnloadAssets(Renderer *renderer, AssetManager *assets)
+void rendererUnloadAssets(AssetManager *assets)
 {
 	if (renderer->systemWaitCursor == null)
 	{
 		renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 	}
 	SDL_SetCursor(renderer->systemWaitCursor);
-	renderer->unloadAssets(renderer, assets);
+	renderer->unloadAssets(assets);
 }
 
-void freeRenderer(Renderer *renderer)
+void freeRenderer()
 {
 	if (renderer->systemWaitCursor != null)
 	{
 		SDL_FreeCursor(renderer->systemWaitCursor);
 		renderer->systemWaitCursor = null;
 	}
-	renderer->free(renderer);
+	renderer->free();
 }
 
-void onWindowResized(Renderer *renderer, s32 w, s32 h)
+void onWindowResized(s32 w, s32 h)
 {
 	renderer->windowResized(w, h);
 	V2 windowSize = v2(w, h);
@@ -118,7 +118,7 @@ void onWindowResized(Renderer *renderer, s32 w, s32 h)
 	renderer->uiCamera.pos = renderer->uiCamera.size * 0.5f;
 }
 
-void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen)
+void resizeWindow(s32 w, s32 h, bool fullscreen)
 {
 	SDL_RestoreWindow(renderer->window);
 
@@ -152,7 +152,7 @@ void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen)
 	resizeEvent.window.data2 = newH;
 	SDL_PushEvent(&resizeEvent);
 
-	onWindowResized(renderer, newW, newH);
+	onWindowResized(newW, newH);
 }
 
 // Screen -> scene space
@@ -169,7 +169,7 @@ V2 unproject(Camera *camera, V2 screenPos)
 	return result;
 }
 
-void setCursor(Renderer *renderer, String cursorName)
+void setCursor(String cursorName)
 {
 	DEBUG_FUNCTION();
 	
@@ -181,12 +181,12 @@ void setCursor(Renderer *renderer, String cursorName)
 	}
 }
 
-inline void setCursor(Renderer *renderer, char *cursorName)
+inline void setCursor(char *cursorName)
 {
-	setCursor(renderer, makeString(cursorName));
+	setCursor(makeString(cursorName));
 }
 
-void setCursorVisible(Renderer *renderer, bool visible)
+void setCursorVisible(bool visible)
 {
 	renderer->cursorIsVisible = visible;
 	SDL_ShowCursor(visible ? 1 : 0);

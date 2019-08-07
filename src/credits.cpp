@@ -1,6 +1,6 @@
 #pragma once
 
-void updateAndRenderCredits(AppState *appState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderCredits(AppState *appState, AssetManager *assets)
 {
 	AppStatus result = appState->appStatus;
 

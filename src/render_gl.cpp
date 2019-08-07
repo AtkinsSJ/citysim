@@ -1,10 +1,10 @@
 
-Renderer *GL_initializeRenderer(SDL_Window *window)
+bool GL_initializeRenderer(SDL_Window *window)
 {
 	GL_Renderer *gl;
 	bootstrapArena(GL_Renderer, gl, renderer.renderArena);
 	bool succeeded = (gl != 0);
-	Renderer *renderer = &gl->renderer;
+	renderer = &gl->renderer;
 
 	if (!succeeded)
 	{
@@ -12,7 +12,7 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 	}
 	else
 	{
-		initRenderer(renderer, &renderer->renderArena, window);
+		initRenderer(&renderer->renderArena, window);
 
 		renderer->platformRenderer = gl;
 		renderer->windowResized = &GL_windowResized;
@@ -123,15 +123,15 @@ Renderer *GL_initializeRenderer(SDL_Window *window)
 
 		if (!succeeded)
 		{
-			GL_freeRenderer(renderer);
+			GL_freeRenderer();
 			gl = 0;
 		}
 	}
 
-	return renderer;
+	return succeeded;
 }
 
-void GL_freeRenderer(Renderer *renderer)
+void GL_freeRenderer()
 {
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 	SDL_GL_DeleteContext(gl->context);
@@ -317,7 +317,7 @@ void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 	}
 }
 
-void GL_loadAssets(Renderer *renderer, AssetManager *assets)
+void GL_loadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	
@@ -357,7 +357,7 @@ void GL_loadAssets(Renderer *renderer, AssetManager *assets)
 	}
 }
 
-void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
+void GL_unloadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	
@@ -390,20 +390,20 @@ void GL_unloadAssets(Renderer *renderer, AssetManager *assets)
 	clear(&gl->shaders);
 }
 
-inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID)
+inline GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID)
 {
-	ASSERT(shaderID >= 0 && shaderID < renderer->shaders.count); //Invalid shader!
+	ASSERT(shaderID >= 0 && shaderID < gl->shaders.count); //Invalid shader!
 
 	// Early-out if nothing is changing!
-	if (shaderID == renderer->currentShader)
+	if (shaderID == gl->currentShader)
 	{
-		return renderer->shaders.items + renderer->currentShader;
+		return gl->shaders.items + gl->currentShader;
 	}
 
-	if (renderer->currentShader >= 0 && renderer->currentShader < renderer->shaders.count)
+	if (gl->currentShader >= 0 && gl->currentShader < gl->shaders.count)
 	{
 		// Clean up the old shader's stuff
-		GL_ShaderProgram *oldShader = renderer->shaders.items + renderer->currentShader;
+		GL_ShaderProgram *oldShader = gl->shaders.items + gl->currentShader;
 		glDisableVertexAttribArray(oldShader->aPositionLoc);
 		glDisableVertexAttribArray(oldShader->aColorLoc);
 		if (oldShader->aUVLoc != -1)
@@ -412,8 +412,8 @@ inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID)
 		}
 	}
 
-	renderer->currentShader = shaderID;
-	GL_ShaderProgram *activeShader = renderer->shaders.items + renderer->currentShader;
+	gl->currentShader = shaderID;
+	GL_ShaderProgram *activeShader = gl->shaders.items + gl->currentShader;
 
 	ASSERT(activeShader->isValid); //Attempting to use a shader that isn't loaded!
 	glUseProgram(activeShader->shaderProgramID);
@@ -434,7 +434,7 @@ inline GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID)
 	return activeShader;
 }
 
-void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk)
+void GL_render(RenderBufferChunk *firstChunk)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 

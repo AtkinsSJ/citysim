@@ -1,6 +1,6 @@
 #pragma once
 
-void updateAndRenderMainMenu(AppState *appState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderMainMenu(AppState *appState, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 	

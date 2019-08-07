@@ -45,7 +45,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?");
 }
 
-void renderConsole(Console *console, Renderer *renderer)
+void renderConsole(Console *console)
 {
 	BitmapFont *consoleFont = getFont(theAssets, makeString("debug"));
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
@@ -59,7 +59,7 @@ void renderConsole(Console *console, Renderer *renderer)
 	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 
-	Rect2 textInputRect = drawTextInput(renderer, renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
+	Rect2 textInputRect = drawTextInput(renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
 	textPos.y -= textInputRect.h;
 
 	textPos.y -= 8.0f;

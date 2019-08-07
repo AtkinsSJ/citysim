@@ -31,7 +31,7 @@ enum AppStatus
 };
 
 struct MemoryArena  *globalFrameTempArena;
-struct Renderer     *theRenderer;
+struct Renderer     *renderer;
 struct AssetManager *theAssets;
 struct InputState   *theInput;
 
@@ -204,12 +204,10 @@ int main(int argc, char *argv[])
 	loadAssets(assets);
 	theAssets = assets;
 
-	Renderer *renderer = platform_initializeRenderer(window);
-	ASSERT(renderer->platformRenderer != null); //Failed to initialize renderer.
-	rendererLoadAssets(renderer, assets);
-	setCursor(renderer, "default");
-	setCursorVisible(renderer, true);
-	theRenderer = renderer;
+	ASSERT(platform_initializeRenderer(window)); //Failed to initialize renderer.
+	rendererLoadAssets(assets);
+	setCursor("default");
+	setCursorVisible(true);
 
 	InputState inputState;
 	initInput(&inputState);
@@ -218,8 +216,8 @@ int main(int argc, char *argv[])
 
 	initUiState(&appState->uiState, &appState->systemArena);
 
-	Camera *worldCamera = &theRenderer->worldCamera;
-	Camera *uiCamera = &theRenderer->uiCamera;
+	Camera *worldCamera = &renderer->worldCamera;
+	Camera *uiCamera = &renderer->uiCamera;
 	V2 windowSize = v2(inputState.windowSize);
 	const f32 TILE_SIZE = 16.0f;
 	initCamera(worldCamera, windowSize, 1.0f/TILE_SIZE, 10000.0f, -10000.0f);
@@ -243,7 +241,7 @@ int main(int argc, char *argv[])
 
 			if (haveAssetFilesChanged(assets))
 			{
-				reloadAssets(assets, theRenderer);
+				reloadAssets(assets);
 			}
 
 			if (inputState.receivedQuitSignal)
@@ -254,21 +252,21 @@ int main(int argc, char *argv[])
 
 			if (inputState.wasWindowResized)
 			{
-				onWindowResized(theRenderer, inputState.windowWidth, inputState.windowHeight);
+				onWindowResized(inputState.windowWidth, inputState.windowHeight);
 			}
 
 			worldCamera->mousePos = unproject(worldCamera, inputState.mousePosNormalised);
 			uiCamera->mousePos = unproject(uiCamera, inputState.mousePosNormalised);
 
-			addSetCamera(&theRenderer->worldBuffer, worldCamera);
-			addClear(&theRenderer->worldBuffer);
-			addSetCamera(&theRenderer->uiBuffer, uiCamera);
+			addSetCamera(&renderer->worldBuffer, worldCamera);
+			addClear(&renderer->worldBuffer);
+			addSetCamera(&renderer->uiBuffer, uiCamera);
 
-			updateAndRender(appState, &inputState, theRenderer, assets);
+			updateAndRender(appState, &inputState, assets);
 
 			if (globalConsole)
 			{
-				renderConsole(globalConsole, theRenderer);
+				renderConsole(globalConsole);
 			}
 
 			// Update camera matrices here
@@ -281,15 +279,15 @@ int main(int argc, char *argv[])
 				DEBUG_ASSETS(assets);
 				DEBUG_ARENA(&appState->systemArena, "System");
 				DEBUG_ARENA(&appState->globalTempArena, "Global Temp Arena");
-				DEBUG_ARENA(&theRenderer->renderArena, "Renderer");
+				DEBUG_ARENA(&renderer->renderArena, "Renderer");
 				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : 0, "GameState");
 				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-				updateAndRenderDebugData(globalDebugState, &inputState, theRenderer);
+				updateAndRenderDebugData(globalDebugState, &inputState);
 			}
 
 			// Actually draw things!
-			render(theRenderer);
+			render();
 
 			resetMemoryArena(&appState->globalTempArena);
 		}
@@ -297,14 +295,14 @@ int main(int argc, char *argv[])
 		// FRAMERATE MONITORING AND CAPPING
 		{
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
-			SDL_GL_SwapWindow(theRenderer->window);
+			SDL_GL_SwapWindow(renderer->window);
 		}
 
 		assets->assetReloadHasJustHappened = false;
 	}
 
 	// CLEAN UP
-	freeRenderer(theRenderer);
+	freeRenderer();
 
 	SDL_DestroyWindow(window);
 	IMG_Quit();

@@ -37,7 +37,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 
 		if (context->doRender)
 		{
-			drawText(&context->renderer->uiBuffer, font, text, bounds, alignment, style->textColor, context->renderer->shaderIds.text);
+			drawText(&renderer->uiBuffer, font, text, bounds, alignment, style->textColor, renderer->shaderIds.text);
 		}
 
 		// For now, we'll always just start a new line.
@@ -57,7 +57,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 
 	u32 textAlignment = style->textAlignment;
 	f32 buttonPadding = style->padding;
-	V2 mousePos = context->renderer->uiCamera.mousePos;
+	V2 mousePos = renderer->uiCamera.mousePos;
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -108,9 +108,9 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		if (context->doRender)
 		{
 			V4 backColor = style->backgroundColor;
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(&context->renderer->uiBuffer, context->renderer->shaderIds.untextured);
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-			drawText(&context->renderer->uiBuffer, font, text, bounds, textAlignment, style->textColor, context->renderer->shaderIds.text);
+			drawText(&renderer->uiBuffer, font, text, bounds, textAlignment, style->textColor, renderer->shaderIds.text);
 
 			if (context->window->wasActiveLastUpdate && contains(buttonBounds, mousePos))
 			{
@@ -118,7 +118,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				// Mouse unpressed: show hover if in bounds
 				if (mouseButtonPressed(theInput, MouseButton_Left))
 				{
-					if (contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &context->renderer->uiCamera)))
+					if (contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
 					{
 						backColor = style->pressedColor;
 					}
@@ -135,7 +135,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 		{
 			if (mouseButtonJustReleased(theInput, MouseButton_Left)
-			 && contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &context->renderer->uiCamera)))
+			 && contains(buttonBounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 				context->uiState->mouseInputHandled = true;
@@ -230,11 +230,10 @@ Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
 					windowArea.h - barHeight - (contentPadding * 2.0f));
 }
 
-WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, Renderer *renderer, UIState *uiState)
+WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState)
 {
 	WindowContext context = {};
 	context.uiState = uiState;
-	context.renderer = renderer;
 	context.temporaryMemory = &globalAppState.globalTempArena;
 	context.window = window;
 	context.windowStyle = windowStyle;
@@ -271,8 +270,8 @@ void prepareForRender(WindowContext *context)
 
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
 {
-	V2 mousePos = context->renderer->uiCamera.mousePos;
-	Rect2I validWindowArea = irectCentreSize(v2i(context->renderer->uiCamera.pos), v2i(context->renderer->uiCamera.size));
+	V2 mousePos = renderer->uiCamera.mousePos;
+	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
 	if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
 	{
@@ -305,14 +304,14 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 		}
 		else
 		{
-			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(theInput, MouseButton_Left, &context->renderer->uiCamera)));
+			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)));
 		}
 		
 		uiState->mouseInputHandled = true;
 	}
 	else if (window->flags & WinFlag_Tooltip)
 	{
-		window->area.pos = v2i(context->renderer->uiCamera.mousePos) + context->windowStyle->offsetFromMouse;
+		window->area.pos = v2i(renderer->uiCamera.mousePos) + context->windowStyle->offsetFromMouse;
 	}
 
 	// Keep window on screen
@@ -349,7 +348,7 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	}
 }
 
-void updateWindows(UIState *uiState, Renderer *renderer)
+void updateWindows(UIState *uiState)
 {
 	DEBUG_FUNCTION();
 
@@ -375,7 +374,7 @@ void updateWindows(UIState *uiState, Renderer *renderer)
 
 		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		WindowContext context = makeWindowContext(window, windowStyle, renderer, uiState);
+		WindowContext context = makeWindowContext(window, windowStyle, uiState);
 
 		// Run the WindowProc once first so we can measure its size
 		updateWindow(uiState, window, &context, isActive);
@@ -473,7 +472,7 @@ void updateWindows(UIState *uiState, Renderer *renderer)
 	}
 }
 
-void renderWindows(Renderer *renderer, UIState *uiState)
+void renderWindows(UIState *uiState)
 {
 	V2 mousePos = renderer->uiCamera.mousePos;
 	for (auto it = iterateBackwards(&uiState->openWindows);
@@ -493,7 +492,7 @@ void renderWindows(Renderer *renderer, UIState *uiState)
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&theAssets->theme, window->styleName);
-		WindowContext context = makeWindowContext(window, windowStyle, renderer, uiState);
+		WindowContext context = makeWindowContext(window, windowStyle, uiState);
 
 		if (!window->isInitialised)
 		{

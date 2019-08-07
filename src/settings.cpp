@@ -126,7 +126,7 @@ void loadSettings(Settings *settings)
 
 void applySettings(Settings *settings)
 {
-	resizeWindow(theRenderer, settings->resolution.x, settings->resolution.y, !settings->windowed);
+	resizeWindow(settings->resolution.x, settings->resolution.y, !settings->windowed);
 
 	setLocale(theAssets, settings->locale);
 }
@@ -192,7 +192,7 @@ void saveSettings(Settings *settings)
 	}
 }
 
-void updateAndRenderSettingsMenu(AppState *appState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderSettingsMenu(AppState *appState, AssetManager *assets)
 {
 	AppStatus result = appState->appStatus;
 

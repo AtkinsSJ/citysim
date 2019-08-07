@@ -573,16 +573,16 @@ inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
 	return result;
 }
 
-void drawCity(City *city, Renderer *renderer, Rect2I visibleTileBounds, Rect2I demolitionRect)
+void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 {
-	drawTerrain(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt);
+	drawTerrain(city, visibleTileBounds, renderer->shaderIds.pixelArt);
 
-	drawZones(city, renderer, visibleTileBounds, renderer->shaderIds.untextured);
+	drawZones(city, visibleTileBounds, renderer->shaderIds.untextured);
 
-	drawBuildings(city, renderer, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
+	drawBuildings(city, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
 }
 
-void drawTerrain(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID)
+void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
@@ -676,7 +676,7 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 	return result;
 }
 
-void drawBuildings(City *city, Renderer *renderer, Rect2I visibleTileBounds, s8 shaderID, Rect2I demolitionRect)
+void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I demolitionRect)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

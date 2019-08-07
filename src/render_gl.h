@@ -68,12 +68,12 @@ struct GL_Renderer
 	Asset *currentTexture; 
 };
 
-Renderer *GL_initializeRenderer(SDL_Window *window);
-void GL_render(Renderer *renderer, RenderBufferChunk *firstChunk);
+bool GL_initializeRenderer(SDL_Window *window);
+void GL_render(RenderBufferChunk *firstChunk);
 void GL_windowResized(s32 newWidth, s32 newHeight);
-void GL_loadAssets(Renderer *renderer, AssetManager *assets);
-void GL_unloadAssets(Renderer *renderer, AssetManager *assets);
-void GL_freeRenderer(Renderer *renderer);
+void GL_loadAssets(AssetManager *assets);
+void GL_unloadAssets(AssetManager *assets);
+void GL_freeRenderer();
 
 void logGLError(GLenum errorCode);
 void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
@@ -82,7 +82,7 @@ void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader);
 bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader *shaderProgram, GL_ShaderPart shaderPart);
 void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribLocation);
 void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation);
-GL_ShaderProgram *useShader(GL_Renderer *renderer, s8 shaderID);
+GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID);
 
 void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color);
 void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv);

@@ -394,7 +394,7 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *uiState, GameState *gameState)
+void updateAndRenderGameUI(AssetManager *assets, UIState *uiState, GameState *gameState)
 {
 	DEBUG_FUNCTION();
 	
@@ -449,7 +449,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 					uiCloseMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
 					gameState->actionMode = ActionMode_Zone;
-					setCursor(renderer, "build");
+					setCursor("build");
 				}
 
 				menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -483,7 +483,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 					uiCloseMenus(uiState);
 					gameState->selectedBuildingTypeID = buildingDef->typeID;
 					gameState->actionMode = ActionMode_Build;
-					setCursor(renderer, "build");
+					setCursor("build");
 				}
 
 				menuButtonRect.y += menuButtonRect.h + uiPadding;
@@ -500,7 +500,7 @@ void updateAndRenderGameUI(Renderer *renderer, AssetManager *assets, UIState *ui
 					SDLK_x, makeString("(X)")))
 		{
 			gameState->actionMode = ActionMode_Demolish;
-			setCursor(renderer, "demolish");
+			setCursor("demolish");
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -531,7 +531,7 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
-void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void updateAndRenderGame(AppState *appState, InputState *inputState, AssetManager *assets)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 	
@@ -569,7 +569,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 
 	// UI!
 	UIState *uiState = &globalAppState.uiState;
-	updateAndRenderGameUI(renderer, assets, uiState, gameState);
+	updateAndRenderGameUI(assets, uiState, gameState);
 
 	V4 ghostColorValid    = color255(128,255,128,255);
 	V4 ghostColorInvalid  = color255(255,0,0,128);
@@ -795,7 +795,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	{
 		// Unselect current thing
 		gameState->actionMode = ActionMode_None;
-		setCursor(renderer, "default");
+		setCursor("default");
 	}
 
 	// RENDERING
@@ -806,7 +806,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	);
 	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
 
-	drawCity(city, renderer, visibleTileBounds, demolitionRect);
+	drawCity(city, visibleTileBounds, demolitionRect);
 
 	// Data layer rendering
 	if (gameState->dataLayerToDraw)
@@ -872,7 +872,7 @@ void updateAndRenderGame(AppState *appState, InputState *inputState, Renderer *r
 	}
 }
 
-void updateAndRender(AppState *appState, InputState *inputState, Renderer *renderer, AssetManager *assets)
+void updateAndRender(AppState *appState, InputState *inputState, AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 
@@ -881,28 +881,28 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 	UIState *uiState = &appState->uiState;
 	uiState->uiRects.count = 0;
 	uiState->mouseInputHandled = false;
-	updateWindows(uiState, renderer);
+	updateWindows(uiState);
 	
 	switch (appState->appStatus)
 	{
 		case AppStatus_MainMenu:
 		{
-			updateAndRenderMainMenu(appState, renderer, assets);
+			updateAndRenderMainMenu(appState, assets);
 		} break;
 
 		case AppStatus_Credits:
 		{
-			updateAndRenderCredits(appState, renderer, assets);
+			updateAndRenderCredits(appState, assets);
 		} break;
 
 		case AppStatus_SettingsMenu:
 		{
-			updateAndRenderSettingsMenu(appState, renderer, assets);
+			updateAndRenderSettingsMenu(appState, assets);
 		} break;
 
 		case AppStatus_Game:
 		{
-			updateAndRenderGame(appState, inputState, renderer, assets);
+			updateAndRenderGame(appState, inputState, assets);
 		} break;
 
 		case AppStatus_Quit: break;
@@ -910,7 +910,7 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 		INVALID_DEFAULT_CASE;
 	}
 
-	renderWindows(renderer, uiState);
+	renderWindows(uiState);
 
 	if (appState->appStatus != oldAppStatus)
 	{

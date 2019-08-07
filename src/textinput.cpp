@@ -19,7 +19,7 @@ String textInputToString(TextInput *textInput)
 	return result;
 }
 
-Rect2 drawTextInput(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth)
+Rect2 drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth)
 {
 	DEBUG_FUNCTION();
 

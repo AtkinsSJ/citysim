@@ -124,7 +124,7 @@ struct DebugTextState
 	u32 charsLastPrinted;
 };
 
-void initDebugTextState(DebugTextState *textState, Renderer *renderer, BitmapFont *font, V4 textColor, f32 screenEdgePadding, bool upwards, bool alignLeft)
+void initDebugTextState(DebugTextState *textState, BitmapFont *font, V4 textColor, f32 screenEdgePadding, bool upwards, bool alignLeft)
 {
 	*textState = {};
 
@@ -193,7 +193,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 	}
 }
 
-void renderDebugData(DebugState *debugState, Renderer *renderer)
+void renderDebugData(DebugState *debugState)
 {
 	DEBUG_FUNCTION_T(DCDT_Debug);
 	BitmapFont *font = getFont(theAssets, makeString("debug"));
@@ -227,7 +227,7 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 	}
 
 	DebugTextState textState;
-	initDebugTextState(&textState, renderer, font, makeWhite(), 16.0f, false, true);
+	initDebugTextState(&textState, font, makeWhite(), 16.0f, false, true);
 
 	u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 	debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
@@ -321,7 +321,7 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 	}
 
 	// Put FPS in top right
-	initDebugTextState(&textState, renderer, font, makeWhite(), 16.0f, false, false);
+	initDebugTextState(&textState, font, makeWhite(), 16.0f, false, false);
 	{
 		String smsForFrame = makeString("???");
 		String sfps = makeString("???");
@@ -335,7 +335,7 @@ void renderDebugData(DebugState *debugState, Renderer *renderer)
 	}
 }
 
-void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, Renderer *renderer)
+void updateAndRenderDebugData(DebugState *debugState, InputState *inputState)
 {
 	DEBUG_FUNCTION_T(DCDT_Debug);
 	if (keyJustPressed(inputState, SDLK_F2))
@@ -380,7 +380,7 @@ void updateAndRenderDebugData(DebugState *debugState, InputState *inputState, Re
 
 	if (debugState->showDebugData)
 	{
-		renderDebugData(debugState, renderer);
+		renderDebugData(debugState);
 	}
 }
 

@@ -110,7 +110,7 @@ inline bool canZoneTile(CanZoneQuery *query, s32 x, s32 y)
 	return query->tileCanBeZoned[(qY * query->bounds.w) + qX] != 0;
 }
 
-void drawZones(City *city, Renderer *renderer, Rect2I visibleArea, s8 shaderID)
+void drawZones(City *city, Rect2I visibleArea, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

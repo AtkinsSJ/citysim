@@ -179,17 +179,17 @@ struct Renderer
 	// Don't access these directly!
 	void *platformRenderer;
 	void (*windowResized)(s32, s32);
-	void (*render)(Renderer *, RenderBufferChunk *);
-	void (*loadAssets)(Renderer *, AssetManager *);
-	void (*unloadAssets)(Renderer *, AssetManager *);
-	void (*free)(Renderer *);
+	void (*render)(RenderBufferChunk *);
+	void (*loadAssets)(AssetManager *);
+	void (*unloadAssets)(AssetManager *);
+	void (*free)();
 };
 
-void initRenderer(Renderer *renderer, MemoryArena *renderArena, SDL_Window *window);
-void render(Renderer *renderer);
-void rendererLoadAssets(Renderer *renderer, AssetManager *assets);
-void rendererUnloadAssets(Renderer *renderer, AssetManager *assets);
-void freeRenderer(Renderer *renderer);
+void initRenderer(MemoryArena *renderArena, SDL_Window *window);
+void render();
+void rendererLoadAssets(AssetManager *assets);
+void rendererUnloadAssets(AssetManager *assets);
+void freeRenderer();
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool);
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
@@ -200,9 +200,9 @@ void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f
 void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
 
-void setCursor(Renderer *uiState, String cursorName);
-void setCursor(Renderer *uiState, char *cursorName);
-void setCursorVisible(Renderer *uiState, bool visible);
+void setCursor(String cursorName);
+void setCursor(char *cursorName);
+void setCursorVisible(bool visible);
 
 u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
 
@@ -244,8 +244,8 @@ void endCurrentSubGroup(DrawRectsGroup *group);
 
 void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u8 paletteSize, V4 *palette);
 
-void resizeWindow(Renderer *renderer, s32 w, s32 h, bool fullscreen);
-void onWindowResized(Renderer *renderer, s32 w, s32 h);
+void resizeWindow(s32 w, s32 h, bool fullscreen);
+void onWindowResized(s32 w, s32 h);
 
 // TODO: Some kind of switch to determine which renderer we want to load.
 #include "render_gl.h"

@@ -517,13 +517,13 @@ bool haveAssetFilesChanged(AssetManager *assets)
 	return hasDirectoryChanged(&assets->assetChangeHandle);
 }
 
-void reloadAssets(AssetManager *assets, Renderer *renderer)
+void reloadAssets(AssetManager *assets)
 {
 	DEBUG_FUNCTION();
 
 	// Preparation
 	consoleWriteLine("Reloading assets...");
-	rendererUnloadAssets(renderer, assets);
+	rendererUnloadAssets(assets);
 
 	// Clear managed assets
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
@@ -547,7 +547,7 @@ void reloadAssets(AssetManager *assets, Renderer *renderer)
 	loadAssets(assets);
 
 	// After stuff
-	rendererLoadAssets(renderer, assets);
+	rendererLoadAssets(assets);
 	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
 }
 

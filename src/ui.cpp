@@ -22,7 +22,7 @@ Rect2 uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origi
 
 	Rect2 bounds = rectPosSize(topLeft, textSize);
 
-	drawText(renderBuffer, font, text, bounds, align, color, theRenderer->shaderIds.text);
+	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text);
 
 	return bounds;
 }
@@ -43,7 +43,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	V2 mousePos = theRenderer->uiCamera.mousePos;
+	V2 mousePos = renderer->uiCamera.mousePos;
 	UIButtonStyle *style = findButtonStyle(&theAssets->theme, makeString("general"));
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
@@ -56,7 +56,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(theInput, MouseButton_Left))
 		{
-			if (contains(bounds, getClickStartPos(theInput, MouseButton_Left, &theRenderer->uiCamera)))
+			if (contains(bounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
 			{
 				backColor = style->pressedColor;
 			}
@@ -64,7 +64,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 		else
 		{
 			if (mouseButtonJustReleased(theInput, MouseButton_Left)
-			 && contains(bounds, getClickStartPos(theInput, MouseButton_Left, &theRenderer->uiCamera)))
+			 && contains(bounds, getClickStartPos(theInput, MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 			}
@@ -82,9 +82,9 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(&theRenderer->uiBuffer, bounds, theRenderer->shaderIds.untextured, backColor);
+	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
 	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(&theRenderer->uiBuffer, getFont(theAssets, style->fontName), text, textOrigin, textAlignment, style->textColor);
+	uiText(&renderer->uiBuffer, getFont(theAssets, style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if ((shortcutKey != SDLK_UNKNOWN)
@@ -156,11 +156,11 @@ void drawUiMessage(UIState *uiState)
 				textColor *= lerp<f32>(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(theRenderer->uiCamera.size.x * 0.5f, theRenderer->uiCamera.size.y - 8.0f);
+			V2 origin = v2(renderer->uiCamera.size.x * 0.5f, renderer->uiCamera.size.y - 8.0f);
 
-			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&theRenderer->uiBuffer, theRenderer->shaderIds.untextured);
+			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-			Rect2 labelRect = uiText(&theRenderer->uiBuffer, getFont(theAssets, style->fontName), uiState->message.text, origin,
+			Rect2 labelRect = uiText(&renderer->uiBuffer, getFont(theAssets, style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);
