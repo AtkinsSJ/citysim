@@ -20,11 +20,11 @@ void loadBMFont(AssetManager *assets, Blob data, Asset *asset)
 	}
 	else
 	{
-		BMFontBlockHeader *blockHeader = 0;
-		BMFontBlock_Common *common = 0;
-		BMFont_Char *chars = 0;
+		BMFontBlockHeader *blockHeader = null;
+		BMFontBlock_Common *common = null;
+		BMFont_Char *chars = null;
 		u32 charCount = 0;
-		void *pages = 0;
+		void *pages = null;
 			
 		blockHeader = (BMFontBlockHeader *)(data.memory + pos);
 		pos += sizeof(BMFontBlockHeader);

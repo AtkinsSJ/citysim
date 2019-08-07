@@ -12,8 +12,6 @@ struct UIMessage
 
 struct UIState
 {
-	MemoryArena arena;
-	Camera *uiCamera;
 	AssetManager *assets;
 	InputState *input;
 
@@ -35,7 +33,7 @@ struct UIState
 	V2 windowDragWindowStartPos;
 };
 
-void initUiState(UIState *uiState, Camera *uiCamera, AssetManager *assets, InputState *input);
+void initUiState(UIState *uiState, AssetManager *assets, InputState *input, MemoryArena *arena);
 
 Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
 bool uiButton(UIState *uiState, Renderer *renderer, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);

@@ -129,7 +129,7 @@ AppState globalAppState;
 
 SDL_Window *initSDL(Settings *settings, const char *windowTitle)
 {
-	SDL_Window *window = 0;
+	SDL_Window *window = null;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -213,8 +213,7 @@ int main(int argc, char *argv[])
 	initInput(&inputState);
 	SDL_GetWindowSize(window, &inputState.windowWidth, &inputState.windowHeight);
 
-	UIState *uiState = &appState->uiState;
-	initUiState(uiState, &renderer->uiCamera, assets, &inputState);
+	initUiState(&appState->uiState, assets, &inputState, &appState->systemArena);
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;

@@ -386,7 +386,11 @@ void pauseMenuWindowProc(WindowContext *context, void *userData)
 	if (window_button(context, exit, maxButtonTextWidth))
 	{
 		globalAppState.gameState->status = GameStatus_Quit;
-		context->closeRequested = true;
+		// NB: We don't close the window here, because doing so makes the window disappear one frame
+		// before the main menu appears, so we get a flash of the game world.
+		// All windows are closed when switching GameStatus so it's fine.
+		// - Sam, 07/08/2019
+		// context->closeRequested = true;
 	}
 }
 
@@ -877,7 +881,7 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 	UIState *uiState = &appState->uiState;
 	uiState->uiRects.count = 0;
 	uiState->mouseInputHandled = false;
-	updateWindows(uiState);
+	updateWindows(uiState, renderer);
 	
 	switch (appState->appStatus)
 	{
@@ -903,14 +907,11 @@ void updateAndRender(AppState *appState, InputState *inputState, Renderer *rende
 
 		case AppStatus_Quit: break;
 		
-		default:
-		{
-			ASSERT(false); //Not implemented this AppStatus yet!
-		} break;
+		INVALID_DEFAULT_CASE;
 	}
 
 	renderWindows(renderer, uiState);
-	
+
 	if (appState->appStatus != oldAppStatus)
 	{
 		clear(&uiState->openWindows);

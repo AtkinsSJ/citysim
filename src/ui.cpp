@@ -1,22 +1,19 @@
 // ui.cpp
 
-void initUiState(UIState *uiState, Camera *uiCamera, AssetManager *assets, InputState *input)
+void initUiState(UIState *uiState, AssetManager *assets, InputState *input, MemoryArena *arena)
 {
 	*uiState = {};
 
-	uiState->uiCamera = uiCamera;
 	uiState->assets = assets;
 	uiState->input = input;
 
-	initMemoryArena(&uiState->arena, MB(1));
-
 	uiState->message = {};
-	uiState->message.text = pushString(&uiState->arena, 256);
+	uiState->message.text = pushString(arena, 256);
 	uiState->message.countdown = -1;
 
 	initialiseArray(&uiState->uiRects, 16);
 
-	initChunkedArray(&uiState->openWindows, &uiState->arena, 16);
+	initChunkedArray(&uiState->openWindows, arena, 16);
 }
 
 Rect2 uiText(Renderer *renderer, RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)
