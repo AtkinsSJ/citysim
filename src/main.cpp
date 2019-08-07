@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 	ASSERT(renderer->platformRenderer != null); //Failed to initialize renderer.
 	rendererLoadAssets(renderer, assets);
 	appState->renderer = renderer;
-	setCursor(renderer, "default.png");
+	setCursor(renderer, "default");
 	setCursorVisible(renderer, true);
 
 	InputState inputState;

@@ -11,12 +11,12 @@ void initAssetManager(AssetManager *assets)
 	// - Sam, 19/05/2019
 	initHashTable(&assets->fileExtensionToType);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "buildings"), AssetType_BuildingDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "cursors"),   AssetType_CursorDefs);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"),   AssetType_TerrainDefs);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"),    AssetType_DevKeymap);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"),     AssetType_UITheme);
 
 	initHashTable(&assets->directoryNameToType);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "cursors"),   AssetType_Cursor);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"),     AssetType_BitmapFont);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"),   AssetType_Shader);
 	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"),  AssetType_Texture);
@@ -73,9 +73,9 @@ Asset *addAsset(AssetManager *assets, AssetType type, String shortName, bool isA
 
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
-	if (!isEmpty(shortName))
+	asset->shortName = shortName;
+	if (isAFile)
 	{
-		asset->shortName = shortName;
 		asset->fullName = pushString(&assets->assetArena, getAssetPath(assets, asset->type, shortName));
 	}
 	asset->state = AssetState_Unloaded;
@@ -188,9 +188,16 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_Cursor:
 		{
+			fileData = readTempFile(asset->cursor.imageFilePath);
 			SDL_Surface *cursorSurface = createSurfaceFromFileData(fileData, asset->shortName);
-			asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, 0, 0);
+			asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, asset->cursor.hotspot.x, asset->cursor.hotspot.y);
 			SDL_FreeSurface(cursorSurface);
+			asset->state = AssetState_Loaded;
+		} break;
+
+		case AssetType_CursorDefs:
+		{
+			loadCursorDefs(assets, fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -238,7 +245,7 @@ void loadAsset(AssetManager *assets, Asset *asset)
 
 		case AssetType_TerrainDefs:
 		{
-			loadTerrainDefinitions(&terrainDefs, assets, fileData, asset);
+			loadTerrainDefs(&terrainDefs, assets, fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -671,5 +678,36 @@ void setLocale(AssetManager *assets, String locale)
 		// Text
 		Asset *textAsset = getAsset(assets, AssetType_Texts, makeString("LOCALE.text"));
 		reloadAsset(assets, textAsset);
+	}
+}
+
+void loadCursorDefs(AssetManager *assets, Blob data, Asset *asset)
+{
+	DEBUG_FUNCTION();
+
+	LineReader reader = readLines(asset->shortName, data);
+
+	while (!isDone(&reader))
+	{
+		String line = nextLine(&reader);
+		String remainder;
+
+		String name     = pushString(&assets->assetArena, nextToken(line, &remainder));
+		String filename = nextToken(remainder, &remainder);
+		s64 hotX, hotY;
+
+		if (asInt(nextToken(remainder, &remainder), &hotX)
+			&& asInt(nextToken(remainder, &remainder), &hotY))
+		{
+			// Add the cursor
+			Asset *cursorAsset = addAsset(assets, AssetType_Cursor, name, false);
+			cursorAsset->cursor.imageFilePath = pushString(&assets->assetArena, getAssetPath(assets, AssetType_Cursor, filename));
+			cursorAsset->cursor.hotspot = v2i(truncate32(hotX), truncate32(hotY));
+		}
+		else
+		{
+			error(&reader, "Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'.");
+			return;
+		}
 	}
 }

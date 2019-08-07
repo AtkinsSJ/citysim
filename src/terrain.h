@@ -21,7 +21,7 @@ struct Terrain
 Terrain invalidTerrain = {0, 0};
 
 
-void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset);
+void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset);
 void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains, AssetManager *assets);
 
 // Returns 0 if not found

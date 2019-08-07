@@ -1,0 +1,7 @@
+# cursor definitions
+# name | image file | x and y of the "hot spot"
+
+default  default.png 0 0
+
+build    build.png 0 0
+demolish demolish.png 0 0

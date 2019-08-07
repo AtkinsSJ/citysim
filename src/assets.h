@@ -7,6 +7,7 @@ enum AssetType
 	AssetType_BitmapFont,
 	AssetType_BuildingDefs,
 	AssetType_Cursor,
+	AssetType_CursorDefs,
 	AssetType_DevKeymap,
 	AssetType_Shader,
 	AssetType_Sprite,
@@ -27,6 +28,8 @@ enum AssetState
 
 struct Cursor
 {
+	String imageFilePath; // Full path
+	V2I hotspot;
 	SDL_Cursor *sdlCursor;
 };
 
@@ -184,3 +187,9 @@ BitmapFont *getFont(AssetManager *assets, String fontName);
 
 #define LOCAL(str) getText(globalAppState.assets, makeString(str))
 String getText(AssetManager *assets, String name);
+
+//
+// Internal
+//
+
+void loadCursorDefs(AssetManager *assets, Blob data, Asset *asset);

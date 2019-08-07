@@ -1,6 +1,6 @@
 #pragma once
 
-void loadTerrainDefinitions(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset)
+void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, AssetManager *assets, Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 

@@ -17,7 +17,7 @@ Notes for searching:
 Cursor update
 ✔ Cursor should be a property of the Renderer, not the UiState.
 	✔ Remember to re-implement the "show the wait cursor" stuff!
-- Config file that defines cursor assets by image filename and "hot" coordinate, so we don't have to refer to a cursor as eg "build.png"
+✔ Config file that defines cursor assets by image filename and "hot" coordinate, so we don't have to refer to a cursor as eg "build.png"
 
 Renderer optimisation!
 - Set up a texture mesh per chunk!
