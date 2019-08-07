@@ -30,7 +30,7 @@ struct UIState
 	V2 windowDragWindowStartPos;
 };
 
-void initUiState(UIState *uiState, MemoryArena *arena);
+void initUIState(UIState *uiState, MemoryArena *arena);
 
 Rect2 uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
 bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);

@@ -1,6 +1,6 @@
 // ui.cpp
 
-void initUiState(UIState *uiState, MemoryArena *arena)
+void initUIState(UIState *uiState, MemoryArena *arena)
 {
 	*uiState = {};
 

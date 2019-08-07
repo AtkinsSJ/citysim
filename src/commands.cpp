@@ -57,11 +57,6 @@ ConsoleCommand(help)
 	}
 }
 
-ConsoleCommand(message)
-{
-	pushUiMessage(&globalAppState.uiState, arguments);
-}
-
 ConsoleCommand(reload_assets)
 {
 	reloadAssets();
@@ -180,7 +175,6 @@ void initCommands(Console *console)
 	append(&console->commands, Command(CMD(exit), 0, 0));
 	append(&console->commands, Command(CMD(funds), 1, 1));
 	append(&console->commands, Command(CMD(hello), 0, 1));
-	append(&console->commands, Command(CMD(message), 1, -1));
 	append(&console->commands, Command(CMD(reload_assets), 0, 0));
 	append(&console->commands, Command(CMD(reload_settings), 0, 0));
 	append(&console->commands, Command(CMD(show_layer), 0, 1));

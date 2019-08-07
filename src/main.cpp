@@ -76,7 +76,6 @@ struct AppState
 	AppStatus appStatus;
 	MemoryArena systemArena;
 
-	UIState uiState;
 	Settings settings;
 
 	GameState *gameState;
@@ -213,7 +212,8 @@ int main(int argc, char *argv[])
 	SDL_GetWindowSize(window, &input.windowWidth, &input.windowHeight);
 	inputState = &input;
 
-	initUiState(&appState->uiState, &appState->systemArena);
+	UIState uiState;
+	initUIState(&uiState, &appState->systemArena);
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;
@@ -262,10 +262,9 @@ int main(int argc, char *argv[])
 			addSetCamera(&renderer->uiBuffer, uiCamera);
 
 			{
-				UIState *uiState = &appState->uiState;
-				uiState->uiRects.count = 0;
-				uiState->mouseInputHandled = false;
-				updateWindows(uiState);
+				uiState.uiRects.count = 0;
+				uiState.mouseInputHandled = false;
+				updateWindows(&uiState);
 				
 				AppStatus newAppStatus = appState->appStatus;
 
@@ -273,22 +272,22 @@ int main(int argc, char *argv[])
 				{
 					case AppStatus_MainMenu:
 					{
-						newAppStatus = updateAndRenderMainMenu(uiState);
+						newAppStatus = updateAndRenderMainMenu(&uiState);
 					} break;
 
 					case AppStatus_Credits:
 					{
-						newAppStatus = updateAndRenderCredits(uiState);
+						newAppStatus = updateAndRenderCredits(&uiState);
 					} break;
 
 					case AppStatus_SettingsMenu:
 					{
-						newAppStatus = updateAndRenderSettingsMenu(uiState);
+						newAppStatus = updateAndRenderSettingsMenu(&uiState);
 					} break;
 
 					case AppStatus_Game:
 					{
-						newAppStatus = updateAndRenderGame(appState->gameState, uiState);
+						newAppStatus = updateAndRenderGame(appState->gameState, &uiState);
 					} break;
 
 					case AppStatus_Quit: break;
@@ -296,7 +295,7 @@ int main(int argc, char *argv[])
 					INVALID_DEFAULT_CASE;
 				}
 
-				renderWindows(uiState);
+				renderWindows(&uiState);
 
 				if (newAppStatus != appState->appStatus)
 				{
@@ -307,7 +306,7 @@ int main(int argc, char *argv[])
 					}
 
 					appState->appStatus = newAppStatus;
-					clear(&uiState->openWindows);
+					clear(&uiState.openWindows);
 
 					if (newAppStatus == AppStatus_Game)
 					{
@@ -317,7 +316,7 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				drawUiMessage(uiState);
+				drawUiMessage(&uiState);
 			}
 
 
