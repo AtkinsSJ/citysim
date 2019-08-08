@@ -115,6 +115,9 @@ bool GL_initializeRenderer(SDL_Window *window)
 
 			gl->vertexCount = 0;
 			gl->indexCount = 0;
+
+			// Other GL_Renderer struct init stuff
+			initChunkedArray(&gl->shaders, &gl->renderer.renderArena, 64);
 		}
 		else
 		{
@@ -383,7 +386,7 @@ void GL_unloadAssets()
 	gl->currentShader = -1;
 	for (s8 shaderID=0; shaderID < gl->shaders.count; shaderID++)
 	{
-		GL_ShaderProgram *shader = pointerTo(&gl->shaders, shaderID);
+		GL_ShaderProgram *shader = get(&gl->shaders, shaderID);
 		glDeleteProgram(shader->shaderProgramID);
 		*shader = {};
 	}
@@ -397,13 +400,13 @@ inline GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID)
 	// Early-out if nothing is changing!
 	if (shaderID == gl->currentShader)
 	{
-		return gl->shaders.items + gl->currentShader;
+		return get(&gl->shaders, gl->currentShader);
 	}
 
 	if (gl->currentShader >= 0 && gl->currentShader < gl->shaders.count)
 	{
 		// Clean up the old shader's stuff
-		GL_ShaderProgram *oldShader = gl->shaders.items + gl->currentShader;
+		GL_ShaderProgram *oldShader = get(&gl->shaders, gl->currentShader);
 		glDisableVertexAttribArray(oldShader->aPositionLoc);
 		glDisableVertexAttribArray(oldShader->aColorLoc);
 		if (oldShader->aUVLoc != -1)
@@ -413,7 +416,7 @@ inline GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID)
 	}
 
 	gl->currentShader = shaderID;
-	GL_ShaderProgram *activeShader = gl->shaders.items + gl->currentShader;
+	GL_ShaderProgram *activeShader = get(&gl->shaders, gl->currentShader);
 
 	ASSERT(activeShader->isValid); //Attempting to use a shader that isn't loaded!
 	glUseProgram(activeShader->shaderProgramID);
@@ -753,8 +756,7 @@ void flushVertices(GL_Renderer *gl)
 		glDrawElements(GL_TRIANGLES, gl->indexCount, GL_UNSIGNED_INT, NULL);
 	}
 
-	GL_ShaderProgram *activeShader = gl->shaders.items + gl->currentShader;
-	DEBUG_DRAW_CALL(activeShader->asset->shortName, (gl->currentTexture == null) ? nullString : gl->currentTexture->shortName, (gl->vertexCount >> 2));
+	DEBUG_DRAW_CALL(get(&gl->shaders, gl->currentShader)->asset->shortName, (gl->currentTexture == null) ? nullString : gl->currentTexture->shortName, (gl->vertexCount >> 2));
 
 	gl->vertexCount = 0;
 	gl->indexCount = 0;

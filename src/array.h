@@ -48,7 +48,3 @@ T *appendUninitialised(Array<T> *a);
 
 template<typename T>
 T * pointerTo(Array<T> *a, s32 index);
-
-// NB: compare() should act like strcmp(): <0 if A comes before B, 0 if equal, >0 if B comes before A
-template<typename T, typename CompareResult>
-void sortInPlace(Array<T> *a, CompareResult (*compare)(T*, T*));

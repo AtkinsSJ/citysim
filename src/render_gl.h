@@ -53,7 +53,7 @@ struct GL_Renderer
 
 	SDL_GLContext context;
 
-	Array<GL_ShaderProgram> shaders;
+	ChunkedArray<GL_ShaderProgram> shaders;
 	s32 currentShader;
 
 	GLuint VBO;

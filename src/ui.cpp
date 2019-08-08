@@ -8,9 +8,9 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 	uiState->message.text = pushString(arena, 256);
 	uiState->message.countdown = -1;
 
-	initialiseArray(&uiState->uiRects, 16);
+	initChunkedArray(&uiState->uiRects, arena, 64);
 
-	initChunkedArray(&uiState->openWindows, arena, 16);
+	initChunkedArray(&uiState->openWindows, arena, 64);
 }
 
 Rect2 uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)

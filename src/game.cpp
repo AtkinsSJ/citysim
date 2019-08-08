@@ -580,9 +580,9 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	bool mouseIsOverUI = uiState->mouseInputHandled;
 	if (!mouseIsOverUI)
 	{
-		for (int i=0; i < uiState->uiRects.count; i++)
+		for (auto it = iterate(&uiState->uiRects); !it.isDone; next(&it))
 		{
-			if (contains(uiState->uiRects.items[i], uiCamera->mousePos))
+			if (contains(getValue(it), uiCamera->mousePos))
 			{
 				mouseIsOverUI = true;
 				break;

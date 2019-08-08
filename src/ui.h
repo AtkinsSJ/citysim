@@ -16,7 +16,7 @@ struct UIState
 	UIMessage message;
 
 	// TODO: Replace this with better "this input has already been used" code!
-	Array<Rect2> uiRects;
+	ChunkedArray<Rect2> uiRects;
 
 	s32 openMenu;
 

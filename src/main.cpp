@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
 			addSetCamera(&renderer->uiBuffer, uiCamera);
 
 			{
-				uiState.uiRects.count = 0;
+				clear(&uiState.uiRects);
 				uiState.mouseInputHandled = false;
 				updateWindows(&uiState);
 				
