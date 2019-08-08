@@ -28,10 +28,7 @@ void expand(StringBuilder *stb, s32 newSize)
 	}
 
 	char *newBuffer = allocateMultiple<char>(stb->arena, targetSize);
-	for (s32 i=0; i<stb->currentMaxLength; i++)
-	{
-		newBuffer[i] = stb->buffer[i];
-	}
+	copyMemory(stb->buffer, newBuffer, stb->currentMaxLength);
 
 	stb->buffer = newBuffer;
 	stb->currentMaxLength = targetSize;
@@ -46,10 +43,8 @@ void append(StringBuilder *stb, char *source, s32 length)
 		expand(stb, newMaxLength);
 	}
 
-	for (s32 i=0; i < lengthToCopy; i++)
-	{
-		stb->buffer[stb->length++] = source[i];
-	}
+	copyMemory(source, stb->buffer + stb->length, lengthToCopy);
+	stb->length += lengthToCopy;
 }
 
 inline void append(StringBuilder *stringBuilder, String source)
