@@ -18,7 +18,14 @@ struct LineReader
 	smm nextLineNumber;
 };
 
-LineReader readLines(String filename, Blob data, bool skipBlankLines=true, bool removeComments=true, char commentChar = '#');
+enum LineReaderFlags
+{
+	LineReader_SkipBlankLines         = 1 << 0,
+	LineReader_RemoveTrailingComments = 1 << 1,
+	DefaultLineReaderFlags = LineReader_SkipBlankLines | LineReader_RemoveTrailingComments,
+};
+
+LineReader readLines(String filename, Blob data, u32 flags = DefaultLineReaderFlags, char commentChar = '#');
 
 String nextLine(LineReader *reader);
 bool isDone(LineReader *reader);

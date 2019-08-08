@@ -14,7 +14,7 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 	BitmapFont *font = getFont(labelStyle->fontName);
 
 	Asset *creditsText = getAsset(AssetType_Misc, makeString("credits.txt"));
-	LineReader reader = readLines(creditsText->shortName, creditsText->data, false, false);
+	LineReader reader = readLines(creditsText->shortName, creditsText->data, 0);
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);

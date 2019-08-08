@@ -1,6 +1,6 @@
 #pragma once
 
-LineReader readLines(String filename, Blob data, bool skipBlankLines, bool removeComments, char commentChar)
+LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 {
 	LineReader result = {};
 
@@ -9,9 +9,9 @@ LineReader readLines(String filename, Blob data, bool skipBlankLines, bool remov
 
 	result.pos = 0;
 	result.lineNumber = 0;
-	result.removeComments = removeComments;
+	result.removeComments = (flags & LineReader_RemoveTrailingComments) != 0;
 	result.commentChar = commentChar;
-	result.skipBlankLines = skipBlankLines;
+	result.skipBlankLines = (flags & LineReader_SkipBlankLines) != 0;
 
 	readNextLineInternal(&result);
 
