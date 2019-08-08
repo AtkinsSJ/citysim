@@ -194,7 +194,6 @@ int main(int argc, char *argv[])
 	loadSettings();
 
 	SDL_Window *window = initSDL(getWindowSettings(), "Some kind of city builder");
-	ASSERT(window != null); //Failed to initialise SDL.
 
 	initAssets();
 	addAssets();
@@ -215,7 +214,7 @@ int main(int argc, char *argv[])
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;
-	V2 windowSize = v2(input.windowSize);
+	V2 windowSize = v2(input.windowWidth, input.windowHeight);
 	const f32 TILE_SIZE = 16.0f;
 	initCamera(worldCamera, windowSize, 1.0f/TILE_SIZE, 10000.0f, -10000.0f);
 	initCamera(uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
@@ -297,6 +296,7 @@ int main(int argc, char *argv[])
 
 				if (newAppStatus != appState->appStatus)
 				{
+					// Clean-up for previous state
 					if (appState->appStatus == AppStatus_Game)
 					{
 						freeGameState(appState->gameState);
@@ -306,6 +306,7 @@ int main(int argc, char *argv[])
 					appState->appStatus = newAppStatus;
 					clear(&uiState.openWindows);
 
+					// Initialise new state
 					if (newAppStatus == AppStatus_Game)
 					{
 						appState->gameState = beginNewGame();

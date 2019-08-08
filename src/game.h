@@ -90,7 +90,7 @@ GameState *beginNewGame();
 AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState);
 void freeGameState(GameState *gameState);
 
-void inputMoveCamera(Camera *camera, V2 windowSize, s32 cityWidth, s32 cityHeight);
+void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight);
 void updateAndRenderGameUI(UIState *uiState, GameState *gameState);
 void showCostTooltip(UIState *uiState, s32 buildCost);
 

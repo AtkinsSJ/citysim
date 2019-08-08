@@ -30,6 +30,7 @@ inline void logError   (char *format, std::initializer_list<String> args)
 inline void logCritical(char *format, std::initializer_list<String> args)
 {
 	log(SDL_LOG_PRIORITY_CRITICAL, format, args);
+	ASSERT(!"Critical error");
 }
 
 /*

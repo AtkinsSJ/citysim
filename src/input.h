@@ -51,10 +51,8 @@ struct InputState
 	// Extra
 	bool receivedQuitSignal;
 	bool wasWindowResized;
-	union {
-		V2I windowSize;
-		struct{s32 windowWidth, windowHeight;};
-	};
+	s32 windowWidth;
+	s32 windowHeight;
 };
 
 //
@@ -66,7 +64,6 @@ void updateInput();
 bool mouseButtonJustPressed(MouseButton mouseButton);
 bool mouseButtonJustReleased(MouseButton mouseButton);
 bool mouseButtonPressed(MouseButton mouseButton);
-
 V2 getClickStartPos(MouseButton mouseButton, struct Camera *camera);
 
 bool modifierKeyIsPressed(ModifierKey modifier);

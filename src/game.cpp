@@ -26,7 +26,7 @@ void freeGameState(GameState *gameState)
 	freeMemoryArena(&gameState->gameArena);
 }
 
-void inputMoveCamera(Camera *camera, V2 windowSize, s32 cityWidth, s32 cityHeight)
+void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight)
 { 
 	DEBUG_FUNCTION();
 	
@@ -55,8 +55,6 @@ void inputMoveCamera(Camera *camera, V2 windowSize, s32 cityWidth, s32 cityHeigh
 	// Panning
 	f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32) sqrt(camera->zoom)) * SECONDS_PER_FRAME;
 	f32 cameraEdgeScrollPixelMargin = 8.0f;
-	f32 cameraEdgeScrollMarginX = cameraEdgeScrollPixelMargin / windowSize.x;
-	f32 cameraEdgeScrollMarginY = cameraEdgeScrollPixelMargin / windowSize.y;
 
 	if (mouseButtonPressed(MouseButton_Middle))
 	{
@@ -69,26 +67,26 @@ void inputMoveCamera(Camera *camera, V2 windowSize, s32 cityWidth, s32 cityHeigh
 	{
 		if (keyIsPressed(SDLK_LEFT)
 			|| keyIsPressed(SDLK_a)
-			|| (inputState->mousePosNormalised.x < (-1.0f + cameraEdgeScrollMarginX)))
+			|| (windowMousePos.x < cameraEdgeScrollPixelMargin))
 		{
 			camera->pos.x -= scrollSpeed;
 		}
 		else if (keyIsPressed(SDLK_RIGHT)
 			|| keyIsPressed(SDLK_d)
-			|| (inputState->mousePosNormalised.x > (1.0f - cameraEdgeScrollMarginX)))
+			|| (windowMousePos.x > (windowSize.x - cameraEdgeScrollPixelMargin)))
 		{
 			camera->pos.x += scrollSpeed;
 		}
 
 		if (keyIsPressed(SDLK_UP)
 			|| keyIsPressed(SDLK_w)
-			|| (inputState->mousePosNormalised.y > (1.0f - cameraEdgeScrollMarginY)))
+			|| (windowMousePos.y < cameraEdgeScrollPixelMargin))
 		{
 			camera->pos.y -= scrollSpeed;
 		}
 		else if (keyIsPressed(SDLK_DOWN)
 			|| keyIsPressed(SDLK_s)
-			|| (inputState->mousePosNormalised.y < (-1.0f + cameraEdgeScrollMarginY)))
+			|| (windowMousePos.y > (windowSize.y - cameraEdgeScrollPixelMargin)))
 		{
 			camera->pos.y += scrollSpeed;
 		}
@@ -575,7 +573,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	Camera *uiCamera    = &renderer->uiCamera;
 	if (gameState->status == GameStatus_Playing)
 	{
-		inputMoveCamera(worldCamera, uiCamera->size, gameState->city.width, gameState->city.height);
+		inputMoveCamera(worldCamera, uiCamera->size, uiCamera->mousePos, gameState->city.width, gameState->city.height);
 	}
 
 	V2I mouseTilePos = v2i(worldCamera->mousePos);
