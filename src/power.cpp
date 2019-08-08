@@ -7,11 +7,11 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
 
 	initSectorGrid(&layer->sectors, gameArena, city->width, city->height, 16);
-	for (s32 sectorIndex = 0; sectorIndex < layer->sectors.count; sectorIndex++)
+	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
 	{
-		PowerSector *sector = layer->sectors.sectors + sectorIndex;
+		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 
-		sector->tilePowerGroup = allocateArray<u8>(gameArena, areaOf(sector->bounds));
+		sector->tilePowerGroup = allocateMultiple<u8>(gameArena, areaOf(sector->bounds));
 
 		initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
 	}
@@ -87,8 +87,8 @@ PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y)
 
 	if (tileExists(city, x, y))
 	{
-		PowerLayer *powerLayer = &city->powerLayer;
-		PowerSector *sector = getSectorAtTilePos(&powerLayer->sectors, x, y);
+		PowerLayer *layer = &city->powerLayer;
+		PowerSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
 
 		s32 relX = x - sector->bounds.x;
 		s32 relY = y - sector->bounds.y;
@@ -97,7 +97,7 @@ PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y)
 		if (powerGroupIndex != 0)
 		{
 			PowerGroup *group = get(&sector->powerGroups, powerGroupIndex - 1);
-			result = get(&powerLayer->networks, group->networkID - 1);
+			result = get(&layer->networks, group->networkID - 1);
 		}
 	}
 
@@ -438,7 +438,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	//
 }
 
-void floodFillCityPowerNetwork(PowerLayer *powerLayer, PowerGroup *powerGroup, PowerNetwork *network)
+void floodFillCityPowerNetwork(PowerLayer *layer, PowerGroup *powerGroup, PowerNetwork *network)
 {
 	DEBUG_FUNCTION();
 
@@ -450,7 +450,7 @@ void floodFillCityPowerNetwork(PowerLayer *powerLayer, PowerGroup *powerGroup, P
 		next(&it))
 	{
 		Rect2I bounds = getValue(it);
-		PowerSector *sector = getSectorAtTilePos(&powerLayer->sectors, bounds.x, bounds.y);
+		PowerSector *sector = getSectorAtTilePos(&layer->sectors, bounds.x, bounds.y);
 		bounds = intersectRelative(sector->bounds, bounds);
 
 		s32 lastPowerGroupIndex = -1;
@@ -467,7 +467,7 @@ void floodFillCityPowerNetwork(PowerLayer *powerLayer, PowerGroup *powerGroup, P
 					PowerGroup *group = get(&sector->powerGroups, powerGroupIndex - 1);
 					if (group->networkID != network->id)
 					{
-						floodFillCityPowerNetwork(powerLayer, group, network);
+						floodFillCityPowerNetwork(layer, group, network);
 					}
 				}
 			}
@@ -479,26 +479,26 @@ void floodFillCityPowerNetwork(PowerLayer *powerLayer, PowerGroup *powerGroup, P
  * TODO: Recalculate individual Sectors as needed, instead of recalculating EVERY ONE whenever anything changes!
  * Still need to recalculate the city-wide networks though.
  */
-void recalculatePowerConnectivity(City *city, PowerLayer *powerLayer)
+void recalculatePowerConnectivity(City *city, PowerLayer *layer)
 {
 	DEBUG_FUNCTION();
 
 	// Clean up networks
-	for (auto it = iterate(&powerLayer->networks);
+	for (auto it = iterate(&layer->networks);
 		!it.isDone;
 		next(&it))
 	{
 		PowerNetwork *powerNetwork = get(it);
 		freePowerNetwork(powerNetwork);
 	}
-	clear(&powerLayer->networks);
+	clear(&layer->networks);
 
 	// Recalculate each sector
 	for (s32 sectorIndex = 0;
-		sectorIndex < powerLayer->sectors.count;
+		sectorIndex < getSectorCount(&layer->sectors);
 		sectorIndex++)
 	{
-		PowerSector *sector = powerLayer->sectors.sectors + sectorIndex;
+		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 
 		recalculateSectorPowerGroups(city, sector);
 	}
@@ -509,10 +509,10 @@ void recalculatePowerConnectivity(City *city, PowerLayer *powerLayer)
 
 	// Flood-fill networks of PowerGroups by walking the boundaries
 	for (s32 sectorIndex = 0;
-		sectorIndex < powerLayer->sectors.count;
+		sectorIndex < getSectorCount(&layer->sectors);
 		sectorIndex++)
 	{
-		PowerSector *sector = powerLayer->sectors.sectors + sectorIndex;
+		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 
 		for (auto it = iterate(&sector->powerGroups);
 			!it.isDone;
@@ -521,8 +521,8 @@ void recalculatePowerConnectivity(City *city, PowerLayer *powerLayer)
 			PowerGroup *powerGroup = get(it);
 			if (powerGroup->networkID == 0)
 			{
-				PowerNetwork *network = newPowerNetwork(powerLayer);
-				floodFillCityPowerNetwork(powerLayer, powerGroup, network);
+				PowerNetwork *network = newPowerNetwork(layer);
+				floodFillCityPowerNetwork(layer, powerGroup, network);
 			}
 		}
 	}
@@ -544,10 +544,10 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 	// Update each PowerGroup's power
 	for (s32 sectorIndex = 0;
-		sectorIndex < layer->sectors.count;
+		sectorIndex < getSectorCount(&layer->sectors);
 		sectorIndex++)
 	{
-		PowerSector *sector = layer->sectors.sectors + sectorIndex;
+		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 		updateSectorPowerValues(city, sector);
 	}
 

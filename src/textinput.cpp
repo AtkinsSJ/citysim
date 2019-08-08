@@ -3,7 +3,7 @@
 TextInput newTextInput(MemoryArena *arena, s32 length, f32 caretFlashCycleDuration)
 {
 	TextInput b = {};
-	b.buffer = allocateArray<char>(arena, length + 1);
+	b.buffer = allocateMultiple<char>(arena, length + 1);
 	b.maxByteLength = length;
 	b.caretFlashCycleDuration = caretFlashCycleDuration;
 

@@ -8,9 +8,8 @@ void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWi
 	grid->sectorSize = sectorSize;
 	grid->sectorsX = divideCeil(cityWidth, sectorSize);
 	grid->sectorsY = divideCeil(cityHeight, sectorSize);
-	grid->count = grid->sectorsX * grid->sectorsY;
 
-	grid->sectors = allocateArray<SectorType>(arena, grid->count);
+	grid->sectors = allocateArray<SectorType>(arena, grid->sectorsX * grid->sectorsY);
 
 	s32 remainderWidth  = cityWidth  % sectorSize;
 	s32 remainderHeight = cityHeight % sectorSize;
@@ -18,7 +17,7 @@ void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWi
 	{
 		for (s32 x = 0; x < grid->sectorsX; x++)
 		{
-			SectorType *sector = grid->sectors + (grid->sectorsX * y) + x;
+			SectorType *sector = &grid->sectors[(grid->sectorsX * y) + x];
 
 			*sector = {};
 			sector->bounds = irectXYWH(x * sectorSize, y * sectorSize, sectorSize, sectorSize);
@@ -42,7 +41,7 @@ inline SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sect
 
 	if (sectorX >= 0 && sectorX < grid->sectorsX && sectorY >= 0 && sectorY < grid->sectorsY)
 	{
-		result = grid->sectors + (sectorY * grid->sectorsX) + sectorX;
+		result = &grid->sectors[(sectorY * grid->sectorsX) + sectorX];
 	}
 
 	return result;

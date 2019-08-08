@@ -11,12 +11,12 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 
 	zoneLayer->width = city->width;
 	zoneLayer->height = city->height;
-	zoneLayer->tileZone = allocateArray<ZoneType>(gameArena, city->width * city->height);
+	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, city->width * city->height);
 
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
-	for (s32 sectorIndex = 0; sectorIndex < zoneLayer->sectors.count; sectorIndex++)
+	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&zoneLayer->sectors); sectorIndex++)
 	{
-		ZoneSector *sector = zoneLayer->sectors.sectors + sectorIndex;
+		ZoneSector *sector = &zoneLayer->sectors.sectors[sectorIndex];
 
 		sector->zoneSectorFlags = 0;
 	}
@@ -201,10 +201,10 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 	layer->sectorsWithEmptyIndZonesCount = 0;
 
 	for (s32 sectorIndex = 0;
-		sectorIndex < layer->sectors.count;
+		sectorIndex < getSectorCount(&layer->sectors);
 		sectorIndex++)
 	{
-		ZoneSector *sector = layer->sectors.sectors + sectorIndex;
+		ZoneSector *sector = &layer->sectors.sectors[sectorIndex];
 
 		sector->zoneSectorFlags = 0;
 
@@ -301,10 +301,10 @@ void growSomeZoneBuildings(City *city)
 			{
 				DEBUG_BLOCK("growSomeZoneBuildings - find a valid zone");
 				for (s32 sectorIndex = 0;
-					!foundAZone && sectorIndex < layer->sectors.count;
+					!foundAZone && sectorIndex < getSectorCount(&layer->sectors);
 					sectorIndex++)
 				{
-					ZoneSector *sector = layer->sectors.sectors + ((sectorIndex + randomSectorOffset) % layer->sectors.count);
+					ZoneSector *sector = &layer->sectors.sectors[((sectorIndex + randomSectorOffset) % getSectorCount(&layer->sectors))];
 
 					if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
 					{

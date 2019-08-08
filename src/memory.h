@@ -98,7 +98,10 @@ template<typename T>
 T *allocateStruct(MemoryArena *arena);
 
 template<typename T>
-T *allocateArray(MemoryArena *arena, smm count);
+T *allocateMultiple(MemoryArena *arena, smm count);
+
+template<typename T>
+Array<T> allocateArray(MemoryArena *arena, s32 count);
 
 template<typename T>
 void copyMemory(T *source, T *dest, smm length);

@@ -10,18 +10,18 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->width = width;
 	city->height = height;
 
-	city->terrain = allocateArray<Terrain>(gameArena, width * height);
+	city->terrain = allocateMultiple<Terrain>(gameArena, width * height);
 
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,  8);
 
 	initSectorGrid(&city->sectors, gameArena, width, height, 16);
-	for (s32 sectorIndex = 0; sectorIndex < city->sectors.count; sectorIndex++)
+	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++)
 	{
-		CitySector *sector = city->sectors.sectors + sectorIndex;
+		CitySector *sector = &city->sectors.sectors[sectorIndex];
 
-		sector->tileBuilding  = allocateArray<TileBuildingRef>(gameArena, areaOf(sector->bounds));
-		sector->tilePathGroup = allocateArray<s32>            (gameArena, areaOf(sector->bounds));
+		sector->tileBuilding  = allocateMultiple<TileBuildingRef>(gameArena, areaOf(sector->bounds));
+		sector->tilePathGroup = allocateMultiple<s32>            (gameArena, areaOf(sector->bounds));
 
 		initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
 	}

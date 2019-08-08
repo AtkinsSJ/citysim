@@ -183,6 +183,18 @@ struct Matrix4 {
 	};
 };
 
+template<typename T>
+struct Array
+{
+	s32 count;
+	T *items;
+
+	// NB: it's a reference so you can do assignments!
+	T& operator[](s32 index);
+};
+template<typename T>
+Array<T> makeArray(s32 count, T *items);
+
 //
 // V2
 //
@@ -325,7 +337,6 @@ void rotateZ(Matrix4 *matrix, f32 radians);
 Matrix4 operator*(Matrix4 a, Matrix4 b);
 Matrix4 operator*=(Matrix4 &a, Matrix4 b);
 V4 operator*(Matrix4 m, V4 v);
-
 
 /**********************************************
 	General

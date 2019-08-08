@@ -7,8 +7,7 @@ struct SectorGrid
 	s32 sectorSize;
 	s32 sectorsX, sectorsY;
 
-	s32 count;
-	Sector *sectors;
+	Array<Sector> sectors;
 };
 
 template<typename Sector>
@@ -16,6 +15,12 @@ void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth,
 
 template<typename Sector>
 Sector *getSector(SectorGrid<Sector> *grid, s32 sectorX, s32 sectorY);
+
+template<typename Sector>
+inline s32 getSectorCount(SectorGrid<Sector> *grid)
+{
+	return grid->sectors.count;
+}
 
 template<typename Sector>
 Sector *getSectorAtTilePos(SectorGrid<Sector> *grid, s32 x, s32 y);

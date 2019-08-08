@@ -59,9 +59,15 @@ inline T *allocateStruct(MemoryArena *arena)
 }
 
 template<typename T>
-inline T *allocateArray(MemoryArena *arena, smm count)
+inline T *allocateMultiple(MemoryArena *arena, smm count)
 {
 	return (T*) allocate(arena, sizeof(T) * count);
+}
+
+template<typename T>
+inline Array<T> allocateArray(MemoryArena *arena, s32 count)
+{
+	return makeArray<T>(count, allocateMultiple<T>(arena, count));
 }
 
 u8 *allocateRaw(smm size)

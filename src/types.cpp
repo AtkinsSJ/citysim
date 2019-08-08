@@ -148,6 +148,23 @@ inline s32 manhattanDistance(Rect2I a, Rect2I b)
 	return result;
 }
 
+template<typename T>
+Array<T> makeArray(s32 count, T *items)
+{
+	Array<T> result;
+	result.count = count;
+	result.items = items;
+
+	return result;
+}
+
+template<typename T>
+inline T& Array<T>::operator[](s32 index)
+{
+	ASSERT(index >=0 && index < count); //Index out of range!
+	return items[index];
+}
+
 /**********************************************
 	V2
  **********************************************/

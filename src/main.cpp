@@ -38,7 +38,6 @@ struct Settings     *settings;
 
 #include "log.h"
 #include "types.h"
-#include "array.h"
 #include "memory.h"
 #include "pool.h"
 #include "chunked_array.h"
@@ -87,7 +86,6 @@ AppState globalAppState;
 
 #include "types.cpp"
 #include "memory.cpp"
-#include "array.cpp"
 #include "random.cpp"
 #include "linked_list.cpp"
 #include "unicode.cpp"
