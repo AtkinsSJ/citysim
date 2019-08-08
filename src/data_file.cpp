@@ -13,6 +13,8 @@ LineReader readLines(String filename, Blob data, bool skipBlankLines, bool remov
 	result.commentChar = commentChar;
 	result.skipBlankLines = skipBlankLines;
 
+	readNextLineInternal(&result);
+
 	return result;
 }
 
@@ -31,12 +33,27 @@ void error(LineReader *reader, char *message, std::initializer_list<String> args
 
 String nextLine(LineReader *reader)
 {
+	String result = reader->nextLine;
+
+	reader->lineNumber = reader->nextLineNumber;
+	readNextLineInternal(reader);
+
+	return result;
+}
+
+inline bool isDone(LineReader *reader)
+{
+	return !reader->hasNextLine;
+}
+
+void readNextLineInternal(LineReader *reader)
+{
 	String line = {};
 
 	do
 	{
 		// Get next line
-		++reader->lineNumber;
+		++reader->nextLineNumber;
 		line.chars = (char *)(reader->data.memory + reader->pos);
 		line.length = 0;
 		while ((reader->pos < reader->data.size) && !isNewline(reader->data.memory[reader->pos]))
@@ -74,9 +91,22 @@ String nextLine(LineReader *reader)
 		// This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
 		if (!reader->skipBlankLines) break;
 	}
-	while (isEmpty(line) && !isDone(reader));
+	while (isEmpty(line) && !(reader->pos >= reader->data.size));
 
-	return line;
+	reader->nextLine = line;
+	reader->hasNextLine = true;
+
+	if (isEmpty(line))
+	{
+		if (reader->skipBlankLines)
+		{
+			reader->hasNextLine = false;
+		}
+		else if (reader->pos >= reader->data.size)
+		{
+			reader->hasNextLine = false;
+		}
+	}
 }
 
 s64 readInt(LineReader *reader, String command, String arguments)

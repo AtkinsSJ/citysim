@@ -48,7 +48,6 @@ void loadSettingsFile(String name, Blob settingsData)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String settingName;
 		String remainder;

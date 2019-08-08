@@ -142,7 +142,6 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String key, value;
 		key = nextToken(line, &value);
@@ -690,7 +689,6 @@ void loadCursorDefs(Blob data, Asset *asset)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String remainder;
 

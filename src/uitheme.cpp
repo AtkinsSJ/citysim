@@ -15,7 +15,7 @@ void initUITheme(UITheme *theme)
 
 void loadUITheme(Blob data, Asset *asset)
 {
-	LineReader reader = readLines(asset->shortName, data, true, true, '#');
+	LineReader reader = readLines(asset->shortName, data);
 
 	UITheme *theme = &assets->theme;
 	clear(&theme->fontNamesToAssetNames);
@@ -53,7 +53,6 @@ void loadUITheme(Blob data, Asset *asset)
 	while (!isDone(&reader))
 	{
 		String line = nextLine(&reader);
-		if (isEmpty(line)) break; // @BlankLastLineBug
 
 		String firstWord, remainder;
 		firstWord = nextToken(line, &remainder);
