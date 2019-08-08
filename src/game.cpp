@@ -774,7 +774,8 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 					if (tileExists(city, mouseTilePos.x, mouseTilePos.y))
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
-						showWindow(uiState, makeString("Inspect tile"), 250, 200, v2i(0,0), makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
+						showWindow(uiState, makeString("Inspect tile"), 250, 200, windowPos, makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;
