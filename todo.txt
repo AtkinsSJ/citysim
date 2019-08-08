@@ -16,9 +16,6 @@ Notes for searching:
 
 Add newline support to .text files!
 
-BuildingCatalogue:
-- Store which menu a building is in, in a queryable way
-
 SECTORS:
 - After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)
 	- Sectors are supposed to *speed up* things, not slow them down!
@@ -137,17 +134,16 @@ Split the game code from the platform code
 - Related, we could do with more clearly separating the various systems, it's all a confusing, coupled, spaghetti mess right now.
 
 GUI
-✔ Convert Tooltips to a special kind of Window, so that we can reuse the fancy window code.
-	✔ Window flag for following the mouse
-	✔ Remove Tooltip style
-	✔ Remove tooltip code
-	✔ Make tooltips not be an "active" window, so they don't render other windows inactive!
 - Convert Toasts (née UI-Messages) to use windows too
 	- This is somewhat more involved....
 	- Multiple toasts can exist at once. I'm thinking each new one pushes all the previous ones up.
 	- After an amount of time, they fade out.
 	- So, probably keep Toasts in a separate array to Windows, because they work in a special way. Still use the WindowProc/Context stuff for convenience, but don't deal with them in updateAndRenderWindows(). So, also no need for a special WinFlag!
 	- Remove UIMessage styles
+
+Building menus:
+- Store in the BuildingCatalogue which menu a building is in, in a queryable way
+- Useful tooltips that describe the building's function and stats
 
 Audio!
 - Probably use SoLoud, rather than SDL_mixer: http://sol.gfxile.net/soloud/

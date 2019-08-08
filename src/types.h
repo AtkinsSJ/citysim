@@ -322,9 +322,6 @@ void translate(Matrix4 *matrix, V3 translation);
 void scale(Matrix4 *matrix, V3 scale);
 void rotateZ(Matrix4 *matrix, f32 radians);
 
-Matrix4 operator+(Matrix4 a, Matrix4 b);
-Matrix4 operator+=(Matrix4 &a, Matrix4 b);
-Matrix4 operator*(Matrix4 m, f32 f);
 Matrix4 operator*(Matrix4 a, Matrix4 b);
 Matrix4 operator*=(Matrix4 &a, Matrix4 b);
 V4 operator*(Matrix4 m, V4 v);
