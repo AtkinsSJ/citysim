@@ -37,10 +37,7 @@ void copyString(char *src, s32 srcLength, String *dest)
 	DEBUG_FUNCTION();
 	
 	s32 copyLength = min(srcLength, dest->maxLength);
-	for (s32 i=0; i<copyLength; i++)
-	{
-		dest->chars[i] = src[i];
-	}
+	copyMemory(src, dest->chars, copyLength);
 	dest->length = copyLength;
 }
 
@@ -415,9 +412,9 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 					if (!succeeded)
 					{
 						// If the index is invalid, show some kind of error. For now, we'll just insert the {n} as given.
-						append(&stb, "{");
+						append(&stb, '{');
 						append(&stb, indexString);
-						append(&stb, "}");
+						append(&stb, '}');
 					}
 				}
 

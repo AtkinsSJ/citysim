@@ -54,7 +54,7 @@ inline void append(StringBuilder *stringBuilder, String source)
 
 inline void append(StringBuilder *stringBuilder, char *source)
 {
-	append(stringBuilder, makeString(source));
+	append(stringBuilder, source, truncate32(strlen(source)));
 }
 
 inline void append(StringBuilder *stringBuilder, char source)

@@ -56,6 +56,9 @@ Tidy up the types/maths files, so that I can ACTUALLY FIND THINGS.
 - Maybe color/v4 should be separate types?
 - I'm sure I can think of other things too!
 
+Debug system:
+- Ability to filter out certain categories from the profiler list?
+
 ------------------------------------------------
 
 Things to work on next maybe:
