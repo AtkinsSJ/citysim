@@ -8,7 +8,7 @@ inline BitmapFontGlyphEntry *findGlyphInternal(BitmapFont *font, unichar targetC
 	while (true)
 	{
 		BitmapFontGlyphEntry *entry = font->glyphEntries + index;
-		if (!entry->isOccupied || entry->codepoint == targetChar)
+		if (entry->codepoint == targetChar || !entry->isOccupied)
 		{
 			result = entry;
 			break;
@@ -39,7 +39,7 @@ BitmapFontGlyph *findGlyph(BitmapFont *font, unichar targetChar)
 	BitmapFontGlyph *result = null;
 	BitmapFontGlyphEntry *entry = findGlyphInternal(font, targetChar);
 
-	if (entry == null || !entry->isOccupied)
+	if (entry == null)
 	{
 		logWarn("Failed to find char 0x{0} in font.", {formatInt(targetChar, 16)});
 	}
@@ -78,9 +78,7 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 		{
 			bool prevWasCR = false;
 
-			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
-			longestLineWidth = max(longestLineWidth, currentLineWidth);
-			ASSERT(maxWidth < 1 || maxWidth >= longestLineWidth); //TOO BIG
+			longestLineWidth = max(longestLineWidth, currentLineWidth + currentWordWidth + whitespaceWidthBeforeCurrentWord);
 
 			whitespaceWidthBeforeCurrentWord = 0;
 			currentWordWidth = 0;

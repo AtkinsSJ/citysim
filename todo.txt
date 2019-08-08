@@ -14,15 +14,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Renderer optimisation!
-- Set up a texture mesh per chunk!
-- Maybe send data to the renderer in a more render-friendly form? (ie, send vertex data instead of the renderer having to construct it.) Then again, that could cause problems if we use multiple renderers? IDK, probably not. It might be more awkward for user code to manipulate things it's submitted already though. IDK.
-
-Speed up text rendering!
-- Possibly replace all floats in text-rendering with integers, and just produce floats at the very end for the actual renderitems. Everything is always done in whole-pixels anyway, and that should be a chunk faster.
-	- calculateTextSize() could return V2I, etc. That's quite a deep rabbit hole though!
-- Use u8s for RenderItem colours instead of V4? That'd divide the memory requirements for a colour by 4! Though, it's a bit tricky to know how that'll affect everything.
-
 Add newline support to .text files!
 
 BuildingCatalogue:
