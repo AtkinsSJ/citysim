@@ -6,7 +6,7 @@ struct WindowContext
 	struct Window *window;
 	UIWindowStyle *windowStyle;
 
-	bool doRender; // NB: Can't just replace this with (renderer == null) because sometimes we have a non-null renderer but want to skip rendering anyway!
+	bool doRender;
 
 	Rect2 contentArea;
 	V2 currentOffset;

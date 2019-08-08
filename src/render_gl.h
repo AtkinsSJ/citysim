@@ -87,5 +87,3 @@ GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID);
 void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color);
 void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv);
 void flushVertices(GL_Renderer *gl);
-
-#include "render_gl.cpp"

@@ -72,6 +72,9 @@ struct Settings     *settings;
 #include "city.h"
 #include "game.h"
 
+// TODO: Some kind of switch to determine which renderer we want to load.
+#include "render_gl.h"
+
 struct AppState
 {
 	AppStatus appStatus;
@@ -119,6 +122,8 @@ AppState globalAppState;
 #include "settings.cpp"
 #include "game.cpp"
 #include "log.cpp"
+
+#include "render_gl.cpp"
 
 #ifdef __linux__
 #include "platform_linux.cpp"
@@ -199,7 +204,7 @@ int main(int argc, char *argv[])
 	addAssets();
 	loadAssets();
 
-	ASSERT(platform_initializeRenderer(window)); //Failed to initialize renderer.
+	ASSERT(GL_initializeRenderer(window)); //Failed to initialize renderer.
 	rendererLoadAssets();
 	setCursor("default");
 	setCursorVisible(true);

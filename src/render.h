@@ -246,7 +246,3 @@ void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gr
 
 void resizeWindow(s32 w, s32 h, bool fullscreen);
 void onWindowResized(s32 w, s32 h);
-
-// TODO: Some kind of switch to determine which renderer we want to load.
-#include "render_gl.h"
-#define platform_initializeRenderer GL_initializeRenderer
