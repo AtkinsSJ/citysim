@@ -24,8 +24,10 @@ struct Random
 void initRandom(Random *random, RandomType type, s32 seed);
 
 s32 randomNext(Random *random);
-s32 randomInRange(Random *random, s32 maxExclusive);
+s32 randomBelow(Random *random, s32 maxExclusive);
+s32 randomBetween(Random *random, s32 minInclusive, s32 maxExclusive);
 bool randomBool(Random *random);
+Rect2I randomlyPlaceRectangle(Random *random, V2I size, Rect2I boundary);
 
 //
 // Internal

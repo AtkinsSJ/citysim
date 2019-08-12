@@ -115,7 +115,7 @@ void returnLastChunkToPool(ChunkedArray<T> *array);
  * every item is iterated once. If false, we stop after the last item.
  * Example usage:
 
-	for (auto it = iterate(&array, randomInRange(random, array.count), true);
+	for (auto it = iterate(&array, randomBelow(random, array.count), true);
 		!it.isDone;
 		next(&it))
 	{

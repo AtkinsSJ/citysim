@@ -29,7 +29,7 @@ s32 randomNext(Random *random)
 	return result;
 }
 
-s32 randomInRange(Random *random, s32 maxExclusive)
+s32 randomBelow(Random *random, s32 maxExclusive)
 {
 	s32 result = 0;
 
@@ -42,9 +42,33 @@ s32 randomInRange(Random *random, s32 maxExclusive)
 	return result;
 }
 
+s32 randomBetween(Random *random, s32 minInclusive, s32 maxExclusive)
+{
+	s32 result = minInclusive;
+
+	// 0 or negative max values don't make sense, so we return a 0 for those.
+	if (maxExclusive > minInclusive)
+	{
+		s32 range = maxExclusive - minInclusive;
+		result = minInclusive + (randomNext(random) % range);
+	}
+
+	return result;
+}
+
 inline bool randomBool(Random *random)
 {
 	return (randomNext(random) % 2) != 0;
+}
+
+Rect2I randomlyPlaceRectangle(Random *random, V2I size, Rect2I boundary)
+{
+	Rect2I result = irectXYWH(
+		randomBetween(random, boundary.x, boundary.x + boundary.w - size.x),
+		randomBetween(random, boundary.y, boundary.y + boundary.h - size.y),
+		size.x, size.y
+	);
+	return result;
 }
 
 //

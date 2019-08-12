@@ -300,11 +300,13 @@ void growSomeZoneBuildings(City *city)
 			V2I zonePos = {};
 			{
 				DEBUG_BLOCK("growSomeZoneBuildings - find a valid zone");
+				s32 sectorCount = getSectorCount(&layer->sectors);
 				for (s32 sectorIndex = 0;
-					!foundAZone && sectorIndex < getSectorCount(&layer->sectors);
+					!foundAZone && sectorIndex < sectorCount;
 					sectorIndex++)
 				{
-					ZoneSector *sector = &layer->sectors.sectors[((sectorIndex + randomSectorOffset) % getSectorCount(&layer->sectors))];
+					s32 realSectorIndex = ((sectorIndex + randomSectorOffset) % sectorCount);
+					ZoneSector *sector = &layer->sectors.sectors[realSectorIndex];
 
 					if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
 					{
@@ -415,7 +417,7 @@ void growSomeZoneBuildings(City *city)
 
 				// Choose a random building, then carry on checking buildings until one is acceptable
 				ChunkedArray<BuildingDef *> *rGrowableBuildings = getRGrowableBuildings();
-				for (auto it = iterate(rGrowableBuildings, randomInRange(random, truncate32(rGrowableBuildings->count)));
+				for (auto it = iterate(rGrowableBuildings, randomBelow(random, truncate32(rGrowableBuildings->count)));
 					!it.isDone;
 					next(&it))
 				{
@@ -435,8 +437,8 @@ void growSomeZoneBuildings(City *city)
 			if (buildingDef)
 			{
 				// Place it!
-				// TODO: Right now this places at the top-left of the zoneFootprint... probably want to be better than that.
-				Rect2I footprint = irectPosSize(zoneFootprint.pos, buildingDef->size);
+				// TODO: This picks a random spot within the zoneFootprint; we should probably pick the most desirable part?
+				Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint); //irectPosSize(zoneFootprint.pos, buildingDef->size);
 
 				Building *building = addBuilding(city, buildingDef, footprint);
 				city->totalResidents += building->currentResidents;
