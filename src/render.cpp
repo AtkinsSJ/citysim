@@ -514,6 +514,8 @@ inline void addSpriteRect(DrawRectsGroup *group, Sprite *sprite, Rect2 bounds, V
 
 void offsetRange(DrawRectsGroup *group, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+
 	ASSERT(startIndex >= 0 && startIndex < group->count);
 	ASSERT(endIndexInclusive >= 0 && endIndexInclusive < group->count);
 	ASSERT(startIndex <= endIndexInclusive);
@@ -558,6 +560,8 @@ void endRectsGroup(DrawRectsGroup *group)
 
 void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u8 paletteSize, V4 *palette)
 {
+	DEBUG_FUNCTION_T(DCDT_Renderer);
+
 	addSetShader(buffer, shaderID);
 
 	smm size = sizeof(RenderItem_DrawGrid)

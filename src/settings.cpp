@@ -14,7 +14,7 @@ void registerSetting(String settingName, smm offset, Type type, s32 count)
 void loadDefaultSettings()
 {
 	settings->windowed = true;
-	settings->resolution = v2i(1024, 768);
+	settings->resolution = v2i(1024, 600);
 	settings->locale = makeString("en");
 }
 

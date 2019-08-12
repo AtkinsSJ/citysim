@@ -112,7 +112,7 @@ File readFile(MemoryArena *memoryArena, String filePath)
 	}
 	else
 	{
-		logError("Failed to open file '{0}' for reading.", {filePath});
+		logWarn("Failed to open file '{0}' for reading.", {filePath});
 	}
 
 	return result;
