@@ -67,6 +67,7 @@ enum DebugCodeDataTag
 	DCDT_Renderer,
 	DCDT_GameUpdate,
 	DCDT_Input,
+	DCDT_Simulation,
 
 	DebugCodeDataTagCount
 };
@@ -75,7 +76,8 @@ V4 debugCodeDataTagColors[DebugCodeDataTagCount] = {
 	color255(255,   0, 255, 255),
 	color255(128, 128, 128, 255),
 	color255( 64, 255,  64, 255),
-	color255( 64, 128, 255, 255),
+	color255( 32,  64, 255, 255),
+	color255(255,   0,   0, 255),
 	color255(255,  64,  64, 255),
 };
 

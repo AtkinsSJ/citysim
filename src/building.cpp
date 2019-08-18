@@ -329,7 +329,7 @@ inline ChunkedArray<BuildingDef *> *getConstructibleBuildings()
 	return &buildingCatalogue.constructibleBuildings;
 }
 
-BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minResidents, s32 maxResidents, s32 minJobs, s32 maxJobs)
+BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minPopulation, s32 maxPopulation)
 {
 	DEBUG_FUNCTION();
 
@@ -361,16 +361,37 @@ BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxS
 		// Cap based on size
 		if (def->width > maxSize.x || def->height > maxSize.y) continue;
 
-		// Cap residents
-		if (minResidents != -1 && def->residents < minResidents) continue;
-		if (maxResidents != -1 && def->residents > maxResidents) continue;
-
-		// Cap jobs
-		if (minJobs != -1 && def->jobs < minJobs) continue;
-		if (maxJobs != -1 && def->jobs > maxJobs) continue;
+		if (zoneType == Zone_Residential)
+		{
+			// Cap residents
+			if (def->residents < minPopulation) continue;
+			if (def->residents > maxPopulation) continue;
+		}
+		else
+		{
+			// Cap jobs
+			if (def->jobs < minPopulation) continue;
+			if (def->jobs > maxPopulation) continue;
+		}
 		
 		result = def;
 		break;
+	}
+
+	return result;
+}
+
+s32 getMaxBuildingSize(ZoneType zoneType)
+{
+	s32 result = 0;
+
+	switch (zoneType)
+	{
+		case Zone_Residential: result = buildingCatalogue.maxRBuildingDim; break;
+		case Zone_Commercial:  result = buildingCatalogue.maxCBuildingDim; break;
+		case Zone_Industrial:  result = buildingCatalogue.maxIBuildingDim; break;
+
+		INVALID_DEFAULT_CASE;
 	}
 
 	return result;

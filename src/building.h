@@ -94,8 +94,10 @@ BuildingDef *findBuildingDef(String name);
 // - Sam, 15/06/2019
 ChunkedArray<BuildingDef *> *getConstructibleBuildings();
 
-// NB: Pass -1 for min/max residents/jobs to say you don't care
-BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minResidents, s32 maxResidents, s32 minJobs, s32 maxJobs);
+// NB: min/maxPopulation parameters are residents or jobs depending on zoneType
+BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minPopulation, s32 maxPopulation);
+
+s32 getMaxBuildingSize(ZoneType zoneType);
 
 struct City;
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);

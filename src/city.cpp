@@ -474,25 +474,6 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 	return result;
 }
 
-void calculateDemand(City *city)
-{
-	DEBUG_FUNCTION();
-	
-	// Ratio of residents to job should be roughly 3 : 1
-
-	// TODO: We want to consider AVAILABLE jobs/residents, not TOTAL ones.
-	// TODO: This is a generally terrible calculation!
-
-	// Residential
-	city->residentialDemand = (city->totalJobs * 3) - city->totalResidents + 50;
-
-	// Commercial
-	city->commercialDemand = 0;
-
-	// Industrial
-	city->industrialDemand = (city->totalResidents / 3) - city->totalJobs + 30;
-}
-
 /**
  * Distance to road, counting diagonal distances as 1.
  * If nothing is found within the maxDistanceToCheck, returns a *really big number*.

@@ -427,7 +427,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	uiText(&renderer->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->residentialDemand), formatInt(city->commercialDemand), formatInt(city->industrialDemand)}),
+	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
 	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 
@@ -551,10 +551,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 	// Update the simulation... need a smarter way of doing this!
 	{
-		DEBUG_BLOCK_T("Update simulation", DCDT_GameUpdate);
-
-		calculateDemand(city);
-		growSomeZoneBuildings(city);
+		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
 		updateZoneLayer(city, &city->zoneLayer);
 

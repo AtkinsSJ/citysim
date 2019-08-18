@@ -24,15 +24,6 @@ demolish_cost 10
 is_path true
 carries_power true
 
-:Building Factory
-size 3 3
-texture factory-3x3 factory-3x3.png 48 48
-build paint 40
-demolish_cost 100
-carries_power true
-power_use 200
-jobs 7
-
 :Building Power Station
 size 4 4
 texture power-plant power-plant.png 64 64
@@ -61,6 +52,26 @@ grows_in r
 demolish_cost 200
 residents 40
 power_use 20
+
+:Building Shop
+size 2 2
+texture shop-2x2 shop-2x2.png 32 32 2 2
+grows_in c
+build rect 50
+demolish_cost 300
+carries_power true
+power_use 30
+jobs 20
+
+:Building Factory
+size 3 3
+texture factory-3x3 factory-3x3.png 48 48
+grows_in i
+build rect 80
+demolish_cost 500
+carries_power true
+power_use 200
+jobs 80
 
 #
 # Not actually buildable stuff

@@ -62,11 +62,6 @@ struct City
 
 	s32 totalResidents;
 	s32 totalJobs;
-
-	// Calculated every so often
-	s32 residentialDemand;
-	s32 commercialDemand;
-	s32 industrialDemand;
 };
 
 //
@@ -74,8 +69,6 @@ struct City
 //
 void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds);
 void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
-
-void calculateDemand(City *city);
 
 void generateTerrain(City *city);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);

@@ -7,12 +7,11 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
-	initBitArray(&zoneLayer->sectorsWithResZones,      gameArena, sectorCount);
-	initBitArray(&zoneLayer->sectorsWithEmptyResZones, gameArena, sectorCount);
-	initBitArray(&zoneLayer->sectorsWithComZones,      gameArena, sectorCount);
-	initBitArray(&zoneLayer->sectorsWithEmptyComZones, gameArena, sectorCount);
-	initBitArray(&zoneLayer->sectorsWithIndZones,      gameArena, sectorCount);
-	initBitArray(&zoneLayer->sectorsWithEmptyIndZones, gameArena, sectorCount);
+	for (s32 zoneType = 0; zoneType < ZoneCount; zoneType++)
+	{
+		initBitArray(&zoneLayer->sectorsWithZones[zoneType],      gameArena, sectorCount);
+		initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
+	}
 
 	for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
 	{
@@ -191,14 +190,13 @@ void markZonesAsEmpty(City * /*city*/, Rect2I /*footprint*/)
 
 void updateZoneLayer(City *city, ZoneLayer *layer)
 {
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+	DEBUG_FUNCTION_T(DCDT_Simulation);
 
-	clearBits(&layer->sectorsWithResZones);
-	clearBits(&layer->sectorsWithEmptyResZones);
-	clearBits(&layer->sectorsWithComZones);
-	clearBits(&layer->sectorsWithEmptyComZones);
-	clearBits(&layer->sectorsWithIndZones);
-	clearBits(&layer->sectorsWithEmptyIndZones);
+	for (s32 zoneType = 0; zoneType < ZoneCount; zoneType++)
+	{
+		clearBits(&layer->sectorsWithZones[zoneType]);
+		clearBits(&layer->sectorsWithEmptyZones[zoneType]);
+	}
 
 	for (s32 sectorIndex = 0;
 		sectorIndex < getSectorCount(&layer->sectors);
@@ -241,29 +239,51 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 
 		if (sector->zoneSectorFlags & ZoneSector_HasResZones)
 		{
-			setBit(&layer->sectorsWithResZones, sectorIndex, true);
+			setBit(&layer->sectorsWithZones[Zone_Residential], sectorIndex, true);
 		}
 		if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
 		{
-			setBit(&layer->sectorsWithEmptyResZones, sectorIndex, true);
+			setBit(&layer->sectorsWithEmptyZones[Zone_Residential], sectorIndex, true);
 		}
 		if (sector->zoneSectorFlags & ZoneSector_HasComZones)
 		{
-			setBit(&layer->sectorsWithComZones, sectorIndex, true);
+			setBit(&layer->sectorsWithZones[Zone_Commercial], sectorIndex, true);
 		}
 		if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones)
 		{
-			setBit(&layer->sectorsWithEmptyComZones, sectorIndex, true);
+			setBit(&layer->sectorsWithEmptyZones[Zone_Commercial], sectorIndex, true);
 		}
 		if (sector->zoneSectorFlags & ZoneSector_HasIndZones)
 		{
-			setBit(&layer->sectorsWithIndZones, sectorIndex, true);
+			setBit(&layer->sectorsWithZones[Zone_Industrial], sectorIndex, true);
 		}
 		if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones)
 		{
-			setBit(&layer->sectorsWithEmptyIndZones, sectorIndex, true);
+			setBit(&layer->sectorsWithEmptyZones[Zone_Industrial], sectorIndex, true);
 		}
 	}
+
+	calculateDemand(city, layer);
+	growSomeZoneBuildings(city);
+}
+
+void calculateDemand(City *city, ZoneLayer *layer)
+{
+	DEBUG_FUNCTION_T(DCDT_Simulation);
+	
+	// Ratio of residents to job should be roughly 3 : 1
+
+	// TODO: We want to consider AVAILABLE jobs/residents, not TOTAL ones.
+	// TODO: This is a generally terrible calculation!
+
+	// Residential
+	layer->demand[Zone_Residential] = (city->totalJobs * 3) - city->totalResidents + 50;
+
+	// Commercial
+	layer->demand[Zone_Commercial] = (city->totalResidents / 6) - city->totalJobs + 10;
+
+	// Industrial
+	layer->demand[Zone_Industrial] = (city->totalResidents / 3) - city->totalJobs + 30;
 }
 
 bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
@@ -294,164 +314,159 @@ bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 
 void growSomeZoneBuildings(City *city)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Simulation);
 
 	ZoneLayer *layer = &city->zoneLayer;
 	Random *random = city->gameRandom;
 
-	// Residential
-	if (city->residentialDemand > 0)
+	for (ZoneType zoneType = FirstZoneType; zoneType < ZoneCount; zoneType = (ZoneType)(zoneType + 1))
 	{
-		s32 remainingDemand = city->residentialDemand;
-		s32 minimumDemand = city->residentialDemand / 20; // Stop when we're below 20% of the original demand
-
-		s32 maxRBuildingDim = buildingCatalogue.maxRBuildingDim;
-
-		// TODO: Stop when we've grown X buildings, because we don't want to grow a whole city at once!
-		while ((layer->sectorsWithEmptyResZones.setBitCount > 0) && (remainingDemand > minimumDemand))
+		if (layer->demand[zoneType] > 0)
 		{
-			// Find a valid res zone
-			// TODO: Better selection than just a random one
-			bool foundAZone = false;
-			s32 randomSectorOffset = randomNext(random);
-			s32 randomXOffset = randomNext(random);
-			s32 randomYOffset = randomNext(random);
-			V2I zonePos = {};
+			s32 remainingDemand = layer->demand[zoneType];
+			s32 minimumDemand = layer->demand[zoneType] / 20; // Stop when we're below 20% of the original demand
+
+			s32 maxRBuildingDim = getMaxBuildingSize(zoneType);
+
+			// TODO: Stop when we've grown X buildings, because we don't want to grow a whole city at once!
+			while ((layer->sectorsWithEmptyZones[zoneType].setBitCount > 0) && (remainingDemand > minimumDemand))
 			{
-				DEBUG_BLOCK("growSomeZoneBuildings - find a valid zone");
-				Array<s32> validSectors = getSetBitIndices(&layer->sectorsWithEmptyResZones);
-				for (s32 i = 0; i < validSectors.count; i++)
+				// Find a valid res zone
+				// TODO: Better selection than just a random one @Desirability
+				bool foundAZone = false;
+				s32 randomSectorOffset = randomNext(random);
+				s32 randomXOffset = randomNext(random);
+				s32 randomYOffset = randomNext(random);
+				V2I zonePos = {};
 				{
-					s32 sectorIndex = validSectors[(i + randomSectorOffset) % validSectors.count];
-					ZoneSector *sector = &layer->sectors.sectors[sectorIndex];
-					ASSERT_PARANOID(sector->zoneSectorFlags & ZoneSector_HasEmptyResZones);
-
-					for (s32 relY=0;
-						!foundAZone && relY < sector->bounds.h;
-						relY++)
+					DEBUG_BLOCK_T("growSomeZoneBuildings - find a valid zone", DCDT_Simulation);
+					Array<s32> validSectors = getSetBitIndices(&layer->sectorsWithEmptyZones[zoneType]);
+					for (s32 i = 0; i < validSectors.count; i++)
 					{
-						for (s32 relX=0;
-							!foundAZone && relX < sector->bounds.w;
-							relX++)
-						{
-							s32 tileX = (relX + randomXOffset) % sector->bounds.w;
-							s32 tileY = (relY + randomYOffset) % sector->bounds.h;
-							s32 x = sector->bounds.x + tileX;
-							s32 y = sector->bounds.y + tileY;
+						s32 sectorIndex = validSectors[(i + randomSectorOffset) % validSectors.count];
+						ZoneSector *sector = &layer->sectors.sectors[sectorIndex];
 
-							if (isZoneAcceptable(city, Zone_Residential, x, y))
+						for (s32 relY=0;
+							!foundAZone && relY < sector->bounds.h;
+							relY++)
+						{
+							for (s32 relX=0;
+								!foundAZone && relX < sector->bounds.w;
+								relX++)
 							{
-								zonePos = v2i(x, y);
-								foundAZone = true;
+								s32 tileX = (relX + randomXOffset) % sector->bounds.w;
+								s32 tileY = (relY + randomYOffset) % sector->bounds.h;
+								s32 x = sector->bounds.x + tileX;
+								s32 y = sector->bounds.y + tileY;
+
+								if (isZoneAcceptable(city, zoneType, x, y))
+								{
+									zonePos = v2i(x, y);
+									foundAZone = true;
+								}
 							}
 						}
 					}
 				}
-			}
 
-			if (!foundAZone)
-			{
-				// There are empty zones, but none meet our requirements, so stop trying to grow anything
-				break;
-			}
-			
-			// Produce a rectangle of the contiguous empty zone area around that point,
-			// so we can fit larger buildings there if possible.
-			Rect2I zoneFootprint = irectXYWH(zonePos.x, zonePos.y, 1, 1);
-			{
-				DEBUG_BLOCK("growSomeZoneBuildings - expand rect");
-				// Gradually expand from zonePos outwards, checking if there is available, zoned space
-
-				bool tryX = randomBool(random);
-				bool positive = randomBool(random);
-
-				while (true)
+				if (!foundAZone)
 				{
-					bool canExpand = true;
-					if (tryX)
-					{
-						s32 x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
-
-						for (s32 y = zoneFootprint.y;
-							y < zoneFootprint.y + zoneFootprint.h;
-							y++)
-						{
-							if (!isZoneAcceptable(city, Zone_Residential, x, y))
-							{
-								canExpand = false;
-								break;
-							}
-						}
-
-						if (canExpand)
-						{
-							zoneFootprint.w++;
-							if (!positive) zoneFootprint.x--;
-						}
-					}
-					else // expand in y
-					{
-						s32 y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
-
-						for (s32 x = zoneFootprint.x;
-							x < zoneFootprint.x + zoneFootprint.w;
-							x++)
-						{
-							if (!isZoneAcceptable(city, Zone_Residential, x, y))
-							{
-								canExpand = false;
-								break;
-							}
-						}
-
-						if (canExpand)
-						{
-							zoneFootprint.h++;
-							if (!positive) zoneFootprint.y--;
-						}
-					}
-
-					// As soon as we fail to expand in a direction, just stop
-					if (!canExpand) break;
-
-					// No need to grow bigger than the largest possible building!
-					// (Unless at some point we do "batches" of buildings like SC4 does)
-					if (zoneFootprint.w >= maxRBuildingDim && zoneFootprint.h >= maxRBuildingDim) break;
-
-					tryX = !tryX; // Alternate x and y
-					positive = randomBool(random); // random direction to expand in
+					// There are empty zones, but none meet our requirements, so stop trying to grow anything
+					break;
 				}
-			}
+				
+				// Produce a rectangle of the contiguous empty zone area around that point,
+				// so we can fit larger buildings there if possible.
+				Rect2I zoneFootprint = irectXYWH(zonePos.x, zonePos.y, 1, 1);
+				{
+					DEBUG_BLOCK_T("growSomeZoneBuildings - expand rect", DCDT_Simulation);
+					// Gradually expand from zonePos outwards, checking if there is available, zoned space
 
-			// Pick a building def that fits the space and is not more than 10% more than the remaining demand
-			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
-			BuildingDef *buildingDef = findGrowableBuildingDef(random, Zone_Residential, zoneFootprint.size, 1, maximumResidents, -1, -1);
+					bool tryX = randomBool(random);
+					bool positive = randomBool(random);
 
-			if (buildingDef)
-			{
-				// Place it!
-				// TODO: This picks a random spot within the zoneFootprint; we should probably pick the most desirable part?
-				Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint);
+					while (true)
+					{
+						bool canExpand = true;
+						if (tryX)
+						{
+							s32 x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
 
-				Building *building = addBuilding(city, buildingDef, footprint);
-				city->totalResidents += building->currentResidents;
-				city->totalJobs += building->currentJobs;
-				updateBuildingTexture(city, building, buildingDef);
+							for (s32 y = zoneFootprint.y;
+								y < zoneFootprint.y + zoneFootprint.h;
+								y++)
+							{
+								if (!isZoneAcceptable(city, zoneType, x, y))
+								{
+									canExpand = false;
+									break;
+								}
+							}
 
-				remainingDemand -= buildingDef->residents;
-			}
-			else
-			{
-				// We failed to find a building def, so we should probably stop trying to build things!
-				// Otherwise, we'll get stuck in an infinite loop
-				break;
+							if (canExpand)
+							{
+								zoneFootprint.w++;
+								if (!positive) zoneFootprint.x--;
+							}
+						}
+						else // expand in y
+						{
+							s32 y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
+
+							for (s32 x = zoneFootprint.x;
+								x < zoneFootprint.x + zoneFootprint.w;
+								x++)
+							{
+								if (!isZoneAcceptable(city, zoneType, x, y))
+								{
+									canExpand = false;
+									break;
+								}
+							}
+
+							if (canExpand)
+							{
+								zoneFootprint.h++;
+								if (!positive) zoneFootprint.y--;
+							}
+						}
+
+						// As soon as we fail to expand in a direction, just stop
+						if (!canExpand) break;
+
+						// No need to grow bigger than the largest possible building!
+						// (Unless at some point we do "batches" of buildings like SC4 does)
+						if (zoneFootprint.w >= maxRBuildingDim && zoneFootprint.h >= maxRBuildingDim) break;
+
+						tryX = !tryX; // Alternate x and y
+						positive = randomBool(random); // random direction to expand in
+					}
+				}
+
+				// Pick a building def that fits the space and is not more than 10% more than the remaining demand
+				s32 maxPopulation = (s32) ((f32)remainingDemand * 1.1f);
+				BuildingDef *buildingDef = findGrowableBuildingDef(random, zoneType, zoneFootprint.size, 1, maxPopulation);
+
+				if (buildingDef)
+				{
+					// Place it!
+					// TODO: This picks a random spot within the zoneFootprint; we should probably pick the most desirable part? @Desirability
+					Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint);
+
+					Building *building = addBuilding(city, buildingDef, footprint);
+					city->totalResidents += building->currentResidents;
+					city->totalJobs += building->currentJobs;
+					updateBuildingTexture(city, building, buildingDef);
+
+					remainingDemand -= (building->currentResidents + building->currentJobs);
+				}
+				else
+				{
+					// We failed to find a building def, so we should probably stop trying to build things!
+					// Otherwise, we'll get stuck in an infinite loop
+					break;
+				}
 			}
 		}
 	}
-
-	// TODO: Commercial
-
-	// TODO: Industrial
-
-	// TODO: Other zones maybe???
 }

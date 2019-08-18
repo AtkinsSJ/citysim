@@ -10,7 +10,8 @@ enum ZoneType
 	Zone_Commercial,
 	Zone_Industrial,
 
-	ZoneCount
+	ZoneCount,
+	FirstZoneType = Zone_Residential
 };
 
 struct ZoneDef
@@ -52,14 +53,11 @@ struct ZoneLayer
 
 	SectorGrid<ZoneSector> sectors;
 
-	BitArray sectorsWithResZones;
-	BitArray sectorsWithEmptyResZones;
+	BitArray sectorsWithZones[ZoneCount];
+	BitArray sectorsWithEmptyZones[ZoneCount];
 
-	BitArray sectorsWithComZones;
-	BitArray sectorsWithEmptyComZones;
-
-	BitArray sectorsWithIndZones;
-	BitArray sectorsWithEmptyIndZones;
+	// Calculated every so often
+	s32 demand[ZoneCount];
 };
 
 struct CanZoneQuery
@@ -73,6 +71,7 @@ struct CanZoneQuery
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
 void updateZoneLayer(City *city, ZoneLayer *layer);
+void calculateDemand(City *city, ZoneLayer *layer);
 
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds);
 bool canZoneTile(CanZoneQuery *query, s32 x, s32 y);
