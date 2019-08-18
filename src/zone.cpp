@@ -280,10 +280,10 @@ void calculateDemand(City *city, ZoneLayer *layer)
 	layer->demand[Zone_Residential] = (city->totalJobs * 3) - city->totalResidents + 50;
 
 	// Commercial
-	layer->demand[Zone_Commercial] = (city->totalResidents / 6) - city->totalJobs + 10;
+	layer->demand[Zone_Commercial] = (city->totalResidents / 6) + 10;
 
 	// Industrial
-	layer->demand[Zone_Industrial] = (city->totalResidents / 3) - city->totalJobs + 30;
+	layer->demand[Zone_Industrial] = (city->totalResidents / 3) - city->totalJobs + 100;
 }
 
 bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
@@ -432,6 +432,8 @@ void growSomeZoneBuildings(City *city)
 						}
 
 						// As soon as we fail to expand in a direction, just stop
+						// TODO: Be smarter about trying different directions, so that we get larger
+						// areas more often.
 						if (!canExpand) break;
 
 						// No need to grow bigger than the largest possible building!
