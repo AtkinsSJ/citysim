@@ -580,6 +580,30 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 	drawZones(city, visibleTileBounds, renderer->shaderIds.untextured);
 
 	drawBuildings(city, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
+
+	// Draw sectors
+	// NB: this is really hacky debug code
+	{
+		Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
+		DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleSectors));
+		V4 sectorColor = color255(255, 255, 255, 25);
+		for (s32 sy = visibleSectors.y;
+			sy < visibleSectors.y + visibleSectors.h;
+			sy++)
+		{
+			for (s32 sx = visibleSectors.x;
+				sx < visibleSectors.x + visibleSectors.w;
+				sx++)
+			{
+				if ((sx + sy) % 2)
+				{
+					CitySector *sector = getSector(&city->sectors, sx, sy);
+					addUntexturedRect(group, rect2(sector->bounds), sectorColor);
+				}
+			}
+		}
+		endRectsGroup(group);
+	}
 }
 
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
