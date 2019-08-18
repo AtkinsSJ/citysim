@@ -2,8 +2,6 @@
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
-	zoneLayer->width = city->width;
-	zoneLayer->height = city->height;
 	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, city->width * city->height);
 
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);

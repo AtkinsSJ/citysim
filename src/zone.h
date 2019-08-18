@@ -48,7 +48,6 @@ struct ZoneSector
 
 struct ZoneLayer
 {
-	s32 width, height; // world size
 	ZoneType *tileZone;
 
 	SectorGrid<ZoneSector> sectors;
