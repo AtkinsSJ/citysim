@@ -2,19 +2,21 @@
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
-	zoneLayer->sectorsWithResZonesCount      = 0;
-	zoneLayer->sectorsWithEmptyResZonesCount = 0;
-	zoneLayer->sectorsWithComZonesCount      = 0;
-	zoneLayer->sectorsWithEmptyComZonesCount = 0;
-	zoneLayer->sectorsWithIndZonesCount      = 0;
-	zoneLayer->sectorsWithEmptyIndZonesCount = 0;
-
 	zoneLayer->width = city->width;
 	zoneLayer->height = city->height;
 	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, city->width * city->height);
 
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
-	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&zoneLayer->sectors); sectorIndex++)
+	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
+
+	initBitField(&zoneLayer->sectorsWithResZones,      gameArena, sectorCount);
+	initBitField(&zoneLayer->sectorsWithEmptyResZones, gameArena, sectorCount);
+	initBitField(&zoneLayer->sectorsWithComZones,      gameArena, sectorCount);
+	initBitField(&zoneLayer->sectorsWithEmptyComZones, gameArena, sectorCount);
+	initBitField(&zoneLayer->sectorsWithIndZones,      gameArena, sectorCount);
+	initBitField(&zoneLayer->sectorsWithEmptyIndZones, gameArena, sectorCount);
+
+	for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
 	{
 		ZoneSector *sector = &zoneLayer->sectors.sectors[sectorIndex];
 
@@ -193,12 +195,12 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-	layer->sectorsWithResZonesCount      = 0;
-	layer->sectorsWithEmptyResZonesCount = 0;
-	layer->sectorsWithComZonesCount      = 0;
-	layer->sectorsWithEmptyComZonesCount = 0;
-	layer->sectorsWithIndZonesCount      = 0;
-	layer->sectorsWithEmptyIndZonesCount = 0;
+	clearBits(&layer->sectorsWithResZones);
+	clearBits(&layer->sectorsWithEmptyResZones);
+	clearBits(&layer->sectorsWithComZones);
+	clearBits(&layer->sectorsWithEmptyComZones);
+	clearBits(&layer->sectorsWithIndZones);
+	clearBits(&layer->sectorsWithEmptyIndZones);
 
 	for (s32 sectorIndex = 0;
 		sectorIndex < getSectorCount(&layer->sectors);
@@ -239,12 +241,30 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 			}
 		}
 
-		if (sector->zoneSectorFlags & ZoneSector_HasResZones)       layer->sectorsWithResZonesCount++;
-		if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)  layer->sectorsWithEmptyResZonesCount++;
-		if (sector->zoneSectorFlags & ZoneSector_HasComZones)       layer->sectorsWithComZonesCount++;
-		if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones)  layer->sectorsWithEmptyComZonesCount++;
-		if (sector->zoneSectorFlags & ZoneSector_HasIndZones)       layer->sectorsWithIndZonesCount++;
-		if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones)  layer->sectorsWithEmptyIndZonesCount++;
+		if (sector->zoneSectorFlags & ZoneSector_HasResZones)
+		{
+			setBit(&layer->sectorsWithResZones, sectorIndex, true);
+		}
+		if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
+		{
+			setBit(&layer->sectorsWithEmptyResZones, sectorIndex, true);
+		}
+		if (sector->zoneSectorFlags & ZoneSector_HasComZones)
+		{
+			setBit(&layer->sectorsWithComZones, sectorIndex, true);
+		}
+		if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones)
+		{
+			setBit(&layer->sectorsWithEmptyComZones, sectorIndex, true);
+		}
+		if (sector->zoneSectorFlags & ZoneSector_HasIndZones)
+		{
+			setBit(&layer->sectorsWithIndZones, sectorIndex, true);
+		}
+		if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones)
+		{
+			setBit(&layer->sectorsWithEmptyIndZones, sectorIndex, true);
+		}
 	}
 }
 
@@ -289,7 +309,7 @@ void growSomeZoneBuildings(City *city)
 
 		s32 maxRBuildingDim = buildingCatalogue.maxRBuildingDim;
 
-		while ((layer->sectorsWithEmptyResZonesCount > 0) && (remainingDemand > minimumDemand))
+		while ((layer->sectorsWithEmptyResZones.setBitsCount > 0) && (remainingDemand > minimumDemand))
 		{
 			// Find a valid res zone
 			// TODO: Better selection than just a random one
@@ -417,6 +437,7 @@ void growSomeZoneBuildings(City *city)
 
 				// Choose a random building, then carry on checking buildings until one is acceptable
 				ChunkedArray<BuildingDef *> *rGrowableBuildings = getRGrowableBuildings();
+				// @RandomIterate
 				for (auto it = iterate(rGrowableBuildings, randomBelow(random, truncate32(rGrowableBuildings->count)));
 					!it.isDone;
 					next(&it))
@@ -438,7 +459,7 @@ void growSomeZoneBuildings(City *city)
 			{
 				// Place it!
 				// TODO: This picks a random spot within the zoneFootprint; we should probably pick the most desirable part?
-				Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint); //irectPosSize(zoneFootprint.pos, buildingDef->size);
+				Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint);
 
 				Building *building = addBuilding(city, buildingDef, footprint);
 				city->totalResidents += building->currentResidents;
