@@ -14,8 +14,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-@RandomIterate in BuildingCatalogue
-
 Add newline support to .text files!
 
 SECTORS:
@@ -42,6 +40,7 @@ SECTORS:
 			- ZoneLayer keeps a sorted list of desirable sectors, per zone type?
 	- Empty zone locations in sectors? (Do we even need those caches when we can just iterate through the 256 tiles in a sector pretty quickly? I guess one nice thing with keeping those lists is we can start at a random one, but we could still do that with tile iteration - just start at a random x,y instead of at 0,0 and cycle through them all.
 		- Possible option: zone-per-tile be a struct with a zone type and flags, including "isOccupied", "isNearRoad" etc.
+	- @RandomIterate: The random selection in findGrowableBuildingDef() is biased, making options that appear after invalid ones more likely to be chosen. This is bad, but I'm not sure how growing is going to happen in the end - the current "grow one at a time" method might be replaced with a "grow a block at a time" one, where the code would be quite different.
 - Statistics
 	- Jobs
 	- Population

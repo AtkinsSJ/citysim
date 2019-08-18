@@ -346,8 +346,12 @@ BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxS
 
 	BuildingDef *result = null;
 
-	// @RandomIterate - This random selection is biased, and wants replacing with an iteration only over valid options,
-	// like in "growSomeZoneBuildings - find a valid zone"
+	// TODO: @RandomIterate - This random selection is biased, and wants replacing with an iteration only over valid options,
+	// like in "growSomeZoneBuildings - find a valid zone".
+	// Well, it does if growing buildings one at a time is how we want to do things. I'm not sure.
+	// Growing a whole "block" of a building might make more sense for residential at least.
+	// Something to decide on later.
+	// - Sam, 18/08/2019
 	for (auto it = iterate(buildings, randomBelow(random, truncate32(buildings->count)));
 		!it.isDone;
 		next(&it))
