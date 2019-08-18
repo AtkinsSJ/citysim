@@ -9,12 +9,12 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
-	initBitField(&zoneLayer->sectorsWithResZones,      gameArena, sectorCount);
-	initBitField(&zoneLayer->sectorsWithEmptyResZones, gameArena, sectorCount);
-	initBitField(&zoneLayer->sectorsWithComZones,      gameArena, sectorCount);
-	initBitField(&zoneLayer->sectorsWithEmptyComZones, gameArena, sectorCount);
-	initBitField(&zoneLayer->sectorsWithIndZones,      gameArena, sectorCount);
-	initBitField(&zoneLayer->sectorsWithEmptyIndZones, gameArena, sectorCount);
+	initBitArray(&zoneLayer->sectorsWithResZones,      gameArena, sectorCount);
+	initBitArray(&zoneLayer->sectorsWithEmptyResZones, gameArena, sectorCount);
+	initBitArray(&zoneLayer->sectorsWithComZones,      gameArena, sectorCount);
+	initBitArray(&zoneLayer->sectorsWithEmptyComZones, gameArena, sectorCount);
+	initBitArray(&zoneLayer->sectorsWithIndZones,      gameArena, sectorCount);
+	initBitArray(&zoneLayer->sectorsWithEmptyIndZones, gameArena, sectorCount);
 
 	for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
 	{
@@ -309,6 +309,7 @@ void growSomeZoneBuildings(City *city)
 
 		s32 maxRBuildingDim = buildingCatalogue.maxRBuildingDim;
 
+		// TODO: Stop when we've grown X buildings, because we don't want to grow a whole city at once!
 		while ((layer->sectorsWithEmptyResZones.setBitsCount > 0) && (remainingDemand > minimumDemand))
 		{
 			// Find a valid res zone
@@ -320,15 +321,11 @@ void growSomeZoneBuildings(City *city)
 			V2I zonePos = {};
 			{
 				DEBUG_BLOCK("growSomeZoneBuildings - find a valid zone");
-				s32 sectorCount = getSectorCount(&layer->sectors);
-				for (s32 sectorIndex = 0;
-					!foundAZone && sectorIndex < sectorCount;
-					sectorIndex++)
+				for (auto it = iterateSetBits(&layer->sectorsWithEmptyResZones); !it.isDone; next(&it))
 				{
-					s32 realSectorIndex = ((sectorIndex + randomSectorOffset) % sectorCount);
-					ZoneSector *sector = &layer->sectors.sectors[realSectorIndex];
+					ZoneSector *sector = &layer->sectors.sectors[getIndex(&it)];
 
-					if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
+					ASSERT(sector->zoneSectorFlags & ZoneSector_HasEmptyResZones);
 					{
 						for (s32 relY=0;
 							!foundAZone && relY < sector->bounds.h;
@@ -342,7 +339,7 @@ void growSomeZoneBuildings(City *city)
 								s32 tileY = (relY + randomYOffset) % sector->bounds.h;
 								s32 x = sector->bounds.x + tileX;
 								s32 y = sector->bounds.y + tileY;
-								// ZoneType zone = *getSectorTile(sector, sector->tileZone, tileX, tileY);
+								
 								if (isZoneAcceptable(city, Zone_Residential, x, y))
 								{
 									zonePos = v2i(x, y);

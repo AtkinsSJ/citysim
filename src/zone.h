@@ -53,14 +53,14 @@ struct ZoneLayer
 
 	SectorGrid<ZoneSector> sectors;
 
-	BitField sectorsWithResZones;
-	BitField sectorsWithEmptyResZones;
+	BitArray sectorsWithResZones;
+	BitArray sectorsWithEmptyResZones;
 
-	BitField sectorsWithComZones;
-	BitField sectorsWithEmptyComZones;
+	BitArray sectorsWithComZones;
+	BitArray sectorsWithEmptyComZones;
 
-	BitField sectorsWithIndZones;
-	BitField sectorsWithEmptyIndZones;
+	BitArray sectorsWithIndZones;
+	BitArray sectorsWithEmptyIndZones;
 };
 
 struct CanZoneQuery
