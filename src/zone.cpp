@@ -310,7 +310,7 @@ void growSomeZoneBuildings(City *city)
 		s32 maxRBuildingDim = buildingCatalogue.maxRBuildingDim;
 
 		// TODO: Stop when we've grown X buildings, because we don't want to grow a whole city at once!
-		while ((layer->sectorsWithEmptyResZones.setBitsCount > 0) && (remainingDemand > minimumDemand))
+		while ((layer->sectorsWithEmptyResZones.setBitCount > 0) && (remainingDemand > minimumDemand))
 		{
 			// Find a valid res zone
 			// TODO: Better selection than just a random one
@@ -321,30 +321,30 @@ void growSomeZoneBuildings(City *city)
 			V2I zonePos = {};
 			{
 				DEBUG_BLOCK("growSomeZoneBuildings - find a valid zone");
-				for (auto it = iterateSetBits(&layer->sectorsWithEmptyResZones); !it.isDone; next(&it))
+				Array<s32> validSectors = getSetBitIndices(&layer->sectorsWithEmptyResZones);
+				for (s32 i = 0; i < validSectors.count; i++)
 				{
-					ZoneSector *sector = &layer->sectors.sectors[getIndex(&it)];
+					s32 sectorIndex = validSectors[(i + randomSectorOffset) % validSectors.count];
+					ZoneSector *sector = &layer->sectors.sectors[sectorIndex];
+					ASSERT_PARANOID(sector->zoneSectorFlags & ZoneSector_HasEmptyResZones);
 
-					ASSERT(sector->zoneSectorFlags & ZoneSector_HasEmptyResZones);
+					for (s32 relY=0;
+						!foundAZone && relY < sector->bounds.h;
+						relY++)
 					{
-						for (s32 relY=0;
-							!foundAZone && relY < sector->bounds.h;
-							relY++)
+						for (s32 relX=0;
+							!foundAZone && relX < sector->bounds.w;
+							relX++)
 						{
-							for (s32 relX=0;
-								!foundAZone && relX < sector->bounds.w;
-								relX++)
+							s32 tileX = (relX + randomXOffset) % sector->bounds.w;
+							s32 tileY = (relY + randomYOffset) % sector->bounds.h;
+							s32 x = sector->bounds.x + tileX;
+							s32 y = sector->bounds.y + tileY;
+
+							if (isZoneAcceptable(city, Zone_Residential, x, y))
 							{
-								s32 tileX = (relX + randomXOffset) % sector->bounds.w;
-								s32 tileY = (relY + randomYOffset) % sector->bounds.h;
-								s32 x = sector->bounds.x + tileX;
-								s32 y = sector->bounds.y + tileY;
-								
-								if (isZoneAcceptable(city, Zone_Residential, x, y))
-								{
-									zonePos = v2i(x, y);
-									foundAZone = true;
-								}
+								zonePos = v2i(x, y);
+								foundAZone = true;
 							}
 						}
 					}

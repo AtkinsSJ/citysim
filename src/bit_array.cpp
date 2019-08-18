@@ -2,7 +2,7 @@
 void initBitArray(BitArray *array, MemoryArena *arena, s32 size)
 {
 	array->size = size;
-	array->setBitsCount = 0;
+	array->setBitCount = 0;
 
 	// I can't think of a good name for this, but it's how many u64s we need
 	s32 chunkCount = 1 + (size / 64);
@@ -51,12 +51,12 @@ void setBit(BitArray *array, s32 index, bool value)
 			if (value)
 			{
 				array->chunks[fieldIndex] |= mask;
-				array->setBitsCount++;
+				array->setBitCount++;
 			}
 			else
 			{
 				array->chunks[fieldIndex] &= ~mask;
-				array->setBitsCount--;
+				array->setBitCount--;
 			}
 		}
 	}
@@ -64,12 +64,26 @@ void setBit(BitArray *array, s32 index, bool value)
 
 void clearBits(BitArray *array)
 {
-	array->setBitsCount = 0;
+	array->setBitCount = 0;
 
 	for (s32 i = 0; i < array->chunks.count; i++)
 	{
 		array->chunks[i] = 0;
 	}
+}
+
+Array<s32> getSetBitIndices(BitArray *array)
+{
+	Array<s32> result = allocateArray<s32>(tempArena, array->setBitCount);
+
+	s32 pos = 0;
+
+	for (auto it = iterateSetBits(array); !it.isDone; next(&it))
+	{
+		result[pos++] = getIndex(&it);
+	}
+
+	return result;
 }
 
 BitArrayIterator iterateSetBits(BitArray *array)
@@ -80,7 +94,7 @@ BitArrayIterator iterateSetBits(BitArray *array)
 	iterator.currentIndex = 0;
 
 	// If bitfield is empty, we can skip some work
-	iterator.isDone = (array->setBitsCount == 0);
+	iterator.isDone = (array->setBitCount == 0);
 
 	// If the first bit is unset, we need to skip ahead
 	if (!iterator.isDone && !getValue(&iterator))

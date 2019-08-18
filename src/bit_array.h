@@ -3,7 +3,7 @@
 struct BitArray
 {
 	s32 size;
-	s32 setBitsCount;
+	s32 setBitCount;
 
 	Array<u64> chunks;
 
@@ -15,6 +15,9 @@ void initBitArray(BitArray *array, MemoryArena *arena, s32 size);
 void setBit(BitArray *array, s32 index, bool value);
 
 void clearBits(BitArray *array);
+
+// Returns a temporary array containing the indices of the set bits from this array
+Array<s32> getSetBitIndices(BitArray *array);
 
 struct BitArrayIterator
 {
