@@ -329,17 +329,47 @@ inline ChunkedArray<BuildingDef *> *getConstructibleBuildings()
 	return &buildingCatalogue.constructibleBuildings;
 }
 
-inline ChunkedArray<BuildingDef *> *getRGrowableBuildings()
+BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minResidents, s32 maxResidents, s32 minJobs, s32 maxJobs)
 {
-	return &buildingCatalogue.rGrowableBuildings;
-}
-inline ChunkedArray<BuildingDef *> *getCGrowableBuildings()
-{
-	return &buildingCatalogue.cGrowableBuildings;
-}
-inline ChunkedArray<BuildingDef *> *getIGrowableBuildings()
-{
-	return &buildingCatalogue.iGrowableBuildings;
+	DEBUG_FUNCTION();
+
+	// Choose a random building, then carry on checking buildings until one is acceptable
+	ChunkedArray<BuildingDef *> *buildings = null;
+	switch (zoneType)
+	{
+		case Zone_Residential: buildings = &buildingCatalogue.rGrowableBuildings; break;
+		case Zone_Commercial:  buildings = &buildingCatalogue.cGrowableBuildings; break;
+		case Zone_Industrial:  buildings = &buildingCatalogue.iGrowableBuildings; break;
+
+		INVALID_DEFAULT_CASE;
+	}
+
+	BuildingDef *result = null;
+
+	// @RandomIterate - This random selection is biased, and wants replacing with an iteration only over valid options,
+	// like in "growSomeZoneBuildings - find a valid zone"
+	for (auto it = iterate(buildings, randomBelow(random, truncate32(buildings->count)));
+		!it.isDone;
+		next(&it))
+	{
+		BuildingDef *def = getValue(it);
+
+		// Cap based on size
+		if (def->width > maxSize.x || def->height > maxSize.y) continue;
+
+		// Cap residents
+		if (minResidents != -1 && def->residents < minResidents) continue;
+		if (maxResidents != -1 && def->residents > maxResidents) continue;
+
+		// Cap jobs
+		if (minJobs != -1 && def->jobs < minJobs) continue;
+		if (maxJobs != -1 && def->jobs > maxJobs) continue;
+		
+		result = def;
+		break;
+	}
+
+	return result;
 }
 
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def)

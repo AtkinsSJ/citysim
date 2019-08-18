@@ -424,31 +424,8 @@ void growSomeZoneBuildings(City *city)
 			}
 
 			// Pick a building def that fits the space and is not more than 10% more than the remaining demand
-			BuildingDef *buildingDef = null;
 			s32 maximumResidents = (s32) ((f32)remainingDemand * 1.1f);
-
-			{
-				DEBUG_BLOCK("growSomeZoneBuildings - pick a building def");
-
-				// Choose a random building, then carry on checking buildings until one is acceptable
-				ChunkedArray<BuildingDef *> *rGrowableBuildings = getRGrowableBuildings();
-				// @RandomIterate
-				for (auto it = iterate(rGrowableBuildings, randomBelow(random, truncate32(rGrowableBuildings->count)));
-					!it.isDone;
-					next(&it))
-				{
-					BuildingDef *aDef = getValue(it);
-
-					// Cap residents
-					if (aDef->residents > maximumResidents) continue;
-
-					// Cap based on size
-					if (aDef->width > zoneFootprint.w || aDef->height > zoneFootprint.h) continue;
-					
-					buildingDef = aDef;
-					break;
-				}
-			}
+			BuildingDef *buildingDef = findGrowableBuildingDef(random, Zone_Residential, zoneFootprint.size, 1, maximumResidents, -1, -1);
 
 			if (buildingDef)
 			{

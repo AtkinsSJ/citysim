@@ -14,6 +14,8 @@ Notes for searching:
 
 ------------------------------------------------
 
+@RandomIterate in BuildingCatalogue
+
 Add newline support to .text files!
 
 SECTORS:

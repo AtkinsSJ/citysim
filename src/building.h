@@ -93,10 +93,9 @@ BuildingDef *findBuildingDef(String name);
 // I guess maybe I could use one that would work for all of these. eh, maybe worth trying later.
 // - Sam, 15/06/2019
 ChunkedArray<BuildingDef *> *getConstructibleBuildings();
-ChunkedArray<BuildingDef *> *getRGrowableBuildings();
-ChunkedArray<BuildingDef *> *getCGrowableBuildings();
-ChunkedArray<BuildingDef *> *getIGrowableBuildings();
 
+// NB: Pass -1 for min/max residents/jobs to say you don't care
+BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minResidents, s32 maxResidents, s32 minJobs, s32 maxJobs);
 
 struct City;
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);
