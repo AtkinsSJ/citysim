@@ -15,27 +15,14 @@ struct PathLayer
 	s32 pathGroupCount;
 };
 
-struct TileBuildingRef
-{
-	bool isOccupied;
-
-	s32 originX;
-	s32 originY;
-
-	// TODO: Could combine these two, have -1 be for non-local buildings?
-	bool isLocal;
-	s32 localIndex;
-};
-
 struct CitySector
 {
 	Rect2I bounds;
 
-	TileBuildingRef *tileBuilding;
-	s32             *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
+	s32 *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
 
 	// NB: A building is owned by a CitySector if its top-left corner tile is inside that CitySector.
-	ChunkedArray<Building>   buildings;
+	ChunkedArray<Building *>   buildingsOwned;
 };
 
 struct City
@@ -49,14 +36,19 @@ struct City
 
 	s32 width, height;
 	Terrain *terrain;
+
+	u32 *tileBuilding;
+	ChunkedArray<Building> buildings;
+
 	SectorGrid<CitySector> sectors;
 
 	PathLayer pathLayer;
 	PowerLayer powerLayer;
 	ZoneLayer zoneLayer;
 
-	ArrayChunkPool<Building>   sectorBuildingsChunkPool;
+	ArrayChunkPool<Building *> sectorBuildingsChunkPool;
 	ArrayChunkPool<Rect2I>     sectorBoundariesChunkPool;
+
 
 	u32 highestBuildingID;
 };
@@ -107,4 +99,3 @@ bool isPathable(City *city, s32 x, s32 y);
 // Private API
 //
 Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint);
-TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y);

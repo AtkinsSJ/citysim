@@ -10,21 +10,25 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->width = width;
 	city->height = height;
 
-	city->terrain = allocateMultiple<Terrain>(gameArena, width * height);
+	s32 cityArea = width * height;
+	city->terrain      = allocateMultiple<Terrain>(gameArena, cityArea);
+	city->tileBuilding = allocateMultiple<u32>(gameArena, cityArea);
 
-	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 32);
-	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,  8);
+	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
+	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,   8);
 
 	initSectorGrid(&city->sectors, gameArena, width, height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++)
 	{
 		CitySector *sector = &city->sectors.sectors[sectorIndex];
 
-		sector->tileBuilding  = allocateMultiple<TileBuildingRef>(gameArena, areaOf(sector->bounds));
 		sector->tilePathGroup = allocateMultiple<s32>            (gameArena, areaOf(sector->bounds));
 
-		initChunkedArray(&sector->buildings, &city->sectorBuildingsChunkPool);
+		initChunkedArray(&sector->buildingsOwned, &city->sectorBuildingsChunkPool);
 	}
+
+	initChunkedArray(&city->buildings, gameArena, 1024);
+	appendBlank(&city->buildings);
 
 	initPowerLayer(&city->powerLayer, city, gameArena);
 	initZoneLayer(&city->zoneLayer, city, gameArena);
@@ -36,19 +40,18 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
-	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
-	
-	s32 localIndex = (s32) ownerSector->buildings.count;
-	Building *building = appendBlank(&ownerSector->buildings);
+	Building *building = appendBlank(&city->buildings);
 	building->id = ++city->highestBuildingID;
 	building->typeID = def->typeID;
 	building->footprint = footprint;
+
+	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
+	append(&ownerSector->buildingsOwned, building);
 
 	// TODO: Properly calculate occupancy!
 	building->currentResidents = def->residents;
 	building->currentJobs = def->jobs;
 
-	// TODO: Optimise this per-sector!
 	for (s32 y = footprint.y;
 		y < footprint.y + footprint.h;
 		y++)
@@ -57,16 +60,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 			x < footprint.x + footprint.w;
 			x++)
 		{
-			CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
-			s32 relX = x - sector->bounds.x;
-			s32 relY = y - sector->bounds.y;
-
-			TileBuildingRef *ref = getSectorTile(sector, sector->tileBuilding, relX, relY);
-			ref->isOccupied = true;
-			ref->originX = footprint.x;
-			ref->originY = footprint.y;
-			ref->isLocal = (sector == ownerSector);
-			ref->localIndex = (ref->isLocal) ? localIndex : -1;
+			setTile(city, city->tileBuilding, x, y, building->id);
 		}
 	}
 
@@ -340,51 +334,27 @@ void demolishRect(City *city, Rect2I area)
 			city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
 
 			Rect2I buildingFootprint = building->footprint;
-			CitySector *buildingOwnerSector = getSectorAtTilePos(&city->sectors, buildingFootprint.x, buildingFootprint.y);
 
-			TileBuildingRef *tileBuildingRef = getSectorBuildingRefAtWorldPosition(buildingOwnerSector, buildingFootprint.x, buildingFootprint.y);
-			removeIndex(&buildingOwnerSector->buildings, tileBuildingRef->localIndex, false);
+			// TODO: Actual deletion! Right now this just marks things
+			building->id = 0;
+			building->typeID = -1;
+
 			building = null; // For safety, because we just deleted the Building!
 
-			// Clear all references to this building
-			Rect2I sectorsArea = getSectorsCovered(&city->sectors, buildingFootprint);
-			for (s32 sY = sectorsArea.y;
-				sY < sectorsArea.y + sectorsArea.h;
-				sY++)
+			for (s32 y = buildingFootprint.y;
+				y < buildingFootprint.y + buildingFootprint.h;
+				y++)
 			{
-				for (s32 sX = sectorsArea.x;
-					sX < sectorsArea.x + sectorsArea.w;
-					sX++)
+				for (s32 x = buildingFootprint.x;
+					x < buildingFootprint.x + buildingFootprint.w;
+					x++)
 				{
-					CitySector *sector = getSector(&city->sectors, sX, sY);
-					Rect2I relArea = intersectRelative(sector->bounds, buildingFootprint);
-					for (s32 relY = relArea.y;
-						relY < relArea.y + relArea.h;
-						relY++)
-					{
-						for (s32 relX = relArea.x;
-							relX < relArea.x + relArea.w;
-							relX++)
-						{
-							TileBuildingRef *tileBuilding = getSectorTile(sector, sector->tileBuilding, relX, relY);
-							tileBuilding->isOccupied = false;
-
-							// Oh wow, we're 5 loops deep. Cool? Coolcoolcoolcoolcoolcoolcoolcococococooolnodoubtnodoubtnodoubt
-
-							// TODO: Remove this! Put recalculation in the pathlayer instead, like for power
-							if (def->isPath)
-							{
-								// Remove from the pathing layer
-								setSectorTile(sector, sector->tilePathGroup, relX, relY, 0);
-							}
-						}
-					}
+					setTile(city, city->tileBuilding, x, y, (u32)0);
 				}
 			}
-
-			// Need to update the filled/empty zone lists
-			markZonesAsEmpty(city, buildingFootprint);
 		}
+
+		// TODO: Actually remove the building!
 
 		// Expand the area to account for buildings to the left or up from it
 		Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);
@@ -400,36 +370,40 @@ void demolishRect(City *city, Rect2I area)
 			{
 				CitySector *sector = getSector(&city->sectors, sX, sY);
 				
-				// Recalculate the tile-building refs for possibly-affected sectors
-				for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
-				{
-					Building *building = get(it);
-					s32 buildingIndex = (s32) getIndex(it);
+				// Rebuild the buildingsOwned array
+				clear(&sector->buildingsOwned);
 
-					Rect2I relArea = intersectRelative(sector->bounds, building->footprint);
-					for (s32 relY=relArea.y;
-						relY < relArea.y + relArea.h;
-						relY++)
+				for (s32 y = sector->bounds.y;
+					y < sector->bounds.y + sector->bounds.h;
+					y++)
+				{
+					for (s32 x = sector->bounds.x;
+						x < sector->bounds.x + sector->bounds.w;
+						x++)
 					{
-						for (s32 relX=relArea.x;
-							relX < relArea.x + relArea.w;
-							relX++)
+						Building *b = getBuildingAtPosition(city, x, y);
+						if (b != null)
 						{
-							TileBuildingRef *ref = getSectorTile(sector, sector->tileBuilding, relX, relY);
-							ref->localIndex = buildingIndex;
+							if (b->footprint.x == x && b->footprint.y == y)
+							{
+								append(&sector->buildingsOwned, b);
+							}
 						}
 					}
 				}
 			}
 		}
 
-		// Any buildings that would have connected with something that just got demolished need to refresh!
-		updateAdjacentBuildingTextures(city, area);
+		// Mark area as changed
+		markZonesAsEmpty(city, area);
+		markPowerLayerDirty(&city->powerLayer, area);
 
 		// TODO: Local recalculation!
 		recalculatePathingConnectivity(city);
 
-		markPowerLayerDirty(&city->powerLayer, area);
+		// Any buildings that would have connected with something that just got demolished need to refresh!
+		updateAdjacentBuildingTextures(city, area);
+
 	}
 }
 
@@ -458,9 +432,9 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 		{
 			CitySector *sector = getSector(&city->sectors, sX, sY);
 
-			for (auto it = iterate(&sector->buildings); !it.isDone; next(&it))
+			for (auto it = iterate(&sector->buildingsOwned); !it.isDone; next(&it))
 			{
-				Building *building = get(it);
+				Building *building = getValue(it);
 				if (overlaps(building->footprint, area))
 				{
 					append(&result, building);
@@ -626,25 +600,14 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 	endRectsGroup(group);
 }
 
-TileBuildingRef *getSectorBuildingRefAtWorldPosition(CitySector *sector, s32 x, s32 y)
-{
-	ASSERT_PARANOID(contains(sector->bounds, x, y));//, "getSectorBuildingRefAtWorldPosition() passed a coordinate that is outside of the sector!");
-
-	s32 relX = x - sector->bounds.x;
-	s32 relY = y - sector->bounds.y;
-
-	return getSectorTile(sector, sector->tileBuilding, relX, relY);
-}
-
 inline bool buildingExistsAtPosition(City *city, s32 x, s32 y)
 {
 	bool result = false;
 
-	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
-	if (sector != null)
+	u32 buildingID = *getTile(city, city->tileBuilding, x, y);
+	if (buildingID > 0)
 	{
-		TileBuildingRef *ref = getSectorBuildingRefAtWorldPosition(sector, x, y);
-		result = ref->isOccupied;
+		result = true;
 	}
 
 	return result;
@@ -654,26 +617,10 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
 	Building *result = null;
 
-	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
-	if (sector != null)
+	u32 buildingID = *getTile(city, city->tileBuilding, x, y);
+	if (buildingID > 0)
 	{
-		TileBuildingRef *ref = getSectorBuildingRefAtWorldPosition(sector, x, y);
-		if (ref->isOccupied)
-		{
-			if (ref->isLocal)
-			{
-				result = get(&sector->buildings, ref->localIndex);
-			}
-			else
-			{
-				// Decided that recursion is the easiest option here to avoid a whole load of
-				// duplicate code with slightly different variable names. (Which sounds like a
-				// recipe for a whole load of subtle bugs.)
-				// We SHOULD only be recursing once, if it's more than once that's a bug. But IDK.
-				// - Sam, 05/06/2019
-				result = getBuildingAtPosition(city, ref->originX, ref->originY);
-			}
-		}
+		result = get(&city->buildings, buildingID);
 	}
 
 	return result;
