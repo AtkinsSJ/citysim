@@ -59,9 +59,6 @@ struct City
 	ArrayChunkPool<Rect2I>     sectorBoundariesChunkPool;
 
 	u32 highestBuildingID;
-
-	s32 totalResidents;
-	s32 totalJobs;
 };
 
 //

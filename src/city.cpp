@@ -213,8 +213,7 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 		needToRecalcPaths = (oldDef->isPath != def->isPath);
 		needToRecalcPower = (oldDef->carriesPower != def->carriesPower);
 
-		city->totalResidents -= building->currentResidents;
-		city->totalJobs -= building->currentJobs;
+		city->zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
 	}
 	else
 	{
@@ -239,8 +238,8 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	// TODO: Calculate residents/jobs properly!
 	building->currentResidents = def->residents;
 	building->currentJobs = def->jobs;
-	city->totalResidents += building->currentResidents;
-	city->totalJobs += building->currentJobs;
+
+	city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
 
 	updateBuildingTexture(city, building, def);
 	updateAdjacentBuildingTextures(city, footprint);
@@ -338,8 +337,7 @@ void demolishRect(City *city, Rect2I area)
 			Building *building = getValue(it);
 			BuildingDef *def = getBuildingDef(building->typeID);
 
-			city->totalResidents -= def->residents;
-			city->totalJobs -= def->jobs;
+			city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
 
 			Rect2I buildingFootprint = building->footprint;
 			CitySector *buildingOwnerSector = getSectorAtTilePos(&city->sectors, buildingFootprint.x, buildingFootprint.y);
@@ -567,7 +565,7 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 	{
 		Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
 		DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleSectors));
-		V4 sectorColor = color255(255, 255, 255, 25);
+		V4 sectorColor = color255(255, 255, 255, 40);
 		for (s32 sy = visibleSectors.y;
 			sy < visibleSectors.y + visibleSectors.h;
 			sy++)

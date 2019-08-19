@@ -276,14 +276,19 @@ void calculateDemand(City *city, ZoneLayer *layer)
 	// TODO: We want to consider AVAILABLE jobs/residents, not TOTAL ones.
 	// TODO: This is a generally terrible calculation!
 
+	s32 totalResidents = getTotalResidents(city);
+	s32 totalJobs = getTotalJobs(city);
+
 	// Residential
-	layer->demand[Zone_Residential] = (city->totalJobs * 3) - city->totalResidents + 50;
+	layer->demand[Zone_Residential] = (totalJobs * 3) - totalResidents + 100;
+
+	s32 totalJobsNeeded = (totalResidents / 3);
 
 	// Commercial
-	layer->demand[Zone_Commercial] = (city->totalResidents / 6) + 10;
+	layer->demand[Zone_Commercial] = floor_s32(totalJobsNeeded * 0.2f) - layer->population[Zone_Commercial] + 20;
 
 	// Industrial
-	layer->demand[Zone_Industrial] = (city->totalResidents / 3) - city->totalJobs + 100;
+	layer->demand[Zone_Industrial] = floor_s32(totalJobsNeeded * 0.8f) - layer->population[Zone_Industrial] + 50;
 }
 
 bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
@@ -456,8 +461,7 @@ void growSomeZoneBuildings(City *city)
 					Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint);
 
 					Building *building = addBuilding(city, buildingDef, footprint);
-					city->totalResidents += building->currentResidents;
-					city->totalJobs += building->currentJobs;
+					layer->population[zoneType] += building->currentResidents + building->currentJobs;
 					updateBuildingTexture(city, building, buildingDef);
 
 					remainingDemand -= (building->currentResidents + building->currentJobs);
@@ -471,4 +475,14 @@ void growSomeZoneBuildings(City *city)
 			}
 		}
 	}
+}
+
+inline s32 getTotalResidents(City *city)
+{
+	return city->zoneLayer.population[Zone_Residential];
+}
+
+inline s32 getTotalJobs(City *city)
+{
+	return city->zoneLayer.population[Zone_Commercial] + city->zoneLayer.population[Zone_Industrial] + city->zoneLayer.population[Zone_None];
 }

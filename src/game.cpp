@@ -422,7 +422,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	uiText(&renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(city->totalResidents), formatInt(city->totalJobs)}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(&renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
 	uiText(&renderer->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);

@@ -56,6 +56,8 @@ struct ZoneLayer
 	BitArray sectorsWithZones[ZoneCount];
 	BitArray sectorsWithEmptyZones[ZoneCount];
 
+	s32 population[ZoneCount]; // NB: Zone_None is used for jobs provided by non-zone, city buildings
+
 	// Calculated every so often
 	s32 demand[ZoneCount];
 };
@@ -85,3 +87,6 @@ void drawZones(City *city, Rect2I visibleArea, s8 shaderID);
 
 void growSomeZoneBuildings(City *city);
 bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y);
+
+s32 getTotalResidents(City *city);
+s32 getTotalJobs(City *city);
