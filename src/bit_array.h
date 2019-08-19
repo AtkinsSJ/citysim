@@ -19,6 +19,9 @@ void clearBits(BitArray *array);
 // Returns a temporary array containing the indices of the set bits from this array
 Array<s32> getSetBitIndices(BitArray *array);
 
+s32 getFirstSetBitIndex(BitArray *array);
+s32 getFirstUnsetBitIndex(BitArray *array);
+
 struct BitArrayIterator
 {
 	BitArray *array;

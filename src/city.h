@@ -37,8 +37,8 @@ struct City
 	s32 width, height;
 	Terrain *terrain;
 
-	u32 *tileBuilding;
-	ChunkedArray<Building> buildings;
+	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
+	OccupancyArray<Building> buildings;
 
 	SectorGrid<CitySector> sectors;
 
@@ -66,6 +66,8 @@ Terrain *getTerrainAt(City *city, s32 x, s32 y);
 bool tileExists(City *city, s32 x, s32 y);
 template<typename T>
 T *getTile(City *city, T *tiles, s32 x, s32 y);
+template<typename T>
+inline T getTileValue(City *city, T *tiles, s32 x, s32 y);
 template<typename T>
 void setTile(City *city, T *tiles, s32 x, s32 y, T value);
 

@@ -164,7 +164,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 			x++)
 		{
 			// Ignore tiles that are already this zone!
-			if ((*getTile(city, zoneLayer->tileZone, x, y) != zoneType)
+			if ((getTileValue(city, zoneLayer->tileZone, x, y) != zoneType)
 			// Terrain must be buildable
 			// @Speed: URGH this terrain lookup for every tile is nasty!
 			&& (get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)

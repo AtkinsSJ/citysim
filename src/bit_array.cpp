@@ -86,6 +86,46 @@ Array<s32> getSetBitIndices(BitArray *array)
 	return result;
 }
 
+s32 getFirstSetBitIndex(BitArray *array)
+{
+	// TODO: use iterator for speed?
+	s32 result = -1;
+
+	if (array->setBitCount > 0)
+	{
+		for (s32 index = 0; index < array->size; index++)
+		{
+			if ((*array)[index])
+			{
+				result = index;
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+s32 getFirstUnsetBitIndex(BitArray *array)
+{
+	// TODO: use iterator for speed?
+	s32 result = -1;
+
+	if (array->setBitCount > 0)
+	{
+		for (s32 index = 0; index < array->size; index++)
+		{
+			if (!(*array)[index])
+			{
+				result = index;
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
 BitArrayIterator iterateSetBits(BitArray *array)
 {
 	BitArrayIterator iterator = {};

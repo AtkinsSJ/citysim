@@ -12,7 +12,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	s32 cityArea = width * height;
 	city->terrain      = allocateMultiple<Terrain>(gameArena, cityArea);
-	city->tileBuilding = allocateMultiple<u32>(gameArena, cityArea);
+	city->tileBuildingIndex = allocateMultiple<s32>(gameArena, cityArea);
 
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,   8);
@@ -27,7 +27,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 		initChunkedArray(&sector->buildingsOwned, &city->sectorBuildingsChunkPool);
 	}
 
-	initChunkedArray(&city->buildings, gameArena, 1024);
+	initOccupancyArray(&city->buildings, gameArena, 1024);
 	appendBlank(&city->buildings);
 
 	initPowerLayer(&city->powerLayer, city, gameArena);
@@ -40,6 +40,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
+	s32 buildingIndex = ???;
 	Building *building = appendBlank(&city->buildings);
 	building->id = ++city->highestBuildingID;
 	building->typeID = def->typeID;
@@ -60,7 +61,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 			x < footprint.x + footprint.w;
 			x++)
 		{
-			setTile(city, city->tileBuilding, x, y, building->id);
+			setTile(city, city->tileBuildingIndex, x, y, buildingIndex);
 		}
 	}
 
@@ -117,6 +118,12 @@ template<typename T>
 inline T *getTile(City *city, T *tiles, s32 x, s32 y)
 {
 	return tiles + ((y * city->width) + x);
+}
+
+template<typename T>
+inline T getTileValue(City *city, T *tiles, s32 x, s32 y)
+{
+	return tiles[((y * city->width) + x)];
 }
 
 template<typename T>
@@ -349,7 +356,7 @@ void demolishRect(City *city, Rect2I area)
 					x < buildingFootprint.x + buildingFootprint.w;
 					x++)
 				{
-					setTile(city, city->tileBuilding, x, y, (u32)0);
+					setTile(city, city->tileBuildingIndex, x, y, 0);
 				}
 			}
 		}
@@ -602,13 +609,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 
 inline bool buildingExistsAtPosition(City *city, s32 x, s32 y)
 {
-	bool result = false;
-
-	u32 buildingID = *getTile(city, city->tileBuilding, x, y);
-	if (buildingID > 0)
-	{
-		result = true;
-	}
+	bool result = getTileValue(city, city->tileBuildingIndex, x, y) > 0;
 
 	return result;
 }
@@ -617,7 +618,7 @@ Building* getBuildingAtPosition(City *city, s32 x, s32 y)
 {
 	Building *result = null;
 
-	u32 buildingID = *getTile(city, city->tileBuilding, x, y);
+	u32 buildingID = getTileValue(city, city->tileBuildingIndex, x, y);
 	if (buildingID > 0)
 	{
 		result = get(&city->buildings, buildingID);

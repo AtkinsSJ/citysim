@@ -81,6 +81,20 @@ struct Building
 	s32 currentJobs;
 };
 
+// NB: We don't use this yet, but the idea is, if someone needs a pointer to a building
+// across multiple frames, use one of these references. The position lets you look-up
+// the building via getBuildingAtPosition(), and the buildingID lets you check that the
+// found building is indeed the one you were after.
+// You'd then do something like this:
+//     Building *theBuilding = getBuilding(city, buildingRef);
+// which would look-up the building, check its ID, and return the Building* if it matches
+// and null if it doesn't, or if no building is at the position any more.
+// - Sam, 19/08/2019
+struct BuildingRef
+{
+	u32 buildingID;
+	V2I buildingPosition;
+};
 
 void loadBuildingDefs(Blob data, Asset *asset);
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
