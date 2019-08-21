@@ -16,6 +16,8 @@ Notes for searching:
 
 Add newline support to .text files!
 
+
+
 SECTORS:
 - After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)
 	- Sectors are supposed to *speed up* things, not slow them down!
@@ -31,8 +33,11 @@ SECTORS:
 	- RESEARCH GRAPH THEORY STUFF!
 		- An edge that will split the graph in two is called a "bridge". https://stackoverflow.com/questions/1566967/checking-if-removing-an-edge-in-a-graph-will-result-in-the-graph-splitting
 		- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
-- Road network
+- Transport networks
 	- Similar stuff to how power works, so figure that out first
+	- Rather than isPath, do a bitfield of some kind that marks vehicle types that can travel across that tile.
+		- Later we may want SC4-style subcategories like "lorry" and "bus" but for now we can just divide it into "road" and "rail". The thought is eventually we might record separate networks for road/rail but each one has a bitfield for subcategories... but really, that's massive overkill right now!
+	- May want to store distance-to-road information in a per-tile array, for speed. If we have a maximum distance, eg 8, which is more than any system needs to check, then recalculating the distance when something changes will only modify a small area instead of potentially having to recalculate the whole thing - but you still get a useful distance value!
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)
@@ -86,26 +91,6 @@ Things to work on next maybe:
 	- Other stuff we could put in sectors:
 		- List of service buildings whose areas of effect cover part of this sector, by service type. (Health, fire, police etc)
 - Record the max building w or h somewhere so we can be smarter about how wide a margin of Sectors around the edge we check when querying buildings withing an area. (eg calculateDemolitionCost()) Currently we check ALL the Sectors that are up or left!
-
-
-Data structure ideas I had late last night:
-- Buildings array:
-	Slots store whether they're empty or full. (Bitfield in the array chunk?)
-
-    When removing one, just mark that slot empty.
-
-    This way, building IDs (or anything else using that array type's indices) are constant. No need to update the id-by-tile array, or later, any other systems that might refer to a building. (Impressionable style walkers need an origin building, or SimCity citizens need a home and a workplace.) Also, this is necessary for inspection windows!
-
-    Inserting into the array would require some walking, but we can keep track of the "earliest free slot index", which should reduce that a lot. (When you fill the slot, walk until you find another free one. When freeing a slot, if it's earlier than the current earliest index, replace that index.)
-
-    I mean, maybe we want a different data structure than what I've described, but still, constant IDs are a must!
-
-    Also probably want to consider what structure best suits other cases too, rather than just using Array always. Eg, ring buffers might be good sometimes.
-
-Arrays stuff
-- Try to remove all "dynamic" uses of Array<>, because it's bad. Replace with ChunkedArray for now.
-- Main issue is, how do we sort ChunkedArrays?
-	- I guess the best idea would be to take advantage of the chunks rather than letting them be a weakness. Maybe some variation on a Merge Sort? (Sort the items within each chunk, then combine them by walking the chunks simultaneously.) Though, that gets compilcated because of the variable (and possibly very large) number of chunks, and because we'd need an extra set of chunks to put the results in. (Could use temp memory, maybe that's OK?)
 
 BUG: We get frame hitching at almost regular intervals. Profiling says it's caused by renderBuffer() sometimes taking twice as long. Need to identify this!
 	It's not just rendering code taking twice as long, it's some other seemingly random (but consistent) functions too. I really don't know why.
