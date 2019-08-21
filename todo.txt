@@ -14,9 +14,9 @@ Notes for searching:
 
 ------------------------------------------------
 
+Make inspection draw a highlight on the tile or building! (Not in the windowProc, but we store the location in gameState->inspectedTilePosition so it's easy to draw it elsewhere.)
+
 Add newline support to .text files!
-
-
 
 SECTORS:
 - After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)
@@ -42,10 +42,13 @@ SECTORS:
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)
 		- Desirability is used to prioritise new developments
+			- Sectors store some kind of aggregate desirability score, either average or the max tile value
 			- ZoneLayer keeps a sorted list of desirable sectors, per zone type?
-	- Empty zone locations in sectors? (Do we even need those caches when we can just iterate through the 256 tiles in a sector pretty quickly? I guess one nice thing with keeping those lists is we can start at a random one, but we could still do that with tile iteration - just start at a random x,y instead of at 0,0 and cycle through them all.
-		- Possible option: zone-per-tile be a struct with a zone type and flags, including "isOccupied", "isNearRoad" etc.
+			- Buildings are grown in the most desirable place within a sector first
+		- Desirability for a tile is affected by if it's already got a building there, and how recently it was constructed. (Will need to record building construction time somehow! And have a game clock.)
+			- So, the how-good-a-place-is weight is "desirability - penalty"
 	- @RandomIterate: The random selection in findGrowableBuildingDef() is biased, making options that appear after invalid ones more likely to be chosen. This is bad, but I'm not sure how growing is going to happen in the end - the current "grow one at a time" method might be replaced with a "grow a block at a time" one, where the code would be quite different.
+	- @RandomIterate: Picking a random x,y within a sector to start with is also biased! But, we'll replace it with a prioritised system outlined above, so this will get fixed.
 - Statistics
 	- Jobs
 	- Population
