@@ -98,35 +98,20 @@ OccupancyArrayItem<T> append(OccupancyArray<T> *array)
 }
 
 template<typename T>
-T removeIndex(OccupancyArray<T> *array, s32 indexToRemove)
+OccupancyArrayChunk<T> *getChunkByIndex(OccupancyArray<T> *array, s32 chunkIndex)
 {
-	// Mark it as unoccupied
+	//@Copypasta from ChunkedArray::getChunkByIndex
 
-	// Decrease counts
-
-	// Update firstChunkWithSpace/Index if the index is lower.
-}
-
-template<typename T>
-T *get(OccupancyArray<T> *array, s32 index)
-{
-	ASSERT(index < array->chunkCount * array->itemsPerChunk);
-
-	T *result = null;
-
-	s32 chunkIndex = index / array->itemsPerChunk;
-	s32 itemIndex  = index % array->itemsPerChunk;
+	ASSERT(chunkIndex < array->chunkCount); //chunkIndex is out of range!
 
 	OccupancyArrayChunk<T> *chunk = null;
 
 	if (chunkIndex == 0)
 	{
-		// Early out!
 		chunk = array->firstChunk;
 	}
 	else if (chunkIndex == (array->chunkCount - 1))
 	{
-		// Early out!
 		chunk = array->lastChunk;
 	}
 	else
@@ -139,6 +124,47 @@ T *get(OccupancyArray<T> *array, s32 index)
 			chunk = chunk->nextChunk;
 		}
 	}
+
+	return chunk;
+}
+
+template<typename T>
+void removeIndex(OccupancyArray<T> *array, s32 indexToRemove)
+{
+	ASSERT(indexToRemove < array->chunkCount * array->itemsPerChunk);
+
+	s32 chunkIndex = indexToRemove / array->itemsPerChunk;
+	s32 itemIndex  = indexToRemove % array->itemsPerChunk;
+
+	OccupancyArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+
+	// Mark it as unoccupied
+	ASSERT(chunk->occupancy[itemIndex]);
+	setBit(&chunk->occupancy, itemIndex, false);
+
+	// Decrease counts
+	chunk->count--;
+	array->count--;
+
+	// Update firstChunkWithSpace/Index if the index is lower.
+	if (chunkIndex < array->firstChunkWithSpaceIndex)
+	{
+		array->firstChunkWithSpaceIndex = chunkIndex;
+		array->firstChunkWithSpace = chunk;
+	}
+}
+
+template<typename T>
+T *get(OccupancyArray<T> *array, s32 index)
+{
+	ASSERT(index < array->chunkCount * array->itemsPerChunk);
+
+	T *result = null;
+
+	s32 chunkIndex = index / array->itemsPerChunk;
+	s32 itemIndex  = index % array->itemsPerChunk;
+
+	OccupancyArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 
 	if (chunk != null && chunk->occupancy[itemIndex])
 	{

@@ -343,9 +343,11 @@ void demolishRect(City *city, Rect2I area)
 
 			Rect2I buildingFootprint = building->footprint;
 
-			// TODO: Actual deletion! Right now this just marks things
 			building->id = 0;
 			building->typeID = -1;
+
+			s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, buildingFootprint.x, buildingFootprint.y);
+			removeIndex(&city->buildings, buildingIndex);
 
 			building = null; // For safety, because we just deleted the Building!
 
@@ -361,8 +363,6 @@ void demolishRect(City *city, Rect2I area)
 				}
 			}
 		}
-
-		// TODO: Actually remove the building!
 
 		// Expand the area to account for buildings to the left or up from it
 		Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);

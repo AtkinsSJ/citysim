@@ -317,8 +317,9 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	Building *building = getBuildingAtPosition(city, tilePos.x, tilePos.y);
 	if (building != null)
 	{
+		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
-		window_label(context, myprintf("Building: {0} (ID {1})", {def->name, formatInt(building->id)}));
+		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})", {def->name, formatInt(building->id), formatInt(buildingIndex)}));
 		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building->currentJobs), formatInt(def->jobs)}));
 		window_label(context, myprintf("- Power: {0}", {formatInt(def->power)}));

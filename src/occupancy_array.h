@@ -40,7 +40,7 @@ template<typename T>
 OccupancyArrayItem<T> append(OccupancyArray<T> *array);
 
 template<typename T>
-T removeIndex(OccupancyArray<T> *array, s32 indexToRemove);
+void removeIndex(OccupancyArray<T> *array, s32 indexToRemove);
 
 template<typename T>
 T *get(OccupancyArray<T> *array, s32 index);
