@@ -11,8 +11,8 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->height = height;
 
 	s32 cityArea = width * height;
-	city->terrain      = allocateMultiple<Terrain>(gameArena, cityArea);
-	city->tileBuildingIndex = allocateMultiple<s32>(gameArena, cityArea);
+	city->terrain           = allocateMultiple<Terrain>(gameArena, cityArea);
+	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
 
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,   8);
@@ -28,7 +28,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	}
 
 	initOccupancyArray(&city->buildings, gameArena, 1024);
-	appendBlank(&city->buildings);
+	append(&city->buildings);
 
 	initPowerLayer(&city->powerLayer, city, gameArena);
 	initZoneLayer(&city->zoneLayer, city, gameArena);
@@ -40,8 +40,9 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
-	s32 buildingIndex = ???;
-	Building *building = appendBlank(&city->buildings);
+	auto buildingSlot = append(&city->buildings);
+	s32 buildingIndex = buildingSlot.index;
+	Building *building = buildingSlot.item;
 	building->id = ++city->highestBuildingID;
 	building->typeID = def->typeID;
 	building->footprint = footprint;
