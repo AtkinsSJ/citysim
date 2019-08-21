@@ -1,4 +1,4 @@
-
+ 
 template<typename T>
 void initOccupancyArray(OccupancyArray<T> *array, MemoryArena *arena, s32 itemsPerChunk)
 {
@@ -106,12 +106,11 @@ OccupancyArrayItem<T> append(OccupancyArray<T> *array)
 template<typename T>
 OccupancyArrayChunk<T> *getChunkByIndex(OccupancyArray<T> *array, s32 chunkIndex)
 {
-	//@Copypasta from ChunkedArray::getChunkByIndex
-
-	ASSERT(chunkIndex < array->chunkCount); //chunkIndex is out of range!
+	ASSERT(chunkIndex >= 0 && chunkIndex < array->chunkCount); //chunkIndex is out of range!
 
 	OccupancyArrayChunk<T> *chunk = null;
 
+	// Shortcuts for known values
 	if (chunkIndex == 0)
 	{
 		chunk = array->firstChunk;
@@ -119,6 +118,10 @@ OccupancyArrayChunk<T> *getChunkByIndex(OccupancyArray<T> *array, s32 chunkIndex
 	else if (chunkIndex == (array->chunkCount - 1))
 	{
 		chunk = array->lastChunk;
+	}
+	else if (chunkIndex == array->firstChunkWithSpaceIndex)
+	{
+		chunk = array->firstChunkWithSpace;
 	}
 	else
 	{

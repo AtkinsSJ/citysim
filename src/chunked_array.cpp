@@ -175,10 +175,11 @@ T *get(ChunkedArray<T> *array, s32 index)
 template<typename T>
 ArrayChunk<T> *getChunkByIndex(ChunkedArray<T> *array, s32 chunkIndex)
 {
-	ASSERT(chunkIndex < array->chunkCount); //chunkIndex is out of range!
+	ASSERT(chunkIndex >= 0 && chunkIndex < array->chunkCount); //chunkIndex is out of range!
 
 	ArrayChunk<T> *chunk = null;
 
+	// Shortcuts for known values
 	if (chunkIndex == 0)
 	{
 		chunk = array->firstChunk;
