@@ -10,6 +10,8 @@ struct SectorGrid
 	Array<Sector> sectors;
 };
 
+// NB: The Sector struct needs to contain a "Rect2I bounds;" member. This is filled-in inside initSectorGrid().
+
 template<typename Sector>
 void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize);
 

@@ -12,14 +12,13 @@ enum DataLayer
 
 struct PathLayer
 {
+	s32 *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
 	s32 pathGroupCount;
 };
 
 struct CitySector
 {
 	Rect2I bounds;
-
-	s32 *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
 
 	// NB: A building is owned by a CitySector if its top-left corner tile is inside that CitySector.
 	ChunkedArray<Building *>   buildingsOwned;
@@ -39,6 +38,7 @@ struct City
 
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
+	u32 highestBuildingID;
 
 	SectorGrid<CitySector> sectors;
 
@@ -48,9 +48,6 @@ struct City
 
 	ArrayChunkPool<Building *> sectorBuildingsChunkPool;
 	ArrayChunkPool<Rect2I>     sectorBoundariesChunkPool;
-
-
-	u32 highestBuildingID;
 };
 
 //

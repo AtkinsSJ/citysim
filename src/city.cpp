@@ -14,6 +14,9 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->terrain           = allocateMultiple<Terrain>(gameArena, cityArea);
 	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
 
+	city->pathLayer.pathGroupCount = 0;
+	city->pathLayer.tilePathGroup = allocateMultiple<s32>(gameArena, cityArea);
+
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,   8);
 
@@ -21,9 +24,6 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++)
 	{
 		CitySector *sector = &city->sectors.sectors[sectorIndex];
-
-		sector->tilePathGroup = allocateMultiple<s32>            (gameArena, areaOf(sector->bounds));
-
 		initChunkedArray(&sector->buildingsOwned, &city->sectorBuildingsChunkPool);
 	}
 
@@ -708,18 +708,7 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 
 inline s32 getPathGroupAt(City *city, s32 x, s32 y)
 {
-	s32 result = 0;
-	CitySector *sector = getSectorAtTilePos(&city->sectors, x, y);
-
-	if (sector != null)
-	{
-		s32 relX = x - sector->bounds.x;
-		s32 relY = y - sector->bounds.y;
-
-		result = *getSectorTile(sector, sector->tilePathGroup, relX, relY);
-	}
-
-	return result;
+	return getTileValue(city, city->pathLayer.tilePathGroup, x, y);
 }
 
 inline bool isPathable(City *city, s32 x, s32 y)
