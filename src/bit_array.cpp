@@ -4,9 +4,16 @@ void initBitArray(BitArray *array, MemoryArena *arena, s32 size)
 	array->size = size;
 	array->setBitCount = 0;
 
-	// I can't think of a good name for this, but it's how many u64s we need
-	s32 chunkCount = 1 + (size / 64);
-	array->chunks = allocateArray<u64>(arena, chunkCount);
+	array->chunks = allocateArray<u64>(arena, calculateBitArrayU64Count(size));
+}
+
+void initBitArray(BitArray *array, s32 size, Array<u64> u64s)
+{
+	array->size = size;
+	array->setBitCount = 0;
+
+	ASSERT(u64s.count * 64 >= size);
+	array->chunks = u64s;
 }
 
 inline bool BitArray::operator[](s32 index)

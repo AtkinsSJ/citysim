@@ -12,6 +12,16 @@ struct BitArray
 
 void initBitArray(BitArray *array, MemoryArena *arena, s32 size);
 
+// If you want, you can supply the memory directly, in case you want to allocate it with something else.
+// Of course, you MUST pass an array of u64s that is big enough!
+// IMPORTANT: we assume that the array is set to all 0s!
+// To get the size, call calculateBitArrayU64Count() below.
+void initBitArray(BitArray *array, s32 size, Array<u64> u64s);
+inline s32 calculateBitArrayU64Count(s32 bitCount)
+{
+	return 1 + (bitCount / 64);
+}
+
 void setBit(BitArray *array, s32 index, bool value);
 
 void clearBits(BitArray *array);

@@ -23,13 +23,19 @@ OccupancyArrayItem<T> append(OccupancyArray<T> *array)
 
 		// @Copypasta ArrayChunk::allocateChunk(). We probably want to move this logic into
 		// an "allocate a struct with its data array" function somehow? That's not easy in C++ though.
+		// Actually, this one has two extra parts, so that's even more complicated...
 		// - Sam, 21/08/2019
-		Blob blob = allocateBlob(array->memoryArena, sizeof(OccupancyArrayChunk<T>) + (sizeof(T) * array->itemsPerChunk));
+		smm structSize = sizeof(OccupancyArrayChunk<T>);
+		smm arraySize = sizeof(T) * array->itemsPerChunk;
+		s32 occupancyArrayCount = calculateBitArrayU64Count(array->itemsPerChunk);
+		smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
+
+		Blob blob = allocateBlob(array->memoryArena, structSize + arraySize + occupancyArraySize);
 		OccupancyArrayChunk<T> *newChunk = (OccupancyArrayChunk<T> *)blob.memory;
 		*newChunk = {};
 		newChunk->count = 0;
-		newChunk->items = (T *)(blob.memory + sizeof(OccupancyArrayChunk<T>));
-		initBitArray(&newChunk->occupancy, array->memoryArena, array->itemsPerChunk); // TODO: Roll allocation into above?
+		newChunk->items = (T *)(blob.memory + structSize);
+		initBitArray(&newChunk->occupancy, array->itemsPerChunk, makeArray(occupancyArrayCount, (u64 *)(blob.memory + structSize + arraySize)));
 
 		array->chunkCount++;
 
