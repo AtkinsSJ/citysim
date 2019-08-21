@@ -10,7 +10,6 @@ template<typename T>
 struct ArrayChunk : PoolItem
 {
 	smm count;
-	smm maxCount;
 	T *items;
 
 	ArrayChunk<T> *prevChunk;

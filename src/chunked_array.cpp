@@ -52,7 +52,6 @@ ArrayChunk<T> *allocateChunk(MemoryArena *arena, smm itemsPerChunk)
 	ArrayChunk<T> *newChunk = (ArrayChunk<T> *)blob.memory;
 	*newChunk = {};
 	newChunk->count = 0;
-	newChunk->maxCount = itemsPerChunk;
 	newChunk->items = (T *)(blob.memory + sizeof(ArrayChunk<T>));
 
 	return newChunk;
