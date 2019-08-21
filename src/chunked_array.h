@@ -9,7 +9,7 @@
 template<typename T>
 struct ArrayChunk : PoolItem
 {
-	smm count;
+	s32 count;
 	T *items;
 
 	ArrayChunk<T> *prevChunk;
@@ -19,7 +19,7 @@ struct ArrayChunk : PoolItem
 template<typename T>
 struct ArrayChunkPool : Pool<ArrayChunk<T>>
 {
-	smm itemsPerChunk;
+	s32 itemsPerChunk;
 };
 
 template<typename T>
@@ -28,9 +28,9 @@ struct ChunkedArray
 	ArrayChunkPool<T> *chunkPool;
 	MemoryArena *memoryArena;
 
-	smm itemsPerChunk;
-	smm chunkCount;
-	smm count;
+	s32 itemsPerChunk;
+	s32 chunkCount;
+	s32 count;
 
 	ArrayChunk<T> *firstChunk;
 	ArrayChunk<T> *lastChunk;
@@ -44,23 +44,23 @@ struct ChunkedArrayIterator
 	bool goBackwards;
 
 	ArrayChunk<T> *currentChunk;
-	smm chunkIndex;
-	smm indexInChunk;
+	s32 chunkIndex;
+	s32 indexInChunk;
 
 	// This is a counter for use when we start not at the beginning of the array but want to iterate it ALL.
 	// For simplicity, we increment it each time we next(), and when it equals the count, we're done.
-	smm itemsIterated;
+	s32 itemsIterated;
 	bool isDone;
 };
 
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm itemsPerChunk);
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, s32 itemsPerChunk);
 
 template<typename T>
 void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool);
 
 template<typename T>
-ArrayChunk<T> *allocateChunk(MemoryArena *arena, smm itemsPerChunk);
+ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk);
 
 // Marks all the chunks as empty. Returns them to a chunkpool if there is one.
 template<typename T>
@@ -76,26 +76,26 @@ template<typename T>
 T *appendUninitialised(ChunkedArray<T> *array);
 
 template<typename T>
-T *get(ChunkedArray<T> *array, smm index);
+T *get(ChunkedArray<T> *array, s32 index);
 
 template<typename T>
-void reserve(ChunkedArray<T> *array, smm desiredSize);
+void reserve(ChunkedArray<T> *array, s32 desiredSize);
 
 template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove);
 
 template<typename T>
-T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder);
+T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder);
 
 template<typename T>
-void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex);
+void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex);
 
 //////////////////////////////////////////////////
 // POOL STUFF                                   //
 //////////////////////////////////////////////////
 
 template<typename T>
-void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, smm itemsPerChunk);
+void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk);
 
 // Used as Pool's allocateItem() function pointer
 template<typename T>
@@ -124,7 +124,7 @@ void returnLastChunkToPool(ChunkedArray<T> *array);
  */
 
 template<typename T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex = 0, bool wrapAround = true, bool goBackwards = false);
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, s32 initialIndex = 0, bool wrapAround = true, bool goBackwards = false);
 
 template<typename T>
 inline ChunkedArrayIterator<T> iterateBackwards(ChunkedArray<T> *array)
@@ -139,7 +139,7 @@ template<typename T>
 T *get(ChunkedArrayIterator<T> iterator);
 
 template<typename T>
-smm getIndex(ChunkedArrayIterator<T> iterator);
+s32 getIndex(ChunkedArrayIterator<T> iterator);
 
 template<typename T>
 T getValue(ChunkedArrayIterator<T> iterator);

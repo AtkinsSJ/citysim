@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, smm itemsPerChunk)
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, s32 itemsPerChunk)
 {
 	array->memoryArena = arena;
 	array->chunkPool = null;
@@ -45,7 +45,7 @@ void clear(ChunkedArray<T> *array)
 }
 
 template<typename T>
-ArrayChunk<T> *allocateChunk(MemoryArena *arena, smm itemsPerChunk)
+ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk)
 {
 	// Rolled into a single allocation
 	Blob blob = allocateBlob(arena, sizeof(ArrayChunk<T>) + (sizeof(T) * itemsPerChunk));
@@ -105,7 +105,7 @@ T *appendUninitialised(ChunkedArray<T> *array)
 	else
 	{
 		chunk = array->firstChunk;
-		smm indexWithinChunk = array->count;
+		s32 indexWithinChunk = array->count;
 		while (indexWithinChunk >= array->itemsPerChunk)
 		{
 			chunk = chunk->nextChunk;
@@ -137,14 +137,14 @@ inline T *appendBlank(ChunkedArray<T> *array)
 }
 
 template<typename T>
-T *get(ChunkedArray<T> *array, smm index)
+T *get(ChunkedArray<T> *array, s32 index)
 {
 	ASSERT(index < array->count); //Index out of array bounds!
 
 	T *result = null;
 
-	smm chunkIndex = index / array->itemsPerChunk;
-	smm itemIndex  = index % array->itemsPerChunk;
+	s32 chunkIndex = index / array->itemsPerChunk;
+	s32 itemIndex  = index % array->itemsPerChunk;
 
 	if (chunkIndex == 0)
 	{
@@ -173,7 +173,7 @@ T *get(ChunkedArray<T> *array, smm index)
 }
 
 template<typename T>
-ArrayChunk<T> *getChunkByIndex(ChunkedArray<T> *array, smm chunkIndex)
+ArrayChunk<T> *getChunkByIndex(ChunkedArray<T> *array, s32 chunkIndex)
 {
 	ASSERT(chunkIndex < array->chunkCount); //chunkIndex is out of range!
 
@@ -218,7 +218,7 @@ ArrayChunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
 }
 
 template<typename T>
-void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
+void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex)
 {
 	DEBUG_FUNCTION();
 
@@ -228,13 +228,13 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 	if (fromIndex < toIndex)
 	{
 		// Moving >, so move each item in the range left 1
-		smm chunkIndex = fromIndex / array->itemsPerChunk;
-		smm itemIndex  = fromIndex % array->itemsPerChunk;
+		s32 chunkIndex = fromIndex / array->itemsPerChunk;
+		s32 itemIndex  = fromIndex % array->itemsPerChunk;
 		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 
 		T movingItem = chunk->items[itemIndex];
 
-		for (smm currentPosition = fromIndex; currentPosition < toIndex; currentPosition++)
+		for (s32 currentPosition = fromIndex; currentPosition < toIndex; currentPosition++)
 		{
 			T *dest = &chunk->items[itemIndex];
 
@@ -255,13 +255,13 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, smm fromIndex, smm toIndex)
 	else
 	{
 		// Moving <, so move each item in the range right 1
-		smm chunkIndex = fromIndex / array->itemsPerChunk;
-		smm itemIndex  = fromIndex % array->itemsPerChunk;
+		s32 chunkIndex = fromIndex / array->itemsPerChunk;
+		s32 itemIndex  = fromIndex % array->itemsPerChunk;
 		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 		
 		T movingItem = chunk->items[itemIndex];
 
-		for (smm currentPosition = fromIndex; currentPosition > toIndex; currentPosition--)
+		for (s32 currentPosition = fromIndex; currentPosition > toIndex; currentPosition--)
 		{
 			T *dest = &chunk->items[itemIndex];
 			itemIndex--;
@@ -290,7 +290,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 		chunk != null;
 		chunk = chunk->nextChunk)
 	{
-		for (smm i=0; i<chunk->count; i++)
+		for (s32 i=0; i<chunk->count; i++)
 		{
 			if (equals(chunk->items[i], toRemove))
 			{
@@ -321,7 +321,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 }
 
 template<typename T>
-T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
+T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 {
 	DEBUG_FUNCTION();
 
@@ -345,8 +345,8 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 	}
 	else
 	{
-		smm chunkIndex = indexToRemove / array->itemsPerChunk;
-		smm itemIndex  = indexToRemove % array->itemsPerChunk;
+		s32 chunkIndex = indexToRemove / array->itemsPerChunk;
+		s32 itemIndex  = indexToRemove % array->itemsPerChunk;
 
 		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
 
@@ -373,7 +373,7 @@ T removeIndex(ChunkedArray<T> *array, smm indexToRemove, bool keepItemOrder)
 }
 
 template<typename T>
-void reserve(ChunkedArray<T> *array, smm desiredSize)
+void reserve(ChunkedArray<T> *array, s32 desiredSize)
 {
 	DEBUG_FUNCTION();
 	
@@ -388,7 +388,7 @@ void reserve(ChunkedArray<T> *array, smm desiredSize)
 //////////////////////////////////////////////////
 
 template<typename T>
-void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, smm itemsPerChunk)
+void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk)
 {
 	pool->itemsPerChunk = itemsPerChunk;
 	initPool<ArrayChunk<T>>(pool, arena, &allocateChunkFromPool, &pool->itemsPerChunk);
@@ -397,7 +397,7 @@ void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, smm itemsPerChun
 template<typename T>
 ArrayChunk<T> *allocateChunkFromPool(MemoryArena *arena, void *userData)
 {
-	smm itemsPerChunk = *((smm*)userData);
+	s32 itemsPerChunk = *((s32*)userData);
 	return allocateChunk<T>(arena, itemsPerChunk);
 }
 
@@ -418,7 +418,7 @@ void returnLastChunkToPool(ChunkedArray<T> *array)
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
 template<typename T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, smm initialIndex, bool wrapAround, bool goBackwards)
+ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, s32 initialIndex, bool wrapAround, bool goBackwards)
 {
 	ChunkedArrayIterator<T> iterator = {};
 
@@ -522,7 +522,7 @@ inline T *get(ChunkedArrayIterator<T> iterator)
 }
 
 template<typename T>
-smm getIndex(ChunkedArrayIterator<T> iterator)
+s32 getIndex(ChunkedArrayIterator<T> iterator)
 {
 	return (iterator.chunkIndex * iterator.array->itemsPerChunk) + iterator.indexInChunk;
 }

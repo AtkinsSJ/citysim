@@ -14,8 +14,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Also, switch ChunkedArray to use s32 instead of smm? Using smm is actually a bit annoying because then everything that touches an smm has to be smm too, and when are we ever going to have an array containing over 2,147,483,647 elements???
-
 Add newline support to .text files!
 
 SECTORS:
