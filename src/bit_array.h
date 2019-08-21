@@ -5,7 +5,7 @@ struct BitArray
 	s32 size;
 	s32 setBitCount;
 
-	Array<u64> chunks;
+	Array<u64> u64s;
 
 	bool operator[](u32 index);
 };

@@ -3,17 +3,16 @@ void initBitArray(BitArray *array, MemoryArena *arena, s32 size)
 {
 	array->size = size;
 	array->setBitCount = 0;
-
-	array->chunks = allocateArray<u64>(arena, calculateBitArrayU64Count(size));
+	array->u64s = allocateArray<u64>(arena, calculateBitArrayU64Count(size));
 }
 
 void initBitArray(BitArray *array, s32 size, Array<u64> u64s)
 {
+	ASSERT(u64s.count * 64 >= size);
+
 	array->size = size;
 	array->setBitCount = 0;
-
-	ASSERT(u64s.count * 64 >= size);
-	array->chunks = u64s;
+	array->u64s = u64s;
 }
 
 inline bool BitArray::operator[](u32 index)
@@ -29,7 +28,7 @@ inline bool BitArray::operator[](u32 index)
 		u32 fieldIndex = index >> 6;
 		u32 bitIndex = index & 63;
 		u64 mask = ((u64)1 << bitIndex);
-		result = (this->chunks[fieldIndex] & mask) != 0;
+		result = (this->u64s[fieldIndex] & mask) != 0;
 	}
 
 	return result;
@@ -46,18 +45,18 @@ void setBit(BitArray *array, s32 index, bool value)
 		u32 fieldIndex = index >> 6;
 		u32 bitIndex = index & 63;
 		u64 mask = ((u64)1 << bitIndex);
-		bool wasSet = (array->chunks[fieldIndex] & mask) != 0;
+		bool wasSet = (array->u64s[fieldIndex] & mask) != 0;
 
 		if (wasSet != value)
 		{
 			if (value)
 			{
-				array->chunks[fieldIndex] |= mask;
+				array->u64s[fieldIndex] |= mask;
 				array->setBitCount++;
 			}
 			else
 			{
-				array->chunks[fieldIndex] &= ~mask;
+				array->u64s[fieldIndex] &= ~mask;
 				array->setBitCount--;
 			}
 		}
@@ -68,9 +67,9 @@ void clearBits(BitArray *array)
 {
 	array->setBitCount = 0;
 
-	for (s32 i = 0; i < array->chunks.count; i++)
+	for (s32 i = 0; i < array->u64s.count; i++)
 	{
-		array->chunks[i] = 0;
+		array->u64s[i] = 0;
 	}
 }
 
