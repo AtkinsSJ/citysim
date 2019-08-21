@@ -16,20 +16,18 @@ void initBitArray(BitArray *array, s32 size, Array<u64> u64s)
 	array->chunks = u64s;
 }
 
-inline bool BitArray::operator[](s32 index)
+inline bool BitArray::operator[](u32 index)
 {
 	bool result = false;
 
-	if (index >= this->size || index < 0)
+	if (index >= (u32)this->size || index < 0)
 	{
 		ASSERT(false);
 	}
 	else
 	{
-		// @Speed: Could do these with bitshifts, once I know it's working right
-		s32 fieldIndex = index / 64;
-		u64 bitIndex = index % 64;
-
+		u32 fieldIndex = index >> 6;
+		u32 bitIndex = index & 63;
 		u64 mask = ((u64)1 << bitIndex);
 		result = (this->chunks[fieldIndex] & mask) != 0;
 	}
@@ -45,12 +43,9 @@ void setBit(BitArray *array, s32 index, bool value)
 	}
 	else
 	{
-		// @Speed: Could do these with bitshifts, once I know it's working right
-		s32 fieldIndex = index / 64;
-		u64 bitIndex = index % 64;
-		
+		u32 fieldIndex = index >> 6;
+		u32 bitIndex = index & 63;
 		u64 mask = ((u64)1 << bitIndex);
-
 		bool wasSet = (array->chunks[fieldIndex] & mask) != 0;
 
 		if (wasSet != value)

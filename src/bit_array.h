@@ -7,7 +7,7 @@ struct BitArray
 
 	Array<u64> chunks;
 
-	bool operator[](s32 index);
+	bool operator[](u32 index);
 };
 
 void initBitArray(BitArray *array, MemoryArena *arena, s32 size);
