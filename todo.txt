@@ -14,8 +14,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Make inspection draw a highlight on the tile or building! (Not in the windowProc, but we store the location in gameState->inspectedTilePosition so it's easy to draw it elsewhere.)
-
 Add newline support to .text files!
 
 SECTORS:

@@ -340,6 +340,17 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 			formatInt(powerNetwork->groups.count)
 		}));
 	}
+
+	// Highlight
+	// Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when
+	// the uiwindow is closed. Maybe at some point we'll want that functionality for other reasons, but
+	// for now, it's cleaner and simpler to just do that drawing here.
+	// Though, that does mean we can't control *when* the highlight is drawn, or make the building be drawn
+	// as highlighted, so maybe this won't work and I'll have to delete this comment in 30 seconds' time!
+	// - Sam, 28/08/2019
+
+	V4 tileHighlightColor = color255(196, 196, 255, 64);
+	drawSingleRect(&renderer->worldOverlayBuffer, rectXYWH(tilePos.x, tilePos.y, 1, 1), renderer->shaderIds.untextured, tileHighlightColor);
 }
 
 void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
