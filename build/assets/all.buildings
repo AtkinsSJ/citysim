@@ -6,7 +6,7 @@ texture road road.png 16 16 4 4
 link_textures path
 build line 10
 demolish_cost 10
-is_path true
+transport road
 
 :Building Power Line
 size 1 1
@@ -21,7 +21,7 @@ combination_of Road | Power Line
 size 1 1
 texture power-line-over-road power-line-over-road.png 16 16 2 1
 demolish_cost 10
-is_path true
+transport road
 carries_power true
 
 :Building Power Station

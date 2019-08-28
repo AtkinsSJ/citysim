@@ -26,7 +26,7 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 	ZoneType result = Zone_None;
 	if (tileExists(city, x, y))
 	{
-		result = *getTile(city, city->zoneLayer.tileZone, x, y);
+		result = getTileValue(city, city->zoneLayer.tileZone, x, y);
 	}
 
 	return result;

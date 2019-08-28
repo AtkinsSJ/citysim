@@ -10,12 +10,6 @@ enum DataLayer
 	DataLayerCount
 };
 
-struct PathLayer
-{
-	s32 *tilePathGroup; // 0 = unpathable, >0 = any tile with the same value is connected
-	s32 pathGroupCount;
-};
-
 struct CitySector
 {
 	Rect2I bounds;
@@ -42,8 +36,8 @@ struct City
 
 	SectorGrid<CitySector> sectors;
 
-	PathLayer pathLayer;
 	PowerLayer powerLayer;
+	TransportLayer transportLayer;
 	ZoneLayer zoneLayer;
 
 	ArrayChunkPool<Building *> sectorBuildingsChunkPool;
@@ -89,10 +83,6 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
 
-// Pathing-related stuff, which will be moved out into a TransportLayer at some point
-s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck);
-s32 getPathGroupAt(City *city, s32 x, s32 y);
-bool isPathable(City *city, s32 x, s32 y);
 
 //
 // Private API

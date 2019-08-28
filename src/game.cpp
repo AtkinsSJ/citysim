@@ -350,7 +350,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	// - Sam, 28/08/2019
 
 	V4 tileHighlightColor = color255(196, 196, 255, 64);
-	drawSingleRect(&renderer->worldOverlayBuffer, rectXYWH(tilePos.x, tilePos.y, 1, 1), renderer->shaderIds.untextured, tileHighlightColor);
+	drawSingleRect(&renderer->worldOverlayBuffer, rectXYWH((f32)tilePos.x, (f32)tilePos.y, 1.0f, 1.0f), renderer->shaderIds.untextured, tileHighlightColor);
 }
 
 void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
@@ -565,9 +565,9 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
-		updateZoneLayer(city, &city->zoneLayer);
-
 		updatePowerLayer(city, &city->powerLayer);
+		updateTransportLayer(city, &city->transportLayer);
+		updateZoneLayer(city, &city->zoneLayer);
 	}
 
 
@@ -841,12 +841,12 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 				{
 					case DataLayer_Paths:
 					{
-						s32 pathGroup = getPathGroupAt(city, x, y);
-						if (pathGroup > 0)
-						{
-							color = genericDataLayerColors[pathGroup % genericDataLayerColorCount];
-							tileHasData = true;
-						}
+						// s32 pathGroup = getPathGroupAt(city, x, y);
+						// if (pathGroup > 0)
+						// {
+						// 	color = genericDataLayerColors[pathGroup % genericDataLayerColorCount];
+						// 	tileHasData = true;
+						// }
 					} break;
 
 					case DataLayer_Power:

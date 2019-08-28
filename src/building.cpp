@@ -211,9 +211,29 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
-				else if (equals(firstWord, "is_path"))
+				else if (equals(firstWord, "transport"))
 				{
-					def->isPath = readBool(&reader, firstWord, remainder);
+					u8 transportTypes = 0;
+
+					s32 tokenCount = countTokens(remainder);
+					for (s32 tokenIndex = 0; tokenIndex < tokenCount; tokenIndex++)
+					{
+						String transportName = nextToken(remainder, &remainder);
+
+						if (equals(transportName, "road"))
+						{
+							transportTypes |= Transport_Road;
+						}
+						else if (equals(transportName, "rail"))
+						{
+							transportTypes |= Transport_Rail;
+						}
+						else
+						{
+							warn(&reader, "Unrecognised transport type \"{0}\".", {transportName});
+						}
+					}
+					def->transportTypes = transportTypes;
 				}
 				else if (equals(firstWord, "carries_power"))
 				{
@@ -422,15 +442,10 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 		{
 			case DataLayer_Paths:
 			{
-				Building *buildingU = getBuildingAtPosition(city, x,   y-1);
-				Building *buildingD = getBuildingAtPosition(city, x,   y+1);
-				Building *buildingL = getBuildingAtPosition(city, x-1, y  );
-				Building *buildingR = getBuildingAtPosition(city, x+1, y  );
-
-				bool linkU = buildingU && getBuildingDef(buildingU->typeID)->isPath;
-				bool linkD = buildingD && getBuildingDef(buildingD->typeID)->isPath;
-				bool linkL = buildingL && getBuildingDef(buildingL->typeID)->isPath;
-				bool linkR = buildingR && getBuildingDef(buildingR->typeID)->isPath;
+				bool linkU = doesTileHaveTransport(city, x,   y-1, def->transportTypes);
+				bool linkD = doesTileHaveTransport(city, x,   y+1, def->transportTypes);
+				bool linkL = doesTileHaveTransport(city, x-1, y,   def->transportTypes);
+				bool linkR = doesTileHaveTransport(city, x+1, y,   def->transportTypes);
 
 				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;

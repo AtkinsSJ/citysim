@@ -70,6 +70,7 @@ struct Settings     *settings;
 #include "power.h"
 #include "terrain.h"
 #include "zone.h"
+#include "transport.h"
 #include "city.h"
 #include "game.h"
 
@@ -118,6 +119,7 @@ AppState globalAppState;
 #include "sector.cpp"
 #include "city.cpp"
 #include "zone.cpp"
+#include "transport.cpp"
 #include "about.cpp"
 #include "game_mainmenu.cpp"
 #include "credits.cpp"

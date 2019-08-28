@@ -1,4 +1,5 @@
 
+#if 0
 inline void setPathGroup(City *city, s32 x, s32 y, s32 value)
 {
 	setTile(city, city->pathLayer.tilePathGroup, x, y, value);
@@ -183,11 +184,6 @@ struct PathingNode
 	PathingNode *next, *prev;
 };
 
-inline s32 tileIndex(City *city, s32 x, s32 y)
-{
-	return (y * city->width) + x;
-}
-
 void _addPathNodeToQueue(City *city, PathingNode *nodes, V2I pos, PathingNode *parentNode, PathingNode **openQueue, Rect2I target)
 {
 	if (isPathable(city, pos.x, pos.y))
@@ -362,3 +358,4 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from)
 
 	return result;
 }
+#endif

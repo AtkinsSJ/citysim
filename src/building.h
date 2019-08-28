@@ -47,7 +47,8 @@ struct BuildingDef
 	s32 residents;
 	s32 jobs;
 	
-	bool isPath;
+	u8 transportTypes;
+
 	bool carriesPower;
 	s32 power; // Positive for production, negative for consumption
 };
