@@ -312,6 +312,7 @@ Rect2I expand(Rect2I rect, s32 radius);
 Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
 Rect2I intersect(Rect2I a, Rect2I b);
 Rect2I intersectRelative(Rect2I outer, Rect2I inner);
+Rect2I unionOf(Rect2I a, Rect2I b);
 
 V2I centreOf(Rect2I rect);
 s32 areaOf(Rect2I rect);

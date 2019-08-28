@@ -3,6 +3,8 @@
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena)
 {
 	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, city->width * city->height);
+	layer->isDirty = false;
+	layer->dirtyRect = irectXYWH(0,0,0,0);
 }
 
 void updateTransportLayer(City *city, TransportLayer *layer)
@@ -19,9 +21,9 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		// So, I think #2 is the better option, but I should test that later if it becomes expensive performance-wise.
 		// - Sam, 28/08/2019
 
-		for (s32 y = 0; y < city->height; y++)
+		for (s32 y = layer->dirtyRect.y; y < layer->dirtyRect.y + layer->dirtyRect.h; y++)
 		{
-			for (s32 x = 0; x < city->width; x++)
+			for (s32 x = layer->dirtyRect.x; x < layer->dirtyRect.x + layer->dirtyRect.w; x++)
 			{
 				Building *building = getBuildingAt(city, x, y);
 				if (building != null)
@@ -42,9 +44,18 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 	}
 }
 
-void markTransportLayerDirty(TransportLayer *layer, Rect2I /*bounds*/)
+void markTransportLayerDirty(TransportLayer *layer, Rect2I bounds)
 {
-	layer->isDirty = true; // TODO: Replace with a proper local recalculation
+	if (layer->isDirty)
+	{
+		// TODO: Probably more optimal to store a list of dirty rects rather than doing this?
+		layer->dirtyRect = unionOf(layer->dirtyRect, bounds);
+	}
+	else
+	{
+		layer->dirtyRect = bounds;
+		layer->isDirty = true;
+	}
 }
 
 bool doesTileHaveTransport(City *city, s32 x, s32 y, u8 transportTypes)

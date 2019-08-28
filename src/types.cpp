@@ -756,6 +756,16 @@ inline Rect2I intersectRelative(Rect2I outer, Rect2I inner)
 	return result;
 }
 
+inline Rect2I unionOf(Rect2I a, Rect2I b)
+{
+	s32 minX = min(a.x, b.x);
+	s32 minY = min(a.y, b.y);
+	s32 maxX = max(a.x+a.w-1, b.x+b.w-1);
+	s32 maxY = max(a.y+a.h-1, b.y+b.h-1);
+
+	return irectMinMax(minX, minY, maxX, maxY);
+}
+
 inline V2I centreOf(Rect2I rect)
 {
 	return v2i(rect.x + rect.w/2, rect.y + rect.h/2);
