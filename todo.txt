@@ -17,9 +17,6 @@ Notes for searching:
 
 Add newline support to .text files!
 
-Actually implement "dirtyRect" stuff in Layers.
-	First one just sets the rect, later calls do a union probably? Keeping a list of rectangles might be faster but would require work to not calculate any tiles multiple times. Actually, multiple-counting is probably still less work than doing a union and counting a (potentially very large) number of tiles that haven't changed.
-
 BuildingRef thing.
 
 SECTORS:

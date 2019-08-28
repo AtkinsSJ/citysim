@@ -191,7 +191,7 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	return true;
 }
 
-void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
+void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAreasDirty)
 {
 	DEBUG_FUNCTION();
 
@@ -249,14 +249,10 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	updateBuildingTexture(city, building, def);
 	updateAdjacentBuildingTextures(city, footprint);
 
-	if (needToRecalcTransport)
+	if (markAreasDirty)
 	{
-		markTransportLayerDirty(&city->transportLayer, footprint);
-	}
-
-	if (needToRecalcPower)
-	{
-		markPowerLayerDirty(&city->powerLayer, footprint);
+		if (needToRecalcTransport)  markTransportLayerDirty(&city->transportLayer, footprint);
+		if (needToRecalcPower)      markPowerLayerDirty(&city->powerLayer, footprint);
 	}
 }
 
@@ -290,10 +286,16 @@ void placeBuildingRect(City *city, BuildingDef *def, Rect2I area)
 		{
 			if (canPlaceBuilding(city, def, area.x + x, area.y + y))
 			{
-				placeBuilding(city, def, area.x + x, area.y + y);
+				placeBuilding(city, def, area.x + x, area.y + y, false);
 			}
 		}
 	}
+
+	bool needToRecalcTransport = (def->transportTypes != 0);
+	bool needToRecalcPower = def->carriesPower;
+
+	if (needToRecalcTransport)  markTransportLayerDirty(&city->transportLayer, area);
+	if (needToRecalcPower)      markPowerLayerDirty(&city->powerLayer, area);
 }
 
 s32 calculateDemolitionCost(City *city, Rect2I area)
