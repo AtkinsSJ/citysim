@@ -8,8 +8,7 @@ enum TransportType
 
 struct TransportLayer
 {
-	bool isDirty;
-	Rect2I dirtyRect;
+	DirtyRects dirtyRects;
 	
 	u8 *tileTransportTypes;
 

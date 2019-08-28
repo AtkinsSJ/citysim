@@ -1,0 +1,55 @@
+#pragma once
+
+void initDirtyRects(DirtyRects *dirtyRects, MemoryArena *arena)
+{
+	initChunkedArray(&dirtyRects->rects, arena, 32);
+}
+
+void markRectAsDirty(DirtyRects *dirtyRects, Rect2I bounds)
+{
+	bool added = false;
+
+	// Check to see if this rectangle is contained by an existing dirty rect
+	for (auto it = iterate(&dirtyRects->rects);
+		!it.isDone;
+		next(&it))
+	{
+		Rect2I *existingRect = get(it);
+
+		if (contains(*existingRect, bounds))
+		{
+			added = true;
+			break;
+		}
+	}
+
+	// Remove any existing rects that are inside our new one
+	if (!added)
+	{
+		for (auto it = iterateBackwards(&dirtyRects->rects);
+			!it.isDone;
+			next(&it))
+		{
+			Rect2I existingRect = getValue(it);
+			if (contains(bounds, existingRect))
+			{
+				removeIndex(&dirtyRects->rects, getIndex(it), false);
+			}
+		}
+	}
+
+	if (!added)
+	{
+		append(&dirtyRects->rects, bounds);
+	}
+}
+
+void clearDirtyRects(DirtyRects *dirtyRects)
+{
+	clear(&dirtyRects->rects);
+}
+
+inline bool isDirty(DirtyRects *dirtyRects)
+{
+	return dirtyRects->rects.count > 0;
+}

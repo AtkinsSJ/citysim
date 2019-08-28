@@ -3,13 +3,13 @@
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena)
 {
 	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, city->width * city->height);
-	layer->isDirty = false;
-	layer->dirtyRect = irectXYWH(0,0,0,0);
+
+	initDirtyRects(&layer->dirtyRects, gameArena);
 }
 
 void updateTransportLayer(City *city, TransportLayer *layer)
 {
-	if (layer->isDirty)
+	if (isDirty(&layer->dirtyRects))
 	{
 		// Calculate transport types on each tile
 		// So, I have two ideas about this:
@@ -21,41 +21,41 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		// So, I think #2 is the better option, but I should test that later if it becomes expensive performance-wise.
 		// - Sam, 28/08/2019
 
-		for (s32 y = layer->dirtyRect.y; y < layer->dirtyRect.y + layer->dirtyRect.h; y++)
+		for (auto it = iterate(&layer->dirtyRects.rects);
+			!it.isDone;
+			next(&it))
 		{
-			for (s32 x = layer->dirtyRect.x; x < layer->dirtyRect.x + layer->dirtyRect.w; x++)
+			Rect2I dirtyRect = getValue(it);
+
+			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
 			{
-				Building *building = getBuildingAt(city, x, y);
-				if (building != null)
+				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
 				{
-					BuildingDef *def = getBuildingDef(building->typeID);
-					setTile<u8>(city, layer->tileTransportTypes, x, y, def->transportTypes);
-				}
-				else
-				{
-					setTile<u8>(city, layer->tileTransportTypes, x, y, 0);
+					Building *building = getBuildingAt(city, x, y);
+					if (building != null)
+					{
+						BuildingDef *def = getBuildingDef(building->typeID);
+						setTile<u8>(city, layer->tileTransportTypes, x, y, def->transportTypes);
+					}
+					else
+					{
+						setTile<u8>(city, layer->tileTransportTypes, x, y, 0);
+					}
 				}
 			}
 		}
 
+		
+
 		// TODO: transport distance recalculation
 
-		layer->isDirty = false;
+		clearDirtyRects(&layer->dirtyRects);
 	}
 }
 
 void markTransportLayerDirty(TransportLayer *layer, Rect2I bounds)
 {
-	if (layer->isDirty)
-	{
-		// TODO: Probably more optimal to store a list of dirty rects rather than doing this?
-		layer->dirtyRect = unionOf(layer->dirtyRect, bounds);
-	}
-	else
-	{
-		layer->dirtyRect = bounds;
-		layer->isDirty = true;
-	}
+	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
 bool doesTileHaveTransport(City *city, s32 x, s32 y, u8 transportTypes)
