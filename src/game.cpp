@@ -314,7 +314,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
 
 	// Building
-	Building *building = getBuildingAtPosition(city, tilePos.x, tilePos.y);
+	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
 	if (building != null)
 	{
 		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, tilePos.x, tilePos.y);

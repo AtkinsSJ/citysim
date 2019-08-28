@@ -17,10 +17,11 @@ struct TransportLayer
 };
 
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena);
-void updateTransportLayer(TransportLayer *layer, City *city);
+void updateTransportLayer(City *city, TransportLayer *layer);
 void markTransportLayerDirty(TransportLayer *layer, Rect2I bounds);
 
 void addTransportToTile(City *city, s32 x, s32 y, u8 transportTypes);
+void removeAllTransportFromTile(City *city, s32 x, s32 y);
 bool doesTileHaveTransport(City *city, s32 x, s32 y, u8 transportTypes);
 s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck);
 

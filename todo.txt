@@ -11,10 +11,16 @@ Notes for searching:
 	@Size - Thing could use less memory
 	@Copypasta - Copy-pasted code, should probably be factored together
 	@Cleanup - Stuff that needs investigating/organising, when it's convenient
+	@Hack - Hacks
 
 ------------------------------------------------
 
 Add newline support to .text files!
+
+Actually implement "dirtyRect" stuff in Layers.
+	First one just sets the rect, later calls do a union probably? Keeping a list of rectangles might be faster but would require work to not calculate any tiles multiple times. Actually, multiple-counting is probably still less work than doing a union and counting a (potentially very large) number of tiles that haven't changed.
+
+BuildingRef thing.
 
 SECTORS:
 - After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)

@@ -84,7 +84,7 @@ struct Building
 
 // NB: We don't use this yet, but the idea is, if someone needs a pointer to a building
 // across multiple frames, use one of these references. The position lets you look-up
-// the building via getBuildingAtPosition(), and the buildingID lets you check that the
+// the building via getBuildingAt(), and the buildingID lets you check that the
 // found building is indeed the one you were after.
 // You'd then do something like this:
 //     Building *theBuilding = getBuilding(city, buildingRef);

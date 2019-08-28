@@ -65,8 +65,8 @@ void setTile(City *city, T *tiles, s32 x, s32 y, T value);
 bool canAfford(City *city, s32 cost);
 void spend(City *city, s32 cost);
 
-bool buildingExistsAtPosition(City *city, s32 x, s32 y);
-Building* getBuildingAtPosition(City *city, s32 x, s32 y);
+bool buildingExistsAt(City *city, s32 x, s32 y);
+Building* getBuildingAt(City *city, s32 x, s32 y);
 // Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
 // each building is only listed once. No guarantees are made about the order.
 enum BuildingQueryFlags

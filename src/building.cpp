@@ -452,10 +452,10 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 
 			case DataLayer_Power:
 			{
-				Building *buildingU = getBuildingAtPosition(city, x,   y-1);
-				Building *buildingD = getBuildingAtPosition(city, x,   y+1);
-				Building *buildingL = getBuildingAtPosition(city, x-1, y  );
-				Building *buildingR = getBuildingAtPosition(city, x+1, y  );
+				Building *buildingU = getBuildingAt(city, x,   y-1);
+				Building *buildingD = getBuildingAt(city, x,   y+1);
+				Building *buildingL = getBuildingAt(city, x-1, y  );
+				Building *buildingR = getBuildingAt(city, x+1, y  );
 
 				bool linkU = buildingU && getBuildingDef(buildingU->typeID)->carriesPower;
 				bool linkD = buildingD && getBuildingDef(buildingD->typeID)->carriesPower;
@@ -481,14 +481,14 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 		y < footprint.y + footprint.h;
 		y++)
 	{
-		Building *buildingL = getBuildingAtPosition(city, footprint.x - 1, y);
+		Building *buildingL = getBuildingAt(city, footprint.x - 1, y);
 		if (buildingL)
 		{
 			BuildingDef *defU = getBuildingDef(buildingL->typeID);
 			if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingL, defU);
 		}
 
-		Building *buildingR = getBuildingAtPosition(city, footprint.x + footprint.w, y);
+		Building *buildingR = getBuildingAt(city, footprint.x + footprint.w, y);
 		if (buildingR)
 		{
 			BuildingDef *defD = getBuildingDef(buildingR->typeID);
@@ -500,8 +500,8 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 		x < footprint.x + footprint.w;
 		x++)
 	{
-		Building *buildingU = getBuildingAtPosition(city, x, footprint.y - 1);
-		Building *buildingD = getBuildingAtPosition(city, x, footprint.y + footprint.h);
+		Building *buildingU = getBuildingAt(city, x, footprint.y - 1);
+		Building *buildingD = getBuildingAt(city, x, footprint.y + footprint.h);
 		if (buildingU)
 		{
 			BuildingDef *defL = getBuildingDef(buildingU->typeID);

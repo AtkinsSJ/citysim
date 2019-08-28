@@ -234,10 +234,10 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 			}
 			else
 			{
-				Building *building = getBuildingAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);
+				Building *building = getBuildingAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
 				if (building != null && getBuildingDef(building->typeID)->carriesPower)
 				{
-					// Set the building's whole area, so we only do 1 getBuildingAtPosition() lookup per building
+					// Set the building's whole area, so we only do 1 getBuildingAt() lookup per building
 					setRectPowerGroupUnknown(sector, building->footprint);
 				}
 			}

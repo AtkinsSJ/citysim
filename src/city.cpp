@@ -173,7 +173,7 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 				return false;
 			}
 
-			Building *buildingAtPos = getBuildingAtPosition(city, x, y);
+			Building *buildingAtPos = getBuildingAt(city, x, y);
 			if (buildingAtPos != null)
 			{
 				// Check if we can combine this with the building that's already there
@@ -200,7 +200,7 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	bool needToRecalcTransport = (def->transportTypes != 0);
 	bool needToRecalcPower = def->carriesPower;
 
-	Building *building = getBuildingAtPosition(city, left, top);
+	Building *building = getBuildingAt(city, left, top);
 	if (building != null)
 	{
 		// Do a quick replace! We already established in canPlaceBuilding() that we match.
@@ -223,13 +223,19 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 		building = addBuilding(city, def, footprint);
 	}
 
-
 	// Tiles
 	for (s32 y=0; y<footprint.h; y++)
 	{
 		for (s32 x=0; x<footprint.w; x++)
 		{
 			// Data layer updates
+			// This is a @Hack! If we don't do this, then the building texture linking doesn't work,
+			// because it reads the transport info for the tile instead of looking up the tile's Building.
+			// The TransportLayer overwrites this later when it does a refresh of the area, but that will
+			// happen at an unknown point in the future after this function ends.
+			// So, we stuff temporary data in here so we can read it in ~10 lines' time!
+			// IDK, the texture-linking stuff really needs a rethink.
+			// - Sam, 28/08/2019
 			addTransportToTile(city, footprint.x+x, footprint.y+y, def->transportTypes);
 		}
 	}
@@ -315,18 +321,6 @@ void demolishRect(City *city, Rect2I area)
 
 	// Building demolition
 	{
-		// NB: This is a little hacky... inside this loop, we remove Buildings from their Sectors.
-		// Each time this happens, the buildings array in that sector gets re-ordered. This would
-		// mess everything up, BUT we iterate the array in reverse, relying on the (current) fact
-		// that findBuildingsOverlappingArea() returns each sector's buildings in the same order
-		// they exist in that sector's buildings array. Meaning, deleting a building only affects
-		// the ones AFTER it (which we've already handled!)
-		// That's an implementation detail, so this could break pretty badly at some point, but
-		// I think it's really unlikely that will happen?
-		// Famous last words...
-		// 
-		// - Sam, 18/06/2019
-		//
 		ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
 		for (auto it = iterate(&buildingsToDemolish, buildingsToDemolish.count-1, false, true);
 			!it.isDone;
@@ -356,6 +350,7 @@ void demolishRect(City *city, Rect2I area)
 					x++)
 				{
 					setTile(city, city->tileBuildingIndex, x, y, 0);
+					removeAllTransportFromTile(city, x, y); // We have to do this for building textures...
 				}
 			}
 		}
@@ -385,7 +380,7 @@ void demolishRect(City *city, Rect2I area)
 						x < sector->bounds.x + sector->bounds.w;
 						x++)
 					{
-						Building *b = getBuildingAtPosition(city, x, y);
+						Building *b = getBuildingAt(city, x, y);
 						if (b != null)
 						{
 							if (b->footprint.x == x && b->footprint.y == y)
@@ -533,14 +528,14 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 	endRectsGroup(group);
 }
 
-inline bool buildingExistsAtPosition(City *city, s32 x, s32 y)
+inline bool buildingExistsAt(City *city, s32 x, s32 y)
 {
 	bool result = getTileValue(city, city->tileBuildingIndex, x, y) > 0;
 
 	return result;
 }
 
-Building* getBuildingAtPosition(City *city, s32 x, s32 y)
+Building* getBuildingAt(City *city, s32 x, s32 y)
 {
 	Building *result = null;
 

@@ -84,7 +84,7 @@ CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
 				canZone = false;
 			}
 			// Tile must be empty
-			else if (buildingExistsAtPosition(city, x, y))
+			else if (buildingExistsAt(city, x, y))
 			{
 				canZone = false;
 			}
@@ -168,7 +168,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 			// Terrain must be buildable
 			// @Speed: URGH this terrain lookup for every tile is nasty!
 			&& (get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)
-			&& (!buildingExistsAtPosition(city, x, y)))
+			&& (!buildingExistsAt(city, x, y)))
 			{
 				setTile(city, zoneLayer->tileZone, x, y, zoneType);
 			}
@@ -213,7 +213,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 				ZoneType zone = getZoneAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
 				if (zone == Zone_None) continue;
 
-				bool isFilled = buildingExistsAtPosition(city, sector->bounds.x + relX, sector->bounds.y + relY);
+				bool isFilled = buildingExistsAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
 				switch (zone)
 				{
 					case Zone_Residential:
@@ -303,7 +303,7 @@ bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 	{
 		isAcceptable = false;
 	}
-	else if (buildingExistsAtPosition(city, x, y))
+	else if (buildingExistsAt(city, x, y))
 	{
 		isAcceptable = false;
 	}

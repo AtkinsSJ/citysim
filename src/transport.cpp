@@ -5,7 +5,7 @@ void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameAren
 	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, city->width * city->height);
 }
 
-void updateTransportLayer(TransportLayer *layer, City *city)
+void updateTransportLayer(City *city, TransportLayer *layer)
 {
 	if (layer->isDirty)
 	{
@@ -19,7 +19,22 @@ void updateTransportLayer(TransportLayer *layer, City *city)
 		// So, I think #2 is the better option, but I should test that later if it becomes expensive performance-wise.
 		// - Sam, 28/08/2019
 
-
+		for (s32 y = 0; y < city->height; y++)
+		{
+			for (s32 x = 0; x < city->width; x++)
+			{
+				Building *building = getBuildingAt(city, x, y);
+				if (building != null)
+				{
+					BuildingDef *def = getBuildingDef(building->typeID);
+					setTile<u8>(city, layer->tileTransportTypes, x, y, def->transportTypes);
+				}
+				else
+				{
+					setTile<u8>(city, layer->tileTransportTypes, x, y, 0);
+				}
+			}
+		}
 
 		// TODO: transport distance recalculation
 
@@ -43,6 +58,18 @@ bool doesTileHaveTransport(City *city, s32 x, s32 y, u8 transportTypes)
 	}
 
 	return result;
+}
+
+void addTransportToTile(City *city, s32 x, s32 y, u8 transportTypes)
+{
+	u8 oldValue = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
+	u8 newValue = oldValue | transportTypes;
+	setTile(city, city->transportLayer.tileTransportTypes, x, y, newValue);
+}
+
+void removeAllTransportFromTile(City *city, s32 x, s32 y)
+{
+	setTile(city, city->transportLayer.tileTransportTypes, x, y, (u8)0);
 }
 
 /**
