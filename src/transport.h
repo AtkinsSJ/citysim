@@ -31,6 +31,3 @@ void addTransportToTile(City *city, s32 x, s32 y, u8 transportTypes);
 void removeAllTransportFromTile(City *city, s32 x, s32 y);
 bool doesTileHaveTransport(City *city, s32 x, s32 y, u8 transportTypes);
 s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type);
-
-// Deprecated
-s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck);

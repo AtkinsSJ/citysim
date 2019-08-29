@@ -151,77 +151,7 @@ void removeAllTransportFromTile(City *city, s32 x, s32 y)
 	setTile(city, city->transportLayer.tileTransportTypes, x, y, (u8)0);
 }
 
-s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
+inline s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
 {
 	return getTileValue(city, city->transportLayer.tileTransportDistance[type], x, y);
-}
-
-/**
- * Distance to road, counting diagonal distances as 1.
- * If nothing is found within the maxDistanceToCheck, returns a *really big number*.
- * If the tile itself is a road, just returns 0 as you'd expect.
- * DEPRECATED
- */
-s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
-{
-	DEBUG_FUNCTION();
-	
-	s32 result = s32Max;
-
-	if (doesTileHaveTransport(city, x, y, TransportBits_Road))
-	{
-		result = 0;
-	}
-	else
-	{
-		bool done = false;
-
-		for (s32 distance = 1;
-			 !done && distance <= maxDistanceToCheck;
-			 distance++)
-		{
-			s32 leftX   = x - distance;
-			s32 rightX  = x + distance;
-			s32 bottomY = y - distance;
-			s32 topY    = y + distance;
-
-			for (s32 px = leftX; px <= rightX; px++)
-			{
-				if (doesTileHaveTransport(city, px, bottomY, TransportBits_Road))
-				{
-					result = distance;
-					done = true;
-					break;
-				}
-
-				if (doesTileHaveTransport(city, px, topY, TransportBits_Road))
-				{
-					result = distance;
-					done = true;
-					break;
-				}
-			}
-
-			if (done) break;
-
-			for (s32 py = bottomY; py <= topY; py++)
-			{
-				if (doesTileHaveTransport(city, leftX, py, TransportBits_Road))
-				{
-					result = distance;
-					done = true;
-					break;
-				}
-
-				if (doesTileHaveTransport(city, rightX, py, TransportBits_Road))
-				{
-					result = distance;
-					done = true;
-					break;
-				}
-			}
-		}
-	}
-
-	return result;
 }

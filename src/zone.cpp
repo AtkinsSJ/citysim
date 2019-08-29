@@ -307,7 +307,7 @@ bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 	{
 		isAcceptable = false;
 	}
-	else if (calculateDistanceToRoad(city, x, y, def.maximumDistanceToRoad) > def.maximumDistanceToRoad)
+	else if (getDistanceToTransport(city, x, y, Transport_Road) > def.maximumDistanceToRoad)
 	{
 		isAcceptable = false;
 	}
