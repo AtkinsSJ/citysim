@@ -2,8 +2,15 @@
 
 enum TransportType
 {
-	Transport_Road = 1 << 0,
-	Transport_Rail = 1 << 1,
+	Transport_Road,
+	Transport_Rail,
+	TransportTypeCount
+};
+
+enum TransportTypeBits
+{
+	TransportBits_Road = 1 << Transport_Road,
+	TransportBits_Rail = 1 << Transport_Rail,
 };
 
 struct TransportLayer
@@ -12,7 +19,8 @@ struct TransportLayer
 	
 	u8 *tileTransportTypes;
 
-	// TODO: Cache the distance of each tile from a road/rail etc. with a limit of eg 8 tiles, so anything > 8 is 255, to make calculations faster and affect a limited area.
+	u8 transportMaxDistance;
+	u8 *tileTransportDistance[TransportTypeCount];
 };
 
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena);

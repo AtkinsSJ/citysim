@@ -97,8 +97,7 @@ void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState)
 	{
 #if BUILD_DEBUG
 		// Clear memory so we spot bugs in keeping pointers to deallocated memory.
-		memset(arena->currentBlock->memory + resetState.used, 0xcd,
-			   arena->currentBlock->used - resetState.used);
+		fillMemory<u8>(arena->currentBlock->memory + resetState.used, 0xcd, arena->currentBlock->used - resetState.used);
 #endif
 		arena->currentBlock->used = resetState.used;
 	}
@@ -151,6 +150,31 @@ template<typename T>
 inline void copyMemory(T *source, T *dest, smm length)
 {
 	memcpy(dest, source, length * sizeof(T));
+}
+
+template<s8>
+inline void fillMemory(s8 *memory, s8 value, smm length)
+{
+	memset(memory, value, length * sizeof(s8));
+}
+template<u8>
+inline void fillMemory(u8 *memory, u8 value, smm length)
+{
+	memset(memory, value, length * sizeof(u8));
+}
+
+template<typename T>
+inline void fillMemory(T *memory, T value, smm length)
+{
+	T *currentElement = memory;
+	smm remainingBytes = length;
+
+	while (remainingBytes > 0)
+	{
+		smm toCopy = min<smm>(remainingBytes, sizeof(T));
+		memcpy(currentElement, &value, toCopy);
+		remainingBytes -= toCopy;
+	}
 }
 
 template<typename T>

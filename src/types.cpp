@@ -63,9 +63,45 @@ inline T min(T a, T b)
 }
 
 template<typename T>
+T min(std::initializer_list<T> values)
+{
+	ASSERT(values.size() > 0);
+
+	auto it = values.begin();
+	T result = *it;
+	it++;
+
+	while (it != values.end())
+	{
+		result = min(result, *it);
+		it++;
+	}
+
+	return result;
+}
+
+template<typename T>
 inline T max(T a, T b)
 {
 	return (a > b) ? a : b;
+}
+
+template<typename T>
+T max(std::initializer_list<T> values)
+{
+	ASSERT(values.size() > 0);
+
+	auto it = values.begin();
+	T result = *it;
+	it++;
+
+	while (it != values.end())
+	{
+		result = max(result, *it);
+		it++;
+	}
+
+	return result;
 }
 
 template<typename T>

@@ -60,6 +60,8 @@ T *getTile(City *city, T *tiles, s32 x, s32 y);
 template<typename T>
 inline T getTileValue(City *city, T *tiles, s32 x, s32 y);
 template<typename T>
+T getTileValueIfExists(City *city, T *tiles, s32 x, s32 y, T defaultValue);
+template<typename T>
 void setTile(City *city, T *tiles, s32 x, s32 y, T value);
 
 bool canAfford(City *city, s32 cost);

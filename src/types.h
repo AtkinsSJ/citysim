@@ -363,7 +363,13 @@ template<typename T>
 T min(T a, T b);
 
 template<typename T>
+T min(std::initializer_list<T> values);
+
+template<typename T>
 T max(T a, T b);
+
+template<typename T>
+T max(std::initializer_list<T> values);
 
 template<typename T>
 T wrap(T value, T max);

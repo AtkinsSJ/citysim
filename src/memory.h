@@ -109,4 +109,7 @@ template<typename T>
 void copyMemory(T *source, T *dest, smm length);
 
 template<typename T>
+void fillMemory(T *memory, T value, smm length);
+
+template<typename T>
 bool isMemoryEqual(T *a, T *b, smm length=1);

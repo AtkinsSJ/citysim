@@ -195,7 +195,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 		clear(&powerGroup->sectorBoundaries);
 	}
 	clear(&sector->powerGroups);
-	memset(sector->tilePowerGroup, 0, sizeof(sector->tilePowerGroup[0]) * areaOf(sector->bounds));
+	fillMemory<u8>(sector->tilePowerGroup, 0, sizeof(sector->tilePowerGroup[0]) * areaOf(sector->bounds));
 
 	// Step 1: Set all power-carrying tiles to -1 (everything was set to 0 in the above memset())
 

@@ -222,11 +222,11 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 						if (equals(transportName, "road"))
 						{
-							transportTypes |= Transport_Road;
+							transportTypes |= TransportBits_Road;
 						}
 						else if (equals(transportName, "rail"))
 						{
-							transportTypes |= Transport_Rail;
+							transportTypes |= TransportBits_Rail;
 						}
 						else
 						{

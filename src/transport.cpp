@@ -2,13 +2,24 @@
 
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena)
 {
-	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, city->width * city->height);
-
 	initDirtyRects(&layer->dirtyRects, gameArena);
+
+	s32 cityArea = city->width * city->height;
+	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, cityArea);
+
+	layer->transportMaxDistance = 8;
+
+	for (s32 type = 0; type < TransportTypeCount; type++)
+	{
+		layer->tileTransportDistance[type] = allocateMultiple<u8>(gameArena, cityArea);
+		fillMemory<u8>(layer->tileTransportDistance[type], 255, cityArea);
+	}
 }
 
 void updateTransportLayer(City *city, TransportLayer *layer)
 {
+	DEBUG_FUNCTION_T(DCDT_Simulation);
+
 	if (isDirty(&layer->dirtyRects))
 	{
 		// Calculate transport types on each tile
@@ -27,6 +38,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		{
 			Rect2I dirtyRect = getValue(it);
 
+			// Transport types on tile, based on what buildings are present
 			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
 			{
 				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
@@ -43,11 +55,67 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 					}
 				}
 			}
+
+			// Clear the surrounding "distance to road" stuff from the rectangle
+			Rect2I distanceChangedRect = expand(dirtyRect, layer->transportMaxDistance);
+			*get(it) = distanceChangedRect; // NB: We do this here so we don't have to do expand() over and over again below.
+
+			for (s32 y = distanceChangedRect.y; y < distanceChangedRect.y + distanceChangedRect.h; y++)
+			{
+				for (s32 x = distanceChangedRect.x; x < distanceChangedRect.x + distanceChangedRect.w; x++)
+				{
+					for (s32 type = 0; type < TransportTypeCount; type++)
+					{
+						u8 distance = doesTileHaveTransport(city, x, y, 1 << type) ? 0 : 255;
+						setTile<u8>(city, layer->tileTransportDistance[type], x, y, distance);
+					}
+				}
+			}
 		}
 
-		
+		// Transport distance recalculation
+		// The simplest possible algorithm is, just spread the 0s out that we marked above.
+		// (If a tile is not 0, set it to the min() of its 8 neighbours, plus 1.)
+		// We have to iterate through the area `transportMaxDistance` times, but it should be fast enough probably.
+		for (s32 iteration = 0; iteration < layer->transportMaxDistance; iteration++)
+		{
+			for (auto it = iterate(&layer->dirtyRects.rects);
+				!it.isDone;
+				next(&it))
+			{
+				// NB: The rects are already expanded, see above.
+				Rect2I dirtyRect = getValue(it);
 
-		// TODO: transport distance recalculation
+				for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
+				{
+					for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
+					{
+						for (s32 type = 0; type < TransportTypeCount; type++)
+						{
+							if (getTile(city, layer->tileTransportDistance[type], x, y) != 0)
+							{
+								u8 minDistance = min({
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y-1, 255),
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y-1, 255),
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y-1, 255),
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y  , 255),
+									// getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y  , 255),
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y  , 255),
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y+1, 255),
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y+1, 255),
+									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y+1, 255),
+								});
+
+								if (minDistance < layer->transportMaxDistance)   minDistance++;
+								if (minDistance >= layer->transportMaxDistance)  minDistance = 255;
+
+								setTile<u8>(city, layer->tileTransportDistance[type], x, y, minDistance);
+							}
+						}
+					}
+				}
+			}
+		}
 
 		clearDirtyRects(&layer->dirtyRects);
 	}
@@ -94,7 +162,7 @@ s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 	
 	s32 result = s32Max;
 
-	if (doesTileHaveTransport(city, x, y, Transport_Road))
+	if (doesTileHaveTransport(city, x, y, TransportBits_Road))
 	{
 		result = 0;
 	}
@@ -113,14 +181,14 @@ s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 
 			for (s32 px = leftX; px <= rightX; px++)
 			{
-				if (doesTileHaveTransport(city, px, bottomY, Transport_Road))
+				if (doesTileHaveTransport(city, px, bottomY, TransportBits_Road))
 				{
 					result = distance;
 					done = true;
 					break;
 				}
 
-				if (doesTileHaveTransport(city, px, topY, Transport_Road))
+				if (doesTileHaveTransport(city, px, topY, TransportBits_Road))
 				{
 					result = distance;
 					done = true;
@@ -132,14 +200,14 @@ s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 
 			for (s32 py = bottomY; py <= topY; py++)
 			{
-				if (doesTileHaveTransport(city, leftX, py, Transport_Road))
+				if (doesTileHaveTransport(city, leftX, py, TransportBits_Road))
 				{
 					result = distance;
 					done = true;
 					break;
 				}
 
-				if (doesTileHaveTransport(city, rightX, py, Transport_Road))
+				if (doesTileHaveTransport(city, rightX, py, TransportBits_Road))
 				{
 					result = distance;
 					done = true;

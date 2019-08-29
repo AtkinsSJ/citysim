@@ -126,6 +126,19 @@ inline T getTileValue(City *city, T *tiles, s32 x, s32 y)
 }
 
 template<typename T>
+inline T getTileValueIfExists(City *city, T *tiles, s32 x, s32 y, T defaultValue)
+{
+	if (tileExists(city, x, y))
+	{
+		return getTileValue(city, tiles, x, y);
+	}
+	else
+	{
+		return defaultValue;
+	}
+}
+
+template<typename T>
 inline void setTile(City *city, T *tiles, s32 x, s32 y, T value)
 {
 	tiles[(y * city->width) + x] = value;
