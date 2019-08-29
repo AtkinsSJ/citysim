@@ -341,6 +341,12 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		}));
 	}
 
+	// Transport
+	for (s32 transportType = 0; transportType < TransportTypeCount; transportType++)
+	{
+		window_label(context, myprintf("Distance to transport #{0}: {1}", {formatInt(transportType), formatInt(getDistanceToTransport(city, tilePos.x, tilePos.y, (TransportType)transportType))}));
+	}
+
 	// Highlight
 	// Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when
 	// the uiwindow is closed. Maybe at some point we'll want that functionality for other reasons, but

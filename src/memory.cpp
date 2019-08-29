@@ -152,17 +152,6 @@ inline void copyMemory(T *source, T *dest, smm length)
 	memcpy(dest, source, length * sizeof(T));
 }
 
-template<s8>
-inline void fillMemory(s8 *memory, s8 value, smm length)
-{
-	memset(memory, value, length * sizeof(s8));
-}
-template<u8>
-inline void fillMemory(u8 *memory, u8 value, smm length)
-{
-	memset(memory, value, length * sizeof(u8));
-}
-
 template<typename T>
 inline void fillMemory(T *memory, T value, smm length)
 {
@@ -174,6 +163,7 @@ inline void fillMemory(T *memory, T value, smm length)
 		smm toCopy = min<smm>(remainingBytes, sizeof(T));
 		memcpy(currentElement, &value, toCopy);
 		remainingBytes -= toCopy;
+		currentElement++;
 	}
 }
 

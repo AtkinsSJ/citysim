@@ -111,5 +111,17 @@ void copyMemory(T *source, T *dest, smm length);
 template<typename T>
 void fillMemory(T *memory, T value, smm length);
 
+template<>
+inline void fillMemory<s8>(s8 *memory, s8 value, smm length)
+{
+	memset(memory, value, length);
+}
+
+template<>
+inline void fillMemory<u8>(u8 *memory, u8 value, smm length)
+{
+	memset(memory, value, length);
+}
+
 template<typename T>
 bool isMemoryEqual(T *a, T *b, smm length=1);

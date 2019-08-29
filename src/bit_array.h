@@ -8,6 +8,9 @@ struct BitArray
 	Array<u64> u64s;
 
 	bool operator[](u32 index);
+
+	// TODO: Could keep a record of the highest/lowest set/unset bit indices, rather than calculating them each time!
+	// Wouldn't even be that hard, just a min() or max() when a bit changes.
 };
 
 void initBitArray(BitArray *array, MemoryArena *arena, s32 size);

@@ -554,10 +554,13 @@ Building* getBuildingAt(City *city, s32 x, s32 y)
 {
 	Building *result = null;
 
-	u32 buildingID = getTileValue(city, city->tileBuildingIndex, x, y);
-	if (buildingID > 0)
+	if (tileExists(city, x, y))
 	{
-		result = get(&city->buildings, buildingID);
+		u32 buildingID = getTileValue(city, city->tileBuildingIndex, x, y);
+		if (buildingID > 0)
+		{
+			result = get(&city->buildings, buildingID);
+		}
 	}
 
 	return result;

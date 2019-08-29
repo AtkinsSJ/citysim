@@ -57,7 +57,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 			}
 
 			// Clear the surrounding "distance to road" stuff from the rectangle
-			Rect2I distanceChangedRect = expand(dirtyRect, layer->transportMaxDistance);
+			Rect2I distanceChangedRect = intersect(expand(dirtyRect, layer->transportMaxDistance), irectXYWH(0,0,city->width, city->height));
 			*get(it) = distanceChangedRect; // NB: We do this here so we don't have to do expand() over and over again below.
 
 			for (s32 y = distanceChangedRect.y; y < distanceChangedRect.y + distanceChangedRect.h; y++)
@@ -76,7 +76,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		// Transport distance recalculation
 		// The simplest possible algorithm is, just spread the 0s out that we marked above.
 		// (If a tile is not 0, set it to the min() of its 8 neighbours, plus 1.)
-		// We have to iterate through the area `transportMaxDistance` times, but it should be fast enough probably.
+		// We have to iterate through the area `transportMaxDistance+1` times, but it should be fast enough probably.
 		for (s32 iteration = 0; iteration < layer->transportMaxDistance; iteration++)
 		{
 			for (auto it = iterate(&layer->dirtyRects.rects);
@@ -92,22 +92,22 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 					{
 						for (s32 type = 0; type < TransportTypeCount; type++)
 						{
-							if (getTile(city, layer->tileTransportDistance[type], x, y) != 0)
+							if (getTileValue(city, layer->tileTransportDistance[type], x, y) != 0)
 							{
 								u8 minDistance = min({
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y-1, 255),
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y-1, 255),
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y-1, 255),
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y  , 255),
-									// getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y  , 255),
+								//	getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y  , 255),
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y  , 255),
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y+1, 255),
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y+1, 255),
 									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y+1, 255),
 								});
 
-								if (minDistance < layer->transportMaxDistance)   minDistance++;
-								if (minDistance >= layer->transportMaxDistance)  minDistance = 255;
+								if (minDistance != 255)  minDistance++;
+								if (minDistance > layer->transportMaxDistance)  minDistance = 255;
 
 								setTile<u8>(city, layer->tileTransportDistance[type], x, y, minDistance);
 							}
@@ -151,10 +151,16 @@ void removeAllTransportFromTile(City *city, s32 x, s32 y)
 	setTile(city, city->transportLayer.tileTransportTypes, x, y, (u8)0);
 }
 
+s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
+{
+	return getTileValue(city, city->transportLayer.tileTransportDistance[type], x, y);
+}
+
 /**
  * Distance to road, counting diagonal distances as 1.
  * If nothing is found within the maxDistanceToCheck, returns a *really big number*.
  * If the tile itself is a road, just returns 0 as you'd expect.
+ * DEPRECATED
  */
 s32 calculateDistanceToRoad(City *city, s32 x, s32 y, s32 maxDistanceToCheck)
 {
