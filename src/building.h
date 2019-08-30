@@ -109,8 +109,8 @@ BuildingDef *findBuildingDef(String name);
 // - Sam, 15/06/2019
 ChunkedArray<BuildingDef *> *getConstructibleBuildings();
 
-// NB: min/maxPopulation parameters are residents or jobs depending on zoneType
-BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minPopulation, s32 maxPopulation);
+template<typename Filter>
+BuildingDef *findRandomZoneBuilding(ZoneType zoneType, Random *random, Filter filter);
 
 s32 getMaxBuildingSize(ZoneType zoneType);
 

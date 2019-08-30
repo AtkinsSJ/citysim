@@ -452,7 +452,19 @@ void growSomeZoneBuildings(City *city)
 
 				// Pick a building def that fits the space and is not more than 10% more than the remaining demand
 				s32 maxPopulation = (s32) ((f32)remainingDemand * 1.1f);
-				BuildingDef *buildingDef = findGrowableBuildingDef(random, zoneType, zoneFootprint.size, 1, maxPopulation);
+				// BuildingDef *buildingDef = findGrowableBuildingDef(random, zoneType, zoneFootprint.size, 1, maxPopulation);
+				BuildingDef *buildingDef = findRandomZoneBuilding(zoneType, random, [&](BuildingDef *it) -> bool {
+					if ((it->width > zoneFootprint.w) || (it->height > zoneFootprint.h)) return false;
+
+					if (it->growsInZone == Zone_Residential)
+					{
+						return (it->residents > 0) && (it->residents <= maxPopulation);
+					}
+					else
+					{
+						return (it->jobs > 0) && (it->jobs <= maxPopulation);
+					}
+				});
 
 				if (buildingDef)
 				{

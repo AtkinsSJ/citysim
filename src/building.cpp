@@ -349,7 +349,8 @@ inline ChunkedArray<BuildingDef *> *getConstructibleBuildings()
 	return &buildingCatalogue.constructibleBuildings;
 }
 
-BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxSize, s32 minPopulation, s32 maxPopulation)
+template<typename Filter>
+BuildingDef *findRandomZoneBuilding(ZoneType zoneType, Random *random, Filter filter)
 {
 	DEBUG_FUNCTION();
 
@@ -378,24 +379,11 @@ BuildingDef *findGrowableBuildingDef(Random *random, ZoneType zoneType, V2I maxS
 	{
 		BuildingDef *def = getValue(it);
 
-		// Cap based on size
-		if (def->width > maxSize.x || def->height > maxSize.y) continue;
-
-		if (zoneType == Zone_Residential)
+		if (filter(def))
 		{
-			// Cap residents
-			if (def->residents < minPopulation) continue;
-			if (def->residents > maxPopulation) continue;
+			result = def;
+			break;
 		}
-		else
-		{
-			// Cap jobs
-			if (def->jobs < minPopulation) continue;
-			if (def->jobs > maxPopulation) continue;
-		}
-		
-		result = def;
-		break;
 	}
 
 	return result;
