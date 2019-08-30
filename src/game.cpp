@@ -574,6 +574,8 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 		updatePowerLayer(city, &city->powerLayer);
 		updateTransportLayer(city, &city->transportLayer);
 		updateZoneLayer(city, &city->zoneLayer);
+
+		updateSomeBuildings(city);
 	}
 
 

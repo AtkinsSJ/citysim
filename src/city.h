@@ -15,7 +15,7 @@ struct CitySector
 	Rect2I bounds;
 
 	// NB: A building is owned by a CitySector if its top-left corner tile is inside that CitySector.
-	ChunkedArray<Building *>   buildingsOwned;
+	ChunkedArray<Building *> ownedBuildings;
 };
 
 struct City
@@ -33,6 +33,7 @@ struct City
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
 	u32 highestBuildingID;
+	s32 nextBuildingSectorUpdateIndex;
 
 	SectorGrid<CitySector> sectors;
 
@@ -81,6 +82,7 @@ s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area);
 void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAreasDirty=true);
 void placeBuildingRect(City *city, BuildingDef *def, Rect2I area);
 void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I demolitionRect);
+void updateSomeBuildings(City *city);
 
 s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);

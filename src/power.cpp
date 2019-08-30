@@ -81,6 +81,25 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 	}
 }
 
+bool doesTileHavePowerNetwork(City *city, s32 x, s32 y)
+{
+	bool result = false;
+
+	if (tileExists(city, x, y))
+	{
+		PowerLayer *layer = &city->powerLayer;
+		PowerSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
+
+		s32 relX = x - sector->bounds.x;
+		s32 relY = y - sector->bounds.y;
+
+		u8 powerGroupIndex = getPowerGroupID(sector, relX, relY);
+		result = (powerGroupIndex != 0);
+	}
+
+	return result;
+}
+
 PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y)
 {
 	PowerNetwork *result = null;
@@ -208,7 +227,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 		Building *building = getValue(it);
 		BuildingDef *def = getBuildingDef(building->typeID);
 
-		if (def->carriesPower)
+		if (def->flags & Building_CarriesPower)
 		{
 			setRectPowerGroupUnknown(sector, building->footprint);
 		}
@@ -235,7 +254,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 			else
 			{
 				Building *building = getBuildingAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
-				if (building != null && getBuildingDef(building->typeID)->carriesPower)
+				if (building != null && (getBuildingDef(building->typeID)->flags & Building_CarriesPower))
 				{
 					// Set the building's whole area, so we only do 1 getBuildingAt() lookup per building
 					setRectPowerGroupUnknown(sector, building->footprint);

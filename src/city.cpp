@@ -21,7 +21,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++)
 	{
 		CitySector *sector = &city->sectors.sectors[sectorIndex];
-		initChunkedArray(&sector->buildingsOwned, &city->sectorBuildingsChunkPool);
+		initChunkedArray(&sector->ownedBuildings, &city->sectorBuildingsChunkPool);
 	}
 
 	initOccupancyArray(&city->buildings, gameArena, 1024);
@@ -46,7 +46,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	building->footprint = footprint;
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
-	append(&ownerSector->buildingsOwned, building);
+	append(&ownerSector->ownedBuildings, building);
 
 	// TODO: Properly calculate occupancy!
 	building->currentResidents = def->residents;
@@ -211,7 +211,7 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
 	bool needToRecalcTransport = (def->transportTypes != 0);
-	bool needToRecalcPower = def->carriesPower;
+	bool needToRecalcPower = (def->flags & Building_CarriesPower);
 
 	Building *building = getBuildingAt(city, left, top);
 	if (building != null)
@@ -224,7 +224,7 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 		def = getBuildingDef(def->buildOverResult);
 
 		needToRecalcTransport = (oldDef->transportTypes != def->transportTypes);
-		needToRecalcPower = (oldDef->carriesPower != def->carriesPower);
+		needToRecalcPower = ((oldDef->flags & Building_CarriesPower) != (def->flags & Building_CarriesPower));
 
 		city->zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
 	}
@@ -305,7 +305,7 @@ void placeBuildingRect(City *city, BuildingDef *def, Rect2I area)
 	}
 
 	bool needToRecalcTransport = (def->transportTypes != 0);
-	bool needToRecalcPower = def->carriesPower;
+	bool needToRecalcPower = (def->flags & Building_CarriesPower);
 
 	if (needToRecalcTransport)  markTransportLayerDirty(&city->transportLayer, area);
 	if (needToRecalcPower)      markPowerLayerDirty(&city->powerLayer, area);
@@ -384,8 +384,8 @@ void demolishRect(City *city, Rect2I area)
 			{
 				CitySector *sector = getSector(&city->sectors, sX, sY);
 				
-				// Rebuild the buildingsOwned array
-				clear(&sector->buildingsOwned);
+				// Rebuild the ownedBuildings array
+				clear(&sector->ownedBuildings);
 
 				for (s32 y = sector->bounds.y;
 					y < sector->bounds.y + sector->bounds.h;
@@ -400,7 +400,7 @@ void demolishRect(City *city, Rect2I area)
 						{
 							if (b->footprint.x == x && b->footprint.y == y)
 							{
-								append(&sector->buildingsOwned, b);
+								append(&sector->ownedBuildings, b);
 							}
 						}
 					}
@@ -444,7 +444,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 		{
 			CitySector *sector = getSector(&city->sectors, sX, sY);
 
-			for (auto it = iterate(&sector->buildingsOwned); !it.isDone; next(&it))
+			for (auto it = iterate(&sector->ownedBuildings); !it.isDone; next(&it))
 			{
 				Building *building = getValue(it);
 				if (overlaps(building->footprint, area))
@@ -642,4 +642,53 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 		buildingsRemaining--;
 	}
 	endRectsGroup(group);
+}
+
+// Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.
+void updateSomeBuildings(City *city)
+{
+	for (s32 i = 0; i < 8; i++)
+	{
+		CitySector *sector = &city->sectors[city->nextBuildingSectorUpdateIndex];
+
+		for (auto it = iterate(&sector->ownedBuildings); !it.isDone; next(&it))
+		{
+			Building *building = getValue(it);
+			BuildingDef *def = getBuildingDef(building->typeID);
+
+			// Check the building's needs are met
+
+
+			// Distance to road
+			if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone))
+			{
+				s32 distanceToRoad = s32Max;
+				// TODO: @Speed: We only actually need to check the boundary tiles, because they're guaranteed to be less than
+				// the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
+				// would work really. Anyway, can think about that later.
+				// - Sam, 30/08/2019
+				for (s32 y = building->footprint.y; y < building->footprint.y + building->footprint.h; y++)
+				{
+					for (s32 x = building->footprint.x; x < building->footprint.x + building->footprint.w; x++)
+					{
+						distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, Transport_Road));
+					}
+				}
+
+				if (def->growsInZone)
+				{
+					// Zoned buildings inherit their zone's max distance to road.
+
+				}
+				else
+				{
+					// Other buildings require contact 
+
+				}
+			}
+
+		}
+
+		city->nextBuildingSectorUpdateIndex = (city->nextBuildingSectorUpdateIndex + 1) % getSectorCount(&city->sectors);
+	}
 }

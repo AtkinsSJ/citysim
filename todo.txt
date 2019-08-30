@@ -21,6 +21,8 @@ BuildingRef thing.
 
 Buildings periodically check their needs are met. (eg, power, distance to road)
 	-> Possibly it's not the building that does so, but rather the layer that does this check. I think that makes more sense.
+TODO: No more direct zoneDefs[] access, use a function to hide the implementation as we might switch away from a static array later!
+TODO: No more direct getBuildingDef(building->typeID) calls to check building properties - use a function on the Building instead, so we hide whether it's a lookup to the BuildingDef or not. (I'm directly accessing BuildingDef flags right now which feels really wrong, and fragile.)
 
 SECTORS:
 - After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)

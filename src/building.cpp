@@ -211,7 +211,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
-				else if (equals(firstWord, "transport"))
+				else if (equals(firstWord, "carries_transport"))
 				{
 					u8 transportTypes = 0;
 
@@ -235,9 +235,27 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					}
 					def->transportTypes = transportTypes;
 				}
+				else if (equals(firstWord, "requires_transport_connection"))
+				{
+					if (readBool(&reader, firstWord, remainder))
+					{
+						def->flags |= Building_RequiresTransportConnection;
+					}
+					else
+					{
+						def->flags ^= Building_RequiresTransportConnection;
+					}
+				}
 				else if (equals(firstWord, "carries_power"))
 				{
-					def->carriesPower = readBool(&reader, firstWord, remainder);
+					if (readBool(&reader, firstWord, remainder))
+					{
+						def->flags |= Building_CarriesPower;
+					}
+					else
+					{
+						def->flags ^= Building_CarriesPower;
+					}
 				}
 				else if (equals(firstWord, "power_gen"))
 				{
@@ -440,15 +458,10 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 
 			case DataLayer_Power:
 			{
-				Building *buildingU = getBuildingAt(city, x,   y-1);
-				Building *buildingD = getBuildingAt(city, x,   y+1);
-				Building *buildingL = getBuildingAt(city, x-1, y  );
-				Building *buildingR = getBuildingAt(city, x+1, y  );
-
-				bool linkU = buildingU && getBuildingDef(buildingU->typeID)->carriesPower;
-				bool linkD = buildingD && getBuildingDef(buildingD->typeID)->carriesPower;
-				bool linkL = buildingL && getBuildingDef(buildingL->typeID)->carriesPower;
-				bool linkR = buildingR && getBuildingDef(buildingR->typeID)->carriesPower;
+				bool linkU = doesTileHavePowerNetwork(city, x,   y-1);
+				bool linkD = doesTileHavePowerNetwork(city, x,   y+1);
+				bool linkL = doesTileHavePowerNetwork(city, x-1, y  );
+				bool linkR = doesTileHavePowerNetwork(city, x+1, y  );
 
 				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
 			} break;

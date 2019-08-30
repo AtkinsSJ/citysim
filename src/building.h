@@ -9,10 +9,18 @@ enum BuildMethod
 	BuildMethod_DragLine,
 };
 
+enum BuildingFlag
+{
+	Building_CarriesPower                = 1 << 0,
+	Building_RequiresTransportConnection = 1 << 1,
+};
+
 struct BuildingDef
 {
 	String name;
 	s32 typeID;
+
+	u32 flags;
 
 	union
 	{
@@ -49,7 +57,6 @@ struct BuildingDef
 	
 	u8 transportTypes;
 
-	bool carriesPower;
 	s32 power; // Positive for production, negative for consumption
 };
 

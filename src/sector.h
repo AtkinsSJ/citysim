@@ -8,6 +8,11 @@ struct SectorGrid
 	s32 sectorsX, sectorsY;
 
 	Array<Sector> sectors;
+
+	inline Sector &operator[](s32 index)
+	{
+		return this->sectors[index];
+	}
 };
 
 // NB: The Sector struct needs to contain a "Rect2I bounds;" member. This is filled-in inside initSectorGrid().
@@ -17,6 +22,9 @@ void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth,
 
 template<typename Sector>
 Sector *getSector(SectorGrid<Sector> *grid, s32 sectorX, s32 sectorY);
+
+template<typename Sector>
+Sector *getSectorByIndex(SectorGrid<Sector> *grid, s32 index);
 
 template<typename Sector>
 inline s32 getSectorCount(SectorGrid<Sector> *grid)
