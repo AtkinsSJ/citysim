@@ -44,6 +44,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	building->id = ++city->highestBuildingID;
 	building->typeID = def->typeID;
 	building->footprint = footprint;
+	initFlags(&building->problems, BuildingProblemCount);
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
 	append(&ownerSector->ownedBuildings, building);
@@ -660,6 +661,7 @@ void updateSomeBuildings(City *city)
 
 
 			// Distance to road
+			// TODO: Replace with access to any transport types, somehow? Not sure what we want with that.
 			if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone))
 			{
 				s32 distanceToRoad = s32Max;
@@ -678,15 +680,32 @@ void updateSomeBuildings(City *city)
 				if (def->growsInZone)
 				{
 					// Zoned buildings inherit their zone's max distance to road.
-
+					if (distanceToRoad > zoneDefs[def->growsInZone].maximumDistanceToRoad)
+					{
+						building->problems |= BuildingProblem_NoTransportAccess;
+					}
+					else
+					{
+						building->problems ^= BuildingProblem_NoTransportAccess;
+					}
+				}
+				else if (def->flags & Building_RequiresTransportConnection)
+				{
+					// Other buildings require direct contact
+					if (distanceToRoad > 1)
+					{
+						building->problems |= BuildingProblem_NoTransportAccess;
+					}
+					else
+					{
+						building->problems ^= BuildingProblem_NoTransportAccess;
+					}
 				}
 				else
 				{
-					// Other buildings require contact 
-
+					building->problems ^= BuildingProblem_NoTransportAccess;
 				}
 			}
-
 		}
 
 		city->nextBuildingSectorUpdateIndex = (city->nextBuildingSectorUpdateIndex + 1) % getSectorCount(&city->sectors);

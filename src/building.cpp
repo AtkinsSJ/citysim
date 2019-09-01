@@ -99,6 +99,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				def = appendBlank(buildings);
 				def->name = pushString(&assets->assetArena, trimEnd(remainder));
 				def->typeID = truncate32(buildings->count - 1);
+				initFlags(&def->flags, BuildingFlagCount);
 			}
 		}
 		else // Properties!

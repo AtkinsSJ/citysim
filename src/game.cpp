@@ -323,6 +323,15 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building->currentJobs), formatInt(def->jobs)}));
 		window_label(context, myprintf("- Power: {0}", {formatInt(def->power)}));
+
+		// Problems
+		for (s32 problemIndex = 0; problemIndex < BuildingProblemCount; problemIndex++)
+		{
+			if (building->problems & (BuildingProblem) problemIndex)
+			{
+				window_label(context, myprintf("- PROBLEM: {0}", {buildingProblemNames[problemIndex]}));
+			}
+		}
 	}
 	else
 	{

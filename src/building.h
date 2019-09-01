@@ -11,8 +11,10 @@ enum BuildMethod
 
 enum BuildingFlag
 {
-	Building_CarriesPower                = 1 << 0,
-	Building_RequiresTransportConnection = 1 << 1,
+	Building_CarriesPower,
+	Building_RequiresTransportConnection,
+
+	BuildingFlagCount
 };
 
 struct BuildingDef
@@ -20,7 +22,7 @@ struct BuildingDef
 	String name;
 	s32 typeID;
 
-	u32 flags;
+	Flags<BuildingFlag> flags;
 
 	union
 	{
@@ -78,6 +80,17 @@ struct BuildingCatalogue
 
 BuildingCatalogue buildingCatalogue = {};
 
+enum BuildingProblem
+{
+	BuildingProblem_NoTransportAccess,
+
+	BuildingProblemCount
+};
+
+String buildingProblemNames[BuildingProblemCount] = {
+	makeString("No access to transport!")
+};
+
 struct Building
 {
 	u32 id;
@@ -87,6 +100,8 @@ struct Building
 	
 	s32 currentResidents;
 	s32 currentJobs;
+
+	Flags<BuildingProblem> problems;
 };
 
 // NB: We don't use this yet, but the idea is, if someone needs a pointer to a building
