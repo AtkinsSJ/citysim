@@ -82,12 +82,14 @@ BuildingCatalogue buildingCatalogue = {};
 
 enum BuildingProblem
 {
+	BuildingProblem_NoPower,
 	BuildingProblem_NoTransportAccess,
 
 	BuildingProblemCount
 };
 
 String buildingProblemNames[BuildingProblemCount] = {
+	makeString("No power!"),
 	makeString("No access to transport!")
 };
 
@@ -104,10 +106,9 @@ struct Building
 	Flags8<BuildingProblem> problems;
 };
 
-// NB: We don't use this yet, but the idea is, if someone needs a pointer to a building
-// across multiple frames, use one of these references. The position lets you look-up
-// the building via getBuildingAt(), and the buildingID lets you check that the
-// found building is indeed the one you were after.
+// NB: If someone needs a pointer to a building across multiple frames, use one of these references.
+// The position lets you look-up the building via getBuildingAt(), and the buildingID lets you check
+// that the found building is indeed the one you were after.
 // You'd then do something like this:
 //     Building *theBuilding = getBuilding(city, buildingRef);
 // which would look-up the building, check its ID, and return the Building* if it matches
@@ -116,13 +117,18 @@ struct Building
 struct BuildingRef
 {
 	u32 buildingID;
-	V2I buildingPosition;
+	V2I buildingPos;
 };
+BuildingRef getReferenceTo(Building *building);
+Building *getBuilding(City *city, BuildingRef ref);
 
 void loadBuildingDefs(Blob data, Asset *asset);
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
 BuildingDef *getBuildingDef(s32 buildingTypeID);
 BuildingDef *findBuildingDef(String name);
+
+s32 getRequiredPower(Building *building);
+
 
 // TODO: These are a bit hacky... I want to hide the implementation details of the catalogue, but
 // creating a whole set of iterator stuff which is almost identical to the regular iterators seems

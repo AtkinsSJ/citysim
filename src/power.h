@@ -8,6 +8,8 @@ struct PowerGroup
 	// TODO: @Size These are always either 1-wide or 1-tall, and up to sectorSize in the other direction, so we could use a much smaller struct than Rect2I!
 	ChunkedArray<Rect2I> sectorBoundaries; // Places in nighbouring sectors that are adjacent to this PowerGroup
 	s32 networkID;
+
+	ChunkedArray<BuildingRef> buildings;
 };
 
 struct PowerSector
@@ -42,6 +44,7 @@ struct PowerLayer
 
 	ArrayChunkPool<PowerGroup> powerGroupsChunkPool;
 	ArrayChunkPool<PowerGroup *> powerGroupPointersChunkPool;
+	ArrayChunkPool<BuildingRef> buildingRefsChunkPool;
 	
 	s32 cachedCombinedProduction;
 	s32 cachedCombinedConsumption;

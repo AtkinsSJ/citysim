@@ -1,5 +1,27 @@
 #pragma once
 
+BuildingRef getReferenceTo(Building *building)
+{
+	BuildingRef result = {};
+	result.buildingID = building->id;
+	result.buildingPos = building->footprint.pos;
+
+	return result;
+}
+
+Building *getBuilding(City *city, BuildingRef ref)
+{
+	Building *result = null;
+
+	Building *buildingAtPosition = getBuildingAt(city, ref.buildingPos.x, ref.buildingPos.y);
+	if ((buildingAtPosition != null) && (buildingAtPosition->id == ref.buildingID))
+	{
+		result = buildingAtPosition;
+	}
+
+	return result;
+}
+
 void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 {
 	put(&catalogue->buildingsByName, def->name, def);
@@ -529,4 +551,17 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 			def->sprites = getSpriteGroup(def->spriteName);
 		}
 	}
+}
+
+inline s32 getRequiredPower(Building *building)
+{
+	s32 result = 0;
+
+	BuildingDef *def = getBuildingDef(building->typeID);
+	if (def->power < 0)
+	{
+		result = -def->power;
+	}
+
+	return result;
 }

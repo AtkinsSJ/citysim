@@ -5,6 +5,7 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	initChunkedArray(&layer->networks, gameArena, 64);
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
+	initChunkPool(&layer->buildingRefsChunkPool, gameArena, 128);
 
 	initSectorGrid(&layer->sectors, gameArena, city->width, city->height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
@@ -201,6 +202,8 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 {
 	DEBUG_FUNCTION();
 
+	PowerLayer *layer = &city->powerLayer;
+
 	// TODO: Clear any references to the PowerGroups that the City itself might have!
 	// (I don't know how that's going to be structured yet.)
 	// Meaning, if a city-wide power network knows that PowerGroup 3 in this sector is part of it,
@@ -278,6 +281,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 			PowerGroup *newGroup = appendBlank(&sector->powerGroups);
 
 			initChunkedArray(&newGroup->sectorBoundaries, &city->sectorBoundariesChunkPool);
+			initChunkedArray(&newGroup->buildings, &layer->buildingRefsChunkPool);
 
 			u8 powerGroupID = (u8)sector->powerGroups.count;
 			newGroup->production = 0;
@@ -288,6 +292,20 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 
 	// At this point, if there are no power groups we can just stop.
 	if (sector->powerGroups.count == 0) return;
+
+	// Store references to the buildings in each group, for faster updating later
+	for (auto it = iterate(&sectorBuildings);
+		!it.isDone;
+		next(&it))
+	{
+		Building *building = getValue(it);
+		if (contains(sector->bounds, building->footprint.pos))
+		{
+			PowerGroup *group = get(&sector->powerGroups, getPowerGroupID(sector, building->footprint.x, building->footprint.y));
+			append(&group->buildings, getReferenceTo(building));
+		}
+	}
+
 
 	// Step 3: Calculate power production/consumption for OWNED buildings, and add to their PowerGroups
 	updateSectorPowerValues(city, sector);
@@ -591,5 +609,109 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		// City-wide power totals
 		layer->cachedCombinedProduction  += network->cachedProduction;
 		layer->cachedCombinedConsumption += network->cachedConsumption;
+	}
+
+	// Handle blackout/brownout situations
+	for (auto networkIt = iterate(&layer->networks);
+		!networkIt.isDone;
+		next(&networkIt))
+	{
+		PowerNetwork *network = get(networkIt);
+
+		if (network->cachedConsumption == 0)
+		{
+			// No consumers, so it's fine
+			continue;
+		}
+		else if (network->cachedProduction == 0)
+		{
+			// Blackout!
+			// @Copypasta Almost identical code for blackout/fully-power
+
+			// So, mark every consumer as having no power
+			for (auto groupIt = iterate(&network->groups);
+				!groupIt.isDone;
+				next(&groupIt))
+			{
+				PowerGroup *powerGroup = getValue(groupIt);
+
+				for (auto buildingRefIt = iterate(&powerGroup->buildings);
+					!buildingRefIt.isDone;
+					next(&buildingRefIt))
+				{
+					BuildingRef buildingRef = getValue(buildingRefIt);
+					Building *building = getBuilding(city, buildingRef);
+
+					if (building != null)
+					{
+						building->problems += BuildingProblem_NoPower;
+					}
+				}
+			}
+		}
+		else if (network->cachedProduction < network->cachedConsumption)
+		{
+			// Brownout!
+			// Supply power to buildings if we can, and mark the rest as unpowered.
+			// TODO: Implement some kind of "rolling brownout" system where buildings get powered
+			// and unpowered over time to even things out, instead of it always being first-come-first-served.
+			s32 powerRemaining = network->cachedProduction;
+
+			// @Copypasta Only a little different from the other branches
+			for (auto groupIt = iterate(&network->groups);
+				!groupIt.isDone;
+				next(&groupIt))
+			{
+				PowerGroup *powerGroup = getValue(groupIt);
+
+				for (auto buildingRefIt = iterate(&powerGroup->buildings);
+					!buildingRefIt.isDone;
+					next(&buildingRefIt))
+				{
+					BuildingRef buildingRef = getValue(buildingRefIt);
+					Building *building = getBuilding(city, buildingRef);
+
+					if (building != null)
+					{
+						s32 requiredPower = getRequiredPower(building);
+						if (powerRemaining >= requiredPower)
+						{
+							building->problems -= BuildingProblem_NoPower;
+							powerRemaining -= requiredPower;
+						}
+						else
+						{
+							building->problems += BuildingProblem_NoPower;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			// All buildings have power!
+			// @Copypasta Almost identical code for blackout/fully-power
+
+			// So, mark every consumer as having power
+			for (auto groupIt = iterate(&network->groups);
+				!groupIt.isDone;
+				next(&groupIt))
+			{
+				PowerGroup *powerGroup = getValue(groupIt);
+
+				for (auto buildingRefIt = iterate(&powerGroup->buildings);
+					!buildingRefIt.isDone;
+					next(&buildingRefIt))
+				{
+					BuildingRef buildingRef = getValue(buildingRefIt);
+					Building *building = getBuilding(city, buildingRef);
+
+					if (building != null)
+					{
+						building->problems -= BuildingProblem_NoPower;
+					}
+				}
+			}
+		}
 	}
 }

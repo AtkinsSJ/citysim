@@ -701,10 +701,6 @@ void updateSomeBuildings(City *city)
 						building->problems -= BuildingProblem_NoTransportAccess;
 					}
 				}
-				else
-				{
-					building->problems -= BuildingProblem_NoTransportAccess;
-				}
 			}
 		}
 
