@@ -44,6 +44,11 @@ struct Flags
 	}
 };
 
+template<typename Enum> using Flags8  = Flags<Enum, u8>;
+template<typename Enum> using Flags16 = Flags<Enum, u16>;
+template<typename Enum> using Flags32 = Flags<Enum, u32>;
+template<typename Enum> using Flags64 = Flags<Enum, u64>;
+
 template<typename Enum, typename Storage>
 void initFlags(Flags<Enum, Storage> *flags, Enum flagCount);
 

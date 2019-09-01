@@ -17,13 +17,15 @@ struct TransportLayer
 	u8 *tileTransportDistance[TransportTypeCount];
 };
 
+using Flags_TransportType = Flags<TransportType, u8>;
+
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena);
 void updateTransportLayer(City *city, TransportLayer *layer);
 void markTransportLayerDirty(TransportLayer *layer, Rect2I bounds);
 
 void addTransportToTile(City *city, s32 x, s32 y, TransportType type);
-void addTransportToTile(City *city, s32 x, s32 y, Flags<TransportType, u8> types);
+void addTransportToTile(City *city, s32 x, s32 y, Flags_TransportType types);
 void removeAllTransportFromTile(City *city, s32 x, s32 y);
 bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type);
-bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags<TransportType, u8> types);
+bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags_TransportType types);
 s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type);

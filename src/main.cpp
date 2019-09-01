@@ -68,11 +68,14 @@ struct Settings     *settings;
 #include "ui.h"
 #include "sector.h"
 #include "dirty.h"
+
+struct City;
+
+#include "transport.h"
 #include "building.h"
 #include "power.h"
 #include "terrain.h"
 #include "zone.h"
-#include "transport.h"
 #include "city.h"
 #include "game.h"
 

@@ -22,7 +22,7 @@ struct BuildingDef
 	String name;
 	s32 typeID;
 
-	Flags<BuildingFlag, u8> flags;
+	Flags8<BuildingFlag> flags;
 
 	union
 	{
@@ -57,7 +57,7 @@ struct BuildingDef
 	s32 residents;
 	s32 jobs;
 	
-	Flags<enum TransportType, u8> transportTypes;
+	Flags_TransportType transportTypes;
 
 	s32 power; // Positive for production, negative for consumption
 };
@@ -101,7 +101,7 @@ struct Building
 	s32 currentResidents;
 	s32 currentJobs;
 
-	Flags<BuildingProblem, u8> problems;
+	Flags8<BuildingProblem> problems;
 };
 
 // NB: We don't use this yet, but the idea is, if someone needs a pointer to a building

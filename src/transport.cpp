@@ -139,7 +139,7 @@ bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type)
 	return result;
 }
 
-bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags<TransportType, u8> types)
+bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags_TransportType types)
 {
 	bool result = false;
 
@@ -159,7 +159,7 @@ void addTransportToTile(City *city, s32 x, s32 y, TransportType type)
 	setTile(city, city->transportLayer.tileTransportTypes, x, y, newValue);
 }
 
-void addTransportToTile(City *city, s32 x, s32 y, Flags<TransportType, u8> types)
+void addTransportToTile(City *city, s32 x, s32 y, Flags_TransportType types)
 {
 	u8 oldValue = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
 	u8 newValue = oldValue | getAll(&types);
