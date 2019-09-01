@@ -47,7 +47,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building->typeID);
-						setTile<u8>(city, layer->tileTransportTypes, x, y, def->transportTypes);
+						setTile<u8>(city, layer->tileTransportTypes, x, y, getAll(&def->transportTypes));
 					}
 					else
 					{
@@ -66,7 +66,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 				{
 					for (s32 type = 0; type < TransportTypeCount; type++)
 					{
-						u8 distance = doesTileHaveTransport(city, x, y, 1 << type) ? 0 : 255;
+						u8 distance = doesTileHaveTransport(city, x, y, (TransportType)type) ? 0 : 255;
 						setTile<u8>(city, layer->tileTransportDistance[type], x, y, distance);
 					}
 				}
@@ -126,23 +126,43 @@ void markTransportLayerDirty(TransportLayer *layer, Rect2I bounds)
 	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
-bool doesTileHaveTransport(City *city, s32 x, s32 y, u8 transportTypes)
+bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type)
 {
 	bool result = false;
 
 	if (tileExists(city, x, y))
 	{
 		u8 transportTypesAtTile = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
-		result = (transportTypes & transportTypesAtTile) != 0;
+		result = (transportTypesAtTile & (1 << type)) != 0;
 	}
 
 	return result;
 }
 
-void addTransportToTile(City *city, s32 x, s32 y, u8 transportTypes)
+bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags<TransportType, u8> types)
+{
+	bool result = false;
+
+	if (tileExists(city, x, y))
+	{
+		u8 transportTypesAtTile = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
+		result = (transportTypesAtTile & getAll(&types)) != 0;
+	}
+
+	return result;
+}
+
+void addTransportToTile(City *city, s32 x, s32 y, TransportType type)
 {
 	u8 oldValue = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
-	u8 newValue = oldValue | transportTypes;
+	u8 newValue = oldValue | (1 << type);
+	setTile(city, city->transportLayer.tileTransportTypes, x, y, newValue);
+}
+
+void addTransportToTile(City *city, s32 x, s32 y, Flags<TransportType, u8> types)
+{
+	u8 oldValue = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
+	u8 newValue = oldValue | getAll(&types);
 	setTile(city, city->transportLayer.tileTransportTypes, x, y, newValue);
 }
 

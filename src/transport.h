@@ -7,12 +7,6 @@ enum TransportType
 	TransportTypeCount
 };
 
-enum TransportTypeBits
-{
-	TransportBits_Road = 1 << Transport_Road,
-	TransportBits_Rail = 1 << Transport_Rail,
-};
-
 struct TransportLayer
 {
 	DirtyRects dirtyRects;
@@ -27,7 +21,9 @@ void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameAren
 void updateTransportLayer(City *city, TransportLayer *layer);
 void markTransportLayerDirty(TransportLayer *layer, Rect2I bounds);
 
-void addTransportToTile(City *city, s32 x, s32 y, u8 transportTypes);
+void addTransportToTile(City *city, s32 x, s32 y, TransportType type);
+void addTransportToTile(City *city, s32 x, s32 y, Flags<TransportType, u8> types);
 void removeAllTransportFromTile(City *city, s32 x, s32 y);
-bool doesTileHaveTransport(City *city, s32 x, s32 y, u8 transportTypes);
+bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type);
+bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags<TransportType, u8> types);
 s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type);

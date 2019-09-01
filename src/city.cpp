@@ -211,7 +211,7 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
-	bool needToRecalcTransport = (def->transportTypes != 0);
+	bool needToRecalcTransport = !isEmpty(&def->transportTypes);
 	bool needToRecalcPower = (def->flags & Building_CarriesPower);
 
 	Building *building = getBuildingAt(city, left, top);
@@ -305,7 +305,7 @@ void placeBuildingRect(City *city, BuildingDef *def, Rect2I area)
 		}
 	}
 
-	bool needToRecalcTransport = (def->transportTypes != 0);
+	bool needToRecalcTransport = !isEmpty(&def->transportTypes);
 	bool needToRecalcPower = (def->flags & Building_CarriesPower);
 
 	if (needToRecalcTransport)  markTransportLayerDirty(&city->transportLayer, area);

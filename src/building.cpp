@@ -100,6 +100,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				def->name = pushString(&assets->assetArena, trimEnd(remainder));
 				def->typeID = truncate32(buildings->count - 1);
 				initFlags(&def->flags, BuildingFlagCount);
+				initFlags(&def->transportTypes, TransportTypeCount);
 			}
 		}
 		else // Properties!
@@ -214,8 +215,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "carries_transport"))
 				{
-					u8 transportTypes = 0;
-
 					s32 tokenCount = countTokens(remainder);
 					for (s32 tokenIndex = 0; tokenIndex < tokenCount; tokenIndex++)
 					{
@@ -223,18 +222,17 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 						if (equals(transportName, "road"))
 						{
-							transportTypes |= TransportBits_Road;
+							def->transportTypes |= Transport_Road;
 						}
 						else if (equals(transportName, "rail"))
 						{
-							transportTypes |= TransportBits_Rail;
+							def->transportTypes |= Transport_Rail;
 						}
 						else
 						{
 							warn(&reader, "Unrecognised transport type \"{0}\".", {transportName});
 						}
 					}
-					def->transportTypes = transportTypes;
 				}
 				else if (equals(firstWord, "requires_transport_connection"))
 				{

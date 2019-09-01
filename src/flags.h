@@ -19,24 +19,36 @@
 // - Sam, 01/09/2019
 //
 
-template<typename Enum>
+template<typename Enum, typename Storage>
 struct Flags
 {
 	s32 flagCount;
-	u64 data;
+	Storage data;
 
 	// Read the value of the flag
 	bool operator&(Enum flag);
 
 	// Add the flag
-	Flags<Enum> *operator|=(Enum flag);
+	Flags<Enum, Storage> *operator|=(Enum flag);
 
 	// Remove the flag
-	Flags<Enum> *operator^=(Enum flag);
+	Flags<Enum, Storage> *operator^=(Enum flag);
+
+	// Comparison
+	bool operator==(Flags<Enum, Storage> &other);
+
+	// Comparison
+	bool operator!=(Flags<Enum, Storage> &other)
+	{
+		return !(*this == other);
+	}
 };
 
-template<typename Enum>
-void initFlags(Flags<Enum> *flags, s32 flagCount);
+template<typename Enum, typename Storage>
+void initFlags(Flags<Enum, Storage> *flags, Enum flagCount);
 
-template<typename Enum>
-bool isEmpty(Flags<Enum> *flags);
+template<typename Enum, typename Storage>
+bool isEmpty(Flags<Enum, Storage> *flags);
+
+template<typename Enum, typename Storage>
+Storage getAll(Flags<Enum, Storage> *flags);
