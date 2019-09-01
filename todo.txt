@@ -21,7 +21,6 @@ BuildingRef thing.
 
 Buildings periodically check their needs are met. (eg, power, distance to road)
 	-> Possibly it's not the building that does so, but rather the layer that does this check. I think that makes more sense.
-TODO: No more direct zoneDefs[] access, use a function to hide the implementation as we might switch away from a static array later!
 TODO: No more direct getBuildingDef(building->typeID) calls to check building properties - use a function on the Building instead, so we hide whether it's a lookup to the BuildingDef or not. (I'm directly accessing BuildingDef flags right now which feels really wrong, and fragile.)
 
 SECTORS:

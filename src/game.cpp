@@ -311,7 +311,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Zone: {0}", {zone ? zoneDefs[zone].name : makeString("None")}));
+	window_label(context, myprintf("Zone: {0}", {zone ? getZoneDef(zone).name : makeString("None")}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -473,7 +473,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (uiButton(uiState, zoneDefs[zoneIndex].name, menuButtonRect,
+				if (uiButton(uiState, getZoneDef(zoneIndex).name, menuButtonRect,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -741,7 +741,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 						{
 							V4 palette[] = {
 								color255(255, 0, 0, 16),
-								zoneDefs[gameState->selectedZoneID].color
+								getZoneDef(gameState->selectedZoneID).color
 							};
 							drawGrid(&renderer->worldOverlayBuffer, rect2(canZoneQuery->bounds), renderer->shaderIds.untextured, canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
 						}

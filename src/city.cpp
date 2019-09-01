@@ -661,7 +661,7 @@ void updateSomeBuildings(City *city)
 
 
 			// Distance to road
-			// TODO: Replace with access to any transport types, somehow? Not sure what we want with that.
+			// TODO: Replace with access to any transport types, instead of just road? Not sure what we want with that.
 			if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone))
 			{
 				s32 distanceToRoad = s32Max;
@@ -680,7 +680,7 @@ void updateSomeBuildings(City *city)
 				if (def->growsInZone)
 				{
 					// Zoned buildings inherit their zone's max distance to road.
-					if (distanceToRoad > zoneDefs[def->growsInZone].maximumDistanceToRoad)
+					if (distanceToRoad > getZoneDef(def->growsInZone).maximumDistanceToRoad)
 					{
 						building->problems |= BuildingProblem_NoTransportAccess;
 					}

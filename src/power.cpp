@@ -247,7 +247,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 			if (getPowerGroupID(sector, relX, relY) == POWER_GROUP_UNKNOWN) continue;
 
 			ZoneType zone = getZoneAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
-			if (zoneDefs[zone].carriesPower)
+			if (getZoneDef(zone).carriesPower)
 			{
 				setPowerGroupID(sector, relX, relY, POWER_GROUP_UNKNOWN);
 			}

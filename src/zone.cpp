@@ -21,6 +21,12 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 	}
 }
 
+inline ZoneDef getZoneDef(s32 zoneType)
+{
+	ASSERT(zoneType >= 0 && zoneType < ZoneCount);
+	return zoneDefs[zoneType];
+}
+
 inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 {
 	ZoneType result = Zone_None;
@@ -136,7 +142,7 @@ void drawZones(City *city, Rect2I visibleArea, s8 shaderID)
 				if (zone != zoneType)
 				{
 					zoneType = zone;
-					zoneColor = zoneDefs[zoneType].color;
+					zoneColor = getZoneDef(zoneType).color;
 				}
 
 				spriteBounds.x = (f32) x;
@@ -295,7 +301,7 @@ bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y)
 {
 	DEBUG_FUNCTION();
 	
-	ZoneDef def = zoneDefs[zoneType];
+	ZoneDef def = getZoneDef(zoneType);
 
 	bool isAcceptable = true;
 
