@@ -682,11 +682,11 @@ void updateSomeBuildings(City *city)
 					// Zoned buildings inherit their zone's max distance to road.
 					if (distanceToRoad > getZoneDef(def->growsInZone).maximumDistanceToRoad)
 					{
-						building->problems |= BuildingProblem_NoTransportAccess;
+						building->problems += BuildingProblem_NoTransportAccess;
 					}
 					else
 					{
-						building->problems ^= BuildingProblem_NoTransportAccess;
+						building->problems -= BuildingProblem_NoTransportAccess;
 					}
 				}
 				else if (def->flags & Building_RequiresTransportConnection)
@@ -694,16 +694,16 @@ void updateSomeBuildings(City *city)
 					// Other buildings require direct contact
 					if (distanceToRoad > 1)
 					{
-						building->problems |= BuildingProblem_NoTransportAccess;
+						building->problems += BuildingProblem_NoTransportAccess;
 					}
 					else
 					{
-						building->problems ^= BuildingProblem_NoTransportAccess;
+						building->problems -= BuildingProblem_NoTransportAccess;
 					}
 				}
 				else
 				{
-					building->problems ^= BuildingProblem_NoTransportAccess;
+					building->problems -= BuildingProblem_NoTransportAccess;
 				}
 			}
 		}

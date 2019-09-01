@@ -222,11 +222,11 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 						if (equals(transportName, "road"))
 						{
-							def->transportTypes |= Transport_Road;
+							def->transportTypes += Transport_Road;
 						}
 						else if (equals(transportName, "rail"))
 						{
-							def->transportTypes |= Transport_Rail;
+							def->transportTypes += Transport_Rail;
 						}
 						else
 						{
@@ -238,22 +238,22 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				{
 					if (readBool(&reader, firstWord, remainder))
 					{
-						def->flags |= Building_RequiresTransportConnection;
+						def->flags += Building_RequiresTransportConnection;
 					}
 					else
 					{
-						def->flags ^= Building_RequiresTransportConnection;
+						def->flags -= Building_RequiresTransportConnection;
 					}
 				}
 				else if (equals(firstWord, "carries_power"))
 				{
 					if (readBool(&reader, firstWord, remainder))
 					{
-						def->flags |= Building_CarriesPower;
+						def->flags += Building_CarriesPower;
 					}
 					else
 					{
-						def->flags ^= Building_CarriesPower;
+						def->flags -= Building_CarriesPower;
 					}
 				}
 				else if (equals(firstWord, "power_gen"))

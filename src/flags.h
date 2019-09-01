@@ -29,10 +29,10 @@ struct Flags
 	bool operator&(Enum flag);
 
 	// Add the flag
-	Flags<Enum, Storage> *operator|=(Enum flag);
+	Flags<Enum, Storage> *operator+=(Enum flag);
 
 	// Remove the flag
-	Flags<Enum, Storage> *operator^=(Enum flag);
+	Flags<Enum, Storage> *operator-=(Enum flag);
 
 	// Comparison
 	bool operator==(Flags<Enum, Storage> &other);

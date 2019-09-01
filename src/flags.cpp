@@ -20,7 +20,7 @@ bool Flags<Enum, Storage>::operator&(Enum flag)
 // Add the flag
 
 template<typename Enum, typename Storage>
-Flags<Enum, Storage> *Flags<Enum, Storage>::operator|=(Enum flag)
+Flags<Enum, Storage> *Flags<Enum, Storage>::operator+=(Enum flag)
 {
 	this->data |= ((u64)1 << flag);
 	return this;
@@ -29,7 +29,7 @@ Flags<Enum, Storage> *Flags<Enum, Storage>::operator|=(Enum flag)
 // Remove the flag
 
 template<typename Enum, typename Storage>
-Flags<Enum, Storage> *Flags<Enum, Storage>::operator^=(Enum flag)
+Flags<Enum, Storage> *Flags<Enum, Storage>::operator-=(Enum flag)
 {
 	u64 mask = ((u64)1 << flag);
 	this->data &= ~mask;
