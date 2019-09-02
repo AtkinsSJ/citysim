@@ -36,9 +36,12 @@ struct PowerNetwork
 
 struct PowerLayer
 {
-	bool isDirty;
+	DirtyRects dirtyRects;
 
 	SectorGrid<PowerSector> sectors;
+
+	u8 powerMaxDistance;
+	u8 *tilePowerDistance;
 
 	ChunkedArray<PowerNetwork> networks;
 

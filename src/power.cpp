@@ -2,10 +2,17 @@
 
 void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 {
+	initDirtyRects(&layer->dirtyRects, gameArena);
+
 	initChunkedArray(&layer->networks, gameArena, 64);
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
 	initChunkPool(&layer->buildingRefsChunkPool, gameArena, 128);
+
+	s32 cityArea = city->width * city->height;
+	layer->tilePowerDistance = allocateMultiple<u8>(gameArena, cityArea);
+	fillMemory<u8>(layer->tilePowerDistance, 255, cityArea);
+	layer->powerMaxDistance = 2;
 
 	initSectorGrid(&layer->sectors, gameArena, city->width, city->height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
@@ -206,12 +213,9 @@ inline void setRectPowerGroupUnknown(PowerSector *sector, Rect2I area)
 	}
 }
 
-void markPowerLayerDirty(PowerLayer *layer, Rect2I area)
+void markPowerLayerDirty(PowerLayer *layer, Rect2I bounds)
 {
-	// TODO: Somehow store the area that needs updating, so we don't have to recalculate the whole thing
-	
-	area = area; // Ignore unused
-	layer->isDirty = true;
+	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
 void addBuildingToPowerLayer(PowerLayer *layer, Building *building)
@@ -599,11 +603,60 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 {
 	DEBUG_FUNCTION();
 
-	if (layer->isDirty)
+	if (isDirty(&layer->dirtyRects))
 	{
+		for (auto it = iterate(&layer->dirtyRects.rects);
+			!it.isDone;
+			next(&it))
+		{
+			Rect2I dirtyRect = getValue(it);
+
+			// Reset the power groups for the area to 0 (no power group) or POWER_GROUP_UNKNOWN
+			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
+			{
+				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
+				{
+					Building *building = getBuildingAt(city, x, y);
+					BuildingDef *def = null;
+					if (building != null)
+					{
+						def = getBuildingDef(building->typeID);
+					}
+
+					PowerSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
+
+					if (def != null && def->flags & Building_CarriesPower)
+					{
+						setSectorTile(city, layer->tilePowerDistance, x - sector->bounds.x, y - sector->bounds.y, POWER_GROUP_UNKNOWN);
+					}
+					else
+					{
+						setSectorTile(city, layer->tilePowerDistance, x - sector->bounds.x, y - sector->bounds.y, (u8)0);
+					}
+				}
+			}
+
+			// Clear the "distance to power" for the surrounding area to 0 or 255
+			Rect2I distanceRect = expand(dirtyRect, layer->powerMaxDistance);
+
+			for (s32 y = distanceRect.y; y < distanceRect.y + distanceRect.h; y++)
+			{
+				for (s32 x = distanceRect.x; x < distanceRect.x + distanceRect.w; x++)
+				{
+					u8 distance = doesTileHaveTransport(city, x, y) ? 0 : 255;
+					setTile<u8>(city, layer->tilePowerDistance, x, y, distance);
+				}
+			}
+		}
+
+		// Actually, this is fiddly. The distance is used to determine how groups connect. So, probably we should just do ONE iteration, over the "distanceRect" areas, to set the distance to 0 or 255. Then expand that out to powerMaxDistance, then go through and determine the powergroups for the affected sectors.
+		// (Gather a set of sectors while we're iterating the rects, so we don't duplicate them.)
+		// -> Create a Set data type! I've needed one several times!
+		// Then, do the network-rebuild based on the groups.
+
 		// TODO: Only update the parts that need updating
 		recalculatePowerConnectivity(city, layer);
-		layer->isDirty = false;
+		clearDirtyRects(&layer->dirtyRects);
 	}
 
 	layer->cachedCombinedProduction = 0;

@@ -39,13 +39,13 @@ template<typename Sector>
 Rect2I getSectorsCovered(SectorGrid<Sector> *grid, Rect2I area);
 
 template<typename Sector, typename T>
-inline T *getSectorTile(Sector *sector, T *tiles, s32 x, s32 y)
+inline T *getSectorTile(Sector *sector, T *tiles, s32 relX, s32 relY)
 {
-	return tiles + (y * sector->bounds.w) + x;
+	return tiles + (relY * sector->bounds.w) + relX;
 }
 
 template<typename Sector, typename T>
-inline void setSectorTile(Sector *sector, T *tiles, s32 x, s32 y, T value)
+inline void setSectorTile(Sector *sector, T *tiles, s32 relX, s32 relY, T value)
 {
-	tiles[(y * sector->bounds.w) + x] = value;
+	tiles[(relY * sector->bounds.w) + relX] = value;
 }
