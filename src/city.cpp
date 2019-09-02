@@ -571,10 +571,13 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-	s32 typeID = -1;
-	SpriteGroup *sprites = null;
 	V4 drawColorNormal = makeWhite();
 	V4 drawColorDemolish = color255(255,128,128,255);
+	V4 drawColorNoPower = color255(32,32,64,255);
+
+	s32 typeID = -1;
+	SpriteGroup *sprites = null;
+
 	bool isDemolitionHappening = areaOf(demolitionRect) > 0;
 
 	//
@@ -623,6 +626,13 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 		{
 			// Draw building red to preview demolition
 			drawColor = drawColorDemolish;
+		}
+		else if (!isEmpty(&building->problems))
+		{
+			if (building->problems & BuildingProblem_NoPower)
+			{
+				drawColor = drawColorNoPower;
+			}
 		}
 
 		Sprite *sprite = getSprite(sprites, building->spriteOffset);
