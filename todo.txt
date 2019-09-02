@@ -17,13 +17,6 @@ Notes for searching:
 
 Add newline support to .text files!
 
-BuildingRef thing.
-
-Buildings periodically check their needs are met. (eg, power, distance to road)
-	-> Possibly it's not the building that does so, but rather the layer that does this check. I think that makes more sense.
-
-BUG: Demolishing things sometimes messes up and they're only removed from *some* sectors
-
 Power: Store distance-to-power-network per tile, update it like distance-to-road, and then consider all tiles with distance <= 2 (for example) as the same network! Shouldn't be much more complicated than our current calculation.
 	-> (Water would be different, because the "spread" from a water pipe does not connect the pipe networks together... Assuming we do things that way. I think the SC2K system had zones carry water as well as power.)
 

@@ -432,7 +432,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 	// Expand the area to account for buildings to the left or up from it
 	// (but don't do that if we only care about origins)
 	s32 expansion = requireOriginInArea ? 0 : buildingCatalogue.overallMaxBuildingDim;
-	Rect2I expandedArea = expand(area, expansion, 0, expansion, 0);
+	Rect2I expandedArea = expand(area, expansion, 0, 0, expansion);
 	Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
 	for (s32 sY = sectorsArea.y;
