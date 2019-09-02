@@ -33,14 +33,30 @@ void freePowerNetwork(PowerNetwork *network)
 	clear(&network->groups);
 }
 
-inline u8 getPowerGroupID(PowerSector *sector, s32 x, s32 y)
+inline u8 getPowerGroupID(PowerSector *sector, s32 relX, s32 relY)
 {
-	return *getSectorTile(sector, sector->tilePowerGroup, x, y);
+	return *getSectorTile(sector, sector->tilePowerGroup, relX, relY);
 }
 
-inline void setPowerGroupID(PowerSector *sector, s32 x, s32 y, u8 value)
+inline void setPowerGroupID(PowerSector *sector, s32 relX, s32 relY, u8 value)
 {
-	setSectorTile(sector, sector->tilePowerGroup, x, y, value);
+	setSectorTile(sector, sector->tilePowerGroup, relX, relY, value);
+}
+
+PowerGroup *getPowerGroupAt(PowerSector *sector, s32 relX, s32 relY)
+{
+	PowerGroup *result = null;
+
+	if (sector != null)
+	{
+		s32 powerGroupID = getPowerGroupID(sector, relX, relY);
+		if (powerGroupID != 0 && powerGroupID != POWER_GROUP_UNKNOWN)
+		{
+			result = get(&sector->powerGroups, powerGroupID - 1);
+		}
+	}
+
+	return result;
 }
 
 void updateSectorPowerValues(City *city, PowerSector *sector)
@@ -198,6 +214,16 @@ void markPowerLayerDirty(PowerLayer *layer, Rect2I area)
 	layer->isDirty = true;
 }
 
+void addBuildingToPowerLayer(PowerLayer *layer, Building *building)
+{
+	PowerSector *sector = getSectorAtTilePos(&layer->sectors, building->footprint.x, building->footprint.y);
+	PowerGroup *group = getPowerGroupAt(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
+	if (group != null)
+	{
+		append(&group->buildings, getReferenceTo(building));
+	}
+}
+
 void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 {
 	DEBUG_FUNCTION();
@@ -299,9 +325,13 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 		next(&it))
 	{
 		Building *building = getValue(it);
+		if (getBuildingDef(building->typeID)->power == 0) continue; // We only care about powered buildings!
+
 		if (contains(sector->bounds, building->footprint.pos))
 		{
-			PowerGroup *group = get(&sector->powerGroups, getPowerGroupID(sector, building->footprint.x, building->footprint.y));
+			PowerGroup *group = getPowerGroupAt(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
+
+			ASSERT(group != null);
 			append(&group->buildings, getReferenceTo(building));
 		}
 	}

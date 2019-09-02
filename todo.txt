@@ -21,10 +21,11 @@ BuildingRef thing.
 
 Buildings periodically check their needs are met. (eg, power, distance to road)
 	-> Possibly it's not the building that does so, but rather the layer that does this check. I think that makes more sense.
-	!!! Zoned buildings don't notice if there is no power when they grow. I think this is because a zoned building growing doesn't mark the area as dirty, so the PowerLayer doesn't update. Investigate this!
-		-> Could manually add grown buildings to their respective power groups, or notify the layer that the sector is dirty, or... something else maybe!
 
 BUG: Demolishing things sometimes messes up and they're only removed from *some* sectors
+
+Power: Store distance-to-power-network per tile, update it like distance-to-road, and then consider all tiles with distance <= 2 (for example) as the same network! Shouldn't be much more complicated than our current calculation.
+	-> (Water would be different, because the "spread" from a water pipe does not connect the pipe networks together... Assuming we do things that way. I think the SC2K system had zones carry water as well as power.)
 
 SECTORS:
 - After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)

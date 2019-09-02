@@ -65,8 +65,9 @@ PowerNetwork *getPowerNetworkAt(PowerLayer *powerLayer, s32 x, s32 y);
 PowerNetwork *newPowerNetwork(PowerLayer *layer);
 void freePowerNetwork(PowerNetwork *network);
 
-u8 getPowerGroupID(PowerSector *sector, s32 x, s32 y);
-void setPowerGroupID(PowerSector *sector, s32 x, s32 y, u8 value);
+u8 getPowerGroupID(PowerSector *sector, s32 relX, s32 relY);
+void setPowerGroupID(PowerSector *sector, s32 relX, s32 relY, u8 value);
+PowerGroup *getPowerGroupAt(PowerSector *sector, s32 relX, s32 relY);
 
 void updateSectorPowerValues(City *city, PowerSector *sector);
 
