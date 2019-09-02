@@ -62,6 +62,7 @@ void updatePowerLayer(City *city, PowerLayer *layer);
 void markPowerLayerDirty(PowerLayer *layer, Rect2I area);
 bool doesTileHavePowerNetwork(City *city, s32 x, s32 y);
 PowerNetwork *getPowerNetworkAt(PowerLayer *powerLayer, s32 x, s32 y);
+u8 getDistanceToPower(City *city, s32 x, s32 y);
 
 
 // Private-but-actually-still-accessible API

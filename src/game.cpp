@@ -350,6 +350,8 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		}));
 	}
 
+	window_label(context, myprintf("Distance to power: {0}", {formatInt(getDistanceToPower(city, tilePos.x, tilePos.y))}));
+
 	// Transport
 	for (s32 transportType = 0; transportType < TransportTypeCount; transportType++)
 	{

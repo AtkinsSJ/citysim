@@ -53,3 +53,22 @@ inline bool isDirty(DirtyRects *dirtyRects)
 {
 	return dirtyRects->rects.count > 0;
 }
+
+Rect2I getOverallRect(DirtyRects *dirtyRects)
+{
+	Rect2I result = irectXYWH(0,0,0,0);
+
+	if (dirtyRects->rects.count > 0)
+	{
+		result = *get(&dirtyRects->rects, 0);
+
+		for (auto it = iterate(&dirtyRects->rects, 1, false);
+			!it.isDone;
+			next(&it))
+		{
+			result = unionOf(result, getValue(it));
+		}
+	}
+
+	return result;
+}
