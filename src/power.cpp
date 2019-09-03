@@ -12,7 +12,7 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	layer->tilePowerDistance = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tilePowerDistance, 255, cityArea);
 	layer->powerMaxDistance = 2;
-	initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance);
+	initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
 
 	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)

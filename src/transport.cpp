@@ -6,7 +6,7 @@ void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameAren
 	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, cityArea);
 
 	layer->transportMaxDistance = 8;
-	initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance);
+	initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance, city->bounds);
 
 	for (s32 type = 0; type < TransportTypeCount; type++)
 	{

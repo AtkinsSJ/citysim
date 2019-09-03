@@ -1,17 +1,23 @@
 #pragma once
 
-void initDirtyRects(DirtyRects *dirtyRects, MemoryArena *arena, s32 expansionRadius)
+void initDirtyRects(DirtyRects *dirtyRects, MemoryArena *arena, s32 expansionRadius, Rect2I bounds)
 {
 	*dirtyRects = {};
 	initChunkedArray(&dirtyRects->rects, arena, 32);
 	dirtyRects->expansionRadius = expansionRadius;
+	dirtyRects->bounds = bounds;
 }
 
-void markRectAsDirty(DirtyRects *dirtyRects, Rect2I bounds)
+void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 {
 	bool added = false;
 
-	Rect2I rectToAdd = expand(bounds, dirtyRects->expansionRadius);
+	Rect2I rectToAdd = expand(rect, dirtyRects->expansionRadius);
+
+	if (areaOf(dirtyRects->bounds) > 0)
+	{
+		rectToAdd = intersect(rectToAdd, dirtyRects->bounds);
+	}
 
 	// Check to see if this rectangle is contained by an existing dirty rect
 	for (auto it = iterate(&dirtyRects->rects);
