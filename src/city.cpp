@@ -368,6 +368,10 @@ void demolishRect(City *city, Rect2I area)
 					removeAllTransportFromTile(city, x, y); // We have to do this for building textures...
 				}
 			}
+
+			markZonesAsEmpty(city, buildingFootprint);
+			markPowerLayerDirty(&city->powerLayer, buildingFootprint);
+			markTransportLayerDirty(&city->transportLayer, buildingFootprint);
 		}
 
 		// Expand the area to account for buildings to the left or up from it
