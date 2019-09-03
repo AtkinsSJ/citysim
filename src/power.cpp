@@ -255,8 +255,6 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	fillMemory<u8>(sector->tilePowerGroup, 0, sizeof(sector->tilePowerGroup[0]) * areaOf(sector->bounds));
 
 	// Step 1: Set all power-carrying tiles to POWER_GROUP_UNKNOWN (everything was set to 0 in the above memset())
-
-#if 1
 	for (s32 relY = 0;
 		relY < sector->bounds.h;
 		relY++)
@@ -267,7 +265,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 		{
 			u8 distanceToPower = getTileValue(city, layer->tilePowerDistance, relX + sector->bounds.x, relY + sector->bounds.y);
 
-			if (distanceToPower <= 2)
+			if (distanceToPower <= 1)
 			{
 				setPowerGroupID(sector, relX, relY, POWER_GROUP_UNKNOWN);
 			}
@@ -277,51 +275,6 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 			}
 		}
 	}
-#else
-	// - Step 1.1, iterate through our owned buildings and mark their tiles if they carry power
-	for (auto it = iterate(&sectorBuildings);
-		!it.isDone;
-		next(&it))
-	{
-		Building *building = getValue(it);
-		BuildingDef *def = getBuildingDef(building->typeID);
-
-		if (def->flags & Building_CarriesPower)
-		{
-			setRectPowerGroupUnknown(sector, building->footprint);
-		}
-	}
-
-	// - Step 1.2, go through each tile that hasn't already been marked, and check it.
-	//   (eg, zones and non-local buildings can carry power)
-	for (s32 relY = 0;
-		relY < sector->bounds.h;
-		relY++)
-	{
-		for (s32 relX = 0;
-			relX < sector->bounds.w;
-			relX++)
-		{
-			// Skip any that have already been set (by step 1.1)
-			if (getPowerGroupID(sector, relX, relY) == POWER_GROUP_UNKNOWN) continue;
-
-			ZoneType zone = getZoneAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
-			if (getZoneDef(zone).carriesPower)
-			{
-				setPowerGroupID(sector, relX, relY, POWER_GROUP_UNKNOWN);
-			}
-			else
-			{
-				Building *building = getBuildingAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
-				if (building != null && (getBuildingDef(building->typeID)->flags & Building_CarriesPower))
-				{
-					// Set the building's whole area, so we only do 1 getBuildingAt() lookup per building
-					setRectPowerGroupUnknown(sector, building->footprint);
-				}
-			}
-		}
-	}
-#endif
 
 	// Step 2: Flood fill each -1 tile as a local PowerGroup
 	for (s32 relY = 0;
@@ -574,7 +527,7 @@ void floodFillCityPowerNetwork(PowerLayer *layer, PowerGroup *powerGroup, PowerN
 	}
 }
 
-void recalculatePowerConnectivity(City *city, PowerLayer *layer)
+void recalculatePowerConnectivity(PowerLayer *layer)
 {
 	DEBUG_FUNCTION();
 
@@ -652,6 +605,10 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 					{
 						setTile<u8>(city, layer->tilePowerDistance, x, y, 0);
 					}
+					else if (getZoneDef(getZoneAt(city, x, y)).carriesPower)
+					{
+						setTile<u8>(city, layer->tilePowerDistance, x, y, 0);
+					}
 					else
 					{
 						setTile<u8>(city, layer->tilePowerDistance, x, y, 255);
@@ -701,32 +658,6 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 			}
 		}
 
-		// Reset the power groups for the area to 0 (no power group) or POWER_GROUP_UNKNOWN
-		// for (auto it = iterate(&layer->dirtyRects.rects);
-		// 	!it.isDone;
-		// 	next(&it))
-		// {
-		// 	Rect2I dirtyRect = expand(getValue(it), layer->powerMaxDistance);
-			
-		// 	for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
-		// 	{
-		// 		for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
-		// 		{
-		// 			u8 distanceToPower = getTileValue(city, layer->tilePowerDistance, x, y);
-		// 			PowerSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
-
-		// 			if (distanceToPower <= 2)
-		// 			{
-		// 				setPowerGroupID(sector, x - sector->bounds.x, y - sector->bounds.y, POWER_GROUP_UNKNOWN);
-		// 			}
-		// 			else
-		// 			{
-		// 				setPowerGroupID(sector, x - sector->bounds.x, y - sector->bounds.y, 0);
-		// 			}
-		// 		}
-		// 	}
-		// }
-
 		// Rebuild the sectors
 		// TODO: Instead of this, construct above a list of sectors that were touched, and update those.
 		Rect2I sectorsRect = getSectorsCovered(&layer->sectors, expand(getOverallRect(&layer->dirtyRects), layer->powerMaxDistance));
@@ -740,7 +671,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 			}
 		}
 
-		recalculatePowerConnectivity(city, layer);
+		recalculatePowerConnectivity(layer);
 		clearDirtyRects(&layer->dirtyRects);
 	}
 
