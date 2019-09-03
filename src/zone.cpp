@@ -2,9 +2,9 @@
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
-	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, city->width * city->height);
+	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, areaOf(city->bounds));
 
-	initSectorGrid(&zoneLayer->sectors, gameArena, city->width, city->height, 16);
+	initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
 	for (s32 zoneType = 0; zoneType < ZoneCount; zoneType++)

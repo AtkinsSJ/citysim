@@ -8,13 +8,13 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
 	initChunkPool(&layer->buildingRefsChunkPool, gameArena, 128);
 
-	s32 cityArea = city->width * city->height;
+	s32 cityArea = areaOf(city->bounds);
 	layer->tilePowerDistance = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tilePowerDistance, 255, cityArea);
 	layer->powerMaxDistance = 2;
 	initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance);
 
-	initSectorGrid(&layer->sectors, gameArena, city->width, city->height, 16);
+	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
 	{
 		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
@@ -365,7 +365,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	}
 
 	// - Step 4.2: Right edge
-	if (sector->bounds.x + sector->bounds.w < city->width)
+	if (sector->bounds.x + sector->bounds.w < city->bounds.w)
 	{
 		u8 currentPGId = 0;
 		Rect2I *currentBoundary = null;
@@ -437,7 +437,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	}
 
 	// - Step 4.4: Bottom edge
-	if (sector->bounds.y + sector->bounds.h < city->height)
+	if (sector->bounds.y + sector->bounds.h < city->bounds.h)
 	{
 		u8 currentPGId = 0;
 		Rect2I *currentBoundary = null;

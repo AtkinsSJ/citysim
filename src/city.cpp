@@ -7,8 +7,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	city->name = name;
 	city->funds = funds;
-	city->width = width;
-	city->height = height;
+	city->bounds = irectXYWH(0, 0, width, height);
 
 	s32 cityArea = width * height;
 	city->terrain           = allocateMultiple<Terrain>(gameArena, cityArea);
@@ -78,8 +77,8 @@ void generateTerrain(City *city)
 	// TODO: Replace this with a direct lookup!
 	BuildingDef *bTree = findBuildingDef(makeString("Tree"));
 
-	for (s32 y = 0; y < city->height; y++) {
-		for (s32 x = 0; x < city->width; x++) {
+	for (s32 y = 0; y < city->bounds.h; y++) {
+		for (s32 x = 0; x < city->bounds.w; x++) {
 
 			f32 px = (f32)x * 0.05f;
 			f32 py = (f32)y * 0.05f;
@@ -110,20 +109,20 @@ void generateTerrain(City *city)
 
 inline bool tileExists(City *city, s32 x, s32 y)
 {
-	return (x >= 0) && (x < city->width)
-		&& (y >= 0) && (y < city->height);
+	return (x >= 0) && (x < city->bounds.w)
+		&& (y >= 0) && (y < city->bounds.h);
 }
 
 template<typename T>
 inline T *getTile(City *city, T *tiles, s32 x, s32 y)
 {
-	return tiles + ((y * city->width) + x);
+	return tiles + ((y * city->bounds.w) + x);
 }
 
 template<typename T>
 inline T getTileValue(City *city, T *tiles, s32 x, s32 y)
 {
-	return tiles[((y * city->width) + x)];
+	return tiles[((y * city->bounds.w) + x)];
 }
 
 template<typename T>
@@ -142,7 +141,7 @@ inline T getTileValueIfExists(City *city, T *tiles, s32 x, s32 y, T defaultValue
 template<typename T>
 inline void setTile(City *city, T *tiles, s32 x, s32 y, T value)
 {
-	tiles[(y * city->width) + x] = value;
+	tiles[(y * city->bounds.w) + x] = value;
 }
 
 inline bool canAfford(City *city, s32 cost)
@@ -168,7 +167,7 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
 	// Are we in bounds?
-	if (!contains(irectXYWH(0,0, city->width, city->height), footprint))
+	if (!contains(irectXYWH(0,0, city->bounds.w, city->bounds.h), footprint))
 	{
 		return false;
 	}

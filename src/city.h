@@ -27,7 +27,7 @@ struct City
 	s32 funds;
 	s32 monthlyExpenditure;
 
-	s32 width, height;
+	Rect2I bounds;
 	Terrain *terrain;
 
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!

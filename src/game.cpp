@@ -14,9 +14,9 @@ GameState *beginNewGame()
 
 	result->actionMode = ActionMode_None;
 
-	result->worldDragState.citySize = v2i(result->city.width, result->city.height);
+	result->worldDragState.citySize = result->city.bounds.size;
 
-	renderer->worldCamera.pos = v2(result->city.width/2, result->city.height/2);
+	renderer->worldCamera.pos = v2(result->city.bounds.size) / 2;
 
 	return result;
 }
@@ -601,7 +601,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	Camera *uiCamera    = &renderer->uiCamera;
 	if (gameState->status == GameStatus_Playing)
 	{
-		inputMoveCamera(worldCamera, uiCamera->size, uiCamera->mousePos, gameState->city.width, gameState->city.height);
+		inputMoveCamera(worldCamera, uiCamera->size, uiCamera->mousePos, gameState->city.bounds.w, gameState->city.bounds.h);
 	}
 
 	V2I mouseTilePos = v2i(worldCamera->mousePos);
@@ -827,7 +827,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	Rect2I visibleTileBounds = irectCentreSize(
 		v2i(worldCamera->pos), v2i(worldCamera->size / worldCamera->zoom) + v2i(3, 3)
 	);
-	visibleTileBounds = intersect(visibleTileBounds, irectXYWH(0, 0, city->width, city->height));
+	visibleTileBounds = intersect(visibleTileBounds, city->bounds);
 
 	drawCity(city, visibleTileBounds, demolitionRect);
 

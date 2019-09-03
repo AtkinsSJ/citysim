@@ -2,7 +2,7 @@
 
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena)
 {
-	s32 cityArea = city->width * city->height;
+	s32 cityArea = areaOf(city->bounds);
 	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, cityArea);
 
 	layer->transportMaxDistance = 8;

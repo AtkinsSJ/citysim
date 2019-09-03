@@ -20,6 +20,8 @@ Add newline support to .text files!
 Power: Store distance-to-power-network per tile, update it like distance-to-road, and then consider all tiles with distance <= 2 (for example) as the same network! Shouldn't be much more complicated than our current calculation.
 	-> (Water would be different, because the "spread" from a water pipe does not connect the pipe networks together... Assuming we do things that way. I think the SC2K system had zones carry water as well as power.)
 
+Make DirtyRects crop incoming expanded rects to the city bounds.
+
 demolishing a rect doesn't correctly add dirty rects for buildings demolished that cross the edge of the demolition rect!
 
 Should all the XLayer functions take the Layer instead of the City? 
