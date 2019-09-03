@@ -2,7 +2,6 @@
 
 void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 {
-	initDirtyRects(&layer->dirtyRects, gameArena);
 
 	initChunkedArray(&layer->networks, gameArena, 64);
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
@@ -13,6 +12,7 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	layer->tilePowerDistance = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tilePowerDistance, 255, cityArea);
 	layer->powerMaxDistance = 2;
+	initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance);
 
 	initSectorGrid(&layer->sectors, gameArena, city->width, city->height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
@@ -591,12 +591,9 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 			Rect2I dirtyRect = getValue(it);
 
 			// Clear the "distance to power" for the surrounding area to 0 or 255
-			Rect2I distanceRect = expand(dirtyRect, layer->powerMaxDistance);
-			*get(it) = distanceRect;
-
-			for (s32 y = distanceRect.y; y < distanceRect.y + distanceRect.h; y++)
+			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
 			{
-				for (s32 x = distanceRect.x; x < distanceRect.x + distanceRect.w; x++)
+				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
 				{
 					Building *building = getBuildingAt(city, x, y);
 					BuildingDef *def = null;
@@ -621,7 +618,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 			}
 
 			// Add the sectors to the list of touched sectors
-			Rect2I sectorsRect = getSectorsCovered(&layer->sectors, distanceRect);
+			Rect2I sectorsRect = getSectorsCovered(&layer->sectors, dirtyRect);
 			for (s32 sY = sectorsRect.y; sY < sectorsRect.y + sectorsRect.h; sY++)
 			{
 				for (s32 sX = sectorsRect.x; sX < sectorsRect.x + sectorsRect.w; sX++)

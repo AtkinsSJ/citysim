@@ -2,12 +2,11 @@
 
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena)
 {
-	initDirtyRects(&layer->dirtyRects, gameArena);
-
 	s32 cityArea = city->width * city->height;
 	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, cityArea);
 
 	layer->transportMaxDistance = 8;
+	initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance);
 
 	for (s32 type = 0; type < TransportTypeCount; type++)
 	{
@@ -57,12 +56,9 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 			}
 
 			// Clear the surrounding "distance to road" stuff from the rectangle
-			Rect2I distanceChangedRect = intersect(expand(dirtyRect, layer->transportMaxDistance), irectXYWH(0,0,city->width, city->height));
-			*get(it) = distanceChangedRect; // NB: We do this here so we don't have to do expand() over and over again below.
-
-			for (s32 y = distanceChangedRect.y; y < distanceChangedRect.y + distanceChangedRect.h; y++)
+			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
 			{
-				for (s32 x = distanceChangedRect.x; x < distanceChangedRect.x + distanceChangedRect.w; x++)
+				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
 				{
 					for (s32 type = 0; type < TransportTypeCount; type++)
 					{

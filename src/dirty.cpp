@@ -1,13 +1,17 @@
 #pragma once
 
-void initDirtyRects(DirtyRects *dirtyRects, MemoryArena *arena)
+void initDirtyRects(DirtyRects *dirtyRects, MemoryArena *arena, s32 expansionRadius)
 {
+	*dirtyRects = {};
 	initChunkedArray(&dirtyRects->rects, arena, 32);
+	dirtyRects->expansionRadius = expansionRadius;
 }
 
 void markRectAsDirty(DirtyRects *dirtyRects, Rect2I bounds)
 {
 	bool added = false;
+
+	Rect2I rectToAdd = expand(bounds, dirtyRects->expansionRadius);
 
 	// Check to see if this rectangle is contained by an existing dirty rect
 	for (auto it = iterate(&dirtyRects->rects);
@@ -16,7 +20,7 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I bounds)
 	{
 		Rect2I *existingRect = get(it);
 
-		if (contains(*existingRect, bounds))
+		if (contains(*existingRect, rectToAdd))
 		{
 			added = true;
 			break;
@@ -31,7 +35,7 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I bounds)
 			next(&it))
 		{
 			Rect2I existingRect = getValue(it);
-			if (contains(bounds, existingRect))
+			if (contains(rectToAdd, existingRect))
 			{
 				removeIndex(&dirtyRects->rects, getIndex(it), false);
 			}
@@ -40,7 +44,7 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I bounds)
 
 	if (!added)
 	{
-		append(&dirtyRects->rects, bounds);
+		append(&dirtyRects->rects, rectToAdd);
 	}
 }
 
