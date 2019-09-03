@@ -17,31 +17,6 @@ Notes for searching:
 
 Add newline support to .text files!
 
-Power: Store distance-to-power-network per tile, update it like distance-to-road, and then consider all tiles with distance <= 2 (for example) as the same network! Shouldn't be much more complicated than our current calculation.
-	-> (Water would be different, because the "spread" from a water pipe does not connect the pipe networks together... Assuming we do things that way. I think the SC2K system had zones carry water as well as power.)
-
-Should all the XLayer functions take the Layer instead of the City? 
-
-SECTORS:
-- After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)
-	- Sectors are supposed to *speed up* things, not slow them down!
-	- Good uses:
-		- Power network information
-		- Querying buildings in an area (I think? It's still a bit unwieldy, but I don't know a better way of avoiding hitting the same building multiple times.)
-		- The ZoneSectorFlags and similar, for recording metadata about an area, for faster checking
-		- Statistics maybe
-	- Stick to flat arrays instead:
-		- Terrain, Zones, and any other kind of per-tile data that doesn't need to be dealt with in aggregate.
-💡 THINK: Is there some way of making the network graph calculation work by making small changes instead of having to recompute the whole thing?
-	- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
-	- RESEARCH GRAPH THEORY STUFF!
-		- An edge that will split the graph in two is called a "bridge". https://stackoverflow.com/questions/1566967/checking-if-removing-an-edge-in-a-graph-will-result-in-the-graph-splitting
-		- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
-- Transport networks
-	- Similar stuff to how power works, so figure that out first
-	- Rather than isPath, do a bitfield of some kind that marks vehicle types that can travel across that tile.
-		- Later we may want SC4-style subcategories like "lorry" and "bus" but for now we can just divide it into "road" and "rail". The thought is eventually we might record separate networks for road/rail but each one has a bitfield for subcategories... but really, that's massive overkill right now!
-	- May want to store distance-to-road information in a per-tile array, for speed. If we have a maximum distance, eg 8, which is more than any system needs to check, then recalculating the distance when something changes will only modify a small area instead of potentially having to recalculate the whole thing - but you still get a useful distance value!
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)
@@ -75,8 +50,6 @@ Debug system:
 ------------------------------------------------
 
 Things to work on next maybe:
-- Power stations and connectivity and consumption?
-- Zones actually spawn stuff
 - Maintain a graph of the power network, so we can recalculate a small portion when things change instead of rebuilding the whole thing
 	- I think we already have enough information actually? PowerNetwork keeps a list of its Groups, and when we change a sector, only 3 things can happen: 1) nothing, 2) splitting a network into multiple parts, or 3) merging networks.
 		Detecting 3) is easy - just see if all the boundaries of the group are the same network. If not, it's a merge!
@@ -84,9 +57,6 @@ Things to work on next maybe:
 		Detecting 1) is just a case of realising neither 2 or 3 happened!
 	- Related to this, we'd want to put networks in a structure that keeps their indices rather than rearranging them when adding/removing networks. (Because merging networks simply would involve moving all the groups from B into A, which would leave a gap at B's index.) I'm starting to want this structure more and more so I'd better implement it!
 - Break the world into Sectors, each of which handles local information. (Power, path connectivity etc)
-	- Transport, power, water, and probably other things, all rely heavily on a flood-fill connectivity check to know what parts of the city are relevant, and it's expensive to recalculate the entire map any time something changes. If we break this into two parts, within-chunk and between-chunks, we'd only need to recalculate at most a single chunk, and then the sectors graph itself. The downside is this is more complicated.
-	- This means each sector would have its own list of PowerGroups, etc. That starts to get messy memory-wise, I don't think something like that would work with our MemoryArena approach. IDK, maybe we could be really sloppy and allocate tons of them? Or put all those things in a central place? Actually that makes more sense.
-	- This also goes towards a few "nice to have" things, like expandable or infinite maps that stream sectors in and out as you move around, or multi-threaded simulation processing (calculate the power network for several sectors simultaneously).
 	- Took me WAY TOO LONG to find this: Tynan Sylvester's description of Rimworld's region system: https://www.youtube.com/watch?v=RMBQn_sg7DA
 		- OK, so his works differently to how I remembered - regions are not a strict grid. They don't find their neighbours spatially, but by using a global hash of the (x, y, direction and length) of each edge.
 		- Each region knows which connectivity group ("room") it is part of, by direct pointer to the Room struct.
@@ -97,7 +67,6 @@ Things to work on next maybe:
 		- Maybe a hybrid - world is broken down into regular-sized sectors, eg 16x16. (Maybe not 16x16 if we're using it for hash purposes! 15 or a prime number might be better then.) Each one contains some number of road regions, and power regions, etc. It also keeps some statistics, like how many jobs and residents are inside it. It knows which buildings are in it. It could even cache the sprites inside it, eg a single "mesh" for the terrain. It also has flags, eg "there are valid empty R zones", "contains industry", or "there's a fire", which would speed up searches for things. 
 	- Other stuff we could put in sectors:
 		- List of service buildings whose areas of effect cover part of this sector, by service type. (Health, fire, police etc)
-- Record the max building w or h somewhere so we can be smarter about how wide a margin of Sectors around the edge we check when querying buildings withing an area. (eg calculateDemolitionCost()) Currently we check ALL the Sectors that are up or left!
 
 BUG: We get frame hitching at almost regular intervals. Profiling says it's caused by renderBuffer() sometimes taking twice as long. Need to identify this!
 	It's not just rendering code taking twice as long, it's some other seemingly random (but consistent) functions too. I really don't know why.
@@ -128,6 +97,16 @@ Split the game code from the platform code
 - platform handles the renderer, input and memory.
 - game has a single entry point function that's run once per frame.
 - Related, we could do with more clearly separating the various systems, it's all a confusing, coupled, spaghetti mess right now.
+
+💡 THINK: Is there some way of making the network graph (and similar) calculation work by making small changes instead of having to recompute the whole thing?
+	- When recalculating the groups in a sector, do the "edge-of-sector border" checks, to find connected outside ones. We could detect network merges easily (a group is connected to other-sector groups with different networks) but splits are hard, I'm not sure how we could do that.
+	- RESEARCH GRAPH THEORY STUFF!
+		- An edge that will split the graph in two is called a "bridge". https://stackoverflow.com/questions/1566967/checking-if-removing-an-edge-in-a-graph-will-result-in-the-graph-splitting
+		- Probably we want to store the graph itself, and track if a powergroup is a "bridge" as we go. That way, We know when we remove it that this has happened, and can rebuild only the networks that were connected to it. (Or maybe trigger a full rebuild, but at least we'd know that it's needed! If a powergroup isn't a bridge, we don't need to do anything, except update the connected powergroups so they know it was removed, and recalculate if they themselves are now bridges.)
+
+
+Transport networks
+- Later we may want SC4-style subcategories like "lorry" and "bus" but for now we can just divide it into "road" and "rail". The thought is eventually we might record separate networks for road/rail but each one has a bitfield for subcategories... but really, that's massive overkill right now!
 
 GUI
 - Convert Toasts (née UI-Messages) to use windows too
@@ -251,6 +230,8 @@ Simcity 4 map sizes: 64x64 (~1km), 128x128 (~2km), 256x256 (~4km)
 (Simcity 3000 map size info is harder to find, but apparently the largest is also 256x256 tiles)
 
 SC3K does indeed model individual power networks, not just "is it connected to a power station" and "is the total of consumption < total production".
+
+SC3K notes: https://simpage.net/simcity3/tips.shtml
 
 -------------------------------------------------
 
