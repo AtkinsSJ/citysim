@@ -581,6 +581,9 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 	if (isDirty(&layer->dirtyRects))
 	{
+		Set<PowerSector *> touchedSectors;
+		initSet(&touchedSectors, tempArena);
+
 		for (auto it = iterate(&layer->dirtyRects.rects);
 			!it.isDone;
 			next(&it))
@@ -613,6 +616,16 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 					{
 						setTile<u8>(city, layer->tilePowerDistance, x, y, 255);
 					}
+				}
+			}
+
+			// Add the sectors to the list of touched sectors
+			Rect2I sectorsRect = getSectorsCovered(&layer->sectors, distanceRect);
+			for (s32 sY = sectorsRect.y; sY < sectorsRect.y + sectorsRect.h; sY++)
+			{
+				for (s32 sX = sectorsRect.x; sX < sectorsRect.x + sectorsRect.w; sX++)
+				{
+					add(&touchedSectors, getSector(&layer->sectors, sX, sY));
 				}
 			}
 		}
@@ -658,18 +671,25 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 			}
 		}
 
-		// Rebuild the sectors
-		// TODO: Instead of this, construct above a list of sectors that were touched, and update those.
-		Rect2I sectorsRect = getSectorsCovered(&layer->sectors, expand(getOverallRect(&layer->dirtyRects), layer->powerMaxDistance));
-		for (s32 sY = sectorsRect.y; sY < sectorsRect.y + sectorsRect.h; sY++)
+		// Rebuild the sectors that were modified
+		for (auto it = iterate(&touchedSectors); !isDone(&it); next(&it))
 		{
-			for (s32 sX = sectorsRect.x; sX < sectorsRect.x + sectorsRect.w; sX++)
-			{
-				PowerSector *sector = getSector(&layer->sectors, sX, sY);
+			PowerSector *sector = getValue(&it);
 
-				recalculateSectorPowerGroups(city, sector);
-			}
+			recalculateSectorPowerGroups(city, sector);
 		}
+
+		// TODO: Instead of this, construct above a list of sectors that were touched, and update those.
+		// Rect2I sectorsRect = getSectorsCovered(&layer->sectors, expand(getOverallRect(&layer->dirtyRects), layer->powerMaxDistance));
+		// for (s32 sY = sectorsRect.y; sY < sectorsRect.y + sectorsRect.h; sY++)
+		// {
+		// 	for (s32 sX = sectorsRect.x; sX < sectorsRect.x + sectorsRect.w; sX++)
+		// 	{
+		// 		PowerSector *sector = getSector(&layer->sectors, sX, sY);
+
+		// 		recalculateSectorPowerGroups(city, sector);
+		// 	}
+		// }
 
 		recalculatePowerConnectivity(layer);
 		clearDirtyRects(&layer->dirtyRects);
