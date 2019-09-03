@@ -1,10 +1,11 @@
 #pragma once
 
 template<typename T>
-void initSet(Set<T> *set, MemoryArena *arena)
+void initSet(Set<T> *set, MemoryArena *arena, bool (*areItemsEqual)(T *a, T *b))
 {
 	*set = {};
 	initChunkedArray(&set->items, arena, 64); // 64 is an arbitrary choice!
+	set->areItemsEqual = areItemsEqual;
 }
 
 template<typename T>
@@ -23,7 +24,7 @@ bool contains(Set<T> *set, T item)
 
 	for (auto it = iterate(&set->items); !it.isDone; next(&it))
 	{
-		if (equals(item, getValue(it)))
+		if (set->areItemsEqual(&item, get(it)))
 		{
 			result = true;
 			break;

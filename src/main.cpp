@@ -239,6 +239,7 @@ int main(int argc, char *argv[])
 
 	u32 initFinishedTicks = SDL_GetTicks();
 	logInfo("Game initialised in {0} milliseconds.", {formatInt(initFinishedTicks - initStartTicks)});
+
 	
 	// GAME LOOP
 	while (appState->appStatus != AppStatus_Quit)

@@ -8,10 +8,11 @@ struct Set
 	// For now, simple is better!
 	// - Sam, 03/09/2019
 	ChunkedArray<T> items;
+	bool (*areItemsEqual)(T *a, T *b);
 };
 
 template<typename T>
-void initSet(Set<T> *set, MemoryArena *arena);
+void initSet(Set<T> *set, MemoryArena *arena, bool (*areItemsEqual)(T *a, T *b) = [](T *a, T *b) { return *a == *b; });
 
 template<typename T>
 void add(Set<T> *set, T item);

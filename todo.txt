@@ -23,8 +23,6 @@ Power: Store distance-to-power-network per tile, update it like distance-to-road
 
 Should all the XLayer functions take the Layer instead of the City? 
 
-Set<T> struct
-
 SECTORS:
 - After some time working with this, I think we want to avoid using Sectors for per-tile data. It's too inconvenient to work with, and slow. Rather than a simple x,y array access, we have to get a sector from an array, and then translate the position into the sector's space, and then access the array. Iterating an area is even more awkward - we call getSectorsCovered() then do a 2d-iteration of that array, then each of those we intersect and then do a 2d iteration of THAT array. We're 4 loops deep before we really start doing anything, and it means one layer can't access other layers' data easily. eg, queryCanZoneTiles() has to check if each tile has buildable terrain and no buildings - each of those requires doing a sector lookup. It's super inefficient where before it would have been a quick, direct array access for each of those! (Well, probably hidden behind an inline function, but still.)
 	- Sectors are supposed to *speed up* things, not slow them down!

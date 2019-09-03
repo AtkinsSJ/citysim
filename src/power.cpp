@@ -582,7 +582,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 	if (isDirty(&layer->dirtyRects))
 	{
 		Set<PowerSector *> touchedSectors;
-		initSet(&touchedSectors, tempArena);
+		initSet<PowerSector *>(&touchedSectors, tempArena, [](PowerSector **a, PowerSector **b) { return *a == *b; });
 
 		for (auto it = iterate(&layer->dirtyRects.rects);
 			!it.isDone;
@@ -678,18 +678,6 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 			recalculateSectorPowerGroups(city, sector);
 		}
-
-		// TODO: Instead of this, construct above a list of sectors that were touched, and update those.
-		// Rect2I sectorsRect = getSectorsCovered(&layer->sectors, expand(getOverallRect(&layer->dirtyRects), layer->powerMaxDistance));
-		// for (s32 sY = sectorsRect.y; sY < sectorsRect.y + sectorsRect.h; sY++)
-		// {
-		// 	for (s32 sX = sectorsRect.x; sX < sectorsRect.x + sectorsRect.w; sX++)
-		// 	{
-		// 		PowerSector *sector = getSector(&layer->sectors, sX, sY);
-
-		// 		recalculateSectorPowerGroups(city, sector);
-		// 	}
-		// }
 
 		recalculatePowerConnectivity(layer);
 		clearDirtyRects(&layer->dirtyRects);
