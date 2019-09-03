@@ -74,47 +74,9 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		}
 
 		// Transport distance recalculation
-		// The simplest possible algorithm is, just spread the 0s out that we marked above.
-		// (If a tile is not 0, set it to the min() of its 8 neighbours, plus 1.)
-		// We have to iterate through the area `transportMaxDistance+1` times, but it should be fast enough probably.
-		for (s32 iteration = 0; iteration < layer->transportMaxDistance; iteration++)
+		for (s32 type = 0; type < TransportTypeCount; type++)
 		{
-			for (auto it = iterate(&layer->dirtyRects.rects);
-				!it.isDone;
-				next(&it))
-			{
-				// NB: The rects are already expanded, see above.
-				Rect2I dirtyRect = getValue(it);
-
-				for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
-				{
-					for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
-					{
-						for (s32 type = 0; type < TransportTypeCount; type++)
-						{
-							if (getTileValue(city, layer->tileTransportDistance[type], x, y) != 0)
-							{
-								u8 minDistance = min({
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y-1, 255),
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y-1, 255),
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y-1, 255),
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y  , 255),
-								//	getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y  , 255),
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y  , 255),
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x-1, y+1, 255),
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x  , y+1, 255),
-									getTileValueIfExists<u8>(city, layer->tileTransportDistance[type], x+1, y+1, 255),
-								});
-
-								if (minDistance != 255)  minDistance++;
-								if (minDistance > layer->transportMaxDistance)  minDistance = 255;
-
-								setTile<u8>(city, layer->tileTransportDistance[type], x, y, minDistance);
-							}
-						}
-					}
-				}
-			}
+			updateDistances(city, layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
 		}
 
 		clearDirtyRects(&layer->dirtyRects);

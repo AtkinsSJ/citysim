@@ -87,6 +87,8 @@ void updateSomeBuildings(City *city);
 s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
 
+void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 maxDistance);
+
 
 //
 // Private API

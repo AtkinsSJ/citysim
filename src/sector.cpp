@@ -1,7 +1,7 @@
 #pragma once
 
-template<typename SectorType>
-void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize)
+template<typename Sector>
+void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize)
 {
 	grid->width  = cityWidth;
 	grid->height = cityHeight;
@@ -9,7 +9,7 @@ void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWi
 	grid->sectorsX = divideCeil(cityWidth, sectorSize);
 	grid->sectorsY = divideCeil(cityHeight, sectorSize);
 
-	grid->sectors = allocateArray<SectorType>(arena, grid->sectorsX * grid->sectorsY);
+	grid->sectors = allocateArray<Sector>(arena, grid->sectorsX * grid->sectorsY);
 
 	s32 remainderWidth  = cityWidth  % sectorSize;
 	s32 remainderHeight = cityHeight % sectorSize;
@@ -17,7 +17,7 @@ void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWi
 	{
 		for (s32 x = 0; x < grid->sectorsX; x++)
 		{
-			SectorType *sector = &grid->sectors[(grid->sectorsX * y) + x];
+			Sector *sector = &grid->sectors[(grid->sectorsX * y) + x];
 
 			*sector = {};
 			sector->bounds = irectXYWH(x * sectorSize, y * sectorSize, sectorSize, sectorSize);
@@ -34,10 +34,10 @@ void initSectorGrid(SectorGrid<SectorType> *grid, MemoryArena *arena, s32 cityWi
 	}
 }
 
-template<typename SectorType>
-inline SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sectorY)
+template<typename Sector>
+inline Sector *getSector(SectorGrid<Sector> *grid, s32 sectorX, s32 sectorY)
 {
-	SectorType *result = null;
+	Sector *result = null;
 
 	if (sectorX >= 0 && sectorX < grid->sectorsX && sectorY >= 0 && sectorY < grid->sectorsY)
 	{
@@ -47,10 +47,10 @@ inline SectorType *getSector(SectorGrid<SectorType> *grid, s32 sectorX, s32 sect
 	return result;
 }
 
-template<typename SectorType>
-inline SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y)
+template<typename Sector>
+inline Sector *getSectorAtTilePos(SectorGrid<Sector> *grid, s32 x, s32 y)
 {
-	SectorType *result = null;
+	Sector *result = null;
 
 	if (x >= 0 && x < grid->width && y >= 0 && y < grid->height)
 	{
@@ -60,8 +60,8 @@ inline SectorType *getSectorAtTilePos(SectorGrid<SectorType> *grid, s32 x, s32 y
 	return result;
 }
 
-template<typename SectorType>
-inline Rect2I getSectorsCovered(SectorGrid<SectorType> *grid, Rect2I area)
+template<typename Sector>
+inline Rect2I getSectorsCovered(SectorGrid<Sector> *grid, Rect2I area)
 {
 	area = intersect(area, irectXYWH(0, 0, grid->width, grid->height));
 

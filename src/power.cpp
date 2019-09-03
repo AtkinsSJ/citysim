@@ -592,6 +592,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 			// Clear the "distance to power" for the surrounding area to 0 or 255
 			Rect2I distanceRect = expand(dirtyRect, layer->powerMaxDistance);
+			*get(it) = distanceRect;
 
 			for (s32 y = distanceRect.y; y < distanceRect.y + distanceRect.h; y++)
 			{
@@ -631,45 +632,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		}
 
 		// Recalculate distance
-		// @Copypasta from updateTransportLayer()
-		for (s32 iteration = 0; iteration < layer->powerMaxDistance; iteration++)
-		{
-			for (auto it = iterate(&layer->dirtyRects.rects);
-				!it.isDone;
-				next(&it))
-			{
-				Rect2I dirtyRect = expand(getValue(it), layer->powerMaxDistance);
-
-				for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
-				{
-					for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
-					{
-						for (s32 type = 0; type < TransportTypeCount; type++)
-						{
-							if (getTileValue(city, layer->tilePowerDistance, x, y) != 0)
-							{
-								u8 minDistance = min({
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x-1, y-1, 255),
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x  , y-1, 255),
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x+1, y-1, 255),
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x-1, y  , 255),
-								//	getTileValueIfExists<u8>(city, layer->tilePowerDistance, x  , y  , 255),
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x+1, y  , 255),
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x-1, y+1, 255),
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x  , y+1, 255),
-									getTileValueIfExists<u8>(city, layer->tilePowerDistance, x+1, y+1, 255),
-								});
-
-								if (minDistance != 255)  minDistance++;
-								if (minDistance > layer->powerMaxDistance)  minDistance = 255;
-
-								setTile<u8>(city, layer->tilePowerDistance, x, y, minDistance);
-							}
-						}
-					}
-				}
-			}
-		}
+		updateDistances(city, layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
 
 		// Rebuild the sectors that were modified
 		for (auto it = iterate(&touchedSectors); !isDone(&it); next(&it))
