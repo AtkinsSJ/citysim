@@ -31,8 +31,6 @@ struct City
 	Rect2I bounds;
 	Terrain *tileTerrain;
 
-	u8 *tileLandValue;
-
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
 	u32 highestBuildingID;
@@ -40,6 +38,7 @@ struct City
 
 	SectorGrid<CitySector> sectors;
 
+	LandValueLayer landValueLayer;
 	PowerLayer powerLayer;
 	TransportLayer transportLayer;
 	ZoneLayer zoneLayer;
@@ -53,10 +52,6 @@ struct City
 //
 void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds);
 void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
-
-void recalculateLandValue(City *city, Rect2I bounds);
-void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds);
-u8 getLandValueAt(City *city, s32 x, s32 y);
 
 void generateTerrain(City *city);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);

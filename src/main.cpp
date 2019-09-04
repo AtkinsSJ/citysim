@@ -74,6 +74,7 @@ struct City;
 
 #include "transport.h"
 #include "building.h"
+#include "land_value.h"
 #include "power.h"
 #include "terrain.h"
 #include "zone.h"
@@ -129,6 +130,7 @@ AppState globalAppState;
 #include "city.cpp"
 #include "zone.cpp"
 #include "transport.cpp"
+#include "land_value.cpp"
 #include "about.cpp"
 #include "game_mainmenu.cpp"
 #include "credits.cpp"
