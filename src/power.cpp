@@ -623,7 +623,7 @@ void recalculatePowerConnectivity(PowerLayer *layer)
 
 void updatePowerLayer(City *city, PowerLayer *layer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_Simulation);
 
 	if (isDirty(&layer->dirtyRects))
 	{

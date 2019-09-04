@@ -156,7 +156,7 @@ template<typename T>
 inline void fillMemory(T *memory, T value, smm length)
 {
 	T *currentElement = memory;
-	smm remainingBytes = length;
+	smm remainingBytes = length * sizeof(T);
 
 	while (remainingBytes > 0)
 	{
@@ -190,4 +190,16 @@ T *copyRegion(T *sourceArray, s32 sourceArrayWidth, s32 sourceArrayHeight, Rect2
 	}
 
 	return result;
+}
+
+template<typename T>
+void setRegion(T *array, s32 arrayWidth, s32 arrayHeight, Rect2I region, T value)
+{
+	ASSERT(contains(irectXYWH(0,0,arrayWidth, arrayHeight), region));
+
+	for (s32 y = region.y; y < region.y + region.h; y++)
+	{
+		// Set whole rows at a time
+		fillMemory<T>(array + (y * arrayWidth) + region.x, value, region.w);
+	}
 }

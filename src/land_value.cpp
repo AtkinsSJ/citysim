@@ -5,53 +5,143 @@ void initLandValueLayer(LandValueLayer *layer, City *city, MemoryArena *gameAren
 	s32 cityArea = areaOf(city->bounds);
 
 	layer->tileLandValue = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileLandValue, 128, cityArea);
+	fillMemory<u8>(layer->tileLandValue, 0, cityArea);
+
+	layer->tileBuildingContributions = allocateMultiple<s16>(gameArena, cityArea);
+	fillMemory<s16>(layer->tileBuildingContributions, 0, cityArea);
+
+	initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
+
+	// Mark whole city as needing recalculating
+	markRectAsDirty(&layer->dirtyRects, city->bounds);
 }
 
-void recalculateLandValue(City *city, Rect2I bounds)
+inline void markLandValueLayerDirty(LandValueLayer *layer, Rect2I bounds)
 {
-	LandValueLayer *layer = &city->landValueLayer;
+	markRectAsDirty(&layer->dirtyRects, bounds);
+}
 
-	for (s32 y = bounds.y; y < bounds.y + bounds.h; y++)
+void updateLandValueLayer(City *city, LandValueLayer *layer)
+{
+	DEBUG_FUNCTION_T(DCDT_Simulation);
+
+	if (isDirty(&layer->dirtyRects))
 	{
-		for (s32 x = bounds.x; x < bounds.x + bounds.w; x++)
+		// Recalculate the building contributions
+		for (auto rectIt = iterate(&layer->dirtyRects.rects);
+			!rectIt.isDone;
+			next(&rectIt))
 		{
-			// Right now, we have very little to base this on!
-			// This explains how SC3K does it: http://www.sc3000.com/knowledge/showarticle.cfm?id=1132
-			// (However, apparently SC3K has an overflow bug with land value, so ehhhhhh...)
-			// -> Maybe we should use a larger int or even a float for the land value. Memory is cheap!
-			//
-			// Anyway... being near water, and being near forest are positive.
-			// Pollution, crime, good service coverage, and building effects all play their part.
-			// So does terrain height if we ever implement non-flat terrain!
-			//
-			// Also, global effects can influence land value. AKA, is the city nice to live in?
-			//
-			// At some point it'd probably be sensible to cache some of the factors in intermediate arrays,
-			// eg the effects of buildings, or distance to water, so we don't have to do a search for them for each tile.
+			Rect2I dirtyRect = getValue(rectIt);
 
+			setRegion<s16>(layer->tileBuildingContributions, city->bounds.w, city->bounds.h, dirtyRect, 0);
 
-			f32 landValue = 0.1f;
-
-			// Waterfront = valuable
-			s32 waterTerrainType = findTerrainTypeByName(makeString("Water"));
-			s32 distanceToWater = calculateDistanceTo(city, x, y, 10, [&](City *city, s32 x, s32 y) {
-				return getTerrainAt(city, x, y)->type == waterTerrainType;
-			});
-			if (distanceToWater < 10)
+			ChunkedArray<Building *> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
+			for (auto buildingIt = iterate(&contributingBuildings);
+				!buildingIt.isDone;
+				next(&buildingIt))
 			{
-				landValue += (10 - distanceToWater) * 0.1f * 0.25f;
+				Building *building = getValue(buildingIt);
+				BuildingDef *def = getBuildingDef(building);
+				if (def->landValueEffect)
+				{
+					// Apply it!
+					V2I buildingCentre = centreOf(building->footprint);
+					s32 diameter = 1 + (def->landValueEffectRadius * 2);
+					f32 invRadius = 1.0f / (f32) def->landValueEffectRadius;
+					Rect2I possibleEffectArea = irectCentreSize(buildingCentre, v2i(diameter, diameter));
+					possibleEffectArea = intersect(possibleEffectArea, dirtyRect);
+
+					for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++)
+					{
+						for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++)
+						{
+							f32 distanceFromSource = lengthOf(x - buildingCentre.x, y - buildingCentre.y);
+							if (distanceFromSource <= def->landValueEffectRadius)
+							{
+								s16 originalValue = getTileValue(city, layer->tileBuildingContributions, x, y);
+								f32 contributionF = lerp((f32)def->landValueEffect, 0.0f, (distanceFromSource * invRadius));
+								s16 contribution = (s16)floor_s32(contributionF);
+
+								// This clamp is probably unnecessary but just in case.
+								s16 newValue = clamp<s16>(originalValue + contribution, s16Min, s16Max);
+								setTile(city, layer->tileBuildingContributions, x, y, newValue);
+							}
+						}
+					}
+				}
 			}
 
-			// Forest = valuable
-			// TODO: We'd probably rather put all building yimby/nimby effects in a separate array that's updated
-			// as buildings are constructed/demolished, because trying to look outwards to find any builidngs
-			// that could be influencing this tile is going to involve a lot of busywork!
-
-			 
-
-			setTile(city, layer->tileLandValue, x, y, clamp01AndMap(landValue));
+			// Now, clamp the tile values into the range we want!
+			// The above process may have overflowed the -255 to 255 range we want the values to be,
+			// but we don't clamp as we go along because then the end result might depend on the order that
+			// buildings are processed.
+			// eg, if we a total positive input of 1000 and a total negative of -900, the end result should be
+			// +100, but if we did all the positives first and then all the negatives, we'd clamp at +255, and
+			// then subtract the -900 and end up clamped to -255! (Or +255 if it happened the other way around.)
+			// So, we instead give ourselves a lot of extra breathing room, and only clamp values at the very end.
+			//
+			// - Sam, 04/09/2019
+			//
+			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
+			{
+				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
+				{
+					s16 originalValue = getTileValue(city, layer->tileBuildingContributions, x, y);
+					s16 newValue = clamp<s16>(originalValue, -255, 255);
+					setTile(city, layer->tileBuildingContributions, x, y, newValue);
+				}
+			}
 		}
+
+		// Recalculate overall value
+		for (auto rectIt = iterate(&layer->dirtyRects.rects);
+			!rectIt.isDone;
+			next(&rectIt))
+		{
+			Rect2I dirtyRect = getValue(rectIt);
+
+			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
+			{
+				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
+				{
+					// Right now, we have very little to base this on!
+					// This explains how SC3K does it: http://www.sc3000.com/knowledge/showarticle.cfm?id=1132
+					// (However, apparently SC3K has an overflow bug with land value, so ehhhhhh...)
+					// -> Maybe we should use a larger int or even a float for the land value. Memory is cheap!
+					//
+					// Anyway... being near water, and being near forest are positive.
+					// Pollution, crime, good service coverage, and building effects all play their part.
+					// So does terrain height if we ever implement non-flat terrain!
+					//
+					// Also, global effects can influence land value. AKA, is the city nice to live in?
+					//
+					// At some point it'd probably be sensible to cache some of the factors in intermediate arrays,
+					// eg the effects of buildings, or distance to water, so we don't have to do a search for them for each tile.
+
+
+					f32 landValue = 0.1f;
+
+					// Waterfront = valuable
+					s32 waterTerrainType = findTerrainTypeByName(makeString("Water"));
+					s32 distanceToWater = calculateDistanceTo(city, x, y, 10, [&](City *city, s32 x, s32 y) {
+						return getTerrainAt(city, x, y)->type == waterTerrainType;
+					});
+					if (distanceToWater < 10)
+					{
+						landValue += (10 - distanceToWater) * 0.1f * 0.25f;
+					}
+
+					// Building effects
+					f32 buildingEffect = getTileValue(city, layer->tileBuildingContributions, x, y) / 255.0f;
+					landValue += buildingEffect;
+
+					setTile(city, layer->tileLandValue, x, y, clamp01AndMap(landValue));
+				}
+			}
+		}
+
+		clearDirtyRects(&layer->dirtyRects);
 	}
 }
 

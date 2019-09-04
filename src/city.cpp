@@ -109,6 +109,13 @@ void generateTerrain(City *city)
 	}
 }
 
+void markAreaDirty(City *city, Rect2I bounds)
+{
+	markLandValueLayerDirty(&city->landValueLayer, bounds);
+	markPowerLayerDirty    (&city->powerLayer, bounds);
+	markTransportLayerDirty(&city->transportLayer, bounds);
+}
+
 inline bool tileExists(City *city, s32 x, s32 y)
 {
 	return (x >= 0) && (x < city->bounds.w)
@@ -266,8 +273,7 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 
 	if (markAreasDirty)
 	{
-		if (needToRecalcTransport)  markTransportLayerDirty(&city->transportLayer, footprint);
-		if (needToRecalcPower)      markPowerLayerDirty(&city->powerLayer, footprint);
+		markAreaDirty(city, footprint);
 	}
 }
 
@@ -306,11 +312,7 @@ void placeBuildingRect(City *city, BuildingDef *def, Rect2I area)
 		}
 	}
 
-	bool needToRecalcTransport = !isEmpty(&def->transportTypes);
-	bool needToRecalcPower = (def->flags & Building_CarriesPower);
-
-	if (needToRecalcTransport)  markTransportLayerDirty(&city->transportLayer, area);
-	if (needToRecalcPower)      markPowerLayerDirty(&city->powerLayer, area);
+	markAreaDirty(city, area);
 }
 
 s32 calculateDemolitionCost(City *city, Rect2I area)
@@ -374,8 +376,8 @@ void demolishRect(City *city, Rect2I area)
 			}
 
 			markZonesAsEmpty(city, buildingFootprint);
-			markPowerLayerDirty(&city->powerLayer, buildingFootprint);
-			markTransportLayerDirty(&city->transportLayer, buildingFootprint);
+
+			markAreaDirty(city, buildingFootprint);
 		}
 
 		// Expand the area to account for buildings to the left or up from it
@@ -418,12 +420,10 @@ void demolishRect(City *city, Rect2I area)
 
 		// Mark area as changed
 		markZonesAsEmpty(city, area);
-		markPowerLayerDirty(&city->powerLayer, area);
-		markTransportLayerDirty(&city->transportLayer, area);
+		markAreaDirty(city, area);
 
 		// Any buildings that would have connected with something that just got demolished need to refresh!
 		updateAdjacentBuildingTextures(city, area);
-
 	}
 }
 
@@ -487,6 +487,7 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 
 	// Draw sectors
 	// NB: this is really hacky debug code
+	if (false)
 	{
 		Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
 		DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleSectors));

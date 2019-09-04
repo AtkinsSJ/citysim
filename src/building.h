@@ -125,6 +125,8 @@ struct BuildingRef
 BuildingRef getReferenceTo(Building *building);
 Building *getBuilding(City *city, BuildingRef ref);
 
+BuildingDef *getBuildingDef(Building *building);
+
 void loadBuildingDefs(Blob data, Asset *asset);
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
 BuildingDef *getBuildingDef(s32 buildingTypeID);

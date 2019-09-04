@@ -53,6 +53,8 @@ struct City
 void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds);
 void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
 
+void markAreaDirty(City *city, Rect2I bounds);
+
 void generateTerrain(City *city);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 Terrain *getTerrainAt(City *city, s32 x, s32 y);

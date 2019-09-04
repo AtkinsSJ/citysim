@@ -9,7 +9,6 @@ GameState *beginNewGame()
 	s32 gameStartFunds = 1000000;
 	initCity(&result->gameArena, &result->gameRandom, &result->city, 133, 117, LOCAL("city_default_name"), gameStartFunds);
 	generateTerrain(&result->city);
-	recalculateLandValue(&result->city, result->city.bounds);
 
 	result->status = GameStatus_Playing;
 
@@ -586,6 +585,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
+		updateLandValueLayer(city, &city->landValueLayer);
 		updatePowerLayer(city, &city->powerLayer);
 		updateTransportLayer(city, &city->transportLayer);
 		updateZoneLayer(city, &city->zoneLayer);

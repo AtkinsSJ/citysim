@@ -391,6 +391,18 @@ inline BuildingDef *getBuildingDef(s32 buildingTypeID)
 	return get(&buildingCatalogue.allBuildings, buildingTypeID);
 }
 
+inline BuildingDef *getBuildingDef(Building *building)
+{
+	BuildingDef *result = null;
+	
+	if (building != null)
+	{
+		result = getBuildingDef(building->typeID);
+	}
+
+	return result;
+}
+
 inline BuildingDef *findBuildingDef(String name)
 {
 	BuildingDef *result = null;

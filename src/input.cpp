@@ -331,6 +331,46 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 		// 
 		// KEYS
 		// 
+		else if (equals(keyName, "1"))
+		{
+			result.key = SDLK_1;
+		}
+		else if (equals(keyName, "2"))
+		{
+			result.key = SDLK_2;
+		}
+		else if (equals(keyName, "3"))
+		{
+			result.key = SDLK_3;
+		}
+		else if (equals(keyName, "4"))
+		{
+			result.key = SDLK_4;
+		}
+		else if (equals(keyName, "5"))
+		{
+			result.key = SDLK_5;
+		}
+		else if (equals(keyName, "6"))
+		{
+			result.key = SDLK_6;
+		}
+		else if (equals(keyName, "7"))
+		{
+			result.key = SDLK_7;
+		}
+		else if (equals(keyName, "8"))
+		{
+			result.key = SDLK_8;
+		}
+		else if (equals(keyName, "9"))
+		{
+			result.key = SDLK_9;
+		}
+		else if (equals(keyName, "0"))
+		{
+			result.key = SDLK_0;
+		}
 		else if (equals(keyName, "F1"))
 		{
 			result.key = SDLK_F1;

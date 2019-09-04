@@ -184,7 +184,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 	// TODO: mark the affected zone sectors as dirty
 
 	// Zones carry power!
-	markPowerLayerDirty(&city->powerLayer, area);
+	markAreaDirty(city, area);
 }
 
 void markZonesAsEmpty(City * /*city*/, Rect2I /*footprint*/)

@@ -221,6 +221,7 @@ V2 operator/=(V2 &v, f32 s);
 V2I v2i(s32 x, s32 y);
 V2I v2i(V2 source);
 
+f32 lengthOf(s32 x, s32 y);
 f32 lengthOf(V2I v);
 
 V2I operator+(V2I lhs, V2I rhs);

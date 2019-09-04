@@ -17,6 +17,8 @@ Notes for searching:
 
 Add newline support to .text files!
 
+HashMap for parseKeyboardShortcut(), and auto-include letter/number keys!
+
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)

@@ -307,6 +307,11 @@ f32 lengthOf(V2I v)
 	return (f32) sqrt(v.x*v.x + v.y*v.y);
 }
 
+f32 lengthOf(s32 x, s32 y)
+{
+	return (f32) sqrt(x*x + y*y);
+}
+
 inline V2I operator+(V2I lhs, V2I rhs)
 {
 	return v2i(lhs.x + rhs.x, lhs.y + rhs.y);
