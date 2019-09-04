@@ -769,6 +769,108 @@ void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 ma
 	}
 }
 
+template<typename Filter>
+s32 calculateDistanceTo(City *city, s32 x, s32 y, s32 maxDistanceToCheck, Filter filter)
+{
+	DEBUG_FUNCTION();
+	
+	s32 result = s32Max;
+
+	if (filter(city, x, y))
+	{
+		result = 0;
+	}
+	else
+	{
+		bool done = false;
+
+		for (s32 distance = 1;
+			 !done && distance <= maxDistanceToCheck;
+			 distance++)
+		{
+			s32 leftX   = x - distance;
+			s32 rightX  = x + distance;
+			s32 bottomY = y - distance;
+			s32 topY    = y + distance;
+
+			for (s32 px = leftX; px <= rightX; px++)
+			{
+				if (filter(city, px, bottomY))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+
+				if (filter(city, px, topY))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+			}
+
+			if (done) break;
+
+			for (s32 py = bottomY; py <= topY; py++)
+			{
+				if (filter(city, leftX, py))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+
+				if (filter(city, rightX, py))
+				{
+					result = distance;
+					done = true;
+					break;
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+void recalculateLandValue(City *city, Rect2I bounds)
+{
+	for (s32 y = bounds.y; y < bounds.y + bounds.h; y++)
+	{
+		for (s32 x = bounds.x; x < bounds.x + bounds.w; x++)
+		{
+			// Right now, we have very little to base this on!
+			// This explains how SC3K does it: http://www.sc3000.com/knowledge/showarticle.cfm?id=1132
+			// (However, apparently SC3K has an overflow bug with land value, so ehhhhhh...)
+			// -> Maybe we should use a larger int or even a float for the land value. Memory is cheap!
+			//
+			// Anyway... being near water, and being near forest are positive.
+			// Pollution, crime, good service coverage, and building effects all play their part.
+			// So does terrain height if we ever implement non-flat terrain!
+			//
+			// Also, global effects can influence land value. AKA, is the city nice to live in?
+			//
+			// At some point it'd probably be sensible to cache some of the factors in intermediate arrays,
+			// eg the effects of buildings, or distance to water, so we don't have to do a search for them for each tile.
+
+			s32 waterTerrainType = findTerrainTypeByName(makeString("Water"));
+			s32 distanceToWater = calculateDistanceTo(city, x, y, 10, [&](City *city, s32 x, s32 y) {
+				return getTerrainAt(city, x, y)->type == waterTerrainType;
+			});
+
+			f32 landValue = 0.1f;
+
+			if (distanceToWater < 10)
+			{
+				landValue += (10 - distanceToWater) * 0.1f * 0.25f;
+			}
+
+			setTile(city, city->tileLandValue, x, y, clamp01AndMap(landValue));
+		}
+	}
+}
+
 void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
@@ -800,4 +902,9 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 	}
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+}
+
+inline u8 getLandValueAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->tileLandValue, x, y);
 }

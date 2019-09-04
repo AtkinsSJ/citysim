@@ -9,6 +9,7 @@ GameState *beginNewGame()
 	s32 gameStartFunds = 1000000;
 	initCity(&result->gameArena, &result->gameRandom, &result->city, 133, 117, LOCAL("city_default_name"), gameStartFunds);
 	generateTerrain(&result->city);
+	recalculateLandValue(&result->city, result->city.bounds);
 
 	result->status = GameStatus_Playing;
 
@@ -357,6 +358,9 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	{
 		window_label(context, myprintf("Distance to transport #{0}: {1}", {formatInt(transportType), formatInt(getDistanceToTransport(city, tilePos.x, tilePos.y, (TransportType)transportType))}));
 	}
+
+	// Land value
+	window_label(context, myprintf("Land value: {0}", {formatInt(getLandValueAt(city, tilePos.x, tilePos.y))}));
 
 	// Highlight
 	// Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when

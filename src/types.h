@@ -356,6 +356,8 @@ s32 divideCeil(s32 numerator, s32 denominator);
 
 s32 truncate32(s64 in);
 
+u8 clamp01AndMap(f32 in);
+
 template<typename T>
 T clamp(T value, T min, T max);
 

@@ -54,7 +54,9 @@ struct City
 void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds);
 void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
 
+void recalculateLandValue(City *city, Rect2I bounds);
 void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds);
+u8 getLandValueAt(City *city, s32 x, s32 y);
 
 void generateTerrain(City *city);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
@@ -69,6 +71,9 @@ template<typename T>
 T getTileValueIfExists(City *city, T *tiles, s32 x, s32 y, T defaultValue);
 template<typename T>
 void setTile(City *city, T *tiles, s32 x, s32 y, T value);
+
+template<typename Filter>
+s32 calculateDistanceTo(City *city, s32 x, s32 y, s32 maxDistanceToCheck, Filter filter);
 
 void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 maxDistance);
 
