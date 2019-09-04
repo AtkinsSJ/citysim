@@ -83,3 +83,4 @@ size 1 1
 texture forest forest.png 16 16
 build paint 100
 demolish_cost 100
+land_value 10 3

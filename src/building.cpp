@@ -342,6 +342,27 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
+				else if (equals(firstWord, "land_value"))
+				{
+					s64 effectValue;
+					s64 effectRadius;
+
+					if (asInt(nextToken(remainder, &remainder), &effectValue))
+					{
+						// Default to radius=value
+						if (!asInt(nextToken(remainder, &remainder), &effectRadius))
+						{
+							effectRadius = effectValue;
+						}
+
+						def->landValueEffect = truncate32(effectValue);
+						def->landValueEffectRadius = truncate32(effectRadius);
+					}
+					else
+					{
+						error(&reader, "Couldn't parse land_value. Expected \"land_value effect [radius]\" where effect and radius are ints.");
+					}
+				}
 				else
 				{
 					error(&reader, "Unrecognized token: {0}", {firstWord});

@@ -60,6 +60,9 @@ struct BuildingDef
 	Flags_TransportType transportTypes;
 
 	s32 power; // Positive for production, negative for consumption
+
+	s32 landValueEffect;
+	s32 landValueEffectRadius;
 };
 
 struct BuildingCatalogue

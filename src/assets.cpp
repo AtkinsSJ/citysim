@@ -479,11 +479,11 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 			String fileExtension = getFileExtension(filename);
 			AssetType *foundAssetType = find(&assets->fileExtensionToType, fileExtension);
 			assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
-			logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
+			// logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
 		}
 		else
 		{
-			logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
+			// logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
 		}
 
 		addAsset(assetType, filename);
