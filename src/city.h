@@ -6,6 +6,7 @@ enum DataLayer
 
 	DataLayer_Paths,
 	DataLayer_Power,
+	DataLayer_LandValue,
 
 	DataLayerCount
 };
@@ -28,7 +29,9 @@ struct City
 	s32 monthlyExpenditure;
 
 	Rect2I bounds;
-	Terrain *terrain;
+	Terrain *tileTerrain;
+
+	u8 *tileLandValue;
 
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
@@ -51,6 +54,8 @@ struct City
 void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, s32 funds);
 void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
 
+void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds);
+
 void generateTerrain(City *city);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 Terrain *getTerrainAt(City *city, s32 x, s32 y);
@@ -64,6 +69,8 @@ template<typename T>
 T getTileValueIfExists(City *city, T *tiles, s32 x, s32 y, T defaultValue);
 template<typename T>
 void setTile(City *city, T *tiles, s32 x, s32 y, T value);
+
+void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 maxDistance);
 
 bool canAfford(City *city, s32 cost);
 void spend(City *city, s32 cost);
@@ -86,9 +93,6 @@ void updateSomeBuildings(City *city);
 
 s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
-
-void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 maxDistance);
-
 
 //
 // Private API

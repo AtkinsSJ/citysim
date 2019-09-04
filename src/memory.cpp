@@ -172,3 +172,22 @@ inline bool isMemoryEqual(T *a, T *b, smm length)
 {
 	return (memcmp(a, b, sizeof(T) * length) == 0);
 }
+
+template<typename T>
+T *copyRegion(T *sourceArray, s32 sourceArrayWidth, s32 sourceArrayHeight, Rect2I region, MemoryArena *arena)
+{
+	ASSERT(contains(irectXYWH(0,0,sourceArrayWidth, sourceArrayHeight), region));
+
+	T *result = allocateMultiple<T>(arena, areaOf(region));
+
+	T *pos = result;
+
+	for (s32 y = region.y; y < region.y + region.h; y++)
+	{
+		// Copy whole rows at a time
+		copyMemory(sourceArray + (y * sourceArrayWidth) + region.x, pos, region.w);
+		pos += region.w;
+	}
+
+	return result;
+}

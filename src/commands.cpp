@@ -73,7 +73,6 @@ ConsoleCommand(show_layer)
 	String remainder = arguments;
 	if (!checkInGame()) return;
 	
-	// For now this is a toggle, but it'd be nice if we could say "show_paths true" or "show_paths 1" maybe
 	if (argumentsCount == 0)
 	{
 		// Hide layers
@@ -83,7 +82,12 @@ ConsoleCommand(show_layer)
 	else if (argumentsCount == 1)
 	{
 		String layerName = nextToken(remainder, &remainder);
-		if (equals(layerName, "paths"))
+		if (equals(layerName, "land_value"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_LandValue;
+			consoleWriteLine("Showing land value layer", CLS_Success);
+		}
+		else if (equals(layerName, "paths"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Paths;
 			consoleWriteLine("Showing paths layer", CLS_Success);
@@ -96,7 +100,7 @@ ConsoleCommand(show_layer)
 	}
 	else
 	{
-		consoleWriteLine("Usage: show_layer (paths|power), or with no argument to hide the data layer", CLS_Error);
+		consoleWriteLine("Usage: show_layer (land_value|paths|power), or with no argument to hide the data layer", CLS_Error);
 	}
 }
 

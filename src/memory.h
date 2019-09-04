@@ -125,3 +125,6 @@ inline void fillMemory<u8>(u8 *memory, u8 value, smm length)
 
 template<typename T>
 bool isMemoryEqual(T *a, T *b, smm length=1);
+
+template<typename T>
+T *copyRegion(T *sourceArray, s32 sourceArrayWidth, s32 sourceArrayHeight, Rect2I region, MemoryArena *arena);

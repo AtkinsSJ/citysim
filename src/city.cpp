@@ -10,9 +10,9 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->bounds = irectXYWH(0, 0, width, height);
 
 	s32 cityArea = width * height;
-	city->terrain           = allocateMultiple<Terrain>(gameArena, cityArea);
-	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
+	city->tileTerrain       = allocateMultiple<Terrain>(gameArena, cityArea);
 
+	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
 	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,   8);
 
@@ -25,6 +25,9 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	initOccupancyArray(&city->buildings, gameArena, 1024);
 	append(&city->buildings);
+
+	city->tileLandValue = allocateMultiple<u8>(gameArena, cityArea);
+	fillMemory<u8>(city->tileLandValue, 128, cityArea);
 
 	initPowerLayer    (&city->powerLayer,     city, gameArena);
 	initTransportLayer(&city->transportLayer, city, gameArena);
@@ -469,7 +472,7 @@ inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
 	Terrain *result = &invalidTerrain;
 	if (tileExists(city, x, y))
 	{
-		result = getTile(city, city->terrain, x, y);
+		result = getTile(city, city->tileTerrain, x, y);
 	}
 
 	return result;
@@ -532,7 +535,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			x < visibleArea.x + visibleArea.w;
 			x++)
 		{
-			Terrain *terrain = getTile(city, city->terrain, x, y);
+			Terrain *terrain = getTile(city, city->tileTerrain, x, y);
 
 			if (terrain->type != terrainType)
 			{
@@ -764,4 +767,37 @@ void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 ma
 			}
 		}
 	}
+}
+
+void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
+{
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	//
+	// TODO: @Speed: Right now we're constructing an array that's just a copy of a section of the land value array,
+	// and then passing that - when we could instead pass the whole array as a texture, and only draw the
+	// visible part of it. (Or even draw the whole thing.)
+	// We could pass the array as a texture, and the palette as a second texture, and then use a shader
+	// similar to the one I developed for GLunatic.
+	// But for right now, keep things simple.
+	//
+	// -Sam, 04/09/2019
+	//
+
+	u8 *data = copyRegion(city->tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+
+
+	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous!
+
+	V4 colorMinLandValue = color255(255, 255, 255, 128);
+	V4 colorMaxLandValue = color255(  0,   0, 255, 128);
+
+	V4 palette[256];
+	f32 ratio = 1.0f / 255.0f;
+	for (s32 i=0; i < 256; i++)
+	{
+		palette[i] = lerp(colorMinLandValue, colorMaxLandValue, i * ratio);
+	}
+
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
 }

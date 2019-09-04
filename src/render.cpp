@@ -558,7 +558,7 @@ void endRectsGroup(DrawRectsGroup *group)
 	endCurrentSubGroup(group);
 }
 
-void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u8 paletteSize, V4 *palette)
+void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u16 paletteSize, V4 *palette)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 

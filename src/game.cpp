@@ -838,10 +838,8 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 		switch (gameState->dataLayerToDraw)
 		{
-			case DataLayer_Power:
-			{
-				drawPowerDataLayer(city, visibleTileBounds);
-			} break;
+			case DataLayer_LandValue:  drawLandValueDataLayer(city, visibleTileBounds); break;
+			case DataLayer_Power:      drawPowerDataLayer    (city, visibleTileBounds); break;
 		}
 	}
 
