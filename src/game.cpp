@@ -836,54 +836,12 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	{
 		DEBUG_BLOCK_T("Draw data layer", DCDT_GameUpdate);
 
-		//
-		// TODO: @Speed: Render in a batch - but I think we want to treat whole-map per-tile grids as a special
-		// case for rendering. Instead of allocating a batch for possibly the whole map, then filling in part,
-		// we could just upload the data grid as a texture. Or maybe embed a 2d array inside the RenderItem.
-		// Lots of possibilities! But right now this is temporary code really, so I'll avoid optimising it.
-		//
-		// - Sam, 22/07/2019
-		//
-
-		for (s32 y = visibleTileBounds.y;
-			y < visibleTileBounds.y + visibleTileBounds.h;
-			y++)
+		switch (gameState->dataLayerToDraw)
 		{
-			for (s32 x = visibleTileBounds.x;
-				x < visibleTileBounds.x + visibleTileBounds.w;
-				x++)
+			case DataLayer_Power:
 			{
-				bool tileHasData = false;
-				V4 color = {};
-
-				switch (gameState->dataLayerToDraw)
-				{
-					case DataLayer_Paths:
-					{
-						// s32 pathGroup = getPathGroupAt(city, x, y);
-						// if (pathGroup > 0)
-						// {
-						// 	color = genericDataLayerColors[pathGroup % genericDataLayerColorCount];
-						// 	tileHasData = true;
-						// }
-					} break;
-
-					case DataLayer_Power:
-					{
-						PowerNetwork *powerNetwork = getPowerNetworkAt(city, x, y);
-						if (powerNetwork != null)
-						{
-							color = genericDataLayerColors[powerNetwork->id % genericDataLayerColorCount];
-							tileHasData = true;
-						}
-					} break;
-				}
-
-				if (tileHasData)
-				{
-					drawSingleRect(&renderer->worldBuffer, rectXYWH((f32)x, (f32)y, 1.0f, 1.0f), renderer->shaderIds.untextured, color);
-				}
-			}
+				drawPowerDataLayer(city, visibleTileBounds);
+			} break;
 		}
 	}
 

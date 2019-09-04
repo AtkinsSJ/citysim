@@ -71,6 +71,52 @@ u8 getDistanceToPower(City *city, s32 x, s32 y)
 	return getTileValue(city, city->powerLayer.tilePowerDistance, x, y);
 }
 
+void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
+{
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+	V4 colorPowered  = color255(255, 255, 0, 128);
+	V4 colorBlackout = color255(  0,   0, 0, 128);
+	V4 colorBrownout = color255(128,  64, 0, 128);
+
+	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
+	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
+	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleTileBounds));
+
+	for (s32 y = visibleTileBounds.y;
+		y < visibleTileBounds.y + visibleTileBounds.h;
+		y++)
+	{
+		spriteBounds.y = (f32) y;
+		for (s32 x = visibleTileBounds.x;
+			x < visibleTileBounds.x + visibleTileBounds.w;
+			x++)
+		{
+			PowerNetwork *network = getPowerNetworkAt(city, x, y);
+			if (network != null)
+			{
+				spriteBounds.x = (f32) x;
+
+				if (network->cachedProduction == 0)
+				{
+					addUntexturedRect(group, spriteBounds, colorBlackout);
+				}
+				else if (network->cachedProduction < network->cachedConsumption)
+				{
+					addUntexturedRect(group, spriteBounds, colorBrownout);
+				}
+				else
+				{
+					addUntexturedRect(group, spriteBounds, colorPowered);
+				}
+			}
+		}
+	}
+
+	endRectsGroup(group);
+}
+
 void updateSectorPowerValues(City *city, PowerSector *sector)
 {
 	DEBUG_FUNCTION();

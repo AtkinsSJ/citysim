@@ -115,7 +115,7 @@ inline bool canZoneTile(CanZoneQuery *query, s32 x, s32 y)
 	return query->tileCanBeZoned[(qY * query->bounds.w) + qX] != 0;
 }
 
-void drawZones(City *city, Rect2I visibleArea, s8 shaderID)
+void drawZones(City *city, Rect2I visibleTileBounds, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
@@ -125,15 +125,15 @@ void drawZones(City *city, Rect2I visibleArea, s8 shaderID)
 
 	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
-	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldBuffer, shaderID, areaOf(visibleArea));
+	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldBuffer, shaderID, areaOf(visibleTileBounds));
 
-	for (s32 y = visibleArea.y;
-		y < visibleArea.y + visibleArea.h;
+	for (s32 y = visibleTileBounds.y;
+		y < visibleTileBounds.y + visibleTileBounds.h;
 		y++)
 	{
 		spriteBounds.y = (f32) y;
-		for (s32 x = visibleArea.x;
-			x < visibleArea.x + visibleArea.w;
+		for (s32 x = visibleTileBounds.x;
+			x < visibleTileBounds.x + visibleTileBounds.w;
 			x++)
 		{
 			ZoneType zone = getZoneAt(city, x, y);

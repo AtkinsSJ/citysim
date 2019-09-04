@@ -673,6 +673,7 @@ void updateSomeBuildings(City *city)
 			BuildingDef *def = getBuildingDef(building->typeID);
 
 			// Check the building's needs are met
+			// ... except for the ones that are checked by layers.
 
 
 			// Distance to road

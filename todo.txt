@@ -106,6 +106,7 @@ Split the game code from the platform code
 
 
 Transport networks
+- Actually check that people can get to work, and how bad the traffic is, etc
 - Later we may want SC4-style subcategories like "lorry" and "bus" but for now we can just divide it into "road" and "rail". The thought is eventually we might record separate networks for road/rail but each one has a bitfield for subcategories... but really, that's massive overkill right now!
 
 GUI
@@ -231,7 +232,9 @@ Simcity 4 map sizes: 64x64 (~1km), 128x128 (~2km), 256x256 (~4km)
 
 SC3K does indeed model individual power networks, not just "is it connected to a power station" and "is the total of consumption < total production".
 
-SC3K notes: https://simpage.net/simcity3/tips.shtml
+SC3K notes:
+	https://simpage.net/simcity3/tips.shtml
+	http://www.sc3000.com/knowledge/index.cfm
 
 -------------------------------------------------
 
