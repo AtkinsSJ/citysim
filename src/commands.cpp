@@ -92,6 +92,11 @@ ConsoleCommand(show_layer)
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Paths;
 			consoleWriteLine("Showing paths layer", CLS_Success);
 		}
+		else if (equals(layerName, "pollution"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Pollution;
+			consoleWriteLine("Showing pollution layer", CLS_Success);
+		}
 		else if (equals(layerName, "power"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Power;

@@ -4,8 +4,9 @@ struct LandValueLayer
 {
 	DirtyRects dirtyRects;
 
-	u8 *tileLandValue; // Cached total
 	s16 *tileBuildingContributions;
+	
+	u8 *tileLandValue; // Cached total
 };
 
 const s32 maxLandValueEffectDistance = 16; // TODO: Better value for this!

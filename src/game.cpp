@@ -586,6 +586,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
 		updateLandValueLayer(city, &city->landValueLayer);
+		updatePollutionLayer(city, &city->pollutionLayer);
 		updatePowerLayer(city, &city->powerLayer);
 		updateTransportLayer(city, &city->transportLayer);
 		updateZoneLayer(city, &city->zoneLayer);
@@ -843,6 +844,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 		switch (gameState->dataLayerToDraw)
 		{
 			case DataLayer_LandValue:  drawLandValueDataLayer(city, visibleTileBounds); break;
+			case DataLayer_Pollution:  drawPollutionDataLayer(city, visibleTileBounds); break;
 			case DataLayer_Power:      drawPowerDataLayer    (city, visibleTileBounds); break;
 		}
 	}

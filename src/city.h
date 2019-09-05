@@ -5,6 +5,7 @@ enum DataLayer
 	DataLayer_None,
 
 	DataLayer_Paths,
+	DataLayer_Pollution,
 	DataLayer_Power,
 	DataLayer_LandValue,
 
@@ -40,6 +41,7 @@ struct City
 	SectorGrid<CitySector> sectors;
 
 	LandValueLayer landValueLayer;
+	PollutionLayer pollutionLayer;
 	PowerLayer powerLayer;
 	TransportLayer transportLayer;
 	ZoneLayer zoneLayer;
