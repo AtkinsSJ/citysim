@@ -56,7 +56,6 @@ DirtyRects:
 	- Traffic density
 
 Pollution:
-- Buildings can add or subtract from it. (Use a system similar to how land value works.)
 - Eventually we probably want it to build up and change over time:
 	- Buildings add or remove an amount from their tiles.
 	- Tile values are blended somehow, so that pollution spreads out, and fades slightly.

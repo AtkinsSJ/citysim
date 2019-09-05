@@ -118,7 +118,7 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous!
 
 	V4 colorMinPollution = color255(255, 255, 255,   0);
-	V4 colorMaxPollution = color255(255,   0,   0, 128);
+	V4 colorMaxPollution = color255(255,   0,   0, 196);
 
 	V4 palette[256];
 	f32 ratio = 1.0f / 255.0f;

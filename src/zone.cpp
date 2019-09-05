@@ -481,7 +481,7 @@ void growSomeZoneBuildings(City *city)
 					layer->population[zoneType] += building->currentResidents + building->currentJobs;
 					updateBuildingTexture(city, building, buildingDef);
 
-					addBuildingToPowerLayer(&city->powerLayer, building);
+					markAreaDirty(city, footprint);
 
 					remainingDemand -= (building->currentResidents + building->currentJobs);
 				}

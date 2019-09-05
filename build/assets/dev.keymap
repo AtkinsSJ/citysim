@@ -8,4 +8,7 @@ Shift+Home  resize_window 1920 1080
 Alt+Home    resize_window 800 600
 Home        resize_window 1024 768
 
-0     show_layer land_value
+0     show_layer
+7     show_layer land_value
+8     show_layer power
+9     show_layer pollution

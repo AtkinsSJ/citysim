@@ -18,6 +18,8 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, Effec
 				f32 contributionF = lerp((f32)effectRadius->centreValue, (f32)effectRadius->outerValue, (distanceFromSource * invRadius));
 				T contribution = (T)floor_s32(contributionF);
 
+				if (contribution == 0) continue;
+
 				switch (type)
 				{
 					case Effect_Add: {

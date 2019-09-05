@@ -33,6 +33,7 @@ carries_power true
 requires_transport_connection true
 power_gen 4000
 jobs 100
+pollution 100 20
 
 #
 # Zoneables
@@ -73,7 +74,7 @@ demolish_cost 500
 carries_power true
 power_use 200
 jobs 80
-pollution 20 8
+pollution 50 8
 
 #
 # Not actually buildable stuff
@@ -85,3 +86,4 @@ texture forest forest.png 16 16
 build paint 100
 demolish_cost 100
 land_value 5 4
+pollution -5 3
