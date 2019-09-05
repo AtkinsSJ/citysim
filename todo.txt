@@ -31,6 +31,10 @@ DirtyRects:
 - It's a good system, but I think we need to break it down more. Different parts of a layer have different ideas of how much the incoming rects should be expanded, or what makes an area dirty at all. I set up the City::markAreaDirty() function because I'm concerned about bugs coming from forgetting to tell a layer that something has changed, in some situations... but that's a one-size-fits-all approach that's less optimal. eg, Power only cares if the tiles changed whether they carry power or not (or how much power is produced/consumed).
 - We could add flags to markAreaDirty() that say which properties have changed, but that sounds like it'd have the same problems of forgetting to update something. It also means each system that alters the map has to know how all of the layers function to know which ones need updating - which is a pretty horrible idea.
 - Maybe markAreaDirty() does checks to see which things need updating, but how would it know?
+- OK here's a good example of the problems: Pollution affects land value, but pollution doesn't mark any areas as dirty, because that would be the whole map every time, and that's no good. So, the land value doesn't update, until something *else* marks the area as dirty.
+	- Perhaps we want to split updates into two parts:
+	1) Dirty areas where the world physically changed, updated on demand.
+	2) Things that are recalculated for the whole city every so often, regularly and automatically.
 
 - Zones
 	- Desirability per zone type

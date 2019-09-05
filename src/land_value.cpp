@@ -2,6 +2,10 @@
 
 void initLandValueLayer(LandValueLayer *layer, City *city, MemoryArena *gameArena)
 {
+	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
+	layer->nextSectorUpdateIndex = 0;
+	layer->sectorsToUpdatePerTick = 8;
+
 	s32 cityArea = areaOf(city->bounds);
 
 	layer->tileLandValue = allocateMultiple<u8>(gameArena, cityArea);
@@ -75,54 +79,58 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 			}
 		}
 
-		// Recalculate overall value
+		clearDirtyRects(&layer->dirtyRects);
+	}
+
+	// Recalculate overall value
+	{
+		DEBUG_BLOCK_T("updateLandValueLayer: total", DCDT_Simulation);
+
+		for (s32 i = 0; i < layer->sectorsToUpdatePerTick; i++)
 		{
-			DEBUG_BLOCK_T("updateLandValueLayer: combine", DCDT_Simulation);
+			BasicSector *sector = &layer->sectors[layer->nextSectorUpdateIndex];
 
-			for (auto rectIt = iterate(&layer->dirtyRects.rects);
-				!rectIt.isDone;
-				next(&rectIt))
+			for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++)
 			{
-				Rect2I dirtyRect = getValue(rectIt);
-
-				for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
+				for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++)
 				{
-					for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
+					// Right now, we have very little to base this on!
+					// This explains how SC3K does it: http://www.sc3000.com/knowledge/showarticle.cfm?id=1132
+					// (However, apparently SC3K has an overflow bug with land value, so ehhhhhh...)
+					// -> Maybe we should use a larger int or even a float for the land value. Memory is cheap!
+					//
+					// Anyway... being near water, and being near forest are positive.
+					// Pollution, crime, good service coverage, and building effects all play their part.
+					// So does terrain height if we ever implement non-flat terrain!
+					//
+					// Also, global effects can influence land value. AKA, is the city nice to live in?
+					//
+					// At some point it'd probably be sensible to cache some of the factors in intermediate arrays,
+					// eg the effects of buildings, or distance to water, so we don't have to do a search for them for each tile.
+
+					f32 landValue = 0.1f;
+
+					// Waterfront = valuable
+					s32 distanceToWater = getTileValue(city, city->tileDistanceToWater, x, y);
+					if (distanceToWater < 10)
 					{
-						// Right now, we have very little to base this on!
-						// This explains how SC3K does it: http://www.sc3000.com/knowledge/showarticle.cfm?id=1132
-						// (However, apparently SC3K has an overflow bug with land value, so ehhhhhh...)
-						// -> Maybe we should use a larger int or even a float for the land value. Memory is cheap!
-						//
-						// Anyway... being near water, and being near forest are positive.
-						// Pollution, crime, good service coverage, and building effects all play their part.
-						// So does terrain height if we ever implement non-flat terrain!
-						//
-						// Also, global effects can influence land value. AKA, is the city nice to live in?
-						//
-						// At some point it'd probably be sensible to cache some of the factors in intermediate arrays,
-						// eg the effects of buildings, or distance to water, so we don't have to do a search for them for each tile.
-
-						f32 landValue = 0.1f;
-
-						// Waterfront = valuable
-						s32 distanceToWater = getTileValue(city, city->tileDistanceToWater, x, y);
-						if (distanceToWater < 10)
-						{
-							landValue += (10 - distanceToWater) * 0.1f * 0.25f;
-						}
-
-						// Building effects
-						f32 buildingEffect = getTileValue(city, layer->tileBuildingContributions, x, y) / 255.0f;
-						landValue += buildingEffect;
-
-						setTile(city, layer->tileLandValue, x, y, clamp01AndMap(landValue));
+						landValue += (10 - distanceToWater) * 0.1f * 0.25f;
 					}
+
+					// Building effects
+					f32 buildingEffect = getTileValue(city, layer->tileBuildingContributions, x, y) / 255.0f;
+					landValue += buildingEffect;
+
+					// Pollution = bad
+					f32 pollutionEffect = (getPollutionAt(city, x, y) / 255.0f) * 0.1f;
+					landValue -= pollutionEffect;
+
+					setTile(city, layer->tileLandValue, x, y, clamp01AndMap(landValue));
 				}
 			}
-		}
 
-		clearDirtyRects(&layer->dirtyRects);
+			layer->nextSectorUpdateIndex = (layer->nextSectorUpdateIndex + 1) % getSectorCount(&layer->sectors);
+		}
 	}
 }
 

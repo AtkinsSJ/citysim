@@ -15,6 +15,11 @@ struct SectorGrid
 	}
 };
 
+struct BasicSector
+{
+	Rect2I bounds;
+};
+
 // NB: The Sector struct needs to contain a "Rect2I bounds;" member. This is filled-in inside initSectorGrid().
 
 template<typename Sector>

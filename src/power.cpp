@@ -2,7 +2,6 @@
 
 void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 {
-
 	initChunkedArray(&layer->networks, gameArena, 64);
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
