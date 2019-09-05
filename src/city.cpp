@@ -10,7 +10,8 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->bounds = irectXYWH(0, 0, width, height);
 
 	s32 cityArea = width * height;
-	city->tileTerrain       = allocateMultiple<Terrain>(gameArena, cityArea);
+	city->tileTerrain         = allocateMultiple<Terrain>(gameArena, cityArea);
+	city->tileDistanceToWater = allocateMultiple<u8>(gameArena, cityArea);
 
 	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
@@ -72,6 +73,8 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 void generateTerrain(City *city)
 {
 	DEBUG_FUNCTION();
+
+	fillMemory<u8>(city->tileDistanceToWater, 255, areaOf(city->bounds));
 	
 	u32 tGround = findTerrainTypeByName(makeString("Ground"));
 	u32 tWater  = findTerrainTypeByName(makeString("Water"));
@@ -88,10 +91,11 @@ void generateTerrain(City *city)
 			f32 perlinValue = stb_perlin_noise3(px, py, 0);
 
 			Terrain *terrain = getTerrainAt(city, x, y);
-			bool isGround = (perlinValue > 0.1f);
-			if (isGround)
+			bool isWater = (perlinValue > 0.1f);
+			if (isWater)
 			{
 				terrain->type = tWater;
+				setTile<u8>(city, city->tileDistanceToWater, x, y, 0);
 			}
 			else
 			{
@@ -107,6 +111,8 @@ void generateTerrain(City *city)
 			terrain->spriteOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
 		}
 	}
+
+	updateDistances(city, city->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }
 
 void markAreaDirty(City *city, Rect2I bounds)

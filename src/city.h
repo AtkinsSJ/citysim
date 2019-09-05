@@ -30,6 +30,7 @@ struct City
 
 	Rect2I bounds;
 	Terrain *tileTerrain;
+	u8 *tileDistanceToWater;
 
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
@@ -46,6 +47,8 @@ struct City
 	ArrayChunkPool<Building *> sectorBuildingsChunkPool;
 	ArrayChunkPool<Rect2I>     sectorBoundariesChunkPool;
 };
+
+const u8 maxDistanceToWater = 10;
 
 //
 // Public API

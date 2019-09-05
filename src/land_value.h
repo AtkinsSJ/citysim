@@ -5,7 +5,6 @@ struct LandValueLayer
 	DirtyRects dirtyRects;
 
 	u8 *tileLandValue; // Cached total
-
 	s16 *tileBuildingContributions;
 };
 
