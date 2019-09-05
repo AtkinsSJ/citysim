@@ -269,3 +269,31 @@ String readTextureDefinition(LineReader *reader, String tokens)
 
 	return result;
 }
+
+EffectRadius readEffectRadius(LineReader *reader, String command, String tokens)
+{
+	EffectRadius result = {};
+
+	String remainder;
+	s64 effectValue;
+	s64 effectRadius;
+
+	if (asInt(nextToken(tokens, &remainder), &effectValue))
+	{
+		// Default to radius=value
+		if (!asInt(nextToken(remainder, &remainder), &effectRadius))
+		{
+			effectRadius = effectValue;
+		}
+
+		result.centreValue = truncate32(effectValue);
+		result.radius      = truncate32(effectRadius);
+		result.outerValue  = 0;
+	}
+	else
+	{
+		error(reader, "Couldn't parse effect radius. Expected \"{0} effectAtCentre [radius] [effectAtEdge]\" where effectAtCentre, radius, and effectAtEdge are ints.", {command});
+	}
+
+	return result;
+}

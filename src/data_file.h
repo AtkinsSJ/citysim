@@ -38,6 +38,7 @@ bool readBool(LineReader *reader, String command, String arguments);
 V4 readColor255(LineReader *reader, String command, String arguments);
 u32 readAlignment(LineReader *reader, String command, String arguments);
 String readTextureDefinition(LineReader *reader, String tokens);
+struct EffectRadius readEffectRadius(LineReader *reader, String command, String tokens);
 
 //
 // Internal

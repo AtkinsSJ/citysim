@@ -67,11 +67,12 @@ struct Settings     *settings;
 #include "data_file.h"
 #include "render.h"
 #include "ui.h"
-#include "sector.h"
-#include "dirty.h"
 
 struct City;
 
+#include "sector.h"
+#include "dirty.h"
+#include "tile_utils.h"
 #include "transport.h"
 #include "building.h"
 #include "land_value.h"
@@ -129,6 +130,7 @@ AppState globalAppState;
 #include "dirty.cpp"
 #include "city.cpp"
 #include "zone.cpp"
+#include "tile_utils.cpp"
 #include "transport.cpp"
 #include "land_value.cpp"
 #include "about.cpp"

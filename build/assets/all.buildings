@@ -73,6 +73,7 @@ demolish_cost 500
 carries_power true
 power_use 200
 jobs 80
+pollution 20 8
 
 #
 # Not actually buildable stuff

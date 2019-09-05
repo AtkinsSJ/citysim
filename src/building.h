@@ -61,8 +61,9 @@ struct BuildingDef
 
 	s32 power; // Positive for production, negative for consumption
 
-	s32 landValueEffect;
-	s32 landValueEffectRadius;
+	EffectRadius landValueEffect;
+
+	EffectRadius pollutionEffect;
 };
 
 struct BuildingCatalogue

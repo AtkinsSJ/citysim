@@ -69,11 +69,6 @@ T getTileValueIfExists(City *city, T *tiles, s32 x, s32 y, T defaultValue);
 template<typename T>
 void setTile(City *city, T *tiles, s32 x, s32 y, T value);
 
-template<typename Filter>
-s32 calculateDistanceTo(City *city, s32 x, s32 y, s32 maxDistanceToCheck, Filter filter);
-
-void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 maxDistance);
-
 bool canAfford(City *city, s32 cost);
 void spend(City *city, s32 cost);
 

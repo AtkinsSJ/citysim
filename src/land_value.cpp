@@ -43,32 +43,9 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 			{
 				Building *building = getValue(buildingIt);
 				BuildingDef *def = getBuildingDef(building);
-				if (def->landValueEffect)
+				if (hasEffect(&def->landValueEffect))
 				{
-					// Apply it!
-					V2I buildingCentre = centreOf(building->footprint);
-					s32 diameter = 1 + (def->landValueEffectRadius * 2);
-					f32 invRadius = 1.0f / (f32) def->landValueEffectRadius;
-					Rect2I possibleEffectArea = irectCentreSize(buildingCentre, v2i(diameter, diameter));
-					possibleEffectArea = intersect(possibleEffectArea, dirtyRect);
-
-					for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++)
-					{
-						for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++)
-						{
-							f32 distanceFromSource = lengthOf(x - buildingCentre.x, y - buildingCentre.y);
-							if (distanceFromSource <= def->landValueEffectRadius)
-							{
-								s16 originalValue = getTileValue(city, layer->tileBuildingContributions, x, y);
-								f32 contributionF = lerp((f32)def->landValueEffect, 0.0f, (distanceFromSource * invRadius));
-								s16 contribution = (s16)floor_s32(contributionF);
-
-								// This clamp is probably unnecessary but just in case.
-								s16 newValue = clamp<s16>(originalValue + contribution, s16Min, s16Max);
-								setTile(city, layer->tileBuildingContributions, x, y, newValue);
-							}
-						}
-					}
+					applyEffect(city, &def->landValueEffect, centreOf(building->footprint), Effect_Add, layer->tileBuildingContributions, dirtyRect);
 				}
 			}
 
