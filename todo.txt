@@ -19,6 +19,12 @@ Add newline support to .text files!
 
 HashMap for parseKeyboardShortcut(), and auto-include letter/number keys!
 
+Palette assets
+	Range palette, when we have a min/max and want to interpolate in X steps
+	Fixed palette, eg the powered/brownout/blackout colours
+
+Make drawGrid() use the grid and palette as Textures, and do a single draw call. That way we don't need to do copyRegion() fiddling - we could even keep the current data layer texture cached on the GPU if we're smart?
+
 - Zones
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)
@@ -41,6 +47,60 @@ HashMap for parseKeyboardShortcut(), and auto-include letter/number keys!
 	- Fire coverage
 	- Police coverage
 	- Traffic density
+
+Pollution:
+- Buildings can add or subtract from it. (Use a system similar to how land value works.)
+- Eventually we probably want it to build up and change over time:
+	- Buildings add or remove an amount from their tiles.
+	- Tile values are blended somehow, so that pollution spreads out, and fades slightly.
+	- (This means that a big plume of smog doesn't pop in or out of existence if a factory is built or demolished.)
+- Transport also creates pollution, depending on type and volume. (And any clean-car-incentive type ordinance effects.)
+
+Fire:
+- Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
+- Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, and ordinances.
+- Keep a list of fire-service buildings so they can be iterated more easily.
+- Small chance of a fire occurring each tick, depending on the risk.
+
+Crime:
+- Building-coverage, which is additive, with only one class.
+- A global prisoner count/capacity.
+- Crime risk per tile, used internally.
+- A per-tile value for "how much" crime there is in that area. It should be a fairly long-term thing, so a single crime downtown doesn't destroy desirability, but if crimes happen there on a regular basis, people don't want to be there.
+	- Possibly, a crime occurring splats an area-of-effect over a wide-ish area, and all tiles gradually tick down over time.
+- I think we want to use a SC4-style model:
+	- Various factors contribute to a population of criminals.
+		- eg: unemployment
+	- Each tick, each criminal may commit a crime.
+	- Crimes are more likely to occur in wealthy areas, and places with lower police presence.
+	- The criminal then has a chance of being caught, based on the police presence and budget etc.
+	- They're then moved from the criminal population to the prisoner population.
+	- When a prisoner completes their sentence, they may or may not return to the criminal population, depending on various factors.
+		- eg: reform programs, prison conditions, overall police presence in city.
+- Model severity of crimes too, somehow? I know SC4 does that but I don't really understand it too well. Obviously more severe crimes have a bigger impact - a murder is much worse than petty theft.
+	- Maybe, criminals even have a "severity" level, and over time without being caught, that level increases. The higher the level, the more severe the crimes they can commit, with a randomness factor.
+- I think I'm over-thinking crime right now. If the calculations are fairly simple, we definitely could do individual simulations of the criminals, similar to a particle system, but I'm not sure. Just throwing ideas out there!
+
+Education/Health:
+- A building-coverage grid for each class of building. (eg primary school, secondary school, college, university, library, museum; or clinic, hospital)
+	- I think the coverage value for each tile wants to be the max of contributing buildings, rather than just adding their effects. eg, living between two hospitals is not going to make your health twice as good as living next to only one! You either have good hospital coverage or you don't.
+- Keep a list of health/education service buildings for easier iteration.
+- Actual education/health quotient per tile is set to a base value when someone moves in, and then gradually changes over time based on the coverage of each building class, funding, and other factors.
+	- Health depends on clinic/hospital coverage, pollution, and possibly ordinances if we ever implement those.
+	- Education is more complicated because different classes are supposed to cater to different age ranges. I don't know if we want to simulate age or not? If we don't, we'd still want the different classes to have different effects, so that you can't get perfect education by spamming libraries, for example.
+- As a side-note, I'm thinking com/ind should also require hospital coverage, not just res... but I'm not sure how that would work. People get sick/have accidents all the time, not just when they're at home! Especially with heavy industry.
+
+Transport:
+- Really not sure about this one right now. We need some way of simulating traffic, which means picking a place to start/end a trip, and then finding a path using a choice of transport method. For the path-finding, we could use an A* style algorithm, so that's not too hard, though we might want to cache the trips somehow - perhaps store sector-to-sector (well, sector-groups not sectors) path costs. We already have an old system for calculating connectivity.
+	- SC4 gives residents a specific job which they always path to, until they can't or they change job (for whatever reason). That's extra data to track but keeps things fairly consistent over time. Occasionally we'd want to recalculate the path for a resident though - possibly all residents as I'm not sure if we could easily subtract their previous trip from the model.
+
+Ordinances!
+- Global effects that you can choose to enable or disable
+	- To avoid exploits, they'd need to only come into effect once paid for. eg, when you turn one on, nothing happens until the next budget happens, and then the ordinance is in effect until the following budget. Otherwise you could disable them just before the budget and then re-enable them afterwards, to get them for free! (Or vice-versa with ones that earn money: enable them only for the budget, and avoid the negative effects the rest of the time.)
+	- These should DEFINITELY be data!
+		- An income/cost calculation
+		- A list of (thing affected, how much)
+		- Name and description (Both are keys for the locale-specific text)
 
 Tidy up the types/maths files, so that I can ACTUALLY FIND THINGS.
 - Maybe color/v4 should be separate types?
