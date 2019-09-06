@@ -352,12 +352,13 @@ s32 ceil_s32(f32 in);
 f32 round_f32(f32 in);
 f32 floor_f32(f32 in);
 f32 ceil_f32(f32 in);
+f32 clamp01(f32 in);
 
 s32 divideCeil(s32 numerator, s32 denominator);
 
 s32 truncate32(s64 in);
 
-u8 clamp01AndMap(f32 in);
+u8 clamp01AndMap_u8(f32 in);
 
 template<typename T>
 T clamp(T value, T min, T max);

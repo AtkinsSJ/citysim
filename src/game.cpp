@@ -843,6 +843,9 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 		switch (gameState->dataLayerToDraw)
 		{
+			case DataLayer_Desirability_Residential:  drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Residential); break;
+			case DataLayer_Desirability_Commercial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Commercial);  break;
+			case DataLayer_Desirability_Industrial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Industrial);  break;
 			case DataLayer_LandValue:  drawLandValueDataLayer(city, visibleTileBounds); break;
 			case DataLayer_Pollution:  drawPollutionDataLayer(city, visibleTileBounds); break;
 			case DataLayer_Power:      drawPowerDataLayer    (city, visibleTileBounds); break;

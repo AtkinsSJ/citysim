@@ -60,7 +60,7 @@ OccupancyArrayItem<T> append(OccupancyArray<T> *array)
 	ASSERT_PARANOID(indexInChunk >= 0 && indexInChunk < array->itemsPerChunk);
 
 	// mark that slot as occupied
-	setBit(&chunk->occupancy, indexInChunk, true);
+	setBit(&chunk->occupancy, indexInChunk);
 	result.index = indexInChunk + (array->firstChunkWithSpaceIndex * array->itemsPerChunk);
 	result.item = chunk->items + indexInChunk;
 
@@ -149,7 +149,7 @@ void removeIndex(OccupancyArray<T> *array, s32 indexToRemove)
 
 	// Mark it as unoccupied
 	ASSERT(chunk->occupancy[itemIndex]);
-	setBit(&chunk->occupancy, itemIndex, false);
+	unsetBit(&chunk->occupancy, itemIndex);
 
 	// Decrease counts
 	chunk->count--;

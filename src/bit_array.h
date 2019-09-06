@@ -25,7 +25,8 @@ inline s32 calculateBitArrayU64Count(s32 bitCount)
 	return 1 + (bitCount / 64);
 }
 
-void setBit(BitArray *array, s32 index, bool value);
+void setBit(BitArray *array, s32 index);
+void unsetBit(BitArray *array, s32 index);
 
 void clearBits(BitArray *array);
 

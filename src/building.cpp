@@ -157,19 +157,20 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "link_textures"))
 				{
-					String layer = nextToken(remainder, &remainder);
-					if (equals(layer, "path"))
-					{
-						def->linkTexturesLayer = DataLayer_Paths;
-					}
-					else if (equals(layer, "power"))
-					{
-						def->linkTexturesLayer = DataLayer_Power;
-					}
-					else
-					{
-						warn(&reader, "Couldn't parse link_textures, assuming NONE.");
-					}
+					warn(&reader, "link_textures is disabled right now, because it's bad.");
+					// String layer = nextToken(remainder, &remainder);
+					// if (equals(layer, "path"))
+					// {
+					// 	def->linkTexturesLayer = DataLayer_Paths;
+					// }
+					// else if (equals(layer, "power"))
+					// {
+					// 	def->linkTexturesLayer = DataLayer_Power;
+					// }
+					// else
+					// {
+					// 	warn(&reader, "Couldn't parse link_textures, assuming NONE.");
+					// }
 				}
 				else if (equals(firstWord, "build"))
 				{
@@ -482,31 +483,31 @@ void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
 		// For now, we'll decide that off-the-map does NOT connect
 		ASSERT(def->width == 1 && def->height == 1); //We only support texture-linking for 1x1 buildings!
 		
-		s32 x = building->footprint.x;
-		s32 y = building->footprint.y;
+		// s32 x = building->footprint.x;
+		// s32 y = building->footprint.y;
 
-		switch (def->linkTexturesLayer)
-		{
-			case DataLayer_Paths:
-			{
-				bool linkU = doesTileHaveTransport(city, x,   y-1, def->transportTypes);
-				bool linkD = doesTileHaveTransport(city, x,   y+1, def->transportTypes);
-				bool linkL = doesTileHaveTransport(city, x-1, y,   def->transportTypes);
-				bool linkR = doesTileHaveTransport(city, x+1, y,   def->transportTypes);
+		// switch (def->linkTexturesLayer)
+		// {
+		// 	case DataLayer_Paths:
+		// 	{
+		// 		bool linkU = doesTileHaveTransport(city, x,   y-1, def->transportTypes);
+		// 		bool linkD = doesTileHaveTransport(city, x,   y+1, def->transportTypes);
+		// 		bool linkL = doesTileHaveTransport(city, x-1, y,   def->transportTypes);
+		// 		bool linkR = doesTileHaveTransport(city, x+1, y,   def->transportTypes);
 
-				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
-			} break;
+		// 		building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+		// 	} break;
 
-			case DataLayer_Power:
-			{
-				bool linkU = doesTileHavePowerNetwork(city, x,   y-1);
-				bool linkD = doesTileHavePowerNetwork(city, x,   y+1);
-				bool linkL = doesTileHavePowerNetwork(city, x-1, y  );
-				bool linkR = doesTileHavePowerNetwork(city, x+1, y  );
+		// 	case DataLayer_Power:
+		// 	{
+		// 		bool linkU = doesTileHavePowerNetwork(city, x,   y-1);
+		// 		bool linkD = doesTileHavePowerNetwork(city, x,   y+1);
+		// 		bool linkL = doesTileHavePowerNetwork(city, x-1, y  );
+		// 		bool linkR = doesTileHavePowerNetwork(city, x+1, y  );
 
-				building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
-			} break;
-		}
+		// 		building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
+		// 	} break;
+		// }
 	}
 	else
 	{

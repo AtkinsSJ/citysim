@@ -51,6 +51,31 @@ struct DragResult
 	Rect2I dragRect;
 };
 
+enum DataLayer
+{
+	DataLayer_None,
+
+	DataLayer_Desirability_Residential,
+	DataLayer_Desirability_Commercial,
+	DataLayer_Desirability_Industrial,
+
+	DataLayer_Pollution,
+	DataLayer_Power,
+	DataLayer_LandValue,
+
+	DataLayerCount
+};
+
+const V4 genericDataLayerColors[] = {
+	color255(  0,   0, 255, 63),
+	color255(  0, 255,   0, 63),
+	color255(255,   0,   0, 63),
+	color255(  0, 255, 255, 63),
+	color255(255, 255,   0, 63),
+	color255(255,   0, 255, 63)
+};
+const s32 genericDataLayerColorCount = 6;
+
 struct GameState
 {
 	MemoryArena gameArena;
@@ -75,16 +100,6 @@ struct GameState
 	// - Sam, 11/2/2019
 	V2I inspectedTilePosition;
 };
-
-const V4 genericDataLayerColors[] = {
-	color255(  0,   0, 255, 63),
-	color255(  0, 255,   0, 63),
-	color255(255,   0,   0, 63),
-	color255(  0, 255, 255, 63),
-	color255(255, 255,   0, 63),
-	color255(255,   0, 255, 63)
-};
-const s32 genericDataLayerColorCount = 6;
 
 GameState *beginNewGame();
 AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState);

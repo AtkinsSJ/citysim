@@ -34,7 +34,7 @@ inline bool BitArray::operator[](u32 index)
 	return result;
 }
 
-void setBit(BitArray *array, s32 index, bool value)
+void setBit(BitArray *array, s32 index)
 {
 	if (index >= array->size || index < 0)
 	{
@@ -45,20 +45,35 @@ void setBit(BitArray *array, s32 index, bool value)
 		u32 fieldIndex = index >> 6;
 		u32 bitIndex = index & 63;
 		u64 mask = ((u64)1 << bitIndex);
+
 		bool wasSet = (array->u64s[fieldIndex] & mask) != 0;
 
-		if (wasSet != value)
+		if (!wasSet)
 		{
-			if (value)
-			{
-				array->u64s[fieldIndex] |= mask;
-				array->setBitCount++;
-			}
-			else
-			{
-				array->u64s[fieldIndex] &= ~mask;
-				array->setBitCount--;
-			}
+			array->u64s[fieldIndex] |= mask;
+			array->setBitCount++;
+		}
+	}
+}
+
+void unsetBit(BitArray *array, s32 index)
+{
+	if (index >= array->size || index < 0)
+	{
+		ASSERT(false);
+	}
+	else
+	{
+		u32 fieldIndex = index >> 6;
+		u32 bitIndex = index & 63;
+		u64 mask = ((u64)1 << bitIndex);
+
+		bool wasSet = (array->u64s[fieldIndex] & mask) != 0;
+
+		if (wasSet)
+		{
+			array->u64s[fieldIndex] &= ~mask;
+			array->setBitCount--;
 		}
 	}
 }

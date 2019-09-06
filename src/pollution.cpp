@@ -115,7 +115,7 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 	u8 *data = copyRegion(city->pollutionLayer.tilePollution, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 
-	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous!
+	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous! @Palette
 
 	V4 colorMinPollution = color255(255, 255, 255,   0);
 	V4 colorMaxPollution = color255(255,   0,   0, 196);
@@ -130,7 +130,12 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
 }
 
-u8 getPollutionAt(City *city, s32 x, s32 y)
+inline u8 getPollutionAt(City *city, s32 x, s32 y)
 {
 	return getTileValue(city, city->pollutionLayer.tilePollution, x, y);
+}
+
+inline f32 getPollutionPercentAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->pollutionLayer.tilePollution, x, y) / 255.0f;
 }

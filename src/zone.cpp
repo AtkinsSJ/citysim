@@ -2,15 +2,21 @@
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
-	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, areaOf(city->bounds));
+	s32 cityArea = areaOf(city->bounds);
+	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, cityArea);
+	zoneLayer->nextSectorUpdateIndex = 0;
+	zoneLayer->sectorsToUpdatePerTick = 8;
 
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
-	for (s32 zoneType = 0; zoneType < ZoneCount; zoneType++)
+	// NB: Element 0 is empty because tracking spots with no zone is not useful
+	for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
 	{
 		initBitArray(&zoneLayer->sectorsWithZones[zoneType],      gameArena, sectorCount);
 		initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
+
+		zoneLayer->tileDesirability[zoneType] = allocateMultiple<u8>(gameArena, cityArea);
 	}
 
 	for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
@@ -41,6 +47,33 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 inline s32 calculateZoneCost(CanZoneQuery *query)
 {
 	return query->zoneableTilesCount * query->zoneDef->costPerTile;
+}
+
+void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zoneType)
+{
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	ASSERT(zoneType >= FirstZoneType && zoneType < ZoneCount);
+
+	// @Copypasta drawLandValueDataLayer()
+	// The TODO: @Speed: from that applies! This is very indirect.
+
+	u8 *data = copyRegion(city->zoneLayer.tileDesirability[zoneType], city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+
+
+	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous! @Palette
+
+	V4 colorMinDesirability = color255(255,   0,   0, 128);
+	V4 colorMaxDesirability = color255(  0, 255,   0, 128);
+
+	V4 palette[256];
+	f32 ratio = 1.0f / 255.0f;
+	for (s32 i=0; i < 256; i++)
+	{
+		palette[i] = lerp(colorMinDesirability, colorMaxDesirability, i * ratio);
+	}
+
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
 }
 
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
@@ -198,75 +231,144 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 {
 	DEBUG_FUNCTION_T(DCDT_Simulation);
 
-	for (s32 zoneType = 0; zoneType < ZoneCount; zoneType++)
+	for (s32 i = 0; i < layer->sectorsToUpdatePerTick; i++)
 	{
-		clearBits(&layer->sectorsWithZones[zoneType]);
-		clearBits(&layer->sectorsWithEmptyZones[zoneType]);
-	}
+		s32 sectorIndex = layer->nextSectorUpdateIndex;
+		ZoneSector *sector = &layer->sectors[sectorIndex];
 
-	for (s32 sectorIndex = 0;
-		sectorIndex < getSectorCount(&layer->sectors);
-		sectorIndex++)
-	{
-		ZoneSector *sector = &layer->sectors.sectors[sectorIndex];
-
-		sector->zoneSectorFlags = 0;
-
-		for (s32 relY=0; relY < sector->bounds.h; relY++)
+		// What zones does it contain?
 		{
-			for (s32 relX=0; relX < sector->bounds.w; relX++)
+			DEBUG_BLOCK_T("updateZoneLayer: zone contents", DCDT_Simulation);
+
+			for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
 			{
-				ZoneType zone = getZoneAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
-				if (zone == Zone_None) continue;
+				unsetBit(&layer->sectorsWithZones     [zoneType], sectorIndex);
+				unsetBit(&layer->sectorsWithEmptyZones[zoneType], sectorIndex);
+			}
 
-				bool isFilled = buildingExistsAt(city, sector->bounds.x + relX, sector->bounds.y + relY);
-				switch (zone)
+			sector->zoneSectorFlags = 0;
+			
+			for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++)
+			{
+				for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++)
 				{
-					case Zone_Residential:
-					{
-						sector->zoneSectorFlags |= ZoneSector_HasResZones;
-						if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyResZones;
-					} break;
+					ZoneType zone = getZoneAt(city, x, y);
+					if (zone == Zone_None) continue;
 
-					case Zone_Commercial:
+					bool isFilled = buildingExistsAt(city, x, y);
+					switch (zone)
 					{
-						sector->zoneSectorFlags |= ZoneSector_HasComZones;
-						if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyComZones;
-					} break;
+						case Zone_Residential:
+						{
+							sector->zoneSectorFlags |= ZoneSector_HasResZones;
+							if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyResZones;
+						} break;
 
-					case Zone_Industrial:
-					{
-						sector->zoneSectorFlags |= ZoneSector_HasIndZones;
-						if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyIndZones;
-					} break;
+						case Zone_Commercial:
+						{
+							sector->zoneSectorFlags |= ZoneSector_HasComZones;
+							if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyComZones;
+						} break;
+
+						case Zone_Industrial:
+						{
+							sector->zoneSectorFlags |= ZoneSector_HasIndZones;
+							if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyIndZones;
+						} break;
+					}
 				}
+			}
+
+			if (sector->zoneSectorFlags & ZoneSector_HasResZones)
+			{
+				setBit(&layer->sectorsWithZones[Zone_Residential], sectorIndex);
+			}
+			if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
+			{
+				setBit(&layer->sectorsWithEmptyZones[Zone_Residential], sectorIndex);
+			}
+			if (sector->zoneSectorFlags & ZoneSector_HasComZones)
+			{
+				setBit(&layer->sectorsWithZones[Zone_Commercial], sectorIndex);
+			}
+			if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones)
+			{
+				setBit(&layer->sectorsWithEmptyZones[Zone_Commercial], sectorIndex);
+			}
+			if (sector->zoneSectorFlags & ZoneSector_HasIndZones)
+			{
+				setBit(&layer->sectorsWithZones[Zone_Industrial], sectorIndex);
+			}
+			if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones)
+			{
+				setBit(&layer->sectorsWithEmptyZones[Zone_Industrial], sectorIndex);
 			}
 		}
 
-		if (sector->zoneSectorFlags & ZoneSector_HasResZones)
+		// What's the desirability?
 		{
-			setBit(&layer->sectorsWithZones[Zone_Residential], sectorIndex, true);
+			DEBUG_BLOCK_T("updateZoneLayer: desirability", DCDT_Simulation);
+
+			f32 totalResDesirability = 0.0f;
+			f32 totalComDesirability = 0.0f;
+			f32 totalIndDesirability = 0.0f;
+
+			for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++)
+			{
+				for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++)
+				{
+					// Residential
+					{
+						// Land value = good
+						f32 desirability = getLandValuePercentAt(city, x, y);
+
+						// pollution = bad
+						desirability -= getPollutionPercentAt(city, x, y) * 0.4f;
+
+						desirability = clamp01(desirability);
+						setTile(city, layer->tileDesirability[Zone_Residential], x, y, (u8)(desirability * 255.0f));
+
+						totalResDesirability += desirability;
+					}
+
+					// Commercial
+					{
+						// Land value = good
+						f32 desirability = getLandValuePercentAt(city, x, y);
+
+						// pollution = bad
+						desirability -= getPollutionPercentAt(city, x, y) * 0.3f;
+
+						desirability = clamp01(desirability);
+						setTile(city, layer->tileDesirability[Zone_Commercial], x, y, (u8)(desirability * 255.0f));
+
+						totalComDesirability += desirability;
+					}
+
+					// Industrial
+					{
+						// Lower land value is better
+						f32 desirability = 1.0f - getLandValuePercentAt(city, x, y);
+
+						// pollution = slightly bad
+						desirability -= getPollutionPercentAt(city, x, y) * 0.15f;
+
+						desirability = clamp01(desirability);
+						setTile(city, layer->tileDesirability[Zone_Industrial], x, y, (u8)(desirability * 255.0f));
+
+						totalIndDesirability += desirability;
+					}
+				}
+			}
+
+			s32 sectorArea = areaOf(sector->bounds);
+			f32 invSectorArea = 1.0f / (f32)sectorArea;
+			sector->averageDesirability[Zone_Residential] = totalResDesirability * invSectorArea;
+			sector->averageDesirability[Zone_Commercial]  = totalComDesirability * invSectorArea;
+			sector->averageDesirability[Zone_Industrial]  = totalIndDesirability * invSectorArea;
 		}
-		if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
-		{
-			setBit(&layer->sectorsWithEmptyZones[Zone_Residential], sectorIndex, true);
-		}
-		if (sector->zoneSectorFlags & ZoneSector_HasComZones)
-		{
-			setBit(&layer->sectorsWithZones[Zone_Commercial], sectorIndex, true);
-		}
-		if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones)
-		{
-			setBit(&layer->sectorsWithEmptyZones[Zone_Commercial], sectorIndex, true);
-		}
-		if (sector->zoneSectorFlags & ZoneSector_HasIndZones)
-		{
-			setBit(&layer->sectorsWithZones[Zone_Industrial], sectorIndex, true);
-		}
-		if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones)
-		{
-			setBit(&layer->sectorsWithEmptyZones[Zone_Industrial], sectorIndex, true);
-		}
+
+		layer->nextSectorUpdateIndex = (layer->nextSectorUpdateIndex + 1) % getSectorCount(&layer->sectors);
 	}
 
 	calculateDemand(city, layer);

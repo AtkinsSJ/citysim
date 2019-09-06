@@ -1,17 +1,5 @@
 #pragma once
 
-enum DataLayer
-{
-	DataLayer_None,
-
-	DataLayer_Paths,
-	DataLayer_Pollution,
-	DataLayer_Power,
-	DataLayer_LandValue,
-
-	DataLayerCount
-};
-
 struct CitySector
 {
 	Rect2I bounds;

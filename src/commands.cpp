@@ -82,15 +82,25 @@ ConsoleCommand(show_layer)
 	else if (argumentsCount == 1)
 	{
 		String layerName = nextToken(remainder, &remainder);
-		if (equals(layerName, "land_value"))
+		if (equals(layerName, "des_res"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Residential;
+			consoleWriteLine("Showing residential desirability", CLS_Success);
+		}
+		else if (equals(layerName, "des_com"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Commercial;
+			consoleWriteLine("Showing commercial desirability", CLS_Success);
+		}
+		else if (equals(layerName, "des_ind"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Industrial;
+			consoleWriteLine("Showing industrial desirability", CLS_Success);
+		}
+		else if (equals(layerName, "land_value"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_LandValue;
 			consoleWriteLine("Showing land value layer", CLS_Success);
-		}
-		else if (equals(layerName, "paths"))
-		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Paths;
-			consoleWriteLine("Showing paths layer", CLS_Success);
 		}
 		else if (equals(layerName, "pollution"))
 		{
@@ -102,16 +112,15 @@ ConsoleCommand(show_layer)
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Power;
 			consoleWriteLine("Showing power layer", CLS_Success);
 		}
-	}
-	else
-	{
-		consoleWriteLine("Usage: show_layer (land_value|paths|power), or with no argument to hide the data layer", CLS_Error);
+		else
+		{
+			consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: des_res, des_com, _des_ind, land_value, pollution, power", CLS_Error);
+		}
 	}
 }
 
 ConsoleCommand(window_size)
 {
-	bool succeeded = false;
 	if (argumentsCount == 2)
 	{
 		String remainder = arguments;
@@ -126,7 +135,6 @@ ConsoleCommand(window_size)
 		{
 			consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
 
-			succeeded = true;
 			resizeWindow((s32)width, (s32)height, false);
 		}
 	}
@@ -135,10 +143,8 @@ ConsoleCommand(window_size)
 		V2 screenSize = renderer->uiCamera.size;
 		consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
 
-		succeeded = true;
 	}
 
-	if (!succeeded)
 	{
 		consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned.", CLS_Error);
 	}
@@ -147,14 +153,12 @@ ConsoleCommand(window_size)
 ConsoleCommand(zoom)
 {
 	String remainder = arguments;
-	bool succeeded = false;
 
 	if (argumentsCount == 0)
 	{
 		// list the zoom
 		f32 zoom = renderer->worldCamera.zoom;
 		consoleWriteLine(myprintf("Current zoom is {0}", {formatFloat(zoom, 3)}), CLS_Success);
-		succeeded = true;
 	}
 	else if (argumentsCount == 1)
 	{
@@ -166,11 +170,9 @@ ConsoleCommand(zoom)
 			f32 newZoom = (f32) requestedZoom;
 			renderer->worldCamera.zoom = newZoom;
 			consoleWriteLine(myprintf("Set zoom to {0}", {formatFloat(newZoom, 3)}), CLS_Success);
-			succeeded = true;
 		}
 	}
 
-	if (!succeeded)
 	{
 		consoleWriteLine("Usage: zoom (scale), where scale is an integer, or with no argument to list the current zoom", CLS_Error);
 	}

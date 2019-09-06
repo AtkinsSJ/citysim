@@ -42,9 +42,14 @@ inline s32 truncate32(s64 in)
 	return (s32) in;
 }
 
-u8 clamp01AndMap(f32 in)
+inline f32 clamp01(f32 in)
 {
-	return (u8)(clamp(in, 0.0f, 1.0f) * 255.0f);
+	return clamp(in, 0.0f, 1.0f);
+}
+
+u8 clamp01AndMap_u8(f32 in)
+{
+	return (u8)(clamp01(in) * 255.0f);
 }
 
 inline bool equals(f32 a, f32 b, f32 epsilon)

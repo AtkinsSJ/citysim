@@ -45,13 +45,18 @@ struct ZoneSector
 {
 	Rect2I bounds;
 	u32 zoneSectorFlags;
+
+	f32 averageDesirability[ZoneCount];
 };
 
 struct ZoneLayer
 {
 	ZoneType *tileZone;
+	u8 *tileDesirability[ZoneCount];
 
 	SectorGrid<ZoneSector> sectors;
+	s32 nextSectorUpdateIndex;
+	s32 sectorsToUpdatePerTick;
 
 	BitArray sectorsWithZones[ZoneCount];
 	BitArray sectorsWithEmptyZones[ZoneCount];
@@ -74,6 +79,8 @@ struct CanZoneQuery
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
 void updateZoneLayer(City *city, ZoneLayer *layer);
 void calculateDemand(City *city, ZoneLayer *layer);
+
+void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zoneType);
 
 ZoneDef getZoneDef(s32 type);
 

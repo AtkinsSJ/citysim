@@ -122,10 +122,10 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 					landValue += buildingEffect;
 
 					// Pollution = bad
-					f32 pollutionEffect = (getPollutionAt(city, x, y) / 255.0f) * 0.1f;
+					f32 pollutionEffect = getPollutionPercentAt(city, x, y) * 0.1f;
 					landValue -= pollutionEffect;
 
-					setTile(city, layer->tileLandValue, x, y, clamp01AndMap(landValue));
+					setTile(city, layer->tileLandValue, x, y, clamp01AndMap_u8(landValue));
 				}
 			}
 
@@ -152,7 +152,7 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 	u8 *data = copyRegion(city->landValueLayer.tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 
-	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous!
+	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous! @Palette
 
 	V4 colorMinLandValue = color255(255, 255, 255, 128);
 	V4 colorMaxLandValue = color255(  0,   0, 255, 128);
@@ -170,4 +170,9 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 inline u8 getLandValueAt(City *city, s32 x, s32 y)
 {
 	return getTileValue(city, city->landValueLayer.tileLandValue, x, y);
+}
+
+inline f32 getLandValuePercentAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->landValueLayer.tileLandValue, x, y) / 255.0f;
 }
