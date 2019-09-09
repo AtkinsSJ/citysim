@@ -367,13 +367,19 @@ template<typename T>
 T min(T a, T b);
 
 template<typename T>
-T min(std::initializer_list<T> values);
+inline T min(T a) { return a; }
+
+template<typename T, typename... Args>
+T min(T a, Args... args);
 
 template<typename T>
 T max(T a, T b);
 
 template<typename T>
-T max(std::initializer_list<T> values);
+inline T max(T a) { return a; }
+
+template<typename T, typename... Args>
+T max(T a, Args... args);
 
 template<typename T>
 T wrap(T value, T max);

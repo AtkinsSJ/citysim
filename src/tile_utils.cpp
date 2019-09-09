@@ -3,6 +3,8 @@
 template<typename T>
 void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, EffectType type, T *tileValues, Rect2I region)
 {
+	DEBUG_FUNCTION();
+	
 	s32 diameter = 1 + (effectRadius->radius * 2);
 	f32 invRadius = 1.0f / (f32) effectRadius->radius;
 	Rect2I possibleEffectArea = irectCentreSize(effectCentre, v2i(diameter, diameter));
@@ -40,6 +42,7 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, Effec
 void updateDistances(City *city, u8 *tileDistance, Rect2I dirtyRect, u8 maxDistance)
 {
 	DEBUG_FUNCTION();
+	ASSERT(contains(city->bounds, dirtyRect));
 	
 	for (s32 iteration = 0; iteration < maxDistance; iteration++)
 	{
@@ -49,17 +52,17 @@ void updateDistances(City *city, u8 *tileDistance, Rect2I dirtyRect, u8 maxDista
 			{
 				if (getTileValue(city, tileDistance, x, y) != 0)
 				{
-					u8 minDistance = min({
-						getTileValueIfExists<u8>(city, tileDistance, x-1, y-1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x  , y-1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x+1, y-1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x-1, y  , 255),
-					//	getTileValueIfExists<u8>(city, tileDistance, x  , y  , 255),
-						getTileValueIfExists<u8>(city, tileDistance, x+1, y  , 255),
-						getTileValueIfExists<u8>(city, tileDistance, x-1, y+1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x  , y+1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x+1, y+1, 255),
-					});
+					u8 minDistance = min(
+						getTileValue<u8>(city, tileDistance, x-1, y-1),
+						getTileValue<u8>(city, tileDistance, x  , y-1),
+						getTileValue<u8>(city, tileDistance, x+1, y-1),
+						getTileValue<u8>(city, tileDistance, x-1, y  ),
+					//	getTileValue<u8>(city, tileDistance, x  , y  ),
+						getTileValue<u8>(city, tileDistance, x+1, y  ),
+						getTileValue<u8>(city, tileDistance, x-1, y+1),
+						getTileValue<u8>(city, tileDistance, x  , y+1),
+						getTileValue<u8>(city, tileDistance, x+1, y+1)
+					);
 
 					if (minDistance != 255)  minDistance++;
 					if (minDistance > maxDistance)  minDistance = 255;
@@ -92,17 +95,17 @@ void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 ma
 				{
 					if (getTileValue(city, tileDistance, x, y) != 0)
 					{
-						u8 minDistance = min({
-							getTileValueIfExists<u8>(city, tileDistance, x-1, y-1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x  , y-1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x+1, y-1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x-1, y  , 255),
-						//	getTileValueIfExists<u8>(city, tileDistance, x  , y  , 255),
-							getTileValueIfExists<u8>(city, tileDistance, x+1, y  , 255),
-							getTileValueIfExists<u8>(city, tileDistance, x-1, y+1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x  , y+1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x+1, y+1, 255),
-						});
+						u8 minDistance = min(
+							getTileValue<u8>(city, tileDistance, x-1, y-1),
+							getTileValue<u8>(city, tileDistance, x  , y-1),
+							getTileValue<u8>(city, tileDistance, x+1, y-1),
+							getTileValue<u8>(city, tileDistance, x-1, y  ),
+						//	getTileValue<u8>(city, tileDistance, x  , y  ),
+							getTileValue<u8>(city, tileDistance, x+1, y  ),
+							getTileValue<u8>(city, tileDistance, x-1, y+1),
+							getTileValue<u8>(city, tileDistance, x  , y+1),
+							getTileValue<u8>(city, tileDistance, x+1, y+1)
+						);
 
 						if (minDistance != 255)  minDistance++;
 						if (minDistance > maxDistance)  minDistance = 255;

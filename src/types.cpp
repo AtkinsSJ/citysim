@@ -72,22 +72,11 @@ inline T min(T a, T b)
 	return (a < b) ? a : b;
 }
 
-template<typename T>
-T min(std::initializer_list<T> values)
+template<typename T, typename... Args>
+T min(T a, Args... args)
 {
-	ASSERT(values.size() > 0);
-
-	auto it = values.begin();
-	T result = *it;
-	it++;
-
-	while (it != values.end())
-	{
-		result = min(result, *it);
-		it++;
-	}
-
-	return result;
+	T b = min(args...);
+	return (a < b) ? a : b;
 }
 
 template<typename T>
@@ -96,22 +85,11 @@ inline T max(T a, T b)
 	return (a > b) ? a : b;
 }
 
-template<typename T>
-T max(std::initializer_list<T> values)
+template<typename T, typename... Args>
+T max(T a, Args... args)
 {
-	ASSERT(values.size() > 0);
-
-	auto it = values.begin();
-	T result = *it;
-	it++;
-
-	while (it != values.end())
-	{
-		result = max(result, *it);
-		it++;
-	}
-
-	return result;
+	T b = max(args...);
+	return (a > b) ? a : b;
 }
 
 template<typename T>
