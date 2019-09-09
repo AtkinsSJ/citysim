@@ -346,92 +346,93 @@ void demolishRect(City *city, Rect2I area)
 	// NB: We assume that we've already checked we can afford this!
 
 	// Building demolition
+	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
+	for (auto it = iterate(&buildingsToDemolish, buildingsToDemolish.count-1, false, true);
+		!it.isDone;
+		next(&it))
 	{
-		ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
-		for (auto it = iterate(&buildingsToDemolish, buildingsToDemolish.count-1, false, true);
-			!it.isDone;
-			next(&it))
+		Building *building = getValue(it);
+		BuildingDef *def = getBuildingDef(building->typeID);
+
+		city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
+
+		Rect2I buildingFootprint = building->footprint;
+
+		building->id = 0;
+		building->typeID = -1;
+
+		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, buildingFootprint.x, buildingFootprint.y);
+		removeIndex(&city->buildings, buildingIndex);
+
+		building = null; // For safety, because we just deleted the Building!
+
+		for (s32 y = buildingFootprint.y;
+			y < buildingFootprint.y + buildingFootprint.h;
+			y++)
 		{
-			Building *building = getValue(it);
-			BuildingDef *def = getBuildingDef(building->typeID);
-
-			city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
-
-			Rect2I buildingFootprint = building->footprint;
-
-			building->id = 0;
-			building->typeID = -1;
-
-			s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, buildingFootprint.x, buildingFootprint.y);
-			removeIndex(&city->buildings, buildingIndex);
-
-			building = null; // For safety, because we just deleted the Building!
-
-			for (s32 y = buildingFootprint.y;
-				y < buildingFootprint.y + buildingFootprint.h;
-				y++)
+			for (s32 x = buildingFootprint.x;
+				x < buildingFootprint.x + buildingFootprint.w;
+				x++)
 			{
-				for (s32 x = buildingFootprint.x;
-					x < buildingFootprint.x + buildingFootprint.w;
-					x++)
-				{
-					setTile(city, city->tileBuildingIndex, x, y, 0);
-					// @Hack: We have to do this for updateAdjacentBuildingTextures()...
-					// The whole buildingtextures system needs a rethink!
-					removeAllTransportFromTile(city, x, y);
-				}
+				setTile(city, city->tileBuildingIndex, x, y, 0);
+				// @Hack: We have to do this for updateAdjacentBuildingTextures()...
+				// The whole buildingtextures system needs a rethink!
+				removeAllTransportFromTile(city, x, y);
 			}
-
-			markZonesAsEmpty(city, buildingFootprint);
-
-			markAreaDirty(city, buildingFootprint);
 		}
 
-		// Expand the area to account for buildings to the left or up from it
-		Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);
-		Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
-
-		for (s32 sY = sectorsArea.y;
-			sY < sectorsArea.y + sectorsArea.h;
-			sY++)
+		// Only need to add the footprint as a separate rect if it's not inside the area!
+		if (!contains(area, buildingFootprint))
 		{
-			for (s32 sX = sectorsArea.x;
-				sX < sectorsArea.x + sectorsArea.w;
-				sX++)
-			{
-				CitySector *sector = getSector(&city->sectors, sX, sY);
-				
-				// Rebuild the ownedBuildings array
-				clear(&sector->ownedBuildings);
+			markZonesAsEmpty(city, buildingFootprint);
+			markAreaDirty(city, buildingFootprint);
+		}
+	}
 
-				for (s32 y = sector->bounds.y;
-					y < sector->bounds.y + sector->bounds.h;
-					y++)
+	// Expand the area to account for buildings to the left or up from it
+	Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);
+	Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
+
+	for (s32 sY = sectorsArea.y;
+		sY < sectorsArea.y + sectorsArea.h;
+		sY++)
+	{
+		for (s32 sX = sectorsArea.x;
+			sX < sectorsArea.x + sectorsArea.w;
+			sX++)
+		{
+			CitySector *sector = getSector(&city->sectors, sX, sY);
+			
+			// Rebuild the ownedBuildings array
+			clear(&sector->ownedBuildings);
+
+			for (s32 y = sector->bounds.y;
+				y < sector->bounds.y + sector->bounds.h;
+				y++)
+			{
+				for (s32 x = sector->bounds.x;
+					x < sector->bounds.x + sector->bounds.w;
+					x++)
 				{
-					for (s32 x = sector->bounds.x;
-						x < sector->bounds.x + sector->bounds.w;
-						x++)
+					Building *b = getBuildingAt(city, x, y);
+					if (b != null)
 					{
-						Building *b = getBuildingAt(city, x, y);
-						if (b != null)
+						if (b->footprint.x == x && b->footprint.y == y)
 						{
-							if (b->footprint.x == x && b->footprint.y == y)
-							{
-								append(&sector->ownedBuildings, b);
-							}
+							append(&sector->ownedBuildings, b);
 						}
 					}
 				}
 			}
 		}
-
-		// Mark area as changed
-		markZonesAsEmpty(city, area);
-		markAreaDirty(city, area);
-
-		// Any buildings that would have connected with something that just got demolished need to refresh!
-		updateAdjacentBuildingTextures(city, area);
 	}
+
+	// Mark area as changed
+	markZonesAsEmpty(city, area);
+	markAreaDirty(city, area);
+
+	// Any buildings that would have connected with something that just got demolished need to refresh!
+	updateAdjacentBuildingTextures(city, area);
 }
 
 ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u32 flags)
