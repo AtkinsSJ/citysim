@@ -375,9 +375,6 @@ void demolishRect(City *city, Rect2I area)
 				x++)
 			{
 				setTile(city, city->tileBuildingIndex, x, y, 0);
-				// @Hack: We have to do this for updateAdjacentBuildingTextures()...
-				// The whole buildingtextures system needs a rethink!
-				removeAllTransportFromTile(city, x, y);
 			}
 		}
 

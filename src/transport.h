@@ -25,7 +25,6 @@ void markTransportLayerDirty(TransportLayer *layer, Rect2I bounds);
 
 void addTransportToTile(City *city, s32 x, s32 y, TransportType type);
 void addTransportToTile(City *city, s32 x, s32 y, Flags_TransportType types);
-void removeAllTransportFromTile(City *city, s32 x, s32 y);
 bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type);
 bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags_TransportType types);
 s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type);

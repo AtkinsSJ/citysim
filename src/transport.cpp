@@ -124,11 +124,6 @@ void addTransportToTile(City *city, s32 x, s32 y, Flags_TransportType types)
 	setTile(city, city->transportLayer.tileTransportTypes, x, y, newValue);
 }
 
-void removeAllTransportFromTile(City *city, s32 x, s32 y)
-{
-	setTile(city, city->transportLayer.tileTransportTypes, x, y, (u8)0);
-}
-
 inline s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
 {
 	return getTileValue(city, city->transportLayer.tileTransportDistance[type], x, y);
