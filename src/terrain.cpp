@@ -137,7 +137,8 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 					}
 					else if (equals(firstWord, "can_build_on"))
 					{
-						def->canBuildOn = readBool(&reader, firstWord, remainder);
+						Maybe<bool> boolRead = readBool(&reader, firstWord, remainder);
+						if (boolRead.isValid) def->canBuildOn = boolRead.value;
 					}
 					else
 					{

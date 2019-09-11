@@ -124,21 +124,29 @@ void loadUITheme(Blob data, Asset *asset)
 			// properties of the item
 			if (equals(firstWord, "backgroundColor"))
 			{
-				switch (target.type)
+				Maybe<V4> backgroundColor = readColor(&reader, firstWord, remainder);
+				if (backgroundColor.isValid)
 				{
-					case Section_Button:    target.button->backgroundColor    = readColor255(&reader, firstWord, remainder); break;
-					case Section_TextBox:   target.textBox->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
-					case Section_UIMessage: target.message->backgroundColor   = readColor255(&reader, firstWord, remainder); break;
-					case Section_Window:    target.window->backgroundColor    = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Button:    target.button->backgroundColor    = backgroundColor.value; break;
+						case Section_TextBox:   target.textBox->backgroundColor   = backgroundColor.value; break;
+						case Section_UIMessage: target.message->backgroundColor   = backgroundColor.value; break;
+						case Section_Window:    target.window->backgroundColor    = backgroundColor.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "backgroundColorInactive"))
 			{
-				switch (target.type)
+				Maybe<V4> backgroundColorInactive = readColor(&reader, firstWord, remainder);
+				if (backgroundColorInactive.isValid)
 				{
-					case Section_Window:  target.window->backgroundColorInactive = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Window:  target.window->backgroundColorInactive = backgroundColorInactive.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "contentButtonStyle"))
@@ -161,10 +169,14 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "contentPadding"))
 			{
-				switch (target.type)
+				Maybe<s64> contentPadding = readInt(&reader, firstWord, remainder);
+				if (contentPadding.isValid)
 				{
-					case Section_Window:  target.window->contentPadding = (f32) readInt(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Window:  target.window->contentPadding = (f32) contentPadding.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "font"))
@@ -182,10 +194,14 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "hoverColor"))
 			{
-				switch (target.type)
+				Maybe<V4> hoverColor = readColor(&reader, firstWord, remainder);
+				if (hoverColor.isValid)
 				{
-					case Section_Button:  target.button->hoverColor = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Button:  target.button->hoverColor = hoverColor.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "offsetFromMouse"))
@@ -204,7 +220,8 @@ void loadUITheme(Blob data, Asset *asset)
 			{
 				if (target.type == Section_General)
 				{
-					theme->overlayColor = readColor255(&reader, firstWord, remainder);
+					Maybe<V4> overlayColor = readColor(&reader, firstWord, remainder);
+					if (overlayColor.isValid) theme->overlayColor = overlayColor.value;
 				}
 				else
 				{
@@ -213,70 +230,102 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "padding"))
 			{
-				switch (target.type)
+				Maybe<s64> padding = readInt(&reader, firstWord, remainder);
+				if (padding.isValid)
 				{
-					case Section_Button:     target.button->padding    = (f32) readInt(&reader, firstWord, remainder); break;
-					case Section_UIMessage:  target.message->padding   = (f32) readInt(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Button:     target.button->padding    = (f32) padding.value; break;
+						case Section_UIMessage:  target.message->padding   = (f32) padding.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "pressedColor"))
 			{
-				switch (target.type)
+				Maybe<V4> pressedColor = readColor(&reader, firstWord, remainder);
+				if (pressedColor.isValid)
 				{
-					case Section_Button:  target.button->pressedColor = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Button:  target.button->pressedColor = pressedColor.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "textAlignment"))
 			{
-				switch (target.type)
+				Maybe<u32> alignment = readAlignment(&reader, firstWord, remainder);
+				if (alignment.isValid)
 				{
-					case Section_Button:  target.button->textAlignment = readAlignment(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Button:  target.button->textAlignment = alignment.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "textColor"))
 			{
-				switch (target.type)
+				Maybe<V4> textColor = readColor(&reader, firstWord, remainder);
+				if (textColor.isValid)
 				{
-					case Section_Button:     target.button->textColor    = readColor255(&reader, firstWord, remainder); break;
-					case Section_Label:      target.label->textColor     = readColor255(&reader, firstWord, remainder); break;
-					case Section_TextBox:    target.textBox->textColor   = readColor255(&reader, firstWord, remainder); break;
-					case Section_UIMessage:  target.message->textColor   = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Button:     target.button->textColor    = textColor.value; break;
+						case Section_Label:      target.label->textColor     = textColor.value; break;
+						case Section_TextBox:    target.textBox->textColor   = textColor.value; break;
+						case Section_UIMessage:  target.message->textColor   = textColor.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "titleBarButtonHoverColor"))
 			{
-				switch (target.type)
+				Maybe<V4> titleBarButtonHoverColor = readColor(&reader, firstWord, remainder);
+				if (titleBarButtonHoverColor.isValid)
 				{
-					case Section_Window:  target.window->titleBarButtonHoverColor = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Window:  target.window->titleBarButtonHoverColor = titleBarButtonHoverColor.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "titleBarColor"))
 			{
-				switch (target.type)
+				Maybe<V4> titleBarColor = readColor(&reader, firstWord, remainder);
+				if (titleBarColor.isValid)
 				{
-					case Section_Window:  target.window->titleBarColor = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Window:  target.window->titleBarColor = titleBarColor.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "titleBarColorInactive"))
 			{
-				switch (target.type)
+				Maybe<V4> titleBarColorInactive = readColor(&reader, firstWord, remainder);
+				if (titleBarColorInactive.isValid)
 				{
-					case Section_Window:  target.window->titleBarColorInactive = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Window:  target.window->titleBarColorInactive = titleBarColorInactive.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "titleBarHeight"))
 			{
-				switch (target.type)
+				Maybe<s64> titleBarHeight = readInt(&reader, firstWord, remainder);
+				if (titleBarHeight.isValid)
 				{
-					case Section_Window:  target.window->titleBarHeight = (f32) readInt(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Window:  target.window->titleBarHeight = (f32) titleBarHeight.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else if (equals(firstWord, "titleFont"))
@@ -291,10 +340,14 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "titleColor"))
 			{
-				switch (target.type)
+				Maybe<V4> titleColor = readColor(&reader, firstWord, remainder);
+				if (titleColor.isValid)
 				{
-					case Section_Window:  target.window->titleColor = readColor255(&reader, firstWord, remainder); break;
-					default:  WRONG_SECTION;
+					switch (target.type)
+					{
+						case Section_Window:  target.window->titleColor = titleColor.value; break;
+						default:  WRONG_SECTION;
+					}
 				}
 			}
 			else 

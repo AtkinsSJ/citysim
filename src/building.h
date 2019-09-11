@@ -64,6 +64,8 @@ struct BuildingDef
 	EffectRadius landValueEffect;
 
 	EffectRadius pollutionEffect;
+
+	f32 fireRisk; // Defaults to 1.0
 };
 
 struct BuildingCatalogue

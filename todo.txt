@@ -24,6 +24,7 @@ Palette assets
 Make drawGrid() use the grid and palette as Textures, and do a single draw call. That way we don't need to do copyRegion() fiddling - we could even keep the current data layer texture cached on the GPU if we're smart?
 
 Land value builidng-effect calculation is super slow.
+- Maybe we should spread it out over multiple frames? Though I'm not sure how to do that... yeah, well, the issue we have is updating the whole map as one dirty-rect, and you can't partially do that. If we had a bunch of rects, we could handle them one at a time and break it up that way... maybe we could specify a max-size for dirty rects and have it break them up automatically? Or maybe we just limit the size of any player inputs so that whole-city rects only happen on load. (That latter option sounds like a good idea for lots of things.)
 
 Texture-linking 2.0:
 - Not just about linking textures!

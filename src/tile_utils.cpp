@@ -43,6 +43,7 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, Effec
 	}
 }
 
+// @Copypasta updateDistances() below that takes DirtyRects
 void updateDistances(City *city, u8 *tileDistance, Rect2I dirtyRect, u8 maxDistance)
 {
 	DEBUG_FUNCTION();

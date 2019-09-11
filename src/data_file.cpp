@@ -109,42 +109,58 @@ void readNextLineInternal(LineReader *reader)
 	}
 }
 
-s64 readInt(LineReader *reader, String command, String arguments)
+Maybe<s64> readInt(LineReader *reader, String command, String arguments)
 {
 	s64 value;
 
 	if (asInt(nextToken(arguments, &arguments), &value))
 	{
-		return value;
+		return makeSuccess(value);
 	}
 	else
 	{
 		error(reader, "Couldn't parse {0}. Expected 1 int.", {command});
-		return 0;
+		return makeFailure<s64>();
 	}
 }
 
-bool readBool(LineReader *reader, String command, String arguments)
+Maybe<bool> readBool(LineReader *reader, String command, String arguments)
 {
 	bool value;
 
 	if (asBool(nextToken(arguments, &arguments), &value))
 	{
-		return value;
+		return makeSuccess(value);
 	}
 	else
 	{
 		error(reader, "Couldn't parse {0}. Expected 1 boolean (true/false).", {command});
-		return false;
+		return makeFailure<bool>();
 	}
 }
 
-V4 readColor255(LineReader *reader, String command, String arguments)
+// f32 readPercent(LineReader *reader, String command, String arguments)
+// {
+// 	f32 value;
+
+// 	s64 intValue;
+
+// 	String token = nextToken(arguments, &arguments);
+// 	if (token[token.length-1] != '%')
+// 	{
+// 		error(reader, "Couldn't parse {0}. Expected 
+// 	}
+// }
+
+Maybe<V4> readColor(LineReader *reader, String command, String arguments)
 {
 	s64 r = 0;
 	s64 g = 0;
 	s64 b = 0;
 	s64 a = 255;
+
+	// TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
+	// We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
 
 	if (asInt(nextToken(arguments, &arguments), &r)
 		&& asInt(nextToken(arguments, &arguments), &g)
@@ -153,16 +169,16 @@ V4 readColor255(LineReader *reader, String command, String arguments)
 		// Note: This does nothing if it fails, which is fine, because the alpha is optional
 		asInt(nextToken(arguments, &arguments), &a);
 
-		return color255((u8)r, (u8)g, (u8)b, (u8)a);
+		return makeSuccess(color255((u8)r, (u8)g, (u8)b, (u8)a));
 	}
 	else
 	{
 		error(reader, "Couldn't parse {0}. Expected 3 or 4 integers from 0 to 255, for R G B and optional A.", {command});
-		return {};
+		return makeFailure<V4>();
 	}
 }
 
-u32 readAlignment(LineReader *reader, String command, String arguments)
+Maybe<u32> readAlignment(LineReader *reader, String command, String arguments)
 {
 	u32 result = 0;
 
@@ -226,19 +242,18 @@ u32 readAlignment(LineReader *reader, String command, String arguments)
 		else
 		{
 			error(reader, "Couldn't parse {0}. Unrecognized alignment keyword '{1}'", {command, token});
-			break;
+
+			return makeFailure<u32>();
 		}
 
 		token = nextToken(arguments, &arguments);
 	}
 
-	return result;
+	return makeSuccess(result);
 }
 
-String readTextureDefinition(LineReader *reader, String tokens)
+Maybe<String> readTextureDefinition(LineReader *reader, String tokens)
 {
-	String result = nullString;
-
 	String spriteName = pushString(&assets->assetArena, nextToken(tokens, &tokens));
 	String textureName = nextToken(tokens, &tokens);
 	s64 regionW;
@@ -260,20 +275,17 @@ String readTextureDefinition(LineReader *reader, String tokens)
 
 		hashString(&spriteName);
 
-		result = spriteName;
+		return makeSuccess(spriteName);
 	}
 	else
 	{
 		error(reader, "Couldn't parse texture. Expected use: \"texture filename.png width height (tilesAcross=1) (tilesDown=1)\"");
+		return makeFailure<String>();
 	}
-
-	return result;
 }
 
-EffectRadius readEffectRadius(LineReader *reader, String command, String tokens)
+Maybe<EffectRadius> readEffectRadius(LineReader *reader, String command, String tokens)
 {
-	EffectRadius result = {};
-
 	String remainder;
 	s64 effectValue;
 	s64 effectRadius;
@@ -286,14 +298,18 @@ EffectRadius readEffectRadius(LineReader *reader, String command, String tokens)
 			effectRadius = effectValue;
 		}
 
+		EffectRadius result = {};
+
 		result.centreValue = truncate32(effectValue);
 		result.radius      = truncate32(effectRadius);
 		result.outerValue  = 0;
+
+		return makeSuccess(result);
 	}
 	else
 	{
 		error(reader, "Couldn't parse effect radius. Expected \"{0} effectAtCentre [radius] [effectAtEdge]\" where effectAtCentre, radius, and effectAtEdge are ints.", {command});
-	}
 
-	return result;
+		return makeFailure<EffectRadius>();
+	}
 }

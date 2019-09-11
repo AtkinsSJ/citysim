@@ -115,6 +115,32 @@ enum Alignment {
 	ALIGN_CENTRE = ALIGN_H_CENTRE | ALIGN_V_CENTRE,
 };
 
+template<typename T>
+struct Maybe
+{
+	bool isValid;
+	T value;
+};
+
+template<typename T>
+inline Maybe<T> makeSuccess(T value)
+{
+	Maybe<T> result;
+	result.isValid = true;
+	result.value = value;
+
+	return result;
+}
+
+template<typename T>
+inline Maybe<T> makeFailure()
+{
+	Maybe<T> result = {};
+	result.isValid = false;
+
+	return result;
+}
+
 struct V2 {
 	f32 x,y;
 };

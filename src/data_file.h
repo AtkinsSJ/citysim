@@ -33,12 +33,12 @@ bool isDone(LineReader *reader);
 void warn(LineReader *reader, char *message, std::initializer_list<String> args = {});
 void error(LineReader *reader, char *message, std::initializer_list<String> args = {});
 
-s64 readInt(LineReader *reader, String command, String arguments);
-bool readBool(LineReader *reader, String command, String arguments);
-V4 readColor255(LineReader *reader, String command, String arguments);
-u32 readAlignment(LineReader *reader, String command, String arguments);
-String readTextureDefinition(LineReader *reader, String tokens);
-struct EffectRadius readEffectRadius(LineReader *reader, String command, String tokens);
+Maybe<s64> readInt(LineReader *reader, String command, String arguments);
+Maybe<bool> readBool(LineReader *reader, String command, String arguments);
+Maybe<V4> readColor(LineReader *reader, String command, String arguments);
+Maybe<u32> readAlignment(LineReader *reader, String command, String arguments);
+Maybe<String> readTextureDefinition(LineReader *reader, String tokens);
+Maybe<struct EffectRadius> readEffectRadius(LineReader *reader, String command, String tokens);
 
 //
 // Internal
