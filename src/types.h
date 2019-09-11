@@ -121,9 +121,9 @@ struct Maybe
 	bool isValid;
 	T value;
 
-	inline T operator||(T alternative)
+	inline T orDefault(T default)
 	{
-		return isValid ? value : alternative;
+		return isValid ? value : default;
 	}
 };
 

@@ -160,7 +160,7 @@ Maybe<V4> readColor(LineReader *reader, String command, String arguments)
 	{
 		// NB: We default to fully opaque if no alpha is provided
 
-		return makeSuccess(color255((u8)r.value, (u8)g.value, (u8)b.value, (u8)(a || 255)));
+		return makeSuccess(color255((u8)r.value, (u8)g.value, (u8)b.value, (u8)(a.orDefault(255))));
 	}
 	else
 	{
@@ -292,8 +292,8 @@ Maybe<EffectRadius> readEffectRadius(LineReader *reader, String command, String 
 		EffectRadius result = {};
 
 		result.centreValue = truncate32(effectValue.value);
-		result.radius      = truncate32(effectRadius || effectValue.value); // Default to radius=value
-		result.outerValue  = truncate32(effectOuterValue || 0);
+		result.radius      = truncate32(effectRadius.orDefault(effectValue.value)); // Default to radius=value
+		result.outerValue  = truncate32(effectOuterValue.orDefault(0));
 
 		return makeSuccess(result);
 	}
