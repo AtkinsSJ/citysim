@@ -26,7 +26,6 @@ Make drawGrid() use the grid and palette as Textures, and do a single draw call.
 Land value builidng-effect calculation is super slow.
 
 DirtyRects:
-- Check for the dirty-rects list becoming too big, because that's probably a bug, like before!
 - It's a good system, but I think we need to break it down more. Different parts of a layer have different ideas of how much the incoming rects should be expanded, or what makes an area dirty at all. I set up the City::markAreaDirty() function because I'm concerned about bugs coming from forgetting to tell a layer that something has changed, in some situations... but that's a one-size-fits-all approach that's less optimal. eg, Power only cares if the tiles changed whether they carry power or not (or how much power is produced/consumed).
 - We could add flags to markAreaDirty() that say which properties have changed, but that sounds like it'd have the same problems of forgetting to update something. It also means each system that alters the map has to know how all of the layers function to know which ones need updating - which is a pretty horrible idea.
 - Maybe markAreaDirty() does checks to see which things need updating, but how would it know?

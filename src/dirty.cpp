@@ -19,31 +19,45 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 		rectToAdd = intersect(rectToAdd, dirtyRects->bounds);
 	}
 
-	// Check to see if this rectangle is contained by an existing dirty rect
-	for (auto it = iterate(&dirtyRects->rects);
-		!it.isDone;
-		next(&it))
+	// Skip empty rects
+	if (areaOf(rectToAdd) == 0)
 	{
-		Rect2I *existingRect = get(it);
-
-		if (contains(*existingRect, rectToAdd))
-		{
-			added = true;
-			break;
-		}
+		return;
 	}
 
-	// Remove any existing rects that are inside our new one
-	if (!added)
+	if (dirtyRects->rects.count > 128)
 	{
-		for (auto it = iterateBackwards(&dirtyRects->rects);
+		logWarn("Over 128 dirty rects, which is probably a bug? (Count: {0}) Skipping duplicate checks.", {formatInt(dirtyRects->rects.count)});
+		DEBUG_BREAK();
+	}
+	else
+	{
+		// Check to see if this rectangle is contained by an existing dirty rect
+		for (auto it = iterate(&dirtyRects->rects);
 			!it.isDone;
 			next(&it))
 		{
-			Rect2I existingRect = getValue(it);
-			if (contains(rectToAdd, existingRect))
+			Rect2I *existingRect = get(it);
+
+			if (contains(*existingRect, rectToAdd))
 			{
-				removeIndex(&dirtyRects->rects, getIndex(it), false);
+				added = true;
+				break;
+			}
+		}
+
+		// Remove any existing rects that are inside our new one
+		if (!added)
+		{
+			for (auto it = iterateBackwards(&dirtyRects->rects);
+				!it.isDone;
+				next(&it))
+			{
+				Rect2I existingRect = getValue(it);
+				if (contains(rectToAdd, existingRect))
+				{
+					removeIndex(&dirtyRects->rects, getIndex(it), false);
+				}
 			}
 		}
 	}
