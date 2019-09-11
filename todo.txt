@@ -25,6 +25,21 @@ Make drawGrid() use the grid and palette as Textures, and do a single draw call.
 
 Land value builidng-effect calculation is super slow.
 
+Texture-linking 2.0:
+- Not just about linking textures!
+- A building def for eg roads is split into variants. eg, a corner variant is distinct from a straight variant. Each is distinct but still recognised as a road. The def defines which one is used in a given situation. eg, "if there are roads west and north of this, select the north-west-corner variant".
+	-> (side note: these are all "networks" so maybe we could split this from the regular builidng code?)
+	- We'd probably want to eventually just define straight/corner/T/X/diagonals pieces instead of every single rotational variant of those. Just variant+rotation.
+	- In SC4 (see https://wiki.sc4devotion.com/index.php?title=Individual_Network_RULs) a network tile variant is chosen by: firstly which connections the tile has, then which other network tiles (and their connections) are required to be in which other positions relative to it, and then a texture is chosen and transformed.
+		-> This implies that when building/demolishing networks, you're really just modifying the "connections" each tile has, and then an appropriate building is displayed that matches that internal model.
+	- Initially we can just check N/E/S/W of the tile to keep things simple.
+- Somehow we want to merge the "place a building on top of another" thing into this?
+	- eg, power-line-over-road can be an automatic building if a road goes one direction and a power line goes the orthogonal direction across the same tile.
+	- Call these "intersections".
+	- SC4: ( https://wiki.sc4devotion.com/index.php?title=Network_Specs/IntersectionSolutions_RUL )
+		-> When the player attempts to build one network across a different one, run down the list of possible intersections of those types. The intersection is chosen based on N/E/S/W tiles of both networks and how they connect to the crossing tile (straight, diagonally, etc). The valid option is then flipped/rotated as necessary.
+		- So, here it specifies what we'd call a Building to be placed at that spot, and not a Variant. (Which makes sense because it's effectively multiple building types otherwise!) (Though... we could implement this as a Building per intersection combination, and then variants within it. eg, one power-line-over-road building with variants for straight/diagonal combinations.)
+
 DirtyRects:
 - It's a good system, but I think we need to break it down more. Different parts of a layer have different ideas of how much the incoming rects should be expanded, or what makes an area dirty at all. I set up the City::markAreaDirty() function because I'm concerned about bugs coming from forgetting to tell a layer that something has changed, in some situations... but that's a one-size-fits-all approach that's less optimal. eg, Power only cares if the tiles changed whether they carry power or not (or how much power is produced/consumed).
 - We could add flags to markAreaDirty() that say which properties have changed, but that sounds like it'd have the same problems of forgetting to update something. It also means each system that alters the map has to know how all of the layers function to know which ones need updating - which is a pretty horrible idea.
@@ -34,17 +49,24 @@ DirtyRects:
 	1) Dirty areas where the world physically changed, updated on demand.
 	2) Things that are recalculated for the whole city every so often, regularly and automatically.
 
-- Zones
-	- Desirability per zone type
-		- (later, make this per *spawn* type, which is more specific)
-		- Desirability is used to prioritise new developments
-			✔ Sectors store some kind of aggregate desirability score, either average or the max tile value
-			✔ ZoneLayer keeps a sorted list of desirable sectors, per zone type?
-			- Buildings are grown in the most desirable place within a sector first
-		- Desirability for a tile is affected by if it's already got a building there, and how recently it was constructed. (Will need to record building construction time somehow! And have a game clock.)
-			- So, the how-good-a-place-is weight is "desirability - penalty"
-	- @RandomIterate: The random selection in findGrowableBuildingDef() is biased, making options that appear after invalid ones more likely to be chosen. This is bad, but I'm not sure how growing is going to happen in the end - the current "grow one at a time" method might be replaced with a "grow a block at a time" one, where the code would be quite different.
-	- @RandomIterate: Picking a random x,y within a sector to start with is also biased! But, we'll replace it with a prioritised system outlined above, so this will get fixed.
+Zones:
+- Desirability per zone type
+	- (later, make this per *spawn* type, which is more specific)
+	- Desirability is used to prioritise new developments
+		✔ Sectors store some kind of aggregate desirability score, either average or the max tile value
+		✔ ZoneLayer keeps a sorted list of desirable sectors, per zone type?
+		- Buildings are grown in the most desirable place within a sector first
+	- Desirability for a tile is affected by if it's already got a building there, and how recently it was constructed. (Will need to record building construction time somehow! And have a game clock.)
+		- So, the how-good-a-place-is weight is "desirability - penalty"
+- @RandomIterate: The random selection in findGrowableBuildingDef() is biased, making options that appear after invalid ones more likely to be chosen. This is bad, but I'm not sure how growing is going to happen in the end - the current "grow one at a time" method might be replaced with a "grow a block at a time" one, where the code would be quite different.
+- @RandomIterate: Picking a random x,y within a sector to start with is also biased! But, we'll replace it with a prioritised system outlined above, so this will get fixed.
+- Grow blocks of buildings at once
+	- Need to figure out how this will work, as there are a bunch of options.
+		- SC3K approach is to distinguish between building lots and filler lots, and then fill an area with lots that are a % of each. Then, there are also specific rules for developing a house and surrounding garden, or farms, or other larger-scale blocks.
+		- SC4 approach is to have zones parcelled up, and find lots that match the parcels. I don't like this much, it's more content-heavy. But when developing, it then seems to find a rectangle of similar parcels and fill them all with variations of the same building.
+	- I'm currently favouring a more 3K-like approach... Define puzzle-pieces, which are combined together to visually form a building and its surroundings. The rules for putting them together are also defined in data.
+		-> In fact, we could even have them all be recognised as a single lot, so the player isn't exposed to the fact that it's made of pieces.
+
 - Statistics
 	- Jobs
 	- Population
@@ -66,7 +88,7 @@ Pollution:
 
 Fire:
 - Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
-- Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, and ordinances.
+- Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
 - Keep a list of fire-service buildings so they can be iterated more easily.
 - Small chance of a fire occurring each tick, depending on the risk.
 
@@ -305,6 +327,7 @@ SC3K does indeed model individual power networks, not just "is it connected to a
 SC3K notes:
 	https://simpage.net/simcity3/tips.shtml
 	http://www.sc3000.com/knowledge/index.cfm
+	How zones develop: http://www.sc3000.com/knowledge/showarticle.cfm?id=1278&openItemID=
 
 -------------------------------------------------
 

@@ -57,6 +57,12 @@ ConsoleCommand(help)
 	}
 }
 
+ConsoleCommand(mark_all_dirty)
+{
+	City *city = &globalAppState.gameState->city;
+	markAreaDirty(city, city->bounds);
+}
+
 ConsoleCommand(reload_assets)
 {
 	reloadAssets();
@@ -137,14 +143,17 @@ ConsoleCommand(window_size)
 
 			resizeWindow((s32)width, (s32)height, false);
 		}
+		else
+		{
+			consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned.", CLS_Error);
+		}
 	}
 	else if (argumentsCount == 0)
 	{
 		V2 screenSize = renderer->uiCamera.size;
 		consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
-
 	}
-
+	else
 	{
 		consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned.", CLS_Error);
 	}
@@ -171,10 +180,10 @@ ConsoleCommand(zoom)
 			renderer->worldCamera.zoom = newZoom;
 			consoleWriteLine(myprintf("Set zoom to {0}", {formatFloat(newZoom, 3)}), CLS_Success);
 		}
-	}
-
-	{
-		consoleWriteLine("Usage: zoom (scale), where scale is an integer, or with no argument to list the current zoom", CLS_Error);
+		else
+		{
+			consoleWriteLine("Usage: zoom (scale), where scale is an integer, or with no argument to list the current zoom", CLS_Error);
+		}
 	}
 }
 
@@ -182,12 +191,13 @@ ConsoleCommand(zoom)
 void initCommands(Console *console)
 {
 	// NB: a max-arguments value of -1 means "no maximum"
-	append(&console->commands, Command(CMD(help), 0, 0));
-	append(&console->commands, Command(CMD(exit), 0, 0));
-	append(&console->commands, Command(CMD(funds), 1, 1));
+	append(&console->commands, Command(CMD(help)));
+	append(&console->commands, Command(CMD(exit)));
+	append(&console->commands, Command(CMD(funds), 1));
 	append(&console->commands, Command(CMD(hello), 0, 1));
-	append(&console->commands, Command(CMD(reload_assets), 0, 0));
-	append(&console->commands, Command(CMD(reload_settings), 0, 0));
+	append(&console->commands, Command(CMD(mark_all_dirty)));
+	append(&console->commands, Command(CMD(reload_assets)));
+	append(&console->commands, Command(CMD(reload_settings)));
 	append(&console->commands, Command(CMD(show_layer), 0, 1));
 	append(&console->commands, Command(CMD(window_size), 0, 2));
 	append(&console->commands, Command(CMD(zoom), 0, 1));
