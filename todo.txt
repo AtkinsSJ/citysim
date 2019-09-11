@@ -38,8 +38,8 @@ DirtyRects:
 	- Desirability per zone type
 		- (later, make this per *spawn* type, which is more specific)
 		- Desirability is used to prioritise new developments
-			- Sectors store some kind of aggregate desirability score, either average or the max tile value
-			- ZoneLayer keeps a sorted list of desirable sectors, per zone type?
+			✔ Sectors store some kind of aggregate desirability score, either average or the max tile value
+			✔ ZoneLayer keeps a sorted list of desirable sectors, per zone type?
 			- Buildings are grown in the most desirable place within a sector first
 		- Desirability for a tile is affected by if it's already got a building there, and how recently it was constructed. (Will need to record building construction time somehow! And have a game clock.)
 			- So, the how-good-a-place-is weight is "desirability - penalty"

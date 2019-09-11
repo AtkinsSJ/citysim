@@ -470,19 +470,22 @@ void growSomeZoneBuildings(City *city)
 			// TODO: Stop when we've grown X buildings, because we don't want to grow a whole city at once!
 			while ((layer->sectorsWithEmptyZones[zoneType].setBitCount > 0) && (remainingDemand > minimumDemand))
 			{
-				// Find a valid res zone
-				// TODO: Better selection than just a random one @Desirability
 				bool foundAZone = false;
-				s32 randomSectorOffset = randomNext(random);
 				s32 randomXOffset = randomNext(random);
 				s32 randomYOffset = randomNext(random);
 				V2I zonePos = {};
 				{
 					DEBUG_BLOCK_T("growSomeZoneBuildings - find a valid zone", DCDT_Simulation);
-					Array<s32> validSectors = getSetBitIndices(&layer->sectorsWithEmptyZones[zoneType]);
-					for (s32 i = 0; i < validSectors.count; i++)
+
+					// Go through sectors from most desirable to least
+					for (s32 position = 0; position < getSectorCount(&layer->sectors); position++)
 					{
-						s32 sectorIndex = validSectors[(i + randomSectorOffset) % validSectors.count];
+						s32 sectorIndex = layer->mostDesirableSectors[zoneType][position];
+
+						// Skip if it doesn't have any available zones
+						// TODO: We want to penalise redevelopment, but still allow it
+						if (!layer->sectorsWithEmptyZones[zoneType][sectorIndex]) continue;
+
 						ZoneSector *sector = &layer->sectors.sectors[sectorIndex];
 
 						for (s32 relY=0;
