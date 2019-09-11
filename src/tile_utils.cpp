@@ -7,17 +7,20 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, Effec
 	
 	s32 diameter = 1 + (effectRadius->radius * 2);
 	f32 invRadius = 1.0f / (f32) effectRadius->radius;
+	f32 radius2 = (f32)(effectRadius->radius * effectRadius->radius);
+
 	Rect2I possibleEffectArea = irectCentreSize(effectCentre, v2i(diameter, diameter));
 	possibleEffectArea = intersect(possibleEffectArea, region);
+
 
 	for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++)
 	{
 		for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++)
 		{
-			f32 distanceFromSource = lengthOf(x - effectCentre.x, y - effectCentre.y);
-			if (distanceFromSource <= effectRadius->radius)
+			f32 distance2FromSource = lengthSquaredOf(x - effectCentre.x, y - effectCentre.y);
+			if (distance2FromSource <= radius2)
 			{
-				f32 contributionF = lerp((f32)effectRadius->centreValue, (f32)effectRadius->outerValue, (distanceFromSource * invRadius));
+				f32 contributionF = lerp((f32)effectRadius->centreValue, (f32)effectRadius->outerValue, (sqrt_f32(distance2FromSource) * invRadius));
 				T contribution = (T)floor_s32(contributionF);
 
 				if (contribution == 0) continue;

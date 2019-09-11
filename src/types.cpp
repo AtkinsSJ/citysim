@@ -31,6 +31,11 @@ inline f32 ceil_f32(f32 in)
 	return (f32) ceil(in);
 }
 
+inline f32 sqrt_f32(f32 in)
+{
+	return (f32) sqrt(in);
+}
+
 inline s32 divideCeil(s32 numerator, s32 denominator)
 {
 	return (numerator + denominator - 1) / denominator;
@@ -330,6 +335,11 @@ inline V2I v2i(V2 source)
 f32 lengthOf(V2I v)
 {
 	return (f32) sqrt(v.x*v.x + v.y*v.y);
+}
+
+f32 lengthSquaredOf(s32 x, s32 y)
+{
+	return (f32) (x*x + y * y);
 }
 
 f32 lengthOf(s32 x, s32 y)

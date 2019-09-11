@@ -229,6 +229,7 @@ V2 operator/=(V2 &v, f32 s);
 V2I v2i(s32 x, s32 y);
 V2I v2i(V2 source);
 
+f32 lengthSquaredOf(s32 x, s32 y);
 f32 lengthOf(s32 x, s32 y);
 f32 lengthOf(V2I v);
 
@@ -360,6 +361,7 @@ s32 ceil_s32(f32 in);
 f32 round_f32(f32 in);
 f32 floor_f32(f32 in);
 f32 ceil_f32(f32 in);
+f32 sqrt_f32(f32 in);
 f32 clamp01(f32 in);
 
 s32 divideCeil(s32 numerator, s32 denominator);

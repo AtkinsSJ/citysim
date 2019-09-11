@@ -3,10 +3,7 @@
 
 F5    reload_assets
 
-Ctrl+Home   resize_window 2560 1080
-Shift+Home  resize_window 1920 1080
-Alt+Home    resize_window 800 600
-Home        resize_window 1024 768
+Home  mark_all_dirty
 
 0     show_layer
 7     show_layer land_value

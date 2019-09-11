@@ -56,6 +56,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 					}
 				}
 
+				//
 				// Now, clamp the tile values into the range we want!
 				// The above process may have overflowed the -255 to 255 range we want the values to be,
 				// but we don't clamp as we go along because then the end result might depend on the order that
