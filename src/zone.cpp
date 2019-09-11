@@ -17,6 +17,13 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 		initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
 
 		zoneLayer->tileDesirability[zoneType] = allocateMultiple<u8>(gameArena, cityArea);
+
+		zoneLayer->mostDesirableSectors[zoneType] = allocateArray<s32>(gameArena, sectorCount);
+		for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
+		{
+			// To start with, we just fill the array 0-to-N because we don't know what's the most desirable.
+			zoneLayer->mostDesirableSectors[zoneType][sectorIndex] = sectorIndex;
+		}
 	}
 
 	for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
@@ -369,6 +376,25 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 		}
 
 		layer->nextSectorUpdateIndex = (layer->nextSectorUpdateIndex + 1) % getSectorCount(&layer->sectors);
+	}
+
+	// Sort the mostDesirableSectors array
+	for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
+	{
+		sortArray(&layer->mostDesirableSectors[zoneType], [&](s32 sectorIndexA, s32 sectorIndexB){
+			return layer->sectors[sectorIndexA].averageDesirability[zoneType] > layer->sectors[sectorIndexB].averageDesirability[zoneType];
+		});
+
+		// TEST
+		#if 0
+		logInfo("Most desirable sectors ({0})", {zoneDefs[zoneType].name});
+		for (s32 position = 0; position < getSectorCount(&layer->sectors); position++)
+		{
+			s32 sectorIndex = layer->mostDesirableSectors[zoneType][position];
+			f32 averageDesirability = layer->sectors[sectorIndex].averageDesirability[zoneType];
+			logInfo("#{0}: sector {1}, desirability {2}", {formatInt(position), formatInt(sectorIndex), formatFloat(averageDesirability, 3)});
+		}
+		#endif
 	}
 
 	calculateDemand(city, layer);

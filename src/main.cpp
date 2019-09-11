@@ -246,7 +246,30 @@ int main(int argc, char *argv[])
 	u32 initFinishedTicks = SDL_GetTicks();
 	logInfo("Game initialised in {0} milliseconds.", {formatInt(initFinishedTicks - initStartTicks)});
 
-	
+
+	// TEST STUFF
+#if 0
+	Array<char> characters = allocateArray<char>(tempArena, 26);
+	for (char i = 0; i < 26; i++)
+	{
+		characters[i] = (char)randomBetween(&globalAppState.cosmeticRandom, 'A', 'Z'+1);
+	}
+	consoleWriteLine("Before sorting");
+	for (s32 i = 0; i < characters.count; i++) { consoleWriteLine(repeatChar(characters[i], 1)); }
+
+	consoleWriteLine("Sorting a < b");
+	sortArray(&characters, [](char a, char b) {
+		return a < b;
+	});
+	for (s32 i = 0; i < characters.count; i++) { consoleWriteLine(repeatChar(characters[i], 1)); }
+
+	consoleWriteLine("Sorting a > b");
+	sortArray(&characters, [](char a, char b) {
+		return a > b;
+	});
+	for (s32 i = 0; i < characters.count; i++) { consoleWriteLine(repeatChar(characters[i], 1)); }
+#endif
+
 	// GAME LOOP
 	while (appState->appStatus != AppStatus_Quit)
 	{

@@ -61,6 +61,8 @@ struct ZoneLayer
 	BitArray sectorsWithZones[ZoneCount];
 	BitArray sectorsWithEmptyZones[ZoneCount];
 
+	Array<s32> mostDesirableSectors[ZoneCount];
+
 	s32 population[ZoneCount]; // NB: Zone_None is used for jobs provided by non-zone, city buildings
 
 	// Calculated every so often

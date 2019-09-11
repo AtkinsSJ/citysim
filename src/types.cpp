@@ -189,6 +189,48 @@ inline T& Array<T>::operator[](s32 index)
 	return items[index];
 }
 
+template<typename T>
+void swap(Array<T> *array, s32 indexA, s32 indexB)
+{
+	T temp = array->items[indexA];
+	array->items[indexA] = array->items[indexB];
+	array->items[indexB] = temp;
+}
+
+template<typename T, typename Comparison>
+void sortArrayInternal(Array<T> *array, Comparison compareElements, s32 lowIndex, s32 highIndex)
+{
+	// Quicksort implementation
+	if (lowIndex < highIndex)
+	{
+		// partition()
+		s32 partitionIndex = 0;
+		{
+			T pivot = array->items[highIndex];
+			s32 i = (lowIndex - 1);
+			for (s32 j = lowIndex; j < highIndex; j++)
+			{
+				if (compareElements(array->items[j], pivot))
+				{
+					i++;
+					swap(array, i, j);
+				}
+			}
+			swap(array, i+1, highIndex);
+			partitionIndex = i+1;
+		}
+
+		sortArrayInternal(array, compareElements, lowIndex, partitionIndex - 1);
+		sortArrayInternal(array, compareElements, partitionIndex + 1, highIndex);
+	}
+}
+
+template<typename T, typename Comparison>
+inline void sortArray(Array<T> *array, Comparison compareElements)
+{
+	sortArrayInternal(array, compareElements, 0, array->count-1);
+}
+
 /**********************************************
 	V2
  **********************************************/

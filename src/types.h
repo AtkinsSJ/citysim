@@ -192,8 +192,16 @@ struct Array
 	// NB: it's a reference so you can do assignments!
 	T& operator[](s32 index);
 };
+
 template<typename T>
 Array<T> makeArray(s32 count, T *items);
+
+template<typename T>
+void swap(Array<T> *array, s32 indexA, s32 indexB);
+
+// compareElements(T a, T b) -> returns (a < b), to sort low to high
+template<typename T, typename Comparison>
+void sortArray(Array<T> *array, Comparison compareElements);
 
 //
 // V2
