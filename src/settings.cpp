@@ -71,10 +71,10 @@ void loadSettingsFile(String name, Blob settingsData)
 				{
 					case Type_bool:
 					{
-						bool value;
-						if (asBool(sValue, &value))
+						Maybe<bool> value = asBool(sValue);
+						if (value.isValid)
 						{
-							((bool *)firstItem)[i] = value;
+							((bool *)firstItem)[i] = value.value;
 						}
 						else
 						{
@@ -84,10 +84,10 @@ void loadSettingsFile(String name, Blob settingsData)
 
 					case Type_s32:
 					{
-						s64 value;
-						if (asInt(sValue, &value))
+						Maybe<s64> value = asInt(sValue);
+						if (value.isValid)
 						{
-							((s32 *)firstItem)[i] = (s32) value;
+							((s32 *)firstItem)[i] = (s32) value.value;
 						}
 						else
 						{

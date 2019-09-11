@@ -75,12 +75,11 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				case Mode_Texture: {
 					if (equals(firstWord, "sprite_size"))
 					{
-						s64 spriteW;
-						s64 spriteH;
-						if (asInt(nextToken(remainder, &remainder), &spriteW)
-							&& asInt(nextToken(remainder, &remainder), &spriteH))
+						Maybe<s64> spriteW = asInt(nextToken(remainder, &remainder));
+						Maybe<s64> spriteH = asInt(nextToken(remainder, &remainder));
+						if (spriteW.isValid && spriteH.isValid)
 						{
-							spriteSize = v2i(truncate32(spriteW), truncate32(spriteH));
+							spriteSize = v2i(truncate32(spriteW.value), truncate32(spriteH.value));
 						}
 						else
 						{
@@ -90,12 +89,11 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 					}
 					else if (equals(firstWord, "sprite_border"))
 					{
-						s64 borderW;
-						s64 borderH;
-						if (asInt(nextToken(remainder, &remainder), &borderW)
-							&& asInt(nextToken(remainder, &remainder), &borderH))
+						Maybe<s64> borderW = asInt(nextToken(remainder, &remainder));
+						Maybe<s64> borderH = asInt(nextToken(remainder, &remainder));
+						if (borderW.isValid && borderH.isValid)
 						{
-							spriteBorder = v2i(truncate32(borderW), truncate32(borderH));
+							spriteBorder = v2i(truncate32(borderW.value), truncate32(borderH.value));
 						}
 						else
 						{
@@ -106,16 +104,14 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 					else if (equals(firstWord, "sprite"))
 					{
 						String spriteName = pushString(&assets->assetArena, nextToken(remainder, &remainder));
-						s64 x;
-						s64 y;
-						s64 w;
-						s64 h;
-						if (asInt(nextToken(remainder, &remainder), &x)
-							&& asInt(nextToken(remainder, &remainder), &y)
-							&& asInt(nextToken(remainder, &remainder), &w)
-							&& asInt(nextToken(remainder, &remainder), &h))
+						Maybe<s64> x = asInt(nextToken(remainder, &remainder));
+						Maybe<s64> y = asInt(nextToken(remainder, &remainder));
+						Maybe<s64> w = asInt(nextToken(remainder, &remainder));
+						Maybe<s64> h = asInt(nextToken(remainder, &remainder));
+
+						if (x.isValid && y.isValid && w.isValid && h.isValid)
 						{
-							Rect2I selectedSprites = irectXYWH(truncate32(x), truncate32(y), truncate32(w), truncate32(h));
+							Rect2I selectedSprites = irectXYWH(truncate32(x.value), truncate32(y.value), truncate32(w.value), truncate32(h.value));
 							addTiledSprites(spriteName, textureAsset, spriteSize, spriteBorder, selectedSprites);
 						}
 						else

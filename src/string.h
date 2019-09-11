@@ -37,8 +37,8 @@ String trim(String input);
 String trimStart(String input);
 String trimEnd(String input);
 
-bool asInt(String string, s64 *result);
-bool asBool(String string, bool *result);
+Maybe<s64> asInt(String input);
+Maybe<bool> asBool(String input);
 
 bool isNullTerminated(String s);
 bool isEmpty(String s);

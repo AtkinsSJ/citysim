@@ -111,32 +111,26 @@ void readNextLineInternal(LineReader *reader)
 
 Maybe<s64> readInt(LineReader *reader, String command, String arguments)
 {
-	s64 value;
+	Maybe<s64> result = asInt(nextToken(arguments, &arguments));
 
-	if (asInt(nextToken(arguments, &arguments), &value))
-	{
-		return makeSuccess(value);
-	}
-	else
+	if (!result.isValid)
 	{
 		error(reader, "Couldn't parse {0}. Expected 1 int.", {command});
-		return makeFailure<s64>();
 	}
+
+	return result;
 }
 
 Maybe<bool> readBool(LineReader *reader, String command, String arguments)
 {
-	bool value;
+	Maybe<bool> result = asBool(nextToken(arguments, &arguments));
 
-	if (asBool(nextToken(arguments, &arguments), &value))
-	{
-		return makeSuccess(value);
-	}
-	else
+	if (!result.isValid)
 	{
 		error(reader, "Couldn't parse {0}. Expected 1 boolean (true/false).", {command});
-		return makeFailure<bool>();
 	}
+
+	return result;
 }
 
 // f32 readPercent(LineReader *reader, String command, String arguments)
@@ -154,22 +148,19 @@ Maybe<bool> readBool(LineReader *reader, String command, String arguments)
 
 Maybe<V4> readColor(LineReader *reader, String command, String arguments)
 {
-	s64 r = 0;
-	s64 g = 0;
-	s64 b = 0;
-	s64 a = 255;
-
 	// TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
 	// We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
 
-	if (asInt(nextToken(arguments, &arguments), &r)
-		&& asInt(nextToken(arguments, &arguments), &g)
-		&& asInt(nextToken(arguments, &arguments), &b))
-	{
-		// Note: This does nothing if it fails, which is fine, because the alpha is optional
-		asInt(nextToken(arguments, &arguments), &a);
+	Maybe<s64> r = asInt(nextToken(arguments, &arguments));
+	Maybe<s64> g = asInt(nextToken(arguments, &arguments));
+	Maybe<s64> b = asInt(nextToken(arguments, &arguments));
+	Maybe<s64> a = asInt(nextToken(arguments, &arguments));
 
-		return makeSuccess(color255((u8)r, (u8)g, (u8)b, (u8)a));
+	if (r.isValid && g.isValid && b.isValid)
+	{
+		// NB: We default to fully opaque if no alpha is provided
+
+		return makeSuccess(color255((u8)r.value, (u8)g.value, (u8)b.value, (u8)(a || 255)));
 	}
 	else
 	{
@@ -256,22 +247,25 @@ Maybe<String> readTextureDefinition(LineReader *reader, String tokens)
 {
 	String spriteName = pushString(&assets->assetArena, nextToken(tokens, &tokens));
 	String textureName = nextToken(tokens, &tokens);
-	s64 regionW;
-	s64 regionH;
-	s64 regionsAcross;
-	s64 regionsDown;
 
-	if (asInt(nextToken(tokens, &tokens), &regionW)
-		&& asInt(nextToken(tokens, &tokens), &regionH))
+	Maybe<s64> regionW = asInt(nextToken(tokens, &tokens));
+	Maybe<s64> regionH = asInt(nextToken(tokens, &tokens));
+
+	if (regionW.isValid && regionH.isValid)
 	{
-		if (!(asInt(nextToken(tokens, &tokens), &regionsAcross)
-			&& asInt(nextToken(tokens, &tokens), &regionsDown)))
+		Maybe<s64> regionsAcross = asInt(nextToken(tokens, &tokens));
+		Maybe<s64> regionsDown   = asInt(nextToken(tokens, &tokens));
+
+		u32 across = 1;
+		u32 down = 1;
+
+		if (regionsAcross.isValid && regionsDown.isValid)
 		{
-			regionsAcross = 1;
-			regionsDown = 1;
+			across = (u32) regionsAcross.value;
+			down = (u32) regionsDown.value;
 		}
 
-		addTiledSprites(spriteName, textureName, (u32)regionW, (u32)regionH, (u32)regionsAcross, (u32)regionsDown);
+		addTiledSprites(spriteName, textureName, (u32)regionW.value, (u32)regionH.value, across, down);
 
 		hashString(&spriteName);
 
@@ -287,22 +281,19 @@ Maybe<String> readTextureDefinition(LineReader *reader, String tokens)
 Maybe<EffectRadius> readEffectRadius(LineReader *reader, String command, String tokens)
 {
 	String remainder;
-	s64 effectValue;
-	s64 effectRadius;
 
-	if (asInt(nextToken(tokens, &remainder), &effectValue))
+	Maybe<s64> effectValue = asInt(nextToken(tokens, &remainder));
+
+	if (effectValue.isValid)
 	{
-		// Default to radius=value
-		if (!asInt(nextToken(remainder, &remainder), &effectRadius))
-		{
-			effectRadius = effectValue;
-		}
+		Maybe<s64> effectRadius = asInt(nextToken(remainder, &remainder));
+		Maybe<s64> effectOuterValue = asInt(nextToken(remainder, &remainder));
 
 		EffectRadius result = {};
 
-		result.centreValue = truncate32(effectValue);
-		result.radius      = truncate32(effectRadius);
-		result.outerValue  = 0;
+		result.centreValue = truncate32(effectValue.value);
+		result.radius      = truncate32(effectRadius || effectValue.value); // Default to radius=value
+		result.outerValue  = truncate32(effectOuterValue || 0);
 
 		return makeSuccess(result);
 	}

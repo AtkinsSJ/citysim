@@ -167,33 +167,35 @@ inline String trim(String input)
 	return trimStart(trimEnd(input));
 }
 
-bool asInt(String string, s64 *result)
+Maybe<s64> asInt(String input)
 {
 	DEBUG_FUNCTION();
+
+	Maybe<s64> result = makeFailure<s64>();
 	
-	bool succeeded = string.length > 0;
+	bool succeeded = input.length > 0;
 
 	if (succeeded)
 	{
 		s64 value = 0;
 		s32 startPosition = 0;
 		bool isNegative = false;
-		if (string.chars[0] == '-')
+		if (input.chars[0] == '-')
 		{
 			isNegative = true;
 			startPosition++;
 		}
-		else if (string.chars[0] == '+')
+		else if (input.chars[0] == '+')
 		{
 			// allow a leading + in case people want it for some reason.
 			startPosition++;
 		}
 
-		for (int position=startPosition; position<string.length; position++)
+		for (s32 position=startPosition; position<input.length; position++)
 		{
 			value *= 10;
 
-			char c = string.chars[position];
+			char c = input.chars[position];
 			if (c >= '0' && c <= '9')
 			{
 				value += c - '0';
@@ -207,34 +209,40 @@ bool asInt(String string, s64 *result)
 
 		if (succeeded)
 		{
-			*result = value;
-			if (isNegative) *result = -*result;
+			if (isNegative)
+			{
+				result = makeSuccess(-value);
+			}
+			else
+			{
+				result = makeSuccess(value);
+			}
 		}
 	}
 
-	return succeeded;
+	return result;
 }
 
-bool asBool(String string, bool *result)
+Maybe<bool> asBool(String input)
 {
 	DEBUG_FUNCTION();
-	
-	bool succeeded = string.length > 0;
 
-	if (equals(string, "true"))
+	Maybe<bool> result;
+
+	if (equals(input, "true"))
 	{
-		*result = true;
+		result = makeSuccess(true);
 	}
-	else if (equals(string, "false"))
+	else if (equals(input, "false"))
 	{
-		*result = false;
+		result = makeSuccess(false);
 	}
 	else
 	{
-		succeeded = false;
+		result = makeFailure<bool>();
 	}
 
-	return succeeded;
+	return result;
 }
 
 inline bool isNullTerminated(String s)
@@ -395,14 +403,14 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 				if (isReadingNumber && endOfNumber > startOfNumber)
 				{
 					String indexString = makeString(format.chars + startOfNumber, (endOfNumber - startOfNumber));
-					s64 parsedIndex = 0;
-					if (asInt(indexString, &parsedIndex))
+					Maybe<s64> parsedIndex = asInt(indexString);
+					if (parsedIndex.isValid)
 					{
 						// now we try and see if it's valid
-						if (parsedIndex >= 0 && parsedIndex < (s64)args.size())
+						if (parsedIndex.value >= 0 && parsedIndex.value < (s64)args.size())
 						{
 							succeeded = true;
-							String arg = args.begin()[parsedIndex];
+							String arg = args.begin()[parsedIndex.value];
 
 							// We don't want the null termination byte to be included in the length, or else we get problems if
 							// we myprintf() the result! Yes, this has happened. It was confusing.

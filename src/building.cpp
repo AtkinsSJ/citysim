@@ -136,14 +136,13 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			{
 				if (equals(firstWord, "size"))
 				{
-					s64 w;
-					s64 h;
+					Maybe<s64> w = asInt(nextToken(remainder, &remainder));
+					Maybe<s64> h = asInt(nextToken(remainder, &remainder));
 
-					if (asInt(nextToken(remainder, &remainder), &w)
-					 && asInt(nextToken(remainder, &remainder), &h))
+					if (w.isValid && h.isValid)
 					{
-						def->width  = (s32) w;
-						def->height = (s32) h;
+						def->width  = truncate32(w.value);
+						def->height = truncate32(h.value);
 					}
 					else
 					{
@@ -175,12 +174,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "build"))
 				{
-					String buildMethodString;
-					s64 cost;
+					String buildMethodString = nextToken(remainder, &remainder);
+					Maybe<s64> cost = asInt(nextToken(remainder, &remainder));
 
-					buildMethodString = nextToken(remainder, &remainder);
-
-					if (asInt(nextToken(remainder, &remainder), &cost))
+					if (cost.isValid)
 					{
 						if (equals(buildMethodString, "paint"))
 						{
@@ -204,7 +201,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 							def->buildMethod = BuildMethod_None;
 						}
 
-						def->buildCost = (s32) cost;
+						def->buildCost = truncate32(cost.value);
 					}
 					else
 					{
@@ -264,10 +261,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "requires_transport_connection"))
 				{
-					Maybe<bool> boolRead = readBool(&reader, firstWord, remainder);
-					if (boolRead.isValid)
+					Maybe<bool> requires_transport_connection = readBool(&reader, firstWord, remainder);
+					if (requires_transport_connection.isValid)
 					{
-						if (boolRead.value)
+						if (requires_transport_connection.value)
 						{
 							def->flags += Building_RequiresTransportConnection;
 						}

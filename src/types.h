@@ -120,6 +120,11 @@ struct Maybe
 {
 	bool isValid;
 	T value;
+
+	inline T operator||(T alternative)
+	{
+		return isValid ? value : alternative;
+	}
 };
 
 template<typename T>

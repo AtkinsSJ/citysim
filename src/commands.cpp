@@ -26,11 +26,11 @@ ConsoleCommand(funds)
 	if (!checkInGame()) return;
 
 	String sAmount = nextToken(remainder, &remainder);
-	s64 amount = 0;
-	if (asInt(sAmount, &amount))
+	Maybe<s64> amount = asInt(sAmount);
+	if (amount.isValid)
 	{
 		consoleWriteLine(myprintf("Set funds to {0}", {sAmount}), CLS_Success);
-		globalAppState.gameState->city.funds = (s32) amount;
+		globalAppState.gameState->city.funds = truncate32(amount.value);
 	}
 	else
 	{
@@ -134,14 +134,14 @@ ConsoleCommand(window_size)
 		String sWidth  = nextToken(remainder, &remainder);
 		String sHeight = nextToken(remainder, &remainder);
 		
-		s64 width = 0;
-		s64 height = 0;
-		if (asInt(sWidth, &width)   && (width > 0)
-		 && asInt(sHeight, &height) && (height > 0))
+		Maybe<s64> width = asInt(sWidth);
+		Maybe<s64> height = asInt(sHeight);
+		if (width.isValid && (width.value > 0)
+		 && height.isValid && (height.value > 0))
 		{
 			consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
 
-			resizeWindow((s32)width, (s32)height, false);
+			resizeWindow(truncate32(width.value), truncate32(height.value), false);
 		}
 		else
 		{
@@ -173,10 +173,10 @@ ConsoleCommand(zoom)
 	{
 		// set the zoom
 		// TODO: We don't have a float-parsing function yet, so we're stuck with ints!
-		s64 requestedZoom;
-		if (asInt(nextToken(remainder, &remainder), &requestedZoom))
+		Maybe<s64> requestedZoom = asInt(nextToken(remainder, &remainder));
+		if (requestedZoom.isValid)
 		{
-			f32 newZoom = (f32) requestedZoom;
+			f32 newZoom = (f32) requestedZoom.value;
 			renderer->worldCamera.zoom = newZoom;
 			consoleWriteLine(myprintf("Set zoom to {0}", {formatFloat(newZoom, 3)}), CLS_Success);
 		}

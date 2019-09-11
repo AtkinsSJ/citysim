@@ -694,15 +694,16 @@ void loadCursorDefs(Blob data, Asset *asset)
 
 		String name     = pushString(&assets->assetArena, nextToken(line, &remainder));
 		String filename = nextToken(remainder, &remainder);
-		s64 hotX, hotY;
 
-		if (asInt(nextToken(remainder, &remainder), &hotX)
-			&& asInt(nextToken(remainder, &remainder), &hotY))
+		Maybe<s64> hotX = asInt(nextToken(remainder, &remainder));
+		Maybe<s64> hotY = asInt(nextToken(remainder, &remainder));
+
+		if (hotX.isValid && hotY.isValid)
 		{
 			// Add the cursor
 			Asset *cursorAsset = addAsset(AssetType_Cursor, name, 0);
 			cursorAsset->cursor.imageFilePath = pushString(&assets->assetArena, getAssetPath(AssetType_Cursor, filename));
-			cursorAsset->cursor.hotspot = v2i(truncate32(hotX), truncate32(hotY));
+			cursorAsset->cursor.hotspot = v2i(truncate32(hotX.value), truncate32(hotY.value));
 		}
 		else
 		{

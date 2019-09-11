@@ -206,13 +206,14 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "offsetFromMouse"))
 			{
-				s64 offsetX, offsetY;
-				if (!asInt(nextToken(remainder, &remainder), &offsetX)) error(&reader, "Could not parse {0} as an integer.", {remainder});
-				if (!asInt(nextToken(remainder, &remainder), &offsetY)) error(&reader, "Could not parse {0} as an integer.", {remainder});
+				Maybe<s64> offsetX = asInt(nextToken(remainder, &remainder));
+				Maybe<s64> offsetY = asInt(nextToken(remainder, &remainder));
+				if (!offsetX.isValid) error(&reader, "Could not parse {0} as an integer.", {remainder});
+				if (!offsetY.isValid) error(&reader, "Could not parse {0} as an integer.", {remainder});
 
 				switch (target.type)
 				{
-					case Section_Window:  target.window->offsetFromMouse = v2i((s32)offsetX, (s32)offsetY); break;
+					case Section_Window:  target.window->offsetFromMouse = v2i(truncate32(offsetX.value), truncate32(offsetY.value)); break;
 					default:  WRONG_SECTION;
 				}
 			}
