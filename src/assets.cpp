@@ -465,7 +465,7 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 		FileInfo *fileInfo = getFileInfo(&it);
 
 		if ((fileInfo->flags & (FileFlag_Hidden | FileFlag_Directory))
-			|| (fileInfo->filename.chars[0] == '.'))
+			|| (fileInfo->filename[0] == '.'))
 		{
 			 continue;
 		}

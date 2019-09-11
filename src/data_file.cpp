@@ -77,7 +77,7 @@ void readNextLineInternal(LineReader *reader)
 		{
 			for (s32 p=0; p<line.length; p++)
 			{
-				if (line.chars[p] == reader->commentChar)
+				if (line[p] == reader->commentChar)
 				{
 					line.length = p;
 					break;

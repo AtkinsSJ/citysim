@@ -8,7 +8,7 @@ String getFileExtension(String filename)
 	String fileExtension = {};
 
 	s32 length = 0;
-	while ((length < filename.length) && (filename.chars[filename.length - length - 1] != '.'))
+	while ((length < filename.length) && (filename[filename.length - length - 1] != '.'))
 	{
 		length++;
 	}

@@ -20,7 +20,7 @@ void initInput(InputState *theInput)
 	for (char c = 'A'; c <= 'Z'; c++)
 	{
 		String key = pushString(systemArena, 1, true);
-		key.chars[0] = c;
+		key[0] = c;
 		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_a + (c - 'A')));
 	}
 
@@ -28,7 +28,7 @@ void initInput(InputState *theInput)
 	for (char i = 0; i <= 9; i++)
 	{
 		String key = pushString(systemArena, 1, true);
-		key.chars[0] = '0' + i;
+		key[0] = '0' + i;
 		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_0 + i));
 	}
 
@@ -36,8 +36,8 @@ void initInput(InputState *theInput)
 	for (char i = 0; i <= 12; i++)
 	{
 		String key = pushString(systemArena, 2, true);
-		key.chars[0] = 'F';
-		key.chars[1] = '1' + i;
+		key[0] = 'F';
+		key[1] = '1' + i;
 		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_F1 + i));
 	}
 

@@ -99,7 +99,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 		firstWord = nextToken(line, &remainder);
 
-		if (firstWord.chars[0] == ':') // Definitions
+		if (firstWord[0] == ':') // Definitions
 		{
 			// Define something
 			firstWord.chars++;

@@ -32,6 +32,12 @@ inline String stringFromBlob(Blob blob, bool hash)
 	return makeString((char*)blob.memory, truncate32(blob.size), hash);
 }
 
+inline char & String::operator[](s32 index)
+{
+	ASSERT(index >=0 && index < this->length); //Index out of range!
+	return this->chars[index];
+}
+
 void copyString(char *src, s32 srcLength, String *dest)
 {
 	DEBUG_FUNCTION();

@@ -8,6 +8,8 @@ struct String
 
 	bool hasHash;
 	u32 hash;
+
+	char &operator[](s32 index);
 };
 
 const String nullString = {};
