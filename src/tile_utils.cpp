@@ -53,15 +53,15 @@ void updateDistances(City *city, u8 *tileDistance, Rect2I dirtyRect, u8 maxDista
 				if (getTileValue(city, tileDistance, x, y) != 0)
 				{
 					u8 minDistance = min(
-						getTileValue<u8>(city, tileDistance, x-1, y-1),
-						getTileValue<u8>(city, tileDistance, x  , y-1),
-						getTileValue<u8>(city, tileDistance, x+1, y-1),
-						getTileValue<u8>(city, tileDistance, x-1, y  ),
-					//	getTileValue<u8>(city, tileDistance, x  , y  ),
-						getTileValue<u8>(city, tileDistance, x+1, y  ),
-						getTileValue<u8>(city, tileDistance, x-1, y+1),
-						getTileValue<u8>(city, tileDistance, x  , y+1),
-						getTileValue<u8>(city, tileDistance, x+1, y+1)
+						getTileValueIfExists<u8>(city, tileDistance, x-1, y-1, 255),
+						getTileValueIfExists<u8>(city, tileDistance, x  , y-1, 255),
+						getTileValueIfExists<u8>(city, tileDistance, x+1, y-1, 255),
+						getTileValueIfExists<u8>(city, tileDistance, x-1, y  , 255),
+					//	getTileValueIfExists<u8>(city, tileDistance, x  , y  , 255),
+						getTileValueIfExists<u8>(city, tileDistance, x+1, y  , 255),
+						getTileValueIfExists<u8>(city, tileDistance, x-1, y+1, 255),
+						getTileValueIfExists<u8>(city, tileDistance, x  , y+1, 255),
+						getTileValueIfExists<u8>(city, tileDistance, x+1, y+1, 255)
 					);
 
 					if (minDistance != 255)  minDistance++;
@@ -96,15 +96,15 @@ void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 ma
 					if (getTileValue(city, tileDistance, x, y) != 0)
 					{
 						u8 minDistance = min(
-							getTileValue<u8>(city, tileDistance, x-1, y-1),
-							getTileValue<u8>(city, tileDistance, x  , y-1),
-							getTileValue<u8>(city, tileDistance, x+1, y-1),
-							getTileValue<u8>(city, tileDistance, x-1, y  ),
-						//	getTileValue<u8>(city, tileDistance, x  , y  ),
-							getTileValue<u8>(city, tileDistance, x+1, y  ),
-							getTileValue<u8>(city, tileDistance, x-1, y+1),
-							getTileValue<u8>(city, tileDistance, x  , y+1),
-							getTileValue<u8>(city, tileDistance, x+1, y+1)
+							getTileValueIfExists<u8>(city, tileDistance, x-1, y-1, 255),
+							getTileValueIfExists<u8>(city, tileDistance, x  , y-1, 255),
+							getTileValueIfExists<u8>(city, tileDistance, x+1, y-1, 255),
+							getTileValueIfExists<u8>(city, tileDistance, x-1, y  , 255),
+						//	getTileValueIfExists<u8>(city, tileDistance, x  , y  , 255),
+							getTileValueIfExists<u8>(city, tileDistance, x+1, y  , 255),
+							getTileValueIfExists<u8>(city, tileDistance, x-1, y+1, 255),
+							getTileValueIfExists<u8>(city, tileDistance, x  , y+1, 255),
+							getTileValueIfExists<u8>(city, tileDistance, x+1, y+1, 255)
 						);
 
 						if (minDistance != 255)  minDistance++;
