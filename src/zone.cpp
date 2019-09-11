@@ -462,13 +462,15 @@ void growSomeZoneBuildings(City *city)
 	{
 		if (layer->demand[zoneType] > 0)
 		{
+			s32 remainingBuildingCount = 8; // How many buildings can be constructed at once TODO: Tweak this number!
 			s32 remainingDemand = layer->demand[zoneType];
 			s32 minimumDemand = layer->demand[zoneType] / 20; // Stop when we're below 20% of the original demand
 
 			s32 maxRBuildingDim = getMaxBuildingSize(zoneType);
 
-			// TODO: Stop when we've grown X buildings, because we don't want to grow a whole city at once!
-			while ((layer->sectorsWithEmptyZones[zoneType].setBitCount > 0) && (remainingDemand > minimumDemand))
+			while ((remainingBuildingCount > 0)
+				&& (layer->sectorsWithEmptyZones[zoneType].setBitCount > 0)
+				&& (remainingDemand > minimumDemand))
 			{
 				bool foundAZone = false;
 				s32 randomXOffset = randomNext(random);
@@ -615,6 +617,7 @@ void growSomeZoneBuildings(City *city)
 					markAreaDirty(city, footprint);
 
 					remainingDemand -= (building->currentResidents + building->currentJobs);
+					remainingBuildingCount--;
 				}
 				else
 				{
