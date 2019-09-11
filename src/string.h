@@ -21,7 +21,7 @@ String repeatChar(char c, s32 length);
 void copyString(char *src, s32 srcLength, String *dest);
 void copyString(String src, String *dest);
 
-String pushString(MemoryArena *arena, s32 length);
+String pushString(MemoryArena *arena, s32 length, bool setLength=false);
 String pushString(MemoryArena *arena, char *src);
 String pushString(MemoryArena *arena, String src);
 

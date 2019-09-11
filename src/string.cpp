@@ -46,11 +46,11 @@ inline void copyString(String src, String *dest)
 	copyString(src.chars, src.length, dest);
 }
 
-inline String pushString(MemoryArena *arena, s32 length)
+inline String pushString(MemoryArena *arena, s32 length, bool setLength)
 {
 	String s = {};
 	s.chars = allocateMultiple<char>(arena, length);
-	s.length = 0;
+	s.length = setLength ? length : 0;
 	s.maxLength = length;
 
 	return s;

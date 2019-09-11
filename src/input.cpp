@@ -9,7 +9,40 @@ void initInput(InputState *theInput)
 {
 	*theInput = {};
 
+	MemoryArena *systemArena = &globalAppState.systemArena;
+
 	theInput->textEntered = makeString(&theInput->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
+
+	// Key names
+	initHashTable(&theInput->keyNames, 0.75f, SDL_NUM_SCANCODES);
+
+	// Letters
+	for (char c = 'A'; c <= 'Z'; c++)
+	{
+		String key = pushString(systemArena, 1, true);
+		key.chars[0] = c;
+		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_a + (c - 'A')));
+	}
+
+	// Numbers
+	for (char i = 0; i <= 9; i++)
+	{
+		String key = pushString(systemArena, 1, true);
+		key.chars[0] = '0' + i;
+		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_0 + i));
+	}
+
+	// F keys
+	for (char i = 0; i <= 12; i++)
+	{
+		String key = pushString(systemArena, 2, true);
+		key.chars[0] = 'F';
+		key.chars[1] = '1' + i;
+		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_F1 + i));
+	}
+
+	// Misc
+	put(&theInput->keyNames, pushString(systemArena, "Home"), (SDL_Keycode)SDLK_HOME);
 }
 
 void updateInput()
@@ -328,108 +361,19 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 		{
 			result.modifiers |= KeyMod_Super;
 		}
-		// 
-		// KEYS
-		// 
-		else if (equals(keyName, "1"))
-		{
-			result.key = SDLK_1;
-		}
-		else if (equals(keyName, "2"))
-		{
-			result.key = SDLK_2;
-		}
-		else if (equals(keyName, "3"))
-		{
-			result.key = SDLK_3;
-		}
-		else if (equals(keyName, "4"))
-		{
-			result.key = SDLK_4;
-		}
-		else if (equals(keyName, "5"))
-		{
-			result.key = SDLK_5;
-		}
-		else if (equals(keyName, "6"))
-		{
-			result.key = SDLK_6;
-		}
-		else if (equals(keyName, "7"))
-		{
-			result.key = SDLK_7;
-		}
-		else if (equals(keyName, "8"))
-		{
-			result.key = SDLK_8;
-		}
-		else if (equals(keyName, "9"))
-		{
-			result.key = SDLK_9;
-		}
-		else if (equals(keyName, "0"))
-		{
-			result.key = SDLK_0;
-		}
-		else if (equals(keyName, "F1"))
-		{
-			result.key = SDLK_F1;
-		}
-		else if (equals(keyName, "F2"))
-		{
-			result.key = SDLK_F2;
-		}
-		else if (equals(keyName, "F3"))
-		{
-			result.key = SDLK_F3;
-		}
-		else if (equals(keyName, "F4"))
-		{
-			result.key = SDLK_F4;
-		}
-		else if (equals(keyName, "F5"))
-		{
-			result.key = SDLK_F5;
-		}
-		else if (equals(keyName, "F6"))
-		{
-			result.key = SDLK_F6;
-		}
-		else if (equals(keyName, "F7"))
-		{
-			result.key = SDLK_F7;
-		}
-		else if (equals(keyName, "F8"))
-		{
-			result.key = SDLK_F8;
-		}
-		else if (equals(keyName, "F9"))
-		{
-			result.key = SDLK_F9;
-		}
-		else if (equals(keyName, "F10"))
-		{
-			result.key = SDLK_F10;
-		}
-		else if (equals(keyName, "F11"))
-		{
-			result.key = SDLK_F11;
-		}
-		else if (equals(keyName, "F12"))
-		{
-			result.key = SDLK_F12;
-		}
-		else if (equals(keyName, "Home"))
-		{
-			result.key = SDLK_HOME;
-		}
-		// 
-		// DUNNO!
-		// 
 		else
 		{
-			// Error!
-			result.key = SDLK_UNKNOWN;
+			SDL_Keycode *found = find(&inputState->keyNames, keyName);
+			if (found)
+			{
+				result.key = *found;
+			}
+			else
+			{
+				// Error!
+				logWarn("Unrecognised key name '{0}' in shortcut string '{1}'", {keyName, shortcutString});
+				result.key = SDLK_UNKNOWN;
+			}
 			break;
 		}
 

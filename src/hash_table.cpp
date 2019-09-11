@@ -27,7 +27,7 @@ void expandHashTable(HashTable<T> *table, s32 newCapacity)
 			}
 		}
 
-		free(oldItems);
+		deallocateRaw(oldItems);
 	}
 
 	ASSERT_PARANOID(oldCount == table->count);//, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
@@ -42,7 +42,7 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 
 	if (initialCapacity > 0)
 	{
-		expandHashTable(table, initialCapacity);
+		expandHashTable(table, ceil_s32(initialCapacity / maxLoadFactor));
 	}
 }
 
@@ -52,7 +52,11 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 	// Expand if necessary
 	if (table->count + 1 > (table->capacity * table->maxLoadFactor))
 	{
-		expandHashTable(table, growHashTableCapacity(table->capacity));
+		s32 newCapacity = max(
+			ceil_s32((table->count + 1) / table->maxLoadFactor),
+			(table->capacity < 8) ? 8 : table->capacity * 2
+		);
+		expandHashTable(table, newCapacity);
 	}
 
 	u32 hash = hashString(&key);
@@ -114,11 +118,6 @@ T findValue(HashTable<T> *table, String key)
 	return *find(table, key);
 }
 
-inline s32 growHashTableCapacity(s32 capacity)
-{
-	return (capacity < 8) ? 8 : capacity * 2;
-}
-
 template<typename T>
 T *put(HashTable<T> *table, String key, T value)
 {
@@ -158,7 +157,7 @@ void freeHashTable(HashTable<T> *table)
 {
 	if (table->entries != null)
 	{
-		free(table->entries);
+		deallocateRaw(table->entries);
 		*table = {};
 	}
 }

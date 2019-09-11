@@ -219,6 +219,11 @@ int main(int argc, char *argv[])
 
 	SDL_Window *window = initSDL(getWindowSettings(), "Some kind of city builder");
 
+	InputState input;
+	initInput(&input);
+	SDL_GetWindowSize(window, &input.windowWidth, &input.windowHeight);
+	inputState = &input;
+
 	initAssets();
 	addAssets();
 	loadAssets();
@@ -227,11 +232,6 @@ int main(int argc, char *argv[])
 	rendererLoadAssets();
 	setCursor("default");
 	setCursorVisible(true);
-
-	InputState input;
-	initInput(&input);
-	SDL_GetWindowSize(window, &input.windowWidth, &input.windowHeight);
-	inputState = &input;
 
 	UIState uiState;
 	initUIState(&uiState, &appState->systemArena);

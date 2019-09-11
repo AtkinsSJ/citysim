@@ -77,12 +77,17 @@ u8 *allocateRaw(smm size)
 	return result;
 }
 
+void deallocateRaw(void *memory)
+{
+	free(memory);
+}
+
 void freeCurrentBlock(MemoryArena *arena)
 {
 	MemoryBlock *block = arena->currentBlock;
 	ASSERT(block != null); //Attempting to free non-existent block
 	arena->currentBlock = block->prevBlock;
-	free(block);
+	deallocateRaw(block);
 }
 
 // Returns the memory arena to a previous state
@@ -119,7 +124,7 @@ void freeMemoryArena(MemoryArena *arena)
 	// Free original block, which may contain the arena so we have to be careful!
 	MemoryBlock *finalBlock = arena->currentBlock;
 	arena->currentBlock = 0;
-	free(finalBlock);
+	deallocateRaw(finalBlock);
 }
 
 void markResetPosition(MemoryArena *arena)

@@ -92,6 +92,7 @@ void freeMemoryArena(MemoryArena *arena);
 
 // Allocates directly from the OS, not from an arena
 u8 *allocateRaw(smm size);
+void deallocateRaw(void *memory);
 
 void *allocate(MemoryArena *arena, smm size);
 Blob allocateBlob(MemoryArena *arena, smm size);

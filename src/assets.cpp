@@ -341,7 +341,7 @@ void unloadAsset(Asset *asset)
 	{
 		assets->assetMemoryAllocated -= asset->data.size;
 		asset->data.size = 0;
-		free(asset->data.memory);
+		deallocateRaw(asset->data.memory);
 	}
 
 	asset->state = AssetState_Unloaded;
