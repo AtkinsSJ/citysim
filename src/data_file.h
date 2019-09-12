@@ -1,6 +1,6 @@
 #pragma once
 
-struct LineReader
+struct LineReader_Old
 {
 	String filename;
 	Blob data;
@@ -25,22 +25,22 @@ enum LineReaderFlags
 	DefaultLineReaderFlags = LineReader_SkipBlankLines | LineReader_RemoveTrailingComments,
 };
 
-LineReader readLines(String filename, Blob data, u32 flags = DefaultLineReaderFlags, char commentChar = '#');
+LineReader_Old readLines_old(String filename, Blob data, u32 flags = DefaultLineReaderFlags, char commentChar = '#');
 
-String nextLine(LineReader *reader);
-bool isDone(LineReader *reader);
+String nextLine(LineReader_Old *reader);
+bool isDone(LineReader_Old *reader);
 
-void warn(LineReader *reader, char *message, std::initializer_list<String> args = {});
-void error(LineReader *reader, char *message, std::initializer_list<String> args = {});
+void warn(LineReader_Old *reader, char *message, std::initializer_list<String> args = {});
+void error(LineReader_Old *reader, char *message, std::initializer_list<String> args = {});
 
-Maybe<s64> readInt(LineReader *reader, String command, String arguments);
-Maybe<bool> readBool(LineReader *reader, String command, String arguments);
-Maybe<V4> readColor(LineReader *reader, String command, String arguments);
-Maybe<u32> readAlignment(LineReader *reader, String command, String arguments);
-Maybe<String> readTextureDefinition(LineReader *reader, String tokens);
-Maybe<struct EffectRadius> readEffectRadius(LineReader *reader, String command, String tokens);
+Maybe<s64> readInt(LineReader_Old *reader, String command, String arguments);
+Maybe<bool> readBool(LineReader_Old *reader, String command, String arguments);
+Maybe<V4> readColor(LineReader_Old *reader, String command, String arguments);
+Maybe<u32> readAlignment(LineReader_Old *reader, String command, String arguments);
+Maybe<String> readTextureDefinition(LineReader_Old *reader, String tokens);
+Maybe<struct EffectRadius> readEffectRadius(LineReader_Old *reader, String command, String tokens);
 
 //
 // Internal
 //
-void readNextLineInternal(LineReader *reader);
+void readNextLineInternal(LineReader_Old *reader);

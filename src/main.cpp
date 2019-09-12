@@ -65,6 +65,7 @@ struct Settings     *settings;
 #include "uitheme.h"
 #include "assets.h"
 #include "data_file.h"
+#include "line_reader.h"
 #include "render.h"
 #include "ui.h"
 
@@ -111,6 +112,7 @@ AppState globalAppState;
 #include "hash_table.cpp"
 #include "file.cpp"
 #include "data_file.cpp"
+#include "line_reader.cpp"
 #include "font.cpp"
 #include "assets.cpp"
 #include "render.cpp"

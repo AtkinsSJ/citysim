@@ -266,7 +266,7 @@ void updateConsole(Console *console)
 
 void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
 {
-	LineReader reader = readLines(filename, data);
+	LineReader_Old reader = readLines_old(filename, data);
 
 	clear(&console->commandShortcuts);
 

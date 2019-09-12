@@ -43,7 +43,7 @@ inline String getUserSettingsPath()
 
 void loadSettingsFile(String name, Blob settingsData)
 {
-	LineReader reader = readLines(name, settingsData);
+	LineReader_Old reader = readLines_old(name, settingsData);
 
 	while (!isDone(&reader))
 	{

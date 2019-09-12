@@ -135,7 +135,7 @@ void ensureAssetIsLoaded(Asset *asset)
 
 void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 {
-	LineReader reader = readLines(asset->shortName, fileData);
+	LineReader_Old reader = readLines_old(asset->shortName, fileData);
 
 	clear(texts);
 
@@ -684,7 +684,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 
-	LineReader reader = readLines(asset->shortName, data);
+	LineReader_Old reader = readLines_old(asset->shortName, data);
 
 	while (!isDone(&reader))
 	{

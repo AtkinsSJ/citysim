@@ -22,14 +22,9 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 
 	TerrainDef *def = null;
 
-	while (!isDone(&reader))
+	while (loadNextLine(&reader))
 	{
-		String line = nextLine(&reader);
-		
-		String firstWord;
-		String remainder;
-
-		firstWord = nextToken(line, &remainder);
+		String firstWord = readToken(&reader);
 
 		if (firstWord.chars[0] == ':') // Definitions
 		{
@@ -43,7 +38,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				mode = Mode_Terrain;
 				def = appendBlank(terrains);
 				
-				String name = trim(remainder);
+				String name = getRemainderOfLine(&reader);
 				if (isEmpty(name))
 				{
 					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain name'");
@@ -55,7 +50,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 			{
 				mode = Mode_Texture;
 				
-				String filename = trim(remainder);
+				String filename = getRemainderOfLine(&reader);
 				if (isEmpty(filename))
 				{
 					error(&reader, "Couldn't parse Texture. Expected: ':Terrain filename'");
@@ -75,8 +70,8 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				case Mode_Texture: {
 					if (equals(firstWord, "sprite_size"))
 					{
-						Maybe<s64> spriteW = asInt(nextToken(remainder, &remainder));
-						Maybe<s64> spriteH = asInt(nextToken(remainder, &remainder));
+						Maybe<s64> spriteW = readInt(&reader);
+						Maybe<s64> spriteH = readInt(&reader);
 						if (spriteW.isValid && spriteH.isValid)
 						{
 							spriteSize = v2i(truncate32(spriteW.value), truncate32(spriteH.value));
@@ -89,8 +84,8 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 					}
 					else if (equals(firstWord, "sprite_border"))
 					{
-						Maybe<s64> borderW = asInt(nextToken(remainder, &remainder));
-						Maybe<s64> borderH = asInt(nextToken(remainder, &remainder));
+						Maybe<s64> borderW = readInt(&reader);
+						Maybe<s64> borderH = readInt(&reader);
 						if (borderW.isValid && borderH.isValid)
 						{
 							spriteBorder = v2i(truncate32(borderW.value), truncate32(borderH.value));
@@ -103,11 +98,11 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 					}
 					else if (equals(firstWord, "sprite"))
 					{
-						String spriteName = pushString(&assets->assetArena, nextToken(remainder, &remainder));
-						Maybe<s64> x = asInt(nextToken(remainder, &remainder));
-						Maybe<s64> y = asInt(nextToken(remainder, &remainder));
-						Maybe<s64> w = asInt(nextToken(remainder, &remainder));
-						Maybe<s64> h = asInt(nextToken(remainder, &remainder));
+						String spriteName = pushString(&assets->assetArena, readToken(&reader));
+						Maybe<s64> x = readInt(&reader);
+						Maybe<s64> y = readInt(&reader);
+						Maybe<s64> w = readInt(&reader);
+						Maybe<s64> h = readInt(&reader);
 
 						if (x.isValid && y.isValid && w.isValid && h.isValid)
 						{
@@ -129,11 +124,11 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				case Mode_Terrain: {
 					if (equals(firstWord, "uses_sprite"))
 					{
-						def->spriteName = pushString(&assets->assetArena, remainder);
+						def->spriteName = pushString(&assets->assetArena, getRemainderOfLine(&reader));
 					}
 					else if (equals(firstWord, "can_build_on"))
 					{
-						Maybe<bool> boolRead = readBool(&reader, firstWord, remainder);
+						Maybe<bool> boolRead = readBool(&reader);
 						if (boolRead.isValid) def->canBuildOn = boolRead.value;
 					}
 					else

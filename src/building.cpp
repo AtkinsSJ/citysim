@@ -90,14 +90,9 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 	BuildingDef *def = null;
 
-	while (!isDone(&reader))
+	while (loadNextLine(&reader))
 	{
-		String line = nextLine(&reader);
-
-		String firstWord;
-		String remainder;
-
-		firstWord = nextToken(line, &remainder);
+		String firstWord = readToken(&reader);
 
 		if (firstWord[0] == ':') // Definitions
 		{
@@ -119,7 +114,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 
 				def = appendBlank(buildings);
-				def->name = pushString(&assets->assetArena, trimEnd(remainder));
+				def->name = pushString(&assets->assetArena, getRemainderOfLine(&reader));
 				def->typeID = truncate32(buildings->count - 1);
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
@@ -136,8 +131,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			{
 				if (equals(firstWord, "size"))
 				{
-					Maybe<s64> w = asInt(nextToken(remainder, &remainder));
-					Maybe<s64> h = asInt(nextToken(remainder, &remainder));
+					Maybe<s64> w = readInt(&reader);
+					Maybe<s64> h = readInt(&reader);
 
 					if (w.isValid && h.isValid)
 					{
@@ -152,13 +147,13 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "texture"))
 				{
-					Maybe<String> spriteName = readTextureDefinition(&reader, remainder);
+					Maybe<String> spriteName = readTextureDefinition(&reader);
 					if (spriteName.isValid)  def->spriteName = spriteName.value;
 				}
 				else if (equals(firstWord, "link_textures"))
 				{
 					warn(&reader, "link_textures is disabled right now, because it's bad.");
-					// String layer = nextToken(remainder, &remainder);
+					// String layer = readToken(&reader);
 					// if (equals(layer, "path"))
 					// {
 					// 	def->linkTexturesLayer = DataLayer_Paths;
@@ -174,8 +169,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "build"))
 				{
-					String buildMethodString = nextToken(remainder, &remainder);
-					Maybe<s64> cost = asInt(nextToken(remainder, &remainder));
+					String buildMethodString = readToken(&reader);
+					Maybe<s64> cost = readInt(&reader);
 
 					if (cost.isValid)
 					{
@@ -211,7 +206,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "demolish_cost"))
 				{
-					Maybe<s64> value = readInt(&reader, firstWord, remainder);
+					Maybe<s64> value = readInt(&reader);
 					if (value.isValid)
 					{
 						def->demolishCost = (s32) value.value;
@@ -219,7 +214,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "grows_in"))
 				{
-					String zoneName = nextToken(remainder, &remainder);
+					String zoneName = readToken(&reader);
 					if (equals(zoneName, "r"))
 					{
 						def->growsInZone = Zone_Residential;
@@ -240,10 +235,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "carries_transport"))
 				{
-					s32 tokenCount = countTokens(remainder);
+					s32 tokenCount = countTokens(getRemainderOfLine(&reader));
 					for (s32 tokenIndex = 0; tokenIndex < tokenCount; tokenIndex++)
 					{
-						String transportName = nextToken(remainder, &remainder);
+						String transportName = readToken(&reader);
 
 						if (equals(transportName, "road"))
 						{
@@ -261,7 +256,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "requires_transport_connection"))
 				{
-					Maybe<bool> requires_transport_connection = readBool(&reader, firstWord, remainder);
+					Maybe<bool> requires_transport_connection = readBool(&reader);
 					if (requires_transport_connection.isValid)
 					{
 						if (requires_transport_connection.value)
@@ -276,7 +271,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "carries_power"))
 				{
-					Maybe<bool> boolRead = readBool(&reader, firstWord, remainder);
+					Maybe<bool> boolRead = readBool(&reader);
 					if (boolRead.isValid)
 					{
 						if (boolRead.value)
@@ -291,7 +286,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "power_gen"))
 				{
-					Maybe<s64> value = readInt(&reader, firstWord, remainder);
+					Maybe<s64> value = readInt(&reader);
 					if (value.isValid)
 					{
 						def->power = (s32) value.value;
@@ -299,7 +294,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "power_use"))
 				{
-					Maybe<s64> value = readInt(&reader, firstWord, remainder);
+					Maybe<s64> value = readInt(&reader);
 					if (value.isValid)
 					{
 						def->power = (s32) -value.value;
@@ -307,7 +302,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "residents"))
 				{
-					Maybe<s64> value = readInt(&reader, firstWord, remainder);
+					Maybe<s64> value = readInt(&reader);
 					if (value.isValid)
 					{
 						def->residents = (s32) value.value;
@@ -315,7 +310,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "jobs"))
 				{
-					Maybe<s64> value = readInt(&reader, firstWord, remainder);
+					Maybe<s64> value = readInt(&reader);
 					if (value.isValid)
 					{
 						def->jobs = (s32) value.value;
@@ -323,10 +318,12 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "combination_of"))
 				{
+					// HACK: This is really janky, but this concept is going away soon anyway so who cares at this point!
+					// - Sam, 12/09/2019
 					String ingredientName1;
 					String ingredientName2;
 
-					if (splitInTwo(remainder, '|', &ingredientName1, &ingredientName2))
+					if (splitInTwo(getRemainderOfLine(&reader), '|', &ingredientName1, &ingredientName2))
 					{
 						ingredientName1 = trim(ingredientName1);
 						ingredientName2 = trim(ingredientName2);
@@ -371,7 +368,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "land_value"))
 				{
-					Maybe<EffectRadius> landValueEffect = readEffectRadius(&reader, firstWord, remainder);
+					Maybe<EffectRadius> landValueEffect = readEffectRadius(&reader);
 					if (landValueEffect.isValid)
 					{
 						def->landValueEffect = landValueEffect.value;
@@ -379,7 +376,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "pollution"))
 				{
-					Maybe<EffectRadius> pollutionEffect = readEffectRadius(&reader, firstWord, remainder);
+					Maybe<EffectRadius> pollutionEffect = readEffectRadius(&reader);
 					if (pollutionEffect.isValid)
 					{
 						def->pollutionEffect = pollutionEffect.value;

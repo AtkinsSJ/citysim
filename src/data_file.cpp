@@ -1,8 +1,8 @@
 #pragma once
 
-LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
+LineReader_Old readLines_old(String filename, Blob data, u32 flags, char commentChar)
 {
-	LineReader result = {};
+	LineReader_Old result = {};
 
 	result.filename   = filename;
 	result.data       = data;
@@ -18,20 +18,20 @@ LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 	return result;
 }
 
-void warn(LineReader *reader, char *message, std::initializer_list<String> args)
+void warn(LineReader_Old *reader, char *message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
 	logWarn("{0}:{1} - {2}", {reader->filename, formatInt(reader->lineNumber), text});
 }
 
-void error(LineReader *reader, char *message, std::initializer_list<String> args)
+void error(LineReader_Old *reader, char *message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
 	logError("{0}:{1} - {2}", {reader->filename, formatInt(reader->lineNumber), text});
 	DEBUG_BREAK();
 }
 
-String nextLine(LineReader *reader)
+String nextLine(LineReader_Old *reader)
 {
 	String result = reader->nextLine;
 
@@ -41,12 +41,12 @@ String nextLine(LineReader *reader)
 	return result;
 }
 
-inline bool isDone(LineReader *reader)
+inline bool isDone(LineReader_Old *reader)
 {
 	return !reader->hasNextLine;
 }
 
-void readNextLineInternal(LineReader *reader)
+void readNextLineInternal(LineReader_Old *reader)
 {
 	String line = {};
 
@@ -109,7 +109,7 @@ void readNextLineInternal(LineReader *reader)
 	}
 }
 
-Maybe<s64> readInt(LineReader *reader, String command, String arguments)
+Maybe<s64> readInt(LineReader_Old *reader, String command, String arguments)
 {
 	Maybe<s64> result = asInt(nextToken(arguments, &arguments));
 
@@ -121,7 +121,7 @@ Maybe<s64> readInt(LineReader *reader, String command, String arguments)
 	return result;
 }
 
-Maybe<bool> readBool(LineReader *reader, String command, String arguments)
+Maybe<bool> readBool(LineReader_Old *reader, String command, String arguments)
 {
 	Maybe<bool> result = asBool(nextToken(arguments, &arguments));
 
@@ -133,7 +133,7 @@ Maybe<bool> readBool(LineReader *reader, String command, String arguments)
 	return result;
 }
 
-// f32 readPercent(LineReader *reader, String command, String arguments)
+// f32 readPercent(LineReader_Old *reader, String command, String arguments)
 // {
 // 	f32 value;
 
@@ -142,11 +142,11 @@ Maybe<bool> readBool(LineReader *reader, String command, String arguments)
 // 	String token = nextToken(arguments, &arguments);
 // 	if (token[token.length-1] != '%')
 // 	{
-// 		error(reader, "Couldn't parse {0}. Expected 
+// 		error(reader, "Couldn't parse {0}. Expected "
 // 	}
 // }
 
-Maybe<V4> readColor(LineReader *reader, String command, String arguments)
+Maybe<V4> readColor(LineReader_Old *reader, String command, String arguments)
 {
 	// TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
 	// We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
@@ -169,7 +169,7 @@ Maybe<V4> readColor(LineReader *reader, String command, String arguments)
 	}
 }
 
-Maybe<u32> readAlignment(LineReader *reader, String command, String arguments)
+Maybe<u32> readAlignment(LineReader_Old *reader, String command, String arguments)
 {
 	u32 result = 0;
 
@@ -243,7 +243,7 @@ Maybe<u32> readAlignment(LineReader *reader, String command, String arguments)
 	return makeSuccess(result);
 }
 
-Maybe<String> readTextureDefinition(LineReader *reader, String tokens)
+Maybe<String> readTextureDefinition(LineReader_Old *reader, String tokens)
 {
 	String spriteName = pushString(&assets->assetArena, nextToken(tokens, &tokens));
 	String textureName = nextToken(tokens, &tokens);
@@ -278,7 +278,7 @@ Maybe<String> readTextureDefinition(LineReader *reader, String tokens)
 	}
 }
 
-Maybe<EffectRadius> readEffectRadius(LineReader *reader, String command, String tokens)
+Maybe<EffectRadius> readEffectRadius(LineReader_Old *reader, String command, String tokens)
 {
 	String remainder;
 
