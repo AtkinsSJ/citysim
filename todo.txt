@@ -27,6 +27,8 @@ Fire:
 - Keep a list of fire-service buildings so they can be iterated more easily.
 - Small chance of a fire occurring each tick, depending on the risk.
 
+Factor out the "nextSectorUpdateIndex" stuff from LandValue/Zone/Fire. 
+
 Add newline support to .text files!
 
 Palette assets
