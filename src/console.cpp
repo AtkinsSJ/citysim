@@ -266,17 +266,14 @@ void updateConsole(Console *console)
 
 void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
 {
-	LineReader_Old reader = readLines_old(filename, data);
+	LineReader reader = readLines(filename, data);
 
 	clear(&console->commandShortcuts);
 
-	while (!isDone(&reader))
+	while (loadNextLine(&reader))
 	{
-		String line = nextLine(&reader);
-
-		String shortcutString, command;
-
-		shortcutString = nextToken(line, &command);
+		String shortcutString = readToken(&reader);
+		String command = getRemainderOfLine(&reader);
 
 		KeyboardShortcut shortcut = parseKeyboardShortcut(shortcutString);
 		if (shortcut.key == SDLK_UNKNOWN)

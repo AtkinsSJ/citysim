@@ -16,13 +16,20 @@ struct LineReader
 	char commentChar;
 };
 
+enum LineReaderFlags
+{
+	LineReader_SkipBlankLines         = 1 << 0,
+	LineReader_RemoveTrailingComments = 1 << 1,
+	DefaultLineReaderFlags = LineReader_SkipBlankLines | LineReader_RemoveTrailingComments,
+};
+
 LineReader readLines(String filename, Blob data, u32 flags = DefaultLineReaderFlags, char commentChar = '#');
 
 bool loadNextLine(LineReader *reader);
 String getLine(LineReader *reader);
 String getRemainderOfLine(LineReader *reader);
 
-String readToken(LineReader *reader);
+String readToken(LineReader *reader, char splitChar=0);
 Maybe<s64> readInt(LineReader *reader);
 Maybe<bool> readBool(LineReader *reader);
 Maybe<V4> readColor(LineReader *reader);

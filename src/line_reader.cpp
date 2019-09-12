@@ -109,9 +109,9 @@ void error(LineReader *reader, char *message, std::initializer_list<String> args
 	DEBUG_BREAK();
 }
 
-String readToken(LineReader *reader)
+String readToken(LineReader *reader, char splitChar)
 {
-	String token = nextToken(reader->lineRemainder, &reader->lineRemainder);
+	String token = nextToken(reader->lineRemainder, &reader->lineRemainder, splitChar);
 
 	return token;
 }

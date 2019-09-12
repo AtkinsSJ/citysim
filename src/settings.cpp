@@ -43,16 +43,11 @@ inline String getUserSettingsPath()
 
 void loadSettingsFile(String name, Blob settingsData)
 {
-	LineReader_Old reader = readLines_old(name, settingsData);
+	LineReader reader = readLines(name, settingsData);
 
-	while (!isDone(&reader))
+	while (loadNextLine(&reader))
 	{
-		String line = nextLine(&reader);
-
-		String settingName;
-		String remainder;
-
-		settingName = nextToken(line, &remainder, '=');
+		String settingName = readToken(&reader, '=');
 
 		SettingDef *def = find(&settings->defs, settingName);
 
@@ -66,38 +61,29 @@ void loadSettingsFile(String name, Blob settingsData)
 
 			for (s32 i=0; i < def->count; i++)
 			{
-				String sValue = nextToken(remainder, &remainder);
 				switch (def->type)
 				{
 					case Type_bool:
 					{
-						Maybe<bool> value = asBool(sValue);
+						Maybe<bool> value = readBool(&reader);
 						if (value.isValid)
 						{
 							((bool *)firstItem)[i] = value.value;
-						}
-						else
-						{
-							error(&reader, "Invalid value \"{0}\", expected true or false.", {sValue});
 						}
 					} break;
 
 					case Type_s32:
 					{
-						Maybe<s64> value = asInt(sValue);
+						Maybe<s64> value = readInt(&reader);
 						if (value.isValid)
 						{
 							((s32 *)firstItem)[i] = (s32) value.value;
-						}
-						else
-						{
-							error(&reader, "Invalid value \"{0}\", expected integer.", {sValue});
 						}
 					} break;
 
 					case Type_String:
 					{
-						((String *)firstItem)[i] = pushString(&settings->settingsArena, sValue);
+						((String *)firstItem)[i] = pushString(&settings->settingsArena, readToken(&reader));
 					} break;
 
 					default: ASSERT(false); //Unhandled setting type!

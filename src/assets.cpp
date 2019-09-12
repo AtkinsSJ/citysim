@@ -135,16 +135,14 @@ void ensureAssetIsLoaded(Asset *asset)
 
 void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 {
-	LineReader_Old reader = readLines_old(asset->shortName, fileData);
+	LineReader reader = readLines(asset->shortName, fileData);
 
 	clear(texts);
 
-	while (!isDone(&reader))
+	while (loadNextLine(&reader))
 	{
-		String line = nextLine(&reader);
-
-		String key, value;
-		key = nextToken(line, &value);
+		String key = readToken(&reader);
+		String value = getRemainderOfLine(&reader);
 
 		put(texts, key, value);
 	}
@@ -684,19 +682,15 @@ void loadCursorDefs(Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 
-	LineReader_Old reader = readLines_old(asset->shortName, data);
+	LineReader reader = readLines(asset->shortName, data);
 
-	while (!isDone(&reader))
+	while (loadNextLine(&reader))
 	{
-		String line = nextLine(&reader);
+		String name     = pushString(&assets->assetArena, readToken(&reader));
+		String filename = readToken(&reader);
 
-		String remainder;
-
-		String name     = pushString(&assets->assetArena, nextToken(line, &remainder));
-		String filename = nextToken(remainder, &remainder);
-
-		Maybe<s64> hotX = asInt(nextToken(remainder, &remainder));
-		Maybe<s64> hotY = asInt(nextToken(remainder, &remainder));
+		Maybe<s64> hotX = readInt(&reader);
+		Maybe<s64> hotY = readInt(&reader);
 
 		if (hotX.isValid && hotY.isValid)
 		{

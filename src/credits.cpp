@@ -14,10 +14,10 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 	BitmapFont *font = getFont(labelStyle->fontName);
 
 	Asset *creditsText = getAsset(AssetType_Misc, makeString("credits.txt"));
-	LineReader_Old reader = readLines_old(creditsText->shortName, creditsText->data, 0);
-	while (!isDone(&reader))
+	LineReader reader = readLines(creditsText->shortName, creditsText->data, 0);
+	while (loadNextLine(&reader))
 	{
-		String line = nextLine(&reader);
+		String line = getLine(&reader);
 		position.y += (uiText(&renderer->uiBuffer, font, line,
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
