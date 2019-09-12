@@ -37,6 +37,16 @@ jobs 100
 pollution 100 20
 fire_risk 170%
 
+:Building Fire Station
+size 3 3
+texture fire-station fire-station.png 48 48
+build plop 750
+demolish_cost 125
+carries_power true
+requires_transport_connection true
+jobs 50
+fire_risk 0%     # A fire here would be really embarrassing...
+
 #
 # Zoneables
 #
