@@ -291,11 +291,11 @@ void renderDebugData(DebugState *debugState)
 	// Top code blocks
 	{
 		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}", {
-			formatString("Code", 40),
-			formatString("Total cycles", 26, false),
+			formatString("Code", 60),
+			formatString("Total cycles", 20, false),
 			formatString("Calls", 10, false),
-			formatString("Avg Cycles", 26, false),
-			formatString("2-second average cycles", 26, false)
+			formatString("Avg Cycles", 20, false),
+			formatString("2-second avg cycles", 20, false)
 		}));
 
 		debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
@@ -307,11 +307,11 @@ void renderDebugData(DebugState *debugState)
 			f32 totalCycles = (f32)code->totalCycleCount[rfi];
 			f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
 			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)", {
-				formatString(code->name, 40),
-				formatString(formatInt(code->totalCycleCount[rfi]), 16, false),
+				formatString(code->name, 60),
+				formatString(formatInt(code->totalCycleCount[rfi]), 10, false),
 				formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
 				formatString(formatInt(code->callCount[rfi]), 10, false),
-				formatString(formatInt((s32)averageCycles), 16, false),
+				formatString(formatInt((s32)averageCycles), 10, false),
 				formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
 				formatString(formatInt(code->averageTotalCycleCount), 10, false),
 				formatString(formatFloat(code->averageTotalCycleCount * msPerCycle, 2), 5, false),

@@ -103,6 +103,11 @@ ConsoleCommand(show_layer)
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Industrial;
 			consoleWriteLine("Showing industrial desirability", CLS_Success);
 		}
+		else if (equals(layerName, "fire"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_FireRisk;
+			consoleWriteLine("Showing fire risk layer", CLS_Success);
+		}
 		else if (equals(layerName, "land_value"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_LandValue;

@@ -28,6 +28,7 @@ struct City
 
 	SectorGrid<CitySector> sectors;
 
+	FireLayer fireLayer;
 	LandValueLayer landValueLayer;
 	PollutionLayer pollutionLayer;
 	PowerLayer powerLayer;

@@ -27,6 +27,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initOccupancyArray(&city->buildings, gameArena, 1024);
 	append(&city->buildings);
 
+	initFireLayer     (&city->fireLayer,      city, gameArena);
 	initLandValueLayer(&city->landValueLayer, city, gameArena);
 	initPollutionLayer(&city->pollutionLayer, city, gameArena);
 	initPowerLayer    (&city->powerLayer,     city, gameArena);
@@ -117,6 +118,7 @@ void generateTerrain(City *city)
 
 void markAreaDirty(City *city, Rect2I bounds)
 {
+	markFireLayerDirty     (&city->fireLayer, bounds);
 	markLandValueLayerDirty(&city->landValueLayer, bounds);
 	markPollutionLayerDirty(&city->pollutionLayer, bounds);
 	markPowerLayerDirty    (&city->powerLayer, bounds);

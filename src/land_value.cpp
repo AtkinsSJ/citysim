@@ -85,7 +85,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 
 	// Recalculate overall value
 	{
-		DEBUG_BLOCK_T("updateLandValueLayer: total", DCDT_Simulation);
+		DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DCDT_Simulation);
 
 		for (s32 i = 0; i < layer->sectorsToUpdatePerTick; i++)
 		{
