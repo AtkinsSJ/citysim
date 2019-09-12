@@ -223,6 +223,42 @@ Maybe<s64> asInt(String input)
 	return result;
 }
 
+Maybe<f64> asFloat(String input)
+{
+	Maybe<f64> result;
+
+	// TODO: Implement this properly!
+	// (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
+	String nullTerminatedInput = pushString(tempArena, input.length+1);
+	copyString(input, &nullTerminatedInput);
+	nullTerminatedInput.length++;
+	nullTerminatedInput[input.length] = '\0';
+
+	f64 doubleValue = atof(nullTerminatedInput.chars);
+	if (doubleValue == 0.0)
+	{
+		// @Hack: 0.0 is returned by atof() if it fails. So, we see if the input really began with a '0' or not.
+		// If it didn't, we assume it failed. If it did, we assume it succeeded.
+		// Note that if it failed on a value beginning with a '0' character, (eg "0_0") then it will assume it succeeded...
+		// But, I don't know a more reliable way without just parsing the float value ourselves so eh!
+		// - Sam, 12/09/2019
+		if (input[0] == '0')
+		{
+			result = makeSuccess(doubleValue);
+		}
+		else
+		{
+			result = makeFailure<f64>();
+		}
+	}
+	else
+	{
+		result = makeSuccess(doubleValue);
+	}
+
+	return result;
+}
+
 Maybe<bool> asBool(String input)
 {
 	DEBUG_FUNCTION();

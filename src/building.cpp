@@ -118,6 +118,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				def->typeID = truncate32(buildings->count - 1);
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
+
+				def->fireRisk = 1.0f;
 			}
 		}
 		else // Properties!
@@ -129,45 +131,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			}
 			else
 			{
-				if (equals(firstWord, "size"))
-				{
-					Maybe<s64> w = readInt(&reader);
-					Maybe<s64> h = readInt(&reader);
-
-					if (w.isValid && h.isValid)
-					{
-						def->width  = truncate32(w.value);
-						def->height = truncate32(h.value);
-					}
-					else
-					{
-						error(&reader, "Couldn't parse size. Expected 2 ints (w,h).");
-						return;
-					}
-				}
-				else if (equals(firstWord, "texture"))
-				{
-					Maybe<String> spriteName = readTextureDefinition(&reader);
-					if (spriteName.isValid)  def->spriteName = spriteName.value;
-				}
-				else if (equals(firstWord, "link_textures"))
-				{
-					warn(&reader, "link_textures is disabled right now, because it's bad.");
-					// String layer = readToken(&reader);
-					// if (equals(layer, "path"))
-					// {
-					// 	def->linkTexturesLayer = DataLayer_Paths;
-					// }
-					// else if (equals(layer, "power"))
-					// {
-					// 	def->linkTexturesLayer = DataLayer_Power;
-					// }
-					// else
-					// {
-					// 	warn(&reader, "Couldn't parse link_textures, assuming NONE.");
-					// }
-				}
-				else if (equals(firstWord, "build"))
+				if (equals(firstWord, "build"))
 				{
 					String buildMethodString = readToken(&reader);
 					Maybe<s64> cost = readInt(&reader);
@@ -204,33 +168,19 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
-				else if (equals(firstWord, "demolish_cost"))
+				else if (equals(firstWord, "carries_power"))
 				{
-					Maybe<s64> value = readInt(&reader);
-					if (value.isValid)
+					Maybe<bool> boolRead = readBool(&reader);
+					if (boolRead.isValid)
 					{
-						def->demolishCost = (s32) value.value;
-					}
-				}
-				else if (equals(firstWord, "grows_in"))
-				{
-					String zoneName = readToken(&reader);
-					if (equals(zoneName, "r"))
-					{
-						def->growsInZone = Zone_Residential;
-					}
-					else if (equals(zoneName, "c"))
-					{
-						def->growsInZone = Zone_Commercial;
-					}
-					else if (equals(zoneName, "i"))
-					{
-						def->growsInZone = Zone_Industrial;
-					}
-					else
-					{
-						error(&reader, "Couldn't parse grows_in. Expected use:\"grows_in r/c/i\"");
-						return;
+						if (boolRead.value)
+						{
+							def->flags += Building_CarriesPower;
+						}
+						else
+						{
+							def->flags -= Building_CarriesPower;
+						}
 					}
 				}
 				else if (equals(firstWord, "carries_transport"))
@@ -252,68 +202,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						{
 							warn(&reader, "Unrecognised transport type \"{0}\".", {transportName});
 						}
-					}
-				}
-				else if (equals(firstWord, "requires_transport_connection"))
-				{
-					Maybe<bool> requires_transport_connection = readBool(&reader);
-					if (requires_transport_connection.isValid)
-					{
-						if (requires_transport_connection.value)
-						{
-							def->flags += Building_RequiresTransportConnection;
-						}
-						else
-						{
-							def->flags -= Building_RequiresTransportConnection;
-						}
-					}
-				}
-				else if (equals(firstWord, "carries_power"))
-				{
-					Maybe<bool> boolRead = readBool(&reader);
-					if (boolRead.isValid)
-					{
-						if (boolRead.value)
-						{
-							def->flags += Building_CarriesPower;
-						}
-						else
-						{
-							def->flags -= Building_CarriesPower;
-						}
-					}
-				}
-				else if (equals(firstWord, "power_gen"))
-				{
-					Maybe<s64> value = readInt(&reader);
-					if (value.isValid)
-					{
-						def->power = (s32) value.value;
-					}
-				}
-				else if (equals(firstWord, "power_use"))
-				{
-					Maybe<s64> value = readInt(&reader);
-					if (value.isValid)
-					{
-						def->power = (s32) -value.value;
-					}
-				}
-				else if (equals(firstWord, "residents"))
-				{
-					Maybe<s64> value = readInt(&reader);
-					if (value.isValid)
-					{
-						def->residents = (s32) value.value;
-					}
-				}
-				else if (equals(firstWord, "jobs"))
-				{
-					Maybe<s64> value = readInt(&reader);
-					if (value.isValid)
-					{
-						def->jobs = (s32) value.value;
 					}
 				}
 				else if (equals(firstWord, "combination_of"))
@@ -366,21 +254,143 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
+				else if (equals(firstWord, "demolish_cost"))
+				{
+					Maybe<s64> demolish_cost = readInt(&reader);
+					if (demolish_cost.isValid)
+					{
+						def->demolishCost = (s32) demolish_cost.value;
+					}
+				}
+				else if (equals(firstWord, "fire_risk"))
+				{
+					Maybe<f64> fire_risk = readFloat(&reader);
+					if (fire_risk.isValid)
+					{
+						def->fireRisk = (f32)fire_risk.value;
+					}
+				}
+				else if (equals(firstWord, "grows_in"))
+				{
+					String zoneName = readToken(&reader);
+					if (equals(zoneName, "r"))
+					{
+						def->growsInZone = Zone_Residential;
+					}
+					else if (equals(zoneName, "c"))
+					{
+						def->growsInZone = Zone_Commercial;
+					}
+					else if (equals(zoneName, "i"))
+					{
+						def->growsInZone = Zone_Industrial;
+					}
+					else
+					{
+						error(&reader, "Couldn't parse grows_in. Expected use:\"grows_in r/c/i\"");
+						return;
+					}
+				}
+				else if (equals(firstWord, "jobs"))
+				{
+					Maybe<s64> jobs = readInt(&reader);
+					if (jobs.isValid)
+					{
+						def->jobs = (s32) jobs.value;
+					}
+				}
 				else if (equals(firstWord, "land_value"))
 				{
-					Maybe<EffectRadius> landValueEffect = readEffectRadius(&reader);
-					if (landValueEffect.isValid)
+					Maybe<EffectRadius> land_value = readEffectRadius(&reader);
+					if (land_value.isValid)
 					{
-						def->landValueEffect = landValueEffect.value;
+						def->landValueEffect = land_value.value;
 					}
+				}
+				else if (equals(firstWord, "link_textures"))
+				{
+					warn(&reader, "link_textures is disabled right now, because it's bad.");
+					// String layer = readToken(&reader);
+					// if (equals(layer, "path"))
+					// {
+					// 	def->linkTexturesLayer = DataLayer_Paths;
+					// }
+					// else if (equals(layer, "power"))
+					// {
+					// 	def->linkTexturesLayer = DataLayer_Power;
+					// }
+					// else
+					// {
+					// 	warn(&reader, "Couldn't parse link_textures, assuming NONE.");
+					// }
 				}
 				else if (equals(firstWord, "pollution"))
 				{
-					Maybe<EffectRadius> pollutionEffect = readEffectRadius(&reader);
-					if (pollutionEffect.isValid)
+					Maybe<EffectRadius> pollution = readEffectRadius(&reader);
+					if (pollution.isValid)
 					{
-						def->pollutionEffect = pollutionEffect.value;
+						def->pollutionEffect = pollution.value;
 					}
+				}
+				else if (equals(firstWord, "power_gen"))
+				{
+					Maybe<s64> power_gen = readInt(&reader);
+					if (power_gen.isValid)
+					{
+						def->power = (s32) power_gen.value;
+					}
+				}
+				else if (equals(firstWord, "power_use"))
+				{
+					Maybe<s64> power_use = readInt(&reader);
+					if (power_use.isValid)
+					{
+						def->power = (s32) -power_use.value;
+					}
+				}
+				else if (equals(firstWord, "requires_transport_connection"))
+				{
+					Maybe<bool> requires_transport_connection = readBool(&reader);
+					if (requires_transport_connection.isValid)
+					{
+						if (requires_transport_connection.value)
+						{
+							def->flags += Building_RequiresTransportConnection;
+						}
+						else
+						{
+							def->flags -= Building_RequiresTransportConnection;
+						}
+					}
+				}
+				else if (equals(firstWord, "residents"))
+				{
+					Maybe<s64> residents = readInt(&reader);
+					if (residents.isValid)
+					{
+						def->residents = (s32) residents.value;
+					}
+				}
+				else if (equals(firstWord, "size"))
+				{
+					Maybe<s64> w = readInt(&reader);
+					Maybe<s64> h = readInt(&reader);
+
+					if (w.isValid && h.isValid)
+					{
+						def->width  = truncate32(w.value);
+						def->height = truncate32(h.value);
+					}
+					else
+					{
+						error(&reader, "Couldn't parse size. Expected 2 ints (w,h).");
+						return;
+					}
+				}
+				else if (equals(firstWord, "texture"))
+				{
+					Maybe<String> spriteName = readTextureDefinition(&reader);
+					if (spriteName.isValid)  def->spriteName = spriteName.value;
 				}
 				else
 				{

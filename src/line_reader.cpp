@@ -129,6 +129,43 @@ Maybe<s64> readInt(LineReader *reader)
 	return result;
 }
 
+Maybe<f64> readFloat(LineReader *reader)
+{
+	String token = readToken(reader);
+	Maybe<f64> result = makeFailure<f64>();
+
+	if (token[token.length-1] == '%')
+	{
+		token.length--;
+
+		Maybe<f64> percent = asFloat(token);
+
+		if (!percent.isValid)
+		{
+			error(reader, "Couldn't parse '{0}%' as a percentage.", {token});
+		}
+		else
+		{
+			result = makeSuccess(percent.value * 0.01f);
+		}
+	}
+	else
+	{
+		Maybe<f64> floatValue = asFloat(token);
+
+		if (!floatValue.isValid)
+		{
+			error(reader, "Couldn't parse '{0}' as a float.", {token});
+		}
+		else
+		{
+			result = makeSuccess(floatValue.value);
+		}
+	}
+
+	return result;
+}
+
 Maybe<bool> readBool(LineReader *reader)
 {
 	String token = readToken(reader);

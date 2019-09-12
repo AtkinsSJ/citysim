@@ -7,7 +7,7 @@ link_textures path
 build line 10
 demolish_cost 10
 carries_transport road
-# fire_risk 0%
+fire_risk 0%
 
 :Building Power Line
 size 1 1
@@ -35,7 +35,7 @@ requires_transport_connection true
 power_gen 4000
 jobs 100
 pollution 100 20
-# fire_risk 170%
+fire_risk 170%
 
 #
 # Zoneables
@@ -77,7 +77,7 @@ carries_power true
 power_use 200
 jobs 80
 pollution 50 8
-# fire_risk 150%
+fire_risk 150%
 
 #
 # Not actually buildable stuff
@@ -90,4 +90,4 @@ build paint 100
 demolish_cost 100
 land_value 5 4
 pollution -5 3
-# fire_risk 10%
+fire_risk 10%

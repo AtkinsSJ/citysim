@@ -31,6 +31,7 @@ String getRemainderOfLine(LineReader *reader);
 
 String readToken(LineReader *reader, char splitChar=0);
 Maybe<s64> readInt(LineReader *reader);
+Maybe<f64> readFloat(LineReader *reader);
 Maybe<bool> readBool(LineReader *reader);
 Maybe<V4> readColor(LineReader *reader);
 Maybe<u32> readAlignment(LineReader *reader);

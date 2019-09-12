@@ -38,6 +38,7 @@ String trimStart(String input);
 String trimEnd(String input);
 
 Maybe<s64> asInt(String input);
+Maybe<f64> asFloat(String input);
 Maybe<bool> asBool(String input);
 
 bool isNullTerminated(String s);

@@ -172,8 +172,7 @@ ConsoleCommand(zoom)
 	else if (argumentsCount == 1)
 	{
 		// set the zoom
-		// TODO: We don't have a float-parsing function yet, so we're stuck with ints!
-		Maybe<s64> requestedZoom = asInt(nextToken(remainder, &remainder));
+		Maybe<f64> requestedZoom = asFloat(nextToken(remainder, &remainder));
 		if (requestedZoom.isValid)
 		{
 			f32 newZoom = (f32) requestedZoom.value;
@@ -182,7 +181,7 @@ ConsoleCommand(zoom)
 		}
 		else
 		{
-			consoleWriteLine("Usage: zoom (scale), where scale is an integer, or with no argument to list the current zoom", CLS_Error);
+			consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom", CLS_Error);
 		}
 	}
 }
