@@ -359,10 +359,10 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 
 	// Land value
-	window_label(context, myprintf("Land value: {0}", {formatInt(getLandValueAt(city, tilePos.x, tilePos.y))}));
+	window_label(context, myprintf("Land value: {0}%", {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
 	// Fire
-	window_label(context, myprintf("Fire risk: {0}\nFire protection: {1}", {formatInt(getFireRiskAt(city, tilePos.x, tilePos.y)), formatInt(getFireProtectionAt(city, tilePos.x, tilePos.y))}));
+	window_label(context, myprintf("Fire risk: {0}\nFire protection: {1}%", {formatInt(getFireRiskAt(city, tilePos.x, tilePos.y)), formatFloat(getFireProtectionPercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
 	// Highlight
 	// Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when

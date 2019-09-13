@@ -170,11 +170,6 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
 }
 
-inline u8 getLandValueAt(City *city, s32 x, s32 y)
-{
-	return getTileValue(city, city->landValueLayer.tileLandValue, x, y);
-}
-
 inline f32 getLandValuePercentAt(City *city, s32 x, s32 y)
 {
 	return getTileValue(city, city->landValueLayer.tileLandValue, x, y) / 255.0f;

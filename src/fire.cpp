@@ -189,7 +189,7 @@ u8 getFireRiskAt(City *city, s32 x, s32 y)
 	return getTileValue(city, city->fireLayer.tileTotalFireRisk, x, y);
 }
 
-u8 getFireProtectionAt(City *city, s32 x, s32 y)
+f32 getFireProtectionPercentAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->fireLayer.tileFireProtection, x, y);
+	return getTileValue(city, city->fireLayer.tileFireProtection, x, y) * 0.01f;
 }

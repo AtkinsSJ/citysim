@@ -20,5 +20,4 @@ void updateLandValueLayer(City *city, LandValueLayer *layer);
 void markLandValueLayerDirty(LandValueLayer *layer, Rect2I bounds);
 
 void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds);
-u8 getLandValueAt(City *city, s32 x, s32 y);
 f32 getLandValuePercentAt(City *city, s32 x, s32 y);

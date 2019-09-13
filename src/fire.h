@@ -26,3 +26,4 @@ void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
 
 u8 getFireRiskAt(City *city, s32 x, s32 y);
 u8 getFireProtectionAt(City *city, s32 x, s32 y);
+f32 getFireProtectionPercentAt(City *city, s32 x, s32 y);
