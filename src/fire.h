@@ -9,8 +9,9 @@ struct FireLayer
 	s32 sectorsToUpdatePerTick;
 
 	u8 *tileBuildingFireRisk;
+	u8 *tileTotalFireRisk; // Risks combined
 	u8 *tileFireProtection;
-	u8 *tileOverallFireRisk;
+	u8 *tileOverallFireRisk; // Risks after we've taken protection into account
 
 	ChunkedArray<BuildingRef> fireProtectionBuildings;
 };

@@ -112,7 +112,7 @@ inline T wrap(T value, T max)
 template<typename T>
 inline T lerp(T a, T b, f32 position)
 {
-	return a + (b-a)*position;
+	return (T)(a + (b-a)*position);
 }
 
 template<typename T>

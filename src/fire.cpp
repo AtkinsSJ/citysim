@@ -12,6 +12,8 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 
 	layer->tileBuildingFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileBuildingFireRisk, 0, cityArea);
+	layer->tileTotalFireRisk = allocateMultiple<u8>(gameArena, cityArea);
+	fillMemory<u8>(layer->tileTotalFireRisk, 0, cityArea);
 	layer->tileFireProtection = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileFireProtection, 0, cityArea);
 	layer->tileOverallFireRisk = allocateMultiple<u8>(gameArena, cityArea);
@@ -64,26 +66,26 @@ void updateFireLayer(City *city, FireLayer *layer)
 	}
 
 	{
-		DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
-		// Building fire protection
-		setRegion<u8>(layer->tileFireProtection, city->bounds.w, city->bounds.h, city->bounds, 0);
-		for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
-		{
-			Building *building = getBuilding(city, getValue(it));
-			if (building != null)
-			{
-				BuildingDef *def = getBuildingDef(building);
-				applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, city->bounds);
-			}
-		}
-		}
-
-	{
 		DEBUG_BLOCK_T("updateFireLayer: overall calculation", DCDT_Simulation);
 
 		for (s32 i = 0; i < layer->sectorsToUpdatePerTick; i++)
 		{
 			BasicSector *sector = &layer->sectors[layer->nextSectorUpdateIndex];
+
+			{
+				DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
+				// Building fire protection
+				setRegion<u8>(layer->tileFireProtection, city->bounds.w, city->bounds.h, sector->bounds, 0);
+				for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
+				{
+					Building *building = getBuilding(city, getValue(it));
+					if (building != null)
+					{
+						BuildingDef *def = getBuildingDef(building);
+						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, sector->bounds);
+					}
+				}
+			}
 
 			for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++)
 			{
@@ -99,8 +101,12 @@ void updateFireLayer(City *city, FireLayer *layer)
 					// - Sam, 12/09/2019
 					//
 					u8 buildingEffect = getTileValue(city, layer->tileBuildingFireRisk, x, y);
+					u8 totalRisk = buildingEffect;
+					setTile(city, layer->tileTotalFireRisk, x, y, totalRisk);
 
-					setTile(city, layer->tileOverallFireRisk, x, y, buildingEffect);
+					f32 protectionPercent = getTileValue(city, layer->tileFireProtection, x, y) * 0.01f;
+					u8 result = lerp<u8>(totalRisk, 0, protectionPercent);
+					setTile(city, layer->tileOverallFireRisk, x, y, result);
 				}
 			}
 
@@ -117,8 +123,8 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 
 	// @Copypasta drawLandValueDataLayer() - the same TODO's apply!
 
-#if 0
-	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+#if 1
+	u8 *data = copyRegion(layer->tileTotalFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 	V4 colorMinFireRisk = color255(255, 255, 255, 128);
 	V4 colorMaxFireRisk = color255(255,   0,   0, 128);
@@ -132,6 +138,7 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
 #else
+	// Just draw the protection
 	u8 *data = copyRegion(layer->tileFireProtection, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 	V4 colorMinFireProtection = color255(255,   0,   0, 128);
@@ -179,7 +186,7 @@ void unregisterFireProtectionBuilding(FireLayer *layer, Building *building)
 
 u8 getFireRiskAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->fireLayer.tileOverallFireRisk, x, y);
+	return getTileValue(city, city->fireLayer.tileTotalFireRisk, x, y);
 }
 
 u8 getFireProtectionAt(City *city, s32 x, s32 y)

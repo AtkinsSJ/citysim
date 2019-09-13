@@ -16,15 +16,15 @@ Notes for searching:
 ------------------------------------------------
 
 Fire:
-- Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
+✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
 	- Active fires
-	- Consider coverage
+	✔ Consider coverage
 	- Consider funding
 	- Consider water coverage
 	✔ BuildingDef fire risk value
 	- Ordinances
-- Keep a list of fire-service buildings so they can be iterated more easily.
+✔ Keep a list of fire-service buildings so they can be iterated more easily.
 - Small chance of a fire occurring each tick, depending on the risk.
 
 Factor out the "nextSectorUpdateIndex" stuff from LandValue/Zone/Fire. 

@@ -149,6 +149,8 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 	//
 	// -Sam, 04/09/2019
 	//
+	// (NB: This code is copypasta'd in several places, so when we fix this, fix those too!)
+	//
 
 	u8 *data = copyRegion(city->landValueLayer.tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
