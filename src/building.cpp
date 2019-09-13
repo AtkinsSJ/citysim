@@ -24,7 +24,7 @@ Building *getBuilding(City *city, BuildingRef ref)
 
 void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 {
-	put(&catalogue->buildingsByName, def->name, def);
+	if (def->typeID == 0) return; // Defs with typeID 0 are templates, which we don't want polluting the catalogue!
 
 	catalogue->overallMaxBuildingDim = max(catalogue->overallMaxBuildingDim, max(def->width, def->height));
 
@@ -103,14 +103,14 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			firstWord.chars++;
 			firstWord.length--;
 
+			if (def != null)
+			{
+				// Now that the previous building is done, we can categorise it
+				_assignBuildingCategories(catalogue, def);
+			}
+
 			if (equals(firstWord, "Building"))
 			{
-				if (def != null)
-				{
-					// Now that the previous building is done, we can categorise it
-					_assignBuildingCategories(catalogue, def);
-				}
-
 				def = appendBlank(buildings);
 				def->name = pushString(&assets->assetArena, getRemainderOfLine(&reader));
 				def->typeID = truncate32(buildings->count - 1);
@@ -118,6 +118,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				initFlags(&def->transportTypes, TransportTypeCount);
 
 				def->fireRisk = 1.0f;
+				put(&catalogue->buildingsByName, def->name, def);
 			}
 			else if (equals(firstWord, "Template"))
 			{
