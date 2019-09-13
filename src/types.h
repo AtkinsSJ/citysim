@@ -439,3 +439,32 @@ bool equals(f32 a, f32 b, f32 epsilon);
 
 template<typename T>
 bool equals(T a, T b);
+
+//
+// All this mess is just so we can access a type's min/max values from a template.
+//
+template<typename T> const inline T minPossibleValue();
+template<typename T> const inline T maxPossibleValue();
+
+template<> const inline u8  minPossibleValue<u8>()  { return 0;      }
+template<> const inline u8  maxPossibleValue<u8>()  { return u8Max;  }
+template<> const inline u16 minPossibleValue<u16>() { return 0;      }
+template<> const inline u16 maxPossibleValue<u16>() { return u16Max; }
+template<> const inline u32 minPossibleValue<u32>() { return 0;      }
+template<> const inline u32 maxPossibleValue<u32>() { return u32Max; }
+template<> const inline u64 minPossibleValue<u64>() { return 0;      }
+template<> const inline u64 maxPossibleValue<u64>() { return u64Max; }
+
+template<> const inline s8  minPossibleValue<s8>()  { return s8Min;  }
+template<> const inline s8  maxPossibleValue<s8>()  { return s8Max;  }
+template<> const inline s16 minPossibleValue<s16>() { return s16Min; }
+template<> const inline s16 maxPossibleValue<s16>() { return s16Max; }
+template<> const inline s32 minPossibleValue<s32>() { return s32Min; }
+template<> const inline s32 maxPossibleValue<s32>() { return s32Max; }
+template<> const inline s64 minPossibleValue<s64>() { return s64Min; }
+template<> const inline s64 maxPossibleValue<s64>() { return s64Max; }
+
+template<> const inline f32 minPossibleValue<f32>() { return f32Min; }
+template<> const inline f32 maxPossibleValue<f32>() { return f32Max; }
+template<> const inline f64 minPossibleValue<f64>() { return f64Min; }
+template<> const inline f64 maxPossibleValue<f64>() { return f64Max; }

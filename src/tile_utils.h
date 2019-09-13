@@ -11,6 +11,7 @@ inline bool hasEffect(EffectRadius *effectRadius) { return effectRadius->radius 
 enum EffectType
 {
 	Effect_Add,
+	Effect_Max,
 };
 template<typename T>
 void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, EffectType type, T *tileValues, Rect2I region);

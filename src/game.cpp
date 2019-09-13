@@ -361,6 +361,9 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	// Land value
 	window_label(context, myprintf("Land value: {0}", {formatInt(getLandValueAt(city, tilePos.x, tilePos.y))}));
 
+	// Fire
+	window_label(context, myprintf("Fire risk: {0}\nFire protection: {1}", {formatInt(getFireRiskAt(city, tilePos.x, tilePos.y)), formatInt(getFireProtectionAt(city, tilePos.x, tilePos.y))}));
+
 	// Highlight
 	// Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when
 	// the uiwindow is closed. Maybe at some point we'll want that functionality for other reasons, but

@@ -12,7 +12,8 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 
 	layer->tileBuildingFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileBuildingFireRisk, 0, cityArea);
-
+	layer->tileFireProtection = allocateMultiple<u8>(gameArena, cityArea);
+	fillMemory<u8>(layer->tileFireProtection, 0, cityArea);
 	layer->tileOverallFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileOverallFireRisk, 0, cityArea);
 
@@ -42,8 +43,8 @@ void updateFireLayer(City *city, FireLayer *layer)
 		{
 			Rect2I dirtyRect = getValue(rectIt);
 
+			// Building fire risk
 			setRegion<u8>(layer->tileBuildingFireRisk, city->bounds.w, city->bounds.h, dirtyRect, 0);
-
 			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
 			{
 				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
@@ -61,6 +62,21 @@ void updateFireLayer(City *city, FireLayer *layer)
 
 		clearDirtyRects(&layer->dirtyRects);
 	}
+
+	{
+		DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
+		// Building fire protection
+		setRegion<u8>(layer->tileFireProtection, city->bounds.w, city->bounds.h, city->bounds, 0);
+		for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
+		{
+			Building *building = getBuilding(city, getValue(it));
+			if (building != null)
+			{
+				BuildingDef *def = getBuildingDef(building);
+				applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, city->bounds);
+			}
+		}
+		}
 
 	{
 		DEBUG_BLOCK_T("updateFireLayer: overall calculation", DCDT_Simulation);
@@ -101,6 +117,7 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 
 	// @Copypasta drawLandValueDataLayer() - the same TODO's apply!
 
+#if 0
 	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 	V4 colorMinFireRisk = color255(255, 255, 255, 128);
@@ -114,6 +131,21 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 	}
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+#else
+	u8 *data = copyRegion(layer->tileFireProtection, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+
+	V4 colorMinFireProtection = color255(255,   0,   0, 128);
+	V4 colorMaxFireProtection = color255(  0, 255,   0, 128);
+
+	V4 palette[256];
+	f32 ratio = 1.0f / 255.0f;
+	for (s32 i=0; i < 256; i++)
+	{
+		palette[i] = lerp(colorMinFireProtection, colorMaxFireProtection, i * ratio);
+	}
+
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+#endif
 
 	// Highlight fire stations
 	if (layer->fireProtectionBuildings.count > 0)
@@ -143,4 +175,14 @@ void unregisterFireProtectionBuilding(FireLayer *layer, Building *building)
 {
 	bool success = findAndRemove(&layer->fireProtectionBuildings, getReferenceTo(building));
 	ASSERT(success);
+}
+
+u8 getFireRiskAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->fireLayer.tileOverallFireRisk, x, y);
+}
+
+u8 getFireProtectionAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->fireLayer.tileFireProtection, x, y);
 }

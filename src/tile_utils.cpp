@@ -32,7 +32,13 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, Effec
 						T originalValue = getTileValue(city, tileValues, x, y);
 
 						// This clamp is probably unnecessary but just in case.
-						T newValue = clamp<T>(originalValue + contribution, s16Min, s16Max);
+						T newValue = clamp<T>(originalValue + contribution, minPossibleValue<T>(), maxPossibleValue<T>());
+						setTile(city, tileValues, x, y, newValue);
+					} break;
+
+					case Effect_Max: {
+						T originalValue = getTileValue(city, tileValues, x, y);
+						T newValue = max(originalValue, contribution);
 						setTile(city, tileValues, x, y, newValue);
 					} break;
 
