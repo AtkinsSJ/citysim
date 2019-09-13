@@ -15,6 +15,8 @@ Notes for searching:
 
 ------------------------------------------------
 
+!!! loadBuildingDefs() apparently never puts things in the buildingsByName hashtable???
+
 Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
@@ -101,6 +103,7 @@ Pollution:
 	- Tile values are blended somehow, so that pollution spreads out, and fades slightly.
 	- (This means that a big plume of smog doesn't pop in or out of existence if a factory is built or demolished.)
 - Transport also creates pollution, depending on type and volume. (And any clean-car-incentive type ordinance effects.)
+- Fire also creates pollution
 
 Crime:
 - Building-coverage, which is additive, with only one class.

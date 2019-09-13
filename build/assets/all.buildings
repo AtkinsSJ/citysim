@@ -1,5 +1,9 @@
 # Building definitions
 
+:Template Civic
+carries_power true
+requires_transport_connection true
+
 :Building Road
 size 1 1
 texture road road.png 16 16 4 4
@@ -26,24 +30,23 @@ carries_transport road
 carries_power true
 
 :Building Power Station
+extends Civic
 size 4 4
 texture power-plant power-plant.png 64 64
 build plop 1000
 demolish_cost 200
-carries_power true
-requires_transport_connection true
 power_gen 4000
 jobs 100
 pollution 100 20
 fire_risk 170%
 
 :Building Fire Station
+extends Civic
 size 3 3
 texture fire-station fire-station.png 48 48
 build plop 750
 demolish_cost 125
-carries_power true
-requires_transport_connection true
+power_use 30
 jobs 50
 fire_risk 0%     # A fire here would be really embarrassing...
 fire_protection 100 30 20

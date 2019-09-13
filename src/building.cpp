@@ -87,6 +87,9 @@ void loadBuildingDefs(Blob data, Asset *asset)
 	catalogue->maxIBuildingDim = 0;
 	catalogue->overallMaxBuildingDim = 0;
 
+	HashTable<BuildingDef> templates;
+	initHashTable(&templates);
+	defer { freeHashTable(&templates); };
 
 	BuildingDef *def = null;
 
@@ -100,12 +103,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			firstWord.chars++;
 			firstWord.length--;
 
-			String defType = firstWord;
-			if (!equals(firstWord, "Building"))
-			{
-				warn(&reader, "Only Building definitions are supported right now.");
-			}
-			else
+			if (equals(firstWord, "Building"))
 			{
 				if (def != null)
 				{
@@ -120,6 +118,17 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				initFlags(&def->transportTypes, TransportTypeCount);
 
 				def->fireRisk = 1.0f;
+			}
+			else if (equals(firstWord, "Template"))
+			{
+				String name = pushString(tempArena, getRemainderOfLine(&reader));
+				def = put(&templates, name);
+				initFlags(&def->flags, BuildingFlagCount);
+				initFlags(&def->transportTypes, TransportTypeCount);
+			}
+			else
+			{
+				warn(&reader, "Only Building definitions are supported right now.");
 			}
 		}
 		else // Properties!
@@ -260,6 +269,40 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					if (demolish_cost.isValid)
 					{
 						def->demolishCost = (s32) demolish_cost.value;
+					}
+				}
+				else if (equals(firstWord, "extends"))
+				{
+					String templateName = readToken(&reader);
+					
+					BuildingDef *templateDef = find(&templates, templateName);
+					if (templateDef == null)
+					{
+						error(&reader, "Could not find template named '{0}'. Make sure templates you use are defined before the buildings that use them!", {templateName});
+					}
+					else
+					{
+						// Copy the def... this could be messy
+						// (We can't just do copyMemory() because we don't want to change the name or typeID.)
+						def->flags = templateDef->flags;
+						def->size = templateDef->size;
+						def->spriteName = templateDef->spriteName;
+						def->sprites = templateDef->sprites;
+						def->linkTexturesLayer = templateDef->linkTexturesLayer;
+						def->buildMethod = templateDef->buildMethod;
+						def->buildCost = templateDef->buildCost;
+						def->canBeBuiltOnID = templateDef->canBeBuiltOnID;
+						def->buildOverResult = templateDef->buildOverResult;
+						def->growsInZone = templateDef->growsInZone;
+						def->demolishCost = templateDef->demolishCost;
+						def->residents = templateDef->residents;
+						def->jobs = templateDef->jobs;
+						def->transportTypes = templateDef->transportTypes;
+						def->power = templateDef->power;
+						def->landValueEffect = templateDef->landValueEffect;
+						def->pollutionEffect = templateDef->pollutionEffect;
+						def->fireRisk = templateDef->fireRisk;
+						def->fireProtection = templateDef->fireProtection;
 					}
 				}
 				else if (equals(firstWord, "fire_protection"))
