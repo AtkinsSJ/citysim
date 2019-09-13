@@ -54,6 +54,8 @@ Texture-linking 2.0:
 	- SC4: ( https://wiki.sc4devotion.com/index.php?title=Network_Specs/IntersectionSolutions_RUL )
 		-> When the player attempts to build one network across a different one, run down the list of possible intersections of those types. The intersection is chosen based on N/E/S/W tiles of both networks and how they connect to the crossing tile (straight, diagonally, etc). The valid option is then flipped/rotated as necessary.
 		- So, here it specifies what we'd call a Building to be placed at that spot, and not a Variant. (Which makes sense because it's effectively multiple building types otherwise!) (Though... we could implement this as a Building per intersection combination, and then variants within it. eg, one power-line-over-road building with variants for straight/diagonal combinations.)
+- Terrain also wants a variants system... probably we can reuse a lot of this for that. So, you define that there is water here and sand there and grass there, and then it picks an appropriate sprite for it.
+	- This implies we want two parts to this: one is pickVariant() which you give the context to and the possible options, and it returns the variant you want; and the other part is code that produces that context information. Because the network system and the terrain system work on different underlying data.
 
 DirtyRects:
 - It's a good system, but I think we need to break it down more. Different parts of a layer have different ideas of how much the incoming rects should be expanded, or what makes an area dirty at all. I set up the City::markAreaDirty() function because I'm concerned about bugs coming from forgetting to tell a layer that something has changed, in some situations... but that's a one-size-fits-all approach that's less optimal. eg, Power only cares if the tiles changed whether they carry power or not (or how much power is produced/consumed).
@@ -135,6 +137,26 @@ Transport:
 - Really not sure about this one right now. We need some way of simulating traffic, which means picking a place to start/end a trip, and then finding a path using a choice of transport method. For the path-finding, we could use an A* style algorithm, so that's not too hard, though we might want to cache the trips somehow - perhaps store sector-to-sector (well, sector-groups not sectors) path costs. We already have an old system for calculating connectivity.
 	- SC4 gives residents a specific job which they always path to, until they can't or they change job (for whatever reason). That's extra data to track but keeps things fairly consistent over time. Occasionally we'd want to recalculate the path for a resident though - possibly all residents as I'm not sure if we could easily subtract their previous trip from the model.
 
+Terrain generation / modification!
+- We need some kind of "generate a new map" button to start off.
+	- SC3K lets you specify:
+		- Map size (small/medium/large-type categories)
+		- Whether each of the 4 map edges are ocean or land
+		- Whether the centre is flat, a mountain, river(s) or lake(s)
+		- How mountainous the land is
+		- How many trees there are
+		- How much of the map is water
+	- Probably want to add a way to see/specify the seed with a random-seed (aka "regenerate") button
+		-> (would this set the parameters too? maybe not but we want a way to easily duplicate maps)
+	- Probably also want a "randomise" button that changes all the parameters along with the seed.
+	- Could replace the "What's at the edges and what's at the centre" system with a set of generation algorithms... Things like "alpine" for mountainous with many trees, or "desert" or whatever. IDK. This is all just theory because we don't even have terrain height in yet! And probably won't for the first game, idk.
+- "God mode" tools that let you tweak things before founding your city would be nice too.
+	- Add/remove water
+	- Change terrain type if we have that
+	- Modify height if we have that
+	- Add/remove trees
+- This is all fairly limited right now because our world is a flat plane, but that's ok!
+
 Ordinances!
 - Global effects that you can choose to enable or disable
 	- To avoid exploits, they'd need to only come into effect once paid for. eg, when you turn one on, nothing happens until the next budget happens, and then the ordinance is in effect until the following budget. Otherwise you could disable them just before the budget and then re-enable them afterwards, to get them for free! (Or vice-versa with ones that earn money: enable them only for the budget, and avoid the negative effects the rest of the time.)
@@ -142,6 +164,33 @@ Ordinances!
 		- An income/cost calculation
 		- A list of (thing affected, how much)
 		- Name and description (Both are keys for the locale-specific text)
+
+Game clock:
+- Have days pass by, following a calendar, and certain events happen every so often (eg, the budget happens on the first day of the month). 
+	- Way back when, I was thinking we'd assign 1 day a week to simulating each aspect, eg traffic on Tuesdays. But so far, a lot of simulation is done X sectors at a time, and it's pretty quick, so we could instead make things happen much more often. eg, divide a day up into ticks where every layer is updated every day, on a specific tick. That keeps things much more up-to-date.
+	- We could of course update different layers more or less often. eg, land value should change fairly slowly so doesn't need to be updated so often. Traffic is fairly important and expensive to calculate so needs a lot of updates.
+	- The goal is to keep things running at a solid 60fps where possible. We might want to tweak the "number of sectors to update at once" figures during runtime, or early-out of processing dirty rects when we've spent X ms on them. Or of course, putting simulation onto a background thread or threads, so that we don't have to worry how long it takes. Just use a double-buffering scheme and swap the active buffer when you're done working on it.
+
+Budget:
+- Buildings have monthly upkeep, categorised by department
+	- Each department has a funding % set by the player.
+	- Building effects in a department are determined by the funding % when the last payment was made. (See note about avoiding exploits with ordinances, this is the same issue - the player shouldn't be able to set the funding to 0% just before the budget tick, and then back to 100% after, for free services!)
+	- So, a fire station given 50% funding is half as effective at fire prevention within its radius.
+		-> Maybe it should be non-linear, but that's more complicated! In SC4 for example, 100% funding is much more efficient than lower funding, and >100% funding only improves things a little.
+- Taxes!
+	- Player can set tax levels for different zones or spawn types, which influences both demand and general happiness (if we have that concept)
+- Loans!
+	- Can take out a limited number of loans, which are paid back over time.
+- If you run out of money, it's bad in some way. We probably don't need a "you lose!" situation, just that you can only spend money that you actually have. Maybe if you have no money, (not $0, but some negative amount,) the game tries to get you to take out a loan, and if you don't can't, services are automatically dropped to 0% funding, so you quickly get big problems if you're unable to keep things in the black.
+
+Saving and loading!
+- Ooooh boy, this is scary.
+- A binary file format is the way to go for speed, but we might want to have a text format as well for easier debugging... if that's worth the extra code.
+	- I'm thinking, tagged sections. Each starts with a header struct that identifies which section it is and how many bytes long the rest of the section is, so that unrecognised sections can be skipped. This seems a fairly standard way of doing binary formats so it makes sense to copy it! (PNG seems a decent model for imitating.)
+	- First section is metadata, especially things that the game might want to know *before* the save-game is loaded. (So, city name, mayor name, save format version, save date, probably city size, whatever else.)
+	- Each layer has a section to itself. It should probably only save *necessary* data, that can't be generated from other data. eg, don't need to store the land-value parts, though we may want to save the cached total land value for each tile maybe? Not sure.
+- On load, we make sure the simulation is "warmed up" before actually letting the player start. So, probably mark the whole city as dirty for every layer, and then let them all process completely.
+	- Another option would be to save all of the "cached" data in the save file, so loading can just continue where you left off without having to warm up first. But that mean saving more data, and it opens us up for problems with the simulation changing over time and the data it needs being missed from older saves. So, recalculating things fresh is safer, even though it could mean the simulation state is slightly different after a save-load loop, because while playing the simulator is always using slightly old data because things update gradually. That should be a really minor issue though.
 
 Tidy up the types/maths files, so that I can ACTUALLY FIND THINGS.
 - Maybe color/v4 should be separate types?

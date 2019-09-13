@@ -49,7 +49,7 @@ demolish_cost 125
 power_use 30
 jobs 50
 fire_risk 0%     # A fire here would be really embarrassing...
-fire_protection 100 30 20
+fire_protection 100 30 20 # This is centre-value, radius, outer-value. It's an odd order because you can skip either the last 1, or the last 2 parameters. Radius, centre-value, outer-value might be a better option, and forcing radius to be required.
 
 #
 # Zoneables
