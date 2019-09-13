@@ -436,3 +436,6 @@ s32 manhattanDistance(Rect2I rect, V2I point);
 s32 manhattanDistance(Rect2I a, Rect2I b);
 
 bool equals(f32 a, f32 b, f32 epsilon);
+
+template<typename T>
+bool equals(T a, T b);

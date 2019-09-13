@@ -323,7 +323,7 @@ Maybe<String> readTextureDefinition(LineReader *reader)
 	}
 }
 
-Maybe<struct EffectRadius> readEffectRadius(LineReader *reader)
+Maybe<EffectRadius> readEffectRadius(LineReader *reader)
 {
 	Maybe<s64> effectValue = asInt(readToken(reader));
 

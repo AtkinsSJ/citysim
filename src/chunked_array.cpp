@@ -441,6 +441,11 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, s32 initialIndex, bool w
 	return iterator;
 }
 
+template<typename T>
+bool hasNext(ChunkedArrayIterator<T> *iterator)
+{
+	return !iterator->isDone;
+}
 
 template<typename T>
 void next(ChunkedArrayIterator<T> *iterator)

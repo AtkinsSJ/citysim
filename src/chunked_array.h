@@ -136,6 +136,9 @@ template<typename T>
 void next(ChunkedArrayIterator<T> *iterator);
 
 template<typename T>
+bool hasNext(ChunkedArrayIterator<T> *iterator);
+
+template<typename T>
 T *get(ChunkedArrayIterator<T> iterator);
 
 template<typename T>

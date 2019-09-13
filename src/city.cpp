@@ -68,6 +68,11 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		}
 	}
 
+	if (hasEffect(&def->fireProtection))
+	{
+		registerFireProtectionBuilding(&city->fireLayer, building);
+	}
+
 	return building;
 }
 
@@ -359,6 +364,12 @@ void demolishRect(City *city, Rect2I area)
 		city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
 
 		Rect2I buildingFootprint = building->footprint;
+
+		// Clean up other references
+		if (hasEffect(&def->fireProtection))
+		{
+			unregisterFireProtectionBuilding(&city->fireLayer, building);
+		}
 
 		building->id = 0;
 		building->typeID = -1;

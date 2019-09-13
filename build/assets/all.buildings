@@ -46,6 +46,7 @@ carries_power true
 requires_transport_connection true
 jobs 50
 fire_risk 0%     # A fire here would be really embarrassing...
+fire_protection 100 100 20
 
 #
 # Zoneables

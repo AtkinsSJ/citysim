@@ -5,7 +5,8 @@ F5    reload_assets
 
 Home  mark_all_dirty
 
-0     show_layer
+6     show_layer fire
 7     show_layer land_value
 8     show_layer power
 9     show_layer pollution
+0     show_layer

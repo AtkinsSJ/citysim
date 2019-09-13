@@ -262,6 +262,14 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						def->demolishCost = (s32) demolish_cost.value;
 					}
 				}
+				else if (equals(firstWord, "fire_protection"))
+				{
+					Maybe<EffectRadius> fire_protection = readEffectRadius(&reader);
+					if (fire_protection.isValid)
+					{
+						def->fireProtection = fire_protection.value;
+					}
+				}
 				else if (equals(firstWord, "fire_risk"))
 				{
 					Maybe<f64> fire_risk = readFloat(&reader);

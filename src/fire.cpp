@@ -16,6 +16,8 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 	layer->tileOverallFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileOverallFireRisk, 0, cityArea);
 
+	initChunkedArray(&layer->fireProtectionBuildings, gameArena, 256);
+
 	// Mark whole city as needing recalculating
 	markRectAsDirty(&layer->dirtyRects, city->bounds);
 }
@@ -95,9 +97,11 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
+	FireLayer *layer = &city->fireLayer;
+
 	// @Copypasta drawLandValueDataLayer() - the same TODO's apply!
 
-	u8 *data = copyRegion(city->fireLayer.tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 	V4 colorMinFireRisk = color255(255, 255, 255, 128);
 	V4 colorMaxFireRisk = color255(255,   0,   0, 128);
@@ -110,4 +114,33 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 	}
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+
+	// Highlight fire stations
+	if (layer->fireProtectionBuildings.count > 0)
+	{
+		V4 highlightColor = color255(0,255,0,128);
+		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->fireProtectionBuildings.count);
+		for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
+		{
+			Building *building = getBuilding(city, getValue(it));
+			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
+			// visible even if the building isn't!
+			if (building != null)
+			{
+				addUntexturedRect(buildingHighlights, rect2(building->footprint), highlightColor);
+			}
+		}
+		endRectsGroup(buildingHighlights);
+	}
+}
+
+void registerFireProtectionBuilding(FireLayer *layer, Building *building)
+{
+	append(&layer->fireProtectionBuildings, getReferenceTo(building));
+}
+
+void unregisterFireProtectionBuilding(FireLayer *layer, Building *building)
+{
+	bool success = findAndRemove(&layer->fireProtectionBuildings, getReferenceTo(building));
+	ASSERT(success);
 }

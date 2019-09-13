@@ -63,6 +63,12 @@ inline bool equals(f32 a, f32 b, f32 epsilon)
 }
 
 template<typename T>
+inline bool equals(T a, T b)
+{
+	return isMemoryEqual<T>(&a, &b);
+}
+
+template<typename T>
 inline T clamp(T value, T min, T max)
 {
 	ASSERT(min <= max); //min > max in clamp()!
