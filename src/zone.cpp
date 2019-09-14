@@ -67,7 +67,7 @@ void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zo
 
 	u8 *data = copyRegion(city->zoneLayer.tileDesirability[zoneType], city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	static Palette palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 0, 0, 128), color255(0, 255, 0, 128), 256);
+	static Array<V4> palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 0, 0, 128), color255(0, 255, 0, 128), 256);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
 }

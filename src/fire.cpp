@@ -124,34 +124,18 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 	// @Copypasta drawLandValueDataLayer() - the same TODO's apply!
 
 #if 1
-	u8 *data = copyRegion(layer->tileTotalFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	V4 colorMinFireRisk = color255(255, 255, 255, 128);
-	V4 colorMaxFireRisk = color255(255,   0,   0, 128);
+	static Array<V4> palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 255, 255, 128), color255(255, 0, 0, 128), 256);
 
-	V4 palette[256];
-	f32 ratio = 1.0f / 255.0f;
-	for (s32 i=0; i < 256; i++)
-	{
-		palette[i] = lerp(colorMinFireRisk, colorMaxFireRisk, i * ratio);
-	}
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
 #else
 	// Just draw the protection
 	u8 *data = copyRegion(layer->tileFireProtection, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	V4 colorMinFireProtection = color255(255,   0,   0, 128);
-	V4 colorMaxFireProtection = color255(  0, 255,   0, 128);
+	static Array<V4> palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 0, 0, 128), color255(0, 255, 0, 128), 256);
 
-	V4 palette[256];
-	f32 ratio = 1.0f / 255.0f;
-	for (s32 i=0; i < 256; i++)
-	{
-		palette[i] = lerp(colorMinFireProtection, colorMaxFireProtection, i * ratio);
-	}
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
 #endif
 
 	// Highlight fire stations

@@ -114,7 +114,7 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(city->pollutionLayer.tilePollution, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	static Palette palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 255, 255, 0), color255(255, 0, 0, 196), 256);
+	static Array<V4> palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 255, 255, 0), color255(255, 0, 0, 196), 256);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
 }
