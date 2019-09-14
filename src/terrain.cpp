@@ -180,51 +180,6 @@ s32 findTerrainTypeByName(String name)
 	return result;
 }
 
-void generateTerrain(City *city)
-{
-	DEBUG_FUNCTION();
-
-	fillMemory<u8>(city->tileDistanceToWater, 255, areaOf(city->bounds));
-	
-	u32 tGround = findTerrainTypeByName(makeString("Ground"));
-	u32 tWater  = findTerrainTypeByName(makeString("Water"));
-
-	// TODO: Replace this with a direct lookup!
-	BuildingDef *bTree = findBuildingDef(makeString("Tree"));
-
-	for (s32 y = 0; y < city->bounds.h; y++) {
-		for (s32 x = 0; x < city->bounds.w; x++) {
-
-			f32 px = (f32)x * 0.05f;
-			f32 py = (f32)y * 0.05f;
-
-			f32 perlinValue = stb_perlin_noise3(px, py, 0);
-
-			Terrain *terrain = getTerrainAt(city, x, y);
-			bool isWater = (perlinValue > 0.1f);
-			if (isWater)
-			{
-				terrain->type = tWater;
-				setTile<u8>(city, city->tileDistanceToWater, x, y, 0);
-			}
-			else
-			{
-				terrain->type = tGround;
-
-				if (stb_perlin_noise3(px, py, 1) > 0.2f)
-				{
-					Building *building = addBuilding(city, bTree, irectXYWH(x, y, bTree->width, bTree->height));
-					building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
-				}
-			}
-
-			terrain->spriteOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
-		}
-	}
-
-	updateDistances(city, city->tileDistanceToWater, city->bounds, maxDistanceToWater);
-}
-
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
@@ -275,4 +230,49 @@ inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
 	}
 
 	return result;
+}
+
+void generateTerrain(City *city)
+{
+	DEBUG_FUNCTION();
+	
+	u32 tGround = findTerrainTypeByName(makeString("Ground"));
+	u32 tWater  = findTerrainTypeByName(makeString("Water"));
+	BuildingDef *bTree = findBuildingDef(makeString("Tree"));
+
+	fillMemory<u8>(city->tileDistanceToWater, 255, areaOf(city->bounds));
+
+	for (s32 y = 0; y < city->bounds.h; y++) {
+		for (s32 x = 0; x < city->bounds.w; x++) {
+
+			f32 px = (f32)x * 0.05f;
+			f32 py = (f32)y * 0.05f;
+
+			f32 perlinValue = stb_perlin_noise3(px, py, 0);
+
+			setTile<u8>(city, city->tileTerrainHeight, x, y, clamp01AndMap_u8(perlinValue));
+
+			Terrain *terrain = getTerrainAt(city, x, y);
+			bool isWater = (perlinValue > 0.1f);
+			if (isWater)
+			{
+				terrain->type = tWater;
+				setTile<u8>(city, city->tileDistanceToWater, x, y, 0);
+			}
+			else
+			{
+				terrain->type = tGround;
+
+				if (stb_perlin_noise3(px, py, 1) > 0.2f)
+				{
+					Building *building = addBuilding(city, bTree, irectXYWH(x, y, bTree->width, bTree->height));
+					building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
+				}
+			}
+
+			terrain->spriteOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
+		}
+	}
+
+	updateDistances(city, city->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }

@@ -19,6 +19,7 @@ struct City
 
 	Rect2I bounds;
 	Terrain *tileTerrain;
+	u8 *tileTerrainHeight;
 	u8 *tileDistanceToWater;
 
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!

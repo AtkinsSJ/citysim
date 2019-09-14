@@ -234,6 +234,9 @@ void swap(Array<T> *array, s32 indexA, s32 indexB);
 template<typename T, typename Comparison>
 void sortArray(Array<T> *array, Comparison compareElements);
 
+typedef Array<V4> Palette;
+Palette makeGradientPalette(MemoryArena *memoryArena, V4 startColor, V4 endColor, s32 steps);
+
 //
 // V2
 //

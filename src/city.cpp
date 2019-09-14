@@ -11,6 +11,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 
 	s32 cityArea = width * height;
 	city->tileTerrain         = allocateMultiple<Terrain>(gameArena, cityArea);
+	city->tileTerrainHeight   = allocateMultiple<u8>(gameArena, cityArea);
 	city->tileDistanceToWater = allocateMultiple<u8>(gameArena, cityArea);
 
 	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);

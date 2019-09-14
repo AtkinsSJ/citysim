@@ -114,20 +114,9 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(city->pollutionLayer.tilePollution, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
+	static Palette palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 255, 255, 0), color255(255, 0, 0, 196), 256);
 
-	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous! @Palette
-
-	V4 colorMinPollution = color255(255, 255, 255,   0);
-	V4 colorMaxPollution = color255(255,   0,   0, 196);
-
-	V4 palette[256];
-	f32 ratio = 1.0f / 255.0f;
-	for (s32 i=0; i < 256; i++)
-	{
-		palette[i] = lerp(colorMinPollution, colorMaxPollution, i * ratio);
-	}
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
 }
 
 inline u8 getPollutionAt(City *city, s32 x, s32 y)

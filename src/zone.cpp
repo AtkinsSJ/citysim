@@ -67,20 +67,9 @@ void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zo
 
 	u8 *data = copyRegion(city->zoneLayer.tileDesirability[zoneType], city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
+	static Palette palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 0, 0, 128), color255(0, 255, 0, 128), 256);
 
-	// TODO: Palette assets! Don't just recalculate this every time, that's ridiculous! @Palette
-
-	V4 colorMinDesirability = color255(255,   0,   0, 128);
-	V4 colorMaxDesirability = color255(  0, 255,   0, 128);
-
-	V4 palette[256];
-	f32 ratio = 1.0f / 255.0f;
-	for (s32 i=0; i < 256; i++)
-	{
-		palette[i] = lerp(colorMinDesirability, colorMaxDesirability, i * ratio);
-	}
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, 256, palette);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
 }
 
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
