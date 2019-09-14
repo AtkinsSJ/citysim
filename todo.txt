@@ -19,6 +19,7 @@ Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
 	- Active fires
+		- Store tile-distance-from-fire, with a short range (4?) then use that to greatly increase fire risk
 	✔ Consider coverage
 	- Consider funding
 	- Consider water coverage
@@ -132,6 +133,9 @@ Education/Health:
 	- Health depends on clinic/hospital coverage, pollution, and possibly ordinances if we ever implement those.
 	- Education is more complicated because different classes are supposed to cater to different age ranges. I don't know if we want to simulate age or not? If we don't, we'd still want the different classes to have different effects, so that you can't get perfect education by spamming libraries, for example.
 - As a side-note, I'm thinking com/ind should also require hospital coverage, not just res... but I'm not sure how that would work. People get sick/have accidents all the time, not just when they're at home! Especially with heavy industry.
+
+Coverage:
+- Calculate a coverage % for each service, based on what % of "inhabited" buildings have access to it and the quality of that access. This means somehow tagging buildings that count for this - perhaps we could count buildings with non-zero job/resident numbers?
 
 Transport:
 - Really not sure about this one right now. We need some way of simulating traffic, which means picking a place to start/end a trip, and then finding a path using a choice of transport method. For the path-finding, we could use an A* style algorithm, so that's not too hard, though we might want to cache the trips somehow - perhaps store sector-to-sector (well, sector-groups not sectors) path costs. We already have an old system for calculating connectivity.

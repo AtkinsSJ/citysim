@@ -28,12 +28,12 @@ struct City
 
 	SectorGrid<CitySector> sectors;
 
-	FireLayer fireLayer;
+	FireLayer      fireLayer;
 	LandValueLayer landValueLayer;
 	PollutionLayer pollutionLayer;
-	PowerLayer powerLayer;
+	PowerLayer     powerLayer;
 	TransportLayer transportLayer;
-	ZoneLayer zoneLayer;
+	ZoneLayer      zoneLayer;
 
 	ArrayChunkPool<Building *> sectorBuildingsChunkPool;
 	ArrayChunkPool<Rect2I>     sectorBoundariesChunkPool;
@@ -48,10 +48,6 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
 
 void markAreaDirty(City *city, Rect2I bounds);
-
-void generateTerrain(City *city);
-void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
-Terrain *getTerrainAt(City *city, s32 x, s32 y);
 
 bool tileExists(City *city, s32 x, s32 y);
 template<typename T>

@@ -558,7 +558,7 @@ s32 getMaxBuildingSize(ZoneType zoneType)
 	return result;
 }
 
-void updateBuildingTexture(City *city, Building *building, BuildingDef *def)
+void updateBuildingTexture(City * /*city*/, Building *building, BuildingDef *def)
 {
 	DEBUG_FUNCTION();
 

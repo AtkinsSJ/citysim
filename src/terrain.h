@@ -20,9 +20,12 @@ struct Terrain
 
 Terrain invalidTerrain = {0, 0};
 
-
 void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset);
 void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains);
+
+void generateTerrain(City *city);
+void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
+Terrain *getTerrainAt(City *city, s32 x, s32 y);
 
 // Returns 0 if not found
 s32 findTerrainTypeByName(String name);
