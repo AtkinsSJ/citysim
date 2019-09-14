@@ -14,6 +14,7 @@ void initAssets()
 	initHashTable(&assets->fileExtensionToType);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "buildings"), AssetType_BuildingDefs);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "cursors"),   AssetType_CursorDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "palettes"),  AssetType_PaletteDefs);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"),   AssetType_TerrainDefs);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"),    AssetType_DevKeymap);
 	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"),     AssetType_UITheme);
@@ -46,7 +47,7 @@ void initAssets()
 	assets->assetChangeHandle = beginWatchingDirectory(assets->assetsPath);
 }
 
-Blob allocate(Assets *theAssets, smm size)
+Blob assetsAllocate(Assets *theAssets, smm size)
 {
 	Blob result = {};
 	result.size = size;
@@ -82,7 +83,7 @@ Asset *addAsset(AssetType type, String shortName, u32 flags)
 
 void copyFileIntoAsset(Blob *fileData, Asset *asset)
 {
-	asset->data = allocate(assets, fileData->size);
+	asset->data = assetsAllocate(assets, fileData->size);
 	memcpy(asset->data.memory, fileData->memory, fileData->size);
 
 	// NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
@@ -202,11 +203,38 @@ void loadAsset(Asset *asset)
 			if (globalConsole != null)
 			{
 				// NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
-				// directly refer to the string data from the file, instead of having to allocate a copy
+				// directly refer to the string data from the file, instead of having to assetsAllocate a copy
 				// and not be able to free it ever. This is more memory efficient.
 				copyFileIntoAsset(&fileData, asset);
 				loadConsoleKeyboardShortcuts(globalConsole, fileData, asset->shortName);
 			}
+			asset->state = AssetState_Loaded;
+		} break;
+
+		case AssetType_Palette:
+		{
+			Palette *palette = &asset->palette;
+			switch (palette->type)
+			{
+				case PaletteType_Gradient: {
+					asset->data = assetsAllocate(assets, palette->size * sizeof(V4));
+					palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.memory);
+					
+					f32 ratio = 1.0f / (f32)(palette->size);
+					for (s32 i=0; i < palette->size; i++)
+					{
+						palette->paletteData[i] = lerp(palette->from, palette->to, i * ratio);
+					}
+				} break;
+
+				INVALID_DEFAULT_CASE;
+			}
+			asset->state = AssetState_Loaded;
+		} break;
+
+		case AssetType_PaletteDefs:
+		{
+			loadPaletteDefs(fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -358,7 +386,7 @@ Asset *addSpriteGroup(String name, s32 spriteCount)
 	ASSERT(spriteCount > 0); //Must have a positive number of sprites in a Sprite Group!
 
 	Asset *spriteGroup = addAsset(AssetType_Sprite, name, 0);
-	spriteGroup->data = allocate(assets, spriteCount * sizeof(Sprite));
+	spriteGroup->data = assetsAllocate(assets, spriteCount * sizeof(Sprite));
 	spriteGroup->spriteGroup.count = spriteCount;
 	spriteGroup->spriteGroup.sprites = (Sprite*) spriteGroup->data.memory;
 
@@ -569,8 +597,13 @@ Asset *getAsset(AssetType type, String shortName)
 		DEBUG_BREAK();
 		logError("Requested asset '{0}' was not found!", {shortName});
 	}
-
+	
 	return result;
+}
+
+inline Array<V4> *getPalette(String name)
+{
+	return &getAsset(AssetType_Palette, name)->palette.paletteData;
 }
 
 inline SpriteGroup *getSpriteGroup(String name)
@@ -703,6 +736,86 @@ void loadCursorDefs(Blob data, Asset *asset)
 		{
 			error(&reader, "Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'.");
 			return;
+		}
+	}
+}
+
+void loadPaletteDefs(Blob data, Asset *asset)
+{
+	DEBUG_FUNCTION();
+
+	LineReader reader = readLines(asset->shortName, data);
+
+	Asset *paletteAsset = null;
+
+	while (loadNextLine(&reader))
+	{
+		String command = readToken(&reader);
+		if (command[0] == ':')
+		{
+			command.length--;
+			command.chars++;
+
+			if (equals(command, makeString("Palette")))
+			{
+				String paletteName = pushString(&assets->assetArena, readToken(&reader));
+				paletteAsset = addAsset(AssetType_Palette, paletteName, 0);
+			}
+			else
+			{
+				error(&reader, "Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!", {command});
+				return;
+			}
+		}
+		else
+		{
+			if (paletteAsset == null)
+			{
+				error(&reader, "Unexpected command '{0}' before the start of a :Palette", {command});
+				return;
+			}
+
+			if (equals(command, makeString("type")))
+			{
+				String type = readToken(&reader);
+
+				if (equals(type, makeString("gradient")))
+				{
+					paletteAsset->palette.type = PaletteType_Gradient;
+				}
+				else
+				{
+					error(&reader, "Unrecognised palette type '{0}', allowed values are: gradient", {type});
+				}
+			}
+			else if (equals(command, makeString("size")))
+			{
+				Maybe<s64> size = readInt(&reader);
+				if (size.isValid)
+				{
+					paletteAsset->palette.size = (s32)size.value;
+				}
+			}
+			else if (equals(command, makeString("from")))
+			{
+				Maybe<V4> from = readColor(&reader);
+				if (from.isValid)
+				{
+					paletteAsset->palette.from = from.value;
+				}
+			}
+			else if (equals(command, makeString("to")))
+			{
+				Maybe<V4> to = readColor(&reader);
+				if (to.isValid)
+				{
+					paletteAsset->palette.to = to.value;
+				}
+			}
+			else
+			{
+				error(&reader, "Unrecognised command '{0}'", {command});
+			}
 		}
 	}
 }

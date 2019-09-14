@@ -9,6 +9,8 @@ enum AssetType
 	AssetType_Cursor,
 	AssetType_CursorDefs,
 	AssetType_DevKeymap,
+	AssetType_Palette,
+	AssetType_PaletteDefs,
 	AssetType_Shader,
 	AssetType_Sprite,
 	AssetType_Texts,
@@ -31,6 +33,20 @@ struct Cursor
 	String imageFilePath; // Full path
 	V2I hotspot;
 	SDL_Cursor *sdlCursor;
+};
+
+enum PaletteType
+{
+	PaletteType_Gradient,
+};
+struct Palette
+{
+	PaletteType type;
+	s32 size;
+	V4 from;
+	V4 to;
+
+	Array<V4> paletteData;
 };
 
 struct Shader
@@ -98,6 +114,7 @@ struct Asset
 	union {
 		BitmapFont bitmapFont;
 		Cursor cursor;
+		Palette palette;
 		Shader shader;
 		SpriteGroup spriteGroup;
 		Texture texture;
@@ -160,10 +177,11 @@ String getAssetPath(AssetType type, String shortName);
 Asset *getAsset(AssetType type, String shortName);
 Asset *getAssetIfExists(AssetType type, String shortName);
 
-SpriteGroup *getSpriteGroup(String name);
-Sprite *getSprite(SpriteGroup *group, s32 offset);
-Shader *getShader(String shaderName);
 BitmapFont *getFont(String fontName);
+Array<V4> *getPalette(String name);
+Shader *getShader(String shaderName);
+Sprite *getSprite(SpriteGroup *group, s32 offset);
+SpriteGroup *getSpriteGroup(String name);
 
 #define LOCAL(str) getText(makeString(str))
 String getText(String name);
@@ -173,3 +191,6 @@ String getText(String name);
 //
 
 void loadCursorDefs(Blob data, Asset *asset);
+void loadPaletteDefs(Blob data, Asset *asset);
+
+Blob assetsAllocate(Assets *theAssets, smm size);

@@ -1108,16 +1108,3 @@ inline V4 operator*(Matrix4 m, V4 v)
 
 	return result;
 }
-
-Array<V4> makeGradientPalette(MemoryArena *memoryArena, V4 startColor, V4 endColor, s32 steps)
-{
-	Array<V4> result = allocateArray<V4>(memoryArena, steps);
-
-	f32 ratio = 1.0f / (f32)(steps);
-	for (s32 i=0; i < steps; i++)
-	{
-		result[i] = lerp(startColor, endColor, i * ratio);
-	}
-
-	return result;
-}

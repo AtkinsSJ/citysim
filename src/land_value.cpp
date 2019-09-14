@@ -158,9 +158,9 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(city->landValueLayer.tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	static Array<V4> palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 255, 255, 128), color255(0, 0, 255, 128), 256);
+	Array<V4> *palette = getPalette(makeString("land_value"));
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 }
 
 inline f32 getLandValuePercentAt(City *city, s32 x, s32 y)

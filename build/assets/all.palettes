@@ -1,0 +1,33 @@
+# Palettes!
+# Probably we want to combine some of these tiny data files at some point, it seems inefficient to have so many?
+# IDK maybe I'm wrong and it's fine. It's less work when hot-loading anyway.
+
+:Palette land_value
+type gradient
+size 256
+from 255 255 255 128
+to     0   0 255 128
+
+:Palette risk
+type gradient
+size 256
+from 255 255 255 128
+to   255   0   0 128
+
+:Palette service_coverage
+type gradient
+size 256
+from 255   0   0 128
+to     0 255   0 128
+
+:Palette desirability
+type gradient
+size 256
+from 255   0   0 128
+to     0 255   0 128
+
+:Palette pollution
+type gradient
+size 256
+from 255 255 255   0
+to   255   0   0 196

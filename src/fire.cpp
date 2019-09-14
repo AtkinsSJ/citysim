@@ -126,16 +126,16 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 #if 1
 	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	static Array<V4> palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 255, 255, 128), color255(255, 0, 0, 128), 256);
+	Array<V4> *palette = getPalette(makeString("risk"));
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #else
 	// Just draw the protection
 	u8 *data = copyRegion(layer->tileFireProtection, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	static Array<V4> palette = makeGradientPalette(&globalAppState.gameState->gameArena, color255(255, 0, 0, 128), color255(0, 255, 0, 128), 256);
+	Array<V4> *palette = getPalette(makeString("service_coverage"));
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette.count, palette.items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #endif
 
 	// Highlight fire stations

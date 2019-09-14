@@ -15,6 +15,11 @@ Notes for searching:
 
 ------------------------------------------------
 
+Palette assets
+	Range palette, when we have a min/max and want to interpolate in X steps
+	Fixed palette, eg the powered/brownout/blackout colours
+	Fix leak in Palettes/Cursors being allocated by their defs file, but not deallocated!
+
 Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
@@ -31,10 +36,6 @@ Fire:
 Factor out the "nextSectorUpdateIndex" stuff from LandValue/Zone/Fire. 
 
 Add newline support to .text files!
-
-Palette assets
-	Range palette, when we have a min/max and want to interpolate in X steps
-	Fixed palette, eg the powered/brownout/blackout colours
 
 Make drawGrid() use the grid and palette as Textures, and do a single draw call. That way we don't need to do copyRegion() fiddling - we could even keep the current data layer texture cached on the GPU if we're smart?
 
