@@ -1,5 +1,21 @@
 #pragma once
 
+inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
+{
+	Terrain *result = &invalidTerrain;
+	if (tileExists(city, x, y))
+	{
+		result = getTile(city, city->tileTerrain, x, y);
+	}
+
+	return result;
+}
+
+inline u8 getTerrainHeightAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->tileTerrainHeight, x, y);
+}
+
 void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
@@ -188,11 +204,13 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 	SpriteGroup *terrainSprites = null;
 
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-	V4 terrainColor = makeWhite();
+	V4 white = makeWhite();
+	Array<V4> *palette = getPalette(makeString("terrain_height"));
 
 	s32 tilesToDraw = areaOf(visibleArea);
 	Asset *terrainTexture = getSprite(get(&terrainDefs, 1)->sprites, 0)->texture;
 	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
+	// DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldBuffer, renderer->shaderIds.untextured, tilesToDraw);
 
 	for (s32 y=visibleArea.y;
 		y < visibleArea.y + visibleArea.h;
@@ -215,21 +233,13 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
 			spriteBounds.x = (f32) x;
 
-			addSpriteRect(group, sprite, spriteBounds, terrainColor);
+			u8 terrainHeight = getTerrainHeightAt(city, x, y);
+
+			addSpriteRect(group, sprite, spriteBounds, white);
+			// addUntexturedRect(group, spriteBounds, (*palette)[terrainHeight]);
 		}
 	}
 	endRectsGroup(group);
-}
-
-inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
-{
-	Terrain *result = &invalidTerrain;
-	if (tileExists(city, x, y))
-	{
-		result = getTile(city, city->tileTerrain, x, y);
-	}
-
-	return result;
 }
 
 void generateTerrain(City *city)
@@ -242,18 +252,22 @@ void generateTerrain(City *city)
 
 	fillMemory<u8>(city->tileDistanceToWater, 255, areaOf(city->bounds));
 
+	Random terrainRandom;
+	s32 seed = 0xdeadbeef;
+	initRandom(&terrainRandom, Random_MT, seed);
+
 	for (s32 y = 0; y < city->bounds.h; y++) {
 		for (s32 x = 0; x < city->bounds.w; x++) {
 
-			f32 px = (f32)x * 0.05f;
-			f32 py = (f32)y * 0.05f;
+			f32 px = (f32)x * 0.02f;
+			f32 py = (f32)y * 0.02f;
 
-			f32 perlinValue = stb_perlin_noise3(px, py, 0);
+			f32 perlinValue = stb_perlin_fbm_noise3(px, py, seed, 2.0f, 0.5f, 4);
 
 			setTile<u8>(city, city->tileTerrainHeight, x, y, clamp01AndMap_u8(perlinValue));
 
 			Terrain *terrain = getTerrainAt(city, x, y);
-			bool isWater = (perlinValue > 0.1f);
+			bool isWater = (perlinValue < 0.0f);
 			if (isWater)
 			{
 				terrain->type = tWater;
@@ -263,10 +277,10 @@ void generateTerrain(City *city)
 			{
 				terrain->type = tGround;
 
-				if (stb_perlin_noise3(px, py, 1) > 0.2f)
+				if (stb_perlin_noise3(px, py, 1, 0, 0, 0) > 0.2f)
 				{
 					Building *building = addBuilding(city, bTree, irectXYWH(x, y, bTree->width, bTree->height));
-					building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
+					building->spriteOffset = randomNext(&terrainRandom);
 				}
 			}
 
