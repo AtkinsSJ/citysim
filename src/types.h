@@ -99,6 +99,10 @@ typedef char32_t unichar;
 
 #define null nullptr
 
+const f32 PI32 = 3.14159265358979323846f;
+const f32 radToDeg = 180.0f / PI32;
+const f32 degToRad = PI32 / 180.0f;
+
 enum Alignment {
 	ALIGN_LEFT = 1,
 	ALIGN_H_CENTRE = 2,
@@ -267,6 +271,9 @@ f32 lengthSquaredOf(s32 x, s32 y);
 f32 lengthOf(s32 x, s32 y);
 f32 lengthOf(V2I v);
 
+// Degrees!
+f32 angleOf(s32 x, s32 y);
+
 V2I operator+(V2I lhs, V2I rhs);
 V2I operator+=(V2I &lhs, V2I rhs);
 V2I operator-(V2I lhs, V2I rhs);
@@ -344,6 +351,7 @@ V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0);
 Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h);
 Rect2I irectNegativeInfinity();
 Rect2I irectPosSize(V2I position, V2I size);
+Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY);
 Rect2I irectCentreSize(V2I position, V2I size);
 Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax);
 

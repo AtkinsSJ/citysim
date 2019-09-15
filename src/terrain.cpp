@@ -316,6 +316,42 @@ void generateTerrain(City *city)
 		}
 	}
 
+	// TODO: Lakes/ponds
+	s32 pondCount = randomBetween(&terrainRandom, 1, 4);
+	for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++)
+	{
+		// Rough idea is: we pick a centre point, then produce a wrapped 1-d noise for the radius at each angle.
+		// We then iterate through each tile in the bounding rect, and see if the distance is < the chosen radius
+		// for that angle. If so, it's water!
+
+		s32 pondCentreX = randomBetween(&terrainRandom, 0, city->bounds.w);
+		s32 pondCentreY = randomBetween(&terrainRandom, 0, city->bounds.h);
+
+		// For starters, we'll use a circle.
+		Array<f32> pondRadiusPerAngle = allocateArray<f32>(tempArena, 36); // One for every 10 degrees, we'll interpolate anyway
+		f32 angleToIndex = pondRadiusPerAngle.count / 360.0f;
+		for (s32 i=0; i<pondRadiusPerAngle.count; i++) pondRadiusPerAngle[i] = 5.0f;
+
+		s32 maxRadius = 5;
+		Rect2I boundingBox = irectCentreSize(pondCentreX, pondCentreY, (maxRadius * 2) + 1, (maxRadius * 2) + 1);
+		for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
+		{
+			for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
+			{
+				f32 angle = angleOf(x - pondCentreX, y - pondCentreY);
+				f32 radiusAtAngle = pondRadiusPerAngle[floor_s32(angle * angleToIndex)];
+				f32 distance = lengthOf(x - pondCentreX, y - pondCentreY);
+				if (distance < radiusAtAngle)
+				{
+					setTile<u8>(city, layer->tileTerrainType, x, y, tWater);
+					setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
+				}
+			}
+		}
+	}
+
+	// TODO: Trees
+
 	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
 
 	updateDistances(city, layer->tileDistanceToWater, city->bounds, maxDistanceToWater);

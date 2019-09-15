@@ -371,6 +371,11 @@ f32 lengthOf(s32 x, s32 y)
 	return (f32) sqrt(x*x + y*y);
 }
 
+f32 angleOf(s32 x, s32 y)
+{
+	return (f32) fmod((atan2(y, x) * radToDeg) + 360.0f, 360.0f);
+}
+
 inline V2I operator+(V2I lhs, V2I rhs)
 {
 	return v2i(lhs.x + rhs.x, lhs.y + rhs.y);
@@ -756,6 +761,11 @@ inline Rect2I irectPosSize(V2I position, V2I size)
 	rect.pos = position;
 	rect.size = size;
 	return rect;
+}
+
+inline Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY)
+{
+	return irectXYWH(centreX - (sizeX / 2), centreY - (sizeY / 2), sizeX, sizeY); 
 }
 
 inline Rect2I irectCentreSize(V2I position, V2I size)
