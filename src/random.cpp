@@ -98,6 +98,7 @@ void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasse
 	// Smoothing
 	for (s32 iteration=0; iteration < smoothingPasses; iteration++)
 	{
+		(*destination)[0] = ((*destination)[0] + (*destination)[1]) / 2.0f;
 		for (s32 i = 1; i < destination->count - 1; i++)
 		{
 			(*destination)[i] = ((*destination)[i-1] + (*destination)[i] + (*destination)[i+1]) / 3.0f;

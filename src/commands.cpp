@@ -38,6 +38,16 @@ ConsoleCommand(funds)
 	}
 }
 
+ConsoleCommand(generate)
+{
+	if (!checkInGame()) return;
+
+	City *city = &globalAppState.gameState->city;
+	generateTerrain(city);
+
+	consoleWriteLine("Generated new map", CLS_Success);
+}
+
 ConsoleCommand(hello)
 {
 	consoleWriteLine("Hello human!");
@@ -198,6 +208,7 @@ void initCommands(Console *console)
 	append(&console->commands, Command(CMD(help)));
 	append(&console->commands, Command(CMD(exit)));
 	append(&console->commands, Command(CMD(funds), 1));
+	append(&console->commands, Command(CMD(generate)));
 	append(&console->commands, Command(CMD(hello), 0, 1));
 	append(&console->commands, Command(CMD(mark_all_dirty)));
 	append(&console->commands, Command(CMD(reload_assets)));
