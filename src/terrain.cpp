@@ -342,20 +342,33 @@ void generateTerrain(City *city)
 		{
 			for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
 			{
-				f32 angle = angleOf(x - pondCentreX, y - pondCentreY);
-
-				// Interpolate between the two nearest radius values
-				f32 desiredIndex = angle * angleToIndex;
-				s32 indexA = (floor_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
-				s32 indexB = (ceil_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
-				f32 noiseAtAngle = lerp(pondRadiusPerAngle[indexA], pondRadiusPerAngle[indexB], fraction_f32(desiredIndex));
-				f32 radiusAtAngle = pondMinRadius + (noiseAtAngle * pondRadiusDiff);
-
 				f32 distance = lengthOf(x - pondCentreX, y - pondCentreY);
-				if (distance < radiusAtAngle)
+
+				// If we're outside the max, we must be outside the blob
+				if (distance > pondMaxRadius) continue;
+
+				// If we're inside the min, we MUST be in the blob
+				if (distance <= pondMinRadius)
 				{
 					setTile<u8>(city, layer->tileTerrainType, x, y, tWater);
 					setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
+				}
+				else
+				{
+					f32 angle = angleOf(x - pondCentreX, y - pondCentreY);
+
+					// Interpolate between the two nearest radius values
+					f32 desiredIndex = angle * angleToIndex;
+					s32 indexA = (floor_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
+					s32 indexB = (ceil_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
+					f32 noiseAtAngle = lerp(pondRadiusPerAngle[indexA], pondRadiusPerAngle[indexB], fraction_f32(desiredIndex));
+					f32 radiusAtAngle = pondMinRadius + (noiseAtAngle * pondRadiusDiff);
+
+					if (distance < radiusAtAngle)
+					{
+						setTile<u8>(city, layer->tileTerrainType, x, y, tWater);
+						setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
+					}
 				}
 			}
 		}
