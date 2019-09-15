@@ -205,12 +205,10 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 	V4 white = makeWhite();
-	Array<V4> *palette = getPalette(makeString("terrain_height"));
 
 	s32 tilesToDraw = areaOf(visibleArea);
 	Asset *terrainTexture = getSprite(get(&terrainDefs, 1)->sprites, 0)->texture;
 	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
-	// DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldBuffer, renderer->shaderIds.untextured, tilesToDraw);
 
 	for (s32 y=visibleArea.y;
 		y < visibleArea.y + visibleArea.h;
@@ -233,10 +231,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			Sprite *sprite = getSprite(terrainSprites, terrain->spriteOffset);
 			spriteBounds.x = (f32) x;
 
-			u8 terrainHeight = getTerrainHeightAt(city, x, y);
-
-			addSpriteRect(group, sprite, spriteBounds, white);//(*palette)[terrainHeight]);
-			// addUntexturedRect(group, spriteBounds, (*palette)[terrainHeight]);
+			addSpriteRect(group, sprite, spriteBounds, white);
 		}
 	}
 	endRectsGroup(group);
@@ -248,7 +243,7 @@ void generateTerrain(City *city)
 	
 	u32 tGround = findTerrainTypeByName(makeString("Ground"));
 	u32 tWater  = findTerrainTypeByName(makeString("Water"));
-	BuildingDef *bTree = findBuildingDef(makeString("Tree"));
+	// BuildingDef *bTree = findBuildingDef(makeString("Tree"));
 
 	fillMemory<u8>(city->tileDistanceToWater, 255, areaOf(city->bounds));
 
@@ -272,11 +267,11 @@ void generateTerrain(City *city)
 	f32 riverMaxWidth = randomFloatBetween(&terrainRandom, 12, 16);
 	f32 riverMinWidth = randomFloatBetween(&terrainRandom, 6, riverMaxWidth);
 	f32 riverWaviness = 16.0f;
-	s32 riverCentreBase = randomBetween(&terrainRandom, city->bounds.w * 0.4f, city->bounds.w * 0.6f);
+	s32 riverCentreBase = randomBetween(&terrainRandom, ceil_s32(city->bounds.w * 0.4f), floor_s32(city->bounds.w * 0.6f));
 	for (s32 y=0; y < city->bounds.h; y++)
 	{
 		s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((f32)y / (f32)city->bounds.h)));
-		s32 riverCentre = riverCentreBase - (riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]);
+		s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
 		s32 riverLeft = riverCentre - (riverWidth / 2);
 
 		for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) 

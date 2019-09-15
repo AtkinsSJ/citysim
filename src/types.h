@@ -228,6 +228,9 @@ template<typename T>
 Array<T> makeArray(s32 count, T *items);
 
 template<typename T>
+bool isInitialised(Array<T> *array);
+
+template<typename T>
 void swap(Array<T> *array, s32 indexA, s32 indexB);
 
 // compareElements(T a, T b) -> returns (a < b), to sort low to high

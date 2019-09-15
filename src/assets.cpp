@@ -223,9 +223,11 @@ void loadAsset(Asset *asset)
 					f32 ratio = 1.0f / (f32)(palette->size);
 					for (s32 i=0; i < palette->size; i++)
 					{
-						palette->paletteData[i] = lerp(palette->from, palette->to, i * ratio);
+						palette->paletteData[i] = lerp(palette->gradient.from, palette->gradient.to, i * ratio);
 					}
 				} break;
+
+				case PaletteType_Fixed: {} break;
 
 				INVALID_DEFAULT_CASE;
 			}
@@ -330,7 +332,11 @@ void loadAsset(Asset *asset)
 
 		default:
 		{
-			copyFileIntoAsset(&fileData, asset);
+			if (asset->flags & Asset_IsAFile)
+			{
+				copyFileIntoAsset(&fileData, asset);
+			}
+
 			asset->state = AssetState_Loaded;
 		} break;
 	}
@@ -780,13 +786,17 @@ void loadPaletteDefs(Blob data, Asset *asset)
 			{
 				String type = readToken(&reader);
 
-				if (equals(type, makeString("gradient")))
+				if (equals(type, makeString("fixed")))
+				{
+					paletteAsset->palette.type = PaletteType_Fixed;
+				}
+				else if (equals(type, makeString("gradient")))
 				{
 					paletteAsset->palette.type = PaletteType_Gradient;
 				}
 				else
 				{
-					error(&reader, "Unrecognised palette type '{0}', allowed values are: gradient", {type});
+					error(&reader, "Unrecognised palette type '{0}', allowed values are: fixed, gradient", {type});
 				}
 			}
 			else if (equals(command, makeString("size")))
@@ -797,12 +807,48 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					paletteAsset->palette.size = (s32)size.value;
 				}
 			}
+			else if (equals(command, makeString("color")))
+			{
+				Maybe<V4> color = readColor(&reader);
+				if (color.isValid)
+				{
+					if (paletteAsset->palette.type == PaletteType_Fixed)
+					{
+						if (!isInitialised(&paletteAsset->palette.paletteData))
+						{
+							paletteAsset->data = assetsAllocate(assets, paletteAsset->palette.size * sizeof(V4));
+							paletteAsset->palette.paletteData = makeArray<V4>(paletteAsset->palette.size, (V4*)paletteAsset->data.memory);
+						}
+
+						s32 colorIndex = paletteAsset->palette.fixed.currentPos++;
+						if (colorIndex >= paletteAsset->palette.size)
+						{
+							error(&reader, "Too many 'color' definitions! 'size' must be large enough.");
+						}
+						else
+						{
+							paletteAsset->palette.paletteData[colorIndex] = color.value;
+						}
+					}
+					else
+					{
+						error(&reader, "'color' is only a valid command for fixed palettes.");
+					}
+				}
+			}
 			else if (equals(command, makeString("from")))
 			{
 				Maybe<V4> from = readColor(&reader);
 				if (from.isValid)
 				{
-					paletteAsset->palette.from = from.value;
+					if (paletteAsset->palette.type == PaletteType_Gradient)
+					{ 
+						paletteAsset->palette.gradient.from = from.value;
+					}
+					else
+					{
+						error(&reader, "'from' is only a valid command for gradient palettes.");
+					}
 				}
 			}
 			else if (equals(command, makeString("to")))
@@ -810,7 +856,14 @@ void loadPaletteDefs(Blob data, Asset *asset)
 				Maybe<V4> to = readColor(&reader);
 				if (to.isValid)
 				{
-					paletteAsset->palette.to = to.value;
+					if (paletteAsset->palette.type == PaletteType_Gradient)
+					{ 
+						paletteAsset->palette.gradient.to = to.value;
+					}
+					else
+					{
+						error(&reader, "'to' is only a valid command for gradient palettes.");
+					}
 				}
 			}
 			else

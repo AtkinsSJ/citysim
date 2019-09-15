@@ -75,13 +75,15 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-	V4 colorPowered  = color255(255, 255, 0, 128);
-	V4 colorBlackout = color255(  0,   0, 0, 128);
-	V4 colorBrownout = color255(128,  64, 0, 128);
 
 	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
 	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleTileBounds));
+
+	Array<V4> *palette = getPalette(makeString("power"));
+	s32 paletteIndexPowered  = 0;
+	s32 paletteIndexBrownout = 1;
+	s32 paletteIndexBlackout = 2;
 
 	for (s32 y = visibleTileBounds.y;
 		y < visibleTileBounds.y + visibleTileBounds.h;
@@ -99,15 +101,15 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 
 				if (network->cachedProduction == 0)
 				{
-					addUntexturedRect(group, spriteBounds, colorBlackout);
+					addUntexturedRect(group, spriteBounds, (*palette)[paletteIndexBlackout]);
 				}
 				else if (network->cachedProduction < network->cachedConsumption)
 				{
-					addUntexturedRect(group, spriteBounds, colorBrownout);
+					addUntexturedRect(group, spriteBounds, (*palette)[paletteIndexBrownout]);
 				}
 				else
 				{
-					addUntexturedRect(group, spriteBounds, colorPowered);
+					addUntexturedRect(group, spriteBounds, (*palette)[paletteIndexPowered]);
 				}
 			}
 		}

@@ -37,14 +37,26 @@ struct Cursor
 
 enum PaletteType
 {
+	PaletteType_Fixed,
 	PaletteType_Gradient,
 };
 struct Palette
 {
 	PaletteType type;
 	s32 size;
-	V4 from;
-	V4 to;
+
+	union
+	{
+		struct
+		{
+			s32 currentPos;
+		} fixed;
+		struct
+		{
+			V4 from;
+			V4 to;
+		} gradient;
+	};
 
 	Array<V4> paletteData;
 };

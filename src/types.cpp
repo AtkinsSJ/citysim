@@ -199,6 +199,12 @@ Array<T> makeArray(s32 count, T *items)
 }
 
 template<typename T>
+inline bool isInitialised(Array<T> *array)
+{
+	return array->items != null;
+}
+
+template<typename T>
 inline T& Array<T>::operator[](s32 index)
 {
 	ASSERT(index >=0 && index < count); //Index out of range!

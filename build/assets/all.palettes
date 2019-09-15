@@ -37,3 +37,21 @@ type gradient
 size 256
 from   0   0   0 255
 to   255 255 255 255
+
+:Palette power
+type fixed
+size 3
+# In order: powered, brownout, blackout
+color 255 255   0 128
+color 128  64   0 128
+color   0   0   0 128
+
+:Palette debug
+type fixed
+size 6
+color   0   0 255 63
+color   0 255   0 63
+color 255   0   0 63
+color   0 255 255 63
+color 255 255   0 63
+color 255   0 255 63
