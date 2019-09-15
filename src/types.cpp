@@ -41,6 +41,11 @@ inline f32 abs_f32(f32 in)
 	return (in < 0.0f) ? -in : in;
 }
 
+inline f32 fraction_f32(f32 in)
+{
+	return (f32) fmod(in, 1.0f);
+}
+
 inline s32 divideCeil(s32 numerator, s32 denominator)
 {
 	return (numerator + denominator - 1) / denominator;

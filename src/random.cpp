@@ -94,7 +94,7 @@ Rect2I randomlyPlaceRectangle(Random *random, V2I size, Rect2I boundary)
 //
 // Noise
 //
-void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasses)
+void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasses, bool wrap)
 {
 	for (s32 i = 0; i < destination->count; i++)
 	{
@@ -104,7 +104,23 @@ void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasse
 	// Smoothing
 	for (s32 iteration=0; iteration < smoothingPasses; iteration++)
 	{
-		(*destination)[0] = ((*destination)[0] + (*destination)[1]) / 2.0f;
+		if (wrap)
+		{
+			// Front
+			(*destination)[0] = ((*destination)[destination->count-1] + (*destination)[0] + (*destination)[1]) / 3.0f;
+			// Back
+			(*destination)[destination->count-1] = ((*destination)[destination->count-2] + (*destination)[destination->count-1] + (*destination)[0]) / 3.0f;
+		}
+		else
+		{
+			// Fake normalisation because otherwise the ends get weird
+
+			// Front
+			(*destination)[0] = ((*destination)[0] + (*destination)[1]) / 2.0f;
+			// Back
+			(*destination)[destination->count-1] = ((*destination)[destination->count-2] + (*destination)[destination->count-1]) / 2.0f;
+		}
+
 		for (s32 i = 1; i < destination->count - 1; i++)
 		{
 			(*destination)[i] = ((*destination)[i-1] + (*destination)[i] + (*destination)[i+1]) / 3.0f;

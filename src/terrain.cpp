@@ -316,7 +316,7 @@ void generateTerrain(City *city)
 		}
 	}
 
-	// TODO: Lakes/ponds
+	// Lakes/ponds
 	s32 pondCount = randomBetween(&terrainRandom, 1, 4);
 	for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++)
 	{
@@ -324,22 +324,33 @@ void generateTerrain(City *city)
 		// We then iterate through each tile in the bounding rect, and see if the distance is < the chosen radius
 		// for that angle. If so, it's water!
 
-		s32 pondCentreX = randomBetween(&terrainRandom, 0, city->bounds.w);
-		s32 pondCentreY = randomBetween(&terrainRandom, 0, city->bounds.h);
+		s32 pondCentreX   = randomBetween(&terrainRandom, 0, city->bounds.w);
+		s32 pondCentreY   = randomBetween(&terrainRandom, 0, city->bounds.h);
+
+		f32 pondMinRadius = randomFloatBetween(&terrainRandom, 3.0f, 5.0f);
+		f32 pondMaxRadius = randomFloatBetween(&terrainRandom, pondMinRadius + 3.0f, 20.0f);
+		f32 pondRadiusDiff = pondMaxRadius - pondMinRadius;
 
 		// For starters, we'll use a circle.
 		Array<f32> pondRadiusPerAngle = allocateArray<f32>(tempArena, 36); // One for every 10 degrees, we'll interpolate anyway
 		f32 angleToIndex = pondRadiusPerAngle.count / 360.0f;
-		for (s32 i=0; i<pondRadiusPerAngle.count; i++) pondRadiusPerAngle[i] = 5.0f;
+		generate1DNoise(&terrainRandom, &pondRadiusPerAngle, 8, true);
 
-		s32 maxRadius = 5;
+		s32 maxRadius = ceil_s32(pondMaxRadius);
 		Rect2I boundingBox = irectCentreSize(pondCentreX, pondCentreY, (maxRadius * 2) + 1, (maxRadius * 2) + 1);
 		for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
 		{
 			for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
 			{
 				f32 angle = angleOf(x - pondCentreX, y - pondCentreY);
-				f32 radiusAtAngle = pondRadiusPerAngle[floor_s32(angle * angleToIndex)];
+
+				// Interpolate between the two nearest radius values
+				f32 desiredIndex = angle * angleToIndex;
+				s32 indexA = (floor_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
+				s32 indexB = (ceil_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
+				f32 noiseAtAngle = lerp(pondRadiusPerAngle[indexA], pondRadiusPerAngle[indexB], fraction_f32(desiredIndex));
+				f32 radiusAtAngle = pondMinRadius + (noiseAtAngle * pondRadiusDiff);
+
 				f32 distance = lengthOf(x - pondCentreX, y - pondCentreY);
 				if (distance < radiusAtAngle)
 				{

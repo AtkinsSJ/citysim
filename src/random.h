@@ -39,7 +39,7 @@ Rect2I randomlyPlaceRectangle(Random *random, V2I size, Rect2I boundary);
 //
 // Noise
 //
-void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasses);
+void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasses, bool wrap=false);
 
 //
 // Internal
