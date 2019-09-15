@@ -12,17 +12,10 @@ struct TerrainDef
 
 ChunkedArray<TerrainDef> terrainDefs = {};
 
-struct Terrain
-{
-	s32 type;
-	s32 spriteOffset; // used as the offset for getSprite
-};
-
-Terrain invalidTerrain = {0, 0};
-
 struct TerrainLayer
 {
-	Terrain *tileTerrain;
+	u8 *tileTerrainType;
+	s32 *tileSpriteOffset;
 	u8 *tileTerrainHeight;
 	u8 *tileDistanceToWater;
 };

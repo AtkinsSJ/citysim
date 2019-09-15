@@ -403,6 +403,9 @@ s32 divideCeil(s32 numerator, s32 denominator);
 
 s32 truncate32(s64 in);
 
+template<typename T>
+T truncate(s64 in);
+
 u8 clamp01AndMap_u8(f32 in);
 
 template<typename T>

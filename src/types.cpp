@@ -52,6 +52,13 @@ inline s32 truncate32(s64 in)
 	return (s32) in;
 }
 
+template<typename T>
+inline T truncate(s64 in)
+{
+	ASSERT(in >= minPossibleValue<T>() && in <= maxPossibleValue<T>());
+	return (T) in;
+}
+
 inline f32 clamp01(f32 in)
 {
 	return clamp(in, 0.0f, 1.0f);
