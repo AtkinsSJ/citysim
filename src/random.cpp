@@ -29,7 +29,7 @@ s32 randomNext(Random *random)
 	return result;
 }
 
-s32 randomBelow(Random *random, s32 maxExclusive)
+inline s32 randomBelow(Random *random, s32 maxExclusive)
 {
 	s32 result = 0;
 
@@ -42,7 +42,7 @@ s32 randomBelow(Random *random, s32 maxExclusive)
 	return result;
 }
 
-s32 randomBetween(Random *random, s32 minInclusive, s32 maxExclusive)
+inline s32 randomBetween(Random *random, s32 minInclusive, s32 maxExclusive)
 {
 	s32 result = minInclusive;
 
@@ -61,14 +61,20 @@ inline bool randomBool(Random *random)
 	return (randomNext(random) % 2) != 0;
 }
 
-f32 randomFloatBetween(Random *random, f32 minInclusive, f32 maxExclusive)
+template<typename T>
+T randomInRange(Random *random)
+{
+	return (T) randomBetween(random, minPossibleValue<T>(), maxPossibleValue<T>() + 1);
+}
+
+inline f32 randomFloatBetween(Random *random, f32 minInclusive, f32 maxExclusive)
 {
 	f32 zeroToOne = randomFloat01(random);
 
 	return (zeroToOne * (maxExclusive - minInclusive)) + minInclusive;
 }
 
-f32 randomFloat01(Random *random)
+inline f32 randomFloat01(Random *random)
 {
 	s32 intValue = randomNext(random);
 	f32 result = abs_f32(((f32) intValue) / ((f32) s32Max));

@@ -5,7 +5,7 @@ void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena)
 	s32 cityArea = city->bounds.w * city->bounds.h;
 
 	layer->tileTerrainType     = allocateMultiple<u8>(gameArena, cityArea);
-	layer->tileSpriteOffset    = allocateMultiple<s32>(gameArena, cityArea);
+	layer->tileSpriteOffset    = allocateMultiple<u8>(gameArena, cityArea);
 	layer->tileTerrainHeight   = allocateMultiple<u8>(gameArena, cityArea);
 	layer->tileDistanceToWater = allocateMultiple<u8>(gameArena, cityArea);
 }
@@ -276,7 +276,7 @@ void generateTerrain(City *city)
 	{
 		for (s32 x = 0; x < city->bounds.w; x++)
 		{
-			setTile<s32>(city, layer->tileSpriteOffset, x, y, randomNext(&globalAppState.cosmeticRandom));
+			setTile<u8>(city, layer->tileSpriteOffset, x, y, randomInRange<u8>(&globalAppState.cosmeticRandom));
 		}
 	}
 
@@ -315,6 +315,8 @@ void generateTerrain(City *city)
 			setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
 		}
 	}
+
+	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
 
 	updateDistances(city, layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }

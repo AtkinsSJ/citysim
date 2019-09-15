@@ -15,9 +15,10 @@ ChunkedArray<TerrainDef> terrainDefs = {};
 struct TerrainLayer
 {
 	u8 *tileTerrainType;
-	s32 *tileSpriteOffset;
 	u8 *tileTerrainHeight;
 	u8 *tileDistanceToWater;
+
+	u8 *tileSpriteOffset;
 };
 
 void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena);
