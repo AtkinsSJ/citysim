@@ -27,7 +27,14 @@ s32 randomNext(Random *random);
 s32 randomBelow(Random *random, s32 maxExclusive);
 s32 randomBetween(Random *random, s32 minInclusive, s32 maxExclusive);
 bool randomBool(Random *random);
+f32 randomFloatBetween(Random *random, f32 minInclusive, f32 maxExclusive);
+f32 randomFloat01(Random *random);
 Rect2I randomlyPlaceRectangle(Random *random, V2I size, Rect2I boundary);
+
+//
+// Noise
+//
+void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasses);
 
 //
 // Internal

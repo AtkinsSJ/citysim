@@ -235,7 +235,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 
 			u8 terrainHeight = getTerrainHeightAt(city, x, y);
 
-			addSpriteRect(group, sprite, spriteBounds, white);
+			addSpriteRect(group, sprite, spriteBounds, (*palette)[terrainHeight]);
 			// addUntexturedRect(group, spriteBounds, (*palette)[terrainHeight]);
 		}
 	}
@@ -262,12 +262,14 @@ void generateTerrain(City *city)
 			f32 px = (f32)x * 0.02f;
 			f32 py = (f32)y * 0.02f;
 
-			f32 perlinValue = stb_perlin_fbm_noise3(px, py, seed, 2.0f, 0.5f, 4);
+			f32 perlinValue = 0.5f;
+			// f32 perlinValue = stb_perlin_fbm_noise3(px, py, 0, 2.0f, 0.5f, 4);
+			// f32 perlinValue = randomFloat01(&terrainRandom);
 
 			setTile<u8>(city, city->tileTerrainHeight, x, y, clamp01AndMap_u8(perlinValue));
 
 			Terrain *terrain = getTerrainAt(city, x, y);
-			bool isWater = (perlinValue < 0.0f);
+			bool isWater = (perlinValue < 0.1f);
 			if (isWater)
 			{
 				terrain->type = tWater;
@@ -285,6 +287,26 @@ void generateTerrain(City *city)
 			}
 
 			terrain->spriteOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
+		}
+	}
+
+	// Generate a river
+	initRandom(&terrainRandom, Random_MT, seed);
+	Array<f32> riverOffset = allocateArray<f32>(tempArena, city->bounds.h);
+	generate1DNoise(&terrainRandom, &riverOffset, 4);
+	f32 riverMaxWidth = randomFloatBetween(&terrainRandom, 12, 16);
+	f32 riverMinWidth = randomFloatBetween(&terrainRandom, 6, riverMaxWidth);
+	for (s32 y=0; y < city->bounds.h; y++)
+	{
+		s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((f32)y / (f32)city->bounds.h)));
+		s32 riverCentre = round_s32(city->bounds.w * (0.5f + (riverOffset[y] * 0.1f)));
+		s32 riverLeft = riverCentre - (riverWidth / 2);
+
+		for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) 
+		{
+			Terrain *terrain = getTerrainAt(city, x, y);
+			terrain->type = tWater;
+			setTile<u8>(city, city->tileDistanceToWater, x, y, 0);
 		}
 	}
 

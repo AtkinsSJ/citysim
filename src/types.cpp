@@ -36,6 +36,11 @@ inline f32 sqrt_f32(f32 in)
 	return (f32) sqrt(in);
 }
 
+inline f32 abs_f32(f32 in)
+{
+	return (in < 0.0f) ? -in : in;
+}
+
 inline s32 divideCeil(s32 numerator, s32 denominator)
 {
 	return (numerator + denominator - 1) / denominator;

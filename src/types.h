@@ -393,6 +393,7 @@ f32 round_f32(f32 in);
 f32 floor_f32(f32 in);
 f32 ceil_f32(f32 in);
 f32 sqrt_f32(f32 in);
+f32 abs_f32(f32 in);
 f32 clamp01(f32 in);
 
 s32 divideCeil(s32 numerator, s32 denominator);

@@ -61,6 +61,20 @@ inline bool randomBool(Random *random)
 	return (randomNext(random) % 2) != 0;
 }
 
+f32 randomFloatBetween(Random *random, f32 minInclusive, f32 maxExclusive)
+{
+	f32 zeroToOne = randomFloat01(random);
+
+	return (zeroToOne * (maxExclusive - minInclusive)) + minInclusive;
+}
+
+f32 randomFloat01(Random *random)
+{
+	s32 intValue = randomNext(random);
+	f32 result = abs_f32(((f32) intValue) / ((f32) s32Max));
+	return result;
+}
+
 Rect2I randomlyPlaceRectangle(Random *random, V2I size, Rect2I boundary)
 {
 	Rect2I result = irectXYWH(
@@ -69,6 +83,26 @@ Rect2I randomlyPlaceRectangle(Random *random, V2I size, Rect2I boundary)
 		size.x, size.y
 	);
 	return result;
+}
+
+//
+// Noise
+//
+void generate1DNoise(Random *random, Array<f32> *destination, s32 smoothingPasses)
+{
+	for (s32 i = 0; i < destination->count; i++)
+	{
+		(*destination)[i] = randomFloat01(random);
+	}
+
+	// Smoothing
+	for (s32 iteration=0; iteration < smoothingPasses; iteration++)
+	{
+		for (s32 i = 1; i < destination->count - 1; i++)
+		{
+			(*destination)[i] = ((*destination)[i-1] + (*destination)[i] + (*destination)[i+1]) / 3.0f;
+		}
+	}
 }
 
 //
