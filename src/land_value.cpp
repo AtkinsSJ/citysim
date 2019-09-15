@@ -112,7 +112,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 					f32 landValue = 0.1f;
 
 					// Waterfront = valuable
-					s32 distanceToWater = getTileValue(city, city->tileDistanceToWater, x, y);
+					s32 distanceToWater = getDistanceToWaterAt(city, x, y);
 					if (distanceToWater < 10)
 					{
 						landValue += (10 - distanceToWater) * 0.1f * 0.25f;

@@ -18,9 +18,6 @@ struct City
 	s32 monthlyExpenditure;
 
 	Rect2I bounds;
-	Terrain *tileTerrain;
-	u8 *tileTerrainHeight;
-	u8 *tileDistanceToWater;
 
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
@@ -33,6 +30,7 @@ struct City
 	LandValueLayer landValueLayer;
 	PollutionLayer pollutionLayer;
 	PowerLayer     powerLayer;
+	TerrainLayer   terrainLayer;
 	TransportLayer transportLayer;
 	ZoneLayer      zoneLayer;
 

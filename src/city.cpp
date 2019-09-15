@@ -10,9 +10,6 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	city->bounds = irectXYWH(0, 0, width, height);
 
 	s32 cityArea = width * height;
-	city->tileTerrain         = allocateMultiple<Terrain>(gameArena, cityArea);
-	city->tileTerrainHeight   = allocateMultiple<u8>(gameArena, cityArea);
-	city->tileDistanceToWater = allocateMultiple<u8>(gameArena, cityArea);
 
 	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
 	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
@@ -32,6 +29,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initLandValueLayer(&city->landValueLayer, city, gameArena);
 	initPollutionLayer(&city->pollutionLayer, city, gameArena);
 	initPowerLayer    (&city->powerLayer,     city, gameArena);
+	initTerrainLayer  (&city->terrainLayer,   city, gameArena);
 	initTransportLayer(&city->transportLayer, city, gameArena);
 	initZoneLayer     (&city->zoneLayer,      city, gameArena);
 
@@ -157,8 +155,7 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 	{
 		for (s32 x=footprint.x; x<footprint.x + footprint.w; x++)
 		{
-			Terrain *terrain = getTerrainAt(city, x, y);
-			TerrainDef *terrainDef = get(&terrainDefs, terrain->type);
+			TerrainDef *terrainDef = getTerrainAt(city, x, y);
 
 			if (!terrainDef->canBuildOn)
 			{

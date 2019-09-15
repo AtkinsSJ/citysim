@@ -114,7 +114,7 @@ CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
 			}
 			// Terrain must be buildable
 			// @Speed: URGH this terrain lookup for every tile is nasty!
-			else if (!get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)
+			else if (!getTerrainAt(city, x, y)->canBuildOn)
 			{
 				canZone = false;
 			}
@@ -202,7 +202,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 			if ((getTileValue(city, zoneLayer->tileZone, x, y) != zoneType)
 			// Terrain must be buildable
 			// @Speed: URGH this terrain lookup for every tile is nasty!
-			&& (get(&terrainDefs, getTerrainAt(city, x, y)->type)->canBuildOn)
+			&& (getTerrainAt(city, x, y)->canBuildOn)
 			&& (!buildingExistsAt(city, x, y)))
 			{
 				setTile(city, zoneLayer->tileZone, x, y, zoneType);

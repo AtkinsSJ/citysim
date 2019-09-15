@@ -1,20 +1,36 @@
 #pragma once
 
-inline Terrain *getTerrainAt(City *city, s32 x, s32 y)
+void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena)
 {
-	Terrain *result = &invalidTerrain;
+	s32 cityArea = city->bounds.w * city->bounds.h;
+
+	layer->tileTerrain         = allocateMultiple<Terrain>(gameArena, cityArea);
+	layer->tileTerrainHeight   = allocateMultiple<u8>(gameArena, cityArea);
+	layer->tileDistanceToWater = allocateMultiple<u8>(gameArena, cityArea);
+}
+
+inline TerrainDef *getTerrainAt(City *city, s32 x, s32 y)
+{
+	s32 terrainType = 0;
 	if (tileExists(city, x, y))
 	{
-		result = getTile(city, city->tileTerrain, x, y);
+		terrainType = getTile(city, city->terrainLayer.tileTerrain, x, y)->type;
 	}
 
+	TerrainDef *result = get(&terrainDefs, terrainType);
 	return result;
 }
 
 inline u8 getTerrainHeightAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->tileTerrainHeight, x, y);
+	return getTileValue(city, city->terrainLayer.tileTerrainHeight, x, y);
 }
+
+inline u8 getDistanceToWaterAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->terrainLayer.tileDistanceToWater, x, y);
+}
+
 
 void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset)
 {
@@ -200,6 +216,8 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
+	TerrainLayer *layer = &city->terrainLayer;
+
 	s32 terrainType = -1;
 	SpriteGroup *terrainSprites = null;
 
@@ -220,7 +238,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			x < visibleArea.x + visibleArea.w;
 			x++)
 		{
-			Terrain *terrain = getTile(city, city->tileTerrain, x, y);
+			Terrain *terrain = getTile(city, layer->tileTerrain, x, y);
 
 			if (terrain->type != terrainType)
 			{
@@ -240,12 +258,14 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 void generateTerrain(City *city)
 {
 	DEBUG_FUNCTION();
+
+	TerrainLayer *layer = &city->terrainLayer;
 	
 	u32 tGround = findTerrainTypeByName(makeString("Ground"));
 	u32 tWater  = findTerrainTypeByName(makeString("Water"));
 	// BuildingDef *bTree = findBuildingDef(makeString("Tree"));
 
-	fillMemory<u8>(city->tileDistanceToWater, 255, areaOf(city->bounds));
+	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));
 
 	Random terrainRandom;
 	s32 seed = randomNext(city->gameRandom);
@@ -255,7 +275,7 @@ void generateTerrain(City *city)
 	{
 		for (s32 x = 0; x < city->bounds.w; x++)
 		{
-			Terrain *terrain = getTerrainAt(city, x, y);
+			Terrain *terrain = getTile(city, layer->tileTerrain, x, y);
 			terrain->type = tGround;
 			terrain->spriteOffset = (s32) randomNext(&globalAppState.cosmeticRandom);
 		}
@@ -276,9 +296,9 @@ void generateTerrain(City *city)
 
 		for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) 
 		{
-			Terrain *terrain = getTerrainAt(city, x, y);
+			Terrain *terrain = getTile(city, layer->tileTerrain, x, y);
 			terrain->type = tWater;
-			setTile<u8>(city, city->tileDistanceToWater, x, y, 0);
+			setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
 		}
 	}
 
@@ -293,11 +313,11 @@ void generateTerrain(City *city)
 		{
 			s32 y = city->bounds.h - 1 - i;
 
-			Terrain *terrain = getTerrainAt(city, x, y);
+			Terrain *terrain = getTile(city, layer->tileTerrain, x, y);
 			terrain->type = tWater;
-			setTile<u8>(city, city->tileDistanceToWater, x, y, 0);
+			setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
 		}
 	}
 
-	updateDistances(city, city->tileDistanceToWater, city->bounds, maxDistanceToWater);
+	updateDistances(city, layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }
