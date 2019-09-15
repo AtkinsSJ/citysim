@@ -12,13 +12,13 @@ Notes for searching:
 	@Copypasta - Copy-pasted code, should probably be factored together
 	@Cleanup - Stuff that needs investigating/organising, when it's convenient
 	@Hack - Hacks
+	@Leak - Memory leaks
 
 ------------------------------------------------
 
 Palette assets
 	Range palette, when we have a min/max and want to interpolate in X steps
 	Fixed palette, eg the powered/brownout/blackout colours
-	Fix leak in Palettes/Cursors being allocated by their defs file, but not deallocated!
 
 Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)

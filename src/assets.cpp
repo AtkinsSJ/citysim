@@ -386,6 +386,7 @@ Asset *addSpriteGroup(String name, s32 spriteCount)
 	ASSERT(spriteCount > 0); //Must have a positive number of sprites in a Sprite Group!
 
 	Asset *spriteGroup = addAsset(AssetType_Sprite, name, 0);
+	if (spriteGroup->data.size != 0) DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
 	spriteGroup->data = assetsAllocate(assets, spriteCount * sizeof(Sprite));
 	spriteGroup->spriteGroup.count = spriteCount;
 	spriteGroup->spriteGroup.sprites = (Sprite*) spriteGroup->data.memory;

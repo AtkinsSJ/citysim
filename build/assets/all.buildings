@@ -57,7 +57,7 @@ fire_protection 100 30 20 # This is centre-value, radius, outer-value. It's an o
 
 :Building Small House
 size 1 1
-texture house-2x2 house-2x2.png 32 32 2 2
+texture house-1x1 house-2x2.png 32 32 2 2
 grows_in r
 demolish_cost 50
 residents 10
@@ -65,7 +65,7 @@ power_use 10
 
 :Building House
 size 2 2
-texture house-2x2 house-2x2.png 32 32 2 2
+texture house-2x2 house-2x2.png 32 32 2 2 # NB: Defining this texture twice causes a small leak!
 grows_in r
 demolish_cost 200
 residents 40
