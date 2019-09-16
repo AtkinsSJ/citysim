@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename T>
-void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, EffectType type, T *tileValues, Rect2I region)
+void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, EffectType type, T *tileValues, Rect2I region, f32 scale)
 {
 	DEBUG_FUNCTION();
 	
@@ -9,8 +9,8 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2I effectCentre, Effec
 	f32 invRadius = 1.0f / (f32) effectRadius->radius;
 	f32 radius2 = (f32)(effectRadius->radius * effectRadius->radius);
 
-	f32 centreValue = (f32)effectRadius->centreValue;
-	f32 outerValue  = (f32)effectRadius->outerValue;
+	f32 centreValue = effectRadius->centreValue * scale;
+	f32 outerValue  = effectRadius->outerValue  * scale;
 
 	Rect2I possibleEffectArea = irectCentreSize(effectCentre, v2i(diameter, diameter));
 	possibleEffectArea = intersect(possibleEffectArea, region);

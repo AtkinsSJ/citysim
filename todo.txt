@@ -120,14 +120,31 @@ Crime:
 	- Maybe, criminals even have a "severity" level, and over time without being caught, that level increases. The higher the level, the more severe the crimes they can commit, with a randomness factor.
 - I think I'm over-thinking crime right now. If the calculations are fairly simple, we definitely could do individual simulations of the criminals, similar to a particle system, but I'm not sure. Just throwing ideas out there!
 
-Education/Health:
-- A building-coverage grid for each class of building. (eg primary school, secondary school, college, university, library, museum; or clinic, hospital)
-	- I think the coverage value for each tile wants to be the max of contributing buildings, rather than just adding their effects. eg, living between two hospitals is not going to make your health twice as good as living next to only one! You either have good hospital coverage or you don't.
-- Keep a list of health/education service buildings for easier iteration.
-- Actual education/health quotient per tile is set to a base value when someone moves in, and then gradually changes over time based on the coverage of each building class, funding, and other factors.
-	- Health depends on clinic/hospital coverage, pollution, and possibly ordinances if we ever implement those.
+Education:
+- Building coverage grids
+	- Primary school
+	- High school
+	- College
+	- University
+	- Library
+	- Museum
+- List of education buildings (per type???)
+- Actual education quotient per tile is set to a base value when someone moves in, and then gradually changes over time based on the coverage of each building class, funding, and other factors.
 	- Education is more complicated because different classes are supposed to cater to different age ranges. I don't know if we want to simulate age or not? If we don't, we'd still want the different classes to have different effects, so that you can't get perfect education by spamming libraries, for example.
-- As a side-note, I'm thinking com/ind should also require hospital coverage, not just res... but I'm not sure how that would work. People get sick/have accidents all the time, not just when they're at home! Especially with heavy industry.
+
+Health:
+- Building coverage grids
+	✔ Hospital
+	- Local clinic
+✔ List of health buildings
+- Health quotient per residential building
+	- Set to some base value at some point?????
+		- I kind of dislike the SC4 system... When a building is constructed, it gets a flat health/edu value, regardless of how good the healthcare is in your city. So immigration drops the average down! I'm thinking maybe it should just be the average? Needs thought.
+	- Each update, modified by health coverage %, pollution, ordinances
+- Health coverage also desired by com/ind/civic buildings.
+	- They won't have a health quotient like residential buildings, because that doesn't make much sense... but hospital access definitely matters because people get ill/have accidents while at work too!
+	- Maybe all inhabited buildings are considered for the overall "health coverage" score
+	- Health factors at a person's workplace could influence their HQ, if we record consistent workplaces!
 
 Coverage:
 - Calculate a coverage % for each service, based on what % of "inhabited" buildings have access to it and the quality of that access. This means somehow tagging buildings that count for this - perhaps we could count buildings with non-zero job/resident numbers?

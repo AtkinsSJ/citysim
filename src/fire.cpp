@@ -77,7 +77,11 @@ void updateFireLayer(City *city, FireLayer *layer)
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building);
-						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, sector->bounds);
+
+						// TODO: Building effectiveness based on budget, power
+						f32 effectiveness = 1.0f;
+
+						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, sector->bounds, effectiveness);
 					}
 				}
 			}

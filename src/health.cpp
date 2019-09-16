@@ -27,12 +27,12 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 		DEBUG_BLOCK_T("updateHealthLayer: dirty rects", DCDT_Simulation);
 
 		// TODO: do we actually need dirty rects? I can't think of anything, unless we move the "register building" stuff to that.
-		for (auto rectIt = iterate(&layer->dirtyRects.rects);
-			!rectIt.isDone;
-			next(&rectIt))
-		{
-			Rect2I dirtyRect = getValue(rectIt);
-		}
+		// for (auto rectIt = iterate(&layer->dirtyRects.rects);
+		// 	!rectIt.isDone;
+		// 	next(&rectIt))
+		// {
+		// 	Rect2I dirtyRect = getValue(rectIt);
+		// }
 
 		clearDirtyRects(&layer->dirtyRects);
 	}
@@ -53,7 +53,11 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building);
-						applyEffect(city, &def->healthEffect, centreOf(building->footprint), Effect_Max, layer->tileHealthCoverage, sector->bounds);
+
+						// TODO: Building effectiveness based on budget, overcrowding, power
+						f32 effectiveness = 1.0f;
+
+						applyEffect(city, &def->healthEffect, centreOf(building->footprint), Effect_Max, layer->tileHealthCoverage, sector->bounds, effectiveness);
 					}
 				}
 			}
@@ -80,7 +84,7 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 
-	// Highlight fire stations
+	// Highlight buildings
 	if (layer->healthBuildings.count > 0)
 	{
 		V4 highlightColor = color255(0,255,0,128);
