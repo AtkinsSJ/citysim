@@ -2,9 +2,7 @@
 
 void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena)
 {
-	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
-	layer->nextSectorUpdateIndex = 0;
-	layer->sectorsToUpdatePerTick = 8;
+	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 
 	initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
@@ -37,9 +35,9 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 	{
 		DEBUG_BLOCK_T("updateHealthLayer: sector updates", DCDT_Simulation);
 
-		for (s32 i = 0; i < layer->sectorsToUpdatePerTick; i++)
+		for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++)
 		{
-			BasicSector *sector = &layer->sectors[layer->nextSectorUpdateIndex];
+			BasicSector *sector = getNextSector(&layer->sectors);
 
 			{
 				DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DCDT_Simulation);
@@ -54,8 +52,6 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 					}
 				}
 			}
-
-			layer->nextSectorUpdateIndex = (layer->nextSectorUpdateIndex + 1) % getSectorCount(&layer->sectors);
 		}
 	}
 }

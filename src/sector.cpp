@@ -1,13 +1,16 @@
 #pragma once
 
 template<typename Sector>
-void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize)
+void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize, s32 sectorsToUpdatePerTick)
 {
 	grid->width  = cityWidth;
 	grid->height = cityHeight;
 	grid->sectorSize = sectorSize;
 	grid->sectorsX = divideCeil(cityWidth, sectorSize);
 	grid->sectorsY = divideCeil(cityHeight, sectorSize);
+
+	grid->nextSectorUpdateIndex = 0;
+	grid->sectorsToUpdatePerTick = sectorsToUpdatePerTick;
 
 	grid->sectors = allocateArray<Sector>(arena, grid->sectorsX * grid->sectorsY);
 
@@ -72,6 +75,26 @@ inline Rect2I getSectorsCovered(SectorGrid<Sector> *grid, Rect2I area)
 		(area.x + area.w) / grid->sectorSize,
 		(area.y + area.h) / grid->sectorSize
 	);
+
+	return result;
+}
+
+template<typename Sector>
+Sector *getNextSector(SectorGrid<Sector> *grid)
+{
+	Sector *result = &grid->sectors[grid->nextSectorUpdateIndex];
+
+	grid->nextSectorUpdateIndex = (grid->nextSectorUpdateIndex + 1) % getSectorCount(grid);
+
+	return result;
+}
+
+template<typename Sector>
+WithIndex<Sector *> getNextSectorWithIndex(SectorGrid<Sector> *grid)
+{
+	WithIndex<Sector *> result = makeValueWithIndex(&grid->sectors[grid->nextSectorUpdateIndex], grid->nextSectorUpdateIndex);
+
+	grid->nextSectorUpdateIndex = (grid->nextSectorUpdateIndex + 1) % getSectorCount(grid);
 
 	return result;
 }

@@ -3,6 +3,7 @@
 :Template Civic
 carries_power true
 requires_transport_connection true
+fire_risk 100%
 
 :Building Road
 size 1 1

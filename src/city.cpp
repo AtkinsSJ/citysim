@@ -16,7 +16,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initChunkPool(&city->sectorBoundariesChunkPool, gameArena,   8);
 	initChunkPool(&city->buildingRefsChunkPool,     gameArena, 128);
 
-	initSectorGrid(&city->sectors, gameArena, width, height, 16);
+	initSectorGrid(&city->sectors, gameArena, width, height, 16, 8);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++)
 	{
 		CitySector *sector = &city->sectors.sectors[sectorIndex];
@@ -600,9 +600,9 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 // Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.
 void updateSomeBuildings(City *city)
 {
-	for (s32 i = 0; i < 8; i++)
+	for (s32 i = 0; i < city->sectors.sectorsToUpdatePerTick; i++)
 	{
-		CitySector *sector = &city->sectors[city->nextBuildingSectorUpdateIndex];
+		CitySector *sector = getNextSector(&city->sectors);
 
 		for (auto it = iterate(&sector->ownedBuildings); !it.isDone; next(&it))
 		{
@@ -656,7 +656,5 @@ void updateSomeBuildings(City *city)
 				}
 			}
 		}
-
-		city->nextBuildingSectorUpdateIndex = (city->nextBuildingSectorUpdateIndex + 1) % getSectorCount(&city->sectors);
 	}
 }

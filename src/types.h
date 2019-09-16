@@ -150,6 +150,22 @@ inline Maybe<T> makeFailure()
 	return result;
 }
 
+template<typename T>
+struct WithIndex
+{
+	T value;
+	s32 index;
+};
+template<typename T>
+inline WithIndex<T> makeValueWithIndex(T value, s32 index)
+{
+	WithIndex<T> result;
+	result.value = value;
+	result.index = index;
+
+	return result;
+}
+
 struct V2 {
 	f32 x,y;
 };

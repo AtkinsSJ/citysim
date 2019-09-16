@@ -4,10 +4,8 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
 	s32 cityArea = areaOf(city->bounds);
 	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, cityArea);
-	zoneLayer->nextSectorUpdateIndex = 0;
-	zoneLayer->sectorsToUpdatePerTick = 8;
 
-	initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
+	initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
 	// NB: Element 0 is empty because tracking spots with no zone is not useful
@@ -227,10 +225,11 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 {
 	DEBUG_FUNCTION_T(DCDT_Simulation);
 
-	for (s32 i = 0; i < layer->sectorsToUpdatePerTick; i++)
+	for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++)
 	{
-		s32 sectorIndex = layer->nextSectorUpdateIndex;
-		ZoneSector *sector = &layer->sectors[sectorIndex];
+		WithIndex<ZoneSector *> sectorWithIndex = getNextSectorWithIndex(&layer->sectors);
+		ZoneSector *sector = sectorWithIndex.value;
+		s32 sectorIndex = sectorWithIndex.index;
 
 		// What zones does it contain?
 		{
@@ -363,8 +362,6 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 			sector->averageDesirability[Zone_Commercial]  = totalComDesirability * invSectorArea;
 			sector->averageDesirability[Zone_Industrial]  = totalIndDesirability * invSectorArea;
 		}
-
-		layer->nextSectorUpdateIndex = (layer->nextSectorUpdateIndex + 1) % getSectorCount(&layer->sectors);
 	}
 
 	// Sort the mostDesirableSectors array

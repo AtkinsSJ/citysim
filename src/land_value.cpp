@@ -2,9 +2,7 @@
 
 void initLandValueLayer(LandValueLayer *layer, City *city, MemoryArena *gameArena)
 {
-	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
-	layer->nextSectorUpdateIndex = 0;
-	layer->sectorsToUpdatePerTick = 8;
+	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 
 	s32 cityArea = areaOf(city->bounds);
 
@@ -84,9 +82,9 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 	{
 		DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DCDT_Simulation);
 
-		for (s32 i = 0; i < layer->sectorsToUpdatePerTick; i++)
+		for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++)
 		{
-			BasicSector *sector = &layer->sectors[layer->nextSectorUpdateIndex];
+			BasicSector *sector = getNextSector(&layer->sectors);
 
 			for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++)
 			{
@@ -130,8 +128,6 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 					setTile(city, layer->tileLandValue, x, y, clamp01AndMap_u8(landValue));
 				}
 			}
-
-			layer->nextSectorUpdateIndex = (layer->nextSectorUpdateIndex + 1) % getSectorCount(&layer->sectors);
 		}
 	}
 }

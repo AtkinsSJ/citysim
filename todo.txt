@@ -29,8 +29,6 @@ Fire:
 ✔ Keep a list of fire-service buildings so they can be iterated more easily.
 - Small chance of a fire occurring each tick, depending on the risk.
 
-Factor out the "nextSectorUpdateIndex" stuff from LandValue/Zone/Fire/updateSomeBuildings().
-
 Add newline support to .text files!
 
 Make drawGrid() use the grid and palette as Textures, and do a single draw call. That way we don't need to do copyRegion() fiddling - we could even keep the current data layer texture cached on the GPU if we're smart?

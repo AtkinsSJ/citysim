@@ -5,8 +5,6 @@ struct FireLayer
 	DirtyRects dirtyRects;
 	
 	SectorGrid<BasicSector> sectors;
-	s32 nextSectorUpdateIndex;
-	s32 sectorsToUpdatePerTick;
 
 	u8 *tileBuildingFireRisk;
 	u8 *tileTotalFireRisk; // Risks combined

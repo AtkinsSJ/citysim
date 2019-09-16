@@ -22,7 +22,6 @@ struct City
 	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
 	u32 highestBuildingID;
-	s32 nextBuildingSectorUpdateIndex;
 
 	SectorGrid<CitySector> sectors;
 

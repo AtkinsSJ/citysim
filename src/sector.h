@@ -9,6 +9,9 @@ struct SectorGrid
 
 	Array<Sector> sectors;
 
+	s32 nextSectorUpdateIndex;
+	s32 sectorsToUpdatePerTick;
+
 	inline Sector &operator[](s32 index)
 	{
 		return this->sectors[index];
@@ -23,7 +26,7 @@ struct BasicSector
 // NB: The Sector struct needs to contain a "Rect2I bounds;" member. This is filled-in inside initSectorGrid().
 
 template<typename Sector>
-void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize);
+void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth, s32 cityHeight, s32 sectorSize, s32 sectorsToUpdatePerTick=0);
 
 template<typename Sector>
 Sector *getSector(SectorGrid<Sector> *grid, s32 sectorX, s32 sectorY);
@@ -54,3 +57,9 @@ inline void setSectorTile(Sector *sector, T *tiles, s32 relX, s32 relY, T value)
 {
 	tiles[(relY * sector->bounds.w) + relX] = value;
 }
+
+template<typename Sector>
+Sector *getNextSector(SectorGrid<Sector> *grid);
+
+template<typename Sector>
+WithIndex<Sector *> getNextSectorWithIndex(SectorGrid<Sector> *grid);

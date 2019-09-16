@@ -5,8 +5,6 @@ struct LandValueLayer
 	DirtyRects dirtyRects;
 
 	SectorGrid<BasicSector> sectors;
-	s32 nextSectorUpdateIndex;
-	s32 sectorsToUpdatePerTick;
 
 	s16 *tileBuildingContributions;
 

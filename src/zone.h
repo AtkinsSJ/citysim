@@ -55,8 +55,6 @@ struct ZoneLayer
 	u8 *tileDesirability[ZoneCount];
 
 	SectorGrid<ZoneSector> sectors;
-	s32 nextSectorUpdateIndex;
-	s32 sectorsToUpdatePerTick;
 
 	BitArray sectorsWithZones[ZoneCount];
 	BitArray sectorsWithEmptyZones[ZoneCount];
