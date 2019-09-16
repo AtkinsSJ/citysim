@@ -16,6 +16,13 @@
 //
 // - Sam, 16/09/2019
 //
+// TODO: This SO answer: https://stackoverflow.com/a/54829058/1178345 explains a way of
+// making the waviness more interesting, by using a combination of periodic functions
+// that are randomly offset. (Instead of using our generate1DNoise() function). Actually,
+// maybe we should just use this system in generate1DNoise()!
+// Hmmm, actually, that system would mean not needing to store a radius array, as you could
+// just compute the exact radius at any given angle. Interesting!
+//
 struct Splat
 {
 	V2I centre;

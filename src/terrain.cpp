@@ -261,9 +261,9 @@ void generateTerrain(City *city)
 
 	TerrainLayer *layer = &city->terrainLayer;
 	
-	u8 tGround = truncate<u8>(findTerrainTypeByName(makeString("Ground")));
-	u8 tWater  = truncate<u8>(findTerrainTypeByName(makeString("Water")));
-	BuildingDef *treeDef = findBuildingDef(makeString("Tree"));
+	u8 tGround = truncate<u8>(findTerrainTypeByName("Ground"s));
+	u8 tWater  = truncate<u8>(findTerrainTypeByName("Water"s));
+	BuildingDef *treeDef = findBuildingDef("Tree"s);
 
 	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));
 

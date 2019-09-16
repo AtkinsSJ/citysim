@@ -87,14 +87,14 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(layer->tileHealthCoverage, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *coveragePalette = getPalette(makeString("service_coverage"));
+	Array<V4> *coveragePalette = getPalette("service_coverage"s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
 
 	// Highlight buildings
 	if (layer->healthBuildings.count > 0)
 	{
-		Array<V4> *buildingsPalette = getPalette(makeString("service_buildings"));
+		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
 		s32 paletteIndexPowered   = 0;
 		s32 paletteIndexUnpowered = 1;
 

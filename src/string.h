@@ -20,6 +20,18 @@ String makeString(const char *chars, bool hash=false);
 String stringFromBlob(Blob blob, bool hash=false);
 String repeatChar(char c, s32 length);
 
+// NB: We're disabling the warning, because we're overriding the "foo"s suffix which is used by the standard
+// library for std::string. We don't use std::string and having to use _s is annoying, so we just use s and
+// make the compiler shut up about it.
+// - Sam, 16/09/2019
+#pragma warning(push)
+#pragma warning(disable: 4455)
+String operator"" s(const char *chars, size_t length)
+{
+	return makeString((char*)chars, (s32)length);
+}
+#pragma warning(pop)
+
 void copyString(char *src, s32 srcLength, String *dest);
 void copyString(String src, String *dest);
 

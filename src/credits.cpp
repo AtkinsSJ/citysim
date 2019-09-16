@@ -10,10 +10,10 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, makeString("title"));
+	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 
-	Asset *creditsText = getAsset(AssetType_Misc, makeString("credits.txt"));
+	Asset *creditsText = getAsset(AssetType_Misc, "credits.txt"s);
 	LineReader reader = readLines(creditsText->shortName, creditsText->data, 0);
 	while (loadNextLine(&reader))
 	{

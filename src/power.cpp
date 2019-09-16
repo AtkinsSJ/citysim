@@ -83,7 +83,7 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
 	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleTileBounds));
 
-	Array<V4> *palette = getPalette(makeString("power"));
+	Array<V4> *palette = getPalette("power"s);
 	s32 paletteIndexPowered  = 0;
 	s32 paletteIndexBrownout = 1;
 	s32 paletteIndexBlackout = 2;
@@ -122,7 +122,7 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 	// Highlight power stations
 	if (layer->powerBuildings.count > 0)
 	{
-		Array<V4> *buildingsPalette = getPalette(makeString("service_buildings"));
+		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
 		s32 paletteIndex = 0;
 
 		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->powerBuildings.count);

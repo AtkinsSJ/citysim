@@ -310,7 +310,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Zone: {0}", {zone ? getZoneDef(zone).name : makeString("None")}));
+	window_label(context, myprintf("Zone: {0}", {zone ? getZoneDef(zone).name : "None"s}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -334,7 +334,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 	else
 	{
-		window_label(context, makeString("Building: None"));
+		window_label(context, "Building: None"s);
 	}
 
 	// Power group
@@ -439,7 +439,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	f32 windowWidth = (f32) renderer->uiCamera.size.x;
 	V2 centre = renderer->uiCamera.pos;
 	UITheme *theme = &assets->theme;
-	UILabelStyle *labelStyle = findLabelStyle(theme, makeString("title"));
+	UILabelStyle *labelStyle = findLabelStyle(theme, "title"s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 	City *city = &gameState->city;
 
@@ -534,7 +534,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect,
 					(gameState->actionMode == ActionMode_Demolish),
-					SDLK_x, makeString("(X)")))
+					SDLK_x, "(X)"s))
 		{
 			gameState->actionMode = ActionMode_Demolish;
 			setCursor("demolish");
@@ -545,7 +545,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, LOCAL("button_menu"), buttonRect))
 		{
-			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), makeString("general"), WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "general"s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }
@@ -810,7 +810,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
 						V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
-						showWindow(uiState, makeString("Inspect tile"), 250, 200, windowPos, makeString("general"), WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						showWindow(uiState, "Inspect tile"s, 250, 200, windowPos, "general"s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;

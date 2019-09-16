@@ -15,7 +15,7 @@ void loadDefaultSettings()
 {
 	settings->windowed = true;
 	settings->resolution = v2i(1024, 600);
-	settings->locale = makeString("en");
+	settings->locale = "en"s;
 }
 
 void initSettings()
@@ -24,8 +24,8 @@ void initSettings()
 	initHashTable(&settings->defs);
 
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
-	settings->userSettingsFilename = makeString("settings.cnf");
-	settings->defaultSettingsFilename = makeString("default-settings.cnf");
+	settings->userSettingsFilename = "settings.cnf"s;
+	settings->defaultSettingsFilename = "default-settings.cnf"s;
 
 #define REGISTER_SETTING(settingName, type, count) registerSetting(makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
 
@@ -201,7 +201,7 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 	V2 position = v2(windowWidth * 0.5f, 157.0f);
 	f32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, makeString("title"));
+	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 
 	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("title_settings"),

@@ -130,14 +130,14 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 #if 1
 	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *palette = getPalette(makeString("risk"));
+	Array<V4> *palette = getPalette("risk"s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #else
 	// Just draw the protection
 	u8 *data = copyRegion(layer->tileFireProtection, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *palette = getPalette(makeString("service_coverage"));
+	Array<V4> *palette = getPalette("service_coverage"s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #endif
@@ -145,7 +145,7 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 	// Highlight fire stations
 	if (layer->fireProtectionBuildings.count > 0)
 	{
-		Array<V4> *buildingsPalette = getPalette(makeString("service_buildings"));
+		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
 		s32 paletteIndexPowered   = 0;
 		s32 paletteIndexUnpowered = 1;
 

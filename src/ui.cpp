@@ -34,7 +34,7 @@ void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 {
-	static String styleName = makeString("tooltip");
+	static String styleName = "tooltip"s;
 	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
@@ -44,7 +44,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 	
 	bool buttonClicked = false;
 	V2 mousePos = renderer->uiCamera.mousePos;
-	UIButtonStyle *style = findButtonStyle(&assets->theme, makeString("general"));
+	UIButtonStyle *style = findButtonStyle(&assets->theme, "general"s);
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
@@ -134,7 +134,7 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = findMessageStyle(&assets->theme, makeString("general"));
+			UIMessageStyle *style = findMessageStyle(&assets->theme, "general"s);
 
 			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 

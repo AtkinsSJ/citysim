@@ -98,8 +98,8 @@ enum BuildingProblem
 };
 
 String buildingProblemNames[BuildingProblemCount] = {
-	makeString("No power!"),
-	makeString("No access to transport!")
+	"No power!"s,
+	"No access to transport!"s
 };
 
 struct Building

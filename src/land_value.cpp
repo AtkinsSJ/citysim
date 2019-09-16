@@ -151,7 +151,7 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(city->landValueLayer.tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *palette = getPalette(makeString("land_value"));
+	Array<V4> *palette = getPalette("land_value"s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 }
