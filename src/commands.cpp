@@ -43,6 +43,10 @@ ConsoleCommand(generate)
 	if (!checkInGame()) return;
 
 	City *city = &globalAppState.gameState->city;
+	if (city->buildings.count > 0)
+	{
+		demolishRect(city, city->bounds);
+	}
 	generateTerrain(city);
 
 	consoleWriteLine("Generated new map", CLS_Success);

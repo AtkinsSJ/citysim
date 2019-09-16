@@ -263,7 +263,7 @@ void generateTerrain(City *city)
 	
 	u8 tGround = truncate<u8>(findTerrainTypeByName(makeString("Ground")));
 	u8 tWater  = truncate<u8>(findTerrainTypeByName(makeString("Water")));
-	// BuildingDef *bTree = findBuildingDef(makeString("Tree"));
+	BuildingDef *treeDef = findBuildingDef(makeString("Tree"));
 
 	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));
 
@@ -320,61 +320,54 @@ void generateTerrain(City *city)
 	s32 pondCount = randomBetween(&terrainRandom, 1, 4);
 	for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++)
 	{
-		// Rough idea is: we pick a centre point, then produce a wrapped 1-d noise for the radius at each angle.
-		// We then iterate through each tile in the bounding rect, and see if the distance is < the chosen radius
-		// for that angle. If so, it's water!
-
 		s32 pondCentreX   = randomBetween(&terrainRandom, 0, city->bounds.w);
 		s32 pondCentreY   = randomBetween(&terrainRandom, 0, city->bounds.h);
 
 		f32 pondMinRadius = randomFloatBetween(&terrainRandom, 3.0f, 5.0f);
 		f32 pondMaxRadius = randomFloatBetween(&terrainRandom, pondMinRadius + 3.0f, 20.0f);
-		f32 pondRadiusDiff = pondMaxRadius - pondMinRadius;
 
-		// For starters, we'll use a circle.
-		Array<f32> pondRadiusPerAngle = allocateArray<f32>(tempArena, 36); // One for every 10 degrees, we'll interpolate anyway
-		f32 angleToIndex = pondRadiusPerAngle.count / 360.0f;
-		generate1DNoise(&terrainRandom, &pondRadiusPerAngle, 8, true);
+		Splat pondSplat = createRandomSplat(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, &terrainRandom);
 
-		s32 maxRadius = ceil_s32(pondMaxRadius);
-		Rect2I boundingBox = irectCentreSize(pondCentreX, pondCentreY, (maxRadius * 2) + 1, (maxRadius * 2) + 1);
+		Rect2I boundingBox = getBoundingBox(&pondSplat);
 		for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
 		{
 			for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
 			{
-				f32 distance = lengthOf(x - pondCentreX, y - pondCentreY);
-
-				// If we're outside the max, we must be outside the blob
-				if (distance > pondMaxRadius) continue;
-
-				// If we're inside the min, we MUST be in the blob
-				if (distance <= pondMinRadius)
+				if (contains(&pondSplat, x, y))
 				{
 					setTile<u8>(city, layer->tileTerrainType, x, y, tWater);
 					setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
-				}
-				else
-				{
-					f32 angle = angleOf(x - pondCentreX, y - pondCentreY);
-
-					// Interpolate between the two nearest radius values
-					f32 desiredIndex = angle * angleToIndex;
-					s32 indexA = (floor_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
-					s32 indexB = (ceil_s32(desiredIndex) + pondRadiusPerAngle.count) % pondRadiusPerAngle.count;
-					f32 noiseAtAngle = lerp(pondRadiusPerAngle[indexA], pondRadiusPerAngle[indexB], fraction_f32(desiredIndex));
-					f32 radiusAtAngle = pondMinRadius + (noiseAtAngle * pondRadiusDiff);
-
-					if (distance < radiusAtAngle)
-					{
-						setTile<u8>(city, layer->tileTerrainType, x, y, tWater);
-						setTile<u8>(city, layer->tileDistanceToWater, x, y, 0);
-					}
 				}
 			}
 		}
 	}
 
-	// TODO: Trees
+	// Forest splats
+	s32 forestCount = randomBetween(&terrainRandom, 10, 20);
+	for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++)
+	{
+		s32 centreX   = randomBetween(&terrainRandom, 0, city->bounds.w);
+		s32 centreY   = randomBetween(&terrainRandom, 0, city->bounds.h);
+
+		f32 minRadius = randomFloatBetween(&terrainRandom, 2.0f, 8.0f);
+		f32 maxRadius = randomFloatBetween(&terrainRandom, minRadius + 1.0f, 30.0f);
+
+		Splat forestSplat = createRandomSplat(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
+
+		Rect2I boundingBox = getBoundingBox(&forestSplat);
+		for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
+		{
+			for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
+			{
+				if (getTerrainAt(city, x, y)->canBuildOn
+					&& (getBuildingAt(city, x, y) == null)
+					&& contains(&forestSplat, x, y))
+				{
+					addBuilding(city, treeDef, irectXYWH(x, y, treeDef->size.x, treeDef->size.y));
+				}
+			}
+		}
+	}
 
 	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
 
