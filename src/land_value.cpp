@@ -15,9 +15,6 @@ void initLandValueLayer(LandValueLayer *layer, City *city, MemoryArena *gameAren
 	fillMemory<s16>(layer->tileBuildingContributions, 0, cityArea);
 
 	initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
-
-	// Mark whole city as needing recalculating
-	markRectAsDirty(&layer->dirtyRects, city->bounds);
 }
 
 inline void markLandValueLayerDirty(LandValueLayer *layer, Rect2I bounds)

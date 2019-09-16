@@ -12,8 +12,9 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	s32 cityArea = width * height;
 
 	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
-	initChunkPool(&city->sectorBuildingsChunkPool,   gameArena, 128);
-	initChunkPool(&city->sectorBoundariesChunkPool,  gameArena,   8);
+	initChunkPool(&city->sectorBuildingsChunkPool,  gameArena, 128);
+	initChunkPool(&city->sectorBoundariesChunkPool, gameArena,   8);
+	initChunkPool(&city->buildingRefsChunkPool,     gameArena, 128);
 
 	initSectorGrid(&city->sectors, gameArena, width, height, 16);
 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++)
@@ -26,6 +27,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	append(&city->buildings);
 
 	initFireLayer     (&city->fireLayer,      city, gameArena);
+	initHealthLayer   (&city->healthLayer,    city, gameArena);
 	initLandValueLayer(&city->landValueLayer, city, gameArena);
 	initPollutionLayer(&city->pollutionLayer, city, gameArena);
 	initPowerLayer    (&city->powerLayer,     city, gameArena);
@@ -34,6 +36,8 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initZoneLayer     (&city->zoneLayer,      city, gameArena);
 
 	city->highestBuildingID = 0;
+
+	markAreaDirty(city, city->bounds);
 }
 
 Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
@@ -72,12 +76,18 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		registerFireProtectionBuilding(&city->fireLayer, building);
 	}
 
+	if (hasEffect(&def->healthEffect))
+	{
+		registerHealthBuilding(&city->healthLayer, building);
+	}
+
 	return building;
 }
 
 void markAreaDirty(City *city, Rect2I bounds)
 {
 	markFireLayerDirty     (&city->fireLayer, bounds);
+	markHealthLayerDirty   (&city->healthLayer, bounds);
 	markLandValueLayerDirty(&city->landValueLayer, bounds);
 	markPollutionLayerDirty(&city->pollutionLayer, bounds);
 	markPowerLayerDirty    (&city->powerLayer, bounds);
@@ -322,6 +332,11 @@ void demolishRect(City *city, Rect2I area)
 		if (hasEffect(&def->fireProtection))
 		{
 			unregisterFireProtectionBuilding(&city->fireLayer, building);
+		}
+
+		if (hasEffect(&def->healthEffect))
+		{
+			unregisterHealthBuilding(&city->healthLayer, building);
 		}
 
 		building->id = 0;

@@ -343,6 +343,14 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
+				else if (equals(firstWord, "health_effect"))
+				{
+					Maybe<EffectRadius> health_effect = readEffectRadius(&reader);
+					if (health_effect.isValid)
+					{
+						def->healthEffect = health_effect.value;
+					}
+				}
 				else if (equals(firstWord, "jobs"))
 				{
 					Maybe<s64> jobs = readInt(&reader);

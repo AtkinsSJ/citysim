@@ -122,6 +122,11 @@ ConsoleCommand(show_layer)
 			globalAppState.gameState->dataLayerToDraw = DataLayer_FireRisk;
 			consoleWriteLine("Showing fire risk layer", CLS_Success);
 		}
+		else if (equals(layerName, "health"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Health;
+			consoleWriteLine("Showing health risk layer", CLS_Success);
+		}
 		else if (equals(layerName, "land_value"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_LandValue;

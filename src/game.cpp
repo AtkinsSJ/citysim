@@ -587,12 +587,13 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
-		updateFireLayer(city, &city->fireLayer);
+		updateFireLayer     (city, &city->fireLayer);
+		updateHealthLayer   (city, &city->healthLayer);
 		updateLandValueLayer(city, &city->landValueLayer);
 		updatePollutionLayer(city, &city->pollutionLayer);
-		updatePowerLayer(city, &city->powerLayer);
+		updatePowerLayer    (city, &city->powerLayer);
 		updateTransportLayer(city, &city->transportLayer);
-		updateZoneLayer(city, &city->zoneLayer);
+		updateZoneLayer     (city, &city->zoneLayer);
 
 		updateSomeBuildings(city);
 	}
@@ -850,6 +851,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 			case DataLayer_Desirability_Commercial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Commercial);  break;
 			case DataLayer_Desirability_Industrial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Industrial);  break;
 			case DataLayer_FireRisk:                  drawFireRiskDataLayer    (city, visibleTileBounds); break;
+			case DataLayer_Health:                    drawHealthDataLayer      (city, visibleTileBounds); break;
 			case DataLayer_LandValue:                 drawLandValueDataLayer   (city, visibleTileBounds); break;
 			case DataLayer_Pollution:                 drawPollutionDataLayer   (city, visibleTileBounds); break;
 			case DataLayer_Power:                     drawPowerDataLayer       (city, visibleTileBounds); break;

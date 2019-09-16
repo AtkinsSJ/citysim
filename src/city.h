@@ -27,6 +27,7 @@ struct City
 	SectorGrid<CitySector> sectors;
 
 	FireLayer      fireLayer;
+	HealthLayer    healthLayer;
 	LandValueLayer landValueLayer;
 	PollutionLayer pollutionLayer;
 	PowerLayer     powerLayer;
@@ -34,8 +35,9 @@ struct City
 	TransportLayer transportLayer;
 	ZoneLayer      zoneLayer;
 
-	ArrayChunkPool<Building *> sectorBuildingsChunkPool;
-	ArrayChunkPool<Rect2I>     sectorBoundariesChunkPool;
+	ArrayChunkPool<Building *>  sectorBuildingsChunkPool;
+	ArrayChunkPool<Rect2I>      sectorBoundariesChunkPool;
+	ArrayChunkPool<BuildingRef> buildingRefsChunkPool;
 };
 
 const u8 maxDistanceToWater = 10;

@@ -19,10 +19,7 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 	layer->tileOverallFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileOverallFireRisk, 0, cityArea);
 
-	initChunkedArray(&layer->fireProtectionBuildings, gameArena, 256);
-
-	// Mark whole city as needing recalculating
-	markRectAsDirty(&layer->dirtyRects, city->bounds);
+	initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
 }
 
 inline void markFireLayerDirty(FireLayer *layer, Rect2I bounds)
