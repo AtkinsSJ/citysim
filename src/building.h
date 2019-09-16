@@ -69,6 +69,9 @@ struct BuildingDef
 	EffectRadius fireProtection;
 
 	EffectRadius healthEffect;
+
+	EffectRadius policeEffect;
+	s32 jailCapacity;
 };
 
 struct BuildingCatalogue

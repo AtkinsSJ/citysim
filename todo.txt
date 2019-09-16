@@ -16,6 +16,8 @@ Notes for searching:
 
 ------------------------------------------------
 
+Swap the parameter order for readEffectRadius() data! It's really confusing as is
+
 Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
@@ -119,6 +121,8 @@ Crime:
 - Model severity of crimes too, somehow? I know SC4 does that but I don't really understand it too well. Obviously more severe crimes have a bigger impact - a murder is much worse than petty theft.
 	- Maybe, criminals even have a "severity" level, and over time without being caught, that level increases. The higher the level, the more severe the crimes they can commit, with a randomness factor.
 - I think I'm over-thinking crime right now. If the calculations are fairly simple, we definitely could do individual simulations of the criminals, similar to a particle system, but I'm not sure. Just throwing ideas out there!
+	- I got distracted trying to figure out what a crime particle would be called. I believe it'd be an enklemon from: https://en.wiktionary.org/wiki/%CE%AD%CE%B3%CE%BA%CE%BB%CE%B7%CE%BC%CE%B1
+	- (Actually, "felon" would be appropriate!)
 
 Education:
 - Building coverage grids

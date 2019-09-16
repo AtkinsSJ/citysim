@@ -264,6 +264,14 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
+				else if (equals(firstWord, "crime_protection"))
+				{
+					Maybe<EffectRadius> crime_protection = readEffectRadius(&reader);
+					if (crime_protection.isValid)
+					{
+						def->policeEffect = crime_protection.value;
+					}
+				}
 				else if (equals(firstWord, "demolish_cost"))
 				{
 					Maybe<s64> demolish_cost = readInt(&reader);
@@ -349,6 +357,14 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					if (health_effect.isValid)
 					{
 						def->healthEffect = health_effect.value;
+					}
+				}
+				else if (equals(firstWord, "jail_size"))
+				{
+					Maybe<s64> jail_size = readInt(&reader);
+					if (jail_size.isValid)
+					{
+						def->jailCapacity = (s32) jail_size.value;
 					}
 				}
 				else if (equals(firstWord, "jobs"))
