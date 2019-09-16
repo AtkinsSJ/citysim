@@ -18,3 +18,5 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds);
 
 void registerHealthBuilding(HealthLayer *layer, Building *building);
 void unregisterHealthBuilding(HealthLayer *layer, Building *building);
+
+f32 getHealthCoveragePercentAt(City *city, s32 x, s32 y);

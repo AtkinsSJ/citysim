@@ -317,6 +317,12 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 						// Land value = good
 						f32 desirability = getLandValuePercentAt(city, x, y);
 
+						// Health coverage = good
+						desirability += getHealthCoveragePercentAt(city, x, y) * 0.3f;
+
+						// Fire protection = good
+						desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
+
 						// pollution = bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.4f;
 
@@ -328,11 +334,14 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 
 					// Commercial
 					{
-						// Land value = good
-						f32 desirability = getLandValuePercentAt(city, x, y);
+						// Land value = very good
+						f32 desirability = getLandValuePercentAt(city, x, y) * 2.0f;
+
+						// Fire protection = good
+						desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
 
 						// pollution = bad
-						desirability -= getPollutionPercentAt(city, x, y) * 0.3f;
+						desirability -= getPollutionPercentAt(city, x, y) * 0.2f;
 
 						desirability = clamp01(desirability);
 						setTile(city, layer->tileDesirability[Zone_Commercial], x, y, (u8)(desirability * 255.0f));
@@ -344,6 +353,9 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 					{
 						// Lower land value is better
 						f32 desirability = 1.0f - getLandValuePercentAt(city, x, y);
+
+						// Fire protection = good
+						desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
 
 						// pollution = slightly bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.15f;

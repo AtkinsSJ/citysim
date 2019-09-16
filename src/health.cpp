@@ -1,5 +1,10 @@
 #pragma once
 
+inline f32 getHealthCoveragePercentAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->healthLayer.tileHealthCoverage, x, y) * 0.01f;
+}
+
 void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena)
 {
 	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
