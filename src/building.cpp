@@ -687,3 +687,8 @@ inline s32 getRequiredPower(Building *building)
 
 	return result;
 }
+
+inline bool buildingHasPower(Building *building)
+{
+	return !(building->problems & BuildingProblem_NoPower);
+}

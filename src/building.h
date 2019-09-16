@@ -139,6 +139,7 @@ BuildingDef *getBuildingDef(s32 buildingTypeID);
 BuildingDef *findBuildingDef(String name);
 
 s32 getRequiredPower(Building *building);
+bool buildingHasPower(Building *building);
 
 
 // TODO: These are a bit hacky... I want to hide the implementation details of the catalogue, but

@@ -54,8 +54,15 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 					{
 						BuildingDef *def = getBuildingDef(building);
 
-						// TODO: Building effectiveness based on budget, overcrowding, power
+						// TODO: Building effectiveness based on budget, overcrowding
 						f32 effectiveness = 1.0f;
+
+						if (!buildingHasPower(building))
+						{
+							// NB: We might want to instead reduce the effectiveness to 1/4 or something,
+							// but that's a balance issue
+							effectiveness = 0.0f;
+						}
 
 						applyEffect(city, &def->healthEffect, centreOf(building->footprint), Effect_Max, layer->tileHealthCoverage, sector->bounds, effectiveness);
 					}
@@ -80,14 +87,17 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(layer->tileHealthCoverage, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *palette = getPalette(makeString("service_coverage"));
+	Array<V4> *coveragePalette = getPalette(makeString("service_coverage"));
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
 
 	// Highlight buildings
 	if (layer->healthBuildings.count > 0)
 	{
-		V4 highlightColor = color255(0,255,0,128);
+		Array<V4> *buildingsPalette = getPalette(makeString("service_buildings"));
+		s32 paletteIndexPowered   = 0;
+		s32 paletteIndexUnpowered = 1;
+
 		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->healthBuildings.count);
 		for (auto it = iterate(&layer->healthBuildings); hasNext(&it); next(&it))
 		{
@@ -96,7 +106,8 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 			// visible even if the building isn't!
 			if (building != null)
 			{
-				addUntexturedRect(buildingHighlights, rect2(building->footprint), highlightColor);
+				s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
 			}
 		}
 		endRectsGroup(buildingHighlights);

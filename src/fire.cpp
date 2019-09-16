@@ -78,8 +78,15 @@ void updateFireLayer(City *city, FireLayer *layer)
 					{
 						BuildingDef *def = getBuildingDef(building);
 
-						// TODO: Building effectiveness based on budget, power
+						// TODO: Building effectiveness based on budget
 						f32 effectiveness = 1.0f;
+
+						if (!buildingHasPower(building))
+						{
+							// NB: We might want to instead reduce the effectiveness to 1/4 or something,
+							// but that's a balance issue
+							effectiveness = 0.0f;
+						}
 
 						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, sector->bounds, effectiveness);
 					}
@@ -138,7 +145,10 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 	// Highlight fire stations
 	if (layer->fireProtectionBuildings.count > 0)
 	{
-		V4 highlightColor = color255(0,255,0,128);
+		Array<V4> *buildingsPalette = getPalette(makeString("service_buildings"));
+		s32 paletteIndexPowered   = 0;
+		s32 paletteIndexUnpowered = 1;
+
 		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->fireProtectionBuildings.count);
 		for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
 		{
@@ -147,7 +157,8 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 			// visible even if the building isn't!
 			if (building != null)
 			{
-				addUntexturedRect(buildingHighlights, rect2(building->footprint), highlightColor);
+				s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
 			}
 		}
 		endRectsGroup(buildingHighlights);

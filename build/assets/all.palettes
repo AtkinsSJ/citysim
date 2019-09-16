@@ -46,6 +46,12 @@ color 255 255   0 128
 color 128  64   0 128
 color   0   0   0 128
 
+:Palette service_buildings
+type fixed
+size 2
+color   0 255   0 128 # powered
+color 255 255   0 128 # unpowered
+
 :Palette debug
 type fixed
 size 6
