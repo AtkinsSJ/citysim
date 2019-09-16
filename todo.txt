@@ -135,7 +135,7 @@ Education:
 Health:
 - Building coverage grids
 	✔ Hospital
-	- Local clinic
+	- Local clinic as a separate coverage type?
 ✔ List of health buildings
 - Health quotient per residential building
 	- Set to some base value at some point?????

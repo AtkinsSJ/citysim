@@ -47,7 +47,8 @@ struct PowerLayer
 
 	ArrayChunkPool<PowerGroup> powerGroupsChunkPool;
 	ArrayChunkPool<PowerGroup *> powerGroupPointersChunkPool;
-	ArrayChunkPool<BuildingRef> buildingRefsChunkPool;
+
+	ChunkedArray<BuildingRef> powerBuildings;
 	
 	s32 cachedCombinedProduction;
 	s32 cachedCombinedConsumption;
@@ -65,6 +66,9 @@ PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y);
 u8 getDistanceToPower(City *city, s32 x, s32 y);
 
 void drawPowerDataLayer(City *city, Rect2I visibleTileBounds);
+
+void registerPowerBuilding(PowerLayer *layer, Building *building);
+void unregisterPowerBuilding(PowerLayer *layer, Building *building);
 
 
 // Private-but-actually-still-accessible API

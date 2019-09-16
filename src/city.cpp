@@ -81,6 +81,11 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 		registerHealthBuilding(&city->healthLayer, building);
 	}
 
+	if (def->power > 0)
+	{
+		registerPowerBuilding(&city->powerLayer, building);
+	}
+
 	return building;
 }
 
@@ -337,6 +342,11 @@ void demolishRect(City *city, Rect2I area)
 		if (hasEffect(&def->healthEffect))
 		{
 			unregisterHealthBuilding(&city->healthLayer, building);
+		}
+
+		if (def->power > 0)
+		{
+			unregisterPowerBuilding(&city->powerLayer, building);
 		}
 
 		building->id = 0;

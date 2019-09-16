@@ -5,7 +5,6 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	initChunkedArray(&layer->networks, gameArena, 64);
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
-	initChunkPool(&layer->buildingRefsChunkPool, gameArena, 128);
 
 	s32 cityArea = areaOf(city->bounds);
 	layer->tilePowerDistance = allocateMultiple<u8>(gameArena, cityArea);
@@ -22,6 +21,8 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 
 		initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
 	}
+
+	initChunkedArray(&layer->powerBuildings, &city->buildingRefsChunkPool);
 }
 
 PowerNetwork *newPowerNetwork(PowerLayer *layer)
@@ -74,6 +75,8 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
+	PowerLayer *layer = &city->powerLayer;
+
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 
 	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
@@ -114,8 +117,25 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 			}
 		}
 	}
-
 	endRectsGroup(group);
+
+	// Highlight power stations
+	if (layer->powerBuildings.count > 0)
+	{
+		Array<V4> *buildingsPalette = getPalette(makeString("service_buildings"));
+		s32 paletteIndex = 0;
+
+		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->powerBuildings.count);
+		for (auto it = iterate(&layer->powerBuildings); hasNext(&it); next(&it))
+		{
+			Building *building = getBuilding(city, getValue(it));
+			if (building != null && overlaps(building->footprint, visibleTileBounds))
+			{
+				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
+			}
+		}
+		endRectsGroup(buildingHighlights);
+	}
 }
 
 void updateSectorPowerValues(City *city, PowerSector *sector)
@@ -338,7 +358,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 			PowerGroup *newGroup = appendBlank(&sector->powerGroups);
 
 			initChunkedArray(&newGroup->sectorBoundaries, &city->sectorBoundariesChunkPool);
-			initChunkedArray(&newGroup->buildings, &layer->buildingRefsChunkPool);
+			initChunkedArray(&newGroup->buildings, &city->buildingRefsChunkPool);
 
 			u8 powerGroupID = (u8)sector->powerGroups.count;
 			newGroup->production = 0;
@@ -828,4 +848,15 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 			}
 		}
 	}
+}
+
+void registerPowerBuilding(PowerLayer *layer, Building *building)
+{
+	append(&layer->powerBuildings, getReferenceTo(building));
+}
+
+void unregisterPowerBuilding(PowerLayer *layer, Building *building)
+{
+	bool success = findAndRemove(&layer->powerBuildings, getReferenceTo(building));
+	ASSERT(success);
 }
