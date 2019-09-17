@@ -16,8 +16,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Swap the parameter order for readEffectRadius() data! It's really confusing as is
-
 Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.

@@ -325,24 +325,24 @@ Maybe<String> readTextureDefinition(LineReader *reader)
 
 Maybe<EffectRadius> readEffectRadius(LineReader *reader)
 {
-	Maybe<s64> effectValue = asInt(readToken(reader));
+	Maybe<s64> radius = asInt(readToken(reader));
 
-	if (effectValue.isValid)
+	if (radius.isValid)
 	{
-		Maybe<s64> effectRadius = asInt(readToken(reader));
-		Maybe<s64> effectOuterValue = asInt(readToken(reader));
+		Maybe<s64> centreValue = asInt(readToken(reader));
+		Maybe<s64> outerValue = asInt(readToken(reader));
 
 		EffectRadius result = {};
 
-		result.centreValue = truncate32(effectValue.value);
-		result.radius      = truncate32(effectRadius.orDefault(effectValue.value)); // Default to radius=value
-		result.outerValue  = truncate32(effectOuterValue.orDefault(0));
+		result.radius      = truncate32(radius.value);
+		result.centreValue = truncate32(centreValue.orDefault(radius.value)); // Default to value=radius
+		result.outerValue  = truncate32(outerValue.orDefault(0));
 
 		return makeSuccess(result);
 	}
 	else
 	{
-		error(reader, "Couldn't parse effect radius. Expected \"{0} effectAtCentre [radius] [effectAtEdge]\" where effectAtCentre, radius, and effectAtEdge are ints.");
+		error(reader, "Couldn't parse effect radius. Expected \"{0} radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints.");
 
 		return makeFailure<EffectRadius>();
 	}
