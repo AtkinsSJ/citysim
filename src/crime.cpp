@@ -103,7 +103,7 @@ void drawCrimeDataLayer(City *city, Rect2I visibleTileBounds)
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #endif
 
-	// Highlight fire stations
+	// Highlight police stations
 	if (layer->policeBuildings.count > 0)
 	{
 		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
@@ -114,8 +114,7 @@ void drawCrimeDataLayer(City *city, Rect2I visibleTileBounds)
 		for (auto it = iterate(&layer->policeBuildings); hasNext(&it); next(&it))
 		{
 			Building *building = getBuilding(city, getValue(it));
-			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
-			// visible even if the building isn't!
+			// NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
 			if (building != null)
 			{
 				s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
@@ -123,6 +122,34 @@ void drawCrimeDataLayer(City *city, Rect2I visibleTileBounds)
 			}
 		}
 		endRectsGroup(buildingHighlights);
+	}
+
+	// Draw radii
+	if (layer->policeBuildings.count > 0)
+	{
+		Array<V4> *ringsPalette = getPalette("coverage_radius"s);
+		s32 paletteIndexPowered   = 0;
+		s32 paletteIndexUnpowered = 1;
+
+		DrawRingsGroup *buildingRadii = beginRingsGroup(&renderer->worldOverlayBuffer, layer->policeBuildings.count);
+
+		for (auto it = iterate(&layer->policeBuildings); hasNext(&it); next(&it))
+		{
+			Building *building = getBuilding(city, getValue(it));
+			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
+			// visible even if the building isn't!
+			if (building != null)
+			{
+				BuildingDef *def = getBuildingDef(building);
+				if (hasEffect(&def->policeEffect))
+				{
+					s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+					addRing(buildingRadii, centreOf(building->footprint), (f32) def->policeEffect.radius, 0.5f, (*ringsPalette)[paletteIndex]);
+				}
+			}
+		}
+
+		endRingsGroup(buildingRadii);
 	}
 }
 

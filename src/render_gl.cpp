@@ -608,6 +608,76 @@ void GL_render(RenderBufferChunk *firstChunk)
 				}
 			} break;
 
+			case RenderItemType_DrawRings:
+			{
+				DEBUG_BLOCK_T("render: RenderItemType_DrawRings", DCDT_Renderer);
+				RenderItem_DrawRings *header = readRenderItem<RenderItem_DrawRings>(renderBufferChunk, &pos);
+				
+				for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++)
+				{
+					RenderItem_DrawRings_Item *item = readRenderItem<RenderItem_DrawRings_Item>(renderBufferChunk, &pos);
+
+					s32 ringSegmentsCount = ceil_s32(2.0f * PI32 * item->radius); // TODO: some kind of "detail" parameter?
+					if (ringSegmentsCount * 4 > RENDER_BATCH_VERTEX_COUNT)
+					{
+						s32 maxRingSegmentsCount = RENDER_BATCH_VERTEX_COUNT / 4;
+						logWarn("We want to draw a ring with {0} segments, but the maximum we can fit in a render batch is {1}!", {formatInt(ringSegmentsCount), formatInt(maxRingSegmentsCount)});
+
+						ringSegmentsCount = maxRingSegmentsCount;
+					}
+
+					if (gl->vertexCount + (4 * ringSegmentsCount) > RENDER_BATCH_VERTEX_COUNT)
+					{
+						flushVertices(gl);
+					}
+
+					f32 minRadius = item->radius - (item->thickness * 0.5f);
+					f32 maxRadius = minRadius + item->thickness;
+					f32 radPerSegment = (2.0f * PI32) / (f32) ringSegmentsCount;
+
+					for (s32 segmentIndex = 0; segmentIndex < ringSegmentsCount; segmentIndex++)
+					{
+						GL_VertexData *vertex = gl->vertices + gl->vertexCount;
+						f32 startAngle = segmentIndex * radPerSegment;
+						f32 endAngle   = (segmentIndex+1) * radPerSegment;
+
+						vertex->pos.x = item->centre.x + (minRadius * cos32(startAngle));
+						vertex->pos.y = item->centre.y + (minRadius * sin32(startAngle));
+						vertex->color = item->color;
+						vertex++;
+
+						vertex->pos.x = item->centre.x + (minRadius * cos32(endAngle));
+						vertex->pos.y = item->centre.y + (minRadius * sin32(endAngle));
+						vertex->color = item->color;
+						vertex++;
+
+						vertex->pos.x = item->centre.x + (maxRadius * cos32(endAngle));
+						vertex->pos.y = item->centre.y + (maxRadius * sin32(endAngle));
+						vertex->color = item->color;
+						vertex++;
+
+						vertex->pos.x = item->centre.x + (maxRadius * cos32(startAngle));
+						vertex->pos.y = item->centre.y + (maxRadius * sin32(startAngle));
+						vertex->color = item->color;
+
+						gl->vertexCount += 4;
+
+						// NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
+						// always, as long as we only render quads.
+						#if 0
+						GLuint *index = gl->indices + gl->indexCount;
+						index[0] = firstVertex + 0;
+						index[1] = firstVertex + 1;
+						index[2] = firstVertex + 2;
+						index[3] = firstVertex + 0;
+						index[4] = firstVertex + 2;
+						index[5] = firstVertex + 3;
+						#endif
+						gl->indexCount += 6;
+					}
+				}
+			} break;
+
 			INVALID_DEFAULT_CASE;
 		}
 	}

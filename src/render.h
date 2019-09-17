@@ -35,6 +35,7 @@ enum RenderItemType
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
 	RenderItemType_DrawGrid,
+	RenderItemType_DrawRings,
 };
 
 struct RenderItem_SectionMarker
@@ -82,13 +83,6 @@ struct RenderItem_DrawRects_Item
 	Rect2 uv;
 };
 
-struct RenderItem_DrawGrid
-{
-	Rect2 bounds; // Rendering position of the grid as a whole
-	u16 paletteSize;
-	s32 gridW, gridH; // Dimensions of the array
-};
-
 struct DrawRectsSubGroup
 {
 	RenderItem_DrawRects *header;
@@ -111,6 +105,47 @@ struct DrawRectsGroup
 	s32 maxCount;
 
 	Asset *texture;
+};
+
+struct RenderItem_DrawRings
+{
+	u8 count;
+};
+struct RenderItem_DrawRings_Item
+{
+	V2 centre;
+	f32 radius;
+	f32 thickness;
+	V4 color;
+};
+
+struct DrawRingsSubGroup
+{
+	RenderItem_DrawRings *header;
+	RenderItem_DrawRings_Item *first;
+	s32 maxCount;
+
+	DrawRingsSubGroup *prev;
+	DrawRingsSubGroup *next;
+};
+
+// Think of this like a "handle". It has data inside but you shouldn't touch it from user code!
+struct DrawRingsGroup
+{
+	RenderBuffer *buffer;
+
+	DrawRingsSubGroup firstSubGroup;
+	DrawRingsSubGroup *currentSubGroup;
+
+	s32 count;
+	s32 maxCount;
+};
+
+struct RenderItem_DrawGrid
+{
+	Rect2 bounds; // Rendering position of the grid as a whole
+	u16 paletteSize;
+	s32 gridW, gridH; // Dimensions of the array
 };
 
 struct RenderBufferChunk : PoolItem
@@ -243,6 +278,11 @@ DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group);
 void endCurrentSubGroup(DrawRectsGroup *group);
 
 void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u16 paletteSize, V4 *palette);
+
+DrawRingsGroup *beginRingsGroup(RenderBuffer *buffer, s32 maxCount);
+DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup *group);
+void addRing(DrawRingsGroup *group, V2 centre, f32 radius, f32 thickness, V4 color);
+void endRingsGroup(DrawRingsGroup *group);
 
 void resizeWindow(s32 w, s32 h, bool fullscreen);
 void onWindowResized(s32 w, s32 h);

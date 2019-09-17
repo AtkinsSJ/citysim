@@ -584,3 +584,82 @@ void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gr
 	V4 *paletteData = (V4 *) data;
 	copyMemory(palette, paletteData, paletteSize);
 }
+
+DrawRingsGroup *beginRingsGroup(RenderBuffer *buffer, s32 maxCount)
+{
+	// @Copypasta beginRectsGroupInternal() - maybe factor out common "grouped render items" code?
+	addSetShader(buffer, renderer->shaderIds.untextured);
+
+	DrawRingsGroup *result = allocateStruct<DrawRingsGroup>(tempArena);
+	*result = {};
+
+	result->buffer = buffer;
+	result->count = 0;
+	result->maxCount = maxCount;
+
+	result->firstSubGroup = beginRingsSubGroup(result);
+	result->currentSubGroup = &result->firstSubGroup;
+
+	return result;
+}
+
+DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup *group)
+{
+	// @Copypasta beginRectsSubGroup() - maybe factor out common "grouped render items" code?
+	DrawRingsSubGroup result = {};
+
+	s32 subGroupItemCount = min(group->maxCount - group->count, (s32) maxRenderItemsPerGroup);
+	ASSERT(subGroupItemCount > 0 && subGroupItemCount <= maxRenderItemsPerGroup);
+
+	smm reservedSize = sizeof(RenderItem_DrawRings_Item) * subGroupItemCount;
+	u8 *data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRings, sizeof(RenderItem_DrawRings), reservedSize);
+	group->buffer->hasRangeReserved = true;
+
+	result.header = (RenderItem_DrawRings *) data;
+	result.first  = (RenderItem_DrawRings_Item *) (data + sizeof(RenderItem_DrawRings));
+	result.maxCount = subGroupItemCount;
+
+	*result.header = {};
+	result.header->count = 0;
+
+	return result;
+}
+
+void endCurrentSubGroup(DrawRingsGroup *group)
+{
+	// @Copypasta endCurrentSubGroup(DrawRectsGroup*) - maybe factor out common "grouped render items" code?
+	ASSERT(group->buffer->hasRangeReserved); //Attempted to finish a range while a range is not reserved!
+	group->buffer->hasRangeReserved = false;
+
+	group->buffer->currentChunk->used += group->currentSubGroup->header->count * sizeof(RenderItem_DrawRings_Item);
+}
+
+void addRing(DrawRingsGroup *group, V2 centre, f32 radius, f32 thickness, V4 color)
+{
+	// @Copypasta addRectInternal() - maybe factor out common "grouped render items" code?
+	ASSERT(group->count < group->maxCount);
+
+	if (group->currentSubGroup->header->count == group->currentSubGroup->maxCount)
+	{
+		endCurrentSubGroup(group);
+		DrawRingsSubGroup *prevSubGroup = group->currentSubGroup;
+		group->currentSubGroup = allocateStruct<DrawRingsSubGroup>(tempArena);
+		*group->currentSubGroup = beginRingsSubGroup(group);
+		prevSubGroup->next = group->currentSubGroup;
+		group->currentSubGroup->prev = prevSubGroup;
+	}
+	ASSERT(group->currentSubGroup->header->count < group->currentSubGroup->maxCount);
+
+	RenderItem_DrawRings_Item *item = group->currentSubGroup->first + group->currentSubGroup->header->count++;
+	item->centre = centre;
+	item->radius = radius;
+	item->thickness = thickness;
+	item->color = color;
+
+	group->count++;
+}
+
+void endRingsGroup(DrawRingsGroup *group)
+{
+	endCurrentSubGroup(group);
+}

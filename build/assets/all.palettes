@@ -52,6 +52,12 @@ size 2
 color   0 255   0 128 # powered
 color 255 255   0 128 # unpowered
 
+:Palette coverage_radius
+type fixed
+size 2
+color 128 255 255 196 # powered
+color  64 128 128 196 # unpowered
+
 :Palette debug
 type fixed
 size 6

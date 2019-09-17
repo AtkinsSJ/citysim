@@ -265,6 +265,7 @@ V2 v2(s32 x, s32 y);
 V2 v2(V2I source);
 
 f32 lengthOf(V2 v);
+f32 lengthSquaredOf(f32 x, f32 y);
 V2 limit(V2 vector, f32 maxLength);
 V2 lerp(V2 a, V2 b, f32 position);
 
@@ -283,7 +284,6 @@ V2 operator/=(V2 &v, f32 s);
 V2I v2i(s32 x, s32 y);
 V2I v2i(V2 source);
 
-f32 lengthSquaredOf(s32 x, s32 y);
 f32 lengthOf(s32 x, s32 y);
 f32 lengthOf(V2I v);
 
@@ -382,7 +382,7 @@ Rect2I intersect(Rect2I a, Rect2I b);
 Rect2I intersectRelative(Rect2I outer, Rect2I inner);
 Rect2I unionOf(Rect2I a, Rect2I b);
 
-V2I centreOf(Rect2I rect);
+V2 centreOf(Rect2I rect);
 s32 areaOf(Rect2I rect);
 
 Rect2I centreWithin(Rect2I outer, Rect2I inner);
@@ -423,6 +423,9 @@ f32 sqrt_f32(f32 in);
 f32 abs_f32(f32 in);
 f32 fraction_f32(f32 in);
 f32 clamp01(f32 in);
+f32 sin32(f32 radians);
+f32 cos32(f32 radians);
+f32 tan32(f32 radians);
 
 s32 divideCeil(s32 numerator, s32 denominator);
 

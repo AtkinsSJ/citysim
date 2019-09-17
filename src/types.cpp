@@ -46,6 +46,22 @@ inline f32 fraction_f32(f32 in)
 	return (f32) fmod(in, 1.0f);
 }
 
+inline f32 sin32(f32 radians)
+{
+	return (f32) sin(radians);
+}
+
+inline f32 cos32(f32 radians)
+{
+	return (f32) cos(radians);
+}
+
+inline f32 tan32(f32 radians)
+{
+	return (f32) tan(radians);
+}
+
+
 inline s32 divideCeil(s32 numerator, s32 denominator)
 {
 	return (numerator + denominator - 1) / denominator;
@@ -292,6 +308,11 @@ inline f32 lengthOf(V2 v)
 	return (f32) sqrt(v.x*v.x + v.y*v.y);
 }
 
+f32 lengthSquaredOf(f32 x, f32 y)
+{
+	return (f32) (x*x + y * y);
+}
+
 inline V2 limit(V2 vector, f32 maxLength)
 {
 	f32 length = lengthOf(vector);
@@ -364,11 +385,6 @@ inline V2I v2i(V2 source)
 f32 lengthOf(V2I v)
 {
 	return (f32) sqrt(v.x*v.x + v.y*v.y);
-}
-
-f32 lengthSquaredOf(s32 x, s32 y)
-{
-	return (f32) (x*x + y * y);
 }
 
 f32 lengthOf(s32 x, s32 y)
@@ -886,9 +902,9 @@ inline Rect2I unionOf(Rect2I a, Rect2I b)
 	return irectMinMax(minX, minY, maxX, maxY);
 }
 
-inline V2I centreOf(Rect2I rect)
+inline V2 centreOf(Rect2I rect)
 {
-	return v2i(rect.x + rect.w/2, rect.y + rect.h/2);
+	return v2(rect.x + rect.w/2.0f, rect.y + rect.h/2.0f);
 }
 
 inline s32 areaOf(Rect2I rect)
