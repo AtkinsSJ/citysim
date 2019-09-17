@@ -102,7 +102,12 @@ ConsoleCommand(show_layer)
 	else if (argumentsCount == 1)
 	{
 		String layerName = nextToken(remainder, &remainder);
-		if (equals(layerName, "des_res"))
+		if (equals(layerName, "crime"))
+		{
+			globalAppState.gameState->dataLayerToDraw = DataLayer_Crime;
+			consoleWriteLine("Showing crime layer", CLS_Success);
+		}
+		else if (equals(layerName, "des_res"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Residential;
 			consoleWriteLine("Showing residential desirability", CLS_Success);
@@ -125,7 +130,7 @@ ConsoleCommand(show_layer)
 		else if (equals(layerName, "health"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Health;
-			consoleWriteLine("Showing health risk layer", CLS_Success);
+			consoleWriteLine("Showing health layer", CLS_Success);
 		}
 		else if (equals(layerName, "land_value"))
 		{
@@ -144,7 +149,7 @@ ConsoleCommand(show_layer)
 		}
 		else
 		{
-			consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: des_res, des_com, _des_ind, land_value, pollution, power", CLS_Error);
+			consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power", CLS_Error);
 		}
 	}
 }

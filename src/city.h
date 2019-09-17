@@ -25,6 +25,7 @@ struct City
 
 	SectorGrid<CitySector> sectors;
 
+	CrimeLayer     crimeLayer;
 	FireLayer      fireLayer;
 	HealthLayer    healthLayer;
 	LandValueLayer landValueLayer;

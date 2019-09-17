@@ -587,6 +587,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
+		updateCrimeLayer    (city, &city->crimeLayer);
 		updateFireLayer     (city, &city->fireLayer);
 		updateHealthLayer   (city, &city->healthLayer);
 		updateLandValueLayer(city, &city->landValueLayer);
@@ -847,6 +848,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 		switch (gameState->dataLayerToDraw)
 		{
+			case DataLayer_Crime:                     drawCrimeDataLayer       (city, visibleTileBounds); break;
 			case DataLayer_Desirability_Residential:  drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Residential); break;
 			case DataLayer_Desirability_Commercial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Commercial);  break;
 			case DataLayer_Desirability_Industrial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Industrial);  break;

@@ -59,6 +59,7 @@ enum DataLayer
 	DataLayer_Desirability_Commercial,
 	DataLayer_Desirability_Industrial,
 
+	DataLayer_Crime,
 	DataLayer_FireRisk,
 	DataLayer_Health,
 	DataLayer_Pollution,

@@ -26,6 +26,7 @@ void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width,
 	initOccupancyArray(&city->buildings, gameArena, 1024);
 	append(&city->buildings);
 
+	initCrimeLayer    (&city->crimeLayer,     city, gameArena);
 	initFireLayer     (&city->fireLayer,      city, gameArena);
 	initHealthLayer   (&city->healthLayer,    city, gameArena);
 	initLandValueLayer(&city->landValueLayer, city, gameArena);
@@ -79,6 +80,11 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	if (hasEffect(&def->healthEffect))
 	{
 		registerHealthBuilding(&city->healthLayer, building);
+	}
+
+	if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
+	{
+		registerPoliceBuilding(&city->crimeLayer, building);
 	}
 
 	if (def->power > 0)
@@ -342,6 +348,11 @@ void demolishRect(City *city, Rect2I area)
 		if (hasEffect(&def->healthEffect))
 		{
 			unregisterHealthBuilding(&city->healthLayer, building);
+		}
+
+		if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
+		{
+			unregisterPoliceBuilding(&city->crimeLayer, building);
 		}
 
 		if (def->power > 0)

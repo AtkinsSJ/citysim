@@ -59,9 +59,7 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 
 						if (!buildingHasPower(building))
 						{
-							// NB: We might want to instead reduce the effectiveness to 1/4 or something,
-							// but that's a balance issue
-							effectiveness = 0.0f;
+							effectiveness = 0.4f; // @Balance
 						}
 
 						applyEffect(city, &def->healthEffect, centreOf(building->footprint), Effect_Max, layer->tileHealthCoverage, sector->bounds, effectiveness);

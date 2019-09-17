@@ -34,6 +34,8 @@ void updateFireLayer(City *city, FireLayer *layer)
 		DEBUG_BLOCK_T("updateFireLayer: building effects", DCDT_Simulation);
 
 		// Recalculate the building contributions
+		// TODO: Forget this, just do the risk per tile in the sectors update loop below.
+		// Because map changes don't really correspond with fire risk changes.
 		for (auto rectIt = iterate(&layer->dirtyRects.rects);
 			!rectIt.isDone;
 			next(&rectIt))
@@ -83,9 +85,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 
 						if (!buildingHasPower(building))
 						{
-							// NB: We might want to instead reduce the effectiveness to 1/4 or something,
-							// but that's a balance issue
-							effectiveness = 0.0f;
+							effectiveness = 0.4f; // @Balance
 						}
 
 						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, sector->bounds, effectiveness);
