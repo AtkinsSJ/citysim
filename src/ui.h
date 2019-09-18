@@ -46,3 +46,23 @@ void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPer
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK
 void basicTooltipWindowProc(WindowContext *context, void *userData);
+
+struct PopupMenu
+{
+	V2 origin;
+	f32 width;
+
+ 	// TODO: Put these in a style!
+ 	// {
+	f32 padding;
+	V4 backgroundColor;
+	// }
+
+	RenderItem_DrawSingleRect *backgroundRect;
+
+	f32 currentYOffset;
+};
+
+PopupMenu beginPopupMenu(f32 x, f32 y, f32 width, V4 backgroundColor);
+bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActive);
+void endPopupMenu(UIState *uiState, PopupMenu *menu);

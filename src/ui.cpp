@@ -183,3 +183,40 @@ inline void uiCloseMenus(UIState *uiState)
 {
 	uiState->openMenu = 0;
 }
+
+PopupMenu beginPopupMenu(f32 x, f32 y, f32 width, V4 backgroundColor)
+{
+	PopupMenu result = {};
+
+	result.origin = v2(x, y);
+	result.width = width;
+
+	result.padding = 4.0f; // TODO: Define this in styles!
+	result.backgroundColor = backgroundColor;
+	result.backgroundRect = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
+	result.currentYOffset = result.padding;
+
+	return result;
+}
+
+bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActive)
+{
+	f32 buttonHeight = 20.0f; // TODO: Actual button size!
+	Rect2 buttonRect = rectXYWH(menu->origin.x + menu->padding,
+								menu->origin.y + menu->currentYOffset,
+								menu->width - (menu->padding * 2.0f),
+								buttonHeight);
+
+	bool result = uiButton(uiState, text, buttonRect, isActive);
+
+	menu->currentYOffset += buttonRect.h + menu->padding;
+
+	return result;
+}
+
+void endPopupMenu(UIState *uiState, PopupMenu *menu)
+{
+	Rect2 menuRect = rectXYWH(menu->origin.x, menu->origin.y, menu->width, menu->currentYOffset);
+	append(&uiState->uiRects, menuRect);
+	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->backgroundColor);
+}

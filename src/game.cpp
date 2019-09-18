@@ -539,28 +539,21 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// Data layer menu
 		if (uiMenuButton(uiState, LOCAL("button_data_views"), buttonRect, Menu_DataViews))
 		{
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
-			Rect2 menuButtonRect = buttonRect;
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-
-			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
+			f32 popupMenuWidth = 200.0f; // TODO: Actual width somehow! Use the button texts' size
+			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{
 				String buttonText = getText(dataViewTitles[dataViewID]);
 
-				if (uiButton(uiState, buttonText, menuButtonRect, (gameState->dataLayerToDraw == dataViewID)))
+				if (popupMenuButton(uiState, &menu, buttonText, (gameState->dataLayerToDraw == dataViewID)))
 				{
 					uiCloseMenus(uiState);
 					gameState->dataLayerToDraw = dataViewID;
 				}
-
-				menuButtonRect.y += menuButtonRect.h + uiPadding;
-				menuRect.h += menuButtonRect.h + uiPadding;
 			}
 
-			append(&uiState->uiRects, menuRect);
-			fillDrawRectPlaceholder(background, menuRect, theme->overlayColor);
+			endPopupMenu(uiState, &menu);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
