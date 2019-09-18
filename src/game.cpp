@@ -385,18 +385,13 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 	UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
 	BitmapFont *buttonFont = getFont(buttonStyle->fontName);
 	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
-	s32 maxButtonTextWidth = 0;
 
 	String resume = LOCAL("button_resume");
-	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, resume, availableButtonTextWidth).x));
 	String save   = LOCAL("button_save");
-	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, save, availableButtonTextWidth).x));
 	String load   = LOCAL("button_load");
-	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, load, availableButtonTextWidth).x));
 	String about  = LOCAL("button_about");
-	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, about, availableButtonTextWidth).x));
 	String exit   = LOCAL("button_exit");
-	maxButtonTextWidth = max(maxButtonTextWidth, round_s32(calculateTextSize(buttonFont, exit, availableButtonTextWidth).x));
+	s32 maxButtonTextWidth = calculateMaxTextWidth(buttonFont, {resume, save, load, about, exit}, availableButtonTextWidth);
 
 	if (window_button(context, resume, maxButtonTextWidth))
 	{

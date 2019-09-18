@@ -183,6 +183,18 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 	return result;
 }
 
+s32 calculateMaxTextWidth(BitmapFont *font, std::initializer_list<String> texts, f32 limit)
+{
+	s32 result = 0;
+
+	for (auto text = texts.begin(); text != texts.end(); text++)
+	{
+		result = max(result, round_s32(calculateTextSize(font, *text, limit).x));
+	}
+
+	return result;
+}
+
 void _alignText(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, u32 align)
 {
 	if (lineWidth == 0)

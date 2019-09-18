@@ -45,6 +45,7 @@ BitmapFontGlyph *findChar(BitmapFont *font, unichar targetChar);
 
 V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth=0);
 V2 calculateTextPosition(V2 origin, V2 size, u32 align);
+s32 calculateMaxTextWidth(BitmapFont *font, std::initializer_list<String> texts, f32 limit=0);
 
 // NB: If caretPosition is not -1, and caretInfoResult is non-null, caretInfoResult is filled with the data
 // for the glyph at that position. (Intended use is so TextInput knows where its caret should appear.)
