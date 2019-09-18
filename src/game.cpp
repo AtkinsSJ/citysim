@@ -497,7 +497,6 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				next(&it))
 			{
 				BuildingDef *buildingDef = getValue(it);
-				ASSERT(buildingDef->buildMethod != BuildMethod_None); //We somehow got an un-constructible building in our constructible buildings list!
 
 				if (popupMenuButton(uiState, &menu, buildingDef->name,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))

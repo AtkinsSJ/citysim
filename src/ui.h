@@ -61,6 +61,12 @@ struct PopupMenu
 	RenderItem_DrawSingleRect *backgroundRect;
 
 	f32 currentYOffset;
+
+	// TODO: Maximum height, with a scrollbar if it's too big.
+	// This means, storing a scroll-position for each menu somehow...
+	// Or, well, we could get away with one scroll position stored for whichever
+	// menu is active, and then set the position to 0 when a menu is shown. Or
+	// when it's hidden, actually!!! That'd work. Awesome.
 };
 
 PopupMenu beginPopupMenu(f32 x, f32 y, f32 width, V4 backgroundColor);
