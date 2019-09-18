@@ -1,4 +1,4 @@
-# test file for text assets
+## test file for text assets
 
 game_title           City Builder Test 9000
 game_subtitle        Very much a work in progress!
@@ -18,6 +18,17 @@ button_save          Save
 button_settings      Settings
 button_website       Website
 button_zone          Zone...
+
+data_view_none						None
+data_view_desirability_residential	Residential desirability
+data_view_desirability_commercial	Commercial desirability
+data_view_desirability_industrial	Industrial desirability
+data_view_crime						Crime
+data_view_fire						Fire
+data_view_health					Health
+data_view_pollution					Pollution
+data_view_power						Power
+data_view_landvalue					Land value
 
 title_about          About
 title_inspect        Inspecting {0}, {1}

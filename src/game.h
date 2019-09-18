@@ -12,6 +12,7 @@ enum GameMenuID
 	Menu_Build,
 	Menu_Zone,
 	Menu_System,
+	Menu_DataViews,
 };
 
 enum ActionMode {
@@ -60,13 +61,28 @@ enum DataLayer
 	DataLayer_Desirability_Industrial,
 
 	DataLayer_Crime,
-	DataLayer_FireRisk,
+	DataLayer_Fire,
 	DataLayer_Health,
 	DataLayer_Pollution,
 	DataLayer_Power,
 	DataLayer_LandValue,
 
 	DataLayerCount
+};
+
+String dataViewTitles[DataLayerCount] = {
+	"data_view_none"s,
+
+	"data_view_desirability_residential"s,
+	"data_view_desirability_commercial"s,
+	"data_view_desirability_industrial"s,
+
+	"data_view_crime"s,
+	"data_view_fire"s,
+	"data_view_health"s,
+	"data_view_pollution"s,
+	"data_view_power"s,
+	"data_view_landvalue"s,
 };
 
 struct GameState
@@ -77,7 +93,7 @@ struct GameState
 	City city;
 
 	// Rendering-related stuff
-	u32 dataLayerToDraw;
+	DataLayer dataLayerToDraw;
 
 	DragState worldDragState;
 	ActionMode actionMode;

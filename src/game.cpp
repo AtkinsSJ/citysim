@@ -541,6 +541,34 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
+		// Data layer menu
+		if (uiMenuButton(uiState, LOCAL("button_data_views"), buttonRect, Menu_DataViews))
+		{
+			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
+			Rect2 menuButtonRect = buttonRect;
+			menuButtonRect.y += menuButtonRect.h + uiPadding;
+
+			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
+
+			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
+			{
+				String buttonText = getText(dataViewTitles[dataViewID]);
+
+				if (uiButton(uiState, buttonText, menuButtonRect, (gameState->dataLayerToDraw == dataViewID)))
+				{
+					uiCloseMenus(uiState);
+					gameState->dataLayerToDraw = dataViewID;
+				}
+
+				menuButtonRect.y += menuButtonRect.h + uiPadding;
+				menuRect.h += menuButtonRect.h + uiPadding;
+			}
+
+			append(&uiState->uiRects, menuRect);
+			fillDrawRectPlaceholder(background, menuRect, theme->overlayColor);
+		}
+		buttonRect.x += buttonRect.w + uiPadding;
+
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, LOCAL("button_menu"), buttonRect))
@@ -852,7 +880,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 			case DataLayer_Desirability_Residential:  drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Residential); break;
 			case DataLayer_Desirability_Commercial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Commercial);  break;
 			case DataLayer_Desirability_Industrial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Industrial);  break;
-			case DataLayer_FireRisk:                  drawFireRiskDataLayer    (city, visibleTileBounds); break;
+			case DataLayer_Fire:                      drawFireDataLayer        (city, visibleTileBounds); break;
 			case DataLayer_Health:                    drawHealthDataLayer      (city, visibleTileBounds); break;
 			case DataLayer_LandValue:                 drawLandValueDataLayer   (city, visibleTileBounds); break;
 			case DataLayer_Pollution:                 drawPollutionDataLayer   (city, visibleTileBounds); break;
