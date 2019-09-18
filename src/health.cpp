@@ -90,26 +90,8 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
 
 	// Highlight buildings
-	if (layer->healthBuildings.count > 0)
-	{
-		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
-		s32 paletteIndexPowered   = 0;
-		s32 paletteIndexUnpowered = 1;
-
-		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->healthBuildings.count);
-		for (auto it = iterate(&layer->healthBuildings); hasNext(&it); next(&it))
-		{
-			Building *building = getBuilding(city, getValue(it));
-			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
-			// visible even if the building isn't!
-			if (building != null)
-			{
-				s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
-			}
-		}
-		endRectsGroup(buildingHighlights);
-	}
+	drawBuildingHighlights(city, &layer->healthBuildings);
+	drawBuildingEffectRadii(city, &layer->healthBuildings, &BuildingDef::healthEffect);
 }
 
 void registerHealthBuilding(HealthLayer *layer, Building *building)

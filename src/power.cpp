@@ -120,22 +120,7 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 	endRectsGroup(group);
 
 	// Highlight power stations
-	if (layer->powerBuildings.count > 0)
-	{
-		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
-		s32 paletteIndex = 0;
-
-		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->powerBuildings.count);
-		for (auto it = iterate(&layer->powerBuildings); hasNext(&it); next(&it))
-		{
-			Building *building = getBuilding(city, getValue(it));
-			if (building != null && overlaps(building->footprint, visibleTileBounds))
-			{
-				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
-			}
-		}
-		endRectsGroup(buildingHighlights);
-	}
+	drawBuildingHighlights(city, &layer->powerBuildings);
 }
 
 void updateSectorPowerValues(City *city, PowerSector *sector)

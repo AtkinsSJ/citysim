@@ -104,53 +104,8 @@ void drawCrimeDataLayer(City *city, Rect2I visibleTileBounds)
 #endif
 
 	// Highlight police stations
-	if (layer->policeBuildings.count > 0)
-	{
-		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
-		s32 paletteIndexPowered   = 0;
-		s32 paletteIndexUnpowered = 1;
-
-		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->policeBuildings.count);
-		for (auto it = iterate(&layer->policeBuildings); hasNext(&it); next(&it))
-		{
-			Building *building = getBuilding(city, getValue(it));
-			// NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
-			if (building != null)
-			{
-				s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
-			}
-		}
-		endRectsGroup(buildingHighlights);
-	}
-
-	// Draw radii
-	if (layer->policeBuildings.count > 0)
-	{
-		Array<V4> *ringsPalette = getPalette("coverage_radius"s);
-		s32 paletteIndexPowered   = 0;
-		s32 paletteIndexUnpowered = 1;
-
-		DrawRingsGroup *buildingRadii = beginRingsGroup(&renderer->worldOverlayBuffer, layer->policeBuildings.count);
-
-		for (auto it = iterate(&layer->policeBuildings); hasNext(&it); next(&it))
-		{
-			Building *building = getBuilding(city, getValue(it));
-			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
-			// visible even if the building isn't!
-			if (building != null)
-			{
-				BuildingDef *def = getBuildingDef(building);
-				if (hasEffect(&def->policeEffect))
-				{
-					s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-					addRing(buildingRadii, centreOf(building->footprint), (f32) def->policeEffect.radius, 0.5f, (*ringsPalette)[paletteIndex]);
-				}
-			}
-		}
-
-		endRingsGroup(buildingRadii);
-	}
+	drawBuildingHighlights(city, &layer->policeBuildings);
+	drawBuildingEffectRadii(city, &layer->policeBuildings, &BuildingDef::policeEffect);
 }
 
 void registerPoliceBuilding(CrimeLayer *layer, Building *building)

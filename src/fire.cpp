@@ -143,26 +143,8 @@ void drawFireRiskDataLayer(City *city, Rect2I visibleTileBounds)
 #endif
 
 	// Highlight fire stations
-	if (layer->fireProtectionBuildings.count > 0)
-	{
-		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
-		s32 paletteIndexPowered   = 0;
-		s32 paletteIndexUnpowered = 1;
-
-		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, layer->fireProtectionBuildings.count);
-		for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
-		{
-			Building *building = getBuilding(city, getValue(it));
-			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
-			// visible even if the building isn't!
-			if (building != null)
-			{
-				s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
-			}
-		}
-		endRectsGroup(buildingHighlights);
-	}
+	drawBuildingHighlights(city, &layer->fireProtectionBuildings);
+	drawBuildingEffectRadii(city, &layer->fireProtectionBuildings, &BuildingDef::fireProtection);
 }
 
 void registerFireProtectionBuilding(FireLayer *layer, Building *building)

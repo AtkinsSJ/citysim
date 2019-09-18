@@ -193,3 +193,85 @@ s32 calculateDistanceTo(City *city, s32 x, s32 y, s32 maxDistanceToCheck, Filter
 
 	return result;
 }
+
+template<typename Iterable>
+void drawBuildingHighlights(City *city, Iterable *buildingRefs)
+{
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	if (buildingRefs->count > 0)
+	{
+		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
+		s32 paletteIndexPowered   = 0;
+		s32 paletteIndexUnpowered = 1;
+
+		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, buildingRefs->count);
+		for (auto it = iterate(buildingRefs); hasNext(&it); next(&it))
+		{
+			Building *building = getBuilding(city, getValue(it));
+			// NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
+			if (building != null)
+			{
+				s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+				addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
+			}
+		}
+		endRectsGroup(buildingHighlights);
+	}
+}
+
+template<typename Iterable>
+void drawBuildingEffectRadii(City *city, Iterable *buildingRefs, EffectRadius BuildingDef::* effectMember)
+{
+	//
+	// Leaving a note here because it's the first time I've used a pointer-to-member, and it's
+	// weird and confusing and the syntax is odd!
+	//
+	// You declare the variable/parameter like this:
+	//    EffectRadius BuildingDef::* effectMember;
+	// Essentially it's just a regular variable definition, with the struct name in the middle and ::*
+	//
+	// Then, we use it like this:
+	//    EffectRadius *effect = &(def->*effectMember);
+	// (The important part is      ^^^^^^^^^^^^^^^^^^)
+	// So, you access the member like you would normally with a . or ->, except you put a * before
+	// the member name to show that it's a member pointer instead of an actual member.
+	//
+	// Now that I've written it out, it's not so bad, but it was really hard to look up about because
+	// I assumed this would be a template-related feature, and so all the examples I found were super
+	// template heavy and abstract and confusing. But no! It's a built-in feature that's actually not
+	// too complicated. I might use this more now that I know about it.
+	//
+	// - Sam, 18/09/2019
+	//
+
+	DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+	if (buildingRefs->count > 0)
+	{
+		Array<V4> *ringsPalette = getPalette("coverage_radius"s);
+		s32 paletteIndexPowered   = 0;
+		s32 paletteIndexUnpowered = 1;
+
+		DrawRingsGroup *buildingRadii = beginRingsGroup(&renderer->worldOverlayBuffer, buildingRefs->count);
+
+		for (auto it = iterate(buildingRefs); hasNext(&it); next(&it))
+		{
+			Building *building = getBuilding(city, getValue(it));
+			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
+			// visible even if the building isn't!
+			if (building != null)
+			{
+				BuildingDef *def = getBuildingDef(building);
+				EffectRadius *effect = &(def->*effectMember);
+				if (hasEffect(effect))
+				{
+					s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+					addRing(buildingRadii, centreOf(building->footprint), (f32) effect->radius, 0.5f, (*ringsPalette)[paletteIndex]);
+				}
+			}
+		}
+
+		endRingsGroup(buildingRadii);
+	}
+}

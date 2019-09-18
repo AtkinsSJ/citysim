@@ -5,6 +5,7 @@ F5    reload_assets
 
 Home  mark_all_dirty
 
+4     show_layer health
 5     show_layer fire
 6     show_layer crime
 7     show_layer land_value
