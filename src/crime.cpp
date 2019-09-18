@@ -118,3 +118,8 @@ void unregisterPoliceBuilding(CrimeLayer *layer, Building *building)
 	bool success = findAndRemove(&layer->policeBuildings, getReferenceTo(building));
 	ASSERT(success);
 }
+
+f32 getPoliceCoveragePercentAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->crimeLayer.tilePoliceCoverage, x, y) / 255.0f;
+}

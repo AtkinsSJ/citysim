@@ -102,8 +102,8 @@ Pollution:
 - Fire also creates pollution
 
 Crime:
-- Building-coverage, which is additive, with only one class.
-- A global prisoner count/capacity.
+✔ Building-coverage, which is additive, with only one class.
+✔ A global prisoner count/capacity.
 - Crime risk per tile, used internally.
 - A per-tile value for "how much" crime there is in that area. It should be a fairly long-term thing, so a single crime downtown doesn't destroy desirability, but if crimes happen there on a regular basis, people don't want to be there.
 	- Possibly, a crime occurring splats an area-of-effect over a wide-ish area, and all tiles gradually tick down over time.

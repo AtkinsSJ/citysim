@@ -19,3 +19,5 @@ void drawCrimeDataLayer(City *city, Rect2I visibleTileBounds);
 
 void registerPoliceBuilding(CrimeLayer *layer, Building *building);
 void unregisterPoliceBuilding(CrimeLayer *layer, Building *building);
+
+f32 getPoliceCoveragePercentAt(City *city, s32 x, s32 y);

@@ -119,7 +119,11 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 
 					// Fire protection = good
 					f32 fireProtection = getFireProtectionPercentAt(city, x, y);
-					landValue += fireProtection * 0.1f;
+					landValue += fireProtection * 0.2f;
+
+					// Police protection = good
+					f32 policeCoverage = getPoliceCoveragePercentAt(city, x, y);
+					landValue += policeCoverage * 0.2f;
 
 					// Pollution = bad
 					f32 pollutionEffect = getPollutionPercentAt(city, x, y) * 0.1f;

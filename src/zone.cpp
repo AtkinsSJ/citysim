@@ -323,11 +323,13 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 						// Fire protection = good
 						desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
 
+						// Police coverage = good
+						desirability += getPoliceCoveragePercentAt(city, x, y) * 0.3f;
+
 						// pollution = bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.4f;
 
-						desirability = clamp01(desirability);
-						setTile(city, layer->tileDesirability[Zone_Residential], x, y, (u8)(desirability * 255.0f));
+						setTile(city, layer->tileDesirability[Zone_Residential], x, y, clamp01AndMap_u8(desirability));
 
 						totalResDesirability += desirability;
 					}
@@ -340,11 +342,13 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 						// Fire protection = good
 						desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
 
+						// Police coverage = good
+						desirability += getPoliceCoveragePercentAt(city, x, y) * 0.3f;
+
 						// pollution = bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.2f;
 
-						desirability = clamp01(desirability);
-						setTile(city, layer->tileDesirability[Zone_Commercial], x, y, (u8)(desirability * 255.0f));
+						setTile(city, layer->tileDesirability[Zone_Commercial], x, y, clamp01AndMap_u8(desirability));
 
 						totalComDesirability += desirability;
 					}
@@ -357,11 +361,13 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 						// Fire protection = good
 						desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
 
+						// Police coverage = good
+						desirability += getPoliceCoveragePercentAt(city, x, y) * 0.2f;
+
 						// pollution = slightly bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.15f;
 
-						desirability = clamp01(desirability);
-						setTile(city, layer->tileDesirability[Zone_Industrial], x, y, (u8)(desirability * 255.0f));
+						setTile(city, layer->tileDesirability[Zone_Industrial], x, y, clamp01AndMap_u8(desirability));
 
 						totalIndDesirability += desirability;
 					}
