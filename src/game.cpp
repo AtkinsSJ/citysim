@@ -467,15 +467,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The "ZONE" menu
 		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, Menu_Zone))
 		{
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
-			Rect2 menuButtonRect = buttonRect;
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-			
-			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
+			f32 popupMenuWidth = 200.0f; // TODO: Actual width somehow! Use the button texts' size
+			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (uiButton(uiState, getZoneDef(zoneIndex).name, menuButtonRect,
+				if (popupMenuButton(uiState, &menu, getZoneDef(zoneIndex).name,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -483,24 +480,17 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 					gameState->actionMode = ActionMode_Zone;
 					setCursor("build");
 				}
-
-				menuButtonRect.y += menuButtonRect.h + uiPadding;
-				menuRect.h += menuButtonRect.h + uiPadding;
 			}
 
-			append(&uiState->uiRects, menuRect);
-			fillDrawRectPlaceholder(background, menuRect, theme->overlayColor);
+			endPopupMenu(uiState, &menu);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build))
 		{
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
-			Rect2 menuButtonRect = buttonRect;
-			menuButtonRect.y += menuButtonRect.h + uiPadding;
-
-			Rect2 menuRect = rectXYWH(menuButtonRect.x - uiPadding, menuButtonRect.y - uiPadding, menuButtonRect.w + (uiPadding * 2), uiPadding);
+			f32 popupMenuWidth = 200.0f; // TODO: Actual width somehow! Use the button texts' size
+			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (auto it = iterate(getConstructibleBuildings());
 				!it.isDone;
@@ -509,7 +499,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				BuildingDef *buildingDef = getValue(it);
 				ASSERT(buildingDef->buildMethod != BuildMethod_None); //We somehow got an un-constructible building in our constructible buildings list!
 
-				if (uiButton(uiState, buildingDef->name, menuButtonRect,
+				if (popupMenuButton(uiState, &menu, buildingDef->name,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);
@@ -517,13 +507,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 					gameState->actionMode = ActionMode_Build;
 					setCursor("build");
 				}
-
-				menuButtonRect.y += menuButtonRect.h + uiPadding;
-				menuRect.h += menuButtonRect.h + uiPadding;
 			}
 
-			append(&uiState->uiRects, menuRect);
-			fillDrawRectPlaceholder(background, menuRect, theme->overlayColor);
+			endPopupMenu(uiState, &menu);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
