@@ -799,6 +799,30 @@ inline Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax)
 	return irectXYWH(xMin, yMin, (1+xMax-xMin), (1+yMax-yMin));
 }
 
+inline Rect2I irectAligned(V2I origin, V2I size, u32 alignment)
+{
+	Rect2I rect = {};
+	rect.size = size;
+
+	switch (alignment & ALIGN_H)
+	{
+		case ALIGN_H_CENTRE:  rect.x = origin.x - (size.x / 2);  break;
+		case ALIGN_RIGHT:     rect.x = origin.x - size.x;        break;
+		case ALIGN_LEFT:      // Left is default
+		default:              rect.x = origin.x;                 break;
+	}
+
+	switch (alignment & ALIGN_V)
+	{
+		case ALIGN_V_CENTRE:  rect.y = origin.y - (size.y / 2);  break;
+		case ALIGN_BOTTOM:    rect.y = origin.y - size.y;        break;
+		case ALIGN_TOP:       // Top is default
+		default:              rect.y = origin.y;                 break;
+	}
+
+	return rect;
+}
+
 inline bool contains(Rect2I rect, s32 x, s32 y)
 {
 	return (x >= rect.x)
@@ -810,6 +834,14 @@ inline bool contains(Rect2I rect, s32 x, s32 y)
 inline bool contains(Rect2I rect, V2I pos)
 {
 	return contains(rect, pos.x, pos.y);
+}
+
+inline bool contains(Rect2I rect, V2 pos)
+{
+	return (pos.x >= rect.x)
+		&& (pos.x < rect.x + rect.w)
+		&& (pos.y >= rect.y)
+		&& (pos.y < rect.y + rect.h);
 }
 
 inline bool contains(Rect2I outer, Rect2I inner)
@@ -918,6 +950,29 @@ inline Rect2I centreWithin(Rect2I outer, Rect2I inner)
 
 	result.x = outer.x - ((result.w - outer.w) / 2);
 	result.y = outer.y - ((result.h - outer.h) / 2);
+
+	return result;
+}
+
+inline V2I alignWithinRectangle(Rect2I bounds, u32 alignment, s32 padding)
+{
+	V2I result;
+
+	switch (alignment & ALIGN_H)
+	{
+		case ALIGN_H_CENTRE:  result.x = bounds.x + (bounds.w / 2);      break;
+		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding;  break;
+		case ALIGN_LEFT:      // Left is default
+		default:              result.x = bounds.x + padding;             break;
+	}
+
+	switch (alignment & ALIGN_V)
+	{
+		case ALIGN_V_CENTRE:  result.y = bounds.y + (bounds.h / 2);      break;
+		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding;  break;
+		case ALIGN_TOP:       // Top is default
+		default:              result.y = bounds.y + padding;             break;
+	}
 
 	return result;
 }

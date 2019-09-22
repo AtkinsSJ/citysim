@@ -310,7 +310,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Zone: {0}", {zone ? getZoneDef(zone).name : "None"s}));
+	window_label(context, myprintf("Zone: {0}", {zone ? getText(getZoneDef(zone).nameID) : "None"s}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -431,48 +431,76 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	f32 windowWidth = (f32) renderer->uiCamera.size.x;
+	s32 windowWidth = renderer->uiCamera.size.x;
 	V2 centre = renderer->uiCamera.pos;
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 	City *city = &gameState->city;
 
-	const f32 uiPadding = 4; // TODO: Move this somewhere sensible!
-	f32 left = uiPadding;
-	f32 right = windowWidth - uiPadding;
+	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
+	s32 left = uiPadding;
+	s32 right = windowWidth - uiPadding;
 
-	Rect2 uiRect = rectXYWH(0,0, windowWidth, 64);
+	Rect2I uiRect = irectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
-	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
+	drawSingleRect(uiBuffer, rect2(uiRect), renderer->shaderIds.untextured, theme->overlayColor);
 
 	uiText(&renderer->uiBuffer, font, city->name,
-	       v2(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
+	       v2i(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(&renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2i(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(&renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
 	uiText(&renderer->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
-	       v2(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+	       v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
-	       v2(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+	       v2i(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 
 	// Build UI
 	{
-		Rect2 buttonRect = rectXYWH(uiPadding, 28 + uiPadding, 80, 24);
+		Rect2I buttonRect = irectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
 		// The "ZONE" menu
 		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, Menu_Zone))
 		{
-			f32 popupMenuWidth = 200.0f; // TODO: Actual width somehow! Use the button texts' size
+			//
+			// UGH, all of this UI code is so hacky!
+			// As I'm trying to use it, more and more of it is unraveling. I want to find the widest button width
+			// beforehand, but that means having to get which font will be used, and that's not exposed nicely!
+			// So I have to hackily write this buttonFont definition in the same way or it'll be wrong.
+			BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "general"s)->fontName);
+			// So, that really wants to come out. Also, calculateTextSize() is the wrong call because we want
+			// to know the BUTTON width, which will be the text size plus padding, depending on the style.
+			//
+			// So probably we want uiButton() to take a nullable Style parameter which defaults to something sensible?
+			// Or maybe not nullable.
+			//
+			// I'm tempted to put random state in PopupMenu so we don't have to pass it to every call... but really,
+			// that would force all buttons to be the same and we might not want that, so it's better to be a little
+			// more verbose. That former kind of thinking is what's led to the UiState mess.
+			//
+			// Ramble ramble ramble.
+			//
+			// - Sam, 22/09/2019
+			//
+
+			s32 buttonTextMaxWidth = 0.0f;
+			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
+			{
+				buttonTextMaxWidth = max(buttonTextMaxWidth, calculateTextSize(buttonFont, getText(getZoneDef(zoneIndex).nameID)).x);
+			}
+
+			s32 popupMenuWidth = buttonTextMaxWidth + (uiPadding * 2);
+
 			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (popupMenuButton(uiState, &menu, getZoneDef(zoneIndex).name,
+				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).nameID),
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -489,10 +517,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build))
 		{
-			f32 popupMenuWidth = 200.0f; // TODO: Actual width somehow! Use the button texts' size
+			s32 popupMenuWidth = 200; // TODO: Actual width somehow! Use the button texts' size
 			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
-			for (auto it = iterate(getConstructibleBuildings());
+			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
+
+			for (auto it = iterate(constructibleBuildings);
 				!it.isDone;
 				next(&it))
 			{
@@ -524,7 +554,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// Data layer menu
 		if (uiMenuButton(uiState, LOCAL("button_data_views"), buttonRect, Menu_DataViews))
 		{
-			f32 popupMenuWidth = 200.0f; // TODO: Actual width somehow! Use the button texts' size
+			s32 popupMenuWidth = 200; // TODO: Actual width somehow! Use the button texts' size
 			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))

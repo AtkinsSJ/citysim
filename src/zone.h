@@ -17,7 +17,7 @@ enum ZoneType
 struct ZoneDef
 {
 	ZoneType typeID;
-	String name;
+	String nameID;
 	V4 color;
 	s32 costPerTile;
 	bool carriesPower;
@@ -25,10 +25,10 @@ struct ZoneDef
 };
 
 ZoneDef zoneDefs[] = {
-	{Zone_None,        "Dezone"s,      color255(255, 255, 255, 128), 10, false, 0},
-	{Zone_Residential, "Residential"s, color255(  0, 255,   0, 128), 10, true,  3},
-	{Zone_Commercial,  "Commercial"s,  color255(  0,   0, 255, 128), 10, true,  2},
-	{Zone_Industrial,  "Industrial"s,  color255(255, 255,   0, 128), 20, true,  4},
+	{Zone_None,        "zone_none"s,        color255(255, 255, 255, 128), 10, false, 0},
+	{Zone_Residential, "zone_residential"s, color255(  0, 255,   0, 128), 10, true,  3},
+	{Zone_Commercial,  "zone_commercial"s,  color255(  0,   0, 255, 128), 10, true,  2},
+	{Zone_Industrial,  "zone_industrial"s,  color255(255, 255,   0, 128), 20, true,  4},
 };
 
 enum ZoneSectorFlags

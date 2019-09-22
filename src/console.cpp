@@ -52,14 +52,14 @@ void renderConsole(Console *console)
 
 	f32 actualConsoleHeight = console->currentHeight * renderer->uiCamera.size.y;
 
-	f32 screenEdgePadding = 8.0f;
-	V2 textPos = v2(screenEdgePadding, round_f32(actualConsoleHeight - screenEdgePadding));
-	f32 textMaxWidth = renderer->uiCamera.size.x - (2*screenEdgePadding);
+	s32 screenEdgePadding = 8;
+	V2I textPos = v2i(screenEdgePadding, round_f32(actualConsoleHeight - screenEdgePadding));
+	s32 textMaxWidth = renderer->uiCamera.size.x - (2*screenEdgePadding);
 
 	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 
-	Rect2 textInputRect = drawTextInput(renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
+	Rect2I textInputRect = drawTextInput(renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
 	textPos.y -= textInputRect.h;
 
 	textPos.y -= 8.0f;
@@ -85,7 +85,7 @@ void renderConsole(Console *console)
 		ConsoleOutputLine *line = get(it);
 		ConsoleLineStyle style = console->styles[line->style];
 
-		Rect2 resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, style.textColor, textMaxWidth);
+		Rect2I resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, style.textColor, textMaxWidth);
 		textPos.y -= resultRect.h;
 
 		// If we've gone off the screen, stop!

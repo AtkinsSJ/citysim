@@ -170,7 +170,7 @@ void loadUITheme(Blob data, Asset *asset)
 				{
 					switch (target.type)
 					{
-						case Section_Window:  target.window->contentPadding = (f32) contentPadding.value; break;
+						case Section_Window:  target.window->contentPadding = (s32) contentPadding.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -232,8 +232,8 @@ void loadUITheme(Blob data, Asset *asset)
 				{
 					switch (target.type)
 					{
-						case Section_Button:     target.button->padding    = (f32) padding.value; break;
-						case Section_UIMessage:  target.message->padding   = (f32) padding.value; break;
+						case Section_Button:     target.button->padding    = (s32) padding.value; break;
+						case Section_UIMessage:  target.message->padding   = (s32) padding.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -320,7 +320,7 @@ void loadUITheme(Blob data, Asset *asset)
 				{
 					switch (target.type)
 					{
-						case Section_Window:  target.window->titleBarHeight = (f32) titleBarHeight.value; break;
+						case Section_Window:  target.window->titleBarHeight = (s32) titleBarHeight.value; break;
 						default:  WRONG_SECTION;
 					}
 				}

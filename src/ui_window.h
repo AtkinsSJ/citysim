@@ -8,11 +8,11 @@ struct WindowContext
 
 	bool doRender;
 
-	Rect2 contentArea;
-	V2 currentOffset;
-	f32 largestItemWidth;
+	Rect2I contentArea;
+	V2I currentOffset;
+	s32 largestItemWidth;
 	u32 alignment;
-	f32 perItemPadding;
+	s32 perItemPadding;
 
 	// Results
 	bool closeRequested;
@@ -65,7 +65,7 @@ void renderWindows(UIState *uiState);
 // INTERNAL
 //
 static void makeWindowActive(UIState *uiState, s32 windowIndex);
-static Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding);
+static Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding);
 
 WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState);
 void prepareForUpdate(WindowContext *context);

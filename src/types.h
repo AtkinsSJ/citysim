@@ -370,9 +370,11 @@ Rect2I irectPosSize(V2I position, V2I size);
 Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY);
 Rect2I irectCentreSize(V2I position, V2I size);
 Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax);
+Rect2I irectAligned(V2I origin, V2I size, u32 alignment);
 
 bool contains(Rect2I rect, s32 x, s32 y);
 bool contains(Rect2I rect, V2I pos);
+bool contains(Rect2I rect, V2 pos);
 bool contains(Rect2I outer, Rect2I inner);
 bool overlaps(Rect2I outer, Rect2I inner);
 
@@ -386,6 +388,7 @@ V2 centreOf(Rect2I rect);
 s32 areaOf(Rect2I rect);
 
 Rect2I centreWithin(Rect2I outer, Rect2I inner);
+V2I alignWithinRectangle(Rect2I bounds, u32 alignment, s32 padding=0);
 
 //
 // Matrix4

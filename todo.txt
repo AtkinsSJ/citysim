@@ -16,6 +16,23 @@ Notes for searching:
 
 ------------------------------------------------
 
+UI:
+- Switch everything to using integer coordinates.
+	-> drawSingleRect and fillDrawRectPlaceholder should maybe take a Rect2I directly, as we do a conversion a lot!
+- calculateUiButtonSize()
+- Pass the style as a parameter to uiButton()
+
+Pop-up menus
+- Theming
+- Scrolling???
+	-> This is a whole THING. Scrollbars, saving menu state, drawing the elements with an offset, and rendering with a stencil!
+	- We already have drawScrollbar(), just need to make it interactable (and consume the mouse input)
+	- Saving menu state, if we only ever have one open at a time, just means we have one set of state, which we can reset when a menu opens or when it closes, whichever is easier. (I think closing because we already have a function for that. On second thoughts, I've come across the code in uiMenuButton() which detects if the menu just became visible, so we can do it there! That's more sensible I think. Or rather, pull that out into a uiShowMenu() function.)
+	- Drawing with an offset shouldn't be TOO crazy.
+	- Now that our renderer is in-order, we should be able to just add a "PushStencil" command before, and a "PopStencil" one after.
+- Button width? IDK.
+- Maybe I should just make these be windows......... probably. Windows could do with a "scrolling part that's stencilled" feature though so yay.
+
 Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.

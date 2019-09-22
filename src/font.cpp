@@ -51,13 +51,13 @@ BitmapFontGlyph *findGlyph(BitmapFont *font, unichar targetChar)
 	return result;
 }
 
-V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
+V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
 	ASSERT(font != null); //Font must be provided!
 	
-	V2 result = v2(maxWidth, (f32)font->lineHeight);
+	V2I result = v2i(maxWidth, font->lineHeight);
 
 	bool doWrap = (maxWidth > 0);
 	s32 currentX = 0;
@@ -176,20 +176,20 @@ V2 calculateTextSize(BitmapFont *font, String text, f32 maxWidth)
 		}
 	}
 
-	result.x = max(maxWidth, (f32)max(longestLineWidth, currentX));
-	result.y = (f32)(font->lineHeight * lineCount);
+	result.x = max(maxWidth, longestLineWidth, currentX);
+	result.y = (font->lineHeight * lineCount);
 
 	ASSERT(maxWidth < 1 || maxWidth >= result.x); //Somehow we measured text that's too wide!
 	return result;
 }
 
-s32 calculateMaxTextWidth(BitmapFont *font, std::initializer_list<String> texts, f32 limit)
+s32 calculateMaxTextWidth(BitmapFont *font, std::initializer_list<String> texts, s32 limit)
 {
 	s32 result = 0;
 
 	for (auto text = texts.begin(); text != texts.end(); text++)
 	{
-		result = max(result, round_s32(calculateTextSize(font, *text, limit).x));
+		result = max(result, calculateTextSize(font, *text, limit).x);
 	}
 
 	return result;
@@ -228,7 +228,7 @@ void _alignText(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, s3
 	}
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 bounds, u32 align, V4 color, s8 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
+void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2I bounds, u32 align, V4 color, s8 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
 {
 	DEBUG_FUNCTION();
 
@@ -237,7 +237,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	ASSERT(renderBuffer != null); //RenderBuffer must be provided!
 	ASSERT(font != null); //Font must be provided!
 
-	V2 topLeft = bounds.pos;
+	V2I topLeft = bounds.pos;
 	s32 maxWidth = (s32) bounds.w;
 	
 	//
@@ -267,7 +267,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	if (caretInfoResult && caretIndex == 0)
 	{
 		caretInfoResult->isValid = true;
-		caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
+		caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
 	}
 
 	s32 startOfCurrentLine = 0;
@@ -310,7 +310,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 					if (caretInfoResult && currentChar == caretIndex)
 					{
 						caretInfoResult->isValid = true;
-						caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
+						caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
 					}
 
 					currentY += font->lineHeight;
@@ -346,7 +346,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 					if (caretInfoResult && currentChar == caretIndex)
 					{
 						caretInfoResult->isValid = true;
-						caretInfoResult->caretPosition = bounds.pos + v2(currentX + whitespaceWidthBeforeCurrentWord, currentY);
+						caretInfoResult->caretPosition = bounds.pos + v2i(currentX + whitespaceWidthBeforeCurrentWord, currentY);
 					}
 				}
 				foundNext = getNextUnichar(text, &bytePos, &c);
@@ -405,13 +405,13 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 						whitespaceWidthBeforeCurrentWord = 0;
 					}
 
-					addGlyphRect(group, glyph, topLeft + v2(currentX, currentY), color);
+					addGlyphRect(group, glyph, v2(topLeft.x + currentX, topLeft.y + currentY), color);
 
 					currentChar++;
 					if (caretInfoResult && currentChar == caretIndex)
 					{
 						caretInfoResult->isValid = true;
-						caretInfoResult->caretPosition = bounds.pos + v2(currentX + glyph->xAdvance, currentY);
+						caretInfoResult->caretPosition = bounds.pos + v2i(currentX + glyph->xAdvance, currentY);
 					}
 
 					currentX += glyph->xAdvance;
@@ -434,20 +434,20 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2 b
 	if (caretInfoResult && currentChar < caretIndex)
 	{
 		caretInfoResult->isValid = true;
-		caretInfoResult->caretPosition = bounds.pos + v2(currentX, currentY);
+		caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
 	}
 
 	ASSERT(glyphCount == group->count);
 	endRectsGroup(group);
 }
 
-V2 calculateTextPosition(V2 origin, V2 size, u32 align)
+V2I calculateTextPosition(V2I origin, V2I size, u32 align)
 {
-	V2 offset;
+	V2I offset;
 
 	switch (align & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE:  offset.x = origin.x - (size.x / 2.0f);  break;
+		case ALIGN_H_CENTRE:  offset.x = origin.x - (size.x / 2);     break;
 		case ALIGN_RIGHT:     offset.x = origin.x - size.x;           break;
 		case ALIGN_LEFT:      // Left is default
 		default:              offset.x = origin.x;                    break;
@@ -455,14 +455,14 @@ V2 calculateTextPosition(V2 origin, V2 size, u32 align)
 
 	switch (align & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE:  offset.y = origin.y - (size.y / 2.0f);  break;
+		case ALIGN_V_CENTRE:  offset.y = origin.y - (size.y / 2);     break;
 		case ALIGN_BOTTOM:    offset.y = origin.y - size.y;           break;
 		case ALIGN_TOP:       // Top is default
 		default:              offset.y = origin.y;                    break;
 	}
 
-	offset.x = round_f32(offset.x);
-	offset.y = round_f32(offset.y);
+	offset.x = offset.x;
+	offset.y = offset.y;
 
 	return offset;
 }

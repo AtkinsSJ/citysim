@@ -10,7 +10,7 @@ struct UIButtonStyle
 	V4 hoverColor;
 	V4 pressedColor;
 
-	f32 padding;
+	s32 padding;
 };
 
 struct UILabelStyle
@@ -32,12 +32,12 @@ struct UIMessageStyle
 	V4 textColor;
 
 	V4 backgroundColor;
-	f32 padding;
+	s32 padding;
 };
 
 struct UIWindowStyle
 {
-	f32 titleBarHeight;
+	s32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
 	String titleFontName;
@@ -47,7 +47,7 @@ struct UIWindowStyle
 	V4 backgroundColor;
 	V4 backgroundColorInactive;
 
-	f32 contentPadding;
+	s32 contentPadding;
 
 	V2I offsetFromMouse;
 

@@ -13,14 +13,14 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 	initChunkedArray(&uiState->openWindows, arena, 64);
 }
 
-Rect2 uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth)
+Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
-	V2 textSize = calculateTextSize(font, text, maxWidth);
-	V2 topLeft  = calculateTextPosition(origin, textSize, align);
+	V2I textSize = calculateTextSize(font, text, maxWidth);
+	V2I topLeft  = calculateTextPosition(origin, textSize, align);
 
-	Rect2 bounds = rectPosSize(topLeft, textSize);
+	Rect2I bounds = irectPosSize(topLeft, textSize);
 
 	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text);
 
@@ -38,12 +38,12 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
-bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
+bool uiButton(UIState *uiState, String text, Rect2I bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	V2 mousePos = renderer->uiCamera.mousePos;
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	UIButtonStyle *style = findButtonStyle(&assets->theme, "general"s);
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
@@ -82,8 +82,8 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
-	V2 textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
+	drawSingleRect(&renderer->uiBuffer, rect2(bounds), renderer->shaderIds.untextured, backColor);
+	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(&renderer->uiBuffer, getFont(style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
@@ -96,7 +96,7 @@ bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active, SDL_Keyc
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
+bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
@@ -112,6 +112,8 @@ bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, s32 menuID, SDL_K
 		{
 			uiState->openMenu = menuID;
 			currentlyOpen = true;
+
+			// NB: Do all menu-state-initialisation here!
 		}
 	}
 
@@ -156,16 +158,16 @@ void drawUiMessage(UIState *uiState)
 				textColor *= lerp<f32>(textColor.a, 0, tt);
 			}
 
-			V2 origin = v2(renderer->uiCamera.size.x * 0.5f, renderer->uiCamera.size.y - 8.0f);
+			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
 
 			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-			Rect2 labelRect = uiText(&renderer->uiBuffer, getFont(style->fontName), uiState->message.text, origin,
+			Rect2I labelRect = uiText(&renderer->uiBuffer, getFont(style->fontName), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);
 
-			fillDrawRectPlaceholder(backgroundRI, labelRect, backgroundColor);
+			fillDrawRectPlaceholder(backgroundRI, rect2(labelRect), backgroundColor);
 		}
 	}
 }
@@ -184,14 +186,14 @@ inline void uiCloseMenus(UIState *uiState)
 	uiState->openMenu = 0;
 }
 
-PopupMenu beginPopupMenu(f32 x, f32 y, f32 width, V4 backgroundColor)
+PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, V4 backgroundColor)
 {
 	PopupMenu result = {};
 
-	result.origin = v2(x, y);
+	result.origin = v2i(x, y);
 	result.width = width;
 
-	result.padding = 4.0f; // TODO: Define this in styles!
+	result.padding = 4; // TODO: Define this in styles!
 	result.backgroundColor = backgroundColor;
 	result.backgroundRect = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 	result.currentYOffset = result.padding;
@@ -201,10 +203,10 @@ PopupMenu beginPopupMenu(f32 x, f32 y, f32 width, V4 backgroundColor)
 
 bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActive)
 {
-	f32 buttonHeight = 20.0f; // TODO: Actual button size!
-	Rect2 buttonRect = rectXYWH(menu->origin.x + menu->padding,
+	s32 buttonHeight = 20; // TODO: Actual button size!
+	Rect2I buttonRect = irectXYWH(menu->origin.x + menu->padding,
 								menu->origin.y + menu->currentYOffset,
-								menu->width - (menu->padding * 2.0f),
+								menu->width - (menu->padding * 2),
 								buttonHeight);
 
 	bool result = uiButton(uiState, text, buttonRect, isActive);
@@ -216,7 +218,7 @@ bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActi
 
 void endPopupMenu(UIState *uiState, PopupMenu *menu)
 {
-	Rect2 menuRect = rectXYWH(menu->origin.x, menu->origin.y, menu->width, menu->currentYOffset);
+	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width, menu->currentYOffset);
 	append(&uiState->uiRects, menuRect);
-	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->backgroundColor);
+	fillDrawRectPlaceholder(menu->backgroundRect, rect2(menuRect), menu->backgroundColor);
 }

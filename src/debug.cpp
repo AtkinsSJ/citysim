@@ -108,12 +108,12 @@ void processDebugData(DebugState *debugState)
 
 struct DebugTextState
 {
-	V2 pos;
+	V2I pos;
 	Alignment hAlign;
 	char buffer[1024];
 	BitmapFont *font;
 	V4 color;
-	f32 maxWidth;
+	s32 maxWidth;
 	bool progressUpwards;
 
 	RenderBuffer *renderBuffer;
@@ -168,14 +168,14 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 	textState->charsLastPrinted = text.length;
 	V4 textColor = (color != null) ? *color : textState->color;
 
-	V2 textSize = calculateTextSize(textState->font, text, textState->maxWidth);
-	V2 topLeft  = calculateTextPosition(textState->pos, textSize, align);
+	V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
+	V2I topLeft  = calculateTextPosition(textState->pos, textSize, align);
 
-	Rect2 bounds = rectPosSize(topLeft, textSize);
+	Rect2I bounds = irectPosSize(topLeft, textSize);
 
 	if (doHighlight && contains(bounds, textState->camera->mousePos))
 	{
-		drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
+		drawSingleRect(textState->renderBuffer, rect2(bounds), textState->untexturedShaderID, textColor * 0.5f);
 		drawText(textState->renderBuffer, textState->font, text, bounds, align, color255(0, 0, 0, 255), textState->textShaderID);
 	}
 	else

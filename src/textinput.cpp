@@ -19,15 +19,15 @@ String textInputToString(TextInput *textInput)
 	return result;
 }
 
-Rect2 drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *textInput, V2 origin, s32 align, V4 color, f32 maxWidth)
+Rect2I drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *textInput, V2I origin, s32 align, V4 color, s32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
 	String text = makeString(textInput->buffer, textInput->byteLength);
 
-	V2 textSize  = calculateTextSize(font, text, maxWidth);
-	V2 topLeft   = calculateTextPosition(origin, textSize, align);
-	Rect2 bounds = rectPosSize(topLeft, textSize);
+	V2I textSize  = calculateTextSize(font, text, maxWidth);
+	V2I topLeft   = calculateTextPosition(origin, textSize, align);
+	Rect2I bounds = irectPosSize(topLeft, textSize);
 
 	// TODO: @Cleanup I really don't like DrawTextResult as it is now. This is the ONLY place we need it, and we keep
 	// a bunch of data in it that we don't really need - we just want to know the top-left corner of where the caret should be.
@@ -44,7 +44,7 @@ Rect2 drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *tex
 		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
 		{
 			// Draw it to the right of the glyph
-			caretRect.pos = drawTextResult.caretPosition;
+			caretRect.pos = v2(drawTextResult.caretPosition);
 		}
 
 		// Shifted 1px left for better legibility of text

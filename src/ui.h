@@ -16,7 +16,7 @@ struct UIState
 	UIMessage message;
 
 	// TODO: Replace this with better "this input has already been used" code!
-	ChunkedArray<Rect2> uiRects;
+	ChunkedArray<Rect2I> uiRects;
 
 	s32 openMenu;
 
@@ -27,21 +27,21 @@ struct UIState
 	// Window stuff
 	ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
 	bool isDraggingWindow;
-	V2 windowDragWindowStartPos;
+	V2I windowDragWindowStartPos;
 };
 
 void initUIState(UIState *uiState, MemoryArena *arena);
 
-Rect2 uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2 origin, u32 align, V4 color, f32 maxWidth = 0);
-bool uiButton(UIState *uiState, String text, Rect2 bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-bool uiMenuButton(UIState *uiState, String text, Rect2 bounds, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
+bool uiButton(UIState *uiState, String text, Rect2I bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 void uiCloseMenus(UIState *uiState);
 
 // NB: `message` is copied into the UIState, so it can be a temporary allocation
 void pushUiMessage(UIState *uiState, String message);
 void drawUiMessage(UIState *uiState);
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2 topLeft, f32 height, f32 scrollPercent, V2 knobSize, V4 knobColor, s8 shaderID);
+void drawScrollBar(RenderBuffer *uiBuffer, V2I topLeft, s32 height, f32 scrollPercent, V2I knobSize, V4 knobColor, s8 shaderID);
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK
@@ -49,18 +49,18 @@ void basicTooltipWindowProc(WindowContext *context, void *userData);
 
 struct PopupMenu
 {
-	V2 origin;
-	f32 width;
+	V2I origin;
+	s32 width;
 
  	// TODO: Put these in a style!
  	// {
-	f32 padding;
+	s32 padding;
 	V4 backgroundColor;
 	// }
 
 	RenderItem_DrawSingleRect *backgroundRect;
 
-	f32 currentYOffset;
+	s32 currentYOffset;
 
 	// TODO: Maximum height, with a scrollbar if it's too big.
 	// This means, storing a scroll-position for each menu somehow...
@@ -69,6 +69,6 @@ struct PopupMenu
 	// when it's hidden, actually!!! That'd work. Awesome.
 };
 
-PopupMenu beginPopupMenu(f32 x, f32 y, f32 width, V4 backgroundColor);
+PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, V4 backgroundColor);
 bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActive);
 void endPopupMenu(UIState *uiState, PopupMenu *menu);

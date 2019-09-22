@@ -6,19 +6,19 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	
 	AppStatus result = AppStatus_MainMenu;
 
-	f32 windowWidth  = (f32) renderer->uiCamera.size.x;
+	s32 windowWidth  = renderer->uiCamera.size.x;
 	UITheme *theme = &assets->theme;
 
 	// Debug text for profiling text rendering
 	UILabelStyle *liLabelStyle = findLabelStyle(theme, "small"s);
 	uiText(&renderer->uiBuffer, getFont(liLabelStyle->fontName), LOCAL("lorem_ipsum"),
-			v2(0.0f,0.0f), ALIGN_LEFT | ALIGN_TOP,
+			v2i(0,0), ALIGN_LEFT | ALIGN_TOP,
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
 			// v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,
 			color255(255, 255, 255, 60), windowWidth);
 
-	V2 position = v2(windowWidth * 0.5f, 157.0f);
-	f32 maxLabelWidth = windowWidth - 256;
+	V2I position = v2i(windowWidth / 2, 157);
+	s32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"s);
 	BitmapFont *font = getFont(labelStyle->fontName);
@@ -32,7 +32,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	position.y += (uiText(&renderer->uiBuffer, font, "This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."s,
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	Rect2 buttonRect = rectXYWH(position.x - (80/2), position.y + 32, 80, 24);
+	Rect2I buttonRect = irectXYWH(position.x - (80/2), position.y + 32, 80, 24);
 	if (uiButton(uiState, LOCAL("button_play"), buttonRect)) // , SDLK_RETURN
 	{
 		result = AppStatus_Game;

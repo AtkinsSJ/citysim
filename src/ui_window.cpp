@@ -15,7 +15,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 	}
 
 	u32 alignment = context->alignment;
-	V2 origin = context->contentArea.pos + context->currentOffset;
+	V2I origin = context->contentArea.pos + context->currentOffset;
 
 	if (alignment & ALIGN_RIGHT)
 	{
@@ -23,17 +23,17 @@ void window_label(WindowContext *context, String text, char *styleName)
 	}
 	else if (alignment & ALIGN_H_CENTRE)
 	{
-		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
+		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
 	}
 
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
-		f32 maxWidth = context->contentArea.w - context->currentOffset.x;
+		s32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
-		V2 textSize = calculateTextSize(font, text, maxWidth);
-		V2 topLeft = calculateTextPosition(origin, textSize, alignment);
-		Rect2 bounds = rectPosSize(topLeft, textSize);
+		V2I textSize = calculateTextSize(font, text, maxWidth);
+		V2I topLeft = calculateTextPosition(origin, textSize, alignment);
+		Rect2I bounds = irectPosSize(topLeft, textSize);
 
 		if (context->doRender)
 		{
@@ -56,8 +56,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 	UIButtonStyle *style = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
 
 	u32 textAlignment = style->textAlignment;
-	f32 buttonPadding = style->padding;
-	V2 mousePos = renderer->uiCamera.mousePos;
+	s32 buttonPadding = style->padding;
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -66,7 +66,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 	}
 
 	s32 alignment = context->alignment;
-	V2 origin = context->contentArea.pos + context->currentOffset;
+	V2I origin = context->contentArea.pos + context->currentOffset;
 
 	if (alignment & ALIGN_RIGHT)
 	{
@@ -74,36 +74,39 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 	}
 	else if (alignment & ALIGN_H_CENTRE)
 	{
-		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2.0f);
+		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
 	}
 
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
-		f32 maxWidth;
+		s32 maxWidth;
 		if (textWidth == -1)
 		{
-			maxWidth = context->contentArea.w - context->currentOffset.x - (2.0f * buttonPadding);
+			maxWidth = context->contentArea.w - context->currentOffset.x - (2 * buttonPadding);
 		}
 		else
 		{
-			maxWidth = (f32) textWidth;
+			maxWidth = textWidth;
 		}
 
-		V2 textSize = calculateTextSize(font, text, maxWidth);
-		Rect2 buttonBounds;
+		// @Cleanup: This if() seems unnecessary, we could just put textWidth into textSize and use that?
+		// It's weird and inconsistent, we treat textWidth as the width sometimes and maxWidth others, and
+		// they could be different values because of calculateTextSize??? Actually I don't even know.
+		V2I textSize = calculateTextSize(font, text, maxWidth);
+		Rect2I buttonBounds;
 		if (textWidth == -1)
 		{
- 			buttonBounds = rectAligned(origin, textSize + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+ 			buttonBounds = irectAligned(origin, textSize + v2i(buttonPadding * 2, buttonPadding * 2), alignment);
 		}
 		else
 		{
-			buttonBounds = rectAligned(origin, v2((f32)textWidth, textSize.y) + v2(buttonPadding * 2.0f, buttonPadding * 2.0f), alignment);
+			buttonBounds = irectAligned(origin, v2i(textWidth, textSize.y) + v2i(buttonPadding * 2, buttonPadding * 2), alignment);
 		}
 
-		V2 textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
-		V2 textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
-		Rect2 bounds = rectPosSize(textTopLeft, textSize);
+		V2I textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
+		V2I textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
+		Rect2I bounds = irectPosSize(textTopLeft, textSize);
 
 		if (context->doRender)
 		{
@@ -129,7 +132,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				}
 			}
 
-			fillDrawRectPlaceholder(background, buttonBounds, backColor);
+			fillDrawRectPlaceholder(background, rect2(buttonBounds), backColor);
 		}
 
 		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
@@ -228,12 +231,12 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 }
 
 inline static
-Rect2 getWindowContentArea(Rect2I windowArea, f32 barHeight, f32 contentPadding)
+Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding)
 {
-	return rectXYWH(windowArea.x + contentPadding,
+	return irectXYWH(windowArea.x + contentPadding,
 					windowArea.y + barHeight + contentPadding,
-					windowArea.w - (contentPadding * 2.0f),
-					windowArea.h - barHeight - (contentPadding * 2.0f));
+					windowArea.w - (contentPadding * 2),
+					windowArea.h - barHeight - (contentPadding * 2));
 }
 
 WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState)
@@ -243,10 +246,10 @@ WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UISt
 	context.window = window;
 	context.windowStyle = windowStyle;
 	context.contentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);
-	context.currentOffset = v2(0,0);
+	context.currentOffset = v2i(0,0);
 	context.largestItemWidth = 0;
 	context.alignment = ALIGN_TOP | ALIGN_LEFT;
-	context.perItemPadding = 4.0f;
+	context.perItemPadding = 4; // TODO: Make this part of the style!
 
 	return context;
 }
@@ -256,10 +259,10 @@ void prepareForUpdate(WindowContext *context)
 	context->doRender = false;
 
 	context->contentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
-	context->currentOffset = v2(0,0);
+	context->currentOffset = v2i(0,0);
 	context->largestItemWidth = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
-	context->perItemPadding = 4.0f;
+	context->perItemPadding = 4; // TODO: Make this part of the style!
 }
 
 void prepareForRender(WindowContext *context)
@@ -267,15 +270,15 @@ void prepareForRender(WindowContext *context)
 	context->doRender = true;
 	
 	context->contentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
-	context->currentOffset = v2(0,0);
+	context->currentOffset = v2i(0,0);
 	context->largestItemWidth = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
-	context->perItemPadding = 4.0f;
+	context->perItemPadding = 4; // TODO: Make this part of the style!
 }
 
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
 {
-	V2 mousePos = renderer->uiCamera.mousePos;
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
 	if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
@@ -285,13 +288,13 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 
 		if (window->flags & WinFlag_AutomaticHeight)
 		{
-			f32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-			window->area.h = round_s32(barHeight + context->currentOffset.y + (context->windowStyle->contentPadding * 2.0f));
+			s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
+			window->area.h = barHeight + context->currentOffset.y + (context->windowStyle->contentPadding * 2);
 		}
 
 		if (window->flags & WinFlag_ShrinkWidth)
 		{
-			window->area.w = round_s32(context->largestItemWidth + (context->windowStyle->contentPadding * 2.0f));
+			window->area.w = context->largestItemWidth + (context->windowStyle->contentPadding * 2);
 		}
 	}
 
@@ -309,7 +312,9 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 		}
 		else
 		{
-			window->area.pos = v2i(uiState->windowDragWindowStartPos + (mousePos - getClickStartPos(MouseButton_Left, &renderer->uiCamera)));
+			V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+			window->area.x = uiState->windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
+			window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
 		}
 		
 		uiState->mouseInputHandled = true;
@@ -357,7 +362,7 @@ void updateWindows(UIState *uiState)
 {
 	DEBUG_FUNCTION();
 
-	V2 mousePos = renderer->uiCamera.mousePos;
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	s32 newActiveWindow = -1;
 	s32 closeWindow = -1;
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
@@ -376,7 +381,7 @@ void updateWindows(UIState *uiState)
 
 		UIWindowStyle *windowStyle = findWindowStyle(&assets->theme, window->styleName);
 
-		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
+		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
 		WindowContext context = makeWindowContext(window, windowStyle, uiState);
 
@@ -388,10 +393,10 @@ void updateWindows(UIState *uiState)
 			closeWindow = windowIndex;
 		}
 
-		Rect2 wholeWindowArea = rect2(window->area);
-		Rect2 barArea = rectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
-		Rect2 closeButtonRect = rectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
-		Rect2 contentArea = getWindowContentArea(window->area, barHeight, 0);
+		Rect2I wholeWindowArea = window->area;
+		Rect2I barArea = irectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
+		Rect2I closeButtonRect = irectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
+		Rect2I contentArea = getWindowContentArea(window->area, barHeight, 0);
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
@@ -410,7 +415,7 @@ void updateWindows(UIState *uiState)
 				{
 					// If we're inside the title bar, start dragging!
 					uiState->isDraggingWindow = true;
-					uiState->windowDragWindowStartPos = v2(window->area.pos);
+					uiState->windowDragWindowStartPos = window->area.pos;
 				}
 
 				// Make this the active window! 
@@ -478,13 +483,13 @@ void updateWindows(UIState *uiState)
 
 void renderWindows(UIState *uiState)
 {
-	V2 mousePos = renderer->uiCamera.mousePos;
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	for (auto it = iterateBackwards(&uiState->openWindows);
 		!it.isDone;
 		next(&it))
 	{
 		Window *window = get(it);
-		s32 windowIndex = (s32) getIndex(it);
+		s32 windowIndex = getIndex(it);
 
 		bool isActive = window->wasActiveLastUpdate;
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
@@ -508,16 +513,16 @@ void renderWindows(UIState *uiState)
 		prepareForRender(&context);
 		window->windowProc(&context, window->userData);
 
-		Rect2 wholeWindowArea = rect2(window->area);
-		f32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
-		Rect2 barArea = rectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
-		Rect2 closeButtonRect = rectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
-		Rect2 contentArea = getWindowContentArea(window->area, barHeight, 0);
+		Rect2I wholeWindowArea = window->area;
+		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
+		Rect2I barArea = irectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
+		Rect2I closeButtonRect = irectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
+		Rect2I contentArea = getWindowContentArea(window->area, barHeight, 0);
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
 		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
-		fillDrawRectPlaceholder(contentBackground, contentArea, backColor);
+		fillDrawRectPlaceholder(contentBackground, rect2(contentArea), backColor);
 
 		if (hasTitleBar)
 		{
@@ -529,15 +534,15 @@ void renderWindows(UIState *uiState)
 
 			BitmapFont *titleFont = getFont(windowStyle->titleFontName);
 
-			drawSingleRect(&renderer->uiBuffer, barArea, renderer->shaderIds.untextured, barColor);
-			uiText(&renderer->uiBuffer, titleFont, window->title, barArea.pos + v2(8.0f, barArea.h * 0.5f), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
+			drawSingleRect(&renderer->uiBuffer, rect2(barArea), renderer->shaderIds.untextured, barColor);
+			uiText(&renderer->uiBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
-				drawSingleRect(&renderer->uiBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
+				drawSingleRect(&renderer->uiBuffer, rect2(closeButtonRect), renderer->shaderIds.untextured, closeButtonColorHover);
 			}
-			uiText(&renderer->uiBuffer, titleFont, closeButtonString, centreOf(closeButtonRect), ALIGN_CENTRE, titleColor);
+			uiText(&renderer->uiBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, titleColor);
 		}
 	}
 }
