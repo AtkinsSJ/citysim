@@ -34,8 +34,8 @@ void initUIState(UIState *uiState, MemoryArena *arena);
 
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 0);
-bool uiButton(UIState *uiState, String text, Rect2I bounds, bool active=false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, bool active = false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 void uiCloseMenus(UIState *uiState);
 
 // NB: `message` is copied into the UIState, so it can be a temporary allocation
@@ -71,5 +71,5 @@ struct PopupMenu
 };
 
 PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, V4 backgroundColor);
-bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActive);
+bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive = false);
 void endPopupMenu(UIState *uiState, PopupMenu *menu);

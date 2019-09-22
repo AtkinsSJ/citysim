@@ -464,8 +464,10 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	{
 		Rect2I buttonRect = irectXYWH(uiPadding, 28 + uiPadding, 80, 24);
 
+		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, Menu_Zone))
+		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, Menu_Zone, buttonStyle))
 		{
 			//
 			// UGH, all of this UI code is so hacky!
@@ -489,12 +491,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			//
 
 			// TODO: Get this style name from somewhere configurable? IDK
-			UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "general"s);
 
 			s32 buttonMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).nameID), buttonStyle).x);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).nameID), popupButtonStyle).x);
 			}
 
 			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
@@ -503,7 +505,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).nameID),
+				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).nameID), popupButtonStyle,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -518,18 +520,18 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build))
+		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build, buttonStyle))
 		{
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
-			UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "general"s);
 			s32 buttonMaxWidth = 0;
 			for (auto it = iterate(constructibleBuildings);
 				!it.isDone;
 				next(&it))
 			{
 				BuildingDef *buildingDef = getValue(it);
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buildingDef->name, buttonStyle).x);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buildingDef->name, popupButtonStyle).x);
 			}
 
 			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
@@ -542,7 +544,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			{
 				BuildingDef *buildingDef = getValue(it);
 
-				if (popupMenuButton(uiState, &menu, buildingDef->name,
+				if (popupMenuButton(uiState, &menu, buildingDef->name, popupButtonStyle,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);
@@ -556,7 +558,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect,
+		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect, buttonStyle,
 					(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, "(X)"s))
 		{
@@ -566,24 +568,24 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// Data layer menu
-		if (uiMenuButton(uiState, LOCAL("button_data_views"), buttonRect, Menu_DataViews))
+		if (uiMenuButton(uiState, LOCAL("button_data_views"), buttonRect, Menu_DataViews, buttonStyle))
 		{
-			UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "general"s);
 			s32 buttonMaxWidth = 0;
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{
 				String buttonText = getText(dataViewTitles[dataViewID]);
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buttonText, buttonStyle).x);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buttonText, popupButtonStyle).x);
 			}
 			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
-			
+
 			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{
 				String buttonText = getText(dataViewTitles[dataViewID]);
 
-				if (popupMenuButton(uiState, &menu, buttonText, (gameState->dataLayerToDraw == dataViewID)))
+				if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, (gameState->dataLayerToDraw == dataViewID)))
 				{
 					uiCloseMenus(uiState);
 					gameState->dataLayerToDraw = dataViewID;
@@ -596,7 +598,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		// The, um, "MENU" menu. Hmmm.
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiButton(uiState, LOCAL("button_menu"), buttonRect))
+		if (uiButton(uiState, LOCAL("button_menu"), buttonRect, buttonStyle))
 		{
 			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "general"s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}

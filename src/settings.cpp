@@ -210,9 +210,11 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 	// position.y += (uiText(uiState, font, LocalString("There are no settings yet, soz."),
 	// 		position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
+	// TODO: @Cleanup Auto-size the buttons, and go down based on their height
+	UIButtonStyle *style = findButtonStyle(&assets->theme, "general"s);
 	s32 uiBorderPadding = 4;
 	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
-	if (uiButton(uiState, LOCAL("button_back"), buttonRect, false, SDLK_ESCAPE))
+	if (uiButton(uiState, LOCAL("button_back"), buttonRect, style, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

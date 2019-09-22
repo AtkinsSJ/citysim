@@ -51,13 +51,18 @@ V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth)
 	return result;
 }
 
-bool uiButton(UIState *uiState, String text, Rect2I bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
+bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, bool active, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
+	if (style == null)
+	{
+		style = findButtonStyle(&assets->theme, "general"s);
+	}
+	
 	bool buttonClicked = false;
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	UIButtonStyle *style = findButtonStyle(&assets->theme, "general"s);
+
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
@@ -109,12 +114,12 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, bool active, SDL_Key
 	return buttonClicked;
 }
 
-bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, SDL_Keycode shortcutKey, String tooltip)
+bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, text, bounds, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, text, bounds, style, currentlyOpen, shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -213,7 +218,7 @@ PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, V4 backgroundColor)
 	return result;
 }
 
-bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActive)
+bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive)
 {
 	s32 buttonHeight = 20; // TODO: Actual button size!
 	Rect2I buttonRect = irectXYWH(menu->origin.x + menu->padding,
@@ -221,7 +226,7 @@ bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, bool isActi
 								menu->width - (menu->padding * 2),
 								buttonHeight);
 
-	bool result = uiButton(uiState, text, buttonRect, isActive);
+	bool result = uiButton(uiState, text, buttonRect, style, isActive);
 
 	menu->currentYOffset += buttonRect.h + menu->padding;
 
