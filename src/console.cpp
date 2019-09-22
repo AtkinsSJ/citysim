@@ -70,9 +70,9 @@ void renderConsole(Console *console)
 	s32 heightOfOutputArea = textPos.y;
 
 	// draw backgrounds now we know size of input area
-	Rect2 inputBackRect = rectXYWHi(0, textPos.y, screenWidth, actualConsoleHeight - heightOfOutputArea);
+	Rect2I inputBackRect = irectXYWH(0, textPos.y, screenWidth, actualConsoleHeight - heightOfOutputArea);
 	fillDrawRectPlaceholder(inputBackground, inputBackRect, consoleStyle->inputBackgroundColor);
-	Rect2 consoleBackRect = rectXYWHi(0,0,screenWidth, heightOfOutputArea);
+	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
 	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, consoleStyle->backgroundColor);
 
 	V2I knobSize = v2i(consoleStyle->scrollBarWidth, consoleStyle->scrollBarWidth);

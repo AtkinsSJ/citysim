@@ -392,6 +392,17 @@ void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color)
 	rect->uv = {};
 }
 
+void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color)
+{
+	addSetShader(buffer, shaderID);
+
+	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+
+	rect->bounds = rectXYWHi(bounds.x, bounds.y, bounds.w, bounds.h);
+	rect->color = color;
+	rect->uv = {};
+}
+
 RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID)
 {
 	addSetShader(buffer, shaderID);
@@ -404,6 +415,13 @@ RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 sh
 void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color)
 {
 	placeholder->bounds = bounds;
+	placeholder->color = color;
+	placeholder->uv = {};
+}
+
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color)
+{
+	placeholder->bounds = rectXYWHi(bounds.x, bounds.y, bounds.w, bounds.h);
 	placeholder->color = color;
 	placeholder->uv = {};
 }

@@ -372,7 +372,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	// - Sam, 28/08/2019
 
 	V4 tileHighlightColor = color255(196, 196, 255, 64);
-	drawSingleRect(&renderer->worldOverlayBuffer, rectXYWH((f32)tilePos.x, (f32)tilePos.y, 1.0f, 1.0f), renderer->shaderIds.untextured, tileHighlightColor);
+	drawSingleRect(&renderer->worldOverlayBuffer, rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer->shaderIds.untextured, tileHighlightColor);
 }
 
 void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
@@ -444,7 +444,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	Rect2I uiRect = irectXYWH(0,0, windowWidth, 64);
 	append(&uiState->uiRects, uiRect);
-	drawSingleRect(uiBuffer, rect2(uiRect), renderer->shaderIds.untextured, theme->overlayColor);
+	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
 
 	uiText(&renderer->uiBuffer, font, city->name,
 	       v2i(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
@@ -751,7 +751,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 								}
 								else
 								{
-									drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(255, 64, 64, 128));
+									drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 								}
 							} break;
 						}
@@ -790,7 +790,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 						}
 						else
 						{
-							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(255, 64, 64, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
 				}
@@ -824,11 +824,11 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 						if (canAfford(city, demolishCost))
 						{
 							// Demolition outline
-							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(128, 0, 0, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(128, 0, 0, 128));
 						}
 						else
 						{
-							drawSingleRect(&renderer->worldOverlayBuffer, rect2(dragResult.dragRect), renderer->shaderIds.untextured, color255(255, 64, 64, 128));
+							drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
 				}

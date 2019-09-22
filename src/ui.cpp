@@ -82,7 +82,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, bool active, SDL_Key
 		backColor = style->hoverColor;
 	}
 
-	drawSingleRect(&renderer->uiBuffer, rect2(bounds), renderer->shaderIds.untextured, backColor);
+	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
 	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(&renderer->uiBuffer, getFont(style->fontName), text, textOrigin, textAlignment, style->textColor);
 
@@ -167,7 +167,7 @@ void drawUiMessage(UIState *uiState)
 
 			labelRect = expand(labelRect, style->padding);
 
-			fillDrawRectPlaceholder(backgroundRI, rect2(labelRect), backgroundColor);
+			fillDrawRectPlaceholder(backgroundRI, labelRect, backgroundColor);
 		}
 	}
 }
@@ -219,5 +219,5 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 {
 	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width, menu->currentYOffset);
 	append(&uiState->uiRects, menuRect);
-	fillDrawRectPlaceholder(menu->backgroundRect, rect2(menuRect), menu->backgroundColor);
+	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->backgroundColor);
 }
