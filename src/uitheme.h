@@ -55,6 +55,20 @@ struct UIWindowStyle
 	String labelStyleName;
 };
 
+struct UIConsoleStyle
+{
+	String fontName;
+	// V4 textColor[CLS_COUNT]; // TODO: Not sure how to do this with multiple ones!
+
+	V4 backgroundColor;
+	V4 inputBackgroundColor;
+	s32 padding;
+
+	// Scrollbar
+	s32 scrollBarWidth;
+	V4 scrollBarKnobColor;
+};
+
 struct UITheme
 {
 	// TODO: Remove this?
@@ -63,6 +77,7 @@ struct UITheme
 	HashTable<String> fontNamesToAssetNames;
 
 	HashTable<UIButtonStyle>  buttonStyles;
+	HashTable<UIConsoleStyle> consoleStyles;
 	HashTable<UILabelStyle>   labelStyles;
 	HashTable<UIMessageStyle> messageStyles;
 	HashTable<UITextBoxStyle> textBoxStyles;
@@ -91,4 +106,8 @@ inline UITextBoxStyle *findTextBoxStyle(UITheme *theme, String name)
 inline UIWindowStyle *findWindowStyle(UITheme *theme, String name)
 {
 	return find(&theme->windowStyles, name);
+}
+inline UIConsoleStyle *findConsoleStyle(UITheme *theme, String name)
+{
+	return find(&theme->consoleStyles, name);
 }

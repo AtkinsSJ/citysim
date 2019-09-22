@@ -10,8 +10,8 @@
 # may want to extend previously defined styles
 
 :Font debug       debug.fnt
-:Font smallFont   dejavu-14.fnt
-:Font normalFont  dejavu-20.fnt
+:Font small       dejavu-14.fnt
+:Font normal      dejavu-20.fnt
 
 # This isn't a thing, what do we call this? A panel? A menu?
 # Probably call it a panel, and define styles for each one (pop-up menu, menu bar, etc)
@@ -19,7 +19,7 @@
  	 	overlayColor        0   0   0 128
 
 :Button general
-font              smallFont            				# testing eol comment
+font              small            				# testing eol comment
 textColor           0   0   0 255
 backgroundColor   255 255 255 255
 hoverColor        192 192 255 255
@@ -28,39 +28,39 @@ padding           4
 textAlignment     H_CENTRE BOTTOM
 
 :Label title
-font              normalFont
+font              normal
 textColor         255 255  64 255
 
 :Label general
-font              normalFont
+font              normal
 textColor         255 255 255 255
 
 :Label small
-font              smallFont
+font              small
 textColor         255 255 255 255
 
 :Label cost-affordable
-font              normalFont
+font              normal
 textColor           0 255   0 255
 
 :Label cost-unaffordable
-font              normalFont
+font              normal
 textColor         255   0   0 255
 
 # ui message and tooltip seem a little redundant with other things
 :UIMessage general
-font              normalFont
+font              normal
 textColor         255 255 255 255
 backgroundColor     0   0   0 128
 padding           4
 
 :TextBox general
-font              normalFont
+font              normal
 textColor           0   0   0 255
 backgroundColor   255 255 255 255
 
 :Window general
-titleFont                normalFont
+titleFont                normal
 titleColor               255 255 255 255
 titleBarHeight           32
 titleBarColor             96 196  96 255
@@ -73,7 +73,7 @@ contentLabelStyle        small
 contentButtonStyle       general
 
 :Window blue
-titleFont                normalFont
+titleFont                normal
 titleColor               255 255 255 255
 titleBarHeight           32
 titleBarColor             96  96 196 255
@@ -92,3 +92,12 @@ contentPadding           8
 contentLabelStyle        small
 contentButtonStyle       general
 offsetFromMouse          16 16
+
+:Console default
+font                 debug
+# V4 textColor[CLS_COUNT]; // TODO: Not sure how to do this with multiple ones!
+backgroundColor        0   0   0 245
+padding 8
+scrollBarWidth 12
+scrollBarKnobColor    48  48  48 245
+inputBackgroundColor  64  64  64 245
