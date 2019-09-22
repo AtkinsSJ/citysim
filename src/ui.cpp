@@ -38,6 +38,19 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
+V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth)
+{
+	s32 doublePadding = (buttonStyle->padding * 2);
+	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
+
+	BitmapFont *font = getFont(buttonStyle->fontName);
+	V2I textSize = calculateTextSize(font, text, textMaxWidth);
+
+	V2I result = v2i(textSize.x + doublePadding, textSize.y + doublePadding);
+
+	return result;
+}
+
 bool uiButton(UIState *uiState, String text, Rect2I bounds, bool active, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();

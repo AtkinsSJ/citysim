@@ -472,7 +472,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			// As I'm trying to use it, more and more of it is unraveling. I want to find the widest button width
 			// beforehand, but that means having to get which font will be used, and that's not exposed nicely!
 			// So I have to hackily write this buttonFont definition in the same way or it'll be wrong.
-			BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "general"s)->fontName);
+			// BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "general"s)->fontName);
 			// So, that really wants to come out. Also, calculateTextSize() is the wrong call because we want
 			// to know the BUTTON width, which will be the text size plus padding, depending on the style.
 			//
@@ -488,13 +488,16 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			// - Sam, 22/09/2019
 			//
 
-			s32 buttonTextMaxWidth = 0;
+			// TODO: Get this style name from somewhere configurable? IDK
+			UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+
+			s32 buttonMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				buttonTextMaxWidth = max(buttonTextMaxWidth, calculateTextSize(buttonFont, getText(getZoneDef(zoneIndex).nameID)).x);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).nameID), buttonStyle).x);
 			}
 
-			s32 popupMenuWidth = buttonTextMaxWidth + (uiPadding * 2);
+			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
 
 			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 

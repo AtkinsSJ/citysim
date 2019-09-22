@@ -39,7 +39,7 @@ title_settings       Settings
 city_default_name    City Name Here
 
 zone_none          De-zone
-zone_residential   Residential is awesomeeeee! Wait why is there so much padding?
+zone_residential   Residential
 zone_commercial    Commercial
 zone_industrial    Industrial
 
