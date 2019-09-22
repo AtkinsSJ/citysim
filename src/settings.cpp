@@ -195,8 +195,8 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 {
 	AppStatus result = AppStatus_SettingsMenu;
 
-	s32 windowWidth = renderer->uiCamera.size.x;
-	s32 windowHeight = renderer->uiCamera.size.y;
+	s32 windowWidth  = round_s32(renderer->uiCamera.size.x);
+	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 
 	V2I position = v2i(windowWidth / 2, 157);
 	s32 maxLabelWidth = windowWidth - 256;

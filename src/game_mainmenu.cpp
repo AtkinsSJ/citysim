@@ -6,7 +6,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	
 	AppStatus result = AppStatus_MainMenu;
 
-	s32 windowWidth  = renderer->uiCamera.size.x;
+	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
 	UITheme *theme = &assets->theme;
 
 	// Debug text for profiling text rendering

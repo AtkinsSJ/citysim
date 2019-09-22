@@ -384,7 +384,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 
 	UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
 	BitmapFont *buttonFont = getFont(buttonStyle->fontName);
-	f32 availableButtonTextWidth = context->contentArea.w - (2.0f * buttonStyle->padding);
+	s32 availableButtonTextWidth = context->contentArea.w - (2 * buttonStyle->padding);
 
 	String resume = LOCAL("button_resume");
 	String save   = LOCAL("button_save");
@@ -431,8 +431,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	s32 windowWidth = renderer->uiCamera.size.x;
-	V2 centre = renderer->uiCamera.pos;
+	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
+	V2I centre = v2i(renderer->uiCamera.pos);
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"s);
 	BitmapFont *font = getFont(labelStyle->fontName);
@@ -457,7 +457,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	       v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
-	       v2i(windowWidth * 0.75f, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 
 	// Build UI
@@ -488,7 +488,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			// - Sam, 22/09/2019
 			//
 
-			s32 buttonTextMaxWidth = 0.0f;
+			s32 buttonTextMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
 				buttonTextMaxWidth = max(buttonTextMaxWidth, calculateTextSize(buttonFont, getText(getZoneDef(zoneIndex).nameID)).x);

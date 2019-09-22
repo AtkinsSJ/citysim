@@ -124,7 +124,7 @@ struct DebugTextState
 	u32 charsLastPrinted;
 };
 
-void initDebugTextState(DebugTextState *textState, BitmapFont *font, V4 textColor, f32 screenEdgePadding, bool upwards, bool alignLeft)
+void initDebugTextState(DebugTextState *textState, BitmapFont *font, V4 textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
 {
 	*textState = {};
 
@@ -140,12 +140,12 @@ void initDebugTextState(DebugTextState *textState, BitmapFont *font, V4 textColo
 	else
 	{
 		textState->hAlign = ALIGN_RIGHT;
-		textState->pos.x = renderer->uiCamera.size.x - screenEdgePadding;
+		textState->pos.x = ceil_s32(renderer->uiCamera.size.x) - screenEdgePadding;
 	}
 
 	if (upwards) 
 	{
-		textState->pos.y = renderer->uiCamera.size.y - screenEdgePadding;
+		textState->pos.y = ceil_s32(renderer->uiCamera.size.y) - screenEdgePadding;
 	}
 	else
 	{
@@ -153,7 +153,7 @@ void initDebugTextState(DebugTextState *textState, BitmapFont *font, V4 textColo
 	}
 	textState->font = font;
 	textState->color = textColor;
-	textState->maxWidth = renderer->uiCamera.size.x - (2*screenEdgePadding);
+	textState->maxWidth = floor_s32(renderer->uiCamera.size.x) - (2*screenEdgePadding);
 
 	textState->textShaderID = renderer->shaderIds.text;
 	textState->untexturedShaderID = renderer->shaderIds.untextured;
@@ -227,7 +227,7 @@ void renderDebugData(DebugState *debugState)
 	}
 
 	DebugTextState textState;
-	initDebugTextState(&textState, font, makeWhite(), 16.0f, false, true);
+	initDebugTextState(&textState, font, makeWhite(), 16, false, true);
 
 	u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
 	debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
@@ -321,7 +321,7 @@ void renderDebugData(DebugState *debugState)
 	}
 
 	// Put FPS in top right
-	initDebugTextState(&textState, font, makeWhite(), 16.0f, false, false);
+	initDebugTextState(&textState, font, makeWhite(), 16, false, false);
 	{
 		String smsForFrame = "???"s;
 		String sfps = "???"s;

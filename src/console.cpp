@@ -50,11 +50,13 @@ void renderConsole(Console *console)
 	BitmapFont *consoleFont = getFont("debug"s);
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
-	f32 actualConsoleHeight = console->currentHeight * renderer->uiCamera.size.y;
+	s32 actualConsoleHeight = floor_s32(console->currentHeight * renderer->uiCamera.size.y);
 
-	s32 screenEdgePadding = 8;
-	V2I textPos = v2i(screenEdgePadding, round_f32(actualConsoleHeight - screenEdgePadding));
-	s32 textMaxWidth = renderer->uiCamera.size.x - (2*screenEdgePadding);
+	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
+
+	s32 padding = 8; // TODO: Console theme???
+	V2I textPos = v2i(padding, actualConsoleHeight - padding);
+	s32 textMaxWidth = screenWidth - (2*padding);
 
 	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
@@ -62,19 +64,21 @@ void renderConsole(Console *console)
 	Rect2I textInputRect = drawTextInput(renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
 	textPos.y -= textInputRect.h;
 
-	textPos.y -= 8.0f;
+	textPos.y -= padding;
+
+	s32 heightOfOutputArea = textPos.y;
 
 	// draw backgrounds now we know size of input area
-	Rect2 inputBackRect = rectXYWH(0,textPos.y,renderer->uiCamera.size.x, actualConsoleHeight - textPos.y);
+	Rect2 inputBackRect = rectXYWHi(0, textPos.y, screenWidth, actualConsoleHeight - heightOfOutputArea);
 	fillDrawRectPlaceholder(inputBackground, inputBackRect, color255(64,64,64,245));
-	Rect2 consoleBackRect = rectXYWH(0,0,renderer->uiCamera.size.x, textPos.y);
+	Rect2 consoleBackRect = rectXYWHi(0,0,screenWidth, heightOfOutputArea);
 	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, color255(0,0,0,245));
 
-	V2 knobSize = v2(12.0f, 64.0f);
+	V2I knobSize = v2i(12, 64);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(renderBuffer, v2(renderer->uiCamera.size.x - knobSize.x, 0.0f), consoleBackRect.h, scrollPercent, knobSize, color255(48, 48, 48, 245), renderer->shaderIds.untextured);
+	drawScrollBar(renderBuffer, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollPercent, knobSize, color255(48, 48, 48, 245), renderer->shaderIds.untextured);
 
-	textPos.y -= 8.0f;
+	textPos.y -= padding;
 
 	// print output lines
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;

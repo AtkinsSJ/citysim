@@ -39,7 +39,7 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *te
 
 	if (showCaret)
 	{
-		Rect2 caretRect = rectXYWH(topLeft.x, topLeft.y, 2, font->lineHeight);
+		Rect2 caretRect = rectXYWHi(topLeft.x, topLeft.y, 2, font->lineHeight);
 
 		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
 		{
