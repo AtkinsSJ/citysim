@@ -19,7 +19,7 @@ Notes for searching:
 UI:
 ✔ Switch everything to using integer coordinates.
 	✔ drawSingleRect and fillDrawRectPlaceholder should maybe take a Rect2I directly, as we do a conversion a lot!
-- calculateUiButtonSize()
+✔ calculateUiButtonSize()
 - Pass the style as a parameter to uiButton()
 ✔ Styling for the Console???
 

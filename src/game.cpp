@@ -520,10 +520,21 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The "BUILD" menu
 		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build))
 		{
-			s32 popupMenuWidth = 200; // TODO: Actual width somehow! Use the button texts' size
-			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
-
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
+
+			UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+			s32 buttonMaxWidth = 0;
+			for (auto it = iterate(constructibleBuildings);
+				!it.isDone;
+				next(&it))
+			{
+				BuildingDef *buildingDef = getValue(it);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buildingDef->name, buttonStyle).x);
+			}
+
+			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
+
+			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (auto it = iterate(constructibleBuildings);
 				!it.isDone;
@@ -557,7 +568,15 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// Data layer menu
 		if (uiMenuButton(uiState, LOCAL("button_data_views"), buttonRect, Menu_DataViews))
 		{
-			s32 popupMenuWidth = 200; // TODO: Actual width somehow! Use the button texts' size
+			UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+			s32 buttonMaxWidth = 0;
+			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
+			{
+				String buttonText = getText(dataViewTitles[dataViewID]);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buttonText, buttonStyle).x);
+			}
+			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
+			
 			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
 
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
