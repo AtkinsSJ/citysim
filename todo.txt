@@ -23,7 +23,8 @@ Pop-up menus
 	- We already have drawScrollbar(), just need to make it interactable (and consume the mouse input)
 	- Saving menu state, if we only ever have one open at a time, just means we have one set of state, which we can reset when a menu opens or when it closes, whichever is easier. (I think closing because we already have a function for that. On second thoughts, I've come across the code in uiMenuButton() which detects if the menu just became visible, so we can do it there! That's more sensible I think. Or rather, pull that out into a uiShowMenu() function.)
 	- Drawing with an offset shouldn't be TOO crazy.
-	- Now that our renderer is in-order, we should be able to just add a "PushStencil" command before, and a "PopStencil" one after.
+	✔ Now that our renderer is in-order, we should be able to just add a "PushStencil" command before, and a "PopStencil" one after.
+		-> Correct term is "scissor". We have BeginScissor/EndScissor. We might want a stack instead at some point, but right now I don't, and I'm unsure how we'd want it to behave, so best to leave it until it's actually needed!
 - Button width? IDK.
 - Maybe I should just make these be windows......... probably. Windows could do with a "scrolling part that's stencilled" feature though so yay.
 

@@ -238,11 +238,8 @@ void clearRenderBuffer(RenderBuffer *buffer)
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
 
-	if (buffer->firstChunk != null)
-	{
-		buffer->firstChunk = null;
-		buffer->currentChunk = null;
-	}
+	buffer->firstChunk = null;
+	buffer->currentChunk = null;
 	
 	// TODO: @Speed: See above
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
@@ -291,21 +288,19 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 
 		RenderBufferChunk *newChunk = getItemFromPool(buffer->chunkPool);
 		newChunk->used = 0;
+		newChunk->prevChunk = null;
+		newChunk->nextChunk = null;
 
 		// Add to the renderbuffer
 		if (buffer->currentChunk == null)
 		{
 			buffer->firstChunk = newChunk;
 			buffer->currentChunk = newChunk;
-
-			newChunk->prevChunk = null;
-			newChunk->nextChunk = null;
 		}
 		else
 		{
 			buffer->currentChunk->nextChunk = newChunk;
 			newChunk->prevChunk = buffer->currentChunk;
-			newChunk->nextChunk = null;
 		}
 
 		buffer->currentChunk = newChunk;

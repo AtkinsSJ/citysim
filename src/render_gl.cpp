@@ -532,6 +532,12 @@ void GL_render(RenderBufferChunk *firstChunk)
 				DEBUG_BLOCK_T("render: RenderItemType_Clear", DCDT_Renderer);
 				RenderItem_Clear *header = readRenderItem<RenderItem_Clear>(renderBufferChunk, &pos);
 
+				// NB: We MUST flush here, otherwise we could render some things after the clear instead of before it!
+				if (gl->vertexCount > 0)
+				{
+					flushVertices(gl);
+				}
+
 				glClearColor(header->clearColor.r, header->clearColor.g, header->clearColor.b, header->clearColor.a);
 				glClear(GL_COLOR_BUFFER_BIT);
 			} break;
@@ -550,6 +556,13 @@ void GL_render(RenderBufferChunk *firstChunk)
 				DEBUG_BLOCK_T("render: RenderItemType_EndScissor", DCDT_Renderer);
 				RenderItem_EndScissor *header = readRenderItem<RenderItem_EndScissor>(renderBufferChunk, &pos);
 				header = header; // Unused
+
+				// NB: We MUST flush here, otherwise we could render some things after the scissor is removed!
+				// (This bug took me nearly half an hour to figure out.)
+				if (gl->vertexCount > 0)
+				{
+					flushVertices(gl);
+				}
 
 				glDisable(GL_SCISSOR_TEST);
 			} break;
