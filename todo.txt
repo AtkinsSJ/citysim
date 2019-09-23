@@ -22,8 +22,8 @@ UI:
 ✔ calculateUiButtonSize()
 ✔ Pass the style as a parameter to uiButton()
 ✔ Styling for the Console???
-- Popup buttons have their height hard-coded, which is wrong!
-- A lot of buttons have their rects hard-coded. See all the @Cleanups
+✔ Popup buttons have their height hard-coded, which is wrong!
+✔ A lot of buttons have their rects hard-coded. See all the @Cleanups
 - Rename "general" to "default" because that's clearer!
 
 Pop-up menus

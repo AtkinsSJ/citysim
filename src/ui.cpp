@@ -220,11 +220,11 @@ PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, V4 backgroundColor)
 
 bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive)
 {
-	s32 buttonHeight = 20; // TODO: Actual button size!
+	V2I buttonSize = calculateButtonSize(text, style, menu->width - (menu->padding * 2));
+
 	Rect2I buttonRect = irectXYWH(menu->origin.x + menu->padding,
 								menu->origin.y + menu->currentYOffset,
-								menu->width - (menu->padding * 2),
-								buttonHeight);
+								buttonSize.x, buttonSize.y);
 
 	bool result = uiButton(uiState, text, buttonRect, style, isActive);
 

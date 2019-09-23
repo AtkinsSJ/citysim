@@ -22,10 +22,11 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
 
-	// TODO: @Cleanup Auto-size the buttons, and go down based on their height
 	UIButtonStyle *style = findButtonStyle(&assets->theme, "general"s);
-	s32 uiBorderPadding = 4;
-	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - 24, 80, 24);
+	s32 uiBorderPadding = 8;
+	String backText = LOCAL("button_back");
+	V2I backSize = calculateButtonSize(backText, style);
+	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
 	if (uiButton(uiState, LOCAL("button_back"), buttonRect, style, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
