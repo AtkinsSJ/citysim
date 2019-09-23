@@ -8,14 +8,7 @@ enum ConsoleLineStyleID
 	CLS_Warning,
 	CLS_Error,
 
-	CLS_Input,
-
 	CLS_COUNT
-};
-
-struct ConsoleLineStyle
-{
-	V4 textColor;
 };
 
 struct ConsoleOutputLine
@@ -56,8 +49,6 @@ struct Command
 
 struct Console
 {
-	ConsoleLineStyle styles[CLS_COUNT];
-
 	f32 currentHeight;
 	f32 targetHeight;
 	f32 openHeight; // % of screen height

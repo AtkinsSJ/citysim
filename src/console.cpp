@@ -16,12 +16,6 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 {
 	Console *console = &theConsole;
 	console->currentHeight = 0;
-	console->styles[CLS_Default].textColor   = color255(192, 192, 192, 255);
-	console->styles[CLS_InputEcho].textColor = color255(128, 128, 128, 255);
-	console->styles[CLS_Error].textColor     = color255(255, 128, 128, 255);
-	console->styles[CLS_Warning].textColor   = color255(255, 255, 128, 255);
-	console->styles[CLS_Success].textColor   = color255(128, 255, 128, 255);
-	console->styles[CLS_Input].textColor     = color255(255, 255, 255, 255);
 
 	console->openHeight = openHeight;
 	console->maximisedHeight = maximisedHeight;
@@ -62,7 +56,7 @@ void renderConsole(Console *console)
 	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 
-	Rect2I textInputRect = drawTextInput(renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, console->styles[CLS_Input].textColor, textMaxWidth);
+	Rect2I textInputRect = drawTextInput(renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, consoleStyle->inputTextColor, textMaxWidth);
 	textPos.y -= textInputRect.h;
 
 	textPos.y -= consoleStyle->padding;
@@ -88,9 +82,9 @@ void renderConsole(Console *console)
 		next(&it))
 	{
 		ConsoleOutputLine *line = get(it);
-		ConsoleLineStyle style = console->styles[line->style];
+		V4 outputTextColor = consoleStyle->outputTextColor[line->style];
 
-		Rect2I resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, style.textColor, textMaxWidth);
+		Rect2I resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
 		textPos.y -= resultRect.h;
 
 		// If we've gone off the screen, stop!

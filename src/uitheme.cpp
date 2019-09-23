@@ -237,6 +237,46 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
+			else if (equals(firstWord, "outputTextColor"))
+			{
+				if (target.type == Section_Console)
+				{
+					String category = readToken(&reader);
+					Maybe<V4> color = readColor(&reader);
+
+					if (color.isValid)
+					{
+						if (equals(category, "default"))
+						{
+							target.console->outputTextColor[CLS_Default] = color.value;
+						}
+						else if (equals(category, "echo"))
+						{
+							target.console->outputTextColor[CLS_InputEcho] = color.value;
+						}
+						else if (equals(category, "success"))
+						{
+							target.console->outputTextColor[CLS_Success] = color.value;
+						}
+						else if (equals(category, "warning"))
+						{
+							target.console->outputTextColor[CLS_Warning] = color.value;
+						}
+						else if (equals(category, "error"))
+						{
+							target.console->outputTextColor[CLS_Error] = color.value;
+						}
+						else
+						{
+							warn(&reader, "Unrecognized output text category '{0}'", {category});
+						}
+					}
+				}
+				else
+				{
+					WRONG_SECTION;
+				}
+			}
 			else if (equals(firstWord, "overlayColor"))
 			{
 				if (target.type == Section_General)
@@ -318,10 +358,11 @@ void loadUITheme(Blob data, Asset *asset)
 				{
 					switch (target.type)
 					{
-						case Section_Button:     target.button->textColor    = textColor.value; break;
-						case Section_Label:      target.label->textColor     = textColor.value; break;
-						case Section_TextBox:    target.textBox->textColor   = textColor.value; break;
-						case Section_UIMessage:  target.message->textColor   = textColor.value; break;
+						case Section_Button:     target.button->textColor       = textColor.value; break;
+						case Section_Console:    target.console->inputTextColor = textColor.value; break;
+						case Section_Label:      target.label->textColor        = textColor.value; break;
+						case Section_TextBox:    target.textBox->textColor      = textColor.value; break;
+						case Section_UIMessage:  target.message->textColor      = textColor.value; break;
 						default:  WRONG_SECTION;
 					}
 				}

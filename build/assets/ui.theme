@@ -95,9 +95,14 @@ offsetFromMouse          16 16
 
 :Console default
 font                 debug
-# V4 textColor[CLS_COUNT]; // TODO: Not sure how to do this with multiple ones!
+outputTextColor default 192 192 192 255
+outputTextColor echo    128 128 128 255
+outputTextColor error   255 128 128 255
+outputTextColor warning 255 255 128 255
+outputTextColor success 128 255 128 255
 backgroundColor        0   0   0 245
 padding 8
 scrollBarWidth 12
 scrollBarKnobColor    48  48  48 245
+textColor            255 255 255 255
 inputBackgroundColor  64  64  64 245

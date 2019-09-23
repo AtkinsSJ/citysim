@@ -58,9 +58,10 @@ struct UIWindowStyle
 struct UIConsoleStyle
 {
 	String fontName;
-	// V4 textColor[CLS_COUNT]; // TODO: Not sure how to do this with multiple ones!
+	V4 outputTextColor[CLS_COUNT];
 
 	V4 backgroundColor;
+	V4 inputTextColor;
 	V4 inputBackgroundColor;
 	s32 padding;
 
