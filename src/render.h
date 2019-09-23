@@ -32,6 +32,9 @@ enum RenderItemType
 
 	RenderItemType_Clear,
 
+	RenderItemType_BeginScissor,
+	RenderItemType_EndScissor,
+
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
 	RenderItemType_DrawGrid,
@@ -62,6 +65,14 @@ struct RenderItem_SetTexture
 struct RenderItem_Clear
 {
 	V4 clearColor;
+};
+
+struct RenderItem_BeginScissor
+{
+	Rect2I bounds;
+};
+struct RenderItem_EndScissor
+{
 };
 
 struct RenderItem_DrawSingleRect
@@ -170,8 +181,10 @@ struct RenderBuffer
 	Pool<RenderBufferChunk> *chunkPool;
 
 	// Transient stuff
+	Camera *currentCamera;
 	bool hasRangeReserved;
 	smm reservedRangeSize;
+	bool hasScissorEnabled;
 
 	s8 currentShader;
 	Asset *currentTexture;
@@ -252,6 +265,11 @@ void addSetShader(RenderBuffer *buffer, s8 shaderID);
 void addSetTexture(RenderBuffer *buffer, Asset *texture);
 
 void addClear(RenderBuffer *buffer, V4 clearColor = {});
+
+// NB: bounds rectangle is in the coordinates of the buffer's camera, to make life easier.
+// (glScissor() takes window-pixel coordinates, but the Y is inverted. Bleh.)
+void addBeginScissor(RenderBuffer *buffer, Rect2 bounds);
+void addEndScissor(RenderBuffer *buffer);
 
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color);
 void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color);

@@ -692,6 +692,11 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 		}
 	} 
 
+	// TESTING
+
+	addBeginScissor(&renderer->worldBuffer, rectCentreSize(worldCamera->mousePos, v2(8, 6)));
+	defer {addEndScissor(&renderer->worldBuffer);};
+
 	Rect2I demolitionRect = irectNegativeInfinity();
 
 	{

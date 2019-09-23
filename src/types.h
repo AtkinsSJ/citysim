@@ -419,6 +419,7 @@ V4 operator*(Matrix4 m, V4 v);
 s32 round_s32(f32 in);
 s32 floor_s32(f32 in);
 s32 ceil_s32(f32 in);
+s32 abs_s32(s32 in);
 f32 round_f32(f32 in);
 f32 floor_f32(f32 in);
 f32 ceil_f32(f32 in);

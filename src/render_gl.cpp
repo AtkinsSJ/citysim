@@ -536,6 +536,24 @@ void GL_render(RenderBufferChunk *firstChunk)
 				glClear(GL_COLOR_BUFFER_BIT);
 			} break;
 
+			case RenderItemType_BeginScissor:
+			{
+				DEBUG_BLOCK_T("render: RenderItemType_BeginScissor", DCDT_Renderer);
+				RenderItem_BeginScissor *header = readRenderItem<RenderItem_BeginScissor>(renderBufferChunk, &pos);
+
+				glEnable(GL_SCISSOR_TEST);
+				glScissor(header->bounds.x, header->bounds.y, header->bounds.w, header->bounds.h);
+			} break;
+
+			case RenderItemType_EndScissor:
+			{
+				DEBUG_BLOCK_T("render: RenderItemType_EndScissor", DCDT_Renderer);
+				RenderItem_EndScissor *header = readRenderItem<RenderItem_EndScissor>(renderBufferChunk, &pos);
+				header = header; // Unused
+
+				glDisable(GL_SCISSOR_TEST);
+			} break;
+
 			case RenderItemType_DrawRects:
 			{
 				DEBUG_BLOCK_T("render: RenderItemType_DrawRects", DCDT_Renderer);
