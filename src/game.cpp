@@ -462,12 +462,13 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	// Build UI
 	{
-		Rect2I buttonRect = irectXYWH(uiPadding, 28 + uiPadding, 80, 24);
-
 		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
 
 		// The "ZONE" menu
-		if (uiMenuButton(uiState, LOCAL("button_zone"), buttonRect, Menu_Zone, buttonStyle))
+		String zoneButtonText = LOCAL("button_zone");
+		V2I buttonSize = calculateButtonSize(zoneButtonText, buttonStyle);
+		Rect2I buttonRect = irectXYWH(uiPadding, buttonSize.y + uiPadding, buttonSize.x, buttonSize.y);
+		if (uiMenuButton(uiState, zoneButtonText, buttonRect, Menu_Zone, buttonStyle))
 		{
 			//
 			// UGH, all of this UI code is so hacky!
@@ -520,7 +521,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		if (uiMenuButton(uiState, LOCAL("button_build"), buttonRect, Menu_Build, buttonStyle))
+		String buildButtonText = LOCAL("button_build");
+		buttonRect.size = calculateButtonSize(buildButtonText, buttonStyle);
+		if (uiMenuButton(uiState, buildButtonText, buttonRect, Menu_Build, buttonStyle))
 		{
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
@@ -558,7 +561,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		if (uiButton(uiState, LOCAL("button_demolish"), buttonRect, buttonStyle,
+		String demolishButtonText = LOCAL("button_demolish");
+		buttonRect.size = calculateButtonSize(demolishButtonText, buttonStyle);
+		if (uiButton(uiState, demolishButtonText, buttonRect, buttonStyle,
 					(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, "(X)"s))
 		{
@@ -568,7 +573,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// Data layer menu
-		if (uiMenuButton(uiState, LOCAL("button_data_views"), buttonRect, Menu_DataViews, buttonStyle))
+		String dataViewButtonText = LOCAL("button_data_views");
+		buttonRect.size = calculateButtonSize(dataViewButtonText, buttonStyle);
+		if (uiMenuButton(uiState, dataViewButtonText, buttonRect, Menu_DataViews, buttonStyle))
 		{
 			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "general"s);
 			s32 buttonMaxWidth = 0;
@@ -597,8 +604,10 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The, um, "MENU" menu. Hmmm.
+		String menuButtonText = LOCAL("button_menu");
+		buttonRect.size = calculateButtonSize(menuButtonText, buttonStyle);
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiButton(uiState, LOCAL("button_menu"), buttonRect, buttonStyle))
+		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
 		{
 			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "general"s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
