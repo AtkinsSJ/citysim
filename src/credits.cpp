@@ -22,7 +22,7 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
 
-	UIButtonStyle *style = findButtonStyle(&assets->theme, "general"s);
+	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"s);
 	s32 uiBorderPadding = 8;
 	String backText = LOCAL("button_back");
 	V2I backSize = calculateButtonSize(backText, style);

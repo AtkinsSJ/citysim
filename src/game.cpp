@@ -462,7 +462,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	// Build UI
 	{
-		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "general"s);
+		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "default"s);
 
 		// The "ZONE" menu
 		String zoneButtonText = LOCAL("button_zone");
@@ -475,7 +475,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			// As I'm trying to use it, more and more of it is unraveling. I want to find the widest button width
 			// beforehand, but that means having to get which font will be used, and that's not exposed nicely!
 			// So I have to hackily write this buttonFont definition in the same way or it'll be wrong.
-			// BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "general"s)->fontName);
+			// BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "default"s)->fontName);
 			// So, that really wants to come out. Also, calculateTextSize() is the wrong call because we want
 			// to know the BUTTON width, which will be the text size plus padding, depending on the style.
 			//
@@ -492,7 +492,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			//
 
 			// TODO: Get this style name from somewhere configurable? IDK
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "general"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"s);
 
 			s32 buttonMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
@@ -527,7 +527,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		{
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "general"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"s);
 			s32 buttonMaxWidth = 0;
 			for (auto it = iterate(constructibleBuildings);
 				!it.isDone;
@@ -577,7 +577,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.size = calculateButtonSize(dataViewButtonText, buttonStyle);
 		if (uiMenuButton(uiState, dataViewButtonText, buttonRect, Menu_DataViews, buttonStyle))
 		{
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "general"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"s);
 			s32 buttonMaxWidth = 0;
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{
@@ -609,7 +609,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
 		{
-			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "general"s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "default"s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }
@@ -875,7 +875,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
 						V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
-						showWindow(uiState, "Inspect tile"s, 250, 200, windowPos, "general"s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						showWindow(uiState, "Inspect tile"s, 250, 200, windowPos, "default"s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;

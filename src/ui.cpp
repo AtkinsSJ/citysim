@@ -57,7 +57,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	
 	if (style == null)
 	{
-		style = findButtonStyle(&assets->theme, "general"s);
+		style = findButtonStyle(&assets->theme, "default"s);
 	}
 	
 	bool buttonClicked = false;
@@ -154,7 +154,7 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = findMessageStyle(&assets->theme, "general"s);
+			UIMessageStyle *style = findMessageStyle(&assets->theme, "default"s);
 
 			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 

@@ -33,7 +33,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 
-	UIButtonStyle *style = findButtonStyle(&assets->theme, "general"s);
+	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"s);
 
 	s32 buttonPadding = 8;
 
