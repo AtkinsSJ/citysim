@@ -15,12 +15,15 @@ enum GameMenuID
 	Menu_DataViews,
 };
 
-enum ActionMode {
+enum ActionMode
+{
 	ActionMode_None = 0,
 
 	ActionMode_Build,
 	ActionMode_Demolish,
 	ActionMode_Zone,
+
+	ActionMode_Debug_StartFire,
 
 	ActionMode_Count,
 };
@@ -127,3 +130,4 @@ DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsO
 void inspectTileWindowProc(WindowContext *context, void *userData);
 void pauseMenuWindowProc(WindowContext *context, void *userData);
 void costTooltipWindowProc(WindowContext *context, void *userData);
+void debugToolsWindowProc(WindowContext *context, void *userData);

@@ -95,6 +95,7 @@ struct AppState
 	AppStatus appStatus;
 	MemoryArena systemArena;
 
+	UIState *uiState;
 	GameState *gameState;
 	Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
 };
@@ -243,6 +244,7 @@ int main(int argc, char *argv[])
 
 	UIState uiState;
 	initUIState(&uiState, &appState->systemArena);
+	globalAppState.uiState = &uiState;
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;

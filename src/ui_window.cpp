@@ -48,7 +48,7 @@ void window_label(WindowContext *context, String text, char *styleName)
 	}
 }
 
-bool window_button(WindowContext *context, String text, s32 textWidth)
+bool window_button(WindowContext *context, String text, s32 textWidth, bool isActive)
 {
 	DEBUG_FUNCTION();
 	
@@ -130,6 +130,10 @@ bool window_button(WindowContext *context, String text, s32 textWidth)
 				{
 					backColor = style->hoverColor;
 				}
+			}
+			else if (isActive)
+			{
+				backColor = style->hoverColor;
 			}
 
 			fillDrawRectPlaceholder(background, buttonBounds, backColor);

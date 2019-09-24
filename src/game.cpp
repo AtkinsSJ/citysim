@@ -361,7 +361,11 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Land value: {0}%", {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
 	// Fire
-	window_label(context, myprintf("Fire risk: {0}\nFire protection: {1}%", {formatInt(getFireRiskAt(city, tilePos.x, tilePos.y)), formatFloat(getFireProtectionPercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
+	window_label(context, myprintf("Fire risk: {0}\nFire protection: {1}%\nDistance to fire: {2}", {
+		formatInt(getFireRiskAt(city, tilePos.x, tilePos.y)),
+		formatFloat(getFireProtectionPercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0),
+		formatInt(getDistanceToFireAt(city, tilePos.x, tilePos.y))
+	}));
 
 	// Highlight
 	// Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when
@@ -632,6 +636,15 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
+void debugToolsWindowProc(WindowContext *context, void *userData)
+{
+	GameState *gameState = (GameState *)userData;
+	if (window_button(context, "Start Fire"s, -1, (gameState->actionMode == ActionMode_Debug_StartFire)))
+	{
+		gameState->actionMode = ActionMode_Debug_StartFire;
+	}
+}
+
 AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
@@ -864,6 +877,16 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 							drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
+				}
+			} break;
+
+			case ActionMode_Debug_StartFire:
+			{
+				if (!mouseIsOverUI
+				 && mouseButtonJustPressed(MouseButton_Left)
+				 && tileExists(city, mouseTilePos.x, mouseTilePos.y))
+				{
+					startFireAt(city, mouseTilePos.x, mouseTilePos.y);
 				}
 			} break;
 

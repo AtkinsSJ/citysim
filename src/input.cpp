@@ -35,9 +35,7 @@ void initInput(InputState *theInput)
 	// F keys
 	for (char i = 0; i <= 12; i++)
 	{
-		String key = pushString(systemArena, 2, true);
-		key[0] = 'F';
-		key[1] = '1' + i;
+		String key = pushString(systemArena, myprintf("F{0}", {formatInt(i+1)}));
 		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_F1 + i));
 	}
 

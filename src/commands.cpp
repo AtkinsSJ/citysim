@@ -14,6 +14,17 @@ static bool checkInGame()
 	return inGame;
 }
 
+ConsoleCommand(debug_tools)
+{
+	if (!checkInGame()) return;
+
+	UIState *uiState = globalAppState.uiState;
+	GameState *gameState = globalAppState.gameState;
+	V2I windowPos = v2i(renderer->uiCamera.pos);
+
+	showWindow(uiState, "Debug Tools"s, 250, 200, windowPos, "default"s, WinFlag_AutomaticHeight | WinFlag_Unique, debugToolsWindowProc, gameState);
+}
+
 ConsoleCommand(exit)
 {
 	consoleWriteLine("Quitting game...", CLS_Success);
@@ -220,6 +231,7 @@ void initCommands(Console *console)
 {
 	// NB: a max-arguments value of -1 means "no maximum"
 	append(&console->commands, Command(CMD(help)));
+	append(&console->commands, Command(CMD(debug_tools)));
 	append(&console->commands, Command(CMD(exit)));
 	append(&console->commands, Command(CMD(funds), 1));
 	append(&console->commands, Command(CMD(generate)));

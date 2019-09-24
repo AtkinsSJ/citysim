@@ -481,6 +481,9 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 
 	drawBuildings(city, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
 
+	// Draw effects
+	drawFires(city, visibleTileBounds);
+
 	// Draw sectors
 	// NB: this is really hacky debug code
 	if (false)

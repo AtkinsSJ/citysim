@@ -8,6 +8,10 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 
 	s32 cityArea = areaOf(city->bounds);
 
+	layer->maxDistanceToFire = 4;
+	layer->tileDistanceToFire = allocateMultiple<u8>(gameArena, cityArea);
+	fillMemory<u8>(layer->tileDistanceToFire, 255, cityArea);
+
 	layer->tileBuildingFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileBuildingFireRisk, 0, cityArea);
 	layer->tileTotalFireRisk = allocateMultiple<u8>(gameArena, cityArea);
@@ -18,6 +22,11 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 	fillMemory<u8>(layer->tileOverallFireRisk, 0, cityArea);
 
 	initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
+	initChunkedArray(&layer->activeFires, gameArena, 256);
+
+	// Assets
+	// TODO: @AssetPacks
+	addTiledSprites("fire"s, "fire.png"s, 1, 1, 1, 1, false);
 }
 
 inline void markFireLayerDirty(FireLayer *layer, Rect2I bounds)
@@ -147,6 +156,56 @@ void drawFireDataLayer(City *city, Rect2I visibleTileBounds)
 	drawBuildingEffectRadii(city, &layer->fireProtectionBuildings, &BuildingDef::fireProtection);
 }
 
+void drawFires(City *city, Rect2I visibleTileBounds)
+{
+	FireLayer *layer = &city->fireLayer;
+	// TODO: @Speed: Only draw fires that are visible, put them into sectors and stuff!
+
+	// TODO: Particle effects for fire instead of this lame thing
+
+	if (layer->activeFires.count > 0)
+	{
+		SpriteGroup *fireSprites = getSpriteGroup("fire"s);
+		Sprite *sprite = getSprite(fireSprites, 0);
+		V4 colorWhite = makeWhite();
+
+		DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, renderer->shaderIds.pixelArt, layer->activeFires.count);
+		for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
+		{
+			Fire *fire = get(it);
+
+			if (contains(visibleTileBounds, fire->pos))
+			{
+				addSpriteRect(group, sprite, rectXYWHi(fire->pos.x, fire->pos.y, 1, 1), colorWhite);
+			}
+		}
+		endRectsGroup(group);
+	}
+}
+
+void startFireAt(City *city, s32 x, s32 y)
+{
+	FireLayer *layer = &city->fireLayer;
+
+	if (getTileValue(city, layer->tileDistanceToFire, x, y) != 0)
+	{
+		Fire *fire = appendBlank(&layer->activeFires);
+		fire->pos.x = x;
+		fire->pos.y = y;
+
+		setTile<u8>(city, layer->tileDistanceToFire, x, y, 0);
+
+		s32 rectDim = (layer->maxDistanceToFire*2) + 1;
+		Rect2I surroundings = irectCentreSize(x, y, rectDim, rectDim);
+		updateDistances(city, layer->tileDistanceToFire, surroundings, layer->maxDistanceToFire);
+	}
+}
+
+u8 getDistanceToFireAt(City *city, s32 x, s32 y)
+{
+	return getTileValue(city, city->fireLayer.tileDistanceToFire, x, y);
+}
+
 void registerFireProtectionBuilding(FireLayer *layer, Building *building)
 {
 	append(&layer->fireProtectionBuildings, getReferenceTo(building));
@@ -167,3 +226,4 @@ f32 getFireProtectionPercentAt(City *city, s32 x, s32 y)
 {
 	return getTileValue(city, city->fireLayer.tileFireProtection, x, y) * 0.01f;
 }
+

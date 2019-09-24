@@ -16,6 +16,10 @@ Notes for searching:
 
 ------------------------------------------------
 
+I think we should switch to _s instead of s for the string suffix, it's worrying me a bit.
+
+Window procs should decide the window title instead of showWindow(), it's weird having it there.
+
 Pop-up menus
 - Theming
 - Scrolling???
@@ -329,7 +333,7 @@ Asset system:
 	- Pad them with a 1px border equal to whatever the edge pixel of the sprite was.
 	- Output the atlas info to a file.
 	- Asset system reads the atlas and uses it to populate Sprite assets.
-- Asset Packs:
+- Asset Packs: @AssetPacks
 	- Assets can be grouped together into a "pack", and then we can specify to load a certain pack. This means not having to put all assets in memory at once.
 	- At a basic level, we'd have a "preload" pack, which is loaded first, and provides what's needed to display a loading screen.
 	- This could then be used for assets tied to a specific game level, if we *have* levels, or similar things like if you can have cities in different regions or planets with different terrain art, etc.
