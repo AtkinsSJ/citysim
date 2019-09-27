@@ -107,20 +107,36 @@ void updateFireLayer(City *city, FireLayer *layer)
 				for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++)
 				{
 					//
-					// TODO: Take other things into consideration once there *are* other things!
-					//
 					// (Maybe we don't even want to keep the tileBuildingFireRisk array at all? It's
 					// kind of redundant because we can just query the building in the tile right here,
 					// in an efficient way... This is placeholder so whatever!)
 					//
 					// - Sam, 12/09/2019
 					//
+
+					f32 tileFireRisk = 0.0f;
+
 					u8 buildingEffect = getTileValue(city, layer->tileBuildingFireRisk, x, y);
-					u8 totalRisk = buildingEffect;
+					tileFireRisk += buildingEffect * (1.0f / 255.0f);
+
+					// Being near a fire has a HUGE risk!
+					// TODO: Balance this! Currently it's a multiplier on the base building risk,
+					// because if we just ADD a value, then we get fire risk on empty tiles.
+					// But, the balance is definitely off.
+					u8 distanceToFire = getTileValue(city, layer->tileDistanceToFire, x, y);
+					if (distanceToFire <= layer->maxDistanceToFire)
+					{
+						f32 proximityRisk = 1.0f - ((f32)distanceToFire / (f32)layer->maxDistanceToFire);
+						tileFireRisk *= (proximityRisk * 5.0f);
+					}
+
+					u8 totalRisk = clamp01AndMap_u8(tileFireRisk);
 					setTile(city, layer->tileTotalFireRisk, x, y, totalRisk);
 
+					// TODO: Balance this! It feels over-powered, even at 50%.
+					// Possibly fire stations shouldn't affect risk from active fires?
 					f32 protectionPercent = getTileValue(city, layer->tileFireProtection, x, y) * 0.01f;
-					u8 result = lerp<u8>(totalRisk, 0, protectionPercent);
+					u8 result = lerp<u8>(totalRisk, 0, protectionPercent * 0.5f);
 					setTile(city, layer->tileOverallFireRisk, x, y, result);
 				}
 			}

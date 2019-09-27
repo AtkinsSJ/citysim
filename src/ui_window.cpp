@@ -212,13 +212,18 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 
 			if (toReplace)
 			{
+				//
 				// I don't think we actually want to keep the old window position, at least we don't in the
 				// one case that actually uses this! (inspectTileWindowProc)
 				// But leaving it commented in case I change my mind later.
 				// - Sam, 08/08/2019
+				//
+				// Update 24/09/2019: I'm finding it really annoying having the window move, so un-commenting
+				// this again!
+				//
 
 				// Make it keep the current window's position
-				// newWindow.area = toReplace->area;
+				newWindow.area = toReplace->area;
 
 				*toReplace = newWindow;
 				makeWindowActive(uiState, oldWindowIndex);
