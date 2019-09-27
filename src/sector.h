@@ -62,4 +62,4 @@ template<typename Sector>
 Sector *getNextSector(SectorGrid<Sector> *grid);
 
 template<typename Sector>
-WithIndex<Sector *> getNextSectorWithIndex(SectorGrid<Sector> *grid);
+Indexed<Sector *> getNextSectorWithIndex(SectorGrid<Sector> *grid);

@@ -36,7 +36,8 @@ Fire:
 ✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
 - Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
 	✔ Active fires
-		✔ Store tile-distance-from-fire, with a short range (4?) then use that to greatly increase fire risk
+		✖ Store tile-distance-from-fire, with a short range (4?) then use that to greatly increase fire risk
+		✔ Changed this to an effect-radius system, so that multiple nearby fires can have a cummulative effect.
 	✔ Consider coverage
 	- Consider funding
 	- Consider water coverage
@@ -44,6 +45,7 @@ Fire:
 	- Ordinances
 ✔ Keep a list of fire-service buildings so they can be iterated more easily.
 - Small chance of a fire occurring each tick, depending on the risk.
+- Fire debug inspection window.
 
 Add newline support to .text files!
 

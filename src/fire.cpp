@@ -6,9 +6,9 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 
 	s32 cityArea = areaOf(city->bounds);
 
-	layer->maxDistanceToFire = 4;
-	layer->tileDistanceToFire = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileDistanceToFire, 255, cityArea);
+	layer->maxFireRadius = 4;
+	layer->tileFireProximityEffect = allocateMultiple<u16>(gameArena, cityArea);
+	fillMemory<u16>(layer->tileFireProximityEffect, 0, cityArea);
 
 	layer->tileTotalFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileTotalFireRisk, 0, cityArea);
@@ -20,7 +20,7 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 	initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
 	initChunkedArray(&layer->activeFires, gameArena, 256);
 
-	initDirtyRects(&layer->dirtyRects, gameArena, layer->maxDistanceToFire, city->bounds);
+	initDirtyRects(&layer->dirtyRects, gameArena, layer->maxFireRadius, city->bounds);
 
 	// Assets
 	// TODO: @AssetPacks
@@ -46,19 +46,24 @@ void updateFireLayer(City *city, FireLayer *layer)
 			next(&rectIt))
 		{
 			Rect2I dirtyRect = getValue(rectIt);
+			setRegion<u16>(layer->tileFireProximityEffect, city->bounds.w, city->bounds.h, dirtyRect, 0);
 
-			setRegion<u8>(layer->tileDistanceToFire, city->bounds.w, city->bounds.h, dirtyRect, 255);
+			Rect2I expandedRect = expand(dirtyRect, layer->maxFireRadius);
 			for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
 			{
 				Fire *fire = get(it);
-				if (contains(dirtyRect, fire->pos))
+				if (contains(expandedRect, fire->pos))
 				{
-					setTile<u8>(city, layer->tileDistanceToFire, fire->pos.x, fire->pos.y, 0);
+					// TODO: Different "strengths" of fire should have different effects
+					EffectRadius fireEffect = {};
+					fireEffect.centreValue = 255;
+					fireEffect.outerValue = 20;
+					fireEffect.radius = layer->maxFireRadius;
+
+					applyEffect<u16>(city, &fireEffect, v2(fire->pos), Effect_Add, layer->tileFireProximityEffect, dirtyRect);
 				}
 			}
 		}
-
-		updateDistances(city, layer->tileDistanceToFire, &layer->dirtyRects, layer->maxDistanceToFire);
 
 		clearDirtyRects(&layer->dirtyRects);
 	}
@@ -119,11 +124,10 @@ void updateFireLayer(City *city, FireLayer *layer)
 					// TODO: Balance this! Currently it's a multiplier on the base building risk,
 					// because if we just ADD a value, then we get fire risk on empty tiles.
 					// But, the balance is definitely off.
-					u8 distanceToFire = getTileValue(city, layer->tileDistanceToFire, x, y);
-					if (distanceToFire <= layer->maxDistanceToFire)
+					u16 fireProximityEffect = getTileValue(city, layer->tileFireProximityEffect, x, y);
+					if (fireProximityEffect > 0)
 					{
-						f32 proximityRisk = 1.0f - ((f32)distanceToFire / (f32)layer->maxDistanceToFire);
-						tileFireRisk += (tileFireRisk * proximityRisk * 4.0f);
+						tileFireRisk += (tileFireRisk * 4.0f * clamp01(fireProximityEffect / 255.0f));
 					}
 
 					u8 totalRisk = clamp01AndMap_u8(tileFireRisk);
@@ -199,7 +203,13 @@ void startFireAt(City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;
 
-	if (getTileValue(city, layer->tileDistanceToFire, x, y) != 0)
+	Indexed<Fire *> existingFire = findFirst(&layer->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
+	if (existingFire.value != null)
+	{
+		// Fire already exists!
+		// TODO: make the fire stronger?
+	}
+	else
 	{
 		Fire *fire = appendBlank(&layer->activeFires);
 		fire->pos.x = x;
@@ -218,11 +228,6 @@ void removeFireAt(City *city, s32 x, s32 y)
 	{
 		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
 	}
-}
-
-u8 getDistanceToFireAt(City *city, s32 x, s32 y)
-{
-	return getTileValue(city, city->fireLayer.tileDistanceToFire, x, y);
 }
 
 void registerFireProtectionBuilding(FireLayer *layer, Building *building)

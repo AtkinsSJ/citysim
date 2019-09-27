@@ -361,10 +361,9 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	window_label(context, myprintf("Land value: {0}%", {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
 	// Fire
-	window_label(context, myprintf("Fire risk: {0}\nFire protection: {1}%\nDistance to fire: {2}", {
+	window_label(context, myprintf("Fire risk: {0}\nFire protection: {1}%", {
 		formatInt(getFireRiskAt(city, tilePos.x, tilePos.y)),
-		formatFloat(getFireProtectionPercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0),
-		formatInt(getDistanceToFireAt(city, tilePos.x, tilePos.y))
+		formatFloat(getFireProtectionPercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)
 	}));
 
 	// Highlight

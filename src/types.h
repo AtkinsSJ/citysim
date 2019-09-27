@@ -151,15 +151,15 @@ inline Maybe<T> makeFailure()
 }
 
 template<typename T>
-struct WithIndex
+struct Indexed
 {
 	T value;
 	s32 index;
 };
 template<typename T>
-inline WithIndex<T> makeValueWithIndex(T value, s32 index)
+inline Indexed<T> makeIndexedValue(T value, s32 index)
 {
-	WithIndex<T> result;
+	Indexed<T> result;
 	result.value = value;
 	result.index = index;
 

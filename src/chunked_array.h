@@ -84,6 +84,11 @@ void reserve(ChunkedArray<T> *array, s32 desiredSize);
 template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove);
 
+// NB: Returns an Indexed<> of null/-1 if nothing is found.
+// A Maybe<> would be more specific, but Maybe<Indexed<T*>> is heading into ridiculousness territory.
+template<typename T, typename Filter>
+Indexed<T *> findFirst(ChunkedArray<T> *array, Filter filter);
+
 template<typename T, typename Filter>
 s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit = -1);
 

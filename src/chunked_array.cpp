@@ -337,6 +337,24 @@ s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit)
 	return removedCount;
 }
 
+template<typename T, typename Filter>
+Indexed<T *> findFirst(ChunkedArray<T> *array, Filter filter)
+{
+	Indexed<T*> result = makeIndexedValue<T*>(null, -1);
+
+	for (auto it = iterate(array); hasNext(&it); next(&it))
+	{
+		T *entry = get(it);
+		if (filter(entry))
+		{
+			result = makeIndexedValue(entry, getIndex(it));
+			break;
+		}
+	}
+
+	return result;
+}
+
 template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 {

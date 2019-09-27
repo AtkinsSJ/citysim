@@ -11,8 +11,8 @@ struct FireLayer
 	
 	SectorGrid<BasicSector> sectors;
 
-	u8 maxDistanceToFire;
-	u8 *tileDistanceToFire;
+	u8 maxFireRadius;
+	u16 *tileFireProximityEffect;
 
 	u8 *tileTotalFireRisk; // Risks combined
 
@@ -35,7 +35,6 @@ void registerFireProtectionBuilding(FireLayer *layer, Building *building);
 void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
 
 void startFireAt(City *city, s32 x, s32 y);
-u8 getDistanceToFireAt(City *city, s32 x, s32 y);
 
 u8 getFireRiskAt(City *city, s32 x, s32 y);
 u8 getFireProtectionAt(City *city, s32 x, s32 y);

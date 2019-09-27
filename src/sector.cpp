@@ -90,9 +90,9 @@ Sector *getNextSector(SectorGrid<Sector> *grid)
 }
 
 template<typename Sector>
-WithIndex<Sector *> getNextSectorWithIndex(SectorGrid<Sector> *grid)
+Indexed<Sector *> getNextSectorWithIndex(SectorGrid<Sector> *grid)
 {
-	WithIndex<Sector *> result = makeValueWithIndex(&grid->sectors[grid->nextSectorUpdateIndex], grid->nextSectorUpdateIndex);
+	Indexed<Sector *> result = makeIndexedValue(&grid->sectors[grid->nextSectorUpdateIndex], grid->nextSectorUpdateIndex);
 
 	grid->nextSectorUpdateIndex = (grid->nextSectorUpdateIndex + 1) % getSectorCount(grid);
 
