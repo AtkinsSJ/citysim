@@ -14,7 +14,6 @@ struct FireLayer
 	u8 maxDistanceToFire;
 	u8 *tileDistanceToFire;
 
-	u8 *tileBuildingFireRisk;
 	u8 *tileTotalFireRisk; // Risks combined
 
 	u8 *tileFireProtection;

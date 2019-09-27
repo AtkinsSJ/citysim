@@ -20,7 +20,7 @@ ConsoleCommand(debug_tools)
 
 	UIState *uiState = globalAppState.uiState;
 	GameState *gameState = globalAppState.gameState;
-	V2I windowPos = v2i(renderer->uiCamera.pos);
+	V2I windowPos = v2i(renderer->uiCamera.pos + renderer->uiCamera.size);
 
 	showWindow(uiState, "Debug Tools"s, 250, 200, windowPos, "default"s, WinFlag_AutomaticHeight | WinFlag_Unique, debugToolsWindowProc, gameState);
 }

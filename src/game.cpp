@@ -639,9 +639,13 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 void debugToolsWindowProc(WindowContext *context, void *userData)
 {
 	GameState *gameState = (GameState *)userData;
-	if (window_button(context, "Start Fire"s, -1, (gameState->actionMode == ActionMode_Debug_StartFire)))
+	if (window_button(context, "Add Fire"s, -1, (gameState->actionMode == ActionMode_Debug_AddFire)))
 	{
-		gameState->actionMode = ActionMode_Debug_StartFire;
+		gameState->actionMode = ActionMode_Debug_AddFire;
+	}
+	if (window_button(context, "Remove Fire"s, -1, (gameState->actionMode == ActionMode_Debug_RemoveFire)))
+	{
+		gameState->actionMode = ActionMode_Debug_RemoveFire;
 	}
 }
 
@@ -880,13 +884,23 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 				}
 			} break;
 
-			case ActionMode_Debug_StartFire:
+			case ActionMode_Debug_AddFire:
 			{
 				if (!mouseIsOverUI
 				 && mouseButtonJustPressed(MouseButton_Left)
 				 && tileExists(city, mouseTilePos.x, mouseTilePos.y))
 				{
 					startFireAt(city, mouseTilePos.x, mouseTilePos.y);
+				}
+			} break;
+
+			case ActionMode_Debug_RemoveFire:
+			{
+				if (!mouseIsOverUI
+				 && mouseButtonJustPressed(MouseButton_Left)
+				 && tileExists(city, mouseTilePos.x, mouseTilePos.y))
+				{
+					removeFireAt(city, mouseTilePos.x, mouseTilePos.y);
 				}
 			} break;
 

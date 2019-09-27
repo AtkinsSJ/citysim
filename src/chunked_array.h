@@ -84,6 +84,9 @@ void reserve(ChunkedArray<T> *array, s32 desiredSize);
 template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove);
 
+template<typename T, typename Filter>
+s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit = -1);
+
 template<typename T>
 T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder);
 

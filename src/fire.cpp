@@ -4,16 +4,12 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 {
 	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 
-	initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
-
 	s32 cityArea = areaOf(city->bounds);
 
 	layer->maxDistanceToFire = 4;
 	layer->tileDistanceToFire = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileDistanceToFire, 255, cityArea);
 
-	layer->tileBuildingFireRisk = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileBuildingFireRisk, 0, cityArea);
 	layer->tileTotalFireRisk = allocateMultiple<u8>(gameArena, cityArea);
 	fillMemory<u8>(layer->tileTotalFireRisk, 0, cityArea);
 	layer->tileFireProtection = allocateMultiple<u8>(gameArena, cityArea);
@@ -23,6 +19,8 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 
 	initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
 	initChunkedArray(&layer->activeFires, gameArena, 256);
+
+	initDirtyRects(&layer->dirtyRects, gameArena, layer->maxDistanceToFire, city->bounds);
 
 	// Assets
 	// TODO: @AssetPacks
@@ -42,31 +40,25 @@ void updateFireLayer(City *city, FireLayer *layer)
 	{
 		DEBUG_BLOCK_T("updateFireLayer: building effects", DCDT_Simulation);
 
-		// Recalculate the building contributions
-		// TODO: Forget this, just do the risk per tile in the sectors update loop below.
-		// Because map changes don't really correspond with fire risk changes.
+		// Recalculate fire distances
 		for (auto rectIt = iterate(&layer->dirtyRects.rects);
 			!rectIt.isDone;
 			next(&rectIt))
 		{
 			Rect2I dirtyRect = getValue(rectIt);
 
-			// Building fire risk
-			setRegion<u8>(layer->tileBuildingFireRisk, city->bounds.w, city->bounds.h, dirtyRect, 0);
-			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
+			setRegion<u8>(layer->tileDistanceToFire, city->bounds.w, city->bounds.h, dirtyRect, 255);
+			for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
 			{
-				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
+				Fire *fire = get(it);
+				if (contains(dirtyRect, fire->pos))
 				{
-					Building *building = getBuildingAt(city, x, y);
-					if (building)
-					{
-						BuildingDef *def = getBuildingDef(building);
-						u8 tileBuildingFireRisk = (u8)clamp(def->fireRisk * 100.0f, 0.0f, 255.0f);
-						setTile(city, layer->tileBuildingFireRisk, x, y, tileBuildingFireRisk);
-					}
+					setTile<u8>(city, layer->tileDistanceToFire, fire->pos.x, fire->pos.y, 0);
 				}
 			}
 		}
+
+		updateDistances(city, layer->tileDistanceToFire, &layer->dirtyRects, layer->maxDistanceToFire);
 
 		clearDirtyRects(&layer->dirtyRects);
 	}
@@ -116,8 +108,12 @@ void updateFireLayer(City *city, FireLayer *layer)
 
 					f32 tileFireRisk = 0.0f;
 
-					u8 buildingEffect = getTileValue(city, layer->tileBuildingFireRisk, x, y);
-					tileFireRisk += buildingEffect * (1.0f / 255.0f);
+					Building *building = getBuildingAt(city, x, y);
+					if (building)
+					{
+						BuildingDef *def = getBuildingDef(building);
+						tileFireRisk += def->fireRisk;
+					}
 
 					// Being near a fire has a HUGE risk!
 					// TODO: Balance this! Currently it's a multiplier on the base building risk,
@@ -127,7 +123,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 					if (distanceToFire <= layer->maxDistanceToFire)
 					{
 						f32 proximityRisk = 1.0f - ((f32)distanceToFire / (f32)layer->maxDistanceToFire);
-						tileFireRisk *= (proximityRisk * 5.0f);
+						tileFireRisk += (tileFireRisk * proximityRisk * 4.0f);
 					}
 
 					u8 totalRisk = clamp01AndMap_u8(tileFireRisk);
@@ -209,11 +205,18 @@ void startFireAt(City *city, s32 x, s32 y)
 		fire->pos.x = x;
 		fire->pos.y = y;
 
-		setTile<u8>(city, layer->tileDistanceToFire, x, y, 0);
+		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+	}
+}
 
-		s32 rectDim = (layer->maxDistanceToFire*2) + 1;
-		Rect2I surroundings = irectCentreSize(x, y, rectDim, rectDim);
-		updateDistances(city, layer->tileDistanceToFire, surroundings, layer->maxDistanceToFire);
+void removeFireAt(City *city, s32 x, s32 y)
+{
+	FireLayer *layer = &city->fireLayer;
+
+	s32 removedFires = removeAll(&layer->activeFires, [=](Fire fire) { return fire.pos.x == x && fire.pos.y == y; }, 1);
+	if (removedFires > 0)
+	{
+		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
 	}
 }
 

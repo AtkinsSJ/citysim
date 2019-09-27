@@ -280,12 +280,13 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex)
 	}
 }
 
-template<typename T>
-bool findAndRemove(ChunkedArray<T> *array, T toRemove)
+template<typename T, typename Filter>
+s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit)
 {
 	DEBUG_FUNCTION();
 
-	bool found = false;
+	s32 removedCount = 0;
+	bool limited = (limit != -1);
 
 	for (ArrayChunk<T> *chunk = array->firstChunk;
 		chunk != null;
@@ -293,10 +294,10 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 	{
 		for (s32 i=0; i<chunk->count; i++)
 		{
-			if (equals(chunk->items[i], toRemove))
+			if (filter(chunk->items[i]))
 			{
-				// FOUND IT!
-				found = true;
+				// FOUND ONE!
+				removedCount++;
 
 				ArrayChunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
 
@@ -305,20 +306,45 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 				lastNonEmptyChunk->count--;
 				array->count--;
 
-				break;
+				if (limited && removedCount >= limit)
+				{
+					break;
+				}
+				else
+				{
+					// We just moved a different element into position i, so make sure we
+					// check that one too!
+					i--;
+				}
 			}
 		}
 
-		if (found) break;
+		if (limited && removedCount >= limit)
+		{
+			break;
+		}
 	}
 
 	// Return empty chunks to the chunkpool
-	if (found && (array->chunkPool != null) && (array->lastChunk->count == 0))
+	if (removedCount && (array->chunkPool != null))
 	{
-		returnLastChunkToPool(array);
+		while (array->lastChunk->count == 0)
+		{
+			returnLastChunkToPool(array);
+		}
 	}
 
-	return found;
+	return removedCount;
+}
+
+template<typename T>
+bool findAndRemove(ChunkedArray<T> *array, T toRemove)
+{
+	DEBUG_FUNCTION();
+
+	s32 removed = removeAll(array, [&](T t) { return equals(t, toRemove); }, 1);
+
+	return removed > 0;
 }
 
 template<typename T>

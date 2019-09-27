@@ -23,7 +23,8 @@ enum ActionMode
 	ActionMode_Demolish,
 	ActionMode_Zone,
 
-	ActionMode_Debug_StartFire,
+	ActionMode_Debug_AddFire,
+	ActionMode_Debug_RemoveFire,
 
 	ActionMode_Count,
 };

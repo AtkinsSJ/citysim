@@ -97,7 +97,6 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 
 void markAreaDirty(City *city, Rect2I bounds)
 {
-	markFireLayerDirty     (&city->fireLayer, bounds);
 	markHealthLayerDirty   (&city->healthLayer, bounds);
 	markLandValueLayerDirty(&city->landValueLayer, bounds);
 	markPollutionLayerDirty(&city->pollutionLayer, bounds);
