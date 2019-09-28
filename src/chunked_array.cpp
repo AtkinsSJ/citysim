@@ -328,7 +328,7 @@ s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit)
 	// Return empty chunks to the chunkpool
 	if (removedCount && (array->chunkPool != null))
 	{
-		while (array->lastChunk->count == 0)
+		while ((array->lastChunk != null) && (array->lastChunk->count == 0))
 		{
 			returnLastChunkToPool(array);
 		}
@@ -409,7 +409,7 @@ T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 	array->count--;
 
 	// Return empty chunks to the chunkpool
-	if ((array->chunkPool != null) && (array->lastChunk->count == 0))
+	if ((array->chunkPool != null) && (array->lastChunk != null) && (array->lastChunk->count == 0))
 	{
 		returnLastChunkToPool(array);
 	}

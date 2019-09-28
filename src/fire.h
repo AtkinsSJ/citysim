@@ -23,6 +23,9 @@ struct FireLayer
 	ChunkedArray<BuildingRef> fireProtectionBuildings;
 
 	ChunkedArray<Fire> activeFires;
+
+	// Debug stuff
+	V2I debugTileInspectionPos;
 };
 
 void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena);
@@ -39,3 +42,6 @@ void startFireAt(City *city, s32 x, s32 y);
 u8 getFireRiskAt(City *city, s32 x, s32 y);
 u8 getFireProtectionAt(City *city, s32 x, s32 y);
 f32 getFireProtectionPercentAt(City *city, s32 x, s32 y);
+
+void debugInspectFireAtPos(City *city, s32 x, s32 y);
+void inspectFireWindowProc(WindowContext *context, void *userData);
