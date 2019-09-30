@@ -230,14 +230,14 @@ void renderDebugData(DebugState *debugState)
 	initDebugTextState(&textState, font, makeWhite(), 16, false, true);
 
 	u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
-	debugTextOut(&textState, myprintf("Examining {0} frames ago", {formatInt(framesAgo)}));
+	debugTextOut(&textState, myprintf("Examining {0} frames ago"_s, {formatInt(framesAgo)}));
 
 	// Asset system
 	{
 		DebugAssetData *assetData = &debugState->assetData;
 		smm totalAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaTotalSize[rfi];
 		smm usedAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaUsedSize[rfi];
-		debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables", {
+		debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables"_s, {
 			formatInt(assetData->loadedAssetCount[rfi]),
 			formatInt(assetData->assetCount[rfi]),
 			formatInt(usedAssetMemory),
@@ -254,7 +254,7 @@ void renderDebugData(DebugState *debugState)
 		DebugArenaData *arena = debugState->arenaDataSentinel.nextNode;
 		while (arena != &debugState->arenaDataSentinel)
 		{
-			debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)", {
+			debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)"_s, {
 				arena->name,
 				formatInt(arena->blockCount[rfi]),
 				formatInt(arena->usedSize[rfi]),
@@ -276,7 +276,7 @@ void renderDebugData(DebugState *debugState)
 			{
 				itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
 			}
-			debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)", {
+			debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)"_s, {
 				renderBufferData->name,
 				formatInt(itemsDrawn),
 				formatInt(drawCallCount),
@@ -286,11 +286,11 @@ void renderDebugData(DebugState *debugState)
 		}
 	}
 
-	debugTextOut(&textState, myprintf("There are {0} cycles in a second", {formatInt(cyclesPerSecond)}));
+	debugTextOut(&textState, myprintf("There are {0} cycles in a second"_s, {formatInt(cyclesPerSecond)}));
 
 	// Top code blocks
 	{
-		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}", {
+		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}"_s, {
 			formatString("Code", 60),
 			formatString("Total cycles", 20, false),
 			formatString("Calls", 10, false),
@@ -306,7 +306,7 @@ void renderDebugData(DebugState *debugState)
 			DebugCodeData *code = topBlock->data;
 			f32 totalCycles = (f32)code->totalCycleCount[rfi];
 			f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
-			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)", {
+			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)"_s, {
 				formatString(code->name, 60),
 				formatString(formatInt(code->totalCycleCount[rfi]), 10, false),
 				formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
@@ -331,7 +331,7 @@ void renderDebugData(DebugState *debugState)
 			smsForFrame = formatFloat(msForFrame, 2);
 			sfps = formatFloat(1000.0f / max(msForFrame, 1.0f), 2);
 		}
-		debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)", {sfps, smsForFrame}));
+		debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)"_s, {sfps, smsForFrame}));
 	}
 }
 

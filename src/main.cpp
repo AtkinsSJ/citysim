@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 
 	ASSERT(GL_initializeRenderer(window)); //Failed to initialize renderer.
 	rendererLoadAssets();
-	setCursor("default");
+	setCursor("default"_s);
 	setCursorVisible(true);
 
 	UIState uiState;

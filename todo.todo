@@ -24,9 +24,11 @@ Use _s more:
 ✔ Console
 - equals()
 ✔ Logging
-- myprintf
+✔ myprintf
 - stringbuilder
 - get rid of LOCAL because it's useless?
+✔ setCursor
+- window_label styleName
 
 _hashed string suffix?
 Console commands in a HashTable

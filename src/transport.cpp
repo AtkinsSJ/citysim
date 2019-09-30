@@ -136,6 +136,6 @@ void debugInspectTransport(WindowContext *context, City *city, s32 x, s32 y)
 	// Transport
 	for (s32 transportType = 0; transportType < TransportTypeCount; transportType++)
 	{
-		window_label(context, myprintf("Distance to transport #{0}: {1}", {formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType))}));
+		window_label(context, myprintf("Distance to transport #{0}: {1}"_s, {formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType))}));
 	}
 }

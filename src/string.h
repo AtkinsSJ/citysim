@@ -79,4 +79,3 @@ inline String formatString(char *value, s32 length=-1, bool alignLeft = true, ch
 String formatBool(bool value);
 
 String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate=false);
-inline String myprintf(char *format, std::initializer_list<String> args, bool zeroTerminate=false) { return myprintf(makeString(format), args, zeroTerminate); }

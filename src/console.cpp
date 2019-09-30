@@ -98,7 +98,7 @@ void renderConsole(Console *console)
 void consoleHandleCommand(Console *console, String commandInput)
 {
 	// copy input to output, for readability
-	consoleWriteLine(myprintf("> {0}", {commandInput}), CLS_InputEcho);
+	consoleWriteLine(myprintf("> {0}"_s, {commandInput}), CLS_InputEcho);
 
 	if (!isEmpty(commandInput))
 	{

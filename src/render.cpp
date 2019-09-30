@@ -181,11 +181,6 @@ void setCursor(String cursorName)
 	}
 }
 
-inline void setCursor(char *cursorName)
-{
-	setCursor(makeString(cursorName));
-}
-
 void setCursorVisible(bool visible)
 {
 	renderer->cursorIsVisible = visible;
@@ -199,7 +194,7 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 	buffer->name = pushString(arena, name);
 	hashString(&buffer->name);
 
-	buffer->renderProfileName = pushString(arena, myprintf("render({0})", {buffer->name}));
+	buffer->renderProfileName = pushString(arena, myprintf("render({0})"_s, {buffer->name}));
 	hashString(&buffer->renderProfileName);
 
 	buffer->hasRangeReserved = false;

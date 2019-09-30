@@ -249,7 +249,6 @@ void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
 
 void setCursor(String cursorName);
-void setCursor(char *cursorName);
 void setCursorVisible(bool visible);
 
 u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);

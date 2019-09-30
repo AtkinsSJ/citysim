@@ -257,7 +257,7 @@ void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 
 	window_label(context, "*** FIRE INFO ***"_s);
 
-	window_label(context, myprintf("There are {0} fire protection buildings and {1} active fires in the city.", {
+	window_label(context, myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, {
 		formatInt(layer->fireProtectionBuildings.count),
 		formatInt(layer->activeFires.count)
 	}));
@@ -265,17 +265,17 @@ void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 	Building *buildingAtPos = getBuildingAt(city, x, y);
 	f32 buildingFireRisk = 100.0f * ((buildingAtPos == null) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
 
-	window_label(context, myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}", {
+	window_label(context, myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {
 		formatInt(getFireRiskAt(city, x, y)),
 		formatFloat(buildingFireRisk, 1),
 		formatInt(getTileValue(city, layer->tileFireProximityEffect, x, y)),
 	}));
 
-	window_label(context, myprintf("Fire protection: {0}%", {
+	window_label(context, myprintf("Fire protection: {0}%"_s, {
 		formatFloat(getFireProtectionPercentAt(city, x, y) * 100.0f, 0)
 	}));
 
-	window_label(context, myprintf("Resulting chance of fire: {0}%", {
+	window_label(context, myprintf("Resulting chance of fire: {0}%"_s, {
 		formatFloat(getTileValue(city, layer->tileOverallFireRisk, x, y) / 2.55f, 1)
 	}));
 }

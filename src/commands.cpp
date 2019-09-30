@@ -40,7 +40,7 @@ ConsoleCommand(funds)
 	Maybe<s64> amount = asInt(sAmount);
 	if (amount.isValid)
 	{
-		consoleWriteLine(myprintf("Set funds to {0}", {sAmount}), CLS_Success);
+		consoleWriteLine(myprintf("Set funds to {0}"_s, {sAmount}), CLS_Success);
 		globalAppState.gameState->city.funds = truncate32(amount.value);
 	}
 	else
@@ -66,7 +66,7 @@ ConsoleCommand(generate)
 ConsoleCommand(hello)
 {
 	consoleWriteLine("Hello human!"_s);
-	consoleWriteLine(myprintf("Testing formatInt bases: 10:{0}, 16:{1}, 36:{2}, 8:{3}, 2:{4}", {formatInt(123456, 10), formatInt(123456, 16), formatInt(123456, 36), formatInt(123456, 8), formatInt(123456, 2)}));
+	consoleWriteLine(myprintf("Testing formatInt bases: 10:{0}, 16:{1}, 36:{2}, 8:{3}, 2:{4}"_s, {formatInt(123456, 10), formatInt(123456, 16), formatInt(123456, 36), formatInt(123456, 8), formatInt(123456, 2)}));
 }
 
 ConsoleCommand(help)
@@ -78,7 +78,7 @@ ConsoleCommand(help)
 		next(&it))
 	{
 		Command *command = get(it);
-		consoleWriteLine(myprintf(" - {0}", {command->name}));
+		consoleWriteLine(myprintf(" - {0}"_s, {command->name}));
 	}
 }
 
@@ -113,47 +113,47 @@ ConsoleCommand(show_layer)
 	else if (argumentsCount == 1)
 	{
 		String layerName = nextToken(remainder, &remainder);
-		if (equals(layerName, "crime"))
+		if (equals(layerName, "crime"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Crime;
 			consoleWriteLine("Showing crime layer"_s, CLS_Success);
 		}
-		else if (equals(layerName, "des_res"))
+		else if (equals(layerName, "des_res"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Residential;
 			consoleWriteLine("Showing residential desirability"_s, CLS_Success);
 		}
-		else if (equals(layerName, "des_com"))
+		else if (equals(layerName, "des_com"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Commercial;
 			consoleWriteLine("Showing commercial desirability"_s, CLS_Success);
 		}
-		else if (equals(layerName, "des_ind"))
+		else if (equals(layerName, "des_ind"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Industrial;
 			consoleWriteLine("Showing industrial desirability"_s, CLS_Success);
 		}
-		else if (equals(layerName, "fire"))
+		else if (equals(layerName, "fire"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Fire;
 			consoleWriteLine("Showing fire layer"_s, CLS_Success);
 		}
-		else if (equals(layerName, "health"))
+		else if (equals(layerName, "health"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Health;
 			consoleWriteLine("Showing health layer"_s, CLS_Success);
 		}
-		else if (equals(layerName, "land_value"))
+		else if (equals(layerName, "land_value"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_LandValue;
 			consoleWriteLine("Showing land value layer"_s, CLS_Success);
 		}
-		else if (equals(layerName, "pollution"))
+		else if (equals(layerName, "pollution"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Pollution;
 			consoleWriteLine("Showing pollution layer"_s, CLS_Success);
 		}
-		else if (equals(layerName, "power"))
+		else if (equals(layerName, "power"_s))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Power;
 			consoleWriteLine("Showing power layer"_s, CLS_Success);
@@ -179,7 +179,7 @@ ConsoleCommand(window_size)
 		if (width.isValid && (width.value > 0)
 		 && height.isValid && (height.value > 0))
 		{
-			consoleWriteLine(myprintf("Window resized to {0} by {1}", {sWidth, sHeight}), CLS_Success);
+			consoleWriteLine(myprintf("Window resized to {0} by {1}"_s, {sWidth, sHeight}), CLS_Success);
 
 			resizeWindow(truncate32(width.value), truncate32(height.value), false);
 		}

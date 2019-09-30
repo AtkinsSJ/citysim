@@ -304,15 +304,15 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// CitySector
 	CitySector *sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
-	window_label(context, myprintf("CitySector: x={0} y={1} w={2} h={3}", {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
+	window_label(context, myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
 
 	// Terrain
 	TerrainDef *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Terrain: {0}", {terrain->name}));
+	window_label(context, myprintf("Terrain: {0}"_s, {terrain->name}));
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Zone: {0}", {zone ? getText(getZoneDef(zone).nameID) : "None"_s}));
+	window_label(context, myprintf("Zone: {0}"_s, {zone ? getText(getZoneDef(zone).nameID) : "None"_s}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -320,17 +320,17 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	{
 		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
-		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})", {def->name, formatInt(building->id), formatInt(buildingIndex)}));
-		window_label(context, myprintf("- Residents: {0} / {1}", {formatInt(building->currentResidents), formatInt(def->residents)}));
-		window_label(context, myprintf("- Jobs: {0} / {1}", {formatInt(building->currentJobs), formatInt(def->jobs)}));
-		window_label(context, myprintf("- Power: {0}", {formatInt(def->power)}));
+		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {def->name, formatInt(building->id), formatInt(buildingIndex)}));
+		window_label(context, myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
+		window_label(context, myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));
+		window_label(context, myprintf("- Power: {0}"_s, {formatInt(def->power)}));
 
 		// Problems
 		for (s32 problemIndex = 0; problemIndex < BuildingProblemCount; problemIndex++)
 		{
 			if (building->problems & (BuildingProblem) problemIndex)
 			{
-				window_label(context, myprintf("- PROBLEM: {0}", {buildingProblemNames[problemIndex]}));
+				window_label(context, myprintf("- PROBLEM: {0}"_s, {buildingProblemNames[problemIndex]}));
 			}
 		}
 	}
@@ -340,7 +340,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 
 	// Land value
-	window_label(context, myprintf("Land value: {0}%", {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
+	window_label(context, myprintf("Land value: {0}%"_s, {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
 	// Debug info
 	if (!isEmpty(&gameState->inspectTileDebugFlags))
@@ -446,14 +446,14 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	uiText(&renderer->uiBuffer, font, city->name,
 	       v2i(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)", {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2i(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(&renderer->uiBuffer, font, myprintf("£{0} (-£{1}/month)"_s, {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2i(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}", {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
+	uiText(&renderer->uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}"_s, {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("Power: {0}/{1}", {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
+	uiText(&renderer->uiBuffer, font, myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}", {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
+	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
 	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 
@@ -509,7 +509,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 					uiCloseMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
 					gameState->actionMode = ActionMode_Zone;
-					setCursor("build");
+					setCursor("build"_s);
 				}
 			}
 
@@ -550,7 +550,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 					uiCloseMenus(uiState);
 					gameState->selectedBuildingTypeID = buildingDef->typeID;
 					gameState->actionMode = ActionMode_Build;
-					setCursor("build");
+					setCursor("build"_s);
 				}
 			}
 
@@ -565,7 +565,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 					SDLK_x, "(X)"_s))
 		{
 			gameState->actionMode = ActionMode_Demolish;
-			setCursor("demolish");
+			setCursor("demolish"_s);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -620,7 +620,7 @@ void costTooltipWindowProc(WindowContext *context, void *userData)
 				? "cost-affordable"
 				: "cost-unaffordable";
 
-	String text = myprintf("£{0}", {formatInt(buildCost)});
+	String text = myprintf("£{0}"_s, {formatInt(buildCost)});
 	window_label(context, text, style);
 }
 
@@ -936,7 +936,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	{
 		// Unselect current thing
 		gameState->actionMode = ActionMode_None;
-		setCursor("default");
+		setCursor("default"_s);
 	}
 
 	// RENDERING

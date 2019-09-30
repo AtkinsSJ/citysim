@@ -265,11 +265,11 @@ Maybe<bool> asBool(String input)
 
 	Maybe<bool> result;
 
-	if (equals(input, "true"))
+	if (equals(input, "true"_s))
 	{
 		result = makeSuccess(true);
 	}
-	else if (equals(input, "false"))
+	else if (equals(input, "false"_s))
 	{
 		result = makeSuccess(false);
 	}
@@ -557,7 +557,7 @@ String formatFloat(f64 value, s32 decimalPlaces)
 {
 	DEBUG_FUNCTION();
 	
-	String formatString = myprintf("%.{0}f\0", {formatInt(decimalPlaces)});
+	String formatString = myprintf("%.{0}f\0"_s, {formatInt(decimalPlaces)});
 
 	s32 length = 100; // TODO: is 100 enough?
 	char *buffer = allocateMultiple<char>(tempArena, length);
