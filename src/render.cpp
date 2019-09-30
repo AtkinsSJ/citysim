@@ -77,9 +77,9 @@ void rendererLoadAssets()
 	renderer->loadAssets();
 
 	// Cache the shader IDs so we don't have to do so many hash lookups
-	renderer->shaderIds.pixelArt   = getShader(makeString("pixelart.glsl"  ))->rendererShaderID;
-	renderer->shaderIds.text       = getShader(makeString("textured.glsl"  ))->rendererShaderID;
-	renderer->shaderIds.untextured = getShader("untextured.glsl"s)->rendererShaderID;
+	renderer->shaderIds.pixelArt   = getShader("pixelart.glsl"_s)->rendererShaderID;
+	renderer->shaderIds.text       = getShader("textured.glsl"_s)->rendererShaderID;
+	renderer->shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
 
 	if (!isEmpty(renderer->currentCursorName))
 	{

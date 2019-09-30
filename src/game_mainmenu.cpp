@@ -10,7 +10,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	UITheme *theme = &assets->theme;
 
 	// Debug text for profiling text rendering
-	UILabelStyle *liLabelStyle = findLabelStyle(theme, "small"s);
+	UILabelStyle *liLabelStyle = findLabelStyle(theme, "small"_s);
 	uiText(&renderer->uiBuffer, getFont(liLabelStyle->fontName), LOCAL("lorem_ipsum"),
 			v2i(0,0), ALIGN_LEFT | ALIGN_TOP,
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
@@ -20,7 +20,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	V2I position = v2i(windowWidth / 2, 157);
 	s32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(theme, "title"s);
+	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 
 	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("game_title"),
@@ -29,11 +29,11 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("game_subtitle"),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(&renderer->uiBuffer, font, "This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."s,
+	position.y += (uiText(&renderer->uiBuffer, font, "This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."_s,
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 
-	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"s);
+	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"_s);
 
 	s32 buttonPadding = 8;
 

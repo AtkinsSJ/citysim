@@ -24,7 +24,7 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 
 	// Assets
 	// TODO: @AssetPacks
-	addTiledSprites("fire"s, "fire.png"s, 1, 1, 1, 1, false);
+	addTiledSprites("fire"_s, "fire.png"_s, 1, 1, 1, 1, false);
 }
 
 inline void markFireLayerDirty(FireLayer *layer, Rect2I bounds)
@@ -155,7 +155,7 @@ void drawFireDataLayer(City *city, Rect2I visibleTileBounds)
 #if 1
 	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *palette = getPalette("risk"s);
+	Array<V4> *palette = getPalette("risk"_s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #else
@@ -181,7 +181,7 @@ void drawFires(City *city, Rect2I visibleTileBounds)
 
 	if (layer->activeFires.count > 0)
 	{
-		SpriteGroup *fireSprites = getSpriteGroup("fire"s);
+		SpriteGroup *fireSprites = getSpriteGroup("fire"_s);
 		Sprite *sprite = getSprite(fireSprites, 0);
 		V4 colorWhite = makeWhite();
 
@@ -255,7 +255,7 @@ void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;
 
-	window_label(context, "*** FIRE INFO ***"s);
+	window_label(context, "*** FIRE INFO ***"_s);
 
 	window_label(context, myprintf("There are {0} fire protection buildings and {1} active fires in the city.", {
 		formatInt(layer->fireProtectionBuildings.count),

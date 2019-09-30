@@ -47,7 +47,7 @@ void renderConsole(Console *console)
 
 	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
 
-	UIConsoleStyle *consoleStyle = findConsoleStyle(&assets->theme, "default"s);
+	UIConsoleStyle *consoleStyle = findConsoleStyle(&assets->theme, "default"_s);
 	BitmapFont *consoleFont = getFont(consoleStyle->fontName);
 
 	V2I textPos = v2i(consoleStyle->padding, actualConsoleHeight - consoleStyle->padding);

@@ -10,10 +10,10 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 	V2I position = v2i(windowWidth / 2, 157);
 	s32 maxLabelWidth = windowWidth - 256;
 
-	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"s);
+	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"_s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 
-	Asset *creditsText = getAsset(AssetType_Misc, "credits.txt"s);
+	Asset *creditsText = getAsset(AssetType_Misc, "credits.txt"_s);
 	LineReader reader = readLines(creditsText->shortName, creditsText->data, 0);
 	while (loadNextLine(&reader))
 	{
@@ -22,7 +22,7 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
 
-	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"s);
+	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"_s);
 	s32 uiBorderPadding = 8;
 	String backText = LOCAL("button_back");
 	V2I backSize = calculateButtonSize(backText, style);

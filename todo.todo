@@ -16,8 +16,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-I think we should switch to _s instead of s for the string suffix, it's worrying me a bit.
-
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
 Window buttons should still do hover-states even on inactive windows.

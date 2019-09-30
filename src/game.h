@@ -75,18 +75,18 @@ enum DataLayer
 };
 
 String dataViewTitles[DataLayerCount] = {
-	"data_view_none"s,
+	"data_view_none"_s,
 
-	"data_view_desirability_residential"s,
-	"data_view_desirability_commercial"s,
-	"data_view_desirability_industrial"s,
+	"data_view_desirability_residential"_s,
+	"data_view_desirability_commercial"_s,
+	"data_view_desirability_industrial"_s,
 
-	"data_view_crime"s,
-	"data_view_fire"s,
-	"data_view_health"s,
-	"data_view_pollution"s,
-	"data_view_power"s,
-	"data_view_landvalue"s,
+	"data_view_crime"_s,
+	"data_view_fire"_s,
+	"data_view_health"_s,
+	"data_view_pollution"_s,
+	"data_view_power"_s,
+	"data_view_landvalue"_s,
 };
 
 enum InspectTileDebugFlags

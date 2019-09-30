@@ -161,22 +161,22 @@ void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum s
 	String typeString = nullString;
 	switch (type)
 	{
-		case GL_DEBUG_TYPE_ERROR:                typeString = "ERROR"s;                break;
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:  typeString = "DEPRECATED_BEHAVIOR"s;  break;
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:   typeString = "UNDEFINED_BEHAVIOR"s;   break;
-		case GL_DEBUG_TYPE_PORTABILITY:          typeString = "PORTABILITY"s;          break;
-		case GL_DEBUG_TYPE_PERFORMANCE:          typeString = "PERFORMANCE"s;          break;
-		default:                                 typeString = "OTHER"s;                break;
+		case GL_DEBUG_TYPE_ERROR:                typeString = "ERROR"_s;                break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:  typeString = "DEPRECATED_BEHAVIOR"_s;  break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:   typeString = "UNDEFINED_BEHAVIOR"_s;   break;
+		case GL_DEBUG_TYPE_PORTABILITY:          typeString = "PORTABILITY"_s;          break;
+		case GL_DEBUG_TYPE_PERFORMANCE:          typeString = "PERFORMANCE"_s;          break;
+		default:                                 typeString = "OTHER"_s;                break;
 	}
 
 	String severityString = nullString;
 	SDL_LogPriority priority;
 	switch (severity)
 	{
-		case GL_DEBUG_SEVERITY_HIGH:   severityString = "HIGH"s;    priority = SDL_LOG_PRIORITY_ERROR;  break;
-		case GL_DEBUG_SEVERITY_MEDIUM: severityString = "MEDIUM"s;  priority = SDL_LOG_PRIORITY_WARN;   break;
-		case GL_DEBUG_SEVERITY_LOW:    severityString = "LOW"s;     priority = SDL_LOG_PRIORITY_WARN;   break;
-		default:                       severityString = "OTHER"s;   priority = SDL_LOG_PRIORITY_INFO;   break;
+		case GL_DEBUG_SEVERITY_HIGH:   severityString = "HIGH"_s;    priority = SDL_LOG_PRIORITY_ERROR;  break;
+		case GL_DEBUG_SEVERITY_MEDIUM: severityString = "MEDIUM"_s;  priority = SDL_LOG_PRIORITY_WARN;   break;
+		case GL_DEBUG_SEVERITY_LOW:    severityString = "LOW"_s;     priority = SDL_LOG_PRIORITY_WARN;   break;
+		default:                       severityString = "OTHER"_s;   priority = SDL_LOG_PRIORITY_INFO;   break;
 	}
 
 	String messageString = makeString((char*)message, truncate32(length));
@@ -234,7 +234,7 @@ bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader *shader
 
 		if (isEmpty(infoLog))
 		{
-			infoLog = "No error log provided by OpenGL. Sad panda."s;
+			infoLog = "No error log provided by OpenGL. Sad panda."_s;
 		}
 
 		logError("Unable to compile part {3} of shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), shaderName, infoLog, formatInt(shaderPart)});
@@ -295,7 +295,7 @@ void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 
 				if (isEmpty(infoLog))
 				{
-					infoLog = "No error log provided by OpenGL. Sad panda."s;
+					infoLog = "No error log provided by OpenGL. Sad panda."_s;
 				}
 
 				logError("Unable to link shader program {0}! ({1})", {asset->shortName, infoLog});

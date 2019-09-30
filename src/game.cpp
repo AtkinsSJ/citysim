@@ -312,7 +312,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Zone: {0}", {zone ? getText(getZoneDef(zone).nameID) : "None"s}));
+	window_label(context, myprintf("Zone: {0}", {zone ? getText(getZoneDef(zone).nameID) : "None"_s}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -336,7 +336,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	}
 	else
 	{
-		window_label(context, "Building: None"s);
+		window_label(context, "Building: None"_s);
 	}
 
 	// Land value
@@ -431,7 +431,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
 	V2I centre = v2i(renderer->uiCamera.pos);
 	UITheme *theme = &assets->theme;
-	UILabelStyle *labelStyle = findLabelStyle(theme, "title"s);
+	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 	City *city = &gameState->city;
 
@@ -459,7 +459,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	// Build UI
 	{
-		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "default"s);
+		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "default"_s);
 
 		// The "ZONE" menu
 		String zoneButtonText = LOCAL("button_zone");
@@ -472,7 +472,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			// As I'm trying to use it, more and more of it is unraveling. I want to find the widest button width
 			// beforehand, but that means having to get which font will be used, and that's not exposed nicely!
 			// So I have to hackily write this buttonFont definition in the same way or it'll be wrong.
-			// BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "default"s)->fontName);
+			// BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "default"_s)->fontName);
 			// So, that really wants to come out. Also, calculateTextSize() is the wrong call because we want
 			// to know the BUTTON width, which will be the text size plus padding, depending on the style.
 			//
@@ -489,7 +489,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			//
 
 			// TODO: Get this style name from somewhere configurable? IDK
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"_s);
 
 			s32 buttonMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
@@ -524,7 +524,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		{
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"_s);
 			s32 buttonMaxWidth = 0;
 			for (auto it = iterate(constructibleBuildings);
 				!it.isDone;
@@ -562,7 +562,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.size = calculateButtonSize(demolishButtonText, buttonStyle);
 		if (uiButton(uiState, demolishButtonText, buttonRect, buttonStyle,
 					(gameState->actionMode == ActionMode_Demolish),
-					SDLK_x, "(X)"s))
+					SDLK_x, "(X)"_s))
 		{
 			gameState->actionMode = ActionMode_Demolish;
 			setCursor("demolish");
@@ -574,7 +574,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.size = calculateButtonSize(dataViewButtonText, buttonStyle);
 		if (uiMenuButton(uiState, dataViewButtonText, buttonRect, Menu_DataViews, buttonStyle))
 		{
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"s);
+			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"_s);
 			s32 buttonMaxWidth = 0;
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{
@@ -606,7 +606,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
 		{
-			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "default"s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }
@@ -632,25 +632,25 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 void debugToolsWindowProc(WindowContext *context, void *userData)
 {
 	GameState *gameState = (GameState *)userData;
-	if (window_button(context, "Inspect fire info"s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Fire)))
+	if (window_button(context, "Inspect fire info"_s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Fire)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Fire;
 	}
-	if (window_button(context, "Add Fire"s, -1, (gameState->actionMode == ActionMode_Debug_AddFire)))
+	if (window_button(context, "Add Fire"_s, -1, (gameState->actionMode == ActionMode_Debug_AddFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_AddFire;
 	}
-	if (window_button(context, "Remove Fire"s, -1, (gameState->actionMode == ActionMode_Debug_RemoveFire)))
+	if (window_button(context, "Remove Fire"_s, -1, (gameState->actionMode == ActionMode_Debug_RemoveFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_RemoveFire;
 	}
 
-	if (window_button(context, "Inspect power info"s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Power)))
+	if (window_button(context, "Inspect power info"_s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Power)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Power;
 	}
 	
-	if (window_button(context, "Inspect transport info"s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Transport)))
+	if (window_button(context, "Inspect transport info"_s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Transport)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Transport;
 	}
@@ -919,7 +919,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
 						V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
-						showWindow(uiState, "Inspect tile"s, 250, 200, windowPos, "default"s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						showWindow(uiState, "Inspect tile"_s, 250, 200, windowPos, "default"_s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;

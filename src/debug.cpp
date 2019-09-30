@@ -196,7 +196,7 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 void renderDebugData(DebugState *debugState)
 {
 	DEBUG_FUNCTION_T(DCDT_Debug);
-	BitmapFont *font = getFont("debug"s);
+	BitmapFont *font = getFont("debug"_s);
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
@@ -323,8 +323,8 @@ void renderDebugData(DebugState *debugState)
 	// Put FPS in top right
 	initDebugTextState(&textState, font, makeWhite(), 16, false, false);
 	{
-		String smsForFrame = "???"s;
-		String sfps = "???"s;
+		String smsForFrame = "???"_s;
+		String sfps = "???"_s;
 		if (rfi != debugState->writingFrameIndex)
 		{
 			f32 msForFrame = (f32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond/1000);

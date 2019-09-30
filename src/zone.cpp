@@ -65,7 +65,7 @@ void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zo
 
 	u8 *data = copyRegion(city->zoneLayer.tileDesirability[zoneType], city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *palette = getPalette("desirability"s);
+	Array<V4> *palette = getPalette("desirability"_s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 }

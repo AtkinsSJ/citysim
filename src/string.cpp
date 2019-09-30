@@ -612,8 +612,8 @@ String formatString(String value, s32 length, bool alignLeft, char paddingChar)
 
 String formatBool(bool value)
 {
-	if (value) return "true"s;
-	else       return "false"s;
+	if (value) return "true"_s;
+	else       return "false"_s;
 }
 
 String repeatChar(char c, s32 length)

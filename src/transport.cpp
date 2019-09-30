@@ -131,7 +131,7 @@ inline s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
 
 void debugInspectTransport(WindowContext *context, City *city, s32 x, s32 y)
 {
-	window_label(context, "*** TRANSPORT INFO ***"s);
+	window_label(context, "*** TRANSPORT INFO ***"_s);
 
 	// Transport
 	for (s32 transportType = 0; transportType < TransportTypeCount; transportType++)

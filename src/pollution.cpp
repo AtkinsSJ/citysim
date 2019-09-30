@@ -114,7 +114,7 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(city->pollutionLayer.tilePollution, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *palette = getPalette("pollution"s);
+	Array<V4> *palette = getPalette("pollution"_s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 }

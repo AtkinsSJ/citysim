@@ -201,7 +201,7 @@ void drawBuildingHighlights(City *city, Iterable *buildingRefs)
 
 	if (buildingRefs->count > 0)
 	{
-		Array<V4> *buildingsPalette = getPalette("service_buildings"s);
+		Array<V4> *buildingsPalette = getPalette("service_buildings"_s);
 		s32 paletteIndexPowered   = 0;
 		s32 paletteIndexUnpowered = 1;
 
@@ -249,7 +249,7 @@ void drawBuildingEffectRadii(City *city, Iterable *buildingRefs, EffectRadius Bu
 
 	if (buildingRefs->count > 0)
 	{
-		Array<V4> *ringsPalette = getPalette("coverage_radius"s);
+		Array<V4> *ringsPalette = getPalette("coverage_radius"_s);
 		s32 paletteIndexPowered   = 0;
 		s32 paletteIndexUnpowered = 1;
 

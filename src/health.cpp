@@ -85,7 +85,7 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 
 	u8 *data = copyRegion(layer->tileHealthCoverage, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
-	Array<V4> *coveragePalette = getPalette("service_coverage"s);
+	Array<V4> *coveragePalette = getPalette("service_coverage"_s);
 
 	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
 

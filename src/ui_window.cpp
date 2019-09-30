@@ -538,7 +538,7 @@ void renderWindows(UIState *uiState)
 			V4 barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
 			V4 titleColor = windowStyle->titleColor;
 
-			String closeButtonString = "X"s;
+			String closeButtonString = "X"_s;
 			V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
 			BitmapFont *titleFont = getFont(windowStyle->titleFontName);

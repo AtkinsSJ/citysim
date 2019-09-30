@@ -83,7 +83,7 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
 	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleTileBounds));
 
-	Array<V4> *palette = getPalette("power"s);
+	Array<V4> *palette = getPalette("power"_s);
 	s32 paletteIndexPowered  = 0;
 	s32 paletteIndexBrownout = 1;
 	s32 paletteIndexBlackout = 2;
@@ -848,7 +848,7 @@ void unregisterPowerBuilding(PowerLayer *layer, Building *building)
 
 void debugInspectPower(WindowContext *context, City *city, s32 x, s32 y)
 {
-	window_label(context, "*** POWER INFO ***"s);
+	window_label(context, "*** POWER INFO ***"_s);
 
 	// Power group
 	PowerNetwork *powerNetwork = getPowerNetworkAt(city, x, y);

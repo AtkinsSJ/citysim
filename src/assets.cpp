@@ -6,7 +6,7 @@ void initAssets()
 
 	ASSERT(assets->assetArena.currentBlock != null); //initAssetManager() called with uninitialised/corrupted memory arena!
 	char *basePath = SDL_GetBasePath();
-	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), "assets"s}));
+	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), "assets"_s}));
 
 	// NB: We only need to define these for assets in the root assets/ directory
 	// Well, for now at least.
@@ -526,7 +526,7 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 void addAssets()
 {
 	// Manually add the texts asset, because it's special.
-	addAsset(AssetType_Texts, "{0}.text"s, AssetDefaultFlags | Asset_IsLocaleSpecific);
+	addAsset(AssetType_Texts, "{0}.text"_s, AssetDefaultFlags | Asset_IsLocaleSpecific);
 
 	{
 		DEBUG_BLOCK("Read asset directories");
@@ -763,7 +763,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 			command.length--;
 			command.chars++;
 
-			if (equals(command, "Palette"s))
+			if (equals(command, "Palette"_s))
 			{
 				String paletteName = pushString(&assets->assetArena, readToken(&reader));
 				paletteAsset = addAsset(AssetType_Palette, paletteName, 0);
@@ -782,15 +782,15 @@ void loadPaletteDefs(Blob data, Asset *asset)
 				return;
 			}
 
-			if (equals(command, "type"s))
+			if (equals(command, "type"_s))
 			{
 				String type = readToken(&reader);
 
-				if (equals(type, "fixed"s))
+				if (equals(type, "fixed"_s))
 				{
 					paletteAsset->palette.type = PaletteType_Fixed;
 				}
-				else if (equals(type, "gradient"s))
+				else if (equals(type, "gradient"_s))
 				{
 					paletteAsset->palette.type = PaletteType_Gradient;
 				}
@@ -799,7 +799,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					error(&reader, "Unrecognised palette type '{0}', allowed values are: fixed, gradient", {type});
 				}
 			}
-			else if (equals(command, "size"s))
+			else if (equals(command, "size"_s))
 			{
 				Maybe<s64> size = readInt(&reader);
 				if (size.isValid)
@@ -807,7 +807,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					paletteAsset->palette.size = (s32)size.value;
 				}
 			}
-			else if (equals(command, "color"s))
+			else if (equals(command, "color"_s))
 			{
 				Maybe<V4> color = readColor(&reader);
 				if (color.isValid)
@@ -836,7 +836,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(command, "from"s))
+			else if (equals(command, "from"_s))
 			{
 				Maybe<V4> from = readColor(&reader);
 				if (from.isValid)
@@ -851,7 +851,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(command, "to"s))
+			else if (equals(command, "to"_s))
 			{
 				Maybe<V4> to = readColor(&reader);
 				if (to.isValid)
