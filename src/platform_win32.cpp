@@ -61,7 +61,7 @@ DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo *res
 		handle.isValid = false;
 		u32 errorCode = (u32)GetLastError();
 		handle.errorCode = errorCode;
-		logError("Failed to read directory listing in \"{0}\". (Error {1})", {handle.path, formatInt(errorCode)});
+		logError("Failed to read directory listing in \"{0}\". (Error {1})"_s, {handle.path, formatInt(errorCode)});
 	}
 	else
 	{
@@ -107,7 +107,7 @@ DirectoryChangeWatchingHandle platform_beginWatchingDirectory(String path)
 		handle.isValid = false;
 		u32 errorCode = (u32)GetLastError();
 		handle.errorCode = errorCode;
-		logError("Failed to set notification for file changes in \"{0}\". (Error {1})", {handle.path, formatInt(errorCode)});
+		logError("Failed to set notification for file changes in \"{0}\". (Error {1})"_s, {handle.path, formatInt(errorCode)});
 	}
 	else
 	{
@@ -130,7 +130,7 @@ bool platform_hasDirectoryChanged(DirectoryChangeWatchingHandle *handle)
 			handle->isValid = false;
 			u32 errorCode = (u32)GetLastError();
 			handle->errorCode = errorCode;
-			logError("Failed to poll for file changes in \"{0}\". (Error {1})", {handle->path, formatInt(errorCode)});
+			logError("Failed to poll for file changes in \"{0}\". (Error {1})"_s, {handle->path, formatInt(errorCode)});
 		} break;
 
 		case WAIT_TIMEOUT: 
@@ -157,7 +157,7 @@ bool platform_hasDirectoryChanged(DirectoryChangeWatchingHandle *handle)
 				handle->isValid = false;
 				u32 errorCode = (u32)GetLastError();
 				handle->errorCode = errorCode;
-				logError("Failed to re-set notification for file changes in \"{0}\". (Error {1})", {handle->path, formatInt(errorCode)});
+				logError("Failed to re-set notification for file changes in \"{0}\". (Error {1})"_s, {handle->path, formatInt(errorCode)});
 			}
 		} break;
 	}

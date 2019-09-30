@@ -105,7 +105,7 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 
 		if (result == null)
 		{
-			logError("Failed to create SDL_Surface from asset '{0}'!\n{1}", {
+			logError("Failed to create SDL_Surface from asset '{0}'!\n{1}"_s, {
 				name, makeString(IMG_GetError())
 			});
 		}
@@ -114,7 +114,7 @@ SDL_Surface *createSurfaceFromFileData(Blob fileData, String name)
 	}
 	else
 	{
-		logError("Failed to create SDL_RWops from asset '{0}'!\n{1}", {
+		logError("Failed to create SDL_RWops from asset '{0}'!\n{1}"_s, {
 			name, makeString(SDL_GetError())
 		});
 	}
@@ -130,7 +130,7 @@ void ensureAssetIsLoaded(Asset *asset)
 
 	if (asset->state != AssetState_Loaded)
 	{
-		logError("Failed to load asset '{0}'", {asset->shortName});
+		logError("Failed to load asset '{0}'"_s, {asset->shortName});
 	}
 }
 
@@ -277,7 +277,7 @@ void loadAsset(Asset *asset)
 
 		case AssetType_Texts:
 		{
-			fileData = readTempFile(getAssetPath(AssetType_Texts, myprintf("{0}.text", {getLocale()})));
+			fileData = readTempFile(getAssetPath(AssetType_Texts, myprintf("{0}.text"_s, {getLocale()})));
 			copyFileIntoAsset(&fileData, asset);
 			loadTexts(&assets->texts, asset, fileData);
 			asset->state = AssetState_Loaded;
@@ -602,7 +602,7 @@ Asset *getAsset(AssetType type, String shortName)
 	if (result == null)
 	{
 		DEBUG_BREAK();
-		logError("Requested asset '{0}' was not found!", {shortName});
+		logError("Requested asset '{0}' was not found!"_s, {shortName});
 	}
 	
 	return result;
@@ -641,7 +641,7 @@ BitmapFont *getFont(String fontName)
 		{
 			result = &fontAsset->bitmapFont;
 		}
-		logError("Failed to find font named '{0}' in the UITheme.", {fontName});
+		logError("Failed to find font named '{0}' in the UITheme."_s, {fontName});
 	}
 	else
 	{
@@ -668,7 +668,7 @@ inline String getText(String name)
 	}
 	else
 	{
-		logWarn("Locale {0} is missing text for '{1}'.", {getLocale(), name});
+		logWarn("Locale {0} is missing text for '{1}'."_s, {getLocale(), name});
 		put(&assets->texts, name, name);
 	}
 
@@ -682,22 +682,22 @@ String getAssetPath(AssetType type, String shortName)
 	switch (type)
 	{
 	case AssetType_Cursor:
-		result = myprintf("{0}/cursors/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/cursors/{1}"_s, {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_BitmapFont:
-		result = myprintf("{0}/fonts/{1}",    {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/fonts/{1}"_s,    {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Shader:
-		result = myprintf("{0}/shaders/{1}",  {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/shaders/{1}"_s,  {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Texts:
-		result = myprintf("{0}/locale/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/locale/{1}"_s, {assets->assetsPath, shortName}, true);
 		break;
 	case AssetType_Texture:
-		result = myprintf("{0}/textures/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/textures/{1}"_s, {assets->assetsPath, shortName}, true);
 		break;
 	default:
-		result = myprintf("{0}/{1}", {assets->assetsPath, shortName}, true);
+		result = myprintf("{0}/{1}"_s, {assets->assetsPath, shortName}, true);
 		break;
 	}
 
@@ -741,7 +741,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 		}
 		else
 		{
-			error(&reader, "Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'.");
+			error(&reader, "Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'."_s);
 			return;
 		}
 	}
@@ -770,7 +770,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 			}
 			else
 			{
-				error(&reader, "Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!", {command});
+				error(&reader, "Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, {command});
 				return;
 			}
 		}
@@ -778,7 +778,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 		{
 			if (paletteAsset == null)
 			{
-				error(&reader, "Unexpected command '{0}' before the start of a :Palette", {command});
+				error(&reader, "Unexpected command '{0}' before the start of a :Palette"_s, {command});
 				return;
 			}
 
@@ -796,7 +796,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 				}
 				else
 				{
-					error(&reader, "Unrecognised palette type '{0}', allowed values are: fixed, gradient", {type});
+					error(&reader, "Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, {type});
 				}
 			}
 			else if (equals(command, "size"_s))
@@ -823,7 +823,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 						s32 colorIndex = paletteAsset->palette.fixed.currentPos++;
 						if (colorIndex >= paletteAsset->palette.size)
 						{
-							error(&reader, "Too many 'color' definitions! 'size' must be large enough.");
+							error(&reader, "Too many 'color' definitions! 'size' must be large enough."_s);
 						}
 						else
 						{
@@ -832,7 +832,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					}
 					else
 					{
-						error(&reader, "'color' is only a valid command for fixed palettes.");
+						error(&reader, "'color' is only a valid command for fixed palettes."_s);
 					}
 				}
 			}
@@ -847,7 +847,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					}
 					else
 					{
-						error(&reader, "'from' is only a valid command for gradient palettes.");
+						error(&reader, "'from' is only a valid command for gradient palettes."_s);
 					}
 				}
 			}
@@ -862,13 +862,13 @@ void loadPaletteDefs(Blob data, Asset *asset)
 					}
 					else
 					{
-						error(&reader, "'to' is only a valid command for gradient palettes.");
+						error(&reader, "'to' is only a valid command for gradient palettes."_s);
 					}
 				}
 			}
 			else
 			{
-				error(&reader, "Unrecognised command '{0}'", {command});
+				error(&reader, "Unrecognised command '{0}'"_s, {command});
 			}
 		}
 	}

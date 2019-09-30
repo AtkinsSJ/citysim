@@ -41,7 +41,7 @@ BitmapFontGlyph *findGlyph(BitmapFont *font, unichar targetChar)
 
 	if (entry == null)
 	{
-		logWarn("Failed to find char 0x{0} in font.", {formatInt(targetChar, 16)});
+		logWarn("Failed to find char 0x{0} in font."_s, {formatInt(targetChar, 16)});
 	}
 	else
 	{

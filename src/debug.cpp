@@ -360,17 +360,17 @@ void updateAndRenderDebugData(DebugState *debugState)
 	if (keyJustPressed(SDLK_INSERT))
 	{
 		// Output draw call data
-		logDebug("****************** DRAW CALLS ******************");
+		logDebug("****************** DRAW CALLS ******************"_s);
 		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
 		u32 rfi = debugState->readingFrameIndex;
 		while (renderBufferData != &debugState->renderBufferDataSentinel)
 		{
 			s32 drawCallCount = renderBufferData->drawCallCount[rfi];
-			logDebug("Buffer {0} ({1} calls)\n-------------------------------", {renderBufferData->name, formatInt(drawCallCount)});
+			logDebug("Buffer {0} ({1} calls)\n-------------------------------"_s, {renderBufferData->name, formatInt(drawCallCount)});
 			for (s32 i=0; i<drawCallCount; i++)
 			{
 				DebugDrawCallData *drawCall = renderBufferData->drawCalls[rfi] + i;
-				logDebug("{0}: {1} item(s), shader '{2}', texture '{3}'", {formatInt(i), formatInt(drawCall->itemsDrawn), drawCall->shaderName, drawCall->textureName});
+				logDebug("{0}: {1} item(s), shader '{2}', texture '{3}'"_s, {formatInt(i), formatInt(drawCall->itemsDrawn), drawCall->shaderName, drawCall->textureName});
 			}
 			renderBufferData = renderBufferData->nextNode;
 		}

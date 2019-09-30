@@ -80,6 +80,7 @@ void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum s
 
 void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader);
 bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader *shaderProgram, GL_ShaderPart shaderPart);
+// NB: Using char* because we have to pass the names to GL!
 void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribLocation);
 void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation);
 GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID);

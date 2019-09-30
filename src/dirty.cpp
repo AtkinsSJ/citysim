@@ -27,7 +27,7 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 
 	if (dirtyRects->rects.count > 128)
 	{
-		logWarn("Over 128 dirty rects, which is probably a bug? (Count: {0}) Skipping duplicate checks.", {formatInt(dirtyRects->rects.count)});
+		logWarn("Over 128 dirty rects, which is probably a bug? (Count: {0}) Skipping duplicate checks."_s, {formatInt(dirtyRects->rects.count)});
 		DEBUG_BREAK();
 	}
 	else

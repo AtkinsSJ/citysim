@@ -38,5 +38,5 @@ Maybe<u32> readAlignment(LineReader *reader);
 Maybe<String> readTextureDefinition(LineReader *reader);
 Maybe<struct EffectRadius> readEffectRadius(LineReader *reader);
 
-void warn(LineReader *reader, char *message, std::initializer_list<String> args = {});
-void error(LineReader *reader, char *message, std::initializer_list<String> args = {});
+void warn(LineReader *reader, String message, std::initializer_list<String> args = {});
+void error(LineReader *reader, String message, std::initializer_list<String> args = {});

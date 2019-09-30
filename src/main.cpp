@@ -165,7 +165,7 @@ SDL_Window *initSDL(WindowSettings windowSettings, const char *windowTitle)
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		logCritical("SDL could not be initialised! :(\n {0}\n", {makeString(SDL_GetError())});
+		logCritical("SDL could not be initialised! :(\n {0}"_s, {makeString(SDL_GetError())});
 	}
 	else
 	{
@@ -173,7 +173,7 @@ SDL_Window *initSDL(WindowSettings windowSettings, const char *windowTitle)
 		u8 imgFlags = IMG_INIT_PNG;
 		if (!(IMG_Init(imgFlags) & imgFlags))
 		{
-			logCritical("SDL_image could not be initialised! :(\n {0}\n", {makeString(IMG_GetError())});
+			logCritical("SDL_image could not be initialised! :(\n {0}"_s, {makeString(IMG_GetError())});
 		}
 		else
 		{
@@ -187,7 +187,7 @@ SDL_Window *initSDL(WindowSettings windowSettings, const char *windowTitle)
 
 			if (!window)
 			{
-				logCritical("Window could not be created! :(\n {0}", {makeString(SDL_GetError())});
+				logCritical("Window could not be created! :(\n {0}"_s, {makeString(SDL_GetError())});
 			}
 		}
 	}
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 	initCamera(uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
 	u32 initFinishedTicks = SDL_GetTicks();
-	logInfo("Game initialised in {0} milliseconds.", {formatInt(initFinishedTicks - initStartTicks)});
+	logInfo("Game initialised in {0} milliseconds."_s, {formatInt(initFinishedTicks - initStartTicks)});
 
 
 	// TEST STUFF

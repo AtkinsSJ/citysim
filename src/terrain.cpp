@@ -65,7 +65,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 			firstWord.length--;
 
 			String defType = firstWord;
-			if (equals(firstWord, "Terrain"))
+			if (equals(firstWord, "Terrain"_s))
 			{
 				mode = Mode_Terrain;
 				def = appendBlank(terrains);
@@ -73,26 +73,26 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				String name = getRemainderOfLine(&reader);
 				if (isEmpty(name))
 				{
-					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain name'");
+					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain name'"_s);
 					return;
 				}
 				def->name = pushString(&assets->assetArena, name);
 			}
-			else if (equals(firstWord, "Texture"))
+			else if (equals(firstWord, "Texture"_s))
 			{
 				mode = Mode_Texture;
 				
 				String filename = getRemainderOfLine(&reader);
 				if (isEmpty(filename))
 				{
-					error(&reader, "Couldn't parse Texture. Expected: ':Terrain filename'");
+					error(&reader, "Couldn't parse Texture. Expected: ':Terrain filename'"_s);
 					return;
 				}
 				textureAsset = addTexture(filename, false);
 			}
 			else
 			{
-				error(&reader, "Unrecognised command: '{0}'", {firstWord});
+				error(&reader, "Unrecognised command: '{0}'"_s, {firstWord});
 			}
 		}
 		else // Properties!
@@ -100,7 +100,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 			switch (mode)
 			{
 				case Mode_Texture: {
-					if (equals(firstWord, "sprite_size"))
+					if (equals(firstWord, "sprite_size"_s))
 					{
 						Maybe<s64> spriteW = readInt(&reader);
 						Maybe<s64> spriteH = readInt(&reader);
@@ -110,11 +110,11 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 						}
 						else
 						{
-							error(&reader, "Couldn't parse sprite_size. Expected 'sprite_size width height'.");
+							error(&reader, "Couldn't parse sprite_size. Expected 'sprite_size width height'."_s);
 							return;
 						}
 					}
-					else if (equals(firstWord, "sprite_border"))
+					else if (equals(firstWord, "sprite_border"_s))
 					{
 						Maybe<s64> borderW = readInt(&reader);
 						Maybe<s64> borderH = readInt(&reader);
@@ -124,11 +124,11 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 						}
 						else
 						{
-							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'.");
+							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'."_s);
 							return;
 						}
 					}
-					else if (equals(firstWord, "sprite"))
+					else if (equals(firstWord, "sprite"_s))
 					{
 						String spriteName = pushString(&assets->assetArena, readToken(&reader));
 						Maybe<s64> x = readInt(&reader);
@@ -143,34 +143,34 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 						}
 						else
 						{
-							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'.");
+							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'."_s);
 							return;
 						}
 					}
 					else
 					{
-						warn(&reader, "Unrecognised property '{0}' inside command ':Texture'", {firstWord});
+						warn(&reader, "Unrecognised property '{0}' inside command ':Texture'"_s, {firstWord});
 					}
 				} break;
 
 				case Mode_Terrain: {
-					if (equals(firstWord, "uses_sprite"))
+					if (equals(firstWord, "uses_sprite"_s))
 					{
 						def->spriteName = pushString(&assets->assetArena, getRemainderOfLine(&reader));
 					}
-					else if (equals(firstWord, "can_build_on"))
+					else if (equals(firstWord, "can_build_on"_s))
 					{
 						Maybe<bool> boolRead = readBool(&reader);
 						if (boolRead.isValid) def->canBuildOn = boolRead.value;
 					}
 					else
 					{
-						warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'", {firstWord});
+						warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'"_s, {firstWord});
 					}
 				} break;
 
 				default: {
-					error(&reader, "Found a property '{0}' before a :command!", {firstWord});
+					error(&reader, "Found a property '{0}' before a :command!"_s, {firstWord});
 				} break;
 			}
 		}

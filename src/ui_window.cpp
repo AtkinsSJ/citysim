@@ -173,7 +173,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 {
 	if (windowProc == null)
 	{
-		logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}", {title});
+		logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, {title});
 		return;
 	}
 

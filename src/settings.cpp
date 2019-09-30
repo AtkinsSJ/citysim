@@ -38,7 +38,7 @@ void initSettings()
 
 inline String getUserSettingsPath()
 {
-	return myprintf("{0}{1}", {settings->userDataPath, settings->userSettingsFilename}, true);
+	return myprintf("{0}{1}"_s, {settings->userDataPath, settings->userSettingsFilename}, true);
 }
 
 void loadSettingsFile(String name, Blob settingsData)
@@ -53,7 +53,7 @@ void loadSettingsFile(String name, Blob settingsData)
 
 		if (def == null)
 		{
-			error(&reader, "Unrecognized setting: {0}", {settingName});
+			error(&reader, "Unrecognized setting: {0}"_s, {settingName});
 		}
 		else
 		{
@@ -105,7 +105,7 @@ void loadSettings()
 		loadSettingsFile(userSettingsFile.name, userSettingsFile.data);
 	}
 
-	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}", {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y), settings->locale});
+	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s, {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y), settings->locale});
 }
 
 void applySettings()
@@ -118,9 +118,9 @@ void applySettings()
 void saveSettings()
 {
 	StringBuilder stb = newStringBuilder(2048);
-	append(&stb, "# User-specific settings file.\n#\n");
-	append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n");
-	append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n");
+	append(&stb, "# User-specific settings file.\n#\n"_s);
+	append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n"_s);
+	append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n"_s);
 
 	u8* base = (u8*) settings;
 	for (auto it = iterate(&settings->defs);
@@ -167,12 +167,12 @@ void saveSettings()
 
 	if (writeFile(userSettingsPath, fileData))
 	{
-		logInfo("Settings saved successfully.");
+		logInfo("Settings saved successfully."_s);
 	}
 	else
 	{
 		// TODO: Really really really need to display an error window to the user!
-		logError("Failed to save user settings to {0}.", {userSettingsPath});
+		logError("Failed to save user settings to {0}."_s, {userSettingsPath});
 	}
 }
 

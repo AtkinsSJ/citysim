@@ -277,7 +277,7 @@ void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
 		KeyboardShortcut shortcut = parseKeyboardShortcut(shortcutString);
 		if (shortcut.key == SDLK_UNKNOWN)
 		{
-			error(&reader, "Unrecognised key in keyboard shortcut sequence '{0}'", {shortcutString});
+			error(&reader, "Unrecognised key in keyboard shortcut sequence '{0}'"_s, {shortcutString});
 		}
 		else
 		{

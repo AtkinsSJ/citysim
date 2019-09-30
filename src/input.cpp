@@ -35,7 +35,7 @@ void initInput(InputState *theInput)
 	// F keys
 	for (char i = 0; i <= 12; i++)
 	{
-		String key = pushString(systemArena, myprintf("F{0}", {formatInt(i+1)}));
+		String key = pushString(systemArena, myprintf("F{0}"_s, {formatInt(i+1)}));
 		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_F1 + i));
 	}
 
@@ -343,19 +343,19 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 		// 
 		// MODIFIERS
 		// 
-		if (equals(keyName, "Alt"))
+		if (equals(keyName, "Alt"_s))
 		{
 			result.modifiers |= KeyMod_Alt;
 		}
-		else if (equals(keyName, "Ctrl"))
+		else if (equals(keyName, "Ctrl"_s))
 		{
 			result.modifiers |= KeyMod_Ctrl;
 		}
-		else if (equals(keyName, "Shift"))
+		else if (equals(keyName, "Shift"_s))
 		{
 			result.modifiers |= KeyMod_Shift;
 		}
-		else if (equals(keyName, "Super"))
+		else if (equals(keyName, "Super"_s))
 		{
 			result.modifiers |= KeyMod_Super;
 		}
@@ -369,7 +369,7 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 			else
 			{
 				// Error!
-				logWarn("Unrecognised key name '{0}' in shortcut string '{1}'", {keyName, shortcutString});
+				logWarn("Unrecognised key name '{0}' in shortcut string '{1}'"_s, {keyName, shortcutString});
 				result.key = SDLK_UNKNOWN;
 			}
 			break;

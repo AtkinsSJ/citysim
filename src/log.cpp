@@ -1,33 +1,33 @@
 #pragma once
 
-void log(SDL_LogPriority priority, char *format, std::initializer_list<String> args)
+void log(SDL_LogPriority priority, String format, std::initializer_list<String> args)
 {
-	String text = myprintf(makeString(format), args, true);
+	String text = myprintf(format, args, true);
 	SDL_LogMessage(SDL_LOG_CATEGORY_CUSTOM, priority, "%s", text.chars);
 }
 
-inline void logVerbose (char *format, std::initializer_list<String> args)
+inline void logVerbose (String format, std::initializer_list<String> args)
 {
 	log(SDL_LOG_PRIORITY_VERBOSE, format, args);
 }
-inline void logDebug   (char *format, std::initializer_list<String> args)
+inline void logDebug   (String format, std::initializer_list<String> args)
 {
 	log(SDL_LOG_PRIORITY_DEBUG, format, args);
 }
-inline void logInfo    (char *format, std::initializer_list<String> args)
+inline void logInfo    (String format, std::initializer_list<String> args)
 {
 	log(SDL_LOG_PRIORITY_INFO, format, args);
 }
-inline void logWarn    (char *format, std::initializer_list<String> args)
+inline void logWarn    (String format, std::initializer_list<String> args)
 {
 	log(SDL_LOG_PRIORITY_WARN, format, args);
 }
-inline void logError   (char *format, std::initializer_list<String> args)
+inline void logError   (String format, std::initializer_list<String> args)
 {
 	log(SDL_LOG_PRIORITY_ERROR, format, args);
 	DEBUG_BREAK();
 }
-inline void logCritical(char *format, std::initializer_list<String> args)
+inline void logCritical(String format, std::initializer_list<String> args)
 {
 	log(SDL_LOG_PRIORITY_CRITICAL, format, args);
 	ASSERT(!"Critical error");

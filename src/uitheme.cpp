@@ -12,7 +12,7 @@ void initUITheme(UITheme *theme)
 	initHashTable(&theme->windowStyles);
 }
 
-#define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'", {firstWord, target.name})
+#define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'"_s, {firstWord, target.name})
 
 void loadUITheme(Blob data, Asset *asset)
 {
@@ -65,7 +65,7 @@ void loadUITheme(Blob data, Asset *asset)
 			--firstWord.length;
 			target.name = firstWord;
 
-			if (equals(firstWord, "Font"))
+			if (equals(firstWord, "Font"_s))
 			{
 				target.type = Section_None;
 				String fontName = readToken(&reader);
@@ -77,44 +77,44 @@ void loadUITheme(Blob data, Asset *asset)
 				}
 				else
 				{
-					error(&reader, "Invalid font declaration: '{0}'", {getLine(&reader)});
+					error(&reader, "Invalid font declaration: '{0}'"_s, {getLine(&reader)});
 				}
 			}
-			else if (equals(firstWord, "General"))
+			else if (equals(firstWord, "General"_s))
 			{
 				target.type = Section_General;
 			}
-			else if (equals(firstWord, "Button"))
+			else if (equals(firstWord, "Button"_s))
 			{
 				String name = pushString(&assets->assetArena, readToken(&reader));
 				target.type = Section_Button;
 				target.button = put(&theme->buttonStyles, name);
 			}
-			else if (equals(firstWord, "Console"))
+			else if (equals(firstWord, "Console"_s))
 			{
 				String name = pushString(&assets->assetArena, readToken(&reader));
 				target.type = Section_Console;
 				target.console = put(&theme->consoleStyles, name);
 			}
-			else if (equals(firstWord, "Label"))
+			else if (equals(firstWord, "Label"_s))
 			{
 				String name = pushString(&assets->assetArena, readToken(&reader));
 				target.type = Section_Label;
 				target.label = put(&theme->labelStyles, name);
 			}
-			else if (equals(firstWord, "UIMessage"))
+			else if (equals(firstWord, "UIMessage"_s))
 			{
 				String name = pushString(&assets->assetArena, readToken(&reader));
 				target.type = Section_UIMessage;
 				target.message = put(&theme->messageStyles, name);
 			}
-			else if (equals(firstWord, "TextBox"))
+			else if (equals(firstWord, "TextBox"_s))
 			{
 				String name = pushString(&assets->assetArena, readToken(&reader));
 				target.type = Section_TextBox;
 				target.textBox = put(&theme->textBoxStyles, name);
 			}
-			else if (equals(firstWord, "Window"))
+			else if (equals(firstWord, "Window"_s))
 			{
 				String name = pushString(&assets->assetArena, readToken(&reader));
 				target.type = Section_Window;
@@ -122,13 +122,13 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else
 			{
-				error(&reader, "Unrecognized command: '{0}'", {firstWord});
+				error(&reader, "Unrecognized command: '{0}'"_s, {firstWord});
 			}
 		}
 		else
 		{
 			// properties of the item
-			if (equals(firstWord, "backgroundColor"))
+			if (equals(firstWord, "backgroundColor"_s))
 			{
 				Maybe<V4> backgroundColor = readColor(&reader);
 				if (backgroundColor.isValid)
@@ -144,7 +144,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "backgroundColorInactive"))
+			else if (equals(firstWord, "backgroundColorInactive"_s))
 			{
 				Maybe<V4> backgroundColorInactive = readColor(&reader);
 				if (backgroundColorInactive.isValid)
@@ -156,7 +156,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "contentButtonStyle"))
+			else if (equals(firstWord, "contentButtonStyle"_s))
 			{
 				String styleName = pushString(&assets->assetArena, readToken(&reader));
 				switch (target.type)
@@ -165,7 +165,7 @@ void loadUITheme(Blob data, Asset *asset)
 					default:  WRONG_SECTION;
 				}
 			}
-			else if (equals(firstWord, "contentLabelStyle"))
+			else if (equals(firstWord, "contentLabelStyle"_s))
 			{
 				String styleName = pushString(&assets->assetArena, readToken(&reader));
 				switch (target.type)
@@ -174,7 +174,7 @@ void loadUITheme(Blob data, Asset *asset)
 					default:  WRONG_SECTION;
 				}
 			}
-			else if (equals(firstWord, "contentPadding"))
+			else if (equals(firstWord, "contentPadding"_s))
 			{
 				Maybe<s64> contentPadding = readInt(&reader);
 				if (contentPadding.isValid)
@@ -186,7 +186,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "font"))
+			else if (equals(firstWord, "font"_s))
 			{
 				String fontName = pushString(&assets->assetArena, readToken(&reader));
 				
@@ -200,7 +200,7 @@ void loadUITheme(Blob data, Asset *asset)
 					default:  WRONG_SECTION;
 				}
 			}
-			else if (equals(firstWord, "hoverColor"))
+			else if (equals(firstWord, "hoverColor"_s))
 			{
 				Maybe<V4> hoverColor = readColor(&reader);
 				if (hoverColor.isValid)
@@ -212,7 +212,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "inputBackgroundColor"))
+			else if (equals(firstWord, "inputBackgroundColor"_s))
 			{
 				Maybe<V4> inputBackgroundColor = readColor(&reader);
 				if (inputBackgroundColor.isValid)
@@ -224,7 +224,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "offsetFromMouse"))
+			else if (equals(firstWord, "offsetFromMouse"_s))
 			{
 				Maybe<s64> offsetX = readInt(&reader);
 				Maybe<s64> offsetY = readInt(&reader);
@@ -237,7 +237,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "outputTextColor"))
+			else if (equals(firstWord, "outputTextColor"_s))
 			{
 				if (target.type == Section_Console)
 				{
@@ -246,29 +246,29 @@ void loadUITheme(Blob data, Asset *asset)
 
 					if (color.isValid)
 					{
-						if (equals(category, "default"))
+						if (equals(category, "default"_s))
 						{
 							target.console->outputTextColor[CLS_Default] = color.value;
 						}
-						else if (equals(category, "echo"))
+						else if (equals(category, "echo"_s))
 						{
 							target.console->outputTextColor[CLS_InputEcho] = color.value;
 						}
-						else if (equals(category, "success"))
+						else if (equals(category, "success"_s))
 						{
 							target.console->outputTextColor[CLS_Success] = color.value;
 						}
-						else if (equals(category, "warning"))
+						else if (equals(category, "warning"_s))
 						{
 							target.console->outputTextColor[CLS_Warning] = color.value;
 						}
-						else if (equals(category, "error"))
+						else if (equals(category, "error"_s))
 						{
 							target.console->outputTextColor[CLS_Error] = color.value;
 						}
 						else
 						{
-							warn(&reader, "Unrecognized output text category '{0}'", {category});
+							warn(&reader, "Unrecognized output text category '{0}'"_s, {category});
 						}
 					}
 				}
@@ -277,7 +277,7 @@ void loadUITheme(Blob data, Asset *asset)
 					WRONG_SECTION;
 				}
 			}
-			else if (equals(firstWord, "overlayColor"))
+			else if (equals(firstWord, "overlayColor"_s))
 			{
 				if (target.type == Section_General)
 				{
@@ -289,7 +289,7 @@ void loadUITheme(Blob data, Asset *asset)
 					WRONG_SECTION;
 				}
 			}
-			else if (equals(firstWord, "padding"))
+			else if (equals(firstWord, "padding"_s))
 			{
 				Maybe<s64> padding = readInt(&reader);
 				if (padding.isValid)
@@ -303,7 +303,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "pressedColor"))
+			else if (equals(firstWord, "pressedColor"_s))
 			{
 				Maybe<V4> pressedColor = readColor(&reader);
 				if (pressedColor.isValid)
@@ -315,7 +315,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "scrollBarKnobColor"))
+			else if (equals(firstWord, "scrollBarKnobColor"_s))
 			{
 				Maybe<V4> scrollBarKnobColor = readColor(&reader);
 				if (scrollBarKnobColor.isValid)
@@ -327,7 +327,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "scrollBarWidth"))
+			else if (equals(firstWord, "scrollBarWidth"_s))
 			{
 				Maybe<s64> scrollBarWidth = readInt(&reader);
 				if (scrollBarWidth.isValid)
@@ -339,7 +339,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "textAlignment"))
+			else if (equals(firstWord, "textAlignment"_s))
 			{
 				Maybe<u32> alignment = readAlignment(&reader);
 				if (alignment.isValid)
@@ -351,7 +351,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "textColor"))
+			else if (equals(firstWord, "textColor"_s))
 			{
 				Maybe<V4> textColor = readColor(&reader);
 				if (textColor.isValid)
@@ -367,7 +367,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "titleBarButtonHoverColor"))
+			else if (equals(firstWord, "titleBarButtonHoverColor"_s))
 			{
 				Maybe<V4> titleBarButtonHoverColor = readColor(&reader);
 				if (titleBarButtonHoverColor.isValid)
@@ -379,7 +379,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "titleBarColor"))
+			else if (equals(firstWord, "titleBarColor"_s))
 			{
 				Maybe<V4> titleBarColor = readColor(&reader);
 				if (titleBarColor.isValid)
@@ -391,7 +391,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "titleBarColorInactive"))
+			else if (equals(firstWord, "titleBarColorInactive"_s))
 			{
 				Maybe<V4> titleBarColorInactive = readColor(&reader);
 				if (titleBarColorInactive.isValid)
@@ -403,7 +403,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "titleBarHeight"))
+			else if (equals(firstWord, "titleBarHeight"_s))
 			{
 				Maybe<s64> titleBarHeight = readInt(&reader);
 				if (titleBarHeight.isValid)
@@ -415,7 +415,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "titleFont"))
+			else if (equals(firstWord, "titleFont"_s))
 			{
 				String fontName = pushString(&assets->assetArena, readToken(&reader));
 
@@ -425,7 +425,7 @@ void loadUITheme(Blob data, Asset *asset)
 					default:  WRONG_SECTION;
 				}
 			}
-			else if (equals(firstWord, "titleColor"))
+			else if (equals(firstWord, "titleColor"_s))
 			{
 				Maybe<V4> titleColor = readColor(&reader);
 				if (titleColor.isValid)
@@ -439,7 +439,7 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else 
 			{
-				error(&reader, "Unrecognized property '{0}'", {firstWord});
+				error(&reader, "Unrecognized property '{0}'"_s, {firstWord});
 			}
 		}
 	}

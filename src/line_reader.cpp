@@ -96,16 +96,16 @@ inline String getRemainderOfLine(LineReader *reader)
 	return trim(reader->lineRemainder);
 }
 
-void warn(LineReader *reader, char *message, std::initializer_list<String> args)
+void warn(LineReader *reader, String message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
-	logWarn("{0}:{1} - {2}", {reader->filename, formatInt(reader->currentLineNumber), text});
+	logWarn("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->currentLineNumber), text});
 }
 
-void error(LineReader *reader, char *message, std::initializer_list<String> args)
+void error(LineReader *reader, String message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
-	logError("{0}:{1} - {2}", {reader->filename, formatInt(reader->currentLineNumber), text});
+	logError("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->currentLineNumber), text});
 	DEBUG_BREAK();
 }
 
@@ -123,7 +123,7 @@ Maybe<s64> readInt(LineReader *reader)
 
 	if (!result.isValid)
 	{
-		error(reader, "Couldn't parse '{0}' as an integer.", {token});
+		error(reader, "Couldn't parse '{0}' as an integer."_s, {token});
 	}
 
 	return result;
@@ -142,7 +142,7 @@ Maybe<f64> readFloat(LineReader *reader)
 
 		if (!percent.isValid)
 		{
-			error(reader, "Couldn't parse '{0}%' as a percentage.", {token});
+			error(reader, "Couldn't parse '{0}%' as a percentage."_s, {token});
 		}
 		else
 		{
@@ -155,7 +155,7 @@ Maybe<f64> readFloat(LineReader *reader)
 
 		if (!floatValue.isValid)
 		{
-			error(reader, "Couldn't parse '{0}' as a float.", {token});
+			error(reader, "Couldn't parse '{0}' as a float."_s, {token});
 		}
 		else
 		{
@@ -173,7 +173,7 @@ Maybe<bool> readBool(LineReader *reader)
 
 	if (!result.isValid)
 	{
-		error(reader, "Couldn't parse '{0}' as a boolean.", {token});
+		error(reader, "Couldn't parse '{0}' as a boolean."_s, {token});
 	}
 
 	return result;
@@ -202,7 +202,7 @@ Maybe<V4> readColor(LineReader *reader)
 	}
 	else
 	{
-		error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A.", {allArguments});
+		error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, {allArguments});
 		result = makeFailure<V4>();
 	}
 
@@ -216,63 +216,63 @@ Maybe<u32> readAlignment(LineReader *reader)
 	String token = readToken(reader);
 	while (!isEmpty(token))
 	{
-		if (equals(token, "LEFT"))
+		if (equals(token, "LEFT"_s))
 		{
 			if (alignment & ALIGN_H)
 			{
-				error(reader, "Multiple horizontal alignment keywords given!");
+				error(reader, "Multiple horizontal alignment keywords given!"_s);
 				break;
 			}
 			alignment |= ALIGN_LEFT;
 		}
-		else if (equals(token, "H_CENTRE"))
+		else if (equals(token, "H_CENTRE"_s))
 		{
 			if (alignment & ALIGN_H)
 			{
-				error(reader, "Multiple horizontal alignment keywords given!");
+				error(reader, "Multiple horizontal alignment keywords given!"_s);
 				break;
 			}
 			alignment |= ALIGN_H_CENTRE;
 		}
-		else if (equals(token, "RIGHT"))
+		else if (equals(token, "RIGHT"_s))
 		{
 			if (alignment & ALIGN_H)
 			{
-				error(reader, "Multiple horizontal alignment keywords given!");
+				error(reader, "Multiple horizontal alignment keywords given!"_s);
 				break;
 			}
 			alignment |= ALIGN_RIGHT;
 		}
-		else if (equals(token, "TOP"))
+		else if (equals(token, "TOP"_s))
 		{
 			if (alignment & ALIGN_V)
 			{
-				error(reader, "Multiple vertical alignment keywords given!");
+				error(reader, "Multiple vertical alignment keywords given!"_s);
 				break;
 			}
 			alignment |= ALIGN_TOP;
 		}
-		else if (equals(token, "V_CENTRE"))
+		else if (equals(token, "V_CENTRE"_s))
 		{
 			if (alignment & ALIGN_V)
 			{
-				error(reader, "Multiple vertical alignment keywords given!");
+				error(reader, "Multiple vertical alignment keywords given!"_s);
 				break;
 			}
 			alignment |= ALIGN_V_CENTRE;
 		}
-		else if (equals(token, "BOTTOM"))
+		else if (equals(token, "BOTTOM"_s))
 		{
 			if (alignment & ALIGN_V)
 			{
-				error(reader, "Multiple vertical alignment keywords given!");
+				error(reader, "Multiple vertical alignment keywords given!"_s);
 				break;
 			}
 			alignment |= ALIGN_BOTTOM;
 		}
 		else
 		{
-			error(reader, "Unrecognized alignment keyword '{0}'", {token});
+			error(reader, "Unrecognized alignment keyword '{0}'"_s, {token});
 
 			return makeFailure<u32>();
 		}
@@ -318,7 +318,7 @@ Maybe<String> readTextureDefinition(LineReader *reader)
 	}
 	else
 	{
-		error(reader, "Couldn't parse texture. Expected use: \"texture filename.png width height (tilesAcross=1) (tilesDown=1)\"");
+		error(reader, "Couldn't parse texture. Expected use: \"texture filename.png width height (tilesAcross=1) (tilesDown=1)\""_s);
 		return makeFailure<String>();
 	}
 }
@@ -342,7 +342,7 @@ Maybe<EffectRadius> readEffectRadius(LineReader *reader)
 	}
 	else
 	{
-		error(reader, "Couldn't parse effect radius. Expected \"{0} radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints.");
+		error(reader, "Couldn't parse effect radius. Expected \"{0} radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints."_s);
 
 		return makeFailure<EffectRadius>();
 	}

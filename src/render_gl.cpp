@@ -8,7 +8,7 @@ bool GL_initializeRenderer(SDL_Window *window)
 
 	if (!succeeded)
 	{
-		logCritical("Failed to allocate memory for GL_Renderer!");
+		logCritical("Failed to allocate memory for GL_Renderer!"_s);
 	}
 	else
 	{
@@ -37,7 +37,7 @@ bool GL_initializeRenderer(SDL_Window *window)
 		gl->context = SDL_GL_CreateContext(renderer->window);
 		if (gl->context == NULL)
 		{
-			logCritical("OpenGL context could not be created! :(\n %s", {makeString(SDL_GetError())});
+			logCritical("OpenGL context could not be created! :(\n {0}"_s, {makeString(SDL_GetError())});
 			succeeded = false;
 		}
 
@@ -46,7 +46,7 @@ bool GL_initializeRenderer(SDL_Window *window)
 		GLenum glewError = glewInit();
 		if (succeeded && glewError != GLEW_OK)
 		{
-			logCritical("Could not initialise GLEW! :(\n %s", {makeString((char*)glewGetErrorString(glewError))});
+			logCritical("Could not initialise GLEW! :(\n {0}"_s, {makeString((char*)glewGetErrorString(glewError))});
 			succeeded = false;
 		}
 
@@ -56,18 +56,18 @@ bool GL_initializeRenderer(SDL_Window *window)
 		{
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 			glDebugMessageCallback(GL_debugCallback, null);
-			logInfo("OpenGL debug message callback enabled");
+			logInfo("OpenGL debug message callback enabled"_s);
 		}
 		else
 		{
-			logInfo("OpenGL debug message callback not available in this context");
+			logInfo("OpenGL debug message callback not available in this context"_s);
 		}
 #endif
 
 		// VSync
 		if (succeeded && SDL_GL_SetSwapInterval(1) < 0)
 		{
-			logCritical("Could not set vsync! :(\n %s", {makeString(SDL_GetError())});
+			logCritical("Could not set vsync! :(\n {0}"_s, {makeString(SDL_GetError())});
 			succeeded = false;
 		}
 
@@ -121,7 +121,7 @@ bool GL_initializeRenderer(SDL_Window *window)
 		}
 		else
 		{
-			logCritical("Could not initialise OpenGL! :(");
+			logCritical("Could not initialise OpenGL! :("_s);
 		}
 
 		if (!succeeded)
@@ -149,7 +149,7 @@ inline void logGLError(GLenum errorCode)
 {
 	if (errorCode != GL_NO_ERROR)
 	{
-		logError("{0}", {makeString((char*)gluErrorString(errorCode))});
+		logError(makeString((char*)gluErrorString(errorCode)));
 	}
 }
 
@@ -181,7 +181,7 @@ void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum s
 
 	String messageString = makeString((char*)message, truncate32(length));
 
-	log(priority, "GL DEBUG: {0} (severity {1}, id {2}): {3}", {typeString, severityString, formatInt(id), messageString});
+	log(priority, "GL DEBUG: {0} (severity {1}, id {2}): {3}"_s, {typeString, severityString, formatInt(id), messageString});
 
 	DEBUG_BREAK();
 }
@@ -237,7 +237,7 @@ bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader *shader
 			infoLog = "No error log provided by OpenGL. Sad panda."_s;
 		}
 
-		logError("Unable to compile part {3} of shader {0}, \'{1}\'! ({2})", {formatInt(shaderID), shaderName, infoLog, formatInt(shaderPart)});
+		logError("Unable to compile part {3} of shader {0}, \'{1}\'! ({2})"_s, {formatInt(shaderID), shaderName, infoLog, formatInt(shaderPart)});
 	}
 
 	return result;
@@ -250,7 +250,7 @@ void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribL
 	*attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
 	if (*attribLocation == -1)
 	{
-		logWarn("Shader '{0}' does not contain requested variable '{1}'", {glShader->asset->shortName, makeString(attribName)});
+		logWarn("Shader '{0}' does not contain requested variable '{1}'"_s, {glShader->asset->shortName, makeString(attribName)});
 	}
 }
 
@@ -261,7 +261,7 @@ void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *unifo
 	*uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
 	if (*uniformLocation == -1)
 	{
-		logWarn("Shader '{0}' does not contain requested uniform '{1}'", {glShader->asset->shortName, makeString(uniformName)});
+		logWarn("Shader '{0}' does not contain requested uniform '{1}'"_s, {glShader->asset->shortName, makeString(uniformName)});
 	}
 }
 
@@ -298,7 +298,7 @@ void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 					infoLog = "No error log provided by OpenGL. Sad panda."_s;
 				}
 
-				logError("Unable to link shader program {0}! ({1})", {asset->shortName, infoLog});
+				logError("Unable to link shader program {0}! ({1})"_s, {asset->shortName, infoLog});
 			}
 			else
 			{
@@ -355,7 +355,7 @@ void GL_loadAssets()
 		loadShaderProgram(asset, shader);
 		if(!shader->isValid)
 		{
-			logError("Failed to load shader '{0}' into OpenGL.", {asset->shortName});
+			logError("Failed to load shader '{0}' into OpenGL."_s, {asset->shortName});
 		}
 	}
 }
@@ -652,7 +652,7 @@ void GL_render(RenderBufferChunk *firstChunk)
 					if (ringSegmentsCount * 4 > RENDER_BATCH_VERTEX_COUNT)
 					{
 						s32 maxRingSegmentsCount = RENDER_BATCH_VERTEX_COUNT / 4;
-						logWarn("We want to draw a ring with {0} segments, but the maximum we can fit in a render batch is {1}!", {formatInt(ringSegmentsCount), formatInt(maxRingSegmentsCount)});
+						logWarn("We want to draw a ring with {0} segments, but the maximum we can fit in a render batch is {1}!"_s, {formatInt(ringSegmentsCount), formatInt(maxRingSegmentsCount)});
 
 						ringSegmentsCount = maxRingSegmentsCount;
 					}

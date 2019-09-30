@@ -11,11 +11,11 @@ void loadBMFont(Blob data, Asset *asset)
 	 || header->tag[1] != BMFontTag[1]
 	 || header->tag[2] != BMFontTag[2])
 	{
-		logError("Not a valid BMFont file: {0}", {asset->fullName});
+		logError("Not a valid BMFont file: {0}"_s, {asset->fullName});
 	}
 	else if (header->version != 3)
 	{
-		logError("BMFont file version is unsupported: {0}, wanted {1} and got {2}",
+		logError("BMFont file version is unsupported: {0}, wanted {1} and got {2}"_s,
 						{asset->fullName, formatInt(BMFontSupportedVersion), formatInt(header->version)});
 	}
 	else
@@ -64,11 +64,11 @@ void loadBMFont(Blob data, Asset *asset)
 		if (! (common && chars && charCount && pages) )
 		{
 			// Something didn't load correctly!
-			logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!", {asset->fullName});
+			logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!"_s, {asset->fullName});
 		}
 		else if (common->pageCount != 1)
 		{
-			logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1.", {asset->fullName, formatInt(common->pageCount)});
+			logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1."_s, {asset->fullName, formatInt(common->pageCount)});
 		}
 		else
 		{

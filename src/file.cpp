@@ -101,7 +101,7 @@ File readFile(MemoryArena *memoryArena, String filePath)
 
 		if (bytesRead != fileSize)
 		{
-			logWarn("File '{0}' was only partially read. Size {1}, read {2}", {filePath, formatInt(fileSize), formatInt(bytesRead)});
+			logWarn("File '{0}' was only partially read. Size {1}, read {2}"_s, {filePath, formatInt(fileSize), formatInt(bytesRead)});
 		}
 		else
 		{
@@ -112,7 +112,7 @@ File readFile(MemoryArena *memoryArena, String filePath)
 	}
 	else
 	{
-		logWarn("Failed to open file '{0}' for reading.", {filePath});
+		logWarn("Failed to open file '{0}' for reading."_s, {filePath});
 	}
 
 	return result;
@@ -134,7 +134,7 @@ bool writeFile(String filePath, String contents)
 	}
 	else
 	{
-		logError("Failed to open file '{0}' for writing.", {filePath});
+		logError("Failed to open file '{0}' for writing."_s, {filePath});
 	}
 
 	return succeeded;
