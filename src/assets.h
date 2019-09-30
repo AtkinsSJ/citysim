@@ -195,7 +195,6 @@ Shader *getShader(String shaderName);
 Sprite *getSprite(SpriteGroup *group, s32 offset);
 SpriteGroup *getSpriteGroup(String name);
 
-#define LOCAL(str) getText(makeString(str))
 String getText(String name);
 
 //

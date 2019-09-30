@@ -7,7 +7,7 @@ GameState *beginNewGame()
 	initRandom(&result->gameRandom, Random_MT, 12345);
 
 	s32 gameStartFunds = 1000000;
-	initCity(&result->gameArena, &result->gameRandom, &result->city, 133, 117, LOCAL("city_default_name"), gameStartFunds);
+	initCity(&result->gameArena, &result->gameRandom, &result->city, 133, 117, getText("city_default_name"_s), gameStartFunds);
 	generateTerrain(&result->city);
 
 	result->status = GameStatus_Playing;
@@ -300,7 +300,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	City *city = &gameState->city;
 
 	V2I tilePos = gameState->inspectedTilePosition;
-	context->window->title = myprintf(LOCAL("title_inspect"), {formatInt(tilePos.x), formatInt(tilePos.y)});
+	context->window->title = myprintf(getText("title_inspect"_s), {formatInt(tilePos.x), formatInt(tilePos.y)});
 
 	// CitySector
 	CitySector *sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
@@ -383,11 +383,11 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 	BitmapFont *buttonFont = getFont(buttonStyle->fontName);
 	s32 availableButtonTextWidth = context->contentArea.w - (2 * buttonStyle->padding);
 
-	String resume = LOCAL("button_resume");
-	String save   = LOCAL("button_save");
-	String load   = LOCAL("button_load");
-	String about  = LOCAL("button_about");
-	String exit   = LOCAL("button_exit");
+	String resume = getText("button_resume"_s);
+	String save   = getText("button_save"_s);
+	String load   = getText("button_load"_s);
+	String about  = getText("button_about"_s);
+	String exit   = getText("button_exit"_s);
 	s32 maxButtonTextWidth = calculateMaxTextWidth(buttonFont, {resume, save, load, about, exit}, availableButtonTextWidth);
 
 	if (window_button(context, resume, maxButtonTextWidth))
@@ -397,12 +397,12 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 
 	if (window_button(context, save, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, LOCAL("debug_msg_unimplemented"));
+		pushUiMessage(context->uiState, getText("debug_msg_unimplemented"_s));
 	}
 
 	if (window_button(context, load, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, LOCAL("debug_msg_unimplemented"));
+		pushUiMessage(context->uiState, getText("debug_msg_unimplemented"_s));
 	}
 
 	if (window_button(context, about, maxButtonTextWidth))
@@ -410,7 +410,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 		showAboutWindow(context->uiState);
 	}
 
-	window_label(context, LOCAL("button_resume"));
+	window_label(context, getText("button_resume"_s));
 
 	if (window_button(context, exit, maxButtonTextWidth))
 	{
@@ -462,7 +462,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "default"_s);
 
 		// The "ZONE" menu
-		String zoneButtonText = LOCAL("button_zone");
+		String zoneButtonText = getText("button_zone"_s);
 		V2I buttonSize = calculateButtonSize(zoneButtonText, buttonStyle);
 		Rect2I buttonRect = irectXYWH(uiPadding, buttonSize.y + uiPadding, buttonSize.x, buttonSize.y);
 		if (uiMenuButton(uiState, zoneButtonText, buttonRect, Menu_Zone, buttonStyle))
@@ -518,7 +518,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
-		String buildButtonText = LOCAL("button_build");
+		String buildButtonText = getText("button_build"_s);
 		buttonRect.size = calculateButtonSize(buildButtonText, buttonStyle);
 		if (uiMenuButton(uiState, buildButtonText, buttonRect, Menu_Build, buttonStyle))
 		{
@@ -558,7 +558,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		String demolishButtonText = LOCAL("button_demolish");
+		String demolishButtonText = getText("button_demolish"_s);
 		buttonRect.size = calculateButtonSize(demolishButtonText, buttonStyle);
 		if (uiButton(uiState, demolishButtonText, buttonRect, buttonStyle,
 					(gameState->actionMode == ActionMode_Demolish),
@@ -570,7 +570,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// Data layer menu
-		String dataViewButtonText = LOCAL("button_data_views");
+		String dataViewButtonText = getText("button_data_views"_s);
 		buttonRect.size = calculateButtonSize(dataViewButtonText, buttonStyle);
 		if (uiMenuButton(uiState, dataViewButtonText, buttonRect, Menu_DataViews, buttonStyle))
 		{
@@ -601,12 +601,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The, um, "MENU" menu. Hmmm.
-		String menuButtonText = LOCAL("button_menu");
+		String menuButtonText = getText("button_menu"_s);
 		buttonRect.size = calculateButtonSize(menuButtonText, buttonStyle);
 		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
 		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
 		{
-			showWindow(uiState, LOCAL("title_menu"), 200, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
 	}
 }
@@ -776,7 +776,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 								}
 								else
 								{
-									pushUiMessage(uiState, LOCAL("msg_cannot_afford_construction"));
+									pushUiMessage(uiState, getText("msg_cannot_afford_construction"_s));
 								}
 							} break;
 
@@ -870,7 +870,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 						}
 						else
 						{
-							pushUiMessage(uiState, LOCAL("msg_cannot_afford_demolition"));
+							pushUiMessage(uiState, getText("msg_cannot_afford_demolition"_s));
 						}
 					} break;
 

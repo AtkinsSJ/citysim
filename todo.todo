@@ -20,16 +20,6 @@ Window procs should decide the window title instead of showWindow(), it's weird 
 
 Window buttons should still do hover-states even on inactive windows.
 
-Use _s more:
-✔ Console
-✔ equals()
-✔ Logging
-✔ myprintf
-✔ stringbuilder
-- get rid of LOCAL because it's useless?
-✔ setCursor
-✔ window_label styleName
-
 _hashed string suffix?
 Console commands in a HashTable
 

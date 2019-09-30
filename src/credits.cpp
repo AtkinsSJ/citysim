@@ -24,10 +24,10 @@ AppStatus updateAndRenderCredits(UIState *uiState)
 
 	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"_s);
 	s32 uiBorderPadding = 8;
-	String backText = LOCAL("button_back");
+	String backText = getText("button_back"_s);
 	V2I backSize = calculateButtonSize(backText, style);
 	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
-	if (uiButton(uiState, LOCAL("button_back"), buttonRect, style, false, SDLK_ESCAPE))
+	if (uiButton(uiState, getText("button_back"_s), buttonRect, style, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

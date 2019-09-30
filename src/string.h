@@ -1,5 +1,9 @@
 #pragma once
 
+//
+// NB: Declare these inline with the _s suffix!
+//
+
 struct String
 {
 	s32 length;

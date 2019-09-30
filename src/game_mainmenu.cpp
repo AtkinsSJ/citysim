@@ -11,7 +11,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 
 	// Debug text for profiling text rendering
 	UILabelStyle *liLabelStyle = findLabelStyle(theme, "small"_s);
-	uiText(&renderer->uiBuffer, getFont(liLabelStyle->fontName), LOCAL("lorem_ipsum"),
+	uiText(&renderer->uiBuffer, getFont(liLabelStyle->fontName), getText("lorem_ipsum"_s),
 			v2i(0,0), ALIGN_LEFT | ALIGN_TOP,
 			// v2(windowWidth * 0.5f,0.0f), ALIGN_H_CENTRE | ALIGN_TOP,
 			// v2(windowWidth,0.0f), ALIGN_RIGHT | ALIGN_TOP,
@@ -23,10 +23,10 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 
-	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("game_title"),
+	position.y += (uiText(&renderer->uiBuffer, font, getText("game_title"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("game_subtitle"),
+	position.y += (uiText(&renderer->uiBuffer, font, getText("game_subtitle"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	position.y += (uiText(&renderer->uiBuffer, font, "This\r\nis\r\na\r\nnon-localised\r\ntest\r\nstring.\r\nIt has multiple lines, of\r\ndifferent length\r\nto test\r\nthe alignment on multi-line strings."_s,
@@ -37,11 +37,11 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 
 	s32 buttonPadding = 8;
 
-	String playText     = LOCAL("button_play");
-	String creditsText  = LOCAL("button_credits");
-	String settingsText = LOCAL("button_settings");
-	String aboutText    = LOCAL("button_about");
-	String exitText     = LOCAL("button_exit");
+	String playText     = getText("button_play"_s);
+	String creditsText  = getText("button_credits"_s);
+	String settingsText = getText("button_settings"_s);
+	String aboutText    = getText("button_about"_s);
+	String exitText     = getText("button_exit"_s);
 
 	V2I playSize     = calculateButtonSize(playText,     style);
 	V2I creditsSize  = calculateButtonSize(creditsText,  style);

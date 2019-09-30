@@ -204,7 +204,7 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"_s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 
-	position.y += (uiText(&renderer->uiBuffer, font, LOCAL("title_settings"),
+	position.y += (uiText(&renderer->uiBuffer, font, getText("title_settings"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	// position.y += (uiText(uiState, font, LocalString("There are no settings yet, soz."),
@@ -212,10 +212,10 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 
 	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"_s);
 	s32 uiBorderPadding = 8;
-	String backText = LOCAL("button_back");
+	String backText = getText("button_back"_s);
 	V2I backSize = calculateButtonSize(backText, style);
 	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
-	if (uiButton(uiState, LOCAL("button_back"), buttonRect, style, false, SDLK_ESCAPE))
+	if (uiButton(uiState, backText, buttonRect, style, false, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}
