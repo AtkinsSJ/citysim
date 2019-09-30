@@ -255,7 +255,7 @@ void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;
 
-	window_label(context, "FIRE INFO"s);
+	window_label(context, "*** FIRE INFO ***"s);
 
 	window_label(context, myprintf("There are {0} fire protection buildings and {1} active fires in the city.", {
 		formatInt(layer->fireProtectionBuildings.count),

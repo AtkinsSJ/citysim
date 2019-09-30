@@ -70,6 +70,7 @@ void drawPowerDataLayer(City *city, Rect2I visibleTileBounds);
 void registerPowerBuilding(PowerLayer *layer, Building *building);
 void unregisterPowerBuilding(PowerLayer *layer, Building *building);
 
+void debugInspectPower(WindowContext *context, City *city, s32 x, s32 y);
 
 // Private-but-actually-still-accessible API
 PowerNetwork *newPowerNetwork(PowerLayer *layer);

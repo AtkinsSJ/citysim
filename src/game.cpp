@@ -339,26 +339,6 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		window_label(context, "Building: None"s);
 	}
 
-	// Power group
-	PowerNetwork *powerNetwork = getPowerNetworkAt(city, tilePos.x, tilePos.y);
-	if (powerNetwork != null)
-	{
-		window_label(context, myprintf("Power Network {0}:\n- Production: {1}\n- Consumption: {2}\n- Contained groups: {3}", {
-			formatInt(powerNetwork->id),
-			formatInt(powerNetwork->cachedProduction),
-			formatInt(powerNetwork->cachedConsumption),
-			formatInt(powerNetwork->groups.count)
-		}));
-	}
-
-	window_label(context, myprintf("Distance to power: {0}", {formatInt(getDistanceToPower(city, tilePos.x, tilePos.y))}));
-
-	// Transport
-	for (s32 transportType = 0; transportType < TransportTypeCount; transportType++)
-	{
-		window_label(context, myprintf("Distance to transport #{0}: {1}", {formatInt(transportType), formatInt(getDistanceToTransport(city, tilePos.x, tilePos.y, (TransportType)transportType))}));
-	}
-
 	// Land value
 	window_label(context, myprintf("Land value: {0}%", {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
@@ -368,6 +348,14 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		if (gameState->inspectTileDebugFlags & DebugInspect_Fire)
 		{
 			debugInspectFire(context, city, tilePos.x, tilePos.y);
+		}
+		if (gameState->inspectTileDebugFlags & DebugInspect_Power)
+		{
+			debugInspectPower(context, city, tilePos.x, tilePos.y);
+		}
+		if (gameState->inspectTileDebugFlags & DebugInspect_Transport)
+		{
+			debugInspectTransport(context, city, tilePos.x, tilePos.y);
 		}
 	}
 
@@ -655,6 +643,16 @@ void debugToolsWindowProc(WindowContext *context, void *userData)
 	if (window_button(context, "Remove Fire"s, -1, (gameState->actionMode == ActionMode_Debug_RemoveFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_RemoveFire;
+	}
+
+	if (window_button(context, "Inspect power info"s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Power)))
+	{
+		gameState->inspectTileDebugFlags ^= DebugInspect_Power;
+	}
+	
+	if (window_button(context, "Inspect transport info"s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Transport)))
+	{
+		gameState->inspectTileDebugFlags ^= DebugInspect_Transport;
 	}
 }
 

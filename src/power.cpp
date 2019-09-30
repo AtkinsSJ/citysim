@@ -845,3 +845,22 @@ void unregisterPowerBuilding(PowerLayer *layer, Building *building)
 	bool success = findAndRemove(&layer->powerBuildings, getReferenceTo(building));
 	ASSERT(success);
 }
+
+void debugInspectPower(WindowContext *context, City *city, s32 x, s32 y)
+{
+	window_label(context, "*** POWER INFO ***"s);
+
+	// Power group
+	PowerNetwork *powerNetwork = getPowerNetworkAt(city, x, y);
+	if (powerNetwork != null)
+	{
+		window_label(context, myprintf("Power Network {0}:\n- Production: {1}\n- Consumption: {2}\n- Contained groups: {3}", {
+			formatInt(powerNetwork->id),
+			formatInt(powerNetwork->cachedProduction),
+			formatInt(powerNetwork->cachedConsumption),
+			formatInt(powerNetwork->groups.count)
+		}));
+	}
+
+	window_label(context, myprintf("Distance to power: {0}", {formatInt(getDistanceToPower(city, x, y))}));
+}

@@ -92,6 +92,8 @@ String dataViewTitles[DataLayerCount] = {
 enum InspectTileDebugFlags
 {
 	DebugInspect_Fire,
+	DebugInspect_Power,
+	DebugInspect_Transport,
 
 	InspectTileDebugFlagCount,
 };

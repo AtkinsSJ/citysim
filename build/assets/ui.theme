@@ -64,10 +64,10 @@ titleFont                normal
 titleColor               255 255 255 255
 titleBarHeight           32
 titleBarColor             96 196  96 255
-titleBarColorInactive     96 128  96 128
+titleBarColorInactive     96 128  96 255
 titleBarButtonHoverColor 255  64  64 255
 backgroundColor           96  96  96 255
-backgroundColorInactive   96  96  96 128
+backgroundColorInactive   96  96  96 255
 contentPadding           12
 contentLabelStyle        small
 contentButtonStyle       default
