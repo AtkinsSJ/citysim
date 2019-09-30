@@ -251,42 +251,31 @@ f32 getFireProtectionPercentAt(City *city, s32 x, s32 y)
 	return getTileValue(city, city->fireLayer.tileFireProtection, x, y) * 0.01f;
 }
 
-void debugInspectFireAtPos(City *city, s32 x, s32 y)
+void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 {
-	city->fireLayer.debugTileInspectionPos = v2i(x, y);
-
-	V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
-	showWindow(globalAppState.uiState, "Fire debug info"s, 250, 200, windowPos, "default"s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectFireWindowProc, city);
-}
-
-void inspectFireWindowProc(WindowContext *context, void *userData)
-{
-	City *city = (City *) userData;
 	FireLayer *layer = &city->fireLayer;
 
-	V2I tilePos = layer->debugTileInspectionPos;
+	window_label(context, "FIRE INFO"s);
 
 	window_label(context, myprintf("There are {0} fire protection buildings and {1} active fires in the city.", {
 		formatInt(layer->fireProtectionBuildings.count),
 		formatInt(layer->activeFires.count)
 	}));
 
-	window_label(context, myprintf("\nInfo at tile {0}, {1}\n"s, {formatInt(tilePos.x), formatInt(tilePos.y)}));
-
-	Building *buildingAtPos = getBuildingAt(city, tilePos.x, tilePos.y);
+	Building *buildingAtPos = getBuildingAt(city, x, y);
 	f32 buildingFireRisk = 100.0f * ((buildingAtPos == null) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
 
 	window_label(context, myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}", {
-		formatInt(getFireRiskAt(city, tilePos.x, tilePos.y)),
+		formatInt(getFireRiskAt(city, x, y)),
 		formatFloat(buildingFireRisk, 1),
-		formatInt(getTileValue(city, layer->tileFireProximityEffect, tilePos.x, tilePos.y)),
+		formatInt(getTileValue(city, layer->tileFireProximityEffect, x, y)),
 	}));
 
 	window_label(context, myprintf("Fire protection: {0}%", {
-		formatFloat(getFireProtectionPercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)
+		formatFloat(getFireProtectionPercentAt(city, x, y) * 100.0f, 0)
 	}));
 
 	window_label(context, myprintf("Resulting chance of fire: {0}%", {
-		formatFloat(getTileValue(city, layer->tileOverallFireRisk, tilePos.x, tilePos.y) / 2.55f, 1)
+		formatFloat(getTileValue(city, layer->tileOverallFireRisk, x, y) / 2.55f, 1)
 	}));
 }

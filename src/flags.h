@@ -34,6 +34,9 @@ struct Flags
 	// Remove the flag
 	Flags<Enum, Storage> *operator-=(Enum flag);
 
+	// Toggle the flag
+	Flags<Enum, Storage> *operator^=(Enum flag);
+
 	// Comparison
 	bool operator==(Flags<Enum, Storage> &other);
 

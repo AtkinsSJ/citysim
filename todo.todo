@@ -47,7 +47,7 @@ Fire:
 	- Ordinances
 ✔ Keep a list of fire-service buildings so they can be iterated more easily.
 - Small chance of a fire occurring each tick, depending on the risk.
-- Fire debug inspection window.
+✔ Fire debug inspection window.
 
 Add newline support to .text files!
 

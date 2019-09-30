@@ -36,6 +36,14 @@ Flags<Enum, Storage> *Flags<Enum, Storage>::operator-=(Enum flag)
 	return this;
 }
 
+// Toggle the flag
+template<typename Enum, typename Storage>
+Flags<Enum, Storage> *Flags<Enum, Storage>::operator^=(Enum flag)
+{
+	this->data ^= ((u64)1 << flag);
+	return this;
+}
+
 template<typename Enum, typename Storage>
 bool Flags<Enum, Storage>::operator==(Flags<Enum, Storage> &other)
 {

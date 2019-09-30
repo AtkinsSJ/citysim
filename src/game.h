@@ -23,7 +23,6 @@ enum ActionMode
 	ActionMode_Demolish,
 	ActionMode_Zone,
 
-	ActionMode_Debug_InspectFire,
 	ActionMode_Debug_AddFire,
 	ActionMode_Debug_RemoveFire,
 
@@ -90,6 +89,13 @@ String dataViewTitles[DataLayerCount] = {
 	"data_view_landvalue"s,
 };
 
+enum InspectTileDebugFlags
+{
+	DebugInspect_Fire,
+
+	InspectTileDebugFlagCount,
+};
+
 struct GameState
 {
 	MemoryArena gameArena;
@@ -113,6 +119,7 @@ struct GameState
 	// Honestly, I'd like to do that now anyway, but I can't think of a good way to do so.
 	// - Sam, 11/2/2019
 	V2I inspectedTilePosition;
+	Flags<InspectTileDebugFlags, u8> inspectTileDebugFlags;
 };
 
 GameState *beginNewGame();
