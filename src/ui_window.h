@@ -50,7 +50,7 @@ struct Window
 //
 void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData);
 
-void window_label(WindowContext *context, String text, char *styleName = null);
+void window_label(WindowContext *context, String text, String styleName = nullString);
 /*
  * If you pass textWidth, then the button will be sized as though the text was that size. If you leave
  * it blank (or pass -1 manually) then the button will be automatically sized to wrap the contained text.

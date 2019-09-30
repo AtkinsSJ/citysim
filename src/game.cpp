@@ -616,9 +616,9 @@ void costTooltipWindowProc(WindowContext *context, void *userData)
 	s32 buildCost = truncate32((smm)userData);
 	City *city = &globalAppState.gameState->city;
 
-	char *style = canAfford(city, buildCost)
-				? "cost-affordable"
-				: "cost-unaffordable";
+	String style = canAfford(city, buildCost)
+				? "cost-affordable"_s
+				: "cost-unaffordable"_s;
 
 	String text = myprintf("£{0}"_s, {formatInt(buildCost)});
 	window_label(context, text, style);

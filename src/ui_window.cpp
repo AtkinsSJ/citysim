@@ -1,12 +1,12 @@
 #pragma once
 
-void window_label(WindowContext *context, String text, char *styleName)
+void window_label(WindowContext *context, String text, String styleName)
 {
 	DEBUG_FUNCTION();
 
 	UILabelStyle *style = null;
-	if (styleName)      style = findLabelStyle(&assets->theme, makeString(styleName));
-	if (style == null)  style = findLabelStyle(&assets->theme, context->windowStyle->labelStyleName);
+	if (!isEmpty(styleName))  style = findLabelStyle(&assets->theme, styleName);
+	if (style == null)        style = findLabelStyle(&assets->theme, context->windowStyle->labelStyleName);
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)

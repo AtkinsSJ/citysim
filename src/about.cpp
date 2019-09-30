@@ -5,7 +5,7 @@ void aboutWindowProc(WindowContext *context, void *userData)
 	// shut up the warning
 	userData = userData;
 
-	window_label(context, LOCAL("game_title"), "title");
+	window_label(context, LOCAL("game_title"), "title"_s);
 	window_label(context, LOCAL("game_copyright"));
 
 	context->alignment = ALIGN_RIGHT;

@@ -28,7 +28,7 @@ Use _s more:
 ✔ stringbuilder
 - get rid of LOCAL because it's useless?
 ✔ setCursor
-- window_label styleName
+✔ window_label styleName
 
 _hashed string suffix?
 Console commands in a HashTable
