@@ -23,7 +23,7 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
 	if (appendWildcard)
 	{
-		append(&stb, "\\*");
+		append(&stb, "\\*"_s);
 	}
 
 	append(&stb, '\0');

@@ -22,10 +22,10 @@ Window buttons should still do hover-states even on inactive windows.
 
 Use _s more:
 ✔ Console
-- equals()
+✔ equals()
 ✔ Logging
 ✔ myprintf
-- stringbuilder
+✔ stringbuilder
 - get rid of LOCAL because it's useless?
 ✔ setCursor
 - window_label styleName

@@ -98,11 +98,6 @@ inline bool equals(String a, String b)
 	return result;
 }
 
-inline bool equals(String a, char *b)
-{
-	return equals(a, makeString(b));
-}
-
 u32 hashString(String *s)
 {
 	// DEBUG_FUNCTION(); // Can't, because we use String hashes in the debug system!

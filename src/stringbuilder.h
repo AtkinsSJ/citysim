@@ -10,6 +10,9 @@
  * It's permitted to pass any MemoryArena you like, and it will use that for allocations. So, if
  * you want to keep it around long term, you can use a separate arena and reset that once you're
  * done.
+ *
+ * TODO: Maybe we should use a chunked approach? That way we're not throwing away the old buffer,
+ * but adding an additional one that carries on. That'a a bit more complicated though.
  */
 
 struct StringBuilder
@@ -27,7 +30,6 @@ void expand(StringBuilder *stb, s32 newSize=-1);
 
 void append(StringBuilder *stb, char *source, s32 length);
 void append(StringBuilder *stringBuilder, String source);
-void append(StringBuilder *stringBuilder, char *source);
 void append(StringBuilder *stringBuilder, char source);
 void append(StringBuilder *stringBuilder, StringBuilder *source);
 

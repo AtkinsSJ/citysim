@@ -52,11 +52,6 @@ inline void append(StringBuilder *stringBuilder, String source)
 	append(stringBuilder, source.chars, source.length);
 }
 
-inline void append(StringBuilder *stringBuilder, char *source)
-{
-	append(stringBuilder, source, truncate32(strlen(source)));
-}
-
 inline void append(StringBuilder *stringBuilder, char source)
 {
 	append(stringBuilder, &source, 1);

@@ -132,7 +132,7 @@ void saveSettings()
 		SettingDef *def = &entry->value;
 
 		append(&stb, name);
-		append(&stb, " = ");
+		append(&stb, " = "_s);
 
 		u8* firstItem = base + def->offset;
 
