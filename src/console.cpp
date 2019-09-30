@@ -32,11 +32,11 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
 
 	initCommands(console);
-	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them.", {formatInt(console->commands.count)}), CLS_Default);
+	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them."_s, {formatInt(console->commands.count)}), CLS_Default);
 
 	globalConsole = console;
 
-	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?");
+	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
 }
 
 void renderConsole(Console *console)
@@ -129,12 +129,12 @@ void consoleHandleCommand(Console *console, String commandInput)
 					{
 						if (command->minArgs == command->maxArgs)
 						{
-							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given.",
+							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given."_s,
 								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
 						}
 						else
 						{
-							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given.",
+							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given."_s,
 								{firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount)}), CLS_Error);
 						}
 					}
@@ -144,7 +144,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 						command->function(console, argCount, arguments);
 						u32 commandEndTime = SDL_GetTicks();
 
-						consoleWriteLine(myprintf("Command executed in {0}ms", {formatInt(commandEndTime - commandStartTime)}));
+						consoleWriteLine(myprintf("Command executed in {0}ms"_s, {formatInt(commandEndTime - commandStartTime)}));
 					}
 
 					break;
@@ -153,7 +153,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 
 			if (!foundCommand)
 			{
-				consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands.", {firstToken}), CLS_Error);
+				consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands."_s, {firstToken}), CLS_Error);
 			}
 		}
 	}

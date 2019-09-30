@@ -61,7 +61,7 @@ void customLogOutputFunction(void *userdata, int category, SDL_LogPriority prior
 			break;
 	}
 
-	consoleWriteLine((char*)message, style);
+	consoleWriteLine(makeString(message), style);
 }
 
 void enableCustomLogger()

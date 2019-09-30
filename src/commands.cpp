@@ -9,7 +9,7 @@ static bool checkInGame()
 	bool inGame = (globalAppState.gameState != null);
 	if (!inGame)
 	{
-		consoleWriteLine("You can only do that when a game is in progress!", CLS_Error);
+		consoleWriteLine("You can only do that when a game is in progress!"_s, CLS_Error);
 	}
 	return inGame;
 }
@@ -27,7 +27,7 @@ ConsoleCommand(debug_tools)
 
 ConsoleCommand(exit)
 {
-	consoleWriteLine("Quitting game...", CLS_Success);
+	consoleWriteLine("Quitting game..."_s, CLS_Success);
 	globalAppState.appStatus = AppStatus_Quit;
 }
 
@@ -45,7 +45,7 @@ ConsoleCommand(funds)
 	}
 	else
 	{
-		consoleWriteLine("Usage: funds amount, where amount is an integer", CLS_Error);
+		consoleWriteLine("Usage: funds amount, where amount is an integer"_s, CLS_Error);
 	}
 }
 
@@ -60,18 +60,18 @@ ConsoleCommand(generate)
 	}
 	generateTerrain(city);
 
-	consoleWriteLine("Generated new map", CLS_Success);
+	consoleWriteLine("Generated new map"_s, CLS_Success);
 }
 
 ConsoleCommand(hello)
 {
-	consoleWriteLine("Hello human!");
+	consoleWriteLine("Hello human!"_s);
 	consoleWriteLine(myprintf("Testing formatInt bases: 10:{0}, 16:{1}, 36:{2}, 8:{3}, 2:{4}", {formatInt(123456, 10), formatInt(123456, 16), formatInt(123456, 36), formatInt(123456, 8), formatInt(123456, 2)}));
 }
 
 ConsoleCommand(help)
 {
-	consoleWriteLine("Available commands are:");
+	consoleWriteLine("Available commands are:"_s);
 
 	for (auto it = iterate(&globalConsole->commands);
 		!it.isDone;
@@ -108,7 +108,7 @@ ConsoleCommand(show_layer)
 	{
 		// Hide layers
 		globalAppState.gameState->dataLayerToDraw = DataLayer_None;
-		consoleWriteLine("Hiding data layers", CLS_Success);
+		consoleWriteLine("Hiding data layers"_s, CLS_Success);
 	}
 	else if (argumentsCount == 1)
 	{
@@ -116,51 +116,51 @@ ConsoleCommand(show_layer)
 		if (equals(layerName, "crime"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Crime;
-			consoleWriteLine("Showing crime layer", CLS_Success);
+			consoleWriteLine("Showing crime layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "des_res"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Residential;
-			consoleWriteLine("Showing residential desirability", CLS_Success);
+			consoleWriteLine("Showing residential desirability"_s, CLS_Success);
 		}
 		else if (equals(layerName, "des_com"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Commercial;
-			consoleWriteLine("Showing commercial desirability", CLS_Success);
+			consoleWriteLine("Showing commercial desirability"_s, CLS_Success);
 		}
 		else if (equals(layerName, "des_ind"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Industrial;
-			consoleWriteLine("Showing industrial desirability", CLS_Success);
+			consoleWriteLine("Showing industrial desirability"_s, CLS_Success);
 		}
 		else if (equals(layerName, "fire"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Fire;
-			consoleWriteLine("Showing fire layer", CLS_Success);
+			consoleWriteLine("Showing fire layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "health"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Health;
-			consoleWriteLine("Showing health layer", CLS_Success);
+			consoleWriteLine("Showing health layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "land_value"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_LandValue;
-			consoleWriteLine("Showing land value layer", CLS_Success);
+			consoleWriteLine("Showing land value layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "pollution"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Pollution;
-			consoleWriteLine("Showing pollution layer", CLS_Success);
+			consoleWriteLine("Showing pollution layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "power"))
 		{
 			globalAppState.gameState->dataLayerToDraw = DataLayer_Power;
-			consoleWriteLine("Showing power layer", CLS_Success);
+			consoleWriteLine("Showing power layer"_s, CLS_Success);
 		}
 		else
 		{
-			consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power", CLS_Error);
+			consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, CLS_Error);
 		}
 	}
 }
@@ -185,17 +185,17 @@ ConsoleCommand(window_size)
 		}
 		else
 		{
-			consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned.", CLS_Error);
+			consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
 		}
 	}
 	else if (argumentsCount == 0)
 	{
 		V2 screenSize = renderer->uiCamera.size;
-		consoleWriteLine(myprintf("Window size is {0} by {1}", {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
+		consoleWriteLine(myprintf("Window size is {0} by {1}"_s, {formatInt((s32)screenSize.x), formatInt((s32)screenSize.y)}), CLS_Success);
 	}
 	else
 	{
-		consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned.", CLS_Error);
+		consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
 	}
 }
 
@@ -207,7 +207,7 @@ ConsoleCommand(zoom)
 	{
 		// list the zoom
 		f32 zoom = renderer->worldCamera.zoom;
-		consoleWriteLine(myprintf("Current zoom is {0}", {formatFloat(zoom, 3)}), CLS_Success);
+		consoleWriteLine(myprintf("Current zoom is {0}"_s, {formatFloat(zoom, 3)}), CLS_Success);
 	}
 	else if (argumentsCount == 1)
 	{
@@ -217,16 +217,16 @@ ConsoleCommand(zoom)
 		{
 			f32 newZoom = (f32) requestedZoom.value;
 			renderer->worldCamera.zoom = newZoom;
-			consoleWriteLine(myprintf("Set zoom to {0}", {formatFloat(newZoom, 3)}), CLS_Success);
+			consoleWriteLine(myprintf("Set zoom to {0}"_s, {formatFloat(newZoom, 3)}), CLS_Success);
 		}
 		else
 		{
-			consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom", CLS_Error);
+			consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom"_s, CLS_Error);
 		}
 	}
 }
 
-#define CMD(name) #name, &cmd_##name
+#define CMD(name) #name##_s, &cmd_##name
 void initCommands(Console *console)
 {
 	// NB: a max-arguments value of -1 means "no maximum"

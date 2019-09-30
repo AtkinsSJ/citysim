@@ -31,9 +31,9 @@ struct Command
 	void (*function)(Console*, s32, String);
 	s32 minArgs, maxArgs;
 
-	Command(char *name, void (*function)(Console*, s32, String), s32 minArgs=0, s32 maxArgs=-1)
+	Command(String name, void (*function)(Console*, s32, String), s32 minArgs=0, s32 maxArgs=-1)
 	{
-		this->name = makeString(name);
+		this->name = name;
 		this->function = function;
 		this->minArgs = minArgs;
 		if (maxArgs == -1)
@@ -78,10 +78,6 @@ void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);
 void consoleHandleCommand(Console *console, String commandInput);
 
 void consoleWriteLine(String text, ConsoleLineStyleID style=CLS_Default);
-inline void consoleWriteLine(char *text, ConsoleLineStyleID style=CLS_Default)
-{
-	consoleWriteLine(makeString(text), style);
-}
 
 inline s32 consoleMaxScrollPos(Console *console)
 {

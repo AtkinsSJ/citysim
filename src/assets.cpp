@@ -5,8 +5,8 @@ void initAssets()
 	bootstrapArena(Assets, assets, assetArena);
 
 	ASSERT(assets->assetArena.currentBlock != null); //initAssetManager() called with uninitialised/corrupted memory arena!
-	char *basePath = SDL_GetBasePath();
-	assets->assetsPath = pushString(&assets->assetArena, constructPath({makeString(basePath), "assets"_s}));
+	String basePath = makeString(SDL_GetBasePath());
+	assets->assetsPath = pushString(&assets->assetArena, constructPath({basePath, "assets"_s}));
 
 	// NB: We only need to define these for assets in the root assets/ directory
 	// Well, for now at least.
@@ -552,7 +552,7 @@ void reloadAssets()
 	DEBUG_FUNCTION();
 
 	// Preparation
-	consoleWriteLine("Reloading assets...");
+	consoleWriteLine("Reloading assets..."_s);
 	rendererUnloadAssets();
 
 	// Clear managed assets
@@ -578,7 +578,7 @@ void reloadAssets()
 
 	// After stuff
 	rendererLoadAssets();
-	consoleWriteLine("Assets reloaded successfully!", CLS_Success);
+	consoleWriteLine("Assets reloaded successfully!"_s, CLS_Success);
 }
 
 void reloadAsset(Asset *asset)

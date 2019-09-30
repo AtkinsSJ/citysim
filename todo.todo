@@ -20,6 +20,9 @@ Window procs should decide the window title instead of showWindow(), it's weird 
 
 Window buttons should still do hover-states even on inactive windows.
 
+_hashed string suffix?
+Console commands in a HashTable
+
 Pop-up menus
 - Theming
 - Scrolling???
