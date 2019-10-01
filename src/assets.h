@@ -201,7 +201,8 @@ String getText(String name);
 // Internal
 //
 
+Blob assetsAllocate(Assets *theAssets, smm size);
+
 void loadCursorDefs(Blob data, Asset *asset);
 void loadPaletteDefs(Blob data, Asset *asset);
-
-Blob assetsAllocate(Assets *theAssets, smm size);
+void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData);

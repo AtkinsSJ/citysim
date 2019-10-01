@@ -134,44 +134,6 @@ void ensureAssetIsLoaded(Asset *asset)
 	}
 }
 
-void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
-{
-	LineReader reader = readLines(asset->shortName, fileData);
-
-	// NB: We store the strings inside the asset data, so it's one block of memory instead of many small ones.
-	// However, since we allocate before we parse the file, we need to make sure that the output texts are
-	// never longer than the input texts, or we could run out of space!
-	// Right now, the only processing we do is replacing \n with a newline character, and similar, so the
-	// output can only ever be smaller or the same size as the input.
-	// - Sam, 01/10/2019
-	asset->data = assetsAllocate(assets, fileData.size);
-	smm currentSize = 0;
-	char *currentPos = (char *)asset->data.memory;
-
-	while (loadNextLine(&reader))
-	{
-		String inputKey = readToken(&reader);
-		String inputText = getRemainderOfLine(&reader);
-
-		// Store the key
-		ASSERT(currentSize + inputKey.length <= asset->data.size);
-		String key = makeString(currentPos, inputKey.length, false);
-		copyString(inputKey, &key);
-		currentSize += key.length;
-		currentPos += key.length;
-
-		// Store the text
-		// TODO: Processing on the text!
-		ASSERT(currentSize + inputText.length <= asset->data.size);
-		String text = makeString(currentPos, inputText.length, false);
-		copyString(inputText, &text);
-		currentSize += text.length;
-		currentPos += text.length;
-
-		put(texts, key, text);
-	}
-}
-
 void loadAsset(Asset *asset)
 {
 	DEBUG_FUNCTION();
@@ -900,5 +862,61 @@ void loadPaletteDefs(Blob data, Asset *asset)
 				error(&reader, "Unrecognised command '{0}'"_s, {command});
 			}
 		}
+	}
+}
+
+void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
+{
+	LineReader reader = readLines(asset->shortName, fileData);
+
+	// NB: We store the strings inside the asset data, so it's one block of memory instead of many small ones.
+	// However, since we allocate before we parse the file, we need to make sure that the output texts are
+	// never longer than the input texts, or we could run out of space!
+	// Right now, the only processing we do is replacing \n with a newline character, and similar, so the
+	// output can only ever be smaller or the same size as the input.
+	// - Sam, 01/10/2019
+	asset->data = assetsAllocate(assets, fileData.size);
+	smm currentSize = 0;
+	char *currentPos = (char *)asset->data.memory;
+
+	while (loadNextLine(&reader))
+	{
+		String inputKey = readToken(&reader);
+		String inputText = getRemainderOfLine(&reader);
+
+		// Store the key
+		ASSERT(currentSize + inputKey.length <= asset->data.size);
+		String key = makeString(currentPos, inputKey.length, false);
+		copyString(inputKey, &key);
+		currentSize += key.length;
+		currentPos += key.length;
+
+		// Store the text
+		ASSERT(currentSize + inputText.length <= asset->data.size);
+		String text = makeString(currentPos, 0, false);
+
+		for (s32 charIndex = 0; charIndex < inputText.length; charIndex++)
+		{
+			char c = inputText[charIndex];
+			if (c == '\\')
+			{
+				if (((charIndex + 1) < inputText.length)
+					&& (inputText[charIndex + 1] == 'n'))
+				{
+					text.chars[text.length] = '\n';
+					text.length++;
+					charIndex++;
+					continue;
+				}
+			}
+
+			text.chars[text.length] = c;
+			text.length++;
+		}
+
+		currentSize += text.length;
+		currentPos += text.length;
+
+		put(texts, key, text);
 	}
 }
