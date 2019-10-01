@@ -16,6 +16,8 @@ void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena)
 	fillMemory<u8>(layer->tileHealthCoverage, 0, cityArea);
 
 	initChunkedArray(&layer->healthBuildings, &city->buildingRefsChunkPool);
+
+	layer->fundingLevel = 1.0f;
 }
 
 void updateHealthLayer(City *city, HealthLayer *layer)
@@ -54,13 +56,18 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 					{
 						BuildingDef *def = getBuildingDef(building);
 
-						// TODO: Building effectiveness based on budget, overcrowding
-						f32 effectiveness = 1.0f;
+						// Budget
+						f32 effectiveness = layer->fundingLevel;
 
+						// Power
 						if (!buildingHasPower(building))
 						{
-							effectiveness = 0.4f; // @Balance
+							effectiveness *= 0.4f; // @Balance
 						}
+
+						// TODO: Water
+
+						// TODO: Overcrowding
 
 						applyEffect(city, &def->healthEffect, centreOf(building->footprint), Effect_Max, layer->tileHealthCoverage, sector->bounds, effectiveness);
 					}

@@ -35,21 +35,6 @@ Pop-up menus
 - Button width? IDK.
 - Maybe I should just make these be windows......... probably. Windows could do with a "scrolling part that's stencilled" feature though so yay.
 
-Fire:
-✔ Building-coverage, using max(), with only one class because I can't think of a reason why different fire buildings would affect differently. (Apart from varying area-of-effect radius and values)
-- Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
-	✔ Active fires
-		✖ Store tile-distance-from-fire, with a short range (4?) then use that to greatly increase fire risk
-		✔ Changed this to an effect-radius system, so that multiple nearby fires can have a cummulative effect.
-	✔ Consider coverage
-	- Consider funding
-	- Consider water coverage
-	✔ BuildingDef fire risk value
-	- Ordinances
-✔ Keep a list of fire-service buildings so they can be iterated more easily.
-- Small chance of a fire occurring each tick, depending on the risk.
-✔ Fire debug inspection window.
-
 Make drawGrid() use the grid and palette as Textures, and do a single draw call. That way we don't need to do copyRegion() fiddling - we could even keep the current data layer texture cached on the GPU if we're smart?
 
 Land value builidng-effect calculation is super slow.
@@ -166,6 +151,12 @@ Health:
 	- They won't have a health quotient like residential buildings, because that doesn't make much sense... but hospital access definitely matters because people get ill/have accidents while at work too!
 	- Maybe all inhabited buildings are considered for the overall "health coverage" score
 	- Health factors at a person's workplace could influence their HQ, if we record consistent workplaces!
+
+Fire:
+- Fire risk calculated per tile, based on nearby active fires, coverage, funding, whether it has water, buildingDef fire-risk values, and ordinances.
+- Water coverage affects fire risk
+- Ordinances affect fire risk
+- Small chance of a fire occurring each tick, depending on the risk.
 
 Coverage:
 - Calculate a coverage % for each service, based on what % of "inhabited" buildings have access to it and the quality of that access. This means somehow tagging buildings that count for this - perhaps we could count buildings with non-zero job/resident numbers?

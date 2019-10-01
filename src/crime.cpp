@@ -14,6 +14,8 @@ void initCrimeLayer(CrimeLayer *layer, City *city, MemoryArena *gameArena)
 	layer->totalJailCapacity = 0;
 	layer->occupiedJailCapacity = 0;
 
+	layer->fundingLevel = 1.0f;
+
 	initChunkedArray(&layer->policeBuildings, &city->buildingRefsChunkPool);
 }
 
@@ -61,12 +63,12 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 
 						if (hasEffect(&def->policeEffect))
 						{
-							// TODO: Building effectiveness based on budget
-							f32 effectiveness = 1.0f;
+							// Budget
+							f32 effectiveness = layer->fundingLevel;
 
 							if (!buildingHasPower(building))
 							{
-								effectiveness = 0.4f; // @Balance
+								effectiveness *= 0.4f; // @Balance
 
 								// TODO: Consider water access too
 							}

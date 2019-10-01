@@ -4,6 +4,8 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 {
 	s32 cityArea = areaOf(city->bounds);
 
+	layer->fundingLevel = 1.0f;
+
 	layer->maxFireRadius = 4;
 	layer->tileFireProximityEffect = allocateMultiple<u16>(gameArena, cityArea);
 	fillMemory<u16>(layer->tileFireProximityEffect, 0, cityArea);
@@ -103,12 +105,11 @@ void updateFireLayer(City *city, FireLayer *layer)
 					{
 						BuildingDef *def = getBuildingDef(building);
 
-						// TODO: Building effectiveness based on budget
-						f32 effectiveness = 1.0f;
+						f32 effectiveness = layer->fundingLevel;
 
 						if (!buildingHasPower(building))
 						{
-							effectiveness = 0.4f; // @Balance
+							effectiveness *= 0.4f; // @Balance
 						}
 
 						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, sector->bounds, effectiveness);

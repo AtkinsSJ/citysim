@@ -32,6 +32,8 @@ struct FireLayer
 	ArrayChunkPool<Fire> firePool;
 	s32 activeFireCount;
 
+	f32 fundingLevel; // @Budget
+
 	// Debug stuff
 	V2I debugTileInspectionPos;
 };

@@ -9,6 +9,8 @@ struct HealthLayer
 	u8 *tileHealthCoverage;
 
 	ChunkedArray<BuildingRef> healthBuildings;
+	
+	f32 fundingLevel; // @Budget
 };
 
 void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena);

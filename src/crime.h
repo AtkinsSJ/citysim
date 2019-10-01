@@ -11,6 +11,8 @@ struct CrimeLayer
 	ChunkedArray<BuildingRef> policeBuildings;
 	s32 totalJailCapacity;
 	s32 occupiedJailCapacity;
+	
+	f32 fundingLevel; // @Budget
 };
 
 void initCrimeLayer(CrimeLayer *layer, City *city, MemoryArena *gameArena);
