@@ -763,7 +763,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 					if (building != null)
 					{
-						building->problems += BuildingProblem_NoPower;
+						addProblem(building, BuildingProblem_NoPower);
 					}
 				}
 			}
@@ -795,12 +795,12 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 						s32 requiredPower = getRequiredPower(building);
 						if (powerRemaining >= requiredPower)
 						{
-							building->problems -= BuildingProblem_NoPower;
+							removeProblem(building, BuildingProblem_NoPower);
 							powerRemaining -= requiredPower;
 						}
 						else
 						{
-							building->problems += BuildingProblem_NoPower;
+							addProblem(building, BuildingProblem_NoPower);
 						}
 					}
 				}
@@ -827,7 +827,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 					if (building != null)
 					{
-						building->problems -= BuildingProblem_NoPower;
+						removeProblem(building, BuildingProblem_NoPower);
 					}
 				}
 			}

@@ -49,6 +49,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 			setRegion<u16>(layer->tileFireProximityEffect, city->bounds.w, city->bounds.h, dirtyRect, 0);
 
 			Rect2I expandedRect = expand(dirtyRect, layer->maxFireRadius);
+			// @FireSectors
 			for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
 			{
 				Fire *fire = get(it);
@@ -176,6 +177,7 @@ void drawFires(City *city, Rect2I visibleTileBounds)
 {
 	FireLayer *layer = &city->fireLayer;
 	// TODO: @Speed: Only draw fires that are visible, put them into sectors and stuff!
+	// @FireSectors
 
 	// TODO: Particle effects for fire instead of this lame thing
 
@@ -211,11 +213,19 @@ void startFireAt(City *city, s32 x, s32 y)
 	}
 	else
 	{
+		// @FireSectors
 		Fire *fire = appendBlank(&layer->activeFires);
 		fire->pos.x = x;
 		fire->pos.y = y;
 
 		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+
+		// Tell the building it's on fire
+		Building *building = getBuildingAt(city, x, y);
+		if (building != null)
+		{
+			addProblem(building, BuildingProblem_Fire);
+		}
 	}
 }
 
@@ -227,6 +237,29 @@ void removeFireAt(City *city, s32 x, s32 y)
 	if (removedFires > 0)
 	{
 		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+
+		// Figure out if the building at the position still has some fire
+		Building *building = getBuildingAt(city, x, y);
+		if (building != null)
+		{
+			bool foundFire = false;
+			// TODO: @FireSectors
+			for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
+			{
+				Fire *fire = get(it);
+
+				if (contains(building->footprint, fire->pos))
+				{
+					foundFire = true;
+					break;
+				}
+			}
+
+			if (!foundFire)
+			{
+				removeProblem(building, BuildingProblem_Fire);
+			}
+		}
 	}
 }
 

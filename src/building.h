@@ -94,6 +94,7 @@ BuildingCatalogue buildingCatalogue = {};
 
 enum BuildingProblem
 {
+	BuildingProblem_Fire,
 	BuildingProblem_NoPower,
 	BuildingProblem_NoTransportAccess,
 
@@ -101,8 +102,9 @@ enum BuildingProblem
 };
 
 String buildingProblemNames[BuildingProblemCount] = {
-	"No power!"_s,
-	"No access to transport!"_s
+	"building_problem_fire"_s,
+	"building_problem_no_power"_s,
+	"building_problem_no_transport"_s
 };
 
 struct Building
@@ -144,6 +146,9 @@ BuildingDef *findBuildingDef(String name);
 s32 getRequiredPower(Building *building);
 bool buildingHasPower(Building *building);
 
+void addProblem(Building *building, BuildingProblem problem);
+void removeProblem(Building *building, BuildingProblem problem);
+bool hasProblem(Building *building, BuildingProblem problem);
 
 // TODO: These are a bit hacky... I want to hide the implementation details of the catalogue, but
 // creating a whole set of iterator stuff which is almost identical to the regular iterators seems

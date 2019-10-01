@@ -328,9 +328,9 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		// Problems
 		for (s32 problemIndex = 0; problemIndex < BuildingProblemCount; problemIndex++)
 		{
-			if (building->problems & (BuildingProblem) problemIndex)
+			if (hasProblem(building, (BuildingProblem) problemIndex))
 			{
-				window_label(context, myprintf("- PROBLEM: {0}"_s, {buildingProblemNames[problemIndex]}));
+				window_label(context, myprintf("- PROBLEM: {0}"_s, {getText(buildingProblemNames[problemIndex])}));
 			}
 		}
 	}

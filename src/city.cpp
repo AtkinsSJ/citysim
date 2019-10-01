@@ -592,12 +592,9 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 			// Draw building red to preview demolition
 			drawColor = drawColorDemolish;
 		}
-		else if (!isEmpty(&building->problems))
+		else if (hasProblem(building, BuildingProblem_NoPower))
 		{
-			if (building->problems & BuildingProblem_NoPower)
-			{
-				drawColor = drawColorNoPower;
-			}
+			drawColor = drawColorNoPower;
 		}
 
 		Sprite *sprite = getSprite(sprites, building->spriteOffset);
@@ -658,11 +655,11 @@ void updateSomeBuildings(City *city)
 					// Zoned buildings inherit their zone's max distance to road.
 					if (distanceToRoad > getZoneDef(def->growsInZone).maximumDistanceToRoad)
 					{
-						building->problems += BuildingProblem_NoTransportAccess;
+						addProblem(building, BuildingProblem_NoTransportAccess);
 					}
 					else
 					{
-						building->problems -= BuildingProblem_NoTransportAccess;
+						removeProblem(building, BuildingProblem_NoTransportAccess);
 					}
 				}
 				else if (def->flags & Building_RequiresTransportConnection)
@@ -670,11 +667,11 @@ void updateSomeBuildings(City *city)
 					// Other buildings require direct contact
 					if (distanceToRoad > 1)
 					{
-						building->problems += BuildingProblem_NoTransportAccess;
+						addProblem(building, BuildingProblem_NoTransportAccess);
 					}
 					else
 					{
-						building->problems -= BuildingProblem_NoTransportAccess;
+						removeProblem(building, BuildingProblem_NoTransportAccess);
 					}
 				}
 			}

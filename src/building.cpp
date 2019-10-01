@@ -691,6 +691,21 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 	}
 }
 
+inline void addProblem(Building *building, BuildingProblem problem)
+{
+	building->problems += problem;
+}
+
+inline void removeProblem(Building *building, BuildingProblem problem)
+{
+	building->problems -= problem;
+}
+
+inline bool hasProblem(Building *building, BuildingProblem problem)
+{
+	return building->problems & problem;
+}
+
 inline s32 getRequiredPower(Building *building)
 {
 	s32 result = 0;
