@@ -2,8 +2,6 @@
 
 void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 {
-	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
-
 	s32 cityArea = areaOf(city->bounds);
 
 	layer->maxFireRadius = 4;
@@ -18,9 +16,18 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 	fillMemory<u8>(layer->tileOverallFireRisk, 0, cityArea);
 
 	initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
-	initChunkedArray(&layer->activeFires, gameArena, 256);
 
 	initDirtyRects(&layer->dirtyRects, gameArena, layer->maxFireRadius, city->bounds);
+
+	layer->activeFireCount = 0;
+	initChunkPool(&layer->firePool, gameArena, 64);
+	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
+	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
+	{
+		FireSector *sector = &layer->sectors.sectors[sectorIndex];
+
+		initChunkedArray(&sector->activeFires, &layer->firePool);
+	}
 
 	// Assets
 	// TODO: @AssetPacks
@@ -49,19 +56,28 @@ void updateFireLayer(City *city, FireLayer *layer)
 			setRegion<u16>(layer->tileFireProximityEffect, city->bounds.w, city->bounds.h, dirtyRect, 0);
 
 			Rect2I expandedRect = expand(dirtyRect, layer->maxFireRadius);
-			// @FireSectors
-			for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
-			{
-				Fire *fire = get(it);
-				if (contains(expandedRect, fire->pos))
-				{
-					// TODO: Different "strengths" of fire should have different effects
-					EffectRadius fireEffect = {};
-					fireEffect.centreValue = 255;
-					fireEffect.outerValue = 20;
-					fireEffect.radius = layer->maxFireRadius;
+			Rect2I affectedSectors = getSectorsCovered(&layer->sectors, expandedRect);
 
-					applyEffect<u16>(city, &fireEffect, v2(fire->pos), Effect_Add, layer->tileFireProximityEffect, dirtyRect);
+			for (s32 sy = affectedSectors.y; sy < affectedSectors.y + affectedSectors.h; sy++)
+			{
+				for (s32 sx = affectedSectors.x; sx < affectedSectors.x + affectedSectors.w; sx++)
+				{
+					FireSector *sector = getSector(&layer->sectors, sx, sy);
+
+					for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+					{
+						Fire *fire = get(it);
+						if (contains(expandedRect, fire->pos))
+						{
+							// TODO: Different "strengths" of fire should have different effects
+							EffectRadius fireEffect = {};
+							fireEffect.centreValue = 255;
+							fireEffect.outerValue = 20;
+							fireEffect.radius = layer->maxFireRadius;
+
+							applyEffect<u16>(city, &fireEffect, v2(fire->pos), Effect_Add, layer->tileFireProximityEffect, dirtyRect);
+						}
+					}
 				}
 			}
 		}
@@ -74,7 +90,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 
 		for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++)
 		{
-			BasicSector *sector = getNextSector(&layer->sectors);
+			FireSector *sector = getNextSector(&layer->sectors);
 
 			{
 				DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
@@ -104,14 +120,6 @@ void updateFireLayer(City *city, FireLayer *layer)
 			{
 				for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++)
 				{
-					//
-					// (Maybe we don't even want to keep the tileBuildingFireRisk array at all? It's
-					// kind of redundant because we can just query the building in the tile right here,
-					// in an efficient way... This is placeholder so whatever!)
-					//
-					// - Sam, 12/09/2019
-					//
-
 					f32 tileFireRisk = 0.0f;
 
 					Building *building = getBuildingAt(city, x, y);
@@ -176,47 +184,76 @@ void drawFireDataLayer(City *city, Rect2I visibleTileBounds)
 void drawFires(City *city, Rect2I visibleTileBounds)
 {
 	FireLayer *layer = &city->fireLayer;
-	// TODO: @Speed: Only draw fires that are visible, put them into sectors and stuff!
-	// @FireSectors
 
-	// TODO: Particle effects for fire instead of this lame thing
+	// TODO: Particle effects for fire instead of this rubbish sprite thing
 
-	if (layer->activeFires.count > 0)
+	if (layer->activeFireCount > 0)
 	{
 		SpriteGroup *fireSprites = getSpriteGroup("fire"_s);
 		Sprite *sprite = getSprite(fireSprites, 0);
 		V4 colorWhite = makeWhite();
 
-		DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, renderer->shaderIds.pixelArt, layer->activeFires.count);
-		for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
-		{
-			Fire *fire = get(it);
+		DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, renderer->shaderIds.pixelArt, layer->activeFireCount);
 
-			if (contains(visibleTileBounds, fire->pos))
+		Rect2I affectedSectors = getSectorsCovered(&layer->sectors, visibleTileBounds);
+		for (s32 sy = affectedSectors.y; sy < affectedSectors.y + affectedSectors.h; sy++)
+		{
+			for (s32 sx = affectedSectors.x; sx < affectedSectors.x + affectedSectors.w; sx++)
 			{
-				addSpriteRect(group, sprite, rectXYWHi(fire->pos.x, fire->pos.y, 1, 1), colorWhite);
+				FireSector *sector = getSector(&layer->sectors, sx, sy);
+
+				for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+				{
+					Fire *fire = get(it);
+
+					if (contains(visibleTileBounds, fire->pos))
+					{
+						addSpriteRect(group, sprite, rectXYWHi(fire->pos.x, fire->pos.y, 1, 1), colorWhite);
+					}
+				}
 			}
 		}
+
 		endRectsGroup(group);
 	}
+}
+
+Fire *findFireAt(City *city, s32 x, s32 y)
+{
+	FireLayer *layer = &city->fireLayer;
+
+	Fire *result = null;
+
+	if (layer->activeFireCount > 0)
+	{
+		FireSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
+		Indexed<Fire *> existingFire = findFirst(&sector->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
+
+		result = existingFire.value;
+	}
+
+	return result;
 }
 
 void startFireAt(City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;
 
-	Indexed<Fire *> existingFire = findFirst(&layer->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
-	if (existingFire.value != null)
+	Fire *existingFire = findFireAt(city, x, y);
+	if (existingFire != null)
 	{
 		// Fire already exists!
 		// TODO: make the fire stronger?
 	}
 	else
 	{
-		// @FireSectors
-		Fire *fire = appendBlank(&layer->activeFires);
+		FireSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
+
+		Fire *fire = appendBlank(&sector->activeFires);
 		fire->pos.x = x;
 		fire->pos.y = y;
+
+		layer->activeFireCount++;
 
 		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
 
@@ -233,28 +270,43 @@ void removeFireAt(City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;
 
-	s32 removedFires = removeAll(&layer->activeFires, [=](Fire fire) { return fire.pos.x == x && fire.pos.y == y; }, 1);
+	FireSector *sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
+	s32 removedFires = removeAll(&sectorAtPosition->activeFires, [=](Fire fire) { return fire.pos.x == x && fire.pos.y == y; }, 1);
 	if (removedFires > 0)
 	{
 		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+
+		layer->activeFireCount -= removedFires;
 
 		// Figure out if the building at the position still has some fire
 		Building *building = getBuildingAt(city, x, y);
 		if (building != null)
 		{
 			bool foundFire = false;
-			// TODO: @FireSectors
-			for (auto it = iterate(&layer->activeFires); hasNext(&it); next(&it))
-			{
-				Fire *fire = get(it);
 
-				if (contains(building->footprint, fire->pos))
+			Rect2I footprintSectors = getSectorsCovered(&layer->sectors, building->footprint);
+			for (s32 sy = footprintSectors.y;
+				sy < footprintSectors.y + footprintSectors.h && !foundFire;
+				sy++)
+			{
+				for (s32 sx = footprintSectors.x;
+					sx < footprintSectors.x + footprintSectors.w && !foundFire;
+					sx++)
 				{
-					foundFire = true;
-					break;
+					FireSector *sector = getSector(&layer->sectors, sx, sy);
+					for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+					{
+						Fire *fire = get(it);
+
+						if (contains(building->footprint, fire->pos))
+						{
+							foundFire = true;
+							break;
+						}
+					}
 				}
 			}
-
+			
 			if (!foundFire)
 			{
 				removeProblem(building, BuildingProblem_Fire);
@@ -292,7 +344,7 @@ void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 
 	window_label(context, myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, {
 		formatInt(layer->fireProtectionBuildings.count),
-		formatInt(layer->activeFires.count)
+		formatInt(layer->activeFireCount)
 	}));
 
 	Building *buildingAtPos = getBuildingAt(city, x, y);

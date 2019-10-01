@@ -5,11 +5,18 @@ struct Fire
 	V2I pos;
 };
 
+struct FireSector
+{
+	Rect2I bounds;
+
+	ChunkedArray<Fire> activeFires;
+};
+
 struct FireLayer
 {
 	DirtyRects dirtyRects;
 	
-	SectorGrid<BasicSector> sectors;
+	SectorGrid<FireSector> sectors;
 
 	u8 maxFireRadius;
 	u16 *tileFireProximityEffect;
@@ -22,7 +29,8 @@ struct FireLayer
 
 	ChunkedArray<BuildingRef> fireProtectionBuildings;
 
-	ChunkedArray<Fire> activeFires;
+	ArrayChunkPool<Fire> firePool;
+	s32 activeFireCount;
 
 	// Debug stuff
 	V2I debugTileInspectionPos;
@@ -37,7 +45,9 @@ void drawFires(City *city, Rect2I visibleTileBounds);
 void registerFireProtectionBuilding(FireLayer *layer, Building *building);
 void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
 
+Fire *findFireAt(City *city, s32 x, s32 y);
 void startFireAt(City *city, s32 x, s32 y);
+void removeFireAt(City *city, s32 x, s32 y);
 
 u8 getFireRiskAt(City *city, s32 x, s32 y);
 u8 getFireProtectionAt(City *city, s32 x, s32 y);
