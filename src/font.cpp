@@ -102,7 +102,7 @@ V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
 			}
 			while (foundNext && isNewline(c));
 		}
-		else if (isWhitespace(c))
+		else if (isWhitespace(c, false))
 		{
 			// WHITESPACE LOOP
 
@@ -129,7 +129,7 @@ V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
 
 				foundNext = getNextUnichar(text, &bytePos, &c);
 			}
-			while (foundNext && isWhitespace(c));
+			while (foundNext && isWhitespace(c, false));
 
 			currentX += whitespaceWidthBeforeCurrentWord;
 
@@ -321,7 +321,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2I 
 			}
 			while (foundNext && isNewline(c));
 		}
-		else if (isWhitespace(c))
+		else if (isWhitespace(c, false))
 		{
 			// NB: We don't handle whitespace characters that actually print something visibly.
 			// Despite being an oxymoron, they do actually exist, but the chance of me actually
@@ -351,7 +351,7 @@ void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2I 
 				}
 				foundNext = getNextUnichar(text, &bytePos, &c);
 			}
-			while (foundNext && isWhitespace(c));
+			while (foundNext && isWhitespace(c, false));
 
 			currentX += whitespaceWidthBeforeCurrentWord;
 		}

@@ -1,7 +1,7 @@
 ## test file for text assets
 
 game_title           City Builder Test 9000
-game_subtitle        Very much a work in \nprogress!\nNow with\n\nnewlines!
+game_subtitle        Very much a work in \nprogress!\nNow with\n \n \nnewlines!
 game_copyright       © Copyright Samuel Atkins 20XX
 
 button_about         About
