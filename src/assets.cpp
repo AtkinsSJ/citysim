@@ -356,15 +356,10 @@ void unloadAsset(Asset *asset)
 		case AssetType_Texts:
 		{
 			// Remove all of our texts from the table
-			// TODO: We really need a proper way to remove keys from the HashTable! This is a dumb @Hack!
 			for (s32 keyIndex = 0; keyIndex < asset->texts.keys.count; keyIndex++)
 			{
 				String key = asset->texts.keys[keyIndex];
-				// Fake-removing a key by setting its value to the key's contents.
-				// This ONLY works because we interpret that as a missing text!
-				// Like I said, @Hack @Hack @Hack!
-				HashTableEntry<String> *entry = findEntry(&assets->texts, key);
-				entry->value = entry->key;
+				removeKey(&assets->texts, key);
 			}
 
 			asset->texts.keys = makeArray<String>(0, null);

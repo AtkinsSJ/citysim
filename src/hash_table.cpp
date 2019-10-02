@@ -68,7 +68,7 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 	{
 		HashTableEntry<T> *entry = table->entries + index;
 
-		if (entry->isOccupied == false || 
+		if ((entry->isOccupied == false && entry->isGravestone == false) || 
 			(hash == hashString(&entry->key) && equals(key, entry->key)))
 		{
 			result = entry;
@@ -111,6 +111,7 @@ T *findOrAdd(HashTable<T> *table, String key)
 	{
 		table->count++;
 		entry->isOccupied = true;
+		entry->isGravestone = false;
 		hashString(&key);
 		entry->key = key;
 	}
@@ -133,6 +134,7 @@ T *put(HashTable<T> *table, String key, T value)
 	{
 		table->count++;
 		entry->isOccupied = true;
+		entry->isGravestone = false;
 		hashString(&key);
 		entry->key = key;
 	}
@@ -140,6 +142,20 @@ T *put(HashTable<T> *table, String key, T value)
 	entry->value = value;
 
 	return &entry->value;
+}
+
+template<typename T>
+void removeKey(HashTable<T> *table, String key)
+{
+	if (table->entries == null) return;
+
+	HashTableEntry<T> *entry = findEntryInternal(table, key);
+	if (entry->isOccupied)
+	{
+		entry->isGravestone = true;
+		entry->isOccupied = false;
+		table->count--;
+	}
 }
 
 template<typename T>
@@ -153,6 +169,7 @@ void clear(HashTable<T> *table)
 			for (s32 i=0; i < table->capacity; i++)
 			{
 				table->entries[i].isOccupied = false;
+				table->entries[i].isGravestone = false;
 			}
 		}
 	}

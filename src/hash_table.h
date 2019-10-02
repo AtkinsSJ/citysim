@@ -4,6 +4,8 @@ template<typename T>
 struct HashTableEntry
 {
 	bool isOccupied;
+	bool isGravestone;
+
 	String key;
 	
 	T value;
@@ -51,6 +53,9 @@ T findValue(HashTable<T> *table, String key);
 
 template<typename T>
 T *put(HashTable<T> *table, String key, T value={});
+
+template<typename T>
+void removeKey(HashTable<T> *table, String key);
 
 template<typename T>
 void clear(HashTable<T> *table);
