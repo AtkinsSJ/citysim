@@ -19,8 +19,10 @@ enum BuildingFlag
 
 struct BuildingDef
 {
-	String name;
+	String id;
 	s32 typeID;
+
+	String nameID;
 
 	Flags8<BuildingFlag> flags;
 

@@ -320,7 +320,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	{
 		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
-		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {def->name, formatInt(building->id), formatInt(buildingIndex)}));
+		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->nameID), formatInt(building->id), formatInt(buildingIndex)}));
 		window_label(context, myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));
 		window_label(context, myprintf("- Power: {0}"_s, {formatInt(def->power)}));
@@ -531,7 +531,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				next(&it))
 			{
 				BuildingDef *buildingDef = getValue(it);
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buildingDef->name, popupButtonStyle).x);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(buildingDef->nameID), popupButtonStyle).x);
 			}
 
 			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
@@ -544,7 +544,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			{
 				BuildingDef *buildingDef = getValue(it);
 
-				if (popupMenuButton(uiState, &menu, buildingDef->name, popupButtonStyle,
+				if (popupMenuButton(uiState, &menu, getText(buildingDef->nameID), popupButtonStyle,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);

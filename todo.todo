@@ -25,6 +25,8 @@ Console commands in a HashTable
 
 Ability to remove things from a HashTable.
 
+Have getText() fall-back to the english if a localised text isn't available.
+
 Pop-up menus
 - Theming
 - Scrolling???

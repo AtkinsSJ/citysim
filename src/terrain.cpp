@@ -263,7 +263,7 @@ void generateTerrain(City *city)
 	
 	u8 tGround = truncate<u8>(findTerrainTypeByName("Ground"_s));
 	u8 tWater  = truncate<u8>(findTerrainTypeByName("Water"_s));
-	BuildingDef *treeDef = findBuildingDef("Tree"_s);
+	BuildingDef *treeDef = findBuildingDef("tree"_s);
 
 	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));
 

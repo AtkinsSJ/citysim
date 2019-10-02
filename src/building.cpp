@@ -112,13 +112,13 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			if (equals(firstWord, "Building"_s))
 			{
 				def = appendBlank(buildings);
-				def->name = pushString(&assets->assetArena, getRemainderOfLine(&reader));
+				def->id = pushString(&assets->assetArena, getRemainderOfLine(&reader));
 				def->typeID = truncate32(buildings->count - 1);
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
 
 				def->fireRisk = 1.0f;
-				put(&catalogue->buildingsByName, def->name, def);
+				put(&catalogue->buildingsByName, def->id, def);
 			}
 			else if (equals(firstWord, "Template"_s))
 			{
@@ -399,6 +399,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					// {
 					// 	warn(&reader, "Couldn't parse link_textures, assuming NONE."_s);
 					// }
+				}
+				else if (equals(firstWord, "name"_s))
+				{
+					def->nameID = pushString(&assets->assetArena, readToken(&reader));
 				}
 				else if (equals(firstWord, "pollution"_s))
 				{
