@@ -177,7 +177,6 @@ void addFont(String name, String filename);
 void loadAsset(Asset *asset);
 void ensureAssetIsLoaded(Asset *asset);
 void unloadAsset(Asset *asset);
-void reloadAsset(Asset *asset);
 
 void addAssets();
 void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType=AssetType_Unknown);

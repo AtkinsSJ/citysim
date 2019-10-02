@@ -581,12 +581,6 @@ void reloadAssets()
 	consoleWriteLine("Assets reloaded successfully!"_s, CLS_Success);
 }
 
-void reloadAsset(Asset *asset)
-{
-	unloadAsset(asset);
-	loadAsset(asset);
-}
-
 Asset *getAssetIfExists(AssetType type, String shortName)
 {
 	Asset **result = find(&assets->assetsByType[type], shortName);
@@ -711,7 +705,16 @@ void reloadLocaleSpecificAssets()
 		Asset *asset = get(it);
 		if (asset->flags & Asset_IsLocaleSpecific)
 		{
-			reloadAsset(asset);
+			unloadAsset(asset);
+		}
+	}
+
+	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	{
+		Asset *asset = get(it);
+		if (asset->flags & Asset_IsLocaleSpecific)
+		{
+			loadAsset(asset);
 		}
 	}
 
