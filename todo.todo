@@ -23,9 +23,7 @@ Window buttons should still do hover-states even on inactive windows.
 _hashed string suffix?
 Console commands in a HashTable
 
-Have getText() fall-back to the english if a localised text isn't available.
-- Figure out which table to add texts to
-- Figure out which table to REMOVE texts from. (Eek, this sounds nasty. Actually, no, we can just have a flag in the asset, no problemo.)
+Automatically record, and output to a file, which strings are missing from the current locale. Possibly put this behind a setting which defaults to false, to reduce the performance impact. - See comment in getText()
 
 Pop-up menus
 - Theming

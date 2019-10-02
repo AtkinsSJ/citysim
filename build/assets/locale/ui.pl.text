@@ -1,6 +1,7 @@
 # test file for text assets
 
 game_title       Miasto 9000
+game_subtitle    Oczywiście
 
 button_play      Grać
 button_credits   Kredyty

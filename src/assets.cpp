@@ -680,9 +680,27 @@ inline String getText(String name)
 	else
 	{
 		// Try to fall back to english if possible
+		String *defaultText = find(&assets->defaultTexts, name);
+		if (defaultText != null)
+		{
+			result = *defaultText;
+		}
 
-		logWarn("Locale {0} is missing text for '{1}'."_s, {getLocale(), name});
-		put(&assets->texts, name, name);
+		// Dilemma: We probably want to report missing texts, somehow... because we'd want to know
+		// that a text is missing! But, we only want to report each missing text once, otherwise
+		// we'll spam the console with the same warning about the same missing text over and over!
+		// We used to avoid that by logging the warning, then inserting the text's name into the
+		// table as its value, so that future getText() calls would find it.
+		// However, now there are two places we look: the texts table, and defaultTexts. Falling
+		// back to a default text should also provide some kind of lesser warning, as it could be
+		// intentional. In any case, we can't only warn once unless we copy the default into texts,
+		// but then when the defaults file is unloaded, it won't unload the copy (though it will
+		// erase the memory that the copy points to) so we can't do that.
+		//
+		// Had two different ideas for solutions. One is we don't store Strings, but a wrapper that
+		// also has a "thing was missing" flag somehow. That doesn't really work when I think about
+		// it though... Idea 2 is to keep a Set of missing strings, add stuff to it here, and write
+		// it to a file at some point. (eg, any time the set gets more members.) 
 	}
 
 	return result;
