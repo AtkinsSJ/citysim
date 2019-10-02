@@ -43,6 +43,7 @@ void initAssets()
 
 	initHashTable(&assets->texts);
 	initHashTable(&assets->defaultTexts);
+	initSet<String>(&assets->missingTextIDs, &assets->assetArena, [](String *a, String *b) {return equals(*a, *b); });
 
 	// NB: This might fail, or we might be on a platform where it isn't implemented.
 	// That's OK though! 
@@ -590,6 +591,7 @@ void reloadAssets()
 	// We're now not *quite* throwing everything away.
 	resetMemoryArena(&assets->assetArena);
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
+	initSet<String>(&assets->missingTextIDs, &assets->assetArena, [](String *a, String *b) {return equals(*a, *b); });
 	addAssets();
 	loadAssets();
 
@@ -670,6 +672,8 @@ inline String getText(String name)
 {
 	DEBUG_FUNCTION();
 
+	hashString(&name);
+
 	String result = name;
 
 	String *foundText = find(&assets->texts, name);
@@ -700,7 +704,23 @@ inline String getText(String name)
 		// Had two different ideas for solutions. One is we don't store Strings, but a wrapper that
 		// also has a "thing was missing" flag somehow. That doesn't really work when I think about
 		// it though... Idea 2 is to keep a Set of missing strings, add stuff to it here, and write
-		// it to a file at some point. (eg, any time the set gets more members.) 
+		// it to a file at some point. (eg, any time the set gets more members.)
+
+
+		// What we're doing for now is to only report a missing text if it's not in the missingTextIDs
+		// set. (And then add it.)
+
+		if (add(&assets->missingTextIDs, name))
+		{
+			if (defaultText != null)
+			{
+				logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, {getLocale(), name});
+			}
+			else
+			{
+				logWarn("Locale {0} is missing text for '{1}'. (No default found!)"_s, {getLocale(), name});
+			}
+		}
 	}
 
 	return result;
@@ -737,6 +757,9 @@ String getAssetPath(AssetType type, String shortName)
 
 void reloadLocaleSpecificAssets()
 {
+	// Clear the list of missing texts because they might not be missing in the new locale!
+	clear(&assets->missingTextIDs);
+
 	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
 	{
 		Asset *asset = get(it);

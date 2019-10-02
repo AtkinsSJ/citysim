@@ -166,6 +166,13 @@ struct Assets
 	// have to do a hashtable lookup inside it, it makes more sense to avoid the "find the asset" lookup.
 	HashTable<String> texts;
 	HashTable<String> defaultTexts; // "en" locale
+	// NB: Sets are stupid right now, they just wrap a ChunkedArray, which means it gets wiped when
+	// we reset the assetsArena in reloadAssets()! If we want to remember things across a reload,
+	// to eg add a "dump missing texts to a file" command, we'll need to switch to something that
+	// survives reloads. Maybe a HashTable of the textID -> whether it found a fallback, that could
+	// be useful.
+	// - Sam, 02/10/2019
+	Set<String> missingTextIDs;
 };
 
 void initAssets();

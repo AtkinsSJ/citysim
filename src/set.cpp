@@ -9,12 +9,17 @@ void initSet(Set<T> *set, MemoryArena *arena, bool (*areItemsEqual)(T *a, T *b))
 }
 
 template<typename T>
-void add(Set<T> *set, T item)
+bool add(Set<T> *set, T item)
 {
+	bool didAdd = false;
+
 	if (!contains(set, item))
 	{
 		append(&set->items, item);
+		didAdd = true;
 	}
+
+	return didAdd;
 }
 
 template<typename T>
@@ -32,4 +37,10 @@ bool contains(Set<T> *set, T item)
 	}
 
 	return result;
+}
+
+template<typename T>
+void clear(Set<T> *set)
+{
+	clear(&set->items);
 }
