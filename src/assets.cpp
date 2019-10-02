@@ -12,17 +12,18 @@ void initAssets()
 	// Well, for now at least.
 	// - Sam, 19/05/2019
 	initHashTable(&assets->fileExtensionToType);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "buildings"), AssetType_BuildingDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "cursors"),   AssetType_CursorDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "palettes"),  AssetType_PaletteDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"),   AssetType_TerrainDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"),    AssetType_DevKeymap);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"),     AssetType_UITheme);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "buildings"_s), AssetType_BuildingDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "cursors"_s),   AssetType_CursorDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "palettes"_s),  AssetType_PaletteDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"_s),   AssetType_TerrainDefs);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"_s),    AssetType_DevKeymap);
+	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"_s),     AssetType_UITheme);
 
 	initHashTable(&assets->directoryNameToType);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"),     AssetType_BitmapFont);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"),   AssetType_Shader);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"),  AssetType_Texture);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"_s),     AssetType_BitmapFont);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"_s),   AssetType_Shader);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"_s),  AssetType_Texture);
+	put(&assets->directoryNameToType, pushString(&assets->assetArena, "locale"_s),    AssetType_Texts);
 
 
 	// NB: This has to happen just after the last addition to the AssetArena which should remain
@@ -139,10 +140,20 @@ void loadAsset(Asset *asset)
 	DEBUG_FUNCTION();
 	if (asset->state != AssetState_Unloaded) return;
 
-	String assetFileName = asset->fullName;
 	if (asset->flags & Asset_IsLocaleSpecific)
 	{
-		assetFileName = myprintf(asset->fullName, {getLocale()}, true);
+		// Only load assets that match our locale
+		String extension = getFileExtension(asset->fullName);
+		String filenameRemainder = asset->fullName;
+		filenameRemainder.length -= (extension.length + 1);
+
+		String localeName = getFileExtension(filenameRemainder);
+
+		if (!equals(localeName, getLocale()))
+		{
+			logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, {asset->fullName, localeName, getLocale()});
+			return;
+		}
 	}
 
 	Blob fileData = {};
@@ -150,7 +161,7 @@ void loadAsset(Asset *asset)
 	// eg, ShaderPrograms are made of several ShaderParts.
 	if (asset->flags & Asset_IsAFile)
 	{
-		fileData = readTempFile(assetFileName);
+		fileData = readTempFile(asset->fullName);
 	}
 
 	// Type-specific loading
@@ -262,15 +273,13 @@ void loadAsset(Asset *asset)
 
 		case AssetType_Texts:
 		{
-			// NB: This assumes only a single texts file. We'll probably want to handle multiple eventually, somehow!
-			fileData = readTempFile(getAssetPath(AssetType_Texts, myprintf("{0}.text"_s, {getLocale()})));
 			loadTexts(&assets->texts, asset, fileData);
 			asset->state = AssetState_Loaded;
 		} break;
 
 		case AssetType_Texture:
 		{
-			SDL_Surface *surface = createSurfaceFromFileData(fileData, assetFileName);
+			SDL_Surface *surface = createSurfaceFromFileData(fileData, asset->fullName);
 			ASSERT(surface->format->BytesPerPixel == 4); //We only handle 32-bit colour images!
 
 			if (!asset->texture.isFileAlphaPremultiplied)
@@ -482,6 +491,10 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 		pathToScan = constructPath({assets->assetsPath, subDirectory}, true);
 	}
 
+	bool isLocaleSpecific = equals(subDirectory, "locale"_s);
+	u32 assetFlags = AssetDefaultFlags;
+	if (isLocaleSpecific) assetFlags |= Asset_IsLocaleSpecific;
+
 	for (auto it = iterateDirectoryListing(pathToScan);
 		hasNextFile(&it);
 		findNextFile(&it))
@@ -510,26 +523,22 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 			// logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
 		}
 
-		addAsset(assetType, filename);
+		
+		addAsset(assetType, filename, assetFlags);
 	}
 }
 
 void addAssets()
 {
-	// Manually add the texts asset, because it's special.
-	addAsset(AssetType_Texts, "{0}.text"_s, AssetDefaultFlags | Asset_IsLocaleSpecific);
+	DEBUG_FUNCTION();
+	addAssetsFromDirectory(nullString);
 
+	for (auto it = iterate(&assets->directoryNameToType);
+		!it.isDone;
+		next(&it))
 	{
-		DEBUG_BLOCK("Read asset directories");
-		addAssetsFromDirectory(nullString);
-
-		for (auto it = iterate(&assets->directoryNameToType);
-			!it.isDone;
-			next(&it))
-		{
-			auto entry = getEntry(it);
-			addAssetsFromDirectory(entry->key, entry->value);
-		}
+		auto entry = getEntry(it);
+		addAssetsFromDirectory(entry->key, entry->value);
 	}
 }
 
