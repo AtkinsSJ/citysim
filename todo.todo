@@ -23,6 +23,8 @@ Window buttons should still do hover-states even on inactive windows.
 _hashed string suffix?
 Console commands in a HashTable
 
+Ability to remove things from a HashTable.
+
 Pop-up menus
 - Theming
 - Scrolling???

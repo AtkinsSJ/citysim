@@ -19,6 +19,36 @@ LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 	return result;
 }
 
+s32 countLines(Blob data)
+{
+	s32 result = 0;
+
+	smm startOfNextLine = 0;
+
+	// @Copypasta from loadNextLine() but with a lot of alterations!
+	do
+	{
+		++result;
+		while ((startOfNextLine < data.size) && !isNewline(data.memory[startOfNextLine]))
+		{
+			++startOfNextLine;
+		}
+
+		// Handle Windows' stupid double-character newline.
+		if (startOfNextLine < data.size)
+		{
+			++startOfNextLine;
+			if (isNewline(data.memory[startOfNextLine]) && (data.memory[startOfNextLine] != data.memory[startOfNextLine-1]))
+			{
+				++startOfNextLine;
+			}
+		}
+	}
+	while (!(startOfNextLine >= data.size));
+
+	return result;
+}
+
 bool loadNextLine(LineReader *reader)
 {
 	bool result = true;

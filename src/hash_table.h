@@ -39,6 +39,9 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, s32 initialCapa
 template<typename T>
 T *find(HashTable<T> *table, String key);
 
+template<typename T>
+HashTableEntry<T> *findEntry(HashTable<T> *table, String key);
+
 // Adds a blank entry with the key if it can't find an existing one
 template<typename T>
 T *findOrAdd(HashTable<T> *table, String key);

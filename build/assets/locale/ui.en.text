@@ -20,6 +20,8 @@ button_settings      Settings
 button_website       Website
 button_zone          Zone...
 
+button_about   Oh no it's a duplicate!
+
 data_view_none						None
 data_view_desirability_residential	Residential desirability
 data_view_desirability_commercial	Commercial desirability

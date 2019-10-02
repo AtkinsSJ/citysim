@@ -355,8 +355,19 @@ void unloadAsset(Asset *asset)
 
 		case AssetType_Texts:
 		{
-			// NB: This assumes only a single texts file. We'll probably want to handle multiple eventually, somehow!
-			clear(&assets->texts);
+			// Remove all of our texts from the table
+			// TODO: We really need a proper way to remove keys from the HashTable! This is a dumb @Hack!
+			for (s32 keyIndex = 0; keyIndex < asset->texts.keys.count; keyIndex++)
+			{
+				String key = asset->texts.keys[keyIndex];
+				// Fake-removing a key by setting its value to the key's contents.
+				// This ONLY works because we interpret that as a missing text!
+				// Like I said, @Hack @Hack @Hack!
+				HashTableEntry<String> *entry = findEntry(&assets->texts, key);
+				entry->value = entry->key;
+			}
+
+			asset->texts.keys = makeArray<String>(0, null);
 		} break;
 
 		case AssetType_Texture:
@@ -887,9 +898,20 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 	// Right now, the only processing we do is replacing \n with a newline character, and similar, so the
 	// output can only ever be smaller or the same size as the input.
 	// - Sam, 01/10/2019
-	asset->data = assetsAllocate(assets, fileData.size);
-	smm currentSize = 0;
-	char *currentPos = (char *)asset->data.memory;
+
+	// We also put an array of keys into the same allocation.
+	// We use the number of lines in the file as a heuristic - we know it'll be slightly more than
+	// the number of texts in the file, because they're 1 per line, and we don't have many blanks.
+
+	s32 lineCount = countLines(fileData);
+	smm keyArraySize = sizeof(String) * lineCount;
+	asset->data = assetsAllocate(assets, fileData.size + keyArraySize);
+
+	asset->texts.keys = makeArray(lineCount, (String*)asset->data.memory);
+	s32 keyCount = 0;
+
+	smm currentSize = keyArraySize;
+	char *currentPos = (char *)(asset->data.memory + keyArraySize);
 
 	while (loadNextLine(&reader))
 	{
@@ -929,6 +951,19 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 		currentSize += text.length;
 		currentPos += text.length;
 
+		// Check that we don't already have a text with that name.
+		// If we do, one will overwrite the other, and that could be unpredictable if they're
+		// in different files. Things will still work, but it would be confusing! And unintended.
+		String *existingValue = find(texts, key);
+		if (existingValue != null && !equals(*existingValue, key))
+		{
+			warn(&reader, "Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, {key, *existingValue});
+		}
+
+		asset->texts.keys[keyCount++] = key;
+
 		put(texts, key, text);
 	}
+
+	asset->texts.keys.count = keyCount;
 }

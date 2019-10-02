@@ -130,6 +130,9 @@ struct Asset
 		Shader shader;
 		SpriteGroup spriteGroup;
 		Texture texture;
+		struct {
+			Array<String> keys;
+		} texts;
 	};
 };
 

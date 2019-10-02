@@ -82,6 +82,12 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 }
 
 template<typename T>
+HashTableEntry<T> *findEntry(HashTable<T> *table, String key)
+{
+	return findEntryInternal(table, key);
+}
+
+template<typename T>
 T *find(HashTable<T> *table, String key)
 {
 	if (table->entries == null) return null;
