@@ -24,6 +24,8 @@ _hashed string suffix?
 Console commands in a HashTable
 
 Have getText() fall-back to the english if a localised text isn't available.
+- Figure out which table to add texts to
+- Figure out which table to REMOVE texts from. (Eek, this sounds nasty. Actually, no, we can just have a flag in the asset, no problemo.)
 
 Pop-up menus
 - Theming

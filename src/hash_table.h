@@ -4,7 +4,7 @@ template<typename T>
 struct HashTableEntry
 {
 	bool isOccupied;
-	bool isGravestone;
+	bool isGravestone; // Apparently the correct term is "tombstone", oops.
 
 	String key;
 	
@@ -32,7 +32,7 @@ struct HashTableIterator
 template<typename T>
 inline bool isHashTableInitialised(HashTable<T> *table)
 {
-	return (table->entries != null);
+	return (table->entries != null || table->maxLoadFactor > 0.0f);
 }
 
 template<typename T>

@@ -75,6 +75,10 @@ struct DirectoryChangeWatchingHandle
 String getFileExtension(String filename);
 String constructPath(std::initializer_list<String> parts, bool appendWildcard=false);
 
+// Locale-dependent files have the format "name.locale.extension"
+// If the filename doesn't follow this format, returns an empty String.
+String getFileLocale(String filename);
+
 FileHandle openFile(String path, FileAccessMode mode);
 void closeFile(FileHandle *file);
 smm getFileSize(FileHandle *file);

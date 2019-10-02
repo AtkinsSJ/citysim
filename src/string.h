@@ -52,6 +52,8 @@ Maybe<bool> asBool(String input);
 bool isNullTerminated(String s);
 bool isEmpty(String s);
 
+Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex=-1);
+
 // TODO: Add "splitchar" support to countTokens() as well
 s32 countTokens(String input);
 // If splitChar is provided, the token ends before that, and it is skipped.

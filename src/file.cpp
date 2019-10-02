@@ -29,6 +29,23 @@ String constructPath(std::initializer_list<String> parts, bool appendWildcard)
 	return platform_constructPath(parts, appendWildcard);
 }
 
+String getFileLocale(String filename)
+{
+	String result = {};
+
+	Maybe<s32> endPos = findIndexOfChar(filename, '.', true);
+	if (endPos.isValid)
+	{
+		Maybe<s32> startPos = findIndexOfChar(filename, '.', true, endPos.value - 1);
+		if (startPos.isValid)
+		{
+			result = makeString(filename.chars + startPos.value + 1, endPos.value - startPos.value - 1);
+		}
+	}
+
+	return result;
+}
+
 FileHandle openFile(String path, FileAccessMode mode)
 {
 	DEBUG_FUNCTION();

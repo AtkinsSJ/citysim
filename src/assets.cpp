@@ -42,6 +42,7 @@ void initAssets()
 	initUITheme(&assets->theme);
 
 	initHashTable(&assets->texts);
+	initHashTable(&assets->defaultTexts);
 
 	// NB: This might fail, or we might be on a platform where it isn't implemented.
 	// That's OK though! 
@@ -143,16 +144,24 @@ void loadAsset(Asset *asset)
 	if (asset->flags & Asset_IsLocaleSpecific)
 	{
 		// Only load assets that match our locale
-		String extension = getFileExtension(asset->fullName);
-		String filenameRemainder = asset->fullName;
-		filenameRemainder.length -= (extension.length + 1);
+		String assetLocale = getFileLocale(asset->fullName);
 
-		String localeName = getFileExtension(filenameRemainder);
-
-		if (!equals(localeName, getLocale()))
+		if (equals(assetLocale, getLocale()))
 		{
-			logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, {asset->fullName, localeName, getLocale()});
-			return;
+			asset->texts.isFallbackLocale = false;
+		}
+		else
+		{
+			if (equals(assetLocale, "en"_s))
+			{
+				logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, {asset->fullName, assetLocale, getLocale()});
+				asset->texts.isFallbackLocale = true;
+			}
+			else
+			{
+				logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, {asset->fullName, assetLocale, getLocale()});
+				return;
+			}
 		}
 	}
 
@@ -273,7 +282,8 @@ void loadAsset(Asset *asset)
 
 		case AssetType_Texts:
 		{
-			loadTexts(&assets->texts, asset, fileData);
+			HashTable<String> *textsTable = (asset->texts.isFallbackLocale ? &assets->defaultTexts : &assets->texts);
+			loadTexts(textsTable, asset, fileData);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -356,10 +366,11 @@ void unloadAsset(Asset *asset)
 		case AssetType_Texts:
 		{
 			// Remove all of our texts from the table
+			HashTable<String> *textsTable = (asset->texts.isFallbackLocale ? &assets->defaultTexts : &assets->texts);
 			for (s32 keyIndex = 0; keyIndex < asset->texts.keys.count; keyIndex++)
 			{
 				String key = asset->texts.keys[keyIndex];
-				removeKey(&assets->texts, key);
+				removeKey(textsTable, key);
 			}
 
 			asset->texts.keys = makeArray<String>(0, null);
@@ -668,6 +679,8 @@ inline String getText(String name)
 	}
 	else
 	{
+		// Try to fall back to english if possible
+
 		logWarn("Locale {0} is missing text for '{1}'."_s, {getLocale(), name});
 		put(&assets->texts, name, name);
 	}

@@ -288,6 +288,64 @@ inline bool isEmpty(String s)
 	return (s.length <= 0);
 }
 
+Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex)
+{
+	Maybe<s32> result;
+
+	if (isEmpty(input))
+	{
+		result = makeFailure<s32>();
+	}
+	else
+	{
+		if (startIndex == -1)
+		{
+			startIndex = (searchFromEnd ? input.length - 1 : 0);
+		}
+
+		s32 pos = startIndex;
+		bool found = false;
+		
+		if (searchFromEnd)
+		{
+			while (pos >= 0)
+			{
+				if (input[pos] == c)
+				{
+					found = true;
+					break;
+				}
+
+				pos--;
+			}
+		}
+		else
+		{
+			while (pos < input.length)
+			{
+				if (input[pos] == c)
+				{
+					found = true;
+					break;
+				}
+
+				pos++;
+			}
+		}
+
+		if (found)
+		{
+			result = makeSuccess(pos);
+		}
+		else
+		{
+			result = makeFailure<s32>();
+		}
+	}
+
+	return result;
+}
+
 s32 countTokens(String input)
 {
 	DEBUG_FUNCTION();

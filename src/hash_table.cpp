@@ -49,6 +49,8 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 template<typename T>
 HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 {
+	ASSERT(isHashTableInitialised(table));
+
 	// Expand if necessary
 	if (table->count + 1 > (table->capacity * table->maxLoadFactor))
 	{
@@ -64,18 +66,32 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 	HashTableEntry<T> *result = null;
 
 	// "Linear probing" - on collision, just keep going until you find an empty slot
+	s32 itemsChecked = 0;
 	while (true)
 	{
 		HashTableEntry<T> *entry = table->entries + index;
 
-		if ((entry->isOccupied == false && entry->isGravestone == false) || 
+		if (entry->isGravestone)
+		{
+			// Store the first gravestone we find, in case we fail to find the "real" option
+			if (result == null) result = entry;
+		}
+		else if ((entry->isOccupied == false) || 
 			(hash == hashString(&entry->key) && equals(key, entry->key)))
 		{
-			result = entry;
+			// If the entry is unoccupied, we'd rather re-use the gravestone we found above
+			if (entry->isOccupied || result == null)
+			{
+				result = entry;
+			}
 			break;
 		}
 
 		index = (index + 1) % table->capacity;
+
+		// Prevent the edge case infinite loop if all unoccupied spaces are gravestones
+		itemsChecked++;
+		if (itemsChecked >= table->capacity) break;
 	}
 
 	return result;
