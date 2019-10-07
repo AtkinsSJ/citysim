@@ -159,6 +159,7 @@ Fire:
 - Water coverage affects fire risk
 - Ordinances affect fire risk
 - Small chance of a fire occurring each tick, depending on the risk.
+	- I've just had an idea about this! Rather than a fire occurring meaning a fire disaster that's shown to the player, most fires are minor events that may not even be visible. (We could show a little animation maybe, but that's a world away.) Then, based on the fire service coverage, it has the chance to develop into a major fire, which is what you'd think of as a fire in simcity-likes. So rather than fire coverage just flat-out stopping fires from happening (which is weird magical nonsense) instead it's essentially fixing most fires quietly, and only if it gets out of control does it come to your attention.
 
 Coverage:
 - Calculate a coverage % for each service, based on what % of "inhabited" buildings have access to it and the quality of that access. This means somehow tagging buildings that count for this - perhaps we could count buildings with non-zero job/resident numbers?
@@ -200,6 +201,7 @@ Game clock:
 	- Way back when, I was thinking we'd assign 1 day a week to simulating each aspect, eg traffic on Tuesdays. But so far, a lot of simulation is done X sectors at a time, and it's pretty quick, so we could instead make things happen much more often. eg, divide a day up into ticks where every layer is updated every day, on a specific tick. That keeps things much more up-to-date.
 	- We could of course update different layers more or less often. eg, land value should change fairly slowly so doesn't need to be updated so often. Traffic is fairly important and expensive to calculate so needs a lot of updates.
 	- The goal is to keep things running at a solid 60fps where possible. We might want to tweak the "number of sectors to update at once" figures during runtime, or early-out of processing dirty rects when we've spent X ms on them. Or of course, putting simulation onto a background thread or threads, so that we don't have to worry how long it takes. Just use a double-buffering scheme and swap the active buffer when you're done working on it.
+- Record statistics at regular intervals, so they can be graphed.
 
 Budget:
 - Buildings have monthly upkeep, categorised by department
@@ -335,6 +337,23 @@ Asset system:
 	- This could then be used for assets tied to a specific game level, if we *have* levels, or similar things like if you can have cities in different regions or planets with different terrain art, etc.
 	- If we're going to evict assets at the end of a level though, we'd need to track which assets are associated with each pack - and some assets could be in multiple ones, potentially. Unless we make it a requirement that each asset only goes in one pack somehow? IDK.
 	- A pack would probably just be defined in a text file. Lines of `type shortname.blah`
+
+Water:
+- Pumps produce water
+	- They only do this if they have power... that's a little complicated.
+	- Pump efficiency is based on distance to water. Closer = better.
+- Buildings consume water
+- Separate map for water pipes! Oh my.
+	- I guess this can be a "tileHasPipe" thing in WaterLayer?
+	- Concept of "underground view" that renders the city differently
+		- Dirt terrain
+		- Either no buildings rendered, or we render them faintly - we need to be able to see where stuff is, but it shouldn't obstruct the view of the underground stuff.
+		- Demolition also needs to act differently... oh my. I guess the City's demolish functions need to know which view is active, and then pass over to demolishWaterRect() or whatever. That's actually not that complicated.
+- Pipes transfer water
+- Connectivity similar to power, but different
+	- Only pipes carry water, and emit it X tiles away. There's no gap-jumping like power has.
+- Pollution? Ideally, we'd have it so that if a pump is in a polluted area, it has a negative effect on health at any buildings that receive its water. Not sure how to track that though.
+	- Maybe, track the highest pump-pollution level within each network, and use that.
 
 Better profiling
 - If we record start/end events instead of just execution-durations, then we can reconstruct the stack. That would let us see which function CALLS are taking the most time, instead of just "function X takes a while".

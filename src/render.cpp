@@ -200,7 +200,6 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 	buffer->hasRangeReserved = false;
 	buffer->hasScissorEnabled = false;
 
-	buffer->arena = arena; // @Cleanup: Don't need this now we're using the pool?
 	buffer->chunkPool = chunkPool;
 
 	buffer->firstChunk = null;

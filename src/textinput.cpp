@@ -29,8 +29,6 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *te
 	V2I topLeft   = calculateTextPosition(origin, textSize, align);
 	Rect2I bounds = irectPosSize(topLeft, textSize);
 
-	// TODO: @Cleanup I really don't like DrawTextResult as it is now. This is the ONLY place we need it, and we keep
-	// a bunch of data in it that we don't really need - we just want to know the top-left corner of where the caret should be.
 	DrawTextResult drawTextResult = {};
 	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
 

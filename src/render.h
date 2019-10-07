@@ -175,7 +175,6 @@ struct RenderBuffer
 	String name;
 	String renderProfileName;
 	
-	MemoryArena *arena;
 	RenderBufferChunk *firstChunk;
 	RenderBufferChunk *currentChunk;
 	Pool<RenderBufferChunk> *chunkPool;
