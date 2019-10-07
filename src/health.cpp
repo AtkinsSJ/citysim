@@ -94,7 +94,7 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 
 	Array<V4> *coveragePalette = getPalette("service_coverage"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
 
 	// Highlight buildings
 	drawBuildingHighlights(city, &layer->healthBuildings);

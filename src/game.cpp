@@ -843,7 +843,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 								color255(255, 0, 0, 16),
 								getZoneDef(gameState->selectedZoneID).color
 							};
-							drawGrid(&renderer->worldOverlayBuffer, rect2(canZoneQuery->bounds), renderer->shaderIds.untextured, canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
+							drawGrid(&renderer->worldOverlayBuffer, rect2(canZoneQuery->bounds), canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
 						}
 						else
 						{

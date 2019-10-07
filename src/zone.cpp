@@ -67,7 +67,7 @@ void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zo
 
 	Array<V4> *palette = getPalette("desirability"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 }
 
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)

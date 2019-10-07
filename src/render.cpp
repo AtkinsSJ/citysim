@@ -314,10 +314,30 @@ inline T *appendRenderItem(RenderBuffer *buffer, RenderItemType type)
 }
 
 template<typename T>
+RenderItemAndData<T> appendRenderItem(RenderBuffer *buffer, RenderItemType type, smm dataSize)
+{
+	RenderItemAndData<T> result = {};
+
+	u8 *bufferData = appendRenderItemInternal(buffer, type, sizeof(T) + dataSize, 0);
+	result.item = (T *) bufferData;
+	result.data = bufferData + sizeof(T);
+
+	return result;
+}
+
+template<typename T>
 inline T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos)
 {
 	T *item = (T *)(renderBufferChunk->memory + *pos);
 	*pos += sizeof(T);
+	return item;
+}
+
+template<typename T>
+inline T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 count)
+{
+	T *item = (T *)(renderBufferChunk->memory + *pos);
+	*pos += sizeof(T) * count;
 	return item;
 }
 
@@ -355,6 +375,32 @@ void addSetTexture(RenderBuffer *buffer, Asset *texture)
 
 		buffer->currentTexture = texture;
 	}
+}
+
+void addSetTextureRaw(RenderBuffer *buffer, s32 width, s32 height, u8 bytesPerPixel, u8 *pixels)
+{
+	buffer->currentTexture = null;
+
+	smm pixelDataSize = (width * height * bytesPerPixel);
+	auto itemAndData = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture, pixelDataSize);
+
+	RenderItem_SetTexture *textureItem = itemAndData.item;
+	*textureItem = {};
+	textureItem->texture = null;
+	textureItem->width = width;
+	textureItem->height = height;
+	textureItem->bytesPerPixel = bytesPerPixel;
+
+	copyMemory(pixels, itemAndData.data, pixelDataSize);
+}
+
+void addSetPalette(RenderBuffer *buffer, s32 paletteSize, V4 *palette)
+{
+	auto itemAndData = appendRenderItem<RenderItem_SetPalette>(buffer, RenderItemType_SetPalette, sizeof(V4) * paletteSize);
+
+	itemAndData.item->paletteSize = paletteSize;
+
+	copyMemory(palette, (V4*) itemAndData.data, paletteSize);
 }
 
 void addClear(RenderBuffer *buffer, V4 clearColor)
@@ -457,7 +503,7 @@ RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 sh
 {
 	addSetShader(buffer, shaderID);
 
-	RenderItem_DrawSingleRect *rect = (RenderItem_DrawSingleRect *) appendRenderItemInternal(buffer, RenderItemType_DrawSingleRect, sizeof(RenderItem_DrawSingleRect), 0);
+	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
 
 	return rect;
 }
@@ -626,31 +672,39 @@ void endRectsGroup(DrawRectsGroup *group)
 	endCurrentSubGroup(group);
 }
 
-void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u16 paletteSize, V4 *palette)
+void drawGrid(RenderBuffer *buffer, Rect2 bounds, s32 gridW, s32 gridH, u8 *grid, u16 paletteSize, V4 *palette)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 
-	addSetShader(buffer, shaderID);
+	addSetShader(buffer, renderer->shaderIds.paletted);
 
-	smm size = sizeof(RenderItem_DrawGrid)
-			 + (gridW * gridH * sizeof(grid[0]))
-			 + (paletteSize * sizeof(palette[0]));
+	addSetTextureRaw(buffer, gridW, gridH, 1, grid);
+	addSetPalette(buffer, paletteSize, palette);
 
-	u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawGrid, size, 0);
+	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+	rect->bounds = bounds;
+	rect->color = makeWhite();
+	rect->uv = rectXYWH(0, 0, 1, 1);
 
-	RenderItem_DrawGrid *gridItem = (RenderItem_DrawGrid *) data;
-	data += sizeof(RenderItem_DrawGrid);
-	gridItem->bounds = bounds;
-	gridItem->paletteSize = paletteSize;
-	gridItem->gridW = gridW;
-	gridItem->gridH = gridH;
+	// smm size = sizeof(RenderItem_DrawGrid)
+	// 		 + (gridW * gridH * sizeof(grid[0]))
+	// 		 + (paletteSize * sizeof(palette[0]));
 
-	u8 *gridData = (u8 *) data;
-	data += (gridW * gridH * sizeof(grid[0]));
-	copyMemory(grid, gridData, (gridW * gridH));
+	// u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawGrid, size, 0);
 
-	V4 *paletteData = (V4 *) data;
-	copyMemory(palette, paletteData, paletteSize);
+	// RenderItem_DrawGrid *gridItem = (RenderItem_DrawGrid *) data;
+	// data += sizeof(RenderItem_DrawGrid);
+	// gridItem->bounds = bounds;
+	// gridItem->paletteSize = paletteSize;
+	// gridItem->gridW = gridW;
+	// gridItem->gridH = gridH;
+
+	// u8 *gridData = (u8 *) data;
+	// data += (gridW * gridH * sizeof(grid[0]));
+	// copyMemory(grid, gridData, (gridW * gridH));
+
+	// V4 *paletteData = (V4 *) data;
+	// copyMemory(palette, paletteData, paletteSize);
 }
 
 DrawRingsGroup *beginRingsGroup(RenderBuffer *buffer, s32 maxCount)

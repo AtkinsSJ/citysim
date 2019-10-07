@@ -32,6 +32,7 @@ struct GL_ShaderProgram
 	Asset *asset;
 
 	// Uniforms
+	GLint uPaletteLoc;
 	GLint uProjectionMatrixLoc;
 	GLint uTextureLoc;
 	GLint uScaleLoc;
@@ -63,6 +64,9 @@ struct GL_Renderer
 	s32 indexCount;
 	GL_VertexData vertices[RENDER_BATCH_VERTEX_COUNT];
 	GLuint        indices [RENDER_BATCH_INDEX_COUNT];
+
+	u32 paletteTextureID;
+	u32 rawTextureID; // TODO: @Speed: Using one texture means that it'll get resized a lot. That's probably really bad!
 
 	// For debugging only
 	Asset *currentTexture; 

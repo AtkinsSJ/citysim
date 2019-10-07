@@ -30,9 +30,10 @@ out vec4 fragColor;
 
 void main()
 {
-	int colorIndex = int(255.0 * texture(uTexture, vUV).r);
-	vec4 texel = texelFetch(uPalette, colorIndex, 0);
+	// int colorIndex = int(255.0 * texture(uTexture, vUV).r);
+	// vec4 texel = texelFetch(uPalette, colorIndex, 0);
 
-	fragColor = vColor;
-	fragColor *= texel;
+	vec4 texel = texture(uTexture, vUV).rgba;
+
+	fragColor = vColor * texel;
 }

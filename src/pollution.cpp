@@ -116,7 +116,7 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 
 	Array<V4> *palette = getPalette("pollution"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 }
 
 inline u8 getPollutionAt(City *city, s32 x, s32 y)

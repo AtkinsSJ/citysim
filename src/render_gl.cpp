@@ -116,6 +116,9 @@ bool GL_initializeRenderer(SDL_Window *window)
 			gl->vertexCount = 0;
 			gl->indexCount = 0;
 
+			glGenTextures(1, &gl->paletteTextureID);
+			glGenTextures(1, &gl->rawTextureID);
+
 			// Other GL_Renderer struct init stuff
 			initChunkedArray(&gl->shaders, &gl->renderer.renderArena, 64);
 		}
@@ -308,6 +311,7 @@ void loadShaderProgram(Asset *asset, GL_ShaderProgram *glShader)
 				loadShaderAttrib(glShader, "aUV", &glShader->aUVLoc);
 
 				// Uniforms
+				loadShaderUniform(glShader, "uPalette", &glShader->uPaletteLoc);
 				loadShaderUniform(glShader, "uProjectionMatrix", &glShader->uProjectionMatrixLoc);
 				loadShaderUniform(glShader, "uTexture", &glShader->uTextureLoc);
 				loadShaderUniform(glShader, "uScale", &glShader->uScaleLoc);
@@ -477,6 +481,32 @@ void GL_render(RenderBufferChunk *firstChunk)
 				currentCamera = header->camera;
 			} break;
 
+			case RenderItemType_SetPalette:
+			{
+				DEBUG_BLOCK_T("render: RenderItemType_SetPalette", DCDT_Renderer);
+				RenderItem_SetPalette *header = readRenderItem<RenderItem_SetPalette>(renderBufferChunk, &pos);
+
+				if (gl->vertexCount > 0)
+				{
+					flushVertices(gl);
+				}
+				
+				// A palette is a 1D texture
+				glActiveTexture(GL_TEXTURE0 + 1);
+				glBindTexture(GL_TEXTURE_1D, gl->paletteTextureID);
+
+				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+				V4 *paletteData = readRenderData<V4>(renderBufferChunk, &pos, header->paletteSize);
+
+				glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, header->paletteSize, 0, GL_RGBA, GL_FLOAT, paletteData);
+
+				glUniform1i(activeShader->uPaletteLoc, 1);
+			} break;
+
 			case RenderItemType_SetShader:
 			{
 				DEBUG_BLOCK_T("render: RenderItemType_SetShader", DCDT_Renderer);
@@ -502,25 +532,52 @@ void GL_render(RenderBufferChunk *firstChunk)
 					flushVertices(gl);
 				}
 
-				ASSERT(header->texture != null); //Attempted to bind a null texture asset!
-				ASSERT(header->texture->state == AssetState_Loaded);
-
-				Texture *texture = &header->texture->texture;
-
-				glActiveTexture(GL_TEXTURE0 + 0);
-				glBindTexture(GL_TEXTURE_2D, texture->gl.glTextureID);
-
-				if (!texture->gl.isLoaded)
+				if (header->texture == null)
 				{
-					// Load texture into GPU
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					// Raw texture!
+					glActiveTexture(GL_TEXTURE0 + 0);
+					glBindTexture(GL_TEXTURE_2D, gl->rawTextureID);
+
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-					// Upload texture
-					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
-					texture->gl.isLoaded = true;
+					u8 *pixelData = readRenderData<u8>(renderBufferChunk, &pos, header->width * header->height * header->bytesPerPixel);
+
+					GLenum pixelFormat = 0;
+					switch (header->bytesPerPixel)
+					{
+						case 1: pixelFormat = GL_RED;   break;
+						case 2: pixelFormat = GL_RG;    break;
+						case 3: pixelFormat = GL_RGB;   break;
+						case 4: pixelFormat = GL_RGBA;  break;
+						default: ASSERT(false);
+					}
+
+					glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, header->width, header->height, 0, pixelFormat, GL_UNSIGNED_BYTE, pixelData);
+				}
+				else
+				{
+					ASSERT(header->texture->state == AssetState_Loaded);
+
+					Texture *texture = &header->texture->texture;
+
+					glActiveTexture(GL_TEXTURE0 + 0);
+					glBindTexture(GL_TEXTURE_2D, texture->gl.glTextureID);
+
+					if (!texture->gl.isLoaded)
+					{
+						// Load texture into GPU
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+						// Upload texture
+						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
+						texture->gl.isLoaded = true;
+					}
 				}
 
 				glUniform1i(activeShader->uTextureLoc, 0);
@@ -608,8 +665,7 @@ void GL_render(RenderBufferChunk *firstChunk)
 				V4 *paletteData = (V4 *)(renderBufferChunk->memory + pos);
 				pos += (header->paletteSize * sizeof(V4));
 
-				// For now, we'll do the easy/lazy thing of just outputting the grid as a series of quads.
-				// We could probably send it as a texture or something, IDK.
+				// Outputting the grid as a series of quads.
 
 				Rect2 bounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 				f32 gridWf = (f32) header->gridW;

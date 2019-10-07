@@ -27,6 +27,7 @@ enum RenderItemType
 	RenderItemType_SectionMarker,
 
 	RenderItemType_SetCamera,
+	RenderItemType_SetPalette,
 	RenderItemType_SetShader,
 	RenderItemType_SetTexture,
 
@@ -52,6 +53,12 @@ struct RenderItem_SetCamera
 	Camera *camera;
 };
 
+struct RenderItem_SetPalette
+{
+	s32 paletteSize;
+	// Palette as a series of V4s follows this struct
+};
+
 struct RenderItem_SetShader
 {
 	s8 shaderID;
@@ -60,6 +67,12 @@ struct RenderItem_SetShader
 struct RenderItem_SetTexture
 {
 	Asset *texture;
+
+	// These are only set for "raw" textures, AKA ones that have the data inline.
+	// The pixel data follows directly after this struct
+	s32 width;
+	s32 height;
+	u8 bytesPerPixel;
 };
 
 struct RenderItem_Clear
@@ -218,6 +231,7 @@ struct Renderer
 	// - Sam, 23/07/2019
 	struct
 	{
+		s8 paletted;
 		s8 pixelArt;
 		s8 text;
 		s8 untextured;
@@ -256,11 +270,23 @@ template<typename T>
 T *appendRenderItem(RenderBuffer *buffer, RenderItemType type);
 
 template<typename T>
+struct RenderItemAndData
+{
+	T *item;
+	u8 *data;
+};
+template<typename T>
+RenderItemAndData<T> appendRenderItem(RenderBuffer *buffer, RenderItemType type, smm dataSize);
+
+template<typename T>
 T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos);
+template<typename T>
+T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 count);
 
 void addSetCamera(RenderBuffer *buffer, Camera *camera);
 void addSetShader(RenderBuffer *buffer, s8 shaderID);
 void addSetTexture(RenderBuffer *buffer, Asset *texture);
+void addSetTextureRaw(RenderBuffer *buffer, s32 width, s32 height, u8 bytesPerPixel, u8 *pixels);
 
 void addClear(RenderBuffer *buffer, V4 clearColor = {});
 
@@ -295,7 +321,7 @@ void endRectsGroup(DrawRectsGroup *group);
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group);
 void endCurrentSubGroup(DrawRectsGroup *group);
 
-void drawGrid(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, s32 gridW, s32 gridH, u8 *grid, u16 paletteSize, V4 *palette);
+void drawGrid(RenderBuffer *buffer, Rect2 bounds, s32 gridW, s32 gridH, u8 *grid, u16 paletteSize, V4 *palette);
 
 DrawRingsGroup *beginRingsGroup(RenderBuffer *buffer, s32 maxCount);
 DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup *group);

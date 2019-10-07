@@ -95,14 +95,14 @@ void drawCrimeDataLayer(City *city, Rect2I visibleTileBounds)
 
 	Array<V4> *palette = getPalette("risk"s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #else
 	// Just draw the protection
 	u8 *data = copyRegion(layer->tilePoliceCoverage, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 	Array<V4> *palette = getPalette("service_coverage"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), renderer->shaderIds.untextured, visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
 #endif
 
 	// Highlight police stations
