@@ -176,10 +176,10 @@ V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
 		}
 	}
 
-	result.x = max(maxWidth, longestLineWidth, currentX);
+	result.x = max(longestLineWidth, currentX);
 	result.y = (font->lineHeight * lineCount);
 
-	ASSERT(maxWidth < 1 || maxWidth >= result.x); //Somehow we measured text that's too wide!
+	ASSERT(maxWidth == 0 || maxWidth >= result.x); //Somehow we measured text that's too wide!
 	return result;
 }
 

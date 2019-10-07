@@ -38,15 +38,17 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
-V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth)
+V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 width)
 {
 	s32 doublePadding = (buttonStyle->padding * 2);
-	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
+	s32 textMaxWidth = (width == 0) ? 0 : (width - doublePadding);
 
 	BitmapFont *font = getFont(buttonStyle->fontName);
 	V2I textSize = calculateTextSize(font, text, textMaxWidth);
 
-	V2I result = v2i(textSize.x + doublePadding, textSize.y + doublePadding);
+	s32 resultWidth = (width == 0) ? (textSize.x + doublePadding) : width;
+
+	V2I result = v2i(resultWidth, textSize.y + doublePadding);
 
 	return result;
 }
