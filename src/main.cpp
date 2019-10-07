@@ -259,25 +259,26 @@ int main(int argc, char *argv[])
 
 	// TEST STUFF
 #if 0
-	Array<char> characters = allocateArray<char>(tempArena, 26);
-	for (char i = 0; i < 26; i++)
+	s32 testW = 26;
+	s32 testH = 10;
+	char *test = allocateMultiple<char>(tempArena, testW * testH);
+	fillMemory(test, '#', testW * testH);
+
+	char *pos = test;
+	for (s32 row = 0; row < testH; row++)
 	{
-		characters[i] = (char)randomBetween(&globalAppState.cosmeticRandom, 'A', 'Z'+1);
+		for (char c = 'A'; c <= 'Z'; c++)
+		{
+			*pos = c;
+			pos++;
+		}
 	}
-	consoleWriteLine("Before sorting");
-	for (s32 i = 0; i < characters.count; i++) { consoleWriteLine(repeatChar(characters[i], 1)); }
 
-	consoleWriteLine("Sorting a < b");
-	sortArray(&characters, [](char a, char b) {
-		return a < b;
-	});
-	for (s32 i = 0; i < characters.count; i++) { consoleWriteLine(repeatChar(characters[i], 1)); }
+	Rect2I region = irectXYWH(1, 1, testW - 2, testH - 2);
+	char *part = copyRegion(test, testW, testH, region, tempArena);
 
-	consoleWriteLine("Sorting a > b");
-	sortArray(&characters, [](char a, char b) {
-		return a > b;
-	});
-	for (s32 i = 0; i < characters.count; i++) { consoleWriteLine(repeatChar(characters[i], 1)); }
+	s32 pause=1000;
+
 #endif
 
 	// GAME LOOP

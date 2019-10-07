@@ -160,22 +160,12 @@ void drawFireDataLayer(City *city, Rect2I visibleTileBounds)
 
 	FireLayer *layer = &city->fireLayer;
 
-	// @Copypasta drawLandValueDataLayer() - the same TODO's apply!
-
-#if 1
-	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	Rect2I bounds = city->bounds;
+	u8 *data = layer->tileOverallFireRisk;//copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 	Array<V4> *palette = getPalette("risk"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
-#else
-	// Just draw the protection
-	u8 *data = copyRegion(layer->tileFireProtection, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
-
-	Array<V4> *palette = getPalette("service_coverage"s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
-#endif
+	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
 
 	// Highlight fire stations
 	drawBuildingHighlights(city, &layer->fireProtectionBuildings);

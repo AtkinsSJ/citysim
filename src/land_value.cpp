@@ -153,11 +153,14 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 	// (NB: This code is copypasta'd in several places, so when we fix this, fix those too!)
 	//
 
-	u8 *data = copyRegion(city->landValueLayer.tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = city->landValueLayer.tileLandValue;
+	Rect2I bounds = city->bounds;
+
+	// u8 *data = copyRegion(city->landValueLayer.tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
 
 	Array<V4> *palette = getPalette("land_value"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
 }
 
 inline f32 getLandValuePercentAt(City *city, s32 x, s32 y)

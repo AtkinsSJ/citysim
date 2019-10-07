@@ -72,8 +72,8 @@ inline Rect2I getSectorsCovered(SectorGrid<Sector> *grid, Rect2I area)
 		area.x / grid->sectorSize,
 		area.y / grid->sectorSize,
 
-		(area.x + area.w) / grid->sectorSize,
-		(area.y + area.h) / grid->sectorSize
+		(area.x + area.w - 1) / grid->sectorSize,
+		(area.y + area.h - 1) / grid->sectorSize
 	);
 
 	return result;
