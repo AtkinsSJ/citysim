@@ -296,6 +296,7 @@ GUI
 	- After an amount of time, they fade out.
 	- So, probably keep Toasts in a separate array to Windows, because they work in a special way. Still use the WindowProc/Context stuff for convenience, but don't deal with them in updateAndRenderWindows(). So, also no need for a special WinFlag!
 	- Remove UIMessage styles
+- ALIGN_EXPAND_H for buttons
 
 Building menus:
 - Store in the BuildingCatalogue which menu a building is in, in a queryable way

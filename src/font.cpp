@@ -220,6 +220,11 @@ void _alignText(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, s3
 		{
 			// Nothing to do!
 		} break;
+
+		case ALIGN_EXPAND_H:
+		{
+			// Nothing to do! (I think?)
+		} break;
 		
 		default:
 		{
@@ -450,6 +455,7 @@ V2I calculateTextPosition(V2I origin, V2I size, u32 align)
 		case ALIGN_H_CENTRE:  offset.x = origin.x - (size.x / 2);     break;
 		case ALIGN_RIGHT:     offset.x = origin.x - size.x;           break;
 		case ALIGN_LEFT:      // Left is default
+		case ALIGN_EXPAND_H:  // Same as left
 		default:              offset.x = origin.x;                    break;
 	}
 
@@ -458,6 +464,7 @@ V2I calculateTextPosition(V2I origin, V2I size, u32 align)
 		case ALIGN_V_CENTRE:  offset.y = origin.y - (size.y / 2);     break;
 		case ALIGN_BOTTOM:    offset.y = origin.y - size.y;           break;
 		case ALIGN_TOP:       // Top is default
+		case ALIGN_EXPAND_V:  // Same as top
 		default:              offset.y = origin.y;                    break;
 	}
 

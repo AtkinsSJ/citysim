@@ -377,7 +377,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 	DEBUG_FUNCTION();
 
 	// Centred, with equal button sizes
-	context->alignment = ALIGN_H_CENTRE;
+	context->alignment = ALIGN_EXPAND_H;
 
 	UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
 	BitmapFont *buttonFont = getFont(buttonStyle->fontName);

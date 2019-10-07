@@ -630,6 +630,7 @@ inline Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
 		case ALIGN_H_CENTRE:  rect.x = origin.x - round_f32(size.x / 2.0f);  break;
 		case ALIGN_RIGHT:     rect.x = origin.x - size.x;                    break;
 		case ALIGN_LEFT:      // Left is default
+		case ALIGN_EXPAND_H:  // Same as left
 		default:              rect.x = origin.x;                             break;
 	}
 
@@ -638,6 +639,7 @@ inline Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
 		case ALIGN_V_CENTRE:  rect.y = origin.y - round_f32(size.y / 2.0f);  break;
 		case ALIGN_BOTTOM:    rect.y = origin.y - size.y;                    break;
 		case ALIGN_TOP:       // Top is default
+		case ALIGN_EXPAND_V:  // Same as top
 		default:              rect.y = origin.y;                             break;
 	}
 
@@ -747,6 +749,7 @@ inline V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding)
 		case ALIGN_H_CENTRE:  result.x = bounds.x + bounds.w / 2.0f;     break;
 		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding;  break;
 		case ALIGN_LEFT:      // Left is default
+		case ALIGN_EXPAND_H:  // Meaningless here so default to left
 		default:              result.x = bounds.x + padding;             break;
 	}
 
@@ -755,6 +758,7 @@ inline V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding)
 		case ALIGN_V_CENTRE:  result.y = bounds.y + bounds.h / 2.0f;     break;
 		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding;  break;
 		case ALIGN_TOP:       // Top is default
+		case ALIGN_EXPAND_V:  // Meaningless here so default to top
 		default:              result.y = bounds.y + padding;             break;
 	}
 
@@ -814,6 +818,7 @@ inline Rect2I irectAligned(V2I origin, V2I size, u32 alignment)
 		case ALIGN_H_CENTRE:  rect.x = origin.x - (size.x / 2);  break;
 		case ALIGN_RIGHT:     rect.x = origin.x - size.x;        break;
 		case ALIGN_LEFT:      // Left is default
+		case ALIGN_EXPAND_H:  // Meaningless here so default to left
 		default:              rect.x = origin.x;                 break;
 	}
 
@@ -822,6 +827,7 @@ inline Rect2I irectAligned(V2I origin, V2I size, u32 alignment)
 		case ALIGN_V_CENTRE:  rect.y = origin.y - (size.y / 2);  break;
 		case ALIGN_BOTTOM:    rect.y = origin.y - size.y;        break;
 		case ALIGN_TOP:       // Top is default
+		case ALIGN_EXPAND_V:  // Meaningless here so default to top
 		default:              rect.y = origin.y;                 break;
 	}
 
@@ -968,6 +974,7 @@ inline V2I alignWithinRectangle(Rect2I bounds, u32 alignment, s32 padding)
 		case ALIGN_H_CENTRE:  result.x = bounds.x + (bounds.w / 2);      break;
 		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding;  break;
 		case ALIGN_LEFT:      // Left is default
+		case ALIGN_EXPAND_H:  // Meaningless here so default to left
 		default:              result.x = bounds.x + padding;             break;
 	}
 
@@ -976,6 +983,7 @@ inline V2I alignWithinRectangle(Rect2I bounds, u32 alignment, s32 padding)
 		case ALIGN_V_CENTRE:  result.y = bounds.y + (bounds.h / 2);      break;
 		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding;  break;
 		case ALIGN_TOP:       // Top is default
+		case ALIGN_EXPAND_V:  // Meaningless here so default to top
 		default:              result.y = bounds.y + padding;             break;
 	}
 

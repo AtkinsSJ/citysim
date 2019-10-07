@@ -273,6 +273,15 @@ Maybe<u32> readAlignment(LineReader *reader)
 			}
 			alignment |= ALIGN_RIGHT;
 		}
+		else if (equals(token, "EXPAND_H"_s))
+		{
+			if (alignment & ALIGN_H)
+			{
+				error(reader, "Multiple horizontal alignment keywords given!"_s);
+				break;
+			}
+			alignment |= ALIGN_EXPAND_H;
+		}
 		else if (equals(token, "TOP"_s))
 		{
 			if (alignment & ALIGN_V)
@@ -299,6 +308,15 @@ Maybe<u32> readAlignment(LineReader *reader)
 				break;
 			}
 			alignment |= ALIGN_BOTTOM;
+		}
+		else if (equals(token, "EXPAND_V"_s))
+		{
+			if (alignment & ALIGN_V)
+			{
+				error(reader, "Multiple vertical alignment keywords given!"_s);
+				break;
+			}
+			alignment |= ALIGN_EXPAND_V;
 		}
 		else
 		{

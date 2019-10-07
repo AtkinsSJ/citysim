@@ -65,55 +65,43 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 		context->currentOffset.y += context->perItemPadding;
 	}
 
-	s32 alignment = context->alignment;
-	V2I origin = context->contentArea.pos + context->currentOffset;
+	s32 buttonAlignment = context->alignment;
+	V2I buttonOrigin = context->contentArea.pos + context->currentOffset;
 
-	if (alignment & ALIGN_RIGHT)
+	if (buttonAlignment & ALIGN_RIGHT)
 	{
-		origin.x = context->contentArea.pos.x + context->contentArea.w;
+		buttonOrigin.x = context->contentArea.pos.x + context->contentArea.w;
 	}
-	else if (alignment & ALIGN_H_CENTRE)
+	else if (buttonAlignment & ALIGN_H_CENTRE)
 	{
-		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
+		buttonOrigin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
 	}
 
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
-		s32 maxWidth;
+		s32 buttonWidth;
 		if (textWidth == -1)
 		{
-			maxWidth = context->contentArea.w - context->currentOffset.x - (2 * buttonPadding);
+			buttonWidth = calculateButtonSize(text, style, context->contentArea.w - context->currentOffset.x).x;
 		}
 		else
 		{
-			maxWidth = textWidth;
+			buttonWidth = textWidth + (style->padding * 2);
 		}
 
-		// @Cleanup: This if() seems unnecessary, we could just put textWidth into textSize and use that?
-		// It's weird and inconsistent, we treat textWidth as the width sometimes and maxWidth others, and
-		// they could be different values because of calculateTextSize??? Actually I don't even know.
-		V2I textSize = calculateTextSize(font, text, maxWidth);
-		Rect2I buttonBounds;
-		if (textWidth == -1)
-		{
- 			buttonBounds = irectAligned(origin, textSize + v2i(buttonPadding * 2, buttonPadding * 2), alignment);
-		}
-		else
-		{
-			buttonBounds = irectAligned(origin, v2i(textWidth, textSize.y) + v2i(buttonPadding * 2, buttonPadding * 2), alignment);
-		}
-
-		V2I textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
-		V2I textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
-		Rect2I bounds = irectPosSize(textTopLeft, textSize);
+		V2I textSize = calculateTextSize(font, text, buttonWidth - (style->padding * 2));
+		Rect2I buttonBounds = irectAligned(buttonOrigin, v2i(buttonWidth, textSize.y + (buttonPadding * 2)), buttonAlignment);
 
 		if (context->doRender)
 		{
 			V4 backColor = style->backgroundColor;
 			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-			drawText(&renderer->uiBuffer, font, text, bounds, textAlignment, style->textColor, renderer->shaderIds.text);
+			V2I textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
+			V2I textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
+			Rect2I textBounds = irectPosSize(textTopLeft, textSize);
+			drawText(&renderer->uiBuffer, font, text, textBounds, textAlignment, style->textColor, renderer->shaderIds.text);
 
 			if (context->window->wasActiveLastUpdate && contains(buttonBounds, mousePos))
 			{
