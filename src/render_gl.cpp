@@ -654,47 +654,6 @@ void GL_render(RenderBufferChunk *firstChunk)
 
 			} break;
 
-			case RenderItemType_DrawGrid:
-			{
-				DEBUG_BLOCK_T("render: RenderItemType_DrawGrid", DCDT_Renderer);
-				RenderItem_DrawGrid *header = readRenderItem<RenderItem_DrawGrid>(renderBufferChunk, &pos);
-
-				u8 *gridData = (u8 *)(renderBufferChunk->memory + pos);
-				pos += (header->gridW * header->gridH * sizeof(u8));
-
-				V4 *paletteData = (V4 *)(renderBufferChunk->memory + pos);
-				pos += (header->paletteSize * sizeof(V4));
-
-				// Outputting the grid as a series of quads.
-
-				Rect2 bounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-				f32 gridWf = (f32) header->gridW;
-				f32 gridHf = (f32) header->gridH;
-				if (!equals(header->bounds.w, gridWf, 0.01f))
-				{
-					bounds.w = header->bounds.w / gridWf;
-				}
-				if (!equals(header->bounds.h, gridHf, 0.01f))
-				{
-					bounds.h = header->bounds.h / gridHf;
-				}
-
-				for (s32 y = 0; y < header->gridH; y++)
-				{
-					bounds.y = header->bounds.y + (y * bounds.h);
-					for (s32 x = 0; x < header->gridW; x++, gridData++)
-					{
-						bounds.x = header->bounds.x + (x * bounds.w);
-
-						if (gl->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT)
-						{
-							flushVertices(gl);
-						}
-						pushQuad(gl, bounds, paletteData[*gridData]);
-					}
-				}
-			} break;
-
 			case RenderItemType_DrawRings:
 			{
 				DEBUG_BLOCK_T("render: RenderItemType_DrawRings", DCDT_Renderer);

@@ -109,14 +109,12 @@ void drawPollutionDataLayer(City *city, Rect2I visibleTileBounds)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-	// @Copypasta drawLandValueDataLayer()
-	// The TODO: @Speed: from that applies! This is very indirect.
-
-	u8 *data = copyRegion(city->pollutionLayer.tilePollution, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = city->pollutionLayer.tilePollution;
+	Rect2I bounds = city->bounds;
 
 	Array<V4> *palette = getPalette("pollution"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
 }
 
 inline u8 getPollutionAt(City *city, s32 x, s32 y)

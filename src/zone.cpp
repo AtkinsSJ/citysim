@@ -60,14 +60,12 @@ void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zo
 
 	ASSERT(zoneType >= FirstZoneType && zoneType < ZoneCount);
 
-	// @Copypasta drawLandValueDataLayer()
-	// The TODO: @Speed: from that applies! This is very indirect.
-
-	u8 *data = copyRegion(city->zoneLayer.tileDesirability[zoneType], city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = city->zoneLayer.tileDesirability[zoneType];
+	Rect2I bounds = city->bounds;
 
 	Array<V4> *palette = getPalette("desirability"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
 }
 
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)

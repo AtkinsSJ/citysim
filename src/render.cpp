@@ -685,26 +685,6 @@ void drawGrid(RenderBuffer *buffer, Rect2 bounds, s32 gridW, s32 gridH, u8 *grid
 	rect->bounds = bounds;
 	rect->color = makeWhite();
 	rect->uv = rectXYWH(0, 0, 1, 1);
-
-	// smm size = sizeof(RenderItem_DrawGrid)
-	// 		 + (gridW * gridH * sizeof(grid[0]))
-	// 		 + (paletteSize * sizeof(palette[0]));
-
-	// u8 *data = appendRenderItemInternal(buffer, RenderItemType_DrawGrid, size, 0);
-
-	// RenderItem_DrawGrid *gridItem = (RenderItem_DrawGrid *) data;
-	// data += sizeof(RenderItem_DrawGrid);
-	// gridItem->bounds = bounds;
-	// gridItem->paletteSize = paletteSize;
-	// gridItem->gridW = gridW;
-	// gridItem->gridH = gridH;
-
-	// u8 *gridData = (u8 *) data;
-	// data += (gridW * gridH * sizeof(grid[0]));
-	// copyMemory(grid, gridData, (gridW * gridH));
-
-	// V4 *paletteData = (V4 *) data;
-	// copyMemory(palette, paletteData, paletteSize);
 }
 
 DrawRingsGroup *beginRingsGroup(RenderBuffer *buffer, s32 maxCount)

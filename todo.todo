@@ -43,6 +43,7 @@ Pop-up menus
 - Maybe I should just make these be windows......... probably. Windows could do with a "scrolling part that's stencilled" feature though so yay.
 
 Make drawGrid() use the grid and palette as Textures, and do a single draw call. That way we don't need to do copyRegion() fiddling - we could even keep the current data layer texture cached on the GPU if we're smart?
+- Maybe cache each layer's texture instead of sending it every frame? It's already pretty fast though.
 - A lot of stuff is hard-coded in the renderer now... probably we don't want setshader/settexture to be unique things after all? Rather, a drawRects or drawGrids etc call will do its own texture/shader setup. Maybe don't pass the shaderID in at all, but we'll see... I might want to vary the shader per draw call sometimes. Well, eg, text and pixel art are the same except a different shader! So yeah that's still necessary.
 
 Land value builidng-effect calculation is super slow.

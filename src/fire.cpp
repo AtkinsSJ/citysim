@@ -161,7 +161,7 @@ void drawFireDataLayer(City *city, Rect2I visibleTileBounds)
 	FireLayer *layer = &city->fireLayer;
 
 	Rect2I bounds = city->bounds;
-	u8 *data = layer->tileOverallFireRisk;//copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = layer->tileOverallFireRisk;
 
 	Array<V4> *palette = getPalette("risk"_s);
 

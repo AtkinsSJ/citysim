@@ -231,10 +231,6 @@ void loadAsset(Asset *asset)
 					{
 						palette->paletteData[i] = lerp(palette->gradient.from, palette->gradient.to, i * ratio);
 					}
-
-					// TEMP HACK
-					palette->paletteData[0] = color255(255,0,255,128);
-					palette->paletteData[palette->size-1] = color255(0,255,255,128);
 				} break;
 
 				case PaletteType_Fixed: {} break;

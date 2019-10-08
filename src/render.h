@@ -38,7 +38,6 @@ enum RenderItemType
 
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
-	RenderItemType_DrawGrid,
 	RenderItemType_DrawRings,
 };
 
@@ -163,13 +162,6 @@ struct DrawRingsGroup
 
 	s32 count;
 	s32 maxCount;
-};
-
-struct RenderItem_DrawGrid
-{
-	Rect2 bounds; // Rendering position of the grid as a whole
-	u16 paletteSize;
-	s32 gridW, gridH; // Dimensions of the array
 };
 
 struct RenderBufferChunk : PoolItem

@@ -88,13 +88,12 @@ void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
 
 	HealthLayer *layer = &city->healthLayer;
 
-	// @Copypasta drawLandValueDataLayer() - the same TODO's apply!
-
-	u8 *data = copyRegion(layer->tileHealthCoverage, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = layer->tileHealthCoverage;
+	Rect2I bounds = city->bounds;
 
 	Array<V4> *coveragePalette = getPalette("service_coverage"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
 
 	// Highlight buildings
 	drawBuildingHighlights(city, &layer->healthBuildings);

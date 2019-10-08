@@ -140,23 +140,12 @@ void drawLandValueDataLayer(City *city, Rect2I visibleTileBounds)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-	//
-	// TODO: @Speed: Right now we're constructing an array that's just a copy of a section of the land value array,
-	// and then passing that - when we could instead pass the whole array as a texture, and only draw the
-	// visible part of it. (Or even draw the whole thing.)
-	// We could pass the array as a texture, and the palette as a second texture, and then use a shader
-	// similar to the one I developed for GLunatic.
-	// But for right now, keep things simple.
-	//
-	// -Sam, 04/09/2019
-	//
-	// (NB: This code is copypasta'd in several places, so when we fix this, fix those too!)
-	//
-
 	u8 *data = city->landValueLayer.tileLandValue;
 	Rect2I bounds = city->bounds;
 
-	// u8 *data = copyRegion(city->landValueLayer.tileLandValue, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	// TODO: We could set the bounds/UVs so we only draw the visibleTileBounds part of it?
+	// I don't know if that would actually make it any faster or if the drivers are smart enough
+	// to crop things already.
 
 	Array<V4> *palette = getPalette("land_value"_s);
 

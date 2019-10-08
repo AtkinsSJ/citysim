@@ -88,21 +88,21 @@ void drawCrimeDataLayer(City *city, Rect2I visibleTileBounds)
 
 	CrimeLayer *layer = &city->crimeLayer;
 
-	// @Copypasta drawFireRiskDataLayer() - the same TODO's apply!
-
 #if 0
-	u8 *data = copyRegion(layer->tileOverallFireRisk, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = layer->tileOverallFireRisk;
+	Rect2I bounds = city->bounds;
 
 	Array<V4> *palette = getPalette("risk"s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
 #else
 	// Just draw the protection
-	u8 *data = copyRegion(layer->tilePoliceCoverage, city->bounds.w, city->bounds.h, visibleTileBounds, tempArena);
+	u8 *data = layer->tilePoliceCoverage;
+	Rect2I bounds = city->bounds;
 
 	Array<V4> *palette = getPalette("service_coverage"_s);
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), visibleTileBounds.w, visibleTileBounds.h, data, (u16)palette->count, palette->items);
+	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
 #endif
 
 	// Highlight police stations
