@@ -89,6 +89,8 @@ void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribL
 void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation);
 GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID);
 
+// Internal
+void uploadTexture2D(GLenum pixelFormat, s32 width, s32 height, void *pixelData);
 void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color);
 void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv);
 void flushVertices(GL_Renderer *gl);

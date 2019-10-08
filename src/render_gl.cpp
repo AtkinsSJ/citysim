@@ -555,7 +555,7 @@ void GL_render(RenderBufferChunk *firstChunk)
 						default: ASSERT(false);
 					}
 
-					glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, header->width, header->height, 0, pixelFormat, GL_UNSIGNED_BYTE, pixelData);
+					uploadTexture2D(pixelFormat, header->width, header->height, pixelData);
 				}
 				else
 				{
@@ -575,7 +575,7 @@ void GL_render(RenderBufferChunk *firstChunk)
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 						// Upload texture
-						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->surface->w, texture->surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->surface->pixels);
+						uploadTexture2D(GL_RGBA, texture->surface->w, texture->surface->h, texture->surface->pixels);
 						texture->gl.isLoaded = true;
 					}
 				}
@@ -775,6 +775,38 @@ void GL_render(RenderBufferChunk *firstChunk)
 	}
 
 	DEBUG_END_RENDER_BUFFER();
+}
+
+inline void uploadTexture2D(GLenum pixelFormat, s32 width, s32 height, void *pixelData)
+{
+	// OpenGL appears to pad images to the nearest multiple of 4 bytes wide, which messes things up.
+	// So, we only send the whole image as once if that isn't going to happen.
+	if ((width % 4) == 0)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, GL_UNSIGNED_BYTE, pixelData);
+	}
+	else
+	{
+		// Send the image as individual rows
+		glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, GL_UNSIGNED_BYTE, null);
+
+		s32 stride = width;
+		switch (pixelFormat)
+		{
+			case GL_RED:  stride = width * 1;  break;
+			case GL_RG:   stride = width * 2;  break;
+			case GL_RGB:  stride = width * 3;  break;
+			case GL_RGBA: stride = width * 4;  break;
+			default: ASSERT(false);
+		}
+
+		u8 *pos = (u8*) pixelData;
+		for (s32 y = 0; y < height; y++)
+		{
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, y, width, 1, pixelFormat, GL_UNSIGNED_BYTE, pos);
+			pos += stride;
+		}
+	}
 }
 
 inline void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color)

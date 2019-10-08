@@ -25,6 +25,11 @@ Console commands in a HashTable
 
 Automatically record, and output to a file, which strings are missing from the current locale. Possibly put this behind a setting which defaults to false, to reduce the performance impact. - See comment in getText()
 
+Snap camera to whole-pixel coordinates, so the blurry edges aren't a problem? (Or less of one anyway.)
+
+Make textures always be powers of two...
+- Either produce atlases that are always powers of two, or just round up the GL texture size to the nearest one and compensate the UVs. Probably both of these are a good idea.
+
 Pop-up menus
 - Theming
 - Scrolling???
