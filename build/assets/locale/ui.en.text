@@ -1,7 +1,7 @@
 ## test file for text assets
 
 game_title           City Builder Test 9000
-game_subtitle        Very much a work in \nprogress!\nNow with\n \n \nnewlines!
+game_subtitle        Very much a work in progress!
 game_copyright       © Copyright Samuel Atkins 20XX
 
 button_about         About
@@ -13,8 +13,9 @@ button_demolish      Demolish
 button_exit          Exit
 button_load          Load
 button_menu          Menu
+button_new_game      New Game
 button_play          Play
-button_resume        Resume has a surprisingly verbose label antidisestablishmentarianism
+button_resume        Resume
 button_save          Save
 button_settings      Settings
 button_website       Website
