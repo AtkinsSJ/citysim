@@ -27,6 +27,8 @@ void append(WriteBuffer *buffer, s32 length, void *data);
 // Like append(), but leaves the bytes blank to fill in later. Returns the start byte's index.
 s32 reserve(WriteBuffer *buffer, s32 length);
 
+void overwriteAt(WriteBuffer *buffer, s32 indexInBuffer, s32 length, void *data);
+
 // Internal
 
 WriteBufferChunk *allocateWriteBufferChunk(WriteBuffer *buffer);

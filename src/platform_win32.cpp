@@ -6,6 +6,23 @@ void openUrlUnsafe(char* url) {
 	ShellExecute(null, "open", url, null, null, SW_SHOWNORMAL);
 }
 
+u64 getCurrentUnixTimestamp()
+{
+	FILETIME currentFileTime;
+	GetSystemTimeAsFileTime(&currentFileTime);
+
+	u64 currentTime = currentFileTime.dwLowDateTime | ((u64)currentFileTime.dwHighDateTime << 32);
+
+	// "File Time" measures 100nanosecond increments, so we divide to get a number of seconds
+	u64 seconds = (currentTime / 10000000);
+
+	// File Time counts from January 1, 1601 so we need to subtract the difference to align it with the unix epoch
+
+	u64 unixTime = seconds - 11644473600;
+
+	return unixTime;
+}
+
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
 	StringBuilder stb = newStringBuilder(256);

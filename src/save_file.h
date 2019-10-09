@@ -1,6 +1,23 @@
 #pragma once
 
-const u8 SAV_VERSION = 1; 
+// TODO: Endian-ness???!?!?!?!??!?!?!?!?!
+// I have no idea how to figure out what's going on with that.
+// OK, apparently x86 is little-endian, so it makes sense to enforce that as the
+// format's choice, because it means not having to do any switching.
+//
+// Trouble is, I'm not sure how I'd implement switching. It can't happen inside
+// WriteBuffer because that doesn't know anything about the data it receives.
+// That means reordering the bytes of each individual member of each struct...
+//
+// GCC has:
+//       #pragma scalar_storage_order little-endian
+// which would be good! But I don't think VC++ has an equivalent, and a quick look
+// online, it seems G++ doesn't handle it either. :'(
+//
+// There's a header file that'll do the conversions automatically based on using
+// their custom leFOO / beFOO types: https://github.com/tatewake/endian-template/blob/master/tEndian.h
+// That might be good, though I haven't had time to read up on it yet.
+
 
 #pragma pack(push, 1)
 
@@ -9,6 +26,8 @@ struct SAVString
 	u32 length;
 	u32 relativeOffset;
 };
+
+const u8 SAV_VERSION = 1;
 
 struct SAVFileHeader
 {
@@ -34,6 +53,8 @@ struct SAVChunkHeader
 	u32 length; // Length of the chunk, NOT including the size of this SAVChunkHeader
 };
 
+const u8 SAV_META_VERSION = 1;
+const u8 SAV_META_ID[4] = {'M', 'E', 'T', 'A'};
 struct SAVChunk_Meta
 {
 	u64 saveTimestamp; // Unix timestamp

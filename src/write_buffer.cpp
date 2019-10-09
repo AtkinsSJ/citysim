@@ -39,7 +39,6 @@ void append(WriteBuffer *buffer, s32 length, void *data)
 		{
 			// Copy the whole thing into the current chunk
 			copyMemory(dataPos, (buffer->lastChunk->bytes + buffer->lastChunk->used), remainingLength);
-			dataPos += remainingLength;
 			buffer->lastChunk->used += remainingLength;
 			buffer->byteCount += remainingLength;
 			remainingLength = 0;
@@ -96,6 +95,46 @@ s32 reserve(WriteBuffer *buffer, s32 length)
 	}
 
 	return result;
+}
+
+void overwriteAt(WriteBuffer *buffer, s32 indexInBuffer, s32 length, void *data)
+{
+	// Find the chunk this starts in
+	WriteBufferChunk *chunk;
+	s32 chunkIndex = indexInBuffer / buffer->chunkSize;
+	chunk = buffer->firstChunk;
+	while (chunkIndex > 0)
+	{
+		chunk = chunk->nextChunk;
+		chunkIndex--;
+	}
+
+	s32 posInChunk = indexInBuffer % buffer->chunkSize;
+
+	s32 remainingLength = length;
+	u8 *dataPos = (u8*) data;
+	while (remainingLength > 0)
+	{
+		s32 remainingInChunk = buffer->chunkSize - posInChunk;
+		if (remainingInChunk > remainingLength)
+		{
+			// Copy the whole thing into the current chunk
+			copyMemory(dataPos, (buffer->lastChunk->bytes + posInChunk), remainingLength);
+			remainingLength = 0;
+		}
+		else
+		{
+			// Copy the amount that will fit in the current chunk
+			s32 lengthToCopy = remainingInChunk;
+			copyMemory(dataPos, (buffer->lastChunk->bytes + posInChunk), lengthToCopy);
+			dataPos += lengthToCopy;
+			remainingLength -= lengthToCopy;
+
+			// Go to next chunk
+			chunk = chunk->nextChunk;
+			posInChunk = 0;
+		}
+	}
 }
 
 WriteBufferChunk *allocateWriteBufferChunk(WriteBuffer *buffer)

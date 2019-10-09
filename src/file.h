@@ -96,7 +96,7 @@ inline Blob readTempFile(String filePath)
 
 bool writeFile(String filePath, String contents);
 
-bool writeToFile(FileHandle *file, smm dataLength, u8 *data);
+bool writeToFile(FileHandle *file, smm dataLength, void *data);
 
 template<typename T>
 bool writeToFile(FileHandle *file, T *data);
