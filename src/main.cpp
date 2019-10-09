@@ -85,6 +85,8 @@ struct City;
 #include "terrain.h"
 #include "zone.h"
 #include "city.h"
+
+#include "save_file.h"
 #include "game.h"
 
 // TODO: Some kind of switch to determine which renderer we want to load.
