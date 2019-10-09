@@ -4,6 +4,22 @@ bool writeSaveFile(City *city, FileHandle *file)
 {
 	bool succeeded = file->isOpen;
 
+	WriteBuffer buffer;
+
+	if (succeeded)
+	{
+		initWriteBuffer(&buffer);
+
+		// File Header
+		SAVFileHeader fileHeader = SAVFileHeader();
+		append(buffer, sizeof(fileHeader), &fileHeader);
+
+		// Meta
+		
+
+		succeeded = writeToFile(file, &buffer);
+	}
+
 	// I'm starting to think what we want is a StringBuilder style thing here,
 	// where we just throw bytes at it and it grows automatically, and we can
 	// then modify past parts of it easily and quickly. Having to seek around
@@ -14,12 +30,6 @@ bool writeSaveFile(City *city, FileHandle *file)
 	// how large it is!)
 	// - Sam, 09/10/2019
 
-	// Header
-	if (succeeded)
-	{
-		SAVFileHeader fileHeader = SAVFileHeader();
-		succeeded = writeToFile<SAVFileHeader>(file, &fileHeader);
-	}
 
 	// Meta
 	if (succeeded)

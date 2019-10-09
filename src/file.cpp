@@ -170,15 +170,14 @@ bool writeFile(String filePath, String contents)
 	return succeeded;
 }
 
-template<typename T>
-bool writeToFile(FileHandle *file, T *data)
+bool writeToFile(FileHandle *file, smm dataLength, void *data)
 {
 	bool succeeded = false;
 
 	if (file->isOpen)
 	{
-		smm bytesWritten = SDL_RWwrite(file->sdl_file, data, 1, sizeof(T));
-		succeeded = (bytesWritten == sizeof(T));
+		smm bytesWritten = SDL_RWwrite(file->sdl_file, data, 1, dataLength);
+		succeeded = (bytesWritten == dataLength);
 	}
 	else
 	{
@@ -186,6 +185,12 @@ bool writeToFile(FileHandle *file, T *data)
 	}
 
 	return succeeded;
+}
+
+template<typename T>
+bool writeToFile(FileHandle *file, T *data)
+{
+	return writeToFile(file, sizeof(T), data);
 }
 
 DirectoryListingHandle beginDirectoryListing(String path, FileInfo *result)
