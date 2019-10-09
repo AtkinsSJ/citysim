@@ -152,6 +152,7 @@ AppState globalAppState;
 #include "settings.cpp"
 #include "game.cpp"
 #include "log.cpp"
+#include "save_file.cpp"
 
 #include "render_gl.cpp"
 

@@ -2,6 +2,7 @@
 
 struct FileHandle
 {
+	String path;
 	bool isOpen;
 	SDL_RWops *sdl_file;
 };
@@ -93,6 +94,9 @@ inline Blob readTempFile(String filePath)
 }
 
 bool writeFile(String filePath, String contents);
+
+template<typename T>
+bool writeToFile(FileHandle *file, T *data);
 
 /*
  * Lists the files and folders in a directory, one at a time. This is NOT recursive!

@@ -396,7 +396,19 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 
 	if (window_button(context, save, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, getText("debug_msg_unimplemented"_s));
+		City *city = &globalAppState.gameState->city;
+		FileHandle saveFile = openFile("whatever.sav\0"_s, FileAccess_Write);
+		bool saveSucceeded = writeSaveFile(city, &saveFile);
+		closeFile(&saveFile);
+
+		if (saveSucceeded)
+		{
+			pushUiMessage(context->uiState, myprintf(getText("msg_save_success"_s), {saveFile.path}));
+		}
+		else
+		{
+			pushUiMessage(context->uiState, myprintf(getText("msg_save_failure"_s), {saveFile.path}));
+		}
 	}
 
 	if (window_button(context, load, maxButtonTextWidth))

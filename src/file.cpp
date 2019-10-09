@@ -54,6 +54,7 @@ FileHandle openFile(String path, FileAccessMode mode)
 
 	FileHandle result = {};
 
+	result.path = path;
 	result.sdl_file = SDL_RWFromFile(path.chars, fileAccessModeStrings[mode]);
 	result.isOpen = (result.sdl_file != null);
 
@@ -152,6 +153,24 @@ bool writeFile(String filePath, String contents)
 	else
 	{
 		logError("Failed to open file '{0}' for writing."_s, {filePath});
+	}
+
+	return succeeded;
+}
+
+template<typename T>
+bool writeToFile(FileHandle *file, T *data)
+{
+	bool succeeded = false;
+
+	if (file->isOpen)
+	{
+		smm bytesWritten = SDL_RWwrite(file->sdl_file, data, 1, sizeof(T));
+		succeeded = (bytesWritten == sizeof(T));
+	}
+	else
+	{
+		logError("Cannot write to file '{0}'."_s, {file->path});
 	}
 
 	return succeeded;

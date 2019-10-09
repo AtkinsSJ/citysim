@@ -46,6 +46,8 @@ zone_industrial    Industrial
 
 msg_cannot_afford_construction   Not enough money for construction.
 msg_cannot_afford_demolition     Not enough money for demolition.
+msg_save_success                 Game saved as '{0}'
+msg_save_failure                 Failed to save game as '{0}'!
 
 building_problem_fire          On fire!
 building_problem_no_power      No power!
