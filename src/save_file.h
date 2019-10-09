@@ -7,7 +7,7 @@ const u8 SAV_VERSION = 1;
 struct SAVString
 {
 	u32 length;
-	u32 offsetInFile;
+	u32 relativeOffset;
 };
 
 struct SAVFileHeader
@@ -48,6 +48,11 @@ struct SAVChunk_Mods
 {
 	// List which mods are enabled in this save, so that we know if they're present or not!
 	// Also, probably turn individual mods on/off to match the save game, that'd be useful!
+
+	// Hmmm... I guess we may also want to allow mods to add their own chunks. That's a bit
+	// trickier! Well, that's only if mods can have their own code somehow - I know we'll
+	// want to support custom content that's just data, but scripting is a whole other thing.
+	// Just-data mods won't need extra sections.
 };
 
 struct SAVChunk_Budget

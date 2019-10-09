@@ -83,6 +83,7 @@ String getFileLocale(String filename);
 FileHandle openFile(String path, FileAccessMode mode);
 void closeFile(FileHandle *file);
 smm getFileSize(FileHandle *file);
+s64 getFilePosition(FileHandle *file);
 
 File readFile(MemoryArena *memoryArena, String filePath);
 smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory);

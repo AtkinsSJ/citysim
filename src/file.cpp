@@ -72,6 +72,18 @@ void closeFile(FileHandle *file)
 	}
 }
 
+s64 getFilePosition(FileHandle *file)
+{
+	s64 result = -1;
+
+	if (file->isOpen)
+	{
+		result = SDL_RWtell(file->sdl_file);
+	}
+
+	return result;
+}
+
 smm getFileSize(FileHandle *file)
 {
 	smm fileSize = -1;
