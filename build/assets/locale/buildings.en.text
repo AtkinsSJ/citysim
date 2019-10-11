@@ -14,3 +14,7 @@ name_com-med1 Shop
 name_ind-large1 Factory
 
 name_tree Tree
+
+# Putting terrain here too!
+name_water  Water
+name_ground Ground

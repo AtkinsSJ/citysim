@@ -70,13 +70,13 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				mode = Mode_Terrain;
 				def = appendBlank(terrains);
 				
-				String name = getRemainderOfLine(&reader);
-				if (isEmpty(name))
+				String id = readToken(&reader);
+				if (isEmpty(id))
 				{
-					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain name'"_s);
+					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
 					return;
 				}
-				def->name = pushString(&assets->assetArena, name);
+				def->id = pushString(&assets->assetArena, id);
 			}
 			else if (equals(firstWord, "Texture"_s))
 			{
@@ -85,7 +85,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				String filename = getRemainderOfLine(&reader);
 				if (isEmpty(filename))
 				{
-					error(&reader, "Couldn't parse Texture. Expected: ':Terrain filename'"_s);
+					error(&reader, "Couldn't parse Texture. Expected: ':Texture filename'"_s);
 					return;
 				}
 				textureAsset = addTexture(filename, false);
@@ -154,9 +154,13 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 				} break;
 
 				case Mode_Terrain: {
-					if (equals(firstWord, "uses_sprite"_s))
+					if (equals(firstWord, "name"_s))
 					{
-						def->spriteName = pushString(&assets->assetArena, getRemainderOfLine(&reader));
+						def->nameID = pushString(&assets->assetArena, readToken(&reader));
+					}
+					else if (equals(firstWord, "uses_sprite"_s))
+					{
+						def->spriteName = pushString(&assets->assetArena, readToken(&reader));
 					}
 					else if (equals(firstWord, "can_build_on"_s))
 					{
@@ -193,7 +197,7 @@ void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains)
 	}
 }
 
-s32 findTerrainTypeByName(String name)
+s32 findTerrainTypeByName(String id)
 {
 	DEBUG_FUNCTION();
 	
@@ -202,7 +206,7 @@ s32 findTerrainTypeByName(String name)
 	for (s32 terrainID = 1; terrainID < terrainDefs.count; terrainID++)
 	{
 		TerrainDef *def = get(&terrainDefs, terrainID);
-		if (equals(def->name, name))
+		if (equals(def->id, id))
 		{
 			result = terrainID;
 			break;
@@ -261,8 +265,8 @@ void generateTerrain(City *city)
 
 	TerrainLayer *layer = &city->terrainLayer;
 	
-	u8 tGround = truncate<u8>(findTerrainTypeByName("Ground"_s));
-	u8 tWater  = truncate<u8>(findTerrainTypeByName("Water"_s));
+	u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
+	u8 tWater  = truncate<u8>(findTerrainTypeByName("water"_s));
 	BuildingDef *treeDef = findBuildingDef("tree"_s);
 
 	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));

@@ -61,6 +61,15 @@ bool writeSaveFile(City *city, FileHandle *file)
 			append(&buffer, city->playerName.length, city->playerName.chars);
 		}
 
+		// Terrain
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_TERR_ID, SAV_TERR_VERSION);
+
+			SAVChunk_Terrain terr = {};
+
+			append(&buffer, sizeof(terr), &terr);
+		}
+
 		succeeded = writeToFile(file, &buffer);
 	}
 

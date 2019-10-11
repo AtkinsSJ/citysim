@@ -117,12 +117,16 @@ struct SAVChunk_Pollution
 	// Do we even need this? YES because of the over-time element
 };
 
+const u8 SAV_TERR_VERSION = 1;
+const u8 SAV_TERR_ID[4] = {'T', 'E', 'R', 'R'};
 struct SAVChunk_Terrain
 {
-	// Map from terrain string ID to to the int id used in the type array below.
-	// Tile type
-	// Tile height
-	// Tile sprite offset
+	u32 terrainTypeCount;
+	u32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
+
+	u32 offsetForTileTerrainType;
+	u32 offsetForTileHeight;
+	u32 offsetForTileSpriteOffset;
 };
 
 struct SAVChunk_Transport

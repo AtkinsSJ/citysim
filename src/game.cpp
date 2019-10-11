@@ -308,7 +308,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Terrain
 	TerrainDef *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Terrain: {0}"_s, {terrain->name}));
+	window_label(context, myprintf("Terrain: {0}"_s, {getText(terrain->nameID)}));
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);

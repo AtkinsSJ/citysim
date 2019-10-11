@@ -2,7 +2,8 @@
 
 struct TerrainDef
 {
-	String name;
+	String id;
+	String nameID;
 
 	String spriteName;
 	SpriteGroup *sprites;
@@ -32,4 +33,4 @@ TerrainDef *getTerrainAt(City *city, s32 x, s32 y);
 u8 getDistanceToWaterAt(City *city, s32 x, s32 y);
 
 // Returns 0 if not found
-s32 findTerrainTypeByName(String name);
+s32 findTerrainTypeByName(String id);
