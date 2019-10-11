@@ -13,9 +13,9 @@ void initOccupancyArray(OccupancyArray<T> *array, MemoryArena *arena, s32 itemsP
 }
 
 template<typename T>
-OccupancyArrayItem<T> append(OccupancyArray<T> *array)
+Indexed<T*> append(OccupancyArray<T> *array)
 {
-	OccupancyArrayItem<T> result = {};
+	Indexed<T*> result = {};
 
 	if (array->firstChunkWithSpace == null)
 	{
@@ -62,7 +62,7 @@ OccupancyArrayItem<T> append(OccupancyArray<T> *array)
 	// mark that slot as occupied
 	setBit(&chunk->occupancy, indexInChunk);
 	result.index = indexInChunk + (array->firstChunkWithSpaceIndex * array->itemsPerChunk);
-	result.item = chunk->items + indexInChunk;
+	result.value = chunk->items + indexInChunk;
 
 	// update counts
 	chunk->count++;
@@ -98,7 +98,7 @@ OccupancyArrayItem<T> append(OccupancyArray<T> *array)
 		}
 	}
 
-	ASSERT_PARANOID(result.item == get(array, result.index));
+	ASSERT_PARANOID(result.value == get(array, result.index));
 
 	return result;
 }
@@ -178,6 +178,76 @@ T *get(OccupancyArray<T> *array, s32 index)
 	if (chunk != null && chunk->occupancy[itemIndex])
 	{
 		result = chunk->items + itemIndex;
+	}
+
+	return result;
+}
+
+template<typename T>
+OccupancyArrayIterator<T> iterate(OccupancyArray<T> *array)
+{
+	OccupancyArrayIterator<T> iterator = {};
+
+	iterator.array = array;
+	iterator.chunkIndex = 0;
+	iterator.indexInChunk = 0;
+	iterator.currentChunk = array->firstChunk;
+
+	// If the table is empty, we can skip some work.
+	iterator.isDone = (array->count == 0);
+
+	// If the first entry is unoccupied, we need to skip ahead
+	if (!iterator.isDone && (get(&iterator) == null))
+	{
+		next(&iterator);
+	}
+
+	return iterator;
+}
+
+template<typename T>
+inline bool hasNext(OccupancyArrayIterator<T> *iterator)
+{
+	return !iterator->isDone;
+}
+
+template<typename T>
+void next(OccupancyArrayIterator<T> *iterator)
+{
+	while (!iterator->isDone)
+	{
+		iterator->indexInChunk++;
+
+		if (iterator->indexInChunk >= iterator->currentChunk->count)
+		{
+			// Next chunk
+			iterator->chunkIndex++;
+			iterator->currentChunk = iterator->currentChunk->nextChunk;
+			iterator->indexInChunk = 0;
+
+			if (iterator->currentChunk == null)
+			{
+				// We're not wrapping, so we're done
+				iterator->isDone = true;
+			}
+		}
+
+		// Only stop iterating if we find an occupied entry
+		if (iterator->currentChunk != null && get(iterator) != null)
+		{
+			break;
+		}
+	}
+}
+
+template<typename T>
+inline T *get(OccupancyArrayIterator<T> *iterator)
+{
+	T *result = null;
+
+	if (iterator->currentChunk->occupancy[iterator->indexInChunk])
+	{
+		result = iterator->currentChunk->items + iterator->indexInChunk;
 	}
 
 	return result;

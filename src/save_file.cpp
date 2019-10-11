@@ -49,8 +49,8 @@ bool writeSaveFile(City *city, FileHandle *file)
 
 			SAVChunk_Meta meta = {};
 			meta.saveTimestamp = getCurrentUnixTimestamp();
-			meta.cityWidth  = city->bounds.w;
-			meta.cityHeight = city->bounds.h;
+			meta.cityWidth  = (u16) city->bounds.w;
+			meta.cityHeight = (u16) city->bounds.h;
 			meta.funds = city->funds;
 			s32 stringOffset = sizeof(meta);
 			meta.cityName = {(u32)city->name.length, (u32)stringOffset};
@@ -105,6 +105,71 @@ bool writeSaveFile(City *city, FileHandle *file)
 
 			overwriteAt(&buffer, startOfTerr, sizeof(terr), &terr);
 		}
+
+		// Buildings
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_BLDG_ID, SAV_BLDG_VERSION);
+
+			SAVChunk_Buildings bldg = {};
+			s32 startOfBldg = reserve(&buffer, sizeof(bldg));
+			s32 offset = sizeof(bldg);
+
+			// Building types table
+			bldg.buildingTypeCount = buildingCatalogue.allBuildings.count;
+			bldg.offsetForBuildingTypeTable = offset;
+			for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
+			{
+				BuildingDef *def = get(it);
+				u32 typeID = def->typeID;
+				u32 idLength = def->id.length;
+
+				// 4 byte int id, 4 byte length, then the text as bytes
+				appendStruct(&buffer, &typeID);
+				appendStruct(&buffer, &idLength);
+				append(&buffer, idLength, def->id.chars);
+
+				offset += sizeof(typeID) + sizeof(idLength) + idLength;
+			}
+
+			//
+			// The buildings themselves!
+			// I'm not sure how to actually do this... current thought is that the "core" building
+			// data will be here, and that other stuff (eg, health/education of the occupants)
+			// will be in the relevant layers' chunks. That seems the most extensible?
+			// Another option would be to store the buildings here as a series of arrays, one
+			// for each field, like we do for Terrain. That feels really messy though.
+			// The tricky thing is that the Building struct in game feels likely to change a lot,
+			// and we want the save format to change as little as possible... though that only
+			// matters once the game is released (or near enough release that I start making
+			// pre-made maps) so maybe it's not such a big issue?
+			// Eh, going to just go ahead with a placeholder version, like the rest of this code!
+			//
+			// - Sam, 11/10/2019
+			//
+			bldg.buildingCount = city->buildings.count;
+			bldg.offsetForBuildingArray = offset;
+			for (auto it = iterate(&city->buildings); hasNext(&it); next(&it))
+			{
+				Building *building = get(&it);
+
+				SAVBuilding sb = {};
+				sb.id = building->id;
+				sb.typeID = building->typeID;
+				sb.x = (u16) building->footprint.x;
+				sb.y = (u16) building->footprint.y;
+				sb.w = (u16) building->footprint.w;
+				sb.h = (u16) building->footprint.h;
+				sb.spriteOffset = (u16) building->spriteOffset;
+				sb.currentResidents = (u16) building->currentResidents;
+				sb.currentJobs = (u16) building->currentJobs;
+
+				appendStruct(&buffer, &sb);
+				offset += sizeof(sb);
+			}
+
+			overwriteAt(&buffer, startOfBldg, sizeof(bldg), &bldg);
+		}
+
 
 		succeeded = writeToFile(file, &buffer);
 	}

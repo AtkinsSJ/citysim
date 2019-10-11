@@ -31,16 +31,34 @@ template<typename T>
 void initOccupancyArray(OccupancyArray<T> *array, MemoryArena *arena, s32 itemsPerChunk);
 
 template<typename T>
-struct OccupancyArrayItem
-{
-	s32 index;
-	T *item;
-};
-template<typename T>
-OccupancyArrayItem<T> append(OccupancyArray<T> *array);
+Indexed<T*> append(OccupancyArray<T> *array);
 
 template<typename T>
 void removeIndex(OccupancyArray<T> *array, s32 indexToRemove);
 
 template<typename T>
 T *get(OccupancyArray<T> *array, s32 index);
+
+template<typename T>
+struct OccupancyArrayIterator
+{
+	OccupancyArray<T> *array;
+
+	OccupancyArrayChunk<T> *currentChunk;
+	s32 chunkIndex;
+	s32 indexInChunk;
+
+	bool isDone;
+};
+
+template<typename T>
+OccupancyArrayIterator<T> iterate(OccupancyArray<T> *array);
+
+template<typename T>
+bool hasNext(OccupancyArrayIterator<T> *iterator);
+
+template<typename T>
+void next(OccupancyArrayIterator<T> *iterator);
+
+template<typename T>
+T *get(OccupancyArrayIterator<T> *iterator);

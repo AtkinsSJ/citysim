@@ -49,7 +49,7 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 
 	auto buildingSlot = append(&city->buildings);
 	s32 buildingIndex = buildingSlot.index;
-	Building *building = buildingSlot.item;
+	Building *building = buildingSlot.value;
 	building->id = ++city->highestBuildingID;
 	building->typeID = def->typeID;
 	building->footprint = footprint;

@@ -82,10 +82,33 @@ struct SAVChunk_Budget
 
 };
 
+const u8 SAV_BLDG_VERSION = 1;
+const u8 SAV_BLDG_ID[4] = {'B', 'L', 'D', 'G'};
 struct SAVChunk_Buildings
 {
-	// Some kind of map from BuilidngDef string id to the s32 typeID, so it survives changes
-	// List of the buildings in the city
+	u32 buildingTypeCount;
+	u32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
+	// The Buildings table is just a sequence of (u32 length, then `length` bytes for the characters)
+
+	// List of the buildings in the city, as SAVBuildings
+	u32 buildingCount;
+	u32 offsetForBuildingArray;
+};
+struct SAVBuilding
+{
+	u32 id;
+	u32 typeID;
+
+	u16 x;
+	u16 y;
+	u16 w;
+	u16 h;
+
+	u16 spriteOffset;
+	u16 currentResidents;
+	u16 currentJobs;
+
+	// TODO: Record builidng problems somehow!
 };
 
 struct SAVChunk_Crime
