@@ -2,6 +2,32 @@
 
 bool writeSaveFile(City *city, FileHandle *file)
 {
+	struct ChunkHeaderWrapper
+	{
+		WriteBuffer *buffer;
+		s32 startOfChunkHeader;
+		s32 startOfChunkData;
+
+		SAVChunkHeader chunkHeader;
+
+		ChunkHeaderWrapper(WriteBuffer *buffer, const u8 chunkID[4], u8 chunkVersion)
+		{
+			this->buffer = buffer;
+			this->startOfChunkHeader = reserve(buffer, sizeof(SAVChunkHeader));
+			this->startOfChunkData = getCurrentPosition(buffer);
+
+			copyMemory<u8>(chunkID, chunkHeader.identifier, 4);
+			chunkHeader.version = chunkVersion;
+		}
+
+		~ChunkHeaderWrapper()
+		{
+			chunkHeader.length = getCurrentPosition(buffer) - this->startOfChunkData;
+			overwriteAt(buffer, startOfChunkHeader, sizeof(chunkHeader), &chunkHeader);
+		}
+	};
+
+
 	bool succeeded = file->isOpen;
 
 	WriteBuffer buffer;
@@ -16,33 +42,24 @@ bool writeSaveFile(City *city, FileHandle *file)
 
 		// Meta
 		{
-			SAVChunkHeader chunkHeader;
-			s32 startOfChunkHeader = reserve(&buffer, sizeof(chunkHeader));
-			copyMemory<u8>(SAV_META_ID, chunkHeader.identifier, 4);
-			chunkHeader.version = SAV_META_VERSION;
-			// TODO: function to fill in the chunkheader with the size automatically
+			ChunkHeaderWrapper wrapper(&buffer, SAV_META_ID, SAV_META_VERSION);
 
 			SAVChunk_Meta meta = {};
 			meta.saveTimestamp = getCurrentUnixTimestamp();
 			meta.cityWidth  = city->bounds.w;
 			meta.cityHeight = city->bounds.h;
 			meta.funds = city->funds;
-			// meta.cityName = {city->name.length, };
-			// meta.playerName = ;
+			s32 stringOffset = sizeof(meta);
+			meta.cityName = {(u32)city->name.length, (u32)stringOffset};
+			stringOffset += meta.cityName.length;
+			meta.playerName = {(u32)city->playerName.length, (u32)stringOffset};
+			stringOffset += meta.playerName.length;
 
-			s32 metaLength = sizeof(meta);// + city->name.length;
-
-			// Strings!
-
-			// Fill the chunk header
+			// Write the data
 			append(&buffer, sizeof(meta), &meta);
-			// City name here
-
-			chunkHeader.length = metaLength;
-			overwriteAt(&buffer, startOfChunkHeader, sizeof(chunkHeader), &chunkHeader);
+			append(&buffer, city->name.length, city->name.chars);
+			append(&buffer, city->playerName.length, city->playerName.chars);
 		}
-
-
 
 		succeeded = writeToFile(file, &buffer);
 	}

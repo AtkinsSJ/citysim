@@ -62,6 +62,12 @@ void append(WriteBuffer *buffer, s32 length, void *data)
 	}
 }
 
+s32 getCurrentPosition(WriteBuffer *buffer)
+{
+	s32 result = buffer->byteCount;
+	return result;
+}
+
 s32 reserve(WriteBuffer *buffer, s32 length)
 {
 	s32 result = buffer->byteCount;

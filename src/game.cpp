@@ -7,7 +7,7 @@ GameState *beginNewGame()
 	initRandom(&result->gameRandom, Random_MT, 12345);
 
 	s32 gameStartFunds = 1000000;
-	initCity(&result->gameArena, &result->gameRandom, &result->city, 128, 128, getText("city_default_name"_s), gameStartFunds);
+	initCity(&result->gameArena, &result->gameRandom, &result->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
 	generateTerrain(&result->city);
 
 	result->status = GameStatus_Playing;
@@ -956,7 +956,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	);
 	visibleTileBounds = intersect(visibleTileBounds, city->bounds);
 
-	logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});
+	// logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});
 
 	drawCity(city, visibleTileBounds, demolitionRect);
 

@@ -38,6 +38,7 @@ title_menu           Menu
 title_settings       Settings
 
 city_default_name    City Name Here
+player_default_name  Defacto
 
 zone_none          De-zone
 zone_residential   Residential
