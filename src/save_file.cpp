@@ -16,14 +16,15 @@ bool writeSaveFile(City *city, FileHandle *file)
 			this->startOfChunkHeader = reserve(buffer, sizeof(SAVChunkHeader));
 			this->startOfChunkData = getCurrentPosition(buffer);
 
-			copyMemory<u8>(chunkID, chunkHeader.identifier, 4);
-			chunkHeader.version = chunkVersion;
+			this->chunkHeader = {};
+			copyMemory<u8>(chunkID, this->chunkHeader.identifier, 4);
+			this->chunkHeader.version = chunkVersion;
 		}
 
 		~ChunkHeaderWrapper()
 		{
-			chunkHeader.length = getCurrentPosition(buffer) - this->startOfChunkData;
-			overwriteAt(buffer, startOfChunkHeader, sizeof(chunkHeader), &chunkHeader);
+			this->chunkHeader.length = getCurrentPosition(buffer) - this->startOfChunkData;
+			overwriteAt(buffer, startOfChunkHeader, sizeof(SAVChunkHeader), &this->chunkHeader);
 		}
 	};
 
@@ -39,6 +40,8 @@ bool writeSaveFile(City *city, FileHandle *file)
 		// File Header
 		SAVFileHeader fileHeader = SAVFileHeader();
 		append(&buffer, sizeof(fileHeader), &fileHeader);
+
+		u32 cityTileCount = city->bounds.w * city->bounds.h;
 
 		// Meta
 		{
@@ -56,7 +59,7 @@ bool writeSaveFile(City *city, FileHandle *file)
 			stringOffset += meta.playerName.length;
 
 			// Write the data
-			append(&buffer, sizeof(meta), &meta);
+			appendStruct(&buffer, &meta);
 			append(&buffer, city->name.length, city->name.chars);
 			append(&buffer, city->playerName.length, city->playerName.chars);
 		}
@@ -64,10 +67,43 @@ bool writeSaveFile(City *city, FileHandle *file)
 		// Terrain
 		{
 			ChunkHeaderWrapper wrapper(&buffer, SAV_TERR_ID, SAV_TERR_VERSION);
+			TerrainLayer *layer = &city->terrainLayer;
 
 			SAVChunk_Terrain terr = {};
+			s32 startOfTerr = reserve(&buffer, sizeof(terr));
+			s32 offset = sizeof(terr);
 
-			append(&buffer, sizeof(terr), &terr);
+			// Terrain types table
+			terr.terrainTypeCount = terrainDefs.count;
+			terr.offsetForTerrainTypeTable = offset;
+			for (auto it = iterate(&terrainDefs); hasNext(&it); next(&it))
+			{
+				TerrainDef *def = get(it);
+				u32 idLength = def->id.length;
+
+				// 4 byte length, then the text as bytes
+				appendStruct(&buffer, &idLength);
+				append(&buffer, idLength, def->id.chars);
+
+				offset += sizeof(idLength) + idLength;
+			}
+
+			// Tile terrain type (u8)
+			terr.offsetForTileTerrainType = offset;
+			append(&buffer, cityTileCount * sizeof(u8), layer->tileTerrainType);
+			offset += cityTileCount * sizeof(u8);
+
+			// Tile height (u8)
+			terr.offsetForTileHeight = offset;
+			append(&buffer, cityTileCount * sizeof(u8), layer->tileTerrainHeight);
+			offset += cityTileCount * sizeof(u8);
+
+			// Tile sprite offset (u8)
+			terr.offsetForTileSpriteOffset = offset;
+			append(&buffer, cityTileCount * sizeof(u8), layer->tileSpriteOffset);
+			offset += cityTileCount * sizeof(u8);
+
+			overwriteAt(&buffer, startOfTerr, sizeof(terr), &terr);
 		}
 
 		succeeded = writeToFile(file, &buffer);

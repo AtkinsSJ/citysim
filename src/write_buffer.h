@@ -24,6 +24,12 @@ void initWriteBuffer(WriteBuffer *buffer, s32 chunkSize = KB(4), MemoryArena *ar
 bool writeToFile(FileHandle *file, WriteBuffer *buffer);
 
 void append(WriteBuffer *buffer, s32 length, void *data);
+template<typename T>
+inline void appendStruct(WriteBuffer *buffer, T *data)
+{
+	append(buffer, sizeof(T), data);
+}
+
 // Like append(), but leaves the bytes blank to fill in later. Returns the start byte's index.
 s32 reserve(WriteBuffer *buffer, s32 length);
 

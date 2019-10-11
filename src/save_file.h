@@ -50,6 +50,7 @@ struct SAVChunkHeader
 {
 	u8 identifier[4];
 	u8 version;
+	u8 _pad[3]; // For future use maybe? Mostly just to make this be a multiple of 4 bytes.
 	u32 length; // Length of the chunk, NOT including the size of this SAVChunkHeader
 };
 
@@ -123,10 +124,11 @@ struct SAVChunk_Terrain
 {
 	u32 terrainTypeCount;
 	u32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
+	// The terrain table is just a sequence of (u32 length, then `length` bytes for the characters)
 
-	u32 offsetForTileTerrainType;
-	u32 offsetForTileHeight;
-	u32 offsetForTileSpriteOffset;
+	u32 offsetForTileTerrainType;  // Array of u8s
+	u32 offsetForTileHeight;       // Array of u8s
+	u32 offsetForTileSpriteOffset; // Array of u8s
 };
 
 struct SAVChunk_Transport

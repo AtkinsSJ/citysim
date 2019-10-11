@@ -125,14 +125,14 @@ void overwriteAt(WriteBuffer *buffer, s32 indexInBuffer, s32 length, void *data)
 		if (remainingInChunk > remainingLength)
 		{
 			// Copy the whole thing into the current chunk
-			copyMemory(dataPos, (buffer->lastChunk->bytes + posInChunk), remainingLength);
+			copyMemory(dataPos, (chunk->bytes + posInChunk), remainingLength);
 			remainingLength = 0;
 		}
 		else
 		{
 			// Copy the amount that will fit in the current chunk
 			s32 lengthToCopy = remainingInChunk;
-			copyMemory(dataPos, (buffer->lastChunk->bytes + posInChunk), lengthToCopy);
+			copyMemory(dataPos, (chunk->bytes + posInChunk), lengthToCopy);
 			dataPos += lengthToCopy;
 			remainingLength -= lengthToCopy;
 
