@@ -154,7 +154,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 	}
 }
 
-void drawFireDataLayer(City *city, Rect2I visibleTileBounds)
+void drawFireDataLayer(City *city, Rect2I /*visibleTileBounds*/)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

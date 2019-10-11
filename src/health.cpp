@@ -82,7 +82,7 @@ inline void markHealthLayerDirty(HealthLayer *layer, Rect2I bounds)
 	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
-void drawHealthDataLayer(City *city, Rect2I visibleTileBounds)
+void drawHealthDataLayer(City *city, Rect2I /*visibleTileBounds*/)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

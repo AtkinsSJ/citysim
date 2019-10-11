@@ -54,7 +54,7 @@ inline s32 calculateZoneCost(CanZoneQuery *query)
 	return query->zoneableTilesCount * query->zoneDef->costPerTile;
 }
 
-void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zoneType)
+void drawDesirabilityDataLayer(City *city, Rect2I /*visibleTileBounds*/, ZoneType zoneType)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
@@ -147,6 +147,8 @@ void drawZones(City *city, Rect2I visibleTileBounds, s8 shaderID)
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 	s32 zoneType = -1;
 	V4 zoneColor = {};
+
+	// TODO: @Speed: Use a drawGrid() call for this somehow!
 
 	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
 	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
