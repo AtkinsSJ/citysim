@@ -51,7 +51,7 @@ struct ZoneSector
 
 struct ZoneLayer
 {
-	ZoneType *tileZone;
+	u8 *tileZone;
 	u8 *tileDesirability[ZoneCount];
 
 	SectorGrid<ZoneSector> sectors;

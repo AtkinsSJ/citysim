@@ -170,6 +170,23 @@ bool writeSaveFile(City *city, FileHandle *file)
 			overwriteAt(&buffer, startOfBldg, sizeof(bldg), &bldg);
 		}
 
+		// Zones
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_ZONE_ID, SAV_ZONE_VERSION);
+			ZoneLayer *layer = &city->zoneLayer;
+
+			SAVChunk_Zone zone = {};
+			s32 startOfZone = reserve(&buffer, sizeof(zone));
+			s32 offset = sizeof(zone);
+
+			// Tile zones
+			zone.offsetForTileZone = offset;
+			append(&buffer, cityTileCount * sizeof(u8), layer->tileZone);
+			offset += cityTileCount * sizeof(u8);
+
+			overwriteAt(&buffer, startOfZone, sizeof(zone), &zone);
+		}
+
 
 		succeeded = writeToFile(file, &buffer);
 	}

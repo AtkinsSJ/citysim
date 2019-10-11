@@ -3,7 +3,7 @@
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
 	s32 cityArea = areaOf(city->bounds);
-	zoneLayer->tileZone = allocateMultiple<ZoneType>(gameArena, cityArea);
+	zoneLayer->tileZone = allocateMultiple<u8>(gameArena, cityArea);
 
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
@@ -43,7 +43,7 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 	ZoneType result = Zone_None;
 	if (tileExists(city, x, y))
 	{
-		result = getTileValue(city, city->zoneLayer.tileZone, x, y);
+		result = (ZoneType) getTileValue(city, city->zoneLayer.tileZone, x, y);
 	}
 
 	return result;
@@ -203,7 +203,7 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 			&& (getTerrainAt(city, x, y)->canBuildOn)
 			&& (!buildingExistsAt(city, x, y)))
 			{
-				setTile(city, zoneLayer->tileZone, x, y, zoneType);
+				setTile(city, zoneLayer->tileZone, x, y, (u8) zoneType);
 			}
 		}
 	}

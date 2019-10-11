@@ -159,9 +159,11 @@ struct SAVChunk_Transport
 
 };
 
+const u8 SAV_ZONE_VERSION = 1;
+const u8 SAV_ZONE_ID[4] = {'Z', 'O', 'N', 'E'};
 struct SAVChunk_Zone
 {
-	// Tile zone
+	u32 offsetForTileZone; // Array of u8s
 };
 
 #pragma pack(pop)
