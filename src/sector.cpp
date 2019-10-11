@@ -51,6 +51,19 @@ inline Sector *getSector(SectorGrid<Sector> *grid, s32 sectorX, s32 sectorY)
 }
 
 template<typename Sector>
+inline Sector *getSectorByIndex(SectorGrid<Sector> *grid, s32 index)
+{
+	Sector *result = null;
+
+	if (index >= 0 && index < grid->sectors.count)
+	{
+		result = &grid->sectors[index];
+	}
+
+	return result;
+}
+
+template<typename Sector>
 inline Sector *getSectorAtTilePos(SectorGrid<Sector> *grid, s32 x, s32 y)
 {
 	Sector *result = null;

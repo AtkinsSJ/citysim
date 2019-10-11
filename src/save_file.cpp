@@ -187,6 +187,37 @@ bool writeSaveFile(City *city, FileHandle *file)
 			overwriteAt(&buffer, startOfZone, sizeof(zone), &zone);
 		}
 
+		// Fire
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_FIRE_ID, SAV_FIRE_VERSION);
+			FireLayer *layer = &city->fireLayer;
+
+			SAVChunk_Fire chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
+
+			// Active fires
+			chunk.activeFireCount = layer->activeFireCount;
+			chunk.offsetForActiveFires = offset;
+			// ughhhh I have to iterate the sectors to get this information!
+			for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
+			{
+				FireSector *sector = getSectorByIndex(&layer->sectors, sectorIndex);
+
+				for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+				{
+					Fire *fire = get(it);
+					SAVFire savFire = {};
+					savFire.x = (u16) fire->pos.x;
+					savFire.y = (u16) fire->pos.y;
+
+					appendStruct(&buffer, &savFire);
+				}
+			}
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
 
 		succeeded = writeToFile(file, &buffer);
 	}

@@ -90,7 +90,7 @@ struct SAVChunk_Buildings
 	u32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
 	// The Buildings table is just a sequence of (u32 length, then `length` bytes for the characters)
 
-	// List of the buildings in the city, as SAVBuildings
+	// Array of the buildings in the city, as SAVBuildings
 	u32 buildingCount;
 	u32 offsetForBuildingArray;
 };
@@ -121,9 +121,21 @@ struct SAVChunk_Education
 	// Building education level, when that's implemented
 };
 
+const u8 SAV_FIRE_VERSION = 1;
+const u8 SAV_FIRE_ID[4] = {'F', 'I', 'R', 'E'};
 struct SAVChunk_Fire
 {
 	// Active fires
+	u32 activeFireCount;
+	u32 offsetForActiveFires; // Array of SAVFires
+
+	// TODO: Fire service building data
+};
+struct SAVFire
+{
+	u16 x;
+	u16 y;
+	// TODO: severity
 };
 
 struct SAVChunk_Health

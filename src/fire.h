@@ -3,6 +3,7 @@
 struct Fire
 {
 	V2I pos;
+	// TODO: severity
 };
 
 struct FireSector
