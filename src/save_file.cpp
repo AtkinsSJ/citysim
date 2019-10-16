@@ -218,6 +218,38 @@ bool writeSaveFile(City *city, FileHandle *file)
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
 
+		// Crime
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_CRIM_ID, SAV_CRIM_VERSION);
+			CrimeLayer *layer = &city->crimeLayer;
+
+			SAVChunk_Crime chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
+
+			chunk.totalJailCapacity = layer->totalJailCapacity;
+			chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
+		// Land Value
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_LVAL_ID, SAV_LVAL_VERSION);
+			LandValueLayer *layer = &city->landValueLayer;
+
+			SAVChunk_LandValue chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
+
+			// Tile land value
+			chunk.offsetForTileLandValue = offset;
+			append(&buffer, cityTileCount * sizeof(u8), layer->tileLandValue);
+			offset += cityTileCount * sizeof(u8);
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
 		// Pollution
 		{
 			ChunkHeaderWrapper wrapper(&buffer, SAV_PLTN_ID, SAV_PLTN_VERSION);

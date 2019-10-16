@@ -116,9 +116,12 @@ struct SAVBuilding
 	// TODO: Record builidng problems somehow!
 };
 
+const u8 SAV_CRIM_VERSION = 1;
+const u8 SAV_CRIM_ID[4] = {'C', 'R', 'I', 'M'};
 struct SAVChunk_Crime
 {
-
+	u32 totalJailCapacity;
+	u32 occupiedJailCapacity;
 };
 
 struct SAVChunk_Education
@@ -148,9 +151,13 @@ struct SAVChunk_Health
 	// Building health level, when that's implemented
 };
 
+const u8 SAV_LVAL_VERSION = 1;
+const u8 SAV_LVAL_ID[4] = {'L', 'V', 'A', 'L'};
 struct SAVChunk_LandValue
 {
-	// Do we even need this?
+	// Kind of redundant as it can be calculated fresh, but in case we have over-time
+	// effects, we might as well put this here.
+	u32 offsetForTileLandValue; // Array of u8s.
 };
 
 const u8 SAV_PLTN_VERSION = 1;
