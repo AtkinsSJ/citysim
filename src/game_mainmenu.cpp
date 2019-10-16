@@ -64,7 +64,19 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (uiButton(uiState, loadText, buttonRect, style))
 	{
-		pushUiMessage(uiState, getText("debug_msg_unimplemented"_s));
+		City *city = &globalAppState.gameState->city;
+		FileHandle saveFile = openFile("whatever.sav\0"_s, FileAccess_Read);
+		bool loadSucceeded = loadSaveFile(&saveFile, city);
+		closeFile(&saveFile);
+
+		if (loadSucceeded)
+		{
+			pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {saveFile.path}));
+		}
+		else
+		{
+			pushUiMessage(uiState, myprintf(getText("msg_load_failure"_s), {saveFile.path}));
+		}
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (uiButton(uiState, creditsText, buttonRect, style))

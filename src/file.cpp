@@ -99,7 +99,7 @@ smm getFileSize(FileHandle *file)
 	return fileSize;
 }
 
-smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
+smm readFromFile(FileHandle *file, smm size, u8 *memory)
 {
 	DEBUG_FUNCTION();
 	
@@ -113,37 +113,44 @@ smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory)
 	return bytesRead;
 }
 
-File readFile(MemoryArena *memoryArena, String filePath)
+File readFile(FileHandle *handle, MemoryArena *arena)
 {
 	DEBUG_FUNCTION();
 	
 	File result = {};
-	result.name = filePath;
+	result.name = handle->path;
 	result.isLoaded = false;
 
-	FileHandle handle = openFile(filePath, FileAccess_Read);
-
-	if (handle.isOpen)
+	if (handle->isOpen)
 	{
-		smm fileSize = getFileSize(&handle);
-		result.data = allocateBlob(memoryArena, fileSize);
-		smm bytesRead = readFileIntoMemory(&handle, fileSize, result.data.memory);
+		smm fileSize = getFileSize(handle);
+		result.data = allocateBlob(arena, fileSize);
+		smm bytesRead = readFromFile(handle, fileSize, result.data.memory);
 
 		if (bytesRead != fileSize)
 		{
-			logWarn("File '{0}' was only partially read. Size {1}, read {2}"_s, {filePath, formatInt(fileSize), formatInt(bytesRead)});
+			logWarn("File '{0}' was only partially read. Size {1}, read {2}"_s, {handle->path, formatInt(fileSize), formatInt(bytesRead)});
 		}
 		else
 		{
 			result.isLoaded = true;
 		}
-
-		closeFile(&handle);
 	}
 	else
 	{
-		logWarn("Failed to open file '{0}' for reading."_s, {filePath});
+		logWarn("Failed to open file '{0}' for reading."_s, {handle->path});
 	}
+
+	return result;
+}
+
+File readFile(MemoryArena *memoryArena, String filePath)
+{
+	DEBUG_FUNCTION();
+
+	FileHandle handle = openFile(filePath, FileAccess_Read);
+	File result = readFile(&handle, memoryArena);
+	closeFile(&handle);
 
 	return result;
 }

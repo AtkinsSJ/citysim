@@ -85,8 +85,10 @@ void closeFile(FileHandle *file);
 smm getFileSize(FileHandle *file);
 s64 getFilePosition(FileHandle *file);
 
+File readFile(FileHandle *file, MemoryArena *arena=tempArena);
 File readFile(MemoryArena *memoryArena, String filePath);
-smm readFileIntoMemory(FileHandle *file, smm size, u8 *memory);
+// Returns how much was read
+smm readFromFile(FileHandle *file, smm size, u8 *memory);
 // Reads the entire file into a Blob that's allocated in temporary memory.
 // If you want to refer to parts of it later, you need to copy the data somewhere else!
 inline Blob readTempFile(String filePath)

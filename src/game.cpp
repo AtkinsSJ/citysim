@@ -398,7 +398,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 	{
 		City *city = &globalAppState.gameState->city;
 		FileHandle saveFile = openFile("whatever.sav\0"_s, FileAccess_Write);
-		bool saveSucceeded = writeSaveFile(city, &saveFile);
+		bool saveSucceeded = writeSaveFile(&saveFile, city);
 		closeFile(&saveFile);
 
 		if (saveSucceeded)

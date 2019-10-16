@@ -44,8 +44,8 @@ struct SAVFileHeader
 	u8 dosNewline[2];
 
 	SAVFileHeader() :
-		version(SAV_VERSION),
 		identifier{'C','I','T','Y'},
+		version(SAV_VERSION),
 		unixNewline(0x0A),
 		dosNewline{0x0D, 0x0A}
 	{ }
@@ -211,4 +211,6 @@ struct SAVChunk_Zone
 
 #pragma pack(pop)
 
-bool writeSaveFile(City *city, FileHandle *file);
+bool writeSaveFile(FileHandle *file, City *city);
+
+bool loadSaveFile(FileHandle *file, City *city);

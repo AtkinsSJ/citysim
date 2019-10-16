@@ -1,6 +1,6 @@
 #pragma once
 
-bool writeSaveFile(City *city, FileHandle *file)
+bool writeSaveFile(FileHandle *file, City *city)
 {
 	struct ChunkHeaderWrapper
 	{
@@ -317,6 +317,179 @@ bool writeSaveFile(City *city, FileHandle *file)
 
 
 		succeeded = writeToFile(file, &buffer);
+	}
+
+	return succeeded;
+}
+
+bool loadSaveFile(FileHandle *file, City *city)
+{
+	// So... I'm not really sure how to signal success, honestly.
+	// I suppose the process ouytside of this function is:
+	// - User confirms to load a city.
+	// - Existing city, if any, is discarded.
+	// - This function is called.
+	// - If it fails, discard the city, else it's in memory.
+	// So, if loading fails, then no city will be in memory, regardless of whether one was
+	// before the loading was attempted! I think that makes the most sense.
+	// Another option would be to load into a second City struct, and then swap it if it
+	// successfully loads... but that makes a bunch of memory-management more complicated.
+	// This way, we only ever have one City in memory so we can clean up easily.
+
+
+	// For now, reading the whole thing into memory and then processing it is simpler.
+	// However, it's wasteful memory-wise, so if save files get big we might want to
+	// read the file a bit at a time. @Size
+
+
+	File saveFile = readFile(file);
+	bool succeeded = saveFile.isLoaded;
+
+	// NB: We use a while() so that we can break out of it easily below.
+	// I guess I could use gotos instead, but that feels worse than abusing a while, somehow.
+	while (succeeded)
+	{
+		u8 *start = saveFile.data.memory;
+		u8 *eof = start + saveFile.data.size;
+
+		u8 *pos = start;
+
+		// File Header
+		SAVFileHeader *fileHeader = (SAVFileHeader *) pos;
+		pos += sizeof(SAVFileHeader);
+		if (pos > eof)
+		{
+			succeeded = false;
+			break;
+		}
+
+		SAVFileHeader example = SAVFileHeader();
+		if (!isMemoryEqual(&fileHeader->identifier, &example.identifier, 1))
+		{
+			logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
+				saveFile.name,
+				makeString((char*)example.identifier, 4),
+				makeString((char*)fileHeader->identifier, 4)
+			});
+			succeeded = false;
+			break;
+		}
+		if (fileHeader->version > example.version)
+		{
+			logError("Save file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
+				saveFile.name,
+				formatInt(fileHeader->version),
+				formatInt(example.version),
+			});
+			succeeded = false;
+			break;
+		}
+		if (!isMemoryEqual(&fileHeader->unixNewline, &example.unixNewline, 3))
+		{
+			logError("Save file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, {
+				saveFile.name
+			});
+			succeeded = false;
+			break;
+		}
+
+		// Loop over file chunks
+		// NB: META chunk must be before any other data chunks, because without it we can't sensibly read
+		// any of the tile data!
+		bool hasLoadedMeta = false;
+		while (pos < eof)
+		{
+			SAVChunkHeader *header = (SavChunkHeader *) pos;
+			pos += sizeof(SAVChunkHeader);
+			if (pos > eof)
+			{
+				succeeded = false;
+				break;
+			}
+
+			// I considered doing a hash table here, but it's really overkill - we only see one of
+			// each of these, and there aren't that many of them, so I doubt it'll make any notable
+			// speed difference, but it WOULD make a big complexity difference!
+			// - Sam, 16/10/2019
+
+			if (isMemoryEqual(&header->identifier, &SAV_META_ID, 1))
+			{
+				// Load Meta
+				if (header->version > SAV_META_VERSION)
+				{
+					logError("META chunk in save file '{0}' uses a newer save file format than we understand. META version is '{1}', maximum we support is '{2}'"_s, {
+						saveFile.name,
+						formatInt(header->identifier),
+						formatInt(SAV_META_VERSION),
+					});
+					succeeded = false;
+					break;
+				}
+
+				SAVChunk_Meta *meta = (SavChunk_Meta *) pos;
+				u8 *startOfChunk = pos;
+				pos += header->length;
+				if (pos > eof)
+				{
+					succeeded = false;
+					break;
+				}
+
+				String cityName = ; // allocate in game arena, and copy data
+				String playerName = ; // allocate in game arena, and copy data
+				// TODO: Get rid of City::gameRandom!
+				initCity(gameArena, gameRandom, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
+
+				hasLoadedMeta = true;
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_BDGT_ID, 1))
+			{
+				// Load Budget
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_BLDG_ID, 1))
+			{
+				// Load Building
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_CRIM_ID, 1))
+			{
+				// Load Crime
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_EDUC_ID, 1))
+			{
+				// Load Education
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_FIRE_ID, 1))
+			{
+				// Load Fire
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_HLTH_ID, 1))
+			{
+				// Load Health
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_LVAL_ID, 1))
+			{
+				// Load Land Value
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_PLTN_ID, 1))
+			{
+				// Load Pollution
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_TERR_ID, 1))
+			{
+				// Load Terrain
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_TPRT_ID, 1))
+			{
+				// Load Transport
+			}
+			else if (isMemoryEqual(&header->identifier, &SAV_ZONE_ID, 1))
+			{
+				// Load Zone
+			}
+		}
+
+		// This break is because we succeeded!
+		break;
 	}
 
 	return succeeded;
