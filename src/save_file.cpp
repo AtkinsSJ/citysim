@@ -218,6 +218,23 @@ bool writeSaveFile(City *city, FileHandle *file)
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
 
+		// Pollution
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_PLTN_ID, SAV_PLTN_VERSION);
+			PollutionLayer *layer = &city->pollutionLayer;
+
+			SAVChunk_Pollution chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
+
+			// Tile pollution
+			chunk.offsetForTilePollution = offset;
+			append(&buffer, cityTileCount * sizeof(u8), layer->tilePollution);
+			offset += cityTileCount * sizeof(u8);
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
 
 		succeeded = writeToFile(file, &buffer);
 	}

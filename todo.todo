@@ -225,7 +225,8 @@ Budget:
 - If you run out of money, it's bad in some way. We probably don't need a "you lose!" situation, just that you can only spend money that you actually have. Maybe if you have no money, (not $0, but some negative amount,) the game tries to get you to take out a loan, and if you don't can't, services are automatically dropped to 0% funding, so you quickly get big problems if you're unable to keep things in the black.
 
 Saving and loading!
-- Ooooh boy, this is scary.
+- Run-length encoding! A lot of per-tile data is repetitive right now (eg, terrain type, zone type) and a really simple RLE scheme could massively reduce the file-size. Might be fun to implement too. I'll wait until I have loading implemented before I attempt this though, as it's much harder to verify in a hex editor!
+- LittleEndian types that convert automatically.
 - A binary file format is the way to go for speed, but we might want to have a text format as well for easier debugging... if that's worth the extra code.
 	- I'm thinking, tagged sections. Each starts with a header struct that identifies which section it is and how many bytes long the rest of the section is, so that unrecognised sections can be skipped. This seems a fairly standard way of doing binary formats so it makes sense to copy it! (PNG seems a decent model for imitating.)
 	- First section is metadata, especially things that the game might want to know *before* the save-game is loaded. (So, city name, mayor name, save format version, save date, probably city size, whatever else.)

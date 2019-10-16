@@ -17,6 +17,11 @@
 // There's a header file that'll do the conversions automatically based on using
 // their custom leFOO / beFOO types: https://github.com/tatewake/endian-template/blob/master/tEndian.h
 // That might be good, though I haven't had time to read up on it yet.
+//
+// OK, I've looked at that header file and it's pretty simple really, so I think I'll
+// implement it myself!
+// You just create a template type that detects the CPU's endianness, and then swaps the
+// byte order whenever you assign to or from that type.
 
 
 #pragma pack(push, 1)
@@ -148,9 +153,12 @@ struct SAVChunk_LandValue
 	// Do we even need this?
 };
 
+const u8 SAV_PLTN_VERSION = 1;
+const u8 SAV_PLTN_ID[4] = {'P', 'L', 'T', 'N'};
 struct SAVChunk_Pollution
 {
-	// Do we even need this? YES because of the over-time element
+	// TODO: Maybe RLE this, but I'm not sure. It's probably pretty variable.
+	u32 offsetForTilePollution; // Array of u8s
 };
 
 const u8 SAV_TERR_VERSION = 1;
@@ -161,7 +169,7 @@ struct SAVChunk_Terrain
 	u32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
 	// The terrain table is just a sequence of (u32 length, then `length` bytes for the characters)
 
-	u32 offsetForTileTerrainType;  // Array of u8s
+	u32 offsetForTileTerrainType;  // Array of u8s    TODO: RLE?
 	u32 offsetForTileHeight;       // Array of u8s
 	u32 offsetForTileSpriteOffset; // Array of u8s
 };
@@ -175,7 +183,7 @@ const u8 SAV_ZONE_VERSION = 1;
 const u8 SAV_ZONE_ID[4] = {'Z', 'O', 'N', 'E'};
 struct SAVChunk_Zone
 {
-	u32 offsetForTileZone; // Array of u8s
+	u32 offsetForTileZone; // Array of u8s    TODO: RLE?
 };
 
 #pragma pack(pop)
