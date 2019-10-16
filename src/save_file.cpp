@@ -187,6 +187,45 @@ bool writeSaveFile(City *city, FileHandle *file)
 			overwriteAt(&buffer, startOfZone, sizeof(zone), &zone);
 		}
 
+		// Budget
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_BDGT_ID, SAV_BDGT_VERSION);
+			// BudgetLayer *layer = &city->budgetLayer;
+
+			SAVChunk_Budget chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
+		// Crime
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_CRIM_ID, SAV_CRIM_VERSION);
+			CrimeLayer *layer = &city->crimeLayer;
+
+			SAVChunk_Crime chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
+
+			chunk.totalJailCapacity = layer->totalJailCapacity;
+			chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
+		// Education
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_EDUC_ID, SAV_EDUC_VERSION);
+			// EducationLayer *layer = &city->educationLayer;
+
+			SAVChunk_Education chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
 		// Fire
 		{
 			ChunkHeaderWrapper wrapper(&buffer, SAV_FIRE_ID, SAV_FIRE_VERSION);
@@ -218,17 +257,14 @@ bool writeSaveFile(City *city, FileHandle *file)
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
 
-		// Crime
+		// Health
 		{
-			ChunkHeaderWrapper wrapper(&buffer, SAV_CRIM_ID, SAV_CRIM_VERSION);
-			CrimeLayer *layer = &city->crimeLayer;
+			ChunkHeaderWrapper wrapper(&buffer, SAV_HLTH_ID, SAV_HLTH_VERSION);
+			// HealthLayer *layer = &city->healthLayer;
 
-			SAVChunk_Crime chunk = {};
+			SAVChunk_Health chunk = {};
 			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
 			// s32 offset = sizeof(chunk);
-
-			chunk.totalJailCapacity = layer->totalJailCapacity;
-			chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
@@ -263,6 +299,18 @@ bool writeSaveFile(City *city, FileHandle *file)
 			chunk.offsetForTilePollution = offset;
 			append(&buffer, cityTileCount * sizeof(u8), layer->tilePollution);
 			offset += cityTileCount * sizeof(u8);
+
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
+		}
+
+		// Transport
+		{
+			ChunkHeaderWrapper wrapper(&buffer, SAV_TPRT_ID, SAV_TPRT_VERSION);
+			// TransportLayer *layer = &city->transportLayer;
+
+			SAVChunk_Transport chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}

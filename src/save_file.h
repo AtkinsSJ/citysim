@@ -80,11 +80,20 @@ struct SAVChunk_Mods
 	// trickier! Well, that's only if mods can have their own code somehow - I know we'll
 	// want to support custom content that's just data, but scripting is a whole other thing.
 	// Just-data mods won't need extra sections.
+
+	// Another thought: we could just pack mod-chunk data inside the MODS data maybe. Just
+	// have sub-chunks within it. Again, this is very far away, so just throwing ideas out,
+	// but if we store enabled mods as:
+	// (name, data size, data offset)
+	// then they can have any amount of data they like, they just have to save/load to a
+	// binary blob.
 };
 
+const u8 SAV_BDGT_VERSION = 1;
+const u8 SAV_BDGT_ID[4] = {'B', 'D', 'G', 'T'};
 struct SAVChunk_Budget
 {
-
+	// TODO: Budget things
 };
 
 const u8 SAV_BLDG_VERSION = 1;
@@ -124,6 +133,8 @@ struct SAVChunk_Crime
 	u32 occupiedJailCapacity;
 };
 
+const u8 SAV_EDUC_VERSION = 1;
+const u8 SAV_EDUC_ID[4] = {'E', 'D', 'U', 'C'};
 struct SAVChunk_Education
 {
 	// Building education level, when that's implemented
@@ -146,6 +157,8 @@ struct SAVFire
 	// TODO: severity
 };
 
+const u8 SAV_HLTH_VERSION = 1;
+const u8 SAV_HLTH_ID[4] = {'H', 'L', 'T', 'H'};
 struct SAVChunk_Health
 {
 	// Building health level, when that's implemented
@@ -181,9 +194,12 @@ struct SAVChunk_Terrain
 	u32 offsetForTileSpriteOffset; // Array of u8s
 };
 
+const u8 SAV_TPRT_VERSION = 1;
+const u8 SAV_TPRT_ID[4] = {'T', 'P', 'R', 'T'};
 struct SAVChunk_Transport
 {
-
+	// TODO: Information about traffic density, routes, etc.
+	// (Not sure what we'll actually simulate yet!)
 };
 
 const u8 SAV_ZONE_VERSION = 1;
