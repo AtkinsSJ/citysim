@@ -117,11 +117,13 @@ bool writeSaveFile(FileHandle *file, City *city)
 			s32 offset = sizeof(bldg);
 
 			// Building types table
-			bldg.buildingTypeCount = buildingCatalogue.allBuildings.count;
+			bldg.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
 			bldg.offsetForBuildingTypeTable = offset;
 			for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
 			{
 				BuildingDef *def = get(it);
+				if (def->typeID == 0) continue; // Skip the null building def!
+
 				u32 typeID = def->typeID;
 				u32 idLength = def->id.length;
 
@@ -148,11 +150,12 @@ bool writeSaveFile(FileHandle *file, City *city)
 			//
 			// - Sam, 11/10/2019
 			//
-			bldg.buildingCount = city->buildings.count;
+			bldg.buildingCount = city->buildings.count - 1; // Not the null building!
 			bldg.offsetForBuildingArray = offset;
 			for (auto it = iterate(&city->buildings); hasNext(&it); next(&it))
 			{
 				Building *building = get(&it);
+				if (building->id == 0) continue; // Skip the null building!
 
 				SAVBuilding sb = {};
 				sb.id = building->id;
@@ -462,7 +465,24 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				u8 *startOfChunk = pos;
 				SAVChunk_Buildings *buildings = READ_CHUNK(SAVChunk_Buildings);
 
-				// TODO: Implement Buildings!
+				// TODO: Map the file's building type IDs to the game's ones
+				// (This is related to the general "the game needs to map IDs when data files change" thing.)
+
+				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + buildings->offsetForBuildingArray);
+				for (u32 buildingIndex = 0;
+					buildingIndex < buildings->buildingCount;
+					buildingIndex++, savBuilding++)
+				{
+					Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
+					BuildingDef *def = getBuildingDef(savBuilding->typeID);
+					Building *building = addBuildingDirect(city, savBuilding->id, def, footprint);
+					building->spriteOffset     = savBuilding->spriteOffset;
+					building->currentResidents = savBuilding->currentResidents;
+					building->currentJobs      = savBuilding->currentJobs;
+
+					// TODO: Get rid of this when we add the highest id to the save file
+					city->highestBuildingID = max(city->highestBuildingID, savBuilding->id);
+				}
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
 			{

@@ -25,7 +25,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	}
 
 	initOccupancyArray(&city->buildings, gameArena, 1024);
-	append(&city->buildings);
+	append(&city->buildings); // Null building
 
 	initCrimeLayer    (&city->crimeLayer,     city, gameArena);
 	initFireLayer     (&city->fireLayer,      city, gameArena);
@@ -45,24 +45,20 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	renderer->worldCamera.pos = v2(city->bounds.size) / 2;
 }
 
-Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
+Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
 	auto buildingSlot = append(&city->buildings);
 	s32 buildingIndex = buildingSlot.index;
 	Building *building = buildingSlot.value;
-	building->id = ++city->highestBuildingID;
+	building->id = id;
 	building->typeID = def->typeID;
 	building->footprint = footprint;
 	initFlags(&building->problems, BuildingProblemCount);
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
 	append(&ownerSector->ownedBuildings, building);
-
-	// TODO: Properly calculate occupancy!
-	building->currentResidents = def->residents;
-	building->currentJobs = def->jobs;
 
 	for (s32 y = footprint.y;
 		y < footprint.y + footprint.h;
@@ -95,6 +91,19 @@ Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
 	{
 		registerPowerBuilding(&city->powerLayer, building);
 	}
+
+	return building;
+}
+
+Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
+{
+	DEBUG_FUNCTION();
+
+	Building *building = addBuildingDirect(city, ++city->highestBuildingID, def, footprint);
+
+	// TODO: Properly calculate occupancy!
+	building->currentResidents = def->residents;
+	building->currentJobs = def->jobs;
 
 	return building;
 }

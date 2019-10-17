@@ -104,6 +104,8 @@ struct SAVChunk_Buildings
 	u32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
 	// The Buildings table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
+	// TODO: Include the highestBuildingID?
+
 	// Array of the buildings in the city, as SAVBuildings
 	u32 buildingCount;
 	u32 offsetForBuildingArray;
