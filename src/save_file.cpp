@@ -393,8 +393,17 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 			break;
 		}
 
-		// Have to do this as a macro, because we need the `break`. Maybe there's a better way though?
+		// Macros are horrible, but I don't think it's possible to do these another way!
 		#define READ(Type) (Type *) pos; pos += sizeof(Type); if (pos > eof) { succeeded = false; break; }
+		#define CHECK_VERSION(Chunk) if (header->version > SAV_ ## Chunk ## _VERSION) \
+				{\
+					logError("{0} chunk in save file '{1}' uses a newer save file format than we understand. {0} version is '{2}', maximum we support is '{3}'"_s, {\
+						#Chunk ## _s, saveFile.name, formatInt(header->version), formatInt(SAV_ ## Chunk ## _VERSION),\
+					});\
+					succeeded = false;\
+					break;\
+				}
+		#define REQUIRE_META(Chunk) if (!hasLoadedMeta) { logError("{0} chunk found before META chunk. META must be the first chunk in the file!"_s, {#Chunk ## _s}); succeeded = false; break;}
 
 		// Loop over file chunks
 		// NB: META chunk must be before any other data chunks, because without it we can't sensibly read
@@ -412,16 +421,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 			if (identifiersAreEqual(header->identifier, SAV_META_ID))
 			{
 				// Load Meta
-				if (header->version > SAV_META_VERSION)
-				{
-					logError("META chunk in save file '{0}' uses a newer save file format than we understand. META version is '{1}', maximum we support is '{2}'"_s, {
-						saveFile.name,
-						formatInt(header->version),
-						formatInt(SAV_META_VERSION),
-					});
-					succeeded = false;
-					break;
-				}
+				CHECK_VERSION(META);
 
 				u8 *startOfChunk = pos;
 				SAVChunk_Meta *meta = READ(SAVChunk_Meta);
@@ -435,46 +435,123 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 			else if (identifiersAreEqual(header->identifier, SAV_BDGT_ID))
 			{
 				// Load Budget
+				CHECK_VERSION(BDGT);
+				REQUIRE_META(BDGT);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Budget *budget = READ(SAVChunk_Budget);
+
+				// TODO: Implement!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_BLDG_ID))
 			{
 				// Load Building
+				CHECK_VERSION(BLDG);
+				REQUIRE_META(BLDG);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Buildings *buildings = READ(SAVChunk_Buildings);
+
+				// TODO: Implement Buildings!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
 			{
 				// Load Crime
+				CHECK_VERSION(CRIM);
+				REQUIRE_META(CRIM);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Crime *crime = READ(SAVChunk_Crime);
+
+				// TODO: Implement Crime!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_EDUC_ID))
 			{
 				// Load Education
+				CHECK_VERSION(EDUC);
+				REQUIRE_META(EDUC);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Education *education = READ(SAVChunk_Education);
+
+				// TODO: Implement Education!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_FIRE_ID))
 			{
 				// Load Fire
+				CHECK_VERSION(FIRE);
+				REQUIRE_META(FIRE);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Fire *fire = READ(SAVChunk_Fire);
+
+				// TODO: Implement Fire!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_HLTH_ID))
 			{
 				// Load Health
+				CHECK_VERSION(HLTH);
+				REQUIRE_META(HLTH);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Health *health = READ(SAVChunk_Health);
+
+				// TODO: Implement Health!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_LVAL_ID))
 			{
 				// Load Land Value
+				CHECK_VERSION(LVAL);
+				REQUIRE_META(LVAL);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_LandValue *landValue = READ(SAVChunk_LandValue);
+
+				// TODO: Implement LandValue!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_PLTN_ID))
 			{
 				// Load Pollution
+				CHECK_VERSION(PLTN);
+				REQUIRE_META(PLTN);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Pollution *pollution = READ(SAVChunk_Pollution);
+
+				// TODO: Implement Pollution!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TERR_ID))
 			{
 				// Load Terrain
+				CHECK_VERSION(TERR);
+				REQUIRE_META(TERR);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Terrain *terrain = READ(SAVChunk_Terrain);
+
+				// TODO: Implement Terrain!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
 				// Load Transport
+				CHECK_VERSION(TPRT);
+				REQUIRE_META(TPRT);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Transport *transport = READ(SAVChunk_Transport);
+
+				// TODO: Implement Transport!
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_ZONE_ID))
 			{
 				// Load Zone
+				CHECK_VERSION(ZONE);
+				REQUIRE_META(ZONE);
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Zone *zone = READ(SAVChunk_Zone);
+
+				// TODO: Implement Zone!
 			}
 		}
 
