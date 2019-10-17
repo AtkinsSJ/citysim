@@ -212,5 +212,10 @@ struct SAVChunk_Zone
 #pragma pack(pop)
 
 bool writeSaveFile(FileHandle *file, City *city);
+bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena);
 
-bool loadSaveFile(FileHandle *file, City *city);
+//
+// INTERNAL
+//
+bool identifiersAreEqual(const u8 *a, const u8 *b);
+String loadString(SAVString source, u8 *base, MemoryArena *arena);

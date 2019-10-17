@@ -13,8 +13,6 @@ struct City
 	String name;
 	String playerName;
 
-	Random *gameRandom;
-
 	s32 funds;
 	s32 monthlyExpenditure;
 
@@ -46,7 +44,7 @@ const u8 maxDistanceToWater = 10;
 //
 // Public API
 //
-void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, String playerName, s32 funds);
+void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String name, String playerName, s32 funds);
 void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
 
 void markAreaDirty(City *city, Rect2I bounds);

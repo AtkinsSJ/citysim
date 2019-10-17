@@ -1,9 +1,8 @@
 #pragma once
 
-void initCity(MemoryArena *gameArena, Random *gameRandom, City *city, u32 width, u32 height, String name, String playerName, s32 funds)
+void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String name, String playerName, s32 funds)
 {
 	*city = {};
-	city->gameRandom = gameRandom;
 
 	// TODO: These want to be in some kind of buffer somewhere so they can be modified!
 	city->name       = pushString(gameArena, name);

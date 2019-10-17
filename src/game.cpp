@@ -6,10 +6,6 @@ GameState *beginNewGame()
 	bootstrapArena(GameState, result, gameArena);
 	initRandom(&result->gameRandom, Random_MT, 12345);
 
-	s32 gameStartFunds = 1000000;
-	initCity(&result->gameArena, &result->gameRandom, &result->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-	generateTerrain(&result->city);
-
 	result->status = GameStatus_Playing;
 
 	result->actionMode = ActionMode_None;

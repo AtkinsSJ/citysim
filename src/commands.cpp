@@ -58,7 +58,7 @@ ConsoleCommand(generate)
 	{
 		demolishRect(city, city->bounds);
 	}
-	generateTerrain(city);
+	generateTerrain(city, &globalAppState.gameState->gameRandom);
 
 	consoleWriteLine("Generated new map"_s, CLS_Success);
 }

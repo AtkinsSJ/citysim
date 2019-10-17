@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
 					if (newAppStatus == AppStatus_Game)
 					{
 						// TODO: Get rid of this!!! It doesn't play well with the save-load stuff
-						appState->gameState = beginNewGame();
+
 						refreshBuildingSpriteCache(&buildingCatalogue);
 						refreshTerrainSpriteCache(&terrainDefs);
 					}

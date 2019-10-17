@@ -27,7 +27,7 @@ void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena);
 void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset);
 void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains);
 
-void generateTerrain(City *city);
+void generateTerrain(City *city, Random *gameRandom);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 TerrainDef *getTerrainAt(City *city, s32 x, s32 y);
 u8 getDistanceToWaterAt(City *city, s32 x, s32 y);

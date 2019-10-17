@@ -259,7 +259,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 	endRectsGroup(group);
 }
 
-void generateTerrain(City *city)
+void generateTerrain(City *city, Random *gameRandom)
 {
 	DEBUG_FUNCTION();
 
@@ -272,7 +272,7 @@ void generateTerrain(City *city)
 	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));
 
 	Random terrainRandom;
-	s32 seed = randomNext(city->gameRandom);
+	s32 seed = randomNext(gameRandom);
 	initRandom(&terrainRandom, Random_MT, seed);
 	fillMemory<u8>(layer->tileTerrainType, tGround, areaOf(city->bounds));
 

@@ -460,7 +460,7 @@ void growSomeZoneBuildings(City *city)
 	DEBUG_FUNCTION_T(DCDT_Simulation);
 
 	ZoneLayer *layer = &city->zoneLayer;
-	Random *random = city->gameRandom;
+	Random *random = &globalAppState.gameState->gameRandom;
 
 	for (ZoneType zoneType = FirstZoneType; zoneType < ZoneCount; zoneType = (ZoneType)(zoneType + 1))
 	{

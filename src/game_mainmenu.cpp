@@ -59,19 +59,28 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	Rect2I buttonRect = irectXYWH(position.x - (buttonWidth/2), position.y + buttonPadding, buttonWidth, buttonHeight);
 	if (uiButton(uiState, newGameText, buttonRect, style))
 	{
+		globalAppState.gameState = beginNewGame();
+
+		s32 gameStartFunds = 1000000;
+		initCity(&globalAppState.gameState->gameArena, &globalAppState.gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+		generateTerrain(&globalAppState.gameState->city, &globalAppState.gameState->gameRandom);
+
 		result = AppStatus_Game;
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (uiButton(uiState, loadText, buttonRect, style))
 	{
+		globalAppState.gameState = beginNewGame();
+
 		City *city = &globalAppState.gameState->city;
 		FileHandle saveFile = openFile("whatever.sav\0"_s, FileAccess_Read);
-		bool loadSucceeded = loadSaveFile(&saveFile, city);
+		bool loadSucceeded = loadSaveFile(&saveFile, city, &globalAppState.gameState->gameArena);
 		closeFile(&saveFile);
 
 		if (loadSucceeded)
 		{
 			pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {saveFile.path}));
+			result = AppStatus_Game;
 		}
 		else
 		{

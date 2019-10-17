@@ -549,6 +549,10 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 void addAssets()
 {
 	DEBUG_FUNCTION();
+
+	// TODO: @AssetPacks
+	addTiledSprites("fire"_s, "fire.png"_s, 1, 1, 1, 1, false);
+
 	addAssetsFromDirectory(nullString);
 
 	for (auto it = iterate(&assets->directoryNameToType);

@@ -30,10 +30,6 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 
 		initChunkedArray(&sector->activeFires, &layer->firePool);
 	}
-
-	// Assets
-	// TODO: @AssetPacks
-	addTiledSprites("fire"_s, "fire.png"_s, 1, 1, 1, 1, false);
 }
 
 inline void markFireLayerDirty(FireLayer *layer, Rect2I bounds)

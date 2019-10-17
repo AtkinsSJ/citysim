@@ -322,7 +322,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 	return succeeded;
 }
 
-bool loadSaveFile(FileHandle *file, City *city)
+bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 {
 	// So... I'm not really sure how to signal success, honestly.
 	// I suppose the process ouytside of this function is:
@@ -364,7 +364,7 @@ bool loadSaveFile(FileHandle *file, City *city)
 		}
 
 		SAVFileHeader example = SAVFileHeader();
-		if (!isMemoryEqual(&fileHeader->identifier, &example.identifier, 1))
+		if (!identifiersAreEqual(fileHeader->identifier, example.identifier))
 		{
 			logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
 				saveFile.name,
@@ -393,104 +393,108 @@ bool loadSaveFile(FileHandle *file, City *city)
 			break;
 		}
 
+		// Have to do this as a macro, because we need the `break`. Maybe there's a better way though?
+		#define READ(Type) (Type *) pos; pos += sizeof(Type); if (pos > eof) { succeeded = false; break; }
+
 		// Loop over file chunks
 		// NB: META chunk must be before any other data chunks, because without it we can't sensibly read
 		// any of the tile data!
 		bool hasLoadedMeta = false;
 		while (pos < eof)
 		{
-			SAVChunkHeader *header = (SavChunkHeader *) pos;
-			pos += sizeof(SAVChunkHeader);
-			if (pos > eof)
-			{
-				succeeded = false;
-				break;
-			}
+			SAVChunkHeader *header = READ(SAVChunkHeader);
 
 			// I considered doing a hash table here, but it's really overkill - we only see one of
 			// each of these, and there aren't that many of them, so I doubt it'll make any notable
 			// speed difference, but it WOULD make a big complexity difference!
 			// - Sam, 16/10/2019
 
-			if (isMemoryEqual(&header->identifier, &SAV_META_ID, 1))
+			if (identifiersAreEqual(header->identifier, SAV_META_ID))
 			{
 				// Load Meta
 				if (header->version > SAV_META_VERSION)
 				{
 					logError("META chunk in save file '{0}' uses a newer save file format than we understand. META version is '{1}', maximum we support is '{2}'"_s, {
 						saveFile.name,
-						formatInt(header->identifier),
+						formatInt(header->version),
 						formatInt(SAV_META_VERSION),
 					});
 					succeeded = false;
 					break;
 				}
 
-				SAVChunk_Meta *meta = (SavChunk_Meta *) pos;
 				u8 *startOfChunk = pos;
-				pos += header->length;
-				if (pos > eof)
-				{
-					succeeded = false;
-					break;
-				}
+				SAVChunk_Meta *meta = READ(SAVChunk_Meta);
 
-				String cityName = ; // allocate in game arena, and copy data
-				String playerName = ; // allocate in game arena, and copy data
-				// TODO: Get rid of City::gameRandom!
-				initCity(gameArena, gameRandom, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
+				String cityName = loadString(meta->cityName, startOfChunk, gameArena);
+				String playerName = loadString(meta->playerName, startOfChunk, gameArena);
+				initCity(gameArena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
 
 				hasLoadedMeta = true;
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_BDGT_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_BDGT_ID))
 			{
 				// Load Budget
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_BLDG_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_BLDG_ID))
 			{
 				// Load Building
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_CRIM_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
 			{
 				// Load Crime
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_EDUC_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_EDUC_ID))
 			{
 				// Load Education
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_FIRE_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_FIRE_ID))
 			{
 				// Load Fire
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_HLTH_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_HLTH_ID))
 			{
 				// Load Health
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_LVAL_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_LVAL_ID))
 			{
 				// Load Land Value
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_PLTN_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_PLTN_ID))
 			{
 				// Load Pollution
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_TERR_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_TERR_ID))
 			{
 				// Load Terrain
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_TPRT_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
 				// Load Transport
 			}
-			else if (isMemoryEqual(&header->identifier, &SAV_ZONE_ID, 1))
+			else if (identifiersAreEqual(header->identifier, SAV_ZONE_ID))
 			{
 				// Load Zone
 			}
 		}
+
+		#undef READ
 
 		// This break is because we succeeded!
 		break;
 	}
 
 	return succeeded;
+}
+
+inline bool identifiersAreEqual(const u8 *a, const u8 *b)
+{
+	return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]) && (a[3] == b[3]);
+}
+
+String loadString(SAVString source, u8 *base, MemoryArena *arena)
+{
+	String toCopy = makeString((char *)(base + source.relativeOffset), source.length, false);
+
+	return pushString(arena, toCopy);
 }
