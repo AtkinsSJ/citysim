@@ -10,10 +10,6 @@ GameState *beginNewGame()
 
 	result->actionMode = ActionMode_None;
 
-	result->worldDragState.citySize = result->city.bounds.size;
-
-	renderer->worldCamera.pos = v2(result->city.bounds.size) / 2;
-
 	initFlags(&result->inspectTileDebugFlags, InspectTileDebugFlagCount);
 
 	return result;

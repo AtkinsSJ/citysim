@@ -40,6 +40,9 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	city->highestBuildingID = 0;
 
 	markAreaDirty(city, city->bounds);
+
+	globalAppState.gameState->worldDragState.citySize = city->bounds.size;
+	renderer->worldCamera.pos = v2(city->bounds.size) / 2;
 }
 
 Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)

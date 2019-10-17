@@ -102,7 +102,7 @@ struct SAVChunk_Buildings
 {
 	u32 buildingTypeCount;
 	u32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
-	// The Buildings table is just a sequence of (u32 length, then `length` bytes for the characters)
+	// The Buildings table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
 	// Array of the buildings in the city, as SAVBuildings
 	u32 buildingCount;
@@ -187,7 +187,7 @@ struct SAVChunk_Terrain
 {
 	u32 terrainTypeCount;
 	u32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
-	// The terrain table is just a sequence of (u32 length, then `length` bytes for the characters)
+	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
 	u32 offsetForTileTerrainType;  // Array of u8s    TODO: RLE?
 	u32 offsetForTileHeight;       // Array of u8s

@@ -79,9 +79,11 @@ bool writeSaveFile(FileHandle *file, City *city)
 			for (auto it = iterate(&terrainDefs); hasNext(&it); next(&it))
 			{
 				TerrainDef *def = get(it);
+				u32 typeID = getIndex(it);
 				u32 idLength = def->id.length;
 
-				// 4 byte length, then the text as bytes
+				// 4 byte int id, 4 byte length, then the text as bytes
+				appendStruct(&buffer, &typeID);
 				appendStruct(&buffer, &idLength);
 				append(&buffer, idLength, def->id.chars);
 
@@ -529,7 +531,11 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				u8 *startOfChunk = pos;
 				SAVChunk_Terrain *terrain = READ(SAVChunk_Terrain);
 
-				// TODO: Implement Terrain!
+
+
+				u8 *tileTerrainType  = startOfChunk + terrain->offsetForTileTerrainType;
+				u8 *tileHeight       = startOfChunk + terrain->offsetForTileHeight;
+				u8 *tileSpriteOffset = startOfChunk + terrain->offsetForTileSpriteOffset;
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
@@ -558,6 +564,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 		#undef READ
 
 		// This break is because we succeeded!
+		succeeded = true;
 		break;
 	}
 

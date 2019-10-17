@@ -10,7 +10,7 @@ name name_road
 size 1 1
 texture road road.png 16 16 4 4
 link_textures path
-build line 10
+build line 12
 demolish_cost 10
 carries_transport road
 fire_risk 0%
