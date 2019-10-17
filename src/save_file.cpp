@@ -87,7 +87,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 				appendStruct(&buffer, &idLength);
 				append(&buffer, idLength, def->id.chars);
 
-				offset += sizeof(idLength) + idLength;
+				offset += sizeof(typeID) + sizeof(idLength) + idLength;
 			}
 
 			// Tile terrain type (u8)
@@ -97,7 +97,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 
 			// Tile height (u8)
 			terr.offsetForTileHeight = offset;
-			append(&buffer, cityTileCount * sizeof(u8), layer->tileTerrainHeight);
+			append(&buffer, cityTileCount * sizeof(u8), layer->tileHeight);
 			offset += cityTileCount * sizeof(u8);
 
 			// Tile sprite offset (u8)
@@ -396,7 +396,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 		}
 
 		// Macros are horrible, but I don't think it's possible to do these another way!
-		#define READ(Type) (Type *) pos; pos += sizeof(Type); if (pos > eof) { succeeded = false; break; }
+		#define READ_CHUNK(Type) (Type *) pos; pos += header->length; if (pos > eof) { succeeded = false; break; }
 		#define CHECK_VERSION(Chunk) if (header->version > SAV_ ## Chunk ## _VERSION) \
 				{\
 					logError("{0} chunk in save file '{1}' uses a newer save file format than we understand. {0} version is '{2}', maximum we support is '{3}'"_s, {\
@@ -411,9 +411,16 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 		// NB: META chunk must be before any other data chunks, because without it we can't sensibly read
 		// any of the tile data!
 		bool hasLoadedMeta = false;
+		s32 cityTileCount = 0;
 		while (pos < eof)
 		{
-			SAVChunkHeader *header = READ(SAVChunkHeader);
+			SAVChunkHeader *header = (SAVChunkHeader *) pos;
+			pos += sizeof(SAVChunkHeader);
+			if (pos > eof)
+			{
+				succeeded = false;
+				break;
+			}
 
 			// I considered doing a hash table here, but it's really overkill - we only see one of
 			// each of these, and there aren't that many of them, so I doubt it'll make any notable
@@ -426,11 +433,12 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				CHECK_VERSION(META);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Meta *meta = READ(SAVChunk_Meta);
+				SAVChunk_Meta *meta = READ_CHUNK(SAVChunk_Meta);
 
 				String cityName = loadString(meta->cityName, startOfChunk, gameArena);
 				String playerName = loadString(meta->playerName, startOfChunk, gameArena);
 				initCity(gameArena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
+				cityTileCount = city->bounds.w * city->bounds.h;
 
 				hasLoadedMeta = true;
 			}
@@ -441,7 +449,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(BDGT);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Budget *budget = READ(SAVChunk_Budget);
+				SAVChunk_Budget *budget = READ_CHUNK(SAVChunk_Budget);
 
 				// TODO: Implement!
 			}
@@ -452,7 +460,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(BLDG);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Buildings *buildings = READ(SAVChunk_Buildings);
+				SAVChunk_Buildings *buildings = READ_CHUNK(SAVChunk_Buildings);
 
 				// TODO: Implement Buildings!
 			}
@@ -463,7 +471,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(CRIM);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Crime *crime = READ(SAVChunk_Crime);
+				SAVChunk_Crime *crime = READ_CHUNK(SAVChunk_Crime);
 
 				// TODO: Implement Crime!
 			}
@@ -474,7 +482,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(EDUC);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Education *education = READ(SAVChunk_Education);
+				SAVChunk_Education *education = READ_CHUNK(SAVChunk_Education);
 
 				// TODO: Implement Education!
 			}
@@ -485,7 +493,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(FIRE);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Fire *fire = READ(SAVChunk_Fire);
+				SAVChunk_Fire *fire = READ_CHUNK(SAVChunk_Fire);
 
 				// TODO: Implement Fire!
 			}
@@ -496,7 +504,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(HLTH);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Health *health = READ(SAVChunk_Health);
+				SAVChunk_Health *health = READ_CHUNK(SAVChunk_Health);
 
 				// TODO: Implement Health!
 			}
@@ -507,7 +515,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(LVAL);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_LandValue *landValue = READ(SAVChunk_LandValue);
+				SAVChunk_LandValue *landValue = READ_CHUNK(SAVChunk_LandValue);
 
 				// TODO: Implement LandValue!
 			}
@@ -518,7 +526,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(PLTN);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Pollution *pollution = READ(SAVChunk_Pollution);
+				SAVChunk_Pollution *pollution = READ_CHUNK(SAVChunk_Pollution);
 
 				// TODO: Implement Pollution!
 			}
@@ -529,13 +537,20 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(TERR);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Terrain *terrain = READ(SAVChunk_Terrain);
+				SAVChunk_Terrain *terrain = READ_CHUNK(SAVChunk_Terrain);
+				TerrainLayer *layer = &city->terrainLayer;
 
-
+				// TODO: Map the file's terrain type IDs to the game's ones
+				// (This is related to the general "the game needs to map IDs when data files change" thing.)
 
 				u8 *tileTerrainType  = startOfChunk + terrain->offsetForTileTerrainType;
+				copyMemory(tileTerrainType, layer->tileTerrainType, cityTileCount);
+
 				u8 *tileHeight       = startOfChunk + terrain->offsetForTileHeight;
+				copyMemory(tileHeight, layer->tileHeight, cityTileCount);
+
 				u8 *tileSpriteOffset = startOfChunk + terrain->offsetForTileSpriteOffset;
+				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
@@ -544,7 +559,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(TPRT);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Transport *transport = READ(SAVChunk_Transport);
+				SAVChunk_Transport *transport = READ_CHUNK(SAVChunk_Transport);
 
 				// TODO: Implement Transport!
 			}
@@ -555,7 +570,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(ZONE);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Zone *zone = READ(SAVChunk_Zone);
+				SAVChunk_Zone *zone = READ_CHUNK(SAVChunk_Zone);
 
 				// TODO: Implement Zone!
 			}

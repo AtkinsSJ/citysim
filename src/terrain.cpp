@@ -6,7 +6,7 @@ void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena)
 
 	layer->tileTerrainType     = allocateMultiple<u8>(gameArena, cityArea);
 	layer->tileSpriteOffset    = allocateMultiple<u8>(gameArena, cityArea);
-	layer->tileTerrainHeight   = allocateMultiple<u8>(gameArena, cityArea);
+	layer->tileHeight          = allocateMultiple<u8>(gameArena, cityArea);
 	layer->tileDistanceToWater = allocateMultiple<u8>(gameArena, cityArea);
 }
 
@@ -24,7 +24,7 @@ inline TerrainDef *getTerrainAt(City *city, s32 x, s32 y)
 
 inline u8 getTerrainHeightAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->terrainLayer.tileTerrainHeight, x, y);
+	return getTileValue(city, city->terrainLayer.tileHeight, x, y);
 }
 
 inline u8 getDistanceToWaterAt(City *city, s32 x, s32 y)
