@@ -31,7 +31,7 @@ f32 getRadiusAtAngle(Splat *splat, f32 degrees)
 
 Rect2I getBoundingBox(Splat *splat)
 {
-	s32 diameter = ceil_s32(splat->maxRadius * 2.0f);
+	s32 diameter = 1 + ceil_s32(splat->maxRadius * 2.0f);
 	return irectCentreSize(splat->centre.x, splat->centre.y, diameter, diameter);
 }
 
