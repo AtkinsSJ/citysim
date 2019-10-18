@@ -1,47 +1,106 @@
 #pragma once
 
-// TODO: Endian-ness???!?!?!?!??!?!?!?!?!
-// I have no idea how to figure out what's going on with that.
-// OK, apparently x86 is little-endian, so it makes sense to enforce that as the
-// format's choice, because it means not having to do any switching.
-//
-// Trouble is, I'm not sure how I'd implement switching. It can't happen inside
-// WriteBuffer because that doesn't know anything about the data it receives.
-// That means reordering the bytes of each individual member of each struct...
-//
-// GCC has:
-//       #pragma scalar_storage_order little-endian
-// which would be good! But I don't think VC++ has an equivalent, and a quick look
-// online, it seems G++ doesn't handle it either. :'(
-//
-// There's a header file that'll do the conversions automatically based on using
-// their custom leFOO / beFOO types: https://github.com/tatewake/endian-template/blob/master/tEndian.h
-// That might be good, though I haven't had time to read up on it yet.
-//
-// OK, I've looked at that header file and it's pretty simple really, so I think I'll
-// implement it myself!
-// You just create a template type that detects the CPU's endianness, and then swaps the
-// byte order whenever you assign to or from that type.
+inline bool cpuIsLittleEndian()
+{
+	u16 i = 1;
+
+	return (*((u8*) &i) == 1);
+}
+
+template<typename T>
+T reverseBytes(T input)
+{
+	T result;
+
+	u8 *inputBytes  = (u8*) &input;
+	u8 *outputBytes = (u8*) &result;
+
+	switch(sizeof(T))
+	{
+		case 8:
+		{
+			outputBytes[0] = inputBytes[7];
+			outputBytes[1] = inputBytes[6];
+			outputBytes[2] = inputBytes[5];
+			outputBytes[3] = inputBytes[4];
+			outputBytes[4] = inputBytes[3];
+			outputBytes[5] = inputBytes[2];
+			outputBytes[6] = inputBytes[1];
+			outputBytes[7] = inputBytes[0];
+		} break;
+
+		case 4:
+		{
+			outputBytes[0] = inputBytes[3];
+			outputBytes[1] = inputBytes[2];
+			outputBytes[2] = inputBytes[1];
+			outputBytes[3] = inputBytes[0];
+		} break;
+
+		case 2:
+		{
+			outputBytes[0] = inputBytes[1];
+			outputBytes[1] = inputBytes[0];
+		} break;
+
+		default:
+		{
+			ASSERT(false); // Only basic types are supported
+		} break;
+	}
+
+	return result;
+}
+
+template<typename T>
+struct LittleEndian
+{
+	T data;
+
+	//
+	// SET
+	//
+	// Direct assignment
+	LittleEndian(T value) : data(cpuIsLittleEndian() ? value : reverseBytes(value))
+	{}
+
+	LittleEndian() : data() {}
+
+	//
+	// GET
+	//
+	operator T() const { return cpuIsLittleEndian() ? data : reverseBytes(data); }
+};
+
+typedef u8                leU8; // Just for consistency
+typedef LittleEndian<u16> leU16;
+typedef LittleEndian<u32> leU32;
+typedef LittleEndian<u64> leU64;
+
+typedef s8                leS8; // Just for consistency
+typedef LittleEndian<s16> leS16;
+typedef LittleEndian<s32> leS32;
+typedef LittleEndian<s64> leS64;
 
 
 #pragma pack(push, 1)
 
 struct SAVString
 {
-	u32 length;
-	u32 relativeOffset;
+	leU32 length;
+	leU32 relativeOffset;
 };
 
 const u8 SAV_VERSION = 1;
 
 struct SAVFileHeader
 {
-	u8 identifier[4];
-	u8 version;
+	leU8 identifier[4];
+	leU8 version;
 
 	// Bytes for checking for unwanted newline-conversion
-	u8 unixNewline;
-	u8 dosNewline[2];
+	leU8 unixNewline;
+	leU8 dosNewline[2];
 
 	SAVFileHeader() :
 		identifier{'C','I','T','Y'},
@@ -53,20 +112,20 @@ struct SAVFileHeader
 
 struct SAVChunkHeader
 {
-	u8 identifier[4];
-	u8 version;
-	u8 _pad[3]; // For future use maybe? Mostly just to make this be a multiple of 4 bytes.
-	u32 length; // Length of the chunk, NOT including the size of this SAVChunkHeader
+	leU8 identifier[4];
+	leU8 version;
+	leU8 _pad[3]; // For future use maybe? Mostly just to make this be a multiple of 4 bytes.
+	leU32 length; // Length of the chunk, NOT including the size of this SAVChunkHeader
 };
 
 const u8 SAV_META_VERSION = 1;
 const u8 SAV_META_ID[4] = {'M', 'E', 'T', 'A'};
 struct SAVChunk_Meta
 {
-	u64 saveTimestamp; // Unix timestamp
-	u16 cityWidth;
-	u16 cityHeight;
-	s32 funds;
+	leU64 saveTimestamp; // Unix timestamp
+	leU16 cityWidth;
+	leU16 cityHeight;
+	leS32 funds;
 	SAVString cityName;
 	SAVString playerName;
 };
@@ -100,29 +159,29 @@ const u8 SAV_BLDG_VERSION = 1;
 const u8 SAV_BLDG_ID[4] = {'B', 'L', 'D', 'G'};
 struct SAVChunk_Buildings
 {
-	u32 buildingTypeCount;
-	u32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
+	leU32 buildingTypeCount;
+	leU32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
 	// The Buildings table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
-	u32 highestBuildingID;
+	leU32 highestBuildingID;
 
 	// Array of the buildings in the city, as SAVBuildings
-	u32 buildingCount;
-	u32 offsetForBuildingArray;
+	leU32 buildingCount;
+	leU32 offsetForBuildingArray;
 };
 struct SAVBuilding
 {
-	u32 id;
-	u32 typeID;
+	leU32 id;
+	leU32 typeID;
 
-	u16 x;
-	u16 y;
-	u16 w;
-	u16 h;
+	leU16 x;
+	leU16 y;
+	leU16 w;
+	leU16 h;
 
-	u16 spriteOffset;
-	u16 currentResidents;
-	u16 currentJobs;
+	leU16 spriteOffset;
+	leU16 currentResidents;
+	leU16 currentJobs;
 
 	// TODO: Record builidng problems somehow!
 };
@@ -131,8 +190,8 @@ const u8 SAV_CRIM_VERSION = 1;
 const u8 SAV_CRIM_ID[4] = {'C', 'R', 'I', 'M'};
 struct SAVChunk_Crime
 {
-	u32 totalJailCapacity;
-	u32 occupiedJailCapacity;
+	leU32 totalJailCapacity;
+	leU32 occupiedJailCapacity;
 };
 
 const u8 SAV_EDUC_VERSION = 1;
@@ -147,15 +206,15 @@ const u8 SAV_FIRE_ID[4] = {'F', 'I', 'R', 'E'};
 struct SAVChunk_Fire
 {
 	// Active fires
-	u32 activeFireCount;
-	u32 offsetForActiveFires; // Array of SAVFires
+	leU32 activeFireCount;
+	leU32 offsetForActiveFires; // Array of SAVFires
 
 	// TODO: Fire service building data
 };
 struct SAVFire
 {
-	u16 x;
-	u16 y;
+	leU16 x;
+	leU16 y;
 	// TODO: severity
 };
 
@@ -172,7 +231,7 @@ struct SAVChunk_LandValue
 {
 	// Kind of redundant as it can be calculated fresh, but in case we have over-time
 	// effects, we might as well put this here.
-	u32 offsetForTileLandValue; // Array of u8s.
+	leU32 offsetForTileLandValue; // Array of u8s.
 };
 
 const u8 SAV_PLTN_VERSION = 1;
@@ -180,22 +239,23 @@ const u8 SAV_PLTN_ID[4] = {'P', 'L', 'T', 'N'};
 struct SAVChunk_Pollution
 {
 	// TODO: Maybe RLE this, but I'm not sure. It's probably pretty variable.
-	u32 offsetForTilePollution; // Array of u8s
+	leU32 offsetForTilePollution; // Array of u8s
 };
 
 const u8 SAV_TERR_VERSION = 1;
 const u8 SAV_TERR_ID[4] = {'T', 'E', 'R', 'R'};
 struct SAVChunk_Terrain
 {
-	s32 terrainGenerationSeed;
+	leS32 terrainGenerationSeed;
+	// TODO: Other terrain-generation parameters
 
-	u32 terrainTypeCount;
-	u32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
+	leU32 terrainTypeCount;
+	leU32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
 	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
-	u32 offsetForTileTerrainType;  // Array of u8s    TODO: RLE?
-	u32 offsetForTileHeight;       // Array of u8s
-	u32 offsetForTileSpriteOffset; // Array of u8s
+	leU32 offsetForTileTerrainType;  // Array of u8s    TODO: RLE?
+	leU32 offsetForTileHeight;       // Array of u8s
+	leU32 offsetForTileSpriteOffset; // Array of u8s
 };
 
 const u8 SAV_TPRT_VERSION = 1;
@@ -210,7 +270,7 @@ const u8 SAV_ZONE_VERSION = 1;
 const u8 SAV_ZONE_ID[4] = {'Z', 'O', 'N', 'E'};
 struct SAVChunk_Zone
 {
-	u32 offsetForTileZone; // Array of u8s    TODO: RLE?
+	leU32 offsetForTileZone; // Array of u8s    TODO: RLE?
 };
 
 #pragma pack(pop)

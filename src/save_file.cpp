@@ -534,7 +534,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					fire.pos.y = savFire->y;
 					addFireRaw(city, fire);
 				}
-				ASSERT(layer->activeFireCount == cFire->activeFireCount);
+				ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_HLTH_ID))
 			{

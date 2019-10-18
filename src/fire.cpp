@@ -224,8 +224,6 @@ Fire *findFireAt(City *city, s32 x, s32 y)
 
 void startFireAt(City *city, s32 x, s32 y)
 {
-	FireLayer *layer = &city->fireLayer;
-
 	Fire *existingFire = findFireAt(city, x, y);
 	if (existingFire != null)
 	{
