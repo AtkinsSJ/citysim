@@ -439,11 +439,11 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				CHECK_VERSION(META);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Meta *meta = READ_CHUNK(SAVChunk_Meta);
+				SAVChunk_Meta *cMeta = READ_CHUNK(SAVChunk_Meta);
 
-				String cityName = loadString(meta->cityName, startOfChunk, gameArena);
-				String playerName = loadString(meta->playerName, startOfChunk, gameArena);
-				initCity(gameArena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
+				String cityName = loadString(cMeta->cityName, startOfChunk, gameArena);
+				String playerName = loadString(cMeta->playerName, startOfChunk, gameArena);
+				initCity(gameArena, city, cMeta->cityWidth, cMeta->cityHeight, cityName, playerName, cMeta->funds);
 				cityTileCount = city->bounds.w * city->bounds.h;
 
 				hasLoadedMeta = true;
@@ -466,16 +466,16 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(BLDG);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Buildings *buildings = READ_CHUNK(SAVChunk_Buildings);
+				SAVChunk_Buildings *cBuildings = READ_CHUNK(SAVChunk_Buildings);
 
-				city->highestBuildingID = buildings->highestBuildingID;
+				city->highestBuildingID = cBuildings->highestBuildingID;
 
 				// TODO: Map the file's building type IDs to the game's ones @MapIDs
 				// (This is related to the general "the game needs to map IDs when data files change" thing.)
 
-				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + buildings->offsetForBuildingArray);
+				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + cBuildings->offsetForBuildingArray);
 				for (u32 buildingIndex = 0;
-					buildingIndex < buildings->buildingCount;
+					buildingIndex < cBuildings->buildingCount;
 					buildingIndex++, savBuilding++)
 				{
 					Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
@@ -493,9 +493,11 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(CRIM);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Crime *crime = READ_CHUNK(SAVChunk_Crime);
+				SAVChunk_Crime *cCrime = READ_CHUNK(SAVChunk_Crime);
+				CrimeLayer *layer = &city->crimeLayer;
 
-				// TODO: Implement Crime!
+				layer->totalJailCapacity    = cCrime->totalJailCapacity;
+				layer->occupiedJailCapacity = cCrime->occupiedJailCapacity;
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_EDUC_ID))
 			{
@@ -515,9 +517,21 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(FIRE);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Fire *fire = READ_CHUNK(SAVChunk_Fire);
+				SAVChunk_Fire *cFire = READ_CHUNK(SAVChunk_Fire);
+				FireLayer *layer = &city->fireLayer;
 
-				// TODO: Implement Fire!
+				// Active fires
+				SAVFire *savFire = (SAVFire *)(startOfChunk + cFire->offsetForActiveFires);
+				for (u32 activeFireIndex = 0;
+					activeFireIndex < cFire->activeFireCount;
+					activeFireIndex++, savFire++)
+				{
+					Fire fire = {};
+					fire.pos.x = savFire->x;
+					fire.pos.y = savFire->y;
+					addFireRaw(city, fire);
+				}
+				ASSERT(layer->activeFireCount == cFire->activeFireCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_HLTH_ID))
 			{
@@ -526,7 +540,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(HLTH);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Health *health = READ_CHUNK(SAVChunk_Health);
+				SAVChunk_Health *cHealth = READ_CHUNK(SAVChunk_Health);
 
 				// TODO: Implement Health!
 			}
@@ -537,7 +551,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(LVAL);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_LandValue *landValue = READ_CHUNK(SAVChunk_LandValue);
+				SAVChunk_LandValue *cLandValue = READ_CHUNK(SAVChunk_LandValue);
 
 				// TODO: Implement LandValue!
 			}
@@ -548,7 +562,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(PLTN);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Pollution *pollution = READ_CHUNK(SAVChunk_Pollution);
+				SAVChunk_Pollution *cPollution = READ_CHUNK(SAVChunk_Pollution);
 
 				// TODO: Implement Pollution!
 			}
@@ -559,19 +573,19 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(TERR);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Terrain *terrain = READ_CHUNK(SAVChunk_Terrain);
+				SAVChunk_Terrain *cTerrain = READ_CHUNK(SAVChunk_Terrain);
 				TerrainLayer *layer = &city->terrainLayer;
 
 				// TODO: Map the file's terrain type IDs to the game's ones @MapIDs
 				// (This is related to the general "the game needs to map IDs when data files change" thing.)
 
-				u8 *tileTerrainType  = startOfChunk + terrain->offsetForTileTerrainType;
+				u8 *tileTerrainType  = startOfChunk + cTerrain->offsetForTileTerrainType;
 				copyMemory(tileTerrainType, layer->tileTerrainType, cityTileCount);
 
-				u8 *tileHeight       = startOfChunk + terrain->offsetForTileHeight;
+				u8 *tileHeight       = startOfChunk + cTerrain->offsetForTileHeight;
 				copyMemory(tileHeight, layer->tileHeight, cityTileCount);
 
-				u8 *tileSpriteOffset = startOfChunk + terrain->offsetForTileSpriteOffset;
+				u8 *tileSpriteOffset = startOfChunk + cTerrain->offsetForTileSpriteOffset;
 				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
@@ -581,7 +595,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(TPRT);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Transport *transport = READ_CHUNK(SAVChunk_Transport);
+				SAVChunk_Transport *cTransport = READ_CHUNK(SAVChunk_Transport);
 
 				// TODO: Implement Transport!
 			}
@@ -592,7 +606,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				REQUIRE_META(ZONE);
 
 				u8 *startOfChunk = pos;
-				SAVChunk_Zone *zone = READ_CHUNK(SAVChunk_Zone);
+				SAVChunk_Zone *cZone = READ_CHUNK(SAVChunk_Zone);
 
 				// TODO: Implement Zone!
 			}

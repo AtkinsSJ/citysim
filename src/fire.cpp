@@ -234,18 +234,37 @@ void startFireAt(City *city, s32 x, s32 y)
 	}
 	else
 	{
-		FireSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
+		Fire fire = {};
+		fire.pos.x = x;
+		fire.pos.y = y;
+		addFireRaw(city, fire);
+	}
+}
 
-		Fire *fire = appendBlank(&sector->activeFires);
-		fire->pos.x = x;
-		fire->pos.y = y;
+void addFireRaw(City *city, Fire fire)
+{
+	FireLayer *layer = &city->fireLayer;
+
+	Fire *existingFire = findFireAt(city, fire.pos.x, fire.pos.y);
+	if (existingFire != null)
+	{
+		// Fire already exists!
+		// We'll overwrite it I guess
+		logWarn("Adding a fire at {0},{1} where one already exists! Overwriting it."_s, {formatInt(fire.pos.x), formatInt(fire.pos.y)});
+		*existingFire = fire;
+	}
+	else
+	{
+		FireSector *sector = getSectorAtTilePos(&layer->sectors, fire.pos.x, fire.pos.y);
+
+		append(&sector->activeFires, fire);
 
 		layer->activeFireCount++;
 
-		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+		markRectAsDirty(&layer->dirtyRects, irectXYWH(fire.pos.x, fire.pos.y, 1, 1));
 
 		// Tell the building it's on fire
-		Building *building = getBuildingAt(city, x, y);
+		Building *building = getBuildingAt(city, fire.pos.x, fire.pos.y);
 		if (building != null)
 		{
 			addProblem(building, BuildingProblem_Fire);
