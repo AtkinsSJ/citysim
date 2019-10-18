@@ -234,11 +234,19 @@ Budget:
 
 Saving and loading!
 - Run-length encoding! A lot of per-tile data is repetitive right now (eg, terrain type, zone type) and a really simple RLE scheme could massively reduce the file-size. Might be fun to implement too. I'll wait until I have loading implemented before I attempt this though, as it's much harder to verify in a hex editor!
+	- I'm finding that different arrays within the save file are suited to different approaches here... I can see a couple of options:
+		1) A single RLE scheme, and then we use it in places it helps, and don't in places it doesn't.
+				(This is simple, but suboptimal size-wise.)
+		2) Multiple, semi-bespoke RLE schemes for different places within the file.
+				(This is messy and complicated, but could produce better results.)
+		3) At the start of each array, store a byte that states which encoding was used on the following data, and then probably a length too. Then, the rleDecode() function (or whatever) reads that byte and processes the data accordingly. So, we use the same system everywhere, and in fact different save-games could have eg the Terrain data encoded differently, but still be readable by the game.
+				(This is again complicated, but more understandable than #2 and also leaves room for new compression schemes in the future without having to change the file format.)
+		... At the moment I'm inclined to think #3 is the best option in the end, but for now I'm going to keep things simpler.
 ✔ LittleEndian types that convert automatically.
-- A binary file format is the way to go for speed, but we might want to have a text format as well for easier debugging... if that's worth the extra code.
-	- I'm thinking, tagged sections. Each starts with a header struct that identifies which section it is and how many bytes long the rest of the section is, so that unrecognised sections can be skipped. This seems a fairly standard way of doing binary formats so it makes sense to copy it! (PNG seems a decent model for imitating.)
-	- First section is metadata, especially things that the game might want to know *before* the save-game is loaded. (So, city name, mayor name, save format version, save date, probably city size, whatever else.)
-	- Each layer has a section to itself. It should probably only save *necessary* data, that can't be generated from other data. eg, don't need to store the land-value parts, though we may want to save the cached total land value for each tile maybe? Not sure.
+✔ A binary file format is the way to go for speed, but we might want to have a text format as well for easier debugging... if that's worth the extra code.
+	✔ I'm thinking, tagged sections. Each starts with a header struct that identifies which section it is and how many bytes long the rest of the section is, so that unrecognised sections can be skipped. This seems a fairly standard way of doing binary formats so it makes sense to copy it! (PNG seems a decent model for imitating.)
+	✔ First section is metadata, especially things that the game might want to know *before* the save-game is loaded. (So, city name, mayor name, save format version, save date, probably city size, whatever else.)
+	✔ Each layer has a section to itself. It should probably only save *necessary* data, that can't be generated from other data. eg, don't need to store the land-value parts, though we may want to save the cached total land value for each tile maybe? Not sure.
 - On load, we make sure the simulation is "warmed up" before actually letting the player start. So, probably mark the whole city as dirty for every layer, and then let them all process completely.
 	- Another option would be to save all of the "cached" data in the save file, so loading can just continue where you left off without having to warm up first. But that mean saving more data, and it opens us up for problems with the simulation changing over time and the data it needs being missed from older saves. So, recalculating things fresh is safer, even though it could mean the simulation state is slightly different after a save-load loop, because while playing the simulator is always using slightly old data because things update gradually. That should be a really minor issue though.
 

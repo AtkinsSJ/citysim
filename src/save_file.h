@@ -1,5 +1,9 @@
 #pragma once
 
+// NB: This is inspired by https://github.com/tatewake/endian-template/blob/master/tEndian.h
+// However, we require a *very small* subset of that! Just assignment to/from LE types from
+// their native equivalents. So, I implemented it myself.
+
 inline bool cpuIsLittleEndian()
 {
 	u16 i = 1;
@@ -253,9 +257,9 @@ struct SAVChunk_Terrain
 	leU32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
 	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
-	leU32 offsetForTileTerrainType;  // Array of u8s    TODO: RLE?
-	leU32 offsetForTileHeight;       // Array of u8s
-	leU32 offsetForTileSpriteOffset; // Array of u8s
+	leU32 offsetForTileTerrainType;  // Array of u8s (RLE)
+	leU32 offsetForTileHeight;       // Array of u8s (RLE)
+	leU32 offsetForTileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
 };
 
 const u8 SAV_TPRT_VERSION = 1;
@@ -283,3 +287,4 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena);
 //
 bool identifiersAreEqual(const u8 *a, const u8 *b);
 String loadString(SAVString source, u8 *base, MemoryArena *arena);
+void rleDecode(u8 *source, u8 *dest, s32 destSize);

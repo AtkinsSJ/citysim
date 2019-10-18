@@ -5,9 +5,11 @@ void initWriteBuffer(WriteBuffer *buffer, s32 chunkSize, MemoryArena *arena)
 	buffer->arena = arena;
 	buffer->chunkSize = chunkSize;
 	buffer->byteCount = 0;
+	buffer->chunkCount = 0;
+	buffer->firstChunk = null;
+	buffer->lastChunk = null;
 
-	buffer->chunkCount = 1;
-	buffer->firstChunk = buffer->lastChunk = allocateWriteBufferChunk(buffer);
+	appendNewChunk(buffer);
 }
 
 bool writeToFile(FileHandle *file, WriteBuffer *buffer)
@@ -24,6 +26,49 @@ bool writeToFile(FileHandle *file, WriteBuffer *buffer)
 	}
 
 	return succeeded;
+}
+
+void appendNewChunk(WriteBuffer *buffer)
+{
+	Blob blob = allocateBlob(buffer->arena, sizeof(WriteBufferChunk) + buffer->chunkSize);
+	WriteBufferChunk *newChunk = (WriteBufferChunk *)blob.memory;
+	newChunk->used = 0;
+	newChunk->bytes = (u8 *) (blob.memory + sizeof(WriteBufferChunk));
+	newChunk->nextChunk = null;
+
+	if (buffer->chunkCount == 0)
+	{
+		buffer->firstChunk = buffer->lastChunk = newChunk;
+		buffer->chunkCount = 1;
+	}
+	else
+	{
+		buffer->lastChunk->nextChunk = newChunk;
+		buffer->lastChunk = newChunk;
+		buffer->chunkCount++;
+	}
+}
+
+void appendS8(WriteBuffer *buffer, s8 byte)
+{
+	if (buffer->lastChunk->used >= buffer->chunkSize)
+	{
+		appendNewChunk(buffer);
+	}
+
+	buffer->lastChunk->bytes[buffer->lastChunk->used++] = *((u8*)&byte);
+	buffer->byteCount++;
+}
+
+void appendU8(WriteBuffer *buffer, u8 byte)
+{
+	if (buffer->lastChunk->used >= buffer->chunkSize)
+	{
+		appendNewChunk(buffer);
+	}
+
+	buffer->lastChunk->bytes[buffer->lastChunk->used++] = byte;
+	buffer->byteCount++;
 }
 
 void append(WriteBuffer *buffer, s32 length, void *data)
@@ -54,12 +99,40 @@ void append(WriteBuffer *buffer, s32 length, void *data)
 			remainingLength -= lengthToCopy;
 
 			// Get a new chunk
-			WriteBufferChunk *newChunk = allocateWriteBufferChunk(buffer);
-			buffer->lastChunk->nextChunk = newChunk;
-			buffer->lastChunk = newChunk;
-			buffer->chunkCount++;
+			appendNewChunk(buffer);
 		}
 	}
+}
+
+s32 appendRLE(WriteBuffer *buffer, s32 length, u8 *data)
+{
+	// Our scheme is, (s8 length, u8...data)
+	// Positive length = repeat the next byte `length` times.
+	// Negative length = copy the next `-length` bytes literally.
+
+	// Though, for attempt #1 we'll stick to always outputting runs, even if it's
+	// a run of length 1.
+	u8 *end = data + length;
+	u8 *pos = data;
+
+	s32 outputLength = 0;
+
+	while (pos < end)
+	{
+		s8 count = 1;
+		u8 value = *pos++;
+		while ((pos < end) && (count < s8Max) && (*pos == value))
+		{
+			count++;
+			pos++;
+		}
+
+		appendS8(buffer, count);
+		appendU8(buffer, value);
+		outputLength += 2;
+	}
+
+	return outputLength;
 }
 
 s32 getCurrentPosition(WriteBuffer *buffer)
@@ -93,10 +166,7 @@ s32 reserve(WriteBuffer *buffer, s32 length)
 			remainingLength -= lengthToCopy;
 
 			// Get a new chunk
-			WriteBufferChunk *newChunk = allocateWriteBufferChunk(buffer);
-			buffer->lastChunk->nextChunk = newChunk;
-			buffer->lastChunk = newChunk;
-			buffer->chunkCount++;
+			appendNewChunk(buffer);
 		}
 	}
 
@@ -141,15 +211,4 @@ void overwriteAt(WriteBuffer *buffer, s32 indexInBuffer, s32 length, void *data)
 			posInChunk = 0;
 		}
 	}
-}
-
-WriteBufferChunk *allocateWriteBufferChunk(WriteBuffer *buffer)
-{
-	Blob blob = allocateBlob(buffer->arena, sizeof(WriteBufferChunk) + buffer->chunkSize);
-	WriteBufferChunk *result = (WriteBufferChunk *)blob.memory;
-	result->used = 0;
-	result->bytes = (u8 *) (blob.memory + sizeof(WriteBufferChunk));
-	result->nextChunk = null;
-
-	return result;
 }

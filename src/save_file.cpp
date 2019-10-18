@@ -95,13 +95,11 @@ bool writeSaveFile(FileHandle *file, City *city)
 
 			// Tile terrain type (u8)
 			terr.offsetForTileTerrainType = offset;
-			append(&buffer, cityTileCount * sizeof(u8), layer->tileTerrainType);
-			offset += cityTileCount * sizeof(u8);
+			offset += appendRLE(&buffer, cityTileCount, layer->tileTerrainType);
 
 			// Tile height (u8)
 			terr.offsetForTileHeight = offset;
-			append(&buffer, cityTileCount * sizeof(u8), layer->tileHeight);
-			offset += cityTileCount * sizeof(u8);
+			offset += appendRLE(&buffer, cityTileCount, layer->tileHeight);
 
 			// Tile sprite offset (u8)
 			terr.offsetForTileSpriteOffset = offset;
@@ -589,10 +587,10 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				// (This is related to the general "the game needs to map IDs when data files change" thing.)
 
 				u8 *tileTerrainType  = startOfChunk + cTerrain->offsetForTileTerrainType;
-				copyMemory(tileTerrainType, layer->tileTerrainType, cityTileCount);
+				rleDecode(tileTerrainType, layer->tileTerrainType, cityTileCount);
 
 				u8 *tileHeight       = startOfChunk + cTerrain->offsetForTileHeight;
-				copyMemory(tileHeight, layer->tileHeight, cityTileCount);
+				rleDecode(tileHeight, layer->tileHeight, cityTileCount);
 
 				u8 *tileSpriteOffset = startOfChunk + cTerrain->offsetForTileSpriteOffset;
 				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
@@ -643,4 +641,33 @@ String loadString(SAVString source, u8 *base, MemoryArena *arena)
 	String toCopy = makeString((char *)(base + source.relativeOffset), source.length, false);
 
 	return pushString(arena, toCopy);
+}
+
+void rleDecode(u8 *source, u8 *dest, s32 destSize)
+{
+	u8 *sourcePos = source;
+	u8 *destPos = dest;
+	u8 *destEnd = dest + destSize;
+
+	while (destPos < destEnd)
+	{
+		s8 length = *((s8 *)sourcePos);
+		sourcePos++;
+		if (length < 0)
+		{
+			// Literals
+			s8 literalCount = -length;
+			copyMemory(sourcePos, destPos, literalCount);
+			sourcePos += literalCount;
+			destPos += literalCount;
+		}
+		else
+		{
+			// RLE
+			u8 value = *sourcePos;
+			sourcePos++;
+			fillMemory(destPos, value, length);
+			destPos += length;
+		}
+	}
 }
