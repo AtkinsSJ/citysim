@@ -135,6 +135,9 @@ bool writeSaveFile(FileHandle *file, City *city)
 				offset += sizeof(typeID) + sizeof(idLength) + idLength;
 			}
 
+			// Highest ID
+			bldg.highestBuildingID = city->highestBuildingID;
+
 			//
 			// The buildings themselves!
 			// I'm not sure how to actually do this... current thought is that the "core" building
@@ -465,7 +468,9 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				u8 *startOfChunk = pos;
 				SAVChunk_Buildings *buildings = READ_CHUNK(SAVChunk_Buildings);
 
-				// TODO: Map the file's building type IDs to the game's ones
+				city->highestBuildingID = buildings->highestBuildingID;
+
+				// TODO: Map the file's building type IDs to the game's ones @MapIDs
 				// (This is related to the general "the game needs to map IDs when data files change" thing.)
 
 				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + buildings->offsetForBuildingArray);
@@ -479,9 +484,6 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					building->spriteOffset     = savBuilding->spriteOffset;
 					building->currentResidents = savBuilding->currentResidents;
 					building->currentJobs      = savBuilding->currentJobs;
-
-					// TODO: Get rid of this when we add the highest id to the save file
-					city->highestBuildingID = max(city->highestBuildingID, savBuilding->id);
 				}
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
@@ -560,7 +562,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				SAVChunk_Terrain *terrain = READ_CHUNK(SAVChunk_Terrain);
 				TerrainLayer *layer = &city->terrainLayer;
 
-				// TODO: Map the file's terrain type IDs to the game's ones
+				// TODO: Map the file's terrain type IDs to the game's ones @MapIDs
 				// (This is related to the general "the game needs to map IDs when data files change" thing.)
 
 				u8 *tileTerrainType  = startOfChunk + terrain->offsetForTileTerrainType;

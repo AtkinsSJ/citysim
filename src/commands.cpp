@@ -54,9 +54,12 @@ ConsoleCommand(generate)
 	if (!checkInGame()) return;
 
 	City *city = &globalAppState.gameState->city;
+	// TODO: Some kind of reset would be better than this, but this is temporary until we add
+	// proper terrain generation and UI, so meh.
 	if (city->buildings.count > 0)
 	{
 		demolishRect(city, city->bounds);
+		city->highestBuildingID = 0;
 	}
 	generateTerrain(city, &globalAppState.gameState->gameRandom);
 

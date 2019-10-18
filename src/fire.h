@@ -4,6 +4,7 @@ struct Fire
 {
 	V2I pos;
 	// TODO: severity
+	// TODO: Timing information (fires shouldn't last forever!)
 };
 
 struct FireSector
