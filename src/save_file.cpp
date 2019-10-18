@@ -190,8 +190,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 
 			// Tile zones
 			zone.offsetForTileZone = offset;
-			append(&buffer, cityTileCount * sizeof(u8), layer->tileZone);
-			offset += cityTileCount * sizeof(u8);
+			offset += appendRLE(&buffer, cityTileCount, layer->tileZone);
 
 			overwriteAt(&buffer, startOfZone, sizeof(zone), &zone);
 		}
@@ -617,7 +616,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				ZoneLayer *layer = &city->zoneLayer;
 
 				u8 *tileZone  = startOfChunk + cZone->offsetForTileZone;
-				copyMemory(tileZone, layer->tileZone, cityTileCount);
+				rleDecode(tileZone, layer->tileZone, cityTileCount);
 			}
 		}
 

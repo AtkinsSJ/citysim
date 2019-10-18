@@ -16,6 +16,8 @@ Notes for searching:
 
 ------------------------------------------------
 
+Something is definitely up with growing zoned buildings, they just refuse to grow in certain places.
+
 PROBLEM: all.terrain and all.buildings are really fragile right now!
 - If you rearrange the order of Building/Terrain definitions while the game is running, the type-ids used by the game then refer to different definitions than before the change, which is at best completely wrong, and at worst just crashes. We need to re-map the IDs somehow - when reloading the defs, find the def with the same name from the old data, and either make sure the new def goes in the same slot, or (more stable) make a oldID->newID conversion table, and update all of the references to typeIDs to use the new IDs. If a name is missing we obviously need to handle that somehow, too - maybe use ID 0 for unrecognised, and make sure to fill that in with something that can be shown in game. We already use ID 0 for "invalid" so that's OK.
 - Basically the same process has to be done when loading a save-game. The typeIDs when the game was saved can't be expected to match the ones when the game is loaded, so it's necessary to store a typeID->name table in the save file (which we already do!) and then swap the save file's IDs with the game's ones when loading.

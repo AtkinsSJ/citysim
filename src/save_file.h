@@ -274,7 +274,7 @@ const u8 SAV_ZONE_VERSION = 1;
 const u8 SAV_ZONE_ID[4] = {'Z', 'O', 'N', 'E'};
 struct SAVChunk_Zone
 {
-	leU32 offsetForTileZone; // Array of u8s    TODO: RLE?
+	leU32 offsetForTileZone; // Array of u8s (RLE)
 };
 
 #pragma pack(pop)
