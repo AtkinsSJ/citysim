@@ -552,8 +552,10 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 
 				u8 *startOfChunk = pos;
 				SAVChunk_LandValue *cLandValue = READ_CHUNK(SAVChunk_LandValue);
+				LandValueLayer *layer = &city->landValueLayer;
 
-				// TODO: Implement LandValue!
+				u8 *tileLandValue  = startOfChunk + cLandValue->offsetForTileLandValue;
+				copyMemory(tileLandValue, layer->tileLandValue, cityTileCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_PLTN_ID))
 			{
@@ -563,8 +565,10 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 
 				u8 *startOfChunk = pos;
 				SAVChunk_Pollution *cPollution = READ_CHUNK(SAVChunk_Pollution);
+				PollutionLayer *layer = &city->pollutionLayer;
 
-				// TODO: Implement Pollution!
+				u8 *tilePollution  = startOfChunk + cPollution->offsetForTilePollution;
+				copyMemory(tilePollution, layer->tilePollution, cityTileCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TERR_ID))
 			{
@@ -607,8 +611,10 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 
 				u8 *startOfChunk = pos;
 				SAVChunk_Zone *cZone = READ_CHUNK(SAVChunk_Zone);
+				ZoneLayer *layer = &city->zoneLayer;
 
-				// TODO: Implement Zone!
+				u8 *tileZone  = startOfChunk + cZone->offsetForTileZone;
+				copyMemory(tileZone, layer->tileZone, cityTileCount);
 			}
 		}
 
