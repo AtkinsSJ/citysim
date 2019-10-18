@@ -187,6 +187,8 @@ const u8 SAV_TERR_VERSION = 1;
 const u8 SAV_TERR_ID[4] = {'T', 'E', 'R', 'R'};
 struct SAVChunk_Terrain
 {
+	s32 terrainGenerationSeed;
+
 	u32 terrainTypeCount;
 	u32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
 	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)

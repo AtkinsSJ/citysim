@@ -273,6 +273,7 @@ void generateTerrain(City *city, Random *gameRandom)
 
 	Random terrainRandom;
 	s32 seed = randomNext(gameRandom);
+	layer->terrainGenerationSeed = seed;
 	initRandom(&terrainRandom, Random_MT, seed);
 	fillMemory<u8>(layer->tileTerrainType, tGround, areaOf(city->bounds));
 

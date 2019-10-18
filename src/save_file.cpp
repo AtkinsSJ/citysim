@@ -73,6 +73,9 @@ bool writeSaveFile(FileHandle *file, City *city)
 			s32 startOfTerr = reserve(&buffer, sizeof(terr));
 			s32 offset = sizeof(terr);
 
+			// Terrain generation parameters
+			terr.terrainGenerationSeed = layer->terrainGenerationSeed;
+
 			// Terrain types table
 			terr.terrainTypeCount = terrainDefs.count;
 			terr.offsetForTerrainTypeTable = offset;
@@ -579,6 +582,8 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				u8 *startOfChunk = pos;
 				SAVChunk_Terrain *cTerrain = READ_CHUNK(SAVChunk_Terrain);
 				TerrainLayer *layer = &city->terrainLayer;
+
+				layer->terrainGenerationSeed = cTerrain->terrainGenerationSeed;
 
 				// TODO: Map the file's terrain type IDs to the game's ones @MapIDs
 				// (This is related to the general "the game needs to map IDs when data files change" thing.)
