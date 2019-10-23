@@ -7,6 +7,7 @@ const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 struct Camera
 {
 	V2 pos; // Centre of camera, in camera units
+	V2 realPos; // If we've rounded the pos to eg whole pixels, then this is the unrounded value.
 	V2 size; // Size of camera, in camera units
 	f32 sizeRatio; // Size of window is multiplied by this to produce the camera's size
 	f32 zoom; // 1 = normal, 2 = things appear twice their size, etc.

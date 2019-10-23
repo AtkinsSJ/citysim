@@ -23,9 +23,27 @@ void freeGameState(GameState *gameState)
 void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight)
 { 
 	DEBUG_FUNCTION();
-	
+
 	const f32 CAMERA_MARGIN = 1; // How many tiles beyond the map can the camera scroll to show?
 	const f32 CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
+
+	//
+	// I've experimented with snapping the camera to whole pixels, to try and reduce flickeriness
+	// of sprite edges... it does keep the graphics looking crisper, and the camera can still
+	// move freely, but you can feel it. It's very slightly uncomfortable. I know old games had
+	// to snap to pixel coordinates, and they feel natural, but their camera movement is a lot
+	// more constrained so you don't notice. Our "drag the mouse and the camera moves smoothly
+	// at any angle and any speed" system makes any snapping more obvious.
+	// I don't know if that is actually how we want the camera to move anyway! A more "click and
+	// drag the map around" approach might be preferable, AND that would work nicely with snapping.
+	// So yeah, not sure, but that's why I'm leaving this as code that's #define'd out.
+	//
+	// - Sam, 23/10/2019
+	//
+#define SNAP_CAMERA_TO_WHOLE_PIXELS 0
+#if SNAP_CAMERA_TO_WHOLE_PIXELS
+	camera->pos = camera->realPos;
+#endif
 
 	// Zooming
 	s32 zoomDelta = inputState->wheelY;
@@ -103,6 +121,17 @@ void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityW
 		f32 minY = (cameraSize.y * 0.5f) - CAMERA_MARGIN;
 		camera->pos.y = clamp( camera->pos.y, minY, (f32)cityHeight - minY );
 	}
+
+#if SNAP_CAMERA_TO_WHOLE_PIXELS
+	// Snap to whole-pixel coordinates
+	// Really, this should work without having to hard-code 16 as the tile size... but IDK.
+	// When zoomed in (zoom > 1) there are > 16 pixels per tile, so we snap to that instead.
+	// When zoomed out, (zoom < 1) we'd rather snap to the nearest 1/16 because less is noticeably jerky.
+	f32 snap = (camera->zoom < 1.0f) ? 16.0f : (16.0f * camera->zoom);
+	camera->realPos = camera->pos;
+	camera->pos.x = round_f32(camera->pos.x * snap) / snap;
+	camera->pos.y = round_f32(camera->pos.y * snap) / snap;
+#endif
 }
 
 Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
