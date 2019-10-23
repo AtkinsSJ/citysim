@@ -598,6 +598,16 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 			sprites = getBuildingDef(typeID)->sprites;
 		}
 
+		if (sprites == null)
+		{
+			// Skip buildings that don't have sprites set. (eg, the Null building.)
+			// This will only occur in an error state, but it's better to catch this
+			// than crash!
+			// TODO: Have some kind of placeholder image for when this happens, in the
+			// style of SC4's big brown boxes. We'd probably need a set of different-sized ones.
+			continue;
+		}
+
 		V4 drawColor = drawColorNormal;
 
 		if (isDemolitionHappening && overlaps(building->footprint, demolitionRect))
