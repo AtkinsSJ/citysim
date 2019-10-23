@@ -540,14 +540,30 @@ void growSomeZoneBuildings(City *city)
 						{
 							s32 x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
 
-							for (s32 y = zoneFootprint.y;
-								y < zoneFootprint.y + zoneFootprint.h;
-								y++)
+							for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.h; y++)
 							{
 								if (!isZoneAcceptable(city, zoneType, x, y))
 								{
 									canExpand = false;
 									break;
+								}
+							}
+
+							if (!canExpand)
+							{
+								// Try again in the opposite direction
+								canExpand = true;
+								positive = !positive;
+
+								x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
+
+								for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.h; y++)
+								{
+									if (!isZoneAcceptable(city, zoneType, x, y))
+									{
+										canExpand = false;
+										break;
+									}
 								}
 							}
 
@@ -561,14 +577,30 @@ void growSomeZoneBuildings(City *city)
 						{
 							s32 y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
 
-							for (s32 x = zoneFootprint.x;
-								x < zoneFootprint.x + zoneFootprint.w;
-								x++)
+							for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.w; x++)
 							{
 								if (!isZoneAcceptable(city, zoneType, x, y))
 								{
 									canExpand = false;
 									break;
+								}
+							}
+
+							if (!canExpand)
+							{
+								// Try again in the opposite direction
+								canExpand = true;
+								positive = !positive;
+
+								y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
+
+								for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.w; x++)
+								{
+									if (!isZoneAcceptable(city, zoneType, x, y))
+									{
+										canExpand = false;
+										break;
+									}
 								}
 							}
 
@@ -579,9 +611,8 @@ void growSomeZoneBuildings(City *city)
 							}
 						}
 
-						// As soon as we fail to expand in a direction, just stop
-						// TODO: Be smarter about trying different directions, so that we get larger
-						// areas more often.
+						// As soon as we fail to expand, we stop.
+						// Maybe we could wait until we fail in both directions?
 						if (!canExpand) break;
 
 						// No need to grow bigger than the largest possible building!

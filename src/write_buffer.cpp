@@ -110,6 +110,8 @@ s32 appendRLE(WriteBuffer *buffer, s32 length, u8 *data)
 	// Positive length = repeat the next byte `length` times.
 	// Negative length = copy the next `-length` bytes literally.
 
+	// const s32 minRunLength = 4; // This is a fairly arbitrary number! Maybe it should be bigger, idk.
+
 	// Though, for attempt #1 we'll stick to always outputting runs, even if it's
 	// a run of length 1.
 	u8 *end = data + length;
