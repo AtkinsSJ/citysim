@@ -43,8 +43,6 @@ PROBLEM: all.terrain and all.buildings are really fragile right now!
 	(See @MapIDs)
 - Related, we want to support multiple .terrain or .buildings files. To do so *requires* that we already have an ID mapper as above, because the order the files are loaded will affect the IDs. In addition, it'll need to be able to handle reloading just one file, like with the text system, though more complicated because of this remapping.
 
-FIXME: Game crashes when it tries to render a type=0 terrain tile.
-
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
 Window buttons should still do hover-states even on inactive windows.

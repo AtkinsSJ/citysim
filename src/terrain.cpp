@@ -250,10 +250,14 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 				terrainSprites = get(&terrainDefs, terrainType)->sprites;
 			}
 
-			Sprite *sprite = getSprite(terrainSprites, getTileValue(city, layer->tileSpriteOffset, x, y));
-			spriteBounds.x = (f32) x;
+			// Null terrain has no sprites, so only draw if there's something to draw!
+			if (terrainSprites != null)
+			{
+				Sprite *sprite = getSprite(terrainSprites, getTileValue(city, layer->tileSpriteOffset, x, y));
+				spriteBounds.x = (f32) x;
 
-			addSpriteRect(group, sprite, spriteBounds, white);
+				addSpriteRect(group, sprite, spriteBounds, white);
+			}
 		}
 	}
 	endRectsGroup(group);
