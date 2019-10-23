@@ -49,9 +49,12 @@ bool writeSaveFile(FileHandle *file, City *city)
 
 			SAVChunk_Meta meta = {};
 			meta.saveTimestamp = getCurrentUnixTimestamp();
-			meta.cityWidth  = (u16) city->bounds.w;
-			meta.cityHeight = (u16) city->bounds.h;
-			meta.funds = city->funds;
+			meta.cityWidth     = (u16) city->bounds.w;
+			meta.cityHeight    = (u16) city->bounds.h;
+			meta.funds         = city->funds;
+			meta.population    = getTotalResidents(city);
+			meta.jobs          = getTotalJobs(city);
+
 			s32 stringOffset = sizeof(meta);
 			meta.cityName = {(u32)city->name.length, (u32)stringOffset};
 			stringOffset += meta.cityName.length;
@@ -484,6 +487,9 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					building->spriteOffset     = savBuilding->spriteOffset;
 					building->currentResidents = savBuilding->currentResidents;
 					building->currentJobs      = savBuilding->currentJobs;
+
+					// This is a bit hacky but it's how we calculate it elsewhere
+					city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
 				}
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))

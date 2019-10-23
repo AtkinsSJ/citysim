@@ -16,7 +16,29 @@ Notes for searching:
 
 ------------------------------------------------
 
-Something is definitely up with growing zoned buildings, they just refuse to grow in certain places.
+Saving and loading!
+- Run-length encoding! A lot of per-tile data is repetitive right now (eg, terrain type, zone type) and a really simple RLE scheme could massively reduce the file-size. Might be fun to implement too. I'll wait until I have loading implemented before I attempt this though, as it's much harder to verify in a hex editor!
+	- I'm finding that different arrays within the save file are suited to different approaches here... I can see a couple of options:
+		1) A single RLE scheme, and then we use it in places it helps, and don't in places it doesn't.
+				(This is simple, but suboptimal size-wise.)
+		2) Multiple, semi-bespoke RLE schemes for different places within the file.
+				(This is messy and complicated, but could produce better results.)
+		3) At the start of each array, store a byte that states which encoding was used on the following data, and then probably a length too. Then, the rleDecode() function (or whatever) reads that byte and processes the data accordingly. So, we use the same system everywhere, and in fact different save-games could have eg the Terrain data encoded differently, but still be readable by the game.
+				(This is again complicated, but more understandable than #2 and also leaves room for new compression schemes in the future without having to change the file format.)
+		... At the moment I'm inclined to think #3 is the best option in the end, but for now I'm going to keep things simpler.
+✔ LittleEndian types that convert automatically.
+✔ A binary file format is the way to go for speed, but we might want to have a text format as well for easier debugging... if that's worth the extra code.
+	✔ I'm thinking, tagged sections. Each starts with a header struct that identifies which section it is and how many bytes long the rest of the section is, so that unrecognised sections can be skipped. This seems a fairly standard way of doing binary formats so it makes sense to copy it! (PNG seems a decent model for imitating.)
+	✔ First section is metadata, especially things that the game might want to know *before* the save-game is loaded. (So, city name, mayor name, save format version, save date, probably city size, whatever else.)
+	✔ Each layer has a section to itself. It should probably only save *necessary* data, that can't be generated from other data. eg, don't need to store the land-value parts, though we may want to save the cached total land value for each tile maybe? Not sure.
+- On load, we make sure the simulation is "warmed up" before actually letting the player start. So, probably mark the whole city as dirty for every layer, and then let them all process completely.
+	- Another option would be to save all of the "cached" data in the save file, so loading can just continue where you left off without having to warm up first. But that mean saving more data, and it opens us up for problems with the simulation changing over time and the data it needs being missed from older saves. So, recalculating things fresh is safer, even though it could mean the simulation state is slightly different after a save-load loop, because while playing the simulator is always using slightly old data because things update gradually. That should be a really minor issue though.
+✔ The game loses its jobs&pop figures after loading. Probably we want to save these (so they can be shown in the loading screen etc) but also recalculate them after loading. (Or during loading? That'd save an extra iteration of the buildings array. Just add up as you load them.)
+- Crashing while loading a save game should NEVER happen. Be super careful with all data we read in. It may well be impossible to prevent it entirely, but this is an area with a lot of opportunities for corrupt data!
+- Also, we want to prevent crashing *after* loading as much as possible. Some kind of validation after loading the file is complete, to make sure the city itself makes sense, would be a good idea. I'm not sure what that would involve really, but catching errors and reporting them is much better than just crashing.
+
+Something is definitely up with growing zoned buildings, they just refuse to grow in certain places. (Saving and loading the game fixes it.)
+	OK, it's not the saving and loading that helps, it was a bug in restoring job/pop count that fixed it! So I fixed that and it's back. I think it's actually that the zone system prioritises the most desirable chunk, which might not have space to actually construct a building in.
 
 PROBLEM: all.terrain and all.buildings are really fragile right now!
 - If you rearrange the order of Building/Terrain definitions while the game is running, the type-ids used by the game then refer to different definitions than before the change, which is at best completely wrong, and at worst just crashes. We need to re-map the IDs somehow - when reloading the defs, find the def with the same name from the old data, and either make sure the new def goes in the same slot, or (more stable) make a oldID->newID conversion table, and update all of the references to typeIDs to use the new IDs. If a name is missing we obviously need to handle that somehow, too - maybe use ID 0 for unrecognised, and make sure to fill that in with something that can be shown in game. We already use ID 0 for "invalid" so that's OK.
@@ -233,24 +255,6 @@ Budget:
 - Loans!
 	- Can take out a limited number of loans, which are paid back over time.
 - If you run out of money, it's bad in some way. We probably don't need a "you lose!" situation, just that you can only spend money that you actually have. Maybe if you have no money, (not $0, but some negative amount,) the game tries to get you to take out a loan, and if you don't can't, services are automatically dropped to 0% funding, so you quickly get big problems if you're unable to keep things in the black.
-
-Saving and loading!
-- Run-length encoding! A lot of per-tile data is repetitive right now (eg, terrain type, zone type) and a really simple RLE scheme could massively reduce the file-size. Might be fun to implement too. I'll wait until I have loading implemented before I attempt this though, as it's much harder to verify in a hex editor!
-	- I'm finding that different arrays within the save file are suited to different approaches here... I can see a couple of options:
-		1) A single RLE scheme, and then we use it in places it helps, and don't in places it doesn't.
-				(This is simple, but suboptimal size-wise.)
-		2) Multiple, semi-bespoke RLE schemes for different places within the file.
-				(This is messy and complicated, but could produce better results.)
-		3) At the start of each array, store a byte that states which encoding was used on the following data, and then probably a length too. Then, the rleDecode() function (or whatever) reads that byte and processes the data accordingly. So, we use the same system everywhere, and in fact different save-games could have eg the Terrain data encoded differently, but still be readable by the game.
-				(This is again complicated, but more understandable than #2 and also leaves room for new compression schemes in the future without having to change the file format.)
-		... At the moment I'm inclined to think #3 is the best option in the end, but for now I'm going to keep things simpler.
-✔ LittleEndian types that convert automatically.
-✔ A binary file format is the way to go for speed, but we might want to have a text format as well for easier debugging... if that's worth the extra code.
-	✔ I'm thinking, tagged sections. Each starts with a header struct that identifies which section it is and how many bytes long the rest of the section is, so that unrecognised sections can be skipped. This seems a fairly standard way of doing binary formats so it makes sense to copy it! (PNG seems a decent model for imitating.)
-	✔ First section is metadata, especially things that the game might want to know *before* the save-game is loaded. (So, city name, mayor name, save format version, save date, probably city size, whatever else.)
-	✔ Each layer has a section to itself. It should probably only save *necessary* data, that can't be generated from other data. eg, don't need to store the land-value parts, though we may want to save the cached total land value for each tile maybe? Not sure.
-- On load, we make sure the simulation is "warmed up" before actually letting the player start. So, probably mark the whole city as dirty for every layer, and then let them all process completely.
-	- Another option would be to save all of the "cached" data in the save file, so loading can just continue where you left off without having to warm up first. But that mean saving more data, and it opens us up for problems with the simulation changing over time and the data it needs being missed from older saves. So, recalculating things fresh is safer, even though it could mean the simulation state is slightly different after a save-load loop, because while playing the simulator is always using slightly old data because things update gradually. That should be a really minor issue though.
 
 Debug system:
 - Ability to filter out certain categories from the profiler list?

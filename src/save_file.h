@@ -86,6 +86,15 @@ typedef LittleEndian<s16> leS16;
 typedef LittleEndian<s32> leS32;
 typedef LittleEndian<s64> leS64;
 
+//
+// A crazy, completely-unnecessary idea: we could implement a thumbnail handler so that
+// saved games show a little picture of the city. Probably we'd embed a small rendered
+// image of the city in the save file (which would be useful for the in-game load menu)
+// and then just use that.
+// See https://docs.microsoft.com/en-us/windows/win32/shell/thumbnail-providers
+// This is very clearly not a good use of time but it would be SUPER COOL.
+// - Sam, 23/10/2019
+//
 
 #pragma pack(push, 1)
 
@@ -132,6 +141,8 @@ struct SAVChunk_Meta
 	leS32 funds;
 	SAVString cityName;
 	SAVString playerName;
+	leU32 population;
+	leU32 jobs;
 };
 
 struct SAVChunk_Mods
