@@ -471,6 +471,7 @@ void growSomeZoneBuildings(City *city)
 			s32 minimumDemand = layer->demand[zoneType] / 20; // Stop when we're below 20% of the original demand
 
 			s32 maxRBuildingDim = getMaxBuildingSize(zoneType);
+			s32 savedPositionInMostDesirableSectorsTable = 0;
 
 			while ((remainingBuildingCount > 0)
 				&& (layer->sectorsWithEmptyZones[zoneType].setBitCount > 0)
@@ -479,12 +480,13 @@ void growSomeZoneBuildings(City *city)
 				bool foundAZone = false;
 				s32 randomXOffset = randomNext(random);
 				s32 randomYOffset = randomNext(random);
+
 				V2I zonePos = {};
 				{
 					DEBUG_BLOCK_T("growSomeZoneBuildings - find a valid zone", DCDT_Simulation);
 
 					// Go through sectors from most desirable to least
-					for (s32 position = 0; position < getSectorCount(&layer->sectors); position++)
+					for (s32 position = savedPositionInMostDesirableSectorsTable; position < getSectorCount(&layer->sectors); position++)
 					{
 						s32 sectorIndex = layer->mostDesirableSectors[zoneType][position];
 
@@ -511,6 +513,20 @@ void growSomeZoneBuildings(City *city)
 								{
 									zonePos = v2i(x, y);
 									foundAZone = true;
+
+									//
+									// NB: We store this for two reasons:
+									// 1) It saves us re-checking the same sectors that we know don't have available
+									//    zones in.
+									// 2) More importantly, if we don't, then we only ever try to build in the first
+									//    valid sector! For example, if there's a 1x1 space in the best sector, but
+									//    all of the possible buildings are larger than that, then we were just trying
+									//    to fit stuff into that 1x1 space over and over, and never looking at less
+									//    desirable sectors! Oops. Fixed now though.
+									//
+									// - Sam, 23/10/2019
+									//
+									savedPositionInMostDesirableSectorsTable = position;
 								}
 							}
 						}
@@ -656,9 +672,11 @@ void growSomeZoneBuildings(City *city)
 				}
 				else
 				{
-					// We failed to find a building def, so we should probably stop trying to build things!
-					// Otherwise, we'll get stuck in an infinite loop
-					break;
+					savedPositionInMostDesirableSectorsTable++; // Go to the next sector in the hope it'll be better.
+
+					// // We failed to find a building def, so we should probably stop trying to build things!
+					// // Otherwise, we'll get stuck in an infinite loop
+					// break;
 				}
 			}
 		}
