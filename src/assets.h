@@ -125,11 +125,20 @@ struct Asset
 	// have anything bigger later. (Well, the BitmapFont is definitely bigger!)
 	union {
 		BitmapFont bitmapFont;
+
 		Cursor cursor;
+
+		struct {
+			Array<String> paletteNames;
+		} paletteDefs;
 		Palette palette;
+
 		Shader shader;
+
 		SpriteGroup spriteGroup;
+
 		Texture texture;
+
 		struct {
 			Array<String> keys;
 			bool isFallbackLocale;
@@ -189,6 +198,7 @@ void addFont(String name, String filename);
 void loadAsset(Asset *asset);
 void ensureAssetIsLoaded(Asset *asset);
 void unloadAsset(Asset *asset);
+void removeAsset(AssetType type, String name);
 
 void addAssets();
 void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType=AssetType_Unknown);

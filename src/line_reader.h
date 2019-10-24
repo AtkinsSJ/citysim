@@ -25,6 +25,8 @@ enum LineReaderFlags
 
 LineReader readLines(String filename, Blob data, u32 flags = DefaultLineReaderFlags, char commentChar = '#');
 
+void restart(LineReader *reader);
+
 s32 countLines(Blob data);
 
 bool loadNextLine(LineReader *reader);

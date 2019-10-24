@@ -364,6 +364,17 @@ void unloadAsset(Asset *asset)
 			}
 		} break;
 
+		case AssetType_PaletteDefs:
+		{
+			// Remove all of our palette assets
+			for (s32 paletteIndex = 0; paletteIndex < asset->paletteDefs.paletteNames.count; paletteIndex++)
+			{
+				String paletteName = asset->paletteDefs.paletteNames[paletteIndex];
+				removeAsset(AssetType_Palette, paletteName);
+			}
+			asset->paletteDefs.paletteNames = makeArray<String>(0, null);
+		} break;
+
 		case AssetType_Texts:
 		{
 			// Remove all of our texts from the table
@@ -395,6 +406,20 @@ void unloadAsset(Asset *asset)
 	}
 
 	asset->state = AssetState_Unloaded;
+}
+
+void removeAsset(AssetType type, String name)
+{
+	Asset *asset = getAssetIfExists(type, name);
+	if (asset == null)
+	{
+		logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, {name, formatInt(type)});
+	}
+	else
+	{
+		unloadAsset(asset);
+		removeKey(&assets->assetsByType[type], name);
+	}
 }
 
 Asset *addTexture(String filename, bool isAlphaPremultiplied)
@@ -820,8 +845,25 @@ void loadPaletteDefs(Blob data, Asset *asset)
 
 	LineReader reader = readLines(asset->shortName, data);
 
-	Asset *paletteAsset = null;
+	// We store the paletteNames array in the defs asset
+	// So, we first need to scan through the file to see how many palettes there are in it!
+	s32 paletteCount = 0;
+	while (loadNextLine(&reader))
+	{
+		String command = readToken(&reader);
+		if (equals(command, ":Palette"_s))
+		{
+			paletteCount++;
+		}
+	}
 
+	asset->data = assetsAllocate(assets, sizeof(String) * paletteCount);
+	asset->paletteDefs.paletteNames = makeArray(paletteCount, (String *) asset->data.memory);
+	s32 paletteIndex = 0;
+
+	restart(&reader);
+
+	Asset *paletteAsset = null;
 	while (loadNextLine(&reader))
 	{
 		String command = readToken(&reader);
@@ -834,6 +876,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 			{
 				String paletteName = pushString(&assets->assetArena, readToken(&reader));
 				paletteAsset = addAsset(AssetType_Palette, paletteName, 0);
+				asset->paletteDefs.paletteNames[paletteIndex++] = paletteName;
 			}
 			else
 			{

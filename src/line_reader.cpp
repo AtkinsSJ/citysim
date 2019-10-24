@@ -19,6 +19,14 @@ LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 	return result;
 }
 
+void restart(LineReader *reader)
+{
+	reader->currentLine = {};
+	reader->lineRemainder = {};
+	reader->currentLineNumber = 0;
+	reader->startOfNextLine = 0;
+}
+
 s32 countLines(Blob data)
 {
 	s32 result = 0;
