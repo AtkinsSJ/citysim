@@ -126,6 +126,9 @@ struct Asset
 	union {
 		BitmapFont bitmapFont;
 
+		struct {
+			Array<String> cursorNames;
+		} cursorDefs;
 		Cursor cursor;
 
 		struct {

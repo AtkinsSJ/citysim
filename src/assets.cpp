@@ -355,6 +355,17 @@ void unloadAsset(Asset *asset)
 
 	switch (asset->type)
 	{
+		case AssetType_CursorDefs:
+		{
+			// Remove all of our cursor assets
+			for (s32 cursorIndex = 0; cursorIndex < asset->cursorDefs.cursorNames.count; cursorIndex++)
+			{
+				String cursorName = asset->cursorDefs.cursorNames[cursorIndex];
+				removeAsset(AssetType_Cursor, cursorName);
+			}
+			asset->cursorDefs.cursorNames = makeArray<String>(0, null);
+		} break;
+
 		case AssetType_Cursor:
 		{
 			if (asset->cursor.sdlCursor != null)
@@ -816,10 +827,25 @@ void loadCursorDefs(Blob data, Asset *asset)
 
 	LineReader reader = readLines(asset->shortName, data);
 
+	// We store the cursorNames array in the defs asset
+	// So, we first need to scan through the file to see how many cursors there are in it!
+	s32 cursorCount = 0;
+	while (loadNextLine(&reader))
+	{
+		cursorCount++;
+	}
+
+	asset->data = assetsAllocate(assets, sizeof(String) * cursorCount);
+	asset->cursorDefs.cursorNames = makeArray(cursorCount, (String *) asset->data.memory);
+	s32 cursorIndex = 0;
+
+	restart(&reader);
+	
 	while (loadNextLine(&reader))
 	{
 		String name     = pushString(&assets->assetArena, readToken(&reader));
 		String filename = readToken(&reader);
+		asset->cursorDefs.cursorNames[cursorIndex++] = name;
 
 		Maybe<s64> hotX = readInt(&reader);
 		Maybe<s64> hotY = readInt(&reader);
