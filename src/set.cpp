@@ -27,9 +27,9 @@ bool contains(Set<T> *set, T item)
 {
 	bool result = false;
 
-	for (auto it = iterate(&set->items); !it.isDone; next(&it))
+	for (auto it = iterate(&set->items); hasNext(&it); next(&it))
 	{
-		if (set->areItemsEqual(&item, get(it)))
+		if (set->areItemsEqual(&item, get(&it)))
 		{
 			result = true;
 			break;

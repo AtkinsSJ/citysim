@@ -129,10 +129,10 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 
 	// Reset each to 0
 	for (auto it = iterate(&sector->powerGroups);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		PowerGroup *powerGroup = get(it);
+		PowerGroup *powerGroup = get(&it);
 		powerGroup->production = 0;
 		powerGroup->consumption = 0;
 	}
@@ -140,10 +140,10 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 	// Count power from buildings
 	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds, BQF_RequireOriginInArea);
 	for (auto it = iterate(&sectorBuildings);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		Building *building = getValue(it);
+		Building *building = getValue(&it);
 		BuildingDef *def = getBuildingDef(building->typeID);
 
 		if (def->power != 0)
@@ -298,9 +298,9 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 
 
 	// Step 0: Remove the old PowerGroups.
-	for (auto it = iterate(&sector->powerGroups); !it.isDone; next(&it))
+	for (auto it = iterate(&sector->powerGroups); hasNext(&it); next(&it))
 	{
-		PowerGroup *powerGroup = get(it);
+		PowerGroup *powerGroup = get(&it);
 		clear(&powerGroup->sectorBoundaries);
 	}
 	clear(&sector->powerGroups);
@@ -358,10 +358,10 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	// Store references to the buildings in each group, for faster updating later
 	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds);
 	for (auto it = iterate(&sectorBuildings);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		Building *building = getValue(it);
+		Building *building = getValue(&it);
 		if (getBuildingDef(building->typeID)->power == 0) continue; // We only care about powered buildings!
 
 		if (contains(sector->bounds, building->footprint.pos))
@@ -550,10 +550,10 @@ void floodFillCityPowerNetwork(PowerLayer *layer, PowerGroup *powerGroup, PowerN
 	append(&network->groups, powerGroup);
 
 	for (auto it = iterate(&powerGroup->sectorBoundaries);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		Rect2I bounds = getValue(it);
+		Rect2I bounds = getValue(&it);
 		PowerSector *sector = getSectorAtTilePos(&layer->sectors, bounds.x, bounds.y);
 		bounds = intersectRelative(sector->bounds, bounds);
 
@@ -585,16 +585,16 @@ void recalculatePowerConnectivity(PowerLayer *layer)
 
 	// Clean up networks
 	for (auto networkIt = iterate(&layer->networks);
-		!networkIt.isDone;
+		hasNext(&networkIt);
 		next(&networkIt))
 	{
-		PowerNetwork *powerNetwork = get(networkIt);
+		PowerNetwork *powerNetwork = get(&networkIt);
 
 		for (auto groupIt = iterate(&powerNetwork->groups);
-			!groupIt.isDone;
+			hasNext(&groupIt);
 			next(&groupIt))
 		{
-			PowerGroup *group = getValue(groupIt);
+			PowerGroup *group = getValue(&groupIt);
 			group->networkID = 0;
 		}
 
@@ -614,10 +614,10 @@ void recalculatePowerConnectivity(PowerLayer *layer)
 		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 
 		for (auto it = iterate(&sector->powerGroups);
-			!it.isDone;
+			hasNext(&it);
 			next(&it))
 		{
-			PowerGroup *powerGroup = get(it);
+			PowerGroup *powerGroup = get(&it);
 			if (powerGroup->networkID == 0)
 			{
 				PowerNetwork *network = newPowerNetwork(layer);
@@ -637,10 +637,10 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		initSet<PowerSector *>(&touchedSectors, tempArena, [](PowerSector **a, PowerSector **b) { return *a == *b; });
 
 		for (auto it = iterate(&layer->dirtyRects.rects);
-			!it.isDone;
+			hasNext(&it);
 			next(&it))
 		{
-			Rect2I dirtyRect = getValue(it);
+			Rect2I dirtyRect = getValue(&it);
 
 			// Clear the "distance to power" for the surrounding area to 0 or 255
 			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
@@ -684,7 +684,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		updateDistances(city, layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
 
 		// Rebuild the sectors that were modified
-		for (auto it = iterate(&touchedSectors); !isDone(&it); next(&it))
+		for (auto it = iterate(&touchedSectors); hasNext(&it); next(&it))
 		{
 			PowerSector *sector = getValue(&it);
 
@@ -709,18 +709,18 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 	// Sum each PowerGroup's power into its Network
 	for (auto networkIt = iterate(&layer->networks);
-		!networkIt.isDone;
+		hasNext(&networkIt);
 		next(&networkIt))
 	{
-		PowerNetwork *network = get(networkIt);
+		PowerNetwork *network = get(&networkIt);
 		network->cachedProduction = 0;
 		network->cachedConsumption = 0;
 
 		for (auto groupIt = iterate(&network->groups);
-			!groupIt.isDone;
+			hasNext(&groupIt);
 			next(&groupIt))
 		{
-			PowerGroup *powerGroup = getValue(groupIt);
+			PowerGroup *powerGroup = getValue(&groupIt);
 			network->cachedProduction += powerGroup->production;
 			network->cachedConsumption += powerGroup->consumption;
 		}
@@ -732,10 +732,10 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 	// Handle blackout/brownout situations
 	for (auto networkIt = iterate(&layer->networks);
-		!networkIt.isDone;
+		hasNext(&networkIt);
 		next(&networkIt))
 	{
-		PowerNetwork *network = get(networkIt);
+		PowerNetwork *network = get(&networkIt);
 
 		if (network->cachedConsumption == 0)
 		{
@@ -749,16 +749,16 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 			// So, mark every consumer as having no power
 			for (auto groupIt = iterate(&network->groups);
-				!groupIt.isDone;
+				hasNext(&groupIt);
 				next(&groupIt))
 			{
-				PowerGroup *powerGroup = getValue(groupIt);
+				PowerGroup *powerGroup = getValue(&groupIt);
 
 				for (auto buildingRefIt = iterate(&powerGroup->buildings);
-					!buildingRefIt.isDone;
+					hasNext(&buildingRefIt);
 					next(&buildingRefIt))
 				{
-					BuildingRef buildingRef = getValue(buildingRefIt);
+					BuildingRef buildingRef = getValue(&buildingRefIt);
 					Building *building = getBuilding(city, buildingRef);
 
 					if (building != null)
@@ -778,16 +778,16 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 			// @Copypasta Only a little different from the other branches
 			for (auto groupIt = iterate(&network->groups);
-				!groupIt.isDone;
+				hasNext(&groupIt);
 				next(&groupIt))
 			{
-				PowerGroup *powerGroup = getValue(groupIt);
+				PowerGroup *powerGroup = getValue(&groupIt);
 
 				for (auto buildingRefIt = iterate(&powerGroup->buildings);
-					!buildingRefIt.isDone;
+					hasNext(&buildingRefIt);
 					next(&buildingRefIt))
 				{
-					BuildingRef buildingRef = getValue(buildingRefIt);
+					BuildingRef buildingRef = getValue(&buildingRefIt);
 					Building *building = getBuilding(city, buildingRef);
 
 					if (building != null)
@@ -813,16 +813,16 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 			// So, mark every consumer as having power
 			for (auto groupIt = iterate(&network->groups);
-				!groupIt.isDone;
+				hasNext(&groupIt);
 				next(&groupIt))
 			{
-				PowerGroup *powerGroup = getValue(groupIt);
+				PowerGroup *powerGroup = getValue(&groupIt);
 
 				for (auto buildingRefIt = iterate(&powerGroup->buildings);
-					!buildingRefIt.isDone;
+					hasNext(&buildingRefIt);
 					next(&buildingRefIt))
 				{
-					BuildingRef buildingRef = getValue(buildingRefIt);
+					BuildingRef buildingRef = getValue(&buildingRefIt);
 					Building *building = getBuilding(city, buildingRef);
 
 					if (building != null)

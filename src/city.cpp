@@ -323,9 +323,9 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 
 	// Building demolition cost
 	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
-	for (auto it = iterate(&buildingsToDemolish); !it.isDone; next(&it))
+	for (auto it = iterate(&buildingsToDemolish); hasNext(&it); next(&it))
 	{
-		Building *building = getValue(it);
+		Building *building = getValue(&it);
 		total += getBuildingDef(building->typeID)->demolishCost;
 	}
 
@@ -341,10 +341,10 @@ void demolishRect(City *city, Rect2I area)
 	// Building demolition
 	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
 	for (auto it = iterate(&buildingsToDemolish, buildingsToDemolish.count-1, false, true);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		Building *building = getValue(it);
+		Building *building = getValue(&it);
 		BuildingDef *def = getBuildingDef(building->typeID);
 
 		city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
@@ -471,9 +471,9 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 		{
 			CitySector *sector = getSector(&city->sectors, sX, sY);
 
-			for (auto it = iterate(&sector->ownedBuildings); !it.isDone; next(&it))
+			for (auto it = iterate(&sector->ownedBuildings); hasNext(&it); next(&it))
 			{
-				Building *building = getValue(it);
+				Building *building = getValue(&it);
 				if (overlaps(building->footprint, area))
 				{
 					append(&result, building);
@@ -587,10 +587,10 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
 
 	for (auto it = iterate(&visibleBuildings);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		Building *building = getValue(it);
+		Building *building = getValue(&it);
 
 		if (typeID != building->typeID)
 		{
@@ -647,9 +647,9 @@ void updateSomeBuildings(City *city)
 	{
 		CitySector *sector = getNextSector(&city->sectors);
 
-		for (auto it = iterate(&sector->ownedBuildings); !it.isDone; next(&it))
+		for (auto it = iterate(&sector->ownedBuildings); hasNext(&it); next(&it))
 		{
-			Building *building = getValue(it);
+			Building *building = getValue(&it);
 			BuildingDef *def = getBuildingDef(building->typeID);
 
 			// Check the building's needs are met

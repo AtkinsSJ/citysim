@@ -344,10 +344,10 @@ Indexed<T *> findFirst(ChunkedArray<T> *array, Filter filter)
 
 	for (auto it = iterate(array); hasNext(&it); next(&it))
 	{
-		T *entry = get(it);
+		T *entry = get(&it);
 		if (filter(entry))
 		{
-			result = makeIndexedValue(entry, getIndex(it));
+			result = makeIndexedValue(entry, getIndex(&it));
 			break;
 		}
 	}
@@ -566,19 +566,19 @@ void next(ChunkedArrayIterator<T> *iterator)
 }
 
 template<typename T>
-inline T *get(ChunkedArrayIterator<T> iterator)
+inline T *get(ChunkedArrayIterator<T> *iterator)
 {
-	return &iterator.currentChunk->items[iterator.indexInChunk];
+	return &iterator->currentChunk->items[iterator->indexInChunk];
 }
 
 template<typename T>
-s32 getIndex(ChunkedArrayIterator<T> iterator)
+s32 getIndex(ChunkedArrayIterator<T> *iterator)
 {
-	return (iterator.chunkIndex * iterator.array->itemsPerChunk) + iterator.indexInChunk;
+	return (iterator->chunkIndex * iterator->array->itemsPerChunk) + iterator->indexInChunk;
 }
 
 template<typename T>
-inline T getValue(ChunkedArrayIterator<T> iterator)
+inline T getValue(ChunkedArrayIterator<T> *iterator)
 {
-	return iterator.currentChunk->items[iterator.indexInChunk];
+	return iterator->currentChunk->items[iterator->indexInChunk];
 }

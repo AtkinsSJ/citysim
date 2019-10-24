@@ -77,10 +77,10 @@ ConsoleCommand(help)
 	consoleWriteLine("Available commands are:"_s);
 
 	for (auto it = iterate(&globalConsole->commands);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		Command *command = get(it);
+		Command *command = get(&it);
 		consoleWriteLine(myprintf(" - {0}"_s, {command->name}));
 	}
 }

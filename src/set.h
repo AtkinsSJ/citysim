@@ -47,9 +47,9 @@ void next(SetIterator<T> *iterator)
 }
 
 template<typename T>
-bool isDone(SetIterator<T> *iterator)
+bool hasNext(SetIterator<T> *iterator)
 {
-	return iterator->itemsIterator.isDone;
+	return !iterator->itemsIterator.isDone;
 }
 
 template<typename T>
@@ -61,5 +61,5 @@ T *get(SetIterator<T> *iterator)
 template<typename T>
 T getValue(SetIterator<T> *iterator)
 {
-	return getValue(iterator->itemsIterator);
+	return getValue(&iterator->itemsIterator);
 }

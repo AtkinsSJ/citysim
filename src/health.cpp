@@ -51,7 +51,7 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 				setRegion<u8>(layer->tileHealthCoverage, city->bounds.w, city->bounds.h, sector->bounds, 0);
 				for (auto it = iterate(&layer->healthBuildings); hasNext(&it); next(&it))
 				{
-					Building *building = getBuilding(city, getValue(it));
+					Building *building = getBuilding(city, getValue(&it));
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building);

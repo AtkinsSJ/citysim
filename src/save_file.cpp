@@ -125,7 +125,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 			bldg.offsetForBuildingTypeTable = offset;
 			for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
 			{
-				BuildingDef *def = get(it);
+				BuildingDef *def = get(&it);
 				if (def->typeID == 0) continue; // Skip the null building def!
 
 				u32 typeID = def->typeID;
@@ -256,7 +256,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 
 				for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
 				{
-					Fire *fire = get(it);
+					Fire *fire = get(&it);
 					SAVFire savFire = {};
 					savFire.x = (u16) fire->pos.x;
 					savFire.y = (u16) fire->pos.y;

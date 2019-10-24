@@ -32,10 +32,10 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		// - Sam, 28/08/2019
 
 		for (auto it = iterate(&layer->dirtyRects.rects);
-			!it.isDone;
+			hasNext(&it);
 			next(&it))
 		{
-			Rect2I dirtyRect = getValue(it);
+			Rect2I dirtyRect = getValue(&it);
 
 			// Transport types on tile, based on what buildings are present
 			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)

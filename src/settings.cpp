@@ -124,10 +124,10 @@ void saveSettings()
 
 	u8* base = (u8*) settings;
 	for (auto it = iterate(&settings->defs);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		auto entry = getEntry(it);
+		auto entry = getEntry(&it);
 		String name = entry->key;
 		SettingDef *def = &entry->value;
 

@@ -78,10 +78,10 @@ void renderConsole(Console *console)
 	// print output lines
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
 	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		ConsoleOutputLine *line = get(it);
+		ConsoleOutputLine *line = get(&it);
 		V4 outputTextColor = consoleStyle->outputTextColor[line->style];
 
 		Rect2I resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
@@ -114,10 +114,10 @@ void consoleHandleCommand(Console *console, String commandInput)
 			String firstToken = nextToken(commandInput, &arguments);
 
 			for (auto it = iterate(&globalConsole->commands);
-				!it.isDone;
+				hasNext(&it);
 				next(&it))
 			{
-				Command *command = get(it);
+				Command *command = get(&it);
 
 				if (equals(command->name, firstToken))
 				{
@@ -163,10 +163,10 @@ void updateConsole(Console *console)
 {
 	// Keyboard shortcuts for commands
 	for (auto it = iterate(&console->commandShortcuts);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		CommandShortcut *shortcut = get(it);
+		CommandShortcut *shortcut = get(&it);
 
 		if (wasShortcutJustPressed(shortcut->shortcut))
 		{

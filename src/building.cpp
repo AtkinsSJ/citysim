@@ -417,7 +417,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "name"_s))
 				{
-					def->nameID = pushString(&assets->assetArena, readToken(&reader));
+					def->nameTextID = pushString(&assets->assetArena, readToken(&reader));
 				}
 				else if (equals(firstWord, "pollution"_s))
 				{
@@ -592,10 +592,10 @@ BuildingDef *findRandomZoneBuilding(ZoneType zoneType, Random *random, Filter fi
 	// Something to decide on later.
 	// - Sam, 18/08/2019
 	for (auto it = iterate(buildings, randomBelow(random, truncate32(buildings->count)));
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		BuildingDef *def = getValue(it);
+		BuildingDef *def = getValue(&it);
 
 		if (filter(def))
 		{
@@ -720,9 +720,9 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(&catalogue->allBuildings); !it.isDone; next(&it))
+	for (auto it = iterate(&catalogue->allBuildings); hasNext(&it); next(&it))
 	{
-		BuildingDef *def = get(it);
+		BuildingDef *def = get(&it);
 
 		// Account for the "null" building
 		if (!isEmpty(def->spriteName))

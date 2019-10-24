@@ -31,19 +31,19 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 			
 			// Recalculate the building contributions
 			for (auto rectIt = iterate(&layer->dirtyRects.rects);
-				!rectIt.isDone;
+				hasNext(&rectIt);
 				next(&rectIt))
 			{
-				Rect2I dirtyRect = getValue(rectIt);
+				Rect2I dirtyRect = getValue(&rectIt);
 
 				setRegion<s16>(layer->tileBuildingContributions, city->bounds.w, city->bounds.h, dirtyRect, 0);
 
 				ChunkedArray<Building *> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
 				for (auto buildingIt = iterate(&contributingBuildings);
-					!buildingIt.isDone;
+					hasNext(&buildingIt);
 					next(&buildingIt))
 				{
-					Building *building = getValue(buildingIt);
+					Building *building = getValue(&buildingIt);
 					BuildingDef *def = getBuildingDef(building);
 					if (hasEffect(&def->landValueEffect))
 					{

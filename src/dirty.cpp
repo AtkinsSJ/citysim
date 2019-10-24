@@ -34,10 +34,10 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 	{
 		// Check to see if this rectangle is contained by an existing dirty rect
 		for (auto it = iterate(&dirtyRects->rects);
-			!it.isDone;
+			hasNext(&it);
 			next(&it))
 		{
-			Rect2I *existingRect = get(it);
+			Rect2I *existingRect = get(&it);
 
 			if (contains(*existingRect, rectToAdd))
 			{
@@ -50,13 +50,13 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 		if (!added)
 		{
 			for (auto it = iterateBackwards(&dirtyRects->rects);
-				!it.isDone;
+				hasNext(&it);
 				next(&it))
 			{
-				Rect2I existingRect = getValue(it);
+				Rect2I existingRect = getValue(&it);
 				if (contains(rectToAdd, existingRect))
 				{
-					removeIndex(&dirtyRects->rects, getIndex(it), false);
+					removeIndex(&dirtyRects->rects, getIndex(&it), false);
 				}
 			}
 		}
@@ -87,10 +87,10 @@ Rect2I getOverallRect(DirtyRects *dirtyRects)
 		result = *get(&dirtyRects->rects, 0);
 
 		for (auto it = iterate(&dirtyRects->rects, 1, false);
-			!it.isDone;
+			hasNext(&it);
 			next(&it))
 		{
-			result = unionOf(result, getValue(it));
+			result = unionOf(result, getValue(&it));
 		}
 	}
 

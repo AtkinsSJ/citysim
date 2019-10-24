@@ -51,5 +51,6 @@ struct BitArrayIterator
 // - Sam, 18/08/2019
 BitArrayIterator iterateSetBits(BitArray *array);
 void next(BitArrayIterator *iterator);
+bool hasNext(BitArrayIterator *iterator);
 s32 getIndex(BitArrayIterator *iterator);
 bool getValue(BitArrayIterator *iterator);

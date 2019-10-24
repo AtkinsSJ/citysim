@@ -258,6 +258,9 @@ int main(int argc, char *argv[])
 	initCamera(worldCamera, windowSize, 1.0f/TILE_SIZE, 10000.0f, -10000.0f);
 	initCamera(uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
+	refreshBuildingSpriteCache(&buildingCatalogue);
+	refreshTerrainSpriteCache(&terrainCatalogue);
+
 	u32 initFinishedTicks = SDL_GetTicks();
 	logInfo("Game initialised in {0} milliseconds."_s, {formatInt(initFinishedTicks - initStartTicks)});
 
@@ -369,13 +372,6 @@ int main(int argc, char *argv[])
 
 					appState->appStatus = newAppStatus;
 					clear(&uiState.openWindows);
-
-					// Initialise new state
-					if (newAppStatus == AppStatus_Game)
-					{
-						refreshBuildingSpriteCache(&buildingCatalogue);
-						refreshTerrainSpriteCache(&terrainCatalogue);
-					}
 				}
 
 				drawUiMessage(&uiState);

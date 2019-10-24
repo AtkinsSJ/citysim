@@ -47,10 +47,10 @@ void updateFireLayer(City *city, FireLayer *layer)
 
 		// Recalculate fire distances
 		for (auto rectIt = iterate(&layer->dirtyRects.rects);
-			!rectIt.isDone;
+			hasNext(&rectIt);
 			next(&rectIt))
 		{
-			Rect2I dirtyRect = getValue(rectIt);
+			Rect2I dirtyRect = getValue(&rectIt);
 			setRegion<u16>(layer->tileFireProximityEffect, city->bounds.w, city->bounds.h, dirtyRect, 0);
 
 			Rect2I expandedRect = expand(dirtyRect, layer->maxFireRadius);
@@ -64,7 +64,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 
 					for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
 					{
-						Fire *fire = get(it);
+						Fire *fire = get(&it);
 						if (contains(expandedRect, fire->pos))
 						{
 							// TODO: Different "strengths" of fire should have different effects
@@ -96,7 +96,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 				setRegion<u8>(layer->tileFireProtection, city->bounds.w, city->bounds.h, sector->bounds, 0);
 				for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
 				{
-					Building *building = getBuilding(city, getValue(it));
+					Building *building = getBuilding(city, getValue(&it));
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building);
@@ -191,7 +191,7 @@ void drawFires(City *city, Rect2I visibleTileBounds)
 
 				for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
 				{
-					Fire *fire = get(it);
+					Fire *fire = get(&it);
 
 					if (contains(visibleTileBounds, fire->pos))
 					{
@@ -300,7 +300,7 @@ void removeFireAt(City *city, s32 x, s32 y)
 					FireSector *sector = getSector(&layer->sectors, sx, sy);
 					for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
 					{
-						Fire *fire = get(it);
+						Fire *fire = get(&it);
 
 						if (contains(building->footprint, fire->pos))
 						{

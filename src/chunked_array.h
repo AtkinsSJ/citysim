@@ -123,10 +123,10 @@ void returnLastChunkToPool(ChunkedArray<T> *array);
  * Example usage:
 
 	for (auto it = iterate(&array, randomBelow(random, array.count), true);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		auto thing = get(it);
+		auto thing = get(&it);
 		// do stuff with the thing
 	}
  */
@@ -147,10 +147,10 @@ template<typename T>
 bool hasNext(ChunkedArrayIterator<T> *iterator);
 
 template<typename T>
-T *get(ChunkedArrayIterator<T> iterator);
+T *get(ChunkedArrayIterator<T> *iterator);
 
 template<typename T>
-s32 getIndex(ChunkedArrayIterator<T> iterator);
+s32 getIndex(ChunkedArrayIterator<T> *iterator);
 
 template<typename T>
-T getValue(ChunkedArrayIterator<T> iterator);
+T getValue(ChunkedArrayIterator<T> *iterator);

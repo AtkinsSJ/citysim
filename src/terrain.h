@@ -2,8 +2,9 @@
 
 struct TerrainDef
 {
+	u8 typeID;
 	String id;
-	String nameID;
+	String nameTextID;
 
 	String spriteName;
 	SpriteGroup *sprites;
@@ -14,6 +15,13 @@ struct TerrainDef
 struct TerrainCatalogue
 {
 	OccupancyArray<TerrainDef> terrainDefs;
+
+	HashTable<TerrainDef *> terrainDefsByID;
+
+	HashTable<u8> terrainIDToOldType;
+	HashTable<u8> terrainIDToType;
+
+	bool terrainDefsHaveChanged;
 };
 
 TerrainCatalogue terrainCatalogue = {};
@@ -41,5 +49,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 TerrainDef *getTerrainAt(City *city, s32 x, s32 y);
 u8 getDistanceToWaterAt(City *city, s32 x, s32 y);
 
+void remapTerrainTypes(TerrainLayer *layer);
+
 // Returns 0 if not found
-s32 findTerrainTypeByName(String id);
+u8 findTerrainTypeByID(String id);

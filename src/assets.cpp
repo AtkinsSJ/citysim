@@ -541,9 +541,9 @@ void loadAssets()
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
 	{
-		Asset *asset = get(it);
+		Asset *asset = get(&it);
 		loadAsset(asset);
 	}
 
@@ -609,10 +609,10 @@ void addAssets()
 	addAssetsFromDirectory(nullString);
 
 	for (auto it = iterate(&assets->directoryNameToType);
-		!it.isDone;
+		hasNext(&it);
 		next(&it))
 	{
-		auto entry = getEntry(it);
+		auto entry = getEntry(&it);
 		addAssetsFromDirectory(entry->key, entry->value);
 	}
 }
@@ -631,9 +631,9 @@ void reloadAssets()
 	rendererUnloadAssets();
 
 	// Clear managed assets
-	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
 	{
-		Asset *asset = get(it);
+		Asset *asset = get(&it);
 		unloadAsset(asset);
 	}
 
@@ -654,6 +654,8 @@ void reloadAssets()
 
 	// After stuff
 	rendererLoadAssets();
+	refreshBuildingSpriteCache(&buildingCatalogue);
+	refreshTerrainSpriteCache(&terrainCatalogue);
 	consoleWriteLine("Assets reloaded successfully!"_s, CLS_Success);
 }
 
@@ -817,18 +819,18 @@ void reloadLocaleSpecificAssets()
 	// Clear the list of missing texts because they might not be missing in the new locale!
 	clear(&assets->missingTextIDs);
 
-	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
 	{
-		Asset *asset = get(it);
+		Asset *asset = get(&it);
 		if (asset->flags & Asset_IsLocaleSpecific)
 		{
 			unloadAsset(asset);
 		}
 	}
 
-	for (auto it = iterate(&assets->allAssets); !it.isDone; next(&it))
+	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
 	{
-		Asset *asset = get(it);
+		Asset *asset = get(&it);
 		if (asset->flags & Asset_IsLocaleSpecific)
 		{
 			loadAsset(asset);

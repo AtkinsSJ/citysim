@@ -34,9 +34,18 @@ inline u8 getDistanceToWaterAt(City *city, s32 x, s32 y)
 
 void initTerrainCatalogue()
 {
+	terrainCatalogue = {};
+
 	initOccupancyArray(&terrainCatalogue.terrainDefs, &globalAppState.systemArena, 128);
 	Indexed<TerrainDef*> nullTerrainDef = append(&terrainCatalogue.terrainDefs);
 	*nullTerrainDef.value = {};
+
+	initHashTable(&terrainCatalogue.terrainDefsByID, 0.75f, 128);
+
+	initHashTable(&terrainCatalogue.terrainIDToType, 0.75f, 128);
+	put<u8>(&terrainCatalogue.terrainIDToType, nullString, 0);
+
+	initHashTable(&terrainCatalogue.terrainIDToOldType, 0.75f, 128);
 }
 
 void loadTerrainDefs(Blob data, Asset *asset)
@@ -76,6 +85,8 @@ void loadTerrainDefs(Blob data, Asset *asset)
 
 	TerrainDef *def = null;
 
+	terrainCatalogue.terrainDefsHaveChanged = true; // Mark that it's changed.
+
 	while (loadNextLine(&reader))
 	{
 		String firstWord = readToken(&reader);
@@ -90,7 +101,16 @@ void loadTerrainDefs(Blob data, Asset *asset)
 			if (equals(firstWord, "Terrain"_s))
 			{
 				mode = Mode_Terrain;
-				def = append(&terrainCatalogue.terrainDefs).value;
+
+				Indexed<TerrainDef *> slot = append(&terrainCatalogue.terrainDefs);
+				def = slot.value;
+
+				if (slot.index > u8Max)
+				{
+					error(&reader, "Too many Terrain definitions! The most we support is {0}."_s, {formatInt(u8Max)});
+					return;
+				}
+				def->typeID = (u8) slot.index;
 				
 				String id = readToken(&reader);
 				if (isEmpty(id))
@@ -98,8 +118,10 @@ void loadTerrainDefs(Blob data, Asset *asset)
 					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
 					return;
 				}
-				def->id = pushString(&assets->assetArena, id);
+				def->id = pushString(&globalAppState.systemArena, id);
 				asset->terrainDefs.terrainIDs[terrainIDsIndex++] = def->id;
+				put(&terrainCatalogue.terrainDefsByID, def->id, def);
+				put(&terrainCatalogue.terrainIDToType, def->id, def->typeID);
 			}
 			else if (equals(firstWord, "Texture"_s))
 			{
@@ -179,7 +201,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				case Mode_Terrain: {
 					if (equals(firstWord, "name"_s))
 					{
-						def->nameID = pushString(&assets->assetArena, readToken(&reader));
+						def->nameTextID = pushString(&assets->assetArena, readToken(&reader));
 					}
 					else if (equals(firstWord, "uses_sprite"_s))
 					{
@@ -206,26 +228,26 @@ void loadTerrainDefs(Blob data, Asset *asset)
 
 void removeTerrainDefs(Array<String> idsToRemove)
 {
-	// TODO: Incomplete!!!
-	// We use the array indices internally, so we can't just remove things from the array -
-	// they need to be remapped. But baby steps.
-
 	for (s32 idIndex = 0; idIndex < idsToRemove.count; idIndex++)
 	{
 		String terrainID = idsToRemove[idIndex];
-		s32 terrainIndex = findTerrainTypeByName(terrainID);
+		s32 terrainIndex = findTerrainTypeByID(terrainID);
 		if (terrainIndex > 0)
 		{
 			removeIndex(&terrainCatalogue.terrainDefs, terrainIndex);
+
+			removeKey(&terrainCatalogue.terrainIDToType, terrainID);
 		}
 	}
+
+	terrainCatalogue.terrainDefsHaveChanged = true; // Mark that it's changed.
 }
 
 void refreshTerrainSpriteCache(TerrainCatalogue *catalogue)
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(&catalogue->terrainDefs); !it.isDone; next(&it))
+	for (auto it = iterate(&catalogue->terrainDefs); hasNext(&it); next(&it))
 	{
 		TerrainDef *def = get(&it);
 
@@ -237,20 +259,16 @@ void refreshTerrainSpriteCache(TerrainCatalogue *catalogue)
 	}
 }
 
-s32 findTerrainTypeByName(String id)
+u8 findTerrainTypeByID(String id)
 {
 	DEBUG_FUNCTION();
 	
-	s32 result = 0;
+	u8 result = 0;
 
-	for (auto it = iterate(&terrainCatalogue.terrainDefs); hasNext(&it); next(&it))
+	TerrainDef **def = find(&terrainCatalogue.terrainDefsByID, id);
+	if (def != null && *def != null)
 	{
-		TerrainDef *def = get(&it);
-		if (equals(def->id, id))
-		{
-			result = getIndex(&it);
-			break;
-		}
+		result = (*def)->typeID;
 	}
 
 	return result;
@@ -309,8 +327,8 @@ void generateTerrain(City *city, Random *gameRandom)
 
 	TerrainLayer *layer = &city->terrainLayer;
 	
-	u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
-	u8 tWater  = truncate<u8>(findTerrainTypeByName("water"_s));
+	u8 tGround = truncate<u8>(findTerrainTypeByID("ground"_s));
+	u8 tWater  = truncate<u8>(findTerrainTypeByID("water"_s));
 	BuildingDef *treeDef = findBuildingDef("tree"_s);
 
 	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));
@@ -421,4 +439,53 @@ void generateTerrain(City *city, Random *gameRandom)
 	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
 
 	updateDistances(city, layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
+}
+
+void remapTerrainTypes(City *city)
+{
+	if (!terrainCatalogue.terrainDefsHaveChanged)
+	{
+		logWarn("Calling remapTerrainTypes() when terrain types haven't changed, so something is wrong somewhere!"_s);
+		DEBUG_BREAK();
+		return;
+	}
+
+	if (terrainCatalogue.terrainIDToOldType.count > 0)
+	{
+		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainCatalogue.terrainIDToOldType.count);
+		for (auto it = iterate(&terrainCatalogue.terrainIDToOldType); hasNext(&it); next(&it))
+		{
+			auto entry = getEntry(&it);
+			String terrainID = entry->key;
+			u8 oldType       = entry->value;
+
+			u8 *newType = find(&terrainCatalogue.terrainIDToType, terrainID);
+			if (newType == null)
+			{
+				oldTypeToNewType[oldType] = 0;
+			}
+			else
+			{
+				oldTypeToNewType[oldType] = *newType;
+			}
+		}
+
+		TerrainLayer *layer = &city->terrainLayer;
+
+		s32 tileCount = areaOf(city->bounds);
+		for (s32 tileIndex = 0; tileIndex < tileCount; tileIndex++)
+		{
+			layer->tileTerrainType[tileIndex] = oldTypeToNewType[ layer->tileTerrainType[tileIndex] ];
+		}
+	}
+
+	// Fill the "old" table for next time.
+	clear(&terrainCatalogue.terrainIDToOldType);
+	for (auto it = iterate(&terrainCatalogue.terrainIDToType); hasNext(&it); next(&it))
+	{
+		auto entry = getEntry(&it);
+		put(&terrainCatalogue.terrainIDToOldType, entry->key, entry->value);
+	}
+
+	terrainCatalogue.terrainDefsHaveChanged = false;
 }

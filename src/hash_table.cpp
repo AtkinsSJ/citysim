@@ -184,8 +184,7 @@ void clear(HashTable<T> *table)
 		{
 			for (s32 i=0; i < table->capacity; i++)
 			{
-				table->entries[i].isOccupied = false;
-				table->entries[i].isGravestone = false;
+				table->entries[i] = {};
 			}
 		}
 	}
@@ -213,7 +212,7 @@ HashTableIterator<T> iterate(HashTable<T> *table)
 	iterator.isDone = (table->count == 0);
 
 	// If the first entry is unoccupied, we need to skip ahead
-	if (!iterator.isDone && !getEntry(iterator)->isOccupied)
+	if (!iterator.isDone && !getEntry(&iterator)->isOccupied)
 	{
 		next(&iterator);
 	}
@@ -235,7 +234,7 @@ void next(HashTableIterator<T> *iterator)
 		else
 		{
 			// Only stop iterating if we find an occupied entry
-			if (getEntry(*iterator)->isOccupied)
+			if (getEntry(iterator)->isOccupied)
 			{
 				break;
 			}
@@ -244,13 +243,19 @@ void next(HashTableIterator<T> *iterator)
 }
 
 template<typename T>
-HashTableEntry<T> *getEntry(HashTableIterator<T> iterator)
+inline bool hasNext(HashTableIterator<T> *iterator)
 {
-	return iterator.hashTable->entries + iterator.currentIndex;
+	return !iterator->isDone;
 }
 
 template<typename T>
-T *get(HashTableIterator<T> iterator)
+HashTableEntry<T> *getEntry(HashTableIterator<T> *iterator)
+{
+	return iterator->hashTable->entries + iterator->currentIndex;
+}
+
+template<typename T>
+T *get(HashTableIterator<T> *iterator)
 {
 	return &getEntry(iterator)->value;
 }

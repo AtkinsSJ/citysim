@@ -36,7 +36,7 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 	layer->totalJailCapacity = 0;
 	for (auto it = iterate(&layer->policeBuildings); hasNext(&it); next(&it))
 	{
-		Building *building = getBuilding(city, getValue(it));
+		Building *building = getBuilding(city, getValue(&it));
 		if (building != null)
 		{
 			BuildingDef *def = getBuildingDef(building);
@@ -56,7 +56,7 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 				setRegion<u8>(layer->tilePoliceCoverage, city->bounds.w, city->bounds.h, sector->bounds, 0);
 				for (auto it = iterate(&layer->policeBuildings); hasNext(&it); next(&it))
 				{
-					Building *building = getBuilding(city, getValue(it));
+					Building *building = getBuilding(city, getValue(&it));
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building);

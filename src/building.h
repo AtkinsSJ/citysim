@@ -22,7 +22,7 @@ struct BuildingDef
 	String id;
 	s32 typeID;
 
-	String nameID;
+	String nameTextID;
 
 	Flags8<BuildingFlag> flags;
 

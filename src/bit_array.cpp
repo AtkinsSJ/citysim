@@ -94,7 +94,7 @@ Array<s32> getSetBitIndices(BitArray *array)
 
 	s32 pos = 0;
 
-	for (auto it = iterateSetBits(array); !it.isDone; next(&it))
+	for (auto it = iterateSetBits(array); hasNext(&it); next(&it))
 	{
 		result[pos++] = getIndex(&it);
 	}
@@ -176,6 +176,11 @@ void next(BitArrayIterator *iterator)
 			if (getValue(iterator)) break;
 		}
 	}
+}
+
+inline bool hasNext(BitArrayIterator *iterator)
+{
+	return !iterator->isDone;
 }
 
 inline s32 getIndex(BitArrayIterator *iterator)
