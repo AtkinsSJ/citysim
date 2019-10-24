@@ -41,6 +41,9 @@ void initAssets()
 
 	initUITheme(&assets->theme);
 
+	initTerrainCatalogue();
+	initBuildingCatalogue();
+
 	initHashTable(&assets->texts);
 	initHashTable(&assets->defaultTexts);
 	initSet<String>(&assets->missingTextIDs, &assets->assetArena, [](String *a, String *b) {return equals(*a, *b); });
@@ -277,7 +280,7 @@ void loadAsset(Asset *asset)
 
 		case AssetType_TerrainDefs:
 		{
-			loadTerrainDefs(&terrainDefs, fileData, asset);
+			loadTerrainDefs(fileData, asset);
 			asset->state = AssetState_Loaded;
 		} break;
 
@@ -355,6 +358,13 @@ void unloadAsset(Asset *asset)
 
 	switch (asset->type)
 	{
+		case AssetType_BuildingDefs:
+		{
+			// Remove all of our terrain defs
+			removeBuildingDefs(asset->buildingDefs.buildingIDs);
+			asset->buildingDefs.buildingIDs = makeArray<String>(0, null);
+		} break;
+
 		case AssetType_CursorDefs:
 		{
 			// Remove all of our cursor assets
@@ -384,6 +394,13 @@ void unloadAsset(Asset *asset)
 				removeAsset(AssetType_Palette, paletteName);
 			}
 			asset->paletteDefs.paletteNames = makeArray<String>(0, null);
+		} break;
+
+		case AssetType_TerrainDefs:
+		{
+			// Remove all of our terrain defs
+			removeTerrainDefs(asset->terrainDefs.terrainIDs);
+			asset->terrainDefs.terrainIDs = makeArray<String>(0, null);
 		} break;
 
 		case AssetType_Texts:
@@ -840,7 +857,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 	s32 cursorIndex = 0;
 
 	restart(&reader);
-	
+
 	while (loadNextLine(&reader))
 	{
 		String name     = pushString(&assets->assetArena, readToken(&reader));

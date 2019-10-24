@@ -11,7 +11,12 @@ struct TerrainDef
 	bool canBuildOn;
 };
 
-ChunkedArray<TerrainDef> terrainDefs = {};
+struct TerrainCatalogue
+{
+	OccupancyArray<TerrainDef> terrainDefs;
+};
+
+TerrainCatalogue terrainCatalogue = {};
 
 struct TerrainLayer
 {
@@ -26,8 +31,10 @@ struct TerrainLayer
 
 void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena);
 
-void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset);
-void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains);
+void initTerrainCatalogue();
+void loadTerrainDefs(Blob data, Asset *asset);
+void refreshTerrainSpriteCache(TerrainCatalogue *catalogue);
+void removeTerrainDefs(Array<String> idsToRemove);
 
 void generateTerrain(City *city, Random *gameRandom);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);

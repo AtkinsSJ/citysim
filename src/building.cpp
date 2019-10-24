@@ -22,6 +22,28 @@ Building *getBuilding(City *city, BuildingRef ref)
 	return result;
 }
 
+void initBuildingCatalogue()
+{
+	BuildingCatalogue *catalogue = &buildingCatalogue;
+	initChunkedArray(&catalogue->constructibleBuildings, &globalAppState.systemArena, 64);
+	initChunkedArray(&catalogue->rGrowableBuildings, &globalAppState.systemArena, 64);
+	initChunkedArray(&catalogue->cGrowableBuildings, &globalAppState.systemArena, 64);
+	initChunkedArray(&catalogue->iGrowableBuildings, &globalAppState.systemArena, 64);
+
+	initChunkedArray(&catalogue->allBuildings, &globalAppState.systemArena, 64);
+	// NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
+	// So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
+	// and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
+	appendBlank(&catalogue->allBuildings);
+
+	initHashTable(&catalogue->buildingsByName, 0.75f, 128);
+
+	catalogue->maxRBuildingDim = 0;
+	catalogue->maxCBuildingDim = 0;
+	catalogue->maxIBuildingDim = 0;
+	catalogue->overallMaxBuildingDim = 0;
+}
+
 void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 {
 	if (def->typeID == 0) return; // Defs with typeID 0 are templates, which we don't want polluting the catalogue!
@@ -60,32 +82,24 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 	BuildingCatalogue *catalogue = &buildingCatalogue;
 	ChunkedArray<BuildingDef> *buildings = &catalogue->allBuildings;
-	HashTable<BuildingDef *> *buildingNames = &catalogue->buildingsByName;
 
-	if (!isHashTableInitialised(buildingNames))
+	// We store the paletteNames array in the defs asset
+	// So, we first need to scan through the file to see how many palettes there are in it!
+	s32 buildingCount = 0;
+	while (loadNextLine(&reader))
 	{
-		initHashTable(buildingNames, 0.75f, 128);
+		String command = readToken(&reader);
+		if (equals(command, ":Building"_s))
+		{
+			buildingCount++;
+		}
 	}
 
-	clear(buildingNames);
+	asset->data = assetsAllocate(assets, sizeof(String) * buildingCount);
+	asset->buildingDefs.buildingIDs = makeArray(buildingCount, (String *) asset->data.memory);
+	s32 buildingIDsIndex = 0;
 
-	// @Cleanup DANGER! Currently, the asset system resets the assetarena, so we have to re-init these arrays every time.
-	// That's gross, and if we ever DON'T reset that, this will be a leak! But oh well.
-	initChunkedArray(&catalogue->constructibleBuildings, &assets->assetArena, 64);
-	initChunkedArray(&catalogue->rGrowableBuildings, &assets->assetArena, 64);
-	initChunkedArray(&catalogue->cGrowableBuildings, &assets->assetArena, 64);
-	initChunkedArray(&catalogue->iGrowableBuildings, &assets->assetArena, 64);
-
-	initChunkedArray(buildings, &assets->assetArena, 64);
-	// NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
-	// So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
-	// and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
-	appendBlank(buildings);
-
-	catalogue->maxRBuildingDim = 0;
-	catalogue->maxCBuildingDim = 0;
-	catalogue->maxIBuildingDim = 0;
-	catalogue->overallMaxBuildingDim = 0;
+	restart(&reader);
 
 	HashTable<BuildingDef> templates;
 	initHashTable(&templates);
@@ -119,6 +133,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 				def->fireRisk = 1.0f;
 				put(&catalogue->buildingsByName, def->id, def);
+				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->id;
 			}
 			else if (equals(firstWord, "Template"_s))
 			{
@@ -493,6 +508,28 @@ void loadBuildingDefs(Blob data, Asset *asset)
 		formatInt(catalogue->iGrowableBuildings.count),
 		formatInt(catalogue->constructibleBuildings.count)
 	});
+}
+
+void removeBuildingDefs(Array<String> idsToRemove)
+{
+	// TODO: Implement this once terrain stuff is done and we can copy it!
+
+	BuildingCatalogue *catalogue = &buildingCatalogue;
+	
+	clear(&catalogue->constructibleBuildings);
+	clear(&catalogue->rGrowableBuildings);
+	clear(&catalogue->cGrowableBuildings);
+	clear(&catalogue->iGrowableBuildings);
+
+	clear(&catalogue->allBuildings);
+	appendBlank(&catalogue->allBuildings);
+
+	clear(&catalogue->buildingsByName);
+
+	catalogue->maxRBuildingDim = 0;
+	catalogue->maxCBuildingDim = 0;
+	catalogue->maxIBuildingDim = 0;
+	catalogue->overallMaxBuildingDim = 0;
 }
 
 inline BuildingDef *getBuildingDef(s32 buildingTypeID)

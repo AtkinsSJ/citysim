@@ -697,7 +697,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	if (assets->assetReloadHasJustHappened)
 	{
 		refreshBuildingSpriteCache(&buildingCatalogue);
-		refreshTerrainSpriteCache(&terrainDefs);
+		refreshTerrainSpriteCache(&terrainCatalogue);
 	}
 
 

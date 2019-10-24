@@ -62,3 +62,6 @@ void next(OccupancyArrayIterator<T> *iterator);
 
 template<typename T>
 T *get(OccupancyArrayIterator<T> *iterator);
+
+template<typename T>
+s32 getIndex(OccupancyArrayIterator<T> *iterator);

@@ -252,3 +252,11 @@ inline T *get(OccupancyArrayIterator<T> *iterator)
 
 	return result;
 }
+
+template<typename T>
+inline s32 getIndex(OccupancyArrayIterator<T> *iterator)
+{
+	s32 result = (iterator->chunkIndex * iterator->array->itemsPerChunk) + iterator->indexInChunk;
+
+	return result;
+}

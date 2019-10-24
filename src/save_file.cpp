@@ -80,12 +80,12 @@ bool writeSaveFile(FileHandle *file, City *city)
 			terr.terrainGenerationSeed = layer->terrainGenerationSeed;
 
 			// Terrain types table
-			terr.terrainTypeCount = terrainDefs.count;
+			terr.terrainTypeCount = terrainCatalogue.terrainDefs.count;
 			terr.offsetForTerrainTypeTable = offset;
-			for (auto it = iterate(&terrainDefs); hasNext(&it); next(&it))
+			for (auto it = iterate(&terrainCatalogue.terrainDefs); hasNext(&it); next(&it))
 			{
-				TerrainDef *def = get(it);
-				u32 typeID = getIndex(it);
+				TerrainDef *def = get(&it);
+				u32 typeID = getIndex(&it);
 				u32 idLength = def->id.length;
 
 				// 4 byte int id, 4 byte length, then the text as bytes

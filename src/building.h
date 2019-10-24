@@ -141,10 +141,12 @@ struct BuildingRef
 BuildingRef getReferenceTo(Building *building);
 Building *getBuilding(City *city, BuildingRef ref);
 
+void initBuildingCatalogue();
 BuildingDef *getBuildingDef(Building *building);
 
 void loadBuildingDefs(Blob data, Asset *asset);
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
+void removeBuildingDefs(Array<String> idsToRemove);
 BuildingDef *getBuildingDef(s32 buildingTypeID);
 BuildingDef *findBuildingDef(String name);
 

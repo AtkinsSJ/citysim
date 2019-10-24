@@ -373,10 +373,8 @@ int main(int argc, char *argv[])
 					// Initialise new state
 					if (newAppStatus == AppStatus_Game)
 					{
-						// TODO: Get rid of this!!! It doesn't play well with the save-load stuff
-
 						refreshBuildingSpriteCache(&buildingCatalogue);
-						refreshTerrainSpriteCache(&terrainDefs);
+						refreshTerrainSpriteCache(&terrainCatalogue);
 					}
 				}
 

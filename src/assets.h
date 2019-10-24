@@ -127,6 +127,10 @@ struct Asset
 		BitmapFont bitmapFont;
 
 		struct {
+			Array<String> buildingIDs;
+		} buildingDefs;
+
+		struct {
 			Array<String> cursorNames;
 		} cursorDefs;
 		Cursor cursor;
@@ -139,6 +143,10 @@ struct Asset
 		Shader shader;
 
 		SpriteGroup spriteGroup;
+
+		struct {
+			Array<String> terrainIDs;
+		} terrainDefs;
 
 		Texture texture;
 

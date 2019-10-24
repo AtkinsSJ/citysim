@@ -18,7 +18,7 @@ inline TerrainDef *getTerrainAt(City *city, s32 x, s32 y)
 		terrainType = getTileValue(city, city->terrainLayer.tileTerrainType, x, y);
 	}
 
-	TerrainDef *result = get(&terrainDefs, terrainType);
+	TerrainDef *result = get(&terrainCatalogue.terrainDefs, terrainType);
 	return result;
 }
 
@@ -32,14 +32,36 @@ inline u8 getDistanceToWaterAt(City *city, s32 x, s32 y)
 	return getTileValue(city, city->terrainLayer.tileDistanceToWater, x, y);
 }
 
-void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset)
+void initTerrainCatalogue()
+{
+	initOccupancyArray(&terrainCatalogue.terrainDefs, &globalAppState.systemArena, 128);
+	Indexed<TerrainDef*> nullTerrainDef = append(&terrainCatalogue.terrainDefs);
+	*nullTerrainDef.value = {};
+}
+
+void loadTerrainDefs(Blob data, Asset *asset)
 {
 	DEBUG_FUNCTION();
 
 	LineReader reader = readLines(asset->shortName, data);
 
-	initChunkedArray(terrains, &assets->assetArena, 16);
-	appendBlank(terrains);
+	// We store the paletteNames array in the defs asset
+	// So, we first need to scan through the file to see how many palettes there are in it!
+	s32 terrainCount = 0;
+	while (loadNextLine(&reader))
+	{
+		String command = readToken(&reader);
+		if (equals(command, ":Terrain"_s))
+		{
+			terrainCount++;
+		}
+	}
+
+	asset->data = assetsAllocate(assets, sizeof(String) * terrainCount);
+	asset->terrainDefs.terrainIDs = makeArray(terrainCount, (String *) asset->data.memory);
+	s32 terrainIDsIndex = 0;
+
+	restart(&reader);
 
 	enum Mode
 	{
@@ -68,7 +90,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 			if (equals(firstWord, "Terrain"_s))
 			{
 				mode = Mode_Terrain;
-				def = appendBlank(terrains);
+				def = append(&terrainCatalogue.terrainDefs).value;
 				
 				String id = readToken(&reader);
 				if (isEmpty(id))
@@ -77,6 +99,7 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 					return;
 				}
 				def->id = pushString(&assets->assetArena, id);
+				asset->terrainDefs.terrainIDs[terrainIDsIndex++] = def->id;
 			}
 			else if (equals(firstWord, "Texture"_s))
 			{
@@ -181,13 +204,30 @@ void loadTerrainDefs(ChunkedArray<TerrainDef> *terrains, Blob data, Asset *asset
 	}
 }
 
-void refreshTerrainSpriteCache(ChunkedArray<TerrainDef> *terrains)
+void removeTerrainDefs(Array<String> idsToRemove)
+{
+	// TODO: Incomplete!!!
+	// We use the array indices internally, so we can't just remove things from the array -
+	// they need to be remapped. But baby steps.
+
+	for (s32 idIndex = 0; idIndex < idsToRemove.count; idIndex++)
+	{
+		String terrainID = idsToRemove[idIndex];
+		s32 terrainIndex = findTerrainTypeByName(terrainID);
+		if (terrainIndex > 0)
+		{
+			removeIndex(&terrainCatalogue.terrainDefs, terrainIndex);
+		}
+	}
+}
+
+void refreshTerrainSpriteCache(TerrainCatalogue *catalogue)
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(terrains); !it.isDone; next(&it))
+	for (auto it = iterate(&catalogue->terrainDefs); !it.isDone; next(&it))
 	{
-		TerrainDef *def = get(it);
+		TerrainDef *def = get(&it);
 
 		// Account for the "null" terrain
 		if (!isEmpty(def->spriteName))
@@ -203,12 +243,12 @@ s32 findTerrainTypeByName(String id)
 	
 	s32 result = 0;
 
-	for (s32 terrainID = 1; terrainID < terrainDefs.count; terrainID++)
+	for (auto it = iterate(&terrainCatalogue.terrainDefs); hasNext(&it); next(&it))
 	{
-		TerrainDef *def = get(&terrainDefs, terrainID);
+		TerrainDef *def = get(&it);
 		if (equals(def->id, id))
 		{
-			result = terrainID;
+			result = getIndex(&it);
 			break;
 		}
 	}
@@ -229,7 +269,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 	V4 white = makeWhite();
 
 	s32 tilesToDraw = areaOf(visibleArea);
-	Asset *terrainTexture = getSprite(get(&terrainDefs, 1)->sprites, 0)->texture;
+	Asset *terrainTexture = getSprite(get(&terrainCatalogue.terrainDefs, 1)->sprites, 0)->texture;
 	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
 
 	for (s32 y=visibleArea.y;
@@ -247,7 +287,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			if (type != terrainType)
 			{
 				terrainType = type;
-				terrainSprites = get(&terrainDefs, terrainType)->sprites;
+				terrainSprites = get(&terrainCatalogue.terrainDefs, terrainType)->sprites;
 			}
 
 			// Null terrain has no sprites, so only draw if there's something to draw!
