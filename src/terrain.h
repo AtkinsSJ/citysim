@@ -43,6 +43,7 @@ void initTerrainCatalogue();
 void loadTerrainDefs(Blob data, Asset *asset);
 void refreshTerrainSpriteCache(TerrainCatalogue *catalogue);
 void removeTerrainDefs(Array<String> idsToRemove);
+TerrainDef *getTerrainDef(u8 terrainType);
 
 void generateTerrain(City *city, Random *gameRandom);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);

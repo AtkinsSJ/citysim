@@ -7,11 +7,6 @@ sprite_border 1 1  # How many pixels wide the border is around each sprite. (eg 
 sprite water 0 0 4 1
 sprite grass 0 1 4 1
 
-:Terrain ground
-name name_ground
-uses_sprite grass
-can_build_on true
-
 :Terrain water
 name name_water
 uses_sprite water

@@ -12,13 +12,13 @@ void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena)
 
 inline TerrainDef *getTerrainAt(City *city, s32 x, s32 y)
 {
-	s32 terrainType = 0;
+	u8 terrainType = 0;
 	if (tileExists(city, x, y))
 	{
 		terrainType = getTileValue(city, city->terrainLayer.tileTerrainType, x, y);
 	}
 
-	TerrainDef *result = get(&terrainCatalogue.terrainDefs, terrainType);
+	TerrainDef *result = getTerrainDef(terrainType);
 	return result;
 }
 
@@ -243,6 +243,19 @@ void removeTerrainDefs(Array<String> idsToRemove)
 	terrainCatalogue.terrainDefsHaveChanged = true; // Mark that it's changed.
 }
 
+inline TerrainDef *getTerrainDef(u8 terrainType)
+{
+	TerrainDef *result = get(&terrainCatalogue.terrainDefs, 0);
+
+	if (terrainType > 0 && terrainType < terrainCatalogue.terrainDefs.count)
+	{
+		TerrainDef *found = get(&terrainCatalogue.terrainDefs, terrainType);
+		if (found != null) result = found;
+	}
+
+	return result;
+}
+
 void refreshTerrainSpriteCache(TerrainCatalogue *catalogue)
 {
 	DEBUG_FUNCTION();
@@ -287,7 +300,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 	V4 white = makeWhite();
 
 	s32 tilesToDraw = areaOf(visibleArea);
-	Asset *terrainTexture = getSprite(get(&terrainCatalogue.terrainDefs, 1)->sprites, 0)->texture;
+	Asset *terrainTexture = getSprite(getTerrainDef(1)->sprites, 0)->texture;
 	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
 
 	for (s32 y=visibleArea.y;
@@ -305,7 +318,7 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			if (type != terrainType)
 			{
 				terrainType = type;
-				terrainSprites = get(&terrainCatalogue.terrainDefs, terrainType)->sprites;
+				terrainSprites = getTerrainDef((u8)terrainType)->sprites;
 			}
 
 			// Null terrain has no sprites, so only draw if there's something to draw!
@@ -468,7 +481,13 @@ void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainIDToOldType, Ha
 		s32 tileCount = areaOf(city->bounds);
 		for (s32 tileIndex = 0; tileIndex < tileCount; tileIndex++)
 		{
-			layer->tileTerrainType[tileIndex] = oldTypeToNewType[ layer->tileTerrainType[tileIndex] ];
+			u8 oldType = layer->tileTerrainType[tileIndex];
+
+			// If a type isn't recognised, we stick 
+			if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0))
+			{
+				layer->tileTerrainType[tileIndex] = oldTypeToNewType[oldType];
+			}
 		}
 	}
 }
@@ -477,7 +496,7 @@ void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainIDToOldType)
 {
 	remapTerrainTypesInternal(city, terrainIDToOldType, &terrainCatalogue.terrainIDToType);
 
-	clear(&terrainCatalogue.terrainIDToOldType);
+	// clear(&terrainCatalogue.terrainIDToOldType);
 	putAll(&terrainCatalogue.terrainIDToOldType, &terrainCatalogue.terrainIDToType);
 
 	terrainCatalogue.terrainDefsHaveChanged = false;
@@ -487,7 +506,7 @@ void remapTerrainTypesTo(City *city, HashTable<u8> *terrainIDToNewType)
 {
 	remapTerrainTypesInternal(city, &terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
 
-	clear(&terrainCatalogue.terrainIDToOldType);
+	// clear(&terrainCatalogue.terrainIDToOldType);
 	putAll(&terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
 
 	terrainCatalogue.terrainDefsHaveChanged = false;

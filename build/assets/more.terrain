@@ -1,0 +1,6 @@
+
+
+:Terrain ground
+name name_ground
+uses_sprite grass
+can_build_on true
