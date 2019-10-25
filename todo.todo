@@ -50,6 +50,8 @@ Window buttons should still do hover-states even on inactive windows.
 _hashed string suffix?
 Console commands in a HashTable
 
+Interned strings for hash tables. It'd make managing their memory so much easier! So many times I've had bugs that were caused by Strings pointing to deallocated/re-used memory.
+
 Automatically record, and output to a file, which strings are missing from the current locale. Possibly put this behind a setting which defaults to false, to reduce the performance impact. - See comment in getText()
 
 Make textures always be powers of two...

@@ -587,10 +587,6 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				TerrainLayer *layer = &city->terrainLayer;
 
 				layer->terrainGenerationSeed = cTerrain->terrainGenerationSeed;
-
-				// TODO: Map the file's terrain type IDs to the game's ones @MapIDs
-				// (This is related to the general "the game needs to map IDs when data files change" thing.)
-
 				u8 *tileTerrainType  = startOfChunk + cTerrain->offsetForTileTerrainType;
 				rleDecode(tileTerrainType, layer->tileTerrainType, cityTileCount);
 
@@ -599,6 +595,23 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 
 				u8 *tileSpriteOffset = startOfChunk + cTerrain->offsetForTileSpriteOffset;
 				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
+
+				// Map the file's terrain type IDs to the game's ones
+				clear(&terrainCatalogue.terrainIDToOldType);
+				u8 *at = startOfChunk + cTerrain->offsetForTerrainTypeTable;
+				for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
+				{
+					u32 terrainType = *(u32 *)at;
+					at += sizeof(u32);
+
+					u32 nameLength = *(u32 *)at;
+					at += sizeof(u32);
+
+					String terrainName = makeString((char*)at, nameLength, true);
+					put(&terrainCatalogue.terrainIDToOldType, terrainName, (u8)terrainType);
+					at += nameLength;
+				}
+				remapTerrainTypes(city);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
