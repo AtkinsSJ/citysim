@@ -494,9 +494,19 @@ void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainIDToOldType, Ha
 
 void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainIDToOldType)
 {
+	// First, remap any IDs that are not present in the current data, so they won't get
+	// merged accidentally.
+	for (auto it = iterate(terrainIDToOldType); hasNext(&it); next(&it))
+	{
+		auto entry = getEntry(&it);
+		if (!contains(&terrainCatalogue.terrainIDToType, entry->key))
+		{
+			put(&terrainCatalogue.terrainIDToType, entry->key, (u8)terrainCatalogue.terrainIDToType.count);
+		}
+	}
+
 	remapTerrainTypesInternal(city, terrainIDToOldType, &terrainCatalogue.terrainIDToType);
 
-	// clear(&terrainCatalogue.terrainIDToOldType);
 	putAll(&terrainCatalogue.terrainIDToOldType, &terrainCatalogue.terrainIDToType);
 
 	terrainCatalogue.terrainDefsHaveChanged = false;
@@ -504,9 +514,19 @@ void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainIDToOldType)
 
 void remapTerrainTypesTo(City *city, HashTable<u8> *terrainIDToNewType)
 {
+	// First, remap any IDs that are not present in the current data, so they won't get
+	// merged accidentally.
+	for (auto it = iterate(&terrainCatalogue.terrainIDToOldType); hasNext(&it); next(&it))
+	{
+		auto entry = getEntry(&it);
+		if (!contains(terrainIDToNewType, entry->key))
+		{
+			put(terrainIDToNewType, entry->key, (u8)terrainIDToNewType->count);
+		}
+	}
+
 	remapTerrainTypesInternal(city, &terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
 
-	// clear(&terrainCatalogue.terrainIDToOldType);
 	putAll(&terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
 
 	terrainCatalogue.terrainDefsHaveChanged = false;

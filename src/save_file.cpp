@@ -609,7 +609,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					at += sizeof(u32);
 
 					String terrainName = makeString((char*)at, nameLength, true);
-					put(&terrainNameToOldType, terrainName, (u8)terrainType);
+					put(&terrainNameToOldType, pushString(gameArena, terrainName), (u8)terrainType);
 					at += nameLength;
 				}
 				remapTerrainTypesFrom(city, &terrainNameToOldType);

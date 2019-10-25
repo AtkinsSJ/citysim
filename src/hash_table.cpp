@@ -120,6 +120,22 @@ T *find(HashTable<T> *table, String key)
 }
 
 template<typename T>
+bool contains(HashTable<T> *table, String key)
+{
+	if (table->entries == null) return false;
+
+	HashTableEntry<T> *entry = findEntryInternal(table, key);
+	if (!entry->isOccupied)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+template<typename T>
 T *findOrAdd(HashTable<T> *table, String key)
 {
 	HashTableEntry<T> *entry = findEntryInternal(table, key);

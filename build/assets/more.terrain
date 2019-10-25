@@ -1,5 +1,4 @@
 
-
 :Terrain ground
 name name_ground
 uses_sprite grass

@@ -33,6 +33,9 @@ template<typename T>
 T *find(HashTable<T> *table, String key);
 
 template<typename T>
+bool contains(HashTable<T> *table, String key);
+
+template<typename T>
 HashTableEntry<T> *findEntry(HashTable<T> *table, String key);
 
 // Adds a blank entry with the key if it can't find an existing one
