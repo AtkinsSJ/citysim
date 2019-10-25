@@ -49,7 +49,10 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 TerrainDef *getTerrainAt(City *city, s32 x, s32 y);
 u8 getDistanceToWaterAt(City *city, s32 x, s32 y);
 
-void remapTerrainTypes(TerrainLayer *layer);
+void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainIDToOldType);
+void remapTerrainTypesTo  (City *city, HashTable<u8> *terrainIDToNewType);
 
 // Returns 0 if not found
 u8 findTerrainTypeByID(String id);
+
+void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainIDToOldType, HashTable<u8> *terrainIDToType);

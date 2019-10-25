@@ -441,25 +441,18 @@ void generateTerrain(City *city, Random *gameRandom)
 	updateDistances(city, layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }
 
-void remapTerrainTypes(City *city)
+void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainIDToOldType, HashTable<u8> *terrainIDToType)
 {
-	if (!terrainCatalogue.terrainDefsHaveChanged)
+	if (terrainIDToOldType->count > 0)
 	{
-		logWarn("Calling remapTerrainTypes() when terrain types haven't changed, so something is wrong somewhere!"_s);
-		DEBUG_BREAK();
-		return;
-	}
-
-	if (terrainCatalogue.terrainIDToOldType.count > 0)
-	{
-		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainCatalogue.terrainIDToOldType.count);
-		for (auto it = iterate(&terrainCatalogue.terrainIDToOldType); hasNext(&it); next(&it))
+		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainIDToOldType->count);
+		for (auto it = iterate(terrainIDToOldType); hasNext(&it); next(&it))
 		{
 			auto entry = getEntry(&it);
 			String terrainID = entry->key;
 			u8 oldType       = entry->value;
 
-			u8 *newType = find(&terrainCatalogue.terrainIDToType, terrainID);
+			u8 *newType = find(terrainIDToType, terrainID);
 			if (newType == null)
 			{
 				oldTypeToNewType[oldType] = 0;
@@ -478,14 +471,24 @@ void remapTerrainTypes(City *city)
 			layer->tileTerrainType[tileIndex] = oldTypeToNewType[ layer->tileTerrainType[tileIndex] ];
 		}
 	}
+}
 
-	// Fill the "old" table for next time.
+void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainIDToOldType)
+{
+	remapTerrainTypesInternal(city, terrainIDToOldType, &terrainCatalogue.terrainIDToType);
+
 	clear(&terrainCatalogue.terrainIDToOldType);
-	for (auto it = iterate(&terrainCatalogue.terrainIDToType); hasNext(&it); next(&it))
-	{
-		auto entry = getEntry(&it);
-		put(&terrainCatalogue.terrainIDToOldType, entry->key, entry->value);
-	}
+	putAll(&terrainCatalogue.terrainIDToOldType, &terrainCatalogue.terrainIDToType);
+
+	terrainCatalogue.terrainDefsHaveChanged = false;
+}
+
+void remapTerrainTypesTo(City *city, HashTable<u8> *terrainIDToNewType)
+{
+	remapTerrainTypesInternal(city, &terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
+
+	clear(&terrainCatalogue.terrainIDToOldType);
+	putAll(&terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
 
 	terrainCatalogue.terrainDefsHaveChanged = false;
 }

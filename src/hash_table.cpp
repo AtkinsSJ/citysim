@@ -161,6 +161,16 @@ T *put(HashTable<T> *table, String key, T value)
 }
 
 template<typename T>
+void putAll(HashTable<T> *table, HashTable<T> *source)
+{
+	for (auto it = iterate(source); hasNext(&it); next(&it))
+	{
+		auto entry = getEntry(&it);
+		put(table, entry->key, entry->value);
+	}
+}
+
+template<typename T>
 void removeKey(HashTable<T> *table, String key)
 {
 	if (table->entries == null) return;

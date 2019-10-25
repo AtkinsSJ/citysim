@@ -597,7 +597,8 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
 
 				// Map the file's terrain type IDs to the game's ones
-				clear(&terrainCatalogue.terrainIDToOldType);
+				HashTable<u8> terrainNameToOldType;
+				initHashTable(&terrainNameToOldType, 1.0f, cTerrain->terrainTypeCount);
 				u8 *at = startOfChunk + cTerrain->offsetForTerrainTypeTable;
 				for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
 				{
@@ -608,10 +609,11 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					at += sizeof(u32);
 
 					String terrainName = makeString((char*)at, nameLength, true);
-					put(&terrainCatalogue.terrainIDToOldType, terrainName, (u8)terrainType);
+					put(&terrainNameToOldType, terrainName, (u8)terrainType);
 					at += nameLength;
 				}
-				remapTerrainTypes(city);
+				remapTerrainTypesFrom(city, &terrainNameToOldType);
+				freeHashTable(&terrainNameToOldType);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{

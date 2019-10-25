@@ -21,15 +21,6 @@ struct HashTable
 };
 
 template<typename T>
-struct HashTableIterator
-{
-	HashTable<T> *hashTable;
-	s32 currentIndex;
-
-	bool isDone;
-};
-
-template<typename T>
 inline bool isHashTableInitialised(HashTable<T> *table)
 {
 	return (table->entries != null || table->maxLoadFactor > 0.0f);
@@ -55,6 +46,9 @@ template<typename T>
 T *put(HashTable<T> *table, String key, T value={});
 
 template<typename T>
+void putAll(HashTable<T> *table, HashTable<T> *source);
+
+template<typename T>
 void removeKey(HashTable<T> *table, String key);
 
 template<typename T>
@@ -62,6 +56,15 @@ void clear(HashTable<T> *table);
 
 template<typename T>
 void freeHashTable(HashTable<T> *table);
+
+template<typename T>
+struct HashTableIterator
+{
+	HashTable<T> *hashTable;
+	s32 currentIndex;
+
+	bool isDone;
+};
 
 template<typename T>
 HashTableIterator<T> iterate(HashTable<T> *table);

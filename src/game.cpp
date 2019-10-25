@@ -695,7 +695,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 	if (terrainCatalogue.terrainDefsHaveChanged)
 	{
-		remapTerrainTypes(city);
+		remapTerrainTypesTo(city, &terrainCatalogue.terrainIDToType);
 	}
 
 		// TODO: Buildings!
