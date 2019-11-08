@@ -483,7 +483,6 @@ void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainIDToOldType, Ha
 		{
 			u8 oldType = layer->tileTerrainType[tileIndex];
 
-			// If a type isn't recognised, we stick 
 			if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0))
 			{
 				layer->tileTerrainType[tileIndex] = oldTypeToNewType[oldType];
