@@ -1,10 +1,5 @@
 # Building definitions
 
-:Template civic
-carries_power true
-requires_transport_connection true
-fire_risk 100%
-
 :Building road
 name name_road
 size 1 1
@@ -32,53 +27,6 @@ texture power-line-over-road power-line-over-road.png 16 16 2 1
 demolish_cost 10
 carries_transport road
 carries_power true
-
-:Building power-station
-name name_power-station
-extends civic
-size 4 4
-texture power-plant power-plant.png 64 64
-build plop 1000
-demolish_cost 200
-power_gen 4000
-jobs 100
-pollution 20 100
-fire_risk 170%
-
-:Building fire-station
-name name_fire-station
-extends civic
-size 3 3
-texture fire-station fire-station.png 48 48
-build plop 750
-demolish_cost 125
-power_use 30
-jobs 40
-fire_risk 0%     # A fire here would be really embarrassing...
-fire_protection 30 100 20
-
-:Building police-station
-name name_police-station
-extends civic
-size 3 3
-texture police-station police-station.png 48 48
-build plop 750
-demolish_cost 125
-power_use 30
-jobs 40
-crime_protection 30 100 30
-jail_size 50
-
-:Building hospital
-name name_hospital
-extends civic
-size 4 4
-texture hospital hospital.png 64 64
-build plop 2000
-demolish_cost 300
-power_use 100
-jobs 200
-health_effect 60 100 30
 
 #
 # Zoneables

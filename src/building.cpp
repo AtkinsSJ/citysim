@@ -30,11 +30,12 @@ void initBuildingCatalogue()
 	initChunkedArray(&catalogue->cGrowableBuildings, &globalAppState.systemArena, 64);
 	initChunkedArray(&catalogue->iGrowableBuildings, &globalAppState.systemArena, 64);
 
-	initChunkedArray(&catalogue->allBuildings, &globalAppState.systemArena, 64);
+	initOccupancyArray(&catalogue->allBuildings, &globalAppState.systemArena, 64);
 	// NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
 	// So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
 	// and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
-	appendBlank(&catalogue->allBuildings);
+	Indexed<BuildingDef*> nullBuildingDef = append(&catalogue->allBuildings);
+	*nullBuildingDef.value = {};
 
 	initHashTable(&catalogue->buildingsByName, 0.75f, 128);
 
@@ -81,10 +82,9 @@ void loadBuildingDefs(Blob data, Asset *asset)
 	LineReader reader = readLines(asset->shortName, data);
 
 	BuildingCatalogue *catalogue = &buildingCatalogue;
-	ChunkedArray<BuildingDef> *buildings = &catalogue->allBuildings;
+	OccupancyArray<BuildingDef> *buildings = &catalogue->allBuildings;
 
-	// We store the paletteNames array in the defs asset
-	// So, we first need to scan through the file to see how many palettes there are in it!
+	// Count the number of building defs in the file first, so we can allocate the buildingIDs array in the asset
 	s32 buildingCount = 0;
 	while (loadNextLine(&reader))
 	{
@@ -125,9 +125,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 			if (equals(firstWord, "Building"_s))
 			{
-				def = appendBlank(buildings);
+				Indexed<BuildingDef *> newDef = append(buildings);
+				def = newDef.value;
 				def->id = pushString(&assets->assetArena, getRemainderOfLine(&reader));
-				def->typeID = truncate32(buildings->count - 1);
+				def->typeID = truncate32(newDef.index);
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
 
@@ -144,14 +145,14 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			}
 			else
 			{
-				warn(&reader, "Only Building definitions are supported right now."_s);
+				warn(&reader, "Only :Building or :Template definitions are supported right now."_s);
 			}
 		}
 		else // Properties!
 		{
 			if (def == null)
 			{
-				error(&reader, "Found a property before starting a :Building!"_s);
+				error(&reader, "Found a property before starting a :Building or :Template!"_s);
 				return;
 			}
 			else
@@ -302,7 +303,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					BuildingDef *templateDef = find(&templates, templateName);
 					if (templateDef == null)
 					{
-						error(&reader, "Could not find template named '{0}'. Make sure templates you use are defined before the buildings that use them!"_s, {templateName});
+						error(&reader, "Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, {templateName});
 					}
 					else
 					{
@@ -512,24 +513,46 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 void removeBuildingDefs(Array<String> idsToRemove)
 {
-	// TODO: Implement this once terrain stuff is done and we can copy it!
-
 	BuildingCatalogue *catalogue = &buildingCatalogue;
+
+	for (s32 idIndex = 0; idIndex < idsToRemove.count; idIndex++)
+	{
+		String buildingID = idsToRemove[idIndex];
+		BuildingDef *def = findBuildingDef(buildingID);
+		if (def != null)
+		{
+			findAndRemove(&catalogue->constructibleBuildings, def);
+			findAndRemove(&catalogue->rGrowableBuildings,     def);
+			findAndRemove(&catalogue->cGrowableBuildings,     def);
+			findAndRemove(&catalogue->iGrowableBuildings,     def);
+
+			removeKey(&catalogue->buildingsByName, buildingID);
+
+			removeIndex(&catalogue->allBuildings, def->typeID);
+		}
+	}
 	
-	clear(&catalogue->constructibleBuildings);
-	clear(&catalogue->rGrowableBuildings);
-	clear(&catalogue->cGrowableBuildings);
-	clear(&catalogue->iGrowableBuildings);
+	// clear(&catalogue->constructibleBuildings);
+	// clear(&catalogue->rGrowableBuildings);
+	// clear(&catalogue->cGrowableBuildings);
+	// clear(&catalogue->iGrowableBuildings);
 
-	clear(&catalogue->allBuildings);
-	appendBlank(&catalogue->allBuildings);
+	// clear(&catalogue->allBuildings);
+	// appendBlank(&catalogue->allBuildings);
 
-	clear(&catalogue->buildingsByName);
+	// clear(&catalogue->buildingsByName);
 
-	catalogue->maxRBuildingDim = 0;
-	catalogue->maxCBuildingDim = 0;
-	catalogue->maxIBuildingDim = 0;
-	catalogue->overallMaxBuildingDim = 0;
+	// TODO: How/when do we recalculate these?
+	// I guess as the max building sizes are an optimisation, and this code is only
+	// run either during development or when users are developing mods, it's not a big
+	// deal if we keep the old values. They're guaranteed to be >= the real value,
+	// which is all that matters for correctness.
+	// - Sam, 10/11/2019
+	//
+	// catalogue->maxRBuildingDim = 0;
+	// catalogue->maxCBuildingDim = 0;
+	// catalogue->maxIBuildingDim = 0;
+	// catalogue->overallMaxBuildingDim = 0;
 }
 
 inline BuildingDef *getBuildingDef(s32 buildingTypeID)

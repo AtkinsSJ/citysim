@@ -64,6 +64,9 @@ Indexed<T*> append(OccupancyArray<T> *array)
 	result.index = indexInChunk + (array->firstChunkWithSpaceIndex * array->itemsPerChunk);
 	result.value = chunk->items + indexInChunk;
 
+	// Make sure the "new" element is actually new and blank and fresh
+	*result.value = {};
+
 	// update counts
 	chunk->count++;
 	array->count++;

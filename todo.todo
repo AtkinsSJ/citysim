@@ -41,6 +41,8 @@ Window procs should decide the window title instead of showWindow(), it's weird 
 
 Window buttons should still do hover-states even on inactive windows.
 
+StringBuilder: Chunks instead of reallocating to a larger buffer size
+
 _hashed string suffix?
 Console commands in a HashTable
 
@@ -247,6 +249,7 @@ Budget:
 
 Debug system:
 - Ability to filter out certain categories from the profiler list?
+- Record start/end events, instead of just "amount of time taken", so that we can build an overall call stack and measure internal time, or see which paths to a function make it slow, etc.
 
 ------------------------------------------------
 

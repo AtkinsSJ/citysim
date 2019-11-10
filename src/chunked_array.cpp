@@ -139,7 +139,7 @@ inline T *appendBlank(ChunkedArray<T> *array)
 template<typename T>
 T *get(ChunkedArray<T> *array, s32 index)
 {
-	ASSERT(index < array->count); //Index out of array bounds!
+	ASSERT(index >= 0 && index < array->count); //Index out of array bounds!
 
 	T *result = null;
 

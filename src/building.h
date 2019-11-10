@@ -74,11 +74,14 @@ struct BuildingDef
 
 	EffectRadius policeEffect;
 	s32 jailCapacity;
+
+	// NB: When you add new fields here, make sure to add them to loadBuildingDefs(), and
+	// copy their values when a building `extends` a template! 
 };
 
 struct BuildingCatalogue
 {
-	ChunkedArray<BuildingDef> allBuildings;
+	OccupancyArray<BuildingDef> allBuildings;
 	HashTable<BuildingDef *> buildingsByName;
 
 	ChunkedArray<BuildingDef *> constructibleBuildings;
