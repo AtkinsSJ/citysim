@@ -374,32 +374,8 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 			break;
 		}
 
-		SAVFileHeader example = SAVFileHeader();
-		if (!identifiersAreEqual(fileHeader->identifier, example.identifier))
+		if (!fileHeaderIsValid(fileHeader, saveFile.name))
 		{
-			logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
-				saveFile.name,
-				makeString((char*)example.identifier, 4),
-				makeString((char*)fileHeader->identifier, 4)
-			});
-			succeeded = false;
-			break;
-		}
-		if (fileHeader->version > example.version)
-		{
-			logError("Save file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
-				saveFile.name,
-				formatInt(fileHeader->version),
-				formatInt(example.version),
-			});
-			succeeded = false;
-			break;
-		}
-		if (!isMemoryEqual(&fileHeader->unixNewline, &example.unixNewline, 3))
-		{
-			logError("Save file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, {
-				saveFile.name
-			});
 			succeeded = false;
 			break;
 		}
@@ -435,6 +411,11 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 			// each of these, and there aren't that many of them, so I doubt it'll make any notable
 			// speed difference, but it WOULD make a big complexity difference!
 			// - Sam, 16/10/2019
+			//
+			// ... Actually, the identifiers are all 4 bytes, so I could just case to a u32 and then
+			// do a simple == or even a switch!
+			// @Speed
+			// - Sam, 10/11/2019
 
 			if (identifiersAreEqual(header->identifier, SAV_META_ID))
 			{
@@ -649,6 +630,40 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 	}
 
 	return succeeded;
+}
+
+bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName)
+{
+	bool isValid = true;
+
+	SAVFileHeader example = SAVFileHeader();
+	if (!identifiersAreEqual(fileHeader->identifier, example.identifier))
+	{
+		logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
+			saveFileName,
+			makeString((char*)example.identifier, 4),
+			makeString((char*)fileHeader->identifier, 4)
+		});
+		isValid = false;
+	}
+	else if (fileHeader->version > example.version)
+	{
+		logError("Save file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
+			saveFileName,
+			formatInt(fileHeader->version),
+			formatInt(example.version),
+		});
+		isValid = false;
+	}
+	else if (!isMemoryEqual(&fileHeader->unixNewline, &example.unixNewline, 3))
+	{
+		logError("Save file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, {
+			saveFileName
+		});
+		isValid = false;
+	}
+
+	return isValid;
 }
 
 inline bool identifiersAreEqual(const u8 *a, const u8 *b)

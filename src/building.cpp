@@ -531,16 +531,6 @@ void removeBuildingDefs(Array<String> idsToRemove)
 			removeIndex(&catalogue->allBuildings, def->typeID);
 		}
 	}
-	
-	// clear(&catalogue->constructibleBuildings);
-	// clear(&catalogue->rGrowableBuildings);
-	// clear(&catalogue->cGrowableBuildings);
-	// clear(&catalogue->iGrowableBuildings);
-
-	// clear(&catalogue->allBuildings);
-	// appendBlank(&catalogue->allBuildings);
-
-	// clear(&catalogue->buildingsByName);
 
 	// TODO: How/when do we recalculate these?
 	// I guess as the max building sizes are an optimisation, and this code is only
