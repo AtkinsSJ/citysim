@@ -16,6 +16,9 @@ Notes for searching:
 
 ------------------------------------------------
 
+The new encoding thing means we could present eg terrain-type-per-tile data as a u16, but actually store it in the file as u8s, using a compression scheme. That would avoid locking the file format to the 255-terrains limitation. Needs further thought.
+	-> Also, when we have far fewer terrains, could compact them into 2-per-byte or more!
+
 Saving and loading!
 - Run-length encoding! A lot of per-tile data is repetitive right now (eg, terrain type, zone type) and a really simple RLE scheme could massively reduce the file-size. Might be fun to implement too. I'll wait until I have loading implemented before I attempt this though, as it's much harder to verify in a hex editor!
 	- I'm finding that different arrays within the save file are suited to different approaches here... I can see a couple of options:

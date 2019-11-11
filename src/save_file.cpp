@@ -80,7 +80,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 			terr.terrainGenerationSeed = layer->terrainGenerationSeed;
 
 			// Terrain types table
-			terr.terrainTypeCount = terrainCatalogue.terrainDefs.count;
+			terr.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
 			terr.offsetForTerrainTypeTable = offset;
 			for (auto it = iterate(&terrainCatalogue.terrainDefs); hasNext(&it); next(&it))
 			{
@@ -99,17 +99,23 @@ bool writeSaveFile(FileHandle *file, City *city)
 			}
 
 			// Tile terrain type (u8)
-			terr.offsetForTileTerrainType = offset;
-			offset += appendRLE(&buffer, cityTileCount, layer->tileTerrainType);
+			// terr.offsetForTileTerrainType = offset;
+			// offset += appendRLE(&buffer, cityTileCount, layer->tileTerrainType);
+			terr.tileTerrainType = appendBlob(offset, &buffer, cityTileCount, layer->tileTerrainType, Blob_RLE_S8);
+			offset += terr.tileTerrainType.length;
 
 			// Tile height (u8)
-			terr.offsetForTileHeight = offset;
-			offset += appendRLE(&buffer, cityTileCount, layer->tileHeight);
+			// terr.offsetForTileHeight = offset;
+			// offset += appendRLE(&buffer, cityTileCount, layer->tileHeight);
+			terr.tileHeight = appendBlob(offset, &buffer, cityTileCount, layer->tileHeight, Blob_RLE_S8);
+			offset += terr.tileHeight.length;
 
 			// Tile sprite offset (u8)
-			terr.offsetForTileSpriteOffset = offset;
-			append(&buffer, cityTileCount * sizeof(u8), layer->tileSpriteOffset);
-			offset += cityTileCount * sizeof(u8);
+			// terr.offsetForTileSpriteOffset = offset;
+			// append(&buffer, cityTileCount * sizeof(u8), layer->tileSpriteOffset);
+			// offset += cityTileCount * sizeof(u8);
+			terr.tileSpriteOffset = appendBlob(offset, &buffer, cityTileCount, layer->tileSpriteOffset, Blob_Uncompressed);
+			offset += terr.tileSpriteOffset.length;
 
 			overwriteAt(&buffer, startOfTerr, sizeof(terr), &terr);
 		}
@@ -634,22 +640,21 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				}
 
 				// Terrain type
-				u8 *tileTerrainType  = startOfChunk + cTerrain->offsetForTileTerrainType;
 				u8 *decodedTileTerrainType = allocateMultiple<u8>(tempArena, cityTileCount);
-				rleDecode(tileTerrainType, decodedTileTerrainType, cityTileCount);
-				for (s32 i = 0; i < cityTileCount; i++)
+				if (decodeBlob(cTerrain->tileTerrainType, startOfChunk, decodedTileTerrainType, cityTileCount))
 				{
-					decodedTileTerrainType[i] = oldTypeToNewType[ decodedTileTerrainType[i] ];
+					for (s32 i = 0; i < cityTileCount; i++)
+					{
+						decodedTileTerrainType[i] = oldTypeToNewType[ decodedTileTerrainType[i] ];
+					}
+					copyMemory(decodedTileTerrainType, layer->tileTerrainType, cityTileCount);
 				}
-				copyMemory(decodedTileTerrainType, layer->tileTerrainType, cityTileCount);
 
 				// Terrain height
-				u8 *tileHeight = startOfChunk + cTerrain->offsetForTileHeight;
-				rleDecode(tileHeight, layer->tileHeight, cityTileCount);
+				decodeBlob(cTerrain->tileHeight, startOfChunk, layer->tileHeight, cityTileCount);
 
 				// Sprite offset
-				u8 *tileSpriteOffset = startOfChunk + cTerrain->offsetForTileSpriteOffset;
-				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
+				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, layer->tileSpriteOffset, cityTileCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
@@ -760,4 +765,62 @@ void rleDecode(u8 *source, u8 *dest, s32 destSize)
 			destPos += length;
 		}
 	}
+}
+
+SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data, SAVBlobCompressionScheme scheme)
+{
+	SAVBlob result = {};
+	result.compressionScheme = scheme;
+	result.relativeOffset = currentOffset;
+	result.decompressedLength = length;
+
+	switch (scheme)
+	{
+		case Blob_Uncompressed: {
+			append(buffer, length, data);
+			result.length = length;
+		} break;
+
+		case Blob_RLE_S8: {
+			result.length = appendRLE(buffer, length, data);
+		} break;
+
+		default: {
+			logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to Blob_Uncompressed."_s, {formatInt(scheme)});
+			result = appendBlob(currentOffset, buffer, length, data, Blob_Uncompressed);
+		} break;
+	}
+
+	return result;
+}
+
+bool decodeBlob(SAVBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
+{
+	bool succeeded = true;
+
+	if ((u32)destSize < blob.decompressedLength)
+	{
+		logError("Unable to decode save file data blob because the destination is too small! (Need {0}, got {1})"_s, {formatInt(blob.decompressedLength), formatInt(destSize)});
+		succeeded = false;
+	}
+	else
+	{
+		switch (blob.compressionScheme)
+		{
+			case Blob_Uncompressed: {
+				copyMemory(baseMemory + blob.relativeOffset, dest, blob.length);
+			} break;
+
+			case Blob_RLE_S8: {
+				rleDecode(baseMemory + blob.relativeOffset, dest, destSize);
+			} break;
+
+			default: {
+				logError("Unable to decode save file data blob because the encoding is unrecognized! ({0})"_s, {formatInt(blob.compressionScheme)});
+				succeeded = false;
+			} break;
+		}
+	}
+
+	return succeeded;
 }

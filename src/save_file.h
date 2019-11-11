@@ -104,6 +104,20 @@ struct SAVString
 	leU32 relativeOffset;
 };
 
+enum SAVBlobCompressionScheme
+{
+	Blob_Uncompressed = 0,
+	Blob_RLE_S8 = 1, // Negative numbers are literal lengths, positive are run lengths
+};
+
+struct SAVBlob
+{
+	leU32 length;
+	leU32 decompressedLength;
+	leU32 relativeOffset;
+	leU32 compressionScheme;
+};
+
 const u8 SAV_VERSION = 1;
 
 struct SAVFileHeader
@@ -268,9 +282,9 @@ struct SAVChunk_Terrain
 	leU32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
 	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
-	leU32 offsetForTileTerrainType;  // Array of u8s (RLE)
-	leU32 offsetForTileHeight;       // Array of u8s (RLE)
-	leU32 offsetForTileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
+	SAVBlob tileTerrainType;  // Array of u8s
+	SAVBlob tileHeight;       // Array of u8s
+	SAVBlob tileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
 };
 
 const u8 SAV_TPRT_VERSION = 1;
@@ -300,3 +314,6 @@ bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName);
 bool identifiersAreEqual(const u8 *a, const u8 *b);
 String loadString(SAVString source, u8 *base, MemoryArena *arena);
 void rleDecode(u8 *source, u8 *dest, s32 destSize);
+
+SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data, SAVBlobCompressionScheme scheme);
+bool decodeBlob(SAVBlob blob, u8 *baseMemory, u8 *dest, s32 destSize);
