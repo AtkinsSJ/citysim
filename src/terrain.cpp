@@ -425,27 +425,34 @@ void generateTerrain(City *city, Random *gameRandom)
 	}
 
 	// Forest splats
-	s32 forestCount = randomBetween(&terrainRandom, 10, 20);
-	for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++)
+	if (treeDef == null)
 	{
-		s32 centreX   = randomBetween(&terrainRandom, 0, city->bounds.w);
-		s32 centreY   = randomBetween(&terrainRandom, 0, city->bounds.h);
-
-		f32 minRadius = randomFloatBetween(&terrainRandom, 2.0f, 8.0f);
-		f32 maxRadius = randomFloatBetween(&terrainRandom, minRadius + 1.0f, 30.0f);
-
-		Splat forestSplat = createRandomSplat(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
-
-		Rect2I boundingBox = getBoundingBox(&forestSplat);
-		for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
+		logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
+	}
+	else
+	{
+		s32 forestCount = randomBetween(&terrainRandom, 10, 20);
+		for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++)
 		{
-			for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
+			s32 centreX   = randomBetween(&terrainRandom, 0, city->bounds.w);
+			s32 centreY   = randomBetween(&terrainRandom, 0, city->bounds.h);
+
+			f32 minRadius = randomFloatBetween(&terrainRandom, 2.0f, 8.0f);
+			f32 maxRadius = randomFloatBetween(&terrainRandom, minRadius + 1.0f, 30.0f);
+
+			Splat forestSplat = createRandomSplat(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
+
+			Rect2I boundingBox = getBoundingBox(&forestSplat);
+			for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
 			{
-				if (getTerrainAt(city, x, y)->canBuildOn
-					&& (getBuildingAt(city, x, y) == null)
-					&& contains(&forestSplat, x, y))
+				for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
 				{
-					addBuilding(city, treeDef, irectXYWH(x, y, treeDef->size.x, treeDef->size.y));
+					if (getTerrainAt(city, x, y)->canBuildOn
+						&& (getBuildingAt(city, x, y) == null)
+						&& contains(&forestSplat, x, y))
+					{
+						addBuilding(city, treeDef, irectXYWH(x, y, treeDef->size.x, treeDef->size.y));
+					}
 				}
 			}
 		}
