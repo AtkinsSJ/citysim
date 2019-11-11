@@ -553,8 +553,6 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 	V4 drawColorDemolish = color255(255,128,128,255);
 	V4 drawColorNoPower = color255(32,32,64,255);
 
-	s32 typeID = -1;
-	SpriteGroup *sprites = null;
 
 	bool isDemolitionHappening = areaOf(demolitionRect) > 0;
 
@@ -583,16 +581,18 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 	// 
 	s32 buildingsRemaining = truncate32(visibleBuildings.count);
 	Building *firstBuilding = *get(&visibleBuildings, 0);
-	Asset *texture = null;
+	DrawRectsGroup *group = null;
+	s32 typeID = -1;
+	SpriteGroup *sprites = null;
 
-	// In some cases, the first building (or buildings) could be the Null building and so have no spirtes!
+	// In some cases, the first building (or buildings) could be the Null building and so have no sprites!
 	// Rather than crash, we want to skip them.
 	BuildingDef *firstDef = getBuildingDef(firstBuilding);
 	if (firstDef->sprites != null)
 	{
-		texture = getSprite(firstDef->sprites, firstBuilding->spriteOffset)->texture;
+		Asset *texture = getSprite(firstDef->sprites, firstBuilding->spriteOffset)->texture;
+		group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
 	}
-	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
 
 	for (auto it = iterate(&visibleBuildings);
 		hasNext(&it);
@@ -606,46 +606,41 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 			sprites = getBuildingDef(typeID)->sprites;
 		}
 
-		if (sprites == null)
+		// Skip buildings with no sprites (aka, the null building).
+		// TODO: Give the null building a placeholder image to draw instead
+		if (sprites != null)
 		{
-			// Skip buildings that don't have sprites set. (eg, the Null building.)
-			// This will only occur in an error state, but it's better to catch this
-			// than crash!
-			// TODO: Have some kind of placeholder image for when this happens, in the
-			// style of SC4's big brown boxes. We'd probably need a set of different-sized ones.
-			continue;
+			Sprite *sprite = getSprite(sprites, building->spriteOffset);
+
+			if (group == null)
+			{
+				group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, shaderID, buildingsRemaining);
+			}
+			else if (group->texture != sprite->texture)
+			{
+				// Finish the current group and start a new one
+				if (group != null)  endRectsGroup(group);
+				group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, shaderID, buildingsRemaining);
+			}
+
+			V4 drawColor = drawColorNormal;
+
+			if (isDemolitionHappening && overlaps(building->footprint, demolitionRect))
+			{
+				// Draw building red to preview demolition
+				drawColor = drawColorDemolish;
+			}
+			else if (hasProblem(building, BuildingProblem_NoPower))
+			{
+				drawColor = drawColorNoPower;
+			}
+
+			addSpriteRect(group, sprite, rect2(building->footprint), drawColor);
 		}
 
-		V4 drawColor = drawColorNormal;
-
-		if (isDemolitionHappening && overlaps(building->footprint, demolitionRect))
-		{
-			// Draw building red to preview demolition
-			drawColor = drawColorDemolish;
-		}
-		else if (hasProblem(building, BuildingProblem_NoPower))
-		{
-			drawColor = drawColorNoPower;
-		}
-
-		Sprite *sprite = getSprite(sprites, building->spriteOffset);
-
-		if (texture == null)
-		{
-			texture = sprite->texture;
-		}
-		else if (texture != sprite->texture)
-		{
-			// Finish the current group and start a new one
-			endRectsGroup(group);
-			texture = sprite->texture;
-			group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
-		}
-
-		addSpriteRect(group, sprite, rect2(building->footprint), drawColor);
 		buildingsRemaining--;
 	}
-	endRectsGroup(group);
+	if (group != null)  endRectsGroup(group);
 }
 
 // Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.
