@@ -85,7 +85,9 @@ bool writeSaveFile(FileHandle *file, City *city)
 			for (auto it = iterate(&terrainCatalogue.terrainDefs); hasNext(&it); next(&it))
 			{
 				TerrainDef *def = get(&it);
-				u32 typeID = getIndex(&it);
+				if (def->typeID == 0) continue; // Skip the null terrain def!
+
+				u32 typeID = def->typeID;
 				u32 idLength = def->id.length;
 
 				// 4 byte int id, 4 byte length, then the text as bytes
@@ -454,9 +456,6 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 
 				city->highestBuildingID = cBuildings->highestBuildingID;
 
-				// TODO: Map the file's building type IDs to the game's ones @MapIDs
-				// (This is related to the general "the game needs to map IDs when data files change" thing.)
-
 				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + cBuildings->offsetForBuildingArray);
 				for (u32 buildingIndex = 0;
 					buildingIndex < cBuildings->buildingCount;
@@ -472,6 +471,27 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					// This is a bit hacky but it's how we calculate it elsewhere
 					city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
 				}
+
+				// Map the file's building type IDs to the game's ones
+				HashTable<s32> buildingNameToOldType;
+				initHashTable(&buildingNameToOldType, 1.0f, cBuildings->buildingTypeCount);
+				put<s32>(&buildingNameToOldType, nullString, 0);
+				u8 *at = startOfChunk + cBuildings->offsetForBuildingTypeTable;
+				for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
+				{
+					u32 buildingType = *(u32 *)at;
+					at += sizeof(u32);
+
+					u32 nameLength = *(u32 *)at;
+					at += sizeof(u32);
+
+					String buildingName = makeString((char*)at, nameLength, true);
+					// @InternedStrings
+					put(&buildingNameToOldType, pushString(gameArena, buildingName), (s32)buildingType);
+					at += nameLength;
+				}
+				remapBuildingTypesFrom(city, &buildingNameToOldType);
+				freeHashTable(&buildingNameToOldType);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
 			{
@@ -580,6 +600,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				// Map the file's terrain type IDs to the game's ones
 				HashTable<u8> terrainNameToOldType;
 				initHashTable(&terrainNameToOldType, 1.0f, cTerrain->terrainTypeCount);
+				put<u8>(&terrainNameToOldType, nullString, 0);
 				u8 *at = startOfChunk + cTerrain->offsetForTerrainTypeTable;
 				for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
 				{
@@ -590,6 +611,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					at += sizeof(u32);
 
 					String terrainName = makeString((char*)at, nameLength, true);
+					// @InternedStrings
 					put(&terrainNameToOldType, pushString(gameArena, terrainName), (u8)terrainType);
 					at += nameLength;
 				}
