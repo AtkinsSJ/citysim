@@ -180,6 +180,5 @@ struct City;
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);
 void updateAdjacentBuildingTextures(City *city, Rect2I footprint);
 
-void remapBuildingTypesFrom    (City *city, HashTable<s32> *buildingNameToOldTypeID);
 void remapBuildingTypesTo      (City *city, HashTable<s32> *buildingNameToNewTypeID);
 void remapBuildingTypesInternal(City *city, HashTable<s32> *buildingNameToOldTypeID, HashTable<s32> *buildingNameToNewTypeID);

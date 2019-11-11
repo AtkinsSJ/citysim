@@ -810,26 +810,6 @@ inline bool buildingHasPower(Building *building)
 	return !(building->problems & BuildingProblem_NoPower);
 }
 
-void remapBuildingTypesFrom(City *city, HashTable<s32> *buildingNameToOldTypeID)
-{
-	// First, remap any IDs that are not present in the current data, so they won't get
-	// merged accidentally.
-	for (auto it = iterate(buildingNameToOldTypeID); hasNext(&it); next(&it))
-	{
-		auto entry = getEntry(&it);
-		if (!contains(&buildingCatalogue.buildingNameToTypeID, entry->key))
-		{
-			put(&buildingCatalogue.buildingNameToTypeID, entry->key, buildingCatalogue.buildingNameToTypeID.count);
-		}
-	}
-
-	remapBuildingTypesInternal(city, buildingNameToOldTypeID, &buildingCatalogue.buildingNameToTypeID);
-
-	putAll(&buildingCatalogue.buildingNameToOldTypeID, &buildingCatalogue.buildingNameToTypeID);
-
-	buildingCatalogue.buildingDefsHaveChanged = false;
-}
-
 void remapBuildingTypesTo(City *city, HashTable<s32> *buildingNameToNewTypeID)
 {
 	// First, remap any IDs that are not present in the current data, so they won't get

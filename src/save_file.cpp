@@ -456,26 +456,9 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 
 				city->highestBuildingID = cBuildings->highestBuildingID;
 
-				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + cBuildings->offsetForBuildingArray);
-				for (u32 buildingIndex = 0;
-					buildingIndex < cBuildings->buildingCount;
-					buildingIndex++, savBuilding++)
-				{
-					Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
-					BuildingDef *def = getBuildingDef(savBuilding->typeID);
-					Building *building = addBuildingDirect(city, savBuilding->id, def, footprint);
-					building->spriteOffset     = savBuilding->spriteOffset;
-					building->currentResidents = savBuilding->currentResidents;
-					building->currentJobs      = savBuilding->currentJobs;
-
-					// This is a bit hacky but it's how we calculate it elsewhere
-					city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
-				}
-
 				// Map the file's building type IDs to the game's ones
-				HashTable<s32> buildingNameToOldType;
-				initHashTable(&buildingNameToOldType, 1.0f, cBuildings->buildingTypeCount);
-				put<s32>(&buildingNameToOldType, nullString, 0);
+				// NB: +1 because the file won't save the null building, so we need to compensate
+				Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1);
 				u8 *at = startOfChunk + cBuildings->offsetForBuildingTypeTable;
 				for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
 				{
@@ -486,12 +469,35 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					at += sizeof(u32);
 
 					String buildingName = makeString((char*)at, nameLength, true);
-					// @InternedStrings
-					put(&buildingNameToOldType, pushString(gameArena, buildingName), (s32)buildingType);
 					at += nameLength;
+
+					BuildingDef *def = findBuildingDef(buildingName);
+					if (def == null)
+					{
+						// Building doesn't exist in the game... we'll remap to 0
+						oldTypeToNewType[buildingType] = 0;
+					}
+					else
+					{
+						oldTypeToNewType[buildingType] = def->typeID;
+					}
 				}
-				remapBuildingTypesFrom(city, &buildingNameToOldType);
-				freeHashTable(&buildingNameToOldType);
+
+				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + cBuildings->offsetForBuildingArray);
+				for (u32 buildingIndex = 0;
+					buildingIndex < cBuildings->buildingCount;
+					buildingIndex++, savBuilding++)
+				{
+					Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
+					BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
+					Building *building = addBuildingDirect(city, savBuilding->id, def, footprint);
+					building->spriteOffset     = savBuilding->spriteOffset;
+					building->currentResidents = savBuilding->currentResidents;
+					building->currentJobs      = savBuilding->currentJobs;
+
+					// This is a bit hacky but it's how we calculate it elsewhere
+					city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+				}
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
 			{
