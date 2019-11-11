@@ -693,14 +693,10 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	AppStatus result = AppStatus_Game;
 	City *city = &gameState->city;
 
-	if (terrainCatalogue.terrainDefsHaveChanged)
+	if (assets->assetReloadHasJustHappened)
 	{
-		remapTerrainTypesTo(city, &terrainCatalogue.terrainNameToType);
-	}
-
-	if (buildingCatalogue.buildingDefsHaveChanged)
-	{
-		remapBuildingTypesTo(city, &buildingCatalogue.buildingNameToTypeID);
+		remapTerrainTypes(city);
+		remapBuildingTypes(city);
 	}
 
 	// Update the simulation... need a smarter way of doing this!

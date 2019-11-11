@@ -21,8 +21,6 @@ struct TerrainCatalogue
 
 	HashTable<u8> terrainNameToOldType;
 	HashTable<u8> terrainNameToType;
-
-	bool terrainDefsHaveChanged;
 };
 
 TerrainCatalogue terrainCatalogue = {};
@@ -51,9 +49,8 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 TerrainDef *getTerrainAt(City *city, s32 x, s32 y);
 u8 getDistanceToWaterAt(City *city, s32 x, s32 y);
 
-void remapTerrainTypesFrom    (City *city, HashTable<u8> *terrainNameToOldType);
-void remapTerrainTypesTo      (City *city, HashTable<u8> *terrainNameToNewType);
-void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainNameToOldType, HashTable<u8> *terrainNameToType);
+void saveTerrainTypes();
+void remapTerrainTypes(City *city);
 
 // Returns 0 if not found
 u8 findTerrainTypeByName(String name);

@@ -86,7 +86,6 @@ struct BuildingCatalogue
 
 	HashTable<s32> buildingNameToTypeID;
 	HashTable<s32> buildingNameToOldTypeID;
-	bool buildingDefsHaveChanged;
 
 	ChunkedArray<BuildingDef *> constructibleBuildings;
 	ChunkedArray<BuildingDef *> rGrowableBuildings;
@@ -180,5 +179,5 @@ struct City;
 void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);
 void updateAdjacentBuildingTextures(City *city, Rect2I footprint);
 
-void remapBuildingTypesTo      (City *city, HashTable<s32> *buildingNameToNewTypeID);
-void remapBuildingTypesInternal(City *city, HashTable<s32> *buildingNameToOldTypeID, HashTable<s32> *buildingNameToNewTypeID);
+void saveBuildingTypes();
+void remapBuildingTypes(City *city);

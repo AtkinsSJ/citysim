@@ -43,6 +43,9 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	globalAppState.gameState->worldDragState.citySize = city->bounds.size;
 	renderer->worldCamera.pos = v2(city->bounds.size) / 2;
+
+	saveBuildingTypes();
+	saveTerrainTypes();
 }
 
 Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footprint)

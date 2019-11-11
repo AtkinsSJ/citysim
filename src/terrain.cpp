@@ -224,8 +224,6 @@ void loadTerrainDefs(Blob data, Asset *asset)
 			}
 		}
 	}
-
-	terrainCatalogue.terrainDefsHaveChanged = true; // Mark that it's changed.
 }
 
 void removeTerrainDefs(Array<String> namesToRemove)
@@ -241,8 +239,6 @@ void removeTerrainDefs(Array<String> namesToRemove)
 			removeKey(&terrainCatalogue.terrainNameToType, terrainName);
 		}
 	}
-
-	terrainCatalogue.terrainDefsHaveChanged = true; // Mark that it's changed.
 }
 
 inline TerrainDef *getTerrainDef(u8 terrainType)
@@ -463,11 +459,16 @@ void generateTerrain(City *city, Random *gameRandom)
 	updateDistances(city, layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }
 
-void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainNameToOldType)
+void saveTerrainTypes()
+{
+	putAll(&terrainCatalogue.terrainNameToOldType, &terrainCatalogue.terrainNameToType);
+}
+
+void remapTerrainTypes(City *city)
 {
 	// First, remap any Names that are not present in the current data, so they won't get
 	// merged accidentally.
-	for (auto it = iterate(terrainNameToOldType); hasNext(&it); next(&it))
+	for (auto it = iterate(&terrainCatalogue.terrainNameToOldType); hasNext(&it); next(&it))
 	{
 		auto entry = getEntry(&it);
 		if (!contains(&terrainCatalogue.terrainNameToType, entry->key))
@@ -476,45 +477,16 @@ void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainNameToOldType)
 		}
 	}
 
-	remapTerrainTypesInternal(city, terrainNameToOldType, &terrainCatalogue.terrainNameToType);
-
-	putAll(&terrainCatalogue.terrainNameToOldType, &terrainCatalogue.terrainNameToType);
-
-	terrainCatalogue.terrainDefsHaveChanged = false;
-}
-
-void remapTerrainTypesTo(City *city, HashTable<u8> *terrainNameToNewType)
-{
-	// First, remap any Names that are not present in the current data, so they won't get
-	// merged accidentally.
-	for (auto it = iterate(&terrainCatalogue.terrainNameToOldType); hasNext(&it); next(&it))
+	if (terrainCatalogue.terrainNameToOldType.count > 0)
 	{
-		auto entry = getEntry(&it);
-		if (!contains(terrainNameToNewType, entry->key))
-		{
-			put(terrainNameToNewType, entry->key, (u8)terrainNameToNewType->count);
-		}
-	}
-
-	remapTerrainTypesInternal(city, &terrainCatalogue.terrainNameToOldType, terrainNameToNewType);
-
-	putAll(&terrainCatalogue.terrainNameToOldType, terrainNameToNewType);
-
-	terrainCatalogue.terrainDefsHaveChanged = false;
-}
-
-void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainNameToOldType, HashTable<u8> *terrainNameToType)
-{
-	if (terrainNameToOldType->count > 0)
-	{
-		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainNameToOldType->count);
-		for (auto it = iterate(terrainNameToOldType); hasNext(&it); next(&it))
+		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainCatalogue.terrainNameToOldType.count);
+		for (auto it = iterate(&terrainCatalogue.terrainNameToOldType); hasNext(&it); next(&it))
 		{
 			auto entry = getEntry(&it);
 			String terrainName = entry->key;
 			u8 oldType       = entry->value;
 
-			u8 *newType = find(terrainNameToType, terrainName);
+			u8 *newType = find(&terrainCatalogue.terrainNameToType, terrainName);
 			if (newType == null)
 			{
 				oldTypeToNewType[oldType] = 0;
@@ -538,4 +510,6 @@ void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainNameToOldType, 
 			}
 		}
 	}
+
+	saveTerrainTypes();
 }

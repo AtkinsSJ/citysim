@@ -457,7 +457,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				city->highestBuildingID = cBuildings->highestBuildingID;
 
 				// Map the file's building type IDs to the game's ones
-				// NB: +1 because the file won't save the null building, so we need to compensate
+				// NB: count+1 because the file won't save the null building, so we need to compensate
 				Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1);
 				u8 *at = startOfChunk + cBuildings->offsetForBuildingTypeTable;
 				for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
@@ -474,7 +474,27 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					BuildingDef *def = findBuildingDef(buildingName);
 					if (def == null)
 					{
-						// Building doesn't exist in the game... we'll remap to 0
+						// The building doesn't exist in the game... we'll remap to 0
+						// 
+						// Ideally, we'd keep the information about what a building really is, so
+						// that if it's later loaded into a game that does have that building, it'll work
+						// again instead of being forever lost. But, we're talking about a situation of
+						// the player messing around with the data files, or adding/removing/adding mods,
+						// so IDK. The saved game is already corrupted if you load it and stuff is missing - 
+						// playing at all from that point is going to break things, and if we later make
+						// that stuff appear again, we're actually just breaking it a second time!
+						// 
+						// So maybe, the real "correct" solution is to tell the player that things are missing
+						// from the game, and then just demolish the missing-id buildings.
+						//
+						// Mods probably want some way to define "migrations" for transforming saved games 
+						// when the mod's data changes. That's probably a good idea for the base game's data
+						// too, because changes happen!
+						//
+						// Lots to think about!
+						//
+						// - Sam, 11/11/2019
+						//
 						oldTypeToNewType[buildingType] = 0;
 					}
 					else
@@ -594,19 +614,10 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				TerrainLayer *layer = &city->terrainLayer;
 
 				layer->terrainGenerationSeed = cTerrain->terrainGenerationSeed;
-				u8 *tileTerrainType  = startOfChunk + cTerrain->offsetForTileTerrainType;
-				rleDecode(tileTerrainType, layer->tileTerrainType, cityTileCount);
-
-				u8 *tileHeight       = startOfChunk + cTerrain->offsetForTileHeight;
-				rleDecode(tileHeight, layer->tileHeight, cityTileCount);
-
-				u8 *tileSpriteOffset = startOfChunk + cTerrain->offsetForTileSpriteOffset;
-				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
 
 				// Map the file's terrain type IDs to the game's ones
-				HashTable<u8> terrainNameToOldType;
-				initHashTable(&terrainNameToOldType, 1.0f, cTerrain->terrainTypeCount);
-				put<u8>(&terrainNameToOldType, nullString, 0);
+				// NB: count+1 because the file won't save the null terrain, so we need to compensate
+				Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, cTerrain->terrainTypeCount + 1);
 				u8 *at = startOfChunk + cTerrain->offsetForTerrainTypeTable;
 				for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
 				{
@@ -617,12 +628,28 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					at += sizeof(u32);
 
 					String terrainName = makeString((char*)at, nameLength, true);
-					// @InternedStrings
-					put(&terrainNameToOldType, pushString(gameArena, terrainName), (u8)terrainType);
 					at += nameLength;
+
+					oldTypeToNewType[terrainType] = findTerrainTypeByName(terrainName);
 				}
-				remapTerrainTypesFrom(city, &terrainNameToOldType);
-				freeHashTable(&terrainNameToOldType);
+
+				// Terrain type
+				u8 *tileTerrainType  = startOfChunk + cTerrain->offsetForTileTerrainType;
+				u8 *decodedTileTerrainType = allocateMultiple<u8>(tempArena, cityTileCount);
+				rleDecode(tileTerrainType, decodedTileTerrainType, cityTileCount);
+				for (s32 i = 0; i < cityTileCount; i++)
+				{
+					decodedTileTerrainType[i] = oldTypeToNewType[ decodedTileTerrainType[i] ];
+				}
+				copyMemory(decodedTileTerrainType, layer->tileTerrainType, cityTileCount);
+
+				// Terrain height
+				u8 *tileHeight = startOfChunk + cTerrain->offsetForTileHeight;
+				rleDecode(tileHeight, layer->tileHeight, cityTileCount);
+
+				// Sprite offset
+				u8 *tileSpriteOffset = startOfChunk + cTerrain->offsetForTileSpriteOffset;
+				copyMemory(tileSpriteOffset, layer->tileSpriteOffset, cityTileCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{

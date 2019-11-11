@@ -46,7 +46,6 @@ void initBuildingCatalogue()
 	initHashTable(&catalogue->buildingNameToTypeID, 0.75f, 128);
 	put<s32>(&catalogue->buildingNameToTypeID, nullString, 0);
 	initHashTable(&catalogue->buildingNameToOldTypeID, 0.75f, 128);
-	catalogue->buildingDefsHaveChanged = false;
 
 	catalogue->maxRBuildingDim = 0;
 	catalogue->maxCBuildingDim = 0;
@@ -527,8 +526,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 		formatInt(catalogue->iGrowableBuildings.count),
 		formatInt(catalogue->constructibleBuildings.count)
 	});
-
-	catalogue->buildingDefsHaveChanged = true;
 }
 
 void removeBuildingDefs(Array<String> idsToRemove)
@@ -553,8 +550,6 @@ void removeBuildingDefs(Array<String> idsToRemove)
 			removeKey(&catalogue->buildingNameToTypeID, buildingID);
 		}
 	}
-
-	catalogue->buildingDefsHaveChanged = true;
 
 	// TODO: How/when do we recalculate these?
 	// I guess as the max building sizes are an optimisation, and this code is only
@@ -810,38 +805,34 @@ inline bool buildingHasPower(Building *building)
 	return !(building->problems & BuildingProblem_NoPower);
 }
 
-void remapBuildingTypesTo(City *city, HashTable<s32> *buildingNameToNewTypeID)
+void saveBuildingTypes()
+{
+	putAll(&buildingCatalogue.buildingNameToOldTypeID, &buildingCatalogue.buildingNameToTypeID);
+}
+
+void remapBuildingTypes(City *city)
 {
 	// First, remap any IDs that are not present in the current data, so they won't get
 	// merged accidentally.
 	for (auto it = iterate(&buildingCatalogue.buildingNameToOldTypeID); hasNext(&it); next(&it))
 	{
 		auto entry = getEntry(&it);
-		if (!contains(buildingNameToNewTypeID, entry->key))
+		if (!contains(&buildingCatalogue.buildingNameToTypeID, entry->key))
 		{
-			put(buildingNameToNewTypeID, entry->key, buildingNameToNewTypeID->count);
+			put(&buildingCatalogue.buildingNameToTypeID, entry->key, buildingCatalogue.buildingNameToTypeID.count);
 		}
 	}
 
-	remapBuildingTypesInternal(city, &buildingCatalogue.buildingNameToOldTypeID, buildingNameToNewTypeID);
-
-	putAll(&buildingCatalogue.buildingNameToOldTypeID, buildingNameToNewTypeID);
-
-	buildingCatalogue.buildingDefsHaveChanged = false;
-}
-
-void remapBuildingTypesInternal(City *city, HashTable<s32> *buildingNameToOldTypeID, HashTable<s32> *buildingNameToNewTypeID)
-{
-	if (buildingNameToOldTypeID->count > 0)
+	if (buildingCatalogue.buildingNameToOldTypeID.count > 0)
 	{
-		Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, buildingNameToOldTypeID->count);
-		for (auto it = iterate(buildingNameToOldTypeID); hasNext(&it); next(&it))
+		Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, buildingCatalogue.buildingNameToOldTypeID.count);
+		for (auto it = iterate(&buildingCatalogue.buildingNameToOldTypeID); hasNext(&it); next(&it))
 		{
 			auto entry = getEntry(&it);
 			String buildingName = entry->key;
 			s32 oldType         = entry->value;
 
-			s32 *newType = find(buildingNameToNewTypeID, buildingName);
+			s32 *newType = find(&buildingCatalogue.buildingNameToTypeID, buildingName);
 			if (newType == null)
 			{
 				oldTypeToNewType[oldType] = 0;
@@ -862,4 +853,6 @@ void remapBuildingTypesInternal(City *city, HashTable<s32> *buildingNameToOldTyp
 			}
 		}
 	}
+
+	saveBuildingTypes();
 }
