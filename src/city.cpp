@@ -583,7 +583,15 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 	// 
 	s32 buildingsRemaining = truncate32(visibleBuildings.count);
 	Building *firstBuilding = *get(&visibleBuildings, 0);
-	Asset *texture = getSprite(getBuildingDef(firstBuilding->typeID)->sprites, firstBuilding->spriteOffset)->texture;
+	Asset *texture = null;
+
+	// In some cases, the first building (or buildings) could be the Null building and so have no spirtes!
+	// Rather than crash, we want to skip them.
+	BuildingDef *firstDef = getBuildingDef(firstBuilding);
+	if (firstDef->sprites != null)
+	{
+		texture = getSprite(firstDef->sprites, firstBuilding->spriteOffset)->texture;
+	}
 	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
 
 	for (auto it = iterate(&visibleBuildings);

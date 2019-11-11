@@ -25,6 +25,8 @@ Building *getBuilding(City *city, BuildingRef ref)
 void initBuildingCatalogue()
 {
 	BuildingCatalogue *catalogue = &buildingCatalogue;
+	*catalogue = {};
+
 	initChunkedArray(&catalogue->constructibleBuildings, &globalAppState.systemArena, 64);
 	initChunkedArray(&catalogue->rGrowableBuildings, &globalAppState.systemArena, 64);
 	initChunkedArray(&catalogue->cGrowableBuildings, &globalAppState.systemArena, 64);
@@ -36,8 +38,15 @@ void initBuildingCatalogue()
 	// and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
 	Indexed<BuildingDef*> nullBuildingDef = append(&catalogue->allBuildings);
 	*nullBuildingDef.value = {};
+	initFlags(&nullBuildingDef.value->flags, BuildingFlagCount);
+	initFlags(&nullBuildingDef.value->transportTypes, TransportTypeCount);
 
 	initHashTable(&catalogue->buildingsByName, 0.75f, 128);
+
+	initHashTable(&catalogue->buildingNameToTypeID, 0.75f, 128);
+	put<s32>(&catalogue->buildingNameToTypeID, nullString, 0);
+	initHashTable(&catalogue->buildingNameToOldTypeID, 0.75f, 128);
+	catalogue->buildingDefsHaveChanged = false;
 
 	catalogue->maxRBuildingDim = 0;
 	catalogue->maxCBuildingDim = 0;
@@ -125,16 +134,25 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 			if (equals(firstWord, "Building"_s))
 			{
+				String id = readToken(&reader);
+				if (isEmpty(id))
+				{
+					error(&reader, "Couldn't parse Building. Expected: ':Building identifier'"_s);
+					return;
+				}
+
 				Indexed<BuildingDef *> newDef = append(buildings);
 				def = newDef.value;
-				def->id = pushString(&assets->assetArena, getRemainderOfLine(&reader));
-				def->typeID = truncate32(newDef.index);
+				// @InternedStrings
+				def->id = pushString(&globalAppState.systemArena, id);
+				def->typeID = newDef.index;
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
 
 				def->fireRisk = 1.0f;
-				put(&catalogue->buildingsByName, def->id, def);
 				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->id;
+				put(&catalogue->buildingsByName, def->id, def);
+				put(&catalogue->buildingNameToTypeID, def->id, def->typeID);
 			}
 			else if (equals(firstWord, "Template"_s))
 			{
@@ -509,6 +527,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 		formatInt(catalogue->iGrowableBuildings.count),
 		formatInt(catalogue->constructibleBuildings.count)
 	});
+
+	catalogue->buildingDefsHaveChanged = true;
 }
 
 void removeBuildingDefs(Array<String> idsToRemove)
@@ -529,8 +549,12 @@ void removeBuildingDefs(Array<String> idsToRemove)
 			removeKey(&catalogue->buildingsByName, buildingID);
 
 			removeIndex(&catalogue->allBuildings, def->typeID);
+
+			removeKey(&catalogue->buildingNameToTypeID, buildingID);
 		}
 	}
+
+	catalogue->buildingDefsHaveChanged = true;
 
 	// TODO: How/when do we recalculate these?
 	// I guess as the max building sizes are an optimisation, and this code is only
@@ -547,7 +571,15 @@ void removeBuildingDefs(Array<String> idsToRemove)
 
 inline BuildingDef *getBuildingDef(s32 buildingTypeID)
 {
-	return get(&buildingCatalogue.allBuildings, buildingTypeID);
+	BuildingDef *result = get(&buildingCatalogue.allBuildings, 0);
+
+	if (buildingTypeID > 0 && buildingTypeID < buildingCatalogue.allBuildings.count)
+	{
+		BuildingDef *found = get(&buildingCatalogue.allBuildings, buildingTypeID);
+		if (found != null) result = found;
+	}
+
+	return result;
 }
 
 inline BuildingDef *getBuildingDef(Building *building)
@@ -776,4 +808,78 @@ inline s32 getRequiredPower(Building *building)
 inline bool buildingHasPower(Building *building)
 {
 	return !(building->problems & BuildingProblem_NoPower);
+}
+
+void remapBuildingTypesFrom(City *city, HashTable<s32> *buildingNameToOldTypeID)
+{
+	// First, remap any IDs that are not present in the current data, so they won't get
+	// merged accidentally.
+	for (auto it = iterate(buildingNameToOldTypeID); hasNext(&it); next(&it))
+	{
+		auto entry = getEntry(&it);
+		if (!contains(&buildingCatalogue.buildingNameToTypeID, entry->key))
+		{
+			put(&buildingCatalogue.buildingNameToTypeID, entry->key, buildingCatalogue.buildingNameToTypeID.count);
+		}
+	}
+
+	remapBuildingTypesInternal(city, buildingNameToOldTypeID, &buildingCatalogue.buildingNameToTypeID);
+
+	putAll(&buildingCatalogue.buildingNameToOldTypeID, &buildingCatalogue.buildingNameToTypeID);
+
+	buildingCatalogue.buildingDefsHaveChanged = false;
+}
+
+void remapBuildingTypesTo(City *city, HashTable<s32> *buildingNameToNewTypeID)
+{
+	// First, remap any IDs that are not present in the current data, so they won't get
+	// merged accidentally.
+	for (auto it = iterate(&buildingCatalogue.buildingNameToOldTypeID); hasNext(&it); next(&it))
+	{
+		auto entry = getEntry(&it);
+		if (!contains(buildingNameToNewTypeID, entry->key))
+		{
+			put(buildingNameToNewTypeID, entry->key, buildingNameToNewTypeID->count);
+		}
+	}
+
+	remapBuildingTypesInternal(city, &buildingCatalogue.buildingNameToOldTypeID, buildingNameToNewTypeID);
+
+	putAll(&buildingCatalogue.buildingNameToOldTypeID, buildingNameToNewTypeID);
+
+	buildingCatalogue.buildingDefsHaveChanged = false;
+}
+
+void remapBuildingTypesInternal(City *city, HashTable<s32> *buildingNameToOldTypeID, HashTable<s32> *buildingNameToNewTypeID)
+{
+	if (buildingNameToOldTypeID->count > 0)
+	{
+		Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, buildingNameToOldTypeID->count);
+		for (auto it = iterate(buildingNameToOldTypeID); hasNext(&it); next(&it))
+		{
+			auto entry = getEntry(&it);
+			String buildingName = entry->key;
+			s32 oldType         = entry->value;
+
+			s32 *newType = find(buildingNameToNewTypeID, buildingName);
+			if (newType == null)
+			{
+				oldTypeToNewType[oldType] = 0;
+			}
+			else
+			{
+				oldTypeToNewType[oldType] = *newType;
+			}
+		}
+
+		for (auto it = iterate(&city->buildings); hasNext(&it); next(&it))
+		{
+			Building *building = get(&it);
+			s32 oldType = building->typeID;
+			if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0))
+			{
+				building->typeID = oldTypeToNewType[oldType];
+			}
+		}
+	}
 }
