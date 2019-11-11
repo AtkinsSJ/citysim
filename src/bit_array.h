@@ -22,7 +22,7 @@ void initBitArray(BitArray *array, MemoryArena *arena, s32 size);
 void initBitArray(BitArray *array, s32 size, Array<u64> u64s);
 inline s32 calculateBitArrayU64Count(s32 bitCount)
 {
-	return 1 + (bitCount / 64);
+	return 1 + ((bitCount-1) / 64);
 }
 
 void setBit(BitArray *array, s32 index);
