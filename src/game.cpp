@@ -329,11 +329,11 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Terrain
 	TerrainDef *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Terrain: {0}"_s, {getText(terrain->nameTextID)}));
+	window_label(context, myprintf("Terrain: {0}"_s, {getText(terrain->textAssetName)}));
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Zone: {0}"_s, {zone ? getText(getZoneDef(zone).nameTextID) : "None"_s}));
+	window_label(context, myprintf("Zone: {0}"_s, {zone ? getText(getZoneDef(zone).textAssetName) : "None"_s}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -341,7 +341,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	{
 		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
-		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->nameTextID), formatInt(building->id), formatInt(buildingIndex)}));
+		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex)}));
 		window_label(context, myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));
 		window_label(context, myprintf("- Power: {0}"_s, {formatInt(def->power)}));
@@ -524,7 +524,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			s32 buttonMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).nameTextID), popupButtonStyle).x);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle).x);
 			}
 
 			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
@@ -533,7 +533,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).nameTextID), popupButtonStyle,
+				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle,
 						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
 				{
 					uiCloseMenus(uiState);
@@ -561,7 +561,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				next(&it))
 			{
 				BuildingDef *buildingDef = getValue(&it);
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(buildingDef->nameTextID), popupButtonStyle).x);
+				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(buildingDef->textAssetName), popupButtonStyle).x);
 			}
 
 			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
@@ -574,7 +574,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			{
 				BuildingDef *buildingDef = getValue(&it);
 
-				if (popupMenuButton(uiState, &menu, getText(buildingDef->nameTextID), popupButtonStyle,
+				if (popupMenuButton(uiState, &menu, getText(buildingDef->textAssetName), popupButtonStyle,
 						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
 				{
 					uiCloseMenus(uiState);
@@ -695,7 +695,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 	if (terrainCatalogue.terrainDefsHaveChanged)
 	{
-		remapTerrainTypesTo(city, &terrainCatalogue.terrainIDToType);
+		remapTerrainTypesTo(city, &terrainCatalogue.terrainNameToType);
 	}
 
 	if (buildingCatalogue.buildingDefsHaveChanged)

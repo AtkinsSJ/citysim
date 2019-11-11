@@ -16,8 +16,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-TODO: String "ids" should be called "names", for clarity. All this "multiple things called ID" nonsense is a mess.
-
 Saving and loading!
 - Run-length encoding! A lot of per-tile data is repetitive right now (eg, terrain type, zone type) and a really simple RLE scheme could massively reduce the file-size. Might be fun to implement too. I'll wait until I have loading implemented before I attempt this though, as it's much harder to verify in a hex editor!
 	- I'm finding that different arrays within the save file are suited to different approaches here... I can see a couple of options:

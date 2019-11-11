@@ -134,8 +134,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 			if (equals(firstWord, "Building"_s))
 			{
-				String id = readToken(&reader);
-				if (isEmpty(id))
+				String name = readToken(&reader);
+				if (isEmpty(name))
 				{
 					error(&reader, "Couldn't parse Building. Expected: ':Building identifier'"_s);
 					return;
@@ -144,15 +144,15 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				Indexed<BuildingDef *> newDef = append(buildings);
 				def = newDef.value;
 				// @InternedStrings
-				def->id = pushString(&globalAppState.systemArena, id);
+				def->name = pushString(&globalAppState.systemArena, name);
 				def->typeID = newDef.index;
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
 
 				def->fireRisk = 1.0f;
-				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->id;
-				put(&catalogue->buildingsByName, def->id, def);
-				put(&catalogue->buildingNameToTypeID, def->id, def->typeID);
+				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->name;
+				put(&catalogue->buildingsByName, def->name, def);
+				put(&catalogue->buildingNameToTypeID, def->name, def->typeID);
 			}
 			else if (equals(firstWord, "Template"_s))
 			{
@@ -436,7 +436,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "name"_s))
 				{
-					def->nameTextID = pushString(&assets->assetArena, readToken(&reader));
+					def->textAssetName = pushString(&assets->assetArena, readToken(&reader));
 				}
 				else if (equals(firstWord, "pollution"_s))
 				{

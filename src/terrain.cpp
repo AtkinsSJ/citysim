@@ -40,12 +40,12 @@ void initTerrainCatalogue()
 	Indexed<TerrainDef*> nullTerrainDef = append(&terrainCatalogue.terrainDefs);
 	*nullTerrainDef.value = {};
 
-	initHashTable(&terrainCatalogue.terrainDefsByID, 0.75f, 128);
+	initHashTable(&terrainCatalogue.terrainDefsByName, 0.75f, 128);
 
-	initHashTable(&terrainCatalogue.terrainIDToType, 0.75f, 128);
-	put<u8>(&terrainCatalogue.terrainIDToType, nullString, 0);
+	initHashTable(&terrainCatalogue.terrainNameToType, 0.75f, 128);
+	put<u8>(&terrainCatalogue.terrainNameToType, nullString, 0);
 
-	initHashTable(&terrainCatalogue.terrainIDToOldType, 0.75f, 128);
+	initHashTable(&terrainCatalogue.terrainNameToOldType, 0.75f, 128);
 }
 
 void loadTerrainDefs(Blob data, Asset *asset)
@@ -100,8 +100,8 @@ void loadTerrainDefs(Blob data, Asset *asset)
 			{
 				mode = Mode_Terrain;
 
-				String id = readToken(&reader);
-				if (isEmpty(id))
+				String name = readToken(&reader);
+				if (isEmpty(name))
 				{
 					error(&reader, "Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
 					return;
@@ -118,10 +118,10 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				def->typeID = (u8) slot.index;
 				
 				// @InternedStrings
-				def->id = pushString(&globalAppState.systemArena, id);
-				asset->terrainDefs.terrainIDs[terrainIDsIndex++] = def->id;
-				put(&terrainCatalogue.terrainDefsByID, def->id, def);
-				put(&terrainCatalogue.terrainIDToType, def->id, def->typeID);
+				def->name = pushString(&globalAppState.systemArena, name);
+				asset->terrainDefs.terrainIDs[terrainIDsIndex++] = def->name;
+				put(&terrainCatalogue.terrainDefsByName, def->name, def);
+				put(&terrainCatalogue.terrainNameToType, def->name, def->typeID);
 			}
 			else if (equals(firstWord, "Texture"_s))
 			{
@@ -201,7 +201,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				case Mode_Terrain: {
 					if (equals(firstWord, "name"_s))
 					{
-						def->nameTextID = pushString(&assets->assetArena, readToken(&reader));
+						def->textAssetName = pushString(&assets->assetArena, readToken(&reader));
 					}
 					else if (equals(firstWord, "uses_sprite"_s))
 					{
@@ -228,17 +228,17 @@ void loadTerrainDefs(Blob data, Asset *asset)
 	terrainCatalogue.terrainDefsHaveChanged = true; // Mark that it's changed.
 }
 
-void removeTerrainDefs(Array<String> idsToRemove)
+void removeTerrainDefs(Array<String> namesToRemove)
 {
-	for (s32 idIndex = 0; idIndex < idsToRemove.count; idIndex++)
+	for (s32 nameIndex = 0; nameIndex < namesToRemove.count; nameIndex++)
 	{
-		String terrainID = idsToRemove[idIndex];
-		s32 terrainIndex = findTerrainTypeByID(terrainID);
+		String terrainName = namesToRemove[nameIndex];
+		s32 terrainIndex = findTerrainTypeByName(terrainName);
 		if (terrainIndex > 0)
 		{
 			removeIndex(&terrainCatalogue.terrainDefs, terrainIndex);
 
-			removeKey(&terrainCatalogue.terrainIDToType, terrainID);
+			removeKey(&terrainCatalogue.terrainNameToType, terrainName);
 		}
 	}
 
@@ -274,13 +274,13 @@ void refreshTerrainSpriteCache(TerrainCatalogue *catalogue)
 	}
 }
 
-u8 findTerrainTypeByID(String id)
+u8 findTerrainTypeByName(String name)
 {
 	DEBUG_FUNCTION();
 	
 	u8 result = 0;
 
-	TerrainDef **def = find(&terrainCatalogue.terrainDefsByID, id);
+	TerrainDef **def = find(&terrainCatalogue.terrainDefsByName, name);
 	if (def != null && *def != null)
 	{
 		result = (*def)->typeID;
@@ -342,8 +342,8 @@ void generateTerrain(City *city, Random *gameRandom)
 
 	TerrainLayer *layer = &city->terrainLayer;
 	
-	u8 tGround = truncate<u8>(findTerrainTypeByID("ground"_s));
-	u8 tWater  = truncate<u8>(findTerrainTypeByID("water"_s));
+	u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
+	u8 tWater  = truncate<u8>(findTerrainTypeByName("water"_s));
 	BuildingDef *treeDef = findBuildingDef("tree"_s);
 
 	fillMemory<u8>(layer->tileDistanceToWater, 255, areaOf(city->bounds));
@@ -463,58 +463,58 @@ void generateTerrain(City *city, Random *gameRandom)
 	updateDistances(city, layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }
 
-void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainIDToOldType)
+void remapTerrainTypesFrom(City *city, HashTable<u8> *terrainNameToOldType)
 {
-	// First, remap any IDs that are not present in the current data, so they won't get
+	// First, remap any Names that are not present in the current data, so they won't get
 	// merged accidentally.
-	for (auto it = iterate(terrainIDToOldType); hasNext(&it); next(&it))
+	for (auto it = iterate(terrainNameToOldType); hasNext(&it); next(&it))
 	{
 		auto entry = getEntry(&it);
-		if (!contains(&terrainCatalogue.terrainIDToType, entry->key))
+		if (!contains(&terrainCatalogue.terrainNameToType, entry->key))
 		{
-			put(&terrainCatalogue.terrainIDToType, entry->key, (u8)terrainCatalogue.terrainIDToType.count);
+			put(&terrainCatalogue.terrainNameToType, entry->key, (u8)terrainCatalogue.terrainNameToType.count);
 		}
 	}
 
-	remapTerrainTypesInternal(city, terrainIDToOldType, &terrainCatalogue.terrainIDToType);
+	remapTerrainTypesInternal(city, terrainNameToOldType, &terrainCatalogue.terrainNameToType);
 
-	putAll(&terrainCatalogue.terrainIDToOldType, &terrainCatalogue.terrainIDToType);
+	putAll(&terrainCatalogue.terrainNameToOldType, &terrainCatalogue.terrainNameToType);
 
 	terrainCatalogue.terrainDefsHaveChanged = false;
 }
 
-void remapTerrainTypesTo(City *city, HashTable<u8> *terrainIDToNewType)
+void remapTerrainTypesTo(City *city, HashTable<u8> *terrainNameToNewType)
 {
-	// First, remap any IDs that are not present in the current data, so they won't get
+	// First, remap any Names that are not present in the current data, so they won't get
 	// merged accidentally.
-	for (auto it = iterate(&terrainCatalogue.terrainIDToOldType); hasNext(&it); next(&it))
+	for (auto it = iterate(&terrainCatalogue.terrainNameToOldType); hasNext(&it); next(&it))
 	{
 		auto entry = getEntry(&it);
-		if (!contains(terrainIDToNewType, entry->key))
+		if (!contains(terrainNameToNewType, entry->key))
 		{
-			put(terrainIDToNewType, entry->key, (u8)terrainIDToNewType->count);
+			put(terrainNameToNewType, entry->key, (u8)terrainNameToNewType->count);
 		}
 	}
 
-	remapTerrainTypesInternal(city, &terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
+	remapTerrainTypesInternal(city, &terrainCatalogue.terrainNameToOldType, terrainNameToNewType);
 
-	putAll(&terrainCatalogue.terrainIDToOldType, terrainIDToNewType);
+	putAll(&terrainCatalogue.terrainNameToOldType, terrainNameToNewType);
 
 	terrainCatalogue.terrainDefsHaveChanged = false;
 }
 
-void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainIDToOldType, HashTable<u8> *terrainIDToType)
+void remapTerrainTypesInternal(City *city, HashTable<u8> *terrainNameToOldType, HashTable<u8> *terrainNameToType)
 {
-	if (terrainIDToOldType->count > 0)
+	if (terrainNameToOldType->count > 0)
 	{
-		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainIDToOldType->count);
-		for (auto it = iterate(terrainIDToOldType); hasNext(&it); next(&it))
+		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainNameToOldType->count);
+		for (auto it = iterate(terrainNameToOldType); hasNext(&it); next(&it))
 		{
 			auto entry = getEntry(&it);
-			String terrainID = entry->key;
+			String terrainName = entry->key;
 			u8 oldType       = entry->value;
 
-			u8 *newType = find(terrainIDToType, terrainID);
+			u8 *newType = find(terrainNameToType, terrainName);
 			if (newType == null)
 			{
 				oldTypeToNewType[oldType] = 0;

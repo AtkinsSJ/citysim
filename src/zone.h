@@ -17,7 +17,7 @@ enum ZoneType
 struct ZoneDef
 {
 	ZoneType typeID;
-	String nameTextID;
+	String textAssetName;
 	V4 color;
 	s32 costPerTile;
 	bool carriesPower;

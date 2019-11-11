@@ -88,14 +88,14 @@ bool writeSaveFile(FileHandle *file, City *city)
 				if (def->typeID == 0) continue; // Skip the null terrain def!
 
 				u32 typeID = def->typeID;
-				u32 idLength = def->id.length;
+				u32 nameLength = def->name.length;
 
 				// 4 byte int id, 4 byte length, then the text as bytes
 				appendStruct(&buffer, &typeID);
-				appendStruct(&buffer, &idLength);
-				append(&buffer, idLength, def->id.chars);
+				appendStruct(&buffer, &nameLength);
+				append(&buffer, nameLength, def->name.chars);
 
-				offset += sizeof(typeID) + sizeof(idLength) + idLength;
+				offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
 			}
 
 			// Tile terrain type (u8)
@@ -131,14 +131,14 @@ bool writeSaveFile(FileHandle *file, City *city)
 				if (def->typeID == 0) continue; // Skip the null building def!
 
 				u32 typeID = def->typeID;
-				u32 idLength = def->id.length;
+				u32 nameLength = def->name.length;
 
 				// 4 byte int id, 4 byte length, then the text as bytes
 				appendStruct(&buffer, &typeID);
-				appendStruct(&buffer, &idLength);
-				append(&buffer, idLength, def->id.chars);
+				appendStruct(&buffer, &nameLength);
+				append(&buffer, nameLength, def->name.chars);
 
-				offset += sizeof(typeID) + sizeof(idLength) + idLength;
+				offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
 			}
 
 			// Highest ID
