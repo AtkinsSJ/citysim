@@ -196,7 +196,7 @@ struct SAVChunk_Buildings
 
 	// Array of the buildings in the city, as SAVBuildings
 	leU32 buildingCount;
-	leU32 offsetForBuildingArray;
+	SAVBlob buildings;
 };
 struct SAVBuilding
 {
@@ -236,7 +236,7 @@ struct SAVChunk_Fire
 {
 	// Active fires
 	leU32 activeFireCount;
-	leU32 offsetForActiveFires; // Array of SAVFires
+	SAVBlob activeFires; // Array of SAVFires
 
 	// TODO: Fire service building data
 };

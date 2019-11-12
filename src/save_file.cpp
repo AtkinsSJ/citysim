@@ -159,26 +159,31 @@ bool writeSaveFile(FileHandle *file, City *city)
 			// - Sam, 11/10/2019
 			//
 			chunk.buildingCount = city->buildings.count - 1; // Not the null building!
-			chunk.offsetForBuildingArray = offset;
+
+			SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, chunk.buildingCount);
+			s32 tempBuildingIndex = 0;
+
 			for (auto it = iterate(&city->buildings); hasNext(&it); next(&it))
 			{
 				Building *building = get(&it);
 				if (building->id == 0) continue; // Skip the null building!
 
-				SAVBuilding sb = {};
-				sb.id = building->id;
-				sb.typeID = building->typeID;
-				sb.x = (u16) building->footprint.x;
-				sb.y = (u16) building->footprint.y;
-				sb.w = (u16) building->footprint.w;
-				sb.h = (u16) building->footprint.h;
-				sb.spriteOffset = (u16) building->spriteOffset;
-				sb.currentResidents = (u16) building->currentResidents;
-				sb.currentJobs = (u16) building->currentJobs;
+				SAVBuilding *sb = tempBuildings + tempBuildingIndex;
+				*sb = {};
+				sb->id = building->id;
+				sb->typeID = building->typeID;
+				sb->x = (u16) building->footprint.x;
+				sb->y = (u16) building->footprint.y;
+				sb->w = (u16) building->footprint.w;
+				sb->h = (u16) building->footprint.h;
+				sb->spriteOffset = (u16) building->spriteOffset;
+				sb->currentResidents = (u16) building->currentResidents;
+				sb->currentJobs = (u16) building->currentJobs;
 
-				appendStruct(&buffer, &sb);
-				offset += sizeof(sb);
+				tempBuildingIndex++;
 			}
+			chunk.buildings = appendBlob(offset, &buffer, chunk.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, Blob_Uncompressed);
+			offset += chunk.buildings.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
@@ -249,7 +254,8 @@ bool writeSaveFile(FileHandle *file, City *city)
 
 			// Active fires
 			chunk.activeFireCount = layer->activeFireCount;
-			chunk.offsetForActiveFires = offset;
+			SAVFire *tempFires = allocateMultiple<SAVFire>(tempArena, chunk.activeFireCount);
+			s32 tempFireIndex = 0;
 			// ughhhh I have to iterate the sectors to get this information!
 			for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
 			{
@@ -258,13 +264,14 @@ bool writeSaveFile(FileHandle *file, City *city)
 				for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
 				{
 					Fire *fire = get(&it);
-					SAVFire savFire = {};
-					savFire.x = (u16) fire->pos.x;
-					savFire.y = (u16) fire->pos.y;
-
-					appendStruct(&buffer, &savFire);
+					SAVFire *savFire = tempFires + tempFireIndex++;
+					*savFire = {};
+					savFire->x = (u16) fire->pos.x;
+					savFire->y = (u16) fire->pos.y;
 				}
 			}
+			chunk.activeFires = appendBlob(offset, &buffer, chunk.activeFireCount * sizeof(SAVFire), (u8*)tempFires, Blob_Uncompressed);
+			offset += chunk.activeFires.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
@@ -500,20 +507,25 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					}
 				}
 
-				SAVBuilding *savBuilding = (SAVBuilding *)(startOfChunk + cBuildings->offsetForBuildingArray);
-				for (u32 buildingIndex = 0;
-					buildingIndex < cBuildings->buildingCount;
-					buildingIndex++, savBuilding++)
+				SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, cBuildings->buildingCount);
+				if (decodeBlob(cBuildings->buildings, startOfChunk, (u8*)tempBuildings, cBuildings->buildingCount * sizeof(SAVBuilding)))
 				{
-					Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
-					BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
-					Building *building = addBuildingDirect(city, savBuilding->id, def, footprint);
-					building->spriteOffset     = savBuilding->spriteOffset;
-					building->currentResidents = savBuilding->currentResidents;
-					building->currentJobs      = savBuilding->currentJobs;
+					for (u32 buildingIndex = 0;
+						buildingIndex < cBuildings->buildingCount;
+						buildingIndex++)
+					{
+						SAVBuilding *savBuilding = tempBuildings + buildingIndex;
 
-					// This is a bit hacky but it's how we calculate it elsewhere
-					city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+						Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
+						BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
+						Building *building = addBuildingDirect(city, savBuilding->id, def, footprint);
+						building->spriteOffset     = savBuilding->spriteOffset;
+						building->currentResidents = savBuilding->currentResidents;
+						building->currentJobs      = savBuilding->currentJobs;
+
+						// This is a bit hacky but it's how we calculate it elsewhere
+						city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+					}
 				}
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
@@ -551,17 +563,22 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				FireLayer *layer = &city->fireLayer;
 
 				// Active fires
-				SAVFire *savFire = (SAVFire *)(startOfChunk + cFire->offsetForActiveFires);
-				for (u32 activeFireIndex = 0;
-					activeFireIndex < cFire->activeFireCount;
-					activeFireIndex++, savFire++)
+				SAVFire *tempFires = allocateMultiple<SAVFire>(tempArena, cFire->activeFireCount);
+				if (decodeBlob(cFire->activeFires, startOfChunk, (u8*)tempFires, cFire->activeFireCount * sizeof(SAVFire)))
 				{
-					Fire fire = {};
-					fire.pos.x = savFire->x;
-					fire.pos.y = savFire->y;
-					addFireRaw(city, fire);
+					for (u32 activeFireIndex = 0;
+						activeFireIndex < cFire->activeFireCount;
+						activeFireIndex++)
+					{
+						SAVFire *savFire = tempFires + activeFireIndex;
+
+						Fire fire = {};
+						fire.pos.x = savFire->x;
+						fire.pos.y = savFire->y;
+						addFireRaw(city, fire);
+					}
+					ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
 				}
-				ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_HLTH_ID))
 			{
