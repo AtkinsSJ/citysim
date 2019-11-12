@@ -260,7 +260,7 @@ struct SAVChunk_LandValue
 {
 	// Kind of redundant as it can be calculated fresh, but in case we have over-time
 	// effects, we might as well put this here.
-	leU32 offsetForTileLandValue; // Array of u8s.
+	SAVBlob tileLandValue; // Array of u8s
 };
 
 const u8 SAV_PLTN_VERSION = 1;
@@ -268,7 +268,7 @@ const u8 SAV_PLTN_ID[4] = {'P', 'L', 'T', 'N'};
 struct SAVChunk_Pollution
 {
 	// TODO: Maybe RLE this, but I'm not sure. It's probably pretty variable.
-	leU32 offsetForTilePollution; // Array of u8s
+	SAVBlob tilePollution; // Array of u8s
 };
 
 const u8 SAV_TERR_VERSION = 1;
@@ -299,7 +299,7 @@ const u8 SAV_ZONE_VERSION = 1;
 const u8 SAV_ZONE_ID[4] = {'Z', 'O', 'N', 'E'};
 struct SAVChunk_Zone
 {
-	leU32 offsetForTileZone; // Array of u8s (RLE)
+	SAVBlob tileZone; // Array of u8s
 };
 
 #pragma pack(pop)

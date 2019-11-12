@@ -72,16 +72,16 @@ bool writeSaveFile(FileHandle *file, City *city)
 			ChunkHeaderWrapper wrapper(&buffer, SAV_TERR_ID, SAV_TERR_VERSION);
 			TerrainLayer *layer = &city->terrainLayer;
 
-			SAVChunk_Terrain terr = {};
-			s32 startOfTerr = reserve(&buffer, sizeof(terr));
-			s32 offset = sizeof(terr);
+			SAVChunk_Terrain chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
 
 			// Terrain generation parameters
-			terr.terrainGenerationSeed = layer->terrainGenerationSeed;
+			chunk.terrainGenerationSeed = layer->terrainGenerationSeed;
 
 			// Terrain types table
-			terr.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
-			terr.offsetForTerrainTypeTable = offset;
+			chunk.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
+			chunk.offsetForTerrainTypeTable = offset;
 			for (auto it = iterate(&terrainCatalogue.terrainDefs); hasNext(&it); next(&it))
 			{
 				TerrainDef *def = get(&it);
@@ -99,38 +99,31 @@ bool writeSaveFile(FileHandle *file, City *city)
 			}
 
 			// Tile terrain type (u8)
-			// terr.offsetForTileTerrainType = offset;
-			// offset += appendRLE(&buffer, cityTileCount, layer->tileTerrainType);
-			terr.tileTerrainType = appendBlob(offset, &buffer, cityTileCount, layer->tileTerrainType, Blob_RLE_S8);
-			offset += terr.tileTerrainType.length;
+			chunk.tileTerrainType = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileTerrainType[0]), layer->tileTerrainType, Blob_RLE_S8);
+			offset += chunk.tileTerrainType.length;
 
 			// Tile height (u8)
-			// terr.offsetForTileHeight = offset;
-			// offset += appendRLE(&buffer, cityTileCount, layer->tileHeight);
-			terr.tileHeight = appendBlob(offset, &buffer, cityTileCount, layer->tileHeight, Blob_RLE_S8);
-			offset += terr.tileHeight.length;
+			chunk.tileHeight = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileHeight[0]), layer->tileHeight, Blob_RLE_S8);
+			offset += chunk.tileHeight.length;
 
 			// Tile sprite offset (u8)
-			// terr.offsetForTileSpriteOffset = offset;
-			// append(&buffer, cityTileCount * sizeof(u8), layer->tileSpriteOffset);
-			// offset += cityTileCount * sizeof(u8);
-			terr.tileSpriteOffset = appendBlob(offset, &buffer, cityTileCount, layer->tileSpriteOffset, Blob_Uncompressed);
-			offset += terr.tileSpriteOffset.length;
+			chunk.tileSpriteOffset = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileSpriteOffset[0]), layer->tileSpriteOffset, Blob_Uncompressed);
+			offset += chunk.tileSpriteOffset.length;
 
-			overwriteAt(&buffer, startOfTerr, sizeof(terr), &terr);
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
 
 		// Buildings
 		{
 			ChunkHeaderWrapper wrapper(&buffer, SAV_BLDG_ID, SAV_BLDG_VERSION);
 
-			SAVChunk_Buildings bldg = {};
-			s32 startOfBldg = reserve(&buffer, sizeof(bldg));
-			s32 offset = sizeof(bldg);
+			SAVChunk_Buildings chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
 
 			// Building types table
-			bldg.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
-			bldg.offsetForBuildingTypeTable = offset;
+			chunk.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
+			chunk.offsetForBuildingTypeTable = offset;
 			for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
 			{
 				BuildingDef *def = get(&it);
@@ -148,7 +141,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 			}
 
 			// Highest ID
-			bldg.highestBuildingID = city->highestBuildingID;
+			chunk.highestBuildingID = city->highestBuildingID;
 
 			//
 			// The buildings themselves!
@@ -165,8 +158,8 @@ bool writeSaveFile(FileHandle *file, City *city)
 			//
 			// - Sam, 11/10/2019
 			//
-			bldg.buildingCount = city->buildings.count - 1; // Not the null building!
-			bldg.offsetForBuildingArray = offset;
+			chunk.buildingCount = city->buildings.count - 1; // Not the null building!
+			chunk.offsetForBuildingArray = offset;
 			for (auto it = iterate(&city->buildings); hasNext(&it); next(&it))
 			{
 				Building *building = get(&it);
@@ -187,7 +180,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 				offset += sizeof(sb);
 			}
 
-			overwriteAt(&buffer, startOfBldg, sizeof(bldg), &bldg);
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
 
 		// Zones
@@ -195,15 +188,15 @@ bool writeSaveFile(FileHandle *file, City *city)
 			ChunkHeaderWrapper wrapper(&buffer, SAV_ZONE_ID, SAV_ZONE_VERSION);
 			ZoneLayer *layer = &city->zoneLayer;
 
-			SAVChunk_Zone zone = {};
-			s32 startOfZone = reserve(&buffer, sizeof(zone));
-			s32 offset = sizeof(zone);
+			SAVChunk_Zone chunk = {};
+			s32 startOfChunk = reserve(&buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
 
 			// Tile zones
-			zone.offsetForTileZone = offset;
-			offset += appendRLE(&buffer, cityTileCount, layer->tileZone);
+			chunk.tileZone = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileZone[0]), layer->tileZone, Blob_RLE_S8);
+			offset += chunk.tileZone.length;
 
-			overwriteAt(&buffer, startOfZone, sizeof(zone), &zone);
+			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
 
 		// Budget
@@ -298,9 +291,8 @@ bool writeSaveFile(FileHandle *file, City *city)
 			s32 offset = sizeof(chunk);
 
 			// Tile land value
-			chunk.offsetForTileLandValue = offset;
-			append(&buffer, cityTileCount * sizeof(u8), layer->tileLandValue);
-			offset += cityTileCount * sizeof(u8);
+			chunk.tileLandValue = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileLandValue[0]), layer->tileLandValue, Blob_Uncompressed);
+			offset += chunk.tileLandValue.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
@@ -315,9 +307,8 @@ bool writeSaveFile(FileHandle *file, City *city)
 			s32 offset = sizeof(chunk);
 
 			// Tile pollution
-			chunk.offsetForTilePollution = offset;
-			append(&buffer, cityTileCount * sizeof(u8), layer->tilePollution);
-			offset += cityTileCount * sizeof(u8);
+			chunk.tilePollution = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tilePollution[0]), layer->tilePollution, Blob_Uncompressed);
+			offset += chunk.tilePollution.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
 		}
@@ -593,8 +584,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				SAVChunk_LandValue *cLandValue = READ_CHUNK(SAVChunk_LandValue);
 				LandValueLayer *layer = &city->landValueLayer;
 
-				u8 *tileLandValue  = startOfChunk + cLandValue->offsetForTileLandValue;
-				copyMemory(tileLandValue, layer->tileLandValue, cityTileCount);
+				decodeBlob(cLandValue->tileLandValue, startOfChunk, layer->tileLandValue, cityTileCount * sizeof(layer->tileLandValue[0]));
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_PLTN_ID))
 			{
@@ -606,8 +596,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				SAVChunk_Pollution *cPollution = READ_CHUNK(SAVChunk_Pollution);
 				PollutionLayer *layer = &city->pollutionLayer;
 
-				u8 *tilePollution  = startOfChunk + cPollution->offsetForTilePollution;
-				copyMemory(tilePollution, layer->tilePollution, cityTileCount);
+				decodeBlob(cPollution->tilePollution, startOfChunk, layer->tilePollution, cityTileCount * sizeof(layer->tilePollution[0]));
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TERR_ID))
 			{
@@ -651,10 +640,10 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				}
 
 				// Terrain height
-				decodeBlob(cTerrain->tileHeight, startOfChunk, layer->tileHeight, cityTileCount);
+				decodeBlob(cTerrain->tileHeight, startOfChunk, layer->tileHeight, cityTileCount * sizeof(layer->tileHeight[0]));
 
 				// Sprite offset
-				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, layer->tileSpriteOffset, cityTileCount);
+				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, layer->tileSpriteOffset, cityTileCount * sizeof(layer->tileSpriteOffset[0]));
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
@@ -677,8 +666,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				SAVChunk_Zone *cZone = READ_CHUNK(SAVChunk_Zone);
 				ZoneLayer *layer = &city->zoneLayer;
 
-				u8 *tileZone  = startOfChunk + cZone->offsetForTileZone;
-				rleDecode(tileZone, layer->tileZone, cityTileCount);
+				decodeBlob(cZone->tileZone, startOfChunk, layer->tileZone, cityTileCount * sizeof(layer->tileZone[0]));
 			}
 		}
 
