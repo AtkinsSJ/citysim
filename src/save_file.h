@@ -108,6 +108,20 @@ enum SAVBlobCompressionScheme
 {
 	Blob_Uncompressed = 0,
 	Blob_RLE_S8 = 1, // Negative numbers are literal lengths, positive are run lengths
+
+	//
+	// TODO: Several per-tile-data arrays here are stored as u8s, but they only have a small number
+	// of possible values. eg, zones are 0-3, or will be 0-10 if we add l/m/h densities. We could
+	// fit two of those into a single byte, instead of 1 byte each. For terrain we only have 0-2
+	// currently which would allow 4 tiles per byte! The downside is extra complexity, but also
+	// it would make it harder to compress the resulting data. RLE works better when there are fewer
+	// options, and eg for that terrain example, we'd going from 3 options to 81 options. Right now
+	// the terrain size is reduced from 16000 to under 600, which is around 25%... which is the same
+	// as the 4-tiles-per-byte system, but more complicated. So yeah, I don't know. To get the most
+	// out of it we'd want an extra RLE or other compression scheme, that works with partial bytes.
+	//
+	// - Sam, 12/11/2019
+	//
 };
 
 struct SAVBlob
@@ -282,7 +296,7 @@ struct SAVChunk_Terrain
 	leU32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
 	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
-	SAVBlob tileTerrainType;  // Array of u8s
+	SAVBlob tileTerrainType;  // Array of u8s (NB: We could make this be a larger type and then compact it down to u8s in the file if there are few enough...)
 	SAVBlob tileHeight;       // Array of u8s
 	SAVBlob tileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
 };
