@@ -36,6 +36,11 @@ void initSettings()
 #undef REGISTER_SETTING
 }
 
+inline String getUserDataPath()
+{
+	return settings->userDataPath;
+}
+
 inline String getUserSettingsPath()
 {
 	return myprintf("{0}{1}"_s, {settings->userDataPath, settings->userSettingsFilename}, true);

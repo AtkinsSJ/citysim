@@ -142,7 +142,7 @@ bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize)
 
 	if (size)
 	{
-		arena->currentBlock = addMemoryBlock(arena, size);
+		arena->currentBlock = addMemoryBlock(arena, max(size, minimumBlockSize));
 		succeeded = (arena->currentBlock->memory != 0);
 	}
 

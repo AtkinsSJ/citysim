@@ -99,6 +99,12 @@ smm getFileSize(FileHandle *file)
 	return fileSize;
 }
 
+bool createDirectory(String path)
+{
+	ASSERT(isNullTerminated(path));
+	return platform_createDirectory(path);
+}
+
 smm readFromFile(FileHandle *file, smm size, u8 *memory)
 {
 	DEBUG_FUNCTION();

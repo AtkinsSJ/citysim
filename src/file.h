@@ -85,6 +85,8 @@ void closeFile(FileHandle *file);
 smm getFileSize(FileHandle *file);
 s64 getFilePosition(FileHandle *file);
 
+bool createDirectory(String path);
+
 File readFile(FileHandle *file, MemoryArena *arena=tempArena);
 File readFile(MemoryArena *memoryArena, String filePath);
 // Returns how much was read

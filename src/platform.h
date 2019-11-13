@@ -18,6 +18,8 @@ u64 getCurrentUnixTimestamp();
 
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard);
 
+bool platform_createDirectory(String path);
+
 struct FileInfo;
 
 struct DirectoryListingHandle;

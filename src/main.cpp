@@ -253,6 +253,8 @@ int main(int argc, char *argv[])
 	initUIState(&uiState, &appState->systemArena);
 	globalAppState.uiState = &uiState;
 
+	initSavedGamesCatalogue();
+
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;
 	V2 windowSize = v2(input.windowWidth, input.windowHeight);
@@ -308,6 +310,8 @@ int main(int argc, char *argv[])
 			{
 				reloadAssets();
 			}
+
+			updateSavedGamesCatalogue();
 
 			if (input.receivedQuitSignal)
 			{
