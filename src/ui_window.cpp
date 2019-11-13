@@ -278,21 +278,18 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
-	if (window->flags & (WinFlag_AutomaticHeight | WinFlag_ShrinkWidth))
+	prepareForUpdate(context);
+	window->windowProc(context, window->userData);
+
+	if (window->flags & WinFlag_AutomaticHeight)
 	{
-		prepareForUpdate(context);
-		window->windowProc(context, window->userData);
+		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
+		window->area.h = barHeight + context->currentOffset.y + (context->windowStyle->contentPadding * 2);
+	}
 
-		if (window->flags & WinFlag_AutomaticHeight)
-		{
-			s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-			window->area.h = barHeight + context->currentOffset.y + (context->windowStyle->contentPadding * 2);
-		}
-
-		if (window->flags & WinFlag_ShrinkWidth)
-		{
-			window->area.w = context->largestItemWidth + (context->windowStyle->contentPadding * 2);
-		}
+	if (window->flags & WinFlag_ShrinkWidth)
+	{
+		window->area.w = context->largestItemWidth + (context->windowStyle->contentPadding * 2);
 	}
 
 	// Handle dragging/position first, BEFORE we use the window rect anywhere

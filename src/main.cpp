@@ -88,6 +88,7 @@ struct City;
 #include "city.h"
 
 #include "save_file.h"
+#include "saved_games.h"
 #include "game.h"
 
 // TODO: Some kind of switch to determine which renderer we want to load.
@@ -155,6 +156,7 @@ AppState globalAppState;
 #include "log.cpp"
 #include "write_buffer.cpp"
 #include "save_file.cpp"
+#include "saved_games.cpp"
 
 #include "render_gl.cpp"
 

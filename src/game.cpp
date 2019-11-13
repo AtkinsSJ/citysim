@@ -434,7 +434,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 
 	if (window_button(context, load, maxButtonTextWidth))
 	{
-		pushUiMessage(context->uiState, getText("debug_msg_unimplemented"_s));
+		showLoadGameWindow(context->uiState);
 	}
 
 	if (window_button(context, about, maxButtonTextWidth))

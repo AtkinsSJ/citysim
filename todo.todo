@@ -21,6 +21,10 @@ Saving and loading!
 	- Another option would be to save all of the "cached" data in the save file, so loading can just continue where you left off without having to warm up first. But that mean saving more data, and it opens us up for problems with the simulation changing over time and the data it needs being missed from older saves. So, recalculating things fresh is safer, even though it could mean the simulation state is slightly different after a save-load loop, because while playing the simulator is always using slightly old data because things update gradually. That should be a really minor issue though.
 - Crashing while loading a save game should NEVER happen. Be super careful with all data we read in. It may well be impossible to prevent it entirely, but this is an area with a lot of opportunities for corrupt data!
 - Also, we want to prevent crashing *after* loading as much as possible. Some kind of validation after loading the file is complete, to make sure the city itself makes sense, would be a good idea. I'm not sure what that would involve really, but catching errors and reporting them is much better than just crashing.
+- LZ77-based compression option. https://en.wikipedia.org/wiki/LZ77_and_LZ78
+- "Save" window that lets you specify the filename and warns of conflicts
+	- Keep in mind the filename it was loaded from (or last saved to) and use that as the default, and don't warn if you try to overwrite it.
+- "Load" window that previews the saved games.
 
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 

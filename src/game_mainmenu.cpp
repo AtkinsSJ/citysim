@@ -70,22 +70,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (uiButton(uiState, loadText, buttonRect, style))
 	{
-		globalAppState.gameState = beginNewGame();
-
-		City *city = &globalAppState.gameState->city;
-		FileHandle saveFile = openFile("whatever.sav\0"_s, FileAccess_Read);
-		bool loadSucceeded = loadSaveFile(&saveFile, city, &globalAppState.gameState->gameArena);
-		closeFile(&saveFile);
-
-		if (loadSucceeded)
-		{
-			pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {saveFile.path}));
-			result = AppStatus_Game;
-		}
-		else
-		{
-			pushUiMessage(uiState, myprintf(getText("msg_load_failure"_s), {saveFile.path}));
-		}
+		showLoadGameWindow(uiState);
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (uiButton(uiState, creditsText, buttonRect, style))

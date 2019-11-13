@@ -1,10 +1,7 @@
 #pragma once
 
-void aboutWindowProc(WindowContext *context, void *userData)
+void aboutWindowProc(WindowContext *context, void * /*userData*/)
 {
-	// shut up the warning
-	userData = userData;
-
 	window_label(context, getText("game_title"_s), "title"_s);
 	window_label(context, getText("game_copyright"_s));
 

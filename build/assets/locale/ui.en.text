@@ -34,6 +34,7 @@ data_view_landvalue					Land value
 
 title_about          About
 title_inspect        Inspecting {0}, {1}
+title_load_game      Load a game
 title_menu           Menu
 title_settings       Settings
 
@@ -47,6 +48,8 @@ zone_industrial    Industrial
 
 msg_cannot_afford_construction   Not enough money for construction.
 msg_cannot_afford_demolition     Not enough money for demolition.
+msg_load_success                 Game loaded
+msg_load_failure                 Failed to load game as '{0}'!
 msg_save_success                 Game saved as '{0}'
 msg_save_failure                 Failed to save game as '{0}'!
 
