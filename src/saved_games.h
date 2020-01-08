@@ -17,6 +17,8 @@ struct SavedGamesCatalogue
 	String savedGamesPath;
 
 	ChunkedArray<SavedGameInfo> savedGames;
+
+	StringTable filenamesTable;
 };
 
 SavedGamesCatalogue savedGamesCatalogue;

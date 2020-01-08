@@ -7,7 +7,9 @@ void initSavedGamesCatalogue()
 
 	initMemoryArena(&catalogue->savedGamesArena, MB(1));
 
-	catalogue->savedGamesPath = pushString(&catalogue->savedGamesArena, constructPath({getUserDataPath(), "saves"_s}));
+	initStringTable(&catalogue->filenamesTable);
+
+	catalogue->savedGamesPath = intern(&catalogue->filenamesTable, constructPath({getUserDataPath(), "saves"_s}));
 	createDirectory(catalogue->savedGamesPath);
 	catalogue->savedGamesChangeHandle = beginWatchingDirectory(catalogue->savedGamesPath);
 
@@ -75,12 +77,8 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 
 		SavedGameInfo *savedGame = appendBlank(&catalogue->savedGames);
 
-		// TODO: @InternedStrings We really want to keep the Strings in the catalogue, in some
-		// kind of special-purpose StringSet or something.
-		// @Leak We re-allocate the strings every time readSavedGamesInfo() is called, and we never free them!
-
-		savedGame->filename = pushString(&catalogue->savedGamesArena, fileInfo->filename);
-		savedGame->fullPath = pushString(&catalogue->savedGamesArena, constructPath({catalogue->savedGamesPath, fileInfo->filename}));
+		savedGame->filename = intern(&catalogue->filenamesTable, fileInfo->filename);
+		savedGame->fullPath = intern(&catalogue->filenamesTable, constructPath({catalogue->savedGamesPath, fileInfo->filename}));
 	}
 }
 

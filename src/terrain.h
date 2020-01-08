@@ -18,6 +18,7 @@ struct TerrainCatalogue
 	OccupancyArray<TerrainDef> terrainDefs;
 
 	HashTable<TerrainDef *> terrainDefsByName;
+	StringTable terrainNames;
 
 	HashTable<u8> terrainNameToOldType;
 	HashTable<u8> terrainNameToType;

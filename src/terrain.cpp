@@ -41,6 +41,7 @@ void initTerrainCatalogue()
 	*nullTerrainDef.value = {};
 
 	initHashTable(&terrainCatalogue.terrainDefsByName, 0.75f, 128);
+	initStringTable(&terrainCatalogue.terrainNames);
 
 	initHashTable(&terrainCatalogue.terrainNameToType, 0.75f, 128);
 	put<u8>(&terrainCatalogue.terrainNameToType, nullString, 0);
@@ -117,8 +118,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				}
 				def->typeID = (u8) slot.index;
 				
-				// @InternedStrings
-				def->name = pushString(&globalAppState.systemArena, name);
+				def->name = intern(&terrainCatalogue.terrainNames, name);
 				asset->terrainDefs.terrainIDs[terrainIDsIndex++] = def->name;
 				put(&terrainCatalogue.terrainDefsByName, def->name, def);
 				put(&terrainCatalogue.terrainNameToType, def->name, def->typeID);

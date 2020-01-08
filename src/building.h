@@ -83,6 +83,7 @@ struct BuildingCatalogue
 {
 	OccupancyArray<BuildingDef> allBuildings;
 	HashTable<BuildingDef *> buildingsByName;
+	StringTable buildingNames;
 
 	HashTable<s32> buildingNameToTypeID;
 	HashTable<s32> buildingNameToOldTypeID;

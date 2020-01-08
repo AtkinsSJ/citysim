@@ -19,6 +19,10 @@ struct HashTable
 	f32 maxLoadFactor;
 	HashTableEntry<T> *entries;
 
+	// @Size: In a lot of cases, we already store the key in a separate StringTable, so having
+	// it stored here too is redundant. But, keys are small so it's unlikely to cause any real
+	// issues.
+	// - Sam, 08/01/2020
 	MemoryArena keyDataArena;
 };
 

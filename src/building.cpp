@@ -42,6 +42,7 @@ void initBuildingCatalogue()
 	initFlags(&nullBuildingDef.value->transportTypes, TransportTypeCount);
 
 	initHashTable(&catalogue->buildingsByName, 0.75f, 128);
+	initStringTable(&catalogue->buildingNames);
 
 	initHashTable(&catalogue->buildingNameToTypeID, 0.75f, 128);
 	put<s32>(&catalogue->buildingNameToTypeID, nullString, 0);
@@ -142,8 +143,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 				Indexed<BuildingDef *> newDef = append(buildings);
 				def = newDef.value;
-				// @InternedStrings
-				def->name = pushString(&globalAppState.systemArena, name);
+				def->name = intern(&catalogue->buildingNames, name);
 				def->typeID = newDef.index;
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
