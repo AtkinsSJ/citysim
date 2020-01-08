@@ -45,6 +45,10 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 
+	window_beginColumns(context);
+
+	window_column(context, 0.4f);
+
 	if (catalogue->savedGames.count == 0)
 	{
 		window_label(context, getText("msg_no_saved_games"_s));
@@ -62,6 +66,11 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 			}
 		}
 	}
+
+	window_column(context);
+
+	window_label(context, "Second column"_s);
+	window_label(context, getText("lorem_ipsum"_s));
 }
 
 void readSavedGamesInfo(SavedGamesCatalogue *catalogue)

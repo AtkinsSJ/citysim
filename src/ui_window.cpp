@@ -1,5 +1,34 @@
 #pragma once
 
+void window_beginColumns(WindowContext *context)
+{
+	context->contentArea = irectXYWH(0,0,0,0);
+	context->columnStartOffsetX = 0;
+}
+
+void window_column(WindowContext *context, f32 widthPercent)
+{
+	s32 columnWidth = 0;
+	if (widthPercent < 0.001f)
+	{
+		// width 0 means "fill the remainder"
+		columnWidth = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX) - context->windowStyle->contentPadding;
+	}
+	else
+	{
+		columnWidth = floor_s32(widthPercent * context->totalContentArea.w);
+	}
+
+	context->columnStartOffsetX = context->columnStartOffsetX + context->contentArea.w;
+	if (context->columnStartOffsetX > 0)
+	{
+		context->columnStartOffsetX += context->windowStyle->contentPadding;
+	}
+
+	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnWidth, context->totalContentArea.h);
+	context->currentOffset = v2i(0,0);
+}
+
 void window_label(WindowContext *context, String text, String styleName)
 {
 	DEBUG_FUNCTION();
@@ -255,7 +284,8 @@ void prepareForUpdate(WindowContext *context)
 {
 	context->doRender = false;
 
-	context->contentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
+	context->totalContentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
+	context->contentArea = context->totalContentArea;
 	context->currentOffset = v2i(0,0);
 	context->largestItemWidth = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
@@ -266,7 +296,8 @@ void prepareForRender(WindowContext *context)
 {
 	context->doRender = true;
 	
-	context->contentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
+	context->totalContentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
+	context->contentArea = context->totalContentArea;
 	context->currentOffset = v2i(0,0);
 	context->largestItemWidth = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
