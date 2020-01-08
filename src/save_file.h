@@ -325,7 +325,10 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena);
 // INTERNAL
 //
 bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName);
+bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName);
 bool identifiersAreEqual(const u8 *a, const u8 *b);
+String readString(SAVString source, u8 *base);
+// @Deprecated
 String loadString(SAVString source, u8 *base, MemoryArena *arena);
 void rleDecode(u8 *source, u8 *dest, s32 destSize);
 

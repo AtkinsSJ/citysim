@@ -50,6 +50,7 @@ msg_cannot_afford_construction   Not enough money for construction.
 msg_cannot_afford_demolition     Not enough money for demolition.
 msg_load_success                 Game loaded
 msg_load_failure                 Failed to load game as '{0}'!
+msg_load_version_too_new         This save file was created by a newer version of the game, so it's very likely that loading it will break things! You probably want to update the game first.
 msg_save_success                 Game saved as '{0}'
 msg_save_failure                 Failed to save game as '{0}'!
 

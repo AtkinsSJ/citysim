@@ -7,13 +7,16 @@ void initSavedGamesCatalogue()
 
 	initMemoryArena(&catalogue->savedGamesArena, MB(1));
 
-	initStringTable(&catalogue->filenamesTable);
+	initStringTable(&catalogue->stringsTable);
 
-	catalogue->savedGamesPath = intern(&catalogue->filenamesTable, constructPath({getUserDataPath(), "saves"_s}));
+	catalogue->savedGamesPath = intern(&catalogue->stringsTable, constructPath({getUserDataPath(), "saves"_s}));
 	createDirectory(catalogue->savedGamesPath);
 	catalogue->savedGamesChangeHandle = beginWatchingDirectory(catalogue->savedGamesPath);
 
 	initChunkedArray(&catalogue->savedGames, &catalogue->savedGamesArena, 64);
+
+	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameIndex = -1;
 
 	// Initial saved-games scan
 	readSavedGamesInfo(catalogue);
@@ -32,12 +35,102 @@ void updateSavedGamesCatalogue()
 		// we already have.
 		// - Sam, 13/11/2019
 
+		clear(&catalogue->savedGames);
 		readSavedGamesInfo(catalogue);
+	}
+}
+
+void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
+{
+	Blob tempBuffer = allocateBlob(tempArena, KB(4));
+
+	for (auto it = iterateDirectoryListing(constructPath({catalogue->savedGamesPath}, true));
+		hasNextFile(&it);
+		findNextFile(&it))
+	{
+		FileInfo *fileInfo = getFileInfo(&it);
+		if (fileInfo->flags & (FileFlag_Directory | FileFlag_Hidden)) continue;
+
+		SavedGameInfo *savedGame = appendBlank(&catalogue->savedGames);
+
+		savedGame->filename = intern(&catalogue->stringsTable, fileInfo->filename);
+		savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({catalogue->savedGamesPath, fileInfo->filename}));
+
+		// Now we have to read the file a little to get the META stuff out of it. Hmmmm.
+
+		FileHandle savedFile = openFile(savedGame->fullPath, FileAccess_Read);
+		savedGame->isReadable = savedFile.isOpen;
+		if (savedGame->isReadable)
+		{
+			smm sizeRead = readFromFile(&savedFile, tempBuffer.size, tempBuffer.memory);
+
+			u8 *pos = tempBuffer.memory;
+			u8 *eof = pos + sizeRead;
+
+			// @Copypasta from loadSaveFile() - might want to extract things out at some point!
+
+			// File Header
+			SAVFileHeader *fileHeader = (SAVFileHeader *) pos;
+			pos += sizeof(SAVFileHeader);
+			if (pos > eof)
+			{
+				savedGame->isReadable = false;
+				continue;
+			}
+
+			if (!fileHeaderIsValid(fileHeader, savedGame->filename))
+			{
+				savedGame->isReadable = false;
+				continue;
+			}
+
+			if (fileHeader->version > SAV_VERSION)
+			{
+				savedGame->problems |= SAVE_IS_FROM_NEWER_VERSION;
+			}
+
+			// META chunk
+			SAVChunkHeader *header = (SAVChunkHeader *) pos;
+			pos += sizeof(SAVChunkHeader);
+			if (pos > eof)
+			{
+				savedGame->isReadable = false;
+				continue;
+			}
+
+			if (identifiersAreEqual(header->identifier, SAV_META_ID))
+			{
+				// Load Meta
+				if (header->version > SAV_META_VERSION)
+				{
+					savedGame->problems |= SAVE_IS_FROM_NEWER_VERSION;
+				}
+
+				u8 *startOfChunk = pos;
+				SAVChunk_Meta *cMeta = (SAVChunk_Meta *) pos;
+				pos += header->length;
+				if (pos > eof)
+				{
+					savedGame->isReadable = false;
+					continue;
+				}
+
+				// savedGame->timestamp  = ;
+				savedGame->cityName   = intern(&catalogue->stringsTable, readString(cMeta->cityName, startOfChunk));
+				savedGame->playerName = intern(&catalogue->stringsTable, readString(cMeta->playerName, startOfChunk));
+				savedGame->funds      = cMeta->funds;
+				savedGame->population = cMeta->population;
+			}
+		}
 	}
 }
 
 void showLoadGameWindow(UIState *uiState)
 {
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameIndex = -1;
+
 	showWindow(uiState, getText("title_load_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, loadGameWindowProc, null);
 }
 
@@ -45,8 +138,11 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 
+	SavedGameInfo *selectedSavedGame = null;
+
 	window_beginColumns(context);
 
+	// List of saved games
 	window_column(context, 0.4f);
 
 	if (catalogue->savedGames.count == 0)
@@ -58,36 +154,46 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 		for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
 		{
 			SavedGameInfo *savedGame = get(&it);
+			s32 index = getIndex(&it);
 
-			if (window_button(context, savedGame->filename))
+			if (window_button(context, savedGame->filename, -1, (catalogue->selectedSavedGameIndex == index)))
 			{
-				loadGame(context->uiState, savedGame);
-				context->closeRequested = true;
+				// Select it and show information in the details pane
+				catalogue->selectedSavedGameIndex = index;
+			}
+
+			if (catalogue->selectedSavedGameIndex == index)
+			{
+				selectedSavedGame = savedGame;
 			}
 		}
 	}
 
+	// Details about the selected saved game
 	window_column(context);
 
-	window_label(context, "Second column"_s);
-	window_label(context, getText("lorem_ipsum"_s));
-}
-
-void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
-{
-	clear(&catalogue->savedGames);
-
-	for (auto it = iterateDirectoryListing(constructPath({catalogue->savedGamesPath}, true));
-		hasNextFile(&it);
-		findNextFile(&it))
+	if (selectedSavedGame)
 	{
-		FileInfo *fileInfo = getFileInfo(&it);
-		if (fileInfo->flags & (FileFlag_Directory | FileFlag_Hidden)) continue;
+		window_label(context, selectedSavedGame->filename);
+		window_label(context, myprintf("Saved <INSERT DATE HERE>"_s, {}));
+		window_label(context, selectedSavedGame->cityName);
+		window_label(context, myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
+		window_label(context, myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));
+		window_label(context, myprintf("{0} population"_s, {formatInt(selectedSavedGame->population)}));
 
-		SavedGameInfo *savedGame = appendBlank(&catalogue->savedGames);
+		if (selectedSavedGame->problems != 0)
+		{
+			if (selectedSavedGame->problems & SAVE_IS_FROM_NEWER_VERSION)
+			{
+				window_label(context, getText("msg_load_version_too_new"_s));
+			}
+		}
 
-		savedGame->filename = intern(&catalogue->filenamesTable, fileInfo->filename);
-		savedGame->fullPath = intern(&catalogue->filenamesTable, constructPath({catalogue->savedGamesPath, fileInfo->filename}));
+		if (window_button(context, getText("button_load"_s)) && (selectedSavedGame != null))
+		{
+			loadGame(context->uiState, selectedSavedGame);
+			context->closeRequested = true;
+		}
 	}
 }
 

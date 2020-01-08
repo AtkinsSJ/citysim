@@ -386,6 +386,12 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 			break;
 		}
 
+		if (!checkFileHeaderVersion(fileHeader, saveFile.name))
+		{
+			succeeded = false;
+			break;
+		}
+
 		// Macros are horrible, but I don't think it's possible to do these another way!
 		#define READ_CHUNK(Type) (Type *) pos; pos += header->length; if (pos > eof) { succeeded = false; break; }
 		#define CHECK_VERSION(Chunk) if (header->version > SAV_ ## Chunk ## _VERSION) \
@@ -711,19 +717,27 @@ bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName)
 		});
 		isValid = false;
 	}
-	else if (fileHeader->version > example.version)
-	{
-		logError("Save file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
-			saveFileName,
-			formatInt(fileHeader->version),
-			formatInt(example.version),
-		});
-		isValid = false;
-	}
 	else if (!isMemoryEqual(&fileHeader->unixNewline, &example.unixNewline, 3))
 	{
 		logError("Save file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, {
 			saveFileName
+		});
+		isValid = false;
+	}
+
+	return isValid;
+}
+
+bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName)
+{
+	bool isValid = true;
+
+	if (fileHeader->version > SAV_VERSION)
+	{
+		logError("Save file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
+			saveFileName,
+			formatInt(fileHeader->version),
+			formatInt(SAV_VERSION),
 		});
 		isValid = false;
 	}
@@ -736,6 +750,12 @@ inline bool identifiersAreEqual(const u8 *a, const u8 *b)
 	return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]) && (a[3] == b[3]);
 }
 
+String readString(SAVString source, u8 *base)
+{
+	return makeString((char *)(base + source.relativeOffset), source.length, false);
+}
+
+// @Deprecated
 String loadString(SAVString source, u8 *base, MemoryArena *arena)
 {
 	String toCopy = makeString((char *)(base + source.relativeOffset), source.length, false);

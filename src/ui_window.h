@@ -53,7 +53,14 @@ struct Window
 //
 void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData);
 
-// Layout stuff
+// Columns!
+// This is very basic right now and probably will need rewriting later to be more comprehensive.
+// Start columns with window_beginColumns().
+// Then, start each column with window_column(context, widthPercent).
+// For the final column, don't pass a width (or make it 0) and it will fill the remaining space.
+// Internally, this all works by modifying the context->contentArea, which is what the 
+// window_label() etc functions use to lay themselves out. So, they don't have to know anything
+// about columns or other layout complexities! So that's pretty nice.
 void window_beginColumns(WindowContext *context);
 void window_column(WindowContext *context, f32 widthPercent=0.0f);
 

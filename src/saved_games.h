@@ -1,9 +1,21 @@
 #pragma once
 
+enum SavedGameProblem
+{
+	SAVE_IS_FROM_NEWER_VERSION = 1 << 0,
+};
+
 struct SavedGameInfo
 {
+	bool isReadable;
 	String filename;
 	String fullPath;
+
+	u32 problems;
+	String cityName;
+	String playerName;
+	s32 funds;
+	s32 population;
 };
 
 struct SavedGamesCatalogue
@@ -12,13 +24,15 @@ struct SavedGamesCatalogue
 	// a list of saved games here, which updates when the files change.
 
 	MemoryArena savedGamesArena;
+	StringTable stringsTable;
 
 	DirectoryChangeWatchingHandle savedGamesChangeHandle;
 	String savedGamesPath;
 
 	ChunkedArray<SavedGameInfo> savedGames;
 
-	StringTable filenamesTable;
+	String selectedSavedGameFilename;
+	s32 selectedSavedGameIndex;
 };
 
 SavedGamesCatalogue savedGamesCatalogue;
