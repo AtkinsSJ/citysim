@@ -73,7 +73,7 @@ void loadUITheme(Blob data, Asset *asset)
 
 				if (!isEmpty(fontName) && !isEmpty(fontFilename))
 				{
-					addFont(pushString(&assets->assetArena, fontName), pushString(&assets->assetArena, fontFilename));
+					addFont(fontName, fontFilename);
 				}
 				else
 				{
@@ -86,37 +86,37 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "Button"_s))
 			{
-				String name = pushString(&assets->assetArena, readToken(&reader));
+				String name = intern(&assets->assetStrings, readToken(&reader));
 				target.type = Section_Button;
 				target.button = put(&theme->buttonStyles, name);
 			}
 			else if (equals(firstWord, "Console"_s))
 			{
-				String name = pushString(&assets->assetArena, readToken(&reader));
+				String name = intern(&assets->assetStrings, readToken(&reader));
 				target.type = Section_Console;
 				target.console = put(&theme->consoleStyles, name);
 			}
 			else if (equals(firstWord, "Label"_s))
 			{
-				String name = pushString(&assets->assetArena, readToken(&reader));
+				String name = intern(&assets->assetStrings, readToken(&reader));
 				target.type = Section_Label;
 				target.label = put(&theme->labelStyles, name);
 			}
 			else if (equals(firstWord, "UIMessage"_s))
 			{
-				String name = pushString(&assets->assetArena, readToken(&reader));
+				String name = intern(&assets->assetStrings, readToken(&reader));
 				target.type = Section_UIMessage;
 				target.message = put(&theme->messageStyles, name);
 			}
 			else if (equals(firstWord, "TextBox"_s))
 			{
-				String name = pushString(&assets->assetArena, readToken(&reader));
+				String name = intern(&assets->assetStrings, readToken(&reader));
 				target.type = Section_TextBox;
 				target.textBox = put(&theme->textBoxStyles, name);
 			}
 			else if (equals(firstWord, "Window"_s))
 			{
-				String name = pushString(&assets->assetArena, readToken(&reader));
+				String name = intern(&assets->assetStrings, readToken(&reader));
 				target.type = Section_Window;
 				target.window = put(&theme->windowStyles, name);
 			}
@@ -158,7 +158,7 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "contentButtonStyle"_s))
 			{
-				String styleName = pushString(&assets->assetArena, readToken(&reader));
+				String styleName = intern(&assets->assetStrings, readToken(&reader));
 				switch (target.type)
 				{
 					case Section_Window:  target.window->buttonStyleName = styleName; break;
@@ -167,7 +167,7 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "contentLabelStyle"_s))
 			{
-				String styleName = pushString(&assets->assetArena, readToken(&reader));
+				String styleName = intern(&assets->assetStrings, readToken(&reader));
 				switch (target.type)
 				{
 					case Section_Window:  target.window->labelStyleName = styleName; break;
@@ -188,7 +188,7 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "font"_s))
 			{
-				String fontName = pushString(&assets->assetArena, readToken(&reader));
+				String fontName = intern(&assets->assetStrings, readToken(&reader));
 				
 				switch (target.type)
 				{
@@ -417,7 +417,7 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "titleFont"_s))
 			{
-				String fontName = pushString(&assets->assetArena, readToken(&reader));
+				String fontName = intern(&assets->assetStrings, readToken(&reader));
 
 				switch (target.type)
 				{

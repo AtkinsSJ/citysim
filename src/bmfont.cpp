@@ -82,7 +82,7 @@ void loadBMFont(Blob data, Asset *asset)
 			asset->data = assetsAllocate(assets, glyphEntryMemorySize);
 			font->glyphEntries = (BitmapFontGlyphEntry *)(asset->data.memory);
 
-			String textureName = pushString(&assets->assetArena, (char *) pages);
+			String textureName = makeString((char *) pages);
 			font->texture = addTexture(textureName, false);
 			ensureAssetIsLoaded(font->texture);
 

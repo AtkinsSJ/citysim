@@ -175,7 +175,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 					}
 					else if (equals(firstWord, "sprite"_s))
 					{
-						String spriteName = pushString(&assets->assetArena, readToken(&reader));
+						String spriteName = intern(&assets->assetStrings, readToken(&reader));
 						Maybe<s64> x = readInt(&reader);
 						Maybe<s64> y = readInt(&reader);
 						Maybe<s64> w = readInt(&reader);
@@ -201,11 +201,11 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				case Mode_Terrain: {
 					if (equals(firstWord, "name"_s))
 					{
-						def->textAssetName = pushString(&assets->assetArena, readToken(&reader));
+						def->textAssetName = intern(&assets->assetStrings, readToken(&reader));
 					}
 					else if (equals(firstWord, "uses_sprite"_s))
 					{
-						def->spriteName = pushString(&assets->assetArena, readToken(&reader));
+						def->spriteName = intern(&assets->assetStrings, readToken(&reader));
 					}
 					else if (equals(firstWord, "can_build_on"_s))
 					{

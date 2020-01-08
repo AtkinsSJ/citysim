@@ -4,31 +4,28 @@ void initAssets()
 {
 	bootstrapArena(Assets, assets, assetArena);
 
+	initStringTable(&assets->assetStrings);
+
 	ASSERT(assets->assetArena.currentBlock != null); //initAssetManager() called with uninitialised/corrupted memory arena!
 	String basePath = makeString(SDL_GetBasePath());
-	assets->assetsPath = pushString(&assets->assetArena, constructPath({basePath, "assets"_s}));
+	assets->assetsPath = intern(&assets->assetStrings, constructPath({basePath, "assets"_s}));
 
 	// NB: We only need to define these for assets in the root assets/ directory
 	// Well, for now at least.
 	// - Sam, 19/05/2019
 	initHashTable(&assets->fileExtensionToType);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "buildings"_s), AssetType_BuildingDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "cursors"_s),   AssetType_CursorDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "palettes"_s),  AssetType_PaletteDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "terrain"_s),   AssetType_TerrainDefs);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "keymap"_s),    AssetType_DevKeymap);
-	put(&assets->fileExtensionToType, pushString(&assets->assetArena, "theme"_s),     AssetType_UITheme);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "buildings"_s), AssetType_BuildingDefs);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "cursors"_s),   AssetType_CursorDefs);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "palettes"_s),  AssetType_PaletteDefs);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "terrain"_s),   AssetType_TerrainDefs);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "keymap"_s),    AssetType_DevKeymap);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "theme"_s),     AssetType_UITheme);
 
 	initHashTable(&assets->directoryNameToType);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "fonts"_s),     AssetType_BitmapFont);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "shaders"_s),   AssetType_Shader);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "textures"_s),  AssetType_Texture);
-	put(&assets->directoryNameToType, pushString(&assets->assetArena, "locale"_s),    AssetType_Texts);
-
-
-	// NB: This has to happen just after the last addition to the AssetArena which should remain
-	// across asset reloads. Maybe we should just have multiple arenas? IDK.
-	markResetPosition(&assets->assetArena);
+	put(&assets->directoryNameToType, intern(&assets->assetStrings, "fonts"_s),     AssetType_BitmapFont);
+	put(&assets->directoryNameToType, intern(&assets->assetStrings, "shaders"_s),   AssetType_Shader);
+	put(&assets->directoryNameToType, intern(&assets->assetStrings, "textures"_s),  AssetType_Texture);
+	put(&assets->directoryNameToType, intern(&assets->assetStrings, "locale"_s),    AssetType_Texts);
 
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
 	assets->assetMemoryAllocated = 0;
@@ -67,22 +64,24 @@ Blob assetsAllocate(Assets *theAssets, smm size)
 
 Asset *addAsset(AssetType type, String shortName, u32 flags)
 {
-	Asset *existing = getAssetIfExists(type, shortName);
+	String internedShortName = intern(&assets->assetStrings, shortName);
+
+	Asset *existing = getAssetIfExists(type, internedShortName);
 	if (existing) return existing;
 
 	Asset *asset = appendBlank(&assets->allAssets);
 	asset->type = type;
-	asset->shortName = shortName;
+	asset->shortName = internedShortName;
 	if (flags & Asset_IsAFile)
 	{
-		asset->fullName = pushString(&assets->assetArena, getAssetPath(asset->type, shortName));
+		asset->fullName = intern(&assets->assetStrings, getAssetPath(asset->type, internedShortName));
 	}
 	asset->state = AssetState_Unloaded;
 	asset->data.size = 0;
 	asset->data.memory = null;
 	asset->flags = flags;
 
-	put(&assets->assetsByType[type], shortName, asset);
+	put(&assets->assetsByType[type], internedShortName, asset);
 
 	return asset;
 }
@@ -473,7 +472,7 @@ Asset *addSpriteGroup(String name, s32 spriteCount)
 
 void addTiledSprites(String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied)
 {
-	String textureName = pushString(&assets->assetArena, textureFilename);
+	String textureName = intern(&assets->assetStrings, textureFilename);
 	Asset **findResult = find(&assets->assetsByType[AssetType_Texture], textureName);
 	Asset *textureAsset;
 	if (findResult == null)
@@ -533,8 +532,8 @@ void addTiledSprites(String name, Asset *texture, V2I tileSize, V2I tileBorder, 
 
 void addFont(String name, String filename)
 {
-	addAsset(AssetType_BitmapFont, filename);
-	put(&assets->theme.fontNamesToAssetNames, name, filename);
+	Asset *asset = addAsset(AssetType_BitmapFont, filename);
+	put(&assets->theme.fontNamesToAssetNames, intern(&assets->assetStrings, name), asset->shortName);
 }
 
 void loadAssets()
@@ -578,7 +577,7 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 			 continue;
 		}
 
-		String filename = pushString(&assets->assetArena, fileInfo->filename);
+		String filename = intern(&assets->assetStrings, fileInfo->filename);
 		AssetType assetType = manualAssetType;
 
 		// Attempt to categorise the asset based on file extension
@@ -643,12 +642,11 @@ void reloadAssets()
 		clear(&assets->assetsByType[assetType]);
 	}
 
-	// General resetting of Assets system
-	// The "throw everything away and start over" method of reloading. It's dumb but effective!
-	// We're now not *quite* throwing everything away.
-	resetMemoryArena(&assets->assetArena);
-	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
-	initSet<String>(&assets->missingTextIDs, &assets->assetArena, [](String *a, String *b) {return equals(*a, *b); });
+	// Reset missing text warnings
+	clear(&assets->missingTextIDs);
+
+	// Regenerate asset catalogue
+	clear(&assets->allAssets);
 	addAssets();
 	loadAssets();
 
@@ -862,7 +860,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 
 	while (loadNextLine(&reader))
 	{
-		String name     = pushString(&assets->assetArena, readToken(&reader));
+		String name     = intern(&assets->assetStrings, readToken(&reader));
 		String filename = readToken(&reader);
 		asset->cursorDefs.cursorNames[cursorIndex++] = name;
 
@@ -873,7 +871,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 		{
 			// Add the cursor
 			Asset *cursorAsset = addAsset(AssetType_Cursor, name, 0);
-			cursorAsset->cursor.imageFilePath = pushString(&assets->assetArena, getAssetPath(AssetType_Cursor, filename));
+			cursorAsset->cursor.imageFilePath = intern(&assets->assetStrings, getAssetPath(AssetType_Cursor, filename));
 			cursorAsset->cursor.hotspot = v2i(truncate32(hotX.value), truncate32(hotY.value));
 		}
 		else
@@ -919,7 +917,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 
 			if (equals(command, "Palette"_s))
 			{
-				String paletteName = pushString(&assets->assetArena, readToken(&reader));
+				String paletteName = intern(&assets->assetStrings, readToken(&reader));
 				paletteAsset = addAsset(AssetType_Palette, paletteName, 0);
 				asset->paletteDefs.paletteNames[paletteIndex++] = paletteName;
 			}

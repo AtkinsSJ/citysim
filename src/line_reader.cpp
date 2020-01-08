@@ -346,8 +346,8 @@ Maybe<u32> readAlignment(LineReader *reader)
 //
 Maybe<String> readTextureDefinition(LineReader *reader)
 {
-	String spriteName = pushString(&assets->assetArena, readToken(reader));
-	String textureName = readToken(reader);
+	String spriteName  = intern(&assets->assetStrings, readToken(reader));
+	String textureName = intern(&assets->assetStrings, readToken(reader));
 
 	Maybe<s64> regionW = asInt(readToken(reader));
 	Maybe<s64> regionH = asInt(readToken(reader));

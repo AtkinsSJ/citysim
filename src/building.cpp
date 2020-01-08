@@ -435,7 +435,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "name"_s))
 				{
-					def->textAssetName = pushString(&assets->assetArena, readToken(&reader));
+					def->textAssetName = intern(&assets->assetStrings, readToken(&reader));
 				}
 				else if (equals(firstWord, "pollution"_s))
 				{

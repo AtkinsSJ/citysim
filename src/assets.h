@@ -160,6 +160,8 @@ struct Asset
 struct Assets
 {
 	MemoryArena assetArena;
+	StringTable assetStrings;
+	
 	DirectoryChangeWatchingHandle assetChangeHandle;
 	bool assetReloadHasJustHappened;
 
