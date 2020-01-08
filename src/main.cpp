@@ -38,6 +38,7 @@ struct Settings     *settings;
 
 #include "log.h"
 #include "types.h"
+#include "time.h"
 #include "memory.h"
 #include "random.h"
 #include "pool.h"
@@ -108,6 +109,7 @@ AppState globalAppState;
 
 #include "types.cpp"
 #include "memory.cpp"
+#include "time.cpp"
 #include "random.cpp"
 #include "linked_list.cpp"
 #include "bit_array.cpp"

@@ -115,7 +115,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 					continue;
 				}
 
-				// savedGame->timestamp  = ;
+				savedGame->saveTime   = getLocalTimeFromTimestamp(cMeta->saveTimestamp);
 				savedGame->cityName   = intern(&catalogue->stringsTable, readString(cMeta->cityName, startOfChunk));
 				savedGame->playerName = intern(&catalogue->stringsTable, readString(cMeta->playerName, startOfChunk));
 				savedGame->funds      = cMeta->funds;
@@ -175,7 +175,7 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 	if (selectedSavedGame)
 	{
 		window_label(context, selectedSavedGame->filename);
-		window_label(context, myprintf("Saved <INSERT DATE HERE>"_s, {}));
+		window_label(context, myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_ShortDateTime)}));
 		window_label(context, selectedSavedGame->cityName);
 		window_label(context, myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
 		window_label(context, myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));

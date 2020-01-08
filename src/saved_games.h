@@ -12,6 +12,7 @@ struct SavedGameInfo
 	String fullPath;
 
 	u32 problems;
+	DateTime saveTime;
 	String cityName;
 	String playerName;
 	s32 funds;

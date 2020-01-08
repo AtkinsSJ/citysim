@@ -23,6 +23,49 @@ u64 getCurrentUnixTimestamp()
 	return unixTime;
 }
 
+DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp)
+{
+	DateTime result = {};
+
+	// NB: Based on the microsoft code at https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
+	FILETIME fileTime = {};
+	u64 temp = (unixTimestamp  + 11644473600) * 10000000;
+	fileTime.dwLowDateTime = (DWORD) temp;
+	fileTime.dwHighDateTime = temp >> 32;
+
+	// We convert to a local FILETIME first, because I don't see a way to do that conversion later.
+	FILETIME localFileTime = {};
+	if (FileTimeToLocalFileTime(&fileTime, &localFileTime) == 0)
+	{
+		// Error handling!
+		u32 errorCode = (u32)GetLastError();
+		logError("Failed to convert filetime ({0}) to local filetime. (Error {1})"_s, {formatInt(temp), formatInt(errorCode)});
+		return result;
+	}
+
+	// Now we can convert that into a SYSTEMTIME
+	SYSTEMTIME localSystemTime;
+	if (FileTimeToSystemTime(&localFileTime, &localSystemTime) == 0)
+	{
+		// Error handling!
+		u32 errorCode = (u32)GetLastError();
+		logError("Failed to convert local filetime ({0}-{1}) to local systemtime. (Error {2})"_s, {formatInt((u32)localFileTime.dwLowDateTime), formatInt((u32)localFileTime.dwHighDateTime), formatInt(errorCode)});
+		return result;
+	}
+
+	// Finally, we can fill-in our own DateTime struct with the data
+	result.year = localSystemTime.wYear;
+	result.month = localSystemTime.wMonth;
+	result.dayOfMonth = localSystemTime.wDay;
+	result.hour = localSystemTime.wHour;
+	result.minute = localSystemTime.wMinute;
+	result.second = localSystemTime.wSecond;
+	result.millisecond = localSystemTime.wMilliseconds;
+	result.dayOfWeek = (DayOfWeek)((localSystemTime.wDayOfWeek + 6) % 7); // NB: Sunday is 0 in SYSTEMTIME, but is 6 for us.
+
+	return result;
+}
+
 bool platform_createDirectory(String _path)
 {
 	bool succeeded = true;
