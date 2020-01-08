@@ -146,8 +146,10 @@ T *findOrAdd(HashTable<T> *table, String key)
 		table->count++;
 		entry->isOccupied = true;
 		entry->isGravestone = false;
-		hashString(&key);
-		entry->key = key;
+
+		String theKey = pushString(&table->keyDataArena, key);
+		hashString(&theKey);
+		entry->key = theKey;
 	}
 
 	return &entry->value;

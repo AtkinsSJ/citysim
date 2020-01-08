@@ -40,8 +40,6 @@ inline char & String::operator[](s32 index)
 
 void copyString(char *src, s32 srcLength, String *dest)
 {
-	DEBUG_FUNCTION();
-	
 	s32 copyLength = min(srcLength, dest->maxLength);
 	copyMemory(src, dest->chars, copyLength);
 	dest->length = copyLength;
