@@ -44,6 +44,8 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 	{
 		expandHashTable(table, ceil_s32(initialCapacity / maxLoadFactor));
 	}
+
+	initMemoryArena(&table->keyDataArena, KB(4), KB(4));
 }
 
 template<typename T>
@@ -167,8 +169,10 @@ T *put(HashTable<T> *table, String key, T value)
 		table->count++;
 		entry->isOccupied = true;
 		entry->isGravestone = false;
-		hashString(&key);
-		entry->key = key;
+
+		String theKey = pushString(&table->keyDataArena, key);
+		hashString(&theKey);
+		entry->key = theKey;
 	}
 
 	entry->value = value;

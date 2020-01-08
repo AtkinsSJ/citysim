@@ -18,6 +18,8 @@ struct HashTable
 	s32 capacity;
 	f32 maxLoadFactor;
 	HashTableEntry<T> *entries;
+
+	MemoryArena keyDataArena;
 };
 
 template<typename T>

@@ -25,6 +25,7 @@ Saving and loading!
 - "Save" window that lets you specify the filename and warns of conflicts
 	- Keep in mind the filename it was loaded from (or last saved to) and use that as the default, and don't warn if you try to overwrite it.
 - "Load" window that previews the saved games.
+- SavedGamesCatalogue may need to create the saves directory after the game has started, in case it gets deleted! (Currently we crash when this happens I think.)
 
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
