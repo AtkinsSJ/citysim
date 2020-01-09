@@ -286,6 +286,27 @@ inline bool isEmpty(String s)
 	return (s.length <= 0);
 }
 
+bool endsWith(String s, String suffix)
+{
+	bool result = false;
+
+	if (s.length == suffix.length)
+	{
+		result = equals(s, suffix);
+	}
+	else if (s.length > suffix.length)
+	{
+		result = isMemoryEqual<char>(suffix.chars, (s.chars + s.length - suffix.length), suffix.length);
+	}
+	else
+	{
+		// Otherwise, suffix > s, so it can't end with it!
+		result = false;
+	}
+
+	return result;
+}
+
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex)
 {
 	Maybe<s32> result;
@@ -456,6 +477,37 @@ bool splitInTwo(String input, char divider, String *leftResult, String *rightRes
 	}
 
 	return foundDivider;
+}
+
+String concatenate(std::initializer_list<String> strings, String between)
+{
+	bool useBetween = (between.length > 0);
+	String result = nullString;
+
+	if (strings.size() > 0)
+	{
+		// Count up the resulting length
+		s32 resultLength = truncate32(between.length * (strings.size() - 1));
+		for (auto it = strings.begin(); it != strings.end(); it++)
+		{
+			resultLength += it->length;
+		}
+
+		StringBuilder stb = newStringBuilder(resultLength, tempArena);
+		s32 pos = 0;
+
+		append(&stb, *strings.begin());
+
+		for (auto it = (strings.begin() + 1); it != strings.end(); it++)
+		{
+			if (useBetween) append(&stb, between);
+			append(&stb, *it);
+		}
+
+		result = getString(&stb);
+	}
+
+	return result;
 }
 
 /**

@@ -51,6 +51,7 @@ Maybe<bool> asBool(String input);
 
 bool isNullTerminated(String s);
 bool isEmpty(String s);
+bool endsWith(String s, String suffix);
 
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex=-1);
 
@@ -61,6 +62,8 @@ s32 countTokens(String input);
 String nextToken(String input, String *remainder, char splitChar = 0);
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String *leftResult, String *rightResult);
+
+String concatenate(std::initializer_list<String> strings, String between=nullString);
 
 String formatInt(u64 value, u8 base=10);
 inline String formatInt(u32 value, u8 base=10) {return formatInt((u64)value, base);}

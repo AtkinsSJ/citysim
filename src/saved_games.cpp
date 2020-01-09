@@ -231,17 +231,23 @@ void saveGameWindowProc(WindowContext *context, void * /*userData*/)
 	window_label(context, "Save game stuff goes here"_s);
 	if (window_button(context, getText("button_save"_s)))
 	{
-		saveGame(context->uiState, "awesomesavegame.sav"_s);
+		saveGame(context->uiState, "fantastico.sav"_s);
 	}
 }
 
 void saveGame(UIState *uiState, String saveName)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-
 	City *city = &globalAppState.gameState->city;
-	String saveFilename = constructPath({catalogue->savedGamesPath, saveName});
-	FileHandle saveFile = openFile(saveFilename, FileAccess_Write);
+
+	String saveFilename = saveName;
+	if (!endsWith(saveFilename, ".sav"_s))
+	{
+		saveFilename = concatenate({saveName, ".sav"_s});
+	}
+
+	String savePath = constructPath({catalogue->savedGamesPath, saveFilename});
+	FileHandle saveFile = openFile(savePath, FileAccess_Write);
 	bool saveSucceeded = writeSaveFile(&saveFile, city);
 	closeFile(&saveFile);
 
