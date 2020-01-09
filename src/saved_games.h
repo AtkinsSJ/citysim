@@ -45,3 +45,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue);
 void showLoadGameWindow(UIState *uiState);
 void loadGameWindowProc(WindowContext *context, void *userData);
 void loadGame(UIState *uiState, SavedGameInfo *savedGame);
+
+void showSaveGameWindow(UIState *uiState);
+void saveGameWindowProc(WindowContext *context, void *userData);
+void saveGame(UIState *uiState, String saveName);

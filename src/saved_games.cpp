@@ -216,3 +216,41 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 		pushUiMessage(uiState, myprintf(getText("msg_load_failure"_s), {saveFile.path}));
 	}
 }
+
+void showSaveGameWindow(UIState *uiState)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameIndex = -1;
+
+	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, saveGameWindowProc, null);
+}
+
+void saveGameWindowProc(WindowContext *context, void * /*userData*/)
+{
+	window_label(context, "Save game stuff goes here"_s);
+	if (window_button(context, getText("button_save"_s)))
+	{
+		saveGame(context->uiState, "awesomesavegame.sav"_s);
+	}
+}
+
+void saveGame(UIState *uiState, String saveName)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+
+	City *city = &globalAppState.gameState->city;
+	String saveFilename = constructPath({catalogue->savedGamesPath, saveName});
+	FileHandle saveFile = openFile(saveFilename, FileAccess_Write);
+	bool saveSucceeded = writeSaveFile(&saveFile, city);
+	closeFile(&saveFile);
+
+	if (saveSucceeded)
+	{
+		pushUiMessage(uiState, myprintf(getText("msg_save_success"_s), {saveFile.path}));
+	}
+	else
+	{
+		pushUiMessage(uiState, myprintf(getText("msg_save_failure"_s), {saveFile.path}));
+	}
+}
