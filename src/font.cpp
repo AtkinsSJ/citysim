@@ -142,7 +142,12 @@ V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
 			{
 				if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
 				{
-					longestLineWidth = max(longestLineWidth, currentLineWidth);
+					// In case this word is the only one on the line, AND is longer than
+					// the max width, we add currentWordWidth to the max() equation below!
+					// Before I added this, it got super weird.
+					// - Sam, 13/01/2020
+
+					longestLineWidth = max(longestLineWidth, currentLineWidth, currentWordWidth);
 
 					lineCount++;
 
