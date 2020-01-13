@@ -26,6 +26,7 @@ u64 getCurrentUnixTimestamp()
 DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp)
 {
 	DateTime result = {};
+	result.unixTimestamp = unixTimestamp;
 
 	// NB: Based on the microsoft code at https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
 	FILETIME fileTime = {};

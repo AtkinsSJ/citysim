@@ -123,6 +123,12 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 			}
 		}
 	}
+
+	// Sort the saved games by most-recent first
+	sortChunkedArray(&catalogue->savedGames, [](SavedGameInfo *a, SavedGameInfo *b) {
+		return a->saveTime.unixTimestamp > b->saveTime.unixTimestamp;
+	});
+
 }
 
 void showLoadGameWindow(UIState *uiState)

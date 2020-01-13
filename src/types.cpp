@@ -258,7 +258,6 @@ void sortArrayInternal(Array<T> *array, Comparison compareElements, s32 lowIndex
 	// Quicksort implementation
 	if (lowIndex < highIndex)
 	{
-		// partition()
 		s32 partitionIndex = 0;
 		{
 			T pivot = array->items[highIndex];

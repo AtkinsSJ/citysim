@@ -98,6 +98,12 @@ T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder);
 template<typename T>
 void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex);
 
+template<typename T, typename Comparison>
+void sortChunkedArray(ChunkedArray<T> *array, Comparison compareElements);
+
+template<typename T, typename Comparison>
+void sortChunkedArrayInternal(ChunkedArray<T> *array, Comparison compareElements, s32 lowIndex, s32 highIndex);
+
 //////////////////////////////////////////////////
 // POOL STUFF                                   //
 //////////////////////////////////////////////////

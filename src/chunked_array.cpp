@@ -428,6 +428,56 @@ void reserve(ChunkedArray<T> *array, s32 desiredSize)
 	}
 }
 
+template<typename T, typename Comparison>
+inline void sortChunkedArray(ChunkedArray<T> *array, Comparison compareElements)
+{
+	sortChunkedArrayInternal(array, compareElements, 0, array->count-1);
+}
+
+template<typename T, typename Comparison>
+void sortChunkedArrayInternal(ChunkedArray<T> *array, Comparison compareElements, s32 lowIndex, s32 highIndex)
+{
+	// Quicksort implementation, copied from sortArrayInternal().
+	// This is probably really terrible, because we're not specifically handling the chunked-ness,
+	// so yeah. @Speed
+
+	if (lowIndex < highIndex)
+	{
+		s32 partitionIndex = 0;
+		{
+			T *pivot = get(array, highIndex);
+			s32 i = (lowIndex - 1);
+			for (s32 j = lowIndex; j < highIndex; j++)
+			{
+				T *itemJ = get(array, j);
+				if (compareElements(itemJ, pivot))
+				{
+					i++;
+					T *itemI = get(array, i);
+					T temp = {};
+
+					temp = *itemI;
+					*itemI = *itemJ;
+					*itemJ = temp;
+				}
+			}
+			
+			T *itemIPlus1 = get(array, i+1);
+			T *itemHighIndex = get(array, highIndex);
+			T temp = {};
+
+			temp = *itemIPlus1;
+			*itemIPlus1 = *itemHighIndex;
+			*itemHighIndex = temp;
+
+			partitionIndex = i+1;
+		}
+
+		sortChunkedArrayInternal(array, compareElements, lowIndex, partitionIndex - 1);
+		sortChunkedArrayInternal(array, compareElements, partitionIndex + 1, highIndex);
+	}
+}
+
 //////////////////////////////////////////////////
 // POOL STUFF                                   //
 //////////////////////////////////////////////////

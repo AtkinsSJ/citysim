@@ -13,6 +13,8 @@ enum DayOfWeek
 
 struct DateTime
 {
+	u64 unixTimestamp; // Global time
+
 	s32 year;
 	s32 month;
 	s32 dayOfMonth;
