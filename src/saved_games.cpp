@@ -122,6 +122,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 				savedGame->population = cMeta->population;
 			}
 		}
+		closeFile(&savedFile);
 	}
 
 	// Sort the saved games by most-recent first
