@@ -56,6 +56,7 @@ V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
 	DEBUG_FUNCTION();
 
 	ASSERT(font != null); //Font must be provided!
+	ASSERT(maxWidth >= 0);
 	
 	V2I result = v2i(maxWidth, font->lineHeight);
 
@@ -181,7 +182,13 @@ V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
 		}
 	}
 
-	result.x = max(longestLineWidth, currentX);
+	// NB: Trailing whitespace can take currentX beyond maxWidth, because we don't adjust
+	// the line width after whitespace. So, I'm clamping currentX to maxWidth to make sure
+	// we don't erroneously return a size that includes the out-of-bounds whitespace.
+	// Maybe we should just wrap it, but I think wrapping whitespace isn't generally what
+	// you want - it's better to just start the new line with the next printable character.
+	// - Sam, 15/01/2020
+	result.x = max(longestLineWidth, doWrap ? min(currentX, maxWidth) : currentX);
 	result.y = (font->lineHeight * lineCount);
 
 	ASSERT(maxWidth == 0 || maxWidth >= result.x); //Somehow we measured text that's too wide!
