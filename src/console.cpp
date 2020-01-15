@@ -49,27 +49,19 @@ void renderConsole(Console *console)
 
 	UIConsoleStyle *consoleStyle = findConsoleStyle(&assets->theme, "default"_s);
 	UITextInputStyle *textInputStyle = findTextInputStyle(&assets->theme, consoleStyle->textInputStyleName);
-	BitmapFont *consoleFont = getFont(consoleStyle->fontName);
 
-	V2I textPos = v2i(consoleStyle->padding, actualConsoleHeight - consoleStyle->padding);
+	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, screenWidth);
+	V2I textInputPos  = v2i(0, actualConsoleHeight - textInputSize.y);
+	Rect2I textInputBounds = irectPosSize(textInputPos, textInputSize);
+	Rect2I textInputRect = drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
+
+	V2I textPos = v2i(consoleStyle->padding, textInputRect.y);
 	s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
-
-	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
-	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
-
-	Rect2I textInputRect = drawTextInput(renderBuffer, &console->input, textInputStyle, textPos, ALIGN_LEFT | ALIGN_BOTTOM, textMaxWidth);
-	textPos.y -= textInputRect.h;
-
-	textPos.y -= consoleStyle->padding;
 
 	s32 heightOfOutputArea = textPos.y;
 
-	// draw backgrounds now we know size of input area
-	// TODO: Draw the input background inside drawTextInput()!
-	Rect2I inputBackRect = irectXYWH(0, textPos.y, screenWidth, actualConsoleHeight - heightOfOutputArea);
-	fillDrawRectPlaceholder(inputBackground, inputBackRect, textInputStyle->backgroundColor);
 	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
-	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, consoleStyle->backgroundColor);
+	drawSingleRect(renderBuffer, consoleBackRect, renderer->shaderIds.untextured, consoleStyle->backgroundColor);
 
 	V2I knobSize = v2i(consoleStyle->scrollBarWidth, consoleStyle->scrollBarWidth);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
@@ -78,6 +70,7 @@ void renderConsole(Console *console)
 	textPos.y -= consoleStyle->padding;
 
 	// print output lines
+	BitmapFont *consoleFont = getFont(consoleStyle->fontName);
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
 	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
 		hasNext(&it);

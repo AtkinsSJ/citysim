@@ -299,6 +299,7 @@ void loadUITheme(Blob data, Asset *asset)
 						case Section_Button:     target.button->padding    = (s32) padding.value; break;
 						case Section_Console:    target.console->padding   = (s32) padding.value; break;
 						case Section_UIMessage:  target.message->padding   = (s32) padding.value; break;
+						case Section_TextInput:  target.textInput->padding = (s32) padding.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -358,7 +359,8 @@ void loadUITheme(Blob data, Asset *asset)
 				{
 					switch (target.type)
 					{
-						case Section_Button:  target.button->textAlignment = alignment.value; break;
+						case Section_Button:     target.button->textAlignment    = alignment.value; break;
+						case Section_TextInput:  target.textInput->textAlignment = alignment.value; break;
 						default:  WRONG_SECTION;
 					}
 				}

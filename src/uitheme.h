@@ -28,7 +28,11 @@ struct UITextInputStyle
 {
 	String fontName;
 	V4 textColor;
+	u32 textAlignment;
+
 	V4 backgroundColor;
+	s32 padding;
+	
 	bool showCaret;
 	f32 caretFlashCycleDuration;
 };

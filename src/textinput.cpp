@@ -12,33 +12,47 @@ TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist
 
 String textInputToString(TextInput *textInput)
 {
-	String result = {};
-	result.chars = textInput->buffer;
-	result.length = textInput->byteLength;
+	return makeString(textInput->buffer, textInput->byteLength);
+}
+
+V2I calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 width)
+{
+	s32 doublePadding = (style->padding * 2);
+	s32 textMaxWidth = (width == 0) ? 0 : (width - doublePadding);
+
+	BitmapFont *font = getFont(style->fontName);
+	String text = textInputToString(textInput);
+	V2I textSize = calculateTextSize(font, text, textMaxWidth);
+
+	s32 resultWidth = (width == 0) ? (textSize.x + doublePadding) : width;
+
+	V2I result = v2i(resultWidth, textSize.y + doublePadding);
 
 	return result;
 }
 
-Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInputStyle *style, V2I origin, s32 align, s32 maxWidth)
+Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInputStyle *style, Rect2I bounds)
 {
 	DEBUG_FUNCTION();
 
-	String text = makeString(textInput->buffer, textInput->byteLength);
+	String text = textInputToString(textInput);
 	BitmapFont *font = getFont(style->fontName);
 
-	V2I textSize  = calculateTextSize(font, text, maxWidth);
-	V2I topLeft   = calculateTextPosition(origin, textSize, align);
-	Rect2I bounds = irectPosSize(topLeft, textSize);
+	Rect2I textBounds = shrink(bounds, style->padding);
+
+	RenderItem_DrawSingleRect *inputBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 
 	DrawTextResult drawTextResult = {};
-	drawText(renderBuffer, font, text, bounds, align, style->textColor, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
+	drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
+
+	fillDrawRectPlaceholder(inputBackground, bounds, style->backgroundColor);
 
 	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, style->caretFlashCycleDuration);
 	bool showCaret = style->showCaret && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
 
 	if (showCaret)
 	{
-		Rect2 caretRect = rectXYWHi(topLeft.x, topLeft.y, 2, font->lineHeight);
+		Rect2 caretRect = rectXYWHi(textBounds.x, textBounds.y, 2, font->lineHeight);
 
 		if (textInput->caretGlyphPos != 0 && drawTextResult.isValid)
 		{

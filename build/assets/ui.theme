@@ -57,7 +57,9 @@ padding           4
 :TextInput default
 font              normal
 textColor           0   0   0 255
+textAlignment     TOP LEFT
 backgroundColor   255 255 255 255
+padding           8
 showCaret         true
 caretFlashCycleDuration 1.0
 
@@ -111,6 +113,8 @@ textInputStyle console
 :TextInput console
 font              debug
 textColor         255 255 255 255
+textAlignment     TOP LEFT
 backgroundColor    64  64  64 245
+padding           8
 showCaret         true
 caretFlashCycleDuration 1.0

@@ -360,7 +360,7 @@ Rect2 intersect(Rect2 a, Rect2 b);
 Rect2 intersectRelative(Rect2 outer, Rect2 inner);
 
 V2 centreOf(Rect2 rect);
-f32 areaOf(Rect2 rect);
+f32 areaOf(Rect2 rect); // Always positive, even if the rect has negative dimensions
 
 V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0);
 
@@ -383,12 +383,18 @@ bool overlaps(Rect2I outer, Rect2I inner);
 
 Rect2I expand(Rect2I rect, s32 radius);
 Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
+// NB: shrink() always keeps the rectangle at >=0 sizes, so if you attempt
+// to subtract more, it remains 0 wide or tall, with a correct centre.
+// (This means shrinking a 0-size rectangle asymmetrically will move the
+// rectangle around. Which isn't useful so I don't know why I'm documenting it.)
+Rect2I shrink(Rect2I rect, s32 radius);
+Rect2I shrink(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
 Rect2I intersect(Rect2I a, Rect2I b);
 Rect2I intersectRelative(Rect2I outer, Rect2I inner);
 Rect2I unionOf(Rect2I a, Rect2I b);
 
 V2 centreOf(Rect2I rect);
-s32 areaOf(Rect2I rect);
+s32 areaOf(Rect2I rect); // Always positive, even if the rect has negative dimensions
 
 Rect2I centreWithin(Rect2I outer, Rect2I inner);
 V2I alignWithinRectangle(Rect2I bounds, u32 alignment, s32 padding=0);

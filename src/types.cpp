@@ -97,7 +97,7 @@ u8 clamp01AndMap_u8(f32 in)
 
 inline bool equals(f32 a, f32 b, f32 epsilon)
 {
-	return (fabs(a-b) < epsilon);
+	return (abs_f32(a-b) < epsilon);
 }
 
 template<typename T>
@@ -726,6 +726,7 @@ inline Rect2 intersectRelative(Rect2 outer, Rect2 inner)
 	return result;
 }
 
+
 inline V2 centreOf(Rect2 rect)
 {
 	return v2(
@@ -736,7 +737,7 @@ inline V2 centreOf(Rect2 rect)
 
 inline f32 areaOf(Rect2 rect)
 {
-	return rect.w * rect.h;
+	return abs_f32(rect.w * rect.h);
 }
 
 inline V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding)
@@ -891,6 +892,61 @@ inline Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left)
 	);
 }
 
+inline Rect2I shrink(Rect2I rect, s32 radius)
+{
+	s32 doubleRadius = radius * 2;
+	if ((rect.w >= doubleRadius) && (rect.h >= doubleRadius))
+	{
+		return irectXYWH(
+			rect.x + radius,
+			rect.y + radius,
+			rect.w - doubleRadius,
+			rect.h - doubleRadius
+		);
+	}
+	else
+	{
+		V2 centre = centreOf(rect);
+		return irectCentreSize((s32)centre.x, (s32)centre.y,
+								max(rect.w - doubleRadius, 0), max(rect.h - doubleRadius, 0));
+	}
+}
+
+inline Rect2I shrink(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left)
+{
+	s32 dWidth = left + right;
+	s32 dHeight = top + bottom;
+
+	Rect2I result = irectXYWH(
+		rect.x + left,
+		rect.y + top,
+		rect.w - dWidth,
+		rect.h - dHeight
+	);
+
+	// NB: We do this calculation differently from the simpler shrink(rect, radius), because
+	// the shrink amount might be different from one side to the other, which means the new
+	// centre is not the same as the old centre!
+	// So, we create the new, possibly inside-out rectangle, and then set its dimensions
+	// to 0 if they are negative, while maintaining the centre point.
+
+	V2 centre = centreOf(result);
+
+	if (result.w < 0)
+	{
+		result.x = (s32) centre.x;
+		result.w = 0;
+	}
+
+	if (result.h < 0)
+	{
+		result.y = (s32) centre.y;
+		result.h = 0;
+	}
+
+	return result;
+}
+
 inline Rect2I intersect(Rect2I inner, Rect2I outer)
 {
 	Rect2I result = inner;
@@ -951,7 +1007,7 @@ inline V2 centreOf(Rect2I rect)
 
 inline s32 areaOf(Rect2I rect)
 {
-	return rect.w * rect.h;
+	return abs_s32(rect.w * rect.h);
 }
 
 inline Rect2I centreWithin(Rect2I outer, Rect2I inner)

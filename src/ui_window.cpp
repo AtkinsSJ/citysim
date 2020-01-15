@@ -217,20 +217,20 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 		// size to be, instead of asking it. Maybe using a calculateTextInputSize() style thing.
 		s32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
-		V2I textSize = v2i(maxWidth, font->lineHeight);
-		// V2I topLeft = calculateTextPosition(origin, textSize, alignment);
-		// Rect2I bounds = irectPosSize(topLeft, textSize);
+		V2I textInputSize = calculateTextInputSize(textInput, style, maxWidth);
+		V2I topLeft = calculateTextPosition(origin, textInputSize, alignment);
+		Rect2I bounds = irectPosSize(topLeft, textInputSize);
 
 		if (context->doRender)
 		{
-			drawTextInput(&renderer->uiBuffer, textInput, style, origin, alignment, maxWidth);
+			drawTextInput(&renderer->uiBuffer, textInput, style, bounds);
 		}
 
 		// For now, we'll always just start a new line.
 		// We'll probably want something fancier later.
-		context->currentOffset.y += textSize.y;
+		context->currentOffset.y += textInputSize.y;
 		
-		context->largestItemWidth = max(textSize.x, context->largestItemWidth);
+		context->largestItemWidth = max(textInputSize.x, context->largestItemWidth);
 	}
 
 	return result;
