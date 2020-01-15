@@ -1,5 +1,10 @@
 #pragma once
 
+// TODO: Maybe rather than putting String names of styles (and fonts) in these, they should
+// use a combined name-and-pointer, so that most of the time the pointer is used, but
+// whenever the theme is modified the pointers can be re-connected.
+// - Sam, 15/01/2020
+
 struct UIButtonStyle
 {
 	String fontName;
@@ -19,11 +24,13 @@ struct UILabelStyle
 	V4 textColor;
 };
 
-struct UITextBoxStyle
+struct UITextInputStyle
 {
 	String fontName;
 	V4 textColor;
 	V4 backgroundColor;
+	bool showCaret;
+	f32 caretFlashCycleDuration;
 };
 
 struct UIMessageStyle
@@ -61,9 +68,9 @@ struct UIConsoleStyle
 	V4 outputTextColor[CLS_COUNT];
 
 	V4 backgroundColor;
-	V4 inputTextColor;
-	V4 inputBackgroundColor;
 	s32 padding;
+
+	String textInputStyleName;
 
 	// Scrollbar
 	s32 scrollBarWidth;
@@ -81,7 +88,7 @@ struct UITheme
 	HashTable<UIConsoleStyle> consoleStyles;
 	HashTable<UILabelStyle>   labelStyles;
 	HashTable<UIMessageStyle> messageStyles;
-	HashTable<UITextBoxStyle> textBoxStyles;
+	HashTable<UITextInputStyle> textInputStyles;
 	HashTable<UIWindowStyle>  windowStyles;
 };
 
@@ -100,9 +107,9 @@ inline UIMessageStyle *findMessageStyle(UITheme *theme, String name)
 {
 	return find(&theme->messageStyles, name);
 }
-inline UITextBoxStyle *findTextBoxStyle(UITheme *theme, String name)
+inline UITextInputStyle *findTextInputStyle(UITheme *theme, String name)
 {
-	return find(&theme->textBoxStyles, name);
+	return find(&theme->textInputStyles, name);
 }
 inline UIWindowStyle *findWindowStyle(UITheme *theme, String name)
 {

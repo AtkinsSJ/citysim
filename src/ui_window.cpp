@@ -188,9 +188,9 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 		result = updateTextInput(textInput);
 	}
 
-	UITextBoxStyle *style = null;
-	if (!isEmpty(styleName))  style = findTextBoxStyle(&assets->theme, styleName);
-	if (style == null)        style = findTextBoxStyle(&assets->theme, "default"_s);
+	UITextInputStyle *style = null;
+	if (!isEmpty(styleName))  style = findTextInputStyle(&assets->theme, styleName);
+	if (style == null)        style = findTextInputStyle(&assets->theme, "default"_s);
 
 	// Add padding between this and the previous element
 	if (context->currentOffset.y > 0)
@@ -213,6 +213,8 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
+		// This measurement is really janky! I'm pretty sure we want to TELL the TextInput what
+		// size to be, instead of asking it. Maybe using a calculateTextInputSize() style thing.
 		s32 maxWidth = context->contentArea.w - context->currentOffset.x;
 
 		V2I textSize = v2i(maxWidth, font->lineHeight);
@@ -221,7 +223,7 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 
 		if (context->doRender)
 		{
-			drawTextInput(&renderer->uiBuffer, font, textInput, origin, alignment, style->textColor, maxWidth);
+			drawTextInput(&renderer->uiBuffer, textInput, style, origin, alignment, maxWidth);
 		}
 
 		// For now, we'll always just start a new line.

@@ -1,11 +1,10 @@
 
 
-TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist, f32 caretFlashCycleDuration)
+TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist)
 {
 	TextInput b = {};
 	b.buffer = allocateMultiple<char>(arena, length + 1);
 	b.maxByteLength = length;
-	b.caretFlashCycleDuration = caretFlashCycleDuration;
 	b.characterBlacklist = characterBlacklist;
 
 	return b;
@@ -20,21 +19,22 @@ String textInputToString(TextInput *textInput)
 	return result;
 }
 
-Rect2I drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *textInput, V2I origin, s32 align, V4 color, s32 maxWidth)
+Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInputStyle *style, V2I origin, s32 align, s32 maxWidth)
 {
 	DEBUG_FUNCTION();
 
 	String text = makeString(textInput->buffer, textInput->byteLength);
+	BitmapFont *font = getFont(style->fontName);
 
 	V2I textSize  = calculateTextSize(font, text, maxWidth);
 	V2I topLeft   = calculateTextPosition(origin, textSize, align);
 	Rect2I bounds = irectPosSize(topLeft, textSize);
 
 	DrawTextResult drawTextResult = {};
-	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
+	drawText(renderBuffer, font, text, bounds, align, style->textColor, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
 
-	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, textInput->caretFlashCycleDuration);
-	bool showCaret = (textInput->caretFlashCounter < (textInput->caretFlashCycleDuration * 0.5f));
+	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, style->caretFlashCycleDuration);
+	bool showCaret = style->showCaret && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
 
 	if (showCaret)
 	{
@@ -49,7 +49,7 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, BitmapFont *font, TextInput *te
 		// Shifted 1px left for better legibility of text
 		caretRect.x -= 1.0f;
 
-		drawSingleRect(renderBuffer, caretRect, renderer->shaderIds.untextured, color);
+		drawSingleRect(renderBuffer, caretRect, renderer->shaderIds.untextured, style->textColor);
 	}
 
 	return bounds;

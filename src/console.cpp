@@ -48,6 +48,7 @@ void renderConsole(Console *console)
 	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
 
 	UIConsoleStyle *consoleStyle = findConsoleStyle(&assets->theme, "default"_s);
+	UITextInputStyle *textInputStyle = findTextInputStyle(&assets->theme, consoleStyle->textInputStyleName);
 	BitmapFont *consoleFont = getFont(consoleStyle->fontName);
 
 	V2I textPos = v2i(consoleStyle->padding, actualConsoleHeight - consoleStyle->padding);
@@ -56,7 +57,7 @@ void renderConsole(Console *console)
 	RenderItem_DrawSingleRect *consoleBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 	RenderItem_DrawSingleRect *inputBackground   = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
 
-	Rect2I textInputRect = drawTextInput(renderBuffer, consoleFont, &console->input, textPos, ALIGN_LEFT | ALIGN_BOTTOM, consoleStyle->inputTextColor, textMaxWidth);
+	Rect2I textInputRect = drawTextInput(renderBuffer, &console->input, textInputStyle, textPos, ALIGN_LEFT | ALIGN_BOTTOM, textMaxWidth);
 	textPos.y -= textInputRect.h;
 
 	textPos.y -= consoleStyle->padding;
@@ -64,8 +65,9 @@ void renderConsole(Console *console)
 	s32 heightOfOutputArea = textPos.y;
 
 	// draw backgrounds now we know size of input area
+	// TODO: Draw the input background inside drawTextInput()!
 	Rect2I inputBackRect = irectXYWH(0, textPos.y, screenWidth, actualConsoleHeight - heightOfOutputArea);
-	fillDrawRectPlaceholder(inputBackground, inputBackRect, consoleStyle->inputBackgroundColor);
+	fillDrawRectPlaceholder(inputBackground, inputBackRect, textInputStyle->backgroundColor);
 	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
 	fillDrawRectPlaceholder(consoleBackground, consoleBackRect, consoleStyle->backgroundColor);
 

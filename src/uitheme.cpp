@@ -8,7 +8,7 @@ void initUITheme(UITheme *theme)
 	initHashTable(&theme->consoleStyles);
 	initHashTable(&theme->labelStyles);
 	initHashTable(&theme->messageStyles);
-	initHashTable(&theme->textBoxStyles);
+	initHashTable(&theme->textInputStyles);
 	initHashTable(&theme->windowStyles);
 }
 
@@ -24,7 +24,7 @@ void loadUITheme(Blob data, Asset *asset)
 	clear(&theme->consoleStyles);
 	clear(&theme->labelStyles);
 	clear(&theme->messageStyles);
-	clear(&theme->textBoxStyles);
+	clear(&theme->textInputStyles);
 	clear(&theme->windowStyles);
 
 	// Scoped structs and enums are a thing, apparently! WOOHOO!
@@ -35,7 +35,7 @@ void loadUITheme(Blob data, Asset *asset)
 		Section_Console,
 		Section_Label,
 		Section_UIMessage,
-		Section_TextBox,
+		Section_TextInput,
 		Section_Window,
 	};
 	struct
@@ -49,7 +49,7 @@ void loadUITheme(Blob data, Asset *asset)
 			UIConsoleStyle *console;
 			UILabelStyle   *label;
 			UIMessageStyle *message;
-			UITextBoxStyle *textBox;
+			UITextInputStyle *textInput;
 			UIWindowStyle  *window;
 		};
 	} target = {};
@@ -108,11 +108,11 @@ void loadUITheme(Blob data, Asset *asset)
 				target.type = Section_UIMessage;
 				target.message = put(&theme->messageStyles, name);
 			}
-			else if (equals(firstWord, "TextBox"_s))
+			else if (equals(firstWord, "TextInput"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_TextBox;
-				target.textBox = put(&theme->textBoxStyles, name);
+				target.type = Section_TextInput;
+				target.textInput = put(&theme->textInputStyles, name);
 			}
 			else if (equals(firstWord, "Window"_s))
 			{
@@ -137,7 +137,7 @@ void loadUITheme(Blob data, Asset *asset)
 					{
 						case Section_Button:    target.button->backgroundColor    = backgroundColor.value; break;
 						case Section_Console:   target.console->backgroundColor   = backgroundColor.value; break;
-						case Section_TextBox:   target.textBox->backgroundColor   = backgroundColor.value; break;
+						case Section_TextInput:   target.textInput->backgroundColor   = backgroundColor.value; break;
 						case Section_UIMessage: target.message->backgroundColor   = backgroundColor.value; break;
 						case Section_Window:    target.window->backgroundColor    = backgroundColor.value; break;
 						default:  WRONG_SECTION;
@@ -152,6 +152,18 @@ void loadUITheme(Blob data, Asset *asset)
 					switch (target.type)
 					{
 						case Section_Window:  target.window->backgroundColorInactive = backgroundColorInactive.value; break;
+						default:  WRONG_SECTION;
+					}
+				}
+			}
+			else if (equals(firstWord, "caretFlashCycleDuration"_s))
+			{
+				Maybe<f64> caretFlashCycleDuration = readFloat(&reader);
+				if (caretFlashCycleDuration.isValid)
+				{
+					switch (target.type)
+					{
+						case Section_TextInput:  target.textInput->caretFlashCycleDuration = (f32) caretFlashCycleDuration.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -195,7 +207,7 @@ void loadUITheme(Blob data, Asset *asset)
 					case Section_Button:     target.button->fontName        = fontName; break;
 					case Section_Console:    target.console->fontName       = fontName; break;
 					case Section_Label:      target.label->fontName         = fontName; break;
-					case Section_TextBox:    target.textBox->fontName       = fontName; break;
+					case Section_TextInput:    target.textInput->fontName       = fontName; break;
 					case Section_UIMessage:  target.message->fontName       = fontName; break;
 					default:  WRONG_SECTION;
 				}
@@ -208,18 +220,6 @@ void loadUITheme(Blob data, Asset *asset)
 					switch (target.type)
 					{
 						case Section_Button:  target.button->hoverColor = hoverColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "inputBackgroundColor"_s))
-			{
-				Maybe<V4> inputBackgroundColor = readColor(&reader);
-				if (inputBackgroundColor.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Console:  target.console->inputBackgroundColor = inputBackgroundColor.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -339,6 +339,18 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
+			else if (equals(firstWord, "showCaret"_s))
+			{
+				Maybe<bool> showCaret = readBool(&reader);
+				if (showCaret.isValid)
+				{
+					switch (target.type)
+					{
+						case Section_TextInput:  target.textInput->showCaret  = showCaret.value; break;
+						default:  WRONG_SECTION;
+					}
+				}
+			}
 			else if (equals(firstWord, "textAlignment"_s))
 			{
 				Maybe<u32> alignment = readAlignment(&reader);
@@ -359,12 +371,20 @@ void loadUITheme(Blob data, Asset *asset)
 					switch (target.type)
 					{
 						case Section_Button:     target.button->textColor       = textColor.value; break;
-						case Section_Console:    target.console->inputTextColor = textColor.value; break;
 						case Section_Label:      target.label->textColor        = textColor.value; break;
-						case Section_TextBox:    target.textBox->textColor      = textColor.value; break;
+						case Section_TextInput:  target.textInput->textColor    = textColor.value; break;
 						case Section_UIMessage:  target.message->textColor      = textColor.value; break;
 						default:  WRONG_SECTION;
 					}
+				}
+			}
+			else if (equals(firstWord, "textInputStyle"_s))
+			{
+				String styleName = intern(&assets->assetStrings, readToken(&reader));
+				switch (target.type)
+				{
+					case Section_Console:  target.console->textInputStyleName = styleName; break;
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "titleBarButtonHoverColor"_s))

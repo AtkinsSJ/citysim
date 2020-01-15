@@ -54,10 +54,12 @@ textColor         255 255 255 255
 backgroundColor     0   0   0 128
 padding           4
 
-:TextBox default
+:TextInput default
 font              normal
 textColor           0   0   0 255
 backgroundColor   255 255 255 255
+showCaret         true
+caretFlashCycleDuration 1.0
 
 :Window default
 titleFont                normal
@@ -104,5 +106,11 @@ backgroundColor        0   0   0 245
 padding 8
 scrollBarWidth 12
 scrollBarKnobColor    48  48  48 245
-textColor            255 255 255 255
-inputBackgroundColor  64  64  64 245
+textInputStyle console
+
+:TextInput console
+font              debug
+textColor         255 255 255 255
+backgroundColor    64  64  64 245
+showCaret         true
+caretFlashCycleDuration 1.0

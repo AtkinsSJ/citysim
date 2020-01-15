@@ -12,16 +12,15 @@ struct TextInput
 	s32 caretBytePos;
 	s32 caretGlyphPos;
 	f32 caretFlashCounter;
-	f32 caretFlashCycleDuration; // Time for one on/off loop. If 0 this will hide the caret forever
 
 	String characterBlacklist;
 };
 
-TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist=nullString, f32 caretFlashCycleDuration=1.0f);
+TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist=nullString);
 // Returns true if pressed RETURN
 bool updateTextInput(TextInput *textInput);
 String textInputToString(TextInput *textInput);
-Rect2I drawTextInput(struct RenderBuffer *renderBuffer, struct BitmapFont *font, TextInput *textInput, V2I origin, s32 align, V4 color, s32 maxWidth = 0);
+Rect2I drawTextInput(struct RenderBuffer *renderBuffer, TextInput *textInput, struct UITextInputStyle *style, V2I origin, s32 align, s32 maxWidth = 0);
 
 void append(TextInput *textInput, char *source, s32 length);
 void append(TextInput *textInput, String source);
