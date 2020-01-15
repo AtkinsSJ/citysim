@@ -6,6 +6,7 @@ struct WindowContext
 	struct Window *window;
 	UIWindowStyle *windowStyle;
 
+	bool doUpdate;
 	bool doRender;
 
 	Rect2I totalContentArea;
@@ -72,6 +73,9 @@ void window_label(WindowContext *context, String text, String styleName = nullSt
  * Either way, it always matches the size vertically.
  */
 bool window_button(WindowContext *context, String text, s32 textWidth = -1, bool isActive = false);
+
+// Returns true if RETURN was pressed, same as updateTextInput().
+bool window_textInput(WindowContext *context, TextInput *textInput, String styleName = nullString);
 
 void updateWindows(UIState *uiState);
 void renderWindows(UIState *uiState);

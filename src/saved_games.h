@@ -32,8 +32,10 @@ struct SavedGamesCatalogue
 
 	ChunkedArray<SavedGameInfo> savedGames;
 
+	// Fields used by the save/load windows
 	String selectedSavedGameFilename;
 	s32 selectedSavedGameIndex;
+	TextInput saveGameName;
 };
 
 SavedGamesCatalogue savedGamesCatalogue;
@@ -48,4 +50,4 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame);
 
 void showSaveGameWindow(UIState *uiState);
 void saveGameWindowProc(WindowContext *context, void *userData);
-void saveGame(UIState *uiState, String saveName);
+bool saveGame(UIState *uiState, String saveName);

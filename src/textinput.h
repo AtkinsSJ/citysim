@@ -13,9 +13,11 @@ struct TextInput
 	s32 caretGlyphPos;
 	f32 caretFlashCounter;
 	f32 caretFlashCycleDuration; // Time for one on/off loop. If 0 this will hide the caret forever
+
+	String characterBlacklist;
 };
 
-TextInput newTextInput(MemoryArena *arena, s32 length, f32 caretFlashCycleDuration=1.0f);
+TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist=nullString, f32 caretFlashCycleDuration=1.0f);
 // Returns true if pressed RETURN
 bool updateTextInput(TextInput *textInput);
 String textInputToString(TextInput *textInput);
@@ -25,6 +27,7 @@ void append(TextInput *textInput, char *source, s32 length);
 void append(TextInput *textInput, String source);
 void append(TextInput *textInput, char *source);
 void insert(TextInput *textInput, String source);
+void insert(TextInput *textInput, char c);
 
 void clear(TextInput *textInput);
 void backspace(TextInput *textInput);

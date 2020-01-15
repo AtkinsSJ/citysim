@@ -365,6 +365,11 @@ Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIn
 	return result;
 }
 
+bool contains(String input, char c)
+{
+	return findIndexOfChar(input, c, false).isValid;
+}
+
 s32 countTokens(String input)
 {
 	DEBUG_FUNCTION();

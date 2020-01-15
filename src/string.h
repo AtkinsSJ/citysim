@@ -54,6 +54,7 @@ bool isEmpty(String s);
 bool endsWith(String s, String suffix);
 
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex=-1);
+bool contains(String input, char c);
 
 // TODO: Add "splitchar" support to countTokens() as well
 s32 countTokens(String input);

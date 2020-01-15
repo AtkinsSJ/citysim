@@ -1,11 +1,12 @@
 
 
-TextInput newTextInput(MemoryArena *arena, s32 length, f32 caretFlashCycleDuration)
+TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist, f32 caretFlashCycleDuration)
 {
 	TextInput b = {};
 	b.buffer = allocateMultiple<char>(arena, length + 1);
 	b.maxByteLength = length;
 	b.caretFlashCycleDuration = caretFlashCycleDuration;
+	b.characterBlacklist = characterBlacklist;
 
 	return b;
 }
@@ -122,6 +123,11 @@ void insert(TextInput *textInput, String source)
 
 	textInput->glyphLength += glyphsToCopy;
 	textInput->caretGlyphPos += glyphsToCopy;
+}
+
+void insert(TextInput *textInput, char c)
+{
+	insert(textInput, makeString(&c, 1));
 }
 
 void moveCaretLeft(TextInput *textInput, s32 count)
@@ -311,17 +317,33 @@ bool updateTextInput(TextInput *textInput)
 
 	if (wasTextEntered())
 	{
-		insert(textInput, getEnteredText());
+		// Filter the input to remove any blacklisted characters
+		String enteredText = getEnteredText();
+		for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+		{
+			char c = enteredText[charIndex];
+			if (!contains(textInput->characterBlacklist, c))
+			{
+				insert(textInput, c);
+			}
+		}
+
 		textInput->caretFlashCounter = 0;
 	}
 
 	if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
 	{
-		String clipboard = getClipboardText();
-		if (!isEmpty(clipboard))
+		// Filter the input to remove any blacklisted characters
+		String enteredText = getClipboardText();
+		for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
 		{
-			insert(textInput, clipboard);
+			char c = enteredText[charIndex];
+			if (!contains(textInput->characterBlacklist, c))
+			{
+				insert(textInput, c);
+			}
 		}
+		
 		textInput->caretFlashCounter = 0;
 	}
 

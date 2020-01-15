@@ -156,13 +156,16 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 			fillDrawRectPlaceholder(background, buttonBounds, backColor);
 		}
 
-		if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
+		if (context->doUpdate)
 		{
-			if (mouseButtonJustReleased(MouseButton_Left)
-			 && contains(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
 			{
-				buttonClicked = true;
-				context->uiState->mouseInputHandled = true;
+				if (mouseButtonJustReleased(MouseButton_Left)
+				 && contains(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+				{
+					buttonClicked = true;
+					context->uiState->mouseInputHandled = true;
+				}
 			}
 		}
 
@@ -173,6 +176,62 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 	}
 
 	return buttonClicked;
+}
+
+bool window_textInput(WindowContext *context, TextInput *textInput, String styleName)
+{
+	DEBUG_FUNCTION();
+
+	bool result = false;
+	if (context->doUpdate)
+	{
+		result = updateTextInput(textInput);
+	}
+
+	UITextBoxStyle *style = null;
+	if (!isEmpty(styleName))  style = findTextBoxStyle(&assets->theme, styleName);
+	if (style == null)        style = findTextBoxStyle(&assets->theme, "default"_s);
+
+	// Add padding between this and the previous element
+	if (context->currentOffset.y > 0)
+	{
+		context->currentOffset.y += context->perItemPadding;
+	}
+
+	u32 alignment = context->alignment;
+	V2I origin = context->contentArea.pos + context->currentOffset;
+
+	if (alignment & ALIGN_RIGHT)
+	{
+		origin.x = context->contentArea.pos.x + context->contentArea.w;
+	}
+	else if (alignment & ALIGN_H_CENTRE)
+	{
+		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
+	}
+
+	BitmapFont *font = getFont(style->fontName);
+	if (font)
+	{
+		s32 maxWidth = context->contentArea.w - context->currentOffset.x;
+
+		V2I textSize = v2i(maxWidth, font->lineHeight);
+		// V2I topLeft = calculateTextPosition(origin, textSize, alignment);
+		// Rect2I bounds = irectPosSize(topLeft, textSize);
+
+		if (context->doRender)
+		{
+			drawTextInput(&renderer->uiBuffer, font, textInput, origin, alignment, style->textColor, maxWidth);
+		}
+
+		// For now, we'll always just start a new line.
+		// We'll probably want something fancier later.
+		context->currentOffset.y += textSize.y;
+		
+		context->largestItemWidth = max(textSize.x, context->largestItemWidth);
+	}
+
+	return result;
 }
 
 static void makeWindowActive(UIState *uiState, s32 windowIndex)
@@ -282,6 +341,7 @@ WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UISt
 
 void prepareForUpdate(WindowContext *context)
 {
+	context->doUpdate = true;
 	context->doRender = false;
 
 	context->totalContentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
@@ -295,6 +355,7 @@ void prepareForUpdate(WindowContext *context)
 void prepareForRender(WindowContext *context)
 {
 	context->doRender = true;
+	context->doUpdate = false;
 	
 	context->totalContentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
 	context->contentArea = context->totalContentArea;

@@ -15,8 +15,10 @@ void initSavedGamesCatalogue()
 
 	initChunkedArray(&catalogue->savedGames, &catalogue->savedGamesArena, 64);
 
+	// Window-related stuff
 	catalogue->selectedSavedGameFilename = nullString;
 	catalogue->selectedSavedGameIndex = -1;
+	catalogue->saveGameName = newTextInput(&catalogue->savedGamesArena, 64, "\\/:*?\"'`<>|[]()^#%&!@+={}~."_s);
 
 	// Initial saved-games scan
 	readSavedGamesInfo(catalogue);
@@ -229,20 +231,32 @@ void showSaveGameWindow(UIState *uiState)
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	catalogue->selectedSavedGameFilename = nullString;
 	catalogue->selectedSavedGameIndex = -1;
+	clear(&catalogue->saveGameName);
 
 	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, saveGameWindowProc, null);
 }
 
 void saveGameWindowProc(WindowContext *context, void * /*userData*/)
 {
-	window_label(context, "Save game stuff goes here"_s);
-	if (window_button(context, getText("button_save"_s)))
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+
+	window_label(context, "Save game name:"_s);
+	bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
+
+	if (window_button(context, getText("button_save"_s)) || pressedEnterInTextInput)
 	{
-		saveGame(context->uiState, "fantastico.sav"_s);
+		String filename = trim(textInputToString(&catalogue->saveGameName));
+		if (!isEmpty(filename))
+		{
+			if (saveGame(context->uiState, filename))
+			{
+				context->closeRequested = true;
+			}
+		}
 	}
 }
 
-void saveGame(UIState *uiState, String saveName)
+bool saveGame(UIState *uiState, String saveName)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	City *city = &globalAppState.gameState->city;
@@ -266,4 +280,6 @@ void saveGame(UIState *uiState, String saveName)
 	{
 		pushUiMessage(uiState, myprintf(getText("msg_save_failure"_s), {saveFile.path}));
 	}
+
+	return saveSucceeded;
 }
