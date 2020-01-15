@@ -40,12 +40,10 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInp
 
 	Rect2I textBounds = shrink(bounds, style->padding);
 
-	RenderItem_DrawSingleRect *inputBackground = appendDrawRectPlaceholder(renderBuffer, renderer->shaderIds.untextured);
+	drawSingleRect(renderBuffer, bounds, renderer->shaderIds.untextured, style->backgroundColor);
 
 	DrawTextResult drawTextResult = {};
 	drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
-
-	fillDrawRectPlaceholder(inputBackground, bounds, style->backgroundColor);
 
 	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, style->caretFlashCycleDuration);
 	bool showCaret = style->showCaret && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
