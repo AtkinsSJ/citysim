@@ -499,7 +499,6 @@ String concatenate(std::initializer_list<String> strings, String between)
 		}
 
 		StringBuilder stb = newStringBuilder(resultLength, tempArena);
-		s32 pos = 0;
 
 		append(&stb, *strings.begin());
 
