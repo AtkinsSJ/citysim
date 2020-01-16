@@ -42,11 +42,14 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInp
 
 	drawSingleRect(renderBuffer, bounds, renderer->shaderIds.untextured, style->backgroundColor);
 
+	bool showCaret = style->showCaret
+					 && hasCapturedInput(textInput)
+					 && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
+
 	DrawTextResult drawTextResult = {};
 	drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
 
 	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, style->caretFlashCycleDuration);
-	bool showCaret = style->showCaret && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
 
 	if (showCaret)
 	{
@@ -265,98 +268,102 @@ bool updateTextInput(TextInput *textInput)
 {
 	bool pressedReturn = false;
 
-	if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
+	if (hasCapturedInput(textInput))
 	{
-		clear(textInput);
-		textInput->caretFlashCounter = 0;
-	}
-	else if (keyJustPressed(SDLK_BACKSPACE))
-	{
-		backspace(textInput);
-		textInput->caretFlashCounter = 0;
-	}
 
-	if (keyJustPressed(SDLK_DELETE))
-	{
-		deleteChar(textInput);
-		textInput->caretFlashCounter = 0;
-	}
-
-	if (keyJustPressed(SDLK_RETURN))
-	{
-		pressedReturn = true;
-		textInput->caretFlashCounter = 0;
-	}
-
-	if (keyJustPressed(SDLK_LEFT))
-	{
-		if (modifierKeyIsPressed(KeyMod_Ctrl))
+		if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
 		{
-			moveCaretLeftWholeWord(textInput);
+			clear(textInput);
+			textInput->caretFlashCounter = 0;
 		}
-		else
+		else if (keyJustPressed(SDLK_BACKSPACE))
 		{
-			moveCaretLeft(textInput, 1);
+			backspace(textInput);
+			textInput->caretFlashCounter = 0;
 		}
-		textInput->caretFlashCounter = 0;
-	}
-	else if (keyJustPressed(SDLK_RIGHT))
-	{
-		if (modifierKeyIsPressed(KeyMod_Ctrl))
+
+		if (keyJustPressed(SDLK_DELETE))
 		{
-			moveCaretRightWholeWord(textInput);
+			deleteChar(textInput);
+			textInput->caretFlashCounter = 0;
 		}
-		else
+
+		if (keyJustPressed(SDLK_RETURN))
 		{
-			moveCaretRight(textInput, 1);
+			pressedReturn = true;
+			textInput->caretFlashCounter = 0;
 		}
-		textInput->caretFlashCounter = 0;
-	}
 
-	if (keyJustPressed(SDLK_HOME))
-	{
-		textInput->caretBytePos = 0;
-		textInput->caretGlyphPos = 0;
-		textInput->caretFlashCounter = 0;
-	}
-
-	if (keyJustPressed(SDLK_END))
-	{
-		textInput->caretBytePos = textInput->byteLength;
-		textInput->caretGlyphPos = textInput->glyphLength;
-		textInput->caretFlashCounter = 0;
-	}
-
-	if (wasTextEntered())
-	{
-		// Filter the input to remove any blacklisted characters
-		String enteredText = getEnteredText();
-		for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+		if (keyJustPressed(SDLK_LEFT))
 		{
-			char c = enteredText[charIndex];
-			if (!contains(textInput->characterBlacklist, c))
+			if (modifierKeyIsPressed(KeyMod_Ctrl))
 			{
-				insert(textInput, c);
+				moveCaretLeftWholeWord(textInput);
 			}
-		}
-
-		textInput->caretFlashCounter = 0;
-	}
-
-	if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
-	{
-		// Filter the input to remove any blacklisted characters
-		String enteredText = getClipboardText();
-		for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
-		{
-			char c = enteredText[charIndex];
-			if (!contains(textInput->characterBlacklist, c))
+			else
 			{
-				insert(textInput, c);
+				moveCaretLeft(textInput, 1);
 			}
+			textInput->caretFlashCounter = 0;
 		}
-		
-		textInput->caretFlashCounter = 0;
+		else if (keyJustPressed(SDLK_RIGHT))
+		{
+			if (modifierKeyIsPressed(KeyMod_Ctrl))
+			{
+				moveCaretRightWholeWord(textInput);
+			}
+			else
+			{
+				moveCaretRight(textInput, 1);
+			}
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_HOME))
+		{
+			textInput->caretBytePos = 0;
+			textInput->caretGlyphPos = 0;
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_END))
+		{
+			textInput->caretBytePos = textInput->byteLength;
+			textInput->caretGlyphPos = textInput->glyphLength;
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (wasTextEntered())
+		{
+			// Filter the input to remove any blacklisted characters
+			String enteredText = getEnteredText();
+			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+			{
+				char c = enteredText[charIndex];
+				if (!contains(textInput->characterBlacklist, c))
+				{
+					insert(textInput, c);
+				}
+			}
+
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
+		{
+			// Filter the input to remove any blacklisted characters
+			String enteredText = getClipboardText();
+			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+			{
+				char c = enteredText[charIndex];
+				if (!contains(textInput->characterBlacklist, c))
+				{
+					insert(textInput, c);
+				}
+			}
+			
+			textInput->caretFlashCounter = 0;
+		}
 	}
 
 	return pressedReturn;

@@ -241,3 +241,21 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 	append(&uiState->uiRects, menuRect);
 	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->backgroundColor);
 }
+
+bool justClickedOnUI(UIState *uiState, Rect2I bounds)
+{
+	bool result = false;
+
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
+	if (!uiState->mouseInputHandled && contains(bounds, mousePos))
+	{
+		if (mouseButtonJustReleased(MouseButton_Left)
+		 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+		{
+			result = true;
+			uiState->mouseInputHandled = true;
+		}
+	}
+
+	return result;
+}

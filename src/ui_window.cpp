@@ -158,14 +158,9 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 
 		if (context->doUpdate)
 		{
-			if (!context->uiState->mouseInputHandled && contains(buttonBounds, mousePos))
+			if (justClickedOnUI(context->uiState, buttonBounds))
 			{
-				if (mouseButtonJustReleased(MouseButton_Left)
-				 && contains(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-				{
-					buttonClicked = true;
-					context->uiState->mouseInputHandled = true;
-				}
+				buttonClicked = true;
 			}
 		}
 
@@ -213,17 +208,24 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
-		// This measurement is really janky! I'm pretty sure we want to TELL the TextInput what
-		// size to be, instead of asking it. Maybe using a calculateTextInputSize() style thing.
-		s32 maxWidth = context->contentArea.w - context->currentOffset.x;
-
-		V2I textInputSize = calculateTextInputSize(textInput, style, maxWidth);
+		s32 width = context->contentArea.w - context->currentOffset.x;
+		V2I textInputSize = calculateTextInputSize(textInput, style, width);
 		V2I topLeft = calculateTextPosition(origin, textInputSize, alignment);
 		Rect2I bounds = irectPosSize(topLeft, textInputSize);
 
 		if (context->doRender)
 		{
 			drawTextInput(&renderer->uiBuffer, textInput, style, bounds);
+		}
+
+		if (context->doUpdate)
+		{
+			// Capture the input focus if we just clicked on this TextInput
+			if (justClickedOnUI(context->uiState, bounds))
+			{
+				captureInput(textInput);
+				textInput->caretFlashCounter = 0;
+			}
 		}
 
 		// For now, we'll always just start a new line.
@@ -247,7 +249,7 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  */
-void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData)
+void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose)
 {
 	if (windowProc == null)
 	{
@@ -264,6 +266,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 	
 	newWindow.windowProc = windowProc;
 	newWindow.userData = userData;
+	newWindow.onClose = onClose;
 
 	bool createdWindowAlready = false;
 
@@ -554,6 +557,19 @@ void updateWindows(UIState *uiState)
 
 	if (closeWindow != -1)
 	{
+		Window *window = get(&uiState->openWindows, closeWindow);
+		if (window->onClose != null)
+		{
+			// TODO: We probably don't need to pass a context at all to the onClose() callback,
+			// but I don't have a clear idea right now of what things we might want to do in
+			// onClose() so I'm leaving it as a WindowProc for now, because I don't want to
+			// litter the code with a bunch of different callback types. IDK.
+			// - Sam, 16/01/2020
+			UIWindowStyle *windowStyle = findWindowStyle(&assets->theme, window->styleName);
+			WindowContext context = makeWindowContext(window, windowStyle, uiState);
+			window->onClose(null, window->userData);
+		}
+
 		uiState->isDraggingWindow = false;
 		removeIndex(&uiState->openWindows, closeWindow, true);
 	}

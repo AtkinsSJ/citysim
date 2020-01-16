@@ -55,6 +55,8 @@ struct InputState
 	s32 windowHeight;
 
 	HashTable<SDL_Keycode> keyNames;
+
+	void *capturedInputTarget; // eg, a TextInput that's currently consuming all key presses
 };
 
 //
@@ -80,6 +82,11 @@ bool wasTextEntered();
 String getEnteredText();
 
 String getClipboardText();
+
+// eg, a TextInput that's currently consuming all key presses
+void captureInput(void *target);
+void releaseInput(void *target);
+bool hasCapturedInput(void *target);
 
 //
 // INTERNAL

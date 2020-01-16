@@ -53,9 +53,9 @@ void renderConsole(Console *console)
 	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, screenWidth);
 	V2I textInputPos  = v2i(0, actualConsoleHeight - textInputSize.y);
 	Rect2I textInputBounds = irectPosSize(textInputPos, textInputSize);
-	Rect2I textInputRect = drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
+	drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
 
-	V2I textPos = v2i(consoleStyle->padding, textInputRect.y);
+	V2I textPos = v2i(consoleStyle->padding, textInputBounds.y);
 	s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
 
 	s32 heightOfOutputArea = textPos.y;
@@ -202,6 +202,19 @@ void updateConsole(Console *console)
 	if (console->currentHeight != console->targetHeight)
 	{
 		console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * SECONDS_PER_FRAME);
+	}
+
+	// This is a little hacky... I think we want the console to ALWAYS consume input if it is open.
+	// Other things can't take control from it.
+	// Maybe this is a terrible idea? Not sure, but we'll see.
+	// - Sam, 16/01/2020
+	if (console->currentHeight > 0)
+	{
+		captureInput(&console->input);
+	}
+	else
+	{
+		releaseInput(&console->input);
 	}
 
 	if (console->currentHeight > 0)

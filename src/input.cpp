@@ -380,3 +380,21 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 
 	return result;
 }
+
+void captureInput(void *target)
+{
+	inputState->capturedInputTarget = target;
+}
+
+void releaseInput(void *target)
+{
+	if (inputState->capturedInputTarget == target)
+	{
+		inputState->capturedInputTarget = null;
+	}
+}
+
+bool hasCapturedInput(void *target)
+{
+	return inputState->capturedInputTarget == target;
+}

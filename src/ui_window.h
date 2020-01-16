@@ -44,6 +44,7 @@ struct Window
 
 	WindowProc windowProc;
 	void *userData;
+	WindowProc onClose;
 
 	bool isInitialised;
 	bool wasActiveLastUpdate;
@@ -52,7 +53,7 @@ struct Window
 //
 // PUBLIC
 //
-void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData);
+void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose=null);
 
 // Columns!
 // This is very basic right now and probably will need rewriting later to be more comprehensive.

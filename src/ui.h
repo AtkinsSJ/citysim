@@ -48,6 +48,8 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK
 void basicTooltipWindowProc(WindowContext *context, void *userData);
 
+bool justClickedOnUI(UIState *uiState, Rect2I bounds);
+
 struct PopupMenu
 {
 	V2I origin;

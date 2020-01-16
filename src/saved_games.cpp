@@ -231,9 +231,11 @@ void showSaveGameWindow(UIState *uiState)
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	catalogue->selectedSavedGameFilename = nullString;
 	catalogue->selectedSavedGameIndex = -1;
-	clear(&catalogue->saveGameName);
 
-	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, saveGameWindowProc, null);
+	clear(&catalogue->saveGameName);
+	captureInput(&catalogue->saveGameName);
+
+	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, saveGameWindowProc, null, saveGameWindowOnClose);
 }
 
 void saveGameWindowProc(WindowContext *context, void * /*userData*/)
@@ -254,6 +256,12 @@ void saveGameWindowProc(WindowContext *context, void * /*userData*/)
 			}
 		}
 	}
+}
+
+void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	releaseInput(&catalogue->saveGameName);
 }
 
 bool saveGame(UIState *uiState, String saveName)

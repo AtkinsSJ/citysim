@@ -44,10 +44,11 @@ void initSavedGamesCatalogue();
 void updateSavedGamesCatalogue();
 void readSavedGamesInfo(SavedGamesCatalogue *catalogue);
 
+void showSaveGameWindow(UIState *uiState);
+void saveGameWindowProc(WindowContext *context, void *userData);
+void saveGameWindowOnClose(WindowContext *context, void *userData);
+bool saveGame(UIState *uiState, String saveName);
+
 void showLoadGameWindow(UIState *uiState);
 void loadGameWindowProc(WindowContext *context, void *userData);
 void loadGame(UIState *uiState, SavedGameInfo *savedGame);
-
-void showSaveGameWindow(UIState *uiState);
-void saveGameWindowProc(WindowContext *context, void *userData);
-bool saveGame(UIState *uiState, String saveName);
