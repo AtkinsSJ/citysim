@@ -345,6 +345,7 @@ void loadUITheme(Blob data, Asset *asset)
 				switch (target.type)
 				{
 					case Section_Console:  target.console->scrollbarStyleName = styleName; break;
+					case Section_Window:   target.window->scrollbarStyleName  = styleName; break;
 					default:  WRONG_SECTION;
 				}
 			}

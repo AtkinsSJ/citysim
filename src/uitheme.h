@@ -71,6 +71,7 @@ struct UIWindowStyle
 
 	String buttonStyleName;
 	String labelStyleName;
+	String scrollbarStyleName;
 };
 
 struct UIConsoleStyle

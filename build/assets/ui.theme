@@ -80,6 +80,7 @@ backgroundColorInactive   96  96  96 255
 contentPadding           12
 contentLabelStyle        small
 contentButtonStyle       default
+scrollbarStyle           default
 
 :Window blue
 titleFont                normal
@@ -93,6 +94,7 @@ backgroundColorInactive   96  96 128 128
 contentPadding           12
 contentLabelStyle        small
 contentButtonStyle       default
+scrollbarStyle           default
 
 :Window tooltip
 backgroundColor           96  96  96 128

@@ -36,6 +36,7 @@ struct SavedGamesCatalogue
 	String selectedSavedGameFilename;
 	s32 selectedSavedGameIndex;
 	TextInput saveGameName;
+	f32 savedGamesListScrollPosition; // As a fraction
 };
 
 SavedGamesCatalogue savedGamesCatalogue;

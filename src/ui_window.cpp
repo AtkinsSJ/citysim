@@ -6,7 +6,7 @@ void window_beginColumns(WindowContext *context)
 	context->columnStartOffsetX = 0;
 }
 
-void window_column(WindowContext *context, s32 width)
+void window_column(WindowContext *context, s32 width, f32 *scrollYPercent)
 {
 	s32 columnWidth = width;
 	if (columnWidth <= 0)
@@ -15,17 +15,46 @@ void window_column(WindowContext *context, s32 width)
 		columnWidth = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX) - context->windowStyle->contentPadding;
 	}
 
-	context->columnStartOffsetX = context->columnStartOffsetX + context->contentArea.w;
+	context->columnStartOffsetX = context->columnStartOffsetX + context->contentArea.w + context->columnScrollbarWidth;
 	if (context->columnStartOffsetX > 0)
 	{
+		// NB: If we're here, then there was a previous column
+		if (context->doRender) addEndScissor(&renderer->uiBuffer);
+
 		context->columnStartOffsetX += context->windowStyle->contentPadding;
 	}
+	
+	context->columnScrollbarWidth = 0;
 
 	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnWidth, context->totalContentArea.h);
 	context->currentOffset = v2i(0,0);
+
+	if (scrollYPercent != null)
+	{
+		// Scrollbar!
+		UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
+		Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w - scrollbarStyle->width,
+										context->contentArea.y,
+										scrollbarStyle->width,
+										context->contentArea.h);
+		context->contentArea.w -= scrollbarStyle->width;
+		context->columnScrollbarWidth = scrollbarStyle->width;
+
+		if (context->doUpdate)
+		{
+
+		}
+
+		if (context->doRender)
+		{
+			drawScrollBar(&renderer->uiBuffer, scrollbarArea.pos, scrollbarArea.h, *scrollYPercent, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+		}
+	}
+
+	if (context->doRender) addBeginScissor(&renderer->uiBuffer, rect2(context->contentArea));
 }
 
-void window_columnPercent(WindowContext *context, f32 widthPercent)
+void window_columnPercent(WindowContext *context, f32 widthPercent, f32 *scrollYPercent)
 {
 	s32 columnWidth = 0;
 
@@ -39,12 +68,17 @@ void window_columnPercent(WindowContext *context, f32 widthPercent)
 		columnWidth = floor_s32(widthPercent * context->totalContentArea.w);
 	}
 
-	window_column(context, columnWidth);
+	window_column(context, columnWidth, scrollYPercent);
 }
 
 Rect2I window_getColumnArea(WindowContext *context)
 {
 	return context->contentArea;
+}
+
+void window_endColumns(WindowContext *context)
+{
+	if (context->doRender) addEndScissor(&renderer->uiBuffer);
 }
 
 V2I window_getCurrentLayoutPosition(WindowContext *context)
