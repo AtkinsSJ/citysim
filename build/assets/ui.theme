@@ -54,6 +54,11 @@ textColor         255 255 255 255
 backgroundColor     0   0   0 128
 padding           4
 
+:Scrollbar default
+backgroundColor       0 128 0 255
+knobColor             0 255 0 255
+width                16
+
 :TextInput default
 font              normal
 textColor           0   0   0 255
@@ -106,8 +111,7 @@ outputTextColor warning 255 255 128 255
 outputTextColor success 128 255 128 255
 backgroundColor        0   0   0 245
 padding 8
-scrollBarWidth 12
-scrollBarKnobColor    48  48  48 245
+scrollbarStyle console
 textInputStyle console
 
 :TextInput console
@@ -118,3 +122,8 @@ backgroundColor    64  64  64 245
 padding           8
 showCaret         true
 caretFlashCycleDuration 1.0
+
+:Scrollbar console
+backgroundColor     0   0   0   0
+knobColor          48  48  48 245
+width             12

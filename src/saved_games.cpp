@@ -152,7 +152,7 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 	window_beginColumns(context);
 
 	// List of saved games
-	window_column(context, 0.4f);
+	window_columnPercent(context, 0.4f);
 
 	if (catalogue->savedGames.count == 0)
 	{
@@ -160,6 +160,13 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 	}
 	else
 	{
+		// TODO: Extract this out into some kind of window_beginScrollArea() function or whatever!
+		if (context->doRender)
+		{
+			Rect2 columnArea = rect2(window_getColumnArea(context));
+			addBeginScissor(&renderer->uiBuffer, columnArea);
+		}
+
 		for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
 		{
 			SavedGameInfo *savedGame = get(&it);
@@ -176,6 +183,20 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 				selectedSavedGame = savedGame;
 			}
 		}
+
+		if (context->doRender)
+		{
+			addEndScissor(&renderer->uiBuffer);
+		}
+	}
+
+	// Scrollbar!
+	window_column(context, 16);
+	Rect2I scrollbarColumnArea = window_getColumnArea(context);
+	UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, "default"_s);
+	if (context->doRender)
+	{
+		drawScrollBar(&renderer->uiBuffer, scrollbarColumnArea.pos, scrollbarColumnArea.h, 0.0f, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 	}
 
 	// Details about the selected saved game

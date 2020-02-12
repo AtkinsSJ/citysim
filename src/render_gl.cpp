@@ -604,6 +604,12 @@ void GL_render(RenderBufferChunk *firstChunk)
 				DEBUG_BLOCK_T("render: RenderItemType_BeginScissor", DCDT_Renderer);
 				RenderItem_BeginScissor *header = readRenderItem<RenderItem_BeginScissor>(renderBufferChunk, &pos);
 
+				// NB: We MUST flush here, otherwise we could render some things after the scissor instead of before it!
+				if (gl->vertexCount > 0)
+				{
+					flushVertices(gl);
+				}
+
 				glEnable(GL_SCISSOR_TEST);
 				glScissor(header->bounds.x, header->bounds.y, header->bounds.w, header->bounds.h);
 			} break;

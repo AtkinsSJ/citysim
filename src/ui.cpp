@@ -192,8 +192,11 @@ void drawUiMessage(UIState *uiState)
 	}
 }
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2I topLeft, s32 height, f32 scrollPercent, V2I knobSize, V4 knobColor, s8 shaderID)
+void drawScrollBar(RenderBuffer *uiBuffer, V2I topLeft, s32 height, f32 scrollPercent, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
 {
+	Rect2 backgroundRect = rectXYWHi(topLeft.x, topLeft.y, knobSize.x, height);
+	drawSingleRect(uiBuffer, backgroundRect, shaderID, backgroundColor);
+
 	knobSize.y = min(knobSize.y, height); // force knob to fit
 	s32 scrollY = round_s32(scrollPercent * (height - knobSize.y));
 	Rect2 knobRect = rectXYWHi(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);

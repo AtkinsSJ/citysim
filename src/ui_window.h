@@ -58,13 +58,17 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 // Columns!
 // This is very basic right now and probably will need rewriting later to be more comprehensive.
 // Start columns with window_beginColumns().
-// Then, start each column with window_column(context, widthPercent).
+// Then, start each column with window_column(context, width) or window_columnPercent(context, widthPercent)
 // For the final column, don't pass a width (or make it 0) and it will fill the remaining space.
 // Internally, this all works by modifying the context->contentArea, which is what the 
 // window_label() etc functions use to lay themselves out. So, they don't have to know anything
 // about columns or other layout complexities! So that's pretty nice.
 void window_beginColumns(WindowContext *context);
-void window_column(WindowContext *context, f32 widthPercent=0.0f);
+void window_column(WindowContext *context, s32 width=0);
+void window_columnPercent(WindowContext *context, f32 widthPercent);
+Rect2I window_getColumnArea(WindowContext *context);
+
+V2I window_getCurrentLayoutPosition(WindowContext *context);
 
 // Elements
 void window_label(WindowContext *context, String text, String styleName = nullString);

@@ -48,6 +48,7 @@ void renderConsole(Console *console)
 	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
 
 	UIConsoleStyle *consoleStyle = findConsoleStyle(&assets->theme, "default"_s);
+	UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, consoleStyle->scrollbarStyleName);
 	UITextInputStyle *textInputStyle = findTextInputStyle(&assets->theme, consoleStyle->textInputStyleName);
 
 	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, screenWidth);
@@ -63,9 +64,9 @@ void renderConsole(Console *console)
 	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
 	drawSingleRect(renderBuffer, consoleBackRect, renderer->shaderIds.untextured, consoleStyle->backgroundColor);
 
-	V2I knobSize = v2i(consoleStyle->scrollBarWidth, consoleStyle->scrollBarWidth);
+	V2I knobSize = v2i(scrollbarStyle->width, scrollbarStyle->width);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(renderBuffer, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollPercent, knobSize, consoleStyle->scrollBarKnobColor, renderer->shaderIds.untextured);
+	drawScrollBar(renderBuffer, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollPercent, knobSize, scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 
 	textPos.y -= consoleStyle->padding;
 

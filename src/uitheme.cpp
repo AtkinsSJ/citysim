@@ -8,6 +8,7 @@ void initUITheme(UITheme *theme)
 	initHashTable(&theme->consoleStyles);
 	initHashTable(&theme->labelStyles);
 	initHashTable(&theme->messageStyles);
+	initHashTable(&theme->scrollbarStyles);
 	initHashTable(&theme->textInputStyles);
 	initHashTable(&theme->windowStyles);
 }
@@ -24,6 +25,7 @@ void loadUITheme(Blob data, Asset *asset)
 	clear(&theme->consoleStyles);
 	clear(&theme->labelStyles);
 	clear(&theme->messageStyles);
+	clear(&theme->scrollbarStyles);
 	clear(&theme->textInputStyles);
 	clear(&theme->windowStyles);
 
@@ -35,6 +37,7 @@ void loadUITheme(Blob data, Asset *asset)
 		Section_Console,
 		Section_Label,
 		Section_UIMessage,
+		Section_Scrollbar,
 		Section_TextInput,
 		Section_Window,
 	};
@@ -45,12 +48,13 @@ void loadUITheme(Blob data, Asset *asset)
 
 		union
 		{
-			UIButtonStyle  *button;
-			UIConsoleStyle *console;
-			UILabelStyle   *label;
-			UIMessageStyle *message;
+			UIButtonStyle    *button;
+			UIConsoleStyle   *console;
+			UILabelStyle     *label;
+			UIMessageStyle   *message;
+			UIScrollbarStyle *scrollbar;
 			UITextInputStyle *textInput;
-			UIWindowStyle  *window;
+			UIWindowStyle    *window;
 		};
 	} target = {};
 
@@ -108,6 +112,12 @@ void loadUITheme(Blob data, Asset *asset)
 				target.type = Section_UIMessage;
 				target.message = put(&theme->messageStyles, name);
 			}
+			else if (equals(firstWord, "Scrollbar"_s))
+			{
+				String name = intern(&assets->assetStrings, readToken(&reader));
+				target.type = Section_Scrollbar;
+				target.scrollbar = put(&theme->scrollbarStyles, name);
+			}
 			else if (equals(firstWord, "TextInput"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
@@ -137,8 +147,9 @@ void loadUITheme(Blob data, Asset *asset)
 					{
 						case Section_Button:    target.button->backgroundColor    = backgroundColor.value; break;
 						case Section_Console:   target.console->backgroundColor   = backgroundColor.value; break;
-						case Section_TextInput:   target.textInput->backgroundColor   = backgroundColor.value; break;
 						case Section_UIMessage: target.message->backgroundColor   = backgroundColor.value; break;
+						case Section_Scrollbar: target.scrollbar->backgroundColor = backgroundColor.value; break;
+						case Section_TextInput: target.textInput->backgroundColor = backgroundColor.value; break;
 						case Section_Window:    target.window->backgroundColor    = backgroundColor.value; break;
 						default:  WRONG_SECTION;
 					}
@@ -207,7 +218,7 @@ void loadUITheme(Blob data, Asset *asset)
 					case Section_Button:     target.button->fontName        = fontName; break;
 					case Section_Console:    target.console->fontName       = fontName; break;
 					case Section_Label:      target.label->fontName         = fontName; break;
-					case Section_TextInput:    target.textInput->fontName       = fontName; break;
+					case Section_TextInput:  target.textInput->fontName     = fontName; break;
 					case Section_UIMessage:  target.message->fontName       = fontName; break;
 					default:  WRONG_SECTION;
 				}
@@ -220,6 +231,18 @@ void loadUITheme(Blob data, Asset *asset)
 					switch (target.type)
 					{
 						case Section_Button:  target.button->hoverColor = hoverColor.value; break;
+						default:  WRONG_SECTION;
+					}
+				}
+			}
+			else if (equals(firstWord, "knobColor"_s))
+			{
+				Maybe<V4> knobColor = readColor(&reader);
+				if (knobColor.isValid)
+				{
+					switch (target.type)
+					{
+						case Section_Scrollbar:  target.scrollbar->knobColor = knobColor.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -316,28 +339,13 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "scrollBarKnobColor"_s))
+			else if (equals(firstWord, "scrollbarStyle"_s))
 			{
-				Maybe<V4> scrollBarKnobColor = readColor(&reader);
-				if (scrollBarKnobColor.isValid)
+				String styleName = intern(&assets->assetStrings, readToken(&reader));
+				switch (target.type)
 				{
-					switch (target.type)
-					{
-						case Section_Console:  target.console->scrollBarKnobColor = scrollBarKnobColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "scrollBarWidth"_s))
-			{
-				Maybe<s64> scrollBarWidth = readInt(&reader);
-				if (scrollBarWidth.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Console:    target.console->scrollBarWidth  = (s32) scrollBarWidth.value; break;
-						default:  WRONG_SECTION;
-					}
+					case Section_Console:  target.console->scrollbarStyleName = styleName; break;
+					default:  WRONG_SECTION;
 				}
 			}
 			else if (equals(firstWord, "showCaret"_s))
@@ -455,6 +463,18 @@ void loadUITheme(Blob data, Asset *asset)
 					switch (target.type)
 					{
 						case Section_Window:  target.window->titleColor = titleColor.value; break;
+						default:  WRONG_SECTION;
+					}
+				}
+			}
+			else if (equals(firstWord, "width"_s))
+			{
+				Maybe<s64> width = readInt(&reader);
+				if (width.isValid)
+				{
+					switch (target.type)
+					{
+						case Section_Scrollbar:  target.scrollbar->width = (s32) width.value; break;
 						default:  WRONG_SECTION;
 					}
 				}

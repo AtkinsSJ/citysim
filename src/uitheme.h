@@ -46,6 +46,13 @@ struct UIMessageStyle
 	s32 padding;
 };
 
+struct UIScrollbarStyle
+{
+	V4 backgroundColor;
+	V4 knobColor;
+	s32 width;
+};
+
 struct UIWindowStyle
 {
 	s32 titleBarHeight;
@@ -74,11 +81,8 @@ struct UIConsoleStyle
 	V4 backgroundColor;
 	s32 padding;
 
+	String scrollbarStyleName;
 	String textInputStyleName;
-
-	// Scrollbar
-	s32 scrollBarWidth;
-	V4 scrollBarKnobColor;
 };
 
 struct UITheme
@@ -88,12 +92,13 @@ struct UITheme
 
 	HashTable<String> fontNamesToAssetNames;
 
-	HashTable<UIButtonStyle>  buttonStyles;
-	HashTable<UIConsoleStyle> consoleStyles;
-	HashTable<UILabelStyle>   labelStyles;
-	HashTable<UIMessageStyle> messageStyles;
+	HashTable<UIButtonStyle>    buttonStyles;
+	HashTable<UIConsoleStyle>   consoleStyles;
+	HashTable<UILabelStyle>     labelStyles;
+	HashTable<UIMessageStyle>   messageStyles;
+	HashTable<UIScrollbarStyle> scrollbarStyles;
 	HashTable<UITextInputStyle> textInputStyles;
-	HashTable<UIWindowStyle>  windowStyles;
+	HashTable<UIWindowStyle>    windowStyles;
 };
 
 void initUITheme(UITheme *theme);
@@ -103,6 +108,10 @@ inline UIButtonStyle *findButtonStyle(UITheme *theme, String name)
 {
 	return find(&theme->buttonStyles, name);
 }
+inline UIConsoleStyle *findConsoleStyle(UITheme *theme, String name)
+{
+	return find(&theme->consoleStyles, name);
+}
 inline UILabelStyle *findLabelStyle(UITheme *theme, String name)
 {
 	return find(&theme->labelStyles, name);
@@ -111,6 +120,10 @@ inline UIMessageStyle *findMessageStyle(UITheme *theme, String name)
 {
 	return find(&theme->messageStyles, name);
 }
+inline UIScrollbarStyle *findScrollbarStyle(UITheme *theme, String name)
+{
+	return find(&theme->scrollbarStyles, name);
+}
 inline UITextInputStyle *findTextInputStyle(UITheme *theme, String name)
 {
 	return find(&theme->textInputStyles, name);
@@ -118,8 +131,4 @@ inline UITextInputStyle *findTextInputStyle(UITheme *theme, String name)
 inline UIWindowStyle *findWindowStyle(UITheme *theme, String name)
 {
 	return find(&theme->windowStyles, name);
-}
-inline UIConsoleStyle *findConsoleStyle(UITheme *theme, String name)
-{
-	return find(&theme->consoleStyles, name);
 }
