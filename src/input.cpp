@@ -398,3 +398,8 @@ bool hasCapturedInput(void *target)
 {
 	return inputState->capturedInputTarget == target;
 }
+
+bool isInputCaptured()
+{
+	return inputState->capturedInputTarget != null;
+}

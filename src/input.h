@@ -87,6 +87,7 @@ String getClipboardText();
 void captureInput(void *target);
 void releaseInput(void *target);
 bool hasCapturedInput(void *target);
+bool isInputCaptured();
 
 //
 // INTERNAL

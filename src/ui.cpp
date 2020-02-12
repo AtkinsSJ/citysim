@@ -107,8 +107,8 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	uiText(&renderer->uiBuffer, getFont(style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
-	if ((shortcutKey != SDLK_UNKNOWN)
-	&& keyJustPressed(shortcutKey))
+	if (!isInputCaptured()
+	&& (shortcutKey != SDLK_UNKNOWN) && keyJustPressed(shortcutKey))
 	{
 		buttonClicked = true;
 	}
