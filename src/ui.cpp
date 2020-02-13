@@ -192,7 +192,51 @@ void drawUiMessage(UIState *uiState)
 	}
 }
 
-void drawScrollBar(RenderBuffer *uiBuffer, V2I topLeft, s32 height, f32 scrollPercent, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
+f32 uiScrollbar(UIState *uiState, s32 scrollingContentSize, Rect2I bounds, UIScrollbarStyle *style, f32 scrollbarPercent)
+{
+	DEBUG_FUNCTION();
+
+	if (style == null)
+	{
+		style = findScrollbarStyle(&assets->theme, "default"_s);
+	}
+
+	f32 resultScrollbarPercent = scrollbarPercent;
+
+	if (!uiState->mouseInputHandled)
+	{
+		// Scrollwheel stuff
+		// (It's weird that we're putting this within mouseInputHandled, but eh)
+		s32 mouseWheelDelta = inputState->wheelY;
+		if (mouseWheelDelta != 0)
+		{
+			f32 scrollbarPosition = scrollbarPercent * (f32)scrollingContentSize;
+			// One scroll step is usually 3 lines of text.
+			// 64px seems reasonable?
+			scrollbarPosition = clamp(scrollbarPosition - (64 * mouseWheelDelta), 0.0f, (f32)scrollingContentSize);
+			resultScrollbarPercent = scrollbarPosition / (f32)scrollingContentSize;
+		}
+
+		// Mouse stuff
+		if (mouseButtonPressed(MouseButton_Left)
+		 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+		{
+			V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
+
+			f32 range = (f32)(bounds.h - style->width);
+
+			resultScrollbarPercent = clamp01((relativeMousePos.y - 0.5f * style->width) / range);
+
+			uiState->mouseInputHandled = true;
+		}
+	}
+
+	drawScrollbar(&renderer->uiBuffer, bounds.pos, bounds.h, resultScrollbarPercent, v2i(style->width, style->width), style->knobColor, style->backgroundColor, renderer->shaderIds.untextured);
+
+	return resultScrollbarPercent;
+}
+
+void drawScrollbar(RenderBuffer *uiBuffer, V2I topLeft, s32 height, f32 scrollPercent, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
 {
 	Rect2 backgroundRect = rectXYWHi(topLeft.x, topLeft.y, knobSize.x, height);
 	drawSingleRect(uiBuffer, backgroundRect, shaderID, backgroundColor);

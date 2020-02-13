@@ -66,7 +66,7 @@ void renderConsole(Console *console)
 
 	V2I knobSize = v2i(scrollbarStyle->width, scrollbarStyle->width);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollBar(renderBuffer, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollPercent, knobSize, scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+	drawScrollbar(renderBuffer, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollPercent, knobSize, scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 
 	textPos.y -= consoleStyle->padding;
 

@@ -1,5 +1,8 @@
 #pragma once
 
+
+f32 TEMP_scrollbarPercent = 1.0f;
+
 AppStatus updateAndRenderMainMenu(UIState *uiState)
 {
 	DEBUG_FUNCTION();
@@ -7,6 +10,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	AppStatus result = AppStatus_MainMenu;
 
 	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
+	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	UITheme *theme = &assets->theme;
 
 	V2I position = v2i(windowWidth / 2, 157);
@@ -92,6 +96,10 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	{
 		result = AppStatus_Quit;
 	}
+
+	UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(theme, "default"_s);
+	Rect2I scrollbarBounds = irectXYWH(0, 0, scrollbarStyle->width, windowHeight);
+	TEMP_scrollbarPercent = uiScrollbar(uiState, windowHeight, scrollbarBounds, scrollbarStyle, TEMP_scrollbarPercent);
 
 	return result;
 }

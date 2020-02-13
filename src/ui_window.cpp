@@ -47,7 +47,7 @@ void window_column(WindowContext *context, s32 width, f32 *scrollYPercent)
 
 		if (context->doRender)
 		{
-			drawScrollBar(&renderer->uiBuffer, scrollbarArea.pos, scrollbarArea.h, *scrollYPercent, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+			drawScrollbar(&renderer->uiBuffer, scrollbarArea.pos, scrollbarArea.h, *scrollYPercent, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 		}
 	}
 
