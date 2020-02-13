@@ -4,57 +4,50 @@ void window_beginColumns(WindowContext *context)
 {
 	context->contentArea = irectXYWH(0,0,0,0);
 	context->columnStartOffsetX = 0;
+	context->columnIndex = -1;
 }
 
-void window_column(WindowContext *context, s32 width, f32 *scrollYPercent)
+void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 {
-	s32 columnWidth = width;
-	if (columnWidth <= 0)
-	{
-		// width 0 means "fill the remainder"
-		columnWidth = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX) - context->windowStyle->contentPadding;
-	}
-
 	context->columnStartOffsetX = context->columnStartOffsetX + context->contentArea.w + context->columnScrollbarWidth;
-	if (context->columnStartOffsetX > 0)
+	if (context->columnIndex >= 0)
 	{
 		// NB: If we're here, then there was a previous column
-		if (context->doRender) addEndScissor(&renderer->uiBuffer);
+		window_completeColumn(context);
 
 		context->columnStartOffsetX += context->windowStyle->contentPadding;
 	}
-	
+
+	context->columnIndex++;
+	ColumnInfo *columnInfo = context->columnInfo + context->columnIndex;
+	*columnInfo = {};
+
+	columnInfo->width = width;
+	if (columnInfo->width <= 0)
+	{
+		// width 0 means "fill the remainder"
+		columnInfo->width = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX) - context->windowStyle->contentPadding;
+	}
+
 	context->columnScrollbarWidth = 0;
 
-	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnWidth, context->totalContentArea.h);
+	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnInfo->width, context->totalContentArea.h);
 	context->currentOffset = v2i(0,0);
+	context->columnScrollbarState = scrollbar;
 
-	if (scrollYPercent != null)
+	if (scrollbar != null)
 	{
 		// Scrollbar!
 		UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
-		Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w - scrollbarStyle->width,
-										context->contentArea.y,
-										scrollbarStyle->width,
-										context->contentArea.h);
+
 		context->contentArea.w -= scrollbarStyle->width;
 		context->columnScrollbarWidth = scrollbarStyle->width;
-
-		if (context->doUpdate)
-		{
-
-		}
-
-		if (context->doRender)
-		{
-			drawScrollbar(&renderer->uiBuffer, scrollbarArea.pos, scrollbarArea.h, *scrollYPercent, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
-		}
 	}
 
 	if (context->doRender) addBeginScissor(&renderer->uiBuffer, rect2(context->contentArea));
 }
 
-void window_columnPercent(WindowContext *context, f32 widthPercent, f32 *scrollYPercent)
+void window_columnPercent(WindowContext *context, f32 widthPercent, ScrollbarState *scrollbar)
 {
 	s32 columnWidth = 0;
 
@@ -68,7 +61,7 @@ void window_columnPercent(WindowContext *context, f32 widthPercent, f32 *scrollY
 		columnWidth = floor_s32(widthPercent * context->totalContentArea.w);
 	}
 
-	window_column(context, columnWidth, scrollYPercent);
+	window_column(context, columnWidth, scrollbar);
 }
 
 Rect2I window_getColumnArea(WindowContext *context)
@@ -76,14 +69,66 @@ Rect2I window_getColumnArea(WindowContext *context)
 	return context->contentArea;
 }
 
+void window_completeColumn(WindowContext *context)
+{
+	if (context->doUpdate)
+	{
+		if (context->columnScrollbarState != null)
+		{
+			context->columnScrollbarState->contentSize = context->currentOffset.y;
+
+			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
+			Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w,
+								context->contentArea.y,
+								context->columnScrollbarWidth,
+								context->contentArea.h);
+
+			updateScrollbar(context->uiState, context->columnScrollbarState, scrollbarArea, scrollbarStyle);
+		}
+	}
+
+	if (context->doRender)
+	{
+		addEndScissor(&renderer->uiBuffer);
+
+		if (context->columnScrollbarState != null)
+		{
+			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
+			Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w,
+								context->contentArea.y,
+								context->columnScrollbarWidth,
+								context->contentArea.h);
+
+			f32 scrollPercent = (f32)context->columnScrollbarState->scrollPosition / (f32)context->columnScrollbarState->contentSize;
+
+			drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarArea.pos, scrollbarArea.h, v2i(context->columnScrollbarWidth, context->columnScrollbarWidth), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+		}
+	}
+}
+
 void window_endColumns(WindowContext *context)
 {
-	if (context->doRender) addEndScissor(&renderer->uiBuffer);
+	window_completeColumn(context);
+
+	ASSERT(context->columnIndex < ArrayCount(context->columnInfo));
 }
 
 V2I window_getCurrentLayoutPosition(WindowContext *context)
 {
-	return context->contentArea.pos + context->currentOffset;
+	V2I result = context->contentArea.pos + context->currentOffset;
+
+	// Adjust if we're in a scrolling column area
+	ColumnInfo *columnInfo = context->columnInfo + context->columnIndex;
+	if (context->columnScrollbarState != null)
+	{
+		// if (*columnInfo->scrollYPercent > 0.5f)
+		// {
+		// 	int foo = 9;
+		// }
+		result.y = result.y - context->columnScrollbarState->scrollPosition;
+	}
+
+	return result;
 }
 
 void window_label(WindowContext *context, String text, String styleName)
@@ -101,7 +146,7 @@ void window_label(WindowContext *context, String text, String styleName)
 	}
 
 	u32 alignment = context->alignment;
-	V2I origin = context->contentArea.pos + context->currentOffset;
+	V2I origin = window_getCurrentLayoutPosition(context);
 
 	if (alignment & ALIGN_RIGHT)
 	{
@@ -152,7 +197,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 	}
 
 	s32 buttonAlignment = context->alignment;
-	V2I buttonOrigin = context->contentArea.pos + context->currentOffset;
+	V2I buttonOrigin = window_getCurrentLayoutPosition(context);
 
 	if (buttonAlignment & ALIGN_RIGHT)
 	{
@@ -251,7 +296,7 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	}
 
 	u32 alignment = context->alignment;
-	V2I origin = context->contentArea.pos + context->currentOffset;
+	V2I origin = window_getCurrentLayoutPosition(context);
 
 	if (alignment & ALIGN_RIGHT)
 	{

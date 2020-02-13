@@ -153,7 +153,7 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 	defer { window_endColumns(context); };
 
 	// List of saved games
-	window_columnPercent(context, 0.4f, &catalogue->savedGamesListScrollPosition);
+	window_columnPercent(context, 0.4f, &catalogue->savedGamesListScrollbar);
 
 	if (catalogue->savedGames.count == 0)
 	{

@@ -192,7 +192,7 @@ void drawUiMessage(UIState *uiState)
 	}
 }
 
-f32 uiScrollbar(UIState *uiState, s32 scrollingContentSize, Rect2I bounds, UIScrollbarStyle *style, f32 scrollbarPercent)
+void updateScrollbar(UIState *uiState, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
 {
 	DEBUG_FUNCTION();
 
@@ -201,8 +201,6 @@ f32 uiScrollbar(UIState *uiState, s32 scrollingContentSize, Rect2I bounds, UIScr
 		style = findScrollbarStyle(&assets->theme, "default"_s);
 	}
 
-	f32 resultScrollbarPercent = scrollbarPercent;
-
 	if (!uiState->mouseInputHandled)
 	{
 		// Scrollwheel stuff
@@ -210,11 +208,9 @@ f32 uiScrollbar(UIState *uiState, s32 scrollingContentSize, Rect2I bounds, UIScr
 		s32 mouseWheelDelta = inputState->wheelY;
 		if (mouseWheelDelta != 0)
 		{
-			f32 scrollbarPosition = scrollbarPercent * (f32)scrollingContentSize;
 			// One scroll step is usually 3 lines of text.
 			// 64px seems reasonable?
-			scrollbarPosition = clamp(scrollbarPosition - (64 * mouseWheelDelta), 0.0f, (f32)scrollingContentSize);
-			resultScrollbarPercent = scrollbarPosition / (f32)scrollingContentSize;
+			state->scrollPosition = clamp(state->scrollPosition - (64 * mouseWheelDelta), 0, state->contentSize);
 		}
 
 		// Mouse stuff
@@ -225,23 +221,23 @@ f32 uiScrollbar(UIState *uiState, s32 scrollingContentSize, Rect2I bounds, UIScr
 
 			f32 range = (f32)(bounds.h - style->width);
 
-			resultScrollbarPercent = clamp01((relativeMousePos.y - 0.5f * style->width) / range);
+			f32 scrollPercent = clamp01((relativeMousePos.y - 0.5f * style->width) / range);
+			state->scrollPosition = round_s32(scrollPercent * state->contentSize);
 
 			uiState->mouseInputHandled = true;
 		}
 	}
 
-	drawScrollbar(&renderer->uiBuffer, bounds.pos, bounds.h, resultScrollbarPercent, v2i(style->width, style->width), style->knobColor, style->backgroundColor, renderer->shaderIds.untextured);
-
-	return resultScrollbarPercent;
+	// drawScrollbar(&renderer->uiBuffer, bounds.pos, bounds.h, resultScrollbarPercent, v2i(style->width, style->width), style->knobColor, style->backgroundColor, renderer->shaderIds.untextured);
 }
 
-void drawScrollbar(RenderBuffer *uiBuffer, V2I topLeft, s32 height, f32 scrollPercent, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
+void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
 {
 	Rect2 backgroundRect = rectXYWHi(topLeft.x, topLeft.y, knobSize.x, height);
 	drawSingleRect(uiBuffer, backgroundRect, shaderID, backgroundColor);
 
 	knobSize.y = min(knobSize.y, height); // force knob to fit
+	// f32 scrollPercent = (f32)state->scrollPosition / (f32)state->contentSize;
 	s32 scrollY = round_s32(scrollPercent * (height - knobSize.y));
 	Rect2 knobRect = rectXYWHi(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
 	drawSingleRect(uiBuffer, knobRect, shaderID, knobColor);

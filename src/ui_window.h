@@ -1,5 +1,15 @@
 #pragma once
 
+struct ColumnInfo
+{
+	s32 width;
+	s32 contentHeight;
+};
+
+// NB: A WindowContext only exists for a single call of a WindowProc.
+// It isn't kept around between update and render, so attempting to save
+// state here that you want to carry over from one to the other will not work!!!
+// AKA, I messed up.
 struct WindowContext
 {
 	struct UIState *uiState;
@@ -18,6 +28,9 @@ struct WindowContext
 
 	s32 columnStartOffsetX;
 	s32 columnScrollbarWidth;
+	struct ScrollbarState *columnScrollbarState;
+	s32 columnIndex;
+	ColumnInfo columnInfo[16];
 
 	// Results
 	bool closeRequested;
@@ -68,10 +81,12 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 // window_label() etc functions use to lay themselves out. So, they don't have to know anything
 // about columns or other layout complexities! So that's pretty nice.
 void window_beginColumns(WindowContext *context);
-void window_column(WindowContext *context, s32 width=0, f32 *scrollYPercent=null);
-void window_columnPercent(WindowContext *context, f32 widthPercent, f32 *scrollYPercent=null);
+void window_column(WindowContext *context, s32 width=0, ScrollbarState *scrollbar=null);
+void window_columnPercent(WindowContext *context, f32 widthPercent, ScrollbarState *scrollbar=null);
 Rect2I window_getColumnArea(WindowContext *context);
 void window_endColumns(WindowContext *context);
+// Internal
+void window_completeColumn(WindowContext *context);
 
 V2I window_getCurrentLayoutPosition(WindowContext *context);
 

@@ -42,10 +42,13 @@ void uiCloseMenus(UIState *uiState);
 void pushUiMessage(UIState *uiState, String message);
 void drawUiMessage(UIState *uiState);
 
-f32 uiScrollbar(UIState *uiState, s32 scrollingContentSize, Rect2I bounds, UIScrollbarStyle *style, f32 scrollbarPercent);
-
-// @Deprecated!
-void drawScrollbar(RenderBuffer *uiBuffer, V2I topLeft, s32 height, f32 scrollPercent, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID);
+struct ScrollbarState
+{
+	s32 contentSize;
+	s32 scrollPosition;
+};
+void updateScrollbar(UIState *uiState, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
+void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID);
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK

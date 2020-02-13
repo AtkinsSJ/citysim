@@ -97,9 +97,9 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 		result = AppStatus_Quit;
 	}
 
-	UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(theme, "default"_s);
-	Rect2I scrollbarBounds = irectXYWH(0, 0, scrollbarStyle->width, windowHeight);
-	TEMP_scrollbarPercent = uiScrollbar(uiState, windowHeight, scrollbarBounds, scrollbarStyle, TEMP_scrollbarPercent);
+	// UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(theme, "default"_s);
+	// Rect2I scrollbarBounds = irectXYWH(0, 0, scrollbarStyle->width, windowHeight);
+	// TEMP_scrollbarPercent = uiScrollbar(uiState, windowHeight, scrollbarBounds, scrollbarStyle, TEMP_scrollbarPercent);
 
 	return result;
 }
