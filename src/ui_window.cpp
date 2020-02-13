@@ -4,13 +4,19 @@ void window_beginColumns(WindowContext *context)
 {
 	context->contentArea = irectXYWH(0,0,0,0);
 	context->columnStartOffsetX = 0;
-	context->columnIndex = -1;
 }
 
 void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 {
+	s32 columnWidth = width;
+	if (columnWidth <= 0)
+	{
+		// width 0 means "fill the remainder"
+		columnWidth = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX + context->columnScrollbarWidth) - context->windowStyle->contentPadding;
+	}
+
 	context->columnStartOffsetX = context->columnStartOffsetX + context->contentArea.w + context->columnScrollbarWidth;
-	if (context->columnIndex >= 0)
+	if (context->columnStartOffsetX > 0)
 	{
 		// NB: If we're here, then there was a previous column
 		window_completeColumn(context);
@@ -18,20 +24,12 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 		context->columnStartOffsetX += context->windowStyle->contentPadding;
 	}
 
-	context->columnIndex++;
-
-	if (width <= 0)
-	{
-		// width 0 means "fill the remainder"
-		width = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX) - context->windowStyle->contentPadding;
-	}
-
 	context->columnScrollbarWidth = 0;
 
-	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, width, context->totalContentArea.h);
+	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnWidth, context->totalContentArea.h);
 	context->currentOffset = v2i(0,0);
-	context->columnScrollbarState = scrollbar;
 
+	context->columnScrollbarState = scrollbar;
 	if (scrollbar != null)
 	{
 		// Scrollbar!

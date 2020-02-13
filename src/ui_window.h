@@ -23,7 +23,6 @@ struct WindowContext
 	s32 columnStartOffsetX;
 	s32 columnScrollbarWidth;
 	struct ScrollbarState *columnScrollbarState;
-	s32 columnIndex;
 
 	// Results
 	bool closeRequested;
