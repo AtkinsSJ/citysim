@@ -19,19 +19,16 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 	}
 
 	context->columnIndex++;
-	ColumnInfo *columnInfo = context->columnInfo + context->columnIndex;
-	*columnInfo = {};
 
-	columnInfo->width = width;
-	if (columnInfo->width <= 0)
+	if (width <= 0)
 	{
 		// width 0 means "fill the remainder"
-		columnInfo->width = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX) - context->windowStyle->contentPadding;
+		width = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX) - context->windowStyle->contentPadding;
 	}
 
 	context->columnScrollbarWidth = 0;
 
-	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnInfo->width, context->totalContentArea.h);
+	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, width, context->totalContentArea.h);
 	context->currentOffset = v2i(0,0);
 	context->columnScrollbarState = scrollbar;
 
@@ -109,8 +106,6 @@ void window_completeColumn(WindowContext *context)
 void window_endColumns(WindowContext *context)
 {
 	window_completeColumn(context);
-
-	ASSERT(context->columnIndex < ArrayCount(context->columnInfo));
 }
 
 V2I window_getCurrentLayoutPosition(WindowContext *context)
@@ -118,13 +113,8 @@ V2I window_getCurrentLayoutPosition(WindowContext *context)
 	V2I result = context->contentArea.pos + context->currentOffset;
 
 	// Adjust if we're in a scrolling column area
-	ColumnInfo *columnInfo = context->columnInfo + context->columnIndex;
 	if (context->columnScrollbarState != null)
 	{
-		// if (*columnInfo->scrollYPercent > 0.5f)
-		// {
-		// 	int foo = 9;
-		// }
 		result.y = result.y - context->columnScrollbarState->scrollPosition;
 	}
 

@@ -1,11 +1,5 @@
 #pragma once
 
-struct ColumnInfo
-{
-	s32 width;
-	s32 contentHeight;
-};
-
 // NB: A WindowContext only exists for a single call of a WindowProc.
 // It isn't kept around between update and render, so attempting to save
 // state here that you want to carry over from one to the other will not work!!!
@@ -30,7 +24,6 @@ struct WindowContext
 	s32 columnScrollbarWidth;
 	struct ScrollbarState *columnScrollbarState;
 	s32 columnIndex;
-	ColumnInfo columnInfo[16];
 
 	// Results
 	bool closeRequested;
