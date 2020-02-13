@@ -96,7 +96,7 @@ void window_completeColumn(WindowContext *context)
 								context->columnScrollbarWidth,
 								context->contentArea.h);
 
-			f32 scrollPercent = (f32)context->columnScrollbarState->scrollPosition / (f32)context->columnScrollbarState->contentSize;
+			f32 scrollPercent = (f32)context->columnScrollbarState->scrollPosition / (f32)(context->columnScrollbarState->contentSize - scrollbarArea.h);
 
 			drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarArea.pos, scrollbarArea.h, v2i(context->columnScrollbarWidth, context->columnScrollbarWidth), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 		}

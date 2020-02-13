@@ -210,7 +210,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, Rect2I bounds, UIS
 		{
 			// One scroll step is usually 3 lines of text.
 			// 64px seems reasonable?
-			state->scrollPosition = clamp(state->scrollPosition - (64 * mouseWheelDelta), 0, state->contentSize);
+			state->scrollPosition = clamp(state->scrollPosition - (64 * mouseWheelDelta), 0, (state->contentSize - bounds.h));
 		}
 
 		// Mouse stuff
@@ -222,7 +222,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, Rect2I bounds, UIS
 			f32 range = (f32)(bounds.h - style->width);
 
 			f32 scrollPercent = clamp01((relativeMousePos.y - 0.5f * style->width) / range);
-			state->scrollPosition = round_s32(scrollPercent * state->contentSize);
+			state->scrollPosition = round_s32(scrollPercent * (state->contentSize - bounds.h));
 
 			uiState->mouseInputHandled = true;
 		}
@@ -237,7 +237,6 @@ void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 h
 	drawSingleRect(uiBuffer, backgroundRect, shaderID, backgroundColor);
 
 	knobSize.y = min(knobSize.y, height); // force knob to fit
-	// f32 scrollPercent = (f32)state->scrollPosition / (f32)state->contentSize;
 	s32 scrollY = round_s32(scrollPercent * (height - knobSize.y));
 	Rect2 knobRect = rectXYWHi(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
 	drawSingleRect(uiBuffer, knobRect, shaderID, knobColor);
