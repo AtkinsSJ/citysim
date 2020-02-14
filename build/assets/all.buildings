@@ -3,29 +3,10 @@
 :Building power-line
 name name_power-line
 size 1 1
-texture power-line power-line.png 16 16 4 4
+sprite b_powerline
 build line 2
 demolish_cost 2
 carries_power true
-
-variant_count 16
-# The 4 flags are Up/Right/Down/Left connectivity
-variant 0000  0
-variant 1000  1
-variant 0100  2
-variant 1100  3
-variant 0010  4
-variant 1010  5
-variant 0110  6
-variant 1110  7
-variant 0001  8
-variant 1001  9
-variant 0101 10
-variant 1101 11
-variant 0011 12
-variant 1011 13
-variant 0111 14
-variant 1111 15
 
 # :Building power-line_road
 # name name_power-line_road
@@ -43,7 +24,7 @@ variant 1111 15
 :Building res-small1
 name name_res-small1
 size 1 1
-texture house-1x1 house-2x2.png 32 32 2 2
+sprite b_house_2x2
 grows_in r
 demolish_cost 50
 residents 10
@@ -52,7 +33,7 @@ power_use 10
 :Building res-med1
 name name_res-med1
 size 2 2
-texture house-2x2 house-2x2.png 32 32 2 2 # NB: Defining this texture twice causes a small leak!
+sprite b_house_2x2
 grows_in r
 demolish_cost 200
 residents 40
@@ -61,7 +42,7 @@ power_use 20
 :Building com-med1
 name name_com-med1
 size 2 2
-texture shop-2x2 shop-2x2.png 32 32 2 2
+sprite b_shop_2x2
 grows_in c
 build rect 50
 demolish_cost 300
@@ -72,7 +53,7 @@ jobs 20
 :Building ind-large1
 name name_ind-large1
 size 3 3
-texture factory-3x3 factory-3x3.png 48 48
+sprite b_factory_3x3
 grows_in i
 build rect 80
 demolish_cost 500
@@ -89,7 +70,7 @@ fire_risk 150%
 :Building tree
 name name_tree
 size 1 1
-texture forest forest.png 16 16
+sprite b_forest
 build paint 100
 demolish_cost 100
 land_value 5 4

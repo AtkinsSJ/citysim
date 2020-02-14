@@ -39,7 +39,6 @@ Maybe<f64> readFloat(LineReader *reader);
 Maybe<bool> readBool(LineReader *reader);
 Maybe<V4> readColor(LineReader *reader);
 Maybe<u32> readAlignment(LineReader *reader);
-Maybe<String> readTextureDefinition(LineReader *reader);
 Maybe<struct EffectRadius> readEffectRadius(LineReader *reader);
 Maybe<V2I> readV2I(LineReader *reader);
 

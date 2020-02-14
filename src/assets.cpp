@@ -1077,9 +1077,9 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				}
 
 				textureAsset = addTexture(filename, false);
-				spriteSize   = spriteSizeIn.value;
+				spriteSize = spriteSizeIn.value;
 
-				s32 spriteCount  = truncate32(spriteCountIn.value);
+				s32 spriteCount = truncate32(spriteCountIn.value);
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 			}

@@ -8,7 +8,7 @@ fire_risk 100%
 name name_power-station
 extends civic
 size 4 4
-texture power-plant power-plant.png 64 64
+sprite b_powerplant
 build plop 1000
 demolish_cost 200
 power_gen 4000
@@ -20,7 +20,7 @@ fire_risk 170%
 name name_fire-station
 extends civic
 size 3 3
-texture fire-station fire-station.png 48 48
+sprite b_firestation
 build plop 750
 demolish_cost 125
 power_use 30
@@ -32,7 +32,7 @@ fire_protection 30 100 20
 name name_police-station
 extends civic
 size 3 3
-texture police-station police-station.png 48 48
+sprite b_policestation
 build plop 750
 demolish_cost 125
 power_use 30
@@ -44,7 +44,7 @@ jail_size 50
 name name_hospital
 extends civic
 size 4 4
-texture hospital hospital.png 64 64
+sprite b_hospital
 build plop 2000
 demolish_cost 300
 power_use 100

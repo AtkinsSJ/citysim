@@ -359,46 +359,6 @@ Maybe<V2I> readV2I(LineReader *reader)
 	return makeFailure<V2I>();
 }
 
-//
-// NB: This is the old, @Deprecated way of doing things, which we want to get rid of... but in the interests of
-// doing one thing at a time, I've just ported this from the old line-reader code.
-// - Sam, 12/09/2019
-//
-Maybe<String> readTextureDefinition(LineReader *reader)
-{
-	String spriteName  = intern(&assets->assetStrings, readToken(reader));
-	String textureName = intern(&assets->assetStrings, readToken(reader));
-
-	Maybe<s64> regionW = asInt(readToken(reader));
-	Maybe<s64> regionH = asInt(readToken(reader));
-
-	if (regionW.isValid && regionH.isValid)
-	{
-		Maybe<s64> regionsAcross = asInt(readToken(reader));
-		Maybe<s64> regionsDown   = asInt(readToken(reader));
-
-		u32 across = 1;
-		u32 down = 1;
-
-		if (regionsAcross.isValid && regionsDown.isValid)
-		{
-			across = (u32) regionsAcross.value;
-			down = (u32) regionsDown.value;
-		}
-
-		addTiledSprites(spriteName, textureName, (u32)regionW.value, (u32)regionH.value, across, down);
-
-		hashString(&spriteName);
-
-		return makeSuccess(spriteName);
-	}
-	else
-	{
-		error(reader, "Couldn't parse texture. Expected use: \"texture filename.png width height (tilesAcross=1) (tilesDown=1)\""_s);
-		return makeFailure<String>();
-	}
-}
-
 Maybe<EffectRadius> readEffectRadius(LineReader *reader)
 {
 	Maybe<s64> radius = asInt(readToken(reader));

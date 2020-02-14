@@ -496,10 +496,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						return;
 					}
 				}
-				else if (equals(firstWord, "texture"_s))
+				else if (equals(firstWord, "sprite"_s))
 				{
-					Maybe<String> spriteName = readTextureDefinition(&reader);
-					if (spriteName.isValid)  def->spriteName = spriteName.value;
+					String spriteName = readToken(&reader);
+					def->spriteName = spriteName;
 				}
 				else if (equals(firstWord, "variant_count"_s))
 				{
@@ -522,7 +522,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						*variant = {};
 
 						String directionFlags = readToken(&reader);
-						Maybe<s64> spriteIndex = readInt(&reader);
+						String spriteName = readToken(&reader);
 
 						if (directionFlags.length == 4)
 						{
@@ -536,10 +536,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 							error(&reader, "First argument to 'variant' should be 4 0/1 flags for up/right/down/left connectivity."_s);
 						}
 
-						if (spriteIndex.isValid)
-						{
-							variant->spriteIndex = truncate32(spriteIndex.value);
-						}
+						variant->spriteName = spriteName;
 					}
 					else
 					{

@@ -28,7 +28,7 @@ enum ConnectionDirection
 struct BuildingVariant
 {
 	u8 connections;
-	s32 spriteIndex;
+	String spriteName;
 };
 
 struct BuildingDef

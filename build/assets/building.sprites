@@ -1,0 +1,49 @@
+# Buildings
+
+:SpriteGroup b_powerline power-line.png 16 16x16
+sprite 0 0
+sprite 1 0
+sprite 2 0
+sprite 3 0
+sprite 0 1
+sprite 1 1
+sprite 2 1
+sprite 3 1
+sprite 0 2
+sprite 1 2
+sprite 2 2
+sprite 3 2
+sprite 0 3
+sprite 1 3
+sprite 2 3
+sprite 3 3
+
+:SpriteGroup b_house_2x2 house-2x2.png 4 32x32
+sprite 0 0
+sprite 1 0
+sprite 0 1
+sprite 1 1
+
+:SpriteGroup b_shop_2x2 shop-2x2.png 4 32x32
+sprite 0 0
+sprite 1 0
+sprite 0 1
+sprite 1 1
+
+:SpriteGroup b_factory_3x3 factory-3x3.png 1 48x48
+sprite 0 0
+
+:SpriteGroup b_forest forest.png 1 16x16
+sprite 0 0
+
+:SpriteGroup b_powerplant power-plant.png 1 64x64
+sprite 0 0
+
+:SpriteGroup b_firestation fire-station.png 1 48x48
+sprite 0 0
+
+:SpriteGroup b_policestation police-station.png 1 48x48
+sprite 0 0
+
+:SpriteGroup b_hospital hospital.png 1 64x64
+sprite 0 0
