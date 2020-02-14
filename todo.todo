@@ -32,6 +32,9 @@ Window buttons should still do hover-states even on inactive windows.
 
 StringBuilder: Chunks instead of reallocating to a larger buffer size
 
+Hard-coded placeholder texture that is used whenever a sprite or texture is missing, rather than just crashing!
+- Maybe keep some kind of "this stuff is missing" list like with text IDs? This is starting to sound like something the Asset system should maintain for every asset type.
+
 _hashed string suffix?
 Console commands in a HashTable
 

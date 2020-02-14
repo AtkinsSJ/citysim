@@ -28,7 +28,9 @@ enum ConnectionDirection
 struct BuildingVariant
 {
 	u8 connections;
+	
 	String spriteName;
+	SpriteGroup *sprites;
 };
 
 struct BuildingDef
@@ -130,11 +132,13 @@ String buildingProblemNames[BuildingProblemCount] = {
 	"building_problem_no_transport"_s
 };
 
+const s32 NO_VARIANT = -1;
 struct Building
 {
 	u32 id;
 	s32 typeID;
 	Rect2I footprint;
+	s32 variantIndex;
 	s32 spriteOffset; // used as the offset for getSprite
 	
 	s32 currentResidents;
@@ -178,6 +182,8 @@ void addProblem(Building *building, BuildingProblem problem);
 void removeProblem(Building *building, BuildingProblem problem);
 bool hasProblem(Building *building, BuildingProblem problem);
 
+Sprite *getBuildingSprite(Building *building);
+
 // TODO: These are a bit hacky... I want to hide the implementation details of the catalogue, but
 // creating a whole set of iterator stuff which is almost identical to the regular iterators seems
 // a bit excessive?
@@ -191,8 +197,8 @@ BuildingDef *findRandomZoneBuilding(ZoneType zoneType, Random *random, Filter fi
 s32 getMaxBuildingSize(ZoneType zoneType);
 
 struct City;
-void updateBuildingTexture(City *city, Building *building, BuildingDef *def = null);
-void updateAdjacentBuildingTextures(City *city, Rect2I footprint);
+void updateBuildingVariant(City *city, Building *building, BuildingDef *def = null);
+void updateAdjacentBuildingVariants(City *city, Rect2I footprint);
 
 void saveBuildingTypes();
 void remapBuildingTypes(City *city);

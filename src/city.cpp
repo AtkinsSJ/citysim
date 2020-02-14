@@ -59,6 +59,10 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	building->typeID = def->typeID;
 	building->footprint = footprint;
 	initFlags(&building->problems, BuildingProblemCount);
+	building->variantIndex = NO_VARIANT;
+	
+	// Random sprite!
+	building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
 	append(&ownerSector->ownedBuildings, building);
@@ -271,8 +275,8 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 
 	city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
 
-	updateBuildingTexture(city, building, def);
-	updateAdjacentBuildingTextures(city, footprint);
+	updateBuildingVariant(city, building, def);
+	updateAdjacentBuildingVariants(city, footprint);
 
 	if (markAreasDirty)
 	{
@@ -446,7 +450,7 @@ void demolishRect(City *city, Rect2I area)
 	markAreaDirty(city, area);
 
 	// Any buildings that would have connected with something that just got demolished need to refresh!
-	updateAdjacentBuildingTextures(city, area);
+	updateAdjacentBuildingVariants(city, area);
 }
 
 ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u32 flags)
@@ -585,8 +589,6 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 	s32 buildingsRemaining = truncate32(visibleBuildings.count);
 	Building *firstBuilding = *get(&visibleBuildings, 0);
 	DrawRectsGroup *group = null;
-	s32 typeID = -1;
-	SpriteGroup *sprites = null;
 
 	// In some cases, the first building (or buildings) could be the Null building and so have no sprites!
 	// Rather than crash, we want to skip them.
@@ -603,18 +605,12 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 	{
 		Building *building = getValue(&it);
 
-		if (typeID != building->typeID)
-		{
-			typeID = building->typeID;
-			sprites = getBuildingDef(typeID)->sprites;
-		}
+		Sprite *sprite = getBuildingSprite(building);
 
 		// Skip buildings with no sprites (aka, the null building).
 		// TODO: Give the null building a placeholder image to draw instead
-		if (sprites != null)
+		if (sprite != null)
 		{
-			Sprite *sprite = getSprite(sprites, building->spriteOffset);
-
 			if (group == null)
 			{
 				group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, shaderID, buildingsRemaining);

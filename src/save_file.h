@@ -225,6 +225,7 @@ struct SAVBuilding
 	leU16 spriteOffset;
 	leU16 currentResidents;
 	leU16 currentJobs;
+	leU16 variantIndex;
 
 	// TODO: Record builidng problems somehow!
 };

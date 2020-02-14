@@ -503,6 +503,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "variant_count"_s))
 				{
+					ASSERT(def->width == 1 && def->height == 1); //We only support variants for 1x1 buildings!
+
 					Maybe<s64> variantCount = readInt(&reader);
 					if (variantCount.isValid)
 					{
@@ -527,9 +529,9 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						if (directionFlags.length == 4)
 						{
 							variant->connections = ((directionFlags[0] == '1') ? Connect_Up    : 0)
-												|| ((directionFlags[1] == '1') ? Connect_Right : 0)
-												|| ((directionFlags[2] == '1') ? Connect_Down  : 0)
-												|| ((directionFlags[3] == '1') ? Connect_Left  : 0);
+												 | ((directionFlags[1] == '1') ? Connect_Right : 0)
+												 | ((directionFlags[2] == '1') ? Connect_Down  : 0)
+												 | ((directionFlags[3] == '1') ? Connect_Left  : 0);
 						}
 						else
 						{
@@ -537,6 +539,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						}
 
 						variant->spriteName = spriteName;
+
+						logInfo("{0} variant {1} has connections {2} (from '{3}')"_s, {def->name, formatInt(variantIndex), formatInt(variant->connections), directionFlags});
 					}
 					else
 					{
@@ -701,100 +705,107 @@ s32 getMaxBuildingSize(ZoneType zoneType)
 	return result;
 }
 
-void updateBuildingTexture(City * /*city*/, Building *building, BuildingDef *def)
+void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDef)
 {
 	DEBUG_FUNCTION();
 
 	if (building == null) return;
 
-	if (def == null)
+	BuildingDef *def = (passedDef != null) ? passedDef : getBuildingDef(building->typeID);
+
+	if (def->variants.count > 0)
 	{
-		def = getBuildingDef(building->typeID);
-	}
+		// NB: Right now we only allow variants for 1x1 buildings.
+		// Later, we might want to expand that, but it will make things a LOT more complicated, so I'm
+		// starting simple!
+		// The only non-1x1 cases I can think of could be worked around, too, so it's fine.
+		// (eg, A train station with included rail - only the RAILS need variants, the station doesn't!)
+		// - Sam, 14/02/2020
 
-	// TODO: Variant-based texture linking or something
-	if (false) //def->linkTexturesLayer)
-	{
-		// Sprite id is 0 to 15, depending on connecting neighbours.
-		// 1 = up, 2 = right, 4 = down, 8 = left
-		// For now, we'll decide that off-the-map does NOT connect
-		ASSERT(def->width == 1 && def->height == 1); //We only support texture-linking for 1x1 buildings!
-		
-		// s32 x = building->footprint.x;
-		// s32 y = building->footprint.y;
+		// Calculate our connections
+		Building *buildingL = getBuildingAt(city, building->footprint.x - 1, building->footprint.y);
+		Building *buildingR = getBuildingAt(city, building->footprint.x + building->footprint.w, building->footprint.y);
+		Building *buildingU = getBuildingAt(city, building->footprint.x, building->footprint.y - 1);
+		Building *buildingD = getBuildingAt(city, building->footprint.x, building->footprint.y + building->footprint.h);
+		u8 connections = (((buildingU != null) && (buildingU->typeID == building->typeID)) ? Connect_Up    : 0)
+					   | (((buildingR != null) && (buildingR->typeID == building->typeID)) ? Connect_Right : 0)
+					   | (((buildingD != null) && (buildingD->typeID == building->typeID)) ? Connect_Down  : 0)
+					   | (((buildingL != null) && (buildingL->typeID == building->typeID)) ? Connect_Left  : 0);
 
-		// switch (def->linkTexturesLayer)
-		// {
-		// 	case DataLayer_Paths:
-		// 	{
-		// 		bool linkU = doesTileHaveTransport(city, x,   y-1, def->transportTypes);
-		// 		bool linkD = doesTileHaveTransport(city, x,   y+1, def->transportTypes);
-		// 		bool linkL = doesTileHaveTransport(city, x-1, y,   def->transportTypes);
-		// 		bool linkR = doesTileHaveTransport(city, x+1, y,   def->transportTypes);
+		// Search for a matching variant
+		// Right now... YAY LINEAR SEARCH! @Speed
+		bool foundVariant = false;
+		for (s32 variantIndex = 0; variantIndex < def->variants.count; variantIndex++)
+		{
+			if (def->variants[variantIndex].connections == connections)
+			{
+				building->variantIndex = variantIndex;
+				foundVariant = true;
+				logInfo("Matched building {0}, connections {1} with variant #{2}"_s, {def->name, formatInt(connections), formatInt(variantIndex)});
+				break;
+			}
+		}
 
-		// 		building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
-		// 	} break;
-
-		// 	case DataLayer_Power:
-		// 	{
-		// 		bool linkU = doesTileHavePowerNetwork(city, x,   y-1);
-		// 		bool linkD = doesTileHavePowerNetwork(city, x,   y+1);
-		// 		bool linkL = doesTileHavePowerNetwork(city, x-1, y  );
-		// 		bool linkR = doesTileHavePowerNetwork(city, x+1, y  );
-
-		// 		building->spriteOffset = (linkU ? 1 : 0) | (linkR ? 2 : 0) | (linkD ? 4 : 0) | (linkL ? 8 : 0);
-		// 	} break;
-		// }
+		if (!foundVariant)
+		{
+			if (!isEmpty(def->spriteName))
+			{
+				logWarn("Unable to find a matching variant for building '{0}' with connections = {1}. Defaulting to the building's defined sprite, '{2}'."_s, {def->name, formatInt(connections), def->spriteName});
+				building->variantIndex = NO_VARIANT;
+			}
+			else
+			{
+				logWarn("Unable to find a matching variant for building '{0}' with connections = {1}. Defaulting to variant #0."_s, {def->name, formatInt(connections)});
+				building->variantIndex = 0;
+			}
+		}
 	}
 	else
 	{
-		// Random sprite!
-		building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
+		building->variantIndex = NO_VARIANT;
 	}
 }
 
-void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
+void updateAdjacentBuildingVariants(City *city, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
-	// TODO: Variant-based texture linking
+	for (s32 y = footprint.y;
+		y < footprint.y + footprint.h;
+		y++)
+	{
+		Building *buildingL = getBuildingAt(city, footprint.x - 1, y);
+		if (buildingL)
+		{
+			BuildingDef *defL = getBuildingDef(buildingL->typeID);
+			if (defL->variants.count > 0) updateBuildingVariant(city, buildingL, defL);
+		}
 
-	// for (s32 y = footprint.y;
-	// 	y < footprint.y + footprint.h;
-	// 	y++)
-	// {
-	// 	Building *buildingL = getBuildingAt(city, footprint.x - 1, y);
-	// 	if (buildingL)
-	// 	{
-	// 		BuildingDef *defU = getBuildingDef(buildingL->typeID);
-	// 		if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingL, defU);
-	// 	}
+		Building *buildingR = getBuildingAt(city, footprint.x + footprint.w, y);
+		if (buildingR)
+		{
+			BuildingDef *defD = getBuildingDef(buildingR->typeID);
+			if (defD->variants.count > 0) updateBuildingVariant(city, buildingR, defD);
+		}
+	}
 
-	// 	Building *buildingR = getBuildingAt(city, footprint.x + footprint.w, y);
-	// 	if (buildingR)
-	// 	{
-	// 		BuildingDef *defD = getBuildingDef(buildingR->typeID);
-	// 		if (defD->linkTexturesLayer) updateBuildingTexture(city, buildingR, defD);
-	// 	}
-	// }
-
-	// for (s32 x = footprint.x;
-	// 	x < footprint.x + footprint.w;
-	// 	x++)
-	// {
-	// 	Building *buildingU = getBuildingAt(city, x, footprint.y - 1);
-	// 	Building *buildingD = getBuildingAt(city, x, footprint.y + footprint.h);
-	// 	if (buildingU)
-	// 	{
-	// 		BuildingDef *defL = getBuildingDef(buildingU->typeID);
-	// 		if (defL->linkTexturesLayer) updateBuildingTexture(city, buildingU, defL);
-	// 	}
-	// 	if (buildingD)
-	// 	{
-	// 		BuildingDef *defR = getBuildingDef(buildingD->typeID);
-	// 		if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingD, defR);
-	// 	}
-	// }
+	for (s32 x = footprint.x;
+		x < footprint.x + footprint.w;
+		x++)
+	{
+		Building *buildingU = getBuildingAt(city, x, footprint.y - 1);
+		Building *buildingD = getBuildingAt(city, x, footprint.y + footprint.h);
+		if (buildingU)
+		{
+			BuildingDef *defU = getBuildingDef(buildingU->typeID);
+			if (defU->variants.count > 0) updateBuildingVariant(city, buildingU, defU);
+		}
+		if (buildingD)
+		{
+			BuildingDef *defR = getBuildingDef(buildingD->typeID);
+			if (defR->variants.count > 0) updateBuildingVariant(city, buildingD, defR);
+		}
+	}
 }
 
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
@@ -809,6 +820,11 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 		if (!isEmpty(def->spriteName))
 		{
 			def->sprites = getSpriteGroup(def->spriteName);
+		}
+
+		for (s32 variantIndex = 0; variantIndex < def->variants.count; variantIndex++)
+		{
+			def->variants[variantIndex].sprites = getSpriteGroup(def->variants[variantIndex].spriteName);
 		}
 	}
 }
@@ -826,6 +842,32 @@ inline void removeProblem(Building *building, BuildingProblem problem)
 inline bool hasProblem(Building *building, BuildingProblem problem)
 {
 	return building->problems & problem;
+}
+
+inline Sprite *getBuildingSprite(Building *building)
+{
+	Sprite *result = null;
+
+	BuildingDef *def = getBuildingDef(building->typeID);
+
+	if (building->variantIndex != NO_VARIANT)
+	{
+		SpriteGroup *sprites = def->variants[building->variantIndex].sprites;
+		if (sprites != null)
+		{
+			result = getSprite(sprites, building->spriteOffset);
+		}
+	}
+	else
+	{
+		SpriteGroup *sprites = def->sprites;
+		if (sprites != null)
+		{
+			result = getSprite(sprites, building->spriteOffset);
+		}
+	}
+
+	return result;
 }
 
 inline s32 getRequiredPower(Building *building)

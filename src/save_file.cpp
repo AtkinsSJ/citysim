@@ -179,6 +179,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 				sb->spriteOffset = (u16) building->spriteOffset;
 				sb->currentResidents = (u16) building->currentResidents;
 				sb->currentJobs = (u16) building->currentJobs;
+				sb->variantIndex = (u16) building->variantIndex;
 
 				tempBuildingIndex++;
 			}
@@ -525,6 +526,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 						Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
 						BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
 						Building *building = addBuildingDirect(city, savBuilding->id, def, footprint);
+						building->variantIndex     = savBuilding->variantIndex;
 						building->spriteOffset     = savBuilding->spriteOffset;
 						building->currentResidents = savBuilding->currentResidents;
 						building->currentJobs      = savBuilding->currentJobs;

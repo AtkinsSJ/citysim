@@ -663,7 +663,7 @@ void growSomeZoneBuildings(City *city)
 
 					Building *building = addBuilding(city, buildingDef, footprint);
 					layer->population[zoneType] += building->currentResidents + building->currentJobs;
-					updateBuildingTexture(city, building, buildingDef);
+					updateBuildingVariant(city, building, buildingDef);
 
 					markAreaDirty(city, footprint);
 
