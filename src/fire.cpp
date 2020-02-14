@@ -176,7 +176,7 @@ void drawFires(City *city, Rect2I visibleTileBounds)
 
 	if (layer->activeFireCount > 0)
 	{
-		SpriteGroup *fireSprites = getSpriteGroup("fire"_s);
+		SpriteGroup *fireSprites = getSpriteGroup("e_fire_1x1"_s);
 		Sprite *sprite = getSprite(fireSprites, 0);
 		V4 colorWhite = makeWhite();
 
