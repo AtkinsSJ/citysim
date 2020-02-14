@@ -95,6 +95,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 	// Count the number of building defs in the file first, so we can allocate the buildingIDs array in the asset
 	s32 buildingCount = 0;
+	// Same for variants as they have their own structs
+	s32 totalVariantCount = 0;
 	while (loadNextLine(&reader))
 	{
 		String command = readToken(&reader);
@@ -102,11 +104,23 @@ void loadBuildingDefs(Blob data, Asset *asset)
 		{
 			buildingCount++;
 		}
+		else if (equals(command, "variant_count"_s))
+		{
+			Maybe<s64> variantCount = readInt(&reader);
+			if (variantCount.isValid)
+			{
+				totalVariantCount += truncate32(variantCount.value);
+			}
+		}
 	}
 
-	asset->data = assetsAllocate(assets, sizeof(String) * buildingCount);
+	smm buildingNamesSize = sizeof(String) * buildingCount;
+	smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
+	asset->data = assetsAllocate(assets, buildingNamesSize + variantsSize);
 	asset->buildingDefs.buildingIDs = makeArray(buildingCount, (String *) asset->data.memory);
+	u8 *variantsMemory = asset->data.memory + buildingNamesSize;
 	s32 buildingIDsIndex = 0;
+	s32 variantIndex = 0;
 
 	restart(&reader);
 
@@ -330,7 +344,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						def->size = templateDef->size;
 						def->spriteName = templateDef->spriteName;
 						def->sprites = templateDef->sprites;
-						def->linkTexturesLayer = templateDef->linkTexturesLayer;
 						def->buildMethod = templateDef->buildMethod;
 						def->buildCost = templateDef->buildCost;
 						def->canBeBuiltOnID = templateDef->canBeBuiltOnID;
@@ -416,23 +429,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						def->landValueEffect = land_value.value;
 					}
 				}
-				else if (equals(firstWord, "link_textures"_s))
-				{
-					warn(&reader, "link_textures is disabled right now, because it's bad."_s);
-					// String layer = readToken(&reader);
-					// if (equals(layer, "path"_s))
-					// {
-					// 	def->linkTexturesLayer = DataLayer_Paths;
-					// }
-					// else if (equals(layer, "power"_s))
-					// {
-					// 	def->linkTexturesLayer = DataLayer_Power;
-					// }
-					// else
-					// {
-					// 	warn(&reader, "Couldn't parse link_textures, assuming NONE."_s);
-					// }
-				}
 				else if (equals(firstWord, "name"_s))
 				{
 					def->textAssetName = intern(&assets->assetStrings, readToken(&reader));
@@ -504,6 +500,51 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				{
 					Maybe<String> spriteName = readTextureDefinition(&reader);
 					if (spriteName.isValid)  def->spriteName = spriteName.value;
+				}
+				else if (equals(firstWord, "variant_count"_s))
+				{
+					Maybe<s64> variantCount = readInt(&reader);
+					if (variantCount.isValid)
+					{
+						s32 count = truncate32(variantCount.value);
+						def->variants = makeArray(count, (BuildingVariant *)variantsMemory);
+						variantsMemory += sizeof(BuildingVariant) * count;
+						variantIndex = 0;
+					}
+				}
+				else if (equals(firstWord, "variant"_s))
+				{
+					if (variantIndex < def->variants.count)
+					{
+						BuildingVariant *variant = def->variants.items + variantIndex;
+						variantIndex++;
+
+						*variant = {};
+
+						String directionFlags = readToken(&reader);
+						Maybe<s64> spriteIndex = readInt(&reader);
+
+						if (directionFlags.length == 4)
+						{
+							variant->connections = ((directionFlags[0] == '1') ? Connect_Up    : 0)
+												|| ((directionFlags[1] == '1') ? Connect_Right : 0)
+												|| ((directionFlags[2] == '1') ? Connect_Down  : 0)
+												|| ((directionFlags[3] == '1') ? Connect_Left  : 0);
+						}
+						else
+						{
+							error(&reader, "First argument to 'variant' should be 4 0/1 flags for up/right/down/left connectivity."_s);
+						}
+
+						if (spriteIndex.isValid)
+						{
+							variant->spriteIndex = truncate32(spriteIndex.value);
+						}
+					}
+					else
+					{
+						error(&reader, "Too many variants for building '{0}'!"_s, {def->name});
+					}
 				}
 				else
 				{
@@ -674,7 +715,8 @@ void updateBuildingTexture(City * /*city*/, Building *building, BuildingDef *def
 		def = getBuildingDef(building->typeID);
 	}
 
-	if (def->linkTexturesLayer)
+	// TODO: Variant-based texture linking or something
+	if (false) //def->linkTexturesLayer)
 	{
 		// Sprite id is 0 to 15, depending on connecting neighbours.
 		// 1 = up, 2 = right, 4 = down, 8 = left
@@ -718,42 +760,44 @@ void updateAdjacentBuildingTextures(City *city, Rect2I footprint)
 {
 	DEBUG_FUNCTION();
 
-	for (s32 y = footprint.y;
-		y < footprint.y + footprint.h;
-		y++)
-	{
-		Building *buildingL = getBuildingAt(city, footprint.x - 1, y);
-		if (buildingL)
-		{
-			BuildingDef *defU = getBuildingDef(buildingL->typeID);
-			if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingL, defU);
-		}
+	// TODO: Variant-based texture linking
 
-		Building *buildingR = getBuildingAt(city, footprint.x + footprint.w, y);
-		if (buildingR)
-		{
-			BuildingDef *defD = getBuildingDef(buildingR->typeID);
-			if (defD->linkTexturesLayer) updateBuildingTexture(city, buildingR, defD);
-		}
-	}
+	// for (s32 y = footprint.y;
+	// 	y < footprint.y + footprint.h;
+	// 	y++)
+	// {
+	// 	Building *buildingL = getBuildingAt(city, footprint.x - 1, y);
+	// 	if (buildingL)
+	// 	{
+	// 		BuildingDef *defU = getBuildingDef(buildingL->typeID);
+	// 		if (defU->linkTexturesLayer) updateBuildingTexture(city, buildingL, defU);
+	// 	}
 
-	for (s32 x = footprint.x;
-		x < footprint.x + footprint.w;
-		x++)
-	{
-		Building *buildingU = getBuildingAt(city, x, footprint.y - 1);
-		Building *buildingD = getBuildingAt(city, x, footprint.y + footprint.h);
-		if (buildingU)
-		{
-			BuildingDef *defL = getBuildingDef(buildingU->typeID);
-			if (defL->linkTexturesLayer) updateBuildingTexture(city, buildingU, defL);
-		}
-		if (buildingD)
-		{
-			BuildingDef *defR = getBuildingDef(buildingD->typeID);
-			if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingD, defR);
-		}
-	}
+	// 	Building *buildingR = getBuildingAt(city, footprint.x + footprint.w, y);
+	// 	if (buildingR)
+	// 	{
+	// 		BuildingDef *defD = getBuildingDef(buildingR->typeID);
+	// 		if (defD->linkTexturesLayer) updateBuildingTexture(city, buildingR, defD);
+	// 	}
+	// }
+
+	// for (s32 x = footprint.x;
+	// 	x < footprint.x + footprint.w;
+	// 	x++)
+	// {
+	// 	Building *buildingU = getBuildingAt(city, x, footprint.y - 1);
+	// 	Building *buildingD = getBuildingAt(city, x, footprint.y + footprint.h);
+	// 	if (buildingU)
+	// 	{
+	// 		BuildingDef *defL = getBuildingDef(buildingU->typeID);
+	// 		if (defL->linkTexturesLayer) updateBuildingTexture(city, buildingU, defL);
+	// 	}
+	// 	if (buildingD)
+	// 	{
+	// 		BuildingDef *defR = getBuildingDef(buildingD->typeID);
+	// 		if (defR->linkTexturesLayer) updateBuildingTexture(city, buildingD, defR);
+	// 	}
+	// }
 }
 
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)

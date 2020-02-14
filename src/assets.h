@@ -13,6 +13,7 @@ enum AssetType
 	AssetType_PaletteDefs,
 	AssetType_Shader,
 	AssetType_Sprite,
+	AssetType_SpriteDefs,
 	AssetType_Texts,
 	AssetType_Texture,
 	AssetType_TerrainDefs,
@@ -145,6 +146,10 @@ struct Asset
 		SpriteGroup spriteGroup;
 
 		struct {
+			Array<String> spriteGroupNames;
+		} spriteDefs;
+
+		struct {
 			Array<String> terrainIDs;
 		} terrainDefs;
 
@@ -239,4 +244,7 @@ Blob assetsAllocate(Assets *theAssets, smm size);
 
 void loadCursorDefs(Blob data, Asset *asset);
 void loadPaletteDefs(Blob data, Asset *asset);
+void loadSpriteDefs(Blob data, Asset *asset);
 void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData);
+
+void removeSpriteDefs(Array<String> namesToRemove);

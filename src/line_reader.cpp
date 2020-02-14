@@ -339,6 +339,26 @@ Maybe<u32> readAlignment(LineReader *reader)
 	return makeSuccess(alignment);
 }
 
+Maybe<V2I> readV2I(LineReader *reader)
+{
+	String token = readToken(reader);
+	String sx, sy;
+
+	if (splitInTwo(token, 'x', &sx, &sy))
+	{
+		Maybe<s64> x = asInt(sx);
+		Maybe<s64> y = asInt(sy);
+
+		if (x.isValid && y.isValid)
+		{
+			return makeSuccess<V2I>(v2i(truncate32(x.value), truncate32(y.value)));
+		}
+	}
+
+	error(reader, "Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, {token});
+	return makeFailure<V2I>();
+}
+
 //
 // NB: This is the old, @Deprecated way of doing things, which we want to get rid of... but in the interests of
 // doing one thing at a time, I've just ported this from the old line-reader code.

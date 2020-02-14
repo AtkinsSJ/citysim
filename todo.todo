@@ -25,7 +25,6 @@ Saving and loading!
 - "Save" window that lets you specify the filename and warns of conflicts
 	- Keep in mind the filename it was loaded from (or last saved to) and use that as the default, and don't warn if you try to overwrite it.
 - "Load" window that previews the saved games.
-- SavedGamesCatalogue may need to create the saves directory after the game has started, in case it gets deleted! (Currently we crash when this happens I think.)
 
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
@@ -78,15 +77,6 @@ Texture-linking 2.0:
 		- So, here it specifies what we'd call a Building to be placed at that spot, and not a Variant. (Which makes sense because it's effectively multiple building types otherwise!) (Though... we could implement this as a Building per intersection combination, and then variants within it. eg, one power-line-over-road building with variants for straight/diagonal combinations.)
 - Terrain also wants a variants system... probably we can reuse a lot of this for that. So, you define that there is water here and sand there and grass there, and then it picks an appropriate sprite for it.
 	- This implies we want two parts to this: one is pickVariant() which you give the context to and the possible options, and it returns the variant you want; and the other part is code that produces that context information. Because the network system and the terrain system work on different underlying data.
-
-DirtyRects:
-- It's a good system, but I think we need to break it down more. Different parts of a layer have different ideas of how much the incoming rects should be expanded, or what makes an area dirty at all. I set up the City::markAreaDirty() function because I'm concerned about bugs coming from forgetting to tell a layer that something has changed, in some situations... but that's a one-size-fits-all approach that's less optimal. eg, Power only cares if the tiles changed whether they carry power or not (or how much power is produced/consumed).
-- We could add flags to markAreaDirty() that say which properties have changed, but that sounds like it'd have the same problems of forgetting to update something. It also means each system that alters the map has to know how all of the layers function to know which ones need updating - which is a pretty horrible idea.
-- Maybe markAreaDirty() does checks to see which things need updating, but how would it know?
-- OK here's a good example of the problems: Pollution affects land value, but pollution doesn't mark any areas as dirty, because that would be the whole map every time, and that's no good. So, the land value doesn't update, until something *else* marks the area as dirty.
-	- Perhaps we want to split updates into two parts:
-	1) Dirty areas where the world physically changed, updated on demand.
-	2) Things that are recalculated for the whole city every so often, regularly and automatically.
 
 Zones:
 - Desirability per zone type

@@ -41,6 +41,7 @@ Maybe<V4> readColor(LineReader *reader);
 Maybe<u32> readAlignment(LineReader *reader);
 Maybe<String> readTextureDefinition(LineReader *reader);
 Maybe<struct EffectRadius> readEffectRadius(LineReader *reader);
+Maybe<V2I> readV2I(LineReader *reader);
 
 void warn(LineReader *reader, String message, std::initializer_list<String> args = {});
 void error(LineReader *reader, String message, std::initializer_list<String> args = {});

@@ -1,0 +1,29 @@
+# Roads
+
+:Building road
+name name_road
+size 1 1
+texture road road.png 16 16 4 4
+build line 12
+demolish_cost 10
+carries_transport road
+fire_risk 0%
+
+variant_count 16
+# The 4 flags are Up/Right/Down/Left connectivity
+variant 0000  0
+variant 1000  1
+variant 0100  2
+variant 1100  3
+variant 0010  4
+variant 1010  5
+variant 0110  6
+variant 1110  7
+variant 0001  8
+variant 1001  9
+variant 0101 10
+variant 1101 11
+variant 0011 12
+variant 1011 13
+variant 0111 14
+variant 1111 15

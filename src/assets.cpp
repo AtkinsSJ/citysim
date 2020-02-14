@@ -16,9 +16,10 @@ void initAssets()
 	initHashTable(&assets->fileExtensionToType);
 	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "buildings"_s), AssetType_BuildingDefs);
 	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "cursors"_s),   AssetType_CursorDefs);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "palettes"_s),  AssetType_PaletteDefs);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "terrain"_s),   AssetType_TerrainDefs);
 	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "keymap"_s),    AssetType_DevKeymap);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "palettes"_s),  AssetType_PaletteDefs);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "sprites"_s),   AssetType_SpriteDefs);
+	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "terrain"_s),   AssetType_TerrainDefs);
 	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "theme"_s),     AssetType_UITheme);
 
 	initHashTable(&assets->directoryNameToType);
@@ -277,6 +278,12 @@ void loadAsset(Asset *asset)
 			asset->state = AssetState_Loaded;
 		} break;
 
+		case AssetType_SpriteDefs:
+		{
+			loadSpriteDefs(fileData, asset);
+			asset->state = AssetState_Loaded;
+		} break;
+
 		case AssetType_TerrainDefs:
 		{
 			loadTerrainDefs(fileData, asset);
@@ -292,6 +299,8 @@ void loadAsset(Asset *asset)
 
 		case AssetType_Texture:
 		{
+			// TODO: Emergency debug texture that's used if loading a file fails.
+			// Right now, we just crash! (Not shippable)
 			SDL_Surface *surface = createSurfaceFromFileData(fileData, asset->fullName);
 			ASSERT(surface->format->BytesPerPixel == 4); //We only handle 32-bit colour images!
 
@@ -393,6 +402,12 @@ void unloadAsset(Asset *asset)
 				removeAsset(AssetType_Palette, paletteName);
 			}
 			asset->paletteDefs.paletteNames = makeArray<String>(0, null);
+		} break;
+
+		case AssetType_SpriteDefs:
+		{
+			removeSpriteDefs(asset->spriteDefs.spriteGroupNames);
+			asset->spriteDefs.spriteGroupNames = makeArray<String>(0, null);
 		} break;
 
 		case AssetType_TerrainDefs:
@@ -1024,6 +1039,91 @@ void loadPaletteDefs(Blob data, Asset *asset)
 				error(&reader, "Unrecognised command '{0}'"_s, {command});
 			}
 		}
+	}
+}
+
+void loadSpriteDefs(Blob data, Asset *asset)
+{
+	DEBUG_FUNCTION();
+
+	LineReader reader = readLines(asset->shortName, data);
+
+	Asset *textureAsset = null;
+	V2I spriteSize = v2i(0,0);
+	Asset *spriteGroup = null;
+	s32 spriteIndex = 0;
+
+	while (loadNextLine(&reader))
+	{
+		String command = readToken(&reader);
+
+		if (command.chars[0] == ':') // Definitions
+		{
+			// Define something
+			command.chars++;
+			command.length--;
+
+			if (equals(command, "SpriteGroup"_s))
+			{
+				String name              = readToken(&reader);
+				String filename          = readToken(&reader);
+				Maybe<s64> spriteCountIn = readInt  (&reader);
+				Maybe<V2I> spriteSizeIn  = readV2I  (&reader);
+
+				if (isEmpty(name) || isEmpty(filename) || !spriteCountIn.isValid || !spriteSizeIn.isValid)
+				{
+					error(&reader, "Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png spriteCount SWxSH'"_s);
+					return;
+				}
+
+				textureAsset = addTexture(filename, false);
+				spriteSize   = spriteSizeIn.value;
+
+				s32 spriteCount  = truncate32(spriteCountIn.value);
+				spriteGroup = addSpriteGroup(name, spriteCount);
+			}
+			else
+			{
+				error(&reader, "Unrecognised command: '{0}'"_s, {command});
+			}
+		}
+		else // Properties!
+		{
+			if (equals(command, "sprite"_s))
+			{
+				Maybe<s64> mx = readInt(&reader);
+				Maybe<s64> my = readInt(&reader);
+
+				if (mx.isValid && my.isValid)
+				{
+					s32 x = truncate32(mx.value);
+					s32 y = truncate32(my.value);
+
+					Sprite *sprite = spriteGroup->spriteGroup.sprites + spriteIndex;
+					sprite->texture = textureAsset;
+					sprite->uv = rectXYWHi(x * spriteSize.x, y * spriteSize.y, spriteSize.x, spriteSize.y);
+
+					spriteIndex++;
+				}
+				else
+				{
+					error(&reader, "Couldn't parse {0}. Expected '{0} x y'."_s, {command});
+				}
+			}
+			else
+			{
+				error(&reader, "Unrecognised command '{0}'"_s, {command});
+			}
+		}
+	}
+}
+
+void removeSpriteDefs(Array<String> namesToRemove)
+{
+	for (s32 nameIndex = 0; nameIndex < namesToRemove.count; nameIndex++)
+	{
+		String spriteGroupName = namesToRemove[nameIndex];
+		removeAsset(AssetType_Sprite, spriteGroupName);
 	}
 }
 

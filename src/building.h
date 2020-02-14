@@ -17,6 +17,20 @@ enum BuildingFlag
 	BuildingFlagCount
 };
 
+enum ConnectionDirection
+{
+	Connect_Up    = 1,
+	Connect_Right = 2,
+	Connect_Down  = 4,
+	Connect_Left  = 8,
+};
+
+struct BuildingVariant
+{
+	u8 connections;
+	s32 spriteIndex;
+};
+
 struct BuildingDef
 {
 	String name;
@@ -37,7 +51,7 @@ struct BuildingDef
 	};
 	String spriteName;
 	SpriteGroup *sprites;
-	enum DataLayer linkTexturesLayer;
+	Array<BuildingVariant> variants;
 
 	BuildMethod buildMethod;
 	s32 buildCost;
