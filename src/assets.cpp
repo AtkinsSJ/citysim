@@ -1081,6 +1081,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 
 				s32 spriteCount  = truncate32(spriteCountIn.value);
 				spriteGroup = addSpriteGroup(name, spriteCount);
+				spriteIndex = 0;
 			}
 			else
 			{
