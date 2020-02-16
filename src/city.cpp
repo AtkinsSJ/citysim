@@ -592,11 +592,10 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 
 	// In some cases, the first building (or buildings) could be the Null building and so have no sprites!
 	// Rather than crash, we want to skip them.
-	BuildingDef *firstDef = getBuildingDef(firstBuilding);
-	if (firstDef->sprites != null)
+	Sprite *firstBuildingSprite = getBuildingSprite(firstBuilding);
+	if (firstBuildingSprite != null)
 	{
-		Asset *texture = getSprite(firstDef->sprites, firstBuilding->spriteOffset)->texture;
-		group = beginRectsGroupTextured(&renderer->worldBuffer, texture, shaderID, buildingsRemaining);
+		group = beginRectsGroupTextured(&renderer->worldBuffer, firstBuildingSprite->texture, shaderID, buildingsRemaining);
 	}
 
 	for (auto it = iterate(&visibleBuildings);
