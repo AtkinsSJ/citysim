@@ -147,11 +147,11 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				case Mode_Texture: {
 					if (equals(firstWord, "sprite_size"_s))
 					{
-						Maybe<s64> spriteW = readInt(&reader);
-						Maybe<s64> spriteH = readInt(&reader);
+						Maybe<s32> spriteW = readInt<s32>(&reader);
+						Maybe<s32> spriteH = readInt<s32>(&reader);
 						if (spriteW.isValid && spriteH.isValid)
 						{
-							spriteSize = v2i(truncate32(spriteW.value), truncate32(spriteH.value));
+							spriteSize = v2i(spriteW.value, spriteH.value);
 						}
 						else
 						{
@@ -161,11 +161,11 @@ void loadTerrainDefs(Blob data, Asset *asset)
 					}
 					else if (equals(firstWord, "sprite_border"_s))
 					{
-						Maybe<s64> borderW = readInt(&reader);
-						Maybe<s64> borderH = readInt(&reader);
+						Maybe<s32> borderW = readInt<s32>(&reader);
+						Maybe<s32> borderH = readInt<s32>(&reader);
 						if (borderW.isValid && borderH.isValid)
 						{
-							spriteBorder = v2i(truncate32(borderW.value), truncate32(borderH.value));
+							spriteBorder = v2i(borderW.value, borderH.value);
 						}
 						else
 						{
@@ -176,14 +176,14 @@ void loadTerrainDefs(Blob data, Asset *asset)
 					else if (equals(firstWord, "sprite"_s))
 					{
 						String spriteName = intern(&assets->assetStrings, readToken(&reader));
-						Maybe<s64> x = readInt(&reader);
-						Maybe<s64> y = readInt(&reader);
-						Maybe<s64> w = readInt(&reader);
-						Maybe<s64> h = readInt(&reader);
+						Maybe<s32> x = readInt<s32>(&reader);
+						Maybe<s32> y = readInt<s32>(&reader);
+						Maybe<s32> w = readInt<s32>(&reader);
+						Maybe<s32> h = readInt<s32>(&reader);
 
 						if (x.isValid && y.isValid && w.isValid && h.isValid)
 						{
-							Rect2I selectedSprites = irectXYWH(truncate32(x.value), truncate32(y.value), truncate32(w.value), truncate32(h.value));
+							Rect2I selectedSprites = irectXYWH(x.value, y.value, w.value, h.value);
 							addTiledSprites(spriteName, textureAsset, spriteSize, spriteBorder, selectedSprites);
 						}
 						else

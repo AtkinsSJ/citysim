@@ -106,10 +106,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 		}
 		else if (equals(command, "variant_count"_s))
 		{
-			Maybe<s64> variantCount = readInt(&reader);
+			Maybe<s32> variantCount = readInt<s32>(&reader);
 			if (variantCount.isValid)
 			{
-				totalVariantCount += truncate32(variantCount.value);
+				totalVariantCount += variantCount.value;
 			}
 		}
 	}
@@ -191,7 +191,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				if (equals(firstWord, "build"_s))
 				{
 					String buildMethodString = readToken(&reader);
-					Maybe<s64> cost = readInt(&reader);
+					Maybe<s32> cost = readInt<s32>(&reader);
 
 					if (cost.isValid)
 					{
@@ -217,7 +217,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 							def->buildMethod = BuildMethod_None;
 						}
 
-						def->buildCost = truncate32(cost.value);
+						def->buildCost = cost.value;
 					}
 					else
 					{
@@ -321,10 +321,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "demolish_cost"_s))
 				{
-					Maybe<s64> demolish_cost = readInt(&reader);
+					Maybe<s32> demolish_cost = readInt<s32>(&reader);
 					if (demolish_cost.isValid)
 					{
-						def->demolishCost = (s32) demolish_cost.value;
+						def->demolishCost = demolish_cost.value;
 					}
 				}
 				else if (equals(firstWord, "extends"_s))
@@ -407,18 +407,18 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "jail_size"_s))
 				{
-					Maybe<s64> jail_size = readInt(&reader);
+					Maybe<s32> jail_size = readInt<s32>(&reader);
 					if (jail_size.isValid)
 					{
-						def->jailCapacity = (s32) jail_size.value;
+						def->jailCapacity = jail_size.value;
 					}
 				}
 				else if (equals(firstWord, "jobs"_s))
 				{
-					Maybe<s64> jobs = readInt(&reader);
+					Maybe<s32> jobs = readInt<s32>(&reader);
 					if (jobs.isValid)
 					{
-						def->jobs = (s32) jobs.value;
+						def->jobs = jobs.value;
 					}
 				}
 				else if (equals(firstWord, "land_value"_s))
@@ -443,18 +443,18 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "power_gen"_s))
 				{
-					Maybe<s64> power_gen = readInt(&reader);
+					Maybe<s32> power_gen = readInt<s32>(&reader);
 					if (power_gen.isValid)
 					{
-						def->power = (s32) power_gen.value;
+						def->power = power_gen.value;
 					}
 				}
 				else if (equals(firstWord, "power_use"_s))
 				{
-					Maybe<s64> power_use = readInt(&reader);
+					Maybe<s32> power_use = readInt<s32>(&reader);
 					if (power_use.isValid)
 					{
-						def->power = (s32) -power_use.value;
+						def->power = -power_use.value;
 					}
 				}
 				else if (equals(firstWord, "requires_transport_connection"_s))
@@ -474,21 +474,21 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "residents"_s))
 				{
-					Maybe<s64> residents = readInt(&reader);
+					Maybe<s32> residents = readInt<s32>(&reader);
 					if (residents.isValid)
 					{
-						def->residents = (s32) residents.value;
+						def->residents = residents.value;
 					}
 				}
 				else if (equals(firstWord, "size"_s))
 				{
-					Maybe<s64> w = readInt(&reader);
-					Maybe<s64> h = readInt(&reader);
+					Maybe<s32> w = readInt<s32>(&reader);
+					Maybe<s32> h = readInt<s32>(&reader);
 
 					if (w.isValid && h.isValid)
 					{
-						def->width  = truncate32(w.value);
-						def->height = truncate32(h.value);
+						def->width  = w.value;
+						def->height = h.value;
 					}
 					else
 					{
@@ -505,10 +505,10 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				{
 					ASSERT(def->width == 1 && def->height == 1); //We only support variants for 1x1 buildings!
 
-					Maybe<s64> variantCount = readInt(&reader);
+					Maybe<s32> variantCount = readInt<s32>(&reader);
 					if (variantCount.isValid)
 					{
-						s32 count = truncate32(variantCount.value);
+						s32 count = variantCount.value;
 						def->variants = makeArray(count, (BuildingVariant *)variantsMemory);
 						variantsMemory += sizeof(BuildingVariant) * count;
 						variantIndex = 0;

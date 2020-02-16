@@ -199,12 +199,12 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "contentPadding"_s))
 			{
-				Maybe<s64> contentPadding = readInt(&reader);
+				Maybe<s32> contentPadding = readInt<s32>(&reader);
 				if (contentPadding.isValid)
 				{
 					switch (target.type)
 					{
-						case Section_Window:  target.window->contentPadding = (s32) contentPadding.value; break;
+						case Section_Window:  target.window->contentPadding = contentPadding.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -249,13 +249,13 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "offsetFromMouse"_s))
 			{
-				Maybe<s64> offsetX = readInt(&reader);
-				Maybe<s64> offsetY = readInt(&reader);
+				Maybe<s32> offsetX = readInt<s32>(&reader);
+				Maybe<s32> offsetY = readInt<s32>(&reader);
 				if (offsetX.isValid && offsetY.isValid)
 				{
 					switch (target.type)
 					{
-						case Section_Window:  target.window->offsetFromMouse = v2i(truncate32(offsetX.value), truncate32(offsetY.value)); break;
+						case Section_Window:  target.window->offsetFromMouse = v2i(offsetX.value, offsetY.value); break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -314,15 +314,15 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "padding"_s))
 			{
-				Maybe<s64> padding = readInt(&reader);
+				Maybe<s32> padding = readInt<s32>(&reader);
 				if (padding.isValid)
 				{
 					switch (target.type)
 					{
-						case Section_Button:     target.button->padding    = (s32) padding.value; break;
-						case Section_Console:    target.console->padding   = (s32) padding.value; break;
-						case Section_UIMessage:  target.message->padding   = (s32) padding.value; break;
-						case Section_TextInput:  target.textInput->padding = (s32) padding.value; break;
+						case Section_Button:     target.button->padding    = padding.value; break;
+						case Section_Console:    target.console->padding   = padding.value; break;
+						case Section_UIMessage:  target.message->padding   = padding.value; break;
+						case Section_TextInput:  target.textInput->padding = padding.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -436,12 +436,12 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "titleBarHeight"_s))
 			{
-				Maybe<s64> titleBarHeight = readInt(&reader);
+				Maybe<s32> titleBarHeight = readInt<s32>(&reader);
 				if (titleBarHeight.isValid)
 				{
 					switch (target.type)
 					{
-						case Section_Window:  target.window->titleBarHeight = (s32) titleBarHeight.value; break;
+						case Section_Window:  target.window->titleBarHeight = titleBarHeight.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -470,12 +470,12 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "width"_s))
 			{
-				Maybe<s64> width = readInt(&reader);
+				Maybe<s32> width = readInt<s32>(&reader);
 				if (width.isValid)
 				{
 					switch (target.type)
 					{
-						case Section_Scrollbar:  target.scrollbar->width = (s32) width.value; break;
+						case Section_Scrollbar:  target.scrollbar->width = width.value; break;
 						default:  WRONG_SECTION;
 					}
 				}

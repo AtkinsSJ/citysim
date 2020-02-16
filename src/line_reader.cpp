@@ -154,14 +154,30 @@ String readToken(LineReader *reader, char splitChar)
 	return token;
 }
 
-Maybe<s64> readInt(LineReader *reader)
+template<typename T>
+Maybe<T> readInt(LineReader *reader)
 {
 	String token = readToken(reader);
-	Maybe<s64> result = asInt(token);
+	Maybe<s64> s64Result = asInt(token);
 
-	if (!result.isValid)
+	Maybe<T> result;
+
+	if (!s64Result.isValid)
 	{
 		error(reader, "Couldn't parse '{0}' as an integer."_s, {token});
+		result = makeFailure<T>();
+	}
+	else
+	{
+		if (s64Result.value >= minPossibleValue<T>() && s64Result.value <= maxPossibleValue<T>())
+		{
+			result = makeSuccess<T>((T) s64Result.value);
+		}
+		else
+		{
+			error(reader, "Value {0} cannot fit in a {1}."_s, {token, typeNameOf<T>()});
+			result = makeFailure<T>();
+		}
 	}
 
 	return result;

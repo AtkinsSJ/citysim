@@ -79,10 +79,10 @@ void loadSettingsFile(String name, Blob settingsData)
 
 					case Type_s32:
 					{
-						Maybe<s64> value = readInt(&reader);
+						Maybe<s32> value = readInt<s32>(&reader);
 						if (value.isValid)
 						{
-							((s32 *)firstItem)[i] = (s32) value.value;
+							((s32 *)firstItem)[i] = value.value;
 						}
 					} break;
 

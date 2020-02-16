@@ -876,15 +876,15 @@ void loadCursorDefs(Blob data, Asset *asset)
 		String filename = readToken(&reader);
 		asset->cursorDefs.cursorNames[cursorIndex++] = name;
 
-		Maybe<s64> hotX = readInt(&reader);
-		Maybe<s64> hotY = readInt(&reader);
+		Maybe<s32> hotX = readInt<s32>(&reader);
+		Maybe<s32> hotY = readInt<s32>(&reader);
 
 		if (hotX.isValid && hotY.isValid)
 		{
 			// Add the cursor
 			Asset *cursorAsset = addAsset(AssetType_Cursor, name, 0);
 			cursorAsset->cursor.imageFilePath = intern(&assets->assetStrings, getAssetPath(AssetType_Cursor, filename));
-			cursorAsset->cursor.hotspot = v2i(truncate32(hotX.value), truncate32(hotY.value));
+			cursorAsset->cursor.hotspot = v2i(hotX.value, hotY.value);
 		}
 		else
 		{
@@ -966,10 +966,10 @@ void loadPaletteDefs(Blob data, Asset *asset)
 			}
 			else if (equals(command, "size"_s))
 			{
-				Maybe<s64> size = readInt(&reader);
+				Maybe<s32> size = readInt<s32>(&reader);
 				if (size.isValid)
 				{
-					paletteAsset->palette.size = (s32)size.value;
+					paletteAsset->palette.size = size.value;
 				}
 			}
 			else if (equals(command, "color"_s))
@@ -1064,7 +1064,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 			{
 				String name              = readToken(&reader);
 				String filename          = readToken(&reader);
-				Maybe<s64> spriteCountIn = readInt  (&reader);
+				Maybe<s32> spriteCountIn = readInt<s32>(&reader);
 				Maybe<V2I> spriteSizeIn  = readV2I  (&reader);
 
 				if (isEmpty(name) || isEmpty(filename) || !spriteCountIn.isValid || !spriteSizeIn.isValid)
@@ -1076,7 +1076,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				textureAsset = addTexture(filename, false);
 				spriteSize = spriteSizeIn.value;
 
-				s32 spriteCount = truncate32(spriteCountIn.value);
+				s32 spriteCount = spriteCountIn.value;
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 			}
@@ -1089,13 +1089,13 @@ void loadSpriteDefs(Blob data, Asset *asset)
 		{
 			if (equals(command, "sprite"_s))
 			{
-				Maybe<s64> mx = readInt(&reader);
-				Maybe<s64> my = readInt(&reader);
+				Maybe<s32> mx = readInt<s32>(&reader);
+				Maybe<s32> my = readInt<s32>(&reader);
 
 				if (mx.isValid && my.isValid)
 				{
-					s32 x = truncate32(mx.value);
-					s32 y = truncate32(my.value);
+					s32 x = mx.value;
+					s32 y = my.value;
 
 					Sprite *sprite = spriteGroup->spriteGroup.sprites + spriteIndex;
 					sprite->texture = textureAsset;

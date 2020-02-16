@@ -516,3 +516,10 @@ template<> const inline f32 minPossibleValue<f32>() { return f32Min; }
 template<> const inline f32 maxPossibleValue<f32>() { return f32Max; }
 template<> const inline f64 minPossibleValue<f64>() { return f64Min; }
 template<> const inline f64 maxPossibleValue<f64>() { return f64Max; }
+
+#include <typeinfo>
+template<typename T>
+String typeNameOf()
+{
+	return makeString( typeid(T).name() );
+}
