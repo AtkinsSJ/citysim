@@ -587,16 +587,7 @@ void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I dem
 	// - Sam, 16/07/2019
 	// 
 	s32 buildingsRemaining = truncate32(visibleBuildings.count);
-	Building *firstBuilding = *get(&visibleBuildings, 0);
 	DrawRectsGroup *group = null;
-
-	// In some cases, the first building (or buildings) could be the Null building and so have no sprites!
-	// Rather than crash, we want to skip them.
-	Sprite *firstBuildingSprite = getBuildingSprite(firstBuilding);
-	if (firstBuildingSprite != null)
-	{
-		group = beginRectsGroupTextured(&renderer->worldBuffer, firstBuildingSprite->texture, shaderID, buildingsRemaining);
-	}
 
 	for (auto it = iterate(&visibleBuildings);
 		hasNext(&it);
