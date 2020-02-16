@@ -445,6 +445,9 @@ s32 divideCeil(s32 numerator, s32 denominator);
 s32 truncate32(s64 in);
 
 template<typename T>
+bool canCastIntTo(s64 input);
+
+template<typename T>
 T truncate(s64 in);
 
 u8 clamp01AndMap_u8(f32 in);
@@ -519,7 +522,4 @@ template<> const inline f64 maxPossibleValue<f64>() { return f64Max; }
 
 #include <typeinfo>
 template<typename T>
-String typeNameOf()
-{
-	return makeString( typeid(T).name() );
-}
+String typeNameOf();

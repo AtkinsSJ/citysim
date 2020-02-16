@@ -160,23 +160,21 @@ Maybe<T> readInt(LineReader *reader)
 	String token = readToken(reader);
 	Maybe<s64> s64Result = asInt(token);
 
-	Maybe<T> result;
+	Maybe<T> result = makeFailure<T>();
 
 	if (!s64Result.isValid)
 	{
 		error(reader, "Couldn't parse '{0}' as an integer."_s, {token});
-		result = makeFailure<T>();
 	}
 	else
 	{
-		if (s64Result.value >= minPossibleValue<T>() && s64Result.value <= maxPossibleValue<T>())
+		if (canCastIntTo<T>(s64Result.value))
 		{
 			result = makeSuccess<T>((T) s64Result.value);
 		}
 		else
 		{
 			error(reader, "Value {0} cannot fit in a {1}."_s, {token, typeNameOf<T>()});
-			result = makeFailure<T>();
 		}
 	}
 
@@ -240,9 +238,9 @@ Maybe<V4> readColor(LineReader *reader)
 
 	String allArguments = getRemainderOfLine(reader);
 
-	Maybe<s64> r = asInt(readToken(reader));
-	Maybe<s64> g = asInt(readToken(reader));
-	Maybe<s64> b = asInt(readToken(reader));
+	Maybe<u8> r = readInt<u8>(reader);
+	Maybe<u8> g = readInt<u8>(reader);
+	Maybe<u8> b = readInt<u8>(reader);
 
 	Maybe<V4> result;
 
@@ -252,7 +250,7 @@ Maybe<V4> readColor(LineReader *reader)
 		// FIXME: We *also* default to fully opaque if the alpha is provided but it can't be read as an int... hmmm.
 		Maybe<s64> a = asInt(readToken(reader));
 
-		result = makeSuccess(color255((u8)r.value, (u8)g.value, (u8)b.value, (u8)(a.orDefault(255))));
+		result = makeSuccess(color255(r.value, g.value, b.value, (u8)a.orDefault(255)));
 	}
 	else
 	{
@@ -360,6 +358,8 @@ Maybe<V2I> readV2I(LineReader *reader)
 	String token = readToken(reader);
 	String sx, sy;
 
+	Maybe<V2I> result = makeFailure<V2I>();
+
 	if (splitInTwo(token, 'x', &sx, &sy))
 	{
 		Maybe<s64> x = asInt(sx);
@@ -367,17 +367,31 @@ Maybe<V2I> readV2I(LineReader *reader)
 
 		if (x.isValid && y.isValid)
 		{
-			return makeSuccess<V2I>(v2i(truncate32(x.value), truncate32(y.value)));
+			if (!canCastIntTo<s32>(x.value))
+			{
+				error(reader, "Value {0} cannot fit in an s32."_s, {sx});
+			}
+			else if (!canCastIntTo<s32>(y.value))
+			{
+				error(reader, "Value {0} cannot fit in an s32."_s, {sy});
+			}
+			else
+			{
+				result = makeSuccess<V2I>(v2i((s32)x.value, (s32)y.value));
+			}
 		}
 	}
+	else
+	{
+		error(reader, "Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, {token});
+	}
 
-	error(reader, "Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, {token});
-	return makeFailure<V2I>();
+	return result;
 }
 
 Maybe<EffectRadius> readEffectRadius(LineReader *reader)
 {
-	Maybe<s64> radius = asInt(readToken(reader));
+	Maybe<s32> radius = readInt<s32>(reader);
 
 	if (radius.isValid)
 	{

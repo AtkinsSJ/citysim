@@ -78,10 +78,19 @@ inline s32 truncate32(s64 in)
 	return (s32) in;
 }
 
+
+template<typename T>
+inline bool canCastIntTo(s64 input)
+{
+	bool result = (input >= minPossibleValue<T>() && input <= maxPossibleValue<T>());
+
+	return result;
+}
+
 template<typename T>
 inline T truncate(s64 in)
 {
-	ASSERT(in >= minPossibleValue<T>() && in <= maxPossibleValue<T>());
+	ASSERT(canCastIntTo<T>(in));
 	return (T) in;
 }
 
@@ -1279,4 +1288,10 @@ inline V4 operator*(Matrix4 m, V4 v)
 			 + v.w * m.v[3][3];
 
 	return result;
+}
+
+template<typename T>
+inline String typeNameOf()
+{
+	return makeString( typeid(T).name() );
 }
