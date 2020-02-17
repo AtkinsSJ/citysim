@@ -34,12 +34,13 @@ String getLine(LineReader *reader);
 String getRemainderOfLine(LineReader *reader);
 
 String readToken(LineReader *reader, char splitChar=0);
+String peekToken(LineReader *reader, char splitChar=0);
 
 template<typename T>
-Maybe<T> readInt(LineReader *reader);
+Maybe<T>    readInt  (LineReader *reader, bool isOptional=false, char splitChar=0);
+Maybe<f64>  readFloat(LineReader *reader, bool isOptional=false, char splitChar=0);
+Maybe<bool> readBool (LineReader *reader, bool isOptional=false, char splitChar=0);
 
-Maybe<f64> readFloat(LineReader *reader);
-Maybe<bool> readBool(LineReader *reader);
 Maybe<V4> readColor(LineReader *reader);
 Maybe<u32> readAlignment(LineReader *reader);
 Maybe<struct EffectRadius> readEffectRadius(LineReader *reader);

@@ -154,78 +154,97 @@ String readToken(LineReader *reader, char splitChar)
 	return token;
 }
 
-template<typename T>
-Maybe<T> readInt(LineReader *reader)
+String peekToken(LineReader *reader, char splitChar)
 {
-	String token = readToken(reader);
-	Maybe<s64> s64Result = asInt(token);
+	String token = nextToken(reader->lineRemainder, null, splitChar);
 
+	return token;
+}
+
+template<typename T>
+Maybe<T> readInt(LineReader *reader, bool isOptional, char splitChar)
+{
+	String token = readToken(reader, splitChar);
 	Maybe<T> result = makeFailure<T>();
 
-	if (!s64Result.isValid)
+	if (! (isOptional && isEmpty(token))) // If it's optional, don't print errors
 	{
-		error(reader, "Couldn't parse '{0}' as an integer."_s, {token});
-	}
-	else
-	{
-		if (canCastIntTo<T>(s64Result.value))
+		Maybe<s64> s64Result = asInt(token);
+
+		if (!s64Result.isValid)
 		{
-			result = makeSuccess<T>((T) s64Result.value);
+			error(reader, "Couldn't parse '{0}' as an integer."_s, {token});
 		}
 		else
 		{
-			error(reader, "Value {0} cannot fit in a {1}."_s, {token, typeNameOf<T>()});
+			if (canCastIntTo<T>(s64Result.value))
+			{
+				result = makeSuccess<T>((T) s64Result.value);
+			}
+			else
+			{
+				error(reader, "Value {0} cannot fit in a {1}."_s, {token, typeNameOf<T>()});
+			}
 		}
 	}
 
 	return result;
 }
 
-Maybe<f64> readFloat(LineReader *reader)
+Maybe<f64> readFloat(LineReader *reader, bool isOptional, char splitChar)
 {
-	String token = readToken(reader);
+	String token = readToken(reader, splitChar);
 	Maybe<f64> result = makeFailure<f64>();
 
-	if (token[token.length-1] == '%')
+	if (! (isOptional && isEmpty(token))) // If it's optional, don't print errors
 	{
-		token.length--;
-
-		Maybe<f64> percent = asFloat(token);
-
-		if (!percent.isValid)
+		if (token[token.length-1] == '%')
 		{
-			error(reader, "Couldn't parse '{0}%' as a percentage."_s, {token});
+			token.length--;
+
+			Maybe<f64> percent = asFloat(token);
+
+			if (!percent.isValid)
+			{
+				error(reader, "Couldn't parse '{0}%' as a percentage."_s, {token});
+			}
+			else
+			{
+				result = makeSuccess(percent.value * 0.01f);
+			}
 		}
 		else
 		{
-			result = makeSuccess(percent.value * 0.01f);
-		}
-	}
-	else
-	{
-		Maybe<f64> floatValue = asFloat(token);
+			Maybe<f64> floatValue = asFloat(token);
 
-		if (!floatValue.isValid)
-		{
-			error(reader, "Couldn't parse '{0}' as a float."_s, {token});
-		}
-		else
-		{
-			result = makeSuccess(floatValue.value);
+			if (!floatValue.isValid)
+			{
+				error(reader, "Couldn't parse '{0}' as a float."_s, {token});
+			}
+			else
+			{
+				result = makeSuccess(floatValue.value);
+			}
 		}
 	}
 
 	return result;
 }
 
-Maybe<bool> readBool(LineReader *reader)
+Maybe<bool> readBool(LineReader *reader, bool isOptional, char splitChar)
 {
-	String token = readToken(reader);
-	Maybe<bool> result = asBool(token);
+	String token = readToken(reader, splitChar);
 
-	if (!result.isValid)
+	Maybe<bool> result = makeFailure<bool>();
+
+	if (! (isOptional && isEmpty(token))) // If it's optional, don't print errors
 	{
-		error(reader, "Couldn't parse '{0}' as a boolean."_s, {token});
+		result = asBool(token);
+
+		if (!result.isValid)
+		{
+			error(reader, "Couldn't parse '{0}' as a boolean."_s, {token});
+		}
 	}
 
 	return result;
@@ -355,31 +374,16 @@ Maybe<u32> readAlignment(LineReader *reader)
 
 Maybe<V2I> readV2I(LineReader *reader)
 {
-	String token = readToken(reader);
-	String sx, sy;
-
 	Maybe<V2I> result = makeFailure<V2I>();
 
-	if (splitInTwo(token, 'x', &sx, &sy))
-	{
-		Maybe<s64> x = asInt(sx);
-		Maybe<s64> y = asInt(sy);
+	String token = peekToken(reader);
 
-		if (x.isValid && y.isValid)
-		{
-			if (!canCastIntTo<s32>(x.value))
-			{
-				error(reader, "Value {0} cannot fit in an s32."_s, {sx});
-			}
-			else if (!canCastIntTo<s32>(y.value))
-			{
-				error(reader, "Value {0} cannot fit in an s32."_s, {sy});
-			}
-			else
-			{
-				result = makeSuccess<V2I>(v2i((s32)x.value, (s32)y.value));
-			}
-		}
+	Maybe<s32> x = readInt<s32>(reader, false, 'x');
+	Maybe<s32> y = readInt<s32>(reader);
+
+	if (x.isValid && y.isValid)
+	{
+		result = makeSuccess<V2I>(v2i(x.value, y.value));
 	}
 	else
 	{
@@ -395,14 +399,14 @@ Maybe<EffectRadius> readEffectRadius(LineReader *reader)
 
 	if (radius.isValid)
 	{
-		Maybe<s64> centreValue = asInt(readToken(reader));
-		Maybe<s64> outerValue = asInt(readToken(reader));
+		Maybe<s32> centreValue = readInt<s32>(reader, true);
+		Maybe<s32> outerValue  = readInt<s32>(reader, true);
 
 		EffectRadius result = {};
 
-		result.radius      = truncate32(radius.value);
-		result.centreValue = truncate32(centreValue.orDefault(radius.value)); // Default to value=radius
-		result.outerValue  = truncate32(outerValue.orDefault(0));
+		result.radius      = radius.value;
+		result.centreValue = centreValue.orDefault(radius.value); // Default to value=radius
+		result.outerValue  = outerValue.orDefault(0);
 
 		return makeSuccess(result);
 	}
