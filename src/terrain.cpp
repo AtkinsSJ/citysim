@@ -55,8 +55,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 
 	LineReader reader = readLines(asset->shortName, data);
 
-	// We store the paletteNames array in the defs asset
-	// So, we first need to scan through the file to see how many palettes there are in it!
+	// Pre scan for the number of Terrains, so we can allocate enough space in the asset.
 	s32 terrainCount = 0;
 	while (loadNextLine(&reader))
 	{
@@ -73,17 +72,6 @@ void loadTerrainDefs(Blob data, Asset *asset)
 
 	restart(&reader);
 
-	enum Mode
-	{
-		Mode_None = 0,
-		Mode_Terrain,
-		Mode_Texture,
-	} mode = Mode_None;
-
-	Asset *textureAsset = null;
-	V2I spriteSize = v2i(0,0);
-	V2I spriteBorder = v2i(0,0);
-
 	TerrainDef *def = null;
 
 	while (loadNextLine(&reader))
@@ -99,8 +87,6 @@ void loadTerrainDefs(Blob data, Asset *asset)
 			String defType = firstWord;
 			if (equals(firstWord, "Terrain"_s))
 			{
-				mode = Mode_Terrain;
-
 				String name = readToken(&reader);
 				if (isEmpty(name))
 				{
@@ -123,18 +109,6 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				put(&terrainCatalogue.terrainDefsByName, def->name, def);
 				put(&terrainCatalogue.terrainNameToType, def->name, def->typeID);
 			}
-			else if (equals(firstWord, "Texture"_s))
-			{
-				mode = Mode_Texture;
-				
-				String filename = getRemainderOfLine(&reader);
-				if (isEmpty(filename))
-				{
-					error(&reader, "Couldn't parse Texture. Expected: ':Texture filename'"_s);
-					return;
-				}
-				textureAsset = addTexture(filename, false);
-			}
 			else
 			{
 				error(&reader, "Unrecognised command: '{0}'"_s, {firstWord});
@@ -142,85 +116,22 @@ void loadTerrainDefs(Blob data, Asset *asset)
 		}
 		else // Properties!
 		{
-			switch (mode)
+			if (equals(firstWord, "can_build_on"_s))
 			{
-				case Mode_Texture: {
-					if (equals(firstWord, "sprite_size"_s))
-					{
-						Maybe<s32> spriteW = readInt<s32>(&reader);
-						Maybe<s32> spriteH = readInt<s32>(&reader);
-						if (spriteW.isValid && spriteH.isValid)
-						{
-							spriteSize = v2i(spriteW.value, spriteH.value);
-						}
-						else
-						{
-							error(&reader, "Couldn't parse sprite_size. Expected 'sprite_size width height'."_s);
-							return;
-						}
-					}
-					else if (equals(firstWord, "sprite_border"_s))
-					{
-						Maybe<s32> borderW = readInt<s32>(&reader);
-						Maybe<s32> borderH = readInt<s32>(&reader);
-						if (borderW.isValid && borderH.isValid)
-						{
-							spriteBorder = v2i(borderW.value, borderH.value);
-						}
-						else
-						{
-							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'."_s);
-							return;
-						}
-					}
-					else if (equals(firstWord, "sprite"_s))
-					{
-						String spriteName = intern(&assets->assetStrings, readToken(&reader));
-						Maybe<s32> x = readInt<s32>(&reader);
-						Maybe<s32> y = readInt<s32>(&reader);
-						Maybe<s32> w = readInt<s32>(&reader);
-						Maybe<s32> h = readInt<s32>(&reader);
-
-						if (x.isValid && y.isValid && w.isValid && h.isValid)
-						{
-							Rect2I selectedSprites = irectXYWH(x.value, y.value, w.value, h.value);
-							addTiledSprites(spriteName, textureAsset, spriteSize, spriteBorder, selectedSprites);
-						}
-						else
-						{
-							error(&reader, "Couldn't parse sprite_border. Expected 'sprite_border width height'."_s);
-							return;
-						}
-					}
-					else
-					{
-						warn(&reader, "Unrecognised property '{0}' inside command ':Texture'"_s, {firstWord});
-					}
-				} break;
-
-				case Mode_Terrain: {
-					if (equals(firstWord, "name"_s))
-					{
-						def->textAssetName = intern(&assets->assetStrings, readToken(&reader));
-					}
-					else if (equals(firstWord, "uses_sprite"_s))
-					{
-						def->spriteName = intern(&assets->assetStrings, readToken(&reader));
-					}
-					else if (equals(firstWord, "can_build_on"_s))
-					{
-						Maybe<bool> boolRead = readBool(&reader);
-						if (boolRead.isValid) def->canBuildOn = boolRead.value;
-					}
-					else
-					{
-						warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'"_s, {firstWord});
-					}
-				} break;
-
-				default: {
-					error(&reader, "Found a property '{0}' before a :command!"_s, {firstWord});
-				} break;
+				Maybe<bool> boolRead = readBool(&reader);
+				if (boolRead.isValid) def->canBuildOn = boolRead.value;
+			}
+			else if (equals(firstWord, "name"_s))
+			{
+				def->textAssetName = intern(&assets->assetStrings, readToken(&reader));
+			}
+			else if (equals(firstWord, "sprite"_s))
+			{
+				def->spriteName = intern(&assets->assetStrings, readToken(&reader));
+			}
+			else
+			{
+				warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'"_s, {firstWord});
 			}
 		}
 	}

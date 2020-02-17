@@ -1,18 +1,11 @@
 # Terrain!
 
-:Texture terrain.png
-sprite_size 16 16
-sprite_border 1 1  # How many pixels wide the border is around each sprite. (eg if 1, there's 2px between two sprites, 1 for each)
-#      Name  x y w h (Rectangle defining which sprites in the texture are for this type)
-sprite water 0 0 4 1
-sprite grass 0 1 4 1
-
 :Terrain water
 name name_water
-uses_sprite water
+sprite t_water
 can_build_on false
 
 :Terrain ground
 name name_ground
-uses_sprite grass
+sprite t_grass
 can_build_on true

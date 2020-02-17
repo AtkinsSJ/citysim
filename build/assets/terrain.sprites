@@ -1,0 +1,15 @@
+# Terrain
+
+:SpriteGroup t_water terrain.png 4 16x16
+border 1 1
+sprite 0 0
+sprite 1 0
+sprite 2 0
+sprite 3 0
+
+:SpriteGroup t_grass terrain.png 4 16x16
+border 1 1
+sprite 0 1
+sprite 1 1
+sprite 2 1
+sprite 3 1

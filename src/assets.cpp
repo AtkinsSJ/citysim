@@ -1046,7 +1046,8 @@ void loadSpriteDefs(Blob data, Asset *asset)
 	LineReader reader = readLines(asset->shortName, data);
 
 	Asset *textureAsset = null;
-	V2I spriteSize = v2i(0,0);
+	V2I spriteSize   = v2i(0,0);
+	V2I spriteBorder = v2i(0,0);
 	Asset *spriteGroup = null;
 	s32 spriteIndex = 0;
 
@@ -1083,11 +1084,26 @@ void loadSpriteDefs(Blob data, Asset *asset)
 			else
 			{
 				error(&reader, "Unrecognised command: '{0}'"_s, {command});
+				return;
 			}
 		}
 		else // Properties!
 		{
-			if (equals(command, "sprite"_s))
+			if (equals(command, "border"_s))
+			{
+				Maybe<s32> borderW = readInt<s32>(&reader);
+				Maybe<s32> borderH = readInt<s32>(&reader);
+				if (borderW.isValid && borderH.isValid)
+				{
+					spriteBorder = v2i(borderW.value, borderH.value);
+				}
+				else
+				{
+					error(&reader, "Couldn't parse border. Expected 'border width height'."_s);
+					return;
+				}
+			}
+			else if (equals(command, "sprite"_s))
 			{
 				Maybe<s32> mx = readInt<s32>(&reader);
 				Maybe<s32> my = readInt<s32>(&reader);
@@ -1099,18 +1115,22 @@ void loadSpriteDefs(Blob data, Asset *asset)
 
 					Sprite *sprite = spriteGroup->spriteGroup.sprites + spriteIndex;
 					sprite->texture = textureAsset;
-					sprite->uv = rectXYWHi(x * spriteSize.x, y * spriteSize.y, spriteSize.x, spriteSize.y);
+					sprite->uv = rectXYWHi(spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
+										   spriteBorder.y + y * (spriteSize.y + spriteBorder.y + spriteBorder.y),
+										   spriteSize.x, spriteSize.y);
 
 					spriteIndex++;
 				}
 				else
 				{
 					error(&reader, "Couldn't parse {0}. Expected '{0} x y'."_s, {command});
+					return;
 				}
 			}
 			else
 			{
 				error(&reader, "Unrecognised command '{0}'"_s, {command});
+				return;
 			}
 		}
 	}

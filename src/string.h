@@ -45,8 +45,6 @@ String trim(String input);
 String trimStart(String input);
 String trimEnd(String input);
 
-// See comment in line_reader.cpp:readV2I(), about wanting to add a which-type-of-int
-// parameter, and the problems with that.
 Maybe<s64> asInt(String input);
 Maybe<f64> asFloat(String input);
 Maybe<bool> asBool(String input);
