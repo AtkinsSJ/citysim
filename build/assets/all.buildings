@@ -3,10 +3,29 @@
 :Building power-line
 name name_power-line
 size 1 1
-sprite b_powerline
+sprite b_powerline_0000
 build line 2
 demolish_cost 2
 carries_power true
+
+variant_count 16
+# The 4 flags are Up/Right/Down/Left connectivity
+variant 0000 b_powerline_0000
+variant 1000 b_powerline_1000
+variant 0100 b_powerline_0100
+variant 1100 b_powerline_1100
+variant 0010 b_powerline_0010
+variant 1010 b_powerline_1010
+variant 0110 b_powerline_0110
+variant 1110 b_powerline_1110
+variant 0001 b_powerline_0001
+variant 1001 b_powerline_1001
+variant 0101 b_powerline_0101
+variant 1101 b_powerline_1101
+variant 0011 b_powerline_0011
+variant 1011 b_powerline_1011
+variant 0111 b_powerline_0111
+variant 1111 b_powerline_1111
 
 # :Building power-line_road
 # name name_power-line_road
