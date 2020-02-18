@@ -36,6 +36,7 @@ void initBuildingCatalogue()
 	// NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
 	// So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
 	// and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
+	// Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
 	Indexed<BuildingDef*> nullBuildingDef = append(&catalogue->allBuildings);
 	*nullBuildingDef.value = {};
 	initFlags(&nullBuildingDef.value->flags, BuildingFlagCount);
@@ -167,10 +168,39 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				put(&catalogue->buildingsByName, def->name, def);
 				put(&catalogue->buildingNameToTypeID, def->name, def->typeID);
 			}
+			else if (equals(firstWord, "Intersection"_s))
+			{
+				String name = readToken(&reader);
+				String part1Name = readToken(&reader);
+				String part2Name = readToken(&reader);
+
+				if (isEmpty(name) || isEmpty(part1Name) || isEmpty(part2Name))
+				{
+					error(&reader, "Couldn't parse Intersection. Expected: ':Intersection identifier part1 part2'"_s);
+					return;
+				}
+
+				Indexed<BuildingDef *> newDef = append(buildings);
+				def = newDef.value;
+				def->name = intern(&catalogue->buildingNames, name);
+				def->typeID = newDef.index;
+				initFlags(&def->flags, BuildingFlagCount);
+				initFlags(&def->transportTypes, TransportTypeCount);
+
+				def->isIntersection = true;
+				def->intersectionPart1Name = intern(&catalogue->buildingNames, part1Name);
+				def->intersectionPart2Name = intern(&catalogue->buildingNames, part2Name);
+			}
 			else if (equals(firstWord, "Template"_s))
 			{
-				String name = pushString(tempArena, getRemainderOfLine(&reader));
-				def = put(&templates, name);
+				String name = readToken(&reader);
+				if (isEmpty(name))
+				{
+					error(&reader, "Couldn't parse Template. Expected: ':Template identifier'"_s);
+					return;
+				}
+
+				def = put(&templates, pushString(tempArena, name));
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
 			}
@@ -526,21 +556,50 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						String directionFlags = readToken(&reader);
 						String spriteName = readToken(&reader);
 
-						if (directionFlags.length == 4)
+						if (directionFlags.length == 8)
 						{
-							variant->connections = ((directionFlags[0] == '1') ? Connect_Up    : 0)
-												 | ((directionFlags[1] == '1') ? Connect_Right : 0)
-												 | ((directionFlags[2] == '1') ? Connect_Down  : 0)
-												 | ((directionFlags[3] == '1') ? Connect_Left  : 0);
+							variant->connections[Connect_N ] = connectionTypeOf(directionFlags[0]);
+							variant->connections[Connect_NE] = connectionTypeOf(directionFlags[1]); 
+							variant->connections[Connect_E ] = connectionTypeOf(directionFlags[2]); 
+							variant->connections[Connect_SE] = connectionTypeOf(directionFlags[3]);
+							variant->connections[Connect_S ] = connectionTypeOf(directionFlags[4]);
+							variant->connections[Connect_SW] = connectionTypeOf(directionFlags[5]); 
+							variant->connections[Connect_W ] = connectionTypeOf(directionFlags[6]); 
+							variant->connections[Connect_NW] = connectionTypeOf(directionFlags[7]);
+						}
+						else if (directionFlags.length == 4)
+						{
+							// The 4 other directions don't matter
+							variant->connections[Connect_NE] = ConnectionType_Anything;
+							variant->connections[Connect_SE] = ConnectionType_Anything; 
+							variant->connections[Connect_SW] = ConnectionType_Anything; 
+							variant->connections[Connect_NW] = ConnectionType_Anything;
+
+							variant->connections[Connect_N] = connectionTypeOf(directionFlags[0]);
+							variant->connections[Connect_E] = connectionTypeOf(directionFlags[1]); 
+							variant->connections[Connect_S] = connectionTypeOf(directionFlags[2]); 
+							variant->connections[Connect_W] = connectionTypeOf(directionFlags[3]);
 						}
 						else
 						{
-							error(&reader, "First argument to 'variant' should be 4 0/1 flags for up/right/down/left connectivity."_s);
+							error(&reader, "First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1 flags for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity."_s);
+							return;
 						}
 
-						variant->spriteName = spriteName;
+						String connectionsString = repeatChar(' ', ConnectionDirectionCount);
+						for (s32 connectionIndex = 0; connectionIndex < ConnectionDirectionCount; connectionIndex++)
+						{
+							if (variant->connections[connectionIndex] == ConnectionType_Invalid)
+							{
+								error(&reader, "Unrecognized connection type character, valid values: '012*'"_s);
+							}
 
-						logInfo("{0} variant {1} has connections {2} (from '{3}')"_s, {def->name, formatInt(variantIndex), formatInt(variant->connections), directionFlags});
+							connectionsString[connectionIndex] = asChar(variant->connections[connectionIndex]);
+						}
+
+						logInfo("{0} variant {1} has connections {2} (from '{3}')"_s, {def->name, formatInt(variantIndex), connectionsString, directionFlags});
+
+						variant->spriteName = spriteName;
 					}
 					else
 					{
@@ -558,6 +617,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 	if (def != null)
 	{
 		// Categorise the last building
+		// TODO: Move into saveBuildingTypes() with other post-processing
 		_assignBuildingCategories(catalogue, def);
 	}
 
@@ -705,6 +765,83 @@ s32 getMaxBuildingSize(ZoneType zoneType)
 	return result;
 }
 
+bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neighbours)
+{
+	auto matchOne = [](BuildingDef *def, ConnectionType connectionType, Building *targetBuilding)
+	{
+		bool result = false;
+
+		if (targetBuilding == null)
+		{
+			result = (connectionType == ConnectionType_Nothing) || (connectionType == ConnectionType_Anything);
+		}
+		else
+		{
+			switch (connectionType)
+			{
+				case ConnectionType_Nothing: {
+					if (def->isIntersection)
+					{
+						result = (targetBuilding->typeID != def->intersectionPart1TypeID)
+							  && (targetBuilding->typeID != def->intersectionPart2TypeID);
+					}
+					else
+					{
+						result = (targetBuilding->typeID != def->typeID);
+					}
+				} break;
+
+				case ConnectionType_Building1: {
+					if (def->isIntersection)
+					{
+						result = (targetBuilding->typeID == def->intersectionPart1TypeID);
+					}
+					else
+					{
+						result = (targetBuilding->typeID == def->typeID);
+					}
+				} break;
+
+				case ConnectionType_Building2: {
+					if (def->isIntersection)
+					{
+						result = (targetBuilding->typeID == def->intersectionPart2TypeID);
+					}
+					else
+					{
+						result = false;
+					}
+				} break;
+
+				case ConnectionType_Anything: {
+					result = true;
+				} break;
+
+				case ConnectionType_Invalid:
+				default: {
+					result = false;
+				} break;
+			}
+		}
+
+		return result;
+	};
+
+	bool result = true;
+
+	for (s32 directionIndex = 0; directionIndex < ConnectionDirectionCount; directionIndex++)
+	{
+		bool directionResult = matchOne(def, variant->connections[directionIndex], neighbours[directionIndex]);
+		if (directionResult == false)
+		{
+			result = false;
+			break;
+		}
+	}
+
+	return result;
+}
+
 void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDef)
 {
 	DEBUG_FUNCTION();
@@ -721,27 +858,35 @@ void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDe
 		// The only non-1x1 cases I can think of could be worked around, too, so it's fine.
 		// (eg, A train station with included rail - only the RAILS need variants, the station doesn't!)
 		// - Sam, 14/02/2020
+		
 
 		// Calculate our connections
-		Building *buildingL = getBuildingAt(city, building->footprint.x - 1, building->footprint.y);
-		Building *buildingR = getBuildingAt(city, building->footprint.x + building->footprint.w, building->footprint.y);
-		Building *buildingU = getBuildingAt(city, building->footprint.x, building->footprint.y - 1);
-		Building *buildingD = getBuildingAt(city, building->footprint.x, building->footprint.y + building->footprint.h);
-		u8 connections = (((buildingU != null) && (buildingU->typeID == building->typeID)) ? Connect_Up    : 0)
-					   | (((buildingR != null) && (buildingR->typeID == building->typeID)) ? Connect_Right : 0)
-					   | (((buildingD != null) && (buildingD->typeID == building->typeID)) ? Connect_Down  : 0)
-					   | (((buildingL != null) && (buildingL->typeID == building->typeID)) ? Connect_Left  : 0);
+		s32 x = building->footprint.x;
+		s32 y = building->footprint.y;
+
+		static_assert(ConnectionDirectionCount == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
+		Building *neighbours[ConnectionDirectionCount] = {
+			getBuildingAt(city, x    , y - 1),
+			getBuildingAt(city, x + 1, y - 1),
+			getBuildingAt(city, x + 1, y    ),
+			getBuildingAt(city, x + 1, y + 1),
+			getBuildingAt(city, x    , y + 1),
+			getBuildingAt(city, x - 1, y + 1),
+			getBuildingAt(city, x - 1, y    ),
+			getBuildingAt(city, x - 1, y - 1)
+		};
 
 		// Search for a matching variant
 		// Right now... YAY LINEAR SEARCH! @Speed
 		bool foundVariant = false;
 		for (s32 variantIndex = 0; variantIndex < def->variants.count; variantIndex++)
 		{
-			if (def->variants[variantIndex].connections == connections)
+			BuildingVariant *variant = &def->variants[variantIndex];
+			if (matchesVariant(def, variant, neighbours))
 			{
 				building->variantIndex = variantIndex;
 				foundVariant = true;
-				logInfo("Matched building {0}, connections {1} with variant #{2}"_s, {def->name, formatInt(connections), formatInt(variantIndex)});
+				logInfo("Matched building {0}#{1} with variant #{2}"_s, {def->name, formatInt(building->id), formatInt(variantIndex)});
 				break;
 			}
 		}
@@ -750,12 +895,12 @@ void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDe
 		{
 			if (!isEmpty(def->spriteName))
 			{
-				logWarn("Unable to find a matching variant for building '{0}' with connections = {1}. Defaulting to the building's defined sprite, '{2}'."_s, {def->name, formatInt(connections), def->spriteName});
+				logWarn("Unable to find a matching variant for building '{0}'. Defaulting to the building's defined sprite, '{1}'."_s, {def->name, def->spriteName});
 				building->variantIndex = NO_VARIANT;
 			}
 			else
 			{
-				logWarn("Unable to find a matching variant for building '{0}' with connections = {1}. Defaulting to variant #0."_s, {def->name, formatInt(connections)});
+				logWarn("Unable to find a matching variant for building '{0}'. Defaulting to variant #0."_s, {def->name});
 				building->variantIndex = 0;
 			}
 		}
@@ -870,6 +1015,40 @@ inline Sprite *getBuildingSprite(Building *building)
 	return result;
 }
 
+inline ConnectionType connectionTypeOf(char c)
+{
+	ConnectionType result;
+
+	switch (c)
+	{
+		case '0':  result = ConnectionType_Nothing;    break;
+		case '1':  result = ConnectionType_Building1;  break;
+		case '2':  result = ConnectionType_Building2;  break;
+		case '*':  result = ConnectionType_Anything;   break;
+
+		default:   result = ConnectionType_Invalid;    break;
+	}
+
+	return result;
+}
+
+inline char asChar(ConnectionType connectionType)
+{
+	char result;
+
+	switch (connectionType)
+	{
+		case ConnectionType_Nothing:    result =  '0';  break;
+		case ConnectionType_Building1:  result =  '1';  break;
+		case ConnectionType_Building2:  result =  '2';  break;
+		case ConnectionType_Anything:   result =  '*';  break;
+
+		default:   result = '@';    break;
+	}
+
+	return result;
+}
+
 inline s32 getRequiredPower(Building *building)
 {
 	s32 result = 0;
@@ -890,6 +1069,38 @@ inline bool buildingHasPower(Building *building)
 
 void saveBuildingTypes()
 {
+	// Post-processing of BuildingDefs
+	for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
+	{
+		auto def = get(&it);
+		if (def->isIntersection)
+		{
+			BuildingDef *part1Def = findBuildingDef(def->intersectionPart1Name);
+			BuildingDef *part2Def = findBuildingDef(def->intersectionPart2Name);
+
+			if (part1Def == null)
+			{
+				logError("Unable to find building named '{0}' for part 1 of intersection '{1}'."_s, {def->intersectionPart1Name, def->name});
+				def->intersectionPart1TypeID = 0;
+			}
+			else
+			{
+				def->intersectionPart1TypeID = part1Def->typeID;
+			}
+
+			if (part2Def == null)
+			{
+				logError("Unable to find building named '{0}' for part 2 of intersection '{1}'."_s, {def->intersectionPart2Name, def->name});
+				def->intersectionPart2TypeID = 0;
+			}
+			else
+			{
+				def->intersectionPart2TypeID = part2Def->typeID;
+			}
+		}
+	}
+
+	// Actual saving
 	putAll(&buildingCatalogue.buildingNameToOldTypeID, &buildingCatalogue.buildingNameToTypeID);
 }
 

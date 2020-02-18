@@ -1,20 +1,20 @@
 # More texts!
 
-name_road Road
-name_power-line Power line
-name_power-line_road Power line over road
-name_power-station Power station
-name_fire-station Fire station
-name_police-station Police station
-name_hospital Hospital
+b_road Road
+b_powerline Power line
+b_powerline_road Power line over road
+b_power-station Power station
+b_fire-station Fire station
+b_police-station Police station
+b_hospital Hospital
 
-name_res-small1 Small house
-name_res-med1 House
-name_com-med1 Shop
-name_ind-large1 Factory
+b_res-small1 Small house
+b_res-med1 House
+b_com-med1 Shop
+b_ind-large1 Factory
 
-name_tree Tree
+b_tree Tree
 
 # Putting terrain here too!
-name_water  Water
-name_ground Ground
+t_water  Water
+t_ground Ground

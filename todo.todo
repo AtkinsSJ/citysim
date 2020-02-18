@@ -26,6 +26,10 @@ Saving and loading!
 	- Keep in mind the filename it was loaded from (or last saved to) and use that as the default, and don't warn if you try to overwrite it.
 - "Load" window that previews the saved games.
 
+Actually implement formatDateTime() formats!
+
+Disable the warnings from save_file.cpp somehow because they spam me all the time.
+
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
 Window buttons should still do hover-states even on inactive windows.

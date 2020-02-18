@@ -116,7 +116,12 @@ void loadTerrainDefs(Blob data, Asset *asset)
 		}
 		else // Properties!
 		{
-			if (equals(firstWord, "can_build_on"_s))
+			if (def == null)
+			{
+				error(&reader, "Found a property before starting a :Terrain!"_s);
+				return;
+			}
+			else if (equals(firstWord, "can_build_on"_s))
 			{
 				Maybe<bool> boolRead = readBool(&reader);
 				if (boolRead.isValid) def->canBuildOn = boolRead.value;

@@ -1089,7 +1089,12 @@ void loadSpriteDefs(Blob data, Asset *asset)
 		}
 		else // Properties!
 		{
-			if (equals(command, "border"_s))
+			if (spriteGroup == null)
+			{
+				error(&reader, "Found a property before starting a :SpriteGroup!"_s);
+				return;
+			}
+			else if (equals(command, "border"_s))
 			{
 				Maybe<s32> borderW = readInt<s32>(&reader);
 				Maybe<s32> borderH = readInt<s32>(&reader);

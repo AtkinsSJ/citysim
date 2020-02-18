@@ -1,5 +1,11 @@
 # Buildings
 
+:SpriteGroup b_powerline_road_1212 powerline-road-1212.png 1 16x16
+sprite 0 0
+
+:SpriteGroup b_powerline_road_2121 powerline-road-2121.png 1 16x16
+sprite 0 0
+
 :SpriteGroup b_house_2x2 house-2x2.png 4 32x32
 sprite 0 0
 sprite 1 0

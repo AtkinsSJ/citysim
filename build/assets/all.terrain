@@ -1,11 +1,11 @@
 # Terrain!
 
 :Terrain water
-name name_water
+name t_water
 sprite t_water
 can_build_on false
 
 :Terrain ground
-name name_ground
+name t_ground
 sprite t_grass
 can_build_on true

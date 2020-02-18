@@ -1,7 +1,7 @@
 # Building definitions
 
-:Building power-line
-name name_power-line
+:Building powerline
+name b_powerline
 size 1 1
 sprite b_powerline_0000
 build line 2
@@ -26,6 +26,46 @@ variant 0011 b_powerline_0011
 variant 1011 b_powerline_1011
 variant 0111 b_powerline_0111
 variant 1111 b_powerline_1111
+
+:Building road
+name b_road
+size 1 1
+sprite b_road_0000
+build line 12
+demolish_cost 10
+carries_transport road
+fire_risk 0%
+
+variant_count 16
+# The 4 flags are Up/Right/Down/Left connectivity
+variant 0000 b_road_0000
+variant 1000 b_road_1000
+variant 0100 b_road_0100
+variant 1100 b_road_1100
+variant 0010 b_road_0010
+variant 1010 b_road_1010
+variant 0110 b_road_0110
+variant 1110 b_road_1110
+variant 0001 b_road_0001
+variant 1001 b_road_1001
+variant 0101 b_road_0101
+variant 1101 b_road_1101
+variant 0011 b_road_0011
+variant 1011 b_road_1011
+variant 0111 b_road_0111
+variant 1111 b_road_1111
+
+:Intersection powerline_road powerline road
+name b_powerline_road
+sprite b_powerline_road_1212
+size 1 1
+demolish_cost 10
+carries_transport road
+carries_power true
+
+variant_count 2
+variant 1212 b_powerline_road_1212
+variant 2121 b_powerline_road_2121
 
 # :Building power-line_road
 # name name_power-line_road
