@@ -206,7 +206,8 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 			if (buildingAtPos != null)
 			{
 				// Check if we can combine this with the building that's already there
-				if (getBuildingDef(buildingAtPos->typeID)->canBeBuiltOnID == def->typeID)
+				Maybe<BuildingDef *> possibleIntersection = findBuildingIntersection(getBuildingDef(buildingAtPos->typeID), def);
+				if (possibleIntersection.isValid)
 				{
 					// We can!
 				}
@@ -236,8 +237,11 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 		// NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
 		BuildingDef *oldDef = getBuildingDef(building->typeID);
 
-		building->typeID = def->buildOverResult;
-		def = getBuildingDef(def->buildOverResult);
+		Maybe<BuildingDef *> intersectionDef = findBuildingIntersection(oldDef, def);
+		ASSERT(intersectionDef.isValid);
+
+		building->typeID = intersectionDef.value->typeID;
+		def = intersectionDef.value; // I really don't like this but I don't want to rewrite this entire function right now!
 
 		needToRecalcTransport = (oldDef->transportTypes != def->transportTypes);
 		needToRecalcPower = ((oldDef->flags & Building_CarriesPower) != (def->flags & Building_CarriesPower));

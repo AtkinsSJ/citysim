@@ -546,6 +546,25 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "variant"_s))
 				{
+					//
+					// NB: Not really related to this code but I needed somewhere to put this:
+					// Right now, we linerarly search through variants and pick the first one
+					// that matches. (And though I originally expected some kind of map, that was
+					// before we had 4 different states per connection, which prevents that.)
+					// So, this makes the order important! If multiple variants can match a
+					// situation, then the more specific one needs to come first.
+					//
+					// eg, if you have an "anything in all directions" variant, and it's first,
+					// then nothing else will ever get chosen!
+					//
+					// I'm not sure if this is actually a problem, but it's something to keep in
+					// mind. Maybe we could check all the variants when matching, and choose the
+					// most specific one, which is calculated somehow. IDK. That would mean having
+					// to check every variant, instead of stopping once we find one.
+					//
+					// - Sam, 19/02/2020
+					//
+
 					if (variantIndex < def->variants.count)
 					{
 						BuildingVariant *variant = def->variants.items + variantIndex;
@@ -951,6 +970,31 @@ void updateAdjacentBuildingVariants(City *city, Rect2I footprint)
 			if (defR->variants.count > 0) updateBuildingVariant(city, buildingD, defR);
 		}
 	}
+}
+
+Maybe<BuildingDef *> findBuildingIntersection(BuildingDef *defA, BuildingDef *defB)
+{
+	Maybe<BuildingDef *> result = makeFailure<BuildingDef *>();
+
+	// It's horrible linear search time!
+	// TODO: Put an intersections list in the catalogue, to make this SLIGHTLY less horrible!
+
+	for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
+	{
+		auto itDef = get(&it);
+
+		if (itDef->isIntersection)
+		{
+			if (((itDef->intersectionPart1TypeID == defA->typeID) && (itDef->intersectionPart2TypeID == defB->typeID))
+				|| ((itDef->intersectionPart2TypeID == defA->typeID) && (itDef->intersectionPart1TypeID == defB->typeID)))
+			{
+				result = makeSuccess(itDef);
+				break;
+			}
+		}
+	}
+
+	return result;
 }
 
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
