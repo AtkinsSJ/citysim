@@ -482,7 +482,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 				else if (equals(firstWord, "sprite"_s))
 				{
-					String spriteName = readToken(&reader);
+					String spriteName = intern(&assets->assetStrings, readToken(&reader));
 					def->spriteName = spriteName;
 				}
 				else if (equals(firstWord, "variant_count"_s))
@@ -748,56 +748,58 @@ bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neigh
 	for (s32 directionIndex = 0; directionIndex < ConnectionDirectionCount; directionIndex++)
 	{
 		bool matchedDirection = false;
+		ConnectionType connectionType = variant->connections[directionIndex];
+		Building *neighbour = neighbours[directionIndex];
 
-		if (neighbours[directionIndex] == null)
+		if (neighbour == null)
 		{
-			result = (variant->connections[directionIndex] == ConnectionType_Nothing) || (variant->connections[directionIndex] == ConnectionType_Anything);
+			matchedDirection = (connectionType == ConnectionType_Nothing) || (connectionType == ConnectionType_Anything);
 		}
 		else
 		{
-			switch (variant->connections[directionIndex])
+			switch (connectionType)
 			{
 				case ConnectionType_Nothing: {
 					if (def->isIntersection)
 					{
-						result = (neighbours[directionIndex]->typeID != def->intersectionPart1TypeID)
-							  && (neighbours[directionIndex]->typeID != def->intersectionPart2TypeID);
+						matchedDirection = (neighbour->typeID != def->intersectionPart1TypeID)
+							  			&& (neighbour->typeID != def->intersectionPart2TypeID);
 					}
 					else
 					{
-						result = (neighbours[directionIndex]->typeID != def->typeID);
+						matchedDirection = (neighbour->typeID != def->typeID);
 					}
 				} break;
 
 				case ConnectionType_Building1: {
 					if (def->isIntersection)
 					{
-						result = (neighbours[directionIndex]->typeID == def->intersectionPart1TypeID);
+						matchedDirection = (neighbour->typeID == def->intersectionPart1TypeID);
 					}
 					else
 					{
-						result = (neighbours[directionIndex]->typeID == def->typeID);
+						matchedDirection = (neighbour->typeID == def->typeID);
 					}
 				} break;
 
 				case ConnectionType_Building2: {
 					if (def->isIntersection)
 					{
-						result = (neighbours[directionIndex]->typeID == def->intersectionPart2TypeID);
+						matchedDirection = (neighbour->typeID == def->intersectionPart2TypeID);
 					}
 					else
 					{
-						result = false;
+						matchedDirection = false;
 					}
 				} break;
 
 				case ConnectionType_Anything: {
-					result = true;
+					matchedDirection = true;
 				} break;
 
 				case ConnectionType_Invalid:
 				default: {
-					result = false;
+					matchedDirection = false;
 				} break;
 			}
 		}
