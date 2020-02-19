@@ -210,6 +210,11 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top)
 				if (possibleIntersection.isValid)
 				{
 					// We can!
+					// TODO: We want to check if there is a valid variant, before we build.
+					// But that means matching against buildings that aren't constructed yet,
+					// but just part of the drag-rect planned construction!
+					// (eg, dragging a road across a rail, we want to check for a rail-crossing
+					// variant that matches the planned road tiles.)
 				}
 				else
 				{

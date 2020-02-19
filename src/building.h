@@ -180,12 +180,12 @@ BuildingRef getReferenceTo(Building *building);
 Building *getBuilding(City *city, BuildingRef ref);
 
 void initBuildingCatalogue();
-BuildingDef *getBuildingDef(Building *building);
 
 void loadBuildingDefs(Blob data, Asset *asset);
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
 void removeBuildingDefs(Array<String> idsToRemove);
 BuildingDef *getBuildingDef(s32 buildingTypeID);
+BuildingDef *getBuildingDef(Building *building);
 BuildingDef *findBuildingDef(String name);
 
 bool buildingDefHasType(BuildingDef *def, s32 typeID);
@@ -201,7 +201,7 @@ Sprite *getBuildingSprite(Building *building);
 
 ConnectionType connectionTypeOf(char c);
 char asChar(ConnectionType connectionType);
-bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neighbours);
+bool matchesVariant(BuildingDef *def, BuildingVariant *variant, BuildingDef **neighbourDefs);
 
 Maybe<BuildingDef *> findBuildingIntersection(BuildingDef *defA, BuildingDef *defB);
 

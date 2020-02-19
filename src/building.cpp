@@ -751,7 +751,7 @@ s32 getMaxBuildingSize(ZoneType zoneType)
 	return result;
 }
 
-bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neighbours)
+bool matchesVariant(BuildingDef *def, BuildingVariant *variant, BuildingDef **neighbourDefs)
 {
 	DEBUG_FUNCTION();
 
@@ -761,16 +761,14 @@ bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neigh
 	{
 		bool matchedDirection = false;
 		ConnectionType connectionType = variant->connections[directionIndex];
-		Building *neighbour = neighbours[directionIndex];
+		BuildingDef *neighbourDef = neighbourDefs[directionIndex];
 
-		if (neighbour == null)
+		if (neighbourDef == null)
 		{
 			matchedDirection = (connectionType == ConnectionType_Nothing) || (connectionType == ConnectionType_Anything);
 		}
 		else
 		{
-			BuildingDef *neighbourDef = getBuildingDef(neighbour);
-
 			switch (connectionType)
 			{
 				case ConnectionType_Nothing: {
@@ -851,15 +849,15 @@ void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDe
 		s32 y = building->footprint.y;
 
 		static_assert(ConnectionDirectionCount == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
-		Building *neighbours[ConnectionDirectionCount] = {
-			getBuildingAt(city, x    , y - 1),
-			getBuildingAt(city, x + 1, y - 1),
-			getBuildingAt(city, x + 1, y    ),
-			getBuildingAt(city, x + 1, y + 1),
-			getBuildingAt(city, x    , y + 1),
-			getBuildingAt(city, x - 1, y + 1),
-			getBuildingAt(city, x - 1, y    ),
-			getBuildingAt(city, x - 1, y - 1)
+		BuildingDef *neighbourDefs[ConnectionDirectionCount] = {
+			getBuildingDef(getBuildingAt(city, x    , y - 1)),
+			getBuildingDef(getBuildingAt(city, x + 1, y - 1)),
+			getBuildingDef(getBuildingAt(city, x + 1, y    )),
+			getBuildingDef(getBuildingAt(city, x + 1, y + 1)),
+			getBuildingDef(getBuildingAt(city, x    , y + 1)),
+			getBuildingDef(getBuildingAt(city, x - 1, y + 1)),
+			getBuildingDef(getBuildingAt(city, x - 1, y    )),
+			getBuildingDef(getBuildingAt(city, x - 1, y - 1))
 		};
 
 		// Search for a matching variant
@@ -868,7 +866,7 @@ void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDe
 		for (s32 variantIndex = 0; variantIndex < def->variants.count; variantIndex++)
 		{
 			BuildingVariant *variant = &def->variants[variantIndex];
-			if (matchesVariant(def, variant, neighbours))
+			if (matchesVariant(def, variant, neighbourDefs))
 			{
 				building->variantIndex = variantIndex;
 				foundVariant = true;
