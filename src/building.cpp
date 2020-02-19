@@ -678,6 +678,18 @@ inline BuildingDef *findBuildingDef(String name)
 	return result;
 }
 
+inline bool buildingDefHasType(BuildingDef *def, s32 typeID)
+{
+	bool result = (def->typeID == typeID);
+
+	if (def->isIntersection)
+	{
+		result = result || (def->intersectionPart1TypeID == typeID) || (def->intersectionPart2TypeID == typeID);
+	}
+
+	return result;
+}
+
 inline ChunkedArray<BuildingDef *> *getConstructibleBuildings()
 {
 	return &buildingCatalogue.constructibleBuildings;
@@ -757,35 +769,37 @@ bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neigh
 		}
 		else
 		{
+			BuildingDef *neighbourDef = getBuildingDef(neighbour);
+
 			switch (connectionType)
 			{
 				case ConnectionType_Nothing: {
 					if (def->isIntersection)
 					{
-						matchedDirection = (neighbour->typeID != def->intersectionPart1TypeID)
-							  			&& (neighbour->typeID != def->intersectionPart2TypeID);
+						matchedDirection = !buildingDefHasType(neighbourDef, def->intersectionPart1TypeID)
+							  			&& !buildingDefHasType(neighbourDef, def->intersectionPart2TypeID);
 					}
 					else
 					{
-						matchedDirection = (neighbour->typeID != def->typeID);
+						matchedDirection = !buildingDefHasType(neighbourDef, def->typeID);
 					}
 				} break;
 
 				case ConnectionType_Building1: {
 					if (def->isIntersection)
 					{
-						matchedDirection = (neighbour->typeID == def->intersectionPart1TypeID);
+						matchedDirection = buildingDefHasType(neighbourDef, def->intersectionPart1TypeID);
 					}
 					else
 					{
-						matchedDirection = (neighbour->typeID == def->typeID);
+						matchedDirection = buildingDefHasType(neighbourDef, def->typeID);
 					}
 				} break;
 
 				case ConnectionType_Building2: {
 					if (def->isIntersection)
 					{
-						matchedDirection = (neighbour->typeID == def->intersectionPart2TypeID);
+						matchedDirection = buildingDefHasType(neighbourDef, def->intersectionPart2TypeID);
 					}
 					else
 					{

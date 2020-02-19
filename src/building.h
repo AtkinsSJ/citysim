@@ -188,6 +188,8 @@ void removeBuildingDefs(Array<String> idsToRemove);
 BuildingDef *getBuildingDef(s32 buildingTypeID);
 BuildingDef *findBuildingDef(String name);
 
+bool buildingDefHasType(BuildingDef *def, s32 typeID);
+
 s32 getRequiredPower(Building *building);
 bool buildingHasPower(Building *building);
 
