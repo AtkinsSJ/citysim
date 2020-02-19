@@ -73,16 +73,6 @@ struct BuildingDef
 
 	BuildMethod buildMethod;
 	s32 buildCost;
-	/*
-	 * This is a bit of a mess, and I don't have a good name for it!
-	 * If we try and place this building over a buildingTypeThisCanBeBuiltOver,
-	 * then buildOverResultBuildingType is produced.
-	 * TODO: If this gets used a lot, we may want to instead have an outside list
-	 * of "a + b -> c" building combinations. Right now, a building can only be an
-	 * ingredient for one building, which I KNOW is not enough!
-	 */
-	s32 canBeBuiltOnID;
-	s32 buildOverResult;
 
 	bool isIntersection;
 	String intersectionPart1Name;

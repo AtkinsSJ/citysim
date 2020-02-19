@@ -67,15 +67,6 @@ variant_count 2
 variant 1212 b_powerline_road_1212
 variant 2121 b_powerline_road_2121
 
-# :Building power-line_road
-# name name_power-line_road
-# combination_of road | power-line
-# size 1 1
-# texture power-line-over-road power-line-over-road.png 16 16 2 1
-# demolish_cost 10
-# carries_transport road
-# carries_power true
-
 #
 # Zoneables
 #

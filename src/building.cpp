@@ -291,56 +291,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						}
 					}
 				}
-				else if (equals(firstWord, "combination_of"_s))
-				{
-					// HACK: This is really janky, but this concept is going away soon anyway so who cares at this point!
-					// - Sam, 12/09/2019
-					String ingredientName1;
-					String ingredientName2;
-
-					if (splitInTwo(getRemainderOfLine(&reader), '|', &ingredientName1, &ingredientName2))
-					{
-						ingredientName1 = trim(ingredientName1);
-						ingredientName2 = trim(ingredientName2);
-
-						// Now, find the buildings so we can link it up!
-						BuildingDef *ingredient1 = findBuildingDef(ingredientName1);
-						BuildingDef *ingredient2 = findBuildingDef(ingredientName2);
-
-						if (ingredient1 == null)
-						{
-							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!"_s, {ingredientName1});
-							return;
-						}
-						else if (ingredient2 == null)
-						{
-							error(&reader, "Couldn't locate building named \"{0}\", make sure it's defined in the file before this point!"_s, {ingredientName2});
-							return;
-						}
-						else
-						{
-							// We found them, yay!
-							if (ingredient1->canBeBuiltOnID)
-							{
-								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one."_s, {ingredientName1});
-								return;
-							}
-							if (ingredient2->canBeBuiltOnID)
-							{
-								error(&reader, "Building named \"{0}\" is already involved in a combination. Right now, we only support one."_s, {ingredientName2});
-								return;
-							}
-							ingredient1->canBeBuiltOnID = ingredient2->typeID;
-							ingredient2->canBeBuiltOnID = ingredient1->typeID;
-							ingredient1->buildOverResult = ingredient2->buildOverResult = def->typeID;
-						}
-					}
-					else
-					{
-						error(&reader, "Couldn't parse combination_of. Expected \"combination_of First Building Name | Second Building Name\"."_s);
-						return;
-					}
-				}
 				else if (equals(firstWord, "crime_protection"_s))
 				{
 					Maybe<EffectRadius> crime_protection = readEffectRadius(&reader);
@@ -376,8 +326,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						def->sprites = templateDef->sprites;
 						def->buildMethod = templateDef->buildMethod;
 						def->buildCost = templateDef->buildCost;
-						def->canBeBuiltOnID = templateDef->canBeBuiltOnID;
-						def->buildOverResult = templateDef->buildOverResult;
 						def->growsInZone = templateDef->growsInZone;
 						def->demolishCost = templateDef->demolishCost;
 						def->residents = templateDef->residents;
