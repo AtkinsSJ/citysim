@@ -28,9 +28,10 @@ void initBuildingCatalogue()
 	*catalogue = {};
 
 	initChunkedArray(&catalogue->constructibleBuildings, &globalAppState.systemArena, 64);
-	initChunkedArray(&catalogue->rGrowableBuildings, &globalAppState.systemArena, 64);
-	initChunkedArray(&catalogue->cGrowableBuildings, &globalAppState.systemArena, 64);
-	initChunkedArray(&catalogue->iGrowableBuildings, &globalAppState.systemArena, 64);
+	initChunkedArray(&catalogue->rGrowableBuildings,     &globalAppState.systemArena, 64);
+	initChunkedArray(&catalogue->cGrowableBuildings,     &globalAppState.systemArena, 64);
+	initChunkedArray(&catalogue->iGrowableBuildings,     &globalAppState.systemArena, 64);
+	initChunkedArray(&catalogue->intersectionBuildings,  &globalAppState.systemArena, 64);
 
 	initOccupancyArray(&catalogue->allBuildings, &globalAppState.systemArena, 64);
 	// NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
@@ -82,6 +83,11 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 			append(&catalogue->iGrowableBuildings, def);
 			catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->width, def->height));
 		} break;
+	}
+
+	if (def->isIntersection)
+	{
+		append(&catalogue->intersectionBuildings, def);
 	}
 }
 
@@ -584,16 +590,16 @@ void loadBuildingDefs(Blob data, Asset *asset)
 	if (def != null)
 	{
 		// Categorise the last building
-		// TODO: Move into saveBuildingTypes() with other post-processing
 		_assignBuildingCategories(catalogue, def);
 	}
 
-	logInfo("Loaded {0} buildings: {1} R, {2} C and {3} I growable, and {4} player-constructible"_s, {
+	logInfo("Loaded {0} buildings: R:{1} C:{2} I:{3} growable, player-constructible:{4}, intersections:{5}"_s, {
 		formatInt(catalogue->allBuildings.count),
 		formatInt(catalogue->rGrowableBuildings.count),
 		formatInt(catalogue->cGrowableBuildings.count),
 		formatInt(catalogue->iGrowableBuildings.count),
-		formatInt(catalogue->constructibleBuildings.count)
+		formatInt(catalogue->constructibleBuildings.count),
+		formatInt(catalogue->intersectionBuildings.count)
 	});
 }
 
@@ -611,6 +617,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
 			findAndRemove(&catalogue->rGrowableBuildings,     def);
 			findAndRemove(&catalogue->cGrowableBuildings,     def);
 			findAndRemove(&catalogue->iGrowableBuildings,     def);
+			findAndRemove(&catalogue->intersectionBuildings,  def);
 
 			removeKey(&catalogue->buildingsByName, buildingID);
 
@@ -734,45 +741,49 @@ s32 getMaxBuildingSize(ZoneType zoneType)
 
 bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neighbours)
 {
-	auto matchOne = [](BuildingDef *def, ConnectionType connectionType, Building *targetBuilding)
-	{
-		bool result = false;
+	DEBUG_FUNCTION();
 
-		if (targetBuilding == null)
+	bool result = true;
+
+	for (s32 directionIndex = 0; directionIndex < ConnectionDirectionCount; directionIndex++)
+	{
+		bool matchedDirection = false;
+
+		if (neighbours[directionIndex] == null)
 		{
-			result = (connectionType == ConnectionType_Nothing) || (connectionType == ConnectionType_Anything);
+			result = (variant->connections[directionIndex] == ConnectionType_Nothing) || (variant->connections[directionIndex] == ConnectionType_Anything);
 		}
 		else
 		{
-			switch (connectionType)
+			switch (variant->connections[directionIndex])
 			{
 				case ConnectionType_Nothing: {
 					if (def->isIntersection)
 					{
-						result = (targetBuilding->typeID != def->intersectionPart1TypeID)
-							  && (targetBuilding->typeID != def->intersectionPart2TypeID);
+						result = (neighbours[directionIndex]->typeID != def->intersectionPart1TypeID)
+							  && (neighbours[directionIndex]->typeID != def->intersectionPart2TypeID);
 					}
 					else
 					{
-						result = (targetBuilding->typeID != def->typeID);
+						result = (neighbours[directionIndex]->typeID != def->typeID);
 					}
 				} break;
 
 				case ConnectionType_Building1: {
 					if (def->isIntersection)
 					{
-						result = (targetBuilding->typeID == def->intersectionPart1TypeID);
+						result = (neighbours[directionIndex]->typeID == def->intersectionPart1TypeID);
 					}
 					else
 					{
-						result = (targetBuilding->typeID == def->typeID);
+						result = (neighbours[directionIndex]->typeID == def->typeID);
 					}
 				} break;
 
 				case ConnectionType_Building2: {
 					if (def->isIntersection)
 					{
-						result = (targetBuilding->typeID == def->intersectionPart2TypeID);
+						result = (neighbours[directionIndex]->typeID == def->intersectionPart2TypeID);
 					}
 					else
 					{
@@ -791,15 +802,7 @@ bool matchesVariant(BuildingDef *def, BuildingVariant *variant, Building **neigh
 			}
 		}
 
-		return result;
-	};
-
-	bool result = true;
-
-	for (s32 directionIndex = 0; directionIndex < ConnectionDirectionCount; directionIndex++)
-	{
-		bool directionResult = matchOne(def, variant->connections[directionIndex], neighbours[directionIndex]);
-		if (directionResult == false)
+		if (matchedDirection == false)
 		{
 			result = false;
 			break;
@@ -922,14 +925,14 @@ void updateAdjacentBuildingVariants(City *city, Rect2I footprint)
 
 Maybe<BuildingDef *> findBuildingIntersection(BuildingDef *defA, BuildingDef *defB)
 {
+	DEBUG_FUNCTION();
+
 	Maybe<BuildingDef *> result = makeFailure<BuildingDef *>();
 
 	// It's horrible linear search time!
-	// TODO: Put an intersections list in the catalogue, to make this SLIGHTLY less horrible!
-
-	for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
+	for (auto it = iterate(&buildingCatalogue.intersectionBuildings); hasNext(&it); next(&it))
 	{
-		auto itDef = get(&it);
+		BuildingDef *itDef = getValue(&it);
 
 		if (itDef->isIntersection)
 		{

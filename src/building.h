@@ -120,6 +120,7 @@ struct BuildingCatalogue
 	ChunkedArray<BuildingDef *> rGrowableBuildings;
 	ChunkedArray<BuildingDef *> cGrowableBuildings;
 	ChunkedArray<BuildingDef *> iGrowableBuildings;
+	ChunkedArray<BuildingDef *> intersectionBuildings;
 
 	s32 maxRBuildingDim;
 	s32 maxCBuildingDim;
