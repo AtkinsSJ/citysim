@@ -89,6 +89,24 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 	{
 		append(&catalogue->intersectionBuildings, def);
 	}
+
+	ASSERT(catalogue->allBuildings.count == (catalogue->buildingsByName.count + 1)); // NB: +1 for the null building.
+}
+
+BuildingDef *appendNewBuildingDef(String name)
+{
+	Indexed<BuildingDef *> newDef = append(&buildingCatalogue.allBuildings);
+	BuildingDef *result = newDef.value;
+	result->name = intern(&buildingCatalogue.buildingNames, name);
+	result->typeID = newDef.index;
+	initFlags(&result->flags, BuildingFlagCount);
+	initFlags(&result->transportTypes, TransportTypeCount);
+
+	result->fireRisk = 1.0f;
+	put(&buildingCatalogue.buildingsByName, result->name, result);
+	put(&buildingCatalogue.buildingNameToTypeID, result->name, result->typeID);
+
+	return result;
 }
 
 void loadBuildingDefs(Blob data, Asset *asset)
@@ -107,7 +125,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 	while (loadNextLine(&reader))
 	{
 		String command = readToken(&reader);
-		if (equals(command, ":Building"_s))
+		if (equals(command, ":Building"_s) || equals(command, ":Intersection"_s))
 		{
 			buildingCount++;
 		}
@@ -162,17 +180,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					return;
 				}
 
-				Indexed<BuildingDef *> newDef = append(buildings);
-				def = newDef.value;
-				def->name = intern(&catalogue->buildingNames, name);
-				def->typeID = newDef.index;
-				initFlags(&def->flags, BuildingFlagCount);
-				initFlags(&def->transportTypes, TransportTypeCount);
-
-				def->fireRisk = 1.0f;
+				def = appendNewBuildingDef(name);
 				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->name;
-				put(&catalogue->buildingsByName, def->name, def);
-				put(&catalogue->buildingNameToTypeID, def->name, def->typeID);
 			}
 			else if (equals(firstWord, "Intersection"_s))
 			{
@@ -186,12 +195,8 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					return;
 				}
 
-				Indexed<BuildingDef *> newDef = append(buildings);
-				def = newDef.value;
-				def->name = intern(&catalogue->buildingNames, name);
-				def->typeID = newDef.index;
-				initFlags(&def->flags, BuildingFlagCount);
-				initFlags(&def->transportTypes, TransportTypeCount);
+				def = appendNewBuildingDef(name);
+				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->name;
 
 				def->isIntersection = true;
 				def->intersectionPart1Name = intern(&catalogue->buildingNames, part1Name);
@@ -212,14 +217,14 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			}
 			else
 			{
-				warn(&reader, "Only :Building or :Template definitions are supported right now."_s);
+				warn(&reader, "Only :Building, :Intersection or :Template definitions are supported right now."_s);
 			}
 		}
 		else // Properties!
 		{
 			if (def == null)
 			{
-				error(&reader, "Found a property before starting a :Building or :Template!"_s);
+				error(&reader, "Found a property before starting a :Building, :Intersection or :Template!"_s);
 				return;
 			}
 			else
@@ -555,7 +560,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						}
 						else
 						{
-							error(&reader, "First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1 flags for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity."_s);
+							error(&reader, "First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1/2/* flags (meaning nothing/part1/part2/anything) for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity. eg, 101012**"_s);
 							return;
 						}
 

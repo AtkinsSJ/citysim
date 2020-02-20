@@ -72,7 +72,7 @@ variant 2121 b_powerline_road_2121
 #
 
 :Building res-small1
-name name_res-small1
+name b_res-small1
 size 1 1
 sprite b_house_2x2
 grows_in r
@@ -81,7 +81,7 @@ residents 10
 power_use 10
 
 :Building res-med1
-name name_res-med1
+name b_res-med1
 size 2 2
 sprite b_house_2x2
 grows_in r
@@ -90,7 +90,7 @@ residents 40
 power_use 20
 
 :Building com-med1
-name name_com-med1
+name b_com-med1
 size 2 2
 sprite b_shop_2x2
 grows_in c
@@ -101,7 +101,7 @@ power_use 30
 jobs 20
 
 :Building ind-large1
-name name_ind-large1
+name b_ind-large1
 size 3 3
 sprite b_factory_3x3
 grows_in i
@@ -118,7 +118,7 @@ fire_risk 150%
 #
 
 :Building tree
-name name_tree
+name b_tree
 size 1 1
 sprite b_forest
 build paint 100

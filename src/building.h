@@ -181,6 +181,7 @@ Building *getBuilding(City *city, BuildingRef ref);
 
 void initBuildingCatalogue();
 
+BuildingDef *appendNewBuildingDef(String name);
 void loadBuildingDefs(Blob data, Asset *asset);
 void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
 void removeBuildingDefs(Array<String> idsToRemove);
