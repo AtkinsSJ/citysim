@@ -451,8 +451,9 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				CHECK_VERSION(BDGT);
 				REQUIRE_META(BDGT);
 
-				u8 *startOfChunk = pos;
+				// u8 *startOfChunk = pos;
 				SAVChunk_Budget *budget = READ_CHUNK(SAVChunk_Budget);
+				budget = budget;
 
 				// TODO: Implement!
 			}
@@ -542,7 +543,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				CHECK_VERSION(CRIM);
 				REQUIRE_META(CRIM);
 
-				u8 *startOfChunk = pos;
+				// u8 *startOfChunk = pos;
 				SAVChunk_Crime *cCrime = READ_CHUNK(SAVChunk_Crime);
 				CrimeLayer *layer = &city->crimeLayer;
 
@@ -555,8 +556,9 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				CHECK_VERSION(EDUC);
 				REQUIRE_META(EDUC);
 
-				u8 *startOfChunk = pos;
+				// u8 *startOfChunk = pos;
 				SAVChunk_Education *education = READ_CHUNK(SAVChunk_Education);
+				education = education;
 
 				// TODO: Implement Education!
 			}
@@ -594,8 +596,9 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				CHECK_VERSION(HLTH);
 				REQUIRE_META(HLTH);
 
-				u8 *startOfChunk = pos;
+				// u8 *startOfChunk = pos;
 				SAVChunk_Health *cHealth = READ_CHUNK(SAVChunk_Health);
+				cHealth = cHealth;
 
 				// TODO: Implement Health!
 			}
@@ -676,8 +679,9 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				CHECK_VERSION(TPRT);
 				REQUIRE_META(TPRT);
 
-				u8 *startOfChunk = pos;
+				// u8 *startOfChunk = pos;
 				SAVChunk_Transport *cTransport = READ_CHUNK(SAVChunk_Transport);
+				cTransport = cTransport;
 
 				// TODO: Implement Transport!
 			}

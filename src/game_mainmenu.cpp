@@ -10,7 +10,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	AppStatus result = AppStatus_MainMenu;
 
 	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
-	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
+	// s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	UITheme *theme = &assets->theme;
 
 	V2I position = v2i(windowWidth / 2, 157);

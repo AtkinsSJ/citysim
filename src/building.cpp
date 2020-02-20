@@ -116,7 +116,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 	LineReader reader = readLines(asset->shortName, data);
 
 	BuildingCatalogue *catalogue = &buildingCatalogue;
-	OccupancyArray<BuildingDef> *buildings = &catalogue->allBuildings;
 
 	// Count the number of building defs in the file first, so we can allocate the buildingIDs array in the asset
 	s32 buildingCount = 0;
