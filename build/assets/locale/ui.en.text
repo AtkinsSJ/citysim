@@ -32,6 +32,35 @@ data_view_pollution					Pollution
 data_view_power						Power
 data_view_landvalue					Land value
 
+date_format_short_date       {day}/{month2}/{year}
+date_format_long_date        {dayN} {day} {monthN} {year}
+date_format_short_date_time  {day}/{month2}/{year} {hour}:{minute2}:{second2}
+date_format_long_date_time   {dayN} {day} {monthN} {year} {hour}:{minute2}:{second2}.{millis4}
+
+date_part_am        am
+date_part_pm        pm
+date_part_amc       AM
+date_part_pmc       PM
+date_part_monday    Monday
+date_part_tuesday   Tuesday
+date_part_wednesday Wednesday
+date_part_thursday  Thursday
+date_part_friday    Friday
+date_part_saturday  Saturday
+date_part_sunday    Sunday
+date_part_month01   January
+date_part_month02   February
+date_part_month03   March
+date_part_month04   April
+date_part_month05   May
+date_part_month06   June
+date_part_month07   July
+date_part_month08   August
+date_part_month09   September
+date_part_month10   October
+date_part_month11   November
+date_part_month12   December
+
 title_about          About
 title_inspect        Inspecting {0}, {1}
 title_load_game      Load a game

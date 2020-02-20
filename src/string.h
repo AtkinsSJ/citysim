@@ -66,15 +66,15 @@ bool splitInTwo(String input, char divider, String *leftResult, String *rightRes
 
 String concatenate(std::initializer_list<String> strings, String between=nullString);
 
-String formatInt(u64 value, u8 base=10);
-inline String formatInt(u32 value, u8 base=10) {return formatInt((u64)value, base);}
-inline String formatInt(u16 value, u8 base=10) {return formatInt((u64)value, base);}
-inline String formatInt(u8  value, u8 base=10) {return formatInt((u64)value, base);}
+String formatInt(u64 value, u8 base=10, s32 zeroPadWidth=0);
+inline String formatInt(u32 value, u8 base=10, s32 zeroPadWidth=0) {return formatInt((u64)value, base, zeroPadWidth);}
+inline String formatInt(u16 value, u8 base=10, s32 zeroPadWidth=0) {return formatInt((u64)value, base, zeroPadWidth);}
+inline String formatInt(u8  value, u8 base=10, s32 zeroPadWidth=0) {return formatInt((u64)value, base, zeroPadWidth);}
 
-String formatInt(s64 value, u8 base=10);
-inline String formatInt(s32 value, u8 base=10) {return formatInt((s64)value, base);}
-inline String formatInt(s16 value, u8 base=10) {return formatInt((s64)value, base);}
-inline String formatInt(s8  value, u8 base=10) {return formatInt((s64)value, base);}
+String formatInt(s64 value, u8 base=10, s32 zeroPadWidth=0);
+inline String formatInt(s32 value, u8 base=10, s32 zeroPadWidth=0) {return formatInt((s64)value, base, zeroPadWidth);}
+inline String formatInt(s16 value, u8 base=10, s32 zeroPadWidth=0) {return formatInt((s64)value, base, zeroPadWidth);}
+inline String formatInt(s8  value, u8 base=10, s32 zeroPadWidth=0) {return formatInt((s64)value, base, zeroPadWidth);}
 
 String formatFloat(f64 value, s32 decimalPlaces);
 inline String formatFloat(f32 value, s32 decimalPlaces) {return formatFloat((f64)value, decimalPlaces);}

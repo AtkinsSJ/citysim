@@ -582,6 +582,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 			default: {
 				if (!isReadingNumber)
 				{
+					// TODO: Accelerate this into a single append, assuming we can remove the null check below.
 					char c = format.chars[i];
 					// We keep getting bugs where I accidentally include null bytes, so remove them!
 					if (c) append(&stb, c);
@@ -602,12 +603,12 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 
 
 const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-String formatInt(u64 value, u8 base)
+String formatInt(u64 value, u8 base, s32 zeroPadWidth)
 {
 	DEBUG_FUNCTION();
 	
 	ASSERT((base > 1) && (base <= 36)); //formatInt() only handles base 2 to base 36.
-	s32 arraySize = 64;
+	s32 arraySize = max(64, zeroPadWidth);
 	char *temp = allocateMultiple<char>(tempArena, arraySize); // Worst case is base 1, which is 64 characters!
 	s32 count = 0;
 
@@ -621,15 +622,20 @@ String formatInt(u64 value, u8 base)
 	}
 	while (v != 0);
 
+	while (count < zeroPadWidth)
+	{
+		temp[arraySize - 1 - count++] = '0';
+	}
+
 	return makeString(temp + (arraySize - count), count);
 }
 
-String formatInt(s64 value, u8 base)
+String formatInt(s64 value, u8 base, s32 zeroPadWidth)
 {
 	DEBUG_FUNCTION();
 	
 	ASSERT((base > 1) && (base <= 36)); //formatInt() only handles base 2 to base 36.
-	s32 arraySize = 65;
+	s32 arraySize = max(65, zeroPadWidth+1);
 	char *temp = allocateMultiple<char>(tempArena, arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
 	bool isNegative = (value < 0);
 	s32 count = 0;
@@ -647,6 +653,11 @@ String formatInt(s64 value, u8 base)
 		v = v / base;
 	}
 	while (v != 0);
+
+	while (count < zeroPadWidth)
+	{
+		temp[arraySize - 1 - count++] = '0';
+	}
 
 	if (isNegative)
 	{

@@ -185,7 +185,7 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 	if (selectedSavedGame)
 	{
 		window_label(context, selectedSavedGame->filename);
-		window_label(context, myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_ShortDateTime)}));
+		window_label(context, myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
 		window_label(context, selectedSavedGame->cityName);
 		window_label(context, myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
 		window_label(context, myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));

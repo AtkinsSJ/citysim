@@ -38,7 +38,6 @@ struct Settings     *settings;
 
 #include "log.h"
 #include "types.h"
-#include "time.h"
 #include "memory.h"
 #include "random.h"
 #include "pool.h"
@@ -50,6 +49,7 @@ struct Settings     *settings;
 #include "linked_list.h"
 #include "splat.h"
 #include "string.h"
+#include "time.h"
 #include "unicode.h"
 #include "stringbuilder.h"
 #include "hash_table.h"
