@@ -26,7 +26,7 @@ struct StringBuilder
 StringBuilder newStringBuilder(s32 initialSize, MemoryArena *arena=tempArena);
 
 // NB: As mentioned above, the old buffer is NOT deallocated!
-void expand(StringBuilder *stb, s32 newSize=-1);
+void expand(StringBuilder *stb, s32 newSize);
 
 void append(StringBuilder *stb, char *source, s32 length);
 void append(StringBuilder *stringBuilder, String source);

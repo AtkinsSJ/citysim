@@ -2,10 +2,12 @@
 
 StringBuilder newStringBuilder(s32 initialSize, MemoryArena *arena)
 {
+	s32 allocationSize = max(initialSize, 256);
+
 	StringBuilder b = {};
 	b.arena = arena;
-	b.buffer = allocateMultiple<char>(arena, initialSize);
-	b.currentMaxLength = initialSize;
+	b.buffer = allocateMultiple<char>(arena, allocationSize);
+	b.currentMaxLength = allocationSize;
 	b.length = 0;
 
 	return b;
@@ -15,20 +17,10 @@ void expand(StringBuilder *stb, s32 newSize)
 {
 	DEBUG_FUNCTION();
 	
-	s32 targetSize = newSize;
-
-	if (targetSize == -1) 
-	{
-		targetSize = stb->currentMaxLength * 2;
-	}
-	else if (targetSize < stb->currentMaxLength)
-	{
-		DEBUG_BREAK();
-		return;
-	}
+	s32 targetSize = max(newSize, stb->currentMaxLength * 2);
 
 	char *newBuffer = allocateMultiple<char>(stb->arena, targetSize);
-	copyMemory(stb->buffer, newBuffer, stb->currentMaxLength);
+	copyMemory(stb->buffer, newBuffer, stb->length);
 
 	stb->buffer = newBuffer;
 	stb->currentMaxLength = targetSize;
@@ -36,15 +28,13 @@ void expand(StringBuilder *stb, s32 newSize)
 
 void append(StringBuilder *stb, char *source, s32 length)
 {
-	s32 lengthToCopy = length;
 	if ((stb->length + length) > stb->currentMaxLength)
 	{
-		s32 newMaxLength = max(stb->length + length, stb->currentMaxLength * 2);
-		expand(stb, newMaxLength);
+		expand(stb, stb->length + length);
 	}
 
-	copyMemory(source, stb->buffer + stb->length, lengthToCopy);
-	stb->length += lengthToCopy;
+	copyMemory(source, stb->buffer + stb->length, length);
+	stb->length += length;
 }
 
 inline void append(StringBuilder *stringBuilder, String source)
