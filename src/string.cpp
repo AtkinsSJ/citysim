@@ -277,7 +277,7 @@ Maybe<bool> asBool(String input)
 inline bool isNullTerminated(String s)
 {
 	// A 0-length string, by definition, can't have a null terminator
-	bool result = !isEmpty(s) && (s.chars[s.length-1] == 0);
+	bool result = (s.length > 0) && (s.chars[s.length-1] == 0);
 	return result;
 }
 
@@ -524,6 +524,16 @@ String concatenate(std::initializer_list<String> strings, String between)
 String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate)
 {
 	DEBUG_FUNCTION();
+
+	// Null bytes are a pain.
+	// If we have a terminating one, just trim it off for now (and optionally re-attach it
+	// based on the zeroTerminate param.
+	// Any nulls in-line will just be printed to the result, following the "garbage in, garbage out"
+	// principle!
+	if (isNullTerminated(format))
+	{
+		format.length--;
+	}
 	
 	String result;
 
@@ -582,10 +592,15 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 			default: {
 				if (!isReadingNumber)
 				{
-					// TODO: Accelerate this into a single append, assuming we can remove the null check below.
-					char c = format.chars[i];
-					// We keep getting bugs where I accidentally include null bytes, so remove them!
-					if (c) append(&stb, c);
+					s32 startIndex = i;
+
+					while (((i+1) < format.length)
+						&& (format.chars[i + 1] != '{'))
+					{
+						i++;
+					}
+
+					append(&stb, format.chars + startIndex, i + 1 - startIndex);
 				}
 			}
 		}
@@ -675,7 +690,7 @@ String formatFloat(f64 value, s32 decimalPlaces)
 {
 	DEBUG_FUNCTION();
 	
-	String formatString = myprintf("%.{0}f\0"_s, {formatInt(decimalPlaces)});
+	String formatString = myprintf("%.{0}f"_s, {formatInt(decimalPlaces)}, true);
 
 	s32 length = 100; // TODO: is 100 enough?
 	char *buffer = allocateMultiple<char>(tempArena, length);

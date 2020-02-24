@@ -7,6 +7,8 @@ inline DateTime getLocalTimeFromTimestamp(u64 unixTimestamp)
 
 String formatDateTime(DateTime dateTime, DateTimeFormat format)
 {
+	DEBUG_FUNCTION();
+	
 	String formatString = nullString;
 
 	switch (format)
