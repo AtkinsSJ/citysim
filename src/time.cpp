@@ -154,9 +154,15 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
 			default: {
 				if (!isReadingSymbol)
 				{
-					// TODO: accelerate this into a single append()
-					char c = formatString.chars[i];
-					append(&stb, c);
+					s32 startIndex = i;
+
+					while (((i+1) < formatString.length)
+						&& (formatString.chars[i + 1] != '{'))
+					{
+						i++;
+					}
+
+					append(&stb, formatString.chars + startIndex, i + 1 - startIndex);
 				}
 			}
 		}
