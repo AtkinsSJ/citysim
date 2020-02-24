@@ -534,75 +534,55 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 	{
 		format.length--;
 	}
-	
-	String result;
 
 	StringBuilder stb = newStringBuilder(format.length * 4);
 
-	s32 startOfNumber = s32Max;
-	bool isReadingNumber = false;
 	for (s32 i=0; i<format.length; i++)
 	{
-		switch (format.chars[i])
+		if (format.chars[i] == '{')
 		{
-			case '{': {
-				startOfNumber = i+1;
-				isReadingNumber = true;
-			} break;
+			i++; // Skip the {
 
-			case '}': {
-				s32 endOfNumber = i;
-				bool succeeded = false;
-				if (isReadingNumber && endOfNumber > startOfNumber)
-				{
-					String indexString = makeString(format.chars + startOfNumber, (endOfNumber - startOfNumber));
-					Maybe<s64> parsedIndex = asInt(indexString);
-					if (parsedIndex.isValid)
-					{
-						// now we try and see if it's valid
-						if (parsedIndex.value >= 0 && parsedIndex.value < (s64)args.size())
-						{
-							succeeded = true;
-							String arg = args.begin()[parsedIndex.value];
+			s32 startOfNumber = i;
 
-							// We don't want the null termination byte to be included in the length, or else we get problems if
-							// we myprintf() the result! Yes, this has happened. It was confusing.
-							// - Sam, 10/12/2018
-							// Update 14/05/2019 - we now do the check here, instead of myprintf() appending a null byte that's not included in the String length. (Because checking if that byte is there for isNullTerminated() means reading off the end of the array... not a great idea! 
-							if (isNullTerminated(arg)) arg.length--;
-
-							append(&stb, arg);
-						}
-						
-					}
-
-					if (!succeeded)
-					{
-						// If the index is invalid, show some kind of error. For now, we'll just insert the {n} as given.
-						append(&stb, '{');
-						append(&stb, indexString);
-						append(&stb, '}');
-					}
-				}
-
-				isReadingNumber = false;
-				startOfNumber = s32Max;
-			} break;
-
-			default: {
-				if (!isReadingNumber)
-				{
-					s32 startIndex = i;
-
-					while (((i+1) < format.length)
-						&& (format.chars[i + 1] != '{'))
-					{
-						i++;
-					}
-
-					append(&stb, format.chars + startIndex, i + 1 - startIndex);
-				}
+			// Run until the next character is a } or we're done
+			while (((i+1) < format.length)
+				&& (format.chars[i] != '}'))
+			{
+				i++;
 			}
+
+			String indexString = makeString(format.chars + startOfNumber, (i - startOfNumber));
+			Maybe<s64> parsedIndex = asInt(indexString);
+			if ((parsedIndex.isValid)
+			 && (parsedIndex.value >= 0 && parsedIndex.value < (s64)args.size()))
+			{
+				String arg = args.begin()[parsedIndex.value];
+
+				if (isNullTerminated(arg)) arg.length--;
+
+				append(&stb, arg);
+			}
+			else
+			{
+				// If the index is invalid, show some kind of error. For now, we'll just insert the {n} as given.
+				append(&stb, '{');
+				append(&stb, indexString);
+				append(&stb, '}');
+			}
+		}
+		else
+		{
+			s32 startIndex = i;
+
+			// Run until the next character is a { or we're done
+			while (((i+1) < format.length)
+				&& (format.chars[i + 1] != '{'))
+			{
+				i++;
+			}
+
+			append(&stb, format.chars + startIndex, i + 1 - startIndex);
 		}
 	}
 
@@ -611,7 +591,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 		append(&stb, '\0');
 	}
 
-	result = getString(&stb);
+	String result = getString(&stb);
 
 	return result;
 }
