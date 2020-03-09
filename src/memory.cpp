@@ -163,6 +163,10 @@ inline void fillMemory(T *memory, T value, smm length)
 	T *currentElement = memory;
 	smm remainingBytes = length * sizeof(T);
 
+	// NB: The loop below works for a fractional number of Ts, but remainingBytes 
+	// is always a whole number of them! It's kind of weird. Could possibly make
+	// this faster by restricting it to whole Ts.
+
 	while (remainingBytes > 0)
 	{
 		smm toCopy = min<smm>(remainingBytes, sizeof(T));

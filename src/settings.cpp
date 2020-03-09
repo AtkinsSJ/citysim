@@ -1,9 +1,10 @@
 #pragma once
 
-void registerSetting(String settingName, smm offset, Type type, s32 count)
+void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName)
 {
 	SettingDef def = {};
 	def.name = settingName;
+	def.textAssetName = textAssetName;
 	def.offset = offset;
 	def.type = type;
 	def.count = count;
@@ -25,9 +26,8 @@ void initSettings()
 
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
 	settings->userSettingsFilename = "settings.cnf"_s;
-	settings->defaultSettingsFilename = "default-settings.cnf"_s;
 
-#define REGISTER_SETTING(settingName, type, count) registerSetting(makeString(#settingName), offsetof(Settings, settingName), Type_##type, count)
+#define REGISTER_SETTING(settingName, type, count) registerSetting(makeString(#settingName), offsetof(Settings, settingName), Type_##type, count, makeString("setting_" #settingName))
 
 	REGISTER_SETTING(windowed,   bool,   1);
 	REGISTER_SETTING(resolution, s32,    2);
@@ -120,6 +120,40 @@ void applySettings()
 	reloadLocaleSpecificAssets();
 }
 
+String settingToString(SettingDef *def)
+{
+	StringBuilder stb = newStringBuilder(256);
+
+	u8* firstItem = ((u8*) settings) + def->offset;
+
+	for (s32 i=0; i < def->count; i++)
+	{
+		if (i > 0) append(&stb, ' ');
+
+		switch (def->type)
+		{
+			case Type_bool:
+			{
+				append(&stb, formatBool(((bool *)firstItem)[i]));
+			} break;
+
+			case Type_s32:
+			{
+				append(&stb, formatInt(((s32 *)firstItem)[i]));
+			} break;
+
+			case Type_String:
+			{
+				append(&stb, ((String *)firstItem)[i]);
+			} break;
+
+			default: ASSERT(false); //Unhandled setting type!
+		}
+	}
+
+	return getString(&stb);
+}
+
 void saveSettings()
 {
 	StringBuilder stb = newStringBuilder(2048);
@@ -127,7 +161,6 @@ void saveSettings()
 	append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n"_s);
 	append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n"_s);
 
-	u8* base = (u8*) settings;
 	for (auto it = iterate(&settings->defs);
 		hasNext(&it);
 		next(&it))
@@ -138,32 +171,7 @@ void saveSettings()
 
 		append(&stb, name);
 		append(&stb, " = "_s);
-
-		u8* firstItem = base + def->offset;
-
-		for (s32 i=0; i < def->count; i++)
-		{
-			switch (def->type)
-			{
-				case Type_bool:
-				{
-					append(&stb, formatBool(((bool *)firstItem)[i]));
-				} break;
-
-				case Type_s32:
-				{
-					append(&stb, formatInt(((s32 *)firstItem)[i]));
-				} break;
-
-				case Type_String:
-				{
-					append(&stb, ((String *)firstItem)[i]);
-				} break;
-
-				default: ASSERT(false); //Unhandled setting type!
-			}
-		}
-
+		append(&stb, settingToString(def));
 		append(&stb, '\n');
 	}
 
@@ -203,17 +211,32 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 	s32 windowWidth  = round_s32(renderer->uiCamera.size.x);
 	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 
-	V2I position = v2i(windowWidth / 2, 157);
 	s32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"_s);
 	BitmapFont *font = getFont(labelStyle->fontName);
 
-	position.y += (uiText(&renderer->uiBuffer, font, getText("title_settings"_s),
-			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
+	V2I titlePos = v2i(windowWidth / 2, 157);
+	uiText(&renderer->uiBuffer, font, getText("title_settings"_s),
+			titlePos, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
 
-	// position.y += (uiText(uiState, font, LocalString("There are no settings yet, soz."),
-	// 		position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
+	// Settings go here!!!
+	s32 windowCentre = windowWidth / 2;
+	s32 settingsAreaWidth = 600;
+	V2I labelPos   = v2i(windowCentre - (settingsAreaWidth / 2), 300);
+	V2I settingPos = v2i(windowCentre + (settingsAreaWidth / 2), 300);
+	for (auto it = iterate(&settings->defs);
+		hasNext(&it);
+		next(&it))
+	{
+		SettingDef *def = get(&it);
+
+		uiText(&renderer->uiBuffer, font, getText(def->textAssetName), labelPos, ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
+		uiText(&renderer->uiBuffer, font, settingToString(def), settingPos, ALIGN_RIGHT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
+
+		labelPos.y += 60;
+		settingPos.y += 60;
+	}
 
 	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"_s);
 	s32 uiBorderPadding = 8;

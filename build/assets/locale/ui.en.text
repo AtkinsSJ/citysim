@@ -61,6 +61,10 @@ date_part_month10   October
 date_part_month11   November
 date_part_month12   December
 
+setting_locale      Locale
+setting_resolution  Window resolution
+setting_windowed    Windowed
+
 title_about          About
 title_inspect        Inspecting {0}, {1}
 title_load_game      Load a game

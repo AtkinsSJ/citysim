@@ -10,6 +10,7 @@ enum Type
 struct SettingDef
 {
 	String name;
+	String textAssetName;
 	smm offset;
 	Type type;
 	s32 count;
@@ -22,7 +23,6 @@ struct Settings
 
 	String userDataPath;
 	String userSettingsFilename;
-	String defaultSettingsFilename;
 
 	// The actual settings
 	// You shouldn't access these directly! Use the getters below.
@@ -54,7 +54,8 @@ AppStatus updateAndRenderSettingsMenu(struct UIState *uiState);
 //
 // INTERNAL
 //
-void registerSetting(String settingName, smm offset, Type type, s32 count);
+void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName);
 void loadDefaultSettings();
 void loadSettingsFile(String name, Blob settingsData);
 String getUserSettingsPath();
+String settingToString(SettingDef *def);
