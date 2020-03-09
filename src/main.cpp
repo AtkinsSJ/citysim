@@ -200,6 +200,10 @@ SDL_Window *initSDL(WindowSettings windowSettings, const char *windowTitle)
 			{
 				logCritical("Window could not be created! :(\n {0}"_s, {makeString(SDL_GetError())});
 			}
+			else
+			{
+				SDL_SetWindowMinimumSize(window, 800, 600);
+			}
 		}
 	}
 
