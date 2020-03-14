@@ -386,6 +386,12 @@ int main(int argc, char *argv[])
 
 					appState->appStatus = newAppStatus;
 					clear(&uiState.openWindows);
+
+					// Initialise new state
+					if (appState->appStatus == AppStatus_SettingsMenu)
+					{
+						initSettingsMenu();
+					}
 				}
 
 				drawUiMessage(&uiState);

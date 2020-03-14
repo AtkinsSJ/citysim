@@ -5,18 +5,22 @@ void registerSetting(String settingName, smm offset, Type type, s32 count, Strin
 	SettingDef def = {};
 	def.name = settingName;
 	def.textAssetName = textAssetName;
-	def.offset = offset;
+	def.offsetWithinSettingsState = offset;
 	def.type = type;
 	def.count = count;
 
 	put(&settings->defs, settingName, def);
 }
 
-void loadDefaultSettings()
+SettingsState makeDefaultSettings()
 {
-	settings->windowed = true;
-	settings->resolution = v2i(1024, 600);
-	settings->locale = "en"_s;
+	SettingsState result = {};
+
+	result.windowed = true;
+	result.resolution = v2i(1024, 600);
+	result.locale = "en"_s;
+
+	return result;
 }
 
 void initSettings()
@@ -27,7 +31,7 @@ void initSettings()
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
 	settings->userSettingsFilename = "settings.cnf"_s;
 
-#define REGISTER_SETTING(settingName, type, count) registerSetting(makeString(#settingName), offsetof(Settings, settingName), Type_##type, count, makeString("setting_" #settingName))
+#define REGISTER_SETTING(settingName, type, count) registerSetting(makeString(#settingName), offsetof(SettingsState, settingName), Type_##type, count, makeString("setting_" #settingName))
 
 	REGISTER_SETTING(windowed,   bool,   1);
 	REGISTER_SETTING(resolution, s32,    2);
@@ -62,7 +66,7 @@ void loadSettingsFile(String name, Blob settingsData)
 		}
 		else
 		{
-			u8* firstItem = ((u8*)settings) + def->offset;
+			u8* firstItem = ((u8*)(&settings->settings)) + def->offsetWithinSettingsState;
 
 			for (s32 i=0; i < def->count; i++)
 			{
@@ -101,7 +105,7 @@ void loadSettingsFile(String name, Blob settingsData)
 void loadSettings()
 {
 	resetMemoryArena(&settings->settingsArena);
-	loadDefaultSettings();
+	settings->settings = makeDefaultSettings();
 
 	File userSettingsFile = readFile(tempArena, getUserSettingsPath());
 	// User settings might not exist
@@ -110,21 +114,21 @@ void loadSettings()
 		loadSettingsFile(userSettingsFile.name, userSettingsFile.data);
 	}
 
-	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s, {formatBool(settings->windowed), formatInt(settings->resolution.x), formatInt(settings->resolution.y), settings->locale});
+	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s, {formatBool(settings->settings.windowed), formatInt(settings->settings.resolution.x), formatInt(settings->settings.resolution.y), settings->settings.locale});
 }
 
 void applySettings()
 {
-	resizeWindow(settings->resolution.x, settings->resolution.y, !settings->windowed);
+	resizeWindow(settings->settings.resolution.x, settings->settings.resolution.y, !settings->settings.windowed);
 
 	reloadLocaleSpecificAssets();
 }
 
-String settingToString(SettingDef *def)
+String settingToString(SettingsState *state, SettingDef *def)
 {
 	StringBuilder stb = newStringBuilder(256);
 
-	u8* firstItem = ((u8*) settings) + def->offset;
+	u8* firstItem = ((u8*) state) + def->offsetWithinSettingsState;
 
 	for (s32 i=0; i < def->count; i++)
 	{
@@ -171,7 +175,7 @@ void saveSettings()
 
 		append(&stb, name);
 		append(&stb, " = "_s);
-		append(&stb, settingToString(def));
+		append(&stb, settingToString(&settings->settings, def));
 		append(&stb, '\n');
 	}
 
@@ -192,16 +196,21 @@ void saveSettings()
 WindowSettings getWindowSettings()
 {
 	WindowSettings result = {};
-	result.width      = settings->resolution.x;
-	result.height     = settings->resolution.y;
-	result.isWindowed = settings->windowed;
+	result.width      = settings->settings.resolution.x;
+	result.height     = settings->settings.resolution.y;
+	result.isWindowed = settings->settings.windowed;
 
 	return result;
 }
 
 String getLocale()
 {
-	return settings->locale;
+	return settings->settings.locale;
+}
+
+void initSettingsMenu()
+{
+	settings->workingState = settings->settings;
 }
 
 AppStatus updateAndRenderSettingsMenu(UIState *uiState)
@@ -232,7 +241,7 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState)
 		SettingDef *def = get(&it);
 
 		uiText(&renderer->uiBuffer, font, getText(def->textAssetName), labelPos, ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
-		uiText(&renderer->uiBuffer, font, settingToString(def), settingPos, ALIGN_RIGHT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
+		uiText(&renderer->uiBuffer, font, settingToString(&settings->workingState, def), settingPos, ALIGN_RIGHT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
 
 		labelPos.y += 60;
 		settingPos.y += 60;
