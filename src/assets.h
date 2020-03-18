@@ -209,8 +209,6 @@ void reloadLocaleSpecificAssets();
 Asset *addAsset(AssetType type, String shortName, u32 flags = AssetDefaultFlags);
 Asset *addTexture(String filename, bool isAlphaPremultiplied);
 Asset *addSpriteGroup(String name, s32 spriteCount);
-void addTiledSprites(String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied=false);
-void addTiledSprites(String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles);
 void addFont(String name, String filename);
 
 void loadAsset(Asset *asset);

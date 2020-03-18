@@ -302,7 +302,11 @@ void loadAsset(Asset *asset)
 			// TODO: Emergency debug texture that's used if loading a file fails.
 			// Right now, we just crash! (Not shippable)
 			SDL_Surface *surface = createSurfaceFromFileData(fileData, asset->fullName);
-			ASSERT(surface->format->BytesPerPixel == 4); //We only handle 32-bit colour images!
+			if (surface->format->BytesPerPixel != 4)
+			{
+				logError("Texture asset '{0}' is not 32bit, which is all we support right now. (BytesPerPixel = {1})"_s, {asset->shortName, formatInt(surface->format->BytesPerPixel)});
+				return;
+			}
 
 			if (!asset->texture.isFileAlphaPremultiplied)
 			{
@@ -483,66 +487,6 @@ Asset *addSpriteGroup(String name, s32 spriteCount)
 	spriteGroup->spriteGroup.sprites = (Sprite*) spriteGroup->data.memory;
 
 	return spriteGroup;
-}
-
-void addTiledSprites(String name, String textureFilename, u32 tileWidth, u32 tileHeight, u32 tilesAcross, u32 tilesDown, bool isAlphaPremultiplied)
-{
-	String textureName = intern(&assets->assetStrings, textureFilename);
-	Asset **findResult = find(&assets->assetsByType[AssetType_Texture], textureName);
-	Asset *textureAsset;
-	if (findResult == null)
-	{
-		textureAsset = addTexture(textureName, isAlphaPremultiplied);
-	}
-	else
-	{
-		textureAsset = *findResult;
-	}
-
-	ASSERT(textureAsset != null); //Failed to find/create texture for Sprite!
-
-	Asset *spriteGroup = addSpriteGroup(name, tilesAcross * tilesDown);
-	Rect2 uv = rectXYWH(0, 0, (f32)tileWidth, (f32)tileHeight);
-
-	s32 spriteIndex = 0;
-	for (u32 y = 0; y < tilesDown; y++)
-	{
-		uv.y = (f32)(y * tileHeight);
-
-		for (u32 x = 0; x < tilesAcross; x++)
-		{
-			uv.x = (f32)(x * tileWidth);
-
-			Sprite *sprite = spriteGroup->spriteGroup.sprites + spriteIndex++;
-			sprite->texture = textureAsset;
-			sprite->uv = uv;
-		}
-	}
-}
-
-void addTiledSprites(String name, Asset *texture, V2I tileSize, V2I tileBorder, Rect2I selectedTiles)
-{
-	ASSERT(texture->type == AssetType_Texture);
-
-	Asset *spriteGroup = addSpriteGroup(name, selectedTiles.w * selectedTiles.h);
-
-	s32 strideX = tileSize.x + (tileBorder.x * 2);
-	s32 strideY = tileSize.y + (tileBorder.y * 2);
-
-	s32 spriteIndex = 0;
-	for (s32 y = selectedTiles.y; y < selectedTiles.y + selectedTiles.h; y++)
-	{
-		for (s32 x = selectedTiles.x; x < selectedTiles.x + selectedTiles.w; x++)
-		{
-			Sprite *sprite = spriteGroup->spriteGroup.sprites + spriteIndex++;
-			sprite->texture = texture;
-			sprite->uv = rectXYWHi(
-				(x * strideX) + tileBorder.x,
-				(y * strideY) + tileBorder.y,
-				tileSize.x, tileSize.y
-			);
-		}
-	}
 }
 
 void addFont(String name, String filename)
@@ -1077,6 +1021,11 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				spriteSize = spriteSizeIn.value;
 
 				s32 spriteCount = countPropertyOccurrences(&reader, "sprite"_s);
+				if (spriteCount < 1)
+				{
+					error(&reader, "SpriteGroup must contain at least 1 sprite!"_s);
+					return;
+				}
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 			}
