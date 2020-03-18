@@ -1,4 +1,4 @@
 # Effects
 
-:SpriteGroup e_fire_1x1 fire.png 1 8x8
+:SpriteGroup e_fire_1x1 fire.png 8x8
 sprite 0 0

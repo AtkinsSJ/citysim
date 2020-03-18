@@ -1065,19 +1065,28 @@ void loadSpriteDefs(Blob data, Asset *asset)
 			{
 				String name              = readToken(&reader);
 				String filename          = readToken(&reader);
-				Maybe<s32> spriteCountIn = readInt<s32>(&reader);
 				Maybe<V2I> spriteSizeIn  = readV2I  (&reader);
 
-				if (isEmpty(name) || isEmpty(filename) || !spriteCountIn.isValid || !spriteSizeIn.isValid)
+				if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.isValid)
 				{
-					error(&reader, "Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png spriteCount SWxSH'"_s);
+					error(&reader, "Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
 					return;
 				}
 
 				textureAsset = addTexture(filename, false);
 				spriteSize = spriteSizeIn.value;
 
-				s32 spriteCount = spriteCountIn.value;
+				// Read ahead to count how many sprites are in this group.
+				LineReaderPosition savedPosition = savePosition(&reader);
+				s32 spriteCount = 0;
+				while (loadNextLine(&reader))
+				{
+					String _firstWord = readToken(&reader);
+					if (_firstWord[0] == ':') break; // We've reached the next :Command
+
+					if (equals(_firstWord, "sprite"_s)) spriteCount++;
+				}
+				restorePosition(&reader, savedPosition);
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 			}

@@ -1,37 +1,37 @@
 # Buildings
 
-:SpriteGroup b_powerline_road_1212 powerline-road-1212.png 1 16x16
+:SpriteGroup b_powerline_road_1212 powerline-road-1212.png 16x16
 sprite 0 0
 
-:SpriteGroup b_powerline_road_2121 powerline-road-2121.png 1 16x16
+:SpriteGroup b_powerline_road_2121 powerline-road-2121.png 16x16
 sprite 0 0
 
-:SpriteGroup b_house_2x2 house-2x2.png 4 32x32
-sprite 0 0
-sprite 1 0
-sprite 0 1
-sprite 1 1
-
-:SpriteGroup b_shop_2x2 shop-2x2.png 4 32x32
+:SpriteGroup b_house_2x2 house-2x2.png 32x32
 sprite 0 0
 sprite 1 0
 sprite 0 1
 sprite 1 1
 
-:SpriteGroup b_factory_3x3 factory-3x3.png 1 48x48
+:SpriteGroup b_shop_2x2 shop-2x2.png 32x32
+sprite 0 0
+sprite 1 0
+sprite 0 1
+sprite 1 1
+
+:SpriteGroup b_factory_3x3 factory-3x3.png 48x48
 sprite 0 0
 
-:SpriteGroup b_forest forest.png 1 16x16
+:SpriteGroup b_forest forest.png 16x16
 sprite 0 0
 
-:SpriteGroup b_powerplant power-plant.png 1 64x64
+:SpriteGroup b_powerplant power-plant.png 64x64
 sprite 0 0
 
-:SpriteGroup b_firestation fire-station.png 1 48x48
+:SpriteGroup b_firestation fire-station.png 48x48
 sprite 0 0
 
-:SpriteGroup b_policestation police-station.png 1 48x48
+:SpriteGroup b_policestation police-station.png 48x48
 sprite 0 0
 
-:SpriteGroup b_hospital hospital.png 1 64x64
+:SpriteGroup b_hospital hospital.png 64x64
 sprite 0 0

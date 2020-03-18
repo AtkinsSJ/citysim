@@ -229,7 +229,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 			if (variantCount > 0)
 			{
-				warn(&reader, "{0} variants"_s, {formatInt(variantCount)});
 				def->variants = makeArray(variantCount, (BuildingVariant *)variantsMemory);
 				variantsMemory += sizeof(BuildingVariant) * variantCount;
 				variantIndex = 0;
