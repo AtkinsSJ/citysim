@@ -30,7 +30,7 @@ void expandHashTable(HashTable<T> *table, s32 newCapacity)
 		deallocateRaw(oldItems);
 	}
 
-	ASSERT_PARANOID(oldCount == table->count);//, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
+	ASSERT(oldCount == table->count);//, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
 }
 
 template<typename T>

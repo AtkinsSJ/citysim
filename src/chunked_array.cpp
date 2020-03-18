@@ -366,13 +366,15 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove)
 }
 
 template<typename T>
-T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
+void removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 {
 	DEBUG_FUNCTION();
 
-	ASSERT(indexToRemove >= 0 && indexToRemove < array->count); //indexToRemove is out of range!
-
-	T result;
+	if (indexToRemove < 0 || indexToRemove >= array->count)
+	{
+		logError("Attempted to remove non-existent index {0} from a ChunkedArray!"_s, {formatInt(indexToRemove)});
+		return;
+	}
 	
 	ArrayChunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
 
@@ -382,11 +384,9 @@ T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 		{
 			// NB: This copies the item we're about to remove to the end of the array.
 			// I guess if Item is large, this could be expensive unnecessarily?
-			// Then again, we're also copying it to `result`, which we currently don't ever use, so meh.
 			// - Sam, 8/2/2019
 			moveItemKeepingOrder(array, indexToRemove, array->count-1);
 		}
-		result = lastNonEmptyChunk->items[lastNonEmptyChunk->count - 1];
 	}
 	else
 	{
@@ -394,8 +394,6 @@ T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 		s32 itemIndex  = indexToRemove % array->itemsPerChunk;
 
 		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
-
-		result = chunk->items[itemIndex];
 
 		// We don't need to rearrange things if we're removing the last item
 		if (indexToRemove != array->count - 1)
@@ -413,8 +411,6 @@ T removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 	{
 		returnLastChunkToPool(array);
 	}
-
-	return result;
 }
 
 template<typename T>

@@ -57,7 +57,7 @@ Indexed<T*> append(OccupancyArray<T> *array)
 
 	// getFirstUnsetBitIndex() to find the free slot
 	s32 indexInChunk = getFirstUnsetBitIndex(&chunk->occupancy);
-	ASSERT_PARANOID(indexInChunk >= 0 && indexInChunk < array->itemsPerChunk);
+	ASSERT(indexInChunk >= 0 && indexInChunk < array->itemsPerChunk);
 
 	// mark that slot as occupied
 	setBit(&chunk->occupancy, indexInChunk);
@@ -101,7 +101,7 @@ Indexed<T*> append(OccupancyArray<T> *array)
 		}
 	}
 
-	ASSERT_PARANOID(result.value == get(array, result.index));
+	ASSERT(result.value == get(array, result.index));
 
 	return result;
 }

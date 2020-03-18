@@ -24,9 +24,9 @@ BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar)
 {
 	BitmapFontGlyphEntry *result = findGlyphInternal(font, targetChar);
 
-	ASSERT_PARANOID(result != null);//, "Failed to add a glyph to font '{0}'!", {font->name});
+	ASSERT(result != null);//, "Failed to add a glyph to font '{0}'!", {font->name});
 	result->codepoint = targetChar;
-	ASSERT_PARANOID(result->isOccupied == false);//, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
+	ASSERT(result->isOccupied == false);//, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
 	result->isOccupied = true;
 
 	font->glyphCount++;
