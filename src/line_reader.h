@@ -32,11 +32,15 @@ LineReaderPosition savePosition(LineReader *reader);
 void restorePosition(LineReader *reader, LineReaderPosition position);
 void restart(LineReader *reader);
 
+// How many lines are in the file?
 s32 countLines(Blob data);
 
 bool loadNextLine(LineReader *reader);
 String getLine(LineReader *reader);
 String getRemainderOfLine(LineReader *reader);
+
+// How many times does the given property appear in the current :Command block?
+s32 countPropertyOccurrences(LineReader *reader, String propertyName);
 
 String readToken(LineReader *reader, char splitChar=0);
 String peekToken(LineReader *reader, char splitChar=0);

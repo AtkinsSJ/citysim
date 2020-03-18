@@ -216,17 +216,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			}
 
 			// Read ahead to count how many variants this building/intersection has.
-			LineReaderPosition savedPosition = savePosition(&reader);
-			s32 variantCount = 0;
-			while (loadNextLine(&reader))
-			{
-				String _firstWord = readToken(&reader);
-				if (_firstWord[0] == ':') break; // We've reached the next :Command
-
-				if (equals(_firstWord, "variant"_s)) variantCount++;
-			}
-			restorePosition(&reader, savedPosition);
-
+			s32 variantCount = countPropertyOccurrences(&reader, "variant"_s);
 			if (variantCount > 0)
 			{
 				def->variants = makeArray(variantCount, (BuildingVariant *)variantsMemory);

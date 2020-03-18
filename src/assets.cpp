@@ -1076,17 +1076,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				textureAsset = addTexture(filename, false);
 				spriteSize = spriteSizeIn.value;
 
-				// Read ahead to count how many sprites are in this group.
-				LineReaderPosition savedPosition = savePosition(&reader);
-				s32 spriteCount = 0;
-				while (loadNextLine(&reader))
-				{
-					String _firstWord = readToken(&reader);
-					if (_firstWord[0] == ':') break; // We've reached the next :Command
-
-					if (equals(_firstWord, "sprite"_s)) spriteCount++;
-				}
-				restorePosition(&reader, savedPosition);
+				s32 spriteCount = countPropertyOccurrences(&reader, "sprite"_s);
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 			}

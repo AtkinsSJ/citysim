@@ -61,6 +61,23 @@ s32 countLines(Blob data)
 	return result;
 }
 
+s32 countPropertyOccurrences(LineReader *reader, String propertyName)
+{
+	s32 result = 0;
+
+	LineReaderPosition savedPosition = savePosition(reader);
+	while (loadNextLine(reader))
+	{
+		String _firstWord = readToken(reader);
+		if (_firstWord[0] == ':') break; // We've reached the next :Command
+
+		if (equals(_firstWord, propertyName)) result++;
+	}
+	restorePosition(reader, savedPosition);
+
+	return result;
+}
+
 bool loadNextLine(LineReader *reader)
 {
 	bool result = true;
