@@ -128,13 +128,9 @@ void loadBuildingDefs(Blob data, Asset *asset)
 		{
 			buildingCount++;
 		}
-		else if (equals(command, "variant_count"_s))
+		else if (equals(command, "variant"_s))
 		{
-			Maybe<s32> variantCount = readInt<s32>(&reader);
-			if (variantCount.isValid)
-			{
-				totalVariantCount += variantCount.value;
-			}
+			totalVariantCount++;
 		}
 	}
 
@@ -218,6 +214,27 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			{
 				warn(&reader, "Only :Building, :Intersection or :Template definitions are supported right now."_s);
 			}
+
+			// Read ahead to count how many variants this building/intersection has.
+			LineReaderPosition savedPosition = savePosition(&reader);
+			s32 variantCount = 0;
+			while (loadNextLine(&reader))
+			{
+				String _firstWord = readToken(&reader);
+				if (_firstWord[0] == ':') break; // We've reached the next :Command
+
+				if (equals(_firstWord, "variant"_s)) variantCount++;
+			}
+			restorePosition(&reader, savedPosition);
+
+			if (variantCount > 0)
+			{
+				warn(&reader, "{0} variants"_s, {formatInt(variantCount)});
+				def->variants = makeArray(variantCount, (BuildingVariant *)variantsMemory);
+				variantsMemory += sizeof(BuildingVariant) * variantCount;
+				variantIndex = 0;
+			}
+
 		}
 		else // Properties!
 		{
@@ -477,6 +494,12 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					{
 						def->width  = w.value;
 						def->height = h.value;
+
+						if ((def->variants.count > 0) && (def->width != 1 || def->height != 1))
+						{
+							error(&reader, "This building is {0}x{1} and has variants. Variants are only allowed for 1x1 tile buildings!"_s, {formatInt(def->width), formatInt(def->height)});
+							return;
+						}
 					}
 					else
 					{
@@ -488,19 +511,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				{
 					String spriteName = intern(&assets->assetStrings, readToken(&reader));
 					def->spriteName = spriteName;
-				}
-				else if (equals(firstWord, "variant_count"_s))
-				{
-					ASSERT(def->width == 1 && def->height == 1); //We only support variants for 1x1 buildings!
-
-					Maybe<s32> variantCount = readInt<s32>(&reader);
-					if (variantCount.isValid)
-					{
-						s32 count = variantCount.value;
-						def->variants = makeArray(count, (BuildingVariant *)variantsMemory);
-						variantsMemory += sizeof(BuildingVariant) * count;
-						variantIndex = 0;
-					}
 				}
 				else if (equals(firstWord, "variant"_s))
 				{

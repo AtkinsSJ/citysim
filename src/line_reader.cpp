@@ -7,10 +7,7 @@ LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 	result.filename = filename;
 	result.data = data;
 
-	result.currentLine = {};
-	result.lineRemainder = {};
-	result.currentLineNumber = 0;
-	result.startOfNextLine = 0;
+	result.position = {};
 
 	result.skipBlankLines = (flags & LineReader_SkipBlankLines) != 0;
 	result.removeComments = (flags & LineReader_RemoveTrailingComments) != 0;
@@ -19,12 +16,19 @@ LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 	return result;
 }
 
+LineReaderPosition savePosition(LineReader *reader)
+{
+	return reader->position;
+}
+
+void restorePosition(LineReader *reader, LineReaderPosition position)
+{
+	reader->position = position;
+}
+
 void restart(LineReader *reader)
 {
-	reader->currentLine = {};
-	reader->lineRemainder = {};
-	reader->currentLineNumber = 0;
-	reader->startOfNextLine = 0;
+	reader->position = {};
 }
 
 s32 countLines(Blob data)
@@ -66,22 +70,22 @@ bool loadNextLine(LineReader *reader)
 	do
 	{
 		// Get next line
-		++reader->currentLineNumber;
-		line.chars = (char *)(reader->data.memory + reader->startOfNextLine);
+		++reader->position.currentLineNumber;
+		line.chars = (char *)(reader->data.memory + reader->position.startOfNextLine);
 		line.length = 0;
-		while ((reader->startOfNextLine < reader->data.size) && !isNewline(reader->data.memory[reader->startOfNextLine]))
+		while ((reader->position.startOfNextLine < reader->data.size) && !isNewline(reader->data.memory[reader->position.startOfNextLine]))
 		{
-			++reader->startOfNextLine;
+			++reader->position.startOfNextLine;
 			++line.length;
 		}
 
 		// Handle Windows' stupid double-character newline.
-		if (reader->startOfNextLine < reader->data.size)
+		if (reader->position.startOfNextLine < reader->data.size)
 		{
-			++reader->startOfNextLine;
-			if (isNewline(reader->data.memory[reader->startOfNextLine]) && (reader->data.memory[reader->startOfNextLine] != reader->data.memory[reader->startOfNextLine-1]))
+			++reader->position.startOfNextLine;
+			if (isNewline(reader->data.memory[reader->position.startOfNextLine]) && (reader->data.memory[reader->position.startOfNextLine] != reader->data.memory[reader->position.startOfNextLine-1]))
 			{
-				++reader->startOfNextLine;
+				++reader->position.startOfNextLine;
 			}
 		}
 
@@ -104,10 +108,10 @@ bool loadNextLine(LineReader *reader)
 		// This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
 		if (!reader->skipBlankLines) break;
 	}
-	while (isEmpty(line) && !(reader->startOfNextLine >= reader->data.size));
+	while (isEmpty(line) && !(reader->position.startOfNextLine >= reader->data.size));
 
-	reader->currentLine = line;
-	reader->lineRemainder = line;
+	reader->position.currentLine   = line;
+	reader->position.lineRemainder = line;
 
 	if (isEmpty(line))
 	{
@@ -115,7 +119,7 @@ bool loadNextLine(LineReader *reader)
 		{
 			result = false;
 		}
-		else if (reader->startOfNextLine >= reader->data.size)
+		else if (reader->position.startOfNextLine >= reader->data.size)
 		{
 			result = false;
 		}
@@ -126,37 +130,37 @@ bool loadNextLine(LineReader *reader)
 
 inline String getLine(LineReader *reader)
 {
-	return reader->currentLine;
+	return reader->position.currentLine;
 }
 
 inline String getRemainderOfLine(LineReader *reader)
 {
-	return trim(reader->lineRemainder);
+	return trim(reader->position.lineRemainder);
 }
 
 void warn(LineReader *reader, String message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
-	logWarn("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->currentLineNumber), text});
+	logWarn("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->position.currentLineNumber), text});
 }
 
 void error(LineReader *reader, String message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
-	logError("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->currentLineNumber), text});
+	logError("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->position.currentLineNumber), text});
 	DEBUG_BREAK();
 }
 
 String readToken(LineReader *reader, char splitChar)
 {
-	String token = nextToken(reader->lineRemainder, &reader->lineRemainder, splitChar);
+	String token = nextToken(reader->position.lineRemainder, &reader->position.lineRemainder, splitChar);
 
 	return token;
 }
 
 String peekToken(LineReader *reader, char splitChar)
 {
-	String token = nextToken(reader->lineRemainder, null, splitChar);
+	String token = nextToken(reader->position.lineRemainder, null, splitChar);
 
 	return token;
 }

@@ -1,15 +1,19 @@
 #pragma once
 
+struct LineReaderPosition
+{
+	String currentLine;
+	smm currentLineNumber;
+	String lineRemainder;
+	smm startOfNextLine;
+};
+
 struct LineReader
 {
 	String filename;
 	Blob data;
 
-	String currentLine;
-	smm currentLineNumber;
-	String lineRemainder;
-
-	smm startOfNextLine;
+	LineReaderPosition position;
 
 	bool skipBlankLines;
 	bool removeComments;
@@ -24,7 +28,8 @@ enum LineReaderFlags
 };
 
 LineReader readLines(String filename, Blob data, u32 flags = DefaultLineReaderFlags, char commentChar = '#');
-
+LineReaderPosition savePosition(LineReader *reader);
+void restorePosition(LineReader *reader, LineReaderPosition position);
 void restart(LineReader *reader);
 
 s32 countLines(Blob data);
