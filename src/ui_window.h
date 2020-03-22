@@ -72,7 +72,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 // Internally, this all works by modifying the context->contentArea, which is what the 
 // window_label() etc functions use to lay themselves out. So, they don't have to know anything
 // about columns or other layout complexities! So that's pretty nice.
-void window_beginColumns(WindowContext *context);
+void window_beginColumns(WindowContext *context, s32 height=0);
 void window_column(WindowContext *context, s32 width=0, ScrollbarState *scrollbar=null);
 void window_columnPercent(WindowContext *context, f32 widthPercent, ScrollbarState *scrollbar=null);
 Rect2I window_getColumnArea(WindowContext *context);

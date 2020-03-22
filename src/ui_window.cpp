@@ -1,14 +1,15 @@
 #pragma once
 
-void window_beginColumns(WindowContext *context)
+void window_beginColumns(WindowContext *context, s32 height)
 {
-	context->contentArea = irectXYWH(0,0,0,0);
+	context->contentArea = irectXYWH(0,0,0,height);
 	context->columnStartOffsetX = 0;
 }
 
 void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 {
 	s32 columnWidth = width;
+	s32 columnHeight = (context->contentArea.h > 0) ? context->contentArea.h : context->totalContentArea.h;
 	if (columnWidth <= 0)
 	{
 		// width 0 means "fill the remainder"
@@ -26,7 +27,7 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 
 	context->columnScrollbarWidth = 0;
 
-	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnWidth, context->totalContentArea.h);
+	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnWidth, columnHeight);
 	context->currentOffset = v2i(0,0);
 
 	context->columnScrollbarState = scrollbar;
@@ -104,6 +105,10 @@ void window_completeColumn(WindowContext *context)
 void window_endColumns(WindowContext *context)
 {
 	window_completeColumn(context);
+
+	context->currentOffset = v2i(0, context->contentArea.h);
+	context->columnStartOffsetX = 0;
+	context->contentArea = context->totalContentArea;
 }
 
 V2I window_getCurrentLayoutPosition(WindowContext *context)

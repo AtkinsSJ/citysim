@@ -134,23 +134,15 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 
 }
 
-void showLoadGameWindow(UIState *uiState)
+void savedGamesWindowProc(WindowContext *context, void *userData)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	catalogue->selectedSavedGameFilename = nullString;
-	catalogue->selectedSavedGameIndex = -1;
-
-	showWindow(uiState, getText("title_load_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, loadGameWindowProc, null);
-}
-
-void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
-{
-	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	bool isSaveWindow = userData != null;
 
 	SavedGameInfo *selectedSavedGame = null;
+	bool justClickedSavedGame = false;
 
-	window_beginColumns(context);
-	defer { window_endColumns(context); };
+	window_beginColumns(context, 350);
 
 	// List of saved games
 	window_columnPercent(context, 0.4f, &catalogue->savedGamesListScrollbar);
@@ -170,6 +162,7 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 			{
 				// Select it and show information in the details pane
 				catalogue->selectedSavedGameIndex = index;
+				justClickedSavedGame = true;
 			}
 
 			if (catalogue->selectedSavedGameIndex == index)
@@ -198,13 +191,71 @@ void loadGameWindowProc(WindowContext *context, void * /*userdata*/)
 				window_label(context, getText("msg_load_version_too_new"_s));
 			}
 		}
+	}
 
+	window_endColumns(context);
+
+	if (isSaveWindow)
+	{
+		// 'Save' buttons
+		window_label(context, "Save game name:"_s);
+
+		if (justClickedSavedGame)
+		{
+			clear(&catalogue->saveGameName);
+			append(&catalogue->saveGameName, selectedSavedGame->filename);
+		}
+
+		bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
+
+		if (window_button(context, getText("button_save"_s)) || pressedEnterInTextInput)
+		{
+			String filename = trim(textInputToString(&catalogue->saveGameName));
+			if (!isEmpty(filename))
+			{
+				if (saveGame(context->uiState, filename))
+				{
+					context->closeRequested = true;
+				}
+			}
+		}
+	}
+	else
+	{
+		// 'Load' buttons
 		if (window_button(context, getText("button_load"_s)) && (selectedSavedGame != null))
 		{
 			loadGame(context->uiState, selectedSavedGame);
 			context->closeRequested = true;
 		}
 	}
+}
+
+void showLoadGameWindow(UIState *uiState)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameIndex = -1;
+
+	showWindow(uiState, getText("title_load_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, null);
+}
+
+void showSaveGameWindow(UIState *uiState)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameIndex = -1;
+
+	clear(&catalogue->saveGameName);
+	captureInput(&catalogue->saveGameName);
+
+	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
+}
+
+void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	releaseInput(&catalogue->saveGameName);
 }
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)
@@ -225,44 +276,6 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 	{
 		pushUiMessage(uiState, myprintf(getText("msg_load_failure"_s), {saveFile.path}));
 	}
-}
-
-void showSaveGameWindow(UIState *uiState)
-{
-	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	catalogue->selectedSavedGameFilename = nullString;
-	catalogue->selectedSavedGameIndex = -1;
-
-	clear(&catalogue->saveGameName);
-	captureInput(&catalogue->saveGameName);
-
-	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, saveGameWindowProc, null, saveGameWindowOnClose);
-}
-
-void saveGameWindowProc(WindowContext *context, void * /*userData*/)
-{
-	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-
-	window_label(context, "Save game name:"_s);
-	bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
-
-	if (window_button(context, getText("button_save"_s)) || pressedEnterInTextInput)
-	{
-		String filename = trim(textInputToString(&catalogue->saveGameName));
-		if (!isEmpty(filename))
-		{
-			if (saveGame(context->uiState, filename))
-			{
-				context->closeRequested = true;
-			}
-		}
-	}
-}
-
-void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
-{
-	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	releaseInput(&catalogue->saveGameName);
 }
 
 bool saveGame(UIState *uiState, String saveName)
