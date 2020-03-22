@@ -2,6 +2,12 @@
 
 void window_beginColumns(WindowContext *context, s32 height)
 {
+	// Auto-height columns in an auto-height window are not allowed because they expand infinitely!
+	// (Pretty sure we don't need this to be possible, but if I'm wrong, I'll have to figure out
+	// how to make it work somehow.)
+	// - Sam, 22/03/2020
+	ASSERT(!(height == 0 && (context->window->flags & WinFlag_AutomaticHeight)));
+
 	context->contentArea = irectXYWH(0,0,0,height);
 	context->columnStartOffsetX = 0;
 }
