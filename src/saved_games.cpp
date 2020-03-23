@@ -134,6 +134,47 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 
 }
 
+void showLoadGameWindow(UIState *uiState)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameIndex = -1;
+
+	showWindow(uiState, getText("title_load_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, null);
+}
+
+void showSaveGameWindow(UIState *uiState)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+
+	clear(&catalogue->saveGameName);
+	captureInput(&catalogue->saveGameName);
+
+	// If we're playing a save file, select that by default
+	Indexed<SavedGameInfo *> selectedSavedGame = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
+		return equals(info->filename, catalogue->activeSavedGameFilename);
+	});
+	if (selectedSavedGame.index != -1)
+	{
+		catalogue->selectedSavedGameFilename = catalogue->activeSavedGameFilename;
+		catalogue->selectedSavedGameIndex = selectedSavedGame.index;
+		append(&catalogue->saveGameName, catalogue->selectedSavedGameFilename);
+	}
+	else
+	{
+		catalogue->selectedSavedGameFilename = nullString;
+		catalogue->selectedSavedGameIndex = -1;
+	}
+
+	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
+}
+
+void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
+{
+	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+	releaseInput(&catalogue->saveGameName);
+}
+
 void savedGamesWindowProc(WindowContext *context, void *userData)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
@@ -207,10 +248,24 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		}
 
 		bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
+		String filename = trim(textInputToString(&catalogue->saveGameName));
+
+		// Show a warning if we're overwriting an existing save that ISN'T the active one
+		if (!isEmpty(filename) && !equals(filename, catalogue->activeSavedGameFilename))
+		{
+			// TODO: We need to make sure to append .sav!!!!!
+			Indexed<SavedGameInfo *> fileToOverwrite = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
+				return equals(filename, info->filename);
+			});
+
+			if (fileToOverwrite.index != -1)
+			{
+				window_label(context, getText("msg_save_warning_overwrite"_s), "warning"_s);
+			}
+		}
 
 		if (window_button(context, getText("button_save"_s)) || pressedEnterInTextInput)
 		{
-			String filename = trim(textInputToString(&catalogue->saveGameName));
 			if (!isEmpty(filename))
 			{
 				if (saveGame(context->uiState, filename))
@@ -229,47 +284,6 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			context->closeRequested = true;
 		}
 	}
-}
-
-void showLoadGameWindow(UIState *uiState)
-{
-	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	catalogue->selectedSavedGameFilename = nullString;
-	catalogue->selectedSavedGameIndex = -1;
-
-	showWindow(uiState, getText("title_load_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, null);
-}
-
-void showSaveGameWindow(UIState *uiState)
-{
-	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-
-	clear(&catalogue->saveGameName);
-	captureInput(&catalogue->saveGameName);
-
-	// If we're playing a save file, select that by default
-	Indexed<SavedGameInfo *> selectedSavedGame = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
-		return equals(info->filename, catalogue->activeSavedGameFilename);
-	});
-	if (selectedSavedGame.index != -1)
-	{
-		catalogue->selectedSavedGameFilename = catalogue->activeSavedGameFilename;
-		catalogue->selectedSavedGameIndex = selectedSavedGame.index;
-		append(&catalogue->saveGameName, catalogue->selectedSavedGameFilename);
-	}
-	else
-	{
-		catalogue->selectedSavedGameFilename = nullString;
-		catalogue->selectedSavedGameIndex = -1;
-	}
-
-	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
-}
-
-void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
-{
-	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	releaseInput(&catalogue->saveGameName);
 }
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)

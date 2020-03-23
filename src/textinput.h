@@ -37,3 +37,5 @@ void moveCaretLeft(TextInput *textInput, s32 count = 1);
 void moveCaretRight(TextInput *textInput, s32 count = 1);
 void moveCaretLeftWholeWord(TextInput *textInput);
 void moveCaretRightWholeWord(TextInput *textInput);
+
+bool isEmpty(TextInput *textInput);

@@ -368,3 +368,8 @@ bool updateTextInput(TextInput *textInput)
 
 	return pressedReturn;
 }
+
+inline bool isEmpty(TextInput *textInput)
+{
+	return textInput->byteLength == 0;
+}

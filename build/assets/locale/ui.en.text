@@ -87,6 +87,7 @@ msg_load_failure                 Failed to load game as '{0}'!
 msg_load_version_too_new         This save file was created by a newer version of the game, so it's very likely that loading it will break things! You probably want to update the game first.
 msg_save_success                 Game saved as '{0}'
 msg_save_failure                 Failed to save game as '{0}'!
+msg_save_warning_overwrite       This will overwrite a previous save game!
 
 building_problem_fire          On fire!
 building_problem_no_power      No power!
