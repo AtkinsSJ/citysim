@@ -33,6 +33,8 @@ struct SavedGamesCatalogue
 
 	ChunkedArray<SavedGameInfo> savedGames;
 
+	String activeSavedGameFilename; // The one that's currently loaded, so we know it's safe to save over it.
+
 	// Fields used by the save/load windows
 	String selectedSavedGameFilename;
 	s32 selectedSavedGameIndex;

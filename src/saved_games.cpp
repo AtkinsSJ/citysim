@@ -243,11 +243,25 @@ void showLoadGameWindow(UIState *uiState)
 void showSaveGameWindow(UIState *uiState)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	catalogue->selectedSavedGameFilename = nullString;
-	catalogue->selectedSavedGameIndex = -1;
 
 	clear(&catalogue->saveGameName);
 	captureInput(&catalogue->saveGameName);
+
+	// If we're playing a save file, select that by default
+	Indexed<SavedGameInfo *> selectedSavedGame = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
+		return equals(info->filename, catalogue->activeSavedGameFilename);
+	});
+	if (selectedSavedGame.index != -1)
+	{
+		catalogue->selectedSavedGameFilename = catalogue->activeSavedGameFilename;
+		catalogue->selectedSavedGameIndex = selectedSavedGame.index;
+		append(&catalogue->saveGameName, catalogue->selectedSavedGameFilename);
+	}
+	else
+	{
+		catalogue->selectedSavedGameFilename = nullString;
+		catalogue->selectedSavedGameIndex = -1;
+	}
 
 	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
 }
@@ -271,6 +285,9 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 	{
 		pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {saveFile.path}));
 		globalAppState.appStatus = AppStatus_Game;
+
+		// Filename is interned so it's safe to copy it
+		savedGamesCatalogue.activeSavedGameFilename = savedGame->filename;
 	}
 	else
 	{
@@ -297,6 +314,9 @@ bool saveGame(UIState *uiState, String saveName)
 	if (saveSucceeded)
 	{
 		pushUiMessage(uiState, myprintf(getText("msg_save_success"_s), {saveFile.path}));
+
+		// Store that we saved it
+		savedGamesCatalogue.activeSavedGameFilename = intern(&catalogue->stringsTable, saveFilename);
 	}
 	else
 	{

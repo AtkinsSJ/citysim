@@ -86,6 +86,7 @@ bool findAndRemove(ChunkedArray<T> *array, T toRemove);
 
 // NB: Returns an Indexed<> of null/-1 if nothing is found.
 // A Maybe<> would be more specific, but Maybe<Indexed<T*>> is heading into ridiculousness territory.
+// Filter is a function with signature: bool filter(T *value)
 template<typename T, typename Filter>
 Indexed<T *> findFirst(ChunkedArray<T> *array, Filter filter);
 
