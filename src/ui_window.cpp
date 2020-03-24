@@ -152,6 +152,8 @@ Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 		} break;
 	}
 
+	ASSERT(result.w > 0);
+
 	return result;
 }
 
@@ -466,47 +468,24 @@ Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding
 					windowArea.h - barHeight - (contentPadding * 2));
 }
 
-WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState)
+WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender)
 {
 	WindowContext context = {};
 	context.uiState = uiState;
 	context.window = window;
 	context.windowStyle = windowStyle;
-	context.contentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);
+	context.totalContentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);
+	context.contentArea = context.totalContentArea;
 	context.currentOffset = v2i(0,0);
 	context.largestItemWidth = 0;
+	context.largestItemHeightOnLine = 0;
 	context.alignment = ALIGN_TOP | ALIGN_LEFT;
 	context.perItemPadding = 4; // TODO: Make this part of the style!
 
+	context.doUpdate = doUpdate;
+	context.doRender = doRender;
+
 	return context;
-}
-
-void prepareForUpdate(WindowContext *context)
-{
-	context->doUpdate = true;
-	context->doRender = false;
-
-	context->totalContentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
-	context->contentArea = context->totalContentArea;
-	context->currentOffset = v2i(0,0);
-	context->largestItemWidth = 0;
-	context->largestItemHeightOnLine = 0;
-	context->alignment = ALIGN_TOP | ALIGN_LEFT;
-	context->perItemPadding = 4; // TODO: Make this part of the style!
-}
-
-void prepareForRender(WindowContext *context)
-{
-	context->doUpdate = false;
-	context->doRender = true;
-	
-	context->totalContentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
-	context->contentArea = context->totalContentArea;
-	context->currentOffset = v2i(0,0);
-	context->largestItemWidth = 0;
-	context->largestItemHeightOnLine = 0;
-	context->alignment = ALIGN_TOP | ALIGN_LEFT;
-	context->perItemPadding = 4; // TODO: Make this part of the style!
 }
 
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
@@ -514,7 +493,6 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
-	prepareForUpdate(context);
 	window->windowProc(context, window->userData);
 
 	if (window->flags & WinFlag_AutomaticHeight)
@@ -613,7 +591,7 @@ void updateWindows(UIState *uiState)
 
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		WindowContext context = makeWindowContext(window, windowStyle, uiState);
+		WindowContext context = makeWindowContext(window, windowStyle, uiState, true, false);
 
 		// Run the WindowProc once first so we can measure its size
 		updateWindow(uiState, window, &context, isActive);
@@ -699,13 +677,6 @@ void updateWindows(UIState *uiState)
 		Window *window = get(&uiState->openWindows, closeWindow);
 		if (window->onClose != null)
 		{
-			// TODO: We probably don't need to pass a context at all to the onClose() callback,
-			// but I don't have a clear idea right now of what things we might want to do in
-			// onClose() so I'm leaving it as a WindowProc for now, because I don't want to
-			// litter the code with a bunch of different callback types. IDK.
-			// - Sam, 16/01/2020
-			UIWindowStyle *windowStyle = findWindowStyle(&assets->theme, window->styleName);
-			WindowContext context = makeWindowContext(window, windowStyle, uiState);
 			window->onClose(null, window->userData);
 		}
 
@@ -744,16 +715,17 @@ void renderWindows(UIState *uiState)
 		}
 
 		UIWindowStyle *windowStyle = findWindowStyle(&assets->theme, window->styleName);
-		WindowContext context = makeWindowContext(window, windowStyle, uiState);
 
 		if (!window->isInitialised)
 		{
-			updateWindow(uiState, window, &context, isActive);
+			WindowContext updateContext = makeWindowContext(window, windowStyle, uiState, true, false);
+			updateWindow(uiState, window, &updateContext, isActive);
 			window->isInitialised = true;
 		}
 
 		RenderItem_DrawSingleRect *contentBackground = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
-		prepareForRender(&context);
+
+		WindowContext context = makeWindowContext(window, windowStyle, uiState, false, true);
 		window->windowProc(&context, window->userData);
 
 		Rect2I wholeWindowArea = window->area;

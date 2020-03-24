@@ -107,6 +107,4 @@ void renderWindows(UIState *uiState);
 static void makeWindowActive(UIState *uiState, s32 windowIndex);
 static Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding);
 
-WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState);
-void prepareForUpdate(WindowContext *context);
-void prepareForRender(WindowContext *context);
+WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender);
