@@ -24,6 +24,28 @@ String getFileExtension(String filename)
 	return fileExtension;
 }
 
+String getFileName(String filename)
+{
+	String result = filename;
+
+	s32 length = 0;
+	while ((length < filename.length) && (filename[filename.length - length - 1] != '.'))
+	{
+		length++;
+	}
+
+	if (length == filename.length)
+	{
+		// no extension!
+	}
+	else
+	{
+		result.length -= length + 1;
+	}
+
+	return result;
+}
+
 String constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
 	return platform_constructPath(parts, appendWildcard);

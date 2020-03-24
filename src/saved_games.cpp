@@ -16,7 +16,7 @@ void initSavedGamesCatalogue()
 	initChunkedArray(&catalogue->savedGames, &catalogue->savedGamesArena, 64);
 
 	// Window-related stuff
-	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameName = nullString;
 	catalogue->selectedSavedGameIndex = -1;
 	catalogue->saveGameName = newTextInput(&catalogue->savedGamesArena, 64, "\\/:*?\"'`<>|[]()^#%&!@+={}~."_s);
 
@@ -55,7 +55,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 
 		SavedGameInfo *savedGame = appendBlank(&catalogue->savedGames);
 
-		savedGame->filename = intern(&catalogue->stringsTable, fileInfo->filename);
+		savedGame->shortName = intern(&catalogue->stringsTable, getFileName(fileInfo->filename));
 		savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({catalogue->savedGamesPath, fileInfo->filename}));
 
 		// Now we have to read the file a little to get the META stuff out of it. Hmmmm.
@@ -80,7 +80,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 				continue;
 			}
 
-			if (!fileHeaderIsValid(fileHeader, savedGame->filename))
+			if (!fileHeaderIsValid(fileHeader, savedGame->shortName))
 			{
 				savedGame->isReadable = false;
 				continue;
@@ -137,7 +137,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 void showLoadGameWindow(UIState *uiState)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	catalogue->selectedSavedGameFilename = nullString;
+	catalogue->selectedSavedGameName = nullString;
 	catalogue->selectedSavedGameIndex = -1;
 
 	showWindow(uiState, getText("title_load_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, null);
@@ -152,17 +152,17 @@ void showSaveGameWindow(UIState *uiState)
 
 	// If we're playing a save file, select that by default
 	Indexed<SavedGameInfo *> selectedSavedGame = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
-		return equals(info->filename, catalogue->activeSavedGameFilename);
+		return equals(info->shortName, catalogue->activeSavedGameName);
 	});
 	if (selectedSavedGame.index != -1)
 	{
-		catalogue->selectedSavedGameFilename = catalogue->activeSavedGameFilename;
+		catalogue->selectedSavedGameName = catalogue->activeSavedGameName;
 		catalogue->selectedSavedGameIndex = selectedSavedGame.index;
-		append(&catalogue->saveGameName, catalogue->selectedSavedGameFilename);
+		append(&catalogue->saveGameName, catalogue->selectedSavedGameName);
 	}
 	else
 	{
-		catalogue->selectedSavedGameFilename = nullString;
+		catalogue->selectedSavedGameName = nullString;
 		catalogue->selectedSavedGameIndex = -1;
 	}
 
@@ -199,7 +199,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			SavedGameInfo *savedGame = get(&it);
 			s32 index = getIndex(&it);
 
-			if (window_button(context, savedGame->filename, -1, (catalogue->selectedSavedGameIndex == index)))
+			if (window_button(context, savedGame->shortName, -1, (catalogue->selectedSavedGameIndex == index)))
 			{
 				// Select it and show information in the details pane
 				catalogue->selectedSavedGameIndex = index;
@@ -218,7 +218,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 	if (selectedSavedGame)
 	{
-		window_label(context, selectedSavedGame->filename);
+		window_label(context, selectedSavedGame->shortName);
 		window_label(context, myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
 		window_label(context, selectedSavedGame->cityName);
 		window_label(context, myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
@@ -244,18 +244,17 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		if (justClickedSavedGame)
 		{
 			clear(&catalogue->saveGameName);
-			append(&catalogue->saveGameName, selectedSavedGame->filename);
+			append(&catalogue->saveGameName, selectedSavedGame->shortName);
 		}
 
 		bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
-		String filename = trim(textInputToString(&catalogue->saveGameName));
+		String inputName = trim(textInputToString(&catalogue->saveGameName));
 
 		// Show a warning if we're overwriting an existing save that ISN'T the active one
-		if (!isEmpty(filename) && !equals(filename, catalogue->activeSavedGameFilename))
+		if (!isEmpty(inputName) && !equals(inputName, catalogue->activeSavedGameName))
 		{
-			// TODO: We need to make sure to append .sav!!!!!
 			Indexed<SavedGameInfo *> fileToOverwrite = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
-				return equals(filename, info->filename);
+				return equals(inputName, info->shortName);
 			});
 
 			if (fileToOverwrite.index != -1)
@@ -266,9 +265,9 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 		if (window_button(context, getText("button_save"_s)) || pressedEnterInTextInput)
 		{
-			if (!isEmpty(filename))
+			if (!isEmpty(inputName))
 			{
-				if (saveGame(context->uiState, filename))
+				if (saveGame(context->uiState, inputName))
 				{
 					context->closeRequested = true;
 				}
@@ -301,7 +300,7 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 		globalAppState.appStatus = AppStatus_Game;
 
 		// Filename is interned so it's safe to copy it
-		savedGamesCatalogue.activeSavedGameFilename = savedGame->filename;
+		savedGamesCatalogue.activeSavedGameName = savedGame->shortName;
 	}
 	else
 	{
@@ -330,7 +329,7 @@ bool saveGame(UIState *uiState, String saveName)
 		pushUiMessage(uiState, myprintf(getText("msg_save_success"_s), {saveFile.path}));
 
 		// Store that we saved it
-		savedGamesCatalogue.activeSavedGameFilename = intern(&catalogue->stringsTable, saveFilename);
+		savedGamesCatalogue.activeSavedGameName = intern(&catalogue->stringsTable, saveName);
 	}
 	else
 	{

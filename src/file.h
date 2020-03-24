@@ -74,6 +74,9 @@ struct DirectoryChangeWatchingHandle
 // eg, getFileExtension("foo.bar.baz") would return "baz".
 // If there is no '.', we return an empty String.
 String getFileExtension(String filename);
+// Returns the part of filename WITHOUT the extension.
+// So, the opposite of getFileExtension()
+String getFileName(String filename);
 String constructPath(std::initializer_list<String> parts, bool appendWildcard=false);
 
 // Locale-dependent files have the format "name.locale.extension"

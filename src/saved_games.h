@@ -8,7 +8,7 @@ enum SavedGameProblem
 struct SavedGameInfo
 {
 	bool isReadable;
-	String filename;
+	String shortName; // Has no extension
 	String fullPath;
 
 	u32 problems;
@@ -33,10 +33,10 @@ struct SavedGamesCatalogue
 
 	ChunkedArray<SavedGameInfo> savedGames;
 
-	String activeSavedGameFilename; // The one that's currently loaded, so we know it's safe to save over it.
+	String activeSavedGameName; // The one that's currently loaded, so we know it's safe to save over it. (shortName)
 
 	// Fields used by the save/load windows
-	String selectedSavedGameFilename;
+	String selectedSavedGameName; // (shortName)
 	s32 selectedSavedGameIndex;
 	TextInput saveGameName;
 
