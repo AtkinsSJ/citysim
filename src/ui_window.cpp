@@ -157,11 +157,51 @@ Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 
 void window_completeWidget(WindowContext *context, V2I widgetSize)
 {
-	// For now, we'll always just start a new line.
-	// We'll probably want something fancier later.
-	context->currentOffset.y += widgetSize.y;
-	
 	context->largestItemWidth = max(widgetSize.x, context->largestItemWidth);
+
+	bool lineIsFull = false;
+
+	switch (context->alignment & ALIGN_H)
+	{
+		case ALIGN_LEFT: {
+			context->currentOffset.x += widgetSize.x + context->perItemPadding;
+			// Check for a full line
+			// NB: We might want to do something smarter when there's only a small remainder.
+			// Though, for now we'll just be smart about not intentionally wrapping a line.
+			if (context->currentOffset.x >= context->contentArea.w)
+			{
+				lineIsFull = true;
+			}
+		} break;
+
+		case ALIGN_RIGHT: {
+			context->currentOffset.x -= widgetSize.x + context->perItemPadding;
+			// Check for a full line
+			// NB: We might want to do something smarter when there's only a small remainder.
+			// Though, for now we'll just be smart about not intentionally wrapping a line.
+			if (context->currentOffset.x <= 0)
+			{
+				lineIsFull = true;
+			}
+		} break;
+
+		case ALIGN_H_CENTRE:
+		case ALIGN_EXPAND_H:
+		default: {
+			// Just start a new line
+			lineIsFull = true;
+		} break;
+	}
+
+	context->largestItemHeightOnLine = max(context->largestItemHeightOnLine, widgetSize.y);
+
+	if (lineIsFull)
+	{
+		context->currentOffset.x = 0;
+		context->currentOffset.y += context->largestItemHeightOnLine;
+
+		context->largestItemHeightOnLine = 0;
+	}
 }
 
 void window_label(WindowContext *context, String text, String styleName)
@@ -450,19 +490,21 @@ void prepareForUpdate(WindowContext *context)
 	context->contentArea = context->totalContentArea;
 	context->currentOffset = v2i(0,0);
 	context->largestItemWidth = 0;
+	context->largestItemHeightOnLine = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
 	context->perItemPadding = 4; // TODO: Make this part of the style!
 }
 
 void prepareForRender(WindowContext *context)
 {
-	context->doRender = true;
 	context->doUpdate = false;
+	context->doRender = true;
 	
 	context->totalContentArea = getWindowContentArea(context->window->area, (context->window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight, context->windowStyle->contentPadding);
 	context->contentArea = context->totalContentArea;
 	context->currentOffset = v2i(0,0);
 	context->largestItemWidth = 0;
+	context->largestItemHeightOnLine = 0;
 	context->alignment = ALIGN_TOP | ALIGN_LEFT;
 	context->perItemPadding = 4; // TODO: Make this part of the style!
 }

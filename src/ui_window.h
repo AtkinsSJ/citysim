@@ -17,6 +17,7 @@ struct WindowContext
 	Rect2I contentArea;
 	V2I currentOffset;
 	s32 largestItemWidth;
+	s32 largestItemHeightOnLine;
 	u32 alignment;
 	s32 perItemPadding;
 
@@ -61,6 +62,8 @@ struct Window
 //
 void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose=null);
 
+
+
 // Columns!
 //
 // This is very basic right now and probably will need rewriting later to be more comprehensive.
@@ -81,6 +84,7 @@ void window_endColumns(WindowContext *context);
 void window_completeColumn(WindowContext *context);
 
 Rect2I window_getCurrentLayoutPosition(WindowContext *context);
+void window_completeWidget(WindowContext *context, V2I widgetSize);
 
 // Elements
 void window_label(WindowContext *context, String text, String styleName = nullString);
