@@ -117,17 +117,51 @@ void window_endColumns(WindowContext *context)
 	context->contentArea = context->totalContentArea;
 }
 
-V2I window_getCurrentLayoutPosition(WindowContext *context)
+Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 {
-	V2I result = context->contentArea.pos + context->currentOffset;
+	Rect2I result = {};
+
+	result.pos = context->contentArea.pos + context->currentOffset;
 
 	// Adjust if we're in a scrolling column area
 	if (context->columnScrollbarState != null)
 	{
-		result.y = result.y - context->columnScrollbarState->scrollPosition;
+		result.pos.y = result.pos.y - context->columnScrollbarState->scrollPosition;
+	}
+
+	// width
+	switch (context->alignment & ALIGN_H)
+	{
+		case ALIGN_RIGHT: {
+			// If the line has only just started, provide the full width
+			if (context->currentOffset.x == 0)
+			{
+				result.w = context->contentArea.w;
+			}
+			else
+			{
+				result.w = context->currentOffset.x;
+			}
+		} break;
+
+		case ALIGN_LEFT:
+		case ALIGN_H_CENTRE:
+		case ALIGN_EXPAND_H:
+		default: {
+			result.w = context->contentArea.w - context->currentOffset.x;
+		} break;
 	}
 
 	return result;
+}
+
+void window_completeWidget(WindowContext *context, V2I widgetSize)
+{
+	// For now, we'll always just start a new line.
+	// We'll probably want something fancier later.
+	context->currentOffset.y += widgetSize.y;
+	
+	context->largestItemWidth = max(widgetSize.x, context->largestItemWidth);
 }
 
 void window_label(WindowContext *context, String text, String styleName)
@@ -145,23 +179,13 @@ void window_label(WindowContext *context, String text, String styleName)
 	}
 
 	u32 alignment = context->alignment;
-	V2I origin = window_getCurrentLayoutPosition(context);
-
-	if (alignment & ALIGN_RIGHT)
-	{
-		origin.x = context->contentArea.pos.x + context->contentArea.w;
-	}
-	else if (alignment & ALIGN_H_CENTRE)
-	{
-		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
-	}
+	Rect2I space = window_getCurrentLayoutPosition(context);
+	V2I origin = alignWithinRectangle(space, alignment);
 
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
-		s32 maxWidth = context->contentArea.w - context->currentOffset.x;
-
-		V2I textSize = calculateTextSize(font, text, maxWidth);
+		V2I textSize = calculateTextSize(font, text, space.w);
 		V2I topLeft = calculateTextPosition(origin, textSize, alignment);
 		Rect2I bounds = irectPosSize(topLeft, textSize);
 
@@ -170,11 +194,7 @@ void window_label(WindowContext *context, String text, String styleName)
 			drawText(&renderer->uiBuffer, font, text, bounds, alignment, style->textColor, renderer->shaderIds.text);
 		}
 
-		// For now, we'll always just start a new line.
-		// We'll probably want something fancier later.
-		context->currentOffset.y += textSize.y;
-		
-		context->largestItemWidth = max(textSize.x, context->largestItemWidth);
+		window_completeWidget(context, textSize);
 	}
 }
 
@@ -196,16 +216,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 	}
 
 	s32 buttonAlignment = context->alignment;
-	V2I buttonOrigin = window_getCurrentLayoutPosition(context);
-
-	if (buttonAlignment & ALIGN_RIGHT)
-	{
-		buttonOrigin.x = context->contentArea.pos.x + context->contentArea.w;
-	}
-	else if (buttonAlignment & ALIGN_H_CENTRE)
-	{
-		buttonOrigin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
-	}
+	Rect2I space = window_getCurrentLayoutPosition(context);
+	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
 
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
@@ -213,7 +225,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 		s32 buttonWidth;
 		if (textWidth == -1)
 		{
-			buttonWidth = calculateButtonSize(text, style, context->contentArea.w - context->currentOffset.x).x;
+			buttonWidth = calculateButtonSize(text, style, space.w).x;
 		}
 		else
 		{
@@ -265,10 +277,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 			}
 		}
 
-		// For now, we'll always just start a new line.
-		// We'll probably want something fancier later.
-		context->currentOffset.y += buttonBounds.h;
-		context->largestItemWidth = max(buttonBounds.w, context->largestItemWidth);
+		window_completeWidget(context, buttonBounds.size);
 	}
 
 	return buttonClicked;
@@ -295,22 +304,13 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	}
 
 	u32 alignment = context->alignment;
-	V2I origin = window_getCurrentLayoutPosition(context);
-
-	if (alignment & ALIGN_RIGHT)
-	{
-		origin.x = context->contentArea.pos.x + context->contentArea.w;
-	}
-	else if (alignment & ALIGN_H_CENTRE)
-	{
-		origin.x = context->contentArea.pos.x + (context->contentArea.w  / 2);
-	}
+	Rect2I space = window_getCurrentLayoutPosition(context);
+	V2I origin = alignWithinRectangle(space, alignment);
 
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
-		s32 width = context->contentArea.w - context->currentOffset.x;
-		V2I textInputSize = calculateTextInputSize(textInput, style, width);
+		V2I textInputSize = calculateTextInputSize(textInput, style, space.w);
 		V2I topLeft = calculateTextPosition(origin, textInputSize, alignment);
 		Rect2I bounds = irectPosSize(topLeft, textInputSize);
 
@@ -329,11 +329,7 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 			}
 		}
 
-		// For now, we'll always just start a new line.
-		// We'll probably want something fancier later.
-		context->currentOffset.y += textInputSize.y;
-		
-		context->largestItemWidth = max(textInputSize.x, context->largestItemWidth);
+		window_completeWidget(context, textInputSize);
 	}
 
 	return result;

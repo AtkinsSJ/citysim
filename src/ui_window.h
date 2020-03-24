@@ -80,7 +80,7 @@ void window_endColumns(WindowContext *context);
 // Internal
 void window_completeColumn(WindowContext *context);
 
-V2I window_getCurrentLayoutPosition(WindowContext *context);
+Rect2I window_getCurrentLayoutPosition(WindowContext *context);
 
 // Elements
 void window_label(WindowContext *context, String text, String styleName = nullString);
