@@ -38,17 +38,40 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
-V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 width)
+V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
 {
 	s32 doublePadding = (buttonStyle->padding * 2);
-	s32 textMaxWidth = (width == 0) ? 0 : (width - doublePadding);
+	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
 
+	V2I result = {};
 	BitmapFont *font = getFont(buttonStyle->fontName);
-	V2I textSize = calculateTextSize(font, text, textMaxWidth);
 
-	s32 resultWidth = (width == 0) ? (textSize.x + doublePadding) : width;
+	if (textMaxWidth < 0)
+	{
+		// ERROR! Negative text width means we can't fit any so give up.
+		// (NB: 0 means "whatever", so we only worry if it's less than that.)
+		DEBUG_BREAK();
 
-	V2I result = v2i(resultWidth, textSize.y + doublePadding);
+		result.x = maxWidth;
+		result.y = font->lineHeight;
+	}
+	else
+	{
+		V2I textSize = calculateTextSize(font, text, textMaxWidth);
+
+		s32 resultWidth = 0;
+
+		if (fillWidth && (maxWidth > 0))
+		{
+			resultWidth = maxWidth;
+		}
+		else
+		{
+			resultWidth = (textSize.x + doublePadding);
+		}
+
+		result = v2i(resultWidth, textSize.y + doublePadding);
+	}
 
 	return result;
 }

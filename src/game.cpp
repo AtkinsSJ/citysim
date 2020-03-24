@@ -399,9 +399,6 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 {
 	DEBUG_FUNCTION();
 
-	// Centred, with equal button sizes
-	context->alignment = ALIGN_EXPAND_H;
-
 	UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
 	s32 availableButtonTextWidth = context->contentArea.w - (2 * buttonStyle->padding);
 
@@ -652,6 +649,7 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 void debugToolsWindowProc(WindowContext *context, void *userData)
 {
 	GameState *gameState = (GameState *)userData;
+
 	if (window_button(context, "Inspect fire info"_s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Fire)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Fire;

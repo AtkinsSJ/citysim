@@ -20,7 +20,7 @@ TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist
 // Returns true if pressed RETURN
 bool updateTextInput(TextInput *textInput);
 String textInputToString(TextInput *textInput);
-V2I calculateTextInputSize(TextInput *textInput, struct UITextInputStyle *style, s32 width = 0);
+V2I calculateTextInputSize(TextInput *textInput, struct UITextInputStyle *style, s32 maxWidth = 0, bool fillWidth = false);
 Rect2I drawTextInput(struct RenderBuffer *renderBuffer, TextInput *textInput, struct UITextInputStyle *style, Rect2I bounds);
 
 void append(TextInput *textInput, char *source, s32 length);

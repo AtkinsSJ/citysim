@@ -15,16 +15,25 @@ String textInputToString(TextInput *textInput)
 	return makeString(textInput->buffer, textInput->byteLength);
 }
 
-V2I calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 width)
+V2I calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 maxWidth, bool fillWidth)
 {
 	s32 doublePadding = (style->padding * 2);
-	s32 textMaxWidth = (width == 0) ? 0 : (width - doublePadding);
+	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
 
 	BitmapFont *font = getFont(style->fontName);
 	String text = textInputToString(textInput);
 	V2I textSize = calculateTextSize(font, text, textMaxWidth);
 
-	s32 resultWidth = (width == 0) ? (textSize.x + doublePadding) : width;
+	s32 resultWidth = 0;
+
+	if (fillWidth && (maxWidth > 0))
+	{
+		resultWidth = maxWidth;
+	}
+	else
+	{
+		resultWidth = (textSize.x + doublePadding);
+	}
 
 	V2I result = v2i(resultWidth, textSize.y + doublePadding);
 

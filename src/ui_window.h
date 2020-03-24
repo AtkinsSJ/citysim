@@ -85,6 +85,8 @@ void window_completeColumn(WindowContext *context);
 
 Rect2I window_getCurrentLayoutPosition(WindowContext *context);
 void window_completeWidget(WindowContext *context, V2I widgetSize);
+void window_startNewLine(WindowContext *context, u32 hAlignment=0);
+void window_alignWidgets(WindowContext *context, u32 hAlignment);
 
 // Elements
 void window_label(WindowContext *context, String text, String styleName = nullString);

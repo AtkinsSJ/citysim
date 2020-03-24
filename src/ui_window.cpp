@@ -199,11 +199,28 @@ void window_completeWidget(WindowContext *context, V2I widgetSize)
 
 	if (lineIsFull)
 	{
-		context->currentOffset.x = 0;
-		context->currentOffset.y += context->largestItemHeightOnLine;
-
-		context->largestItemHeightOnLine = 0;
+		// New line with the same alignment
+		window_startNewLine(context);
 	}
+}
+
+void window_startNewLine(WindowContext *context, u32 hAlignment)
+{
+	context->currentOffset.x = 0;
+	context->currentOffset.y += context->largestItemHeightOnLine;
+
+	context->largestItemHeightOnLine = 0;
+
+	// Only change alignment if we passed one
+	if (hAlignment != 0)
+	{
+		context->alignment = (context->alignment & ALIGN_V) | (hAlignment & ALIGN_H);
+	}
+}
+
+void window_alignWidgets(WindowContext *context, u32 hAlignment)
+{
+	context->alignment = (context->alignment & ALIGN_V) | (hAlignment & ALIGN_H);
 }
 
 void window_label(WindowContext *context, String text, String styleName)
@@ -267,7 +284,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 		s32 buttonWidth;
 		if (textWidth == -1)
 		{
-			buttonWidth = calculateButtonSize(text, style, space.w).x;
+			bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+			buttonWidth = calculateButtonSize(text, style, space.w, fillWidth).x;
 		}
 		else
 		{
@@ -352,7 +370,8 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	BitmapFont *font = getFont(style->fontName);
 	if (font)
 	{
-		V2I textInputSize = calculateTextInputSize(textInput, style, space.w);
+		bool fillWidth = ((alignment & ALIGN_H) == ALIGN_EXPAND_H);
+		V2I textInputSize = calculateTextInputSize(textInput, style, space.w, fillWidth);
 		V2I topLeft = calculateTextPosition(origin, textInputSize, alignment);
 		Rect2I bounds = irectPosSize(topLeft, textInputSize);
 
@@ -479,7 +498,7 @@ WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UISt
 	context.currentOffset = v2i(0,0);
 	context.largestItemWidth = 0;
 	context.largestItemHeightOnLine = 0;
-	context.alignment = ALIGN_TOP | ALIGN_LEFT;
+	context.alignment = ALIGN_TOP | ALIGN_EXPAND_H;
 	context.perItemPadding = 4; // TODO: Make this part of the style!
 
 	context.doUpdate = doUpdate;

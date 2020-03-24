@@ -247,9 +247,12 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			append(&catalogue->saveGameName, selectedSavedGame->shortName);
 		}
 
+		window_startNewLine(context, ALIGN_RIGHT);
+
 		// Now we try and do multiple things on one line! Wish me luck.
 		bool pressedSave = window_button(context, getText("button_save"_s));
 
+		window_alignWidgets(context, ALIGN_EXPAND_H);
 		bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
 		String inputName = trim(textInputToString(&catalogue->saveGameName));
 
