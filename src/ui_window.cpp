@@ -630,7 +630,7 @@ void updateWindows(UIState *uiState)
 				newActiveWindow = windowIndex;
 			}
 
-			// Tooltips don't take mouse inputState
+			// Tooltips don't take mouse input
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
@@ -644,7 +644,7 @@ void updateWindows(UIState *uiState)
 
 		if (contains(wholeWindowArea, mousePos))
 		{
-			// Tooltips don't take mouse inputState
+			// Tooltips don't take mouse input
 			if (!isTooltip)
 			{
 				uiState->mouseInputHandled = true;
