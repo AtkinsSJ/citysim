@@ -19,7 +19,7 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 	if (columnWidth <= 0)
 	{
 		// width 0 means "fill the remainder"
-		columnWidth = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX + context->columnScrollbarWidth) - context->windowStyle->contentPadding;
+		columnWidth = context->totalContentArea.w - (context->contentArea.w + context->columnStartOffsetX + context->columnScrollbarWidth) - context->windowStyle->margin;
 	}
 
 	context->columnStartOffsetX = context->columnStartOffsetX + context->contentArea.w + context->columnScrollbarWidth;
@@ -28,7 +28,7 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 		// NB: If we're here, then there was a previous column
 		window_completeColumn(context);
 
-		context->columnStartOffsetX += context->windowStyle->contentPadding;
+		context->columnStartOffsetX += context->windowStyle->margin;
 	}
 
 	context->columnScrollbarWidth = 0;
@@ -170,7 +170,7 @@ void window_completeWidget(WindowContext *context, V2I widgetSize)
 	switch (context->alignment & ALIGN_H)
 	{
 		case ALIGN_LEFT: {
-			context->currentLeft += widgetSize.x + context->perItemPadding;
+			context->currentLeft += widgetSize.x + context->windowStyle->contentPadding;
 			// Check for a full line
 			// NB: We might want to do something smarter when there's only a small remainder.
 			// Though, for now we'll just be smart about not intentionally wrapping a line.
@@ -181,7 +181,7 @@ void window_completeWidget(WindowContext *context, V2I widgetSize)
 		} break;
 
 		case ALIGN_RIGHT: {
-			context->currentRight -= widgetSize.x + context->perItemPadding;
+			context->currentRight -= widgetSize.x + context->windowStyle->contentPadding;
 			// Check for a full line
 			// NB: We might want to do something smarter when there's only a small remainder.
 			// Though, for now we'll just be smart about not intentionally wrapping a line.
@@ -213,7 +213,7 @@ void window_startNewLine(WindowContext *context, u32 hAlignment)
 {
 	context->currentLeft = 0;
 	context->currentRight = context->contentArea.w;
-	context->currentY += context->largestItemHeightOnLine + context->perItemPadding;
+	context->currentY += context->largestItemHeightOnLine + context->windowStyle->contentPadding;
 
 	context->largestItemHeightOnLine = 0;
 
@@ -466,12 +466,12 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 }
 
 inline static
-Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding)
+Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 {
-	return irectXYWH(windowArea.x + contentPadding,
-					windowArea.y + barHeight + contentPadding,
-					windowArea.w - (contentPadding * 2),
-					windowArea.h - barHeight - (contentPadding * 2));
+	return irectXYWH(windowArea.x + margin,
+					windowArea.y + barHeight + margin,
+					windowArea.w - (margin * 2),
+					windowArea.h - barHeight - (margin * 2));
 }
 
 WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender)
@@ -480,7 +480,7 @@ WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UISt
 	context.uiState = uiState;
 	context.window = window;
 	context.windowStyle = windowStyle;
-	context.totalContentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);
+	context.totalContentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->margin);
 	context.contentArea = context.totalContentArea;
 	context.currentLeft = 0;
 	context.currentRight = context.contentArea.w;
@@ -488,7 +488,6 @@ WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UISt
 	context.largestItemWidth = 0;
 	context.largestItemHeightOnLine = 0;
 	context.alignment = ALIGN_TOP | ALIGN_EXPAND_H;
-	context.perItemPadding = 4; // TODO: Make this part of the style!
 
 	context.doUpdate = doUpdate;
 	context.doRender = doRender;
@@ -506,12 +505,12 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	if (window->flags & WinFlag_AutomaticHeight)
 	{
 		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-		window->area.h = barHeight + context->currentY + context->largestItemHeightOnLine + (context->windowStyle->contentPadding * 2);
+		window->area.h = barHeight + context->currentY + context->largestItemHeightOnLine + (context->windowStyle->margin * 2);
 	}
 
 	if (window->flags & WinFlag_ShrinkWidth)
 	{
-		window->area.w = context->largestItemWidth + (context->windowStyle->contentPadding * 2);
+		window->area.w = context->largestItemWidth + (context->windowStyle->margin * 2);
 	}
 
 	// Handle dragging/position first, BEFORE we use the window rect anywhere

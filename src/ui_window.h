@@ -16,7 +16,6 @@ struct WindowContext
 	Rect2I totalContentArea;
 	Rect2I contentArea;
 	u32 alignment;
-	s32 perItemPadding;
 	s32 currentY;
 	s32 currentLeft;
 	s32 currentRight;

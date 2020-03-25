@@ -81,6 +81,7 @@ titleBarColorInactive     96 128  96 255
 titleBarButtonHoverColor 255  64  64 255
 backgroundColor           96  96  96 255
 backgroundColorInactive   96  96  96 255
+margin                   12
 contentPadding           12
 contentLabelStyle        small
 contentButtonStyle       default
@@ -95,6 +96,7 @@ titleBarColorInactive     96  96 128 128
 titleBarButtonHoverColor 255  64  64 255
 backgroundColor           96  96 128 255
 backgroundColorInactive   96  96 128 128
+margin                   12
 contentPadding           12
 contentLabelStyle        small
 contentButtonStyle       default
@@ -103,7 +105,7 @@ scrollbarStyle           default
 :Window tooltip
 backgroundColor           96  96  96 128
 backgroundColorInactive   96  96  96 128
-contentPadding           8
+margin                   8
 contentLabelStyle        small
 contentButtonStyle       default
 offsetFromMouse          16 16

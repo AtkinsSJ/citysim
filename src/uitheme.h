@@ -65,6 +65,7 @@ struct UIWindowStyle
 	V4 backgroundColor;
 	V4 backgroundColorInactive;
 
+	s32 margin;
 	s32 contentPadding;
 
 	V2I offsetFromMouse;

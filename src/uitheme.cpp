@@ -247,6 +247,18 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
+			else if (equals(firstWord, "margin"_s))
+			{
+				Maybe<s32> margin = readInt<s32>(&reader);
+				if (margin.isValid)
+				{
+					switch (target.type)
+					{
+						case Section_Window:  target.window->margin = margin.value; break;
+						default:  WRONG_SECTION;
+					}
+				}
+			}
 			else if (equals(firstWord, "offsetFromMouse"_s))
 			{
 				Maybe<s32> offsetX = readInt<s32>(&reader);
