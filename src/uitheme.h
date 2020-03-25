@@ -24,6 +24,25 @@ struct UILabelStyle
 	V4 textColor;
 };
 
+struct UIMessageStyle
+{
+	String fontName;
+	V4 textColor;
+
+	V4 backgroundColor;
+	s32 padding;
+};
+
+struct UIPopupMenuStyle
+{
+	s32 margin;
+	s32 contentPadding;
+	V4 backgroundColor;
+
+	String buttonStyleName;
+	String scrollbarStyleName;
+};
+
 struct UITextInputStyle
 {
 	String fontName;
@@ -35,15 +54,6 @@ struct UITextInputStyle
 	
 	bool showCaret;
 	f32 caretFlashCycleDuration;
-};
-
-struct UIMessageStyle
-{
-	String fontName;
-	V4 textColor;
-
-	V4 backgroundColor;
-	s32 padding;
 };
 
 struct UIScrollbarStyle
@@ -98,6 +108,7 @@ struct UITheme
 	HashTable<UIConsoleStyle>   consoleStyles;
 	HashTable<UILabelStyle>     labelStyles;
 	HashTable<UIMessageStyle>   messageStyles;
+	HashTable<UIPopupMenuStyle> popupMenuStyles;
 	HashTable<UIScrollbarStyle> scrollbarStyles;
 	HashTable<UITextInputStyle> textInputStyles;
 	HashTable<UIWindowStyle>    windowStyles;
@@ -121,6 +132,10 @@ inline UILabelStyle *findLabelStyle(UITheme *theme, String name)
 inline UIMessageStyle *findMessageStyle(UITheme *theme, String name)
 {
 	return find(&theme->messageStyles, name);
+}
+inline UIPopupMenuStyle *findPopupMenuStyle(UITheme *theme, String name)
+{
+	return find(&theme->popupMenuStyles, name);
 }
 inline UIScrollbarStyle *findScrollbarStyle(UITheme *theme, String name)
 {

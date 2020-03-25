@@ -58,14 +58,13 @@ bool justClickedOnUI(UIState *uiState, Rect2I bounds);
 
 struct PopupMenu
 {
+	UIPopupMenuStyle *style;
+	UIButtonStyle *buttonStyle;
+	UIScrollbarStyle *scrollbarStyle;
+
 	V2I origin;
 	s32 width;
-
- 	// TODO: Put these in a style!
- 	// {
-	s32 padding;
-	V4 backgroundColor;
-	// }
+	s32 maxHeight;
 
 	RenderItem_DrawSingleRect *backgroundRect;
 
@@ -78,6 +77,6 @@ struct PopupMenu
 	// when it's hidden, actually!!! That'd work. Awesome.
 };
 
-PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, V4 backgroundColor);
+PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style);
 bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive = false);
 void endPopupMenu(UIState *uiState, PopupMenu *menu);

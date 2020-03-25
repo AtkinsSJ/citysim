@@ -446,6 +446,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
+	// s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	V2I centre = v2i(renderer->uiCamera.pos);
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
@@ -477,6 +478,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	// Build UI
 	{
 		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "default"_s);
+		UIPopupMenuStyle *popupMenuStyle = findPopupMenuStyle(&assets->theme, "default"_s);
+		UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, popupMenuStyle->buttonStyleName);
 
 		// The "ZONE" menu
 		String zoneButtonText = getText("button_zone"_s);
@@ -505,18 +508,16 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			// - Sam, 22/09/2019
 			//
 
-			// TODO: Get this style name from somewhere configurable? IDK
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"_s);
-
 			s32 buttonMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
 				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle).x);
 			}
 
-			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
+			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
+			s32 popupMenuMaxHeight = 128;
 
-			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
+			PopupMenu menu = beginPopupMenu(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
@@ -541,7 +542,6 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		{
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"_s);
 			s32 buttonMaxWidth = 0;
 			for (auto it = iterate(constructibleBuildings);
 				hasNext(&it);
@@ -551,9 +551,10 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(buildingDef->textAssetName), popupButtonStyle).x);
 			}
 
-			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
+			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
+			s32 popupMenuMaxHeight = 128;
 
-			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
+			PopupMenu menu = beginPopupMenu(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
 			for (auto it = iterate(constructibleBuildings);
 				hasNext(&it);
@@ -591,16 +592,16 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.size = calculateButtonSize(dataViewButtonText, buttonStyle);
 		if (uiMenuButton(uiState, dataViewButtonText, buttonRect, Menu_DataViews, buttonStyle))
 		{
-			UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, "default"_s);
 			s32 buttonMaxWidth = 0;
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{
 				String buttonText = getText(dataViewTitles[dataViewID]);
 				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buttonText, popupButtonStyle).x);
 			}
-			s32 popupMenuWidth = buttonMaxWidth + (uiPadding * 2);
+			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
+			s32 popupMenuMaxHeight = 128;
 
-			PopupMenu menu = beginPopupMenu(buttonRect.x - uiPadding, buttonRect.y + buttonRect.h, popupMenuWidth, theme->overlayColor);
+			PopupMenu menu = beginPopupMenu(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{

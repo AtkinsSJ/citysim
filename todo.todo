@@ -22,9 +22,9 @@ Saving and loading!
 - Crashing while loading a save game should NEVER happen. Be super careful with all data we read in. It may well be impossible to prevent it entirely, but this is an area with a lot of opportunities for corrupt data!
 - Also, we want to prevent crashing *after* loading as much as possible. Some kind of validation after loading the file is complete, to make sure the city itself makes sense, would be a good idea. I'm not sure what that would involve really, but catching errors and reporting them is much better than just crashing.
 - LZ77-based compression option. https://en.wikipedia.org/wiki/LZ77_and_LZ78
-- "Save" window that lets you specify the filename and warns of conflicts
-	- Keep in mind the filename it was loaded from (or last saved to) and use that as the default, and don't warn if you try to overwrite it.
-- "Load" window that previews the saved games.
+
+I think buttons within a scrolling area are still clickable if they're outside of the scissor! Oops
+(Fix this on popup menus and window columns)
 
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
@@ -53,7 +53,7 @@ Pop-up menus
 	✔ Now that our renderer is in-order, we should be able to just add a "PushStencil" command before, and a "PopStencil" one after.
 		-> Correct term is "scissor". We have BeginScissor/EndScissor. We might want a stack instead at some point, but right now I don't, and I'm unsure how we'd want it to behave, so best to leave it until it's actually needed!
 - Button width? IDK.
-- Maybe I should just make these be windows......... probably. Windows could do with a "scrolling part that's stencilled" feature though so yay.
+- Maybe I should just make these be windows.
 
 DrawGrid textures
 - Maybe cache each layer's texture instead of sending it every frame? It's already pretty fast though.

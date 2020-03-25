@@ -270,41 +270,51 @@ inline void uiCloseMenus(UIState *uiState)
 	uiState->openMenu = 0;
 }
 
-PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, V4 backgroundColor)
+PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style)
 {
 	PopupMenu result = {};
 
+	result.style = style;
+	result.scrollbarStyle = findScrollbarStyle(&assets->theme, style->scrollbarStyleName);
+	result.buttonStyle = findButtonStyle(&assets->theme, style->buttonStyleName);
+
 	result.origin = v2i(x, y);
 	result.width = width;
+	result.maxHeight = maxHeight;
 
-	result.padding = 4; // TODO: Define this in styles!
-	result.backgroundColor = backgroundColor;
 	result.backgroundRect = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
-	result.currentYOffset = result.padding;
+	result.currentYOffset = result.style->margin;
+
+	s32 scrollbarWidth = (result.scrollbarStyle ? result.scrollbarStyle->width : 0);
+	addBeginScissor(&renderer->uiBuffer, rectXYWHi(x, y, width + scrollbarWidth, maxHeight));
 
 	return result;
 }
 
 bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive)
 {
-	V2I buttonSize = calculateButtonSize(text, style, menu->width - (menu->padding * 2));
+	V2I buttonSize = calculateButtonSize(text, style, menu->width - (menu->style->margin * 2));
 
-	Rect2I buttonRect = irectXYWH(menu->origin.x + menu->padding,
+	Rect2I buttonRect = irectXYWH(menu->origin.x + menu->style->margin,
 								menu->origin.y + menu->currentYOffset,
 								buttonSize.x, buttonSize.y);
 
 	bool result = uiButton(uiState, text, buttonRect, style, isActive);
 
-	menu->currentYOffset += buttonRect.h + menu->padding;
+	menu->currentYOffset += buttonRect.h + menu->style->contentPadding;
 
 	return result;
 }
 
 void endPopupMenu(UIState *uiState, PopupMenu *menu)
 {
-	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width, menu->currentYOffset);
+	// TODO: If there's no scrollbar, make it width 0!
+	s32 scrollbarWidth = (menu->scrollbarStyle ? menu->scrollbarStyle->width : 0);
+
+	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(menu->currentYOffset, menu->maxHeight));
 	append(&uiState->uiRects, menuRect);
-	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->backgroundColor);
+	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
+	addEndScissor(&renderer->uiBuffer);
 }
 
 bool justClickedOnUI(UIState *uiState, Rect2I bounds)

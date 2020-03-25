@@ -37,6 +37,11 @@ void updateSavedGamesCatalogue()
 		// we already have.
 		// - Sam, 13/11/2019
 
+		// Another option would be to scan the file-change times, and only update the ones that
+		// changed since the last read. (And also add any ones that were missing, and remove
+		// any that have been deleted.) This might not take much effort?
+		// - Sam, 25/03/2019
+
 		clear(&catalogue->savedGames);
 		readSavedGamesInfo(catalogue);
 	}

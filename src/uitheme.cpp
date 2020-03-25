@@ -8,6 +8,7 @@ void initUITheme(UITheme *theme)
 	initHashTable(&theme->consoleStyles);
 	initHashTable(&theme->labelStyles);
 	initHashTable(&theme->messageStyles);
+	initHashTable(&theme->popupMenuStyles);
 	initHashTable(&theme->scrollbarStyles);
 	initHashTable(&theme->textInputStyles);
 	initHashTable(&theme->windowStyles);
@@ -25,6 +26,7 @@ void loadUITheme(Blob data, Asset *asset)
 	clear(&theme->consoleStyles);
 	clear(&theme->labelStyles);
 	clear(&theme->messageStyles);
+	clear(&theme->popupMenuStyles);
 	clear(&theme->scrollbarStyles);
 	clear(&theme->textInputStyles);
 	clear(&theme->windowStyles);
@@ -37,6 +39,7 @@ void loadUITheme(Blob data, Asset *asset)
 		Section_Console,
 		Section_Label,
 		Section_UIMessage,
+		Section_PopupMenu,
 		Section_Scrollbar,
 		Section_TextInput,
 		Section_Window,
@@ -52,6 +55,7 @@ void loadUITheme(Blob data, Asset *asset)
 			UIConsoleStyle   *console;
 			UILabelStyle     *label;
 			UIMessageStyle   *message;
+			UIPopupMenuStyle *popupMenu;
 			UIScrollbarStyle *scrollbar;
 			UITextInputStyle *textInput;
 			UIWindowStyle    *window;
@@ -112,6 +116,12 @@ void loadUITheme(Blob data, Asset *asset)
 				target.type = Section_UIMessage;
 				target.message = put(&theme->messageStyles, name);
 			}
+			else if (equals(firstWord, "PopupMenu"_s))
+			{
+				String name = intern(&assets->assetStrings, readToken(&reader));
+				target.type = Section_PopupMenu;
+				target.popupMenu = put(&theme->popupMenuStyles, name);
+			}
 			else if (equals(firstWord, "Scrollbar"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
@@ -148,6 +158,7 @@ void loadUITheme(Blob data, Asset *asset)
 						case Section_Button:    target.button->backgroundColor    = backgroundColor.value; break;
 						case Section_Console:   target.console->backgroundColor   = backgroundColor.value; break;
 						case Section_UIMessage: target.message->backgroundColor   = backgroundColor.value; break;
+						case Section_PopupMenu: target.popupMenu->backgroundColor = backgroundColor.value; break;
 						case Section_Scrollbar: target.scrollbar->backgroundColor = backgroundColor.value; break;
 						case Section_TextInput: target.textInput->backgroundColor = backgroundColor.value; break;
 						case Section_Window:    target.window->backgroundColor    = backgroundColor.value; break;
@@ -167,6 +178,16 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
+			else if (equals(firstWord, "buttonStyle"_s))
+			{
+				String styleName = intern(&assets->assetStrings, readToken(&reader));
+				switch (target.type)
+				{
+					case Section_PopupMenu:  target.popupMenu->buttonStyleName = styleName; break;
+					case Section_Window:     target.window->buttonStyleName    = styleName; break;
+					default:  WRONG_SECTION;
+				}
+			}
 			else if (equals(firstWord, "caretFlashCycleDuration"_s))
 			{
 				Maybe<f64> caretFlashCycleDuration = readFloat(&reader);
@@ -179,24 +200,6 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "contentButtonStyle"_s))
-			{
-				String styleName = intern(&assets->assetStrings, readToken(&reader));
-				switch (target.type)
-				{
-					case Section_Window:  target.window->buttonStyleName = styleName; break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "contentLabelStyle"_s))
-			{
-				String styleName = intern(&assets->assetStrings, readToken(&reader));
-				switch (target.type)
-				{
-					case Section_Window:  target.window->labelStyleName = styleName; break;
-					default:  WRONG_SECTION;
-				}
-			}
 			else if (equals(firstWord, "contentPadding"_s))
 			{
 				Maybe<s32> contentPadding = readInt<s32>(&reader);
@@ -204,7 +207,8 @@ void loadUITheme(Blob data, Asset *asset)
 				{
 					switch (target.type)
 					{
-						case Section_Window:  target.window->contentPadding = contentPadding.value; break;
+						case Section_PopupMenu:  target.popupMenu->contentPadding = contentPadding.value; break;
+						case Section_Window:     target.window->contentPadding    = contentPadding.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -247,6 +251,15 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
+			else if (equals(firstWord, "labelStyle"_s))
+			{
+				String styleName = intern(&assets->assetStrings, readToken(&reader));
+				switch (target.type)
+				{
+					case Section_Window:  target.window->labelStyleName = styleName; break;
+					default:  WRONG_SECTION;
+				}
+			}
 			else if (equals(firstWord, "margin"_s))
 			{
 				Maybe<s32> margin = readInt<s32>(&reader);
@@ -254,7 +267,8 @@ void loadUITheme(Blob data, Asset *asset)
 				{
 					switch (target.type)
 					{
-						case Section_Window:  target.window->margin = margin.value; break;
+						case Section_PopupMenu:  target.popupMenu->margin = margin.value; break;
+						case Section_Window:     target.window->margin    = margin.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -356,8 +370,9 @@ void loadUITheme(Blob data, Asset *asset)
 				String styleName = intern(&assets->assetStrings, readToken(&reader));
 				switch (target.type)
 				{
-					case Section_Console:  target.console->scrollbarStyleName = styleName; break;
-					case Section_Window:   target.window->scrollbarStyleName  = styleName; break;
+					case Section_Console:    target.console->scrollbarStyleName   = styleName; break;
+					case Section_PopupMenu:  target.popupMenu->scrollbarStyleName = styleName; break;
+					case Section_Window:     target.window->scrollbarStyleName    = styleName; break;
 					default:  WRONG_SECTION;
 				}
 			}
