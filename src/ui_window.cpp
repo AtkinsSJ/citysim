@@ -213,7 +213,10 @@ void window_startNewLine(WindowContext *context, u32 hAlignment)
 {
 	context->currentLeft = 0;
 	context->currentRight = context->contentArea.w;
-	context->currentY += context->largestItemHeightOnLine + context->windowStyle->contentPadding;
+	if (context->largestItemHeightOnLine > 0)
+	{
+		context->currentY += context->largestItemHeightOnLine + context->windowStyle->contentPadding;
+	}
 
 	context->largestItemHeightOnLine = 0;
 
@@ -505,7 +508,9 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	if (window->flags & WinFlag_AutomaticHeight)
 	{
 		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-		window->area.h = barHeight + context->currentY + context->largestItemHeightOnLine + (context->windowStyle->margin * 2);
+		s32 contentHeight = context->currentY + context->largestItemHeightOnLine;
+		if (contentHeight > 0) contentHeight -= context->windowStyle->contentPadding; // Remove trailing padding
+		window->area.h = barHeight + contentHeight + (context->windowStyle->margin * 2);
 	}
 
 	if (window->flags & WinFlag_ShrinkWidth)
