@@ -15,11 +15,13 @@ struct WindowContext
 
 	Rect2I totalContentArea;
 	Rect2I contentArea;
-	V2I currentOffset;
-	s32 largestItemWidth;
-	s32 largestItemHeightOnLine;
 	u32 alignment;
 	s32 perItemPadding;
+	s32 currentY;
+	s32 currentLeft;
+	s32 currentRight;
+	s32 largestItemWidth;
+	s32 largestItemHeightOnLine;
 
 	s32 columnStartOffsetX;
 	s32 columnScrollbarWidth;

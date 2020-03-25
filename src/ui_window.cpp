@@ -34,7 +34,9 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 	context->columnScrollbarWidth = 0;
 
 	context->contentArea = irectXYWH(context->totalContentArea.x + context->columnStartOffsetX, context->totalContentArea.y, columnWidth, columnHeight);
-	context->currentOffset = v2i(0,0);
+	context->currentLeft  = 0;
+	context->currentRight = context->contentArea.w;
+	context->currentY     = 0;
 
 	context->columnScrollbarState = scrollbar;
 	if (scrollbar != null)
@@ -77,7 +79,7 @@ void window_completeColumn(WindowContext *context)
 	{
 		if (context->columnScrollbarState != null)
 		{
-			context->columnScrollbarState->contentSize = context->currentOffset.y;
+			context->columnScrollbarState->contentSize = context->currentY;
 
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
 			Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w,
@@ -112,7 +114,9 @@ void window_endColumns(WindowContext *context)
 {
 	window_completeColumn(context);
 
-	context->currentOffset = v2i(0, context->contentArea.h);
+	context->currentLeft  = 0;
+	context->currentRight = context->totalContentArea.w;
+	context->currentY     = context->contentArea.h;
 	context->columnStartOffsetX = 0;
 	context->contentArea = context->totalContentArea;
 }
@@ -121,7 +125,9 @@ Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 {
 	Rect2I result = {};
 
-	result.pos = context->contentArea.pos + context->currentOffset;
+	result.x = context->contentArea.x + context->currentLeft;
+	result.y = context->contentArea.y + context->currentY;
+	result.w = context->currentRight - context->currentLeft;
 
 	// Adjust if we're in a scrolling column area
 	if (context->columnScrollbarState != null)
@@ -129,28 +135,28 @@ Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 		result.pos.y = result.pos.y - context->columnScrollbarState->scrollPosition;
 	}
 
-	// width
-	switch (context->alignment & ALIGN_H)
-	{
-		case ALIGN_RIGHT: {
-			// If the line has only just started, provide the full width
-			if (context->currentOffset.x == 0)
-			{
-				result.w = context->contentArea.w;
-			}
-			else
-			{
-				result.w = context->currentOffset.x;
-			}
-		} break;
+	// // width
+	// switch (context->alignment & ALIGN_H)
+	// {
+	// 	case ALIGN_RIGHT: {
+	// 		// If the line has only just started, provide the full width
+	// 		if (context->currentOffset.x == 0)
+	// 		{
+	// 			result.w = context->contentArea.w;
+	// 		}
+	// 		else
+	// 		{
+	// 			result.w = context->currentOffset.x;
+	// 		}
+	// 	} break;
 
-		case ALIGN_LEFT:
-		case ALIGN_H_CENTRE:
-		case ALIGN_EXPAND_H:
-		default: {
-			result.w = context->contentArea.w - context->currentOffset.x;
-		} break;
-	}
+	// 	case ALIGN_LEFT:
+	// 	case ALIGN_H_CENTRE:
+	// 	case ALIGN_EXPAND_H:
+	// 	default: {
+	// 		result.w = context->contentArea.w - context->currentOffset.x;
+	// 	} break;
+	// }
 
 	ASSERT(result.w > 0);
 
@@ -159,29 +165,27 @@ Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 
 void window_completeWidget(WindowContext *context, V2I widgetSize)
 {
-	context->largestItemWidth = max(widgetSize.x, context->largestItemWidth);
-
 	bool lineIsFull = false;
 
 	switch (context->alignment & ALIGN_H)
 	{
 		case ALIGN_LEFT: {
-			context->currentOffset.x += widgetSize.x + context->perItemPadding;
+			context->currentLeft += widgetSize.x + context->perItemPadding;
 			// Check for a full line
 			// NB: We might want to do something smarter when there's only a small remainder.
 			// Though, for now we'll just be smart about not intentionally wrapping a line.
-			if (context->currentOffset.x >= context->contentArea.w)
+			if (context->currentLeft >= context->currentRight)
 			{
 				lineIsFull = true;
 			}
 		} break;
 
 		case ALIGN_RIGHT: {
-			context->currentOffset.x -= widgetSize.x + context->perItemPadding;
+			context->currentRight -= widgetSize.x + context->perItemPadding;
 			// Check for a full line
 			// NB: We might want to do something smarter when there's only a small remainder.
 			// Though, for now we'll just be smart about not intentionally wrapping a line.
-			if (context->currentOffset.x <= 0)
+			if (context->currentLeft >= context->currentRight)
 			{
 				lineIsFull = true;
 			}
@@ -195,6 +199,7 @@ void window_completeWidget(WindowContext *context, V2I widgetSize)
 		} break;
 	}
 
+	context->largestItemWidth        = max(context->largestItemWidth,        widgetSize.x);
 	context->largestItemHeightOnLine = max(context->largestItemHeightOnLine, widgetSize.y);
 
 	if (lineIsFull)
@@ -206,8 +211,9 @@ void window_completeWidget(WindowContext *context, V2I widgetSize)
 
 void window_startNewLine(WindowContext *context, u32 hAlignment)
 {
-	context->currentOffset.x = 0;
-	context->currentOffset.y += context->largestItemHeightOnLine;
+	context->currentLeft = 0;
+	context->currentRight = context->contentArea.w;
+	context->currentY += context->largestItemHeightOnLine + context->perItemPadding;
 
 	context->largestItemHeightOnLine = 0;
 
@@ -230,12 +236,6 @@ void window_label(WindowContext *context, String text, String styleName)
 	UILabelStyle *style = null;
 	if (!isEmpty(styleName))  style = findLabelStyle(&assets->theme, styleName);
 	if (style == null)        style = findLabelStyle(&assets->theme, context->windowStyle->labelStyleName);
-
-	// Add padding between this and the previous element
-	if (context->currentOffset.y > 0)
-	{
-		context->currentOffset.y += context->perItemPadding;
-	}
 
 	u32 alignment = context->alignment;
 	Rect2I space = window_getCurrentLayoutPosition(context);
@@ -267,12 +267,6 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 	u32 textAlignment = style->textAlignment;
 	s32 buttonPadding = style->padding;
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-
-	// Add padding between this and the previous element
-	if (context->currentOffset.y > 0)
-	{
-		context->currentOffset.y += context->perItemPadding;
-	}
 
 	s32 buttonAlignment = context->alignment;
 	Rect2I space = window_getCurrentLayoutPosition(context);
@@ -356,12 +350,6 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	UITextInputStyle *style = null;
 	if (!isEmpty(styleName))  style = findTextInputStyle(&assets->theme, styleName);
 	if (style == null)        style = findTextInputStyle(&assets->theme, "default"_s);
-
-	// Add padding between this and the previous element
-	if (context->currentOffset.y > 0)
-	{
-		context->currentOffset.y += context->perItemPadding;
-	}
 
 	u32 alignment = context->alignment;
 	Rect2I space = window_getCurrentLayoutPosition(context);
@@ -494,7 +482,9 @@ WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UISt
 	context.windowStyle = windowStyle;
 	context.totalContentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->contentPadding);
 	context.contentArea = context.totalContentArea;
-	context.currentOffset = v2i(0,0);
+	context.currentLeft = 0;
+	context.currentRight = context.contentArea.w;
+	context.currentY = 0;
 	context.largestItemWidth = 0;
 	context.largestItemHeightOnLine = 0;
 	context.alignment = ALIGN_TOP | ALIGN_EXPAND_H;
@@ -516,7 +506,7 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 	if (window->flags & WinFlag_AutomaticHeight)
 	{
 		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-		window->area.h = barHeight + context->currentOffset.y + (context->windowStyle->contentPadding * 2);
+		window->area.h = barHeight + context->currentY + context->largestItemHeightOnLine + (context->windowStyle->contentPadding * 2);
 	}
 
 	if (window->flags & WinFlag_ShrinkWidth)
