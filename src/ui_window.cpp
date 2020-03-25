@@ -372,8 +372,7 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	{
 		bool fillWidth = ((alignment & ALIGN_H) == ALIGN_EXPAND_H);
 		V2I textInputSize = calculateTextInputSize(textInput, style, space.w, fillWidth);
-		V2I topLeft = calculateTextPosition(origin, textInputSize, alignment);
-		Rect2I bounds = irectPosSize(topLeft, textInputSize);
+		Rect2I bounds = irectAligned(origin, textInputSize, alignment);
 
 		if (context->doRender)
 		{
