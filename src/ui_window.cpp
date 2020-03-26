@@ -77,7 +77,7 @@ void window_completeColumn(WindowContext *context)
 {
 	if (context->doUpdate)
 	{
-		if (context->columnScrollbarState != null && (context->currentY > context->contentArea.h))
+		if (context->columnScrollbarState != null)
 		{
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
@@ -93,7 +93,7 @@ void window_completeColumn(WindowContext *context)
 	{
 		addEndScissor(&renderer->uiBuffer);
 
-		if (context->columnScrollbarState != null && (context->currentY > context->contentArea.h))
+		if (context->columnScrollbarState != null)
 		{
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
@@ -101,9 +101,17 @@ void window_completeColumn(WindowContext *context)
 								context->columnScrollbarWidth,
 								context->contentArea.h);
 
-			f32 scrollPercent = getScrollbarPercent(context->columnScrollbarState, scrollbarBounds.h);
+			if (context->currentY > context->contentArea.h)
+			{
+				f32 scrollPercent = getScrollbarPercent(context->columnScrollbarState, scrollbarBounds.h);
 
-			drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(context->columnScrollbarWidth, context->columnScrollbarWidth), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+				drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(context->columnScrollbarWidth, context->columnScrollbarWidth), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+			}
+			else
+			{
+				// Content is too small for a scrollbar, so just draw the background of it with no knob.
+				drawSingleRect(&renderer->uiBuffer, scrollbarBounds, renderer->shaderIds.untextured, scrollbarStyle->backgroundColor);
+			}
 		}
 	}
 }

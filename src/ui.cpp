@@ -257,35 +257,43 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 
 	state->contentSize = contentSize;
 
-	if (style == null)
+	// If the content is smaller than the scrollbar, then snap it to position 0 and don't allow interaction.
+	if (bounds.h > state->contentSize)
 	{
-		style = findScrollbarStyle(&assets->theme, "default"_s);
+		state->scrollPosition = 0;
 	}
-
-	if (!uiState->mouseInputHandled)
+	else
 	{
-		// Scrollwheel stuff
-		// (It's weird that we're putting this within mouseInputHandled, but eh)
-		s32 mouseWheelDelta = inputState->wheelY;
-		if (mouseWheelDelta != 0)
+		if (style == null)
 		{
-			// One scroll step is usually 3 lines of text.
-			// 64px seems reasonable?
-			state->scrollPosition = clamp(state->scrollPosition - (64 * mouseWheelDelta), 0, (state->contentSize - bounds.h));
+			style = findScrollbarStyle(&assets->theme, "default"_s);
 		}
 
-		// Mouse stuff
-		if (mouseButtonPressed(MouseButton_Left)
-		 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+		if (!uiState->mouseInputHandled)
 		{
-			V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
+			// Scrollwheel stuff
+			// (It's weird that we're putting this within mouseInputHandled, but eh)
+			s32 mouseWheelDelta = inputState->wheelY;
+			if (mouseWheelDelta != 0)
+			{
+				// One scroll step is usually 3 lines of text.
+				// 64px seems reasonable?
+				state->scrollPosition = clamp(state->scrollPosition - (64 * mouseWheelDelta), 0, (state->contentSize - bounds.h));
+			}
 
-			f32 range = (f32)(bounds.h - style->width);
+			// Mouse stuff
+			if (mouseButtonPressed(MouseButton_Left)
+			 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			{
+				V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
 
-			f32 scrollPercent = clamp01((relativeMousePos.y - 0.5f * style->width) / range);
-			state->scrollPosition = round_s32(scrollPercent * (state->contentSize - bounds.h));
+				f32 range = (f32)(bounds.h - style->width);
 
-			uiState->mouseInputHandled = true;
+				f32 scrollPercent = clamp01((relativeMousePos.y - 0.5f * style->width) / range);
+				state->scrollPosition = round_s32(scrollPercent * (state->contentSize - bounds.h));
+
+				uiState->mouseInputHandled = true;
+			}
 		}
 	}
 }
@@ -293,6 +301,8 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 // TODO: We really want a version of this that just takes a ScrollbarState*, it'd make many things simpler.
 // However, we use this without a ScrollbarState in the console, currently. May or may not want to move that
 // over to using a ScrollbarState too.
+// NB: Roll the "just draw the background if the content is too small for a scrollbar" stuff from 
+// window_completeColumn() into that, too.
 void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
 {
 	Rect2 backgroundRect = rectXYWHi(topLeft.x, topLeft.y, knobSize.x, height);
@@ -306,7 +316,18 @@ void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 h
 
 inline f32 getScrollbarPercent(ScrollbarState *scrollbar, s32 scrollbarHeight)
 {
-	return (f32)scrollbar->scrollPosition / (f32)(scrollbar->contentSize - scrollbarHeight);
+	f32 result = 0.0f;
+
+	// We only do this if the content is large enough to need scrolling.
+	// If it's not, we default to 0 above.
+	if (scrollbarHeight <= scrollbar->contentSize)
+	{
+		result = (f32)scrollbar->scrollPosition / (f32)(scrollbar->contentSize - scrollbarHeight);
+	}
+
+	result = clamp01(result);
+
+	return result;
 }
 
 inline void uiCloseMenus(UIState *uiState)
@@ -367,7 +388,7 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 		f32 scrollPercent = getScrollbarPercent(&uiState->openMenuScrollbar, scrollbarBounds.h);
 		drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(scrollbarWidth, scrollbarWidth), menu->scrollbarStyle->knobColor, menu->scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 	}
-	
+
 	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(menu->currentYOffset, menu->maxHeight));
 
 	append(&uiState->uiRects, menuRect);
