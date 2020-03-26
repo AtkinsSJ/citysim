@@ -188,7 +188,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	SavedGameInfo *selectedSavedGame = null;
 	bool justClickedSavedGame = false;
 
-	window_beginColumns(context, 350);
+	window_beginColumns(context, 250);
 
 	// List of saved games
 	window_columnPercent(context, 0.4f, &catalogue->savedGamesListScrollbar);

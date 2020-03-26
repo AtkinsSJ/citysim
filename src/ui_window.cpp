@@ -77,7 +77,7 @@ void window_completeColumn(WindowContext *context)
 {
 	if (context->doUpdate)
 	{
-		if (context->columnScrollbarState != null)
+		if (context->columnScrollbarState != null && (context->currentY > context->contentArea.h))
 		{
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
@@ -93,7 +93,7 @@ void window_completeColumn(WindowContext *context)
 	{
 		addEndScissor(&renderer->uiBuffer);
 
-		if (context->columnScrollbarState != null)
+		if (context->columnScrollbarState != null && (context->currentY > context->contentArea.h))
 		{
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
@@ -130,7 +130,7 @@ Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 	// Adjust if we're in a scrolling column area
 	if (context->columnScrollbarState != null)
 	{
-		result.pos.y = result.pos.y + context->columnScrollbarState->scrollPosition;
+		result.y = result.y - context->columnScrollbarState->scrollPosition;
 	}
 
 	ASSERT(result.w > 0);
