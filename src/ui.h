@@ -30,6 +30,8 @@ struct UIState
 	// UI elements that react to the mouse should only do so if this is false - and then
 	// they should set it to true. 
 	bool mouseInputHandled;
+	bool isInputScissorActive;
+	Rect2I inputScissorBounds;
 
 	// Window stuff
 	ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous

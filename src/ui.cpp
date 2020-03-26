@@ -91,7 +91,8 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
-	if (!uiState->mouseInputHandled && contains(bounds, mousePos))
+	if (!uiState->mouseInputHandled && contains(bounds, mousePos)
+		&& (!uiState->isInputScissorActive || contains(uiState->inputScissorBounds, mousePos)))
 	{
 		uiState->mouseInputHandled = true;
 
@@ -295,7 +296,9 @@ PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeigh
 	result.currentYOffset = result.style->margin;
 
 	s32 scrollbarWidth = (result.scrollbarStyle ? result.scrollbarStyle->width : 0);
-	addBeginScissor(&renderer->uiBuffer, rectXYWHi(x, y, width + scrollbarWidth, maxHeight));
+	uiState->inputScissorBounds = irectXYWH(x, y, width + scrollbarWidth, maxHeight);
+	uiState->isInputScissorActive = true;
+	addBeginScissor(&renderer->uiBuffer, rect2(uiState->inputScissorBounds));
 
 	return result;
 }
@@ -305,7 +308,7 @@ bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonSty
 	V2I buttonSize = calculateButtonSize(text, style, menu->width - (menu->style->margin * 2));
 
 	Rect2I buttonRect = irectXYWH(menu->origin.x + menu->style->margin,
-								menu->origin.y + menu->currentYOffset,
+								menu->origin.y + menu->currentYOffset - uiState->openMenuScrollbar.scrollPosition,
 								buttonSize.x, buttonSize.y);
 
 	bool result = uiButton(uiState, text, buttonRect, style, isActive);
@@ -330,6 +333,7 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 
 	append(&uiState->uiRects, menuRect);
 	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
+	uiState->isInputScissorActive = false;
 	addEndScissor(&renderer->uiBuffer);
 }
 
