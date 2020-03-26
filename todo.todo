@@ -43,18 +43,6 @@ Automatically record, and output to a file, which strings are missing from the c
 Make textures always be powers of two...
 - Either produce atlases that are always powers of two, or just round up the GL texture size to the nearest one and compensate the UVs. Probably both of these are a good idea.
 
-Pop-up menus
-- Theming
-- Scrolling???
-	-> This is a whole THING. Scrollbars, saving menu state, drawing the elements with an offset, and rendering with a stencil!
-	- We already have drawScrollbar(), just need to make it interactable (and consume the mouse input)
-	- Saving menu state, if we only ever have one open at a time, just means we have one set of state, which we can reset when a menu opens or when it closes, whichever is easier. (I think closing because we already have a function for that. On second thoughts, I've come across the code in uiMenuButton() which detects if the menu just became visible, so we can do it there! That's more sensible I think. Or rather, pull that out into a uiShowMenu() function.)
-	- Drawing with an offset shouldn't be TOO crazy.
-	✔ Now that our renderer is in-order, we should be able to just add a "PushStencil" command before, and a "PopStencil" one after.
-		-> Correct term is "scissor". We have BeginScissor/EndScissor. We might want a stack instead at some point, but right now I don't, and I'm unsure how we'd want it to behave, so best to leave it until it's actually needed!
-- Button width? IDK.
-- Maybe I should just make these be windows.
-
 DrawGrid textures
 - Maybe cache each layer's texture instead of sending it every frame? It's already pretty fast though.
 - Pass UVs to drawGrid() so that it doesn't just draw over the whole map

@@ -445,8 +445,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
-	// s32 windowHeight = round_s32(renderer->uiCamera.size.y);
+	s32 windowWidth  = round_s32(renderer->uiCamera.size.x);
+	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	V2I centre = v2i(renderer->uiCamera.pos);
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
@@ -515,7 +515,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			}
 
 			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
-			s32 popupMenuMaxHeight = 128;
+			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
 
 			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
@@ -552,7 +552,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			}
 
 			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
-			s32 popupMenuMaxHeight = 128;
+			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
 
 			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
@@ -599,7 +599,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buttonText, popupButtonStyle).x);
 			}
 			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
-			s32 popupMenuMaxHeight = 128;
+			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
 
 			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 

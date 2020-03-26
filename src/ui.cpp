@@ -354,16 +354,21 @@ bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonSty
 
 void endPopupMenu(UIState *uiState, PopupMenu *menu)
 {
-	// TODO: If there's no scrollbar, make it width 0!
-	s32 scrollbarWidth = (menu->scrollbarStyle ? menu->scrollbarStyle->width : 0);
+	// Only show the scrollbar if the content is larger than will fit.
+	bool showScrollbar = (menu->currentYOffset > menu->maxHeight);
 
-	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(menu->currentYOffset, menu->maxHeight));
+	s32 scrollbarWidth = (showScrollbar ? menu->scrollbarStyle->width : 0);
 
 	// Handle scrollbar stuff
-	Rect2I scrollbarBounds = irectXYWH(menu->origin.x + menu->width, menu->origin.y, scrollbarWidth, menuRect.h);
-	updateScrollbar(uiState, &uiState->openMenuScrollbar, menu->currentYOffset, scrollbarBounds, menu->scrollbarStyle);
-	f32 scrollPercent = getScrollbarPercent(&uiState->openMenuScrollbar, scrollbarBounds.h);
-	drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(scrollbarWidth, scrollbarWidth), menu->scrollbarStyle->knobColor, menu->scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+	if (showScrollbar)
+	{
+		Rect2I scrollbarBounds = irectXYWH(menu->origin.x + menu->width, menu->origin.y, scrollbarWidth, menu->maxHeight);
+		updateScrollbar(uiState, &uiState->openMenuScrollbar, menu->currentYOffset, scrollbarBounds, menu->scrollbarStyle);
+		f32 scrollPercent = getScrollbarPercent(&uiState->openMenuScrollbar, scrollbarBounds.h);
+		drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(scrollbarWidth, scrollbarWidth), menu->scrollbarStyle->knobColor, menu->scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+	}
+	
+	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(menu->currentYOffset, menu->maxHeight));
 
 	append(&uiState->uiRects, menuRect);
 	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
