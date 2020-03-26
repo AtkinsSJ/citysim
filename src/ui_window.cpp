@@ -80,12 +80,12 @@ void window_completeColumn(WindowContext *context)
 		if (context->columnScrollbarState != null)
 		{
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
-			Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w,
+			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
 								context->contentArea.y,
 								context->columnScrollbarWidth,
 								context->contentArea.h);
 
-			updateScrollbar(context->uiState, context->columnScrollbarState, context->currentY, scrollbarArea, scrollbarStyle);
+			updateScrollbar(context->uiState, context->columnScrollbarState, context->currentY, scrollbarBounds, scrollbarStyle);
 		}
 	}
 
@@ -96,14 +96,14 @@ void window_completeColumn(WindowContext *context)
 		if (context->columnScrollbarState != null)
 		{
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
-			Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w,
+			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
 								context->contentArea.y,
 								context->columnScrollbarWidth,
 								context->contentArea.h);
 
-			f32 scrollPercent = getScrollbarPercent(context->columnScrollbarState, scrollbarArea.h);
+			f32 scrollPercent = getScrollbarPercent(context->columnScrollbarState, scrollbarBounds.h);
 
-			drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarArea.pos, scrollbarArea.h, v2i(context->columnScrollbarWidth, context->columnScrollbarWidth), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+			drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(context->columnScrollbarWidth, context->columnScrollbarWidth), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 		}
 	}
 }
@@ -111,12 +111,12 @@ void window_completeColumn(WindowContext *context)
 void window_endColumns(WindowContext *context)
 {
 	window_completeColumn(context);
+	// Position the cursor at the bottom of the columned area
+	context->currentY     = (context->contentArea.y + context->contentArea.h) - context->totalContentArea.y;
 
-	context->currentLeft  = 0;
-	context->currentRight = context->totalContentArea.w;
-	context->currentY     = context->contentArea.h;
-	context->columnStartOffsetX = 0;
 	context->contentArea = context->totalContentArea;
+	context->currentLeft  = 0;
+	context->currentRight = context->contentArea.w;
 }
 
 Rect2I window_getCurrentLayoutPosition(WindowContext *context)
@@ -130,31 +130,8 @@ Rect2I window_getCurrentLayoutPosition(WindowContext *context)
 	// Adjust if we're in a scrolling column area
 	if (context->columnScrollbarState != null)
 	{
-		result.pos.y = result.pos.y - context->columnScrollbarState->scrollPosition;
+		result.pos.y = result.pos.y + context->columnScrollbarState->scrollPosition;
 	}
-
-	// // width
-	// switch (context->alignment & ALIGN_H)
-	// {
-	// 	case ALIGN_RIGHT: {
-	// 		// If the line has only just started, provide the full width
-	// 		if (context->currentOffset.x == 0)
-	// 		{
-	// 			result.w = context->contentArea.w;
-	// 		}
-	// 		else
-	// 		{
-	// 			result.w = context->currentOffset.x;
-	// 		}
-	// 	} break;
-
-	// 	case ALIGN_LEFT:
-	// 	case ALIGN_H_CENTRE:
-	// 	case ALIGN_EXPAND_H:
-	// 	default: {
-	// 		result.w = context->contentArea.w - context->currentOffset.x;
-	// 	} break;
-	// }
 
 	ASSERT(result.w > 0);
 
