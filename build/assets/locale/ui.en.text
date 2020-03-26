@@ -30,7 +30,12 @@ data_view_fire						Fire
 data_view_health					Health
 data_view_pollution					Pollution
 data_view_power						Power
+data_view_power_powered             Powered
+data_view_power_brownout            Brownout
+data_view_power_blackout            Blackout
 data_view_landvalue					Land value
+data_view_buildings_powered         Powered buildings
+data_view_buildings_unpowered       Unpowered buildings
 
 date_format_short_date       {day}/{month2}/{year}
 date_format_long_date        {dayN} {day} {monthN} {year}

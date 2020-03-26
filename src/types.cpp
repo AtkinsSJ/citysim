@@ -254,6 +254,20 @@ inline T& Array<T>::operator[](s32 index)
 }
 
 template<typename T>
+inline T *first(Array<T> *array)
+{
+	ASSERT(array->count > 0); //Index out of range!
+	return &array->items[0];
+}
+
+template<typename T>
+inline T *last(Array<T> *array)
+{
+	ASSERT(array->count > 0); //Index out of range!
+	return &array->items[array->count-1];
+}
+
+template<typename T>
 void swap(Array<T> *array, s32 indexA, s32 indexB)
 {
 	T temp = array->items[indexA];

@@ -4,29 +4,76 @@ void initDataViewUI()
 {
 	dataViewUI[DataView_None].title = "data_view_none"_s;
 
-	Array<V4> *desirabilityPalette = getPalette("desirability"_s);
+	Array<V4> *desirabilityPalette     = getPalette("desirability"_s);
+	Array<V4> *landValuePalette        = getPalette("land_value"_s);
+	Array<V4> *pollutionPalette        = getPalette("pollution"_s);
+	Array<V4> *powerPalette            = getPalette("power"_s);
+	Array<V4> *serviceBuildingsPalette = getPalette("service_buildings"_s);
+	Array<V4> *serviceCoveragePalette  = getPalette("service_coverage"_s);
 
 	dataViewUI[DataView_Desirability_Residential].title = "data_view_desirability_residential"_s;
 	dataViewUI[DataView_Desirability_Residential].hasGradient = true;
-	// dataViewUI[DataView_Desirability_Residential].gradientColorMin = desirabilityPalette[0];
-	// dataViewUI[DataView_Desirability_Residential].gradientColorMax = desirabilityPalette[desirabilityPalette->count-1];
+	dataViewUI[DataView_Desirability_Residential].gradientColorMin = *first(desirabilityPalette);
+	dataViewUI[DataView_Desirability_Residential].gradientColorMax = *last(desirabilityPalette);
 
 	dataViewUI[DataView_Desirability_Commercial].title = "data_view_desirability_commercial"_s;
 	dataViewUI[DataView_Desirability_Commercial].hasGradient = true;
-	// dataViewUI[DataView_Desirability_Commercial].gradientColorMin = desirabilityPalette[0];
-	// dataViewUI[DataView_Desirability_Commercial].gradientColorMax = desirabilityPalette[desirabilityPalette->count-1];
-	
+	dataViewUI[DataView_Desirability_Commercial].gradientColorMin = *first(desirabilityPalette);
+	dataViewUI[DataView_Desirability_Commercial].gradientColorMax = *last(desirabilityPalette);
+
 	dataViewUI[DataView_Desirability_Industrial].title = "data_view_desirability_industrial"_s;
 	dataViewUI[DataView_Desirability_Industrial].hasGradient = true;
-	// dataViewUI[DataView_Desirability_Industrial].gradientColorMin = desirabilityPalette[0];
-	// dataViewUI[DataView_Desirability_Industrial].gradientColorMax = desirabilityPalette[desirabilityPalette->count-1];
+	dataViewUI[DataView_Desirability_Industrial].gradientColorMin = *first(desirabilityPalette);
+	dataViewUI[DataView_Desirability_Industrial].gradientColorMax = *last(desirabilityPalette);
 
 	dataViewUI[DataView_Crime].title = "data_view_crime"_s;
+	dataViewUI[DataView_Crime].hasGradient = true;
+	dataViewUI[DataView_Crime].gradientColorMin = *first(serviceCoveragePalette);
+	dataViewUI[DataView_Crime].gradientColorMax = *last(serviceCoveragePalette);
+	dataViewUI[DataView_Crime].fixedColorCount = 2;
+	dataViewUI[DataView_Crime].fixedColors[0] = (*serviceBuildingsPalette)[0];
+	dataViewUI[DataView_Crime].fixedColors[1] = (*serviceBuildingsPalette)[1];
+	dataViewUI[DataView_Crime].fixedColorNames[0] = "data_view_buildings_powered"_s;
+	dataViewUI[DataView_Crime].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
+
 	dataViewUI[DataView_Fire].title = "data_view_fire"_s;
+	dataViewUI[DataView_Fire].hasGradient = true;
+	dataViewUI[DataView_Fire].gradientColorMin = *first(serviceCoveragePalette);
+	dataViewUI[DataView_Fire].gradientColorMax = *last(serviceCoveragePalette);
+	dataViewUI[DataView_Fire].fixedColorCount = 2;
+	dataViewUI[DataView_Fire].fixedColors[0] = (*serviceBuildingsPalette)[0];
+	dataViewUI[DataView_Fire].fixedColors[1] = (*serviceBuildingsPalette)[1];
+	dataViewUI[DataView_Fire].fixedColorNames[0] = "data_view_buildings_powered"_s;
+	dataViewUI[DataView_Fire].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
+
 	dataViewUI[DataView_Health].title = "data_view_health"_s;
-	dataViewUI[DataView_Pollution].title = "data_view_pollution"_s;
-	dataViewUI[DataView_Power].title = "data_view_power"_s;
+	dataViewUI[DataView_Health].hasGradient = true;
+	dataViewUI[DataView_Health].gradientColorMin = *first(serviceCoveragePalette);
+	dataViewUI[DataView_Health].gradientColorMax = *last(serviceCoveragePalette);
+	dataViewUI[DataView_Health].fixedColorCount = 2;
+	dataViewUI[DataView_Health].fixedColors[0] = (*serviceBuildingsPalette)[0];
+	dataViewUI[DataView_Health].fixedColors[1] = (*serviceBuildingsPalette)[1];
+	dataViewUI[DataView_Health].fixedColorNames[0] = "data_view_buildings_powered"_s;
+	dataViewUI[DataView_Health].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
+
 	dataViewUI[DataView_LandValue].title = "data_view_landvalue"_s;
+	dataViewUI[DataView_LandValue].hasGradient = true;
+	dataViewUI[DataView_LandValue].gradientColorMin = *first(landValuePalette);
+	dataViewUI[DataView_LandValue].gradientColorMax = *last(landValuePalette);
+
+	dataViewUI[DataView_Pollution].title = "data_view_pollution"_s;
+	dataViewUI[DataView_Pollution].hasGradient = true;
+	dataViewUI[DataView_Pollution].gradientColorMin = *first(pollutionPalette);
+	dataViewUI[DataView_Pollution].gradientColorMax = *last(pollutionPalette);
+
+	dataViewUI[DataView_Power].title = "data_view_power"_s;
+	dataViewUI[DataView_Power].fixedColorCount = 3;
+	dataViewUI[DataView_Power].fixedColors[0] = (*powerPalette)[0];
+	dataViewUI[DataView_Power].fixedColors[1] = (*powerPalette)[1];
+	dataViewUI[DataView_Power].fixedColors[2] = (*powerPalette)[2];
+	dataViewUI[DataView_Power].fixedColorNames[0] = "data_view_power_powered"_s;
+	dataViewUI[DataView_Power].fixedColorNames[1] = "data_view_power_brownout"_s;
+	dataViewUI[DataView_Power].fixedColorNames[2] = "data_view_power_blackout"_s;
 }
 
 GameState *beginNewGame()
