@@ -262,6 +262,8 @@ int main(int argc, char *argv[])
 	initUIState(&uiState, &appState->systemArena);
 	globalAppState.uiState = &uiState;
 
+	initDataViewUI();
+
 	initSavedGamesCatalogue();
 
 	Camera *worldCamera = &renderer->worldCamera;

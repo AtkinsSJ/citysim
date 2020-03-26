@@ -54,7 +54,7 @@ inline s32 calculateZoneCost(CanZoneQuery *query)
 	return query->zoneableTilesCount * query->zoneDef->costPerTile;
 }
 
-void drawDesirabilityDataLayer(City *city, Rect2I /*visibleTileBounds*/, ZoneType zoneType)
+void drawDesirabilityDataView(City *city, Rect2I /*visibleTileBounds*/, ZoneType zoneType)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

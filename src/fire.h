@@ -43,7 +43,7 @@ struct FireLayer
 void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena);
 void updateFireLayer(City *city, FireLayer *layer);
 void markFireLayerDirty(FireLayer *layer, Rect2I bounds);
-void drawFireDataLayer(City *city, Rect2I visibleTileBounds);
+void drawFireDataView(City *city, Rect2I visibleTileBounds);
 void drawFires(City *city, Rect2I visibleTileBounds);
 
 void registerFireProtectionBuilding(FireLayer *layer, Building *building);

@@ -65,7 +65,7 @@ bool doesTileHavePowerNetwork(City *city, s32 x, s32 y);
 PowerNetwork *getPowerNetworkAt(City *city, s32 x, s32 y);
 u8 getDistanceToPower(City *city, s32 x, s32 y);
 
-void drawPowerDataLayer(City *city, Rect2I visibleTileBounds);
+void drawPowerDataView(City *city, Rect2I visibleTileBounds);
 
 void registerPowerBuilding(PowerLayer *layer, Building *building);
 void unregisterPowerBuilding(PowerLayer *layer, Building *building);

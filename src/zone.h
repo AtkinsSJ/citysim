@@ -80,7 +80,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
 void updateZoneLayer(City *city, ZoneLayer *layer);
 void calculateDemand(City *city, ZoneLayer *layer);
 
-void drawDesirabilityDataLayer(City *city, Rect2I visibleTileBounds, ZoneType zoneType);
+void drawDesirabilityDataView(City *city, Rect2I visibleTileBounds, ZoneType zoneType);
 
 ZoneDef getZoneDef(s32 type);
 

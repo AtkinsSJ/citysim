@@ -1,5 +1,34 @@
 #pragma once
 
+void initDataViewUI()
+{
+	dataViewUI[DataView_None].title = "data_view_none"_s;
+
+	Array<V4> *desirabilityPalette = getPalette("desirability"_s);
+
+	dataViewUI[DataView_Desirability_Residential].title = "data_view_desirability_residential"_s;
+	dataViewUI[DataView_Desirability_Residential].hasGradient = true;
+	// dataViewUI[DataView_Desirability_Residential].gradientColorMin = desirabilityPalette[0];
+	// dataViewUI[DataView_Desirability_Residential].gradientColorMax = desirabilityPalette[desirabilityPalette->count-1];
+
+	dataViewUI[DataView_Desirability_Commercial].title = "data_view_desirability_commercial"_s;
+	dataViewUI[DataView_Desirability_Commercial].hasGradient = true;
+	// dataViewUI[DataView_Desirability_Commercial].gradientColorMin = desirabilityPalette[0];
+	// dataViewUI[DataView_Desirability_Commercial].gradientColorMax = desirabilityPalette[desirabilityPalette->count-1];
+	
+	dataViewUI[DataView_Desirability_Industrial].title = "data_view_desirability_industrial"_s;
+	dataViewUI[DataView_Desirability_Industrial].hasGradient = true;
+	// dataViewUI[DataView_Desirability_Industrial].gradientColorMin = desirabilityPalette[0];
+	// dataViewUI[DataView_Desirability_Industrial].gradientColorMax = desirabilityPalette[desirabilityPalette->count-1];
+
+	dataViewUI[DataView_Crime].title = "data_view_crime"_s;
+	dataViewUI[DataView_Fire].title = "data_view_fire"_s;
+	dataViewUI[DataView_Health].title = "data_view_health"_s;
+	dataViewUI[DataView_Pollution].title = "data_view_pollution"_s;
+	dataViewUI[DataView_Power].title = "data_view_power"_s;
+	dataViewUI[DataView_LandValue].title = "data_view_landvalue"_s;
+}
+
 GameState *beginNewGame()
 {
 	GameState *result;
@@ -595,18 +624,18 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 	}
 
-	// Data layer display
-
+	// Data-views menu
+	RenderItem_DrawSingleRect *dataViewUIBackground = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 	String dataViewButtonText = getText("button_data_views"_s);
 	V2I dataViewButtonSize = calculateButtonSize(dataViewButtonText, buttonStyle);
 	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, windowHeight - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
 	if (uiMenuButton(uiState, dataViewButtonText, dataViewButtonBounds, Menu_DataViews, buttonStyle))
 	{
 		s32 buttonMaxWidth = 0;
-		s32 menuContentHeight = (DataLayerCount - 1) * popupMenuStyle->contentPadding;
-		for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
+		s32 menuContentHeight = (DataViewCount - 1) * popupMenuStyle->contentPadding;
+		for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1))
 		{
-			String buttonText = getText(dataViewTitles[dataViewID]);
+			String buttonText = getText(dataViewUI[dataViewID].title);
 			V2I buttonSize = calculateButtonSize(buttonText, popupButtonStyle);
 			buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
 			menuContentHeight += buttonSize.y;
@@ -618,9 +647,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		PopupMenu menu = beginPopupMenu(uiState, dataViewButtonBounds.x - popupMenuStyle->margin, menuY, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
-		for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
+		for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1))
 		{
-			String buttonText = getText(dataViewTitles[dataViewID]);
+			String buttonText = getText(dataViewUI[dataViewID].title);
 
 			if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, (gameState->dataLayerToDraw == dataViewID)))
 			{
@@ -630,6 +659,44 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 
 		endPopupMenu(uiState, &menu);
+	}
+
+	// Data-view info
+	if (uiState->openMenu != Menu_DataViews && gameState->dataLayerToDraw != DataView_None)
+	{
+		s32 dataViewUIWidth = dataViewButtonSize.x;
+
+		V2I uiPos = dataViewButtonBounds.pos;
+		uiPos.y -= uiPadding;
+
+		// Somehow we want to display the key in a sensible way...
+		// Sometimes it's a set of fixed colors, sometimes it's a gradient.
+		// It might even be both!
+		// Ideally we won't have to hard code them all, but... it might be easiest for now!
+
+		DataViewUI *dataView = &dataViewUI[gameState->dataLayerToDraw];
+
+		Rect2I labelRect = uiText(&renderer->uiBuffer, font, getText(dataView->title),
+			uiPos, ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
+		uiPos.y -= labelRect.h;
+		dataViewUIWidth = max(dataViewUIWidth, labelRect.w);
+
+		// Close button
+		V2I dataViewCloseButtonSize = calculateButtonSize("X"_s, buttonStyle);
+		Rect2I dataViewCloseButtonBounds = irectXYWH(uiPos.x + dataViewUIWidth + uiPadding, uiPos.y, dataViewCloseButtonSize.x, dataViewCloseButtonSize.y);
+		if (uiButton(uiState, "X"_s, dataViewCloseButtonBounds, buttonStyle))
+		{
+			gameState->dataLayerToDraw = DataView_None;
+		}
+		dataViewUIWidth += dataViewCloseButtonBounds.w + uiPadding;
+
+		Rect2 dataViewUIBounds = rectXYWHi(uiPos.x - uiPadding, uiPos.y - uiPadding, dataViewUIWidth + (uiPadding*2), dataViewButtonBounds.y + dataViewButtonBounds.h - uiPos.y + (uiPadding*2));
+		fillDrawRectPlaceholder(dataViewUIBackground, dataViewUIBounds, theme->overlayColor);
+	}
+	else
+	{
+		Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
+		fillDrawRectPlaceholder(dataViewUIBackground, dataViewUIBounds, theme->overlayColor);
 	}
 }
 
@@ -979,15 +1046,15 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 		switch (gameState->dataLayerToDraw)
 		{
-			case DataLayer_Crime:                     drawCrimeDataLayer       (city, visibleTileBounds); break;
-			case DataLayer_Desirability_Residential:  drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Residential); break;
-			case DataLayer_Desirability_Commercial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Commercial);  break;
-			case DataLayer_Desirability_Industrial:   drawDesirabilityDataLayer(city, visibleTileBounds, Zone_Industrial);  break;
-			case DataLayer_Fire:                      drawFireDataLayer        (city, visibleTileBounds); break;
-			case DataLayer_Health:                    drawHealthDataLayer      (city, visibleTileBounds); break;
-			case DataLayer_LandValue:                 drawLandValueDataLayer   (city, visibleTileBounds); break;
-			case DataLayer_Pollution:                 drawPollutionDataLayer   (city, visibleTileBounds); break;
-			case DataLayer_Power:                     drawPowerDataLayer       (city, visibleTileBounds); break;
+			case DataView_Crime:                     drawCrimeDataView       (city, visibleTileBounds); break;
+			case DataView_Desirability_Residential:  drawDesirabilityDataView(city, visibleTileBounds, Zone_Residential); break;
+			case DataView_Desirability_Commercial:   drawDesirabilityDataView(city, visibleTileBounds, Zone_Commercial);  break;
+			case DataView_Desirability_Industrial:   drawDesirabilityDataView(city, visibleTileBounds, Zone_Industrial);  break;
+			case DataView_Fire:                      drawFireDataView        (city, visibleTileBounds); break;
+			case DataView_Health:                    drawHealthDataView      (city, visibleTileBounds); break;
+			case DataView_LandValue:                 drawLandValueDataView   (city, visibleTileBounds); break;
+			case DataView_Pollution:                 drawPollutionDataView   (city, visibleTileBounds); break;
+			case DataView_Power:                     drawPowerDataView       (city, visibleTileBounds); break;
 		}
 	}
 

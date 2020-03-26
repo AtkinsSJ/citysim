@@ -71,7 +71,7 @@ u8 getDistanceToPower(City *city, s32 x, s32 y)
 	return getTileValue(city, city->powerLayer.tilePowerDistance, x, y);
 }
 
-void drawPowerDataLayer(City *city, Rect2I visibleTileBounds)
+void drawPowerDataView(City *city, Rect2I visibleTileBounds)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

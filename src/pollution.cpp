@@ -105,7 +105,7 @@ void markPollutionLayerDirty(PollutionLayer *layer, Rect2I bounds)
 	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
-void drawPollutionDataLayer(City *city, Rect2I /*visibleTileBounds*/)
+void drawPollutionDataView(City *city, Rect2I /*visibleTileBounds*/)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

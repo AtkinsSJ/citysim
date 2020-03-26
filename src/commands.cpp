@@ -110,7 +110,7 @@ ConsoleCommand(show_layer)
 	if (argumentsCount == 0)
 	{
 		// Hide layers
-		globalAppState.gameState->dataLayerToDraw = DataLayer_None;
+		globalAppState.gameState->dataLayerToDraw = DataView_None;
 		consoleWriteLine("Hiding data layers"_s, CLS_Success);
 	}
 	else if (argumentsCount == 1)
@@ -118,47 +118,47 @@ ConsoleCommand(show_layer)
 		String layerName = nextToken(remainder, &remainder);
 		if (equals(layerName, "crime"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Crime;
+			globalAppState.gameState->dataLayerToDraw = DataView_Crime;
 			consoleWriteLine("Showing crime layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "des_res"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Residential;
+			globalAppState.gameState->dataLayerToDraw = DataView_Desirability_Residential;
 			consoleWriteLine("Showing residential desirability"_s, CLS_Success);
 		}
 		else if (equals(layerName, "des_com"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Commercial;
+			globalAppState.gameState->dataLayerToDraw = DataView_Desirability_Commercial;
 			consoleWriteLine("Showing commercial desirability"_s, CLS_Success);
 		}
 		else if (equals(layerName, "des_ind"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Desirability_Industrial;
+			globalAppState.gameState->dataLayerToDraw = DataView_Desirability_Industrial;
 			consoleWriteLine("Showing industrial desirability"_s, CLS_Success);
 		}
 		else if (equals(layerName, "fire"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Fire;
+			globalAppState.gameState->dataLayerToDraw = DataView_Fire;
 			consoleWriteLine("Showing fire layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "health"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Health;
+			globalAppState.gameState->dataLayerToDraw = DataView_Health;
 			consoleWriteLine("Showing health layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "land_value"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_LandValue;
+			globalAppState.gameState->dataLayerToDraw = DataView_LandValue;
 			consoleWriteLine("Showing land value layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "pollution"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Pollution;
+			globalAppState.gameState->dataLayerToDraw = DataView_Pollution;
 			consoleWriteLine("Showing pollution layer"_s, CLS_Success);
 		}
 		else if (equals(layerName, "power"_s))
 		{
-			globalAppState.gameState->dataLayerToDraw = DataLayer_Power;
+			globalAppState.gameState->dataLayerToDraw = DataView_Power;
 			consoleWriteLine("Showing power layer"_s, CLS_Success);
 		}
 		else

@@ -136,7 +136,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 	}
 }
 
-void drawLandValueDataLayer(City *city, Rect2I /*visibleTileBounds*/)
+void drawLandValueDataView(City *city, Rect2I /*visibleTileBounds*/)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

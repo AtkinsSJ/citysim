@@ -82,7 +82,7 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 	}
 }
 
-void drawCrimeDataLayer(City *city, Rect2I /*visibleTileBounds*/)
+void drawCrimeDataView(City *city, Rect2I /*visibleTileBounds*/)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 

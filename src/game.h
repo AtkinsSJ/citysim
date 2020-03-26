@@ -56,38 +56,42 @@ struct DragResult
 	Rect2I dragRect;
 };
 
-enum DataLayer
+enum DataView
 {
-	DataLayer_None,
+	DataView_None,
 
-	DataLayer_Desirability_Residential,
-	DataLayer_Desirability_Commercial,
-	DataLayer_Desirability_Industrial,
+	DataView_Desirability_Residential,
+	DataView_Desirability_Commercial,
+	DataView_Desirability_Industrial,
 
-	DataLayer_Crime,
-	DataLayer_Fire,
-	DataLayer_Health,
-	DataLayer_Pollution,
-	DataLayer_Power,
-	DataLayer_LandValue,
+	DataView_Crime,
+	DataView_Fire,
+	DataView_Health,
+	DataView_Pollution,
+	DataView_Power,
+	DataView_LandValue,
 
-	DataLayerCount
+	DataViewCount
 };
 
-String dataViewTitles[DataLayerCount] = {
-	"data_view_none"_s,
+struct DataViewUI
+{
+	String title;
 
-	"data_view_desirability_residential"_s,
-	"data_view_desirability_commercial"_s,
-	"data_view_desirability_industrial"_s,
+	// Gradient
+	bool hasGradient;
+	V4 gradientColorMin;
+	V4 gradientColorMax;
 
-	"data_view_crime"_s,
-	"data_view_fire"_s,
-	"data_view_health"_s,
-	"data_view_pollution"_s,
-	"data_view_power"_s,
-	"data_view_landvalue"_s,
+	// Fixed-colors
+	s32 fixedColorCount;
+	V4 fixedColors[16];
+	String fixedColorNames[16];
 };
+
+DataViewUI dataViewUI[DataViewCount] = {};
+
+void initDataViewUI();
 
 enum InspectTileDebugFlags
 {
@@ -105,8 +109,8 @@ struct GameState
 	Random gameRandom;
 	City city;
 
-	// Rendering-related stuff
-	DataLayer dataLayerToDraw;
+	DataView dataLayerToDraw;
+	DataViewUI dataLayerUI[DataViewCount];
 
 	DragState worldDragState;
 	ActionMode actionMode;
