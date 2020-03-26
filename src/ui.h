@@ -42,6 +42,8 @@ struct UIState
 void initUIState(UIState *uiState, MemoryArena *arena);
 
 bool isMouseInUIBounds(UIState *uiState, Rect2I bounds);
+bool isMouseInUIBounds(UIState *uiState, Rect2I bounds, V2 mousePos);
+bool justClickedOnUI(UIState *uiState, Rect2I bounds);
 
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth=0, bool fillWidth=true);
@@ -61,7 +63,6 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK
 void basicTooltipWindowProc(WindowContext *context, void *userData);
 
-bool justClickedOnUI(UIState *uiState, Rect2I bounds);
 
 struct PopupMenu
 {

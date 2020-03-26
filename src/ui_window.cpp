@@ -314,6 +314,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 			if (justClickedOnUI(context->uiState, buttonBounds))
 			{
 				buttonClicked = true;
+				context->uiState->mouseInputHandled = true;
 			}
 		}
 
@@ -358,6 +359,7 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 			// Capture the input focus if we just clicked on this TextInput
 			if (justClickedOnUI(context->uiState, bounds))
 			{
+				context->uiState->mouseInputHandled = true;
 				captureInput(textInput);
 				textInput->caretFlashCounter = 0;
 			}

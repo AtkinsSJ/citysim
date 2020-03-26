@@ -13,37 +13,28 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 	initChunkedArray(&uiState->openWindows, arena, 64);
 }
 
-bool isMouseInUIBounds(UIState *uiState, Rect2I bounds)
+inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds)
 {
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-
-	bool result = contains(bounds, mousePos);
-
-	if (result && uiState->isInputScissorActive)
-	{
-		result = contains(uiState->inputScissorBounds, mousePos);
-	}
-
-	return result;
-
-	// TODO: These two functions need adjusting to work together!
-	// Also, make sure this one is used instead of contains() in all places.
+	return isMouseInUIBounds(uiState, bounds, renderer->uiCamera.mousePos);
 }
 
-bool justClickedOnUI(UIState *uiState, Rect2I bounds)
+inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds, V2 mousePos)
 {
-	bool result = false;
+	Rect2I clippedBounds = uiState->isInputScissorActive ? intersect(bounds, uiState->inputScissorBounds) : bounds;
 
+	bool result = contains(clippedBounds, mousePos);
+
+	return result;
+}
+
+inline bool justClickedOnUI(UIState *uiState, Rect2I bounds)
+{
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	if (!uiState->mouseInputHandled && contains(bounds, mousePos))
-	{
-		if (mouseButtonJustReleased(MouseButton_Left)
-		 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-		{
-			result = true;
-			uiState->mouseInputHandled = true;
-		}
-	}
+	Rect2I clippedBounds = uiState->isInputScissorActive ? intersect(bounds, uiState->inputScissorBounds) : bounds;
+
+	bool result = contains(clippedBounds, mousePos)
+			   && mouseButtonJustReleased(MouseButton_Left)
+			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
 
 	return result;
 }
@@ -121,7 +112,6 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	}
 	
 	bool buttonClicked = false;
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
@@ -134,7 +124,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(MouseButton_Left))
 		{
-			if (contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			if (isMouseInUIBounds(uiState, bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				backColor = style->pressedColor;
 			}
@@ -142,7 +132,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 		else
 		{
 			if (mouseButtonJustReleased(MouseButton_Left)
-			 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			 && isMouseInUIBounds(uiState, bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 			}
@@ -283,7 +273,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 
 			// Mouse stuff
 			if (mouseButtonPressed(MouseButton_Left)
-			 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			 && isMouseInUIBounds(uiState, bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
 

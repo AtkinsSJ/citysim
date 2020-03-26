@@ -279,7 +279,6 @@ bool updateTextInput(TextInput *textInput)
 
 	if (hasCapturedInput(textInput))
 	{
-
 		if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
 		{
 			clear(textInput);
