@@ -474,13 +474,11 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	uiText(&renderer->uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
 	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-
+	UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "default"_s);
+	UIPopupMenuStyle *popupMenuStyle = findPopupMenuStyle(&assets->theme, "default"_s);
+	UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, popupMenuStyle->buttonStyleName);
 	// Build UI
 	{
-		UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, "default"_s);
-		UIPopupMenuStyle *popupMenuStyle = findPopupMenuStyle(&assets->theme, "default"_s);
-		UIButtonStyle *popupButtonStyle = findButtonStyle(&assets->theme, popupMenuStyle->buttonStyleName);
-
 		// The "ZONE" menu
 		String zoneButtonText = getText("button_zone"_s);
 		V2I buttonSize = calculateButtonSize(zoneButtonText, buttonStyle);
@@ -587,37 +585,6 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
-		// Data layer menu
-		String dataViewButtonText = getText("button_data_views"_s);
-		buttonRect.size = calculateButtonSize(dataViewButtonText, buttonStyle);
-		if (uiMenuButton(uiState, dataViewButtonText, buttonRect, Menu_DataViews, buttonStyle))
-		{
-			s32 buttonMaxWidth = 0;
-			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
-			{
-				String buttonText = getText(dataViewTitles[dataViewID]);
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(buttonText, popupButtonStyle).x);
-			}
-			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
-			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
-
-			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
-
-			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
-			{
-				String buttonText = getText(dataViewTitles[dataViewID]);
-
-				if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, (gameState->dataLayerToDraw == dataViewID)))
-				{
-					uiCloseMenus(uiState);
-					gameState->dataLayerToDraw = dataViewID;
-				}
-			}
-
-			endPopupMenu(uiState, &menu);
-		}
-		buttonRect.x += buttonRect.w + uiPadding;
-
 		// The, um, "MENU" menu. Hmmm.
 		String menuButtonText = getText("button_menu"_s);
 		buttonRect.size = calculateButtonSize(menuButtonText, buttonStyle);
@@ -626,6 +593,43 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		{
 			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
 		}
+	}
+
+	// Data layer display
+
+	String dataViewButtonText = getText("button_data_views"_s);
+	V2I dataViewButtonSize = calculateButtonSize(dataViewButtonText, buttonStyle);
+	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, windowHeight - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
+	if (uiMenuButton(uiState, dataViewButtonText, dataViewButtonBounds, Menu_DataViews, buttonStyle))
+	{
+		s32 buttonMaxWidth = 0;
+		s32 menuContentHeight = (DataLayerCount - 1) * popupMenuStyle->contentPadding;
+		for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
+		{
+			String buttonText = getText(dataViewTitles[dataViewID]);
+			V2I buttonSize = calculateButtonSize(buttonText, popupButtonStyle);
+			buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
+			menuContentHeight += buttonSize.y;
+		}
+		s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
+		s32 popupMenuMaxHeight = windowHeight - 128;
+
+		s32 menuY = dataViewButtonBounds.y - min(popupMenuMaxHeight, (menuContentHeight + 2*popupMenuStyle->margin));
+
+		PopupMenu menu = beginPopupMenu(uiState, dataViewButtonBounds.x - popupMenuStyle->margin, menuY, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
+
+		for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
+		{
+			String buttonText = getText(dataViewTitles[dataViewID]);
+
+			if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, (gameState->dataLayerToDraw == dataViewID)))
+			{
+				uiCloseMenus(uiState);
+				gameState->dataLayerToDraw = dataViewID;
+			}
+		}
+
+		endPopupMenu(uiState, &menu);
 	}
 }
 

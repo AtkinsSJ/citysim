@@ -23,9 +23,6 @@ Saving and loading!
 - Also, we want to prevent crashing *after* loading as much as possible. Some kind of validation after loading the file is complete, to make sure the city itself makes sense, would be a good idea. I'm not sure what that would involve really, but catching errors and reporting them is much better than just crashing.
 - LZ77-based compression option. https://en.wikipedia.org/wiki/LZ77_and_LZ78
 
-I think buttons within a scrolling area are still clickable if they're outside of the scissor! Oops
-(Fix this on popup menus and window columns)
-
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
 Window buttons should still do hover-states even on inactive windows.

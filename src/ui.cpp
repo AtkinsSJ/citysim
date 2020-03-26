@@ -379,7 +379,9 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 		drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(scrollbarWidth, scrollbarWidth), menu->scrollbarStyle->knobColor, menu->scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 	}
 
-	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(menu->currentYOffset, menu->maxHeight));
+	s32 contentHeight = (menu->currentYOffset > 0) ? (menu->currentYOffset - menu->style->contentPadding) : 0;
+
+	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(contentHeight + menu->style->margin, menu->maxHeight));
 
 	append(&uiState->uiRects, menuRect);
 	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
