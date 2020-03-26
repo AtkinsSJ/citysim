@@ -13,6 +13,41 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 	initChunkedArray(&uiState->openWindows, arena, 64);
 }
 
+bool isMouseInUIBounds(UIState *uiState, Rect2I bounds)
+{
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
+
+	bool result = contains(bounds, mousePos);
+
+	if (result && uiState->isInputScissorActive)
+	{
+		result = contains(uiState->inputScissorBounds, mousePos);
+	}
+
+	return result;
+
+	// TODO: These two functions need adjusting to work together!
+	// Also, make sure this one is used instead of contains() in all places.
+}
+
+bool justClickedOnUI(UIState *uiState, Rect2I bounds)
+{
+	bool result = false;
+
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
+	if (!uiState->mouseInputHandled && contains(bounds, mousePos))
+	{
+		if (mouseButtonJustReleased(MouseButton_Left)
+		 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+		{
+			result = true;
+			uiState->mouseInputHandled = true;
+		}
+	}
+
+	return result;
+}
+
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
 {
 	DEBUG_FUNCTION();
@@ -91,8 +126,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
-	if (!uiState->mouseInputHandled && contains(bounds, mousePos)
-		&& (!uiState->isInputScissorActive || contains(uiState->inputScissorBounds, mousePos)))
+	if (!uiState->mouseInputHandled && isMouseInUIBounds(uiState, bounds))
 	{
 		uiState->mouseInputHandled = true;
 
@@ -335,22 +369,4 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
 	uiState->isInputScissorActive = false;
 	addEndScissor(&renderer->uiBuffer);
-}
-
-bool justClickedOnUI(UIState *uiState, Rect2I bounds)
-{
-	bool result = false;
-
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	if (!uiState->mouseInputHandled && contains(bounds, mousePos))
-	{
-		if (mouseButtonJustReleased(MouseButton_Left)
-		 && contains(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-		{
-			result = true;
-			uiState->mouseInputHandled = true;
-		}
-	}
-
-	return result;
 }
