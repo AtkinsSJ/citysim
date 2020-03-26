@@ -79,15 +79,13 @@ void window_completeColumn(WindowContext *context)
 	{
 		if (context->columnScrollbarState != null)
 		{
-			context->columnScrollbarState->contentSize = context->currentY;
-
 			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
 			Rect2I scrollbarArea = irectXYWH(context->contentArea.x + context->contentArea.w,
 								context->contentArea.y,
 								context->columnScrollbarWidth,
 								context->contentArea.h);
 
-			updateScrollbar(context->uiState, context->columnScrollbarState, scrollbarArea, scrollbarStyle);
+			updateScrollbar(context->uiState, context->columnScrollbarState, context->currentY, scrollbarArea, scrollbarStyle);
 		}
 	}
 
@@ -103,7 +101,7 @@ void window_completeColumn(WindowContext *context)
 								context->columnScrollbarWidth,
 								context->contentArea.h);
 
-			f32 scrollPercent = (f32)context->columnScrollbarState->scrollPosition / (f32)(context->columnScrollbarState->contentSize - scrollbarArea.h);
+			f32 scrollPercent = getScrollbarPercent(context->columnScrollbarState, scrollbarArea.h);
 
 			drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarArea.pos, scrollbarArea.h, v2i(context->columnScrollbarWidth, context->columnScrollbarWidth), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 		}

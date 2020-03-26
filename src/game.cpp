@@ -517,7 +517,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
 			s32 popupMenuMaxHeight = 128;
 
-			PopupMenu menu = beginPopupMenu(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
+			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
@@ -554,7 +554,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
 			s32 popupMenuMaxHeight = 128;
 
-			PopupMenu menu = beginPopupMenu(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
+			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
 			for (auto it = iterate(constructibleBuildings);
 				hasNext(&it);
@@ -601,7 +601,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
 			s32 popupMenuMaxHeight = 128;
 
-			PopupMenu menu = beginPopupMenu(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
+			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
 			for (DataLayer dataViewID = DataLayer_None; dataViewID < DataLayerCount; dataViewID = (DataLayer)(dataViewID + 1))
 			{

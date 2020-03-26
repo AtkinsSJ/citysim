@@ -153,10 +153,11 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 		}
 		else
 		{
+			// NB: Do all menu-state-initialisation here!
 			uiState->openMenu = menuID;
 			currentlyOpen = true;
 
-			// NB: Do all menu-state-initialisation here!
+			uiState->openMenuScrollbar = {};
 		}
 	}
 
@@ -215,9 +216,11 @@ void drawUiMessage(UIState *uiState)
 	}
 }
 
-void updateScrollbar(UIState *uiState, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
+void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style)
 {
 	DEBUG_FUNCTION();
+
+	state->contentSize = contentSize;
 
 	if (style == null)
 	{
@@ -250,10 +253,11 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, Rect2I bounds, UIS
 			uiState->mouseInputHandled = true;
 		}
 	}
-
-	// drawScrollbar(&renderer->uiBuffer, bounds.pos, bounds.h, resultScrollbarPercent, v2i(style->width, style->width), style->knobColor, style->backgroundColor, renderer->shaderIds.untextured);
 }
 
+// TODO: We really want a version of this that just takes a ScrollbarState*, it'd make many things simpler.
+// However, we use this without a ScrollbarState in the console, currently. May or may not want to move that
+// over to using a ScrollbarState too.
 void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
 {
 	Rect2 backgroundRect = rectXYWHi(topLeft.x, topLeft.y, knobSize.x, height);
@@ -265,12 +269,17 @@ void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 h
 	drawSingleRect(uiBuffer, knobRect, shaderID, knobColor);
 }
 
+inline f32 getScrollbarPercent(ScrollbarState *scrollbar, s32 scrollbarHeight)
+{
+	return (f32)scrollbar->scrollPosition / (f32)(scrollbar->contentSize - scrollbarHeight);
+}
+
 inline void uiCloseMenus(UIState *uiState)
 {
 	uiState->openMenu = 0;
 }
 
-PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style)
+PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style)
 {
 	PopupMenu result = {};
 
@@ -312,6 +321,13 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 	s32 scrollbarWidth = (menu->scrollbarStyle ? menu->scrollbarStyle->width : 0);
 
 	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(menu->currentYOffset, menu->maxHeight));
+
+	// Handle scrollbar stuff
+	Rect2I scrollbarBounds = irectXYWH(menu->origin.x + menu->width, menu->origin.y, scrollbarWidth, menuRect.h);
+	updateScrollbar(uiState, &uiState->openMenuScrollbar, menu->currentYOffset, scrollbarBounds, menu->scrollbarStyle);
+	f32 scrollPercent = getScrollbarPercent(&uiState->openMenuScrollbar, scrollbarBounds.h);
+	drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(scrollbarWidth, scrollbarWidth), menu->scrollbarStyle->knobColor, menu->scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+
 	append(&uiState->uiRects, menuRect);
 	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
 	addEndScissor(&renderer->uiBuffer);

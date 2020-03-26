@@ -8,6 +8,12 @@ struct UIMessage
 	f32 countdown; // In seconds
 };
 
+struct ScrollbarState
+{
+	s32 contentSize;
+	s32 scrollPosition;
+};
+
 #include "ui_window.h"
 
 struct UIState
@@ -19,6 +25,7 @@ struct UIState
 	ChunkedArray<Rect2I> uiRects;
 
 	s32 openMenu;
+	ScrollbarState openMenuScrollbar;
 
 	// UI elements that react to the mouse should only do so if this is false - and then
 	// they should set it to true. 
@@ -42,13 +49,9 @@ void uiCloseMenus(UIState *uiState);
 void pushUiMessage(UIState *uiState, String message);
 void drawUiMessage(UIState *uiState);
 
-struct ScrollbarState
-{
-	s32 contentSize;
-	s32 scrollPosition;
-};
-void updateScrollbar(UIState *uiState, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
+void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
 void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID);
+f32 getScrollbarPercent(ScrollbarState *state, s32 scrollbarHeight); // Percent meaning 0.99 = 99%. (I know that's not a percent, but whatever)
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK
@@ -77,6 +80,6 @@ struct PopupMenu
 	// when it's hidden, actually!!! That'd work. Awesome.
 };
 
-PopupMenu beginPopupMenu(s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style);
+PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style);
 bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive = false);
 void endPopupMenu(UIState *uiState, PopupMenu *menu);
