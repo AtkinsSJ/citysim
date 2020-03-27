@@ -8,6 +8,7 @@ void initDataViewUI()
 	Array<V4> *landValuePalette        = getPalette("land_value"_s);
 	Array<V4> *pollutionPalette        = getPalette("pollution"_s);
 	Array<V4> *powerPalette            = getPalette("power"_s);
+	Array<V4> *riskPalette             = getPalette("risk"_s);
 	Array<V4> *serviceBuildingsPalette = getPalette("service_buildings"_s);
 	Array<V4> *serviceCoveragePalette  = getPalette("service_coverage"_s);
 
@@ -38,8 +39,8 @@ void initDataViewUI()
 
 	dataViewUI[DataView_Fire].title = "data_view_fire"_s;
 	dataViewUI[DataView_Fire].hasGradient = true;
-	dataViewUI[DataView_Fire].gradientColorMin = asOpaque(*first(serviceCoveragePalette));
-	dataViewUI[DataView_Fire].gradientColorMax = asOpaque(*last(serviceCoveragePalette));
+	dataViewUI[DataView_Fire].gradientColorMin = asOpaque(*first(riskPalette));
+	dataViewUI[DataView_Fire].gradientColorMax = asOpaque(*last(riskPalette));
 	dataViewUI[DataView_Fire].fixedColorCount = 2;
 	dataViewUI[DataView_Fire].fixedColors[0] = asOpaque((*serviceBuildingsPalette)[0]);
 	dataViewUI[DataView_Fire].fixedColors[1] = asOpaque((*serviceBuildingsPalette)[1]);
