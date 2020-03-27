@@ -772,8 +772,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 		dataViewUIWidth += dataViewCloseButtonBounds.w + uiPadding;
 
-		Rect2 dataViewUIBounds = rectXYWHi(uiPos.x - uiPadding, uiPos.y - uiPadding, dataViewUIWidth + (uiPadding*2), dataViewButtonBounds.y + dataViewButtonBounds.h - uiPos.y + (uiPadding*2));
+		Rect2I dataViewUIBounds = irectXYWH(uiPos.x - uiPadding, uiPos.y - uiPadding, dataViewUIWidth + (uiPadding*2), dataViewButtonBounds.y + dataViewButtonBounds.h - uiPos.y + (uiPadding*2));
 		fillDrawRectPlaceholder(dataViewUIBackground, dataViewUIBounds, theme->overlayColor);
+		append(&uiState->uiRects, dataViewUIBounds);
 	}
 	else
 	{
