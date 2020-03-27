@@ -46,6 +46,40 @@ void initAssets()
 	initHashTable(&assets->defaultTexts);
 	initSet<String>(&assets->missingTextIDs, &assets->assetArena, [](String *a, String *b) {return equals(*a, *b); });
 
+	// Placeholder assets!
+	{
+		// Texture
+		Asset *placeholderTexture = &assets->placeholderAssets[AssetType_Texture];
+		*placeholderTexture = {};
+		placeholderTexture->type = AssetType_Texture;
+		placeholderTexture->state = AssetState_Loaded;
+		placeholderTexture->data = assetsAllocate(assets, 2 * 2 * sizeof(u32));
+		u32 *pixels = (u32*)placeholderTexture->data.memory;
+		pixels[0] = pixels[3] = 0xffff00ff;
+		pixels[1] = pixels[2] = 0xff000000;
+		placeholderTexture->texture.surface = SDL_CreateRGBSurfaceFrom(pixels, 2, 2, 32, 2*sizeof(u32),
+							0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+		placeholderTexture->texture.isFileAlphaPremultiplied = true;
+
+		// Sprite!
+		Asset *placeholderSprite = &assets->placeholderAssets[AssetType_Sprite];
+		*placeholderSprite = {};
+		placeholderSprite->type = AssetType_Sprite;
+		placeholderSprite->state = AssetState_Loaded;
+		placeholderSprite->data = assetsAllocate(assets, 1 * sizeof(Sprite));
+		placeholderSprite->spriteGroup.count = 1;
+		placeholderSprite->spriteGroup.sprites = (Sprite*) placeholderSprite->data.memory;
+		placeholderSprite->spriteGroup.sprites[0].texture = &assets->placeholderAssets[AssetType_Texture];
+		placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+
+		// Cursor
+		Asset *placeholderCursor = &assets->placeholderAssets[AssetType_Cursor];
+		*placeholderCursor = {};
+		placeholderCursor->type = AssetType_Cursor;
+		placeholderCursor->state = AssetState_Loaded;
+		placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+	}
+
 	// NB: This might fail, or we might be on a platform where it isn't implemented.
 	// That's OK though! 
 	assets->assetChangeHandle = beginWatchingDirectory(assets->assetsPath);
@@ -627,8 +661,8 @@ Asset *getAsset(AssetType type, String shortName)
 
 	if (result == null)
 	{
-		DEBUG_BREAK();
-		logError("Requested asset '{0}' was not found!"_s, {shortName});
+		logWarn("Requested asset '{0}' was not found! Using placeholder."_s, {shortName});
+		result = &assets->placeholderAssets[type];
 	}
 	
 	return result;

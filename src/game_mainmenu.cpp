@@ -101,5 +101,8 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	// Rect2I scrollbarBounds = irectXYWH(0, 0, scrollbarStyle->width, windowHeight);
 	// TEMP_scrollbarPercent = uiScrollbar(uiState, windowHeight, scrollbarBounds, scrollbarStyle, TEMP_scrollbarPercent);
 
+	Sprite *testSprite = getSprite(getSpriteGroup("kasjhdaksjdkajsdhkasjd"_s), 0);
+	drawSingleSprite(&renderer->uiBuffer, testSprite, rectXYWH(0, 0, 32, 32), renderer->shaderIds.pixelArt, makeWhite());
+
 	return result;
 }

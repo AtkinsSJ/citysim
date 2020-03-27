@@ -181,6 +181,12 @@ struct Assets
 	ChunkedArray<Asset> allAssets;
 	HashTable<Asset*> assetsByType[AssetTypeCount];
 
+	// If a requested asset is not found, the one here is used instead.
+	// Probably most of these will be empty, but we do need a placeholder sprite at least,
+	// so I figure it's better to put this in place for all types while I'm at it.
+	// - Sam, 27/03/2020
+	Asset placeholderAssets[AssetTypeCount];
+
 	// TODO: If the theme is an asset, we should remove this direct reference!
 	// Will want to make the UITheme itself a densely-packed struct, rather than a set of hashtables,
 	// so that we can put the whole thing inside the Asset's data blob.

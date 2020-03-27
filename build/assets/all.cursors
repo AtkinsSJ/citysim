@@ -3,5 +3,5 @@
 
 default  default.png 0 0
 
-build    build.png 0 0
-demolish demolish.png 0 0
+#build    build.png 0 0
+#demolish demolish.png 0 0
