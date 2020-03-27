@@ -656,7 +656,7 @@ void GL_render(RenderBufferChunk *firstChunk)
 				{
 					flushVertices(gl);
 				}
-				pushQuadWithUV(gl, item->bounds, item->color, item->uv);
+				pushQuadWithUVMulticolor(gl, item->bounds, item->color00, item->color01, item->color10, item->color11, item->uv);
 
 			} break;
 
@@ -823,6 +823,11 @@ inline void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color)
 
 inline void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv)
 {
+	return pushQuadWithUVMulticolor(gl, bounds, color, color, color, color, uv);
+}
+
+inline void pushQuadWithUVMulticolor(GL_Renderer *gl, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv)
+{
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	// s32 firstVertex = gl->vertexCount;
 
@@ -840,28 +845,28 @@ inline void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv)
 
 	vertex->pos.x = minX;
 	vertex->pos.y = minY;
-	vertex->color = color;
+	vertex->color = color00;
 	vertex->uv.x = minU;
 	vertex->uv.y = minV;
 	vertex++;
 
 	vertex->pos.x = maxX;
 	vertex->pos.y = minY;
-	vertex->color = color;
+	vertex->color = color01;
 	vertex->uv.x = maxU;
 	vertex->uv.y = minV;
 	vertex++;
 
 	vertex->pos.x = maxX;
 	vertex->pos.y = maxY;
-	vertex->color = color;
+	vertex->color = color11;
 	vertex->uv.x = maxU;
 	vertex->uv.y = maxV;
 	vertex++;
 
 	vertex->pos.x = minX;
 	vertex->pos.y = maxY;
-	vertex->color = color;
+	vertex->color = color10;
 	vertex->uv.x = minU;
 	vertex->uv.y = maxV;
 

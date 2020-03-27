@@ -13,64 +13,64 @@ void initDataViewUI()
 
 	dataViewUI[DataView_Desirability_Residential].title = "data_view_desirability_residential"_s;
 	dataViewUI[DataView_Desirability_Residential].hasGradient = true;
-	dataViewUI[DataView_Desirability_Residential].gradientColorMin = *first(desirabilityPalette);
-	dataViewUI[DataView_Desirability_Residential].gradientColorMax = *last(desirabilityPalette);
+	dataViewUI[DataView_Desirability_Residential].gradientColorMin = asOpaque(*first(desirabilityPalette));
+	dataViewUI[DataView_Desirability_Residential].gradientColorMax = asOpaque(*last(desirabilityPalette));
 
 	dataViewUI[DataView_Desirability_Commercial].title = "data_view_desirability_commercial"_s;
 	dataViewUI[DataView_Desirability_Commercial].hasGradient = true;
-	dataViewUI[DataView_Desirability_Commercial].gradientColorMin = *first(desirabilityPalette);
-	dataViewUI[DataView_Desirability_Commercial].gradientColorMax = *last(desirabilityPalette);
+	dataViewUI[DataView_Desirability_Commercial].gradientColorMin = asOpaque(*first(desirabilityPalette));
+	dataViewUI[DataView_Desirability_Commercial].gradientColorMax = asOpaque(*last(desirabilityPalette));
 
 	dataViewUI[DataView_Desirability_Industrial].title = "data_view_desirability_industrial"_s;
 	dataViewUI[DataView_Desirability_Industrial].hasGradient = true;
-	dataViewUI[DataView_Desirability_Industrial].gradientColorMin = *first(desirabilityPalette);
-	dataViewUI[DataView_Desirability_Industrial].gradientColorMax = *last(desirabilityPalette);
+	dataViewUI[DataView_Desirability_Industrial].gradientColorMin = asOpaque(*first(desirabilityPalette));
+	dataViewUI[DataView_Desirability_Industrial].gradientColorMax = asOpaque(*last(desirabilityPalette));
 
 	dataViewUI[DataView_Crime].title = "data_view_crime"_s;
 	dataViewUI[DataView_Crime].hasGradient = true;
-	dataViewUI[DataView_Crime].gradientColorMin = *first(serviceCoveragePalette);
-	dataViewUI[DataView_Crime].gradientColorMax = *last(serviceCoveragePalette);
+	dataViewUI[DataView_Crime].gradientColorMin = asOpaque(*first(serviceCoveragePalette));
+	dataViewUI[DataView_Crime].gradientColorMax = asOpaque(*last(serviceCoveragePalette));
 	dataViewUI[DataView_Crime].fixedColorCount = 2;
-	dataViewUI[DataView_Crime].fixedColors[0] = (*serviceBuildingsPalette)[0];
-	dataViewUI[DataView_Crime].fixedColors[1] = (*serviceBuildingsPalette)[1];
+	dataViewUI[DataView_Crime].fixedColors[0] = asOpaque((*serviceBuildingsPalette)[0]);
+	dataViewUI[DataView_Crime].fixedColors[1] = asOpaque((*serviceBuildingsPalette)[1]);
 	dataViewUI[DataView_Crime].fixedColorNames[0] = "data_view_buildings_powered"_s;
 	dataViewUI[DataView_Crime].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
 
 	dataViewUI[DataView_Fire].title = "data_view_fire"_s;
 	dataViewUI[DataView_Fire].hasGradient = true;
-	dataViewUI[DataView_Fire].gradientColorMin = *first(serviceCoveragePalette);
-	dataViewUI[DataView_Fire].gradientColorMax = *last(serviceCoveragePalette);
+	dataViewUI[DataView_Fire].gradientColorMin = asOpaque(*first(serviceCoveragePalette));
+	dataViewUI[DataView_Fire].gradientColorMax = asOpaque(*last(serviceCoveragePalette));
 	dataViewUI[DataView_Fire].fixedColorCount = 2;
-	dataViewUI[DataView_Fire].fixedColors[0] = (*serviceBuildingsPalette)[0];
-	dataViewUI[DataView_Fire].fixedColors[1] = (*serviceBuildingsPalette)[1];
+	dataViewUI[DataView_Fire].fixedColors[0] = asOpaque((*serviceBuildingsPalette)[0]);
+	dataViewUI[DataView_Fire].fixedColors[1] = asOpaque((*serviceBuildingsPalette)[1]);
 	dataViewUI[DataView_Fire].fixedColorNames[0] = "data_view_buildings_powered"_s;
 	dataViewUI[DataView_Fire].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
 
 	dataViewUI[DataView_Health].title = "data_view_health"_s;
 	dataViewUI[DataView_Health].hasGradient = true;
-	dataViewUI[DataView_Health].gradientColorMin = *first(serviceCoveragePalette);
-	dataViewUI[DataView_Health].gradientColorMax = *last(serviceCoveragePalette);
+	dataViewUI[DataView_Health].gradientColorMin = asOpaque(*first(serviceCoveragePalette));
+	dataViewUI[DataView_Health].gradientColorMax = asOpaque(*last(serviceCoveragePalette));
 	dataViewUI[DataView_Health].fixedColorCount = 2;
-	dataViewUI[DataView_Health].fixedColors[0] = (*serviceBuildingsPalette)[0];
-	dataViewUI[DataView_Health].fixedColors[1] = (*serviceBuildingsPalette)[1];
+	dataViewUI[DataView_Health].fixedColors[0] = asOpaque((*serviceBuildingsPalette)[0]);
+	dataViewUI[DataView_Health].fixedColors[1] = asOpaque((*serviceBuildingsPalette)[1]);
 	dataViewUI[DataView_Health].fixedColorNames[0] = "data_view_buildings_powered"_s;
 	dataViewUI[DataView_Health].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
 
 	dataViewUI[DataView_LandValue].title = "data_view_landvalue"_s;
 	dataViewUI[DataView_LandValue].hasGradient = true;
-	dataViewUI[DataView_LandValue].gradientColorMin = *first(landValuePalette);
-	dataViewUI[DataView_LandValue].gradientColorMax = *last(landValuePalette);
+	dataViewUI[DataView_LandValue].gradientColorMin = asOpaque(*first(landValuePalette));
+	dataViewUI[DataView_LandValue].gradientColorMax = asOpaque(*last(landValuePalette));
 
 	dataViewUI[DataView_Pollution].title = "data_view_pollution"_s;
 	dataViewUI[DataView_Pollution].hasGradient = true;
-	dataViewUI[DataView_Pollution].gradientColorMin = *first(pollutionPalette);
-	dataViewUI[DataView_Pollution].gradientColorMax = *last(pollutionPalette);
+	dataViewUI[DataView_Pollution].gradientColorMin = asOpaque(*first(pollutionPalette));
+	dataViewUI[DataView_Pollution].gradientColorMax = asOpaque(*last(pollutionPalette));
 
 	dataViewUI[DataView_Power].title = "data_view_power"_s;
 	dataViewUI[DataView_Power].fixedColorCount = 3;
-	dataViewUI[DataView_Power].fixedColors[0] = (*powerPalette)[0];
-	dataViewUI[DataView_Power].fixedColors[1] = (*powerPalette)[1];
-	dataViewUI[DataView_Power].fixedColors[2] = (*powerPalette)[2];
+	dataViewUI[DataView_Power].fixedColors[0] = asOpaque((*powerPalette)[0]);
+	dataViewUI[DataView_Power].fixedColors[1] = asOpaque((*powerPalette)[1]);
+	dataViewUI[DataView_Power].fixedColors[2] = asOpaque((*powerPalette)[2]);
 	dataViewUI[DataView_Power].fixedColorNames[0] = "data_view_power_powered"_s;
 	dataViewUI[DataView_Power].fixedColorNames[1] = "data_view_power_brownout"_s;
 	dataViewUI[DataView_Power].fixedColorNames[2] = "data_view_power_blackout"_s;
@@ -716,12 +716,46 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		V2I uiPos = dataViewButtonBounds.pos;
 		uiPos.y -= uiPadding;
 
-		// Somehow we want to display the key in a sensible way...
-		// Sometimes it's a set of fixed colors, sometimes it's a gradient.
-		// It might even be both!
-		// Ideally we won't have to hard code them all, but... it might be easiest for now!
-
 		DataViewUI *dataView = &dataViewUI[gameState->dataLayerToDraw];
+
+		s32 paletteBlockSize = font->lineHeight;
+
+		// We're working from bottom to top, so we start at the end.
+
+		// First, the named colors
+		for (s32 fixedColorIndex = dataView->fixedColorCount-1; fixedColorIndex >= 0; fixedColorIndex--)
+		{
+			// Block is to the left, so we offset the label by that width and padding
+			Rect2I colorLabelBounds = uiText(&renderer->uiBuffer, font, getText(dataView->fixedColorNames[fixedColorIndex]), uiPos + v2i(paletteBlockSize + uiPadding, 0), ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
+
+			Rect2I paletteBlockBounds = irectXYWH(uiPos.x, uiPos.y - paletteBlockSize, paletteBlockSize, paletteBlockSize);
+			drawSingleRect(&renderer->uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, dataView->fixedColors[fixedColorIndex]);
+
+			uiPos.y -= colorLabelBounds.h + uiPadding;
+
+			// Overall width of this line is both block & label
+			dataViewUIWidth = max(dataViewUIWidth, colorLabelBounds.w + uiPadding + paletteBlockSize);
+		}
+
+		// Above that, the gradient
+		if (dataView->hasGradient)
+		{
+			// Arbitrarily going to make the height 4x the width
+			Rect2I gradientBounds = irectXYWH(uiPos.x, uiPos.y - (paletteBlockSize * 4), paletteBlockSize, paletteBlockSize * 4);
+
+			drawSingleRect(&renderer->uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, dataView->gradientColorMax, dataView->gradientColorMax, dataView->gradientColorMin, dataView->gradientColorMin);
+
+			s32 labelLeft = gradientBounds.x + gradientBounds.w + uiPadding;
+
+			// One label at the top
+			Rect2I minLabelBounds = uiText(&renderer->uiBuffer, font, getText("data_view_minimum"_s), v2i(labelLeft, gradientBounds.y + gradientBounds.h), ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
+
+			// The other at the bottom
+			Rect2I maxLabelBounds = uiText(&renderer->uiBuffer, font, getText("data_view_maximum"_s), v2i(labelLeft, gradientBounds.y), ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor);
+
+			uiPos.y -= gradientBounds.h + uiPadding;
+			dataViewUIWidth = max(dataViewUIWidth, gradientBounds.w + uiPadding + max(minLabelBounds.w, maxLabelBounds.w));
+		}
 
 		Rect2I labelRect = uiText(&renderer->uiBuffer, font, getText(dataView->title),
 			uiPos, ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);

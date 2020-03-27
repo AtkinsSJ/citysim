@@ -93,4 +93,5 @@ GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID);
 void uploadTexture2D(GLenum pixelFormat, s32 width, s32 height, void *pixelData);
 void pushQuad(GL_Renderer *gl, Rect2 bounds, V4 color);
 void pushQuadWithUV(GL_Renderer *gl, Rect2 bounds, V4 color, Rect2 uv);
+void pushQuadWithUVMulticolor(GL_Renderer *gl, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv);
 void flushVertices(GL_Renderer *gl);

@@ -91,7 +91,10 @@ struct RenderItem_EndScissor
 struct RenderItem_DrawSingleRect
 {
 	Rect2 bounds;
-	V4 color;
+	V4 color00;
+	V4 color01;
+	V4 color10;
+	V4 color11;
 	Rect2 uv; // in (0 to 1) space
 };
 
@@ -291,6 +294,7 @@ void addEndScissor(RenderBuffer *buffer);
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color);
 void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color);
 void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color);
+void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
 
 // For when you want something to appear NOW in the render-order, but you don't know its details until later
 RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID);

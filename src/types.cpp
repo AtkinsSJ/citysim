@@ -562,6 +562,37 @@ inline V4 makeWhite()
 	return v4(1.0f,1.0f,1.0f,1.0f);
 }
 
+inline V4 asOpaque(V4 color)
+{
+	// Colors are always stored with premultiplied alpha, so in order to set the alpha
+	// back to 100%, we have to divide by that alpha.
+
+	V4 result = color;
+
+	// If alpha is 0, we can't divide, so just set it
+	if (result.a == 0.0f)
+	{
+		result.a = 1.0f;
+	}
+	// If alpha is already 1, we don't need to do anything
+	// If alpha is > 1, clamp it
+	else if (result.a >= 1.0f)
+	{
+		result.a = 1.0f;
+	}
+	// Otherwise, divide by the alpha and then make it 1
+	else
+	{
+		result.r = result.r / result.a;
+		result.g = result.g / result.a;
+		result.b = result.b / result.a;
+
+		result.a = 1.0f;
+	}
+
+	return result;
+}
+
 inline f32 lengthOf(V4 v)
 {
 	return (f32) sqrt(v.x*v.x + v.y*v.y + v.z*v.z);

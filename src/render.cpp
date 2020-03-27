@@ -473,29 +473,34 @@ void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 sha
 	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
 
 	rect->bounds = bounds;
-	rect->color = color;
+	rect->color00 = color;
+	rect->color01 = color;
+	rect->color10 = color;
+	rect->color11 = color;
 	rect->uv = sprite->uv;
 }
 
-void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color)
+inline void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color)
+{
+	drawSingleRect(buffer, bounds, shaderID, color, color, color, color);
+}
+
+inline void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color)
+{
+	drawSingleRect(buffer, rect2(bounds), shaderID, color, color, color, color);
+}
+
+void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11)
 {
 	addSetShader(buffer, shaderID);
 
 	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
 
 	rect->bounds = bounds;
-	rect->color = color;
-	rect->uv = {};
-}
-
-void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color)
-{
-	addSetShader(buffer, shaderID);
-
-	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
-
-	rect->bounds = rectXYWHi(bounds.x, bounds.y, bounds.w, bounds.h);
-	rect->color = color;
+	rect->color00 = color00;
+	rect->color01 = color01;
+	rect->color10 = color10;
+	rect->color11 = color11;
 	rect->uv = {};
 }
 
@@ -511,14 +516,20 @@ RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 sh
 void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color)
 {
 	placeholder->bounds = bounds;
-	placeholder->color = color;
+	placeholder->color00 = color;
+	placeholder->color01 = color;
+	placeholder->color10 = color;
+	placeholder->color11 = color;
 	placeholder->uv = {};
 }
 
 void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color)
 {
 	placeholder->bounds = rectXYWHi(bounds.x, bounds.y, bounds.w, bounds.h);
-	placeholder->color = color;
+	placeholder->color00 = color;
+	placeholder->color01 = color;
+	placeholder->color10 = color;
+	placeholder->color11 = color;
 	placeholder->uv = {};
 }
 
@@ -683,7 +694,10 @@ void drawGrid(RenderBuffer *buffer, Rect2 bounds, s32 gridW, s32 gridH, u8 *grid
 
 	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
 	rect->bounds = bounds;
-	rect->color = makeWhite();
+	rect->color00 = makeWhite();
+	rect->color01 = makeWhite();
+	rect->color10 = makeWhite();
+	rect->color11 = makeWhite();
 	rect->uv = rectXYWH(0, 0, 1, 1);
 }
 

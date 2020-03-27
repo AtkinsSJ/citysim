@@ -36,6 +36,8 @@ data_view_power_blackout            Blackout
 data_view_landvalue					Land value
 data_view_buildings_powered         Powered buildings
 data_view_buildings_unpowered       Unpowered buildings
+data_view_minimum                   Low
+data_view_maximum                   High
 
 date_format_short_date       {day}/{month2}/{year}
 date_format_long_date        {dayN} {day} {monthN} {year}
