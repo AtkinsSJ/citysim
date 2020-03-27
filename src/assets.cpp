@@ -32,9 +32,13 @@ void initAssets()
 	assets->assetMemoryAllocated = 0;
 	assets->maxAssetMemoryAllocated = 0;
 
+	auto compareStrings = [](String *a, String *b) {return equals(*a, *b); };
+
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
 		initHashTable(&assets->assetsByType[assetType]);
+
+		initSet<String>(&assets->missingAssetNames[assetType], &assets->assetArena, compareStrings);
 	}
 
 	initUITheme(&assets->theme);
@@ -44,7 +48,8 @@ void initAssets()
 
 	initHashTable(&assets->texts);
 	initHashTable(&assets->defaultTexts);
-	initSet<String>(&assets->missingTextIDs, &assets->assetArena, [](String *a, String *b) {return equals(*a, *b); });
+
+	initSet<String>(&assets->missingTextIDs, &assets->assetArena, compareStrings);
 
 	// Placeholder assets!
 	{
@@ -630,9 +635,11 @@ void reloadAssets()
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
 		clear(&assets->assetsByType[assetType]);
+
+		// Reset missing text warnings
+		clear(&assets->missingAssetNames[assetType]);
 	}
 
-	// Reset missing text warnings
 	clear(&assets->missingTextIDs);
 
 	// Regenerate asset catalogue
@@ -661,7 +668,10 @@ Asset *getAsset(AssetType type, String shortName)
 
 	if (result == null)
 	{
-		logWarn("Requested asset '{0}' was not found! Using placeholder."_s, {shortName});
+		if (add(&assets->missingAssetNames[type], shortName))
+		{
+			logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, {assetTypeNames[type], shortName});
+		}
 		result = &assets->placeholderAssets[type];
 	}
 	

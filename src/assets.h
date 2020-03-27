@@ -23,6 +23,24 @@ enum AssetType
 	AssetType_Unknown = -1
 };
 
+String assetTypeNames[] = {
+	"Misc"_s,
+	"BitmapFont"_s,
+	"BuildingDefs"_s,
+	"Cursor"_s,
+	"CursorDefs"_s,
+	"DevKeymap"_s,
+	"Palette"_s,
+	"PaletteDefs"_s,
+	"Shader"_s,
+	"Sprite"_s,
+	"SpriteDefs"_s,
+	"Texts"_s,
+	"Texture"_s,
+	"TerrainDefs"_s,
+	"UITheme"_s,
+};
+
 enum AssetState
 {
 	AssetState_Unloaded,
@@ -186,6 +204,8 @@ struct Assets
 	// so I figure it's better to put this in place for all types while I'm at it.
 	// - Sam, 27/03/2020
 	Asset placeholderAssets[AssetTypeCount];
+	// The missing assets are logged here!
+	Set<String> missingAssetNames[AssetTypeCount];
 
 	// TODO: If the theme is an asset, we should remove this direct reference!
 	// Will want to make the UITheme itself a densely-packed struct, rather than a set of hashtables,
