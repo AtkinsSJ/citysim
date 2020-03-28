@@ -82,34 +82,6 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 	}
 }
 
-void drawCrimeDataView(City *city, Rect2I /*visibleTileBounds*/)
-{
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	CrimeLayer *layer = &city->crimeLayer;
-
-#if 0
-	u8 *data = layer->tileOverallFireRisk;
-	Rect2I bounds = city->bounds;
-
-	Array<V4> *palette = getPalette("risk"s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
-#else
-	// Just draw the protection
-	u8 *data = layer->tilePoliceCoverage;
-	Rect2I bounds = city->bounds;
-
-	Array<V4> *palette = getPalette("service_coverage"_s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
-#endif
-
-	// Highlight police stations
-	drawBuildingHighlights(city, &layer->policeBuildings);
-	drawBuildingEffectRadii(city, &layer->policeBuildings, &BuildingDef::policeEffect);
-}
-
 void registerPoliceBuilding(CrimeLayer *layer, Building *building)
 {
 	append(&layer->policeBuildings, getReferenceTo(building));

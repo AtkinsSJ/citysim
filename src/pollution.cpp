@@ -105,18 +105,6 @@ void markPollutionLayerDirty(PollutionLayer *layer, Rect2I bounds)
 	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
-void drawPollutionDataView(City *city, Rect2I /*visibleTileBounds*/)
-{
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	u8 *data = city->pollutionLayer.tilePollution;
-	Rect2I bounds = city->bounds;
-
-	Array<V4> *palette = getPalette("pollution"_s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
-}
-
 inline u8 getPollutionAt(City *city, s32 x, s32 y)
 {
 	return getTileValue(city, city->pollutionLayer.tilePollution, x, y);

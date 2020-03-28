@@ -87,11 +87,18 @@ struct DataViewUI
 	s32 fixedColorCount;
 	V4 fixedColors[16];
 	String fixedColorNames[16];
+
+	// Overlay
+	ChunkedArray<BuildingRef> *highlightedBuildings;
+	EffectRadius BuildingDef:: *effectRadiusMember;
+	String overlayPaletteName;
+	// NB: This is a pointer to the variable, not pointer to the array itself!
+	// The DataViewUI data gets initialised before a City exists, so the per-tile arrays
+	// have not been allocated yet.
+	u8 **overlayTileData;
+
+	u8 (*calculateTileValue)(City *city, s32 x, s32 y);
 };
-
-DataViewUI dataViewUI[DataViewCount] = {};
-
-void initDataViewUI();
 
 enum InspectTileDebugFlags
 {
@@ -110,7 +117,7 @@ struct GameState
 	City city;
 
 	DataView dataLayerToDraw;
-	DataViewUI dataLayerUI[DataViewCount];
+	DataViewUI dataViewUI[DataViewCount];
 
 	DragState worldDragState;
 	ActionMode actionMode;
@@ -142,6 +149,14 @@ DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsO
 //
 // Internal
 //
+void initDataViewUI(GameState *gameState);
+void setGradient(DataViewUI *dataViewUI, Array<V4> *palette);
+void setHighlightedBuildings(DataViewUI *dataViewUI, ChunkedArray<BuildingRef> *highlightedBuildings, EffectRadius BuildingDef:: *effectRadiusMember = null);
+void setTileOverlay(DataViewUI *dataViewUI, u8 **tileData, String paletteName);
+void setTileOverlayCallback(DataViewUI *dataViewUI, u8 (*calculateTileValue)(City *city, s32 x, s32 y), String paletteName);
+void drawDataViewOverlay(GameState *gameState, Rect2I visibleTileBounds);
+void drawDataViewUI(UIState *uiState, GameState *gameState);
+
 void inspectTileWindowProc(WindowContext *context, void *userData);
 void pauseMenuWindowProc(WindowContext *context, void *userData);
 void costTooltipWindowProc(WindowContext *context, void *userData);

@@ -15,6 +15,5 @@ void initPollutionLayer(PollutionLayer *layer, City *city, MemoryArena *gameAren
 void updatePollutionLayer(City *city, PollutionLayer *layer);
 void markPollutionLayerDirty(PollutionLayer *layer, Rect2I bounds);
 
-void drawPollutionDataView(City *city, Rect2I visibleTileBounds);
 u8 getPollutionAt(City *city, s32 x, s32 y);
 f32 getPollutionPercentAt(City *city, s32 x, s32 y);

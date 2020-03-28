@@ -16,7 +16,6 @@ struct HealthLayer
 void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena);
 void updateHealthLayer(City *city, HealthLayer *layer);
 void markHealthLayerDirty(HealthLayer *layer, Rect2I bounds);
-void drawHealthDataView(City *city, Rect2I visibleTileBounds);
 
 void registerHealthBuilding(HealthLayer *layer, Building *building);
 void unregisterHealthBuilding(HealthLayer *layer, Building *building);

@@ -17,7 +17,6 @@ struct CrimeLayer
 
 void initCrimeLayer(CrimeLayer *layer, City *city, MemoryArena *gameArena);
 void updateCrimeLayer(City *city, CrimeLayer *layer);
-void drawCrimeDataView(City *city, Rect2I visibleTileBounds);
 
 void registerPoliceBuilding(CrimeLayer *layer, Building *building);
 void unregisterPoliceBuilding(CrimeLayer *layer, Building *building);

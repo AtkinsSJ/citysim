@@ -54,20 +54,6 @@ inline s32 calculateZoneCost(CanZoneQuery *query)
 	return query->zoneableTilesCount * query->zoneDef->costPerTile;
 }
 
-void drawDesirabilityDataView(City *city, Rect2I /*visibleTileBounds*/, ZoneType zoneType)
-{
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	ASSERT(zoneType >= FirstZoneType && zoneType < ZoneCount);
-
-	u8 *data = city->zoneLayer.tileDesirability[zoneType];
-	Rect2I bounds = city->bounds;
-
-	Array<V4> *palette = getPalette("desirability"_s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
-}
-
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds)
 {
 	DEBUG_FUNCTION_T(DCDT_Highlight);

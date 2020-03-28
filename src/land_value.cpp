@@ -136,22 +136,6 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 	}
 }
 
-void drawLandValueDataView(City *city, Rect2I /*visibleTileBounds*/)
-{
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	u8 *data = city->landValueLayer.tileLandValue;
-	Rect2I bounds = city->bounds;
-
-	// TODO: We could set the bounds/UVs so we only draw the visibleTileBounds part of it?
-	// I don't know if that would actually make it any faster or if the drivers are smart enough
-	// to crop things already.
-
-	Array<V4> *palette = getPalette("land_value"_s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
-}
-
 inline f32 getLandValuePercentAt(City *city, s32 x, s32 y)
 {
 	return getTileValue(city, city->landValueLayer.tileLandValue, x, y) / 255.0f;

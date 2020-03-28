@@ -83,6 +83,15 @@ void initAssets()
 		placeholderCursor->type = AssetType_Cursor;
 		placeholderCursor->state = AssetState_Loaded;
 		placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+
+		// Palette
+		Asset *placeholderPalette = &assets->placeholderAssets[AssetType_Palette];
+		*placeholderPalette = {};
+		placeholderPalette->type = AssetType_Palette;
+		placeholderPalette->state = AssetState_Loaded;
+		placeholderPalette->palette.type = PaletteType_Fixed;
+		placeholderPalette->palette.size = 0;
+		placeholderPalette->palette.paletteData = makeArray<V4>(0, null);
 	}
 
 	// NB: This might fail, or we might be on a platform where it isn't implemented.

@@ -82,24 +82,6 @@ inline void markHealthLayerDirty(HealthLayer *layer, Rect2I bounds)
 	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
-void drawHealthDataView(City *city, Rect2I /*visibleTileBounds*/)
-{
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	HealthLayer *layer = &city->healthLayer;
-
-	u8 *data = layer->tileHealthCoverage;
-	Rect2I bounds = city->bounds;
-
-	Array<V4> *coveragePalette = getPalette("service_coverage"_s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)coveragePalette->count, coveragePalette->items);
-
-	// Highlight buildings
-	drawBuildingHighlights(city, &layer->healthBuildings);
-	drawBuildingEffectRadii(city, &layer->healthBuildings, &BuildingDef::healthEffect);
-}
-
 void registerHealthBuilding(HealthLayer *layer, Building *building)
 {
 	append(&layer->healthBuildings, getReferenceTo(building));

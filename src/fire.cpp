@@ -150,24 +150,6 @@ void updateFireLayer(City *city, FireLayer *layer)
 	}
 }
 
-void drawFireDataView(City *city, Rect2I /*visibleTileBounds*/)
-{
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	FireLayer *layer = &city->fireLayer;
-
-	Rect2I bounds = city->bounds;
-	u8 *data = layer->tileOverallFireRisk;
-
-	Array<V4> *palette = getPalette("risk"_s);
-
-	drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, data, (u16)palette->count, palette->items);
-
-	// Highlight fire stations
-	drawBuildingHighlights(city, &layer->fireProtectionBuildings);
-	drawBuildingEffectRadii(city, &layer->fireProtectionBuildings, &BuildingDef::fireProtection);
-}
-
 void drawFires(City *city, Rect2I visibleTileBounds)
 {
 	FireLayer *layer = &city->fireLayer;

@@ -71,54 +71,34 @@ u8 getDistanceToPower(City *city, s32 x, s32 y)
 	return getTileValue(city, city->powerLayer.tilePowerDistance, x, y);
 }
 
-void drawPowerDataView(City *city, Rect2I visibleTileBounds)
+u8 calculatePowerOverlayForTile(City *city, s32 x, s32 y)
 {
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	PowerLayer *layer = &city->powerLayer;
-
-	Array<V4> *palette = getPalette("power"_s);
 	u8 paletteIndexPowered  = 0;
 	u8 paletteIndexBrownout = 1;
 	u8 paletteIndexBlackout = 2;
 	u8 paletteIndexNone     = 255;
 
-	Array2<u8> grid = allocateArray2<u8>(tempArena, visibleTileBounds.w, visibleTileBounds.h);
-	for (s32 gridY = 0;
-		gridY < grid.h;
-		gridY++)
+	u8 result = paletteIndexNone;
+
+	PowerNetwork *network = getPowerNetworkAt(city, x, y);
+	if (network == null)
 	{
-		for (s32 gridX = 0;
-			gridX < grid.w;
-			gridX++)
-		{
-			PowerNetwork *network = getPowerNetworkAt(city, visibleTileBounds.x + gridX, visibleTileBounds.y + gridY);
-			if (network == null)
-			{
-				grid.set(gridX, gridY, paletteIndexNone);
-			}
-			else
-			{
-				if (network->cachedProduction == 0)
-				{
-					grid.set(gridX, gridY, paletteIndexBlackout);
-				}
-				else if (network->cachedProduction < network->cachedConsumption)
-				{
-					grid.set(gridX, gridY, paletteIndexBrownout);
-				}
-				else
-				{
-					grid.set(gridX, gridY, paletteIndexPowered);
-				}
-			}
-		}
+		result = paletteIndexNone;
+	}
+	else if (network->cachedProduction == 0)
+	{
+		result = paletteIndexBlackout;
+	}
+	else if (network->cachedProduction < network->cachedConsumption)
+	{
+		result = paletteIndexBrownout;
+	}
+	else
+	{
+		result = paletteIndexPowered;
 	}
 
-	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), grid.w, grid.h, grid.items, (u16)palette->count, palette->items);
-
-	// Highlight power stations
-	drawBuildingHighlights(city, &layer->powerBuildings);
+	return result;
 }
 
 void updateSectorPowerValues(City *city, PowerSector *sector)
