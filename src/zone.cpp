@@ -39,13 +39,7 @@ inline ZoneDef getZoneDef(s32 zoneType)
 
 inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 {
-	ZoneType result = Zone_None;
-	if (tileExists(city, x, y))
-	{
-		result = (ZoneType) city->zoneLayer.tileZone.get(x, y);
-	}
-
-	return result;
+	return (ZoneType) city->zoneLayer.tileZone.getIfExists(x, y, Zone_None);
 }
 
 inline s32 calculateZoneCost(CanZoneQuery *query)

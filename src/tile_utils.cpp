@@ -49,11 +49,12 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2 effectCentre, Effect
 	}
 }
 
-// @Copypasta updateDistances() below that takes DirtyRects
-void updateDistances(City *city, u8 *tileDistance, Rect2I dirtyRect, u8 maxDistance)
+// The simplest possible algorithm is, just spread the 0s out that we marked above.
+// (If a tile is not 0, set it to the min() of its 8 neighbours, plus 1.)
+// We have to iterate through the area `maxDistance` times, but it should be fast enough probably.
+void updateDistances(Array2<u8> *tileDistance, Rect2I dirtyRect, u8 maxDistance)
 {
 	DEBUG_FUNCTION();
-	ASSERT(contains(city->bounds, dirtyRect));
 	
 	for (s32 iteration = 0; iteration < maxDistance; iteration++)
 	{
@@ -61,34 +62,32 @@ void updateDistances(City *city, u8 *tileDistance, Rect2I dirtyRect, u8 maxDista
 		{
 			for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
 			{
-				if (getTileValue(city, tileDistance, x, y) != 0)
+				if (tileDistance->get(x, y) != 0)
 				{
 					u8 minDistance = min(
-						getTileValueIfExists<u8>(city, tileDistance, x-1, y-1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x  , y-1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x+1, y-1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x-1, y  , 255),
-					//	getTileValueIfExists<u8>(city, tileDistance, x  , y  , 255),
-						getTileValueIfExists<u8>(city, tileDistance, x+1, y  , 255),
-						getTileValueIfExists<u8>(city, tileDistance, x-1, y+1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x  , y+1, 255),
-						getTileValueIfExists<u8>(city, tileDistance, x+1, y+1, 255)
+						tileDistance->getIfExists(x-1, y-1, 255),
+						tileDistance->getIfExists(x  , y-1, 255),
+						tileDistance->getIfExists(x+1, y-1, 255),
+						tileDistance->getIfExists(x-1, y  , 255),
+					//	tileDistance->getIfExists(x  , y  , 255),
+						tileDistance->getIfExists(x+1, y  , 255),
+						tileDistance->getIfExists(x-1, y+1, 255),
+						tileDistance->getIfExists(x  , y+1, 255),
+						tileDistance->getIfExists(x+1, y+1, 255)
 					);
 
 					if (minDistance != 255)  minDistance++;
 					if (minDistance > maxDistance)  minDistance = 255;
 
-					setTile<u8>(city, tileDistance, x, y, minDistance);
+					tileDistance->set(x, y, minDistance);
 				}
 			}
 		}
 	}
 }
 
-// The simplest possible algorithm is, just spread the 0s out that we marked above.
-// (If a tile is not 0, set it to the min() of its 8 neighbours, plus 1.)
-// We have to iterate through the area `maxDistance` times, but it should be fast enough probably.
-void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 maxDistance)
+// @CopyPasta the other updateDistances().
+void updateDistances(Array2<u8> *tileDistance, DirtyRects *dirtyRects, u8 maxDistance)
 {
 	DEBUG_FUNCTION();
 	
@@ -104,43 +103,29 @@ void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 ma
 			{
 				for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
 				{
-					if (getTileValue(city, tileDistance, x, y) != 0)
+					if (tileDistance->get(x, y) != 0)
 					{
 						u8 minDistance = min(
-							getTileValueIfExists<u8>(city, tileDistance, x-1, y-1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x  , y-1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x+1, y-1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x-1, y  , 255),
-						//	getTileValueIfExists<u8>(city, tileDistance, x  , y  , 255),
-							getTileValueIfExists<u8>(city, tileDistance, x+1, y  , 255),
-							getTileValueIfExists<u8>(city, tileDistance, x-1, y+1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x  , y+1, 255),
-							getTileValueIfExists<u8>(city, tileDistance, x+1, y+1, 255)
+							tileDistance->getIfExists(x-1, y-1, 255),
+							tileDistance->getIfExists(x  , y-1, 255),
+							tileDistance->getIfExists(x+1, y-1, 255),
+							tileDistance->getIfExists(x-1, y  , 255),
+						//	tileDistance->getIfExists(x  , y  , 255),
+							tileDistance->getIfExists(x+1, y  , 255),
+							tileDistance->getIfExists(x-1, y+1, 255),
+							tileDistance->getIfExists(x  , y+1, 255),
+							tileDistance->getIfExists(x+1, y+1, 255)
 						);
 
 						if (minDistance != 255)  minDistance++;
 						if (minDistance > maxDistance)  minDistance = 255;
 
-						setTile<u8>(city, tileDistance, x, y, minDistance);
+						tileDistance->set(x, y, minDistance);
 					}
 				}
 			}
 		}
 	}
-}
-
-// NB: We might want to do something to take advantage of the Array2's w/h, but for now we'll
-// just pass things over to the raw-pointer version.
-void updateDistances(City *city, Array2<u8> *tileDistance, Rect2I dirtyRect, u8 maxDistance)
-{
-	updateDistances(city, tileDistance->items, dirtyRect, maxDistance);
-}
-
-// NB: We might want to do something to take advantage of the Array2's w/h, but for now we'll
-// just pass things over to the raw-pointer version.
-void updateDistances(City *city, Array2<u8> *tileDistance, DirtyRects *dirtyRects, u8 maxDistance)
-{
-	updateDistances(city, tileDistance->items, dirtyRects, maxDistance);
 }
 
 template<typename Filter>

@@ -10,14 +10,9 @@ void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena)
 
 inline TerrainDef *getTerrainAt(City *city, s32 x, s32 y)
 {
-	u8 terrainType = 0;
-	if (tileExists(city, x, y))
-	{
-		terrainType = city->terrainLayer.tileTerrainType.get(x, y);
-	}
+	u8 terrainType = city->terrainLayer.tileTerrainType.getIfExists(x, y, 0);
 
-	TerrainDef *result = getTerrainDef(terrainType);
-	return result;
+	return getTerrainDef(terrainType);
 }
 
 inline u8 getTerrainHeightAt(City *city, s32 x, s32 y)
@@ -370,7 +365,7 @@ void generateTerrain(City *city, Random *gameRandom)
 
 	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
 
-	updateDistances(city, &layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
+	updateDistances(&layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
 }
 
 void saveTerrainTypes()

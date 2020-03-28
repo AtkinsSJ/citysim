@@ -129,28 +129,9 @@ inline bool tileExists(City *city, s32 x, s32 y)
 }
 
 template<typename T>
-inline T *getTile(City *city, T *tiles, s32 x, s32 y)
-{
-	return tiles + ((y * city->bounds.w) + x);
-}
-
-template<typename T>
 inline T getTileValue(City *city, T *tiles, s32 x, s32 y)
 {
 	return tiles[((y * city->bounds.w) + x)];
-}
-
-template<typename T>
-inline T getTileValueIfExists(City *city, T *tiles, s32 x, s32 y, T defaultValue)
-{
-	if (tileExists(city, x, y))
-	{
-		return getTileValue(city, tiles, x, y);
-	}
-	else
-	{
-		return defaultValue;
-	}
 }
 
 template<typename T>

@@ -344,6 +344,19 @@ inline T& Array2<T>::get(s32 x, s32 y)
 }
 
 template<typename T>
+inline T Array2<T>::getIfExists(s32 x, s32 y, T defaultValue)
+{
+	T result = defaultValue;
+
+	if (x >= 0 && x < this->w && y >= 0 && y < this->h)
+	{
+		result = this->items[ (y * this->w) + x ];
+	}
+
+	return result;
+}
+
+template<typename T>
 inline void Array2<T>::set(s32 x, s32 y, T value)
 {
 	this->get(x, y) = value;

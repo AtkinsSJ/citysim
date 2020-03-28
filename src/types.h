@@ -285,6 +285,7 @@ struct Array2
 	T *items;
 
 	T &get(s32 x, s32 y);
+	T getIfExists(s32 x, s32 y, T defaultValue);
 
 	void set(s32 x, s32 y, T value);
 };

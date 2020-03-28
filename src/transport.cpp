@@ -71,7 +71,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		// Transport distance recalculation
 		for (s32 type = 0; type < TransportTypeCount; type++)
 		{
-			updateDistances(city, &layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
+			updateDistances(&layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
 		}
 
 		clearDirtyRects(&layer->dirtyRects);

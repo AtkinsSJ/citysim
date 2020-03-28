@@ -658,7 +658,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		}
 
 		// Recalculate distance
-		updateDistances(city, &layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
+		updateDistances(&layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
 
 		// Rebuild the sectors that were modified
 		for (auto it = iterate(&touchedSectors); hasNext(&it); next(&it))
