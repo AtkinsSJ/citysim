@@ -128,18 +128,6 @@ inline bool tileExists(City *city, s32 x, s32 y)
 		&& (y >= 0) && (y < city->bounds.h);
 }
 
-template<typename T>
-inline T getTileValue(City *city, T *tiles, s32 x, s32 y)
-{
-	return tiles[((y * city->bounds.w) + x)];
-}
-
-template<typename T>
-inline void setTile(City *city, T *tiles, s32 x, s32 y, T value)
-{
-	tiles[(y * city->bounds.w) + x] = value;
-}
-
 inline bool canAfford(City *city, s32 cost)
 {
 	return city->funds >= cost;

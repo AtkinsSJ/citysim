@@ -13,9 +13,8 @@ enum EffectType
 	Effect_Add,
 	Effect_Max,
 };
-// TODO: applyEffect() version for Array2<T> instead of just T*
 template<typename T>
-void applyEffect(City *city, EffectRadius *effectRadius, V2 effectCentre, EffectType type, T *tileValues, Rect2I region, f32 scale=1.0f);
+void applyEffect(EffectRadius *effectRadius, V2 effectCentre, EffectType type, Array2<T> *tileValues, Rect2I region, f32 scale=1.0f);
 
 // NB: This is a REALLY slow function! It's great for throwing in as a temporary solution, but
 // if you want to use it a lot, then a per-tile distance array that's modified with updateDistances()

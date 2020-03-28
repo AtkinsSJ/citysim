@@ -50,10 +50,6 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
 void markAreaDirty(City *city, Rect2I bounds);
 
 bool tileExists(City *city, s32 x, s32 y);
-template<typename T>
-inline T getTileValue(City *city, T *tiles, s32 x, s32 y);
-template<typename T>
-void setTile(City *city, T *tiles, s32 x, s32 y, T value);
 
 bool canAfford(City *city, s32 cost);
 void spend(City *city, s32 cost);

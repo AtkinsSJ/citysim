@@ -39,7 +39,7 @@ void updatePollutionLayer(City *city, PollutionLayer *layer)
 					BuildingDef *def = getBuildingDef(building);
 					if (hasEffect(&def->pollutionEffect))
 					{
-						applyEffect(city, &def->pollutionEffect, centreOf(building->footprint), Effect_Add, layer->tileBuildingContributions.items, dirtyRect);
+						applyEffect(&def->pollutionEffect, centreOf(building->footprint), Effect_Add, &layer->tileBuildingContributions, dirtyRect);
 					}
 				}
 

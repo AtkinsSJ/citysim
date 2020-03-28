@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename T>
-void applyEffect(City *city, EffectRadius *effectRadius, V2 effectCentre, EffectType type, T *tileValues, Rect2I region, f32 scale)
+void applyEffect(EffectRadius *effectRadius, V2 effectCentre, EffectType type, Array2<T> *tileValues, Rect2I region, f32 scale)
 {
 	DEBUG_FUNCTION();
 	
@@ -29,17 +29,17 @@ void applyEffect(City *city, EffectRadius *effectRadius, V2 effectCentre, Effect
 				switch (type)
 				{
 					case Effect_Add: {
-						T originalValue = getTileValue(city, tileValues, x, y);
+						T originalValue = tileValues->get(x, y);
 
 						// This clamp is probably unnecessary but just in case.
 						T newValue = clamp<T>(originalValue + contribution, minPossibleValue<T>(), maxPossibleValue<T>());
-						setTile(city, tileValues, x, y, newValue);
+						tileValues->set(x, y, newValue);
 					} break;
 
 					case Effect_Max: {
-						T originalValue = getTileValue(city, tileValues, x, y);
+						T originalValue = tileValues->get(x, y);
 						T newValue = max(originalValue, contribution);
-						setTile(city, tileValues, x, y, newValue);
+						tileValues->set(x, y, newValue);
 					} break;
 
 					INVALID_DEFAULT_CASE;
