@@ -976,7 +976,7 @@ void initDataViewUI(GameState *gameState)
 	setGradient(&dataViewUI[DataView_Crime], "service_coverage"_s);
 	setFixedColors(&dataViewUI[DataView_Crime], "service_buildings"_s, {"data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s});
 	setHighlightedBuildings(&dataViewUI[DataView_Crime], &city->crimeLayer.policeBuildings, &BuildingDef::policeEffect);
-	setTileOverlay(&dataViewUI[DataView_Crime], &city->crimeLayer.tilePoliceCoverage, "service_coverage"_s);
+	setTileOverlay(&dataViewUI[DataView_Crime], &city->crimeLayer.tilePoliceCoverage.items, "service_coverage"_s);
 
 	dataViewUI[DataView_Fire].title = "data_view_fire"_s;
 	setGradient(&dataViewUI[DataView_Fire], "risk"_s);

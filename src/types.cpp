@@ -349,6 +349,24 @@ inline void Array2<T>::set(s32 x, s32 y, T value)
 	this->get(x, y) = value;
 }
 
+template<typename T>
+void fill(Array2<T> *array, T value)
+{
+	fillMemory<T>(array->items, value, array->w * array->h);
+}
+
+template<typename T>
+void fillRegion(Array2<T> *array, Rect2I region, T value)
+{
+	ASSERT(contains(irectXYWH(0,0,array->w, array->h), region));
+
+	for (s32 y = region.y; y < region.y + region.h; y++)
+	{
+		// Set whole rows at a time
+		fillMemory<T>(array->items + (y * array->w) + region.x, value, region.w);
+	}
+}
+
 /**********************************************
 	V2
  **********************************************/

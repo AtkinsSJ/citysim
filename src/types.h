@@ -292,6 +292,12 @@ struct Array2
 template<typename T>
 Array2<T> makeArray2(s32 w, s32 h, T *items);
 
+template<typename T>
+void fill(Array2<T> *array, T value);
+
+template<typename T>
+void fillRegion(Array2<T> *array, Rect2I region, T value);
+
 //
 // V2
 //

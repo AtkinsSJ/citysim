@@ -6,10 +6,8 @@ void initCrimeLayer(CrimeLayer *layer, City *city, MemoryArena *gameArena)
 
 	initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
-	s32 cityArea = areaOf(city->bounds);
-
-	layer->tilePoliceCoverage = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tilePoliceCoverage, 0, cityArea);
+	layer->tilePoliceCoverage = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tilePoliceCoverage, 0);
 
 	layer->totalJailCapacity = 0;
 	layer->occupiedJailCapacity = 0;
@@ -53,7 +51,7 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 
 			{
 				DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DCDT_Simulation);
-				setRegion<u8>(layer->tilePoliceCoverage, city->bounds.w, city->bounds.h, sector->bounds, 0);
+				fillRegion<u8>(&layer->tilePoliceCoverage, sector->bounds, 0);
 				for (auto it = iterate(&layer->policeBuildings); hasNext(&it); next(&it))
 				{
 					Building *building = getBuilding(city, getValue(&it));
@@ -73,7 +71,7 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 								// TODO: Consider water access too
 							}
 
-							applyEffect(city, &def->policeEffect, centreOf(building->footprint), Effect_Add, layer->tilePoliceCoverage, sector->bounds, effectiveness);
+							applyEffect(city, &def->policeEffect, centreOf(building->footprint), Effect_Add, layer->tilePoliceCoverage.items, sector->bounds, effectiveness);
 						}
 					}
 				}
@@ -95,5 +93,5 @@ void unregisterPoliceBuilding(CrimeLayer *layer, Building *building)
 
 f32 getPoliceCoveragePercentAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->crimeLayer.tilePoliceCoverage, x, y) / 255.0f;
+	return city->crimeLayer.tilePoliceCoverage.get(x, y) / 255.0f;
 }

@@ -13,6 +13,7 @@ enum EffectType
 	Effect_Add,
 	Effect_Max,
 };
+// TODO: applyEffect() version for Array2<T> instead of just T*
 template<typename T>
 void applyEffect(City *city, EffectRadius *effectRadius, V2 effectCentre, EffectType type, T *tileValues, Rect2I region, f32 scale=1.0f);
 

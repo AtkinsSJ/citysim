@@ -6,7 +6,7 @@ struct CrimeLayer
 	
 	SectorGrid<BasicSector> sectors;
 
-	u8 *tilePoliceCoverage;
+	Array2<u8> tilePoliceCoverage;
 
 	ChunkedArray<BuildingRef> policeBuildings;
 	s32 totalJailCapacity;
