@@ -18,6 +18,8 @@ Notes for searching:
 
 Placeholder font that's hard-coded. Tricky!
 
+Police coverage is briefly too high in some places after placing a police station, not sure why.
+
 Saving and loading!
 - On load, we make sure the simulation is "warmed up" before actually letting the player start. So, probably mark the whole city as dirty for every layer, and then let them all process completely.
 	- Another option would be to save all of the "cached" data in the save file, so loading can just continue where you left off without having to warm up first. But that mean saving more data, and it opens us up for problems with the simulation changing over time and the data it needs being missed from older saves. So, recalculating things fresh is safer, even though it could mean the simulation state is slightly different after a save-load loop, because while playing the simulator is always using slightly old data because things update gradually. That should be a really minor issue though.
