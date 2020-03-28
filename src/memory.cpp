@@ -61,13 +61,35 @@ inline T *allocateStruct(MemoryArena *arena)
 template<typename T>
 inline T *allocateMultiple(MemoryArena *arena, smm count)
 {
-	return (T*) allocate(arena, sizeof(T) * count);
+	// Negative allocations are obviously incorrect, so we assert them.
+	// However, count=0 sometimes is used, eg when interning an empty string that's used
+	// as a hashtable key. To avoid needlessly complicating user code, we just return null
+	// here when you try to allocate 0 things. The end result is the same - you're not going
+	// to use the memory if you've got 0 things allocated anyway!
+	// - Sam, 28/03/2020
+	ASSERT(count >= 0);
+	T *result = null;
+
+	if (count > 0)
+	{
+		result = (T*) allocate(arena, sizeof(T) * count);
+	}
+
+	return result;
 }
 
 template<typename T>
 inline Array<T> allocateArray(MemoryArena *arena, s32 count)
 {
+	ASSERT(count > 0);
 	return makeArray<T>(count, allocateMultiple<T>(arena, count));
+}
+
+template<typename T>
+inline Array2<T> allocateArray2(MemoryArena *arena, s32 w, s32 h)
+{
+	ASSERT(w > 0 && h > 0);
+	return makeArray2<T>(w, h, allocateMultiple<T>(arena, w*h));
 }
 
 u8 *allocateRaw(smm size)

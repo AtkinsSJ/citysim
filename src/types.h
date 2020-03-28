@@ -266,6 +266,21 @@ void swap(Array<T> *array, s32 indexA, s32 indexB);
 template<typename T, typename Comparison>
 void sortArray(Array<T> *array, Comparison compareElements);
 
+template<typename T>
+struct Array2
+{
+	s32 w;
+	s32 h;
+	T *items;
+
+	T &get(s32 x, s32 y);
+
+	void set(s32 x, s32 y, T value);
+};
+
+template<typename T>
+Array2<T> makeArray2(s32 w, s32 h, T *items);
+
 //
 // V2
 //

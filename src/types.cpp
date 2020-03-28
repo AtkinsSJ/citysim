@@ -230,6 +230,10 @@ inline s32 manhattanDistance(Rect2I a, Rect2I b)
 	return result;
 }
 
+/**********************************************
+	Array
+ **********************************************/
+
 template<typename T>
 Array<T> makeArray(s32 count, T *items)
 {
@@ -306,6 +310,36 @@ template<typename T, typename Comparison>
 inline void sortArray(Array<T> *array, Comparison compareElements)
 {
 	sortArrayInternal(array, compareElements, 0, array->count-1);
+}
+
+/**********************************************
+	Array2
+ **********************************************/
+
+template<typename T>
+Array2<T> makeArray2(s32 w, s32 h, T *items)
+{
+	Array2<T> result = {};
+
+	result.w = w;
+	result.h = h;
+	result.items = items;
+
+	return result;
+}
+
+template<typename T>
+inline T& Array2<T>::get(s32 x, s32 y)
+{
+	ASSERT(x >= 0 && x < this->w && y >= 0 && y < this->h);
+
+	return this->items[ (y * this->w) + x ];
+}
+
+template<typename T>
+inline void Array2<T>::set(s32 x, s32 y, T value)
+{
+	this->get(x, y) = value;
 }
 
 /**********************************************

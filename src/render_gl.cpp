@@ -497,8 +497,13 @@ void GL_render(RenderBufferChunk *firstChunk)
 
 				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+				// Having a transparent border color which we clamp outside indices to, means that any parts of the
+				// texture that specify a palette color that doesn't exist, will be fully transparent.
+				// This is a bit of a hack... but it's a useful one!
+				f32 borderColor[4] = {0,0,0,0};
+				glTexParameterfv(GL_TEXTURE_1D, GL_TEXTURE_BORDER_COLOR, borderColor);
+				glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 
 				V4 *paletteData = readRenderData<V4>(renderBufferChunk, &pos, header->paletteSize);
 

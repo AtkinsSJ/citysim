@@ -77,47 +77,45 @@ void drawPowerDataView(City *city, Rect2I visibleTileBounds)
 
 	PowerLayer *layer = &city->powerLayer;
 
-	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-
-	// TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
-	// actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
-	DrawRectsGroup *group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleTileBounds));
-
 	Array<V4> *palette = getPalette("power"_s);
-	s32 paletteIndexPowered  = 0;
-	s32 paletteIndexBrownout = 1;
-	s32 paletteIndexBlackout = 2;
+	u8 paletteIndexPowered  = 0;
+	u8 paletteIndexBrownout = 1;
+	u8 paletteIndexBlackout = 2;
+	u8 paletteIndexNone     = 255;
 
-	for (s32 y = visibleTileBounds.y;
-		y < visibleTileBounds.y + visibleTileBounds.h;
-		y++)
+	Array2<u8> grid = allocateArray2<u8>(tempArena, visibleTileBounds.w, visibleTileBounds.h);
+	for (s32 gridY = 0;
+		gridY < grid.h;
+		gridY++)
 	{
-		spriteBounds.y = (f32) y;
-		for (s32 x = visibleTileBounds.x;
-			x < visibleTileBounds.x + visibleTileBounds.w;
-			x++)
+		for (s32 gridX = 0;
+			gridX < grid.w;
+			gridX++)
 		{
-			PowerNetwork *network = getPowerNetworkAt(city, x, y);
-			if (network != null)
+			PowerNetwork *network = getPowerNetworkAt(city, visibleTileBounds.x + gridX, visibleTileBounds.y + gridY);
+			if (network == null)
 			{
-				spriteBounds.x = (f32) x;
-
+				grid.set(gridX, gridY, paletteIndexNone);
+			}
+			else
+			{
 				if (network->cachedProduction == 0)
 				{
-					addUntexturedRect(group, spriteBounds, (*palette)[paletteIndexBlackout]);
+					grid.set(gridX, gridY, paletteIndexBlackout);
 				}
 				else if (network->cachedProduction < network->cachedConsumption)
 				{
-					addUntexturedRect(group, spriteBounds, (*palette)[paletteIndexBrownout]);
+					grid.set(gridX, gridY, paletteIndexBrownout);
 				}
 				else
 				{
-					addUntexturedRect(group, spriteBounds, (*palette)[paletteIndexPowered]);
+					grid.set(gridX, gridY, paletteIndexPowered);
 				}
 			}
 		}
 	}
-	endRectsGroup(group);
+
+	drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), grid.w, grid.h, grid.items, (u16)palette->count, palette->items);
 
 	// Highlight power stations
 	drawBuildingHighlights(city, &layer->powerBuildings);

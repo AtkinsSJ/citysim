@@ -107,6 +107,9 @@ template<typename T>
 Array<T> allocateArray(MemoryArena *arena, s32 count);
 
 template<typename T>
+Array2<T> allocateArray2(MemoryArena *arena, s32 w, s32 h);
+
+template<typename T>
 void copyMemory(const T *source, T *dest, smm length);
 
 template<typename T>
