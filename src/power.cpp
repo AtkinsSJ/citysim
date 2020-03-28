@@ -6,9 +6,8 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
 	initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
 
-	s32 cityArea = areaOf(city->bounds);
-	layer->tilePowerDistance = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tilePowerDistance, 255, cityArea);
+	layer->tilePowerDistance = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tilePowerDistance, 255);
 	layer->powerMaxDistance = 2;
 	initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
 
@@ -17,7 +16,7 @@ void initPowerLayer(PowerLayer *layer, City *city, MemoryArena *gameArena)
 	{
 		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 
-		sector->tilePowerGroup = allocateMultiple<u8>(gameArena, areaOf(sector->bounds));
+		sector->tilePowerGroup = allocateArray2<u8>(gameArena, sector->bounds.w, sector->bounds.h);
 
 		initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
 	}
@@ -42,12 +41,12 @@ void freePowerNetwork(PowerNetwork *network)
 
 inline u8 getPowerGroupID(PowerSector *sector, s32 relX, s32 relY)
 {
-	return *getSectorTile(sector, sector->tilePowerGroup, relX, relY);
+	return sector->tilePowerGroup.get(relX, relY);
 }
 
 inline void setPowerGroupID(PowerSector *sector, s32 relX, s32 relY, u8 value)
 {
-	setSectorTile(sector, sector->tilePowerGroup, relX, relY, value);
+	sector->tilePowerGroup.set(relX, relY, value);
 }
 
 PowerGroup *getPowerGroupAt(PowerSector *sector, s32 relX, s32 relY)
@@ -68,7 +67,7 @@ PowerGroup *getPowerGroupAt(PowerSector *sector, s32 relX, s32 relY)
 
 u8 getDistanceToPower(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->powerLayer.tilePowerDistance, x, y);
+	return city->powerLayer.tilePowerDistance.get(x, y);
 }
 
 u8 calculatePowerOverlayForTile(City *city, s32 x, s32 y)
@@ -282,7 +281,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 		clear(&powerGroup->sectorBoundaries);
 	}
 	clear(&sector->powerGroups);
-	fillMemory<u8>(sector->tilePowerGroup, 0, sizeof(sector->tilePowerGroup[0]) * areaOf(sector->bounds));
+	fill<u8>(&sector->tilePowerGroup, 0);
 
 	// Step 1: Set all power-carrying tiles to POWER_GROUP_UNKNOWN (everything was set to 0 in the above memset())
 	for (s32 relY = 0;
@@ -293,7 +292,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 			relX < sector->bounds.w;
 			relX++)
 		{
-			u8 distanceToPower = getTileValue(city, layer->tilePowerDistance, relX + sector->bounds.x, relY + sector->bounds.y);
+			u8 distanceToPower = layer->tilePowerDistance.get(relX + sector->bounds.x, relY + sector->bounds.y);
 
 			if (distanceToPower <= 1)
 			{
@@ -634,15 +633,15 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 					if (def != null && def->flags & Building_CarriesPower)
 					{
-						setTile<u8>(city, layer->tilePowerDistance, x, y, 0);
+						layer->tilePowerDistance.set(x, y, 0);
 					}
 					else if (getZoneDef(getZoneAt(city, x, y)).carriesPower)
 					{
-						setTile<u8>(city, layer->tilePowerDistance, x, y, 0);
+						layer->tilePowerDistance.set(x, y, 0);
 					}
 					else
 					{
-						setTile<u8>(city, layer->tilePowerDistance, x, y, 255);
+						layer->tilePowerDistance.set(x, y, 255);
 					}
 				}
 			}
@@ -659,7 +658,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		}
 
 		// Recalculate distance
-		updateDistances(city, layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
+		updateDistances(city, &layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
 
 		// Rebuild the sectors that were modified
 		for (auto it = iterate(&touchedSectors); hasNext(&it); next(&it))

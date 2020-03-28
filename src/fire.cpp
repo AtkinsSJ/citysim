@@ -2,20 +2,18 @@
 
 void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena)
 {
-	s32 cityArea = areaOf(city->bounds);
-
 	layer->fundingLevel = 1.0f;
 
 	layer->maxFireRadius = 4;
-	layer->tileFireProximityEffect = allocateMultiple<u16>(gameArena, cityArea);
-	fillMemory<u16>(layer->tileFireProximityEffect, 0, cityArea);
+	layer->tileFireProximityEffect = allocateArray2<u16>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u16>(&layer->tileFireProximityEffect, 0);
 
-	layer->tileTotalFireRisk = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileTotalFireRisk, 0, cityArea);
-	layer->tileFireProtection = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileFireProtection, 0, cityArea);
-	layer->tileOverallFireRisk = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileOverallFireRisk, 0, cityArea);
+	layer->tileTotalFireRisk = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tileTotalFireRisk, 0);
+	layer->tileFireProtection = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tileFireProtection, 0);
+	layer->tileOverallFireRisk = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tileOverallFireRisk, 0);
 
 	initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
 
@@ -51,7 +49,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 			next(&rectIt))
 		{
 			Rect2I dirtyRect = getValue(&rectIt);
-			setRegion<u16>(layer->tileFireProximityEffect, city->bounds.w, city->bounds.h, dirtyRect, 0);
+			fillRegion<u16>(&layer->tileFireProximityEffect, dirtyRect, 0);
 
 			Rect2I expandedRect = expand(dirtyRect, layer->maxFireRadius);
 			Rect2I affectedSectors = getSectorsCovered(&layer->sectors, expandedRect);
@@ -73,7 +71,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 							fireEffect.outerValue = 20;
 							fireEffect.radius = layer->maxFireRadius;
 
-							applyEffect<u16>(city, &fireEffect, v2(fire->pos), Effect_Add, layer->tileFireProximityEffect, dirtyRect);
+							applyEffect<u16>(city, &fireEffect, v2(fire->pos), Effect_Add, layer->tileFireProximityEffect.items, dirtyRect);
 						}
 					}
 				}
@@ -93,7 +91,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 			{
 				DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
 				// Building fire protection
-				setRegion<u8>(layer->tileFireProtection, city->bounds.w, city->bounds.h, sector->bounds, 0);
+				fillRegion<u8>(&layer->tileFireProtection, sector->bounds, 0);
 				for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
 				{
 					Building *building = getBuilding(city, getValue(&it));
@@ -108,7 +106,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 							effectiveness *= 0.4f; // @Balance
 						}
 
-						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection, sector->bounds, effectiveness);
+						applyEffect(city, &def->fireProtection, centreOf(building->footprint), Effect_Max, layer->tileFireProtection.items, sector->bounds, effectiveness);
 					}
 				}
 			}
@@ -130,20 +128,20 @@ void updateFireLayer(City *city, FireLayer *layer)
 					// TODO: Balance this! Currently it's a multiplier on the base building risk,
 					// because if we just ADD a value, then we get fire risk on empty tiles.
 					// But, the balance is definitely off.
-					u16 fireProximityEffect = getTileValue(city, layer->tileFireProximityEffect, x, y);
+					u16 fireProximityEffect = layer->tileFireProximityEffect.get(x, y);
 					if (fireProximityEffect > 0)
 					{
 						tileFireRisk += (tileFireRisk * 4.0f * clamp01(fireProximityEffect / 255.0f));
 					}
 
 					u8 totalRisk = clamp01AndMap_u8(tileFireRisk);
-					setTile(city, layer->tileTotalFireRisk, x, y, totalRisk);
+					layer->tileTotalFireRisk.set(x, y, totalRisk);
 
 					// TODO: Balance this! It feels over-powered, even at 50%.
 					// Possibly fire stations shouldn't affect risk from active fires?
-					f32 protectionPercent = getTileValue(city, layer->tileFireProtection, x, y) * 0.01f;
+					f32 protectionPercent = layer->tileFireProtection.get(x, y) * 0.01f;
 					u8 result = lerp<u8>(totalRisk, 0, protectionPercent * 0.5f);
-					setTile(city, layer->tileOverallFireRisk, x, y, result);
+					layer->tileOverallFireRisk.set(x, y, result);
 				}
 			}
 		}
@@ -314,12 +312,12 @@ void unregisterFireProtectionBuilding(FireLayer *layer, Building *building)
 
 u8 getFireRiskAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->fireLayer.tileTotalFireRisk, x, y);
+	return city->fireLayer.tileTotalFireRisk.get(x, y);
 }
 
 f32 getFireProtectionPercentAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->fireLayer.tileFireProtection, x, y) * 0.01f;
+	return city->fireLayer.tileFireProtection.get(x, y) * 0.01f;
 }
 
 void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
@@ -339,7 +337,7 @@ void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 	window_label(context, myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {
 		formatInt(getFireRiskAt(city, x, y)),
 		formatFloat(buildingFireRisk, 1),
-		formatInt(getTileValue(city, layer->tileFireProximityEffect, x, y)),
+		formatInt(layer->tileFireProximityEffect.get(x, y)),
 	}));
 
 	window_label(context, myprintf("Fire protection: {0}%"_s, {
@@ -347,6 +345,6 @@ void debugInspectFire(WindowContext *context, City *city, s32 x, s32 y)
 	}));
 
 	window_label(context, myprintf("Resulting chance of fire: {0}%"_s, {
-		formatFloat(getTileValue(city, layer->tileOverallFireRisk, x, y) / 2.55f, 1)
+		formatFloat(layer->tileOverallFireRisk.get(x, y) / 2.55f, 1)
 	}));
 }

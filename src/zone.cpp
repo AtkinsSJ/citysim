@@ -2,8 +2,7 @@
 
 void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 {
-	s32 cityArea = areaOf(city->bounds);
-	zoneLayer->tileZone = allocateMultiple<u8>(gameArena, cityArea);
+	zoneLayer->tileZone = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
 
 	initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
@@ -14,7 +13,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 		initBitArray(&zoneLayer->sectorsWithZones[zoneType],      gameArena, sectorCount);
 		initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
 
-		zoneLayer->tileDesirability[zoneType] = allocateMultiple<u8>(gameArena, cityArea);
+		zoneLayer->tileDesirability[zoneType] = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
 
 		zoneLayer->mostDesirableSectors[zoneType] = allocateArray<s32>(gameArena, sectorCount);
 		for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
@@ -43,7 +42,7 @@ inline ZoneType getZoneAt(City *city, s32 x, s32 y)
 	ZoneType result = Zone_None;
 	if (tileExists(city, x, y))
 	{
-		result = (ZoneType) getTileValue(city, city->zoneLayer.tileZone, x, y);
+		result = (ZoneType) city->zoneLayer.tileZone.get(x, y);
 	}
 
 	return result;
@@ -183,13 +182,13 @@ void placeZone(City *city, ZoneType zoneType, Rect2I area)
 			x++)
 		{
 			// Ignore tiles that are already this zone!
-			if ((getTileValue(city, zoneLayer->tileZone, x, y) != zoneType)
+			if ((zoneLayer->tileZone.get(x, y) != zoneType)
 			// Terrain must be buildable
 			// @Speed: URGH this terrain lookup for every tile is nasty!
 			&& (getTerrainAt(city, x, y)->canBuildOn)
 			&& (!buildingExistsAt(city, x, y)))
 			{
-				setTile(city, zoneLayer->tileZone, x, y, (u8) zoneType);
+				zoneLayer->tileZone.set(x, y, (u8) zoneType);
 			}
 		}
 	}
@@ -315,7 +314,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 						// pollution = bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.4f;
 
-						setTile(city, layer->tileDesirability[Zone_Residential], x, y, clamp01AndMap_u8(desirability));
+						layer->tileDesirability[Zone_Residential].set(x, y, clamp01AndMap_u8(desirability));
 
 						totalResDesirability += desirability;
 					}
@@ -334,7 +333,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 						// pollution = bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.2f;
 
-						setTile(city, layer->tileDesirability[Zone_Commercial], x, y, clamp01AndMap_u8(desirability));
+						layer->tileDesirability[Zone_Commercial].set(x, y, clamp01AndMap_u8(desirability));
 
 						totalComDesirability += desirability;
 					}
@@ -353,7 +352,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 						// pollution = slightly bad
 						desirability -= getPollutionPercentAt(city, x, y) * 0.15f;
 
-						setTile(city, layer->tileDesirability[Zone_Industrial], x, y, clamp01AndMap_u8(desirability));
+						layer->tileDesirability[Zone_Industrial].set(x, y, clamp01AndMap_u8(desirability));
 
 						totalIndDesirability += desirability;
 					}

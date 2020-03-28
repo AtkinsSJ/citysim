@@ -342,7 +342,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
 	if (building != null)
 	{
-		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, tilePos.x, tilePos.y);
+		s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
 		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex)}));
 		window_label(context, myprintf("Variant: {0}"_s, {formatInt(building->variantIndex)}));
@@ -962,15 +962,15 @@ void initDataViewUI(GameState *gameState)
 
 	dataViewUI[DataView_Desirability_Residential].title = "data_view_desirability_residential"_s;
 	setGradient(&dataViewUI[DataView_Desirability_Residential], "desirability"_s);
-	setTileOverlay(&dataViewUI[DataView_Desirability_Residential], &city->zoneLayer.tileDesirability[Zone_Residential], "desirability"_s);
+	setTileOverlay(&dataViewUI[DataView_Desirability_Residential], &city->zoneLayer.tileDesirability[Zone_Residential].items, "desirability"_s);
 
 	dataViewUI[DataView_Desirability_Commercial].title = "data_view_desirability_commercial"_s;
 	setGradient(&dataViewUI[DataView_Desirability_Commercial], "desirability"_s);
-	setTileOverlay(&dataViewUI[DataView_Desirability_Commercial], &city->zoneLayer.tileDesirability[Zone_Commercial], "desirability"_s);
+	setTileOverlay(&dataViewUI[DataView_Desirability_Commercial], &city->zoneLayer.tileDesirability[Zone_Commercial].items, "desirability"_s);
 
 	dataViewUI[DataView_Desirability_Industrial].title = "data_view_desirability_industrial"_s;
 	setGradient(&dataViewUI[DataView_Desirability_Industrial], "desirability"_s);
-	setTileOverlay(&dataViewUI[DataView_Desirability_Industrial], &city->zoneLayer.tileDesirability[Zone_Industrial], "desirability"_s);
+	setTileOverlay(&dataViewUI[DataView_Desirability_Industrial], &city->zoneLayer.tileDesirability[Zone_Industrial].items, "desirability"_s);
 
 	dataViewUI[DataView_Crime].title = "data_view_crime"_s;
 	setGradient(&dataViewUI[DataView_Crime], "service_coverage"_s);
@@ -982,21 +982,21 @@ void initDataViewUI(GameState *gameState)
 	setGradient(&dataViewUI[DataView_Fire], "risk"_s);
 	setFixedColors(&dataViewUI[DataView_Fire], "service_buildings"_s, {"data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s});
 	setHighlightedBuildings(&dataViewUI[DataView_Fire], &city->fireLayer.fireProtectionBuildings, &BuildingDef::fireProtection);
-	setTileOverlay(&dataViewUI[DataView_Fire], &city->fireLayer.tileOverallFireRisk, "risk"_s);
+	setTileOverlay(&dataViewUI[DataView_Fire], &city->fireLayer.tileOverallFireRisk.items, "risk"_s);
 
 	dataViewUI[DataView_Health].title = "data_view_health"_s;
 	setGradient(&dataViewUI[DataView_Health], "service_coverage"_s);
 	setFixedColors(&dataViewUI[DataView_Health], "service_buildings"_s, {"data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s});
 	setHighlightedBuildings(&dataViewUI[DataView_Health], &city->healthLayer.healthBuildings, &BuildingDef::healthEffect);
-	setTileOverlay(&dataViewUI[DataView_Health], &city->healthLayer.tileHealthCoverage, "service_coverage"_s);
+	setTileOverlay(&dataViewUI[DataView_Health], &city->healthLayer.tileHealthCoverage.items, "service_coverage"_s);
 
 	dataViewUI[DataView_LandValue].title = "data_view_landvalue"_s;
 	setGradient(&dataViewUI[DataView_LandValue], "land_value"_s);
-	setTileOverlay(&dataViewUI[DataView_LandValue], &city->landValueLayer.tileLandValue, "land_value"_s);
+	setTileOverlay(&dataViewUI[DataView_LandValue], &city->landValueLayer.tileLandValue.items, "land_value"_s);
 
 	dataViewUI[DataView_Pollution].title = "data_view_pollution"_s;
 	setGradient(&dataViewUI[DataView_Pollution], "pollution"_s);
-	setTileOverlay(&dataViewUI[DataView_Pollution], &city->pollutionLayer.tilePollution, "pollution"_s);
+	setTileOverlay(&dataViewUI[DataView_Pollution], &city->pollutionLayer.tilePollution.items, "pollution"_s);
 
 	dataViewUI[DataView_Power].title = "data_view_power"_s;
 	setFixedColors(&dataViewUI[DataView_Power], "power"_s, {"data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s});

@@ -2,7 +2,7 @@
 
 inline f32 getHealthCoveragePercentAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->healthLayer.tileHealthCoverage, x, y) * 0.01f;
+	return city->healthLayer.tileHealthCoverage.get(x, y) * 0.01f;
 }
 
 void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena)
@@ -11,9 +11,8 @@ void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena)
 
 	initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
-	s32 cityArea = areaOf(city->bounds);
-	layer->tileHealthCoverage = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileHealthCoverage, 0, cityArea);
+	layer->tileHealthCoverage = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tileHealthCoverage, 0);
 
 	initChunkedArray(&layer->healthBuildings, &city->buildingRefsChunkPool);
 
@@ -48,7 +47,7 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 
 			{
 				DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DCDT_Simulation);
-				setRegion<u8>(layer->tileHealthCoverage, city->bounds.w, city->bounds.h, sector->bounds, 0);
+				fillRegion<u8>(&layer->tileHealthCoverage, sector->bounds, 0);
 				for (auto it = iterate(&layer->healthBuildings); hasNext(&it); next(&it))
 				{
 					Building *building = getBuilding(city, getValue(&it));
@@ -69,7 +68,7 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 
 						// TODO: Overcrowding
 
-						applyEffect(city, &def->healthEffect, centreOf(building->footprint), Effect_Max, layer->tileHealthCoverage, sector->bounds, effectiveness);
+						applyEffect(city, &def->healthEffect, centreOf(building->footprint), Effect_Max, layer->tileHealthCoverage.items, sector->bounds, effectiveness);
 					}
 				}
 			}

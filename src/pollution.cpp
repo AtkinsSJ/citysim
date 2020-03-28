@@ -2,13 +2,11 @@
 
 void initPollutionLayer(PollutionLayer *layer, City *city, MemoryArena *gameArena)
 {
-	s32 cityArea = areaOf(city->bounds);
+	layer->tilePollution = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tilePollution, 0);
 
-	layer->tilePollution = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tilePollution, 0, cityArea);
-
-	layer->tileBuildingContributions = allocateMultiple<s16>(gameArena, cityArea);
-	fillMemory<s16>(layer->tileBuildingContributions, 0, cityArea);
+	layer->tileBuildingContributions = allocateArray2<s16>(gameArena, city->bounds.w, city->bounds.h);
+	fill<s16>(&layer->tileBuildingContributions, 0);
 
 	initDirtyRects(&layer->dirtyRects, gameArena, maxPollutionEffectDistance, city->bounds);
 }
@@ -30,7 +28,7 @@ void updatePollutionLayer(City *city, PollutionLayer *layer)
 			{
 				Rect2I dirtyRect = getValue(&rectIt);
 
-				setRegion<s16>(layer->tileBuildingContributions, city->bounds.w, city->bounds.h, dirtyRect, 0);
+				fillRegion<s16>(&layer->tileBuildingContributions, dirtyRect, 0);
 
 				ChunkedArray<Building *> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
 				for (auto buildingIt = iterate(&contributingBuildings);
@@ -41,7 +39,7 @@ void updatePollutionLayer(City *city, PollutionLayer *layer)
 					BuildingDef *def = getBuildingDef(building);
 					if (hasEffect(&def->pollutionEffect))
 					{
-						applyEffect(city, &def->pollutionEffect, centreOf(building->footprint), Effect_Add, layer->tileBuildingContributions, dirtyRect);
+						applyEffect(city, &def->pollutionEffect, centreOf(building->footprint), Effect_Add, layer->tileBuildingContributions.items, dirtyRect);
 					}
 				}
 
@@ -60,9 +58,9 @@ void updatePollutionLayer(City *city, PollutionLayer *layer)
 				{
 					for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
 					{
-						s16 originalValue = getTileValue(city, layer->tileBuildingContributions, x, y);
+						s16 originalValue = layer->tileBuildingContributions.get(x, y);
 						s16 newValue = clamp<s16>(originalValue, -255, 255);
-						setTile(city, layer->tileBuildingContributions, x, y, newValue);
+						layer->tileBuildingContributions.set(x, y, newValue);
 					}
 				}
 			}
@@ -86,11 +84,11 @@ void updatePollutionLayer(City *city, PollutionLayer *layer)
 						// In future we might want to update things over time, but right now it's just
 						// a glorified copy from the tileBuildingContributions array.
 
-						s16 buildingContributions = getTileValue(city, layer->tileBuildingContributions, x, y);
+						s16 buildingContributions = layer->tileBuildingContributions.get(x, y);
 
 						u8 newValue = (u8) clamp<s16>(buildingContributions, 0, 255);
 
-						setTile(city, layer->tilePollution, x, y, newValue);
+						layer->tilePollution.set(x, y, newValue);
 					}
 				}
 			}
@@ -107,10 +105,10 @@ void markPollutionLayerDirty(PollutionLayer *layer, Rect2I bounds)
 
 inline u8 getPollutionAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->pollutionLayer.tilePollution, x, y);
+	return city->pollutionLayer.tilePollution.get(x, y);
 }
 
 inline f32 getPollutionPercentAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->pollutionLayer.tilePollution, x, y) / 255.0f;
+	return city->pollutionLayer.tilePollution.get(x, y) / 255.0f;
 }

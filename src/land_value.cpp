@@ -4,13 +4,11 @@ void initLandValueLayer(LandValueLayer *layer, City *city, MemoryArena *gameAren
 {
 	initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 
-	s32 cityArea = areaOf(city->bounds);
+	layer->tileLandValue = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	fill<u8>(&layer->tileLandValue, 0);
 
-	layer->tileLandValue = allocateMultiple<u8>(gameArena, cityArea);
-	fillMemory<u8>(layer->tileLandValue, 0, cityArea);
-
-	layer->tileBuildingContributions = allocateMultiple<s16>(gameArena, cityArea);
-	fillMemory<s16>(layer->tileBuildingContributions, 0, cityArea);
+	layer->tileBuildingContributions = allocateArray2<s16>(gameArena, city->bounds.w, city->bounds.h);
+	fill<s16>(&layer->tileBuildingContributions, 0);
 
 	initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 }
@@ -36,7 +34,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 			{
 				Rect2I dirtyRect = getValue(&rectIt);
 
-				setRegion<s16>(layer->tileBuildingContributions, city->bounds.w, city->bounds.h, dirtyRect, 0);
+				fillRegion<s16>(&layer->tileBuildingContributions, dirtyRect, 0);
 
 				ChunkedArray<Building *> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
 				for (auto buildingIt = iterate(&contributingBuildings);
@@ -47,7 +45,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 					BuildingDef *def = getBuildingDef(building);
 					if (hasEffect(&def->landValueEffect))
 					{
-						applyEffect(city, &def->landValueEffect, centreOf(building->footprint), Effect_Add, layer->tileBuildingContributions, dirtyRect);
+						applyEffect(city, &def->landValueEffect, centreOf(building->footprint), Effect_Add, layer->tileBuildingContributions.items, dirtyRect);
 					}
 				}
 
@@ -67,9 +65,9 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 				{
 					for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++)
 					{
-						s16 originalValue = getTileValue(city, layer->tileBuildingContributions, x, y);
+						s16 originalValue = layer->tileBuildingContributions.get(x, y);
 						s16 newValue = clamp<s16>(originalValue, -255, 255);
-						setTile(city, layer->tileBuildingContributions, x, y, newValue);
+						layer->tileBuildingContributions.set(x, y, newValue);
 					}
 				}
 			}
@@ -114,7 +112,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 					}
 
 					// Building effects
-					f32 buildingEffect = getTileValue(city, layer->tileBuildingContributions, x, y) / 255.0f;
+					f32 buildingEffect = layer->tileBuildingContributions.get(x, y) / 255.0f;
 					landValue += buildingEffect;
 
 					// Fire protection = good
@@ -129,7 +127,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 					f32 pollutionEffect = getPollutionPercentAt(city, x, y) * 0.1f;
 					landValue -= pollutionEffect;
 
-					setTile(city, layer->tileLandValue, x, y, clamp01AndMap_u8(landValue));
+					layer->tileLandValue.set(x, y, clamp01AndMap_u8(landValue));
 				}
 			}
 		}
@@ -138,5 +136,5 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 
 inline f32 getLandValuePercentAt(City *city, s32 x, s32 y)
 {
-	return getTileValue(city, city->landValueLayer.tileLandValue, x, y) / 255.0f;
+	return city->landValueLayer.tileLandValue.get(x, y) / 255.0f;
 }

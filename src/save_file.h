@@ -334,4 +334,6 @@ String loadString(SAVString source, u8 *base, MemoryArena *arena);
 void rleDecode(u8 *source, u8 *dest, s32 destSize);
 
 SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data, SAVBlobCompressionScheme scheme);
+SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, Array2<u8> *data, SAVBlobCompressionScheme scheme);
 bool decodeBlob(SAVBlob blob, u8 *baseMemory, u8 *dest, s32 destSize);
+bool decodeBlob(SAVBlob blob, u8 *baseMemory, Array2<u8> *dest);

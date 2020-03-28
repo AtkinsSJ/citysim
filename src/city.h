@@ -18,7 +18,7 @@ struct City
 
 	Rect2I bounds;
 
-	s32 *tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
+	Array2<s32> tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
 	OccupancyArray<Building> buildings;
 	u32 highestBuildingID;
 

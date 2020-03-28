@@ -10,9 +10,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	city->funds = funds;
 	city->bounds = irectXYWH(0, 0, width, height);
 
-	s32 cityArea = width * height;
-
-	city->tileBuildingIndex = allocateMultiple<s32>    (gameArena, cityArea);
+	city->tileBuildingIndex = allocateArray2<s32>(gameArena, width, height);
 	initChunkPool(&city->sectorBuildingsChunkPool,  gameArena, 128);
 	initChunkPool(&city->sectorBoundariesChunkPool, gameArena,   8);
 	initChunkPool(&city->buildingRefsChunkPool,     gameArena, 128);
@@ -75,7 +73,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 			x < footprint.x + footprint.w;
 			x++)
 		{
-			setTile(city, city->tileBuildingIndex, x, y, buildingIndex);
+			city->tileBuildingIndex.set(x, y, buildingIndex);
 		}
 	}
 
@@ -391,7 +389,7 @@ void demolishRect(City *city, Rect2I area)
 		building->id = 0;
 		building->typeID = -1;
 
-		s32 buildingIndex = getTileValue(city, city->tileBuildingIndex, buildingFootprint.x, buildingFootprint.y);
+		s32 buildingIndex = city->tileBuildingIndex.get(buildingFootprint.x, buildingFootprint.y);
 		removeIndex(&city->buildings, buildingIndex);
 
 		building = null; // For safety, because we just deleted the Building!
@@ -404,7 +402,7 @@ void demolishRect(City *city, Rect2I area)
 				x < buildingFootprint.x + buildingFootprint.w;
 				x++)
 			{
-				setTile(city, city->tileBuildingIndex, x, y, 0);
+				city->tileBuildingIndex.set(x, y, 0);
 			}
 		}
 
@@ -540,7 +538,7 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 
 inline bool buildingExistsAt(City *city, s32 x, s32 y)
 {
-	bool result = getTileValue(city, city->tileBuildingIndex, x, y) > 0;
+	bool result = city->tileBuildingIndex.get(x, y) > 0;
 
 	return result;
 }
@@ -551,7 +549,7 @@ Building* getBuildingAt(City *city, s32 x, s32 y)
 
 	if (tileExists(city, x, y))
 	{
-		u32 buildingID = getTileValue(city, city->tileBuildingIndex, x, y);
+		u32 buildingID = city->tileBuildingIndex.get(x, y);
 		if (buildingID > 0)
 		{
 			result = get(&city->buildings, buildingID);

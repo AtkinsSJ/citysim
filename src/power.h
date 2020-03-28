@@ -18,7 +18,7 @@ struct PowerSector
 
 	// 0 = none, >0 = any tile with the same value is connected
 	// POWER_GROUP_UNKNOWN is used as a temporary value while recalculating
-	u8 *tilePowerGroup;
+	Array2<u8> tilePowerGroup;
 
 	// NB: Power groups start at 1, (0 means "none") so subtract 1 from the value in tilePowerGroup to get the index!
 	ChunkedArray<PowerGroup> powerGroups;
@@ -41,7 +41,7 @@ struct PowerLayer
 	SectorGrid<PowerSector> sectors;
 
 	u8 powerMaxDistance;
-	u8 *tilePowerDistance;
+	Array2<u8> tilePowerDistance;
 
 	ChunkedArray<PowerNetwork> networks;
 

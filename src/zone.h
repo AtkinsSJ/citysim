@@ -51,8 +51,8 @@ struct ZoneSector
 
 struct ZoneLayer
 {
-	u8 *tileZone;
-	u8 *tileDesirability[ZoneCount];
+	Array2<u8> tileZone;
+	Array2<u8> tileDesirability[ZoneCount];
 
 	SectorGrid<ZoneSector> sectors;
 

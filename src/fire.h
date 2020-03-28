@@ -21,13 +21,13 @@ struct FireLayer
 	SectorGrid<FireSector> sectors;
 
 	u8 maxFireRadius;
-	u16 *tileFireProximityEffect;
+	Array2<u16> tileFireProximityEffect;
 
-	u8 *tileTotalFireRisk; // Risks combined
+	Array2<u8> tileTotalFireRisk; // Risks combined
 
-	u8 *tileFireProtection;
+	Array2<u8> tileFireProtection;
 
-	u8 *tileOverallFireRisk; // Risks after we've taken protection into account
+	Array2<u8> tileOverallFireRisk; // Risks after we've taken protection into account
 
 	ChunkedArray<BuildingRef> fireProtectionBuildings;
 

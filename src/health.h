@@ -6,7 +6,7 @@ struct HealthLayer
 
 	SectorGrid<BasicSector> sectors;
 
-	u8 *tileHealthCoverage;
+	Array2<u8> tileHealthCoverage;
 
 	ChunkedArray<BuildingRef> healthBuildings;
 	

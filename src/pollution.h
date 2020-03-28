@@ -4,9 +4,9 @@ struct PollutionLayer
 {
 	DirtyRects dirtyRects;
 	
-	s16 *tileBuildingContributions;
+	Array2<s16> tileBuildingContributions;
 
-	u8 *tilePollution; // Cached total
+	Array2<u8> tilePollution; // Cached total
 };
 
 const s32 maxPollutionEffectDistance = 16; // TODO: Better value for this!

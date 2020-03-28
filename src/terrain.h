@@ -30,11 +30,11 @@ struct TerrainLayer
 {
 	s32 terrainGenerationSeed;
 
-	u8 *tileTerrainType;
-	u8 *tileHeight;
-	u8 *tileDistanceToWater;
+	Array2<u8> tileTerrainType;
+	Array2<u8> tileHeight;
+	Array2<u8> tileDistanceToWater;
 
-	u8 *tileSpriteOffset;
+	Array2<u8> tileSpriteOffset;
 };
 
 void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena);

@@ -11,10 +11,10 @@ struct TransportLayer
 {
 	DirtyRects dirtyRects;
 	
-	u8 *tileTransportTypes;
+	Array2<u8> tileTransportTypes;
 
 	u8 transportMaxDistance;
-	u8 *tileTransportDistance[TransportTypeCount];
+	Array2<u8> tileTransportDistance[TransportTypeCount];
 };
 
 using Flags_TransportType = Flags<TransportType, u8>;

@@ -129,6 +129,20 @@ void updateDistances(City *city, u8 *tileDistance, DirtyRects *dirtyRects, u8 ma
 	}
 }
 
+// NB: We might want to do something to take advantage of the Array2's w/h, but for now we'll
+// just pass things over to the raw-pointer version.
+void updateDistances(City *city, Array2<u8> *tileDistance, Rect2I dirtyRect, u8 maxDistance)
+{
+	updateDistances(city, tileDistance->items, dirtyRect, maxDistance);
+}
+
+// NB: We might want to do something to take advantage of the Array2's w/h, but for now we'll
+// just pass things over to the raw-pointer version.
+void updateDistances(City *city, Array2<u8> *tileDistance, DirtyRects *dirtyRects, u8 maxDistance)
+{
+	updateDistances(city, tileDistance->items, dirtyRects, maxDistance);
+}
+
 template<typename Filter>
 s32 calculateDistanceTo(City *city, s32 x, s32 y, s32 maxDistanceToCheck, Filter filter)
 {

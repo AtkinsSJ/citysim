@@ -2,16 +2,15 @@
 
 void initTransportLayer(TransportLayer *layer, City *city, MemoryArena *gameArena)
 {
-	s32 cityArea = areaOf(city->bounds);
-	layer->tileTransportTypes = allocateMultiple<u8>(gameArena, cityArea);
+	layer->tileTransportTypes = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
 
 	layer->transportMaxDistance = 8;
 	initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance, city->bounds);
 
 	for (s32 type = 0; type < TransportTypeCount; type++)
 	{
-		layer->tileTransportDistance[type] = allocateMultiple<u8>(gameArena, cityArea);
-		fillMemory<u8>(layer->tileTransportDistance[type], 255, cityArea);
+		layer->tileTransportDistance[type] = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+		fill<u8>(&layer->tileTransportDistance[type], 255);
 	}
 }
 
@@ -46,11 +45,11 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building->typeID);
-						setTile<u8>(city, layer->tileTransportTypes, x, y, getAll(&def->transportTypes));
+						layer->tileTransportTypes.set(x, y, getAll(&def->transportTypes));
 					}
 					else
 					{
-						setTile<u8>(city, layer->tileTransportTypes, x, y, 0);
+						layer->tileTransportTypes.set(x, y, 0);
 					}
 				}
 			}
@@ -63,7 +62,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 					for (s32 type = 0; type < TransportTypeCount; type++)
 					{
 						u8 distance = doesTileHaveTransport(city, x, y, (TransportType)type) ? 0 : 255;
-						setTile<u8>(city, layer->tileTransportDistance[type], x, y, distance);
+						layer->tileTransportDistance[type].set(x, y, distance);
 					}
 				}
 			}
@@ -72,7 +71,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		// Transport distance recalculation
 		for (s32 type = 0; type < TransportTypeCount; type++)
 		{
-			updateDistances(city, layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
+			updateDistances(city, &layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
 		}
 
 		clearDirtyRects(&layer->dirtyRects);
@@ -90,7 +89,7 @@ bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type)
 
 	if (tileExists(city, x, y))
 	{
-		u8 transportTypesAtTile = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
+		u8 transportTypesAtTile = city->transportLayer.tileTransportTypes.get(x, y);
 		result = (transportTypesAtTile & (1 << type)) != 0;
 	}
 
@@ -103,7 +102,7 @@ bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags_TransportType types)
 
 	if (tileExists(city, x, y))
 	{
-		u8 transportTypesAtTile = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
+		u8 transportTypesAtTile = city->transportLayer.tileTransportTypes.get(x, y);
 		result = (transportTypesAtTile & getAll(&types)) != 0;
 	}
 
@@ -112,21 +111,21 @@ bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags_TransportType types)
 
 void addTransportToTile(City *city, s32 x, s32 y, TransportType type)
 {
-	u8 oldValue = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
+	u8 oldValue = city->transportLayer.tileTransportTypes.get(x, y);
 	u8 newValue = oldValue | (1 << type);
-	setTile(city, city->transportLayer.tileTransportTypes, x, y, newValue);
+	city->transportLayer.tileTransportTypes.set(x, y, newValue);
 }
 
 void addTransportToTile(City *city, s32 x, s32 y, Flags_TransportType types)
 {
-	u8 oldValue = getTileValue(city, city->transportLayer.tileTransportTypes, x, y);
+	u8 oldValue = city->transportLayer.tileTransportTypes.get(x, y);
 	u8 newValue = oldValue | getAll(&types);
-	setTile(city, city->transportLayer.tileTransportTypes, x, y, newValue);
+	city->transportLayer.tileTransportTypes.set(x, y, newValue);
 }
 
 inline s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
 {
-	return getTileValue(city, city->transportLayer.tileTransportDistance[type], x, y);
+	return city->transportLayer.tileTransportDistance[type].get(x, y);
 }
 
 void debugInspectTransport(WindowContext *context, City *city, s32 x, s32 y)

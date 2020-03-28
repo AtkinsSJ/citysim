@@ -41,8 +41,6 @@ bool writeSaveFile(FileHandle *file, City *city)
 		SAVFileHeader fileHeader = SAVFileHeader();
 		append(&buffer, sizeof(fileHeader), &fileHeader);
 
-		u32 cityTileCount = city->bounds.w * city->bounds.h;
-
 		// Meta
 		{
 			ChunkHeaderWrapper wrapper(&buffer, SAV_META_ID, SAV_META_VERSION);
@@ -99,15 +97,15 @@ bool writeSaveFile(FileHandle *file, City *city)
 			}
 
 			// Tile terrain type (u8)
-			chunk.tileTerrainType = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileTerrainType[0]), layer->tileTerrainType, Blob_RLE_S8);
+			chunk.tileTerrainType = appendBlob(offset, &buffer, &layer->tileTerrainType, Blob_RLE_S8);
 			offset += chunk.tileTerrainType.length;
 
 			// Tile height (u8)
-			chunk.tileHeight = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileHeight[0]), layer->tileHeight, Blob_RLE_S8);
+			chunk.tileHeight = appendBlob(offset, &buffer, &layer->tileHeight, Blob_RLE_S8);
 			offset += chunk.tileHeight.length;
 
 			// Tile sprite offset (u8)
-			chunk.tileSpriteOffset = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileSpriteOffset[0]), layer->tileSpriteOffset, Blob_Uncompressed);
+			chunk.tileSpriteOffset = appendBlob(offset, &buffer, &layer->tileSpriteOffset, Blob_Uncompressed);
 			offset += chunk.tileSpriteOffset.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
@@ -199,7 +197,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 			s32 offset = sizeof(chunk);
 
 			// Tile zones
-			chunk.tileZone = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileZone[0]), layer->tileZone, Blob_RLE_S8);
+			chunk.tileZone = appendBlob(offset, &buffer, &layer->tileZone, Blob_RLE_S8);
 			offset += chunk.tileZone.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
@@ -299,7 +297,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 			s32 offset = sizeof(chunk);
 
 			// Tile land value
-			chunk.tileLandValue = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tileLandValue[0]), layer->tileLandValue, Blob_Uncompressed);
+			chunk.tileLandValue = appendBlob(offset, &buffer, &layer->tileLandValue, Blob_Uncompressed);
 			offset += chunk.tileLandValue.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
@@ -315,7 +313,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 			s32 offset = sizeof(chunk);
 
 			// Tile pollution
-			chunk.tilePollution = appendBlob(offset, &buffer, cityTileCount * sizeof(layer->tilePollution[0]), layer->tilePollution, Blob_Uncompressed);
+			chunk.tilePollution = appendBlob(offset, &buffer, &layer->tilePollution, Blob_Uncompressed);
 			offset += chunk.tilePollution.length;
 
 			overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
@@ -612,7 +610,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				SAVChunk_LandValue *cLandValue = READ_CHUNK(SAVChunk_LandValue);
 				LandValueLayer *layer = &city->landValueLayer;
 
-				decodeBlob(cLandValue->tileLandValue, startOfChunk, layer->tileLandValue, cityTileCount * sizeof(layer->tileLandValue[0]));
+				decodeBlob(cLandValue->tileLandValue, startOfChunk, &layer->tileLandValue);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_PLTN_ID))
 			{
@@ -624,7 +622,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				SAVChunk_Pollution *cPollution = READ_CHUNK(SAVChunk_Pollution);
 				PollutionLayer *layer = &city->pollutionLayer;
 
-				decodeBlob(cPollution->tilePollution, startOfChunk, layer->tilePollution, cityTileCount * sizeof(layer->tilePollution[0]));
+				decodeBlob(cPollution->tilePollution, startOfChunk, &layer->tilePollution);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TERR_ID))
 			{
@@ -664,14 +662,14 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					{
 						decodedTileTerrainType[i] = oldTypeToNewType[ decodedTileTerrainType[i] ];
 					}
-					copyMemory(decodedTileTerrainType, layer->tileTerrainType, cityTileCount);
+					copyMemory(decodedTileTerrainType, layer->tileTerrainType.items, cityTileCount);
 				}
 
 				// Terrain height
-				decodeBlob(cTerrain->tileHeight, startOfChunk, layer->tileHeight, cityTileCount * sizeof(layer->tileHeight[0]));
+				decodeBlob(cTerrain->tileHeight, startOfChunk, &layer->tileHeight);
 
 				// Sprite offset
-				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, layer->tileSpriteOffset, cityTileCount * sizeof(layer->tileSpriteOffset[0]));
+				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, &layer->tileSpriteOffset);
 			}
 			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
 			{
@@ -695,7 +693,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				SAVChunk_Zone *cZone = READ_CHUNK(SAVChunk_Zone);
 				ZoneLayer *layer = &city->zoneLayer;
 
-				decodeBlob(cZone->tileZone, startOfChunk, layer->tileZone, cityTileCount * sizeof(layer->tileZone[0]));
+				decodeBlob(cZone->tileZone, startOfChunk, &layer->tileZone);
 			}
 		}
 
@@ -825,6 +823,11 @@ SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data,
 	return result;
 }
 
+SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, Array2<u8> *data, SAVBlobCompressionScheme scheme)
+{
+	return appendBlob(currentOffset, buffer, data->w * data->h, data->items, scheme);
+}
+
 bool decodeBlob(SAVBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
 {
 	bool succeeded = true;
@@ -854,4 +857,9 @@ bool decodeBlob(SAVBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
 	}
 
 	return succeeded;
+}
+
+bool decodeBlob(SAVBlob blob, u8 *baseMemory, Array2<u8> *dest)
+{
+	return decodeBlob(blob, baseMemory, dest->items, dest->w * dest->h);
 }

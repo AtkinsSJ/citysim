@@ -6,9 +6,9 @@ struct LandValueLayer
 
 	SectorGrid<BasicSector> sectors;
 
-	s16 *tileBuildingContributions;
+	Array2<s16> tileBuildingContributions;
 
-	u8 *tileLandValue; // Cached total
+	Array2<u8> tileLandValue; // Cached total
 };
 
 const s32 maxLandValueEffectDistance = 16; // TODO: Better value for this!
