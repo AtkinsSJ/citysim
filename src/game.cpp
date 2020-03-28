@@ -960,99 +960,85 @@ void initDataViewUI(GameState *gameState)
 
 	dataViewUI[DataView_None].title = "data_view_none"_s;
 
-	Array<V4> *desirabilityPalette     = getPalette("desirability"_s);
-	Array<V4> *landValuePalette        = getPalette("land_value"_s);
-	Array<V4> *pollutionPalette        = getPalette("pollution"_s);
-	Array<V4> *powerPalette            = getPalette("power"_s);
-	Array<V4> *riskPalette             = getPalette("risk"_s);
-	Array<V4> *serviceBuildingsPalette = getPalette("service_buildings"_s);
-	Array<V4> *serviceCoveragePalette  = getPalette("service_coverage"_s);
-
 	dataViewUI[DataView_Desirability_Residential].title = "data_view_desirability_residential"_s;
-	setGradient(&dataViewUI[DataView_Desirability_Residential], desirabilityPalette);
+	setGradient(&dataViewUI[DataView_Desirability_Residential], "desirability"_s);
 	setTileOverlay(&dataViewUI[DataView_Desirability_Residential], &city->zoneLayer.tileDesirability[Zone_Residential], "desirability"_s);
 
 	dataViewUI[DataView_Desirability_Commercial].title = "data_view_desirability_commercial"_s;
-	setGradient(&dataViewUI[DataView_Desirability_Commercial], desirabilityPalette);
+	setGradient(&dataViewUI[DataView_Desirability_Commercial], "desirability"_s);
 	setTileOverlay(&dataViewUI[DataView_Desirability_Commercial], &city->zoneLayer.tileDesirability[Zone_Commercial], "desirability"_s);
 
 	dataViewUI[DataView_Desirability_Industrial].title = "data_view_desirability_industrial"_s;
-	setGradient(&dataViewUI[DataView_Desirability_Industrial], desirabilityPalette);
+	setGradient(&dataViewUI[DataView_Desirability_Industrial], "desirability"_s);
 	setTileOverlay(&dataViewUI[DataView_Desirability_Industrial], &city->zoneLayer.tileDesirability[Zone_Industrial], "desirability"_s);
 
 	dataViewUI[DataView_Crime].title = "data_view_crime"_s;
-	setGradient(&dataViewUI[DataView_Crime], serviceCoveragePalette);
-	dataViewUI[DataView_Crime].fixedColorCount = 2;
-	dataViewUI[DataView_Crime].fixedColors[0] = asOpaque((*serviceBuildingsPalette)[0]);
-	dataViewUI[DataView_Crime].fixedColors[1] = asOpaque((*serviceBuildingsPalette)[1]);
-	dataViewUI[DataView_Crime].fixedColorNames[0] = "data_view_buildings_powered"_s;
-	dataViewUI[DataView_Crime].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
+	setGradient(&dataViewUI[DataView_Crime], "service_coverage"_s);
+	setFixedColors(&dataViewUI[DataView_Crime], "service_buildings"_s, {"data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s});
 	setHighlightedBuildings(&dataViewUI[DataView_Crime], &city->crimeLayer.policeBuildings, &BuildingDef::policeEffect);
 	setTileOverlay(&dataViewUI[DataView_Crime], &city->crimeLayer.tilePoliceCoverage, "service_coverage"_s);
 
 	dataViewUI[DataView_Fire].title = "data_view_fire"_s;
-	setGradient(&dataViewUI[DataView_Fire], riskPalette);
-	dataViewUI[DataView_Fire].fixedColorCount = 2;
-	dataViewUI[DataView_Fire].fixedColors[0] = asOpaque((*serviceBuildingsPalette)[0]);
-	dataViewUI[DataView_Fire].fixedColors[1] = asOpaque((*serviceBuildingsPalette)[1]);
-	dataViewUI[DataView_Fire].fixedColorNames[0] = "data_view_buildings_powered"_s;
-	dataViewUI[DataView_Fire].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
+	setGradient(&dataViewUI[DataView_Fire], "risk"_s);
+	setFixedColors(&dataViewUI[DataView_Fire], "service_buildings"_s, {"data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s});
 	setHighlightedBuildings(&dataViewUI[DataView_Fire], &city->fireLayer.fireProtectionBuildings, &BuildingDef::fireProtection);
 	setTileOverlay(&dataViewUI[DataView_Fire], &city->fireLayer.tileOverallFireRisk, "risk"_s);
 
 	dataViewUI[DataView_Health].title = "data_view_health"_s;
-	setGradient(&dataViewUI[DataView_Health], serviceCoveragePalette);
-	dataViewUI[DataView_Health].fixedColorCount = 2;
-	dataViewUI[DataView_Health].fixedColors[0] = asOpaque((*serviceBuildingsPalette)[0]);
-	dataViewUI[DataView_Health].fixedColors[1] = asOpaque((*serviceBuildingsPalette)[1]);
-	dataViewUI[DataView_Health].fixedColorNames[0] = "data_view_buildings_powered"_s;
-	dataViewUI[DataView_Health].fixedColorNames[1] = "data_view_buildings_unpowered"_s;
+	setGradient(&dataViewUI[DataView_Health], "service_coverage"_s);
+	setFixedColors(&dataViewUI[DataView_Health], "service_buildings"_s, {"data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s});
 	setHighlightedBuildings(&dataViewUI[DataView_Health], &city->healthLayer.healthBuildings, &BuildingDef::healthEffect);
 	setTileOverlay(&dataViewUI[DataView_Health], &city->healthLayer.tileHealthCoverage, "service_coverage"_s);
 
 	dataViewUI[DataView_LandValue].title = "data_view_landvalue"_s;
-	setGradient(&dataViewUI[DataView_LandValue], landValuePalette);
+	setGradient(&dataViewUI[DataView_LandValue], "land_value"_s);
 	setTileOverlay(&dataViewUI[DataView_LandValue], &city->landValueLayer.tileLandValue, "land_value"_s);
 
 	dataViewUI[DataView_Pollution].title = "data_view_pollution"_s;
-	setGradient(&dataViewUI[DataView_Pollution], pollutionPalette);
+	setGradient(&dataViewUI[DataView_Pollution], "pollution"_s);
 	setTileOverlay(&dataViewUI[DataView_Pollution], &city->pollutionLayer.tilePollution, "pollution"_s);
 
 	dataViewUI[DataView_Power].title = "data_view_power"_s;
-	dataViewUI[DataView_Power].fixedColorCount = 3;
-	dataViewUI[DataView_Power].fixedColors[0] = asOpaque((*powerPalette)[0]);
-	dataViewUI[DataView_Power].fixedColors[1] = asOpaque((*powerPalette)[1]);
-	dataViewUI[DataView_Power].fixedColors[2] = asOpaque((*powerPalette)[2]);
-	dataViewUI[DataView_Power].fixedColorNames[0] = "data_view_power_powered"_s;
-	dataViewUI[DataView_Power].fixedColorNames[1] = "data_view_power_brownout"_s;
-	dataViewUI[DataView_Power].fixedColorNames[2] = "data_view_power_blackout"_s;
+	setFixedColors(&dataViewUI[DataView_Power], "power"_s, {"data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s});
 	setHighlightedBuildings(&dataViewUI[DataView_Power], &city->powerLayer.powerBuildings);
 	setTileOverlayCallback(&dataViewUI[DataView_Power], calculatePowerOverlayForTile, "power"_s);
 }
 
-void setGradient(DataViewUI *dataViewUI, Array<V4> *palette)
+void setGradient(DataViewUI *dataView, String paletteName)
 {
-	dataViewUI->hasGradient = true;
-	dataViewUI->gradientColorMin = asOpaque(*first(palette));
-	dataViewUI->gradientColorMax = asOpaque(*last(palette));
+	dataView->hasGradient = true;
+	dataView->gradientPaletteName = paletteName;
 }
 
-void setHighlightedBuildings(DataViewUI *dataViewUI, ChunkedArray<BuildingRef> *highlightedBuildings, EffectRadius BuildingDef:: *effectRadiusMember)
+void setFixedColors(DataViewUI *dataView, String paletteName, std::initializer_list<String> names)
 {
-	dataViewUI->highlightedBuildings = highlightedBuildings;
-	dataViewUI->effectRadiusMember = effectRadiusMember;
+	dataView->hasFixedColors = true;
+	dataView->fixedPaletteName = paletteName;
+	dataView->fixedColorNames = allocateArray<String>(&globalAppState.systemArena, truncate32(names.size()));
+	s32 nameIndex = 0;
+	for (auto it = names.begin(); it != names.end(); it++)
+	{
+		dataView->fixedColorNames[nameIndex] = pushString(&globalAppState.systemArena, *it);
+		nameIndex++;
+	}
 }
 
-void setTileOverlay(DataViewUI *dataViewUI, u8 **tileData, String paletteName)
+void setHighlightedBuildings(DataViewUI *dataView, ChunkedArray<BuildingRef> *highlightedBuildings, EffectRadius BuildingDef:: *effectRadiusMember)
 {
-	dataViewUI->overlayTileData = tileData;
-	dataViewUI->overlayPaletteName = paletteName;
+	dataView->highlightedBuildings = highlightedBuildings;
+	dataView->effectRadiusMember = effectRadiusMember;
 }
 
-void setTileOverlayCallback(DataViewUI *dataViewUI, u8 (*calculateTileValue)(City *city, s32 x, s32 y), String paletteName)
+void setTileOverlay(DataViewUI *dataView, u8 **tileData, String paletteName)
 {
-	dataViewUI->calculateTileValue = calculateTileValue;
-	dataViewUI->overlayPaletteName = paletteName;
+	dataView->overlayTileData = tileData;
+	dataView->overlayPaletteName = paletteName;
+}
+
+void setTileOverlayCallback(DataViewUI *dataView, u8 (*calculateTileValue)(City *city, s32 x, s32 y), String paletteName)
+{
+	dataView->calculateTileValue = calculateTileValue;
+	dataView->overlayPaletteName = paletteName;
 }
 
 void drawDataViewOverlay(GameState *gameState, Rect2I visibleTileBounds)
@@ -1176,27 +1162,38 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 		// We're working from bottom to top, so we start at the end.
 
 		// First, the named colors
-		for (s32 fixedColorIndex = dataView->fixedColorCount-1; fixedColorIndex >= 0; fixedColorIndex--)
+		if (dataView->hasFixedColors)
 		{
-			// Block is to the left, so we offset the label by that width and padding
-			Rect2I colorLabelBounds = uiText(uiBuffer, font, getText(dataView->fixedColorNames[fixedColorIndex]), uiPos + v2i(paletteBlockSize + uiPadding, 0), ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
+			Array<V4> *fixedPalette = getPalette(dataView->fixedPaletteName);
+			ASSERT(fixedPalette->count >= dataView->fixedColorNames.count);
 
-			Rect2I paletteBlockBounds = irectXYWH(uiPos.x, uiPos.y - paletteBlockSize, paletteBlockSize, paletteBlockSize);
-			drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, dataView->fixedColors[fixedColorIndex]);
+			for (s32 fixedColorIndex = dataView->fixedColorNames.count-1; fixedColorIndex >= 0; fixedColorIndex--)
+			{
+				// Block is to the left, so we offset the label by that width and padding
+				Rect2I colorLabelBounds = uiText(uiBuffer, font, getText(dataView->fixedColorNames[fixedColorIndex]), uiPos + v2i(paletteBlockSize + uiPadding, 0), ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
 
-			uiPos.y -= colorLabelBounds.h + uiPadding;
+				Rect2I paletteBlockBounds = irectXYWH(uiPos.x, uiPos.y - paletteBlockSize, paletteBlockSize, paletteBlockSize);
+				drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, asOpaque(fixedPalette->get(fixedColorIndex)));
 
-			// Overall width of this line is both block & label
-			dataViewUIWidth = max(dataViewUIWidth, colorLabelBounds.w + uiPadding + paletteBlockSize);
+				uiPos.y -= colorLabelBounds.h + uiPadding;
+
+				// Overall width of this line is both block & label
+				dataViewUIWidth = max(dataViewUIWidth, colorLabelBounds.w + uiPadding + paletteBlockSize);
+			}
 		}
 
 		// Above that, the gradient
 		if (dataView->hasGradient)
 		{
+			Array<V4> *gradientPalette = getPalette(dataView->gradientPaletteName);
+
 			// Arbitrarily going to make the height 4x the width
 			Rect2I gradientBounds = irectXYWH(uiPos.x, uiPos.y - (paletteBlockSize * 4), paletteBlockSize, paletteBlockSize * 4);
 
-			drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, dataView->gradientColorMax, dataView->gradientColorMax, dataView->gradientColorMin, dataView->gradientColorMin);
+			V4 minColor = asOpaque(*first(gradientPalette));
+			V4 maxColor = asOpaque( *last(gradientPalette));
+
+			drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, maxColor, maxColor, minColor, minColor);
 
 			s32 labelLeft = gradientBounds.x + gradientBounds.w + uiPadding;
 

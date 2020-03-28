@@ -258,6 +258,13 @@ inline T& Array<T>::operator[](s32 index)
 }
 
 template<typename T>
+inline T& Array<T>::get(s32 index)
+{
+	ASSERT(index >=0 && index < count); //Index out of range!
+	return items[index];
+}
+
+template<typename T>
 inline T *first(Array<T> *array)
 {
 	ASSERT(array->count > 0); //Index out of range!

@@ -80,13 +80,12 @@ struct DataViewUI
 
 	// Gradient
 	bool hasGradient;
-	V4 gradientColorMin;
-	V4 gradientColorMax;
+	String gradientPaletteName;
 
 	// Fixed-colors
-	s32 fixedColorCount;
-	V4 fixedColors[16];
-	String fixedColorNames[16];
+	bool hasFixedColors;
+	String fixedPaletteName;
+	Array<String> fixedColorNames;
 
 	// Overlay
 	ChunkedArray<BuildingRef> *highlightedBuildings;
@@ -146,16 +145,18 @@ void showCostTooltip(UIState *uiState, s32 buildCost);
 Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize);
 DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1});
 
+void drawDataViewOverlay(GameState *gameState, Rect2I visibleTileBounds);
+void drawDataViewUI(UIState *uiState, GameState *gameState);
+
 //
 // Internal
 //
 void initDataViewUI(GameState *gameState);
-void setGradient(DataViewUI *dataViewUI, Array<V4> *palette);
+void setGradient(DataViewUI *dataViewUI, String paletteName);
+void setFixedColors(DataViewUI *dataView, String paletteName, std::initializer_list<String> names);
 void setHighlightedBuildings(DataViewUI *dataViewUI, ChunkedArray<BuildingRef> *highlightedBuildings, EffectRadius BuildingDef:: *effectRadiusMember = null);
 void setTileOverlay(DataViewUI *dataViewUI, u8 **tileData, String paletteName);
 void setTileOverlayCallback(DataViewUI *dataViewUI, u8 (*calculateTileValue)(City *city, s32 x, s32 y), String paletteName);
-void drawDataViewOverlay(GameState *gameState, Rect2I visibleTileBounds);
-void drawDataViewUI(UIState *uiState, GameState *gameState);
 
 void inspectTileWindowProc(WindowContext *context, void *userData);
 void pauseMenuWindowProc(WindowContext *context, void *userData);
