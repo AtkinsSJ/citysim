@@ -46,18 +46,6 @@ Sector *getSectorAtTilePos(SectorGrid<Sector> *grid, s32 x, s32 y);
 template<typename Sector>
 Rect2I getSectorsCovered(SectorGrid<Sector> *grid, Rect2I area);
 
-template<typename Sector, typename T>
-inline T *getSectorTile(Sector *sector, T *tiles, s32 relX, s32 relY)
-{
-	return tiles + (relY * sector->bounds.w) + relX;
-}
-
-template<typename Sector, typename T>
-inline void setSectorTile(Sector *sector, T *tiles, s32 relX, s32 relY, T value)
-{
-	tiles[(relY * sector->bounds.w) + relX] = value;
-}
-
 template<typename Sector>
 Sector *getNextSector(SectorGrid<Sector> *grid);
 
