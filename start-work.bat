@@ -3,7 +3,7 @@ REM this is a copy of the batch file I use to start working on this.
 
 explorer P:\citysim
 cd P:\citysim
-start .\build\under-london.sln
+start .\build\citysim.sln
 start "" "C:\Program Files\Sublime Text 3\sublime_text.exe" -p P:\citysim\citysim.sublime-project
 
 start "C:\Program Files\PuTTY\pageant.exe" C:\Users\msn\Documents\ssh\privatekey.ppk

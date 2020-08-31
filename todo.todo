@@ -16,6 +16,9 @@ Notes for searching:
 
 ------------------------------------------------
 
+Move save-file code for each layer into the layer.
+- Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
+
 Placeholder font that's hard-coded. Tricky!
 
 Police coverage is briefly too high in some places after placing a police station, not sure why.
