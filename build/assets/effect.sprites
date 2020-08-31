@@ -2,3 +2,6 @@
 
 :SpriteGroup e_fire_1x1 fire.png 8x8
 sprite 0 0
+
+:SpriteGroup icon_no_power icon-no-power.png 16x16
+sprite 0 0

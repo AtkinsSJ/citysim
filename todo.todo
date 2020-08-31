@@ -16,6 +16,9 @@ Notes for searching:
 
 ------------------------------------------------
 
+Problem Icons
+- I think these want to be entities in their own right, rather than just part of drawing a building. This would let us manage a minimum distance between them, so they don't overlap, and we can animate them. 
+
 Move save-file code for each layer into the layer.
 - Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 
