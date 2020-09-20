@@ -148,43 +148,6 @@ void updateFireLayer(City *city, FireLayer *layer)
 	}
 }
 
-void drawFires(City *city, Rect2I visibleTileBounds)
-{
-	FireLayer *layer = &city->fireLayer;
-
-	// TODO: Particle effects for fire instead of this rubbish sprite thing
-
-	if (layer->activeFireCount > 0)
-	{
-		SpriteGroup *fireSprites = getSpriteGroup("e_fire_1x1"_s);
-		Sprite *sprite = getSprite(fireSprites, 0);
-		V4 colorWhite = makeWhite();
-
-		DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, renderer->shaderIds.pixelArt, layer->activeFireCount);
-
-		Rect2I affectedSectors = getSectorsCovered(&layer->sectors, visibleTileBounds);
-		for (s32 sy = affectedSectors.y; sy < affectedSectors.y + affectedSectors.h; sy++)
-		{
-			for (s32 sx = affectedSectors.x; sx < affectedSectors.x + affectedSectors.w; sx++)
-			{
-				FireSector *sector = getSector(&layer->sectors, sx, sy);
-
-				for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
-				{
-					Fire *fire = get(&it);
-
-					if (contains(visibleTileBounds, fire->pos))
-					{
-						addSpriteRect(group, sprite, rectXYWHi(fire->pos.x, fire->pos.y, 1, 1), colorWhite);
-					}
-				}
-			}
-		}
-
-		endRectsGroup(group);
-	}
-}
-
 Indexed<Fire*> findFireAt(City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;

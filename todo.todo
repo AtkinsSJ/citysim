@@ -27,7 +27,7 @@ ENTITIES:
 	✔ Creating a fire creates an entity
 	✔ Destroying a fire destroys its entity
 	✔ Entities are drawn
-	- Clean up fire drawing code
+	✔ Clean up fire drawing code
 - Convert buildings too
 
 Buildings should be responsible for detecting their own problems, not the fire layer for instance. @BuildingProblem
