@@ -2,6 +2,8 @@
 
 struct Fire
 {
+	Entity *entity;
+
 	V2I pos;
 	// TODO: severity
 	// TODO: Timing information (fires shouldn't last forever!)
@@ -51,7 +53,7 @@ void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
 Fire *findFireAt(City *city, s32 x, s32 y);
 void startFireAt(City *city, s32 x, s32 y);
 void removeFireAt(City *city, s32 x, s32 y);
-void addFireRaw(City *city, Fire fire);
+void addFireRaw(City *city, s32 x, s32 y);
 
 u8 getFireRiskAt(City *city, s32 x, s32 y);
 u8 getFireProtectionAt(City *city, s32 x, s32 y);

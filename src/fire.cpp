@@ -209,44 +209,43 @@ void startFireAt(City *city, s32 x, s32 y)
 	{
 		// Fire already exists!
 		// TODO: make the fire stronger?
+		logWarn("Fire at {0},{1} already exists!"_s, {formatInt(x), formatInt(y)});
 	}
 	else
 	{
-		Fire fire = {};
-		fire.pos.x = x;
-		fire.pos.y = y;
-		addFireRaw(city, fire);
+		addFireRaw(city, x, y);
 	}
 }
 
-void addFireRaw(City *city, Fire fire)
+void addFireRaw(City *city, s32 x, s32 y)
 {
+	// NB: We don't care if the fire already exists. startFireAt() already checks for this case.
+
 	FireLayer *layer = &city->fireLayer;
 
-	Fire *existingFire = findFireAt(city, fire.pos.x, fire.pos.y);
-	if (existingFire != null)
+	FireSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
+
+	Fire *fire = appendBlank(&sector->activeFires);
+
+	fire->pos = v2i(x, y);
+	fire->entity = addEntity(city);
+	// TODO: Probably most of this wants to be moved into addEntity()
+	fire->entity->type = EntityType_Fire;
+	fire->entity->bounds = rectXYWHi(x, y, 1, 1);
+	fire->entity->depth = 0; // TODO
+	fire->entity->sprite = getSprite(getSpriteGroup("e_fire_1x1"_s), randomNext(&globalAppState.cosmeticRandom));
+	fire->entity->color = makeWhite();
+
+	layer->activeFireCount++;
+
+	markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+
+	// Tell the building it's on fire
+	// TODO: Remove this! @BuildingProblem
+	Building *building = getBuildingAt(city, x, y);
+	if (building != null)
 	{
-		// Fire already exists!
-		// We'll overwrite it I guess
-		logWarn("Adding a fire at {0},{1} where one already exists! Overwriting it."_s, {formatInt(fire.pos.x), formatInt(fire.pos.y)});
-		*existingFire = fire;
-	}
-	else
-	{
-		FireSector *sector = getSectorAtTilePos(&layer->sectors, fire.pos.x, fire.pos.y);
-
-		append(&sector->activeFires, fire);
-
-		layer->activeFireCount++;
-
-		markRectAsDirty(&layer->dirtyRects, irectXYWH(fire.pos.x, fire.pos.y, 1, 1));
-
-		// Tell the building it's on fire
-		Building *building = getBuildingAt(city, fire.pos.x, fire.pos.y);
-		if (building != null)
-		{
-			addProblem(building, BuildingProblem_Fire);
-		}
+		addProblem(building, BuildingProblem_Fire);
 	}
 }
 
@@ -263,6 +262,7 @@ void removeFireAt(City *city, s32 x, s32 y)
 		layer->activeFireCount -= removedFires;
 
 		// Figure out if the building at the position still has some fire
+		// TODO: Move problem detection, Building should be responsible for it @BuildingProblem
 		Building *building = getBuildingAt(city, x, y);
 		if (building != null)
 		{

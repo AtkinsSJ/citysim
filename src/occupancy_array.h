@@ -11,6 +11,8 @@ struct OccupancyArrayChunk
 	OccupancyArrayChunk<T> *nextChunk;
 };
 
+// A chunked array that keeps track of which slots are empty, and attempts to fill them.
+// (The regular ChunkedArray just moves the elements to fill empty slots, so the order can change.)
 template<typename T>
 struct OccupancyArray
 {

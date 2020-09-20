@@ -789,6 +789,14 @@ inline bool contains(Rect2 outer, Rect2 inner)
 	return contains(outer, inner.pos) && contains(outer, inner.pos + inner.size);
 }
 
+inline bool overlaps(Rect2 a, Rect2 b)
+{
+	return (a.x < b.x + b.w)
+		&& (b.x < a.x + a.w)
+		&& (a.y < b.y + b.h)
+		&& (b.y < a.y + a.h);
+}
+
 inline Rect2 expand(Rect2 rect, f32 radius)
 {
 	return rectXYWH(

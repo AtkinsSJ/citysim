@@ -580,10 +580,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 					{
 						SAVFire *savFire = tempFires + activeFireIndex;
 
-						Fire fire = {};
-						fire.pos.x = savFire->x;
-						fire.pos.y = savFire->y;
-						addFireRaw(city, fire);
+						addFireRaw(city, savFire->x, savFire->y);
 					}
 					ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
 				}

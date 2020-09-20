@@ -25,6 +25,8 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	initOccupancyArray(&city->buildings, gameArena, 1024);
 	append(&city->buildings); // Null building
 
+	initOccupancyArray(&city->entities, gameArena, 1024);
+
 	initCrimeLayer    (&city->crimeLayer,     city, gameArena);
 	initFireLayer     (&city->fireLayer,      city, gameArena);
 	initHealthLayer   (&city->healthLayer,    city, gameArena);
@@ -44,6 +46,30 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	saveBuildingTypes();
 	saveTerrainTypes();
+}
+
+inline Entity *addEntity(City *city)
+{
+	return append(&city->entities).value;
+}
+
+void drawEntities(City *city, Rect2I visibleTileBounds)
+{
+	// TODO: Depth sorting
+	// TODO: Sectors maybe? Though collecting all the visible entities into a data structure might be slower than just
+	//  iterating the entities array.
+	Rect2 cropArea = rect2(visibleTileBounds);
+	auto shaderID = renderer->shaderIds.pixelArt;
+
+	for (auto it = iterate(&city->entities); hasNext(&it); next(&it))
+	{
+		auto entity = get(&it);
+		if (overlaps(cropArea, entity->bounds))
+		{
+			// TODO: Batch these together somehow? Our batching is a bit complicated
+			drawSingleSprite(&renderer->worldBuffer, entity->sprite, entity->bounds, shaderID, entity->color);
+		}
+	}
 }
 
 Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footprint)
@@ -477,7 +503,9 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 	drawBuildings(city, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
 
 	// Draw effects
-	drawFires(city, visibleTileBounds);
+	//drawFires(city, visibleTileBounds);
+
+	drawEntities(city, visibleTileBounds);
 
 	// Draw sectors
 	// NB: this is really hacky debug code

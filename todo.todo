@@ -21,6 +21,18 @@ Problem Icons
 
 Related to this ^ maybe we want to have a more general-purpose "entity" system? Buildings, actors, fires, indicators, etc could all be represented partly as a generic "entity": a sprite, an area to draw it, a depth to draw at, and a colour; and then either have the other data in a union or a separate struct somewhere else. That'll help with drawing, as we'll need to draw all of these things sorted together in order for it to look right.
 
+ENTITIES:
+- Fires first:
+	- Fires point to an entity
+	- Creating a fire creates an entity
+	- Destroying a fire destroys its entity
+	- Entities are drawn
+- Convert buildings too
+
+Buildings should be responsible for detecting their own problems, not the fire layer for instance. @BuildingProblem
+
+Rather than having a bunch of registerFireProtectionBuilding() etc functions, just tell all layers about a new building (entity?) being created/destroyed, and let them decide if they care or not!
+
 Move save-file code for each layer into the layer.
 - Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 

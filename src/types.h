@@ -392,7 +392,7 @@ Rect2 rect2(Rect2I source);
 bool contains(Rect2 rect, f32 x, f32 y);
 bool contains(Rect2 rect, V2 pos);
 bool contains(Rect2 outer, Rect2 inner);
-bool overlaps(Rect2 outer, Rect2 inner);
+bool overlaps(Rect2 a, Rect2 b);
 
 Rect2 expand(Rect2 rect, f32 radius);
 Rect2 expand(Rect2 rect, f32 top, f32 right, f32 bottom, f32 left);

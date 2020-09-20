@@ -24,6 +24,8 @@ struct City
 
 	SectorGrid<CitySector> sectors;
 
+	OccupancyArray<Entity> entities;
+
 	CrimeLayer     crimeLayer;
 	FireLayer      fireLayer;
 	HealthLayer    healthLayer;
@@ -72,6 +74,10 @@ void updateSomeBuildings(City *city);
 
 s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
+
+Entity *addEntity(City *city);
+void deleteEntity(City *city, Entity *entity);
+void drawEntities(City *city, Rect2I visibleTileBounds);
 
 //
 // Private API

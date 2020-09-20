@@ -74,6 +74,7 @@ struct Settings     *settings;
 
 struct City;
 
+#include "entity.h"
 #include "sector.h"
 #include "dirty.h"
 #include "tile_utils.h"
@@ -132,6 +133,7 @@ AppState globalAppState;
 #include "uitheme.cpp"
 #include "ui.cpp"
 #include "ui_window.cpp"
+#include "entity.cpp"
 #include "building.cpp"
 #include "terrain.cpp"
 #include "bmfont.cpp"
