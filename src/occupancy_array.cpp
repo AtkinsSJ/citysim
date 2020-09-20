@@ -33,7 +33,6 @@ Indexed<T*> append(OccupancyArray<T> *array)
 		Blob blob = allocateBlob(array->memoryArena, structSize + arraySize + occupancyArraySize);
 		OccupancyArrayChunk<T> *newChunk = (OccupancyArrayChunk<T> *)blob.memory;
 		*newChunk = {};
-		newChunk->count = 0;
 		newChunk->items = (T *)(blob.memory + structSize);
 		initBitArray(&newChunk->occupancy, array->itemsPerChunk, makeArray(occupancyArrayCount, (u64 *)(blob.memory + structSize + arraySize)));
 
@@ -68,10 +67,9 @@ Indexed<T*> append(OccupancyArray<T> *array)
 	*result.value = {};
 
 	// update counts
-	chunk->count++;
 	array->count++;
 
-	if (chunk->count == array->itemsPerChunk)
+	if (chunk->occupancy.setBitCount == array->itemsPerChunk)
 	{
 		// recalculate firstChunkWithSpace/Index
 		if (array->count == array->itemsPerChunk * array->chunkCount)
@@ -87,7 +85,7 @@ Indexed<T*> append(OccupancyArray<T> *array)
 			// (If that's not, we have bigger problems!)
 			OccupancyArrayChunk<T> *nextChunk = chunk->nextChunk;
 			s32 nextChunkIndex = array->firstChunkWithSpaceIndex + 1;
-			while (nextChunk->count == array->itemsPerChunk)
+			while (nextChunk->occupancy.setBitCount == array->itemsPerChunk)
 			{
 				// NB: We don't check for a null nextChunk. It should never be null - if it is, something is corrupted
 				// and we want to crash here, and the dereference will do that so no need to assert!
@@ -155,7 +153,6 @@ void removeIndex(OccupancyArray<T> *array, s32 indexToRemove)
 	unsetBit(&chunk->occupancy, itemIndex);
 
 	// Decrease counts
-	chunk->count--;
 	array->count--;
 
 	// Update firstChunkWithSpace/Index if the index is lower.

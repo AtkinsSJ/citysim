@@ -3,7 +3,6 @@
 template<typename T>
 struct OccupancyArrayChunk
 {
-	s32 count; // @Size: This is redundant as the BitArray tracks the number of set bits too.
 	T *items;
 	BitArray occupancy;
 
