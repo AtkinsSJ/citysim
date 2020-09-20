@@ -76,7 +76,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
 
 Entity *addEntity(City *city);
-void deleteEntity(City *city, Entity *entity);
+void removeEntity(City *city, Entity *entity);
 void drawEntities(City *city, Rect2I visibleTileBounds);
 
 //

@@ -185,18 +185,16 @@ void drawFires(City *city, Rect2I visibleTileBounds)
 	}
 }
 
-Fire *findFireAt(City *city, s32 x, s32 y)
+Indexed<Fire*> findFireAt(City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;
 
-	Fire *result = null;
+	Indexed<Fire*> result = makeNullIndexedValue<Fire*>();
 
 	if (layer->activeFireCount > 0)
 	{
 		FireSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
-		Indexed<Fire *> existingFire = findFirst(&sector->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
-
-		result = existingFire.value;
+		result = findFirst(&sector->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
 	}
 
 	return result;
@@ -204,8 +202,8 @@ Fire *findFireAt(City *city, s32 x, s32 y)
 
 void startFireAt(City *city, s32 x, s32 y)
 {
-	Fire *existingFire = findFireAt(city, x, y);
-	if (existingFire != null)
+	Indexed<Fire*> existingFire = findFireAt(city, x, y);
+	if (existingFire.value != null)
 	{
 		// Fire already exists!
 		// TODO: make the fire stronger?
@@ -254,12 +252,16 @@ void removeFireAt(City *city, s32 x, s32 y)
 	FireLayer *layer = &city->fireLayer;
 
 	FireSector *sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
-	s32 removedFires = removeAll(&sectorAtPosition->activeFires, [=](Fire fire) { return fire.pos.x == x && fire.pos.y == y; }, 1);
-	if (removedFires > 0)
-	{
-		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+	Indexed<Fire*> fireAtPosition = findFirst(&sectorAtPosition->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
 
-		layer->activeFireCount -= removedFires;
+	if (fireAtPosition.value != null)
+	{
+		// Remove it!
+		removeEntity(city, fireAtPosition.value->entity);
+		removeIndex(&sectorAtPosition->activeFires, fireAtPosition.index);
+		layer->activeFireCount--;
+
+		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
 
 		// Figure out if the building at the position still has some fire
 		// TODO: Move problem detection, Building should be responsible for it @BuildingProblem

@@ -50,7 +50,7 @@ void drawFires(City *city, Rect2I visibleTileBounds);
 void registerFireProtectionBuilding(FireLayer *layer, Building *building);
 void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
 
-Fire *findFireAt(City *city, s32 x, s32 y);
+Indexed<Fire*> findFireAt(City *city, s32 x, s32 y);
 void startFireAt(City *city, s32 x, s32 y);
 void removeFireAt(City *city, s32 x, s32 y);
 void addFireRaw(City *city, s32 x, s32 y);

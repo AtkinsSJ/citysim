@@ -159,6 +159,17 @@ struct Indexed
 	T value;
 	s32 index;
 };
+
+template<typename T>
+inline Indexed<T> makeNullIndexedValue()
+{
+	Indexed<T> result;
+	result.value = null;
+	result.index = -1;
+
+	return result;
+}
+
 template<typename T>
 inline Indexed<T> makeIndexedValue(T value, s32 index)
 {

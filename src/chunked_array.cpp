@@ -340,7 +340,7 @@ s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit)
 template<typename T, typename Filter>
 Indexed<T *> findFirst(ChunkedArray<T> *array, Filter filter)
 {
-	Indexed<T*> result = makeIndexedValue<T*>(null, -1);
+	Indexed<T*> result = makeNullIndexedValue<T*>();
 
 	for (auto it = iterate(array); hasNext(&it); next(&it))
 	{

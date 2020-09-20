@@ -221,7 +221,7 @@ void next(OccupancyArrayIterator<T> *iterator)
 	{
 		iterator->indexInChunk++;
 
-		if (iterator->indexInChunk >= iterator->currentChunk->count)
+		if (iterator->indexInChunk >= iterator->array->itemsPerChunk)
 		{
 			// Next chunk
 			iterator->chunkIndex++;

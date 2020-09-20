@@ -10,6 +10,7 @@ enum EntityType
 
 struct Entity
 {
+	s32 index;
 	EntityType type;
 
 	Rect2 bounds;

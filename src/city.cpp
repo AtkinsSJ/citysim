@@ -50,7 +50,16 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 inline Entity *addEntity(City *city)
 {
-	return append(&city->entities).value;
+	auto entityRecord = append(&city->entities);
+	logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
+	entityRecord.value->index = entityRecord.index;
+	return entityRecord.value;
+}
+
+inline void removeEntity(City *city, Entity *entity)
+{
+	logInfo("Removing entity #{0}"_s, {formatInt(entity->index)});
+	removeIndex(&city->entities, entity->index);
 }
 
 void drawEntities(City *city, Rect2I visibleTileBounds)
