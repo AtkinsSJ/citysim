@@ -30,6 +30,7 @@ ENTITIES:
 	✔ Clean up fire drawing code
 - Convert buildings too
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.
+- Saving and loading of Entity? Or do we include that data elsewhere? IDK
 
 Buildings should be responsible for detecting their own problems, not the fire layer for instance. @BuildingProblem
 

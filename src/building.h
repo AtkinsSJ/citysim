@@ -152,6 +152,8 @@ struct Building
 	s32 typeID;
 	Rect2I footprint;
 	s32 variantIndex;
+
+	Entity *entity;
 	s32 spriteOffset; // used as the offset for getSprite
 	
 	s32 currentResidents;

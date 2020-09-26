@@ -85,7 +85,11 @@ void drawEntities(City *city, Rect2I visibleTileBounds)
 		auto entity = get(&it);
 		if (overlaps(cropArea, entity->bounds))
 		{
-			// TODO: Batch these together somehow? Our batching is a bit complicated
+			// TODO: Batch these together somehow? Our batching is a bit complicated.
+			// OK, turns out our renderer still batches same-texture-same-shader calls into a single draw call!
+			// So, the difference is just sending N x RenderItem_DrawSingleRect instead of 1 x RenderItem_DrawRects
+			// Thanks, past me!
+			// - Sam, 26/09/2020
 			drawSingleSprite(&renderer->worldBuffer, entity->sprite, entity->bounds, shaderID, entity->color);
 		}
 	}
@@ -106,6 +110,10 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	
 	// Random sprite!
 	building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
+
+	building->entity = addEntity(city, EntityType_Building, building);
+	building->entity->bounds = rect2(footprint);
+	building->entity->sprite = getSprite(def->sprites, building->spriteOffset);
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
 	append(&ownerSector->ownedBuildings, building);
@@ -405,6 +413,7 @@ void demolishRect(City *city, Rect2I area)
 
 		s32 buildingIndex = city->tileBuildingIndex.get(buildingFootprint.x, buildingFootprint.y);
 		removeIndex(&city->buildings, buildingIndex);
+		removeEntity(city, building->entity);
 
 		building = null; // For safety, because we just deleted the Building!
 
@@ -519,7 +528,7 @@ void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
 
 	drawZones(city, visibleTileBounds, renderer->shaderIds.untextured);
 
-	drawBuildings(city, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
+	// drawBuildings(city, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
 
 	drawEntities(city, visibleTileBounds);
 
