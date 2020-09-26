@@ -113,7 +113,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 
 	building->entity = addEntity(city, EntityType_Building, building);
 	building->entity->bounds = rect2(footprint);
-	building->entity->sprite = getSprite(def->sprites, building->spriteOffset);
+	building->entity->sprite = getBuildingSprite(building);
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
 	append(&ownerSector->ownedBuildings, building);

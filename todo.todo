@@ -29,6 +29,11 @@ ENTITIES:
 	✔ Entities are drawn
 	✔ Clean up fire drawing code
 - Convert buildings too
+	✔ Buildings have entities
+	- Demolition rect colours building entities
+	- Being unpowered colours building entities
+		-> I think both of these should be calculated by the building, in an updateBuilding() function.
+		-> Which makes me think also, we should update ALL entities, and finally use that entity data pointer.
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.
 - Saving and loading of Entity? Or do we include that data elsewhere? IDK
 

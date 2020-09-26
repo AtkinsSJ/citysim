@@ -529,6 +529,11 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 						building->spriteOffset     = savBuilding->spriteOffset;
 						building->currentResidents = savBuilding->currentResidents;
 						building->currentJobs      = savBuilding->currentJobs;
+						// Because the sprite was assigned in addBuildingDirect(), before we loaded the variant, we
+						// need to overwrite the sprite here.
+						// Probably there's a better way to organise this, but this works.
+						// - Sam, 26/09/2020
+						building->entity->sprite = getBuildingSprite(building);
 
 						// This is a bit hacky but it's how we calculate it elsewhere
 						city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;

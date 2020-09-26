@@ -898,7 +898,7 @@ void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDe
 	}
 
 	// Update the entity sprite
-	building->entity->sprite = getSprite(def->sprites, building->spriteOffset);
+	building->entity->sprite = getBuildingSprite(building);
 }
 
 void updateAdjacentBuildingVariants(City *city, Rect2I footprint)
