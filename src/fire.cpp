@@ -207,6 +207,11 @@ void addFireRaw(City *city, s32 x, s32 y)
 	}
 }
 
+void updateFire(City * /*city*/, Fire * /*fire*/)
+{
+	// TODO: Burn baby burn, disco inferno
+}
+
 void removeFireAt(City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;

@@ -34,6 +34,9 @@ ENTITIES:
 	- Being unpowered colours building entities
 		-> I think both of these should be calculated by the building, in an updateBuilding() function.
 		-> Which makes me think also, we should update ALL entities, and finally use that entity data pointer.
+		OK, so... need to make a decision about what updateEntities() is, and where it goes.
+			- If it's a simulation thing, it should be tied to the simulation
+			- If it's just a rendering update thing, it needs a different name probably!
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.
 - Saving and loading of Entity? Or do we include that data elsewhere? IDK
 

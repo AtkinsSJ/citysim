@@ -51,8 +51,9 @@ void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
 
 Indexed<Fire*> findFireAt(City *city, s32 x, s32 y);
 void startFireAt(City *city, s32 x, s32 y);
-void removeFireAt(City *city, s32 x, s32 y);
 void addFireRaw(City *city, s32 x, s32 y);
+void updateFire(City *city, Fire *fire);
+void removeFireAt(City *city, s32 x, s32 y);
 
 u8 getFireRiskAt(City *city, s32 x, s32 y);
 u8 getFireProtectionAt(City *city, s32 x, s32 y);

@@ -989,6 +989,27 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 	}
 }
 
+void updateBuilding(City *city, Building *building)
+{
+	V4 drawColorNormal = makeWhite();
+	V4 drawColorDemolish = color255(255,128,128,255);
+	V4 drawColorNoPower = color255(32,32,64,255);
+
+	if (areaOf(city->demolitionRect) > 0 && overlaps(building->footprint, city->demolitionRect))
+	{
+		// Draw building red to preview demolition
+		building->entity->color = drawColorDemolish;
+	}
+	else if (hasProblem(building, BuildingProblem_NoPower))
+	{
+		building->entity->color = drawColorNoPower;
+	}
+	else
+	{
+		building->entity->color = drawColorNormal;
+	}
+}
+
 inline void addProblem(Building *building, BuildingProblem problem)
 {
 	building->problems += problem;

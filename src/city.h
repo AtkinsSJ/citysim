@@ -36,6 +36,8 @@ struct City
 	TransportLayer transportLayer;
 	ZoneLayer      zoneLayer;
 
+	Rect2I demolitionRect;
+
 	ArrayChunkPool<Building *>  sectorBuildingsChunkPool;
 	ArrayChunkPool<Rect2I>      sectorBoundariesChunkPool;
 	ArrayChunkPool<BuildingRef> buildingRefsChunkPool;
@@ -47,7 +49,7 @@ const u8 maxDistanceToWater = 10;
 // Public API
 //
 void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String name, String playerName, s32 funds);
-void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect);
+void drawCity(City *city, Rect2I visibleTileBounds);
 
 void markAreaDirty(City *city, Rect2I bounds);
 
@@ -78,6 +80,7 @@ void demolishRect(City *city, Rect2I area);
 template <typename T>
 Entity *addEntity(City *city, EntityType type, T *entityData);
 void removeEntity(City *city, Entity *entity);
+void updateEntities(City *city);
 void drawEntities(City *city, Rect2I visibleTileBounds);
 
 //

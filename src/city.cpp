@@ -72,6 +72,15 @@ inline void removeEntity(City *city, Entity *entity)
 	removeIndex(&city->entities, entity->index);
 }
 
+void updateEntities(City *city)
+{
+	for (auto it = iterate(&city->entities); hasNext(&it); next(&it))
+	{
+		Entity *entity = get(&it);
+		updateEntity(city, entity);
+	}
+}
+
 void drawEntities(City *city, Rect2I visibleTileBounds)
 {
 	// TODO: Depth sorting
@@ -522,7 +531,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 	return result;
 }
 
-void drawCity(City *city, Rect2I visibleTileBounds, Rect2I demolitionRect)
+void drawCity(City *city, Rect2I visibleTileBounds)
 {
 	drawTerrain(city, visibleTileBounds, renderer->shaderIds.pixelArt);
 

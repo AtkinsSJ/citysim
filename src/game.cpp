@@ -704,7 +704,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 		}
 	}
 
-	Rect2I demolitionRect = irectNegativeInfinity();
+	city->demolitionRect = irectNegativeInfinity();
 
 	{
 		DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
@@ -845,7 +845,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 			{
 				DragResult dragResult = updateDragState(&gameState->worldDragState, mouseTilePos, mouseIsOverUI, DragRect);
 				s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
-				demolitionRect = dragResult.dragRect;
+				city->demolitionRect = dragResult.dragRect;
 
 				switch (dragResult.operation)
 				{
@@ -937,7 +937,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 	// logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});
 
-	drawCity(city, visibleTileBounds, demolitionRect);
+	drawCity(city, visibleTileBounds);
 
 	// Data layer rendering
 	if (gameState->dataLayerToDraw)

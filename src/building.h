@@ -196,6 +196,7 @@ bool buildingDefHasType(BuildingDef *def, s32 typeID);
 s32 getRequiredPower(Building *building);
 bool buildingHasPower(Building *building);
 
+void updateBuilding(City *city, Building *building);
 void addProblem(Building *building, BuildingProblem problem);
 void removeProblem(Building *building, BuildingProblem problem);
 bool hasProblem(Building *building, BuildingProblem problem);
