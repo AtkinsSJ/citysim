@@ -75,7 +75,8 @@ void updateSomeBuildings(City *city);
 s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
 
-Entity *addEntity(City *city);
+template <typename T>
+Entity *addEntity(City *city, EntityType type, T *entityData);
 void removeEntity(City *city, Entity *entity);
 void drawEntities(City *city, Rect2I visibleTileBounds);
 

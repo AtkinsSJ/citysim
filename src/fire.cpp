@@ -189,13 +189,10 @@ void addFireRaw(City *city, s32 x, s32 y)
 	Fire *fire = appendBlank(&sector->activeFires);
 
 	fire->pos = v2i(x, y);
-	fire->entity = addEntity(city);
+	fire->entity = addEntity(city, EntityType_Fire, fire);
 	// TODO: Probably most of this wants to be moved into addEntity()
-	fire->entity->type = EntityType_Fire;
 	fire->entity->bounds = rectXYWHi(x, y, 1, 1);
-	fire->entity->depth = 0; // TODO
 	fire->entity->sprite = getSprite(getSpriteGroup("e_fire_1x1"_s), randomNext(&globalAppState.cosmeticRandom));
-	fire->entity->color = makeWhite();
 
 	layer->activeFireCount++;
 

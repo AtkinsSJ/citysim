@@ -35,6 +35,8 @@ Buildings should be responsible for detecting their own problems, not the fire l
 
 Rather than having a bunch of registerFireProtectionBuilding() etc functions, just tell all layers about a new building (entity?) being created/destroyed, and let them decide if they care or not!
 
+BUFFS! (See paper notes)
+
 Move save-file code for each layer into the layer.
 - Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 

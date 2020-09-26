@@ -48,12 +48,22 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	saveTerrainTypes();
 }
 
-inline Entity *addEntity(City *city)
+template <typename T>
+Entity *addEntity(City *city, EntityType type, T *entityData)
 {
 	auto entityRecord = append(&city->entities);
 	logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
 	entityRecord.value->index = entityRecord.index;
-	return entityRecord.value;
+
+	Entity *entity = entityRecord.value;
+	entity->type = type;
+	// Make sure we're supplying entity data that matched the entity type!
+	ASSERT(checkEntityMatchesType<T>(entity));
+	entity->dataPointer = entityData;
+
+	entity->color = makeWhite();
+	entity->depth = 0;
+	return entity;
 }
 
 inline void removeEntity(City *city, Entity *entity)
