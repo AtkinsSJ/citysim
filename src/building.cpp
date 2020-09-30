@@ -1051,8 +1051,19 @@ void updateBuilding(City *city, Building *building)
 	}
 
 	// Power!
+	if (def->power < 0)
+	{
+		if (-def->power > building->allocatedPower)
+		{
+			addProblem(building, BuildingProblem_NoPower);
+		}
+		else
+		{
+			removeProblem(building, BuildingProblem_NoPower);
+		}
+	}
 
-
+	// Now, colour the building based on its problems
 	V4 drawColorNormal = makeWhite();
 	V4 drawColorNoPower = color255(32,32,64,255);
 

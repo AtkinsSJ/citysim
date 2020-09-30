@@ -740,8 +740,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 					if (building != null)
 					{
-						// @BuildingProblem
-						addProblem(building, BuildingProblem_NoPower);
+						building->allocatedPower = 0;
 					}
 				}
 			}
@@ -773,14 +772,12 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 						s32 requiredPower = getRequiredPower(building);
 						if (powerRemaining >= requiredPower)
 						{
-							// @BuildingProblem
-							removeProblem(building, BuildingProblem_NoPower);
+							building->allocatedPower = requiredPower;
 							powerRemaining -= requiredPower;
 						}
 						else
 						{
-							// @BuildingProblem
-							addProblem(building, BuildingProblem_NoPower);
+							building->allocatedPower = 0;
 						}
 					}
 				}
@@ -805,11 +802,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 					BuildingRef buildingRef = getValue(&buildingRefIt);
 					Building *building = getBuilding(city, buildingRef);
 
-					if (building != null)
-					{
-						// @BuildingProblem
-						removeProblem(building, BuildingProblem_NoPower);
-					}
+					building->allocatedPower = getRequiredPower(building);
 				}
 			}
 		}

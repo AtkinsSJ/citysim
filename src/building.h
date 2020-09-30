@@ -159,6 +159,8 @@ struct Building
 	s32 currentResidents;
 	s32 currentJobs;
 
+	s32 allocatedPower;
+
 	// TODO: Need to know how long a problem has been going/when it started, because you don't
 	// want a building to abandon immediately when a problem occurs, but want some kind of
 	// countdown. That needs to be recorded in the savegame too.

@@ -35,8 +35,6 @@ ENTITIES:
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.
 - Saving and loading of Entity? Or do we include that data elsewhere? IDK
 
-Buildings should be responsible for detecting their own problems, not the fire layer for instance. @BuildingProblem
-
 Rather than having a bunch of registerFireProtectionBuilding() etc functions, just tell all layers about a new building (entity?) being created/destroyed, and let them decide if they care or not!
 
 BUFFS! (See paper notes)
@@ -194,6 +192,10 @@ Coverage:
 Transport:
 - Really not sure about this one right now. We need some way of simulating traffic, which means picking a place to start/end a trip, and then finding a path using a choice of transport method. For the path-finding, we could use an A* style algorithm, so that's not too hard, though we might want to cache the trips somehow - perhaps store sector-to-sector (well, sector-groups not sectors) path costs. We already have an old system for calculating connectivity.
 	- SC4 gives residents a specific job which they always path to, until they can't or they change job (for whatever reason). That's extra data to track but keeps things fairly consistent over time. Occasionally we'd want to recalculate the path for a resident though - possibly all residents as I'm not sure if we could easily subtract their previous trip from the model.
+
+Power:
+- Brownouts: Partial power coverage to each building when demand is higher than supply. Display this visually.
+	- Alternatively, cycle which buildings don't get power. Though, maybe a sector-by-sector basis is easier?
 
 Terrain generation / modification!
 - We need some kind of "generate a new map" button to start off.
