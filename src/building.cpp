@@ -1040,6 +1040,18 @@ void updateBuilding(City *city, Building *building)
 		}
 	}
 
+	// Fire!
+	if (doesAreaContainFire(city, building->footprint))
+	{
+		addProblem(building, BuildingProblem_Fire);
+	}
+	else
+	{
+		removeProblem(building, BuildingProblem_Fire);
+	}
+
+	// Power!
+
 
 	V4 drawColorNormal = makeWhite();
 	V4 drawColorNoPower = color255(32,32,64,255);

@@ -50,6 +50,7 @@ void registerFireProtectionBuilding(FireLayer *layer, Building *building);
 void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
 
 Indexed<Fire*> findFireAt(City *city, s32 x, s32 y);
+bool doesAreaContainFire(City *city, Rect2I bounds);
 void startFireAt(City *city, s32 x, s32 y);
 void addFireRaw(City *city, s32 x, s32 y);
 void updateFire(City *city, Fire *fire);

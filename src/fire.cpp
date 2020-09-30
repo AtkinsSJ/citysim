@@ -163,6 +163,37 @@ Indexed<Fire*> findFireAt(City *city, s32 x, s32 y)
 	return result;
 }
 
+bool doesAreaContainFire(City *city, Rect2I bounds)
+{
+	FireLayer *layer = &city->fireLayer;
+	bool foundFire = false;
+
+	Rect2I footprintSectors = getSectorsCovered(&layer->sectors, bounds);
+	for (s32 sy = footprintSectors.y;
+		sy < footprintSectors.y + footprintSectors.h && !foundFire;
+		sy++)
+	{
+		for (s32 sx = footprintSectors.x;
+			sx < footprintSectors.x + footprintSectors.w && !foundFire;
+			sx++)
+		{
+			FireSector *sector = getSector(&layer->sectors, sx, sy);
+			for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+			{
+				Fire *fire = get(&it);
+
+				if (contains(bounds, fire->pos))
+				{
+					foundFire = true;
+					break;
+				}
+			}
+		}
+	}
+
+	return foundFire;
+}
+
 void startFireAt(City *city, s32 x, s32 y)
 {
 	Indexed<Fire*> existingFire = findFireAt(city, x, y);
@@ -197,19 +228,12 @@ void addFireRaw(City *city, s32 x, s32 y)
 	layer->activeFireCount++;
 
 	markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
-
-	// Tell the building it's on fire
-	// TODO: Remove this! @BuildingProblem
-	Building *building = getBuildingAt(city, x, y);
-	if (building != null)
-	{
-		addProblem(building, BuildingProblem_Fire);
-	}
 }
 
 void updateFire(City * /*city*/, Fire * /*fire*/)
 {
 	// TODO: Burn baby burn, disco inferno
+	// NB: This isn't actually called from anywhere right now.
 }
 
 void removeFireAt(City *city, s32 x, s32 y)
@@ -227,42 +251,6 @@ void removeFireAt(City *city, s32 x, s32 y)
 		layer->activeFireCount--;
 
 		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
-
-		// Figure out if the building at the position still has some fire
-		// TODO: Move problem detection, Building should be responsible for it @BuildingProblem
-		Building *building = getBuildingAt(city, x, y);
-		if (building != null)
-		{
-			bool foundFire = false;
-
-			Rect2I footprintSectors = getSectorsCovered(&layer->sectors, building->footprint);
-			for (s32 sy = footprintSectors.y;
-				sy < footprintSectors.y + footprintSectors.h && !foundFire;
-				sy++)
-			{
-				for (s32 sx = footprintSectors.x;
-					sx < footprintSectors.x + footprintSectors.w && !foundFire;
-					sx++)
-				{
-					FireSector *sector = getSector(&layer->sectors, sx, sy);
-					for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
-					{
-						Fire *fire = get(&it);
-
-						if (contains(building->footprint, fire->pos))
-						{
-							foundFire = true;
-							break;
-						}
-					}
-				}
-			}
-			
-			if (!foundFire)
-			{
-				removeProblem(building, BuildingProblem_Fire);
-			}
-		}
 	}
 }
 
