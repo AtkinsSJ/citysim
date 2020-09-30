@@ -16,10 +16,14 @@ Notes for searching:
 
 ------------------------------------------------
 
-Problem Icons
-- I think these want to be entities in their own right, rather than just part of drawing a building. This would let us manage a minimum distance between them, so they don't overlap, and we can animate them.
-
-Related to this ^ maybe we want to have a more general-purpose "entity" system? Buildings, actors, fires, indicators, etc could all be represented partly as a generic "entity": a sprite, an area to draw it, a depth to draw at, and a colour; and then either have the other data in a union or a separate struct somewhere else. That'll help with drawing, as we'll need to draw all of these things sorted together in order for it to look right.
+Building problems:
+- Problem icon entities
+	- Maintain minimum distance between them, so it's not cluttered and chaotic.
+	- Appear/disappear when the building gains or loses its problem
+	- Somehow, we need to make sure that preventing overlaps doesn't result in none showing at all if one is removed!
+		(eg, if a 5x5 area is without power, but only one icon is shown in the middle, then demolishing the building in the middle would remove the icon. We need to make sure other icons pop up in its place so the lack of power is still indicated for the other buildings in that area.)
+- Problems have a start time. This gives some breathing room so that briefly having a problem doesn't immediately have consequences.
+- I guess we need a game clock before we can do that though!
 
 ENTITIES:
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.
