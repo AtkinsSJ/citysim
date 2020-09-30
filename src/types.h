@@ -381,6 +381,8 @@ V4 operator+(V4 lhs, V4 rhs);
 V4 operator+=(V4 &lhs, V4 rhs);
 V4 operator-(V4 lhs, V4 rhs);
 V4 operator-=(V4 &lhs, V4 rhs);
+V4 operator*(V4 lhs, V4 rhs);
+V4 operator*=(V4 &lhs, V4 rhs);
 V4 operator*(V4 v, f32 s);
 V4 operator*=(V4 &v, f32 s);
 V4 operator/(V4 v, f32 s);

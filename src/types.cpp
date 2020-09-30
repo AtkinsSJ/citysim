@@ -676,7 +676,11 @@ inline V4 operator+(V4 lhs, V4 rhs)
 }
 inline V4 operator+=(V4 &lhs, V4 rhs)
 {
-	lhs = lhs + rhs;
+	lhs.x += rhs.x;
+	lhs.y += rhs.y;
+	lhs.z += rhs.z;
+	lhs.w += rhs.w;
+	
 	return lhs;
 }
 inline V4 operator-(V4 lhs, V4 rhs)
@@ -685,7 +689,24 @@ inline V4 operator-(V4 lhs, V4 rhs)
 }
 inline V4 operator-=(V4 &lhs, V4 rhs)
 {
-	lhs = lhs - rhs;
+	lhs.x -= rhs.x;
+	lhs.y -= rhs.y;
+	lhs.z -= rhs.z;
+	lhs.w -= rhs.w;
+	
+	return lhs;
+}
+inline V4 operator*(V4 lhs, V4 rhs)
+{
+	return v4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
+}
+inline V4 operator*=(V4 &lhs, V4 rhs)
+{
+	lhs.x *= rhs.x;
+	lhs.y *= rhs.y;
+	lhs.z *= rhs.z;
+	lhs.w *= rhs.w;
+
 	return lhs;
 }
 inline V4 operator*(V4 v, f32 s)

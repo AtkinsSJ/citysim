@@ -991,16 +991,60 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 
 void updateBuilding(City *city, Building *building)
 {
+	BuildingDef *def = getBuildingDef(building->typeID);
+
+	// Check the building's needs are met
+	// ... except for the ones that are checked by layers.
+
+
+	// Distance to road
+	// TODO: Replace with access to any transport types, instead of just road? Not sure what we want with that.
+	if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone))
+	{
+		s32 distanceToRoad = s32Max;
+		// TODO: @Speed: We only actually need to check the boundary tiles, because they're guaranteed to be less than
+		// the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
+		// would work really. Anyway, can think about that later.
+		// - Sam, 30/08/2019
+		for (s32 y = building->footprint.y; y < building->footprint.y + building->footprint.h; y++)
+		{
+			for (s32 x = building->footprint.x; x < building->footprint.x + building->footprint.w; x++)
+			{
+				distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, Transport_Road));
+			}
+		}
+
+		if (def->growsInZone)
+		{
+			// Zoned buildings inherit their zone's max distance to road.
+			if (distanceToRoad > getZoneDef(def->growsInZone).maximumDistanceToRoad)
+			{
+				addProblem(building, BuildingProblem_NoTransportAccess);
+			}
+			else
+			{
+				removeProblem(building, BuildingProblem_NoTransportAccess);
+			}
+		}
+		else if (def->flags & Building_RequiresTransportConnection)
+		{
+			// Other buildings require direct contact
+			if (distanceToRoad > 1)
+			{
+				addProblem(building, BuildingProblem_NoTransportAccess);
+			}
+			else
+			{
+				removeProblem(building, BuildingProblem_NoTransportAccess);
+			}
+		}
+	}
+
+
 	V4 drawColorNormal = makeWhite();
-	V4 drawColorDemolish = color255(255,128,128,255);
 	V4 drawColorNoPower = color255(32,32,64,255);
 
-	if (areaOf(city->demolitionRect) > 0 && overlaps(building->footprint, city->demolitionRect))
-	{
-		// Draw building red to preview demolition
-		building->entity->color = drawColorDemolish;
-	}
-	else if (hasProblem(building, BuildingProblem_NoPower))
+	if (hasProblem(building, BuildingProblem_NoPower))
 	{
 		building->entity->color = drawColorNoPower;
 	}

@@ -63,6 +63,9 @@ Entity *addEntity(City *city, EntityType type, T *entityData)
 
 	entity->color = makeWhite();
 	entity->depth = 0;
+
+	entity->canBeDemolished = false;
+
 	return entity;
 }
 
@@ -72,15 +75,6 @@ inline void removeEntity(City *city, Entity *entity)
 	removeIndex(&city->entities, entity->index);
 }
 
-void updateEntities(City *city)
-{
-	for (auto it = iterate(&city->entities); hasNext(&it); next(&it))
-	{
-		Entity *entity = get(&it);
-		updateEntity(city, entity);
-	}
-}
-
 void drawEntities(City *city, Rect2I visibleTileBounds)
 {
 	// TODO: Depth sorting
@@ -88,6 +82,10 @@ void drawEntities(City *city, Rect2I visibleTileBounds)
 	//  iterating the entities array.
 	Rect2 cropArea = rect2(visibleTileBounds);
 	auto shaderID = renderer->shaderIds.pixelArt;
+
+	bool isDemolitionHappening = (areaOf(city->demolitionRect) > 0);
+	V4 drawColorDemolish = color255(255,128,128,255);
+	Rect2 demolitionRect = rect2(city->demolitionRect);
 
 	for (auto it = iterate(&city->entities); hasNext(&it); next(&it))
 	{
@@ -99,7 +97,15 @@ void drawEntities(City *city, Rect2I visibleTileBounds)
 			// So, the difference is just sending N x RenderItem_DrawSingleRect instead of 1 x RenderItem_DrawRects
 			// Thanks, past me!
 			// - Sam, 26/09/2020
-			drawSingleSprite(&renderer->worldBuffer, entity->sprite, entity->bounds, shaderID, entity->color);
+
+			V4 drawColor = entity->color;
+
+			if (entity->canBeDemolished && isDemolitionHappening && overlaps(entity->bounds, demolitionRect))
+			{
+				drawColor *= drawColorDemolish;
+			}
+
+			drawSingleSprite(&renderer->worldBuffer, entity->sprite, entity->bounds, shaderID, drawColor);
 		}
 	}
 }
@@ -123,6 +129,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	building->entity = addEntity(city, EntityType_Building, building);
 	building->entity->bounds = rect2(footprint);
 	building->entity->sprite = getBuildingSprite(building);
+	building->entity->canBeDemolished = true;
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
 	append(&ownerSector->ownedBuildings, building);
@@ -680,54 +687,7 @@ void updateSomeBuildings(City *city)
 		for (auto it = iterate(&sector->ownedBuildings); hasNext(&it); next(&it))
 		{
 			Building *building = getValue(&it);
-			BuildingDef *def = getBuildingDef(building->typeID);
-
-			// Check the building's needs are met
-			// ... except for the ones that are checked by layers.
-
-
-			// Distance to road
-			// TODO: Replace with access to any transport types, instead of just road? Not sure what we want with that.
-			if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone))
-			{
-				s32 distanceToRoad = s32Max;
-				// TODO: @Speed: We only actually need to check the boundary tiles, because they're guaranteed to be less than
-				// the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
-				// would work really. Anyway, can think about that later.
-				// - Sam, 30/08/2019
-				for (s32 y = building->footprint.y; y < building->footprint.y + building->footprint.h; y++)
-				{
-					for (s32 x = building->footprint.x; x < building->footprint.x + building->footprint.w; x++)
-					{
-						distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, Transport_Road));
-					}
-				}
-
-				if (def->growsInZone)
-				{
-					// Zoned buildings inherit their zone's max distance to road.
-					if (distanceToRoad > getZoneDef(def->growsInZone).maximumDistanceToRoad)
-					{
-						addProblem(building, BuildingProblem_NoTransportAccess);
-					}
-					else
-					{
-						removeProblem(building, BuildingProblem_NoTransportAccess);
-					}
-				}
-				else if (def->flags & Building_RequiresTransportConnection)
-				{
-					// Other buildings require direct contact
-					if (distanceToRoad > 1)
-					{
-						addProblem(building, BuildingProblem_NoTransportAccess);
-					}
-					else
-					{
-						removeProblem(building, BuildingProblem_NoTransportAccess);
-					}
-				}
-			}
+			updateBuilding(city, building);
 		}
 	}
 }

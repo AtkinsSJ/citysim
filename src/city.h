@@ -80,7 +80,6 @@ void demolishRect(City *city, Rect2I area);
 template <typename T>
 Entity *addEntity(City *city, EntityType type, T *entityData);
 void removeEntity(City *city, Entity *entity);
-void updateEntities(City *city);
 void drawEntities(City *city, Rect2I visibleTileBounds);
 
 //

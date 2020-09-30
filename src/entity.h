@@ -19,6 +19,9 @@ struct Entity
 	f32 depth;
 	Sprite *sprite;
 	V4 color;
+
+	// Misc
+	bool canBeDemolished; // TODO: make this be flags?
 };
 
 template <typename T>
