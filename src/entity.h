@@ -46,5 +46,3 @@ inline bool checkEntityMatchesType(Entity *entity)
 
 	return false;
 }
-
-void updateEntity(City *city, Entity *entity);
