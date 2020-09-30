@@ -80,15 +80,21 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 	}
 }
 
-void registerPoliceBuilding(CrimeLayer *layer, Building *building)
+void notifyNewBuilding(CrimeLayer *layer, BuildingDef *def, Building *building)
 {
-	append(&layer->policeBuildings, getReferenceTo(building));
+	if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
+	{
+		append(&layer->policeBuildings, getReferenceTo(building));
+	}
 }
 
-void unregisterPoliceBuilding(CrimeLayer *layer, Building *building)
+void notifyBuildingDemolished(CrimeLayer *layer, BuildingDef *def, Building *building)
 {
-	bool success = findAndRemove(&layer->policeBuildings, getReferenceTo(building));
-	ASSERT(success);
+	if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
+	{
+		bool success = findAndRemove(&layer->policeBuildings, getReferenceTo(building));
+		ASSERT(success);
+	}
 }
 
 f32 getPoliceCoveragePercentAt(City *city, s32 x, s32 y)

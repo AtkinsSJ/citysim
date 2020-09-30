@@ -81,13 +81,19 @@ inline void markHealthLayerDirty(HealthLayer *layer, Rect2I bounds)
 	markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
-void registerHealthBuilding(HealthLayer *layer, Building *building)
+void notifyNewBuilding(HealthLayer *layer, BuildingDef *def, Building *building)
 {
-	append(&layer->healthBuildings, getReferenceTo(building));
+	if (hasEffect(&def->healthEffect))
+	{
+		append(&layer->healthBuildings, getReferenceTo(building));
+	}
 }
 
-void unregisterHealthBuilding(HealthLayer *layer, Building *building)
+void notifyBuildingDemolished(HealthLayer *layer, BuildingDef *def, Building *building)
 {
-	bool success = findAndRemove(&layer->healthBuildings, getReferenceTo(building));
-	ASSERT(success);
+	if (hasEffect(&def->healthEffect))
+	{
+		bool success = findAndRemove(&layer->healthBuildings, getReferenceTo(building));
+		ASSERT(success);
+	}
 }

@@ -46,8 +46,8 @@ void initFireLayer(FireLayer *layer, City *city, MemoryArena *gameArena);
 void updateFireLayer(City *city, FireLayer *layer);
 void markFireLayerDirty(FireLayer *layer, Rect2I bounds);
 
-void registerFireProtectionBuilding(FireLayer *layer, Building *building);
-void unregisterFireProtectionBuilding(FireLayer *layer, Building *building);
+void notifyNewBuilding(FireLayer *layer, BuildingDef *def, Building *building);
+void notifyBuildingDemolished(FireLayer *layer, BuildingDef *def, Building *building);
 
 Indexed<Fire*> findFireAt(City *city, s32 x, s32 y);
 bool doesAreaContainFire(City *city, Rect2I bounds);

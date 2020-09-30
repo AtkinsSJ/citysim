@@ -35,8 +35,6 @@ ENTITIES:
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.
 - Saving and loading of Entity? Or do we include that data elsewhere? IDK
 
-Rather than having a bunch of registerFireProtectionBuilding() etc functions, just tell all layers about a new building (entity?) being created/destroyed, and let them decide if they care or not!
-
 BUFFS! (See paper notes)
 
 Move save-file code for each layer into the layer.
@@ -45,6 +43,7 @@ Move save-file code for each layer into the layer.
 Placeholder font that's hard-coded. Tricky!
 
 Police coverage is briefly too high in some places after placing a police station, not sure why.
+	- We also have an overflow issue with too many police stations' effects overlapping
 
 Saving and loading!
 - On load, we make sure the simulation is "warmed up" before actually letting the player start. So, probably mark the whole city as dirty for every layer, and then let them all process completely.

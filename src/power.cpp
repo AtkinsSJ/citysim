@@ -809,15 +809,22 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 	}
 }
 
-void registerPowerBuilding(PowerLayer *layer, Building *building)
+
+void notifyNewBuilding(PowerLayer *layer, BuildingDef *def, Building *building)
 {
-	append(&layer->powerBuildings, getReferenceTo(building));
+	if (def->power > 0)
+	{
+		append(&layer->powerBuildings, getReferenceTo(building));
+	}
 }
 
-void unregisterPowerBuilding(PowerLayer *layer, Building *building)
+void notifyBuildingDemolished(PowerLayer *layer, BuildingDef *def, Building *building)
 {
-	bool success = findAndRemove(&layer->powerBuildings, getReferenceTo(building));
-	ASSERT(success);
+	if (def->power > 0)
+	{
+		bool success = findAndRemove(&layer->powerBuildings, getReferenceTo(building));
+		ASSERT(success);
+	}
 }
 
 void debugInspectPower(WindowContext *context, City *city, s32 x, s32 y)

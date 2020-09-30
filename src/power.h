@@ -67,8 +67,8 @@ u8 getDistanceToPower(City *city, s32 x, s32 y);
 
 u8 calculatePowerOverlayForTile(City *city, s32 x, s32 y);
 
-void registerPowerBuilding(PowerLayer *layer, Building *building);
-void unregisterPowerBuilding(PowerLayer *layer, Building *building);
+void notifyNewBuilding(PowerLayer *layer, BuildingDef *def, Building *building);
+void notifyBuildingDemolished(PowerLayer *layer, BuildingDef *def, Building *building);
 
 void debugInspectPower(WindowContext *context, City *city, s32 x, s32 y);
 

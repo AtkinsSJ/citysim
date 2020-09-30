@@ -17,7 +17,7 @@ void initHealthLayer(HealthLayer *layer, City *city, MemoryArena *gameArena);
 void updateHealthLayer(City *city, HealthLayer *layer);
 void markHealthLayerDirty(HealthLayer *layer, Rect2I bounds);
 
-void registerHealthBuilding(HealthLayer *layer, Building *building);
-void unregisterHealthBuilding(HealthLayer *layer, Building *building);
+void notifyNewBuilding(HealthLayer *layer, BuildingDef *def, Building *building);
+void notifyBuildingDemolished(HealthLayer *layer, BuildingDef *def, Building *building);
 
 f32 getHealthCoveragePercentAt(City *city, s32 x, s32 y);

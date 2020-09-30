@@ -254,15 +254,21 @@ void removeFireAt(City *city, s32 x, s32 y)
 	}
 }
 
-void registerFireProtectionBuilding(FireLayer *layer, Building *building)
+void notifyNewBuilding(FireLayer *layer, BuildingDef *def, Building *building)
 {
-	append(&layer->fireProtectionBuildings, getReferenceTo(building));
+	if (hasEffect(&def->fireProtection))
+	{
+		append(&layer->fireProtectionBuildings, getReferenceTo(building));
+	}
 }
 
-void unregisterFireProtectionBuilding(FireLayer *layer, Building *building)
+void notifyBuildingDemolished(FireLayer *layer, BuildingDef *def, Building *building)
 {
-	bool success = findAndRemove(&layer->fireProtectionBuildings, getReferenceTo(building));
-	ASSERT(success);
+	if (hasEffect(&def->fireProtection))
+	{
+		bool success = findAndRemove(&layer->fireProtectionBuildings, getReferenceTo(building));
+		ASSERT(success);
+	}
 }
 
 u8 getFireRiskAt(City *city, s32 x, s32 y)

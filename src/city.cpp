@@ -146,25 +146,10 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 		}
 	}
 
-	if (hasEffect(&def->fireProtection))
-	{
-		registerFireProtectionBuilding(&city->fireLayer, building);
-	}
-
-	if (hasEffect(&def->healthEffect))
-	{
-		registerHealthBuilding(&city->healthLayer, building);
-	}
-
-	if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
-	{
-		registerPoliceBuilding(&city->crimeLayer, building);
-	}
-
-	if (def->power > 0)
-	{
-		registerPowerBuilding(&city->powerLayer, building);
-	}
+	notifyNewBuilding(&city->crimeLayer, def, building);
+	notifyNewBuilding(&city->fireLayer, def, building);
+	notifyNewBuilding(&city->healthLayer, def, building);
+	notifyNewBuilding(&city->powerLayer, def, building);
 
 	return building;
 }
@@ -404,25 +389,10 @@ void demolishRect(City *city, Rect2I area)
 		Rect2I buildingFootprint = building->footprint;
 
 		// Clean up other references
-		if (hasEffect(&def->fireProtection))
-		{
-			unregisterFireProtectionBuilding(&city->fireLayer, building);
-		}
-
-		if (hasEffect(&def->healthEffect))
-		{
-			unregisterHealthBuilding(&city->healthLayer, building);
-		}
-
-		if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
-		{
-			unregisterPoliceBuilding(&city->crimeLayer, building);
-		}
-
-		if (def->power > 0)
-		{
-			unregisterPowerBuilding(&city->powerLayer, building);
-		}
+		notifyBuildingDemolished(&city->crimeLayer, def, building);
+		notifyBuildingDemolished(&city->fireLayer, def, building);
+		notifyBuildingDemolished(&city->healthLayer, def, building);
+		notifyBuildingDemolished(&city->powerLayer, def, building);
 
 		building->id = 0;
 		building->typeID = -1;
