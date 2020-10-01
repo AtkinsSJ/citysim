@@ -1173,7 +1173,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 				Rect2I colorLabelBounds = uiText(uiBuffer, font, getText(dataView->fixedColorNames[fixedColorIndex]), uiPos + v2i(paletteBlockSize + uiPadding, 0), ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
 
 				Rect2I paletteBlockBounds = irectXYWH(uiPos.x, uiPos.y - paletteBlockSize, paletteBlockSize, paletteBlockSize);
-				drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, asOpaque(fixedPalette->get(fixedColorIndex)));
+				drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, asOpaque((*fixedPalette)[fixedColorIndex]));
 
 				uiPos.y -= colorLabelBounds.h + uiPadding;
 

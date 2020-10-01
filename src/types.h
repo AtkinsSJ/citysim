@@ -259,10 +259,7 @@ struct Array
 	T *items;
 
 	// NB: it's a reference so you can do assignments!
-	// @Deprecated, it's confusing and weird when using pointers. Use .get() instead
 	T& operator[](s32 index);
-
-	T &get(s32 index);
 };
 
 template<typename T>
