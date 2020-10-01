@@ -102,35 +102,25 @@ Array<s32> getSetBitIndices(BitArray *array)
 	return result;
 }
 
-s32 getFirstSetBitIndex(BitArray *array)
+inline s32 getFirstSetBitIndex(BitArray *array)
 {
-	s32 result = -1;
-
-	if (array->setBitCount > 0)
-	{
-		for (s32 index = 0; index < array->size; index++)
-		{
-			if ((*array)[index])
-			{
-				result = index;
-				break;
-			}
-		}
-	}
-
-	return result;
+	return getFirstMatchingBitIndex(array, true);
 }
 
-s32 getFirstUnsetBitIndex(BitArray *array)
+inline s32 getFirstUnsetBitIndex(BitArray *array)
 {
-	// @Copypasta getFirstSetBitIndex
+	return getFirstMatchingBitIndex(array, false);
+}
+
+s32 getFirstMatchingBitIndex(BitArray *array, bool set)
+{
 	s32 result = -1;
 
 	if (array->setBitCount != array->size)
 	{
 		for (s32 index = 0; index < array->size; index++)
 		{
-			if (!(*array)[index])
+			if ((*array)[index] == set)
 			{
 				result = index;
 				break;

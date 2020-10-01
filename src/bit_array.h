@@ -35,6 +35,7 @@ Array<s32> getSetBitIndices(BitArray *array);
 
 s32 getFirstSetBitIndex(BitArray *array);
 s32 getFirstUnsetBitIndex(BitArray *array);
+s32 getFirstMatchingBitIndex(BitArray *array, bool set);
 
 struct BitArrayIterator
 {
