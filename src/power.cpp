@@ -707,108 +707,85 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		layer->cachedCombinedConsumption += network->cachedConsumption;
 	}
 
-	// Handle blackout/brownout situations
+	// Supply power to buildings
 	for (auto networkIt = iterate(&layer->networks);
 		hasNext(&networkIt);
 		next(&networkIt))
 	{
 		PowerNetwork *network = get(&networkIt);
 
+		// Figure out which mode this network is in.
+		enum NetworkMode {
+			Blackout, // No production
+			Brownout, // Not enough production
+			FullCoverage // Enough
+		} networkMode;
 		if (network->cachedConsumption == 0)
 		{
-			// No consumers, so it's fine
+			// No iteration of buildings is necessary!
 			continue;
 		}
 		else if (network->cachedProduction == 0)
 		{
-			// Blackout!
-			// @Copypasta Almost identical code for blackout/fully-power
-
-			// So, mark every consumer as having no power
-			for (auto groupIt = iterate(&network->groups);
-				hasNext(&groupIt);
-				next(&groupIt))
-			{
-				PowerGroup *powerGroup = getValue(&groupIt);
-
-				for (auto buildingRefIt = iterate(&powerGroup->buildings);
-					hasNext(&buildingRefIt);
-					next(&buildingRefIt))
-				{
-					BuildingRef buildingRef = getValue(&buildingRefIt);
-					Building *building = getBuilding(city, buildingRef);
-
-					if (building != null)
-					{
-						building->allocatedPower = 0;
-					}
-				}
-			}
+			networkMode = Blackout;
 		}
 		else if (network->cachedProduction < network->cachedConsumption)
 		{
-			// Brownout!
-			// Supply power to buildings if we can, and mark the rest as unpowered.
-			// TODO: Implement some kind of "rolling brownout" system where buildings get powered
-			// and unpowered over time to even things out, instead of it always being first-come-first-served.
-			s32 powerRemaining = network->cachedProduction;
-
-			// @Copypasta Only a little different from the other branches
-			for (auto groupIt = iterate(&network->groups);
-				hasNext(&groupIt);
-				next(&groupIt))
-			{
-				PowerGroup *powerGroup = getValue(&groupIt);
-
-				for (auto buildingRefIt = iterate(&powerGroup->buildings);
-					hasNext(&buildingRefIt);
-					next(&buildingRefIt))
-				{
-					BuildingRef buildingRef = getValue(&buildingRefIt);
-					Building *building = getBuilding(city, buildingRef);
-
-					if (building != null)
-					{
-						s32 requiredPower = getRequiredPower(building);
-						if (powerRemaining >= requiredPower)
-						{
-							building->allocatedPower = requiredPower;
-							powerRemaining -= requiredPower;
-						}
-						else
-						{
-							building->allocatedPower = 0;
-						}
-					}
-				}
-			}
+			networkMode = Brownout;
 		}
 		else
 		{
-			// All buildings have power!
-			// @Copypasta Almost identical code for blackout/fully-power
+			networkMode = FullCoverage;
+		}
 
-			// So, mark every consumer as having power
-			for (auto groupIt = iterate(&network->groups);
-				hasNext(&groupIt);
-				next(&groupIt))
+		// Now, iterate the buildings and give them power based on that mode.
+		s32 powerRemaining = network->cachedProduction;
+		for (auto groupIt = iterate(&network->groups);
+			hasNext(&groupIt);
+			next(&groupIt))
+		{
+			PowerGroup *powerGroup = getValue(&groupIt);
+
+			for (auto buildingRefIt = iterate(&powerGroup->buildings);
+				hasNext(&buildingRefIt);
+				next(&buildingRefIt))
 			{
-				PowerGroup *powerGroup = getValue(&groupIt);
+				BuildingRef buildingRef = getValue(&buildingRefIt);
+				Building *building = getBuilding(city, buildingRef);
 
-				for (auto buildingRefIt = iterate(&powerGroup->buildings);
-					hasNext(&buildingRefIt);
-					next(&buildingRefIt))
+				if (building != null)
 				{
-					BuildingRef buildingRef = getValue(&buildingRefIt);
-					Building *building = getBuilding(city, buildingRef);
+					switch (networkMode)
+					{
+						case Blackout: {
+							building->allocatedPower = 0;
+						} break;
 
-					building->allocatedPower = getRequiredPower(building);
+						case Brownout: {
+							// Supply power to buildings if we can, and mark the rest as unpowered.
+							// TODO: Implement some kind of "rolling brownout" system where buildings get powered
+							// and unpowered over time to even things out, instead of it always being first-come-first-served.
+							s32 requiredPower = getRequiredPower(building);
+							if (powerRemaining >= requiredPower)
+							{
+								building->allocatedPower = requiredPower;
+								powerRemaining -= requiredPower;
+							}
+							else
+							{
+								building->allocatedPower = 0;
+							}
+						} break;
+
+						case FullCoverage: {
+							building->allocatedPower = getRequiredPower(building);
+						} break;
+					}
 				}
 			}
 		}
 	}
 }
-
 
 void notifyNewBuilding(PowerLayer *layer, BuildingDef *def, Building *building)
 {

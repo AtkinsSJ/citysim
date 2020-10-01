@@ -37,7 +37,7 @@ s32 countLines(Blob data)
 
 	smm startOfNextLine = 0;
 
-	// @Copypasta from loadNextLine() but with a lot of alterations!
+	// Code originally based on loadNextLine() but with a lot of alterations!
 	do
 	{
 		++result;
