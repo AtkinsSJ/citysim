@@ -436,8 +436,8 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 				u8 *startOfChunk = pos;
 				SAVChunk_Meta *cMeta = READ_CHUNK(SAVChunk_Meta);
 
-				String cityName = loadString(cMeta->cityName, startOfChunk, gameArena);
-				String playerName = loadString(cMeta->playerName, startOfChunk, gameArena);
+				String cityName = readString(cMeta->cityName, startOfChunk);
+				String playerName = readString(cMeta->playerName, startOfChunk);
 				initCity(gameArena, city, cMeta->cityWidth, cMeta->cityHeight, cityName, playerName, cMeta->funds);
 				cityTileCount = city->bounds.w * city->bounds.h;
 
@@ -759,14 +759,6 @@ inline bool identifiersAreEqual(const u8 *a, const u8 *b)
 String readString(SAVString source, u8 *base)
 {
 	return makeString((char *)(base + source.relativeOffset), source.length, false);
-}
-
-// @Deprecated
-String loadString(SAVString source, u8 *base, MemoryArena *arena)
-{
-	String toCopy = makeString((char *)(base + source.relativeOffset), source.length, false);
-
-	return pushString(arena, toCopy);
 }
 
 void rleDecode(u8 *source, u8 *dest, s32 destSize)
