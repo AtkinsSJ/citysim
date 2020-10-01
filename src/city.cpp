@@ -282,23 +282,6 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 		building = addBuilding(city, def, footprint);
 	}
 
-	// Tiles
-	for (s32 y=0; y<footprint.h; y++)
-	{
-		for (s32 x=0; x<footprint.w; x++)
-		{
-			// Data layer updates
-			// This is a @Hack! If we don't do this, then the building texture linking doesn't work,
-			// because it reads the transport info for the tile instead of looking up the tile's Building.
-			// The TransportLayer overwrites this later when it does a refresh of the area, but that will
-			// happen at an unknown point in the future after this function ends.
-			// So, we stuff temporary data in here so we can read it in ~10 lines' time!
-			// IDK, the texture-linking stuff really needs a rethink.
-			// - Sam, 28/08/2019
-			addTransportToTile(city, footprint.x+x, footprint.y+y, def->transportTypes);
-		}
-	}
-
 	// TODO: Calculate residents/jobs properly!
 	building->currentResidents = def->residents;
 	building->currentJobs = def->jobs;
