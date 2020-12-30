@@ -22,6 +22,8 @@ GameState *beginNewGame()
 	initCity(&gameState->gameArena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
 	generateTerrain(&gameState->city, &gameState->gameRandom);
 
+	initGameClock(&gameState->gameClock);
+
 	return gameState;
 }
 

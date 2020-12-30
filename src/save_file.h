@@ -159,6 +159,14 @@ struct SAVChunkHeader
 	leU32 length; // Length of the chunk, NOT including the size of this SAVChunkHeader
 };
 
+//
+//
+//
+//         Start of actual game-related stuff
+//
+//
+//
+
 const u8 SAV_META_VERSION = 1;
 const u8 SAV_META_ID[4] = {'M', 'E', 'T', 'A'};
 struct SAVChunk_Meta

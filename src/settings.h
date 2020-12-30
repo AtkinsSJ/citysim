@@ -66,5 +66,7 @@ AppStatus updateAndRenderSettingsMenu(struct UIState *uiState);
 void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName);
 SettingsState makeDefaultSettings();
 void loadSettingsFile(String name, Blob settingsData);
+
+String getUserDataPath();
 String getUserSettingsPath();
 String settingToString(SettingsState *state, SettingDef *def);
