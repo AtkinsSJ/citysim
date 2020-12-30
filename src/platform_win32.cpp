@@ -56,7 +56,7 @@ DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp)
 
 	// Finally, we can fill-in our own DateTime struct with the data
 	result.year = localSystemTime.wYear;
-	result.month = localSystemTime.wMonth;
+	result.month = (MonthOfYear)(localSystemTime.wMonth - 1); // SYSTEMTIME month starts at 1 for January
 	result.dayOfMonth = localSystemTime.wDay;
 	result.hour = localSystemTime.wHour;
 	result.minute = localSystemTime.wMinute;

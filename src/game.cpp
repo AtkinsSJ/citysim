@@ -480,8 +480,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	uiText(uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}"_s, {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
+	uiText(uiBuffer, font, formatDateTime(gameState->gameClock.cosmeticDate, DateTime_ShortDate),
+		v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+/*
 	uiText(uiBuffer, font, myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+*/
 
 	uiText(uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
 	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);

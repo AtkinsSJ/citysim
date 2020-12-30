@@ -5,6 +5,42 @@ inline DateTime getLocalTimeFromTimestamp(u64 unixTimestamp)
 	return platform_getLocalTimeFromTimestamp(unixTimestamp);
 }
 
+inline DateTime makeFakeDateTime(u32 daysFromStart, f32 timeWithinDay)
+{
+	DateTime dateTime = {};
+
+	// We don't currently bother with leap years, so the month lengths are hard-coded
+	const u32 DAYS_PER_YEAR = 365;
+	const u32 DAYS_PER_MONTH[] = {
+	//   J   F   M   A   M   J   J   A   S   O   N   D
+		31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+	};
+
+	dateTime.year = (daysFromStart / DAYS_PER_YEAR) + 1;
+	u32 dayOfYear = daysFromStart % DAYS_PER_YEAR;
+	u8 monthIndex = 0;
+	while (dayOfYear >= DAYS_PER_MONTH[monthIndex])
+	{
+		dayOfYear -= DAYS_PER_MONTH[monthIndex];
+		monthIndex++;
+	}
+	dateTime.month = (MonthOfYear)monthIndex;
+	dateTime.dayOfMonth = dayOfYear;
+
+	dateTime.dayOfWeek = (DayOfWeek)(daysFromStart % 7);
+
+	// Time as a percentage
+	f32 fractionalHours = clamp01(timeWithinDay) * 24.0f;
+	dateTime.hour = floor_s32(fractionalHours);
+	f32 fractionalMinutes = fraction_f32(fractionalHours) * 60.0f;
+	dateTime.minute = floor_s32(fractionalMinutes);
+	f32 fractionalSeconds = fraction_f32(fractionalMinutes) * 60.0f;
+	dateTime.second = floor_s32(fractionalSeconds);
+	dateTime.millisecond = floor_s32(fraction_f32(fractionalSeconds) * 1000.0f);
+
+	return dateTime;
+}
+
 String formatDateTime(DateTime dateTime, DateTimeFormat format)
 {
 	DEBUG_FUNCTION();

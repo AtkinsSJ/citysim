@@ -10,16 +10,34 @@ enum DayOfWeek
 	Day_Saturday,
 	Day_Sunday,
 
-	DayOfWeekCount,
+	DayOfWeekCount
+};
+
+enum MonthOfYear
+{
+	Month_January,
+	Month_February,
+	Month_March,
+	Month_April,
+	Month_May,
+	Month_June,
+	Month_July,
+	Month_August,
+	Month_September,
+	Month_October,
+	Month_November,
+	Month_December,
+
+	MonthOfYearCount
 };
 
 struct DateTime
 {
-	u64 unixTimestamp; // Global time
+	u64 unixTimestamp; // Global time. Only valid if this DateTime was read from the operating system 
 
 	s32 year;
-	s32 month;
-	s32 dayOfMonth;
+	MonthOfYear month;
+	s32 dayOfMonth; // Starts at 1 for the first day
 	s32 hour;
 	s32 minute;
 	s32 second;
@@ -62,6 +80,12 @@ const String monthNameStrings[12] = {
 };
 
 DateTime getLocalTimeFromTimestamp(u64 unixTimestamp);
+
+// Creates a DateTime struct that looks right, from game clock data.
+// daysFromStart counts from 1st January year 1, and timeWithinDay is a 0-1 value for the time.
+// This is only useful for the simulation and displaying it to the player, and may or may not
+// align to leap years etc. Like the name says, it's fake! The unix timestamp will always be wrong.
+DateTime makeFakeDateTime(u32 daysFromStart, f32 timeWithinDay);
 
 //
 // This runs like myprintf(), except with named sections instead of numbered ones.
