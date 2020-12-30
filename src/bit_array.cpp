@@ -19,6 +19,8 @@ inline bool BitArray::operator[](u32 index)
 {
 	bool result = false;
 
+	// NB: Check and assert done this way so that in debug builds, we assert, but
+	// in release builds without asserts, we just return false for non-existent bits.
 	if (index >= (u32)this->size || index < 0)
 	{
 		ASSERT(false);
@@ -36,6 +38,8 @@ inline bool BitArray::operator[](u32 index)
 
 void setBit(BitArray *array, s32 index)
 {
+	// NB: Check and assert done this way so that in debug builds, we assert, but
+	// in release builds without asserts, we just do nothing for non-existent bits.
 	if (index >= array->size || index < 0)
 	{
 		ASSERT(false);
@@ -58,6 +62,8 @@ void setBit(BitArray *array, s32 index)
 
 void unsetBit(BitArray *array, s32 index)
 {
+	// NB: Check and assert done this way so that in debug builds, we assert, but
+	// in release builds without asserts, we just do nothing for non-existent bits. 
 	if (index >= array->size || index < 0)
 	{
 		ASSERT(false);

@@ -17,7 +17,7 @@ Notes for searching:
 ------------------------------------------------
 
 Building problems:
-- Problem icon entities
+- Problem icon entities (Zots!)
 	- Maintain minimum distance between them, so it's not cluttered and chaotic.
 	- Appear/disappear when the building gains or loses its problem
 	- Somehow, we need to make sure that preventing overlaps doesn't result in none showing at all if one is removed!
@@ -50,6 +50,13 @@ Window procs should decide the window title instead of showWindow(), it's weird 
 Window buttons should still do hover-states even on inactive windows.
 
 StringBuilder: Chunks instead of reallocating to a larger buffer size
+
+Multiple Cities
+- Our eventual goal, the game I actually want to make, is code-named "Cities In Space". It involves having multiple colony-cities (different planets, etc) which trade resources between.
+- That means, we'll need to move away from having one single City struct, and be able to support multiple of them, running in parallel.
+- Honestly, I don't like the name "City" for the struct anyway. Not sure what it *should* be called though.
+	- Could call each one a "World", and the overall game state the "Universe"? (Unless we want to have multiple cities on one planet, then it'd be confusing?)
+	- "Map" is a decent term, but it's also what you'd call the minimap. Though actually, if it's a "MiniMap" that's fine.
 
 _hashed string suffix?
 Console commands in a HashTable
