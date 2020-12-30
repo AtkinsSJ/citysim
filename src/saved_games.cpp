@@ -301,13 +301,18 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 {
 	GameState *gameState = newGameState();
 
+	u32 startTicks = SDL_GetTicks();
+
 	FileHandle saveFile = openFile(savedGame->fullPath, FileAccess_Read);
 	bool loadSucceeded = loadSaveFile(&saveFile, gameState);
 	closeFile(&saveFile);
 
 	if (loadSucceeded)
 	{
-		pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {saveFile.path}));
+		u32 endTicks = SDL_GetTicks();
+		logInfo("Loaded save '{0}' in {1} milliseconds."_s, {savedGame->shortName, formatInt(endTicks - startTicks)});
+
+		pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {savedGame->shortName}));
 
 		globalAppState.gameState = gameState;
 		globalAppState.appStatus = AppStatus_Game;
@@ -317,7 +322,7 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 	}
 	else
 	{
-		pushUiMessage(uiState, myprintf(getText("msg_load_failure"_s), {saveFile.path}));
+		pushUiMessage(uiState, myprintf(getText("msg_load_failure"_s), {savedGame->shortName}));
 	}
 }
 
