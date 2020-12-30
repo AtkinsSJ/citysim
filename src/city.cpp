@@ -39,6 +39,9 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	city->highestBuildingID = 0;
 
+	// TODO: The rest of this code doesn't really belong here!
+	// It belongs in a "we've just started/loaded a game, so initialise things" place.
+
 	// TODO: Are we sure we want to do this?
 	markAreaDirty(city, city->bounds);
 

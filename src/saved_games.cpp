@@ -125,6 +125,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 				savedGame->saveTime   = getLocalTimeFromTimestamp(cMeta->saveTimestamp);
 				savedGame->cityName   = intern(&catalogue->stringsTable, readString(cMeta->cityName, startOfChunk));
 				savedGame->playerName = intern(&catalogue->stringsTable, readString(cMeta->playerName, startOfChunk));
+				savedGame->citySize   = v2i(cMeta->cityWidth, cMeta->cityHeight);
 				savedGame->funds      = cMeta->funds;
 				savedGame->population = cMeta->population;
 			}
@@ -298,16 +299,17 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 {
-	globalAppState.gameState = loadExistingGame();
+	GameState *gameState = newGameState();
 
-	City *city = &globalAppState.gameState->city;
 	FileHandle saveFile = openFile(savedGame->fullPath, FileAccess_Read);
-	bool loadSucceeded = loadSaveFile(&saveFile, city, &globalAppState.gameState->gameArena);
+	bool loadSucceeded = loadSaveFile(&saveFile, gameState);
 	closeFile(&saveFile);
 
 	if (loadSucceeded)
 	{
 		pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {saveFile.path}));
+
+		globalAppState.gameState = gameState;
 		globalAppState.appStatus = AppStatus_Game;
 
 		// Filename is interned so it's safe to copy it

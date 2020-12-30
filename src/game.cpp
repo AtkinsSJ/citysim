@@ -1,41 +1,28 @@
 #pragma once
 
-GameState *beginNewGame()
+GameState *newGameState()
 {
-	GameState *result;
-	bootstrapArena(GameState, result, gameArena);
-	initRandom(&result->gameRandom, Random_MT, 12345);
+	GameState *gameState;
+	bootstrapArena(GameState, gameState, gameArena);
+	initRandom(&gameState->gameRandom, Random_MT, 12345);
 
-	result->status = GameStatus_Playing;
+	gameState->status = GameStatus_Playing;
+	gameState->actionMode = ActionMode_None;
+	initFlags(&gameState->inspectTileDebugFlags, InspectTileDebugFlagCount);
+	initDataViewUI(gameState);
 
-	result->actionMode = ActionMode_None;
-
-	initFlags(&result->inspectTileDebugFlags, InspectTileDebugFlagCount);
-
-	initDataViewUI(result);
-
-	s32 gameStartFunds = 1000000;
-	initCity(&result->gameArena, &result->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-	generateTerrain(&result->city, &result->gameRandom);
-
-	return result;
+	return gameState;
 }
 
-GameState *loadExistingGame()
+GameState *beginNewGame()
 {
-	GameState *result;
-	bootstrapArena(GameState, result, gameArena);
-	initRandom(&result->gameRandom, Random_MT, 12345);
+	GameState *gameState = newGameState();
 
-	result->status = GameStatus_Playing;
+	s32 gameStartFunds = 1000000;
+	initCity(&gameState->gameArena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+	generateTerrain(&gameState->city, &gameState->gameRandom);
 
-	result->actionMode = ActionMode_None;
-
-	initFlags(&result->inspectTileDebugFlags, InspectTileDebugFlagCount);
-
-	initDataViewUI(result);
-
-	return result;
+	return gameState;
 }
 
 void freeGameState(GameState *gameState)

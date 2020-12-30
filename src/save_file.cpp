@@ -338,7 +338,7 @@ bool writeSaveFile(FileHandle *file, City *city)
 	return succeeded;
 }
 
-bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
+bool loadSaveFile(FileHandle *file, GameState *gameState)
 {
 	// So... I'm not really sure how to signal success, honestly.
 	// I suppose the process ouytside of this function is:
@@ -356,6 +356,8 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 	// For now, reading the whole thing into memory and then processing it is simpler.
 	// However, it's wasteful memory-wise, so if save files get big we might want to
 	// read the file a bit at a time. @Size
+
+	City *city = &gameState->city;
 
 
 	File saveFile = readFile(file);
@@ -438,7 +440,7 @@ bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena)
 
 				String cityName = readString(cMeta->cityName, startOfChunk);
 				String playerName = readString(cMeta->playerName, startOfChunk);
-				initCity(gameArena, city, cMeta->cityWidth, cMeta->cityHeight, cityName, playerName, cMeta->funds);
+				initCity(&gameState->gameArena, city, cMeta->cityWidth, cMeta->cityHeight, cityName, playerName, cMeta->funds);
 				cityTileCount = city->bounds.w * city->bounds.h;
 
 				hasLoadedMeta = true;

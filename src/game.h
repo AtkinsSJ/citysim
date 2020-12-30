@@ -134,8 +134,8 @@ struct GameState
 	Flags<InspectTileDebugFlags, u8> inspectTileDebugFlags;
 };
 
-GameState *beginNewGame();
-GameState *loadExistingGame();
+GameState *newGameState(); // A blank game state with no city
+GameState *beginNewGame(); // A game state for a new map
 
 AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState);
 void freeGameState(GameState *gameState);

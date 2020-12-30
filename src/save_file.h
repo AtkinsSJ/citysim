@@ -320,7 +320,7 @@ struct SAVChunk_Zone
 #pragma pack(pop)
 
 bool writeSaveFile(FileHandle *file, City *city);
-bool loadSaveFile(FileHandle *file, City *city, MemoryArena *gameArena);
+bool loadSaveFile(FileHandle *file, struct GameState *gameState);
 
 //
 // INTERNAL

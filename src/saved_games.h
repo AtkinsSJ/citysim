@@ -16,6 +16,7 @@ struct SavedGameInfo
 	DateTime saveTime;
 	String cityName;
 	String playerName;
+	V2I citySize;
 	s32 funds;
 	s32 population;
 };
