@@ -16,6 +16,16 @@ Notes for searching:
 
 ------------------------------------------------
 
+Split beginNewGame() into itself and loadExistingGame()
+(Our existing save code fills-in the City that's within the Game, but we need it to also be able to modify other parts of the Game struct which are independent of the City, like the clock and the RNG state and potentially other things.)
+- Add city size to SavedGameInfo so it can be used to initialise before fully reading the save file
+- Add camera position to save game
+
+Game clock!
+- (See paper notes)
+
+Save and restore gameRandom state
+
 Building problems:
 - Problem icon entities (Zots!)
 	- Maintain minimum distance between them, so it's not cluttered and chaotic.

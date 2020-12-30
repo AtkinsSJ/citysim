@@ -31,7 +31,6 @@ enum ActionMode
 
 struct DragState
 {
-	V2I citySize;
 	bool isDragging;
 	V2I mouseDragStartWorldPos;
 	V2I mouseDragEndWorldPos;
@@ -113,6 +112,7 @@ struct GameState
 	MemoryArena gameArena;
 	GameStatus status;
 	Random gameRandom;
+	GameClock gameClock;
 	City city;
 
 	DataView dataLayerToDraw;
@@ -135,6 +135,8 @@ struct GameState
 };
 
 GameState *beginNewGame();
+GameState *loadExistingGame();
+
 AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState);
 void freeGameState(GameState *gameState);
 
@@ -142,8 +144,8 @@ void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityW
 void updateAndRenderGameUI(UIState *uiState, GameState *gameState);
 void showCostTooltip(UIState *uiState, s32 buildCost);
 
-Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize);
-DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1});
+Rect2I getDragArea(DragState *dragState, Rect2I cityBounds, DragType dragType, V2I itemSize);
+DragResult updateDragState(DragState *dragState, Rect2I cityBounds, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1});
 
 void drawDataViewOverlay(GameState *gameState, Rect2I visibleTileBounds);
 void drawDataViewUI(UIState *uiState, GameState *gameState);

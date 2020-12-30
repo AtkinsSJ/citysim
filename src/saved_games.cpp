@@ -298,7 +298,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 {
-	globalAppState.gameState = beginNewGame();
+	globalAppState.gameState = loadExistingGame();
 
 	City *city = &globalAppState.gameState->city;
 	FileHandle saveFile = openFile(savedGame->fullPath, FileAccess_Read);

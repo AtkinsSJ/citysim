@@ -14,6 +14,27 @@ GameState *beginNewGame()
 
 	initDataViewUI(result);
 
+	s32 gameStartFunds = 1000000;
+	initCity(&result->gameArena, &result->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+	generateTerrain(&result->city, &result->gameRandom);
+
+	return result;
+}
+
+GameState *loadExistingGame()
+{
+	GameState *result;
+	bootstrapArena(GameState, result, gameArena);
+	initRandom(&result->gameRandom, Random_MT, 12345);
+
+	result->status = GameStatus_Playing;
+
+	result->actionMode = ActionMode_None;
+
+	initFlags(&result->inspectTileDebugFlags, InspectTileDebugFlagCount);
+
+	initDataViewUI(result);
+
 	return result;
 }
 
@@ -137,7 +158,7 @@ void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityW
 #endif
 }
 
-Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
+Rect2I getDragArea(DragState *dragState, Rect2I cityBounds, DragType dragType, V2I itemSize)
 {
 	DEBUG_FUNCTION();
 
@@ -264,13 +285,13 @@ Rect2I getDragArea(DragState *dragState, DragType dragType, V2I itemSize)
 			INVALID_DEFAULT_CASE;
 		}
 
-		result = intersect(result, irectXYWH(0,0, dragState->citySize.x, dragState->citySize.y));
+		result = intersect(result, cityBounds);
 	}
 
 	return result;
 }
 
-DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize)
+DragResult updateDragState(DragState *dragState, Rect2I cityBounds, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize)
 {
 	DEBUG_FUNCTION();
 
@@ -279,7 +300,7 @@ DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsO
 	if (dragState->isDragging && mouseButtonJustReleased(MouseButton_Left))
 	{
 		result.operation = DragResult_DoAction;
-		result.dragRect = getDragArea(dragState, dragType, itemSize);
+		result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
 
 		dragState->isDragging = false;
 	}
@@ -295,7 +316,7 @@ DragResult updateDragState(DragState *dragState, V2I mouseTilePos, bool mouseIsO
 		if (mouseButtonPressed(MouseButton_Left) && dragState->isDragging)
 		{
 			dragState->mouseDragEndWorldPos = mouseTilePos;
-			result.dragRect = getDragArea(dragState, dragType, itemSize);
+			result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
 		}
 		else
 		{
@@ -750,7 +771,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 					{
 						DragType dragType = (buildingDef->buildMethod == BuildMethod_DragLine) ? DragLine : DragRect;
 
-						DragResult dragResult = updateDragState(&gameState->worldDragState, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
+						DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
 						s32 buildCost = calculateBuildCost(city, buildingDef, dragResult.dragRect);
 
 						switch (dragResult.operation)
@@ -806,7 +827,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 			case ActionMode_Zone:
 			{
-				DragResult dragResult = updateDragState(&gameState->worldDragState, mouseTilePos, mouseIsOverUI, DragRect);
+				DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, DragRect);
 
 				CanZoneQuery *canZoneQuery = queryCanZoneTiles(city, gameState->selectedZoneID, dragResult.dragRect);
 				s32 zoneCost = calculateZoneCost(canZoneQuery);
@@ -843,7 +864,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 
 			case ActionMode_Demolish:
 			{
-				DragResult dragResult = updateDragState(&gameState->worldDragState, mouseTilePos, mouseIsOverUI, DragRect);
+				DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, DragRect);
 				s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
 				city->demolitionRect = dragResult.dragRect;
 

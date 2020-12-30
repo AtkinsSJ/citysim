@@ -63,10 +63,6 @@ AppStatus updateAndRenderMainMenu(UIState *uiState)
 	{
 		globalAppState.gameState = beginNewGame();
 
-		s32 gameStartFunds = 1000000;
-		initCity(&globalAppState.gameState->gameArena, &globalAppState.gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-		generateTerrain(&globalAppState.gameState->city, &globalAppState.gameState->gameRandom);
-
 		result = AppStatus_Game;
 	}
 	buttonRect.y += buttonHeight + buttonPadding;

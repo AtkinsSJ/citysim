@@ -39,9 +39,9 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	city->highestBuildingID = 0;
 
+	// TODO: Are we sure we want to do this?
 	markAreaDirty(city, city->bounds);
 
-	globalAppState.gameState->worldDragState.citySize = city->bounds.size;
 	renderer->worldCamera.pos = v2(city->bounds.size) / 2;
 
 	saveBuildingTypes();
@@ -52,7 +52,7 @@ template <typename T>
 Entity *addEntity(City *city, EntityType type, T *entityData)
 {
 	auto entityRecord = append(&city->entities);
-	logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
+	// logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
 	entityRecord.value->index = entityRecord.index;
 
 	Entity *entity = entityRecord.value;
@@ -71,7 +71,7 @@ Entity *addEntity(City *city, EntityType type, T *entityData)
 
 inline void removeEntity(City *city, Entity *entity)
 {
-	logInfo("Removing entity #{0}"_s, {formatInt(entity->index)});
+	// logInfo("Removing entity #{0}"_s, {formatInt(entity->index)});
 	removeIndex(&city->entities, entity->index);
 }
 
