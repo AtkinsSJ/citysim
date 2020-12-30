@@ -25,7 +25,7 @@ inline DateTime makeFakeDateTime(u32 daysFromStart, f32 timeWithinDay)
 		monthIndex++;
 	}
 	dateTime.month = (MonthOfYear)monthIndex;
-	dateTime.dayOfMonth = dayOfYear;
+	dateTime.dayOfMonth = dayOfYear + 1;
 
 	dateTime.dayOfWeek = (DayOfWeek)(daysFromStart % 7);
 
@@ -97,16 +97,16 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
 					}
 					else if (equals(symbol, "month"_s))
 					{
-						append(&stb, formatInt(dateTime.month));
+						append(&stb, formatInt(dateTime.month + 1));
 					}
 					else if (equals(symbol, "month2"_s))
 					{
-						append(&stb, formatInt(dateTime.month, 10, 2));
+						append(&stb, formatInt(dateTime.month + 1, 10, 2));
 					}
 					else if (equals(symbol, "monthN"_s))
 					{
-						ASSERT(dateTime.month >= 1 && dateTime.month <= 12);
-						String monthName = monthNameStrings[dateTime.month - 1];
+						ASSERT(dateTime.month >= 0 && dateTime.month < MonthOfYearCount);
+						String monthName = monthNameStrings[dateTime.month];
 						append(&stb, getText(monthName));
 					}
 					else if (equals(symbol, "day"_s))
