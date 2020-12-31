@@ -159,9 +159,9 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
 					{
 						append(&stb, formatInt(dateTime.millisecond));
 					}
-					else if (equals(symbol, "millis4"_s))
+					else if (equals(symbol, "millis3"_s))
 					{
-						append(&stb, formatInt(dateTime.millisecond, 10, 4));
+						append(&stb, formatInt(dateTime.millisecond, 10, 3));
 					}
 					else if (equals(symbol, "am"_s))
 					{

@@ -42,7 +42,7 @@ data_view_maximum                   High
 date_format_short_date       {day}/{month2}/{year}
 date_format_long_date        {dayN} {day} {monthN} {year}
 date_format_short_date_time  {day}/{month2}/{year} {hour}:{minute2}:{second2}
-date_format_long_date_time   {dayN} {day} {monthN} {year} {hour}:{minute2}:{second2}.{millis4}
+date_format_long_date_time   {dayN} {day} {monthN} {year} {hour}:{minute2}:{second2}.{millis3}
 
 date_part_am        am
 date_part_pm        pm

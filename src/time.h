@@ -109,7 +109,7 @@ DateTime makeFakeDateTime(u32 daysFromStart, f32 timeWithinDay);
 //   second     Seconds
 //   second2    2-digit seconds
 //   millis     Milliseconds
-//   millis4    4-digit milliseconds
+//   millis3    3-digit milliseconds
 //   am         am/pm lowecase
 //   AM         AM/PM uppercase
 //
