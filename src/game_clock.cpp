@@ -7,6 +7,9 @@ void initGameClock(GameClock *clock, u32 currentDay, f32 timeOfDay)
 	clock->currentDay = currentDay;
 	clock->timeWithinDay = clamp01(timeOfDay);
 
+	clock->speed = Speed_Low;
+	clock->isPaused = false;
+
 	updateCosmeticDate(clock);
 }
 
@@ -17,12 +20,15 @@ void updateCosmeticDate(GameClock *clock)
 
 void incrementClock(GameClock *clock, f32 deltaTime)
 {
-	clock->timeWithinDay += (deltaTime / SECONDS_PER_GAME_DAY);
-	while (clock->timeWithinDay >= 1.0f)
+	if (!clock->isPaused)
 	{
-		// Next day!
-		clock->currentDay++;
-		clock->timeWithinDay -= 1.0f;
+		clock->timeWithinDay += (deltaTime * GAME_DAYS_PER_SECOND[clock->speed]);
+		while (clock->timeWithinDay >= 1.0f)
+		{
+			// Next day!
+			clock->currentDay++;
+			clock->timeWithinDay -= 1.0f;
+		}
+		updateCosmeticDate(clock);
 	}
-	updateCosmeticDate(clock);
 }

@@ -28,8 +28,8 @@ Game clock!
 - UI display of state
 - Speed control buttons
 - Pause game on load or start
-- Progress time while game is running
-- Increment day at end of day
+✔ Progress time while game is running
+✔ Increment day at end of day
 - Run callback at end of month
 
 

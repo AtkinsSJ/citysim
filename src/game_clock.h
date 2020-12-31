@@ -1,5 +1,14 @@
 #pragma once
 
+enum GameClockSpeed
+{
+	Speed_Low,
+	Speed_Medium,
+	Speed_Fast,
+
+	GameClockSpeedCount
+};
+
 struct GameClock
 {
 	// Internal values
@@ -10,10 +19,17 @@ struct GameClock
 	// "Cosmetic" values generated from the internal values
 	DateTime cosmeticDate;
 
-	// TODO: Keep the current date string cached here? My string system doesn't make that very easy.
+	// TODO: @Speed Keep the current date string cached here? My string system doesn't make that very easy.
+
+	GameClockSpeed speed;
+	bool isPaused;
 };
 
-const f32 SECONDS_PER_GAME_DAY = 5.0f;
+const f32 GAME_DAYS_PER_SECOND[GameClockSpeedCount] = {
+	1.0f / 5.0f, // Slow
+	1.0f / 1.0f, // Medium
+	3.0f / 1.0f  // Fast
+};
 
 void initGameClock(GameClock *clock, u32 currentDay = 0, f32 timeOfDay = 0.0f);
 
