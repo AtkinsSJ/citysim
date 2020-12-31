@@ -58,7 +58,7 @@ String getLocale();
 
 // Menu
 void initSettingsMenu();
-AppStatus updateAndRenderSettingsMenu(struct UIState *uiState);
+AppStatus updateAndRenderSettingsMenu(struct UIState *uiState, f32 deltaTime);
 
 //
 // INTERNAL

@@ -13,7 +13,10 @@ struct GameClock
 	// TODO: Keep the current date string cached here? My string system doesn't make that very easy.
 };
 
+const f32 SECONDS_PER_GAME_DAY = 5.0f;
 
 void initGameClock(GameClock *clock, u32 currentDay = 0, f32 timeOfDay = 0.0f);
 
 void updateCosmeticDate(GameClock *clock);
+
+void incrementClock(GameClock *clock, f32 deltaTime);

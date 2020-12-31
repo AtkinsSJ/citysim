@@ -213,7 +213,7 @@ void initSettingsMenu()
 	settings->workingState = settings->settings;
 }
 
-AppStatus updateAndRenderSettingsMenu(UIState *uiState)
+AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
 {
 	AppStatus result = AppStatus_SettingsMenu;
 

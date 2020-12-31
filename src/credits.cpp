@@ -1,6 +1,6 @@
 #pragma once
 
-AppStatus updateAndRenderCredits(UIState *uiState)
+AppStatus updateAndRenderCredits(UIState *uiState, f32 /*deltaTime*/)
 {
 	AppStatus result = AppStatus_Credits;
 

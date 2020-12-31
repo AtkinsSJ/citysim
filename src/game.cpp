@@ -660,7 +660,7 @@ void debugToolsWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
+AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaTime)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
@@ -676,6 +676,8 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState)
 	// Update the simulation... need a smarter way of doing this!
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
+
+		incrementClock(&gameState->gameClock, deltaTime);
 
 		updateCrimeLayer    (city, &city->crimeLayer);
 		updateFireLayer     (city, &city->fireLayer);

@@ -1,7 +1,7 @@
 #pragma once
 
 
-AppStatus updateAndRenderMainMenu(UIState *uiState)
+AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 {
 	DEBUG_FUNCTION();
 	

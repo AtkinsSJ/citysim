@@ -307,6 +307,8 @@ int main(int argc, char *argv[])
 #endif
 
 	// GAME LOOP
+	u64 frameStartTime = SDL_GetPerformanceCounter();
+	f32 deltaTime = SECONDS_PER_FRAME;
 	while (appState->appStatus != AppStatus_Quit)
 	{
 		{
@@ -355,22 +357,22 @@ int main(int argc, char *argv[])
 				{
 					case AppStatus_MainMenu:
 					{
-						newAppStatus = updateAndRenderMainMenu(&uiState);
+						newAppStatus = updateAndRenderMainMenu(&uiState, deltaTime);
 					} break;
 
 					case AppStatus_Credits:
 					{
-						newAppStatus = updateAndRenderCredits(&uiState);
+						newAppStatus = updateAndRenderCredits(&uiState, deltaTime);
 					} break;
 
 					case AppStatus_SettingsMenu:
 					{
-						newAppStatus = updateAndRenderSettingsMenu(&uiState);
+						newAppStatus = updateAndRenderSettingsMenu(&uiState, deltaTime);
 					} break;
 
 					case AppStatus_Game:
 					{
-						newAppStatus = updateAndRenderGame(appState->gameState, &uiState);
+						newAppStatus = updateAndRenderGame(appState->gameState, &uiState, deltaTime);
 					} break;
 
 					case AppStatus_Quit: break;
@@ -439,6 +441,10 @@ int main(int argc, char *argv[])
 		{
 			DEBUG_BLOCK("SDL_GL_SwapWindow");
 			SDL_GL_SwapWindow(renderer->window);
+			
+			u64 now = SDL_GetPerformanceCounter();
+			deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));
+			frameStartTime = now;
 		}
 
 		assets->assetReloadHasJustHappened = false;
