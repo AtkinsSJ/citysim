@@ -715,7 +715,19 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
-		incrementClock(&gameState->gameClock, deltaTime);
+		u8 clockEvents = incrementClock(&gameState->gameClock, deltaTime);
+		if (clockEvents & ClockEvent_NewWeek)
+		{
+			logInfo("New week!"_s);
+		}
+		if (clockEvents & ClockEvent_NewMonth)
+		{
+			logInfo("New month, a budget tick should happen here!"_s);
+		}
+		if (clockEvents & ClockEvent_NewYear)
+		{
+			logInfo("New year!"_s);
+		}
 
 		updateCrimeLayer    (city, &city->crimeLayer);
 		updateFireLayer     (city, &city->fireLayer);

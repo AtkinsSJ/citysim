@@ -26,7 +26,8 @@ Game clock!
 ✔ Pause game while main menu is open
 ✔ Progress time while game is running
 ✔ Increment day at end of day
-- Run callback at end of month
+✔ Run callback at end of month
+- Animation to show time of day
 
 Close the pause window after loading a game
 

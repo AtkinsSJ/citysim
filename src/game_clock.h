@@ -38,4 +38,12 @@ void initGameClock(GameClock *clock, GameTimestamp currentDay = 0, f32 timeOfDay
 
 void updateCosmeticDate(GameClock *clock);
 
-void incrementClock(GameClock *clock, f32 deltaTime);
+enum ClockEvents
+{
+	ClockEvent_NewDay   = 1 << 0,
+	ClockEvent_NewWeek  = 1 << 1,
+	ClockEvent_NewMonth = 1 << 2,
+	ClockEvent_NewYear  = 1 << 3,
+};
+// Returns a set of ClockEvents for events that occur
+u8 incrementClock(GameClock *clock, f32 deltaTime);
