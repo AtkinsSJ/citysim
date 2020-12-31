@@ -86,6 +86,9 @@ typedef LittleEndian<s16> leS16;
 typedef LittleEndian<s32> leS32;
 typedef LittleEndian<s64> leS64;
 
+typedef LittleEndian<f32> leF32;
+typedef LittleEndian<f64> leF64;
+
 //
 // A crazy, completely-unnecessary idea: we could implement a thumbnail handler so that
 // saved games show a little picture of the city. Probably we'd embed a small rendered
@@ -179,6 +182,15 @@ struct SAVChunk_Meta
 	SAVString playerName;
 	leU32 population;
 	leU32 jobs;
+
+	// Clock
+	LittleEndian<GameTimestamp> currentDay;
+	leF32 timeWithinDay;
+
+	// Camera
+	leF32 cameraX;
+	leF32 cameraY;
+	leF32 cameraZoom;
 };
 
 struct SAVChunk_Mods
@@ -327,8 +339,9 @@ struct SAVChunk_Zone
 
 #pragma pack(pop)
 
-bool writeSaveFile(FileHandle *file, City *city);
-bool loadSaveFile(FileHandle *file, struct GameState *gameState);
+struct GameState;
+bool writeSaveFile(FileHandle *file, GameState *gameState);
+bool loadSaveFile(FileHandle *file, GameState *gameState);
 
 //
 // INTERNAL

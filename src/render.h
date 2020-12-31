@@ -7,7 +7,9 @@ const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
 struct Camera
 {
 	V2 pos; // Centre of camera, in camera units
+#if SNAP_CAMERA_TO_WHOLE_PIXELS
 	V2 realPos; // If we've rounded the pos to eg whole pixels, then this is the unrounded value.
+#endif
 	V2 size; // Size of camera, in camera units
 	f32 sizeRatio; // Size of window is multiplied by this to produce the camera's size
 	f32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
@@ -256,6 +258,9 @@ void clearRenderBuffer(RenderBuffer *buffer);
 void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);
 V2 unproject(Camera *camera, V2 screenPos);
+void setCameraPos(Camera *camera, V2 position, f32 zoom);
+// rounding the zoom so it doesn't gradually drift due to float imprecision
+f32 snapZoomLevel(f32 zoom);
 
 void setCursor(String cursorName);
 void setCursorVisible(bool visible);

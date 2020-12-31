@@ -73,8 +73,7 @@ void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityW
 
 	if (zoomDelta)
 	{
-		// round()ing the zoom so it doesn't gradually drift due to float imprecision
-		camera->zoom = (f32) clamp(round_f32(10 * camera->zoom + zoomDelta) * 0.1f, 0.1f, 10.0f);
+		camera->zoom = snapZoomLevel(camera->zoom + zoomDelta);
 	}
 
 	// Panning

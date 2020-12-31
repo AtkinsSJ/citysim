@@ -1,6 +1,6 @@
 #pragma once
 
-bool writeSaveFile(FileHandle *file, City *city)
+bool writeSaveFile(FileHandle *file, GameState *gameState)
 {
 	struct ChunkHeaderWrapper
 	{
@@ -37,6 +37,8 @@ bool writeSaveFile(FileHandle *file, City *city)
 	{
 		initWriteBuffer(&buffer);
 
+		City *city = &gameState->city;
+
 		// File Header
 		SAVFileHeader fileHeader = SAVFileHeader();
 		append(&buffer, sizeof(fileHeader), &fileHeader);
@@ -58,6 +60,17 @@ bool writeSaveFile(FileHandle *file, City *city)
 			stringOffset += meta.cityName.length;
 			meta.playerName = {(u32)city->playerName.length, (u32)stringOffset};
 			stringOffset += meta.playerName.length;
+
+			// Clock
+			GameClock *clock = &gameState->gameClock;
+			meta.currentDay = clock->currentDay;
+			meta.timeWithinDay = clock->timeWithinDay;
+
+			// Camera
+			Camera *camera = &renderer->worldCamera;
+			meta.cameraX = camera->pos.x;
+			meta.cameraY = camera->pos.y;
+			meta.cameraZoom = camera->zoom;
 
 			// Write the data
 			appendStruct(&buffer, &meta);
@@ -442,6 +455,12 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				String playerName = readString(cMeta->playerName, startOfChunk);
 				initCity(&gameState->gameArena, city, cMeta->cityWidth, cMeta->cityHeight, cityName, playerName, cMeta->funds);
 				cityTileCount = city->bounds.w * city->bounds.h;
+
+				// Clock
+				initGameClock(&gameState->gameClock, cMeta->currentDay, cMeta->timeWithinDay);
+
+				// Camera
+				setCameraPos(&renderer->worldCamera, v2(cMeta->cameraX, cMeta->cameraY), cMeta->cameraZoom);
 
 				hasLoadedMeta = true;
 			}

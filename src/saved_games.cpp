@@ -316,7 +316,6 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 
 		globalAppState.gameState = gameState;
 		globalAppState.appStatus = AppStatus_Game;
-		gameState->gameClock.isPaused = true;
 
 		// Filename is interned so it's safe to copy it
 		savedGamesCatalogue.activeSavedGameName = savedGame->shortName;
@@ -330,7 +329,6 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 bool saveGame(UIState *uiState, String saveName)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
-	City *city = &globalAppState.gameState->city;
 
 	String saveFilename = saveName;
 	if (!endsWith(saveFilename, ".sav"_s))
@@ -340,7 +338,7 @@ bool saveGame(UIState *uiState, String saveName)
 
 	String savePath = constructPath({catalogue->savedGamesPath, saveFilename});
 	FileHandle saveFile = openFile(savePath, FileAccess_Write);
-	bool saveSucceeded = writeSaveFile(&saveFile, city);
+	bool saveSucceeded = writeSaveFile(&saveFile, globalAppState.gameState);
 	closeFile(&saveFile);
 
 	if (saveSucceeded)

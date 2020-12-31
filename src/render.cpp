@@ -23,6 +23,19 @@ void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f
 	updateCameraMatrix(camera);
 }
 
+void setCameraPos(Camera *camera, V2 position, f32 zoom)
+{
+	camera->pos = position;
+	camera->zoom = snapZoomLevel(zoom);
+
+	updateCameraMatrix(camera);
+}
+
+inline f32 snapZoomLevel(f32 zoom)
+{
+	return (f32) clamp(round_f32(10 * zoom) * 0.1f, 0.1f, 10.0f);
+}
+
 void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 {
 	renderer->window = window;
