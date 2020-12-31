@@ -1,13 +1,13 @@
 #pragma once
 
-void initGameClock(GameClock *clock, u32 currentDay, f32 timeOfDay)
+void initGameClock(GameClock *clock, GameTimestamp currentDay, f32 timeOfDay)
 {
 	*clock = {};
 
 	clock->currentDay = currentDay;
 	clock->timeWithinDay = clamp01(timeOfDay);
 
-	clock->speed = Speed_Low;
+	clock->speed = Speed_Slow;
 	clock->isPaused = false;
 
 	updateCosmeticDate(clock);

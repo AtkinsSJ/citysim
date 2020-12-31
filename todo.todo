@@ -25,8 +25,8 @@ Game clock!
 - (See paper notes)
 ✔ Add the state to the game
 - Save and load the state (Add camera position while we're modifying it)
-- UI display of state
-- Speed control buttons
+✔ UI display of state
+✔ Speed control buttons
 - Pause game on load or start
 ✔ Progress time while game is running
 ✔ Increment day at end of day

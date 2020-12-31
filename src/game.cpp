@@ -468,8 +468,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
 	s32 left = uiPadding;
 	s32 right = windowWidth - uiPadding;
+	s32 toolbarBottom = 64;
 
-	Rect2I uiRect = irectXYWH(0,0, windowWidth, 64);
+	Rect2I uiRect = irectXYWH(0,0, windowWidth, toolbarBottom);
 	append(&uiState->uiRects, uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
 
@@ -480,8 +481,43 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	uiText(uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}"_s, {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(uiBuffer, font, formatDateTime(gameState->gameClock.cosmeticDate, DateTime_LongDateTime),
-		v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+	// Game clock
+	{
+		GameClock *clock = &gameState->gameClock;
+		uiText(uiBuffer, font, formatDateTime(clock->cosmeticDate, DateTime_ShortDate),
+			v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+
+		UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
+		V2I speedButtonSize = calculateButtonSize(">>>"_s, buttonStyle);
+		Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarBottom - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
+
+		if (uiButton(uiState, ">>>"_s, speedButtonRect, buttonStyle, clock->speed == Speed_Fast))
+		{
+			clock->speed = Speed_Fast;
+			clock->isPaused = false;
+		}
+		speedButtonRect.x -= speedButtonRect.w + uiPadding;
+
+		if (uiButton(uiState, ">>"_s, speedButtonRect, buttonStyle, clock->speed == Speed_Medium))
+		{
+			clock->speed = Speed_Medium;
+			clock->isPaused = false;
+		}
+		speedButtonRect.x -= speedButtonRect.w + uiPadding;
+
+		if (uiButton(uiState, ">"_s, speedButtonRect, buttonStyle, clock->speed == Speed_Slow))
+		{
+			clock->speed = Speed_Slow;
+			clock->isPaused = false;
+		}
+		speedButtonRect.x -= speedButtonRect.w + uiPadding;
+
+		if (uiButton(uiState, "||"_s, speedButtonRect, buttonStyle, clock->isPaused))
+		{
+			clock->isPaused = !clock->isPaused;
+		}
+	}
+
 /*
 	uiText(uiBuffer, font, myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
@@ -495,10 +531,20 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	UIButtonStyle *popupButtonStyle = findButtonStyle(theme, popupMenuStyle->buttonStyleName);
 	// Build UI
 	{
+		// The, um, "MENU" menu. Hmmm.
+		String menuButtonText = getText("button_menu"_s);
+		V2I buttonSize = calculateButtonSize(menuButtonText, buttonStyle);
+		Rect2I buttonRect = irectXYWH(uiPadding, toolbarBottom - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
+		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
+		{
+			// TODO: Pause the game!
+			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+		}
+		buttonRect.x += buttonRect.w + uiPadding;
+
 		// The "ZONE" menu
 		String zoneButtonText = getText("button_zone"_s);
-		V2I buttonSize = calculateButtonSize(zoneButtonText, buttonStyle);
-		Rect2I buttonRect = irectXYWH(uiPadding, buttonSize.y + uiPadding, buttonSize.x, buttonSize.y);
+		buttonRect.size = calculateButtonSize(zoneButtonText, buttonStyle);
 		if (uiMenuButton(uiState, zoneButtonText, buttonRect, Menu_Zone, buttonStyle))
 		{
 			//
@@ -600,15 +646,6 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			setCursor("demolish"_s);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
-
-		// The, um, "MENU" menu. Hmmm.
-		String menuButtonText = getText("button_menu"_s);
-		buttonRect.size = calculateButtonSize(menuButtonText, buttonStyle);
-		buttonRect.x = windowWidth - (buttonRect.w + uiPadding);
-		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
-		{
-			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
-		}
 	}
 
 	drawDataViewUI(uiState, gameState);
