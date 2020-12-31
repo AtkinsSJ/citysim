@@ -9,4 +9,5 @@ start "" "C:\Program Files\Sublime Text 3\sublime_text.exe" -p P:\citysim\citysi
 start "C:\Program Files\PuTTY\pageant.exe" C:\Users\msn\Documents\ssh\privatekey.ppk
 start "" "C:\Program Files\Sublime Merge\sublime_merge.exe"
 
-cmd.exe /k "call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64"
+wt new-tab -p "C++ Dev" -d P:\citysim --title CitySim
+REM cmd.exe /k "call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64"
