@@ -40,6 +40,7 @@ enum WindowFlags
 	WinFlag_Tooltip         = 1 << 3,
 	WinFlag_Headless        = 1 << 4,
 	WinFlag_ShrinkWidth     = 1 << 5,
+	WinFlag_Pause           = 1 << 6, // Pauses the game while open
 };
 
 struct Window

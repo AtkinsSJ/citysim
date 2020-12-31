@@ -537,8 +537,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		Rect2I buttonRect = irectXYWH(uiPadding, toolbarBottom - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
 		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
 		{
-			// TODO: Pause the game!
-			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, pauseMenuWindowProc, null);
+			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
+					   WinFlag_Unique | WinFlag_Modal | WinFlag_AutomaticHeight | WinFlag_Pause,
+					   pauseMenuWindowProc, null);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -711,6 +712,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 	}
 
 	// Update the simulation... need a smarter way of doing this!
+	if (!uiState->isAPauseWindowOpen)
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 

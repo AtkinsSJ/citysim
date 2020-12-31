@@ -572,6 +572,8 @@ void updateWindows(UIState *uiState)
 	s32 closeWindow = -1;
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
+	uiState->isAPauseWindowOpen = false;
+
 	bool isActive = true;
 	for (auto it = iterate(&uiState->openWindows);
 		hasNext(&it);
@@ -596,6 +598,11 @@ void updateWindows(UIState *uiState)
 		if (context.closeRequested || isTooltip)
 		{
 			closeWindow = windowIndex;
+		}
+
+		if (!context.closeRequested && ((window->flags & WinFlag_Pause) != 0))
+		{
+			uiState->isAPauseWindowOpen = true;
 		}
 
 		Rect2I wholeWindowArea = window->area;
