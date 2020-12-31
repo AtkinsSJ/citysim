@@ -8,7 +8,7 @@ void initGameClock(GameClock *clock, GameTimestamp currentDay, f32 timeOfDay)
 	clock->timeWithinDay = clamp01(timeOfDay);
 
 	clock->speed = Speed_Slow;
-	clock->isPaused = false;
+	clock->isPaused = true;
 
 	updateCosmeticDate(clock);
 }

@@ -27,14 +27,13 @@ Game clock!
 - Save and load the state (Add camera position while we're modifying it)
 ✔ UI display of state
 ✔ Speed control buttons
-- Pause game on load or start
+✔ Pause game on load or start
 ✔ Pause game while main menu is open
 ✔ Progress time while game is running
 ✔ Increment day at end of day
 - Run callback at end of month
 
-
-Save and restore gameRandom state
+Close the pause window after loading a game
 
 Building problems:
 - Problem icon entities (Zots!)
