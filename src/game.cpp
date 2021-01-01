@@ -483,11 +483,27 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	// Game clock
 	{
 		GameClock *clock = &gameState->gameClock;
-		uiText(uiBuffer, font, formatDateTime(clock->cosmeticDate, DateTime_ShortDate),
-			v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
+		// We're sizing the clock area based on the speed control buttons.
+		// The >>> button is the largest, so they're all set to that size.
+		// For the total area, we just add their widths and padding together.
 		UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
 		V2I speedButtonSize = calculateButtonSize(">>>"_s, buttonStyle);
+		s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
+
+		String dateString = formatDateTime(clock->cosmeticDate, DateTime_ShortDate);
+		V2I dateStringSize = calculateTextSize(font, dateString, clockWidth);
+
+		// Draw a progress bar for the current day
+		Rect2I dateRect = irectXYWH(right - clockWidth, uiPadding, clockWidth, dateStringSize.y);
+		drawSingleRect(uiBuffer, dateRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
+		Rect2I dateProgressRect = dateRect;
+		dateProgressRect.w = round_s32(dateProgressRect.w * clock->timeWithinDay);
+		drawSingleRect(uiBuffer, dateProgressRect, renderer->shaderIds.untextured, color255(64, 255, 64, 128));
+
+		uiText(uiBuffer, font, dateString, alignWithinRectangle(dateRect, ALIGN_TOP | ALIGN_H_CENTRE), ALIGN_TOP | ALIGN_H_CENTRE, labelStyle->textColor, clockWidth);
+
+		// Speed control buttons
 		Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarBottom - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
 
 		if (uiButton(uiState, ">>>"_s, speedButtonRect, buttonStyle, clock->speed == Speed_Fast))
