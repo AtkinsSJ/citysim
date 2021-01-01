@@ -112,3 +112,8 @@ u8 incrementClock(GameClock *clock, f32 deltaTime)
 
 	return clockEvents;
 }
+
+inline GameTimestamp getCurrentTimestamp()
+{
+	return globalAppState.gameState->gameClock.currentDay;
+}

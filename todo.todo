@@ -31,6 +31,8 @@ ENTITIES:
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.
 
 BUFFS! (See paper notes)
+- Ordinances are a buff, a cost calculation, a name and a description
+	- To avoid exploits, they'd need to only come into effect once paid for. eg, when you turn one on, nothing happens until the next budget happens, and then the ordinance is in effect until the following budget. Otherwise you could disable them just before the budget and then re-enable them afterwards, to get them for free! (Or vice-versa with ones that earn money: enable them only for the budget, and avoid the negative effects the rest of the time.)
 
 Split "binary file" code from "save file" code
 - Half of what's in save_file.h is low-level types, so that should be separated out.
@@ -220,20 +222,14 @@ Terrain generation / modification!
 	- Add/remove trees
 - This is all fairly limited right now because our world is a flat plane, but that's ok!
 
-Ordinances!
-- Global effects that you can choose to enable or disable
-	- To avoid exploits, they'd need to only come into effect once paid for. eg, when you turn one on, nothing happens until the next budget happens, and then the ordinance is in effect until the following budget. Otherwise you could disable them just before the budget and then re-enable them afterwards, to get them for free! (Or vice-versa with ones that earn money: enable them only for the budget, and avoid the negative effects the rest of the time.)
-	- These should DEFINITELY be data!
-		- An income/cost calculation
-		- A list of (thing affected, how much)
-		- Name and description (Both are keys for the locale-specific text)
-
-Game clock:
-- Have days pass by, following a calendar, and certain events happen every so often (eg, the budget happens on the first day of the month). 
-	- Way back when, I was thinking we'd assign 1 day a week to simulating each aspect, eg traffic on Tuesdays. But so far, a lot of simulation is done X sectors at a time, and it's pretty quick, so we could instead make things happen much more often. eg, divide a day up into ticks where every layer is updated every day, on a specific tick. That keeps things much more up-to-date.
-	- We could of course update different layers more or less often. eg, land value should change fairly slowly so doesn't need to be updated so often. Traffic is fairly important and expensive to calculate so needs a lot of updates.
-	- The goal is to keep things running at a solid 60fps where possible. We might want to tweak the "number of sectors to update at once" figures during runtime, or early-out of processing dirty rects when we've spent X ms on them. Or of course, putting simulation onto a background thread or threads, so that we don't have to worry how long it takes. Just use a double-buffering scheme and swap the active buffer when you're done working on it.
+Statistics:
 - Record statistics at regular intervals, so they can be graphed.
+- Save and load them
+- Graphs and charts!
+	I quite like SC3K's style of having a single time graph that you can show/hide each stat on. It lets you compare things in a way that you can't in SC4. Though, how often do you actually *want* to compare unrelated things?
+- Some way for layers (or mods) to register a statistic to track, and how to graph it
+	SC4 lets you mod in graphs and overlays, but they have to replace an existing one.
+	We'd like to avoid that and instead let you just add new ones.
 
 Budget:
 - Buildings have monthly upkeep, categorised by department

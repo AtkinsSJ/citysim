@@ -47,3 +47,5 @@ enum ClockEvents
 };
 // Returns a set of ClockEvents for events that occur
 u8 incrementClock(GameClock *clock, f32 deltaTime);
+
+GameTimestamp getCurrentTimestamp();

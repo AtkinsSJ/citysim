@@ -74,6 +74,7 @@ struct Settings     *settings;
 
 struct City;
 
+#include "game_clock.h"
 #include "entity.h"
 #include "sector.h"
 #include "dirty.h"
@@ -89,7 +90,6 @@ struct City;
 #include "terrain.h"
 #include "zone.h"
 #include "city.h"
-#include "game_clock.h"
 
 #include "save_file.h"
 #include "saved_games.h"

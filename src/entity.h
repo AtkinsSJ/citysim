@@ -13,6 +13,7 @@ struct Entity
 	s32 index;
 	EntityType type;
 	void *dataPointer; // Type-checked to match the `type`, see checkEntityMatchesType()
+	GameTimestamp creationDate;
 
 	// Drawing data
 	Rect2 bounds;
