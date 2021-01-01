@@ -34,7 +34,7 @@ const f32 GAME_DAYS_PER_SECOND[GameClockSpeedCount] = {
 	3.0f / 1.0f  // Fast
 };
 
-void initGameClock(GameClock *clock, GameTimestamp currentDay = 0, f32 timeOfDay = 0.0f);
+void initGameClock(GameClock *clock, s32 year = 1, MonthOfYear month = Month_January, s32 day = 1, f32 timeOfDay = 0.0f);
 
 void updateCosmeticDate(GameClock *clock);
 

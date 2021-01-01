@@ -81,12 +81,6 @@ const String monthNameStrings[12] = {
 
 DateTime getLocalTimeFromTimestamp(u64 unixTimestamp);
 
-// Creates a DateTime struct that looks right, from game clock data.
-// daysFromStart counts from 1st January year 1, and timeWithinDay is a 0-1 value for the time.
-// This is only useful for the simulation and displaying it to the player, and may or may not
-// align to leap years etc. Like the name says, it's fake! The unix timestamp will always be wrong.
-DateTime makeFakeDateTime(u32 daysFromStart, f32 timeWithinDay);
-
 //
 // This runs like myprintf(), except with named sections instead of numbered ones.
 //

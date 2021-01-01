@@ -63,7 +63,10 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 			// Clock
 			GameClock *clock = &gameState->gameClock;
-			meta.currentDay = clock->currentDay;
+			updateCosmeticDate(clock); // Make sure the Y/M/D info is current
+			meta.clockYear  = clock->cosmeticDate.year;
+			meta.clockMonth = (u8)clock->cosmeticDate.month;
+			meta.clockDay   = (u8)clock->cosmeticDate.dayOfMonth;
 			meta.timeWithinDay = clock->timeWithinDay;
 
 			// Camera
@@ -457,7 +460,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				cityTileCount = city->bounds.w * city->bounds.h;
 
 				// Clock
-				initGameClock(&gameState->gameClock, cMeta->currentDay, cMeta->timeWithinDay);
+				initGameClock(&gameState->gameClock, cMeta->clockYear, (MonthOfYear)cMeta->clockMonth, cMeta->clockDay, cMeta->timeWithinDay);
 
 				// Camera
 				setCameraPos(&renderer->worldCamera, v2(cMeta->cameraX, cMeta->cameraY), cMeta->cameraZoom);

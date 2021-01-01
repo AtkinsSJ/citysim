@@ -184,7 +184,9 @@ struct SAVChunk_Meta
 	leU32 jobs;
 
 	// Clock
-	LittleEndian<GameTimestamp> currentDay;
+	leS32 clockYear;
+	leU8  clockMonth;
+	leU8  clockDay;
 	leF32 timeWithinDay;
 
 	// Camera
