@@ -1,16 +1,16 @@
 #pragma once
 
-bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName)
+bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName, SAVIdentifier identifier)
 {
 	bool isValid = true;
 
-	SAVFileHeader example = SAVFileHeader();
-	if (!identifiersAreEqual(fileHeader->identifier, example.identifier))
+	SAVFileHeader example = SAVFileHeader(identifier, 0);
+	if (fileHeader->identifier != example.identifier)
 	{
 		logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
 			saveFileName,
-			makeString((char*)example.identifier, 4),
-			makeString((char*)fileHeader->identifier, 4)
+			makeString((char*)(&example.identifier), 4),
+			makeString((char*)(&fileHeader->identifier), 4)
 		});
 		isValid = false;
 	}
@@ -25,16 +25,16 @@ bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName)
 	return isValid;
 }
 
-bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName)
+bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName, u8 currentVersion)
 {
 	bool isValid = true;
 
-	if (fileHeader->version > SAV_VERSION)
+	if (fileHeader->version > currentVersion)
 	{
 		logError("Save file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
 			saveFileName,
 			formatInt(fileHeader->version),
-			formatInt(SAV_VERSION),
+			formatInt(currentVersion),
 		});
 		isValid = false;
 	}

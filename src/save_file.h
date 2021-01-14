@@ -13,6 +13,9 @@
 
 #pragma pack(push, 1)
 
+const u8 SAV_VERSION = 1;
+const SAVIdentifier SAV_FILE_ID = "CITY"_id;
+
 const u8 SAV_META_VERSION = 1;
 const u8 SAV_META_ID[4] = {'M', 'E', 'T', 'A'};
 struct SAVChunk_Meta

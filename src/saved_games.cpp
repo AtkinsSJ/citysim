@@ -85,7 +85,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 				continue;
 			}
 
-			if (!fileHeaderIsValid(fileHeader, savedGame->shortName))
+			if (!fileHeaderIsValid(fileHeader, savedGame->shortName, SAV_FILE_ID))
 			{
 				savedGame->isReadable = false;
 				continue;

@@ -39,7 +39,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		City *city = &gameState->city;
 
 		// File Header
-		SAVFileHeader fileHeader = SAVFileHeader();
+		SAVFileHeader fileHeader = SAVFileHeader(SAV_FILE_ID, SAV_VERSION);
 		append(&buffer, sizeof(fileHeader), &fileHeader);
 
 		// Meta
@@ -395,13 +395,13 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			break;
 		}
 
-		if (!fileHeaderIsValid(fileHeader, saveFile.name))
+		if (!fileHeaderIsValid(fileHeader, saveFile.name, SAV_FILE_ID))
 		{
 			succeeded = false;
 			break;
 		}
 
-		if (!checkFileHeaderVersion(fileHeader, saveFile.name))
+		if (!checkFileHeaderVersion(fileHeader, saveFile.name, SAV_VERSION))
 		{
 			succeeded = false;
 			break;

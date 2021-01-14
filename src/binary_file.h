@@ -2,6 +2,13 @@
 
 #pragma pack(push, 1)
 
+typedef leU32 SAVIdentifier;
+inline SAVIdentifier operator"" _id(const char *chars, size_t length)
+{
+	ASSERT(length == 4);
+	return *((u32*)chars);
+}
+
 struct SAVString
 {
 	leU32 length;
@@ -36,23 +43,18 @@ struct SAVBlob
 	leU32 compressionScheme;
 };
 
-const u8 SAV_VERSION = 1;
-
 struct SAVFileHeader
 {
-	leU8 identifier[4];
+	SAVIdentifier identifier;
 	leU8 version;
 
 	// Bytes for checking for unwanted newline-conversion
-	leU8 unixNewline;
-	leU8 dosNewline[2];
+	leU8 unixNewline = 0x0A;
+	leU8 dosNewline[2] = {0x0D, 0x0A};
 
-	SAVFileHeader() :
-		identifier{'C','I','T','Y'},
-		version(SAV_VERSION),
-		unixNewline(0x0A),
-		dosNewline{0x0D, 0x0A}
-	{ }
+	SAVFileHeader(SAVIdentifier theIdentifier, leU8 theVersion)
+		: identifier(theIdentifier), version(theVersion)
+	{}
 };
 
 struct SAVChunkHeader
@@ -65,8 +67,8 @@ struct SAVChunkHeader
 
 #pragma pack(pop)
 
-bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName);
-bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName);
+bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName, SAVIdentifier identifier);
+bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName, u8 currentVersion);
 bool identifiersAreEqual(const u8 *a, const u8 *b);
 String readString(SAVString source, u8 *base);
 void rleDecode(u8 *source, u8 *dest, s32 destSize);
