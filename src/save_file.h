@@ -135,6 +135,16 @@ struct SAVBlob
 	leU32 compressionScheme;
 };
 
+struct SAVTimestamp
+{
+	leS32 year;
+	leU8  month;
+	leU8  day;
+	leF32 timeWithinDay;
+};
+void writeTimestamp(struct GameClock *clock, SAVTimestamp *outTimestamp);
+void readTimestamp(SAVTimestamp *timestamp, GameClock *outClock);
+
 const u8 SAV_VERSION = 1;
 
 struct SAVFileHeader
@@ -184,10 +194,7 @@ struct SAVChunk_Meta
 	leU32 jobs;
 
 	// Clock
-	leS32 clockYear;
-	leU8  clockMonth;
-	leU8  clockDay;
-	leF32 timeWithinDay;
+	SAVTimestamp currentTime;
 
 	// Camera
 	leF32 cameraX;

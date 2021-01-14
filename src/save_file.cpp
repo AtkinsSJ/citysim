@@ -1,5 +1,19 @@
 #pragma once
 
+void writeTimestamp(GameClock *clock, SAVTimestamp *outTimestamp)
+{
+	updateCosmeticDate(clock); // Make sure the Y/M/D info is current
+	outTimestamp->year  = clock->cosmeticDate.year;
+	outTimestamp->month = (u8)clock->cosmeticDate.month;
+	outTimestamp->day   = (u8)clock->cosmeticDate.dayOfMonth;
+	outTimestamp->timeWithinDay = clock->timeWithinDay;
+}
+
+void readTimestamp(SAVTimestamp *timestamp, GameClock *outClock)
+{
+	initGameClock(outClock, timestamp->year, (MonthOfYear)timestamp->month, timestamp->day, timestamp->timeWithinDay);
+}
+
 bool writeSaveFile(FileHandle *file, GameState *gameState)
 {
 	struct ChunkHeaderWrapper
@@ -63,12 +77,8 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 			// Clock
 			GameClock *clock = &gameState->gameClock;
-			updateCosmeticDate(clock); // Make sure the Y/M/D info is current
-			meta.clockYear  = clock->cosmeticDate.year;
-			meta.clockMonth = (u8)clock->cosmeticDate.month;
-			meta.clockDay   = (u8)clock->cosmeticDate.dayOfMonth;
-			meta.timeWithinDay = clock->timeWithinDay;
-
+			writeTimestamp(clock, &meta.currentTime);
+			
 			// Camera
 			Camera *camera = &renderer->worldCamera;
 			meta.cameraX = camera->pos.x;
@@ -460,7 +470,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				cityTileCount = city->bounds.w * city->bounds.h;
 
 				// Clock
-				initGameClock(&gameState->gameClock, cMeta->clockYear, (MonthOfYear)cMeta->clockMonth, cMeta->clockDay, cMeta->timeWithinDay);
+				readTimestamp(&cMeta->currentTime, &gameState->gameClock);
 
 				// Camera
 				setCameraPos(&renderer->worldCamera, v2(cMeta->cameraX, cMeta->cameraY), cMeta->cameraZoom);

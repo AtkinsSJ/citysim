@@ -39,7 +39,20 @@ Split "binary file" code from "save file" code
 Move save-file code for each layer into the layer.
 - Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 
+STATS!
+- Record statistics once per day, then aggregate ones each month and year (probably averages are most useful)
+- Each layer (or mod) can register their own statistics. They'd provide a name and a callback function, and possibly a range of possible values. When the statistics system wants to record the daily stats, it calls all those functions to get their current value.
+- Statistics include population, finances, etc. But also we can include things like tax rates and funding levels, so we can view how they affect other stats.
+- Might want the ability to record "events" to the stats log too. Showing when an ordinance was enacted, or when a coal power plant was built or demolished etc, gives context to the changes you might see graphed.
+- Viewing statistics wants to allow you to choose what appears on the graph, maybe like SC3K. Save combinations that you like for easy reference. Have several pre-defined ones too, based on category. (eg, financial things.)
+- SC3K also has pie charts for displaying percents of things. That could be useful, but needs more thought.
+- Saving these probably wants some kind of compression. It's a whole bunch of data.
+
 Placeholder font that's hard-coded. Tricky!
+
+Lua scripting?
+- We want a way of doing arbitrary calculations for Buffs, and this would also allow more interesting behaviour, especially with mods. But, it's also a big job to implement.
+- If we do, we can replace our data-file formats with lua scripts calling functions to define those game-objects. That makes reloading more difficult though. Right now we can reload an individual buildings file, but with lua, it'd be hard to track which things come from which files, so we'd probably have to reload all of them.
 
 Police coverage is briefly too high in some places after placing a police station, not sure why.
 	- We also have an overflow issue with too many police stations' effects overlapping
