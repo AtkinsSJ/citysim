@@ -16,10 +16,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Storing timestamps
-- Everything just uses the day number. It's simple, and it's consistent, and it gives us 11 million in-game days.
-- It's also the same format that's used in the game simulation, so there's no conversion needed on saving/loading.
-
 BUG: Zooming out is weird
 
 Close the pause window after loading a game

@@ -22,20 +22,7 @@ void initGameClock(GameClock *clock, GameTimestamp date, f32 timeOfDay)
 
 void updateCosmeticDate(GameClock *clock)
 {
-	DateTime dateTime = {};
-
-	dateTime.year = (clock->currentDay / DAYS_PER_YEAR) + 1;
-	u32 dayOfYear = clock->currentDay % DAYS_PER_YEAR;
-	u8 monthIndex = 0;
-	while (dayOfYear >= DAYS_PER_MONTH[monthIndex])
-	{
-		dayOfYear -= DAYS_PER_MONTH[monthIndex];
-		monthIndex++;
-	}
-	dateTime.month = (MonthOfYear)monthIndex;
-	dateTime.dayOfMonth = dayOfYear + 1;
-
-	dateTime.dayOfWeek = (DayOfWeek)(clock->currentDay % 7);
+	DateTime dateTime = dateTimeFromTimestamp(clock->currentDay);
 
 	// Time as a percentage
 	f32 fractionalHours = clamp01(clock->timeWithinDay) * 24.0f;
@@ -67,6 +54,26 @@ GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day)
 	result += (day - 1);
 
 	return result;
+}
+
+DateTime dateTimeFromTimestamp(GameTimestamp timestamp)
+{
+	DateTime dateTime = {};
+
+	dateTime.year = (timestamp / DAYS_PER_YEAR) + 1;
+	u32 dayOfYear = timestamp % DAYS_PER_YEAR;
+	u8 monthIndex = 0;
+	while (dayOfYear >= DAYS_PER_MONTH[monthIndex])
+	{
+		dayOfYear -= DAYS_PER_MONTH[monthIndex];
+		monthIndex++;
+	}
+	dateTime.month = (MonthOfYear)monthIndex;
+	dateTime.dayOfMonth = dayOfYear + 1;
+
+	dateTime.dayOfWeek = (DayOfWeek)(timestamp % 7);
+
+	return dateTime;
 }
 
 u8 incrementClock(GameClock *clock, f32 deltaTime)

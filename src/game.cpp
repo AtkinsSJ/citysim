@@ -358,6 +358,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
 		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex)}));
+		window_label(context, myprintf("Constructed: {0}"_s, {formatDateTime(dateTimeFromTimestamp(building->entity->creationDate), DateTime_ShortDate)}));
 		window_label(context, myprintf("Variant: {0}"_s, {formatInt(building->variantIndex)}));
 		window_label(context, myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
 		window_label(context, myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));

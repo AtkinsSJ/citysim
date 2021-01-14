@@ -50,3 +50,4 @@ u8 incrementClock(GameClock *clock, f32 deltaTime);
 
 GameTimestamp getCurrentTimestamp();
 GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day);
+DateTime dateTimeFromTimestamp(GameTimestamp timestamp);
