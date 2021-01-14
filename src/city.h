@@ -78,7 +78,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
 
 template <typename T>
-Entity *addEntity(City *city, EntityType type, T *entityData, GameTimestamp creationDate = getCurrentTimestamp());
+Entity *addEntity(City *city, EntityType type, T *entityData);
 void removeEntity(City *city, Entity *entity);
 void drawEntities(City *city, Rect2I visibleTileBounds);
 

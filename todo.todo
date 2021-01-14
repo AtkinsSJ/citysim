@@ -20,6 +20,8 @@ BUG: Zooming out is weird
 
 Close the pause window after loading a game
 
+Deleting saved games
+
 Building problems:
 - Problem icon entities (Zots!)
 	- Maintain minimum distance between them, so it's not cluttered and chaotic.

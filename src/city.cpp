@@ -52,7 +52,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 }
 
 template <typename T>
-Entity *addEntity(City *city, EntityType type, T *entityData, GameTimestamp creationDate)
+Entity *addEntity(City *city, EntityType type, T *entityData)
 {
 	auto entityRecord = append(&city->entities);
 	// logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
@@ -63,8 +63,6 @@ Entity *addEntity(City *city, EntityType type, T *entityData, GameTimestamp crea
 	// Make sure we're supplying entity data that matched the entity type!
 	ASSERT(checkEntityMatchesType<T>(entity));
 	entity->dataPointer = entityData;
-
-	entity->creationDate = creationDate;
 
 	entity->color = makeWhite();
 	entity->depth = 0;
@@ -124,6 +122,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	Building *building = buildingSlot.value;
 	building->id = id;
 	building->typeID = def->typeID;
+	building->creationDate = creationDate;
 	building->footprint = footprint;
 	initFlags(&building->problems, BuildingProblemCount);
 	building->variantIndex = NO_VARIANT;
@@ -131,7 +130,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	// Random sprite!
 	building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
 
-	building->entity = addEntity(city, EntityType_Building, building, creationDate);
+	building->entity = addEntity(city, EntityType_Building, building);
 	building->entity->bounds = rect2(footprint);
 	building->entity->sprite = getBuildingSprite(building);
 	building->entity->canBeDemolished = true;

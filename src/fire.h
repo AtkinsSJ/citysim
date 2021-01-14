@@ -7,6 +7,7 @@ struct Fire
 	V2I pos;
 	// TODO: severity
 	// TODO: Timing information (fires shouldn't last forever!)
+	GameTimestamp startDate;
 };
 
 struct FireSector

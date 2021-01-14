@@ -150,6 +150,7 @@ struct Building
 {
 	u32 id;
 	s32 typeID;
+	GameTimestamp creationDate;
 	Rect2I footprint;
 	s32 variantIndex;
 

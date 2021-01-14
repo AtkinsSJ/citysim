@@ -182,7 +182,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 				*sb = {};
 				sb->id = building->id;
 				sb->typeID = building->typeID;
-				sb->creationDate = building->entity->creationDate;
+				sb->creationDate = building->creationDate;
 				sb->x = (u16) building->footprint.x;
 				sb->y = (u16) building->footprint.y;
 				sb->w = (u16) building->footprint.w;
@@ -280,7 +280,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 					*savFire = {};
 					savFire->x = (u16) fire->pos.x;
 					savFire->y = (u16) fire->pos.y;
-					savFire->startDate = fire->entity->creationDate;
+					savFire->startDate = fire->startDate;
 				}
 			}
 			chunk.activeFires = appendBlob(offset, &buffer, chunk.activeFireCount * sizeof(SAVFire), (u8*)tempFires, Blob_Uncompressed);
