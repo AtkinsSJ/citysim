@@ -135,7 +135,7 @@ struct GameState
 };
 
 GameState *newGameState(); // A blank game state with no city
-GameState *beginNewGame(); // A game state for a new map
+void beginNewGame(); // A game state for a new map
 
 AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaTime);
 void freeGameState(GameState *gameState);

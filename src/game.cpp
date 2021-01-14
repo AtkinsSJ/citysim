@@ -14,17 +14,21 @@ GameState *newGameState()
 	return gameState;
 }
 
-GameState *beginNewGame()
+void beginNewGame()
 {
-	GameState *gameState = newGameState();
+	if (globalAppState.gameState != null)
+	{
+		freeGameState(globalAppState.gameState);
+	}
+
+	globalAppState.gameState = newGameState();
+	GameState *gameState = globalAppState.gameState;
 
 	s32 gameStartFunds = 1000000;
 	initCity(&gameState->gameArena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
 	generateTerrain(&gameState->city, &gameState->gameRandom);
 
 	initGameClock(&gameState->gameClock);
-
-	return gameState;
 }
 
 void freeGameState(GameState *gameState)

@@ -299,7 +299,13 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 {
-	GameState *gameState = newGameState();
+	if (globalAppState.gameState != null)
+	{
+		freeGameState(globalAppState.gameState);
+	}
+
+	globalAppState.gameState = newGameState();
+	GameState *gameState = globalAppState.gameState;
 
 	u32 startTicks = SDL_GetTicks();
 
@@ -314,7 +320,6 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 
 		pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {savedGame->shortName}));
 
-		globalAppState.gameState = gameState;
 		globalAppState.appStatus = AppStatus_Game;
 
 		// Filename is interned so it's safe to copy it

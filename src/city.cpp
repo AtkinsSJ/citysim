@@ -64,7 +64,7 @@ Entity *addEntity(City *city, EntityType type, T *entityData)
 	ASSERT(checkEntityMatchesType<T>(entity));
 	entity->dataPointer = entityData;
 
-	entity->creationDate = 0;//getCurrentTimestamp();
+	entity->creationDate = getCurrentTimestamp();
 
 	entity->color = makeWhite();
 	entity->depth = 0;

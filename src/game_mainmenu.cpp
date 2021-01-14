@@ -61,7 +61,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	Rect2I buttonRect = irectXYWH(position.x - (buttonWidth/2), position.y + buttonPadding, buttonWidth, buttonHeight);
 	if (uiButton(uiState, newGameText, buttonRect, style))
 	{
-		globalAppState.gameState = beginNewGame();
+		beginNewGame();
 
 		result = AppStatus_Game;
 	}
