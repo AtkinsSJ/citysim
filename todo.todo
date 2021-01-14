@@ -16,11 +16,16 @@ Notes for searching:
 
 ------------------------------------------------
 
+Saving and loading:
+- Make binary_file header non-SAV-specific
+	- Also, rename the types probably!
+- Deleting saved games
+- Move save-file code for each layer into the layer.
+	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
+
 BUG: Zooming out is weird
 
 Close the pause window after loading a game
-
-Deleting saved games
 
 Building problems:
 - Problem icon entities (Zots!)
@@ -38,10 +43,6 @@ BUFFS! (See paper notes)
 - Ordinances are a buff, a cost calculation, a name and a description
 	- To avoid exploits, they'd need to only come into effect once paid for. eg, when you turn one on, nothing happens until the next budget happens, and then the ordinance is in effect until the following budget. Otherwise you could disable them just before the budget and then re-enable them afterwards, to get them for free! (Or vice-versa with ones that earn money: enable them only for the budget, and avoid the negative effects the rest of the time.)
 
-Split "binary file" code from "save file" code
-- Half of what's in save_file.h is low-level types, so that should be separated out.
-Move save-file code for each layer into the layer.
-- Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 
 STATS!
 - Record statistics once per day, then aggregate ones each month and year (probably averages are most useful)
