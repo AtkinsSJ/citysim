@@ -135,16 +135,6 @@ struct SAVBlob
 	leU32 compressionScheme;
 };
 
-struct SAVTimestamp
-{
-	leS32 year;
-	leU8  month;
-	leU8  day;
-	leF32 timeWithinDay;
-};
-void writeTimestamp(struct GameClock *clock, SAVTimestamp *outTimestamp);
-void readTimestamp(SAVTimestamp *timestamp, GameClock *outClock);
-
 const u8 SAV_VERSION = 1;
 
 struct SAVFileHeader
@@ -194,7 +184,8 @@ struct SAVChunk_Meta
 	leU32 jobs;
 
 	// Clock
-	SAVTimestamp currentTime;
+	LittleEndian<GameTimestamp> currentDate;
+	leF32 timeWithinDay;
 
 	// Camera
 	leF32 cameraX;
@@ -246,6 +237,8 @@ struct SAVBuilding
 	leU32 id;
 	leU32 typeID;
 
+	LittleEndian<GameTimestamp> creationDate;
+
 	leU16 x;
 	leU16 y;
 	leU16 w;
@@ -288,6 +281,7 @@ struct SAVFire
 {
 	leU16 x;
 	leU16 y;
+	LittleEndian<GameTimestamp> startDate;
 	// TODO: severity
 };
 

@@ -78,12 +78,12 @@ s32 calculateDemolitionCost(City *city, Rect2I area);
 void demolishRect(City *city, Rect2I area);
 
 template <typename T>
-Entity *addEntity(City *city, EntityType type, T *entityData);
+Entity *addEntity(City *city, EntityType type, T *entityData, GameTimestamp creationDate = getCurrentTimestamp());
 void removeEntity(City *city, Entity *entity);
 void drawEntities(City *city, Rect2I visibleTileBounds);
 
 //
 // Private API
 //
-Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footprint);
-Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint);
+Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footprint, GameTimestamp creationDate);
+Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint, GameTimestamp creationDate = getCurrentTimestamp());

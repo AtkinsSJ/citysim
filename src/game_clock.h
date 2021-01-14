@@ -32,9 +32,9 @@ const f32 GAME_DAYS_PER_SECOND[GameClockSpeedCount] = {
 	1.0f / 5.0f, // Slow
 	1.0f / 1.0f, // Medium
 	3.0f / 1.0f  // Fast
-};
+}; 
 
-void initGameClock(GameClock *clock, s32 year = 1, MonthOfYear month = Month_January, s32 day = 1, f32 timeOfDay = 0.0f);
+void initGameClock(GameClock *clock, GameTimestamp date = 0, f32 timeOfDay = 0.0f);
 
 void updateCosmeticDate(GameClock *clock);
 
@@ -49,3 +49,4 @@ enum ClockEvents
 u8 incrementClock(GameClock *clock, f32 deltaTime);
 
 GameTimestamp getCurrentTimestamp();
+GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day);

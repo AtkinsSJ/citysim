@@ -7,13 +7,15 @@ enum SavedGameProblem
 
 struct SavedGameInfo
 {
+	// File properties
 	bool isReadable;
 	String shortName; // Has no extension
 	String fullPath;
+	DateTime saveTime;
 
 	u32 problems;
 	
-	DateTime saveTime;
+	// City properties
 	String cityName;
 	String playerName;
 	V2I citySize;

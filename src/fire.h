@@ -52,7 +52,7 @@ void notifyBuildingDemolished(FireLayer *layer, BuildingDef *def, Building *buil
 Indexed<Fire*> findFireAt(City *city, s32 x, s32 y);
 bool doesAreaContainFire(City *city, Rect2I bounds);
 void startFireAt(City *city, s32 x, s32 y);
-void addFireRaw(City *city, s32 x, s32 y);
+void addFireRaw(City *city, s32 x, s32 y, GameTimestamp startDate);
 void updateFire(City *city, Fire *fire);
 void removeFireAt(City *city, s32 x, s32 y);
 

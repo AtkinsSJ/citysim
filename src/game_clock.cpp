@@ -1,45 +1,23 @@
 #pragma once
 
-// We don't currently bother with leap years, so the month lengths are hard-coded
+// We don't bother with leap years, so the month lengths are hard-coded
 const u32 DAYS_PER_YEAR = 365;
 const u32 DAYS_PER_MONTH[] = {
 //   J   F   M   A   M   J   J   A   S   O   N   D
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-void initGameClock(GameClock *clock, s32 year, MonthOfYear month, s32 day, f32 timeOfDay)
+void initGameClock(GameClock *clock, GameTimestamp date, f32 timeOfDay)
 {
 	*clock = {};
 
-	// NB: Day #0 is 1st January, 0001
-
-	GameTimestamp currentDay = 0;
-
-	// Add days for previous years
-	currentDay += (year - 1) * DAYS_PER_YEAR;
-
-	// Add days for previous months this year
-	for (s32 monthIndex = Month_January; monthIndex < month; monthIndex++)
-	{
-		currentDay += DAYS_PER_MONTH[monthIndex];
-	}
-
-	// Add day within month
-	currentDay += (day - 1);
-
-	clock->currentDay = currentDay;
-
+	clock->currentDay = date;
 	clock->timeWithinDay = clamp01(timeOfDay);
 
 	clock->speed = Speed_Slow;
 	clock->isPaused = true;
 
 	updateCosmeticDate(clock);
-
-	// Make sure we match our input
-	ASSERT(clock->cosmeticDate.year == year);
-	ASSERT(clock->cosmeticDate.month == month);
-	ASSERT(clock->cosmeticDate.dayOfMonth == day);
 }
 
 void updateCosmeticDate(GameClock *clock)
@@ -69,6 +47,26 @@ void updateCosmeticDate(GameClock *clock)
 	dateTime.millisecond = floor_s32(fraction_f32(fractionalSeconds) * 1000.0f);
 
 	clock->cosmeticDate = dateTime;
+}
+
+GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day)
+{
+	// NB: Day #0 is 1st January, 0001
+	GameTimestamp result = 0;
+
+	// Add days for previous years
+	result += (year - 1) * DAYS_PER_YEAR;
+
+	// Add days for previous months this year
+	for (s32 monthIndex = Month_January; monthIndex < month; monthIndex++)
+	{
+		result += DAYS_PER_MONTH[monthIndex];
+	}
+
+	// Add day within month
+	result += (day - 1);
+
+	return result;
 }
 
 u8 incrementClock(GameClock *clock, f32 deltaTime)

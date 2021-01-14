@@ -52,7 +52,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 }
 
 template <typename T>
-Entity *addEntity(City *city, EntityType type, T *entityData)
+Entity *addEntity(City *city, EntityType type, T *entityData, GameTimestamp creationDate)
 {
 	auto entityRecord = append(&city->entities);
 	// logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
@@ -64,7 +64,7 @@ Entity *addEntity(City *city, EntityType type, T *entityData)
 	ASSERT(checkEntityMatchesType<T>(entity));
 	entity->dataPointer = entityData;
 
-	entity->creationDate = getCurrentTimestamp();
+	entity->creationDate = creationDate;
 
 	entity->color = makeWhite();
 	entity->depth = 0;
@@ -115,7 +115,7 @@ void drawEntities(City *city, Rect2I visibleTileBounds)
 	}
 }
 
-Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footprint)
+Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footprint, GameTimestamp creationDate)
 {
 	DEBUG_FUNCTION();
 
@@ -131,7 +131,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	// Random sprite!
 	building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
 
-	building->entity = addEntity(city, EntityType_Building, building);
+	building->entity = addEntity(city, EntityType_Building, building, creationDate);
 	building->entity->bounds = rect2(footprint);
 	building->entity->sprite = getBuildingSprite(building);
 	building->entity->canBeDemolished = true;
@@ -159,11 +159,11 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	return building;
 }
 
-Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint)
+Building *addBuilding(City *city, BuildingDef *def, Rect2I footprint, GameTimestamp creationDate)
 {
 	DEBUG_FUNCTION();
 
-	Building *building = addBuildingDirect(city, ++city->highestBuildingID, def, footprint);
+	Building *building = addBuildingDirect(city, ++city->highestBuildingID, def, footprint, creationDate);
 
 	// TODO: Properly calculate occupancy!
 	building->currentResidents = def->residents;

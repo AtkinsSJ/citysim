@@ -1,19 +1,5 @@
 #pragma once
 
-void writeTimestamp(GameClock *clock, SAVTimestamp *outTimestamp)
-{
-	updateCosmeticDate(clock); // Make sure the Y/M/D info is current
-	outTimestamp->year  = clock->cosmeticDate.year;
-	outTimestamp->month = (u8)clock->cosmeticDate.month;
-	outTimestamp->day   = (u8)clock->cosmeticDate.dayOfMonth;
-	outTimestamp->timeWithinDay = clock->timeWithinDay;
-}
-
-void readTimestamp(SAVTimestamp *timestamp, GameClock *outClock)
-{
-	initGameClock(outClock, timestamp->year, (MonthOfYear)timestamp->month, timestamp->day, timestamp->timeWithinDay);
-}
-
 bool writeSaveFile(FileHandle *file, GameState *gameState)
 {
 	struct ChunkHeaderWrapper
@@ -41,7 +27,6 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			overwriteAt(buffer, startOfChunkHeader, sizeof(SAVChunkHeader), &this->chunkHeader);
 		}
 	};
-
 
 	bool succeeded = file->isOpen;
 
@@ -77,7 +62,8 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 			// Clock
 			GameClock *clock = &gameState->gameClock;
-			writeTimestamp(clock, &meta.currentTime);
+			meta.currentDate = clock->currentDay;
+			meta.timeWithinDay = clock->timeWithinDay;
 			
 			// Camera
 			Camera *camera = &renderer->worldCamera;
@@ -196,6 +182,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 				*sb = {};
 				sb->id = building->id;
 				sb->typeID = building->typeID;
+				sb->creationDate = building->entity->creationDate;
 				sb->x = (u16) building->footprint.x;
 				sb->y = (u16) building->footprint.y;
 				sb->w = (u16) building->footprint.w;
@@ -293,6 +280,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 					*savFire = {};
 					savFire->x = (u16) fire->pos.x;
 					savFire->y = (u16) fire->pos.y;
+					savFire->startDate = fire->entity->creationDate;
 				}
 			}
 			chunk.activeFires = appendBlob(offset, &buffer, chunk.activeFireCount * sizeof(SAVFire), (u8*)tempFires, Blob_Uncompressed);
@@ -470,7 +458,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				cityTileCount = city->bounds.w * city->bounds.h;
 
 				// Clock
-				readTimestamp(&cMeta->currentTime, &gameState->gameClock);
+				initGameClock(&gameState->gameClock, cMeta->currentDate, cMeta->timeWithinDay);
 
 				// Camera
 				setCameraPos(&renderer->worldCamera, v2(cMeta->cameraX, cMeta->cameraY), cMeta->cameraZoom);
@@ -558,7 +546,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 						Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
 						BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
-						Building *building = addBuildingDirect(city, savBuilding->id, def, footprint);
+						Building *building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
 						building->variantIndex     = savBuilding->variantIndex;
 						building->spriteOffset     = savBuilding->spriteOffset;
 						building->currentResidents = savBuilding->currentResidents;
@@ -619,7 +607,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 					{
 						SAVFire *savFire = tempFires + activeFireIndex;
 
-						addFireRaw(city, savFire->x, savFire->y);
+						addFireRaw(city, savFire->x, savFire->y, savFire->startDate);
 					}
 					ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
 				}

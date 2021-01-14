@@ -205,11 +205,11 @@ void startFireAt(City *city, s32 x, s32 y)
 	}
 	else
 	{
-		addFireRaw(city, x, y);
+		addFireRaw(city, x, y, getCurrentTimestamp());
 	}
 }
 
-void addFireRaw(City *city, s32 x, s32 y)
+void addFireRaw(City *city, s32 x, s32 y, GameTimestamp startDate)
 {
 	// NB: We don't care if the fire already exists. startFireAt() already checks for this case.
 
@@ -220,7 +220,7 @@ void addFireRaw(City *city, s32 x, s32 y)
 	Fire *fire = appendBlank(&sector->activeFires);
 
 	fire->pos = v2i(x, y);
-	fire->entity = addEntity(city, EntityType_Fire, fire);
+	fire->entity = addEntity(city, EntityType_Fire, fire, startDate);
 	// TODO: Probably most of this wants to be moved into addEntity()
 	fire->entity->bounds = rectXYWHi(x, y, 1, 1);
 	fire->entity->sprite = getSprite(getSpriteGroup("e_fire_1x1"_s), randomNext(&globalAppState.cosmeticRandom));
