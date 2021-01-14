@@ -105,7 +105,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 				continue;
 			}
 
-			if (identifiersAreEqual(header->identifier, SAV_META_ID))
+			if (header->identifier == SAV_META_ID)
 			{
 				// Load Meta
 				if (header->version > SAV_META_VERSION)

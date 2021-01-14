@@ -42,11 +42,6 @@ bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName, u8 c
 	return isValid;
 }
 
-inline bool identifiersAreEqual(const u8 *a, const u8 *b)
-{
-	return (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]) && (a[3] == b[3]);
-}
-
 String readString(SAVString source, u8 *base)
 {
 	return makeString((char *)(base + source.relativeOffset), source.length, false);

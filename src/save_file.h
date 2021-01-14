@@ -17,7 +17,7 @@ const u8 SAV_VERSION = 1;
 const SAVIdentifier SAV_FILE_ID = "CITY"_id;
 
 const u8 SAV_META_VERSION = 1;
-const u8 SAV_META_ID[4] = {'M', 'E', 'T', 'A'};
+const SAVIdentifier SAV_META_ID = "META"_id;
 struct SAVChunk_Meta
 {
 	leU64 saveTimestamp; // Unix timestamp
@@ -58,14 +58,14 @@ struct SAVChunk_Mods
 };
 
 const u8 SAV_BDGT_VERSION = 1;
-const u8 SAV_BDGT_ID[4] = {'B', 'D', 'G', 'T'};
+const SAVIdentifier SAV_BDGT_ID = "BDGT"_id;
 struct SAVChunk_Budget
 {
 	// TODO: Budget things
 };
 
 const u8 SAV_BLDG_VERSION = 1;
-const u8 SAV_BLDG_ID[4] = {'B', 'L', 'D', 'G'};
+const SAVIdentifier SAV_BLDG_ID = "BLDG"_id;
 struct SAVChunk_Buildings
 {
 	leU32 buildingTypeCount;
@@ -99,7 +99,7 @@ struct SAVBuilding
 };
 
 const u8 SAV_CRIM_VERSION = 1;
-const u8 SAV_CRIM_ID[4] = {'C', 'R', 'I', 'M'};
+const SAVIdentifier SAV_CRIM_ID = "CRIM"_id;
 struct SAVChunk_Crime
 {
 	leU32 totalJailCapacity;
@@ -107,14 +107,14 @@ struct SAVChunk_Crime
 };
 
 const u8 SAV_EDUC_VERSION = 1;
-const u8 SAV_EDUC_ID[4] = {'E', 'D', 'U', 'C'};
+const SAVIdentifier SAV_EDUC_ID = "EDUC"_id;
 struct SAVChunk_Education
 {
 	// Building education level, when that's implemented
 };
 
 const u8 SAV_FIRE_VERSION = 1;
-const u8 SAV_FIRE_ID[4] = {'F', 'I', 'R', 'E'};
+const SAVIdentifier SAV_FIRE_ID = "FIRE"_id;
 struct SAVChunk_Fire
 {
 	// Active fires
@@ -132,14 +132,14 @@ struct SAVFire
 };
 
 const u8 SAV_HLTH_VERSION = 1;
-const u8 SAV_HLTH_ID[4] = {'H', 'L', 'T', 'H'};
+const SAVIdentifier SAV_HLTH_ID = "HLTH"_id;
 struct SAVChunk_Health
 {
 	// Building health level, when that's implemented
 };
 
 const u8 SAV_LVAL_VERSION = 1;
-const u8 SAV_LVAL_ID[4] = {'L', 'V', 'A', 'L'};
+const SAVIdentifier SAV_LVAL_ID = "LVAL"_id;
 struct SAVChunk_LandValue
 {
 	// Kind of redundant as it can be calculated fresh, but in case we have over-time
@@ -148,7 +148,7 @@ struct SAVChunk_LandValue
 };
 
 const u8 SAV_PLTN_VERSION = 1;
-const u8 SAV_PLTN_ID[4] = {'P', 'L', 'T', 'N'};
+const SAVIdentifier SAV_PLTN_ID = "PLTN"_id;
 struct SAVChunk_Pollution
 {
 	// TODO: Maybe RLE this, but I'm not sure. It's probably pretty variable.
@@ -156,7 +156,7 @@ struct SAVChunk_Pollution
 };
 
 const u8 SAV_TERR_VERSION = 1;
-const u8 SAV_TERR_ID[4] = {'T', 'E', 'R', 'R'};
+const SAVIdentifier SAV_TERR_ID = "TERR"_id;
 struct SAVChunk_Terrain
 {
 	leS32 terrainGenerationSeed;
@@ -172,7 +172,7 @@ struct SAVChunk_Terrain
 };
 
 const u8 SAV_TPRT_VERSION = 1;
-const u8 SAV_TPRT_ID[4] = {'T', 'P', 'R', 'T'};
+const SAVIdentifier SAV_TPRT_ID = "TPRT"_id;
 struct SAVChunk_Transport
 {
 	// TODO: Information about traffic density, routes, etc.
@@ -180,7 +180,7 @@ struct SAVChunk_Transport
 };
 
 const u8 SAV_ZONE_VERSION = 1;
-const u8 SAV_ZONE_ID[4] = {'Z', 'O', 'N', 'E'};
+const SAVIdentifier SAV_ZONE_ID = "ZONE"_id;
 struct SAVChunk_Zone
 {
 	SAVBlob tileZone; // Array of u8s

@@ -2,7 +2,7 @@
 
 #pragma pack(push, 1)
 
-typedef leU32 SAVIdentifier;
+typedef u32 SAVIdentifier;
 inline SAVIdentifier operator"" _id(const char *chars, size_t length)
 {
 	ASSERT(length == 4);
@@ -45,7 +45,7 @@ struct SAVBlob
 
 struct SAVFileHeader
 {
-	SAVIdentifier identifier;
+	LittleEndian<SAVIdentifier> identifier;
 	leU8 version;
 
 	// Bytes for checking for unwanted newline-conversion
@@ -59,7 +59,7 @@ struct SAVFileHeader
 
 struct SAVChunkHeader
 {
-	leU8 identifier[4];
+	LittleEndian<SAVIdentifier> identifier;
 	leU8 version;
 	leU8 _pad[3]; // For future use maybe? Mostly just to make this be a multiple of 4 bytes.
 	leU32 length; // Length of the chunk, NOT including the size of this SAVChunkHeader
@@ -69,7 +69,6 @@ struct SAVChunkHeader
 
 bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName, SAVIdentifier identifier);
 bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName, u8 currentVersion);
-bool identifiersAreEqual(const u8 *a, const u8 *b);
 String readString(SAVString source, u8 *base);
 void rleDecode(u8 *source, u8 *dest, s32 destSize);
 

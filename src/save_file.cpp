@@ -10,14 +10,14 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		SAVChunkHeader chunkHeader;
 
-		ChunkHeaderWrapper(WriteBuffer *buffer, const u8 chunkID[4], u8 chunkVersion)
+		ChunkHeaderWrapper(WriteBuffer *buffer, SAVIdentifier chunkID, u8 chunkVersion)
 		{
 			this->buffer = buffer;
 			this->startOfChunkHeader = reserve(buffer, sizeof(SAVChunkHeader));
 			this->startOfChunkData = getCurrentPosition(buffer);
 
 			this->chunkHeader = {};
-			copyMemory<u8>(chunkID, this->chunkHeader.identifier, 4);
+			this->chunkHeader.identifier = chunkID;
 			this->chunkHeader.version = chunkVersion;
 		}
 
@@ -444,7 +444,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			// @Speed
 			// - Sam, 10/11/2019
 
-			if (identifiersAreEqual(header->identifier, SAV_META_ID))
+			if (header->identifier == SAV_META_ID)
 			{
 				// Load Meta
 				CHECK_VERSION(META);
@@ -465,7 +465,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				hasLoadedMeta = true;
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_BDGT_ID))
+			else if (header->identifier == SAV_BDGT_ID)
 			{
 				// Load Budget
 				CHECK_VERSION(BDGT);
@@ -477,7 +477,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// TODO: Implement!
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_BLDG_ID))
+			else if (header->identifier == SAV_BLDG_ID)
 			{
 				// Load Building
 				CHECK_VERSION(BLDG);
@@ -562,7 +562,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 					}
 				}
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_CRIM_ID))
+			else if (header->identifier == SAV_CRIM_ID)
 			{
 				// Load Crime
 				CHECK_VERSION(CRIM);
@@ -575,7 +575,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				layer->totalJailCapacity    = cCrime->totalJailCapacity;
 				layer->occupiedJailCapacity = cCrime->occupiedJailCapacity;
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_EDUC_ID))
+			else if (header->identifier == SAV_EDUC_ID)
 			{
 				// Load Education
 				CHECK_VERSION(EDUC);
@@ -587,7 +587,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// TODO: Implement Education!
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_FIRE_ID))
+			else if (header->identifier == SAV_FIRE_ID)
 			{
 				// Load Fire
 				CHECK_VERSION(FIRE);
@@ -612,7 +612,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 					ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
 				}
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_HLTH_ID))
+			else if (header->identifier == SAV_HLTH_ID)
 			{
 				// Load Health
 				CHECK_VERSION(HLTH);
@@ -624,7 +624,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// TODO: Implement Health!
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_LVAL_ID))
+			else if (header->identifier == SAV_LVAL_ID)
 			{
 				// Load Land Value
 				CHECK_VERSION(LVAL);
@@ -636,7 +636,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				decodeBlob(cLandValue->tileLandValue, startOfChunk, &layer->tileLandValue);
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_PLTN_ID))
+			else if (header->identifier == SAV_PLTN_ID)
 			{
 				// Load Pollution
 				CHECK_VERSION(PLTN);
@@ -648,7 +648,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				decodeBlob(cPollution->tilePollution, startOfChunk, &layer->tilePollution);
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_TERR_ID))
+			else if (header->identifier == SAV_TERR_ID)
 			{
 				// Load Terrain
 				CHECK_VERSION(TERR);
@@ -695,7 +695,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				// Sprite offset
 				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, &layer->tileSpriteOffset);
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_TPRT_ID))
+			else if (header->identifier == SAV_TPRT_ID)
 			{
 				// Load Transport
 				CHECK_VERSION(TPRT);
@@ -707,7 +707,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// TODO: Implement Transport!
 			}
-			else if (identifiersAreEqual(header->identifier, SAV_ZONE_ID))
+			else if (header->identifier == SAV_ZONE_ID)
 			{
 				// Load Zone
 				CHECK_VERSION(ZONE);
