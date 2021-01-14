@@ -17,8 +17,6 @@ Notes for searching:
 ------------------------------------------------
 
 Saving and loading:
-- Make binary_file header non-SAV-specific
-	- Also, rename the types probably!
 - Deleting saved games
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.

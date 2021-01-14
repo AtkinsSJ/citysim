@@ -8,12 +8,12 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		s32 startOfChunkHeader;
 		s32 startOfChunkData;
 
-		SAVChunkHeader chunkHeader;
+		FileChunkHeader chunkHeader;
 
-		ChunkHeaderWrapper(WriteBuffer *buffer, SAVIdentifier chunkID, u8 chunkVersion)
+		ChunkHeaderWrapper(WriteBuffer *buffer, FileIdentifier chunkID, u8 chunkVersion)
 		{
 			this->buffer = buffer;
-			this->startOfChunkHeader = reserve(buffer, sizeof(SAVChunkHeader));
+			this->startOfChunkHeader = reserve(buffer, sizeof(FileChunkHeader));
 			this->startOfChunkData = getCurrentPosition(buffer);
 
 			this->chunkHeader = {};
@@ -24,7 +24,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		~ChunkHeaderWrapper()
 		{
 			this->chunkHeader.length = getCurrentPosition(buffer) - this->startOfChunkData;
-			overwriteAt(buffer, startOfChunkHeader, sizeof(SAVChunkHeader), &this->chunkHeader);
+			overwriteAt(buffer, startOfChunkHeader, sizeof(FileChunkHeader), &this->chunkHeader);
 		}
 	};
 
@@ -39,7 +39,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		City *city = &gameState->city;
 
 		// File Header
-		SAVFileHeader fileHeader = SAVFileHeader(SAV_FILE_ID, SAV_VERSION);
+		FileHeader fileHeader = FileHeader(SAV_FILE_ID, SAV_VERSION);
 		append(&buffer, sizeof(fileHeader), &fileHeader);
 
 		// Meta
@@ -387,8 +387,8 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 		u8 *pos = start;
 
 		// File Header
-		SAVFileHeader *fileHeader = (SAVFileHeader *) pos;
-		pos += sizeof(SAVFileHeader);
+		FileHeader *fileHeader = (FileHeader *) pos;
+		pos += sizeof(FileHeader);
 		if (pos > eof)
 		{
 			succeeded = false;
@@ -426,8 +426,8 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 		s32 cityTileCount = 0;
 		while (pos < eof)
 		{
-			SAVChunkHeader *header = (SAVChunkHeader *) pos;
-			pos += sizeof(SAVChunkHeader);
+			FileChunkHeader *header = (FileChunkHeader *) pos;
+			pos += sizeof(FileChunkHeader);
 			if (pos > eof)
 			{
 				succeeded = false;

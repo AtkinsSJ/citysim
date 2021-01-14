@@ -77,8 +77,8 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 			// @Copypasta from loadSaveFile() - might want to extract things out at some point!
 
 			// File Header
-			SAVFileHeader *fileHeader = (SAVFileHeader *) pos;
-			pos += sizeof(SAVFileHeader);
+			FileHeader *fileHeader = (FileHeader *) pos;
+			pos += sizeof(FileHeader);
 			if (pos > eof)
 			{
 				savedGame->isReadable = false;
@@ -97,8 +97,8 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 			}
 
 			// META chunk
-			SAVChunkHeader *header = (SAVChunkHeader *) pos;
-			pos += sizeof(SAVChunkHeader);
+			FileChunkHeader *header = (FileChunkHeader *) pos;
+			pos += sizeof(FileChunkHeader);
 			if (pos > eof)
 			{
 				savedGame->isReadable = false;

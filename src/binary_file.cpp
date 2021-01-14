@@ -1,10 +1,10 @@
 #pragma once
 
-bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName, SAVIdentifier identifier)
+bool fileHeaderIsValid(FileHeader *fileHeader, String saveFileName, FileIdentifier identifier)
 {
 	bool isValid = true;
 
-	SAVFileHeader example = SAVFileHeader(identifier, 0);
+	FileHeader example = FileHeader(identifier, 0);
 	if (fileHeader->identifier != example.identifier)
 	{
 		logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
@@ -25,7 +25,7 @@ bool fileHeaderIsValid(SAVFileHeader *fileHeader, String saveFileName, SAVIdenti
 	return isValid;
 }
 
-bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName, u8 currentVersion)
+bool checkFileHeaderVersion(FileHeader *fileHeader, String saveFileName, u8 currentVersion)
 {
 	bool isValid = true;
 
@@ -42,7 +42,7 @@ bool checkFileHeaderVersion(SAVFileHeader *fileHeader, String saveFileName, u8 c
 	return isValid;
 }
 
-String readString(SAVString source, u8 *base)
+String readString(FileString source, u8 *base)
 {
 	return makeString((char *)(base + source.relativeOffset), source.length, false);
 }
@@ -76,9 +76,9 @@ void rleDecode(u8 *source, u8 *dest, s32 destSize)
 	}
 }
 
-SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data, SAVBlobCompressionScheme scheme)
+FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data, FileBlobCompressionScheme scheme)
 {
-	SAVBlob result = {};
+	FileBlob result = {};
 	result.compressionScheme = scheme;
 	result.relativeOffset = currentOffset;
 	result.decompressedLength = length;
@@ -103,12 +103,12 @@ SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data,
 	return result;
 }
 
-SAVBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, Array2<u8> *data, SAVBlobCompressionScheme scheme)
+FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, Array2<u8> *data, FileBlobCompressionScheme scheme)
 {
 	return appendBlob(currentOffset, buffer, data->w * data->h, data->items, scheme);
 }
 
-bool decodeBlob(SAVBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
+bool decodeBlob(FileBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
 {
 	bool succeeded = true;
 
@@ -139,7 +139,7 @@ bool decodeBlob(SAVBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
 	return succeeded;
 }
 
-bool decodeBlob(SAVBlob blob, u8 *baseMemory, Array2<u8> *dest)
+bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest)
 {
 	return decodeBlob(blob, baseMemory, dest->items, dest->w * dest->h);
 }

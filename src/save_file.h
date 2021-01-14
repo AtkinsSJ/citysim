@@ -14,18 +14,18 @@
 #pragma pack(push, 1)
 
 const u8 SAV_VERSION = 1;
-const SAVIdentifier SAV_FILE_ID = "CITY"_id;
+const FileIdentifier SAV_FILE_ID = "CITY"_id;
 
 const u8 SAV_META_VERSION = 1;
-const SAVIdentifier SAV_META_ID = "META"_id;
+const FileIdentifier SAV_META_ID = "META"_id;
 struct SAVChunk_Meta
 {
 	leU64 saveTimestamp; // Unix timestamp
 	leU16 cityWidth;
 	leU16 cityHeight;
 	leS32 funds;
-	SAVString cityName;
-	SAVString playerName;
+	FileString cityName;
+	FileString playerName;
 	leU32 population;
 	leU32 jobs;
 
@@ -58,14 +58,14 @@ struct SAVChunk_Mods
 };
 
 const u8 SAV_BDGT_VERSION = 1;
-const SAVIdentifier SAV_BDGT_ID = "BDGT"_id;
+const FileIdentifier SAV_BDGT_ID = "BDGT"_id;
 struct SAVChunk_Budget
 {
 	// TODO: Budget things
 };
 
 const u8 SAV_BLDG_VERSION = 1;
-const SAVIdentifier SAV_BLDG_ID = "BLDG"_id;
+const FileIdentifier SAV_BLDG_ID = "BLDG"_id;
 struct SAVChunk_Buildings
 {
 	leU32 buildingTypeCount;
@@ -76,7 +76,7 @@ struct SAVChunk_Buildings
 
 	// Array of the buildings in the city, as SAVBuildings
 	leU32 buildingCount;
-	SAVBlob buildings;
+	FileBlob buildings;
 };
 struct SAVBuilding
 {
@@ -99,7 +99,7 @@ struct SAVBuilding
 };
 
 const u8 SAV_CRIM_VERSION = 1;
-const SAVIdentifier SAV_CRIM_ID = "CRIM"_id;
+const FileIdentifier SAV_CRIM_ID = "CRIM"_id;
 struct SAVChunk_Crime
 {
 	leU32 totalJailCapacity;
@@ -107,19 +107,19 @@ struct SAVChunk_Crime
 };
 
 const u8 SAV_EDUC_VERSION = 1;
-const SAVIdentifier SAV_EDUC_ID = "EDUC"_id;
+const FileIdentifier SAV_EDUC_ID = "EDUC"_id;
 struct SAVChunk_Education
 {
 	// Building education level, when that's implemented
 };
 
 const u8 SAV_FIRE_VERSION = 1;
-const SAVIdentifier SAV_FIRE_ID = "FIRE"_id;
+const FileIdentifier SAV_FIRE_ID = "FIRE"_id;
 struct SAVChunk_Fire
 {
 	// Active fires
 	leU32 activeFireCount;
-	SAVBlob activeFires; // Array of SAVFires
+	FileBlob activeFires; // Array of SAVFires
 
 	// TODO: Fire service building data
 };
@@ -132,31 +132,31 @@ struct SAVFire
 };
 
 const u8 SAV_HLTH_VERSION = 1;
-const SAVIdentifier SAV_HLTH_ID = "HLTH"_id;
+const FileIdentifier SAV_HLTH_ID = "HLTH"_id;
 struct SAVChunk_Health
 {
 	// Building health level, when that's implemented
 };
 
 const u8 SAV_LVAL_VERSION = 1;
-const SAVIdentifier SAV_LVAL_ID = "LVAL"_id;
+const FileIdentifier SAV_LVAL_ID = "LVAL"_id;
 struct SAVChunk_LandValue
 {
 	// Kind of redundant as it can be calculated fresh, but in case we have over-time
 	// effects, we might as well put this here.
-	SAVBlob tileLandValue; // Array of u8s
+	FileBlob tileLandValue; // Array of u8s
 };
 
 const u8 SAV_PLTN_VERSION = 1;
-const SAVIdentifier SAV_PLTN_ID = "PLTN"_id;
+const FileIdentifier SAV_PLTN_ID = "PLTN"_id;
 struct SAVChunk_Pollution
 {
 	// TODO: Maybe RLE this, but I'm not sure. It's probably pretty variable.
-	SAVBlob tilePollution; // Array of u8s
+	FileBlob tilePollution; // Array of u8s
 };
 
 const u8 SAV_TERR_VERSION = 1;
-const SAVIdentifier SAV_TERR_ID = "TERR"_id;
+const FileIdentifier SAV_TERR_ID = "TERR"_id;
 struct SAVChunk_Terrain
 {
 	leS32 terrainGenerationSeed;
@@ -166,13 +166,13 @@ struct SAVChunk_Terrain
 	leU32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
 	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
 
-	SAVBlob tileTerrainType;  // Array of u8s (NB: We could make this be a larger type and then compact it down to u8s in the file if there are few enough...)
-	SAVBlob tileHeight;       // Array of u8s
-	SAVBlob tileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
+	FileBlob tileTerrainType;  // Array of u8s (NB: We could make this be a larger type and then compact it down to u8s in the file if there are few enough...)
+	FileBlob tileHeight;       // Array of u8s
+	FileBlob tileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
 };
 
 const u8 SAV_TPRT_VERSION = 1;
-const SAVIdentifier SAV_TPRT_ID = "TPRT"_id;
+const FileIdentifier SAV_TPRT_ID = "TPRT"_id;
 struct SAVChunk_Transport
 {
 	// TODO: Information about traffic density, routes, etc.
@@ -180,10 +180,10 @@ struct SAVChunk_Transport
 };
 
 const u8 SAV_ZONE_VERSION = 1;
-const SAVIdentifier SAV_ZONE_ID = "ZONE"_id;
+const FileIdentifier SAV_ZONE_ID = "ZONE"_id;
 struct SAVChunk_Zone
 {
-	SAVBlob tileZone; // Array of u8s
+	FileBlob tileZone; // Array of u8s
 };
 
 #pragma pack(pop)
