@@ -20,6 +20,7 @@ DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp);
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard);
 
 bool platform_createDirectory(String path);
+bool platform_deleteFile(String path);
 
 struct FileInfo;
 

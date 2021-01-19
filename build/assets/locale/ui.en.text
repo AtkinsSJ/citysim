@@ -10,6 +10,7 @@ button_build         Build...
 button_credits       Credits
 button_data_views	 Overlay
 button_demolish      Demolish
+button_delete_save   Delete Save
 button_exit          Exit
 button_load          Load
 button_menu          Menu
@@ -89,6 +90,8 @@ zone_industrial    Industrial
 
 msg_cannot_afford_construction   Not enough money for construction.
 msg_cannot_afford_demolition     Not enough money for demolition.
+msg_delete_save_success          '{0}' deleted
+msg_delete_save_failure          Failed to delete '{0}'!
 msg_load_success                 Game loaded
 msg_load_failure                 Failed to load game as '{0}'!
 msg_load_version_too_new         This save file was created by a newer version of the game, so it's very likely that loading it will break things! You probably want to update the game first.

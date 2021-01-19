@@ -121,6 +121,12 @@ smm getFileSize(FileHandle *file)
 	return fileSize;
 }
 
+bool deleteFile(String path)
+{
+	ASSERT(isNullTerminated(path));
+	return platform_deleteFile(path);
+}
+
 bool createDirectory(String path)
 {
 	ASSERT(isNullTerminated(path));

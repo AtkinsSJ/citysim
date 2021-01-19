@@ -224,6 +224,10 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 	if (selectedSavedGame)
 	{
+		if (window_button(context, getText("button_delete_save"_s), -1, false))
+		{
+			deleteSave(context->uiState, selectedSavedGame);
+		}
 		window_label(context, selectedSavedGame->shortName);
 		window_label(context, myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
 		window_label(context, selectedSavedGame->cityName);
@@ -359,4 +363,20 @@ bool saveGame(UIState *uiState, String saveName)
 	}
 
 	return saveSucceeded;
+}
+
+bool deleteSave(UIState *uiState, SavedGameInfo *savedGame)
+{
+	bool success = deleteFile(savedGame->fullPath);
+
+	if (success)
+	{
+		pushUiMessage(uiState, myprintf(getText("msg_delete_save_success"_s), {savedGame->shortName}));
+	}
+	else
+	{
+		pushUiMessage(uiState, myprintf(getText("msg_delete_save_failure"_s), {savedGame->shortName}));
+	}
+
+	return success;
 }

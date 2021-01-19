@@ -136,6 +136,18 @@ bool platform_createDirectory(String _path)
 	return succeeded;
 }
 
+bool platform_deleteFile(String path)
+{
+	bool succeeded = true;
+
+	if (DeleteFile(path.chars) == 0)
+	{
+		succeeded = false;
+	}
+
+	return succeeded;
+}
+
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
 	StringBuilder stb = newStringBuilder(256);

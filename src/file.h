@@ -87,6 +87,7 @@ FileHandle openFile(String path, FileAccessMode mode);
 void closeFile(FileHandle *file);
 smm getFileSize(FileHandle *file);
 s64 getFilePosition(FileHandle *file);
+bool deleteFile(String path);
 
 bool createDirectory(String path);
 
