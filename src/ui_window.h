@@ -34,12 +34,12 @@ typedef void (*WindowProc)(WindowContext*, void*);
 
 enum WindowFlags
 {
-	WinFlag_AutomaticHeight = 1 << 0,
+	WinFlag_AutomaticHeight = 1 << 0, // Height determined by content
 	WinFlag_Unique          = 1 << 1, // Only one window with the same WindowProc will be allowed. A new one will replace the old.
 	WinFlag_Modal           = 1 << 2,
-	WinFlag_Tooltip         = 1 << 3,
-	WinFlag_Headless        = 1 << 4,
-	WinFlag_ShrinkWidth     = 1 << 5,
+	WinFlag_Tooltip         = 1 << 3, // Follows the mouse cursor
+	WinFlag_Headless        = 1 << 4, // No title bar
+	WinFlag_ShrinkWidth     = 1 << 5, // Reduces the width to match the content of the window
 	WinFlag_Pause           = 1 << 6, // Pauses the game while open
 };
 

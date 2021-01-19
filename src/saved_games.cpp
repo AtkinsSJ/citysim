@@ -146,7 +146,7 @@ void showLoadGameWindow(UIState *uiState)
 	catalogue->selectedSavedGameName = nullString;
 	catalogue->selectedSavedGameIndex = -1;
 
-	showWindow(uiState, getText("title_load_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, null);
+	showWindow(uiState, getText("title_load_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc, null);
 }
 
 void showSaveGameWindow(UIState *uiState)
@@ -172,7 +172,7 @@ void showSaveGameWindow(UIState *uiState)
 		catalogue->selectedSavedGameIndex = -1;
 	}
 
-	showWindow(uiState, getText("title_save_game"_s), 400, 400, {}, "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
+	showWindow(uiState, getText("title_save_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
 }
 
 void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
@@ -189,7 +189,9 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	SavedGameInfo *selectedSavedGame = null;
 	bool justClickedSavedGame = false;
 
-	window_beginColumns(context, 250);
+	s32 bottomBarHeight = 30; // @Cleanup: magic number!
+
+	window_beginColumns(context, context->contentArea.h - bottomBarHeight);
 
 	// List of saved games
 	window_columnPercent(context, 0.4f, &catalogue->savedGamesListScrollbar);
@@ -224,10 +226,13 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 	if (selectedSavedGame)
 	{
+		window_alignWidgets(context, ALIGN_RIGHT);
 		if (window_button(context, getText("button_delete_save"_s), -1, false))
 		{
 			deleteSave(context->uiState, selectedSavedGame);
 		}
+		window_alignWidgets(context, ALIGN_EXPAND_H);
+
 		window_label(context, selectedSavedGame->shortName);
 		window_label(context, myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
 		window_label(context, selectedSavedGame->cityName);
@@ -249,20 +254,25 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	if (isSaveWindow)
 	{
 		// 'Save' buttons
+		window_alignWidgets(context, ALIGN_LEFT);
+		if (window_button(context, getText("button_back"_s)))
+		{
+			context->closeRequested = true;
+		}
+
 		window_label(context, "Save game name:"_s);
 
+		window_alignWidgets(context, ALIGN_RIGHT);
+		// Now we try and do multiple things on one line! Wish me luck.
+		bool pressedSave = window_button(context, getText("button_save"_s));
+
+		window_alignWidgets(context, ALIGN_EXPAND_H);
 		if (justClickedSavedGame)
 		{
 			clear(&catalogue->saveGameName);
 			append(&catalogue->saveGameName, selectedSavedGame->shortName);
 		}
 
-		window_startNewLine(context, ALIGN_RIGHT);
-
-		// Now we try and do multiple things on one line! Wish me luck.
-		bool pressedSave = window_button(context, getText("button_save"_s));
-
-		window_alignWidgets(context, ALIGN_EXPAND_H);
 		bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
 		String inputName = trim(textInputToString(&catalogue->saveGameName));
 
@@ -293,6 +303,13 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	else
 	{
 		// 'Load' buttons
+		window_alignWidgets(context, ALIGN_LEFT);
+		if (window_button(context, getText("button_back"_s)))
+		{
+			context->closeRequested = true;
+		}
+
+		window_alignWidgets(context, ALIGN_RIGHT);
 		if (window_button(context, getText("button_load"_s)) && (selectedSavedGame != null))
 		{
 			loadGame(context->uiState, selectedSavedGame);

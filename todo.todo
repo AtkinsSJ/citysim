@@ -16,8 +16,19 @@ Notes for searching:
 
 ------------------------------------------------
 
+Window UI System features:
+- Confirmation dialogs
+- Frames
+- Button styles
+- Label styles
+- Embedded images
+- Image buttons
+- Align things to the bottom
+
 Saving and loading:
+- Save/Load window revamp!
 - Deleting saved games
+	- Add a confirmation dialog!
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 
