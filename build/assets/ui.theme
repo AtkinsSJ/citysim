@@ -22,8 +22,9 @@
 font              small            				# testing eol comment
 textColor           0   0   0 255
 backgroundColor   255 255 255 255
-hoverColor        192 192 255 255
-pressedColor      128 128 255 255
+hoverBackgroundColor        192 192 255 255
+pressedBackgroundColor      128 128 255 255
+disabledBackgroundColor     128 128 128 255
 padding           6
 textAlignment     H_CENTRE V_CENTRE
 

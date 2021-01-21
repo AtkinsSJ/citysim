@@ -97,7 +97,7 @@ void window_label(WindowContext *context, String text, String styleName = nullSt
  * it blank (or pass -1 manually) then the button will be automatically sized to wrap the contained text.
  * Either way, it always matches the size vertically.
  */
-bool window_button(WindowContext *context, String text, s32 textWidth = -1, bool isActive = false);
+bool window_button(WindowContext *context, String text, s32 textWidth = -1, ButtonState state = Button_Normal);
 
 // Returns true if RETURN was pressed, same as updateTextInput().
 bool window_textInput(WindowContext *context, TextInput *textInput, String styleName = nullString);

@@ -243,7 +243,7 @@ void window_label(WindowContext *context, String text, String styleName)
 	}
 }
 
-bool window_button(WindowContext *context, String text, s32 textWidth, bool isActive)
+bool window_button(WindowContext *context, String text, s32 textWidth, ButtonState state)
 {
 	DEBUG_FUNCTION();
 	
@@ -285,7 +285,11 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 			Rect2I textBounds = irectPosSize(textTopLeft, textSize);
 			drawText(&renderer->uiBuffer, font, text, textBounds, textAlignment, style->textColor, renderer->shaderIds.text);
 
-			if (context->window->wasActiveLastUpdate && contains(buttonBounds, mousePos))
+			if (state == Button_Disabled)
+			{
+				backColor = style->disabledBackgroundColor;
+			}
+			else if (context->window->wasActiveLastUpdate && contains(buttonBounds, mousePos))
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
@@ -293,17 +297,17 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 				{
 					if (contains(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 					{
-						backColor = style->pressedColor;
+						backColor = style->pressedBackgroundColor;
 					}
 				}
 				else
 				{
-					backColor = style->hoverColor;
+					backColor = style->hoverBackgroundColor;
 				}
 			}
-			else if (isActive)
+			else if (state == Button_Active)
 			{
-				backColor = style->hoverColor;
+				backColor = style->hoverBackgroundColor;
 			}
 
 			fillDrawRectPlaceholder(background, buttonBounds, backColor);
@@ -311,7 +315,8 @@ bool window_button(WindowContext *context, String text, s32 textWidth, bool isAc
 
 		if (context->doUpdate)
 		{
-			if (justClickedOnUI(context->uiState, buttonBounds))
+			if ((state != Button_Disabled)
+			 && justClickedOnUI(context->uiState, buttonBounds))
 			{
 				buttonClicked = true;
 				context->uiState->mouseInputHandled = true;

@@ -511,28 +511,28 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// Speed control buttons
 		Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarBottom - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
 
-		if (uiButton(uiState, ">>>"_s, speedButtonRect, buttonStyle, clock->speed == Speed_Fast))
+		if (uiButton(uiState, ">>>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Fast)))
 		{
 			clock->speed = Speed_Fast;
 			clock->isPaused = false;
 		}
 		speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-		if (uiButton(uiState, ">>"_s, speedButtonRect, buttonStyle, clock->speed == Speed_Medium))
+		if (uiButton(uiState, ">>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Medium)))
 		{
 			clock->speed = Speed_Medium;
 			clock->isPaused = false;
 		}
 		speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-		if (uiButton(uiState, ">"_s, speedButtonRect, buttonStyle, clock->speed == Speed_Slow))
+		if (uiButton(uiState, ">"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Slow)))
 		{
 			clock->speed = Speed_Slow;
 			clock->isPaused = false;
 		}
 		speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-		if (uiButton(uiState, "||"_s, speedButtonRect, buttonStyle, clock->isPaused))
+		if (uiButton(uiState, "||"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->isPaused)))
 		{
 			clock->isPaused = !clock->isPaused;
 		}
@@ -603,7 +603,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
 				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle,
-						(gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))
+						buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
 				{
 					uiCloseMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
@@ -644,7 +644,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				BuildingDef *buildingDef = getValue(&it);
 
 				if (popupMenuButton(uiState, &menu, getText(buildingDef->textAssetName), popupButtonStyle,
-						(gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))
+						buttonIsActive((gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID))))
 				{
 					uiCloseMenus(uiState);
 					gameState->selectedBuildingTypeID = buildingDef->typeID;
@@ -660,7 +660,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		String demolishButtonText = getText("button_demolish"_s);
 		buttonRect.size = calculateButtonSize(demolishButtonText, buttonStyle);
 		if (uiButton(uiState, demolishButtonText, buttonRect, buttonStyle,
-					(gameState->actionMode == ActionMode_Demolish),
+					buttonIsActive(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, "(X)"_s))
 		{
 			gameState->actionMode = ActionMode_Demolish;
@@ -694,25 +694,25 @@ void debugToolsWindowProc(WindowContext *context, void *userData)
 {
 	GameState *gameState = (GameState *)userData;
 
-	if (window_button(context, "Inspect fire info"_s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Fire)))
+	if (window_button(context, "Inspect fire info"_s, -1, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Fire;
 	}
-	if (window_button(context, "Add Fire"_s, -1, (gameState->actionMode == ActionMode_Debug_AddFire)))
+	if (window_button(context, "Add Fire"_s, -1, buttonIsActive(gameState->actionMode == ActionMode_Debug_AddFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_AddFire;
 	}
-	if (window_button(context, "Remove Fire"_s, -1, (gameState->actionMode == ActionMode_Debug_RemoveFire)))
+	if (window_button(context, "Remove Fire"_s, -1, buttonIsActive(gameState->actionMode == ActionMode_Debug_RemoveFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_RemoveFire;
 	}
 
-	if (window_button(context, "Inspect power info"_s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Power)))
+	if (window_button(context, "Inspect power info"_s, -1, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Power)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Power;
 	}
 	
-	if (window_button(context, "Inspect transport info"_s, -1, (gameState->inspectTileDebugFlags & DebugInspect_Transport)))
+	if (window_button(context, "Inspect transport info"_s, -1, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Transport)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Transport;
 	}
@@ -1224,7 +1224,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
 
-			if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, (gameState->dataLayerToDraw == dataViewID)))
+			if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
 			{
 				uiCloseMenus(uiState);
 				gameState->dataLayerToDraw = dataViewID;

@@ -12,8 +12,9 @@ struct UIButtonStyle
 	u32 textAlignment;
 
 	V4 backgroundColor;
-	V4 hoverColor;
-	V4 pressedColor;
+	V4 hoverBackgroundColor;
+	V4 pressedBackgroundColor;
+	V4 disabledBackgroundColor;
 
 	s32 padding;
 };

@@ -102,7 +102,7 @@ V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, b
 	return result;
 }
 
-bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, bool active, SDL_Keycode shortcutKey, String tooltip)
+bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
@@ -116,7 +116,11 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	V4 backColor = style->backgroundColor;
 	u32 textAlignment = style->textAlignment;
 
-	if (!uiState->mouseInputHandled && isMouseInUIBounds(uiState, bounds))
+	if (state == Button_Disabled)
+	{
+		backColor = style->disabledBackgroundColor;
+	}
+	else if (!uiState->mouseInputHandled && isMouseInUIBounds(uiState, bounds))
 	{
 		uiState->mouseInputHandled = true;
 
@@ -126,7 +130,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 		{
 			if (isMouseInUIBounds(uiState, bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
-				backColor = style->pressedColor;
+				backColor = style->pressedBackgroundColor;
 			}
 		}
 		else
@@ -136,7 +140,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 			{
 				buttonClicked = true;
 			}
-			backColor = style->hoverColor;
+			backColor = style->hoverBackgroundColor;
 		}
 
 		if (tooltip.length)
@@ -145,9 +149,9 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 			showTooltip(uiState, basicTooltipWindowProc, null);
 		}
 	}
-	else if (active)
+	else if (state == Button_Active)
 	{
-		backColor = style->hoverColor;
+		backColor = style->hoverBackgroundColor;
 	}
 
 	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
@@ -155,7 +159,8 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	uiText(&renderer->uiBuffer, getFont(style->fontName), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
-	if (!isInputCaptured()
+	if (state != Button_Disabled
+	&& !isInputCaptured()
 	&& (shortcutKey != SDLK_UNKNOWN) && keyJustPressed(shortcutKey))
 	{
 		buttonClicked = true;
@@ -169,7 +174,7 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, text, bounds, style, currentlyOpen, shortcutKey, tooltip))
+	if (uiButton(uiState, text, bounds, style, buttonIsActive(currentlyOpen), shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -348,7 +353,7 @@ PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeigh
 	return result;
 }
 
-bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive)
+bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, ButtonState state)
 {
 	V2I buttonSize = calculateButtonSize(text, style, menu->width - (menu->style->margin * 2));
 
@@ -356,7 +361,7 @@ bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonSty
 								menu->origin.y + menu->currentYOffset - uiState->openMenuScrollbar.scrollPosition,
 								buttonSize.x, buttonSize.y);
 
-	bool result = uiButton(uiState, text, buttonRect, style, isActive);
+	bool result = uiButton(uiState, text, buttonRect, style, state);
 
 	menu->currentYOffset += buttonRect.h + menu->style->contentPadding;
 

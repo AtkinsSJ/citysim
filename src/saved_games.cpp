@@ -207,7 +207,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			SavedGameInfo *savedGame = get(&it);
 			s32 index = getIndex(&it);
 
-			if (window_button(context, savedGame->shortName, -1, (catalogue->selectedSavedGameIndex == index)))
+			if (window_button(context, savedGame->shortName, -1, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
 			{
 				// Select it and show information in the details pane
 				catalogue->selectedSavedGameIndex = index;
@@ -227,7 +227,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	if (selectedSavedGame)
 	{
 		window_alignWidgets(context, ALIGN_RIGHT);
-		if (window_button(context, getText("button_delete_save"_s), -1, false))
+		if (window_button(context, getText("button_delete_save"_s)))
 		{
 			deleteSave(context->uiState, selectedSavedGame);
 		}
@@ -263,8 +263,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		window_label(context, "Save game name:"_s);
 
 		window_alignWidgets(context, ALIGN_RIGHT);
-		// Now we try and do multiple things on one line! Wish me luck.
-		bool pressedSave = window_button(context, getText("button_save"_s));
+		bool pressedSave = window_button(context, getText("button_save"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled);
 
 		window_alignWidgets(context, ALIGN_EXPAND_H);
 		if (justClickedSavedGame)
@@ -310,7 +309,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		}
 
 		window_alignWidgets(context, ALIGN_RIGHT);
-		if (window_button(context, getText("button_load"_s)) && (selectedSavedGame != null))
+		if (window_button(context, getText("button_load"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled))
 		{
 			loadGame(context->uiState, selectedSavedGame);
 			context->closeRequested = true;

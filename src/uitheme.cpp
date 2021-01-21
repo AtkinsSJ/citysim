@@ -213,6 +213,18 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
+			else if (equals(firstWord, "disabledBackgroundColor"_s))
+			{
+				Maybe<V4> disabledBackgroundColor = readColor(&reader);
+				if (disabledBackgroundColor.isValid)
+				{
+					switch (target.type)
+					{
+						case Section_Button:  target.button->disabledBackgroundColor = disabledBackgroundColor.value; break;
+						default:  WRONG_SECTION;
+					}
+				}
+			}
 			else if (equals(firstWord, "font"_s))
 			{
 				String fontName = intern(&assets->assetStrings, readToken(&reader));
@@ -227,14 +239,14 @@ void loadUITheme(Blob data, Asset *asset)
 					default:  WRONG_SECTION;
 				}
 			}
-			else if (equals(firstWord, "hoverColor"_s))
+			else if (equals(firstWord, "hoverBackgroundColor"_s))
 			{
-				Maybe<V4> hoverColor = readColor(&reader);
-				if (hoverColor.isValid)
+				Maybe<V4> hoverBackgroundColor = readColor(&reader);
+				if (hoverBackgroundColor.isValid)
 				{
 					switch (target.type)
 					{
-						case Section_Button:  target.button->hoverColor = hoverColor.value; break;
+						case Section_Button:  target.button->hoverBackgroundColor = hoverBackgroundColor.value; break;
 						default:  WRONG_SECTION;
 					}
 				}
@@ -353,14 +365,14 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else if (equals(firstWord, "pressedColor"_s))
+			else if (equals(firstWord, "pressedBackgroundColor"_s))
 			{
-				Maybe<V4> pressedColor = readColor(&reader);
-				if (pressedColor.isValid)
+				Maybe<V4> pressedBackgroundColor = readColor(&reader);
+				if (pressedBackgroundColor.isValid)
 				{
 					switch (target.type)
 					{
-						case Section_Button:  target.button->pressedColor = pressedColor.value; break;
+						case Section_Button:  target.button->pressedBackgroundColor = pressedBackgroundColor.value; break;
 						default:  WRONG_SECTION;
 					}
 				}

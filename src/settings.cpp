@@ -252,7 +252,7 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
 	String backText = getText("button_back"_s);
 	V2I backSize = calculateButtonSize(backText, style);
 	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
-	if (uiButton(uiState, backText, buttonRect, style, false, SDLK_ESCAPE))
+	if (uiButton(uiState, backText, buttonRect, style, Button_Normal, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

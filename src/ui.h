@@ -14,6 +14,17 @@ struct ScrollbarState
 	s32 scrollPosition;
 };
 
+enum ButtonState
+{
+	Button_Normal,
+	Button_Disabled,
+	Button_Active,
+};
+inline ButtonState buttonIsActive(bool isActive)
+{
+	return isActive ? Button_Active : Button_Normal;
+}
+
 #include "ui_window.h"
 
 struct UIState
@@ -48,7 +59,7 @@ bool justClickedOnUI(UIState *uiState, Rect2I bounds);
 
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth=0, bool fillWidth=true);
-bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, bool active = false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 void uiCloseMenus(UIState *uiState);
 
@@ -87,5 +98,5 @@ struct PopupMenu
 };
 
 PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style);
-bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, bool isActive = false);
+bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, ButtonState state = Button_Normal);
 void endPopupMenu(UIState *uiState, PopupMenu *menu);
