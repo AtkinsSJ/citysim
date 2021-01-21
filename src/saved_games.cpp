@@ -227,7 +227,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	if (selectedSavedGame)
 	{
 		window_alignWidgets(context, ALIGN_RIGHT);
-		if (window_button(context, getText("button_delete_save"_s)))
+		if (window_button(context, getText("button_delete_save"_s), -1, Button_Normal, "delete"_s))
 		{
 			deleteSave(context->uiState, selectedSavedGame);
 		}

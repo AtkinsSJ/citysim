@@ -243,12 +243,14 @@ void window_label(WindowContext *context, String text, String styleName)
 	}
 }
 
-bool window_button(WindowContext *context, String text, s32 textWidth, ButtonState state)
+bool window_button(WindowContext *context, String text, s32 textWidth, ButtonState state, String styleName)
 {
 	DEBUG_FUNCTION();
 	
 	bool buttonClicked = false;
-	UIButtonStyle *style = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
+	UIButtonStyle *style = null;
+	if (!isEmpty(styleName))  style = findButtonStyle(&assets->theme, styleName);
+	if (style == null)        style = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
 
 	u32 textAlignment = style->textAlignment;
 	s32 buttonPadding = style->padding;

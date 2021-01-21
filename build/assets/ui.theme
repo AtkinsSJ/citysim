@@ -4,7 +4,6 @@
 #
 # Probably not final syntax, but we'll give it a go!
 # colours probably want to be 0 to 1, not 0 to 255.
-# probably want to name each style, like ":TYPE NAME"
 # may not want font indirection?
 # may want variables we can define
 # may want to extend previously defined styles
@@ -27,6 +26,13 @@ pressedBackgroundColor      128 128 255 255
 disabledBackgroundColor     128 128 128 255
 padding           6
 textAlignment     H_CENTRE V_CENTRE
+
+:Button delete
+extends default
+backgroundColor             192 128 128 255
+hoverBackgroundColor        255 128 128 255
+pressedBackgroundColor      220 128 128 255
+disabledBackgroundColor     128  64  64 255
 
 :Label title
 font              normal

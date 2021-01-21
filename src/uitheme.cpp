@@ -147,7 +147,8 @@ void loadUITheme(Blob data, Asset *asset)
 		}
 		else
 		{
-			// properties of the item
+			// Properties of the item
+			// These are arranged alphabetically
 			if (equals(firstWord, "backgroundColor"_s))
 			{
 				Maybe<V4> backgroundColor = readColor(&reader);
@@ -223,6 +224,103 @@ void loadUITheme(Blob data, Asset *asset)
 						case Section_Button:  target.button->disabledBackgroundColor = disabledBackgroundColor.value; break;
 						default:  WRONG_SECTION;
 					}
+				}
+			}
+			else if (equals(firstWord, "extends"_s))
+			{
+				// Clones an existing style
+				String parentStyleName = readToken(&reader);
+
+				switch (target.type)
+				{
+					case Section_Button: {
+						UIButtonStyle *parent = findButtonStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.button) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find Button style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
+					case Section_Console: {
+						UIConsoleStyle *parent = findConsoleStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.console) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find Console style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
+					case Section_Label: {
+						UILabelStyle *parent = findLabelStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.label) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find Label style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
+					case Section_PopupMenu: {
+						UIPopupMenuStyle *parent = findPopupMenuStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.popupMenu) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find PopupMenu style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
+					case Section_Scrollbar: {
+						UIScrollbarStyle *parent = findScrollbarStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.scrollbar) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find Scrollbar style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
+					case Section_TextInput: {
+						UITextInputStyle *parent = findTextInputStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.textInput) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find TextInput style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
+					case Section_UIMessage: {
+						UIMessageStyle *parent = findMessageStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.message) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find UIMessage style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
+					case Section_Window: {
+						UIWindowStyle *parent = findWindowStyle(theme, parentStyleName);
+						if (parent != null)
+						{
+							*(target.window) = *parent;
+						}
+						else
+						{
+							error(&reader, "Unable to find Window style named '{0}'"_s, {parentStyleName});
+						}
+					} break;
 				}
 			}
 			else if (equals(firstWord, "font"_s))
