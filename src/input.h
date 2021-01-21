@@ -43,6 +43,7 @@ struct InputState
 	// Keyboard
 	bool _keyWasDown[KEYBOARD_KEY_COUNT];
 	bool _keyDown[KEYBOARD_KEY_COUNT];
+	bool _keyDownIsRepeat[KEYBOARD_KEY_COUNT];
 
 	bool hasUnhandledTextEntered; // Has anyone requested the _textEntered?
 	String textEntered;
@@ -73,7 +74,7 @@ V2 getClickStartPos(MouseButton mouseButton, struct Camera *camera);
 bool modifierKeyIsPressed(ModifierKey modifier);
 bool keyIsPressed(SDL_Keycode key, u8 modifiers=0);
 bool keyWasPressed(SDL_Keycode key, u8 modifiers=0);
-bool keyJustPressed(SDL_Keycode key, u8 modifiers=0);
+bool keyJustPressed(SDL_Keycode key, u8 modifiers=0, bool ignoreRepeats=false);
 
 KeyboardShortcut parseKeyboardShortcut(String shortcutString);
 bool wasShortcutJustPressed(KeyboardShortcut shortcut);

@@ -35,6 +35,11 @@ BUG: Zooming out is weird
 
 Close the pause window after loading a game
 
+Text Input:
+- While a text-input is active, the rest of the game shouldn't respond to keyboard events.
+- Guide for handling textinputs properly: https://wiki.libsdl.org/Tutorials/TextInput
+	- Though, this is pretty scanty.
+
 Building problems:
 - Problem icon entities (Zots!)
 	- Maintain minimum distance between them, so it's not cluttered and chaotic.

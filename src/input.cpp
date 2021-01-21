@@ -117,16 +117,21 @@ void updateInput()
 			case SDL_KEYDOWN: {
 				s32 keycode = keycodeToIndex(event.key.keysym.sym);
 				inputState->_keyDown[keycode] = true;
+				inputState->_keyDownIsRepeat[keycode] = (event.key.repeat > 0);
 				if (event.key.repeat)
 				{
-					// This is a hack! Well, our whole concept of inputState handling is weird, so not really.
-					// We pretend that we had released the key so that we notice the repeat.
+					// Slight hack: We detect a key press if _keyDown is true and _keyWasDown is false.
+					// This hides repeats!
+					// So, we falsely say _keyWasDown is false, so the repeat gets noticed.
+					// You can distinguish between repeats and normal presses with _keyDownIsRepeat.
+					// keyJustPressed() also has a parameter for ignoring repeats.
 					inputState->_keyWasDown[keycode] = false;
 				}
 			} break;
 			case SDL_KEYUP: {
 				s32 keycode = keycodeToIndex(event.key.keysym.sym);
 				inputState->_keyDown[keycode] = false;
+				inputState->_keyDownIsRepeat[keycode] = false;
 			} break;
 			case SDL_TEXTINPUT: {
 				inputState->hasUnhandledTextEntered = true;
@@ -276,15 +281,25 @@ inline bool keyWasPressed(SDL_Keycode key, u8 modifiers)
 	return result;
 }
 
-inline bool keyJustPressed(SDL_Keycode key, u8 modifiers)
+inline bool keyJustPressed(SDL_Keycode key, u8 modifiers, bool ignoreRepeats)
 {
-	return keyIsPressed(key, modifiers) && !keyWasPressed(key);
+	bool result = keyIsPressed(key, modifiers) && !keyWasPressed(key);
+
+	if (result && ignoreRepeats)
+	{
+		s32 keycode = keycodeToIndex(key);
+
+		// To ignore the repeat, we just return the opposite of whether it's a repeat.
+		// The result is always true before this line.
+		result = !inputState->_keyDownIsRepeat[keycode];
+	}
+
+	return result;
 }
 
 inline bool wasShortcutJustPressed(KeyboardShortcut shortcut)
 {
-	return inputState->_keyDown[keycodeToIndex(shortcut.key)]
-		&& (getPressedModifierKeys() == shortcut.modifiers);
+	return keyJustPressed(shortcut.key, shortcut.modifiers, true);
 }
 
 inline bool wasTextEntered()

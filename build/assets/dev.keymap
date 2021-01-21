@@ -4,7 +4,7 @@
 F5    reload_assets
 F1    debug_tools
 
-Home  mark_all_dirty
+# Home  mark_all_dirty
 
 1     show_layer des_res
 2     show_layer des_com
