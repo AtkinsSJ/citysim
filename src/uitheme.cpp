@@ -12,6 +12,34 @@ void initUITheme(UITheme *theme)
 	initHashTable(&theme->scrollbarStyles);
 	initHashTable(&theme->textInputStyles);
 	initHashTable(&theme->windowStyles);
+
+	initHashTable(&theme->styleProperties, 0.75f, 256);
+	#define PROP(name, _type, inButton, inConsole, inLabel, inMessage, inPopupMenu, inScrollbar, inTextInput, inWindow) {\
+		Property property = {}; \
+		property.type = _type; \
+		property.offsetInStyleStruct[Section_Button]    = inButton    ? offsetof(UIButtonStyle, name)    : -1; \
+		property.offsetInStyleStruct[Section_Console]   = inConsole   ? offsetof(UIConsoleStyle, name)   : -1; \
+		property.offsetInStyleStruct[Section_Label]     = inLabel     ? offsetof(UILabelStyle, name)     : -1; \
+		property.offsetInStyleStruct[Section_UIMessage] = inMessage   ? offsetof(UIMessageStyle, name)   : -1; \
+		property.offsetInStyleStruct[Section_PopupMenu] = inPopupMenu ? offsetof(UIPopupMenuStyle, name) : -1; \
+		property.offsetInStyleStruct[Section_Scrollbar] = inScrollbar ? offsetof(UIScrollbarStyle, name) : -1; \
+		property.offsetInStyleStruct[Section_TextInput] = inTextInput ? offsetof(UITextInputStyle, name) : -1; \
+		property.offsetInStyleStruct[Section_Window]    = inWindow    ? offsetof(UIWindowStyle, name)    : -1; \
+		put(&theme->styleProperties, makeString(#name), property); \
+	}
+
+	//                                                     btn    cnsl   label  msg    popup  scrll  txtin  windw
+	PROP(backgroundColor,            PropertyType_Color,    true,  true, false,  true,  true,  true,  true,  true);
+	PROP(backgroundColorInactive,    PropertyType_Color,   false, false, false, false, false, false, false,  true);
+	PROP(buttonStyle,                PropertyType_String,  false, false, false, false,  true, false, false,  true);
+	PROP(caretFlashCycleDuration,    PropertyType_Float,   false, false, false, false, false, false,  true, false);
+	PROP(contentPadding,             PropertyType_Int,     false, false, false, false,  true, false, false,  true);
+	PROP(disabledBackgroundColor,    PropertyType_Color,    true, false, false, false, false, false, false, false);
+
+	PROP(backgroundColorInactive,    PropertyType_Color,   false, false, false, false, false, false, false, false);
+	PROP(backgroundColorInactive,    PropertyType_Color,   false, false, false, false, false, false, false, false);
+
+	#undef PROP
 }
 
 #define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'"_s, {firstWord, target.name})
@@ -32,25 +60,15 @@ void loadUITheme(Blob data, Asset *asset)
 	clear(&theme->windowStyles);
 
 	// Scoped structs and enums are a thing, apparently! WOOHOO!
-	enum SectionType {
-		Section_None = 0,
-		Section_General = 1,
-		Section_Button,
-		Section_Console,
-		Section_Label,
-		Section_UIMessage,
-		Section_PopupMenu,
-		Section_Scrollbar,
-		Section_TextInput,
-		Section_Window,
-	};
-	struct
+	struct Target
 	{
 		SectionType type;
 		String name;
 
 		union
 		{
+			u8 *bytes;
+
 			UIButtonStyle    *button;
 			UIConsoleStyle   *console;
 			UILabelStyle     *label;
@@ -149,25 +167,7 @@ void loadUITheme(Blob data, Asset *asset)
 		{
 			// Properties of the item
 			// These are arranged alphabetically
-			if (equals(firstWord, "backgroundColor"_s))
-			{
-				Maybe<V4> backgroundColor = readColor(&reader);
-				if (backgroundColor.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Button:    target.button->backgroundColor    = backgroundColor.value; break;
-						case Section_Console:   target.console->backgroundColor   = backgroundColor.value; break;
-						case Section_UIMessage: target.message->backgroundColor   = backgroundColor.value; break;
-						case Section_PopupMenu: target.popupMenu->backgroundColor = backgroundColor.value; break;
-						case Section_Scrollbar: target.scrollbar->backgroundColor = backgroundColor.value; break;
-						case Section_TextInput: target.textInput->backgroundColor = backgroundColor.value; break;
-						case Section_Window:    target.window->backgroundColor    = backgroundColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "backgroundColorInactive"_s))
+			if (equals(firstWord, "backgroundColorInactive"_s))
 			{
 				Maybe<V4> backgroundColorInactive = readColor(&reader);
 				if (backgroundColorInactive.isValid)
@@ -617,9 +617,133 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 				}
 			}
-			else 
+			else
 			{
-				error(&reader, "Unrecognized property '{0}'"_s, {firstWord});
+				// Check our properties map for a match
+				Property *property = find(&theme->styleProperties, firstWord);
+				if (property)
+				{
+					switch (property->type)
+					{
+						case PropertyType_Alignment: {
+							Maybe<u32> value = readAlignment(&reader);
+							if (value.isValid)
+							{
+								smm offset = property->offsetInStyleStruct[target.type];
+								if (offset >= 0)
+								{
+									*((u32*)(target.bytes + offset)) = value.value;
+								}
+								else
+								{
+									WRONG_SECTION;
+								}
+							}
+						} break;
+
+						case PropertyType_Boolean: {
+							Maybe<bool> value = readBool(&reader);
+							if (value.isValid)
+							{
+								smm offset = property->offsetInStyleStruct[target.type];
+								if (offset >= 0)
+								{
+									*((bool*)(target.bytes + offset)) = value.value;
+								}
+								else
+								{
+									WRONG_SECTION;
+								}
+							}
+						} break;
+
+						case PropertyType_Color: {
+							Maybe<V4> value = readColor(&reader);
+							if (value.isValid)
+							{
+								smm offset = property->offsetInStyleStruct[target.type];
+								if (offset >= 0)
+								{
+									*((V4*)(target.bytes + offset)) = value.value;
+								}
+								else
+								{
+									WRONG_SECTION;
+								}
+							}
+						} break;
+
+						case PropertyType_Float: {
+							Maybe<f32> value = readInt<f32>(&reader);
+							if (value.isValid)
+							{
+								smm offset = property->offsetInStyleStruct[target.type];
+								if (offset >= 0)
+								{
+									*((f32*)(target.bytes + offset)) = value.value;
+								}
+								else
+								{
+									WRONG_SECTION;
+								}
+							}
+						} break;
+
+						case PropertyType_Integer: {
+							Maybe<s32> value = readInt<s32>(&reader);
+							if (value.isValid)
+							{
+								smm offset = property->offsetInStyleStruct[target.type];
+								if (offset >= 0)
+								{
+									*((s32*)(target.bytes + offset)) = value.value;
+								}
+								else
+								{
+									WRONG_SECTION;
+								}
+							}
+						} break;
+
+						case PropertyType_String: {
+							String value = intern(&assets->assetStrings, readToken(&reader));
+							// Strings are read directly, so we don't need an if(valid) check
+							smm offset = property->offsetInStyleStruct[target.type];
+							if (offset >= 0)
+							{
+								*((String*)(target.bytes + offset)) = value;
+							}
+							else
+							{
+								WRONG_SECTION;
+							}
+						} break;
+
+						case PropertyType_V2I: {
+							Maybe<s32> offsetX = readInt<s32>(&reader);
+							Maybe<s32> offsetY = readInt<s32>(&reader);
+							if (offsetX.isValid && offsetY.isValid)
+							{
+								smm offset = property->offsetInStyleStruct[target.type];
+								if (offset >= 0)
+								{
+									V2I vector = v2i(offsetX.value, offsetY.value);
+									*((V2I*)(target.bytes + offset)) = vector;
+								}
+								else
+								{
+									WRONG_SECTION;
+								}
+							}
+						} break;
+
+						default: logCritical("Invalid property type for '{0}'"_s, {firstWord});
+					}
+				}
+				else
+				{
+					error(&reader, "Unrecognized property '{0}'"_s, {firstWord});
+				}
 			}
 		}
 	}

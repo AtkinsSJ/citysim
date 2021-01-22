@@ -98,8 +98,43 @@ struct UIConsoleStyle
 	String textInputStyleName;
 };
 
+// Private
+enum SectionType {
+	Section_None = 0,
+	Section_General = 1,
+	Section_Button,
+	Section_Console,
+	Section_Label,
+	Section_UIMessage,
+	Section_PopupMenu,
+	Section_Scrollbar,
+	Section_TextInput,
+	Section_Window,
+	SectionTypeCount
+};
+
+enum PropertyType
+{
+	PropertyType_Alignment,
+	PropertyType_Boolean,
+	PropertyType_Color,
+	PropertyType_Float,
+	PropertyType_Integer,
+	PropertyType_String,
+	PropertyType_V2I,
+	PropertyTypeCount
+};
+
+struct Property
+{
+	PropertyType type;
+	smm offsetInStyleStruct[SectionTypeCount];
+};
+
 struct UITheme
 {
+	HashTable<Property> styleProperties;
+
 	// TODO: Remove this?
 	V4 overlayColor;
 
