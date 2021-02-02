@@ -42,7 +42,7 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 	if (scrollbar != null)
 	{
 		// Scrollbar!
-		UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
+		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &context->windowStyle->scrollbarStyle);
 
 		context->contentArea.w -= scrollbarStyle->width;
 		context->columnScrollbarWidth = scrollbarStyle->width;
@@ -79,7 +79,7 @@ void window_completeColumn(WindowContext *context)
 	{
 		if (context->columnScrollbarState != null)
 		{
-			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
+			UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &context->windowStyle->scrollbarStyle);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
 								context->contentArea.y,
 								context->columnScrollbarWidth,
@@ -95,7 +95,7 @@ void window_completeColumn(WindowContext *context)
 
 		if (context->columnScrollbarState != null)
 		{
-			UIScrollbarStyle *scrollbarStyle = findScrollbarStyle(&assets->theme, context->windowStyle->scrollbarStyleName);
+			UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &context->windowStyle->scrollbarStyle);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
 								context->contentArea.y,
 								context->columnScrollbarWidth,
@@ -221,7 +221,7 @@ void window_label(WindowContext *context, String text, String styleName)
 
 	UILabelStyle *style = null;
 	if (!isEmpty(styleName))  style = findLabelStyle(&assets->theme, styleName);
-	if (style == null)        style = findLabelStyle(&assets->theme, context->windowStyle->labelStyleName);
+	if (style == null)        style = findStyle<UILabelStyle>(&assets->theme, &context->windowStyle->labelStyle);
 
 	u32 alignment = context->alignment;
 	Rect2I space = window_getCurrentLayoutPosition(context);
@@ -250,7 +250,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth, ButtonSta
 	bool buttonClicked = false;
 	UIButtonStyle *style = null;
 	if (!isEmpty(styleName))  style = findButtonStyle(&assets->theme, styleName);
-	if (style == null)        style = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
+	if (style == null)        style = findStyle<UIButtonStyle>(&assets->theme, &context->windowStyle->buttonStyle);
 
 	u32 textAlignment = style->textAlignment;
 	s32 buttonPadding = style->padding;

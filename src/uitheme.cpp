@@ -30,32 +30,32 @@ void initUITheme(UITheme *theme)
 	}
 
 	//                                                     btn   cnsl  label    msg  popup  scrll  txtin  windw
-	PROP(backgroundColor,            PropType_Color,      true,  true, false,  true,  true,  true,  true,  true);
-	PROP(backgroundColorInactive,    PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(buttonStyle,                PropType_String,    false, false, false, false,  true, false, false,  true);
-	PROP(caretFlashCycleDuration,    PropType_Float,     false, false, false, false, false, false,  true, false);
-	PROP(contentPadding,             PropType_Int,       false, false, false, false,  true, false, false,  true);
-	PROP(disabledBackgroundColor,    PropType_Color,      true, false, false, false, false, false, false, false);
-	PROP(font,                       PropType_String,     true,  true,  true,  true, false, false,  true, false);
-	PROP(hoverBackgroundColor,       PropType_Color,      true, false, false, false, false, false, false, false);
-	PROP(knobColor,                  PropType_Color,     false, false, false, false, false,  true, false, false);
-	PROP(labelStyle,                 PropType_String,    false, false, false, false, false, false, false,  true);
-	PROP(margin,                     PropType_Int,       false, false, false, false,  true, false, false,  true);
-	PROP(offsetFromMouse,            PropType_V2I,       false, false, false, false, false, false, false,  true);
-	PROP(padding,                    PropType_Int,        true,  true, false,  true, false, false,  true, false);
-	PROP(pressedBackgroundColor,     PropType_Color,      true, false, false, false, false, false, false, false);
-	PROP(scrollbarStyle,             PropType_String,    false,  true, false, false,  true, false, false,  true);
-	PROP(showCaret,                  PropType_Bool,      false, false, false, false, false, false,  true, false);
-	PROP(textAlignment,              PropType_Alignment,  true, false, false, false, false, false,  true, false);
-	PROP(textColor,                  PropType_Color,      true, false,  true,  true, false, false,  true, false);
-	PROP(textInputStyle,             PropType_String,    false,  true, false, false, false, false, false, false);
-	PROP(titleBarButtonHoverColor,   PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleBarColor,              PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleBarColorInactive,      PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleBarHeight,             PropType_Int,       false, false, false, false, false, false, false,  true);
-	PROP(titleColor,                 PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleFont,                  PropType_String,    false, false, false, false, false, false, false,  true);
-	PROP(width,                      PropType_Int,       false, false, false, false, false,  true, false, false);
+	PROP(backgroundColor,          PropType_Color,      true,  true, false,  true,  true,  true,  true,  true);
+	PROP(backgroundColorInactive,  PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(buttonStyle,              PropType_Style,     false, false, false, false,  true, false, false,  true);
+	PROP(caretFlashCycleDuration,  PropType_Float,     false, false, false, false, false, false,  true, false);
+	PROP(contentPadding,           PropType_Int,       false, false, false, false,  true, false, false,  true);
+	PROP(disabledBackgroundColor,  PropType_Color,      true, false, false, false, false, false, false, false);
+	PROP(font,                     PropType_Font,       true,  true,  true,  true, false, false,  true, false);
+	PROP(hoverBackgroundColor,     PropType_Color,      true, false, false, false, false, false, false, false);
+	PROP(knobColor,                PropType_Color,     false, false, false, false, false,  true, false, false);
+	PROP(labelStyle,               PropType_Style,     false, false, false, false, false, false, false,  true);
+	PROP(margin,                   PropType_Int,       false, false, false, false,  true, false, false,  true);
+	PROP(offsetFromMouse,          PropType_V2I,       false, false, false, false, false, false, false,  true);
+	PROP(padding,                  PropType_Int,        true,  true, false,  true, false, false,  true, false);
+	PROP(pressedBackgroundColor,   PropType_Color,      true, false, false, false, false, false, false, false);
+	PROP(scrollbarStyle,           PropType_Style,     false,  true, false, false,  true, false, false,  true);
+	PROP(showCaret,                PropType_Bool,      false, false, false, false, false, false,  true, false);
+	PROP(textAlignment,            PropType_Alignment,  true, false, false, false, false, false,  true, false);
+	PROP(textColor,                PropType_Color,      true, false,  true,  true, false, false,  true, false);
+	PROP(textInputStyle,           PropType_Style,     false,  true, false, false, false, false, false, false);
+	PROP(titleBarButtonHoverColor, PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleBarColor,            PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleBarColorInactive,    PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleBarHeight,           PropType_Int,       false, false, false, false, false, false, false,  true);
+	PROP(titleColor,               PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleFont,                PropType_Font,      false, false, false, false, false, false, false,  true);
+	PROP(width,                    PropType_Int,       false, false, false, false, false,  true, false, false);
 
 	#undef PROP
 
@@ -68,7 +68,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 	switch (style->type)
 	{
 		case Section_Button: {
-			UIButtonStyle *button = put(&theme->buttonStyles, style->name);
+			UIButtonStyle *button = put(&theme->buttonStyles, style->name, UIButtonStyle());
 
 			button->font = style->font;
 			button->textColor = style->textColor;
@@ -83,7 +83,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		} break;
 
 		case Section_Console: {
-			UIConsoleStyle *console = put(&theme->consoleStyles, style->name);
+			UIConsoleStyle *console = put(&theme->consoleStyles, style->name, UIConsoleStyle());
 
 			console->font = style->font;
 			copyMemory(style->outputTextColor, console->outputTextColor, CLS_COUNT);
@@ -91,19 +91,19 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			console->backgroundColor = style->backgroundColor;
 			console->padding = style->padding;
 
-			console->scrollbarStyleName = style->scrollbarStyle;
-			console->textInputStyleName = style->textInputStyle;
+			console->scrollbarStyle = style->scrollbarStyle;
+			console->textInputStyle = style->textInputStyle;
 		} break;
 
 		case Section_Label: {
-			UILabelStyle *label = put(&theme->labelStyles, style->name);
+			UILabelStyle *label = put(&theme->labelStyles, style->name, UILabelStyle());
 
 			label->font = style->font;
 			label->textColor = style->textColor;
 		} break;
 
 		case Section_UIMessage: {
-			UIMessageStyle *message = put(&theme->messageStyles, style->name);
+			UIMessageStyle *message = put(&theme->messageStyles, style->name, UIMessageStyle());
 
 			message->font = style->font;
 			message->textColor = style->textColor;
@@ -113,18 +113,18 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		} break;
 
 		case Section_PopupMenu: {
-			UIPopupMenuStyle *menu = put(&theme->popupMenuStyles, style->name);
+			UIPopupMenuStyle *menu = put(&theme->popupMenuStyles, style->name, UIPopupMenuStyle());
 
 			menu->margin = style->margin;
 			menu->contentPadding = style->contentPadding;
 			menu->backgroundColor = style->backgroundColor;
 
-			menu->buttonStyleName = style->buttonStyle;
-			menu->scrollbarStyleName = style->scrollbarStyle;
+			menu->buttonStyle = style->buttonStyle;
+			menu->scrollbarStyle = style->scrollbarStyle;
 		} break;
 
 		case Section_Scrollbar: {
-			UIScrollbarStyle *scrollbar = put(&theme->scrollbarStyles, style->name);
+			UIScrollbarStyle *scrollbar = put(&theme->scrollbarStyles, style->name, UIScrollbarStyle());
 
 			scrollbar->backgroundColor = style->backgroundColor;
 			scrollbar->knobColor = style->knobColor;
@@ -132,7 +132,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		} break;
 
 		case Section_TextInput: {
-			UITextInputStyle *textInput = put(&theme->textInputStyles, style->name);
+			UITextInputStyle *textInput = put(&theme->textInputStyles, style->name, UITextInputStyle());
 
 			textInput->font = style->font;
 			textInput->textColor = style->textColor;
@@ -146,7 +146,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		} break;
 
 		case Section_Window: {
-			UIWindowStyle *window = put(&theme->windowStyles, style->name);
+			UIWindowStyle *window = put(&theme->windowStyles, style->name, UIWindowStyle());
 
 			window->titleBarHeight = style->titleBarHeight;
 			window->titleBarColor = style->titleBarColor;
@@ -163,9 +163,9 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 
 			window->offsetFromMouse = style->offsetFromMouse;
 
-			window->buttonStyleName = style->buttonStyle;
-			window->labelStyleName = style->labelStyle;
-			window->scrollbarStyleName = style->scrollbarStyle;
+			window->buttonStyle = style->buttonStyle;
+			window->labelStyle = style->labelStyle;
+			window->scrollbarStyle = style->scrollbarStyle;
 		} break;
 	}
 }
@@ -174,6 +174,7 @@ UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, SectionType type)
 {
 	UIStylePack *pack = findOrAdd(styles, name);
 	UIStyle *result = pack->styleByType + type;
+	*result = UIStyle();
 
 	result->name = name;
 	result->type = type;
@@ -402,7 +403,6 @@ void loadUITheme(Blob data, Asset *asset)
 
 							case PropType_Font: {
 								String value = intern(&assets->assetStrings, readToken(&reader));
-								// Strings are read directly, so we don't need an if(valid) check
 								FontReference *fontRef = ((FontReference*)((u8*)(target) + property->offsetInStyleStruct));
 								*fontRef = {};
 								fontRef->fontName = value;
@@ -414,6 +414,14 @@ void loadUITheme(Blob data, Asset *asset)
 								{
 									*((s32*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
+							} break;
+
+							case PropType_Style: {
+								String value = intern(&assets->assetStrings, readToken(&reader));
+								// The style-type is already specified in the UIStyle struct, so we only need
+								// to overwrite the name of the style we're looking for.
+								UIStyleReference *styleRef = ((UIStyleReference*)((u8*)(target) + property->offsetInStyleStruct));
+								styleRef->name = value;
 							} break;
 
 							case PropType_String: {
@@ -448,6 +456,7 @@ void loadUITheme(Blob data, Asset *asset)
 		}
 	}
 
+	// Actually write out the styles into the UITheme
 	for (auto it = iterate(&styles); hasNext(&it); next(&it))
 	{
 		UIStylePack *stylePack = get(&it);
@@ -465,4 +474,144 @@ void loadUITheme(Blob data, Asset *asset)
 	freeHashTable(&styles);
 
 	#undef WRONG_SECTION
+}
+
+template <typename T>
+bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
+{
+	// Type-checking
+	switch (reference->styleType)
+	{
+		case Section_Button:
+		{
+			if (typeid(T*) == typeid(UIButtonStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findButtonStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		case Section_Console:
+		{
+			if (typeid(T*) == typeid(UIConsoleStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findConsoleStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		case Section_Label:
+		{
+			if (typeid(T*) == typeid(UILabelStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findLabelStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		case Section_UIMessage:
+		{
+			if (typeid(T*) == typeid(UIMessageStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findMessageStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		case Section_PopupMenu:
+		{
+			if (typeid(T*) == typeid(UIPopupMenuStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findPopupMenuStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		case Section_Scrollbar:
+		{
+			if (typeid(T*) == typeid(UIScrollbarStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findScrollbarStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		case Section_TextInput:
+		{
+			if (typeid(T*) == typeid(UITextInputStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findTextInputStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		case Section_Window:
+		{
+			if (typeid(T*) == typeid(UIWindowStyle*))
+			{
+				if (reference->pointer == null)
+				{
+					reference->pointer = findWindowStyle(theme, reference->name);
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		INVALID_DEFAULT_CASE;
+	}
+
+	return false;
+}
+
+template <typename T>
+inline T* findStyle(UITheme *theme, UIStyleReference *reference)
+{
+	ASSERT(checkAndFetchStylePointer<T>(theme, reference));
+
+	return (T*) reference->pointer;
 }

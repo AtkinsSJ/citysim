@@ -5,6 +5,29 @@
 // whenever the theme is modified the pointers can be re-connected.
 // - Sam, 15/01/2020
 
+enum SectionType {
+	Section_None = 0,
+	Section_Button = 1,
+	Section_Console,
+	Section_Label,
+	Section_UIMessage,
+	Section_PopupMenu,
+	Section_Scrollbar,
+	Section_TextInput,
+	Section_Window,
+	SectionTypeCount
+};
+
+struct UIStyleReference
+{
+	String name;
+	SectionType styleType;
+
+	void *pointer;
+
+	UIStyleReference(SectionType type) : styleType(type) {}
+};
+
 struct UIButtonStyle
 {
 	FontReference font;
@@ -40,8 +63,8 @@ struct UIPopupMenuStyle
 	s32 contentPadding;
 	V4 backgroundColor;
 
-	String buttonStyleName;
-	String scrollbarStyleName;
+	UIStyleReference buttonStyle = UIStyleReference(Section_Button);
+	UIStyleReference scrollbarStyle = UIStyleReference(Section_Scrollbar);
 };
 
 struct UITextInputStyle
@@ -81,9 +104,9 @@ struct UIWindowStyle
 
 	V2I offsetFromMouse;
 
-	String buttonStyleName;
-	String labelStyleName;
-	String scrollbarStyleName;
+	UIStyleReference buttonStyle = UIStyleReference(Section_Button);
+	UIStyleReference labelStyle = UIStyleReference(Section_Label);
+	UIStyleReference scrollbarStyle = UIStyleReference(Section_Scrollbar);
 };
 
 struct UIConsoleStyle
@@ -94,22 +117,8 @@ struct UIConsoleStyle
 	V4 backgroundColor;
 	s32 padding;
 
-	String scrollbarStyleName;
-	String textInputStyleName;
-};
-
-// Private
-enum SectionType {
-	Section_None = 0,
-	Section_Button = 1,
-	Section_Console,
-	Section_Label,
-	Section_UIMessage,
-	Section_PopupMenu,
-	Section_Scrollbar,
-	Section_TextInput,
-	Section_Window,
-	SectionTypeCount
+	UIStyleReference scrollbarStyle = UIStyleReference(Section_Scrollbar);
+	UIStyleReference textInputStyle = UIStyleReference(Section_TextInput);
 };
 
 enum PropType
@@ -121,6 +130,7 @@ enum PropType
 	PropType_Font,
 	PropType_Int,
 	PropType_String,
+	PropType_Style,
 	PropType_V2I,
 	PropTypeCount
 };
@@ -133,25 +143,25 @@ struct UIStyle
 	// PROPERTIES
 	V4 backgroundColorInactive;
 	V4 backgroundColor;
-	String buttonStyle;
+	UIStyleReference buttonStyle = UIStyleReference(Section_Button);
 	f32 caretFlashCycleDuration;
 	s32 contentPadding;
 	V4 disabledBackgroundColor;
 	FontReference font;
 	V4 hoverBackgroundColor;
 	V4 knobColor;
-	String labelStyle;
+	UIStyleReference labelStyle = UIStyleReference(Section_Label);
 	s32 margin;
 	V2I offsetFromMouse;
 	V4 overlayColor;
 	V4 outputTextColor[CLS_COUNT];
 	s32 padding;
 	V4 pressedBackgroundColor;
-	String scrollbarStyle;
+	UIStyleReference scrollbarStyle = UIStyleReference(Section_Scrollbar);
 	bool showCaret;
 	u32 textAlignment;
 	V4 textColor;
-	String textInputStyle;
+	UIStyleReference textInputStyle = UIStyleReference(Section_TextInput);
 	V4 titleBarButtonHoverColor;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -194,6 +204,9 @@ struct UITheme
 
 void initUITheme(UITheme *theme);
 void loadUITheme(Blob data, struct Asset *asset);
+
+template <typename T>
+T* findStyle(UITheme *theme, UIStyleReference *reference);
 
 inline UIButtonStyle *findButtonStyle(UITheme *theme, String name)
 {

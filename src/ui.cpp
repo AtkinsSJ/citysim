@@ -335,8 +335,8 @@ PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeigh
 	PopupMenu result = {};
 
 	result.style = style;
-	result.scrollbarStyle = findScrollbarStyle(&assets->theme, style->scrollbarStyleName);
-	result.buttonStyle = findButtonStyle(&assets->theme, style->buttonStyleName);
+	result.scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+	result.buttonStyle = findStyle<UIButtonStyle>(&assets->theme, &style->buttonStyle);
 
 	result.origin = v2i(x, y);
 	result.width = width;

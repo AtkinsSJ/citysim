@@ -415,7 +415,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 {
 	DEBUG_FUNCTION();
 
-	UIButtonStyle *buttonStyle = findButtonStyle(&assets->theme, context->windowStyle->buttonStyleName);
+	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(&assets->theme, &context->windowStyle->buttonStyle);
 	s32 availableButtonTextWidth = context->contentArea.w - (2 * buttonStyle->padding);
 
 	String resume = getText("button_resume"_s);
@@ -548,7 +548,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
 	UIPopupMenuStyle *popupMenuStyle = findPopupMenuStyle(theme, "default"_s);
-	UIButtonStyle *popupButtonStyle = findButtonStyle(theme, popupMenuStyle->buttonStyleName);
+	UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuStyle->buttonStyle);
 	// Build UI
 	{
 		// The, um, "MENU" menu. Hmmm.
@@ -1195,7 +1195,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
 	UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
 	UIPopupMenuStyle *popupMenuStyle = findPopupMenuStyle(theme, "default"_s);
-	UIButtonStyle *popupButtonStyle = findButtonStyle(theme, popupMenuStyle->buttonStyleName);
+	UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuStyle->buttonStyle);
 
 	// Data-views menu
 	RenderItem_DrawSingleRect *dataViewUIBackground = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);

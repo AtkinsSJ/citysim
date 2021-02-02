@@ -16,9 +16,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-UI Theme
-- Would be nice to replace the ___Name properties on Styles with a combination name and pointer, so that it only goes through the hash table the first time. Though, that'd mean clearing them all if an asset reloads. But I think the styles would all be reloaded in that case anyway so it's fine?
-
 Window UI System features:
 - Confirmation dialogs
 - Frames
