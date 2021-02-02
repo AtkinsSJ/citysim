@@ -101,8 +101,7 @@ struct UIConsoleStyle
 // Private
 enum SectionType {
 	Section_None = 0,
-	Section_General = 1,
-	Section_Button,
+	Section_Button = 1,
 	Section_Console,
 	Section_Label,
 	Section_UIMessage,
@@ -113,29 +112,71 @@ enum SectionType {
 	SectionTypeCount
 };
 
-enum PropertyType
+enum PropType
 {
-	PropertyType_Alignment,
-	PropertyType_Boolean,
-	PropertyType_Color,
-	PropertyType_Float,
-	PropertyType_Integer,
-	PropertyType_String,
-	PropertyType_V2I,
-	PropertyTypeCount
+	PropType_Alignment,
+	PropType_Bool,
+	PropType_Color,
+	PropType_Float,
+	PropType_Int,
+	PropType_String,
+	PropType_V2I,
+	PropTypeCount
 };
 
-struct Property
+struct UIStyle
 {
-	PropertyType type;
-	smm offsetInStyleStruct[SectionTypeCount];
+	SectionType type;
+	String name;
+
+	// PROPERTIES
+	V4 backgroundColorInactive;
+	V4 backgroundColor;
+	String buttonStyle;
+	f32 caretFlashCycleDuration;
+	s32 contentPadding;
+	V4 disabledBackgroundColor;
+	String font;
+	V4 hoverBackgroundColor;
+	V4 knobColor;
+	String labelStyle;
+	s32 margin;
+	V2I offsetFromMouse;
+	V4 overlayColor;
+	V4 outputTextColor[CLS_COUNT];
+	s32 padding;
+	V4 pressedBackgroundColor;
+	String scrollbarStyle;
+	bool showCaret;
+	u32 textAlignment;
+	V4 textColor;
+	String textInputStyle;
+	V4 titleBarButtonHoverColor;
+	V4 titleBarColor;
+	V4 titleBarColorInactive;
+	s32 titleBarHeight;
+	V4 titleColor;
+	String titleFont;
+	s32 width;
+};
+
+struct UIStylePack
+{
+	UIStyle styleByType[SectionTypeCount];
+};
+
+struct UIProperty
+{
+	PropType type;
+	smm offsetInStyleStruct;
+	bool existsInStyle[SectionTypeCount];
 };
 
 struct UITheme
 {
-	HashTable<Property> styleProperties;
+	HashTable<UIProperty> styleProperties;
 
-	// TODO: Remove this?
+	// TODO: Remove this!
 	V4 overlayColor;
 
 	HashTable<String> fontNamesToAssetNames;

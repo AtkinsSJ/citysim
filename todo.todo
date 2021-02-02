@@ -16,6 +16,13 @@ Notes for searching:
 
 ------------------------------------------------
 
+UI Theme HashTable
+	- This is a huge pain. I cannot believe how much of a pain it has been.
+	- The problem is, offsetof() throws a compiler error if the thing you're asking for isn't a member of the struct. What I *want* is to return -1 in that case, but figuring out a way to make that work is a pain.
+	- I can write a template to check if a member exists in a given struct, but I need an instantiation of it for EVERY MEMBER that I want to check. Which I can maybe use macros for, but then actually going from "does it exist" to "what is the offset" is massively confusing me. You can use "if constexpr(asdad)" to check a condition at compile time, but that only works inside a template. And offsetof() doesn't play nicely with templates because it's a macro. And I just don't understand template voodoo at all and I'm massively overwhelmed and stressed out and it's ruined my day and I feel awful and it's all for such a silly simple thing that was supposed to make my life easier and be fun to write. URGHHHHHHHHH.
+	- tl;dr: C++ sucks, I wish I could use Jai already.
+- Unrelated, but would be nice to replace the ___Name properties on Styles with a combination name and pointer, so that it only goes through the hash table the first time. Though, that'd mean clearing them all if an asset reloads. But I think the styles would all be reloaded in that case anyway so it's fine?
+
 Window UI System features:
 - Confirmation dialogs
 - Frames

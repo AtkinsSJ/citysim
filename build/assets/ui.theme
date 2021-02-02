@@ -12,11 +12,6 @@
 :Font small       dejavu-14.fnt
 :Font normal      dejavu-20.fnt
 
-# This isn't a thing, what do we call this? A panel? A menu?
-# Probably call it a panel, and define styles for each one (pop-up menu, menu bar, etc)
-:General
- 	 	overlayColor        0   0   0 128
-
 :Button default
 font              small            				# testing eol comment
 textColor           0   0   0 255

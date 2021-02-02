@@ -15,37 +15,176 @@ void initUITheme(UITheme *theme)
 
 	initHashTable(&theme->styleProperties, 0.75f, 256);
 	#define PROP(name, _type, inButton, inConsole, inLabel, inMessage, inPopupMenu, inScrollbar, inTextInput, inWindow) {\
-		Property property = {}; \
+		UIProperty property = {}; \
 		property.type = _type; \
-		property.offsetInStyleStruct[Section_Button]    = inButton    ? offsetof(UIButtonStyle, name)    : -1; \
-		property.offsetInStyleStruct[Section_Console]   = inConsole   ? offsetof(UIConsoleStyle, name)   : -1; \
-		property.offsetInStyleStruct[Section_Label]     = inLabel     ? offsetof(UILabelStyle, name)     : -1; \
-		property.offsetInStyleStruct[Section_UIMessage] = inMessage   ? offsetof(UIMessageStyle, name)   : -1; \
-		property.offsetInStyleStruct[Section_PopupMenu] = inPopupMenu ? offsetof(UIPopupMenuStyle, name) : -1; \
-		property.offsetInStyleStruct[Section_Scrollbar] = inScrollbar ? offsetof(UIScrollbarStyle, name) : -1; \
-		property.offsetInStyleStruct[Section_TextInput] = inTextInput ? offsetof(UITextInputStyle, name) : -1; \
-		property.offsetInStyleStruct[Section_Window]    = inWindow    ? offsetof(UIWindowStyle, name)    : -1; \
+		property.offsetInStyleStruct = offsetof(UIStyle, name); \
+		property.existsInStyle[Section_Button]    = inButton; \
+		property.existsInStyle[Section_Console]   = inConsole; \
+		property.existsInStyle[Section_Label]     = inLabel; \
+		property.existsInStyle[Section_UIMessage] = inMessage; \
+		property.existsInStyle[Section_PopupMenu] = inPopupMenu; \
+		property.existsInStyle[Section_Scrollbar] = inScrollbar; \
+		property.existsInStyle[Section_TextInput] = inTextInput; \
+		property.existsInStyle[Section_Window]    = inWindow; \
 		put(&theme->styleProperties, makeString(#name), property); \
 	}
 
-	//                                                     btn    cnsl   label  msg    popup  scrll  txtin  windw
-	PROP(backgroundColor,            PropertyType_Color,    true,  true, false,  true,  true,  true,  true,  true);
-	PROP(backgroundColorInactive,    PropertyType_Color,   false, false, false, false, false, false, false,  true);
-	PROP(buttonStyle,                PropertyType_String,  false, false, false, false,  true, false, false,  true);
-	PROP(caretFlashCycleDuration,    PropertyType_Float,   false, false, false, false, false, false,  true, false);
-	PROP(contentPadding,             PropertyType_Int,     false, false, false, false,  true, false, false,  true);
-	PROP(disabledBackgroundColor,    PropertyType_Color,    true, false, false, false, false, false, false, false);
-
-	PROP(backgroundColorInactive,    PropertyType_Color,   false, false, false, false, false, false, false, false);
-	PROP(backgroundColorInactive,    PropertyType_Color,   false, false, false, false, false, false, false, false);
+	//                                                     btn   cnsl  label    msg  popup  scrll  txtin  windw
+	PROP(backgroundColor,            PropType_Color,      true,  true, false,  true,  true,  true,  true,  true);
+	PROP(backgroundColorInactive,    PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(buttonStyle,                PropType_String,    false, false, false, false,  true, false, false,  true);
+	PROP(caretFlashCycleDuration,    PropType_Float,     false, false, false, false, false, false,  true, false);
+	PROP(contentPadding,             PropType_Int,       false, false, false, false,  true, false, false,  true);
+	PROP(disabledBackgroundColor,    PropType_Color,      true, false, false, false, false, false, false, false);
+	PROP(font,                       PropType_String,     true,  true,  true,  true, false, false,  true, false);
+	PROP(hoverBackgroundColor,       PropType_Color,      true, false, false, false, false, false, false, false);
+	PROP(knobColor,                  PropType_Color,     false, false, false, false, false,  true, false, false);
+	PROP(labelStyle,                 PropType_String,    false, false, false, false, false, false, false,  true);
+	PROP(margin,                     PropType_Int,       false, false, false, false,  true, false, false,  true);
+	PROP(offsetFromMouse,            PropType_V2I,       false, false, false, false, false, false, false,  true);
+	PROP(padding,                    PropType_Int,        true,  true, false,  true, false, false,  true, false);
+	PROP(pressedBackgroundColor,     PropType_Color,      true, false, false, false, false, false, false, false);
+	PROP(scrollbarStyle,             PropType_String,    false,  true, false, false,  true, false, false,  true);
+	PROP(showCaret,                  PropType_Bool,      false, false, false, false, false, false,  true, false);
+	PROP(textAlignment,              PropType_Alignment,  true, false, false, false, false, false,  true, false);
+	PROP(textColor,                  PropType_Color,      true, false,  true,  true, false, false,  true, false);
+	PROP(textInputStyle,             PropType_String,    false,  true, false, false, false, false, false, false);
+	PROP(titleBarButtonHoverColor,   PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleBarColor,              PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleBarColorInactive,      PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleBarHeight,             PropType_Int,       false, false, false, false, false, false, false,  true);
+	PROP(titleColor,                 PropType_Color,     false, false, false, false, false, false, false,  true);
+	PROP(titleFont,                  PropType_String,    false, false, false, false, false, false, false,  true);
+	PROP(width,                      PropType_Int,       false, false, false, false, false,  true, false, false);
 
 	#undef PROP
+
+	// TODO: Remove this!
+	theme->overlayColor = color255(0, 0, 0, 128);
 }
 
-#define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'"_s, {firstWord, target.name})
+void saveStyleToTheme(UITheme *theme, UIStyle *style)
+{
+	switch (style->type)
+	{
+		case Section_Button: {
+			UIButtonStyle *button = put(&theme->buttonStyles, style->name);
+
+			button->fontName = style->font;
+			button->textColor = style->textColor;
+			button->textAlignment = style->textAlignment;
+
+			button->backgroundColor = style->backgroundColor;
+			button->hoverBackgroundColor = style->hoverBackgroundColor;
+			button->pressedBackgroundColor = style->pressedBackgroundColor;
+			button->disabledBackgroundColor = style->disabledBackgroundColor;
+
+			button->padding = style->padding;
+		} break;
+
+		case Section_Console: {
+			UIConsoleStyle *console = put(&theme->consoleStyles, style->name);
+
+			console->fontName = style->font;
+			copyMemory(style->outputTextColor, console->outputTextColor, CLS_COUNT);
+
+			console->backgroundColor = style->backgroundColor;
+			console->padding = style->padding;
+
+			console->scrollbarStyleName = style->scrollbarStyle;
+			console->textInputStyleName = style->textInputStyle;
+		} break;
+
+		case Section_Label: {
+			UILabelStyle *label = put(&theme->labelStyles, style->name);
+
+			label->fontName = style->font;
+			label->textColor = style->textColor;
+		} break;
+
+		case Section_UIMessage: {
+			UIMessageStyle *message = put(&theme->messageStyles, style->name);
+
+			message->fontName = style->font;
+			message->textColor = style->textColor;
+
+			message->backgroundColor = style->backgroundColor;
+			message->padding = style->padding;
+		} break;
+
+		case Section_PopupMenu: {
+			UIPopupMenuStyle *menu = put(&theme->popupMenuStyles, style->name);
+
+			menu->margin = style->margin;
+			menu->contentPadding = style->contentPadding;
+			menu->backgroundColor = style->backgroundColor;
+
+			menu->buttonStyleName = style->buttonStyle;
+			menu->scrollbarStyleName = style->scrollbarStyle;
+		} break;
+
+		case Section_Scrollbar: {
+			UIScrollbarStyle *scrollbar = put(&theme->scrollbarStyles, style->name);
+
+			scrollbar->backgroundColor = style->backgroundColor;
+			scrollbar->knobColor = style->knobColor;
+			scrollbar->width = style->width;
+		} break;
+
+		case Section_TextInput: {
+			UITextInputStyle *textInput = put(&theme->textInputStyles, style->name);
+
+			textInput->fontName = style->font;
+			textInput->textColor = style->textColor;
+			textInput->textAlignment = style->textAlignment;
+
+			textInput->backgroundColor = style->backgroundColor;
+			textInput->padding = style->padding;
+	
+			textInput->showCaret = style->showCaret;
+			textInput->caretFlashCycleDuration = style->caretFlashCycleDuration;
+		} break;
+
+		case Section_Window: {
+			UIWindowStyle *window = put(&theme->windowStyles, style->name);
+
+			window->titleBarHeight = style->titleBarHeight;
+			window->titleBarColor = style->titleBarColor;
+			window->titleBarColorInactive = style->titleBarColorInactive;
+			window->titleFontName = style->titleFont;
+			window->titleColor = style->titleColor;
+			window->titleBarButtonHoverColor = style->titleBarButtonHoverColor;
+
+			window->backgroundColor = style->backgroundColor;
+			window->backgroundColorInactive = style->backgroundColorInactive;
+
+			window->margin = style->margin;
+			window->contentPadding = style->contentPadding;
+
+			window->offsetFromMouse = style->offsetFromMouse;
+
+			window->buttonStyleName = style->buttonStyle;
+			window->labelStyleName = style->labelStyle;
+			window->scrollbarStyleName = style->scrollbarStyle;
+		} break;
+	}
+}
+
+UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, SectionType type)
+{
+	UIStylePack *pack = findOrAdd(styles, name);
+	UIStyle *result = pack->styleByType + type;
+
+	result->name = name;
+	result->type = type;
+
+	return result;
+}
 
 void loadUITheme(Blob data, Asset *asset)
 {
+	#define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'"_s, {firstWord, currentSection})
+
 	LineReader reader = readLines(asset->shortName, data);
 
 	UITheme *theme = &assets->theme;
@@ -59,26 +198,11 @@ void loadUITheme(Blob data, Asset *asset)
 	clear(&theme->textInputStyles);
 	clear(&theme->windowStyles);
 
-	// Scoped structs and enums are a thing, apparently! WOOHOO!
-	struct Target
-	{
-		SectionType type;
-		String name;
+	HashTable<UIStylePack> styles;
+	initHashTable(&styles);
 
-		union
-		{
-			u8 *bytes;
-
-			UIButtonStyle    *button;
-			UIConsoleStyle   *console;
-			UILabelStyle     *label;
-			UIMessageStyle   *message;
-			UIPopupMenuStyle *popupMenu;
-			UIScrollbarStyle *scrollbar;
-			UITextInputStyle *textInput;
-			UIWindowStyle    *window;
-		};
-	} target = {};
+	String currentSection = nullString;
+	UIStyle *target = null;
 
 	while (loadNextLine(&reader))
 	{
@@ -89,11 +213,11 @@ void loadUITheme(Blob data, Asset *asset)
 			// define an item
 			++firstWord.chars;
 			--firstWord.length;
-			target.name = firstWord;
+			currentSection = firstWord;
 
 			if (equals(firstWord, "Font"_s))
 			{
-				target.type = Section_None;
+				target = null;
 				String fontName = readToken(&reader);
 				String fontFilename = getRemainderOfLine(&reader);
 
@@ -108,55 +232,64 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 			else if (equals(firstWord, "General"_s))
 			{
-				target.type = Section_General;
+				target = null;
+				// target->type = Section_General;
 			}
 			else if (equals(firstWord, "Button"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_Button;
-				target.button = put(&theme->buttonStyles, name);
+				target = addStyle(&styles, name, Section_Button);
+				target->name = name;
+				target->type = Section_Button;
 			}
 			else if (equals(firstWord, "Console"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_Console;
-				target.console = put(&theme->consoleStyles, name);
+				target = addStyle(&styles, name, Section_Console);
+				target->name = name;
+				target->type = Section_Console;
 			}
 			else if (equals(firstWord, "Label"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_Label;
-				target.label = put(&theme->labelStyles, name);
+				target = addStyle(&styles, name, Section_Label);
+				target->name = name;
+				target->type = Section_Label;
 			}
 			else if (equals(firstWord, "UIMessage"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_UIMessage;
-				target.message = put(&theme->messageStyles, name);
+				target = addStyle(&styles, name, Section_UIMessage);
+				target->name = name;
+				target->type = Section_UIMessage;
 			}
 			else if (equals(firstWord, "PopupMenu"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_PopupMenu;
-				target.popupMenu = put(&theme->popupMenuStyles, name);
+				target = addStyle(&styles, name, Section_PopupMenu);
+				target->name = name;
+				target->type = Section_PopupMenu;
 			}
 			else if (equals(firstWord, "Scrollbar"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_Scrollbar;
-				target.scrollbar = put(&theme->scrollbarStyles, name);
+				target = addStyle(&styles, name, Section_Scrollbar);
+				target->name = name;
+				target->type = Section_Scrollbar;
 			}
 			else if (equals(firstWord, "TextInput"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_TextInput;
-				target.textInput = put(&theme->textInputStyles, name);
+				target = addStyle(&styles, name, Section_TextInput);
+				target->name = name;
+				target->type = Section_TextInput;
 			}
 			else if (equals(firstWord, "Window"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target.type = Section_Window;
-				target.window = put(&theme->windowStyles, name);
+				target = addStyle(&styles, name, Section_Window);
+				target->name = name;
+				target->type = Section_Window;
 			}
 			else
 			{
@@ -167,577 +300,136 @@ void loadUITheme(Blob data, Asset *asset)
 		{
 			// Properties of the item
 			// These are arranged alphabetically
-			if (equals(firstWord, "backgroundColorInactive"_s))
-			{
-				Maybe<V4> backgroundColorInactive = readColor(&reader);
-				if (backgroundColorInactive.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Window:  target.window->backgroundColorInactive = backgroundColorInactive.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "buttonStyle"_s))
-			{
-				String styleName = intern(&assets->assetStrings, readToken(&reader));
-				switch (target.type)
-				{
-					case Section_PopupMenu:  target.popupMenu->buttonStyleName = styleName; break;
-					case Section_Window:     target.window->buttonStyleName    = styleName; break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "caretFlashCycleDuration"_s))
-			{
-				Maybe<f64> caretFlashCycleDuration = readFloat(&reader);
-				if (caretFlashCycleDuration.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_TextInput:  target.textInput->caretFlashCycleDuration = (f32) caretFlashCycleDuration.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "contentPadding"_s))
-			{
-				Maybe<s32> contentPadding = readInt<s32>(&reader);
-				if (contentPadding.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_PopupMenu:  target.popupMenu->contentPadding = contentPadding.value; break;
-						case Section_Window:     target.window->contentPadding    = contentPadding.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "disabledBackgroundColor"_s))
-			{
-				Maybe<V4> disabledBackgroundColor = readColor(&reader);
-				if (disabledBackgroundColor.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Button:  target.button->disabledBackgroundColor = disabledBackgroundColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "extends"_s))
+			if (equals(firstWord, "extends"_s))
 			{
 				// Clones an existing style
 				String parentStyleName = readToken(&reader);
-
-				switch (target.type)
+				UIStylePack *parentPack = find(&styles, parentStyleName);
+				if (parentPack == null)
 				{
-					case Section_Button: {
-						UIButtonStyle *parent = findButtonStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.button) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find Button style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
-					case Section_Console: {
-						UIConsoleStyle *parent = findConsoleStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.console) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find Console style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
-					case Section_Label: {
-						UILabelStyle *parent = findLabelStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.label) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find Label style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
-					case Section_PopupMenu: {
-						UIPopupMenuStyle *parent = findPopupMenuStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.popupMenu) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find PopupMenu style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
-					case Section_Scrollbar: {
-						UIScrollbarStyle *parent = findScrollbarStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.scrollbar) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find Scrollbar style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
-					case Section_TextInput: {
-						UITextInputStyle *parent = findTextInputStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.textInput) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find TextInput style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
-					case Section_UIMessage: {
-						UIMessageStyle *parent = findMessageStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.message) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find UIMessage style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
-					case Section_Window: {
-						UIWindowStyle *parent = findWindowStyle(theme, parentStyleName);
-						if (parent != null)
-						{
-							*(target.window) = *parent;
-						}
-						else
-						{
-							error(&reader, "Unable to find Window style named '{0}'"_s, {parentStyleName});
-						}
-					} break;
+					error(&reader, "Unable to find style named '{0}'"_s, {parentStyleName});
 				}
-			}
-			else if (equals(firstWord, "font"_s))
-			{
-				String fontName = intern(&assets->assetStrings, readToken(&reader));
-				
-				switch (target.type)
+				else
 				{
-					case Section_Button:     target.button->fontName        = fontName; break;
-					case Section_Console:    target.console->fontName       = fontName; break;
-					case Section_Label:      target.label->fontName         = fontName; break;
-					case Section_TextInput:  target.textInput->fontName     = fontName; break;
-					case Section_UIMessage:  target.message->fontName       = fontName; break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "hoverBackgroundColor"_s))
-			{
-				Maybe<V4> hoverBackgroundColor = readColor(&reader);
-				if (hoverBackgroundColor.isValid)
-				{
-					switch (target.type)
+					UIStyle *parent = parentPack->styleByType + target->type;
+					// For undefined styles, the parent struct will be all nulls, so the type will not match
+					if (parent->type != target->type)
 					{
-						case Section_Button:  target.button->hoverBackgroundColor = hoverBackgroundColor.value; break;
-						default:  WRONG_SECTION;
+						error(&reader, "Attempting to extend a style of the wrong type."_s);
 					}
-				}
-			}
-			else if (equals(firstWord, "knobColor"_s))
-			{
-				Maybe<V4> knobColor = readColor(&reader);
-				if (knobColor.isValid)
-				{
-					switch (target.type)
+					else
 					{
-						case Section_Scrollbar:  target.scrollbar->knobColor = knobColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "labelStyle"_s))
-			{
-				String styleName = intern(&assets->assetStrings, readToken(&reader));
-				switch (target.type)
-				{
-					case Section_Window:  target.window->labelStyleName = styleName; break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "margin"_s))
-			{
-				Maybe<s32> margin = readInt<s32>(&reader);
-				if (margin.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_PopupMenu:  target.popupMenu->margin = margin.value; break;
-						case Section_Window:     target.window->margin    = margin.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "offsetFromMouse"_s))
-			{
-				Maybe<s32> offsetX = readInt<s32>(&reader);
-				Maybe<s32> offsetY = readInt<s32>(&reader);
-				if (offsetX.isValid && offsetY.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Window:  target.window->offsetFromMouse = v2i(offsetX.value, offsetY.value); break;
-						default:  WRONG_SECTION;
+						String name = target->name;
+						*target = *parent;
+						target->name = name;
 					}
 				}
 			}
 			else if (equals(firstWord, "outputTextColor"_s))
 			{
-				if (target.type == Section_Console)
-				{
-					String category = readToken(&reader);
-					Maybe<V4> color = readColor(&reader);
+				String category = readToken(&reader);
+				Maybe<V4> color = readColor(&reader);
 
-					if (color.isValid)
+				if (color.isValid)
+				{
+					if (equals(category, "default"_s))
 					{
-						if (equals(category, "default"_s))
-						{
-							target.console->outputTextColor[CLS_Default] = color.value;
-						}
-						else if (equals(category, "echo"_s))
-						{
-							target.console->outputTextColor[CLS_InputEcho] = color.value;
-						}
-						else if (equals(category, "success"_s))
-						{
-							target.console->outputTextColor[CLS_Success] = color.value;
-						}
-						else if (equals(category, "warning"_s))
-						{
-							target.console->outputTextColor[CLS_Warning] = color.value;
-						}
-						else if (equals(category, "error"_s))
-						{
-							target.console->outputTextColor[CLS_Error] = color.value;
-						}
-						else
-						{
-							warn(&reader, "Unrecognized output text category '{0}'"_s, {category});
-						}
+						target->outputTextColor[CLS_Default] = color.value;
 					}
-				}
-				else
-				{
-					WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "overlayColor"_s))
-			{
-				if (target.type == Section_General)
-				{
-					Maybe<V4> overlayColor = readColor(&reader);
-					if (overlayColor.isValid) theme->overlayColor = overlayColor.value;
-				}
-				else
-				{
-					WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "padding"_s))
-			{
-				Maybe<s32> padding = readInt<s32>(&reader);
-				if (padding.isValid)
-				{
-					switch (target.type)
+					else if (equals(category, "echo"_s))
 					{
-						case Section_Button:     target.button->padding    = padding.value; break;
-						case Section_Console:    target.console->padding   = padding.value; break;
-						case Section_UIMessage:  target.message->padding   = padding.value; break;
-						case Section_TextInput:  target.textInput->padding = padding.value; break;
-						default:  WRONG_SECTION;
+						target->outputTextColor[CLS_InputEcho] = color.value;
 					}
-				}
-			}
-			else if (equals(firstWord, "pressedBackgroundColor"_s))
-			{
-				Maybe<V4> pressedBackgroundColor = readColor(&reader);
-				if (pressedBackgroundColor.isValid)
-				{
-					switch (target.type)
+					else if (equals(category, "success"_s))
 					{
-						case Section_Button:  target.button->pressedBackgroundColor = pressedBackgroundColor.value; break;
-						default:  WRONG_SECTION;
+						target->outputTextColor[CLS_Success] = color.value;
 					}
-				}
-			}
-			else if (equals(firstWord, "scrollbarStyle"_s))
-			{
-				String styleName = intern(&assets->assetStrings, readToken(&reader));
-				switch (target.type)
-				{
-					case Section_Console:    target.console->scrollbarStyleName   = styleName; break;
-					case Section_PopupMenu:  target.popupMenu->scrollbarStyleName = styleName; break;
-					case Section_Window:     target.window->scrollbarStyleName    = styleName; break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "showCaret"_s))
-			{
-				Maybe<bool> showCaret = readBool(&reader);
-				if (showCaret.isValid)
-				{
-					switch (target.type)
+					else if (equals(category, "warning"_s))
 					{
-						case Section_TextInput:  target.textInput->showCaret  = showCaret.value; break;
-						default:  WRONG_SECTION;
+						target->outputTextColor[CLS_Warning] = color.value;
 					}
-				}
-			}
-			else if (equals(firstWord, "textAlignment"_s))
-			{
-				Maybe<u32> alignment = readAlignment(&reader);
-				if (alignment.isValid)
-				{
-					switch (target.type)
+					else if (equals(category, "error"_s))
 					{
-						case Section_Button:     target.button->textAlignment    = alignment.value; break;
-						case Section_TextInput:  target.textInput->textAlignment = alignment.value; break;
-						default:  WRONG_SECTION;
+						target->outputTextColor[CLS_Error] = color.value;
 					}
-				}
-			}
-			else if (equals(firstWord, "textColor"_s))
-			{
-				Maybe<V4> textColor = readColor(&reader);
-				if (textColor.isValid)
-				{
-					switch (target.type)
+					else
 					{
-						case Section_Button:     target.button->textColor       = textColor.value; break;
-						case Section_Label:      target.label->textColor        = textColor.value; break;
-						case Section_TextInput:  target.textInput->textColor    = textColor.value; break;
-						case Section_UIMessage:  target.message->textColor      = textColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "textInputStyle"_s))
-			{
-				String styleName = intern(&assets->assetStrings, readToken(&reader));
-				switch (target.type)
-				{
-					case Section_Console:  target.console->textInputStyleName = styleName; break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "titleBarButtonHoverColor"_s))
-			{
-				Maybe<V4> titleBarButtonHoverColor = readColor(&reader);
-				if (titleBarButtonHoverColor.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Window:  target.window->titleBarButtonHoverColor = titleBarButtonHoverColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "titleBarColor"_s))
-			{
-				Maybe<V4> titleBarColor = readColor(&reader);
-				if (titleBarColor.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Window:  target.window->titleBarColor = titleBarColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "titleBarColorInactive"_s))
-			{
-				Maybe<V4> titleBarColorInactive = readColor(&reader);
-				if (titleBarColorInactive.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Window:  target.window->titleBarColorInactive = titleBarColorInactive.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "titleBarHeight"_s))
-			{
-				Maybe<s32> titleBarHeight = readInt<s32>(&reader);
-				if (titleBarHeight.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Window:  target.window->titleBarHeight = titleBarHeight.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "titleFont"_s))
-			{
-				String fontName = intern(&assets->assetStrings, readToken(&reader));
-
-				switch (target.type)
-				{
-					case Section_Window:  target.window->titleFontName = fontName; break;
-					default:  WRONG_SECTION;
-				}
-			}
-			else if (equals(firstWord, "titleColor"_s))
-			{
-				Maybe<V4> titleColor = readColor(&reader);
-				if (titleColor.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Window:  target.window->titleColor = titleColor.value; break;
-						default:  WRONG_SECTION;
-					}
-				}
-			}
-			else if (equals(firstWord, "width"_s))
-			{
-				Maybe<s32> width = readInt<s32>(&reader);
-				if (width.isValid)
-				{
-					switch (target.type)
-					{
-						case Section_Scrollbar:  target.scrollbar->width = width.value; break;
-						default:  WRONG_SECTION;
+						warn(&reader, "Unrecognized output text category '{0}'"_s, {category});
 					}
 				}
 			}
 			else
 			{
 				// Check our properties map for a match
-				Property *property = find(&theme->styleProperties, firstWord);
+				UIProperty *property = find(&theme->styleProperties, firstWord);
 				if (property)
 				{
-					switch (property->type)
+					if (property->existsInStyle[target->type])
 					{
-						case PropertyType_Alignment: {
-							Maybe<u32> value = readAlignment(&reader);
-							if (value.isValid)
-							{
-								smm offset = property->offsetInStyleStruct[target.type];
-								if (offset >= 0)
+						switch (property->type)
+						{
+							case PropType_Alignment: {
+								Maybe<u32> value = readAlignment(&reader);
+								if (value.isValid)
 								{
-									*((u32*)(target.bytes + offset)) = value.value;
+									*((u32*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
-								else
-								{
-									WRONG_SECTION;
-								}
-							}
-						} break;
+							} break;
 
-						case PropertyType_Boolean: {
-							Maybe<bool> value = readBool(&reader);
-							if (value.isValid)
-							{
-								smm offset = property->offsetInStyleStruct[target.type];
-								if (offset >= 0)
+							case PropType_Bool: {
+								Maybe<bool> value = readBool(&reader);
+								if (value.isValid)
 								{
-									*((bool*)(target.bytes + offset)) = value.value;
+									*((bool*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
-								else
-								{
-									WRONG_SECTION;
-								}
-							}
-						} break;
+							} break;
 
-						case PropertyType_Color: {
-							Maybe<V4> value = readColor(&reader);
-							if (value.isValid)
-							{
-								smm offset = property->offsetInStyleStruct[target.type];
-								if (offset >= 0)
+							case PropType_Color: {
+								Maybe<V4> value = readColor(&reader);
+								if (value.isValid)
 								{
-									*((V4*)(target.bytes + offset)) = value.value;
+									*((V4*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
-								else
-								{
-									WRONG_SECTION;
-								}
-							}
-						} break;
+							} break;
 
-						case PropertyType_Float: {
-							Maybe<f32> value = readInt<f32>(&reader);
-							if (value.isValid)
-							{
-								smm offset = property->offsetInStyleStruct[target.type];
-								if (offset >= 0)
+							case PropType_Float: {
+								Maybe<f64> value = readFloat(&reader);
+								if (value.isValid)
 								{
-									*((f32*)(target.bytes + offset)) = value.value;
+									*((f32*)((u8*)(target) + property->offsetInStyleStruct)) = (f32)(value.value);
 								}
-								else
-								{
-									WRONG_SECTION;
-								}
-							}
-						} break;
+							} break;
 
-						case PropertyType_Integer: {
-							Maybe<s32> value = readInt<s32>(&reader);
-							if (value.isValid)
-							{
-								smm offset = property->offsetInStyleStruct[target.type];
-								if (offset >= 0)
+							case PropType_Int: {
+								Maybe<s32> value = readInt<s32>(&reader);
+								if (value.isValid)
 								{
-									*((s32*)(target.bytes + offset)) = value.value;
+									*((s32*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
-								else
-								{
-									WRONG_SECTION;
-								}
-							}
-						} break;
+							} break;
 
-						case PropertyType_String: {
-							String value = intern(&assets->assetStrings, readToken(&reader));
-							// Strings are read directly, so we don't need an if(valid) check
-							smm offset = property->offsetInStyleStruct[target.type];
-							if (offset >= 0)
-							{
-								*((String*)(target.bytes + offset)) = value;
-							}
-							else
-							{
-								WRONG_SECTION;
-							}
-						} break;
+							case PropType_String: {
+								String value = intern(&assets->assetStrings, readToken(&reader));
+								// Strings are read directly, so we don't need an if(valid) check
+								*((String*)((u8*)(target) + property->offsetInStyleStruct)) = value;
+							} break;
 
-						case PropertyType_V2I: {
-							Maybe<s32> offsetX = readInt<s32>(&reader);
-							Maybe<s32> offsetY = readInt<s32>(&reader);
-							if (offsetX.isValid && offsetY.isValid)
-							{
-								smm offset = property->offsetInStyleStruct[target.type];
-								if (offset >= 0)
+							case PropType_V2I: {
+								Maybe<s32> offsetX = readInt<s32>(&reader);
+								Maybe<s32> offsetY = readInt<s32>(&reader);
+								if (offsetX.isValid && offsetY.isValid)
 								{
 									V2I vector = v2i(offsetX.value, offsetY.value);
-									*((V2I*)(target.bytes + offset)) = vector;
+									*((V2I*)((u8*)(target) + property->offsetInStyleStruct)) = vector;
 								}
-								else
-								{
-									WRONG_SECTION;
-								}
-							}
-						} break;
+							} break;
 
-						default: logCritical("Invalid property type for '{0}'"_s, {firstWord});
+							default: logCritical("Invalid property type for '{0}'"_s, {firstWord});
+						}
+					}
+					else
+					{
+						WRONG_SECTION;
 					}
 				}
 				else
@@ -747,5 +439,22 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 		}
 	}
+
+	for (auto it = iterate(&styles); hasNext(&it); next(&it))
+	{
+		UIStylePack *stylePack = get(&it);
+		for (s32 sectionType = 1; sectionType < SectionTypeCount; sectionType++)
+		{
+			UIStyle *style = stylePack->styleByType + sectionType;
+			// For undefined styles, the parent struct will be all nulls, so the type will not match
+			if (style->type == sectionType)
+			{
+				saveStyleToTheme(theme, style);
+			}
+		}
+	}
+
+	freeHashTable(&styles);
+
+	#undef WRONG_SECTION
 }
-#undef WRONG_SECTION
