@@ -466,7 +466,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	V2I centre = v2i(renderer->uiCamera.pos);
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
-	BitmapFont *font = getFont(labelStyle->fontName);
+	BitmapFont *font = getFont(&labelStyle->font);
 	City *city = &gameState->city;
 
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
@@ -573,7 +573,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			// As I'm trying to use it, more and more of it is unraveling. I want to find the widest button width
 			// beforehand, but that means having to get which font will be used, and that's not exposed nicely!
 			// So I have to hackily write this buttonFont definition in the same way or it'll be wrong.
-			// BitmapFont *buttonFont = getFont(findButtonStyle(&assets->theme, "default"_s)->fontName);
+			// BitmapFont *buttonFont = getFont(&findButtonStyle(&assets->theme, "default"_s)->fontName);
 			// So, that really wants to come out. Also, calculateTextSize() is the wrong call because we want
 			// to know the BUTTON width, which will be the text size plus padding, depending on the style.
 			//
@@ -1190,7 +1190,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	UITheme *theme = &assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
-	BitmapFont *font = getFont(labelStyle->fontName);
+	BitmapFont *font = getFont(&labelStyle->font);
 
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
 	UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);

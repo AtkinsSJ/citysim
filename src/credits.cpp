@@ -11,7 +11,7 @@ AppStatus updateAndRenderCredits(UIState *uiState, f32 /*deltaTime*/)
 	s32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"_s);
-	BitmapFont *font = getFont(labelStyle->fontName);
+	BitmapFont *font = getFont(&labelStyle->font);
 
 	Asset *creditsText = getAsset(AssetType_Misc, "credits.txt"_s);
 	LineReader reader = readLines(creditsText->shortName, creditsText->data, 0);

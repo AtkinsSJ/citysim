@@ -32,6 +32,12 @@ struct BitmapFont
 	struct Asset *texture;
 };
 
+struct FontReference
+{
+	String fontName;
+	BitmapFont *font;
+};
+
 struct DrawTextResult
 {
 	bool isValid;

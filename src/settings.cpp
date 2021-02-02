@@ -223,7 +223,7 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
 	s32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(&assets->theme, "title"_s);
-	BitmapFont *font = getFont(labelStyle->fontName);
+	BitmapFont *font = getFont(&labelStyle->font);
 
 	V2I titlePos = v2i(windowWidth / 2, 157);
 	uiText(&renderer->uiBuffer, font, getText("title_settings"_s),

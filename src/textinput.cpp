@@ -20,7 +20,7 @@ V2I calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 ma
 	s32 doublePadding = (style->padding * 2);
 	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
 
-	BitmapFont *font = getFont(style->fontName);
+	BitmapFont *font = getFont(&style->font);
 	String text = textInputToString(textInput);
 	V2I textSize = calculateTextSize(font, text, textMaxWidth);
 
@@ -45,7 +45,7 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInp
 	DEBUG_FUNCTION();
 
 	String text = textInputToString(textInput);
-	BitmapFont *font = getFont(style->fontName);
+	BitmapFont *font = getFont(&style->font);
 
 	Rect2I textBounds = shrink(bounds, style->padding);
 

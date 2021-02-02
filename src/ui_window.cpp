@@ -227,7 +227,7 @@ void window_label(WindowContext *context, String text, String styleName)
 	Rect2I space = window_getCurrentLayoutPosition(context);
 	V2I origin = alignWithinRectangle(space, alignment);
 
-	BitmapFont *font = getFont(style->fontName);
+	BitmapFont *font = getFont(&style->font);
 	if (font)
 	{
 		V2I textSize = calculateTextSize(font, text, space.w);
@@ -260,7 +260,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth, ButtonSta
 	Rect2I space = window_getCurrentLayoutPosition(context);
 	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
 
-	BitmapFont *font = getFont(style->fontName);
+	BitmapFont *font = getFont(&style->font);
 	if (font)
 	{
 		s32 buttonWidth;
@@ -349,7 +349,7 @@ bool window_textInput(WindowContext *context, TextInput *textInput, String style
 	Rect2I space = window_getCurrentLayoutPosition(context);
 	V2I origin = alignWithinRectangle(space, alignment);
 
-	BitmapFont *font = getFont(style->fontName);
+	BitmapFont *font = getFont(&style->font);
 	if (font)
 	{
 		bool fillWidth = ((alignment & ALIGN_H) == ALIGN_EXPAND_H);
@@ -758,7 +758,7 @@ void renderWindows(UIState *uiState)
 			String closeButtonString = "X"_s;
 			V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
-			BitmapFont *titleFont = getFont(windowStyle->titleFontName);
+			BitmapFont *titleFont = getFont(&windowStyle->titleFont);
 
 			drawSingleRect(&renderer->uiBuffer, barArea, renderer->shaderIds.untextured, barColor);
 			uiText(&renderer->uiBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);

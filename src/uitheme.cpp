@@ -70,7 +70,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		case Section_Button: {
 			UIButtonStyle *button = put(&theme->buttonStyles, style->name);
 
-			button->fontName = style->font;
+			button->font = style->font;
 			button->textColor = style->textColor;
 			button->textAlignment = style->textAlignment;
 
@@ -85,7 +85,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		case Section_Console: {
 			UIConsoleStyle *console = put(&theme->consoleStyles, style->name);
 
-			console->fontName = style->font;
+			console->font = style->font;
 			copyMemory(style->outputTextColor, console->outputTextColor, CLS_COUNT);
 
 			console->backgroundColor = style->backgroundColor;
@@ -98,14 +98,14 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		case Section_Label: {
 			UILabelStyle *label = put(&theme->labelStyles, style->name);
 
-			label->fontName = style->font;
+			label->font = style->font;
 			label->textColor = style->textColor;
 		} break;
 
 		case Section_UIMessage: {
 			UIMessageStyle *message = put(&theme->messageStyles, style->name);
 
-			message->fontName = style->font;
+			message->font = style->font;
 			message->textColor = style->textColor;
 
 			message->backgroundColor = style->backgroundColor;
@@ -134,7 +134,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		case Section_TextInput: {
 			UITextInputStyle *textInput = put(&theme->textInputStyles, style->name);
 
-			textInput->fontName = style->font;
+			textInput->font = style->font;
 			textInput->textColor = style->textColor;
 			textInput->textAlignment = style->textAlignment;
 
@@ -151,7 +151,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			window->titleBarHeight = style->titleBarHeight;
 			window->titleBarColor = style->titleBarColor;
 			window->titleBarColorInactive = style->titleBarColorInactive;
-			window->titleFontName = style->titleFont;
+			window->titleFont = style->titleFont;
 			window->titleColor = style->titleColor;
 			window->titleBarButtonHoverColor = style->titleBarButtonHoverColor;
 
@@ -398,6 +398,14 @@ void loadUITheme(Blob data, Asset *asset)
 								{
 									*((f32*)((u8*)(target) + property->offsetInStyleStruct)) = (f32)(value.value);
 								}
+							} break;
+
+							case PropType_Font: {
+								String value = intern(&assets->assetStrings, readToken(&reader));
+								// Strings are read directly, so we don't need an if(valid) check
+								FontReference *fontRef = ((FontReference*)((u8*)(target) + property->offsetInStyleStruct));
+								*fontRef = {};
+								fontRef->fontName = value;
 							} break;
 
 							case PropType_Int: {

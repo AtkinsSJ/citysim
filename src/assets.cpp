@@ -734,6 +734,16 @@ BitmapFont *getFont(String fontName)
 	return result;
 }
 
+inline BitmapFont *getFont(FontReference *fontRef)
+{
+	if (fontRef->font == null)
+	{
+		fontRef->font = getFont(fontRef->fontName);
+	}
+
+	return fontRef->font;
+}
+
 inline String getText(String name)
 {
 	DEBUG_FUNCTION();

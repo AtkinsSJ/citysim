@@ -15,7 +15,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	s32 maxLabelWidth = windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
-	BitmapFont *font = getFont(labelStyle->fontName);
+	BitmapFont *font = getFont(&labelStyle->font);
 
 	position.y += (uiText(&renderer->uiBuffer, font, getText("game_title"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;

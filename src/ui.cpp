@@ -70,7 +70,7 @@ V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, b
 	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
 
 	V2I result = {};
-	BitmapFont *font = getFont(buttonStyle->fontName);
+	BitmapFont *font = getFont(&buttonStyle->font);
 
 	if (textMaxWidth < 0)
 	{
@@ -156,7 +156,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 
 	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
 	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(&renderer->uiBuffer, getFont(style->fontName), text, textOrigin, textAlignment, style->textColor);
+	uiText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if (state != Button_Disabled
@@ -236,7 +236,7 @@ void drawUiMessage(UIState *uiState)
 
 			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-			Rect2I labelRect = uiText(&renderer->uiBuffer, getFont(style->fontName), uiState->message.text, origin,
+			Rect2I labelRect = uiText(&renderer->uiBuffer, getFont(&style->font), uiState->message.text, origin,
 										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
 
 			labelRect = expand(labelRect, style->padding);

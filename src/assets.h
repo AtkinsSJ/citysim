@@ -253,6 +253,8 @@ Asset *getAsset(AssetType type, String shortName);
 Asset *getAssetIfExists(AssetType type, String shortName);
 
 BitmapFont *getFont(String fontName);
+BitmapFont *getFont(FontReference *fontRef);
+
 Array<V4> *getPalette(String name);
 Shader *getShader(String shaderName);
 Sprite *getSprite(SpriteGroup *group, s32 offset);

@@ -7,7 +7,7 @@
 
 struct UIButtonStyle
 {
-	String fontName;
+	FontReference font;
 	V4 textColor;
 	u32 textAlignment;
 
@@ -21,13 +21,13 @@ struct UIButtonStyle
 
 struct UILabelStyle
 {
-	String fontName;
+	FontReference font;
 	V4 textColor;
 };
 
 struct UIMessageStyle
 {
-	String fontName;
+	FontReference font;
 	V4 textColor;
 
 	V4 backgroundColor;
@@ -46,7 +46,7 @@ struct UIPopupMenuStyle
 
 struct UITextInputStyle
 {
-	String fontName;
+	FontReference font;
 	V4 textColor;
 	u32 textAlignment;
 
@@ -69,7 +69,7 @@ struct UIWindowStyle
 	s32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
-	String titleFontName;
+	FontReference titleFont;
 	V4 titleColor;
 	V4 titleBarButtonHoverColor;
 
@@ -88,7 +88,7 @@ struct UIWindowStyle
 
 struct UIConsoleStyle
 {
-	String fontName;
+	FontReference font;
 	V4 outputTextColor[CLS_COUNT];
 
 	V4 backgroundColor;
@@ -118,6 +118,7 @@ enum PropType
 	PropType_Bool,
 	PropType_Color,
 	PropType_Float,
+	PropType_Font,
 	PropType_Int,
 	PropType_String,
 	PropType_V2I,
@@ -136,7 +137,7 @@ struct UIStyle
 	f32 caretFlashCycleDuration;
 	s32 contentPadding;
 	V4 disabledBackgroundColor;
-	String font;
+	FontReference font;
 	V4 hoverBackgroundColor;
 	V4 knobColor;
 	String labelStyle;
@@ -156,7 +157,7 @@ struct UIStyle
 	V4 titleBarColorInactive;
 	s32 titleBarHeight;
 	V4 titleColor;
-	String titleFont;
+	FontReference titleFont;
 	s32 width;
 };
 

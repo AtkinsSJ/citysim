@@ -71,7 +71,7 @@ void renderConsole(Console *console)
 	textPos.y -= consoleStyle->padding;
 
 	// print output lines
-	BitmapFont *consoleFont = getFont(consoleStyle->fontName);
+	BitmapFont *consoleFont = getFont(&consoleStyle->font);
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
 	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
 		hasNext(&it);
