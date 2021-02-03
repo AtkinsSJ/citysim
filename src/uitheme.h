@@ -6,7 +6,7 @@
 // - Sam, 15/01/2020
 
 enum UIStyleType {
-	// NB: When changing this, make sure to change the lambdas in checkAndFetchStylePointer() to match!
+	// NB: When changing this, make sure to change the lambdas in findStyle() to match!
 	UIStyle_None = 0,
 	UIStyle_Button = 1,
 	UIStyle_Console,

@@ -473,8 +473,29 @@ void loadUITheme(Blob data, Asset *asset)
 }
 
 template <typename T>
-bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
+bool checkStyleMatchesType(UIStyleReference *reference)
 {
+	switch (reference->styleType)
+	{
+		case UIStyle_Button: 	 return (typeid(T*) == typeid(UIButtonStyle*));
+		case UIStyle_Console: 	 return (typeid(T*) == typeid(UIConsoleStyle*));
+		case UIStyle_Label: 	 return (typeid(T*) == typeid(UILabelStyle*));
+		case UIStyle_UIMessage:  return (typeid(T*) == typeid(UIMessageStyle*));
+		case UIStyle_PopupMenu:  return (typeid(T*) == typeid(UIPopupMenuStyle*));
+		case UIStyle_Scrollbar:  return (typeid(T*) == typeid(UIScrollbarStyle*));
+		case UIStyle_TextInput:  return (typeid(T*) == typeid(UITextInputStyle*));
+		case UIStyle_Window: 	 return (typeid(T*) == typeid(UIWindowStyle*));
+		INVALID_DEFAULT_CASE;
+	}
+
+	return false;
+}
+
+template <typename T>
+inline T* findStyle(UITheme *theme, UIStyleReference *reference)
+{
+	ASSERT(checkStyleMatchesType<T>(reference));
+
 	// Order must match enum UIStyleType
 	static void* (*findStyleByType[UIStyleTypeCount])(UITheme*, String) = {
 		null,
@@ -488,34 +509,10 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 		[] (UITheme *theme, String name) { return (void*) findWindowStyle(theme, name); }
 	};
 
-	// Type-checking
-	bool isValid = false;
-
-	switch (reference->styleType)
-	{
-		case UIStyle_Button: 	isValid = (typeid(T*) == typeid(UIButtonStyle*)); 	 break;
-		case UIStyle_Console: 	isValid = (typeid(T*) == typeid(UIConsoleStyle*)); 	 break;
-		case UIStyle_Label: 	isValid = (typeid(T*) == typeid(UILabelStyle*)); 	 break;
-		case UIStyle_UIMessage: isValid = (typeid(T*) == typeid(UIMessageStyle*)); 	 break;
-		case UIStyle_PopupMenu: isValid = (typeid(T*) == typeid(UIPopupMenuStyle*)); break;
-		case UIStyle_Scrollbar: isValid = (typeid(T*) == typeid(UIScrollbarStyle*)); break;
-		case UIStyle_TextInput: isValid = (typeid(T*) == typeid(UITextInputStyle*)); break;
-		case UIStyle_Window: 	isValid = (typeid(T*) == typeid(UIWindowStyle*)); 	 break;
-		INVALID_DEFAULT_CASE;
-	}
-
-	if (isValid)
+	if (reference->pointer == null)
 	{
 		reference->pointer = findStyleByType[reference->styleType](theme, reference->name);
 	}
-
-	return isValid;
-}
-
-template <typename T>
-inline T* findStyle(UITheme *theme, UIStyleReference *reference)
-{
-	ASSERT(checkAndFetchStylePointer<T>(theme, reference));
 
 	return (T*) reference->pointer;
 }
