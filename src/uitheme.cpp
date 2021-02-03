@@ -18,14 +18,14 @@ void initUITheme(UITheme *theme)
 		UIProperty property = {}; \
 		property.type = _type; \
 		property.offsetInStyleStruct = offsetof(UIStyle, name); \
-		property.existsInStyle[Section_Button]    = inButton; \
-		property.existsInStyle[Section_Console]   = inConsole; \
-		property.existsInStyle[Section_Label]     = inLabel; \
-		property.existsInStyle[Section_UIMessage] = inMessage; \
-		property.existsInStyle[Section_PopupMenu] = inPopupMenu; \
-		property.existsInStyle[Section_Scrollbar] = inScrollbar; \
-		property.existsInStyle[Section_TextInput] = inTextInput; \
-		property.existsInStyle[Section_Window]    = inWindow; \
+		property.existsInStyle[UIStyle_Button]    = inButton; \
+		property.existsInStyle[UIStyle_Console]   = inConsole; \
+		property.existsInStyle[UIStyle_Label]     = inLabel; \
+		property.existsInStyle[UIStyle_UIMessage] = inMessage; \
+		property.existsInStyle[UIStyle_PopupMenu] = inPopupMenu; \
+		property.existsInStyle[UIStyle_Scrollbar] = inScrollbar; \
+		property.existsInStyle[UIStyle_TextInput] = inTextInput; \
+		property.existsInStyle[UIStyle_Window]    = inWindow; \
 		put(&theme->styleProperties, makeString(#name), property); \
 	}
 
@@ -67,7 +67,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 {
 	switch (style->type)
 	{
-		case Section_Button: {
+		case UIStyle_Button: {
 			UIButtonStyle *button = put(&theme->buttonStyles, style->name, UIButtonStyle());
 
 			button->font = style->font;
@@ -82,7 +82,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			button->padding = style->padding;
 		} break;
 
-		case Section_Console: {
+		case UIStyle_Console: {
 			UIConsoleStyle *console = put(&theme->consoleStyles, style->name, UIConsoleStyle());
 
 			console->font = style->font;
@@ -95,14 +95,14 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			console->textInputStyle = style->textInputStyle;
 		} break;
 
-		case Section_Label: {
+		case UIStyle_Label: {
 			UILabelStyle *label = put(&theme->labelStyles, style->name, UILabelStyle());
 
 			label->font = style->font;
 			label->textColor = style->textColor;
 		} break;
 
-		case Section_UIMessage: {
+		case UIStyle_UIMessage: {
 			UIMessageStyle *message = put(&theme->messageStyles, style->name, UIMessageStyle());
 
 			message->font = style->font;
@@ -112,7 +112,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			message->padding = style->padding;
 		} break;
 
-		case Section_PopupMenu: {
+		case UIStyle_PopupMenu: {
 			UIPopupMenuStyle *menu = put(&theme->popupMenuStyles, style->name, UIPopupMenuStyle());
 
 			menu->margin = style->margin;
@@ -123,7 +123,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			menu->scrollbarStyle = style->scrollbarStyle;
 		} break;
 
-		case Section_Scrollbar: {
+		case UIStyle_Scrollbar: {
 			UIScrollbarStyle *scrollbar = put(&theme->scrollbarStyles, style->name, UIScrollbarStyle());
 
 			scrollbar->backgroundColor = style->backgroundColor;
@@ -131,7 +131,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			scrollbar->width = style->width;
 		} break;
 
-		case Section_TextInput: {
+		case UIStyle_TextInput: {
 			UITextInputStyle *textInput = put(&theme->textInputStyles, style->name, UITextInputStyle());
 
 			textInput->font = style->font;
@@ -145,7 +145,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			textInput->caretFlashCycleDuration = style->caretFlashCycleDuration;
 		} break;
 
-		case Section_Window: {
+		case UIStyle_Window: {
 			UIWindowStyle *window = put(&theme->windowStyles, style->name, UIWindowStyle());
 
 			window->titleBarHeight = style->titleBarHeight;
@@ -170,7 +170,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 	}
 }
 
-UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, SectionType type)
+UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, UIStyleType type)
 {
 	UIStylePack *pack = findOrAdd(styles, name);
 	UIStyle *result = pack->styleByType + type;
@@ -184,8 +184,6 @@ UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, SectionType type)
 
 void loadUITheme(Blob data, Asset *asset)
 {
-	#define WRONG_SECTION error(&reader, "property '{0}' in an invalid section: '{1}'"_s, {firstWord, currentSection})
-
 	LineReader reader = readLines(asset->shortName, data);
 
 	UITheme *theme = &assets->theme;
@@ -234,63 +232,63 @@ void loadUITheme(Blob data, Asset *asset)
 			else if (equals(firstWord, "General"_s))
 			{
 				target = null;
-				// target->type = Section_General;
+				// target->type = UIStyle_General;
 			}
 			else if (equals(firstWord, "Button"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_Button);
+				target = addStyle(&styles, name, UIStyle_Button);
 				target->name = name;
-				target->type = Section_Button;
+				target->type = UIStyle_Button;
 			}
 			else if (equals(firstWord, "Console"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_Console);
+				target = addStyle(&styles, name, UIStyle_Console);
 				target->name = name;
-				target->type = Section_Console;
+				target->type = UIStyle_Console;
 			}
 			else if (equals(firstWord, "Label"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_Label);
+				target = addStyle(&styles, name, UIStyle_Label);
 				target->name = name;
-				target->type = Section_Label;
+				target->type = UIStyle_Label;
 			}
 			else if (equals(firstWord, "UIMessage"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_UIMessage);
+				target = addStyle(&styles, name, UIStyle_UIMessage);
 				target->name = name;
-				target->type = Section_UIMessage;
+				target->type = UIStyle_UIMessage;
 			}
 			else if (equals(firstWord, "PopupMenu"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_PopupMenu);
+				target = addStyle(&styles, name, UIStyle_PopupMenu);
 				target->name = name;
-				target->type = Section_PopupMenu;
+				target->type = UIStyle_PopupMenu;
 			}
 			else if (equals(firstWord, "Scrollbar"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_Scrollbar);
+				target = addStyle(&styles, name, UIStyle_Scrollbar);
 				target->name = name;
-				target->type = Section_Scrollbar;
+				target->type = UIStyle_Scrollbar;
 			}
 			else if (equals(firstWord, "TextInput"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_TextInput);
+				target = addStyle(&styles, name, UIStyle_TextInput);
 				target->name = name;
-				target->type = Section_TextInput;
+				target->type = UIStyle_TextInput;
 			}
 			else if (equals(firstWord, "Window"_s))
 			{
 				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, Section_Window);
+				target = addStyle(&styles, name, UIStyle_Window);
 				target->name = name;
-				target->type = Section_Window;
+				target->type = UIStyle_Window;
 			}
 			else
 			{
@@ -445,7 +443,7 @@ void loadUITheme(Blob data, Asset *asset)
 					}
 					else
 					{
-						WRONG_SECTION;
+						error(&reader, "Property '{0}' is not allowed in '{1}'"_s, {firstWord, currentSection});
 					}
 				}
 				else
@@ -460,7 +458,7 @@ void loadUITheme(Blob data, Asset *asset)
 	for (auto it = iterate(&styles); hasNext(&it); next(&it))
 	{
 		UIStylePack *stylePack = get(&it);
-		for (s32 sectionType = 1; sectionType < SectionTypeCount; sectionType++)
+		for (s32 sectionType = 1; sectionType < UIStyleTypeCount; sectionType++)
 		{
 			UIStyle *style = stylePack->styleByType + sectionType;
 			// For undefined styles, the parent struct will be all nulls, so the type will not match
@@ -472,8 +470,6 @@ void loadUITheme(Blob data, Asset *asset)
 	}
 
 	freeHashTable(&styles);
-
-	#undef WRONG_SECTION
 }
 
 template <typename T>
@@ -482,7 +478,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 	// Type-checking
 	switch (reference->styleType)
 	{
-		case Section_Button:
+		case UIStyle_Button:
 		{
 			if (typeid(T*) == typeid(UIButtonStyle*))
 			{
@@ -497,7 +493,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 				return false;
 			}
 		}
-		case Section_Console:
+		case UIStyle_Console:
 		{
 			if (typeid(T*) == typeid(UIConsoleStyle*))
 			{
@@ -512,7 +508,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 				return false;
 			}
 		}
-		case Section_Label:
+		case UIStyle_Label:
 		{
 			if (typeid(T*) == typeid(UILabelStyle*))
 			{
@@ -527,7 +523,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 				return false;
 			}
 		}
-		case Section_UIMessage:
+		case UIStyle_UIMessage:
 		{
 			if (typeid(T*) == typeid(UIMessageStyle*))
 			{
@@ -542,7 +538,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 				return false;
 			}
 		}
-		case Section_PopupMenu:
+		case UIStyle_PopupMenu:
 		{
 			if (typeid(T*) == typeid(UIPopupMenuStyle*))
 			{
@@ -557,7 +553,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 				return false;
 			}
 		}
-		case Section_Scrollbar:
+		case UIStyle_Scrollbar:
 		{
 			if (typeid(T*) == typeid(UIScrollbarStyle*))
 			{
@@ -572,7 +568,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 				return false;
 			}
 		}
-		case Section_TextInput:
+		case UIStyle_TextInput:
 		{
 			if (typeid(T*) == typeid(UITextInputStyle*))
 			{
@@ -587,7 +583,7 @@ bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 				return false;
 			}
 		}
-		case Section_Window:
+		case UIStyle_Window:
 		{
 			if (typeid(T*) == typeid(UIWindowStyle*))
 			{
