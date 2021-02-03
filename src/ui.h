@@ -25,6 +25,7 @@ inline ButtonState buttonIsActive(bool isActive)
 	return isActive ? Button_Active : Button_Normal;
 }
 
+#include "ui_panel.h"
 #include "ui_window.h"
 
 struct UIState

@@ -163,6 +163,7 @@ AppState globalAppState;
 #include "transport.cpp"
 #include "types.cpp"
 #include "ui.cpp"
+#include "ui_panel.cpp"
 #include "ui_window.cpp"
 #include "uitheme.cpp"
 #include "unicode.cpp"
