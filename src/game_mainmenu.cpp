@@ -91,5 +91,15 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 		result = AppStatus_Quit;
 	}
 
+	UIPanel testPanel(irectXYWH(32, 4, 320, 240));
+	{
+		testPanel.addText("This is a test!"_s);
+		if (testPanel.addButton("And a button!"_s))
+		{
+			pushUiMessage(uiState, "You clicked a thing!"_s);
+		}
+	}
+	testPanel.endPanel();
+
 	return result;
 }

@@ -32,6 +32,7 @@ Panels:
 - Replace UIMessage
 - Replace PopupMenu?
 - Replace window content layout with panels?
+- Consider putting a UIState pointer in UIPanel?
 
 Window/UI System features:
 - Confirmation dialogs

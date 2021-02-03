@@ -7,7 +7,7 @@
 
 struct UIPanel
 {
-	UIPanel(Rect2I bounds, UIPanelStyle *style);
+	UIPanel(Rect2I bounds, UIPanelStyle *style = null);
 	UIPanel(Rect2I bounds, String styleName) : UIPanel(bounds, findPanelStyle(&assets->theme, styleName)) {}
 
 	void addText(String text, String styleName = nullString);
@@ -16,6 +16,11 @@ struct UIPanel
 	void startNewLine(u32 hAlignment = 0);
 
 	void endPanel();
+
+	// "Private"
+
+	Rect2I getCurrentLayoutPosition();
+	void completeWidget(V2I widgetSize);
 
 	Rect2I bounds;
 	Rect2I contentArea;
@@ -26,7 +31,6 @@ struct UIPanel
 	s32 largestItemWidth;
 	s32 largestItemHeightOnLine;
 
-private:
-	void completeWidget(V2I widgetSize);
-	void init();
+	UIPanelStyle *style;
+	RenderItem_DrawSingleRect *backgroundPlaceholder;
 };
