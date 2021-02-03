@@ -65,19 +65,21 @@ void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityW
 	s32 zoomDelta = inputState->wheelY;
 
 	// Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
-	// TODO: Wrap with !isInputCaptured()
-	// if (keyJustPressed(SDLK_PAGEUP))
-	// {
-	// 	zoomDelta++;
-	// }
-	// else if (keyJustPressed(SDLK_PAGEDOWN))
-	// {
-	// 	zoomDelta--;
-	// }
+	if (!isInputCaptured())
+	{
+		if (keyJustPressed(SDLK_EQUALS) || keyJustPressed(SDLK_KP_PLUS))
+		{
+			zoomDelta++;
+		}
+		else if (keyJustPressed(SDLK_MINUS) || keyJustPressed(SDLK_KP_MINUS))
+		{
+			zoomDelta--;
+		}
+	}
 
 	if (zoomDelta)
 	{
-		camera->zoom = snapZoomLevel(camera->zoom + zoomDelta);
+		camera->zoom = snapZoomLevel(camera->zoom + (zoomDelta * 0.1f));
 	}
 
 	// Panning

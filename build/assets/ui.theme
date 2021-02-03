@@ -18,7 +18,7 @@ textColor           0   0   0 255
 backgroundColor   255 255 255 255
 hoverBackgroundColor        192 192 255 255
 pressedBackgroundColor      128 128 255 255
-disabledBackgroundColor     128 128 128 255
+disabledBackgroundColor      96  96  96 255
 padding           6
 textAlignment     H_CENTRE V_CENTRE
 
@@ -88,8 +88,8 @@ titleBarHeight           32
 titleBarColor             96 196  96 255
 titleBarColorInactive     96 128  96 255
 titleBarButtonHoverColor 255  64  64 255
-backgroundColor           96  96  96 255
-backgroundColorInactive   96  96  96 255
+backgroundColor          128 128 128 255
+backgroundColorInactive  128 128 128 255
 margin                   12
 contentPadding           4
 labelStyle               small

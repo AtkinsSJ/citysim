@@ -16,12 +16,17 @@ Notes for searching:
 
 ------------------------------------------------
 
-Window UI System features:
+Window/UI System features:
 - Confirmation dialogs
 - Frames
 - Embedded images
 - Image buttons
 - Align things to the bottom
+- Graphical backgrounds for things, instead of just solid colours.
+	- Nine-patches!
+- Parity between windowed and non-windowed UI. They're very different right now which is awkward.
+	- Possibly, have toolbar style menus in the game just be windows with a forced background depth and snapping to a set position?
+	- Or, could treat those and window contents as "panels", which then handle the layout.
 
 Saving and loading:
 - Save/Load window revamp!
@@ -30,14 +35,11 @@ Saving and loading:
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 
-BUG: Zooming out is weird
-
 Close the pause window after loading a game
 
 Text Input:
-- While a text-input is active, the rest of the game shouldn't respond to keyboard events.
 - Guide for handling textinputs properly: https://wiki.libsdl.org/Tutorials/TextInput
-	- Though, this is pretty scanty.
+	- It's pretty scanty, but we do see there's a way to tell it where our text input is, so the OS can make that look correct.
 
 Building problems:
 - Problem icon entities (Zots!)
