@@ -434,16 +434,8 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				break;
 			}
 
-			// I considered doing a hash table here, but it's really overkill - we only see one of
-			// each of these, and there aren't that many of them, so I doubt it'll make any notable
-			// speed difference, but it WOULD make a big complexity difference!
-			// - Sam, 16/10/2019
-			//
-			// ... Actually, the identifiers are all 4 bytes, so I could just case to a u32 and then
-			// do a simple == or even a switch!
-			// @Speed
-			// - Sam, 10/11/2019
-
+			// NB: The SAV_XXX_ID stuff isn't constant at compile time, or something,
+			// so we can't switch() on it, even though it looks like it should work!
 			if (header->identifier == SAV_META_ID)
 			{
 				// Load Meta

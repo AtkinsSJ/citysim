@@ -49,6 +49,8 @@ void updateSavedGamesCatalogue()
 
 void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 {
+	// We picked 4KB somewhat arbitrarily. It should be way more than enough, given that the META
+	// chunk comes first, which we require.
 	Blob tempBuffer = allocateBlob(tempArena, KB(4));
 
 	for (auto it = iterateDirectoryListing(constructPath({catalogue->savedGamesPath}, true));

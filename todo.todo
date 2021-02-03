@@ -13,6 +13,7 @@ Notes for searching:
 	@Cleanup - Stuff that needs investigating/organising, when it's convenient
 	@Hack - Hacks
 	@Leak - Memory leaks
+	@Balance - Game design things to tweak
 
 ------------------------------------------------
 
@@ -288,6 +289,9 @@ Budget:
 Debug system:
 - Ability to filter out certain categories from the profiler list?
 - Record start/end events, instead of just "amount of time taken", so that we can build an overall call stack and measure internal time, or see which paths to a function make it slow, etc.
+
+Files:
+- Might be worth having a table-of-contents at the start of our binary files, which lists the chunks, along with their sizes and offsets. That way, we could read a specific chunk's data without having to read the entire file into memory.
 
 ------------------------------------------------
 

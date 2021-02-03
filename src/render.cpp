@@ -223,7 +223,7 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 
 	// TODO: @Speed: This should probably be delayed until we first try to append an item to this buffer.
 	// Right now, we're reallocating a chunk we just freed, and (potentially) only to hold this one marker!
-	// See also below
+	// See also clearRenderBuffer()
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
 	bufferStart->renderProfileName = buffer->renderProfileName;
@@ -248,7 +248,7 @@ void clearRenderBuffer(RenderBuffer *buffer)
 	buffer->firstChunk = null;
 	buffer->currentChunk = null;
 	
-	// TODO: @Speed: See above
+	// TODO: @Speed: See initRenderBuffer()
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
 	bufferStart->renderProfileName = buffer->renderProfileName;
