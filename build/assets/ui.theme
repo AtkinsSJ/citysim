@@ -67,6 +67,18 @@ contentPadding    4
 buttonStyle       default
 scrollbarStyle    default
 
+:Panel default
+margin            8
+contentPadding    4
+backgroundColor   128 128 128 255
+labelStyle        default
+buttonStyle       default
+scrollbarStyle    default
+
+:Panel inset
+extends default
+backgroundColor    96  96  96 255
+
 :Scrollbar default
 backgroundColor       0 128 0 255
 knobColor             0 255 0 255

@@ -12,6 +12,7 @@ enum UIStyleType {
 	UIStyle_Console,
 	UIStyle_Label,
 	UIStyle_UIMessage,
+	UIStyle_Panel,
 	UIStyle_PopupMenu,
 	UIStyle_Scrollbar,
 	UIStyle_TextInput,
@@ -49,6 +50,7 @@ struct UILabelStyle
 	V4 textColor;
 };
 
+// @Deprecated - will use Panels
 struct UIMessageStyle
 {
 	FontReference font;
@@ -58,6 +60,18 @@ struct UIMessageStyle
 	s32 padding;
 };
 
+struct UIPanelStyle
+{
+	s32 margin;
+	s32 contentPadding;
+	V4 backgroundColor;
+
+	UIStyleReference buttonStyle    = UIStyleReference(UIStyle_Button);
+	UIStyleReference labelStyle     = UIStyleReference(UIStyle_Label);
+	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
+};
+
+// @Deprecated - will use Panels
 struct UIPopupMenuStyle
 {
 	s32 margin;
@@ -90,6 +104,8 @@ struct UIScrollbarStyle
 
 struct UIWindowStyle
 {
+	// TODO: Will probably use a Panel for the main body of the window
+
 	s32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -197,6 +213,7 @@ struct UITheme
 	HashTable<UIConsoleStyle>   consoleStyles;
 	HashTable<UILabelStyle>     labelStyles;
 	HashTable<UIMessageStyle>   messageStyles;
+	HashTable<UIPanelStyle>     panelStyles;
 	HashTable<UIPopupMenuStyle> popupMenuStyles;
 	HashTable<UIScrollbarStyle> scrollbarStyles;
 	HashTable<UITextInputStyle> textInputStyles;
@@ -224,6 +241,10 @@ inline UILabelStyle *findLabelStyle(UITheme *theme, String name)
 inline UIMessageStyle *findMessageStyle(UITheme *theme, String name)
 {
 	return find(&theme->messageStyles, name);
+}
+inline UIPanelStyle *findPanelStyle(UITheme *theme, String name)
+{
+	return find(&theme->panelStyles, name);
 }
 inline UIPopupMenuStyle *findPopupMenuStyle(UITheme *theme, String name)
 {

@@ -8,13 +8,14 @@ void initUITheme(UITheme *theme)
 	initHashTable(&theme->consoleStyles);
 	initHashTable(&theme->labelStyles);
 	initHashTable(&theme->messageStyles);
+	initHashTable(&theme->panelStyles);
 	initHashTable(&theme->popupMenuStyles);
 	initHashTable(&theme->scrollbarStyles);
 	initHashTable(&theme->textInputStyles);
 	initHashTable(&theme->windowStyles);
 
 	initHashTable(&theme->styleProperties, 0.75f, 256);
-	#define PROP(name, _type, inButton, inConsole, inLabel, inMessage, inPopupMenu, inScrollbar, inTextInput, inWindow) {\
+	#define PROP(name, _type, inButton, inConsole, inLabel, inMessage, inPanel, inPopupMenu, inScrollbar, inTextInput, inWindow) {\
 		UIProperty property = {}; \
 		property.type = _type; \
 		property.offsetInStyleStruct = offsetof(UIStyle, name); \
@@ -22,6 +23,7 @@ void initUITheme(UITheme *theme)
 		property.existsInStyle[UIStyle_Console]   = inConsole; \
 		property.existsInStyle[UIStyle_Label]     = inLabel; \
 		property.existsInStyle[UIStyle_UIMessage] = inMessage; \
+		property.existsInStyle[UIStyle_Panel]     = inPanel; \
 		property.existsInStyle[UIStyle_PopupMenu] = inPopupMenu; \
 		property.existsInStyle[UIStyle_Scrollbar] = inScrollbar; \
 		property.existsInStyle[UIStyle_TextInput] = inTextInput; \
@@ -29,33 +31,33 @@ void initUITheme(UITheme *theme)
 		put(&theme->styleProperties, makeString(#name), property); \
 	}
 
-	//                                                     btn   cnsl  label    msg  popup  scrll  txtin  windw
-	PROP(backgroundColor,          PropType_Color,      true,  true, false,  true,  true,  true,  true,  true);
-	PROP(backgroundColorInactive,  PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(buttonStyle,              PropType_Style,     false, false, false, false,  true, false, false,  true);
-	PROP(caretFlashCycleDuration,  PropType_Float,     false, false, false, false, false, false,  true, false);
-	PROP(contentPadding,           PropType_Int,       false, false, false, false,  true, false, false,  true);
-	PROP(disabledBackgroundColor,  PropType_Color,      true, false, false, false, false, false, false, false);
-	PROP(font,                     PropType_Font,       true,  true,  true,  true, false, false,  true, false);
-	PROP(hoverBackgroundColor,     PropType_Color,      true, false, false, false, false, false, false, false);
-	PROP(knobColor,                PropType_Color,     false, false, false, false, false,  true, false, false);
-	PROP(labelStyle,               PropType_Style,     false, false, false, false, false, false, false,  true);
-	PROP(margin,                   PropType_Int,       false, false, false, false,  true, false, false,  true);
-	PROP(offsetFromMouse,          PropType_V2I,       false, false, false, false, false, false, false,  true);
-	PROP(padding,                  PropType_Int,        true,  true, false,  true, false, false,  true, false);
-	PROP(pressedBackgroundColor,   PropType_Color,      true, false, false, false, false, false, false, false);
-	PROP(scrollbarStyle,           PropType_Style,     false,  true, false, false,  true, false, false,  true);
-	PROP(showCaret,                PropType_Bool,      false, false, false, false, false, false,  true, false);
-	PROP(textAlignment,            PropType_Alignment,  true, false, false, false, false, false,  true, false);
-	PROP(textColor,                PropType_Color,      true, false,  true,  true, false, false,  true, false);
-	PROP(textInputStyle,           PropType_Style,     false,  true, false, false, false, false, false, false);
-	PROP(titleBarButtonHoverColor, PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleBarColor,            PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleBarColorInactive,    PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleBarHeight,           PropType_Int,       false, false, false, false, false, false, false,  true);
-	PROP(titleColor,               PropType_Color,     false, false, false, false, false, false, false,  true);
-	PROP(titleFont,                PropType_Font,      false, false, false, false, false, false, false,  true);
-	PROP(width,                    PropType_Int,       false, false, false, false, false,  true, false, false);
+	//                                                   btn   cnsl  label    msg  panel  popup  scrll  txtin  windw
+	PROP(backgroundColor,          PropType_Color,      true,  true, false,  true,  true,  true,  true,  true,  true);
+	PROP(backgroundColorInactive,  PropType_Color,     false, false, false, false, false, false, false, false,  true);
+	PROP(buttonStyle,              PropType_Style,     false, false, false, false,  true,  true, false, false,  true);
+	PROP(caretFlashCycleDuration,  PropType_Float,     false, false, false, false, false, false, false,  true, false);
+	PROP(contentPadding,           PropType_Int,       false, false, false, false,  true,  true, false, false,  true);
+	PROP(disabledBackgroundColor,  PropType_Color,      true, false, false, false, false, false, false, false, false);
+	PROP(font,                     PropType_Font,       true,  true,  true,  true, false, false, false,  true, false);
+	PROP(hoverBackgroundColor,     PropType_Color,      true, false, false, false, false, false, false, false, false);
+	PROP(knobColor,                PropType_Color,     false, false, false, false, false, false,  true, false, false);
+	PROP(labelStyle,               PropType_Style,     false, false, false, false,  true, false, false, false,  true);
+	PROP(margin,                   PropType_Int,       false, false, false, false,  true,  true, false, false,  true);
+	PROP(offsetFromMouse,          PropType_V2I,       false, false, false, false, false, false, false, false,  true);
+	PROP(padding,                  PropType_Int,        true,  true, false,  true, false, false, false,  true, false);
+	PROP(pressedBackgroundColor,   PropType_Color,      true, false, false, false, false, false, false, false, false);
+	PROP(scrollbarStyle,           PropType_Style,     false,  true, false, false,  true,  true, false, false,  true);
+	PROP(showCaret,                PropType_Bool,      false, false, false, false, false, false, false,  true, false);
+	PROP(textAlignment,            PropType_Alignment,  true, false, false, false, false, false, false,  true, false);
+	PROP(textColor,                PropType_Color,      true, false,  true,  true, false, false, false,  true, false);
+	PROP(textInputStyle,           PropType_Style,     false,  true, false, false, false, false, false, false, false);
+	PROP(titleBarButtonHoverColor, PropType_Color,     false, false, false, false, false, false, false, false,  true);
+	PROP(titleBarColor,            PropType_Color,     false, false, false, false, false, false, false, false,  true);
+	PROP(titleBarColorInactive,    PropType_Color,     false, false, false, false, false, false, false, false,  true);
+	PROP(titleBarHeight,           PropType_Int,       false, false, false, false, false, false, false, false,  true);
+	PROP(titleColor,               PropType_Color,     false, false, false, false, false, false, false, false,  true);
+	PROP(titleFont,                PropType_Font,      false, false, false, false, false, false, false, false,  true);
+	PROP(width,                    PropType_Int,       false, false, false, false, false, false,  true, false, false);
 
 	#undef PROP
 
@@ -110,6 +112,18 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 
 			message->backgroundColor = style->backgroundColor;
 			message->padding = style->padding;
+		} break;
+
+		case UIStyle_Panel: {
+			UIPanelStyle *panel = put(&theme->panelStyles, style->name, UIPanelStyle());
+
+			panel->margin = style->margin;
+			panel->contentPadding = style->contentPadding;
+			panel->backgroundColor = style->backgroundColor;
+
+			panel->buttonStyle = style->buttonStyle;
+			panel->labelStyle = style->labelStyle;
+			panel->scrollbarStyle = style->scrollbarStyle;
 		} break;
 
 		case UIStyle_PopupMenu: {
@@ -192,6 +206,7 @@ void loadUITheme(Blob data, Asset *asset)
 	clear(&theme->consoleStyles);
 	clear(&theme->labelStyles);
 	clear(&theme->messageStyles);
+	clear(&theme->panelStyles);
 	clear(&theme->popupMenuStyles);
 	clear(&theme->scrollbarStyles);
 	clear(&theme->textInputStyles);
@@ -261,6 +276,13 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_UIMessage);
 				target->name = name;
 				target->type = UIStyle_UIMessage;
+			}
+			else if (equals(firstWord, "Panel"_s))
+			{
+				String name = intern(&assets->assetStrings, readToken(&reader));
+				target = addStyle(&styles, name, UIStyle_Panel);
+				target->name = name;
+				target->type = UIStyle_Panel;
 			}
 			else if (equals(firstWord, "PopupMenu"_s))
 			{
@@ -481,6 +503,7 @@ bool checkStyleMatchesType(UIStyleReference *reference)
 		case UIStyle_Console: 	 return (typeid(T*) == typeid(UIConsoleStyle*));
 		case UIStyle_Label: 	 return (typeid(T*) == typeid(UILabelStyle*));
 		case UIStyle_UIMessage:  return (typeid(T*) == typeid(UIMessageStyle*));
+		case UIStyle_Panel:      return (typeid(T*) == typeid(UIPanelStyle*));
 		case UIStyle_PopupMenu:  return (typeid(T*) == typeid(UIPopupMenuStyle*));
 		case UIStyle_Scrollbar:  return (typeid(T*) == typeid(UIScrollbarStyle*));
 		case UIStyle_TextInput:  return (typeid(T*) == typeid(UITextInputStyle*));
@@ -503,6 +526,7 @@ inline T* findStyle(UITheme *theme, UIStyleReference *reference)
 		[] (UITheme *theme, String name) { return (void*) findConsoleStyle(theme, name); },
 		[] (UITheme *theme, String name) { return (void*) findLabelStyle(theme, name); },
 		[] (UITheme *theme, String name) { return (void*) findMessageStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findPanelStyle(theme, name); },
 		[] (UITheme *theme, String name) { return (void*) findPopupMenuStyle(theme, name); },
 		[] (UITheme *theme, String name) { return (void*) findScrollbarStyle(theme, name); },
 		[] (UITheme *theme, String name) { return (void*) findTextInputStyle(theme, name); },

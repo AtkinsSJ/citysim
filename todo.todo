@@ -14,8 +14,18 @@ Notes for searching:
 	@Hack - Hacks
 	@Leak - Memory leaks
 	@Balance - Game design things to tweak
+	@Deprecated - Deprecated stuff
 
 ------------------------------------------------
+
+Panels:
+	A generalisation of UIMessage, PopupMenu, etc... Anything with widgets inside basically.
+- Styles
+- Actually implement them
+- Scrolling!
+- Replace UIMessage
+- Replace PopupMenu?
+- Replace window content layout with panels?
 
 Window/UI System features:
 - Confirmation dialogs
