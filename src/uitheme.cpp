@@ -475,133 +475,41 @@ void loadUITheme(Blob data, Asset *asset)
 template <typename T>
 bool checkAndFetchStylePointer(UITheme *theme, UIStyleReference *reference)
 {
+	// Order must match enum UIStyleType
+	static void* (*findStyleByType[UIStyleTypeCount])(UITheme*, String) = {
+		null,
+		[] (UITheme *theme, String name) { return (void*) findButtonStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findConsoleStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findLabelStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findMessageStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findPopupMenuStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findScrollbarStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findTextInputStyle(theme, name); },
+		[] (UITheme *theme, String name) { return (void*) findWindowStyle(theme, name); }
+	};
+
 	// Type-checking
+	bool isValid = false;
+
 	switch (reference->styleType)
 	{
-		case UIStyle_Button:
-		{
-			if (typeid(T*) == typeid(UIButtonStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findButtonStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case UIStyle_Console:
-		{
-			if (typeid(T*) == typeid(UIConsoleStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findConsoleStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case UIStyle_Label:
-		{
-			if (typeid(T*) == typeid(UILabelStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findLabelStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case UIStyle_UIMessage:
-		{
-			if (typeid(T*) == typeid(UIMessageStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findMessageStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case UIStyle_PopupMenu:
-		{
-			if (typeid(T*) == typeid(UIPopupMenuStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findPopupMenuStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case UIStyle_Scrollbar:
-		{
-			if (typeid(T*) == typeid(UIScrollbarStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findScrollbarStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case UIStyle_TextInput:
-		{
-			if (typeid(T*) == typeid(UITextInputStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findTextInputStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		case UIStyle_Window:
-		{
-			if (typeid(T*) == typeid(UIWindowStyle*))
-			{
-				if (reference->pointer == null)
-				{
-					reference->pointer = findWindowStyle(theme, reference->name);
-				}
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
+		case UIStyle_Button: 	isValid = (typeid(T*) == typeid(UIButtonStyle*)); 	 break;
+		case UIStyle_Console: 	isValid = (typeid(T*) == typeid(UIConsoleStyle*)); 	 break;
+		case UIStyle_Label: 	isValid = (typeid(T*) == typeid(UILabelStyle*)); 	 break;
+		case UIStyle_UIMessage: isValid = (typeid(T*) == typeid(UIMessageStyle*)); 	 break;
+		case UIStyle_PopupMenu: isValid = (typeid(T*) == typeid(UIPopupMenuStyle*)); break;
+		case UIStyle_Scrollbar: isValid = (typeid(T*) == typeid(UIScrollbarStyle*)); break;
+		case UIStyle_TextInput: isValid = (typeid(T*) == typeid(UITextInputStyle*)); break;
+		case UIStyle_Window: 	isValid = (typeid(T*) == typeid(UIWindowStyle*)); 	 break;
 		INVALID_DEFAULT_CASE;
 	}
 
-	return false;
+	if (isValid)
+	{
+		reference->pointer = findStyleByType[reference->styleType](theme, reference->name);
+	}
+
+	return isValid;
 }
 
 template <typename T>
