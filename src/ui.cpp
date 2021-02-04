@@ -330,9 +330,20 @@ inline f32 getScrollbarPercent(ScrollbarState *scrollbar, s32 scrollbarHeight)
 	return result;
 }
 
-inline void uiCloseMenus(UIState *uiState)
+void showMenu(UIState *uiState, s32 menuID)
+{
+	uiState->openMenu = menuID;
+	uiState->openMenuScrollbar = {};
+}
+
+inline void hideMenus(UIState *uiState)
 {
 	uiState->openMenu = 0;
+}
+
+inline bool isMenuVisible(UIState *uiState, s32 menuID)
+{
+	return (uiState->openMenu == menuID);
 }
 
 PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style)

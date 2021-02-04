@@ -568,29 +568,20 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The "ZONE" menu
 		String zoneButtonText = getText("button_zone"_s);
 		buttonRect.size = calculateButtonSize(zoneButtonText, buttonStyle);
-		if (uiMenuButton(uiState, zoneButtonText, buttonRect, Menu_Zone, buttonStyle))
+		if (uiButton(uiState, zoneButtonText, buttonRect, buttonStyle, buttonIsActive(isMenuVisible(uiState, Menu_Zone))))
 		{
-			//
-			// UGH, all of this UI code is so hacky!
-			// As I'm trying to use it, more and more of it is unraveling. I want to find the widest button width
-			// beforehand, but that means having to get which font will be used, and that's not exposed nicely!
-			// So I have to hackily write this buttonFont definition in the same way or it'll be wrong.
-			// BitmapFont *buttonFont = getFont(&findButtonStyle(&assets->theme, "default"_s)->fontName);
-			// So, that really wants to come out. Also, calculateTextSize() is the wrong call because we want
-			// to know the BUTTON width, which will be the text size plus padding, depending on the style.
-			//
-			// So probably we want uiButton() to take a nullable Style parameter which defaults to something sensible?
-			// Or maybe not nullable.
-			//
-			// I'm tempted to put random state in PopupMenu so we don't have to pass it to every call... but really,
-			// that would force all buttons to be the same and we might not want that, so it's better to be a little
-			// more verbose. That former kind of thinking is what's led to the UiState mess.
-			//
-			// Ramble ramble ramble.
-			//
-			// - Sam, 22/09/2019
-			//
+			if (isMenuVisible(uiState, Menu_Zone))
+			{
+				hideMenus(uiState);
+			}
+			else
+			{
+				showMenu(uiState, Menu_Zone);
+			}
+		}
 
+		if (isMenuVisible(uiState, Menu_Zone))
+		{
 			s32 buttonMaxWidth = 0;
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
@@ -600,6 +591,20 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
 			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
 
+			// UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), "popupMenu"_s);
+			// for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
+			// {
+			// 	if (menu.addButton(getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle,
+			// 			buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
+			// 	{
+			// 		hideMenus(uiState);
+			// 		gameState->selectedZoneID = (ZoneType) zoneIndex;
+			// 		gameState->actionMode = ActionMode_Zone;
+			// 		setCursor("build"_s);
+			// 	}
+			// }
+			// menu.end();
+
 			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
 
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
@@ -607,7 +612,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle,
 						buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
 				{
-					uiCloseMenus(uiState);
+					hideMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
 					gameState->actionMode = ActionMode_Zone;
 					setCursor("build"_s);
@@ -616,6 +621,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 			endPopupMenu(uiState, &menu);
 		}
+
 		buttonRect.x += buttonRect.w + uiPadding;
 
 		// The "BUILD" menu
@@ -648,7 +654,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				if (popupMenuButton(uiState, &menu, getText(buildingDef->textAssetName), popupButtonStyle,
 						buttonIsActive((gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID))))
 				{
-					uiCloseMenus(uiState);
+					hideMenus(uiState);
 					gameState->selectedBuildingTypeID = buildingDef->typeID;
 					gameState->actionMode = ActionMode_Build;
 					setCursor("build"_s);
@@ -1228,7 +1234,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 			if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
 			{
-				uiCloseMenus(uiState);
+				hideMenus(uiState);
 				gameState->dataLayerToDraw = dataViewID;
 			}
 		}

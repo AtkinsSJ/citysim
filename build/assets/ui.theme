@@ -85,6 +85,13 @@ extends default
 margin 0
 backgroundColor    96  96 128 255
 
+:Panel popupMenu
+margin            8
+contentPadding    4
+backgroundColor     0   0   0 128
+buttonStyle       default
+scrollbarStyle    default
+
 :Scrollbar default
 backgroundColor       0 128 0 255
 knobColor             0 255 0 255

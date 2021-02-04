@@ -64,7 +64,6 @@ Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I ori
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth=0, bool fillWidth=true);
 bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-void uiCloseMenus(UIState *uiState);
 
 // NB: `message` is copied into the UIState, so it can be a temporary allocation
 void pushUiMessage(UIState *uiState, String message);
@@ -78,6 +77,9 @@ void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
 // Is this something we should actually expose??? IDK
 void basicTooltipWindowProc(WindowContext *context, void *userData);
 
+void showMenu(UIState *uiState, s32 menuID);
+void hideMenus(UIState *uiState);
+bool isMenuVisible(UIState *uiState, s32 menuID);
 
 struct PopupMenu
 {
