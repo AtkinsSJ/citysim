@@ -18,8 +18,9 @@ struct UIPanel
 
 	// 
 	UIPanel row(s32 height, Alignment vAlignment, String styleName = nullString);
+	UIPanel column(s32 width, Alignment hAlignment, String styleName = nullString);
 
-	void endPanel();
+	void end();
 
 	// "Private"
 

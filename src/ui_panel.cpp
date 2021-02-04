@@ -187,10 +187,8 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 	if (vAlignment == ALIGN_TOP)
 	{
 		Rect2I rowBounds = irectXYWH(
-			contentArea.x + currentLeft,
-			contentArea.y + currentY,
-			currentRight - currentLeft,
-			height
+			contentArea.x, contentArea.y + currentY,
+			contentArea.w, height
 		);
 
 		completeWidget(rowBounds.size);
@@ -200,19 +198,54 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 	else
 	{
 		Rect2I rowBounds = irectXYWH(
-			contentArea.x + currentLeft,
-			contentArea.y + contentArea.h - height,
-			currentRight - currentLeft,
-			height
+			contentArea.x, contentArea.y + contentArea.h - height,
+			contentArea.w, height
 		);
 
-		contentArea.h -= height;
+		contentArea.h -= height + style->contentPadding;
 
 		return UIPanel(rowBounds, rowStyle);
 	}
 }
 
-void UIPanel::endPanel()
+UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
+{
+	ASSERT(hAlignment == ALIGN_LEFT || hAlignment == ALIGN_RIGHT);
+
+	startNewLine();
+
+	UIPanelStyle *columnStyle = null;
+	if (!isEmpty(styleName)) columnStyle = findPanelStyle(&assets->theme, styleName);
+	if (columnStyle == null) columnStyle = this->style;
+
+	if (hAlignment == ALIGN_LEFT)
+	{
+		Rect2I columnBounds = irectXYWH(
+			contentArea.x, contentArea.y + currentY,
+			width, contentArea.h
+		);
+
+		contentArea.w -= width + style->contentPadding;
+		contentArea.x += width + style->contentPadding;
+		startNewLine();
+
+		return UIPanel(columnBounds, columnStyle);
+	}
+	else
+	{
+		Rect2I columnBounds = irectXYWH(
+			contentArea.x + contentArea.w - width, contentArea.y + currentY,
+			width, contentArea.h
+		);
+
+		contentArea.w -= width + style->contentPadding;
+		startNewLine();
+
+		return UIPanel(columnBounds, columnStyle);
+	}
+}
+
+void UIPanel::end()
 {
 	DEBUG_FUNCTION();
 

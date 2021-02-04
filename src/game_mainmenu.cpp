@@ -93,19 +93,120 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	// This is a copy of savedGamesWindowProc() in our new system, for testing
 	UIPanel testPanel(irectXYWH(32, 4, 780, 580));
 	{
+		SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
+		bool isSaveWindow = true;
+
+		SavedGameInfo *selectedSavedGame = null;
+		bool justClickedSavedGame = false;
+
 		UIPanel bottomBar = testPanel.row(26, ALIGN_BOTTOM, "plain"_s);
 
-		testPanel.addText("This is a test!"_s);
-		if (testPanel.addButton("And a button!"_s))
+		UIPanel savesList = testPanel.column(320, ALIGN_LEFT, "inset"_s);
 		{
-			pushUiMessage(uiState, "You clicked a thing!"_s);
+			savesList.alignWidgets(ALIGN_EXPAND_H);
+
+			if (catalogue->savedGames.count == 0)
+			{
+				savesList.addText(getText("msg_no_saved_games"_s));
+			}
+			else
+			{
+				for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
+				{
+					SavedGameInfo *savedGame = get(&it);
+					s32 index = getIndex(&it);
+
+					if (savesList.addButton(savedGame->shortName, -1, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
+					{
+						// Select it and show information in the details pane
+						catalogue->selectedSavedGameIndex = index;
+						justClickedSavedGame = true;
+					}
+
+					if (catalogue->selectedSavedGameIndex == index)
+					{
+						selectedSavedGame = savedGame;
+					}
+				}
+			}
+		}
+		savesList.end();
+
+		// Now we have the saved-game info
+		if (selectedSavedGame)
+		{
+			testPanel.alignWidgets(ALIGN_RIGHT);
+			if (testPanel.addButton(getText("button_delete_save"_s), -1, Button_Normal, "delete"_s))
+			{
+				deleteSave(globalAppState.uiState, selectedSavedGame);
+			}
+
+			testPanel.alignWidgets(ALIGN_EXPAND_H);
+			testPanel.addText(selectedSavedGame->shortName);
+			testPanel.addText(myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
+			testPanel.addText(selectedSavedGame->cityName);
+			testPanel.addText(myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
+			testPanel.addText(myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));
+			testPanel.addText(myprintf("{0} population"_s, {formatInt(selectedSavedGame->population)}));
+
+			if (selectedSavedGame->problems != 0)
+			{
+				if (selectedSavedGame->problems & SAVE_IS_FROM_NEWER_VERSION)
+				{
+					testPanel.addText(getText("msg_load_version_too_new"_s));
+				}
+			}
 		}
 
 		// Bottom bar
 		{
-			if (false) //isSaveWindow)
+			if (isSaveWindow)
 			{
+				// 'Save' buttons
+				bottomBar.alignWidgets(ALIGN_LEFT);
+				if (bottomBar.addButton(getText("button_back"_s)))
+				{
+					// context->closeRequested = true;
+				}
 
+				bottomBar.addText("Save game name:"_s);
+
+				bottomBar.alignWidgets(ALIGN_RIGHT);
+				bool pressedSave = bottomBar.addButton(getText("button_save"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled);
+
+				bottomBar.alignWidgets(ALIGN_EXPAND_H);
+				if (justClickedSavedGame)
+				{
+					clear(&catalogue->saveGameName);
+					append(&catalogue->saveGameName, selectedSavedGame->shortName);
+				}
+
+				bool pressedEnterInTextInput = false;//window_textInput(context, &catalogue->saveGameName);
+				String inputName = trim(textInputToString(&catalogue->saveGameName));
+
+				// Show a warning if we're overwriting an existing save that ISN'T the active one
+				if (!isEmpty(inputName) && !equals(inputName, catalogue->activeSavedGameName))
+				{
+					Indexed<SavedGameInfo *> fileToOverwrite = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
+						return equals(inputName, info->shortName);
+					});
+
+					if (fileToOverwrite.index != -1)
+					{
+						bottomBar.addText(getText("msg_save_warning_overwrite"_s), "warning"_s);
+					}
+				}
+
+				if (pressedSave || pressedEnterInTextInput)
+				{
+					if (!isEmpty(inputName))
+					{
+						if (saveGame(globalAppState.uiState, inputName))
+						{
+							// context->closeRequested = true;
+						}
+					}
+				}
 			}
 			else
 			{
@@ -116,16 +217,16 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 				}
 
 				bottomBar.alignWidgets(ALIGN_RIGHT);
-				if (bottomBar.addButton(getText("button_load"_s), -1))//, selectedSavedGame ? Button_Normal : Button_Disabled))
+				if (bottomBar.addButton(getText("button_load"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled))
 				{
-					// loadGame(context->uiState, selectedSavedGame);
+					loadGame(globalAppState.uiState, selectedSavedGame);
 					// context->closeRequested = true;
 				}
 			}
 		}
-		bottomBar.endPanel();
+		bottomBar.end();
 	}
-	testPanel.endPanel();
+	testPanel.end();
 
 	return result;
 }
