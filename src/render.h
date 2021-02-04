@@ -194,7 +194,7 @@ struct RenderBuffer
 	Camera *currentCamera;
 	bool hasRangeReserved;
 	smm reservedRangeSize;
-	bool hasScissorEnabled;
+	s32 scissorCount;
 
 	s8 currentShader;
 	Asset *currentTexture;

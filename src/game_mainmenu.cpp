@@ -111,21 +111,25 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 			}
 			else
 			{
-				for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
+				// TEMPORARY: Multiply the list so that we can test scrolling
+				for (int iteration = 0; iteration < 20; iteration++)
 				{
-					SavedGameInfo *savedGame = get(&it);
-					s32 index = getIndex(&it);
-
-					if (savesList.addButton(savedGame->shortName, -1, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
+					for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
 					{
-						// Select it and show information in the details pane
-						catalogue->selectedSavedGameIndex = index;
-						justClickedSavedGame = true;
-					}
+						SavedGameInfo *savedGame = get(&it);
+						s32 index = getIndex(&it);
 
-					if (catalogue->selectedSavedGameIndex == index)
-					{
-						selectedSavedGame = savedGame;
+						if (savesList.addButton(savedGame->shortName, -1, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
+						{
+							// Select it and show information in the details pane
+							catalogue->selectedSavedGameIndex = index;
+							justClickedSavedGame = true;
+						}
+
+						if (catalogue->selectedSavedGameIndex == index)
+						{
+							selectedSavedGame = savedGame;
+						}
 					}
 				}
 			}

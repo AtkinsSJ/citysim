@@ -211,7 +211,7 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 	hashString(&buffer->renderProfileName);
 
 	buffer->hasRangeReserved = false;
-	buffer->hasScissorEnabled = false;
+	buffer->scissorCount = 0;
 
 	buffer->chunkPool = chunkPool;
 
@@ -424,7 +424,6 @@ void addClear(RenderBuffer *buffer, V4 clearColor)
 
 void addBeginScissor(RenderBuffer *buffer, Rect2 bounds)
 {
-	ASSERT(!buffer->hasScissorEnabled);
 	RenderItem_BeginScissor *scissor = appendRenderItem<RenderItem_BeginScissor>(buffer, RenderItemType_BeginScissor);
 
 	//
@@ -467,15 +466,15 @@ void addBeginScissor(RenderBuffer *buffer, Rect2 bounds)
 	// Crop it to be within the screen bounds
 	scissor->bounds = intersect(resultBounds, irectXYWH(0, 0, inputState->windowWidth, inputState->windowHeight));
 
-	buffer->hasScissorEnabled = true;
+	buffer->scissorCount++;
 }
 
 void addEndScissor(RenderBuffer *buffer)
 {
-	ASSERT(buffer->hasScissorEnabled);
+	ASSERT(buffer->scissorCount > 0);
 	RenderItem_EndScissor *scissor = appendRenderItem<RenderItem_EndScissor>(buffer, RenderItemType_EndScissor);
 	scissor = scissor; // Unused
-	buffer->hasScissorEnabled = false;
+	buffer->scissorCount--;
 }
 
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color)

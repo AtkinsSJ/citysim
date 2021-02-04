@@ -68,6 +68,8 @@ struct GL_Renderer
 	u32 paletteTextureID;
 	u32 rawTextureID; // TODO: @Speed: Using one texture means that it'll get resized a lot. That's probably really bad!
 
+	Stack<Rect2I> scissorStack;
+
 	// For debugging only
 	Asset *currentTexture; 
 };

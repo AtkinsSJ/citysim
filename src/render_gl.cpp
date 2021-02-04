@@ -121,6 +121,8 @@ bool GL_initializeRenderer(SDL_Window *window)
 
 			// Other GL_Renderer struct init stuff
 			initChunkedArray(&gl->shaders, &gl->renderer.renderArena, 64);
+
+			initStack(&gl->scissorStack, &gl->renderer.renderArena);
 		}
 		else
 		{
@@ -615,7 +617,13 @@ void GL_render(RenderBufferChunk *firstChunk)
 					flushVertices(gl);
 				}
 
-				glEnable(GL_SCISSOR_TEST);
+				if (isEmpty(&gl->scissorStack))
+				{
+					glEnable(GL_SCISSOR_TEST);
+				}
+
+				push(&gl->scissorStack, header->bounds);
+
 				glScissor(header->bounds.x, header->bounds.y, header->bounds.w, header->bounds.h);
 			} break;
 
@@ -632,7 +640,18 @@ void GL_render(RenderBufferChunk *firstChunk)
 					flushVertices(gl);
 				}
 
-				glDisable(GL_SCISSOR_TEST);
+				pop(&gl->scissorStack);
+
+				// Restore previous scissor
+				if (!isEmpty(&gl->scissorStack))
+				{
+					Rect2I *previousScissor = peek(&gl->scissorStack);
+					glScissor(previousScissor->x, previousScissor->y, previousScissor->w, previousScissor->h);
+				}
+				else
+				{
+					glDisable(GL_SCISSOR_TEST);
+				}
 			} break;
 
 			case RenderItemType_DrawRects:
@@ -743,6 +762,8 @@ void GL_render(RenderBufferChunk *firstChunk)
 	{
 		flushVertices(gl);
 	}
+
+	ASSERT(isEmpty(&gl->scissorStack));
 
 	DEBUG_END_RENDER_BUFFER();
 }

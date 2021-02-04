@@ -32,7 +32,12 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle)
 	// TODO: Handle backgrounds that aren't a solid colour
 	this->backgroundPlaceholder = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-	// TODO: Scissor?
+	// Scissor
+	// if (context->doRender)
+	{
+		addBeginScissor(&renderer->uiBuffer, rect2(bounds));
+	}
+
 	// TODO: UI Rect?
 }
 
@@ -308,6 +313,10 @@ void UIPanel::end()
 
 
 	// Clear any scissor stuff
+	// if (context->doRender)
+	{
+		addEndScissor(&renderer->uiBuffer);
+	}
 }
 
 Rect2I UIPanel::getCurrentLayoutPosition()
