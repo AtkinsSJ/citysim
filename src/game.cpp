@@ -549,8 +549,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 	UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
-	UIPopupMenuStyle *popupMenuStyle = findPopupMenuStyle(theme, "default"_s);
-	UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuStyle->buttonStyle);
+	UIPanelStyle *popupMenuPanelStyle = findPanelStyle(theme, "popupMenu"_s);
 	// Build UI
 	{
 		// The, um, "MENU" menu. Hmmm.
@@ -582,19 +581,14 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		if (isMenuVisible(uiState, Menu_Zone))
 		{
-			// s32 buttonMaxWidth = 0;
-			// for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
-			// {
-			// 	buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle).x);
-			// }
-
-			s32 popupMenuWidth = 150;//buttonMaxWidth + (popupMenuStyle->margin * 2);
+			s32 popupMenuWidth = 150;
 			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
 
-			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), "popupMenu"_s);
+			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (menu.addButton(getText(getZoneDef(zoneIndex).textAssetName), buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
+				if (menu.addButton(getText(getZoneDef(zoneIndex).textAssetName),
+					buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
 				{
 					hideMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
@@ -611,23 +605,26 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The "BUILD" menu
 		String buildButtonText = getText("button_build"_s);
 		buttonRect.size = calculateButtonSize(buildButtonText, buttonStyle);
-		if (uiMenuButton(uiState, buildButtonText, buttonRect, Menu_Build, buttonStyle))
+		if (uiButton(uiState, buildButtonText, buttonRect, buttonStyle, buttonIsActive(isMenuVisible(uiState, Menu_Build))))
+		{
+			if (isMenuVisible(uiState, Menu_Build))
+			{
+				hideMenus(uiState);
+			}
+			else
+			{
+				showMenu(uiState, Menu_Build);
+			}
+		}
+
+		if (isMenuVisible(uiState, Menu_Build))
 		{
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
-			s32 buttonMaxWidth = 0;
-			for (auto it = iterate(constructibleBuildings);
-				hasNext(&it);
-				next(&it))
-			{
-				BuildingDef *buildingDef = getValue(&it);
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(buildingDef->textAssetName), popupButtonStyle).x);
-			}
-
-			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
+			s32 popupMenuWidth = 150;
 			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
 
-			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
+			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 
 			for (auto it = iterate(constructibleBuildings);
 				hasNext(&it);
@@ -635,7 +632,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			{
 				BuildingDef *buildingDef = getValue(&it);
 
-				if (popupMenuButton(uiState, &menu, getText(buildingDef->textAssetName), popupButtonStyle,
+				if (menu.addButton(getText(buildingDef->textAssetName),
 						buttonIsActive((gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID))))
 				{
 					hideMenus(uiState);
@@ -645,7 +642,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				}
 			}
 
-			endPopupMenu(uiState, &menu);
+			menu.shrinkToContent();
+			menu.end();
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
