@@ -18,12 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Implement a scissor stack in renderer.
-- Right now, we only handle one scissor. An RenderItemType_EndScissor clears all scissor testing.
-- Instead, we want to be able to have multiple, and ending one just restores the previous one, as a stack.
-- Not sure if we want each one to intersect with its parent or just be set verbatim.
-	Our current use cases are scissors inside other scissors, so either would work fine: Doing the intersection in the renderer doesn't add anything, as it's already intersected, so keeping it verbatim is simpler and works just as well!
-
 Panels:
 	A generalisation of UIMessage, PopupMenu, etc... Anything with widgets inside basically.
 - Styles
@@ -33,6 +27,12 @@ Panels:
 - Replace PopupMenu?
 - Replace window content layout with panels?
 - Consider putting a UIState pointer in UIPanel?
+
+Implement a scissor stack in renderer.
+- Right now, we only handle one scissor. An RenderItemType_EndScissor clears all scissor testing.
+- Instead, we want to be able to have multiple, and ending one just restores the previous one, as a stack.
+- Not sure if we want each one to intersect with its parent or just be set verbatim.
+	Our current use cases are scissors inside other scissors, so either would work fine: Doing the intersection in the renderer doesn't add anything, as it's already intersected, so keeping it verbatim is simpler and works just as well!
 
 Window/UI System features:
 - Confirmation dialogs

@@ -54,7 +54,10 @@ void UIPanel::addText(String text, String styleName)
 		V2I topLeft = calculateTextPosition(origin, textSize, this->widgetAlignment);
 		Rect2I textBounds = irectPosSize(topLeft, textSize);
 
-		drawText(&renderer->uiBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
+		// if (context->doRender)
+		{
+			drawText(&renderer->uiBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
+		}
 
 		completeWidget(textSize);
 	}
@@ -205,19 +208,19 @@ void UIPanel::startNewLine(u32 hAlignment)
 {
 	DEBUG_FUNCTION();
 
-	this->currentLeft = 0;
-	this->currentRight = this->contentArea.w;
-	if (this->largestItemHeightOnLine > 0)
+	currentLeft = 0;
+	currentRight = contentArea.w;
+	if (largestItemHeightOnLine > 0)
 	{
-		this->currentY += this->largestItemHeightOnLine + this->style->contentPadding;
+		currentY += largestItemHeightOnLine + style->contentPadding;
 	}
 
-	this->largestItemHeightOnLine = 0;
+	largestItemHeightOnLine = 0;
 
 	// Only change alignment if we passed one
 	if (hAlignment != 0)
 	{
-		this->widgetAlignment = (this->widgetAlignment & ALIGN_V) | (hAlignment & ALIGN_H);
+		widgetAlignment = (widgetAlignment & ALIGN_V) | (hAlignment & ALIGN_H);
 	}
 }
 
@@ -299,7 +302,7 @@ void UIPanel::end()
 	DEBUG_FUNCTION();
 
 	// Fill in the background
-	fillDrawRectPlaceholder(this->backgroundPlaceholder, this->bounds, this->style->backgroundColor);
+	fillDrawRectPlaceholder(backgroundPlaceholder, bounds, style->backgroundColor);
 
 	// Draw the scrollbar if we have one
 
@@ -311,14 +314,14 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 {
 	Rect2I result = {};
 
-	result.x = this->contentArea.x + this->currentLeft;
-	result.y = this->contentArea.y + this->currentY;
-	result.w = this->currentRight - this->currentLeft;
+	result.x = contentArea.x + currentLeft;
+	result.y = contentArea.y + currentY;
+	result.w = currentRight - currentLeft;
 
 	// Adjust if we're in a scrolling column area
-	// if (this->columnScrollbarState != null)
+	// if (columnScrollbarState != null)
 	// {
-	// 	result.y = result.y - this->columnScrollbarState->scrollPosition;
+	// 	result.y = result.y - columnScrollbarState->scrollPosition;
 	// }
 
 	ASSERT(result.w > 0);
@@ -332,25 +335,25 @@ void UIPanel::completeWidget(V2I widgetSize)
 	
 	bool lineIsFull = false;
 
-	switch (this->widgetAlignment & ALIGN_H)
+	switch (widgetAlignment & ALIGN_H)
 	{
 		case ALIGN_LEFT: {
-			this->currentLeft += widgetSize.x + this->style->contentPadding;
+			currentLeft += widgetSize.x + style->contentPadding;
 			// Check for a full line
 			// NB: We might want to do something smarter when there's only a small remainder.
 			// Though, for now we'll just be smart about not intentionally wrapping a line.
-			if (this->currentLeft >= this->currentRight)
+			if (currentLeft >= currentRight)
 			{
 				lineIsFull = true;
 			}
 		} break;
 
 		case ALIGN_RIGHT: {
-			this->currentRight -= widgetSize.x + this->style->contentPadding;
+			currentRight -= widgetSize.x + style->contentPadding;
 			// Check for a full line
 			// NB: We might want to do something smarter when there's only a small remainder.
 			// Though, for now we'll just be smart about not intentionally wrapping a line.
-			if (this->currentLeft >= this->currentRight)
+			if (currentLeft >= currentRight)
 			{
 				lineIsFull = true;
 			}
@@ -364,8 +367,8 @@ void UIPanel::completeWidget(V2I widgetSize)
 		} break;
 	}
 
-	this->largestItemWidth        = max(this->largestItemWidth,        widgetSize.x);
-	this->largestItemHeightOnLine = max(this->largestItemHeightOnLine, widgetSize.y);
+	largestItemWidth        = max(largestItemWidth,        widgetSize.x);
+	largestItemHeightOnLine = max(largestItemHeightOnLine, widgetSize.y);
 
 	if (lineIsFull)
 	{
