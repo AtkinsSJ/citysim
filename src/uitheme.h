@@ -64,6 +64,8 @@ struct UIPanelStyle
 {
 	s32 margin;
 	s32 contentPadding;
+	u32 widgetAlignment;
+	
 	V4 backgroundColor;
 
 	UIStyleReference buttonStyle    = UIStyleReference(UIStyle_Button);
@@ -159,10 +161,12 @@ struct UIStyle
 	String name;
 
 	// PROPERTIES
+	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
 	V4 backgroundColorInactive;
 	V4 backgroundColor;
 	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
 	f32 caretFlashCycleDuration;
+	u32 widgetAlignment;
 	s32 contentPadding;
 	V4 disabledBackgroundColor;
 	FontReference font;

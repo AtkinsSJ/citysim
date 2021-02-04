@@ -36,6 +36,7 @@ void initUITheme(UITheme *theme)
 	PROP(backgroundColorInactive,  PropType_Color,     false, false, false, false, false, false, false, false,  true);
 	PROP(buttonStyle,              PropType_Style,     false, false, false, false,  true,  true, false, false,  true);
 	PROP(caretFlashCycleDuration,  PropType_Float,     false, false, false, false, false, false, false,  true, false);
+	PROP(widgetAlignment,           PropType_Alignment, false, false, false, false,  true, false, false, false, false);
 	PROP(contentPadding,           PropType_Int,       false, false, false, false,  true,  true, false, false,  true);
 	PROP(disabledBackgroundColor,  PropType_Color,      true, false, false, false, false, false, false, false, false);
 	PROP(font,                     PropType_Font,       true,  true,  true,  true, false, false, false,  true, false);
@@ -119,6 +120,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 
 			panel->margin = style->margin;
 			panel->contentPadding = style->contentPadding;
+			panel->widgetAlignment = style->widgetAlignment;
 			panel->backgroundColor = style->backgroundColor;
 
 			panel->buttonStyle = style->buttonStyle;

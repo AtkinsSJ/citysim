@@ -582,35 +582,19 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		if (isMenuVisible(uiState, Menu_Zone))
 		{
-			s32 buttonMaxWidth = 0;
-			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
-			{
-				buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle).x);
-			}
-
-			s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
-			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
-
-			// UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), "popupMenu"_s);
+			// s32 buttonMaxWidth = 0;
 			// for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			// {
-			// 	if (menu.addButton(getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle,
-			// 			buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
-			// 	{
-			// 		hideMenus(uiState);
-			// 		gameState->selectedZoneID = (ZoneType) zoneIndex;
-			// 		gameState->actionMode = ActionMode_Zone;
-			// 		setCursor("build"_s);
-			// 	}
+			// 	buttonMaxWidth = max(buttonMaxWidth, calculateButtonSize(getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle).x);
 			// }
-			// menu.end();
 
-			PopupMenu menu = beginPopupMenu(uiState, buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
+			s32 popupMenuWidth = 150;//buttonMaxWidth + (popupMenuStyle->margin * 2);
+			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
 
+			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), "popupMenu"_s);
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (popupMenuButton(uiState, &menu, getText(getZoneDef(zoneIndex).textAssetName), popupButtonStyle,
-						buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
+				if (menu.addButton(getText(getZoneDef(zoneIndex).textAssetName), buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
 				{
 					hideMenus(uiState);
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
@@ -618,8 +602,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 					setCursor("build"_s);
 				}
 			}
-
-			endPopupMenu(uiState, &menu);
+			menu.shrinkToContent();
+			menu.end();
 		}
 
 		buttonRect.x += buttonRect.w + uiPadding;

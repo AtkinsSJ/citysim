@@ -70,6 +70,7 @@ scrollbarStyle    default
 :Panel default
 margin            8
 contentPadding    4
+widgetAlignment    TOP LEFT
 backgroundColor   128 128 128 255
 labelStyle        default
 buttonStyle       default
@@ -88,6 +89,7 @@ backgroundColor    96  96 128 255
 :Panel popupMenu
 margin            8
 contentPadding    4
+widgetAlignment    TOP EXPAND_H
 backgroundColor     0   0   0 128
 buttonStyle       default
 scrollbarStyle    default

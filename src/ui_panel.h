@@ -11,7 +11,7 @@ struct UIPanel
 	UIPanel(Rect2I bounds, String styleName) : UIPanel(bounds, findPanelStyle(&assets->theme, styleName)) {}
 
 	void addText(String text, String styleName = nullString);
-	bool addButton(String text, s32 textWidth = -1, ButtonState state = Button_Normal, String styleName = nullString);
+	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
 	bool addTextInput(TextInput *textInput, String styleName = nullString);
 
 	void alignWidgets(u32 alignment);
@@ -21,6 +21,7 @@ struct UIPanel
 	UIPanel row(s32 height, Alignment vAlignment, String styleName = nullString);
 	UIPanel column(s32 width, Alignment hAlignment, String styleName = nullString);
 
+	void shrinkToContent();
 	void end();
 
 	// "Private"

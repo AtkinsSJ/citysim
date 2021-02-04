@@ -121,7 +121,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 							SavedGameInfo *savedGame = get(&it);
 							s32 index = getIndex(&it);
 
-							if (savesList.addButton(savedGame->shortName, -1, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
+							if (savesList.addButton(savedGame->shortName, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
 							{
 								// Select it and show information in the details pane
 								catalogue->selectedSavedGameIndex = index;
@@ -142,7 +142,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 			if (selectedSavedGame)
 			{
 				testPanel.alignWidgets(ALIGN_RIGHT);
-				if (testPanel.addButton(getText("button_delete_save"_s), -1, Button_Normal, "delete"_s))
+				if (testPanel.addButton(getText("button_delete_save"_s), Button_Normal, "delete"_s))
 				{
 					deleteSave(globalAppState.uiState, selectedSavedGame);
 				}
@@ -178,7 +178,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 					bottomBar.addText("Save game name:"_s);
 
 					bottomBar.alignWidgets(ALIGN_RIGHT);
-					bool pressedSave = bottomBar.addButton(getText("button_save"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled);
+					bool pressedSave = bottomBar.addButton(getText("button_save"_s), selectedSavedGame ? Button_Normal : Button_Disabled);
 
 					bottomBar.alignWidgets(ALIGN_EXPAND_H);
 					if (justClickedSavedGame)
@@ -223,7 +223,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 					}
 
 					bottomBar.alignWidgets(ALIGN_RIGHT);
-					if (bottomBar.addButton(getText("button_load"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled))
+					if (bottomBar.addButton(getText("button_load"_s), selectedSavedGame ? Button_Normal : Button_Disabled))
 					{
 						loadGame(globalAppState.uiState, selectedSavedGame);
 						// context->closeRequested = true;

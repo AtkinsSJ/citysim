@@ -18,9 +18,16 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
 
-	// TODO: make this a parameter to pass in?
-	// TODO: maybe make it a style property too?
-	this->widgetAlignment = ALIGN_TOP | ALIGN_LEFT;
+	// Default to top-left alignment if they're not specified
+	this->widgetAlignment = this->style->widgetAlignment;
+	if ((this->widgetAlignment & ALIGN_H) == 0)
+	{
+		this->widgetAlignment |= ALIGN_LEFT;
+	}
+	if ((this->widgetAlignment & ALIGN_V) == 0)
+	{
+		this->widgetAlignment |= ALIGN_TOP;
+	}
 
 	// Relative to contentArea
 	this->currentLeft= 0;
@@ -68,7 +75,7 @@ void UIPanel::addText(String text, String styleName)
 	}
 }
 
-bool UIPanel::addButton(String text, s32 textWidth, ButtonState state, String styleName)
+bool UIPanel::addButton(String text, ButtonState state, String styleName)
 {
 	DEBUG_FUNCTION();
 
@@ -88,16 +95,8 @@ bool UIPanel::addButton(String text, s32 textWidth, ButtonState state, String st
 	BitmapFont *font = getFont(&buttonStyle->font);
 	if (font)
 	{
-		s32 buttonWidth;
-		if (textWidth == -1)
-		{
-			bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-			buttonWidth = calculateButtonSize(text, buttonStyle, space.w, fillWidth).x;
-		}
-		else
-		{
-			buttonWidth = textWidth + (buttonStyle->padding * 2);
-		}
+		bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+		s32 buttonWidth = calculateButtonSize(text, buttonStyle, space.w, fillWidth).x;
 
 		V2I textSize = calculateTextSize(font, text, buttonWidth - (buttonStyle->padding * 2));
 		Rect2I buttonBounds = irectAligned(buttonOrigin, v2i(buttonWidth, textSize.y + (buttonPadding * 2)), buttonAlignment);
@@ -300,6 +299,12 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 
 		return UIPanel(columnBounds, columnStyle, false);
 	}
+}
+
+void UIPanel::shrinkToContent()
+{
+	s32 contentHeight = currentY - style->contentPadding + (2 *style->margin);
+	bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
 }
 
 void UIPanel::end()
