@@ -249,7 +249,9 @@ inline UIMessageStyle *findMessageStyle(UITheme *theme, String name)
 }
 inline UIPanelStyle *findPanelStyle(UITheme *theme, String name)
 {
-	return find(&theme->panelStyles, name);
+	auto style = find(&theme->panelStyles, name);
+	if (style == null) logError("Unable to find panel style '{0}'"_s, {name});
+	return style;
 }
 inline UIPopupMenuStyle *findPopupMenuStyle(UITheme *theme, String name)
 {

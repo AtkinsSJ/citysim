@@ -14,6 +14,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
 	}
 
 	this->isTopLevel = thisIsTopLevel;
+	this->hasAddedWidgets = false;
 	
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
@@ -36,21 +37,13 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
 
 	this->largestItemWidth = 0;
 	this->largestItemHeightOnLine = 0;
-
-	// Prepare to render background
-	// TODO: Handle backgrounds that aren't a solid colour
-	this->backgroundPlaceholder = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
-
-	// Scissor
-	// if (context->doRender)
-	{
-		addBeginScissor(&renderer->uiBuffer, rect2(bounds));
-	}
 }
 
 void UIPanel::addText(String text, String styleName)
 {
 	DEBUG_FUNCTION();
+	
+	prepareForWidgets();
 
 	UILabelStyle *labelStyle = null;
 	if (!isEmpty(styleName))  labelStyle = findLabelStyle(&assets->theme, styleName);
@@ -78,6 +71,8 @@ void UIPanel::addText(String text, String styleName)
 bool UIPanel::addButton(String text, ButtonState state, String styleName)
 {
 	DEBUG_FUNCTION();
+	
+	prepareForWidgets();
 
 	bool buttonClicked = false;
 	UIButtonStyle *buttonStyle = null;
@@ -159,6 +154,8 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 {
 	DEBUG_FUNCTION();
+	
+	prepareForWidgets();
 
 	bool result = false;
 	// if (context->doUpdate)
@@ -232,6 +229,8 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 {
 	DEBUG_FUNCTION();
 	ASSERT(vAlignment == ALIGN_TOP || vAlignment == ALIGN_BOTTOM);
+	
+	prepareForWidgets();
 
 	startNewLine();
 
@@ -267,6 +266,8 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 {
 	DEBUG_FUNCTION();
 	ASSERT(hAlignment == ALIGN_LEFT || hAlignment == ALIGN_RIGHT);
+	
+	prepareForWidgets();
 
 	startNewLine();
 
@@ -311,22 +312,42 @@ void UIPanel::end()
 {
 	DEBUG_FUNCTION();
 
-	// Fill in the background
-	fillDrawRectPlaceholder(backgroundPlaceholder, bounds, style->backgroundColor);
-
-	// Draw the scrollbar if we have one
-
-
-	// Clear any scissor stuff
-	// if (context->doRender)
+	if (hasAddedWidgets)
 	{
-		addEndScissor(&renderer->uiBuffer);
+		// if (context->doRender)
+		{
+			// Fill in the background
+			fillDrawRectPlaceholder(backgroundPlaceholder, bounds, style->backgroundColor);
+
+			// Draw the scrollbar if we have one
+
+
+			// Clear any scissor stuff
+			addEndScissor(&renderer->uiBuffer);
+		}
 	}
 
 	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
 	if (isTopLevel)
 	{
 		addUIRect(globalAppState.uiState, bounds);
+	}
+}
+
+void UIPanel::prepareForWidgets()
+{
+	if (!hasAddedWidgets)
+	{
+		// if (context->doRender)
+		{
+			addBeginScissor(&renderer->uiBuffer, rect2(bounds));
+
+			// Prepare to render background
+			// TODO: Handle backgrounds that aren't a solid colour
+			this->backgroundPlaceholder = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
+		}
+
+		hasAddedWidgets = true;
 	}
 }
 

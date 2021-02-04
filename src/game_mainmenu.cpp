@@ -91,7 +91,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	}
 
 	// This is a copy of savedGamesWindowProc() in our new system, for testing
-	if (false)
+	if (true)
 	{
 		UIPanel testPanel(irectXYWH(32, 4, 780, 580));
 		{
@@ -114,7 +114,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 				else
 				{
 					// TEMPORARY: Multiply the list so that we can test scrolling
-					for (int iteration = 0; iteration < 20; iteration++)
+					// for (int iteration = 0; iteration < 20; iteration++)
 					{
 						for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
 						{

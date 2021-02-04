@@ -24,8 +24,9 @@ Panels:
 - Actually implement them
 - Scrolling!
 - Replace UIMessage
-- Replace PopupMenu?
+- Replace PopupMenu
 - Replace window content layout with panels?
+- Replace DataView UI
 - Consider putting a UIState pointer in UIPanel?
 
 Backgrounds:
@@ -34,6 +35,8 @@ Backgrounds:
 	- Solid colour
 	- Fixed image?
 	- Nine-patch
+
+TextInput: Ctrl-delete to delete a word, like we have Ctrl-backspace already.
 
 Window/UI System features:
 - Confirmation dialogs
