@@ -13,7 +13,11 @@ struct UIPanel
 	void addText(String text, String styleName = nullString);
 	bool addButton(String text, s32 textWidth = -1, ButtonState state = Button_Normal, String styleName = nullString);
 
+	void alignWidgets(u32 alignment);
 	void startNewLine(u32 hAlignment = 0);
+
+	// 
+	UIPanel row(s32 height, Alignment vAlignment, String styleName = nullString);
 
 	void endPanel();
 
@@ -25,9 +29,12 @@ struct UIPanel
 	Rect2I bounds;
 	Rect2I contentArea;
 	u32 widgetAlignment;
+
+	// Relative to contentArea
 	s32 currentY;
 	s32 currentLeft;
 	s32 currentRight;
+	
 	s32 largestItemWidth;
 	s32 largestItemHeightOnLine;
 

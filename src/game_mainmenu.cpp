@@ -1,6 +1,5 @@
 #pragma once
 
-
 AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 {
 	DEBUG_FUNCTION();
@@ -91,13 +90,40 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 		result = AppStatus_Quit;
 	}
 
-	UIPanel testPanel(irectXYWH(32, 4, 320, 240));
+	// This is a copy of savedGamesWindowProc() in our new system, for testing
+	UIPanel testPanel(irectXYWH(32, 4, 780, 580));
 	{
+		UIPanel bottomBar = testPanel.row(26, ALIGN_BOTTOM, "plain"_s);
+
 		testPanel.addText("This is a test!"_s);
 		if (testPanel.addButton("And a button!"_s))
 		{
 			pushUiMessage(uiState, "You clicked a thing!"_s);
 		}
+
+		// Bottom bar
+		{
+			if (false) //isSaveWindow)
+			{
+
+			}
+			else
+			{
+				bottomBar.alignWidgets(ALIGN_LEFT);
+				if (bottomBar.addButton(getText("button_back"_s)))
+				{
+					// context->closeRequested = true;
+				}
+
+				bottomBar.alignWidgets(ALIGN_RIGHT);
+				if (bottomBar.addButton(getText("button_load"_s), -1))//, selectedSavedGame ? Button_Normal : Button_Disabled))
+				{
+					// loadGame(context->uiState, selectedSavedGame);
+					// context->closeRequested = true;
+				}
+			}
+		}
+		bottomBar.endPanel();
 	}
 	testPanel.endPanel();
 

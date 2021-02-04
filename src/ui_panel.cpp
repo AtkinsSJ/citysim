@@ -18,8 +18,9 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle)
 
 	// TODO: make this a parameter to pass in?
 	// TODO: maybe make it a style property too?
-	this->widgetAlignment = ALIGN_TOP | ALIGN_EXPAND_H;
+	this->widgetAlignment = ALIGN_TOP | ALIGN_LEFT;
 
+	// Relative to contentArea
 	this->currentLeft= 0;
 	this->currentRight = this->contentArea.w;
 	this->currentY = 0;
@@ -148,6 +149,11 @@ bool UIPanel::addButton(String text, s32 textWidth, ButtonState state, String st
 	return buttonClicked;
 }
 
+void UIPanel::alignWidgets(u32 alignment)
+{
+	widgetAlignment = (widgetAlignment & ALIGN_V) | (alignment & ALIGN_H);
+}
+
 void UIPanel::startNewLine(u32 hAlignment)
 {
 	DEBUG_FUNCTION();
@@ -165,6 +171,44 @@ void UIPanel::startNewLine(u32 hAlignment)
 	if (hAlignment != 0)
 	{
 		this->widgetAlignment = (this->widgetAlignment & ALIGN_V) | (hAlignment & ALIGN_H);
+	}
+}
+
+UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
+{
+	ASSERT(vAlignment == ALIGN_TOP || vAlignment == ALIGN_BOTTOM);
+
+	startNewLine();
+
+	UIPanelStyle *rowStyle = null;
+	if (!isEmpty(styleName)) rowStyle = findPanelStyle(&assets->theme, styleName);
+	if (rowStyle == null)    rowStyle = this->style;
+
+	if (vAlignment == ALIGN_TOP)
+	{
+		Rect2I rowBounds = irectXYWH(
+			contentArea.x + currentLeft,
+			contentArea.y + currentY,
+			currentRight - currentLeft,
+			height
+		);
+
+		completeWidget(rowBounds.size);
+
+		return UIPanel(rowBounds, rowStyle);
+	}
+	else
+	{
+		Rect2I rowBounds = irectXYWH(
+			contentArea.x + currentLeft,
+			contentArea.y + contentArea.h - height,
+			currentRight - currentLeft,
+			height
+		);
+
+		contentArea.h -= height;
+
+		return UIPanel(rowBounds, rowStyle);
 	}
 }
 
