@@ -74,6 +74,7 @@ backgroundColor   128 128 128 255
 labelStyle        default
 buttonStyle       default
 scrollbarStyle    default
+textInputStyle    default
 
 :Panel inset
 extends default

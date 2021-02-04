@@ -50,7 +50,7 @@ void initUITheme(UITheme *theme)
 	PROP(showCaret,                PropType_Bool,      false, false, false, false, false, false, false,  true, false);
 	PROP(textAlignment,            PropType_Alignment,  true, false, false, false, false, false, false,  true, false);
 	PROP(textColor,                PropType_Color,      true, false,  true,  true, false, false, false,  true, false);
-	PROP(textInputStyle,           PropType_Style,     false,  true, false, false, false, false, false, false, false);
+	PROP(textInputStyle,           PropType_Style,     false,  true, false, false,  true, false, false, false, false);
 	PROP(titleBarButtonHoverColor, PropType_Color,     false, false, false, false, false, false, false, false,  true);
 	PROP(titleBarColor,            PropType_Color,     false, false, false, false, false, false, false, false,  true);
 	PROP(titleBarColorInactive,    PropType_Color,     false, false, false, false, false, false, false, false,  true);
@@ -124,6 +124,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			panel->buttonStyle = style->buttonStyle;
 			panel->labelStyle = style->labelStyle;
 			panel->scrollbarStyle = style->scrollbarStyle;
+			panel->textInputStyle = style->textInputStyle;
 		} break;
 
 		case UIStyle_PopupMenu: {

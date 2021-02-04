@@ -149,6 +149,53 @@ bool UIPanel::addButton(String text, s32 textWidth, ButtonState state, String st
 	return buttonClicked;
 }
 
+bool UIPanel::addTextInput(TextInput *textInput, String styleName)
+{
+	DEBUG_FUNCTION();
+
+	bool result = false;
+	// if (context->doUpdate)
+	{
+		result = updateTextInput(textInput);
+	}
+
+	UITextInputStyle *textInputStyle = null;
+	if (!isEmpty(styleName))  textInputStyle = findTextInputStyle(&assets->theme, styleName);
+	if (textInputStyle == null)        textInputStyle = findStyle<UITextInputStyle>(&assets->theme, &this->style->textInputStyle);
+
+	s32 alignment = this->widgetAlignment;
+	Rect2I space = getCurrentLayoutPosition();
+	V2I origin = alignWithinRectangle(space, alignment);
+
+	BitmapFont *font = getFont(&textInputStyle->font);
+	if (font)
+	{
+		bool fillWidth = ((alignment & ALIGN_H) == ALIGN_EXPAND_H);
+		V2I textInputSize = calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
+		Rect2I textInputBounds = irectAligned(origin, textInputSize, alignment);
+
+		// if (context->doRender)
+		{
+			drawTextInput(&renderer->uiBuffer, textInput, textInputStyle, textInputBounds);
+		}
+
+		// if (context->doUpdate)
+		{
+			// Capture the input focus if we just clicked on this TextInput
+			if (justClickedOnUI(globalAppState.uiState, textInputBounds))
+			{
+				globalAppState.uiState->mouseInputHandled = true;
+				captureInput(textInput);
+				textInput->caretFlashCounter = 0;
+			}
+		}
+
+		completeWidget(textInputSize);
+	}
+
+	return result;
+}
+
 void UIPanel::alignWidgets(u32 alignment)
 {
 	widgetAlignment = (widgetAlignment & ALIGN_V) | (alignment & ALIGN_H);
@@ -176,6 +223,7 @@ void UIPanel::startNewLine(u32 hAlignment)
 
 UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 {
+	DEBUG_FUNCTION();
 	ASSERT(vAlignment == ALIGN_TOP || vAlignment == ALIGN_BOTTOM);
 
 	startNewLine();
@@ -210,6 +258,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 {
+	DEBUG_FUNCTION();
 	ASSERT(hAlignment == ALIGN_LEFT || hAlignment == ALIGN_RIGHT);
 
 	startNewLine();

@@ -69,6 +69,7 @@ struct UIPanelStyle
 	UIStyleReference buttonStyle    = UIStyleReference(UIStyle_Button);
 	UIStyleReference labelStyle     = UIStyleReference(UIStyle_Label);
 	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
+	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
 };
 
 // @Deprecated - will use Panels

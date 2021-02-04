@@ -181,7 +181,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 					append(&catalogue->saveGameName, selectedSavedGame->shortName);
 				}
 
-				bool pressedEnterInTextInput = false;//window_textInput(context, &catalogue->saveGameName);
+				bool pressedEnterInTextInput = bottomBar.addTextInput(&catalogue->saveGameName);
 				String inputName = trim(textInputToString(&catalogue->saveGameName));
 
 				// Show a warning if we're overwriting an existing save that ISN'T the active one

@@ -12,6 +12,7 @@ struct UIPanel
 
 	void addText(String text, String styleName = nullString);
 	bool addButton(String text, s32 textWidth = -1, ButtonState state = Button_Normal, String styleName = nullString);
+	bool addTextInput(TextInput *textInput, String styleName = nullString);
 
 	void alignWidgets(u32 alignment);
 	void startNewLine(u32 hAlignment = 0);
