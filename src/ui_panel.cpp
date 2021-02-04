@@ -1,6 +1,6 @@
 #pragma once
 
-UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle)
+UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
 {
 	DEBUG_FUNCTION();
 
@@ -12,6 +12,8 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle)
 	{
 		this->style = panelStyle;
 	}
+
+	this->isTopLevel = thisIsTopLevel;
 	
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
@@ -37,8 +39,6 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle)
 	{
 		addBeginScissor(&renderer->uiBuffer, rect2(bounds));
 	}
-
-	// TODO: UI Rect?
 }
 
 void UIPanel::addText(String text, String styleName)
@@ -249,7 +249,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 		completeWidget(rowBounds.size);
 
-		return UIPanel(rowBounds, rowStyle);
+		return UIPanel(rowBounds, rowStyle, false);
 	}
 	else
 	{
@@ -260,7 +260,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 		contentArea.h -= height + style->contentPadding;
 
-		return UIPanel(rowBounds, rowStyle);
+		return UIPanel(rowBounds, rowStyle, false);
 	}
 }
 
@@ -286,7 +286,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.x += width + style->contentPadding;
 		startNewLine();
 
-		return UIPanel(columnBounds, columnStyle);
+		return UIPanel(columnBounds, columnStyle, false);
 	}
 	else
 	{
@@ -298,7 +298,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.w -= width + style->contentPadding;
 		startNewLine();
 
-		return UIPanel(columnBounds, columnStyle);
+		return UIPanel(columnBounds, columnStyle, false);
 	}
 }
 
@@ -316,6 +316,12 @@ void UIPanel::end()
 	// if (context->doRender)
 	{
 		addEndScissor(&renderer->uiBuffer);
+	}
+
+	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
+	if (isTopLevel)
+	{
+		addUIRect(globalAppState.uiState, bounds);
 	}
 }
 

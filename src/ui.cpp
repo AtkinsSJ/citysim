@@ -39,6 +39,11 @@ inline bool justClickedOnUI(UIState *uiState, Rect2I bounds)
 	return result;
 }
 
+void addUIRect(UIState *uiState, Rect2I bounds)
+{
+	append(&uiState->uiRects, bounds);
+}
+
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
 {
 	DEBUG_FUNCTION();
@@ -388,7 +393,7 @@ void endPopupMenu(UIState *uiState, PopupMenu *menu)
 
 	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(contentHeight + menu->style->margin, menu->maxHeight));
 
-	append(&uiState->uiRects, menuRect);
+	addUIRect(uiState, menuRect);
 	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
 	uiState->isInputScissorActive = false;
 	addEndScissor(&renderer->uiBuffer);

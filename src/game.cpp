@@ -477,7 +477,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	s32 toolbarBottom = 64;
 
 	Rect2I uiRect = irectXYWH(0,0, windowWidth, toolbarBottom);
-	append(&uiState->uiRects, uiRect);
+	addUIRect(uiState, uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
 
 	uiText(uiBuffer, font, city->name,
@@ -1312,7 +1312,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 		Rect2I dataViewUIBounds = irectXYWH(uiPos.x - uiPadding, uiPos.y - uiPadding, dataViewUIWidth + (uiPadding*2), dataViewButtonBounds.y + dataViewButtonBounds.h - uiPos.y + (uiPadding*2));
 		fillDrawRectPlaceholder(dataViewUIBackground, dataViewUIBounds, theme->overlayColor);
-		append(&uiState->uiRects, dataViewUIBounds);
+		addUIRect(uiState, dataViewUIBounds);
 	}
 	else
 	{

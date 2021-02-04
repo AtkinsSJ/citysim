@@ -7,7 +7,7 @@
 
 struct UIPanel
 {
-	UIPanel(Rect2I bounds, UIPanelStyle *style = null);
+	UIPanel(Rect2I bounds, UIPanelStyle *style = null, bool isTopLevel = true);
 	UIPanel(Rect2I bounds, String styleName) : UIPanel(bounds, findPanelStyle(&assets->theme, styleName)) {}
 
 	void addText(String text, String styleName = nullString);
@@ -27,6 +27,8 @@ struct UIPanel
 
 	Rect2I getCurrentLayoutPosition();
 	void completeWidget(V2I widgetSize);
+
+	bool isTopLevel;
 
 	Rect2I bounds;
 	Rect2I contentArea;

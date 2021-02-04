@@ -28,6 +28,13 @@ Panels:
 - Replace window content layout with panels?
 - Consider putting a UIState pointer in UIPanel?
 
+Backgrounds:
+- A general struct that abstracts how different backgrounds are drawn, so that eg a Panel can just say it has a background, call prepareBackgroundPlaceholder() and fillBackgroundPlaceholder() (or something) and be done.
+- Kinds:
+	- Solid colour
+	- Fixed image?
+	- Nine-patch
+
 Window/UI System features:
 - Confirmation dialogs
 - Frames
