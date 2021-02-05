@@ -25,7 +25,12 @@
 struct UIPanel
 {
 	UIPanel(Rect2I bounds, UIPanelStyle *style = null, bool isTopLevel = true);
-	UIPanel(Rect2I bounds, String styleName) : UIPanel(bounds, findPanelStyle(&assets->theme, styleName)) {}
+	UIPanel(Rect2I bounds, String styleName)
+		: UIPanel(bounds, findPanelStyle(&assets->theme, styleName)) {}
+
+	// NB: These decrease the content area, so call them before adding elements that should scroll
+	void enableHorizontalScrolling(ScrollbarState *hScrollbar);
+	void enableVerticalScrolling(ScrollbarState *vScrollbar);
 
 	void addText(String text, String styleName = nullString);
 	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
@@ -54,6 +59,11 @@ struct UIPanel
 	Rect2I bounds;
 	Rect2I contentArea;
 	u32 widgetAlignment;
+
+	ScrollbarState *hScrollbar;
+	Rect2I hScrollbarBounds;
+	ScrollbarState *vScrollbar;
+	Rect2I vScrollbarBounds;
 
 	// Relative to contentArea
 	s32 currentY;

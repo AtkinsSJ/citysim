@@ -105,6 +105,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 
 			UIPanel savesList = testPanel.column(320, ALIGN_LEFT, "inset"_s);
 			{
+				savesList.enableVerticalScrolling(&catalogue->savedGamesListScrollbar);
 				savesList.alignWidgets(ALIGN_EXPAND_H);
 
 				if (catalogue->savedGames.count == 0)
@@ -114,7 +115,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 				else
 				{
 					// TEMPORARY: Multiply the list so that we can test scrolling
-					// for (int iteration = 0; iteration < 20; iteration++)
+					for (int iteration = 0; iteration < 20; iteration++)
 					{
 						for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
 						{

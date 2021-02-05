@@ -30,6 +30,9 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
 		this->widgetAlignment |= ALIGN_TOP;
 	}
 
+	this->hScrollbar = null;
+	this->vScrollbar = null;
+
 	// Relative to contentArea
 	this->currentLeft= 0;
 	this->currentRight = this->contentArea.w;
@@ -37,6 +40,29 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
 
 	this->largestItemWidth = 0;
 	this->largestItemHeightOnLine = 0;
+}
+
+void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
+{
+	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+	ASSERT(scrollbarStyle != null);
+
+	this->hScrollbar = scrollbarState;
+	this->hScrollbarBounds = irectXYWH(bounds.x, bounds.y + bounds.h - scrollbarStyle->width, bounds.w, scrollbarStyle->width);
+
+	this->contentArea.h -= scrollbarStyle->width;
+}
+
+void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState)
+{
+	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+	ASSERT(scrollbarStyle != null);
+	
+	this->vScrollbar = scrollbarState;
+	this->vScrollbarBounds = irectXYWH(bounds.x + bounds.w - scrollbarStyle->width, bounds.y, scrollbarStyle->width, bounds.h);
+
+	this->contentArea.w -= scrollbarStyle->width;
+	this->currentRight -= scrollbarStyle->width;
 }
 
 void UIPanel::addText(String text, String styleName)
@@ -47,7 +73,7 @@ void UIPanel::addText(String text, String styleName)
 
 	UILabelStyle *labelStyle = null;
 	if (!isEmpty(styleName))  labelStyle = findLabelStyle(&assets->theme, styleName);
-	if (labelStyle == null)        labelStyle = findStyle<UILabelStyle>(&assets->theme, &this->style->labelStyle);
+	if (labelStyle == null)   labelStyle = findStyle<UILabelStyle>(&assets->theme, &this->style->labelStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
@@ -74,7 +100,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	
 	prepareForWidgets();
 
-	bool buttonClicked = false;
+	bool buttonWasClicked = false;
 	UIButtonStyle *buttonStyle = null;
 	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(&assets->theme, styleName);
 	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&assets->theme, &this->style->buttonStyle);
@@ -140,7 +166,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 			if ((state != Button_Disabled)
 			 && justClickedOnUI(uiState, buttonBounds))
 			{
-				buttonClicked = true;
+				buttonWasClicked = true;
 				uiState->mouseInputHandled = true;
 			}
 		}
@@ -148,7 +174,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 		completeWidget(buttonBounds.size);
 	}
 
-	return buttonClicked;
+	return buttonWasClicked;
 }
 
 bool UIPanel::addTextInput(TextInput *textInput, String styleName)
@@ -306,31 +332,76 @@ void UIPanel::shrinkToContent()
 {
 	s32 contentHeight = currentY - style->contentPadding + (2 *style->margin);
 	bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
+
+	hScrollbarBounds.w = bounds.w;
+	vScrollbarBounds.h = bounds.h;
 }
 
 void UIPanel::end()
 {
 	DEBUG_FUNCTION();
+	UIState *uiState = globalAppState.uiState;
 
-	if (hasAddedWidgets)
+	if (!hasAddedWidgets)
 	{
 		// if (context->doRender)
 		{
-			// Fill in the background
-			fillDrawRectPlaceholder(backgroundPlaceholder, bounds, style->backgroundColor);
+			addBeginScissor(&renderer->uiBuffer, rect2(bounds));
 
-			// Draw the scrollbar if we have one
-
-
-			// Clear any scissor stuff
-			addEndScissor(&renderer->uiBuffer);
+			// Prepare to render background
+			// TODO: Handle backgrounds that aren't a solid colour
+			this->backgroundPlaceholder = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 		}
+	}
+
+	// Handle scrollbars
+	if (hScrollbar)
+	{
+		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+
+		// if (context->doUpdate)
+		{
+			updateScrollbar(uiState, hScrollbar, currentLeft + style->margin, hScrollbarBounds, scrollbarStyle);
+		}
+
+		f32 scrollPercent = getScrollbarPercent(hScrollbar, hScrollbarBounds.h);
+
+		// if (context->doRender)
+		{
+			drawScrollbar(&renderer->uiBuffer, scrollPercent, hScrollbarBounds.pos, hScrollbarBounds.h, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+		}
+	}
+
+	if (vScrollbar)
+	{
+		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+
+		// if (context->doUpdate)
+		{
+			updateScrollbar(uiState, vScrollbar, currentY + style->margin, vScrollbarBounds, scrollbarStyle);
+		}
+
+		f32 scrollPercent = getScrollbarPercent(vScrollbar, vScrollbarBounds.h);
+
+		// if (context->doRender)
+		{
+			drawScrollbar(&renderer->uiBuffer, scrollPercent, vScrollbarBounds.pos, vScrollbarBounds.h, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+		}
+	}
+
+	// if (context->doRender)
+	{
+		// Fill in the background
+		fillDrawRectPlaceholder(backgroundPlaceholder, bounds, style->backgroundColor);
+
+		// Clear any scissor stuff
+		addEndScissor(&renderer->uiBuffer);
 	}
 
 	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
 	if (isTopLevel)
 	{
-		addUIRect(globalAppState.uiState, bounds);
+		addUIRect(uiState, bounds);
 	}
 }
 
@@ -360,10 +431,15 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 	result.w = currentRight - currentLeft;
 
 	// Adjust if we're in a scrolling column area
-	// if (columnScrollbarState != null)
-	// {
-	// 	result.y = result.y - columnScrollbarState->scrollPosition;
-	// }
+	if (hScrollbar != null)
+	{
+		result.x = result.x - hScrollbar->scrollPosition;
+	}
+
+	if (vScrollbar != null)
+	{
+		result.y = result.y - vScrollbar->scrollPosition;
+	}
 
 	ASSERT(result.w > 0);
 
