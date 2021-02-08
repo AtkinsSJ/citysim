@@ -28,14 +28,16 @@ struct UIPanel
 	UIPanel(Rect2I bounds, String styleName)
 		: UIPanel(bounds, findPanelStyle(&assets->theme, styleName)) {}
 
-	// NB: These decrease the content area, so call them before adding elements that should scroll
+	// Configuration functions, which should be called before adding any widgets
 	void enableHorizontalScrolling(ScrollbarState *hScrollbar);
 	void enableVerticalScrolling(ScrollbarState *vScrollbar, bool expandWidth=false);
 
+	// Add stuff to the panel
 	void addText(String text, String styleName = nullString);
 	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
 	bool addTextInput(TextInput *textInput, String styleName = nullString);
 
+	// Layout options
 	void alignWidgets(u32 alignment);
 	void startNewLine(u32 hAlignment = 0);
 
@@ -44,14 +46,15 @@ struct UIPanel
 	UIPanel row(s32 height, Alignment vAlignment, String styleName = nullString);
 	UIPanel column(s32 width, Alignment hAlignment, String styleName = nullString);
 
-	void shrinkToContent();
-	void end();
+	void end(bool shinkToContentHeight = false);
 
 	// "Private"
-
 	void prepareForWidgets();
 	Rect2I getCurrentLayoutPosition();
 	void completeWidget(V2I widgetSize);
+
+	// Call after modifying the contentArea. Updates the positions fields to match.
+	void updateLayoutPosition();
 
 	bool isTopLevel;
 	bool hasAddedWidgets;

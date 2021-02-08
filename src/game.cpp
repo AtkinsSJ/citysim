@@ -589,8 +589,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 					setCursor("build"_s);
 				}
 			}
-			menu.shrinkToContent();
-			menu.end();
+			menu.end(true);
 		}
 
 		buttonRect.x += buttonRect.w + uiPadding;
@@ -628,8 +627,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				}
 			}
 
-			menu.shrinkToContent();
-			menu.end();
+			menu.end(true);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
@@ -1225,8 +1223,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 			}
 		}
 
-		menu.shrinkToContent();
-		menu.end();
+		menu.end(true);
 	}
 
 	// Data-view info

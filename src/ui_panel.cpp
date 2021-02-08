@@ -51,6 +51,7 @@ void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 	this->hScrollbarBounds = irectXYWH(bounds.x, bounds.y + bounds.h - scrollbarStyle->width, bounds.w, scrollbarStyle->width);
 
 	this->contentArea.h -= scrollbarStyle->width;
+	updateLayoutPosition();
 }
 
 void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expandWidth)
@@ -71,6 +72,7 @@ void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expan
 	{
 		this->contentArea.w -= scrollbarStyle->width;
 		this->currentRight -= scrollbarStyle->width;
+		updateLayoutPosition();
 	}
 }
 
@@ -281,6 +283,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 		);
 
 		completeWidget(rowBounds.size);
+		updateLayoutPosition();
 
 		return UIPanel(rowBounds, rowStyle, false);
 	}
@@ -292,6 +295,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 		);
 
 		contentArea.h -= height + style->contentPadding;
+		updateLayoutPosition();
 
 		return UIPanel(rowBounds, rowStyle, false);
 	}
@@ -319,7 +323,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 
 		contentArea.w -= width + style->contentPadding;
 		contentArea.x += width + style->contentPadding;
-		startNewLine();
+		updateLayoutPosition();
 
 		return UIPanel(columnBounds, columnStyle, false);
 	}
@@ -331,25 +335,25 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		);
 
 		contentArea.w -= width + style->contentPadding;
-		startNewLine();
+		updateLayoutPosition();
 
 		return UIPanel(columnBounds, columnStyle, false);
 	}
 }
 
-void UIPanel::shrinkToContent()
-{
-	s32 contentHeight = currentY - style->contentPadding + (2 *style->margin);
-	bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
-
-	hScrollbarBounds.w = bounds.w;
-	vScrollbarBounds.h = bounds.h;
-}
-
-void UIPanel::end()
+void UIPanel::end(bool shrinkToContentHeight)
 {
 	DEBUG_FUNCTION();
 	UIState *uiState = globalAppState.uiState;
+
+	if (shrinkToContentHeight)
+	{
+		s32 contentHeight = currentY - style->contentPadding + (2 *style->margin);
+		bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
+
+		hScrollbarBounds.w = bounds.w;
+		vScrollbarBounds.h = bounds.h;
+	}
 
 	if (!hasAddedWidgets)
 	{
@@ -505,4 +509,10 @@ void UIPanel::completeWidget(V2I widgetSize)
 		// New line with the same alignment
 		startNewLine();
 	}
+}
+
+void UIPanel::updateLayoutPosition()
+{
+	currentLeft = max(0, currentLeft);
+	currentRight = min(contentArea.w, currentRight);
 }
