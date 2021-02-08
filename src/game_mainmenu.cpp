@@ -91,7 +91,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	}
 
 	// This is a copy of savedGamesWindowProc() in our new system, for testing
-	if (true)
+	if (false)
 	{
 		UIPanel testPanel(irectXYWH(32, 4, 780, 580));
 		{

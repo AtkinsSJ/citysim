@@ -569,14 +569,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.size = calculateButtonSize(zoneButtonText, buttonStyle);
 		if (uiButton(uiState, zoneButtonText, buttonRect, buttonStyle, buttonIsActive(isMenuVisible(uiState, Menu_Zone))))
 		{
-			if (isMenuVisible(uiState, Menu_Zone))
-			{
-				hideMenus(uiState);
-			}
-			else
-			{
-				showMenu(uiState, Menu_Zone);
-			}
+			toggleMenuVisible(uiState, Menu_Zone);
 		}
 
 		if (isMenuVisible(uiState, Menu_Zone))
@@ -607,14 +600,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.size = calculateButtonSize(buildButtonText, buttonStyle);
 		if (uiButton(uiState, buildButtonText, buttonRect, buttonStyle, buttonIsActive(isMenuVisible(uiState, Menu_Build))))
 		{
-			if (isMenuVisible(uiState, Menu_Build))
-			{
-				hideMenus(uiState);
-			}
-			else
-			{
-				showMenu(uiState, Menu_Build);
-			}
+			toggleMenuVisible(uiState, Menu_Build);
 		}
 
 		if (isMenuVisible(uiState, Menu_Build))
@@ -1184,44 +1170,63 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
 	UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
-	UIPopupMenuStyle *popupMenuStyle = findPopupMenuStyle(theme, "default"_s);
-	UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuStyle->buttonStyle);
+	UIPanelStyle *popupMenuPanelStyle = findPanelStyle(theme, "popupMenu"_s);
 
 	// Data-views menu
 	RenderItem_DrawSingleRect *dataViewUIBackground = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
 	String dataViewButtonText = getText("button_data_views"_s);
 	V2I dataViewButtonSize = calculateButtonSize(dataViewButtonText, buttonStyle);
 	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, windowHeight - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
-	if (uiMenuButton(uiState, dataViewButtonText, dataViewButtonBounds, Menu_DataViews, buttonStyle))
+	if (uiButton(uiState, dataViewButtonText, dataViewButtonBounds, buttonStyle))
 	{
+		toggleMenuVisible(uiState, Menu_DataViews);
+	}
+
+	if (isMenuVisible(uiState, Menu_DataViews))
+	{
+		// Measure the menu contents
+		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuPanelStyle->buttonStyle);
 		s32 buttonMaxWidth = 0;
-		s32 menuContentHeight = (DataViewCount - 1) * popupMenuStyle->contentPadding;
+		s32 buttonMaxHeight = 0;
+		s32 menuContentHeight = (DataViewCount - 1) * popupMenuPanelStyle->contentPadding;
 		for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1))
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
 			V2I buttonSize = calculateButtonSize(buttonText, popupButtonStyle);
 			buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
+			buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
 			menuContentHeight += buttonSize.y;
 		}
-		s32 popupMenuWidth = buttonMaxWidth + (popupMenuStyle->margin * 2);
+		s32 popupMenuWidth = buttonMaxWidth + (popupMenuPanelStyle->margin * 2);
 		s32 popupMenuMaxHeight = windowHeight - 128;
+		s32 estimatedMenuHeight = 10 * ((DataViewCount * buttonMaxHeight)
+								+ ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
+								+ (popupMenuPanelStyle->margin * 2));
 
-		s32 menuY = dataViewButtonBounds.y - min(popupMenuMaxHeight, (menuContentHeight + 2*popupMenuStyle->margin));
+		s32 menuY = dataViewButtonBounds.y - clamp(estimatedMenuHeight, menuContentHeight + 2*popupMenuPanelStyle->margin, popupMenuMaxHeight);
 
-		PopupMenu menu = beginPopupMenu(uiState, dataViewButtonBounds.x - popupMenuStyle->margin, menuY, popupMenuWidth, popupMenuMaxHeight, popupMenuStyle);
+		UIPanel menu = UIPanel(irectXYWH(dataViewButtonBounds.x - popupMenuPanelStyle->margin + 20, menuY, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+
+		// Enable scrolling if there's too many items to fit
+		if (estimatedMenuHeight > popupMenuMaxHeight)
+		{
+			menu.enableVerticalScrolling(&uiState->openMenuScrollbar, true);
+		}
 
 		for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1))
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
 
-			if (popupMenuButton(uiState, &menu, buttonText, popupButtonStyle, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
+			for (int i=0; i < 10; i++)
+			if (menu.addButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
 			{
 				hideMenus(uiState);
 				gameState->dataLayerToDraw = dataViewID;
 			}
 		}
 
-		endPopupMenu(uiState, &menu);
+		menu.shrinkToContent();
+		menu.end();
 	}
 
 	// Data-view info

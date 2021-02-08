@@ -30,7 +30,7 @@ struct UIPanel
 
 	// NB: These decrease the content area, so call them before adding elements that should scroll
 	void enableHorizontalScrolling(ScrollbarState *hScrollbar);
-	void enableVerticalScrolling(ScrollbarState *vScrollbar);
+	void enableVerticalScrolling(ScrollbarState *vScrollbar, bool expandWidth=false);
 
 	void addText(String text, String styleName = nullString);
 	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);

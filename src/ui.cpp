@@ -341,6 +341,18 @@ inline void hideMenus(UIState *uiState)
 	uiState->openMenu = 0;
 }
 
+inline void toggleMenuVisible(UIState *uiState, s32 menuID)
+{
+	if (isMenuVisible(uiState, menuID))
+	{
+		hideMenus(uiState);
+	}
+	else
+	{
+		showMenu(uiState, menuID);
+	}
+}
+
 inline bool isMenuVisible(UIState *uiState, s32 menuID)
 {
 	return (uiState->openMenu == menuID);

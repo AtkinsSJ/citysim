@@ -53,16 +53,25 @@ void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 	this->contentArea.h -= scrollbarStyle->width;
 }
 
-void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState)
+void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expandWidth)
 {
 	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
 	ASSERT(scrollbarStyle != null);
-	
-	this->vScrollbar = scrollbarState;
-	this->vScrollbarBounds = irectXYWH(bounds.x + bounds.w - scrollbarStyle->width, bounds.y, scrollbarStyle->width, bounds.h);
 
-	this->contentArea.w -= scrollbarStyle->width;
-	this->currentRight -= scrollbarStyle->width;
+	this->vScrollbar = scrollbarState;
+
+	s32 scrollbarX = bounds.x + bounds.w - (expandWidth ? 0 : scrollbarStyle->width);
+	this->vScrollbarBounds = irectXYWH(scrollbarX, bounds.y, scrollbarStyle->width, bounds.h);
+
+	if (expandWidth)
+	{
+		this->bounds.w += scrollbarStyle->width;
+	}
+	else
+	{
+		this->contentArea.w -= scrollbarStyle->width;
+		this->currentRight -= scrollbarStyle->width;
+	}
 }
 
 void UIPanel::addText(String text, String styleName)

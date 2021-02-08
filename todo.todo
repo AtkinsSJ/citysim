@@ -21,8 +21,8 @@ Notes for searching:
 Panels:
 	A generalisation of UIMessage, PopupMenu, etc... Anything with widgets inside basically.
 - Styles
-- Actually implement them
-- Scrolling!
+✔ Actually implement them
+✔ Scrolling!
 - Replace UIMessage
 - Replace PopupMenu
 - Replace window content layout with panels?

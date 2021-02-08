@@ -79,6 +79,7 @@ void basicTooltipWindowProc(WindowContext *context, void *userData);
 
 void showMenu(UIState *uiState, s32 menuID);
 void hideMenus(UIState *uiState);
+void toggleMenuVisible(UIState *uiState, s32 menuID);
 bool isMenuVisible(UIState *uiState, s32 menuID);
 
 struct PopupMenu
