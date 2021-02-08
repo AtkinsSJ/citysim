@@ -53,13 +53,6 @@ textColor           0 255   0 255
 font              normal
 textColor         255   0   0 255
 
-# ui message and tooltip seem a little redundant with other things
-:UIMessage default
-font              normal
-textColor         255 255 255 255
-backgroundColor     0   0   0 128
-padding           4
-
 :Panel default
 margin            8
 contentPadding    4
@@ -86,6 +79,12 @@ widgetAlignment    TOP EXPAND_H
 backgroundColor     0   0   0 128
 buttonStyle       default
 scrollbarStyle    default
+
+:Panel toast
+labelStyle        default
+backgroundColor     0   0   0 128
+margin            8
+contentPadding    4
 
 :Scrollbar default
 backgroundColor       0 128 0 255

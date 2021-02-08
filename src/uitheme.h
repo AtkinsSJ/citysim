@@ -11,7 +11,6 @@ enum UIStyleType {
 	UIStyle_Button = 1,
 	UIStyle_Console,
 	UIStyle_Label,
-	UIStyle_UIMessage,
 	UIStyle_Panel,
 	UIStyle_Scrollbar,
 	UIStyle_TextInput,
@@ -47,16 +46,6 @@ struct UILabelStyle
 {
 	FontReference font;
 	V4 textColor;
-};
-
-// @Deprecated - will use Panels
-struct UIMessageStyle
-{
-	FontReference font;
-	V4 textColor;
-
-	V4 backgroundColor;
-	s32 padding;
 };
 
 struct UIPanelStyle
@@ -205,7 +194,6 @@ struct UITheme
 	HashTable<UIButtonStyle>    buttonStyles;
 	HashTable<UIConsoleStyle>   consoleStyles;
 	HashTable<UILabelStyle>     labelStyles;
-	HashTable<UIMessageStyle>   messageStyles;
 	HashTable<UIPanelStyle>     panelStyles;
 	HashTable<UIScrollbarStyle> scrollbarStyles;
 	HashTable<UITextInputStyle> textInputStyles;
@@ -229,10 +217,6 @@ inline UIConsoleStyle *findConsoleStyle(UITheme *theme, String name)
 inline UILabelStyle *findLabelStyle(UITheme *theme, String name)
 {
 	return find(&theme->labelStyles, name);
-}
-inline UIMessageStyle *findMessageStyle(UITheme *theme, String name)
-{
-	return find(&theme->messageStyles, name);
 }
 inline UIPanelStyle *findPanelStyle(UITheme *theme, String name)
 {

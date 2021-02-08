@@ -20,14 +20,16 @@ Notes for searching:
 
 Panels:
 	A generalisation of UIMessage, PopupMenu, etc... Anything with widgets inside basically.
-- Styles
+✔ Styles
 ✔ Actually implement them
 ✔ Scrolling!
-- Replace UIMessage
+✔ Replace UIMessage
 ✔ Replace PopupMenu
 - Replace window content layout with panels?
 - Replace DataView UI
 - Consider putting a UIState pointer in UIPanel?
+
+BUG: Can't save games without selecting an existing one
 
 Backgrounds:
 - A general struct that abstracts how different backgrounds are drawn, so that eg a Panel can just say it has a background, call prepareBackgroundPlaceholder() and fillBackgroundPlaceholder() (or something) and be done.
@@ -35,6 +37,17 @@ Backgrounds:
 	- Solid colour
 	- Fixed image?
 	- Nine-patch
+
+Scrollbar improvements:
+- Convert drawScrollbar() to take a ScrollbarState
+	-> need to convert the console to using a ScrollbarState first
+- Increase the bar size to something more reasonable
+- Add support for horizontal scrollbars
+
+UIMessage:
+- Rename to Toast, because that's what I call them
+- Queue them, instead of having one that's overwritten
+- Animate them, with some kind of tweening system, so they pop up and down again
 
 TextInput: Ctrl-delete to delete a word, like we have Ctrl-backspace already.
 

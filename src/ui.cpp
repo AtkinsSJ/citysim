@@ -68,7 +68,7 @@ inline Rect2I getInputScissorRect(UIState *uiState)
 	{
 		result = irectInfinity();
 	}
-	
+
 	return result;
 }
 
@@ -248,38 +248,23 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIMessageStyle *style = findMessageStyle(&assets->theme, "default"_s);
+			UIPanelStyle *style = findPanelStyle(&assets->theme, "toast"_s);
 
-			f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
-
-			V4 backgroundColor = style->backgroundColor;
-			V4 textColor = style->textColor;
-
-			if (t < 0.2f)
-			{
-				// Fade out
-				f32 tt = t / 0.2f;
-				backgroundColor *= lerp<f32>(0, backgroundColor.a, tt);
-				textColor *= lerp<f32>(0, textColor.a, tt);
-			}
-			else if (t > 0.8f)
-			{
-				// Fade in
-				f32 tt = (t - 0.8f) / 0.2f;
-				backgroundColor *= lerp<f32>(backgroundColor.a, 0, tt);
-				textColor *= lerp<f32>(textColor.a, 0, tt);
-			}
-
+			// f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
+			// TODO: Animate this based on t.
+			// Though probably we want to keep a little animation-state enum instead of just a timer.
 			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
 
-			RenderItem_DrawSingleRect *backgroundRI = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
+			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&assets->theme, &style->labelStyle);
+			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
+			V2I textSize = calculateTextSize(getFont(&labelStyle->font), uiState->message.text, maxWidth - (2 * style->margin));
 
-			Rect2I labelRect = uiText(&renderer->uiBuffer, getFont(&style->font), uiState->message.text, origin,
-										 ALIGN_H_CENTRE | ALIGN_BOTTOM, textColor);
+			V2I toastSize = v2i(textSize.x + (2 * style->margin), textSize.y + (2 * style->margin));
+			Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
 
-			labelRect = expand(labelRect, style->padding);
-
-			fillDrawRectPlaceholder(backgroundRI, labelRect, backgroundColor);
+			UIPanel toast = UIPanel(toastBounds, style);
+			toast.addText(uiState->message.text);
+			toast.end();
 		}
 	}
 }
