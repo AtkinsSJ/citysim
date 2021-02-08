@@ -24,7 +24,7 @@ Panels:
 ✔ Actually implement them
 ✔ Scrolling!
 - Replace UIMessage
-- Replace PopupMenu
+✔ Replace PopupMenu
 - Replace window content layout with panels?
 - Replace DataView UI
 - Consider putting a UIState pointer in UIPanel?

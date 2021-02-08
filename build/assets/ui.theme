@@ -60,13 +60,6 @@ textColor         255 255 255 255
 backgroundColor     0   0   0 128
 padding           4
 
-:PopupMenu default
-backgroundColor     0   0   0 128
-margin            8
-contentPadding    4
-buttonStyle       default
-scrollbarStyle    default
-
 :Panel default
 margin            8
 contentPadding    4

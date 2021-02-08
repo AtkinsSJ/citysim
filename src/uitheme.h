@@ -13,7 +13,6 @@ enum UIStyleType {
 	UIStyle_Label,
 	UIStyle_UIMessage,
 	UIStyle_Panel,
-	UIStyle_PopupMenu,
 	UIStyle_Scrollbar,
 	UIStyle_TextInput,
 	UIStyle_Window,
@@ -72,17 +71,6 @@ struct UIPanelStyle
 	UIStyleReference labelStyle     = UIStyleReference(UIStyle_Label);
 	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
 	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
-};
-
-// @Deprecated - will use Panels
-struct UIPopupMenuStyle
-{
-	s32 margin;
-	s32 contentPadding;
-	V4 backgroundColor;
-
-	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
-	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
 };
 
 struct UITextInputStyle
@@ -219,7 +207,6 @@ struct UITheme
 	HashTable<UILabelStyle>     labelStyles;
 	HashTable<UIMessageStyle>   messageStyles;
 	HashTable<UIPanelStyle>     panelStyles;
-	HashTable<UIPopupMenuStyle> popupMenuStyles;
 	HashTable<UIScrollbarStyle> scrollbarStyles;
 	HashTable<UITextInputStyle> textInputStyles;
 	HashTable<UIWindowStyle>    windowStyles;
@@ -252,10 +239,6 @@ inline UIPanelStyle *findPanelStyle(UITheme *theme, String name)
 	auto style = find(&theme->panelStyles, name);
 	if (style == null) logError("Unable to find panel style '{0}'"_s, {name});
 	return style;
-}
-inline UIPopupMenuStyle *findPopupMenuStyle(UITheme *theme, String name)
-{
-	return find(&theme->popupMenuStyles, name);
 }
 inline UIScrollbarStyle *findScrollbarStyle(UITheme *theme, String name)
 {
