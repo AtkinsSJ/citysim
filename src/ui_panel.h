@@ -24,9 +24,9 @@
 //
 struct UIPanel
 {
-	UIPanel(Rect2I bounds, UIPanelStyle *style = null, bool isTopLevel = true);
-	UIPanel(Rect2I bounds, String styleName)
-		: UIPanel(bounds, findPanelStyle(&assets->theme, styleName)) {}
+	UIPanel(Rect2I bounds, UIPanelStyle *style = null, bool topToBottom = true, bool isTopLevel = true);
+	UIPanel(Rect2I bounds, String styleName, bool topToBottom = true)
+		: UIPanel(bounds, findPanelStyle(&assets->theme, styleName), topToBottom) {}
 
 	// Configuration functions, which should be called before adding any widgets
 	void enableHorizontalScrolling(ScrollbarState *hScrollbar);
@@ -69,9 +69,11 @@ struct UIPanel
 	Rect2I vScrollbarBounds;
 
 	// Relative to contentArea
-	s32 currentY;
+	bool topToBottom;
 	s32 currentLeft;
 	s32 currentRight;
+	s32 currentTop;
+	s32 currentBottom;
 	
 	s32 largestItemWidth;
 	s32 largestItemHeightOnLine;

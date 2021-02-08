@@ -1,6 +1,6 @@
 #pragma once
 
-UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
+UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool topToBottom, bool thisIsTopLevel)
 {
 	DEBUG_FUNCTION();
 
@@ -19,24 +19,20 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool thisIsTopLevel)
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
 
-	// Default to top-left alignment if they're not specified
-	this->widgetAlignment = this->style->widgetAlignment;
-	if ((this->widgetAlignment & ALIGN_H) == 0)
-	{
-		this->widgetAlignment |= ALIGN_LEFT;
-	}
-	if ((this->widgetAlignment & ALIGN_V) == 0)
-	{
-		this->widgetAlignment |= ALIGN_TOP;
-	}
+	// Default to left-aligned
+	u32 hAlignment = this->style->widgetAlignment & ALIGN_H;
+	if (hAlignment == 0) hAlignment = ALIGN_LEFT;
+	this->widgetAlignment = hAlignment | (topToBottom ? ALIGN_TOP : ALIGN_BOTTOM);
 
 	this->hScrollbar = null;
 	this->vScrollbar = null;
 
 	// Relative to contentArea
+	this->topToBottom = topToBottom;
 	this->currentLeft= 0;
 	this->currentRight = this->contentArea.w;
-	this->currentY = 0;
+	this->currentTop = 0;
+	this->currentBottom = this->contentArea.h;
 
 	this->largestItemWidth = 0;
 	this->largestItemHeightOnLine = 0;
@@ -248,9 +244,17 @@ void UIPanel::startNewLine(u32 hAlignment)
 
 	currentLeft = 0;
 	currentRight = contentArea.w;
+
 	if (largestItemHeightOnLine > 0)
 	{
-		currentY += largestItemHeightOnLine + style->contentPadding;
+		if (topToBottom)
+		{
+			currentTop += largestItemHeightOnLine + style->contentPadding;
+		}
+		else
+		{
+			currentBottom -= largestItemHeightOnLine + style->contentPadding;
+		}
 	}
 
 	largestItemHeightOnLine = 0;
@@ -278,14 +282,14 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 	if (vAlignment == ALIGN_TOP)
 	{
 		Rect2I rowBounds = irectXYWH(
-			contentArea.x, contentArea.y + currentY,
+			contentArea.x, contentArea.y + currentTop,
 			contentArea.w, height
 		);
 
 		completeWidget(rowBounds.size);
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, false);
+		return UIPanel(rowBounds, rowStyle, topToBottom, false);
 	}
 	else
 	{
@@ -297,7 +301,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 		contentArea.h -= height + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, false);
+		return UIPanel(rowBounds, rowStyle, topToBottom, false);
 	}
 }
 
@@ -317,7 +321,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 	if (hAlignment == ALIGN_LEFT)
 	{
 		Rect2I columnBounds = irectXYWH(
-			contentArea.x, contentArea.y + currentY,
+			contentArea.x, contentArea.y + currentTop,
 			width, contentArea.h
 		);
 
@@ -325,19 +329,19 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.x += width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, false);
+		return UIPanel(columnBounds, columnStyle, topToBottom, false);
 	}
 	else
 	{
 		Rect2I columnBounds = irectXYWH(
-			contentArea.x + contentArea.w - width, contentArea.y + currentY,
+			contentArea.x + contentArea.w - width, contentArea.y + currentTop,
 			width, contentArea.h
 		);
 
 		contentArea.w -= width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, false);
+		return UIPanel(columnBounds, columnStyle, topToBottom, false);
 	}
 }
 
@@ -348,8 +352,18 @@ void UIPanel::end(bool shrinkToContentHeight)
 
 	if (shrinkToContentHeight)
 	{
-		s32 contentHeight = currentY - style->contentPadding + (2 *style->margin);
-		bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
+		if (topToBottom)
+		{
+			s32 contentHeight = currentTop - style->contentPadding + (2 *style->margin);
+			bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
+		}
+		else
+		{
+			s32 contentHeight = (contentArea.h - currentBottom) + style->contentPadding + (2 *style->margin);
+			s32 newHeight = clamp(contentHeight, (2 *style->margin), bounds.h);
+			bounds.y += (bounds.h - newHeight);
+			bounds.h = newHeight;
+		}
 
 		hScrollbarBounds.w = bounds.w;
 		vScrollbarBounds.h = bounds.h;
@@ -391,7 +405,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 
 		// if (context->doUpdate)
 		{
-			updateScrollbar(uiState, vScrollbar, currentY + style->margin, vScrollbarBounds, scrollbarStyle);
+			updateScrollbar(uiState, vScrollbar, currentTop + style->margin, vScrollbarBounds, scrollbarStyle);
 		}
 
 		f32 scrollPercent = getScrollbarPercent(vScrollbar, vScrollbarBounds.h);
@@ -444,8 +458,16 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 	Rect2I result = {};
 
 	result.x = contentArea.x + currentLeft;
-	result.y = contentArea.y + currentY;
 	result.w = currentRight - currentLeft;
+
+	if (topToBottom)
+	{
+		result.y = contentArea.y + currentTop;
+	}
+	else
+	{
+		result.y = contentArea.y + currentBottom;
+	}
 
 	// Adjust if we're in a scrolling column area
 	if (hScrollbar != null)
@@ -515,4 +537,7 @@ void UIPanel::updateLayoutPosition()
 {
 	currentLeft = max(0, currentLeft);
 	currentRight = min(contentArea.w, currentRight);
+
+	currentTop = max(0, currentTop);
+	currentBottom = min(contentArea.h, currentBottom);
 }

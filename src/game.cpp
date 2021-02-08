@@ -1182,6 +1182,8 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 	if (isMenuVisible(uiState, Menu_DataViews))
 	{
+		s32 menuMultiplier = 5;
+
 		// Measure the menu contents
 		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuPanelStyle->buttonStyle);
 		s32 buttonMaxWidth = 0;
@@ -1197,13 +1199,11 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 		}
 		s32 popupMenuWidth = buttonMaxWidth + (popupMenuPanelStyle->margin * 2);
 		s32 popupMenuMaxHeight = windowHeight - 128;
-		s32 estimatedMenuHeight = 10 * ((DataViewCount * buttonMaxHeight)
+		s32 estimatedMenuHeight = menuMultiplier * ((DataViewCount * buttonMaxHeight)
 								+ ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
 								+ (popupMenuPanelStyle->margin * 2));
 
-		s32 menuY = dataViewButtonBounds.y - clamp(estimatedMenuHeight, menuContentHeight + 2*popupMenuPanelStyle->margin, popupMenuMaxHeight);
-
-		UIPanel menu = UIPanel(irectXYWH(dataViewButtonBounds.x - popupMenuPanelStyle->margin, menuY, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+		UIPanel menu = UIPanel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->margin, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, false);
 
 		// Enable scrolling if there's too many items to fit
 		if (estimatedMenuHeight > popupMenuMaxHeight)
@@ -1211,15 +1211,15 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 			menu.enableVerticalScrolling(&uiState->openMenuScrollbar, true);
 		}
 
-		for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1))
+		for (s32 dataViewID = DataViewCount - 1; dataViewID >= 0; dataViewID = dataViewID - 1)
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
 
-			for (int i=0; i < 10; i++)
+			for (int i=0; i < menuMultiplier; i++)
 			if (menu.addButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
 			{
 				hideMenus(uiState);
-				gameState->dataLayerToDraw = dataViewID;
+				gameState->dataLayerToDraw = (DataView) dataViewID;
 			}
 		}
 

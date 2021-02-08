@@ -969,30 +969,36 @@ inline Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax)
 	return irectXYWH(xMin, yMin, (1+xMax-xMin), (1+yMax-yMin));
 }
 
-inline Rect2I irectAligned(V2I origin, V2I size, u32 alignment)
+inline Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, u32 alignment)
 {
 	Rect2I rect = {};
-	rect.size = size;
+	rect.w = w;
+	rect.h = h;
 
 	switch (alignment & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE:  rect.x = origin.x - (size.x / 2);  break;
-		case ALIGN_RIGHT:     rect.x = origin.x - size.x;        break;
+		case ALIGN_H_CENTRE:  rect.x = originX - (w / 2);  break;
+		case ALIGN_RIGHT:     rect.x = originX - w;        break;
 		case ALIGN_LEFT:      // Left is default
 		case ALIGN_EXPAND_H:  // Meaningless here so default to left
-		default:              rect.x = origin.x;                 break;
+		default:              rect.x = originX;                 break;
 	}
 
 	switch (alignment & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE:  rect.y = origin.y - (size.y / 2);  break;
-		case ALIGN_BOTTOM:    rect.y = origin.y - size.y;        break;
+		case ALIGN_V_CENTRE:  rect.y = originY - (h / 2);  break;
+		case ALIGN_BOTTOM:    rect.y = originY - h;        break;
 		case ALIGN_TOP:       // Top is default
 		case ALIGN_EXPAND_V:  // Meaningless here so default to top
-		default:              rect.y = origin.y;                 break;
+		default:              rect.y = originY;                 break;
 	}
 
 	return rect;
+}
+
+inline Rect2I irectAligned(V2I origin, V2I size, u32 alignment)
+{
+	return irectAligned(origin.x, origin.y, size.x, size.y, alignment);
 }
 
 inline bool contains(Rect2I rect, s32 x, s32 y)

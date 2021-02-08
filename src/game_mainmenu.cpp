@@ -7,7 +7,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	AppStatus result = AppStatus_MainMenu;
 
 	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
-	// s32 windowHeight = round_s32(renderer->uiCamera.size.y);
+	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	UITheme *theme = &assets->theme;
 
 	V2I position = v2i(windowWidth / 2, 157);
@@ -90,8 +90,21 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 		result = AppStatus_Quit;
 	}
 
-	// This is a copy of savedGamesWindowProc() in our new system, for testing
 	if (true)
+	{
+		UIPanel menu = UIPanel(irectAligned(0, windowHeight, 200, windowHeight, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
+
+		for (int i=0; i < 20; i++)
+		{
+			menu.addText(formatInt(i));
+			menu.startNewLine();
+		}
+
+		menu.end(true);
+	}
+
+	// This is a copy of savedGamesWindowProc() in our new system, for testing
+	if (false)
 	{
 		UIPanel testPanel(irectXYWH(32, 4, 780, 580));
 		{

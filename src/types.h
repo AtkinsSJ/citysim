@@ -424,6 +424,7 @@ Rect2I irectPosSize(V2I position, V2I size);
 Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY);
 Rect2I irectCentreSize(V2I position, V2I size);
 Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax);
+Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, u32 alignment);
 Rect2I irectAligned(V2I origin, V2I size, u32 alignment);
 
 bool contains(Rect2I rect, s32 x, s32 y);
