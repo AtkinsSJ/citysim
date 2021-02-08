@@ -1205,7 +1205,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 		s32 menuY = dataViewButtonBounds.y - clamp(estimatedMenuHeight, menuContentHeight + 2*popupMenuPanelStyle->margin, popupMenuMaxHeight);
 
-		UIPanel menu = UIPanel(irectXYWH(dataViewButtonBounds.x - popupMenuPanelStyle->margin + 20, menuY, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+		UIPanel menu = UIPanel(irectXYWH(dataViewButtonBounds.x - popupMenuPanelStyle->margin, menuY, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 
 		// Enable scrolling if there's too many items to fit
 		if (estimatedMenuHeight > popupMenuMaxHeight)

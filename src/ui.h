@@ -42,8 +42,7 @@ struct UIState
 	// UI elements that react to the mouse should only do so if this is false - and then
 	// they should set it to true. 
 	bool mouseInputHandled;
-	bool isInputScissorActive;
-	Rect2I inputScissorBounds;
+	Stack<Rect2I> inputScissorRects;
 
 	// Window stuff
 	ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
@@ -57,6 +56,14 @@ void initUIState(UIState *uiState, MemoryArena *arena);
 bool isMouseInUIBounds(UIState *uiState, Rect2I bounds);
 bool isMouseInUIBounds(UIState *uiState, Rect2I bounds, V2 mousePos);
 bool justClickedOnUI(UIState *uiState, Rect2I bounds);
+
+void pushInputScissorRect(UIState *uiState, Rect2I bounds);
+void popInputScissorRect(UIState *uiState);
+bool isInputScissorActive(UIState *uiState);
+// NB: This asserts when no input scissor is active.
+// TODO: We may want to make it return a rectangle that is functionally infinite in that case instead,
+// so that it's always safe to call.
+Rect2I getInputScissorRect(UIState *uiState);
 
 void addUIRect(UIState *uiState, Rect2I bounds);
 
@@ -81,28 +88,3 @@ void showMenu(UIState *uiState, s32 menuID);
 void hideMenus(UIState *uiState);
 void toggleMenuVisible(UIState *uiState, s32 menuID);
 bool isMenuVisible(UIState *uiState, s32 menuID);
-
-struct PopupMenu
-{
-	UIPopupMenuStyle *style;
-	UIButtonStyle *buttonStyle;
-	UIScrollbarStyle *scrollbarStyle;
-
-	V2I origin;
-	s32 width;
-	s32 maxHeight;
-
-	RenderItem_DrawSingleRect *backgroundRect;
-
-	s32 currentYOffset;
-
-	// TODO: Maximum height, with a scrollbar if it's too big.
-	// This means, storing a scroll-position for each menu somehow...
-	// Or, well, we could get away with one scroll position stored for whichever
-	// menu is active, and then set the position to 0 when a menu is shown. Or
-	// when it's hidden, actually!!! That'd work. Awesome.
-};
-
-PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style);
-bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, ButtonState state = Button_Normal);
-void endPopupMenu(UIState *uiState, PopupMenu *menu);

@@ -109,6 +109,8 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	
 	prepareForWidgets();
 
+	UIState *uiState = globalAppState.uiState;
+
 	bool buttonWasClicked = false;
 	UIButtonStyle *buttonStyle = null;
 	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(&assets->theme, styleName);
@@ -116,7 +118,6 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 
 	u32 textAlignment = buttonStyle->textAlignment;
 	s32 buttonPadding = buttonStyle->padding;
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 
 	s32 buttonAlignment = this->widgetAlignment;
 	Rect2I space = getCurrentLayoutPosition();
@@ -145,13 +146,13 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 			{
 				backColor = buttonStyle->disabledBackgroundColor;
 			}
-			else if (contains(buttonBounds, mousePos))
+			else if (isMouseInUIBounds(uiState, buttonBounds))
 			{
 				// Mouse pressed: must have started and currently be inside the bounds to show anything
 				// Mouse unpressed: show hover if in bounds
 				if (mouseButtonPressed(MouseButton_Left))
 				{
-					if (contains(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+					if (isMouseInUIBounds(uiState, buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 					{
 						backColor = buttonStyle->pressedBackgroundColor;
 					}
@@ -171,7 +172,6 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 
 		// if (this->doUpdate)
 		{
-			UIState *uiState = globalAppState.uiState;
 			if ((state != Button_Disabled)
 			 && justClickedOnUI(uiState, buttonBounds))
 			{
@@ -405,6 +405,8 @@ void UIPanel::end()
 
 		// Clear any scissor stuff
 		addEndScissor(&renderer->uiBuffer);
+
+		popInputScissorRect(uiState);
 	}
 
 	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
@@ -421,6 +423,8 @@ void UIPanel::prepareForWidgets()
 		// if (context->doRender)
 		{
 			addBeginScissor(&renderer->uiBuffer, rect2(bounds));
+
+			pushInputScissorRect(globalAppState.uiState, bounds);
 
 			// Prepare to render background
 			// TODO: Handle backgrounds that aren't a solid colour

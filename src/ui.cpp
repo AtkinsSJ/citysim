@@ -11,6 +11,8 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 	initChunkedArray(&uiState->uiRects, arena, 64);
 
 	initChunkedArray(&uiState->openWindows, arena, 64);
+
+	initStack(&uiState->inputScissorRects, arena);
 }
 
 inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds)
@@ -20,7 +22,7 @@ inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds)
 
 inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds, V2 mousePos)
 {
-	Rect2I clippedBounds = uiState->isInputScissorActive ? intersect(bounds, uiState->inputScissorBounds) : bounds;
+	Rect2I clippedBounds = isInputScissorActive(uiState) ? intersect(bounds, getInputScissorRect(uiState)) : bounds;
 
 	bool result = contains(clippedBounds, mousePos);
 
@@ -30,12 +32,35 @@ inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds, V2 mousePos)
 inline bool justClickedOnUI(UIState *uiState, Rect2I bounds)
 {
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	Rect2I clippedBounds = uiState->isInputScissorActive ? intersect(bounds, uiState->inputScissorBounds) : bounds;
+	Rect2I clippedBounds = isInputScissorActive(uiState) ? intersect(bounds, getInputScissorRect(uiState)) : bounds;
 
 	bool result = contains(clippedBounds, mousePos)
 			   && mouseButtonJustReleased(MouseButton_Left)
 			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
 
+	return result;
+}
+
+inline void pushInputScissorRect(UIState *uiState, Rect2I bounds)
+{
+	push(&uiState->inputScissorRects, bounds);
+}
+
+inline void popInputScissorRect(UIState *uiState)
+{
+	pop(&uiState->inputScissorRects);
+}
+
+inline bool isInputScissorActive(UIState *uiState)
+{
+	return !isEmpty(&uiState->inputScissorRects);
+}
+
+inline Rect2I getInputScissorRect(UIState *uiState)
+{
+	ASSERT(isInputScissorActive(uiState));
+
+	Rect2I result = *peek(&uiState->inputScissorRects);
 	return result;
 }
 
@@ -356,68 +381,4 @@ inline void toggleMenuVisible(UIState *uiState, s32 menuID)
 inline bool isMenuVisible(UIState *uiState, s32 menuID)
 {
 	return (uiState->openMenu == menuID);
-}
-
-PopupMenu beginPopupMenu(UIState *uiState, s32 x, s32 y, s32 width, s32 maxHeight, UIPopupMenuStyle *style)
-{
-	PopupMenu result = {};
-
-	result.style = style;
-	result.scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
-	result.buttonStyle = findStyle<UIButtonStyle>(&assets->theme, &style->buttonStyle);
-
-	result.origin = v2i(x, y);
-	result.width = width;
-	result.maxHeight = maxHeight;
-
-	result.backgroundRect = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
-	result.currentYOffset = result.style->margin;
-
-	s32 scrollbarWidth = (result.scrollbarStyle ? result.scrollbarStyle->width : 0);
-	uiState->inputScissorBounds = irectXYWH(x, y, width + scrollbarWidth, maxHeight);
-	uiState->isInputScissorActive = true;
-	addBeginScissor(&renderer->uiBuffer, rect2(uiState->inputScissorBounds));
-
-	return result;
-}
-
-bool popupMenuButton(UIState *uiState, PopupMenu *menu, String text, UIButtonStyle *style, ButtonState state)
-{
-	V2I buttonSize = calculateButtonSize(text, style, menu->width - (menu->style->margin * 2));
-
-	Rect2I buttonRect = irectXYWH(menu->origin.x + menu->style->margin,
-								menu->origin.y + menu->currentYOffset - uiState->openMenuScrollbar.scrollPosition,
-								buttonSize.x, buttonSize.y);
-
-	bool result = uiButton(uiState, text, buttonRect, style, state);
-
-	menu->currentYOffset += buttonRect.h + menu->style->contentPadding;
-
-	return result;
-}
-
-void endPopupMenu(UIState *uiState, PopupMenu *menu)
-{
-	// Only show the scrollbar if the content is larger than will fit.
-	bool showScrollbar = (menu->currentYOffset > menu->maxHeight);
-
-	s32 scrollbarWidth = (showScrollbar ? menu->scrollbarStyle->width : 0);
-
-	// Handle scrollbar stuff
-	if (showScrollbar)
-	{
-		Rect2I scrollbarBounds = irectXYWH(menu->origin.x + menu->width, menu->origin.y, scrollbarWidth, menu->maxHeight);
-		updateScrollbar(uiState, &uiState->openMenuScrollbar, menu->currentYOffset, scrollbarBounds, menu->scrollbarStyle);
-		f32 scrollPercent = getScrollbarPercent(&uiState->openMenuScrollbar, scrollbarBounds.h);
-		drawScrollbar(&renderer->uiBuffer, scrollPercent, scrollbarBounds.pos, scrollbarBounds.h, v2i(scrollbarWidth, scrollbarWidth), menu->scrollbarStyle->knobColor, menu->scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
-	}
-
-	s32 contentHeight = (menu->currentYOffset > 0) ? (menu->currentYOffset - menu->style->contentPadding) : 0;
-
-	Rect2I menuRect = irectXYWH(menu->origin.x, menu->origin.y, menu->width + scrollbarWidth, min(contentHeight + menu->style->margin, menu->maxHeight));
-
-	addUIRect(uiState, menuRect);
-	fillDrawRectPlaceholder(menu->backgroundRect, menuRect, menu->style->backgroundColor);
-	uiState->isInputScissorActive = false;
-	addEndScissor(&renderer->uiBuffer);
 }
