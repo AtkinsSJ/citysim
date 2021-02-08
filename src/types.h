@@ -418,7 +418,8 @@ V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0);
 // Rect2I
 //
 Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h);
-Rect2I irectNegativeInfinity();
+Rect2I irectInfinity(); // Contains approximately everything...
+Rect2I irectNegativeInfinity(); // Contains nothing
 Rect2I irectPosSize(V2I position, V2I size);
 Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY);
 Rect2I irectCentreSize(V2I position, V2I size);

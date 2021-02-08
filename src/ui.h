@@ -60,9 +60,8 @@ bool justClickedOnUI(UIState *uiState, Rect2I bounds);
 void pushInputScissorRect(UIState *uiState, Rect2I bounds);
 void popInputScissorRect(UIState *uiState);
 bool isInputScissorActive(UIState *uiState);
-// NB: This asserts when no input scissor is active.
-// TODO: We may want to make it return a rectangle that is functionally infinite in that case instead,
-// so that it's always safe to call.
+// NB: This is safe to call whether or not a scissor is active. It returns
+// either the scissor or a functionally infinite rectangle.
 Rect2I getInputScissorRect(UIState *uiState);
 
 void addUIRect(UIState *uiState, Rect2I bounds);

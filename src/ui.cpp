@@ -58,9 +58,17 @@ inline bool isInputScissorActive(UIState *uiState)
 
 inline Rect2I getInputScissorRect(UIState *uiState)
 {
-	ASSERT(isInputScissorActive(uiState));
+	Rect2I result;
 
-	Rect2I result = *peek(&uiState->inputScissorRects);
+	if (isInputScissorActive(uiState))
+	{
+		result = *peek(&uiState->inputScissorRects);
+	}
+	else
+	{
+		result = irectInfinity();
+	}
+	
 	return result;
 }
 

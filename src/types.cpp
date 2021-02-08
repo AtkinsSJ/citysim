@@ -927,11 +927,24 @@ inline Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h)
 	return rect;
 }
 
+// Rectangle that SHOULD contain anything. It is the maximum size, and centred
+// on 0,0 In practice, the distance between the minimum and maximum integers
+// is double what we can store, so the min and max possible positions are
+// outside this rectangle, by a long way (0.5 * s32Max). But I cannot conceive
+// that we will ever need to deal with positions that are anywhere near that,
+// so it should be fine.
+// - Sam, 08/02/2021
+inline Rect2I irectInfinity()
+{
+	return irectXYWH(s32Min / 2, s32Min / 2, s32Max, s32Max);
+}
+
 // Rectangle that is guaranteed to not contain anything, because it's inside-out
 inline Rect2I irectNegativeInfinity()
 {
 	return irectXYWH(s32Max, s32Max, s32Min, s32Min);
 }
+
 
 inline Rect2I irectPosSize(V2I position, V2I size)
 {
