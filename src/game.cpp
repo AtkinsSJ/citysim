@@ -1171,10 +1171,13 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	UIPanelStyle *popupMenuPanelStyle = findPanelStyle(theme, "popupMenu"_s);
 
 	// Data-views menu
-	RenderItem_DrawSingleRect *dataViewUIBackground = appendDrawRectPlaceholder(uiBuffer, renderer->shaderIds.untextured);
 	String dataViewButtonText = getText("button_data_views"_s);
 	V2I dataViewButtonSize = calculateButtonSize(dataViewButtonText, buttonStyle);
 	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, windowHeight - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
+
+	Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
+	drawSingleRect(uiBuffer, dataViewUIBounds, renderer->shaderIds.untextured, theme->overlayColor);
+
 	if (uiButton(uiState, dataViewButtonText, dataViewButtonBounds, buttonStyle))
 	{
 		toggleMenuVisible(uiState, Menu_DataViews);
@@ -1236,7 +1239,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 		s32 paletteBlockSize = font->lineHeight;
 
-		UIPanel ui = UIPanel(irectAligned(uiPos.x, uiPos.y, 400, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
+		UIPanel ui = UIPanel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
 		{
 			// We're working from bottom to top, so we start at the end.
 
@@ -1300,10 +1303,5 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 		}
 		ui.end(true);
-	}
-	else
-	{
-		Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
-		fillDrawRectPlaceholder(dataViewUIBackground, dataViewUIBounds, theme->overlayColor);
 	}
 }

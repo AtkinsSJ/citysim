@@ -77,13 +77,13 @@ backgroundColor    0 0 0 0
 margin            8
 contentPadding    4
 widgetAlignment    TOP EXPAND_H
-backgroundColor     0   0   0 128
+backgroundColor   128 128 128 255
 buttonStyle       default
 scrollbarStyle    default
 
 :Panel toast
 labelStyle        default
-backgroundColor     0   0   0 128
+backgroundColor   128 128 128 255
 margin            8
 contentPadding    4
 
