@@ -1236,7 +1236,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 		s32 paletteBlockSize = font->lineHeight;
 
-		UIPanel ui = UIPanel(irectAligned(uiPos.x + 300, uiPos.y, 400, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
+		UIPanel ui = UIPanel(irectAligned(uiPos.x, uiPos.y, 400, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
 		{
 			// We're working from bottom to top, so we start at the end.
 
@@ -1256,96 +1256,50 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 				}
 			}
 
-			// // Above that, the gradient
-			// if (dataView->hasGradient)
-			// {
-			// 	// Arbitrarily going to make the height 4x the width
-			// 	s32 gradientHeight = paletteBlockSize * 4;
-			// 	UIPanel gradientPanel = ui.row(gradientHeight, ALIGN_TOP, "plain"_s);
+			// Above that, the gradient
+			if (dataView->hasGradient)
+			{
+				// Arbitrarily going to make the height 4x the width
+				s32 gradientHeight = paletteBlockSize * 4;
+				UIPanel gradientPanel = ui.row(gradientHeight, ALIGN_BOTTOM, "plain"_s);
 
-			// 	// Rect2I gradientBounds = gradientPanel.addBlank(paletteBlockSize, gradientHeight);
+				UIPanel gradientColumn = gradientPanel.column(paletteBlockSize, ALIGN_LEFT, "plain"_s);
+				{
+					Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
-			// 	// Array<V4> *gradientPalette = getPalette(dataView->gradientPaletteName);
-			// 	// V4 minColor = asOpaque(*first(gradientPalette));
-			// 	// V4 maxColor = asOpaque( *last(gradientPalette));
+					Array<V4> *gradientPalette = getPalette(dataView->gradientPaletteName);
+					V4 minColor = asOpaque(*first(gradientPalette));
+					V4 maxColor = asOpaque( *last(gradientPalette));
 
-			// 	// drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, maxColor, maxColor, minColor, minColor);
+					drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, maxColor, maxColor, minColor, minColor);
+				}
+				gradientColumn.end();
 
-			// 	// gradientPanel.addText(getText("data_view_minimum"_s));
-			// 	// gradientPanel.startNewLine();
-			// 	// gradientPanel.addText(getText("data_view_maximum"_s));
+				gradientPanel.addText(getText("data_view_minimum"_s));
+
+				// @Hack! We read some internal Panel fields to manually move the "max" label up
+				s32 spaceHeight = (gradientHeight - (2 * gradientPanel.largestItemHeightOnLine) - (2 * gradientPanel.style->contentPadding));
+				gradientPanel.startNewLine();
+				gradientPanel.addBlank(1, spaceHeight);
+				gradientPanel.startNewLine();
+
+				gradientPanel.addText(getText("data_view_maximum"_s));
 				
-			// 	gradientPanel.end();
-			// }
+				gradientPanel.end();
+			}
+
+			// Title and close button
+			// TODO: Probably want to make this a Window that can't be moved?
+			ui.addText(getText(dataView->title), "title"_s);
+
+			ui.alignWidgets(ALIGN_RIGHT);
+			if (ui.addButton("X"_s))
+			{
+				gameState->dataLayerToDraw = DataView_None;
+			}
+
 		}
 		ui.end(true);
-
-		s32 dataViewUIWidth = dataViewButtonSize.x;
-		// We're working from bottom to top, so we start at the end.
-
-		// First, the named colors
-		if (dataView->hasFixedColors)
-		{
-			Array<V4> *fixedPalette = getPalette(dataView->fixedPaletteName);
-			ASSERT(fixedPalette->count >= dataView->fixedColorNames.count);
-
-			for (s32 fixedColorIndex = dataView->fixedColorNames.count-1; fixedColorIndex >= 0; fixedColorIndex--)
-			{
-				// Block is to the left, so we offset the label by that width and padding
-				Rect2I colorLabelBounds = uiText(uiBuffer, font, getText(dataView->fixedColorNames[fixedColorIndex]), uiPos + v2i(paletteBlockSize + uiPadding, 0), ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
-
-				Rect2I paletteBlockBounds = irectXYWH(uiPos.x, uiPos.y - paletteBlockSize, paletteBlockSize, paletteBlockSize);
-				drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, asOpaque((*fixedPalette)[fixedColorIndex]));
-
-				uiPos.y -= colorLabelBounds.h + uiPadding;
-
-				// Overall width of this line is both block & label
-				dataViewUIWidth = max(dataViewUIWidth, colorLabelBounds.w + uiPadding + paletteBlockSize);
-			}
-		}
-
-		// Above that, the gradient
-		if (dataView->hasGradient)
-		{
-			Array<V4> *gradientPalette = getPalette(dataView->gradientPaletteName);
-
-			// Arbitrarily going to make the height 4x the width
-			Rect2I gradientBounds = irectXYWH(uiPos.x, uiPos.y - (paletteBlockSize * 4), paletteBlockSize, paletteBlockSize * 4);
-
-			V4 minColor = asOpaque(*first(gradientPalette));
-			V4 maxColor = asOpaque( *last(gradientPalette));
-
-			drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, maxColor, maxColor, minColor, minColor);
-
-			s32 labelLeft = gradientBounds.x + gradientBounds.w + uiPadding;
-
-			// One label at the top
-			Rect2I minLabelBounds = uiText(uiBuffer, font, getText("data_view_minimum"_s), v2i(labelLeft, gradientBounds.y + gradientBounds.h), ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
-
-			// The other at the bottom
-			Rect2I maxLabelBounds = uiText(uiBuffer, font, getText("data_view_maximum"_s), v2i(labelLeft, gradientBounds.y), ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor);
-
-			uiPos.y -= gradientBounds.h + uiPadding;
-			dataViewUIWidth = max(dataViewUIWidth, gradientBounds.w + uiPadding + max(minLabelBounds.w, maxLabelBounds.w));
-		}
-
-		Rect2I labelRect = uiText(uiBuffer, font, getText(dataView->title),
-			uiPos, ALIGN_LEFT | ALIGN_BOTTOM, labelStyle->textColor);
-		uiPos.y -= labelRect.h;
-		dataViewUIWidth = max(dataViewUIWidth, labelRect.w);
-
-		// Close button
-		V2I dataViewCloseButtonSize = calculateButtonSize("X"_s, buttonStyle);
-		Rect2I dataViewCloseButtonBounds = irectXYWH(uiPos.x + dataViewUIWidth + uiPadding, uiPos.y, dataViewCloseButtonSize.x, dataViewCloseButtonSize.y);
-		if (uiButton(uiState, "X"_s, dataViewCloseButtonBounds, buttonStyle))
-		{
-			gameState->dataLayerToDraw = DataView_None;
-		}
-		dataViewUIWidth += dataViewCloseButtonBounds.w + uiPadding;
-
-		Rect2I dataViewUIBounds = irectXYWH(uiPos.x - uiPadding, uiPos.y - uiPadding, dataViewUIWidth + (uiPadding*2), dataViewButtonBounds.y + dataViewButtonBounds.h - uiPos.y + (uiPadding*2));
-		fillDrawRectPlaceholder(dataViewUIBackground, dataViewUIBounds, theme->overlayColor);
-		addUIRect(uiState, dataViewUIBounds);
 	}
 	else
 	{

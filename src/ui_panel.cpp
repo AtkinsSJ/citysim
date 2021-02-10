@@ -301,7 +301,16 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 			contentArea.w, height
 		);
 
-		completeWidget(rowBounds.size);
+		if (topToBottom)
+		{
+			completeWidget(rowBounds.size);
+		}
+		else
+		{
+			contentArea.h -= height + style->contentPadding;
+			contentArea.y += height + style->contentPadding;
+		}
+
 		updateLayoutPosition();
 
 		return UIPanel(rowBounds, rowStyle, topToBottom, false);
@@ -309,11 +318,19 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 	else
 	{
 		Rect2I rowBounds = irectXYWH(
-			contentArea.x, contentArea.y + contentArea.h - height,
+			contentArea.x, contentArea.y + currentBottom - height,
 			contentArea.w, height
 		);
 
-		contentArea.h -= height + style->contentPadding;
+		if (topToBottom)
+		{
+			contentArea.h -= height + style->contentPadding;
+		}
+		else
+		{
+			completeWidget(rowBounds.size);
+		}
+		
 		updateLayoutPosition();
 
 		return UIPanel(rowBounds, rowStyle, topToBottom, false);
@@ -368,6 +385,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 	// @Hack! I don't at all understand why we get a trailing space of 2x the contentPadding at the end.
 	if (!topToBottom && hasAddedWidgets)
 	{
+		startNewLine();
 		currentBottom += (style->contentPadding * 2);
 	}
 
