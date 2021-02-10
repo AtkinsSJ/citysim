@@ -350,16 +350,19 @@ void UIPanel::end(bool shrinkToContentHeight)
 	DEBUG_FUNCTION();
 	UIState *uiState = globalAppState.uiState;
 
+	s32 contentHeight = (topToBottom ? (currentTop + style->margin)
+									 : (contentArea.h - currentBottom));
+
 	if (shrinkToContentHeight)
 	{
 		if (topToBottom)
 		{
-			s32 contentHeight = currentTop - style->contentPadding + (2 *style->margin);
+			contentHeight = currentTop - style->contentPadding + (2 *style->margin);
 			bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
 		}
 		else
 		{
-			s32 contentHeight = (contentArea.h - currentBottom) + style->contentPadding + (2 *style->margin);
+			contentHeight = (contentArea.h - currentBottom) + style->contentPadding + (2 *style->margin);
 			s32 newHeight = clamp(contentHeight, (2 *style->margin), bounds.h);
 			bounds.y += (bounds.h - newHeight);
 			bounds.h = newHeight;
@@ -367,6 +370,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 
 		hScrollbarBounds.w = bounds.w;
 		vScrollbarBounds.h = bounds.h;
+		vScrollbarBounds.y = bounds.y;
 	}
 
 	if (!hasAddedWidgets)
@@ -405,7 +409,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 
 		// if (context->doUpdate)
 		{
-			updateScrollbar(uiState, vScrollbar, currentTop + style->margin, vScrollbarBounds, scrollbarStyle);
+			updateScrollbar(uiState, vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
 		}
 
 		f32 scrollPercent = getScrollbarPercent(vScrollbar, vScrollbarBounds.h);
@@ -463,21 +467,26 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 	if (topToBottom)
 	{
 		result.y = contentArea.y + currentTop;
+		
+		if (vScrollbar != null)
+		{
+			result.y -= vScrollbar->scrollPosition;
+		}
 	}
 	else
 	{
 		result.y = contentArea.y + currentBottom;
+
+		if (vScrollbar != null)
+		{
+			result.y += (vScrollbar->contentSize - vScrollbar->scrollPosition - bounds.h);
+		}
 	}
 
-	// Adjust if we're in a scrolling column area
+	// Adjust if we're in a scrolling area
 	if (hScrollbar != null)
 	{
 		result.x = result.x - hScrollbar->scrollPosition;
-	}
-
-	if (vScrollbar != null)
-	{
-		result.y = result.y - vScrollbar->scrollPosition;
 	}
 
 	ASSERT(result.w > 0);
