@@ -350,6 +350,12 @@ void UIPanel::end(bool shrinkToContentHeight)
 	DEBUG_FUNCTION();
 	UIState *uiState = globalAppState.uiState;
 
+	// @Hack! I don't at all understand why we get a trailing space of 2x the contentPadding at the end.
+	if (!topToBottom && hasAddedWidgets)
+	{
+		currentBottom += (style->contentPadding * 2);
+	}
+
 	s32 contentHeight = (topToBottom ? (currentTop + style->margin)
 									 : (contentArea.h - currentBottom));
 
