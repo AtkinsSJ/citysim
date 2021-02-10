@@ -426,6 +426,9 @@ void addClear(RenderBuffer *buffer, V4 clearColor)
 
 void addBeginScissor(RenderBuffer *buffer, Rect2 bounds)
 {
+	ASSERT(bounds.w >= 0);
+	ASSERT(bounds.h >= 0);
+
 	RenderItem_BeginScissor *scissor = appendRenderItem<RenderItem_BeginScissor>(buffer, RenderItemType_BeginScissor);
 
 	//
@@ -462,11 +465,15 @@ void addBeginScissor(RenderBuffer *buffer, Rect2 bounds)
 
 	s32 width  = abs_s32(screenMinX - screenMaxX);
 	s32 height = abs_s32(screenMinY - screenMaxY);
+	ASSERT(width >= 0);
+	ASSERT(height >= 0);
 
 	Rect2I resultBounds = irectXYWH(min(screenMinX, screenMaxX), min(screenMinY, screenMaxY), width, height);
 
 	// Crop it to be within the screen bounds
 	scissor->bounds = intersect(resultBounds, irectXYWH(0, 0, inputState->windowWidth, inputState->windowHeight));
+	ASSERT(scissor->bounds.w >= 0);
+	ASSERT(scissor->bounds.h >= 0);
 
 	buffer->scissorCount++;
 }

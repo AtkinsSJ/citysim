@@ -36,6 +36,10 @@ struct UIPanel
 	void addText(String text, String styleName = nullString);
 	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
 	bool addTextInput(TextInput *textInput, String styleName = nullString);
+	// Add a blank rectangle as if it were a widget. (So, leaving padding between
+	// it and other widgets.) The bounds are returned so you can draw your own
+	// contents.
+	Rect2I addBlank(s32 width, s32 height = 0);
 
 	// Layout options
 	void alignWidgets(u32 alignment);

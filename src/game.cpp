@@ -1182,7 +1182,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 	if (isMenuVisible(uiState, Menu_DataViews))
 	{
-		s32 menuMultiplier = 5;
+		s32 menuMultiplier = 1; // DEBUG!
 
 		// Measure the menu contents
 		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuPanelStyle->buttonStyle);
@@ -1229,8 +1229,6 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	// Data-view info
 	if (uiState->openMenu != Menu_DataViews && gameState->dataLayerToDraw != DataView_None)
 	{
-		s32 dataViewUIWidth = dataViewButtonSize.x;
-
 		V2I uiPos = dataViewButtonBounds.pos;
 		uiPos.y -= uiPadding;
 
@@ -1238,6 +1236,51 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 		s32 paletteBlockSize = font->lineHeight;
 
+		UIPanel ui = UIPanel(irectAligned(uiPos.x + 300, uiPos.y, 400, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
+		{
+			// We're working from bottom to top, so we start at the end.
+
+			// First, the named colors
+			if (dataView->hasFixedColors)
+			{
+				Array<V4> *fixedPalette = getPalette(dataView->fixedPaletteName);
+				ASSERT(fixedPalette->count >= dataView->fixedColorNames.count);
+
+				for (s32 fixedColorIndex = dataView->fixedColorNames.count-1; fixedColorIndex >= 0; fixedColorIndex--)
+				{
+					Rect2I paletteBlockBounds = ui.addBlank(paletteBlockSize, paletteBlockSize);
+					drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, asOpaque((*fixedPalette)[fixedColorIndex]));
+
+					ui.addText(getText(dataView->fixedColorNames[fixedColorIndex]));
+					ui.startNewLine();
+				}
+			}
+
+			// // Above that, the gradient
+			// if (dataView->hasGradient)
+			// {
+			// 	// Arbitrarily going to make the height 4x the width
+			// 	s32 gradientHeight = paletteBlockSize * 4;
+			// 	UIPanel gradientPanel = ui.row(gradientHeight, ALIGN_TOP, "plain"_s);
+
+			// 	// Rect2I gradientBounds = gradientPanel.addBlank(paletteBlockSize, gradientHeight);
+
+			// 	// Array<V4> *gradientPalette = getPalette(dataView->gradientPaletteName);
+			// 	// V4 minColor = asOpaque(*first(gradientPalette));
+			// 	// V4 maxColor = asOpaque( *last(gradientPalette));
+
+			// 	// drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, maxColor, maxColor, minColor, minColor);
+
+			// 	// gradientPanel.addText(getText("data_view_minimum"_s));
+			// 	// gradientPanel.startNewLine();
+			// 	// gradientPanel.addText(getText("data_view_maximum"_s));
+				
+			// 	gradientPanel.end();
+			// }
+		}
+		ui.end(true);
+
+		s32 dataViewUIWidth = dataViewButtonSize.x;
 		// We're working from bottom to top, so we start at the end.
 
 		// First, the named colors

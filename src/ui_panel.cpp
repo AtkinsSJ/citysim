@@ -233,6 +233,21 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	return result;
 }
 
+Rect2I UIPanel::addBlank(s32 width, s32 height)
+{
+	DEBUG_FUNCTION();
+
+	prepareForWidgets();
+
+	Rect2I layoutPosition = getCurrentLayoutPosition();
+	V2I origin = alignWithinRectangle(layoutPosition, widgetAlignment);
+	V2I size = v2i(width, height);
+
+	completeWidget(size);
+
+	return irectAligned(origin, size, widgetAlignment);
+}
+
 void UIPanel::alignWidgets(u32 alignment)
 {
 	widgetAlignment = (widgetAlignment & ALIGN_V) | (alignment & ALIGN_H);

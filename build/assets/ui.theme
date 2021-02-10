@@ -71,6 +71,7 @@ backgroundColor    96  96  96 255
 :Panel plain
 extends default
 margin 0
+backgroundColor    0 0 0 0
 
 :Panel popupMenu
 margin            8
