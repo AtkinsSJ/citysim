@@ -547,7 +547,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 						// need to overwrite the sprite here.
 						// Probably there's a better way to organise this, but this works.
 						// - Sam, 26/09/2020
-						building->entity->sprite = getBuildingSprite(building);
+						loadBuildingSprite(building);
 
 						// This is a bit hacky but it's how we calculate it elsewhere
 						city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;

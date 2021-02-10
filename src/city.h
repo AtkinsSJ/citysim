@@ -71,7 +71,6 @@ bool canPlaceBuilding(City *city, BuildingDef *def, s32 left, s32 top);
 s32 calculateBuildCost(City *city, BuildingDef *def, Rect2I area);
 void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAreasDirty=true);
 void placeBuildingRect(City *city, BuildingDef *def, Rect2I area);
-void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I demolitionRect);
 void updateSomeBuildings(City *city);
 
 s32 calculateDemolitionCost(City *city, Rect2I area);

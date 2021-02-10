@@ -204,7 +204,7 @@ void addProblem(Building *building, BuildingProblem problem);
 void removeProblem(Building *building, BuildingProblem problem);
 bool hasProblem(Building *building, BuildingProblem problem);
 
-Sprite *getBuildingSprite(Building *building);
+void loadBuildingSprite(Building *building);
 
 ConnectionType connectionTypeOf(char c);
 char asChar(ConnectionType connectionType);

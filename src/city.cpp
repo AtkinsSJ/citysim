@@ -108,7 +108,7 @@ void drawEntities(City *city, Rect2I visibleTileBounds)
 				drawColor *= drawColorDemolish;
 			}
 
-			drawSingleSprite(&renderer->worldBuffer, entity->sprite, entity->bounds, shaderID, drawColor);
+			drawSingleSprite(&renderer->worldBuffer, getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
 		}
 	}
 }
@@ -132,7 +132,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 
 	building->entity = addEntity(city, EntityType_Building, building);
 	building->entity->bounds = rect2(footprint);
-	building->entity->sprite = getBuildingSprite(building);
+	loadBuildingSprite(building);
 	building->entity->canBeDemolished = true;
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
@@ -552,86 +552,6 @@ Building* getBuildingAt(City *city, s32 x, s32 y)
 	}
 
 	return result;
-}
-
-void drawBuildings(City *city, Rect2I visibleTileBounds, s8 shaderID, Rect2I demolitionRect)
-{
-	DEBUG_FUNCTION_T(DCDT_GameUpdate);
-
-	V4 drawColorNormal = makeWhite();
-	V4 drawColorDemolish = color255(255,128,128,255);
-	V4 drawColorNoPower = color255(32,32,64,255);
-
-
-	bool isDemolitionHappening = areaOf(demolitionRect) > 0;
-
-	//
-	// TODO: Once buildings have "height" that extends above their footprint, we'll need to know
-	// the maximum height, and go a corresponding number of sectors down to ensure they're drawn.
-	//
-	// - Sam, 17/06/2019
-	//
-
-	// TODO: @Speed: Maybe do the iteration on sectors directly, instead of producing this
-	// array and then iterating it? Or some other smarter way.
-	ChunkedArray<Building *> visibleBuildings = findBuildingsOverlappingArea(city, visibleTileBounds);
-
-	if (visibleBuildings.count == 0) return;
-
-	//
-	// NB: We don't know how many of the buildings will be in each batch, because a batch can
-	// only have a single texture. So we track how many buildings HAVEN'T been drawn yet, and
-	// each time we start a batch we set it to that size. That way it's always large enough,
-	// without being TOO excessive.
-	// Theoretically later we could smush things into fewer textures, and that would speed
-	// this up, but I think we'll always need the "is the texture different?" check in the loop.
-	//
-	// - Sam, 16/07/2019
-	// 
-	s32 buildingsRemaining = truncate32(visibleBuildings.count);
-	DrawRectsGroup *group = null;
-
-	for (auto it = iterate(&visibleBuildings);
-		hasNext(&it);
-		next(&it))
-	{
-		Building *building = getValue(&it);
-
-		Sprite *sprite = getBuildingSprite(building);
-
-		// Skip buildings with no sprites (aka, the null building).
-		// TODO: Give the null building a placeholder image to draw instead
-		if (sprite != null)
-		{
-			if (group == null)
-			{
-				group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, shaderID, buildingsRemaining);
-			}
-			else if (group->texture != sprite->texture)
-			{
-				// Finish the current group and start a new one
-				if (group != null)  endRectsGroup(group);
-				group = beginRectsGroupTextured(&renderer->worldBuffer, sprite->texture, shaderID, buildingsRemaining);
-			}
-
-			V4 drawColor = drawColorNormal;
-
-			if (isDemolitionHappening && overlaps(building->footprint, demolitionRect))
-			{
-				// Draw building red to preview demolition
-				drawColor = drawColorDemolish;
-			}
-			else if (hasProblem(building, BuildingProblem_NoPower))
-			{
-				drawColor = drawColorNoPower;
-			}
-
-			addSpriteRect(group, sprite, rect2(building->footprint), drawColor);
-		}
-
-		buildingsRemaining--;
-	}
-	if (group != null)  endRectsGroup(group);
 }
 
 // Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.

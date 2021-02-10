@@ -100,6 +100,15 @@ struct SpriteGroup
 	Sprite *sprites;
 };
 
+struct SpriteRef
+{
+	String spriteGroupName;
+	s32 spriteIndex;
+
+	Sprite *pointer;
+	u32 pointerRetrievedTicks;
+};
+
 struct Texture
 {
 	bool isFileAlphaPremultiplied;
@@ -187,6 +196,7 @@ struct Assets
 	
 	DirectoryChangeWatchingHandle assetChangeHandle;
 	bool assetReloadHasJustHappened;
+	u32 lastAssetReloadTicks;
 
 	// TODO: Also include size of the UITheme, somehow.
 	smm assetMemoryAllocated;
@@ -257,8 +267,12 @@ BitmapFont *getFont(FontReference *fontRef);
 
 Array<V4> *getPalette(String name);
 Shader *getShader(String shaderName);
+// @Deprecated
 Sprite *getSprite(SpriteGroup *group, s32 offset);
 SpriteGroup *getSpriteGroup(String name);
+
+SpriteRef getSpriteRef(String groupName, s32 spriteIndex);
+Sprite *getSprite(SpriteRef *ref);
 
 String getText(String name);
 

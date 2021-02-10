@@ -224,7 +224,7 @@ void addFireRaw(City *city, s32 x, s32 y, GameTimestamp startDate)
 	fire->entity = addEntity(city, EntityType_Fire, fire);
 	// TODO: Probably most of this wants to be moved into addEntity()
 	fire->entity->bounds = rectXYWHi(x, y, 1, 1);
-	fire->entity->sprite = getSprite(getSpriteGroup("e_fire_1x1"_s), randomNext(&globalAppState.cosmeticRandom));
+	fire->entity->sprite = getSpriteRef("e_fire_1x1"_s, randomNext(&globalAppState.cosmeticRandom));
 
 	layer->activeFireCount++;
 

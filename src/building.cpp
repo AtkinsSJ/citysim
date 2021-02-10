@@ -898,7 +898,7 @@ void updateBuildingVariant(City *city, Building *building, BuildingDef *passedDe
 	}
 
 	// Update the entity sprite
-	building->entity->sprite = getBuildingSprite(building);
+	loadBuildingSprite(building);
 }
 
 void updateAdjacentBuildingVariants(City *city, Rect2I footprint)
@@ -1092,30 +1092,18 @@ inline bool hasProblem(Building *building, BuildingProblem problem)
 	return building->problems & problem;
 }
 
-inline Sprite *getBuildingSprite(Building *building)
+void loadBuildingSprite(Building *building)
 {
-	Sprite *result = null;
-
 	BuildingDef *def = getBuildingDef(building->typeID);
 
 	if (building->variantIndex != NO_VARIANT)
 	{
-		SpriteGroup *sprites = def->variants[building->variantIndex].sprites;
-		if (sprites != null)
-		{
-			result = getSprite(sprites, building->spriteOffset);
-		}
+		building->entity->sprite = getSpriteRef(def->variants[building->variantIndex].spriteName, building->spriteOffset);
 	}
 	else
 	{
-		SpriteGroup *sprites = def->sprites;
-		if (sprites != null)
-		{
-			result = getSprite(sprites, building->spriteOffset);
-		}
+		building->entity->sprite = getSpriteRef(def->spriteName, building->spriteOffset);
 	}
-
-	return result;
 }
 
 inline ConnectionType connectionTypeOf(char c)

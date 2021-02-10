@@ -31,7 +31,8 @@ Panels:
 
 BUG: Can't save games without selecting an existing one
 
-BUG: Somehow we crashed when reloading the assets once. The texture it was asserting was loaded, had an invalid name.
+Asset references
+- We can't keep asset pointers around through an asset reload, because they point to the wrong memory. We solved this with SpriteRef for the Sprite* case, but we also store SpriteGroup*s and others. Perhaps a template AssetRef<Type> which works in the same way would be useful?
 
 Backgrounds:
 - A general struct that abstracts how different backgrounds are drawn, so that eg a Panel can just say it has a background, call prepareBackgroundPlaceholder() and fillBackgroundPlaceholder() (or something) and be done.

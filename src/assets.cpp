@@ -553,6 +553,7 @@ void loadAssets()
 		loadAsset(asset);
 	}
 
+	assets->lastAssetReloadTicks = SDL_GetTicks();
 	assets->assetReloadHasJustHappened = true;
 }
 
@@ -700,6 +701,40 @@ inline SpriteGroup *getSpriteGroup(String name)
 inline Sprite *getSprite(SpriteGroup *group, s32 offset)
 {
 	return group->sprites + (offset % group->count);
+}
+
+SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
+{
+	SpriteRef result = {};
+
+	result.spriteGroupName = groupName;
+	result.spriteIndex = spriteIndex;
+
+	// NB: We don't retrieve the sprite now, we just leave the pointerRetrievedTicks value at 0
+	// so that it WILL be retrieved the first time we call getSprite().
+
+	return result;
+}
+
+Sprite *getSprite(SpriteRef *ref)
+{
+	if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks))
+	{
+		SpriteGroup *group = getSpriteGroup(ref->spriteGroupName);
+		if (group != null)
+		{
+			ref->pointer = group->sprites + (ref->spriteIndex % group->count);
+		}
+		else
+		{
+			// TODO: Dummy sprite!
+			ASSERT(!"Sprite group missing");
+		}
+
+		ref->pointerRetrievedTicks = SDL_GetTicks();
+	}
+
+	return ref->pointer;
 }
 
 inline Shader *getShader(String shaderName)

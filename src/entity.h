@@ -17,7 +17,7 @@ struct Entity
 	// Drawing data
 	Rect2 bounds;
 	f32 depth;
-	Sprite *sprite;
+	SpriteRef sprite;
 	V4 color;
 
 	// Misc
