@@ -478,8 +478,16 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState
 	  totalContentArea(getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->margin)),
 	  contentArea(totalContentArea),
 	  currentRight(contentArea.w),
-	  windowPanel(contentArea, findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
-	      Panel_LayoutTopToBottom | Panel_IsTopLevel | (doUpdate ? Panel_DoUpdate : 0) | (doRender ? Panel_DoRender : 0))
+	  windowPanel(
+	  	  irectXYWH(window->area.x,
+	  	  		window->area.y + ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight),
+	  	  		window->area.w,
+	  	  		((window->flags & WinFlag_AutomaticHeight)
+	  	  			? 10000 : 
+	  	  			(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight)))),
+	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
+	      Panel_LayoutTopToBottom | Panel_IsTopLevel | (doUpdate ? Panel_DoUpdate : 0) | (doRender ? Panel_DoRender : 0)
+	  )
 {}
 
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
@@ -491,10 +499,16 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 
 	if (window->flags & WinFlag_AutomaticHeight)
 	{
+		context->windowPanel.end(true);
 		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-		s32 contentHeight = context->currentY + context->largestItemHeightOnLine;
-		if (contentHeight > 0) contentHeight -= context->windowStyle->contentPadding; // Remove trailing padding
-		window->area.h = barHeight + contentHeight + (context->windowStyle->margin * 2);
+		window->area.h = barHeight + context->windowPanel.bounds.h;
+		// s32 contentHeight = context->currentY + context->largestItemHeightOnLine;
+		// if (contentHeight > 0) contentHeight -= context->windowStyle->contentPadding; // Remove trailing padding
+		// window->area.h = barHeight + contentHeight + (context->windowStyle->margin * 2);
+	}
+	else
+	{
+		context->windowPanel.end();
 	}
 
 	if (window->flags & WinFlag_ShrinkWidth)
@@ -723,13 +737,15 @@ void renderWindows(UIState *uiState)
 		{
 			WindowContext updateContext = WindowContext(window, windowStyle, uiState, true, false);
 			updateWindow(uiState, window, &updateContext, isActive);
+			updateContext.windowPanel.end((window->flags & WinFlag_AutomaticHeight) != 0);
 			window->isInitialised = true;
 		}
 
-		RenderItem_DrawSingleRect *contentBackground = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
+		// RenderItem_DrawSingleRect *contentBackground = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
 		WindowContext context = WindowContext(window, windowStyle, uiState, false, true);
 		window->windowProc(&context, window->userData);
+		context.windowPanel.end((window->flags & WinFlag_AutomaticHeight) != 0);
 
 		Rect2I wholeWindowArea = window->area;
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
@@ -739,8 +755,8 @@ void renderWindows(UIState *uiState)
 
 		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
-		V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
-		fillDrawRectPlaceholder(contentBackground, contentArea, backColor);
+		// V4 backColor = (isActive ? windowStyle->backgroundColor : windowStyle->backgroundColorInactive);
+		// fillDrawRectPlaceholder(contentBackground, contentArea, backColor);
 
 		if (hasTitleBar)
 		{
