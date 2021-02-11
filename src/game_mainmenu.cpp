@@ -192,7 +192,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 					bottomBar.addText("Save game name:"_s);
 
 					bottomBar.alignWidgets(ALIGN_RIGHT);
-					bool pressedSave = bottomBar.addButton(getText("button_save"_s), selectedSavedGame ? Button_Normal : Button_Disabled);
+					bool pressedSave = bottomBar.addButton(getText("button_save"_s), !isEmpty(&catalogue->saveGameName) ? Button_Normal : Button_Disabled);
 
 					bottomBar.alignWidgets(ALIGN_EXPAND_H);
 					if (justClickedSavedGame)

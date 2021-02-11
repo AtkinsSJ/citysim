@@ -265,7 +265,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		window_label(context, "Save game name:"_s);
 
 		window_alignWidgets(context, ALIGN_RIGHT);
-		bool pressedSave = window_button(context, getText("button_save"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled);
+		bool pressedSave = window_button(context, getText("button_save"_s), -1, !isEmpty(&catalogue->saveGameName) ? Button_Normal : Button_Disabled);
 
 		window_alignWidgets(context, ALIGN_EXPAND_H);
 		if (justClickedSavedGame)

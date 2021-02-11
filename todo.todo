@@ -28,8 +28,6 @@ Panels:
 - Replace window content layout with panels?
 - Replace DataView UI
 
-BUG: Can't save games without selecting an existing one
-
 Asset references
 - We can't keep asset pointers around through an asset reload, because they point to the wrong memory. We solved this with SpriteRef for the Sprite* case, but we also store SpriteGroup*s and others. Perhaps a template AssetRef<Type> which works in the same way would be useful?
 
