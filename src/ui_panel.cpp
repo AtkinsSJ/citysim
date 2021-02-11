@@ -43,7 +43,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 
 void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 {
-	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
 	ASSERT(scrollbarStyle != null);
 
 	this->hScrollbar = scrollbarState;
@@ -55,7 +55,7 @@ void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 
 void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expandWidth)
 {
-	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
 	ASSERT(scrollbarStyle != null);
 
 	this->vScrollbar = scrollbarState;
@@ -83,7 +83,7 @@ void UIPanel::addText(String text, String styleName)
 
 	UILabelStyle *labelStyle = null;
 	if (!isEmpty(styleName))  labelStyle = findLabelStyle(&assets->theme, styleName);
-	if (labelStyle == null)   labelStyle = findStyle<UILabelStyle>(&assets->theme, &this->style->labelStyle);
+	if (labelStyle == null)   labelStyle = findStyle<UILabelStyle>(&this->style->labelStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
@@ -115,7 +115,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	bool buttonWasClicked = false;
 	UIButtonStyle *buttonStyle = null;
 	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(&assets->theme, styleName);
-	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&assets->theme, &this->style->buttonStyle);
+	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&this->style->buttonStyle);
 
 	u32 textAlignment = buttonStyle->textAlignment;
 	s32 buttonPadding = buttonStyle->padding;
@@ -200,8 +200,8 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	}
 
 	UITextInputStyle *textInputStyle = null;
-	if (!isEmpty(styleName))  textInputStyle = findTextInputStyle(&assets->theme, styleName);
-	if (textInputStyle == null)        textInputStyle = findStyle<UITextInputStyle>(&assets->theme, &this->style->textInputStyle);
+	if (!isEmpty(styleName))    textInputStyle = findTextInputStyle(&assets->theme, styleName);
+	if (textInputStyle == null) textInputStyle = findStyle<UITextInputStyle>(&this->style->textInputStyle);
 
 	s32 alignment = this->widgetAlignment;
 	Rect2I space = getCurrentLayoutPosition();
@@ -430,7 +430,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 	// Handle scrollbars
 	if (hScrollbar)
 	{
-		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
 
 		if (doUpdate)
 		{
@@ -447,7 +447,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 
 	if (vScrollbar)
 	{
-		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
+		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
 
 		if (doUpdate)
 		{

@@ -104,6 +104,7 @@ struct UIWindowStyle
 	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
 	UIStyleReference labelStyle = UIStyleReference(UIStyle_Label);
 	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
+	UIStyleReference panelStyle = UIStyleReference(UIStyle_Panel);
 };
 
 struct UIConsoleStyle
@@ -155,6 +156,7 @@ struct UIStyle
 	V4 overlayColor;
 	V4 outputTextColor[CLS_COUNT];
 	s32 padding;
+	UIStyleReference panelStyle = UIStyleReference(UIStyle_Panel);
 	V4 pressedBackgroundColor;
 	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
 	bool showCaret;
@@ -205,6 +207,12 @@ void loadUITheme(Blob data, struct Asset *asset);
 
 template <typename T>
 T* findStyle(UITheme *theme, UIStyleReference *reference);
+
+template <typename T>
+inline T* findStyle(UIStyleReference *reference)
+{
+	return findStyle<T>(&assets->theme, reference);
+}
 
 inline UIButtonStyle *findButtonStyle(UITheme *theme, String name)
 {

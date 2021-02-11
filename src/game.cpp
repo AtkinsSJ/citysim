@@ -417,7 +417,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 {
 	DEBUG_FUNCTION();
 
-	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(&assets->theme, &context->windowStyle->buttonStyle);
+	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(&context->windowStyle->buttonStyle);
 	s32 availableButtonTextWidth = context->contentArea.w - (2 * buttonStyle->padding);
 
 	String resume = getText("button_resume"_s);
@@ -1186,7 +1186,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	if (isMenuVisible(uiState, Menu_DataViews))
 	{
 		// Measure the menu contents
-		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuPanelStyle->buttonStyle);
+		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(&popupMenuPanelStyle->buttonStyle);
 		s32 buttonMaxWidth = 0;
 		s32 buttonMaxHeight = 0;
 		s32 menuContentHeight = (DataViewCount - 1) * popupMenuPanelStyle->contentPadding;

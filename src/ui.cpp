@@ -255,7 +255,7 @@ void drawUiMessage(UIState *uiState)
 			// Though probably we want to keep a little animation-state enum instead of just a timer.
 			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
 
-			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&assets->theme, &style->labelStyle);
+			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
 			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
 			V2I textSize = calculateTextSize(getFont(&labelStyle->font), uiState->message.text, maxWidth - (2 * style->margin));
 

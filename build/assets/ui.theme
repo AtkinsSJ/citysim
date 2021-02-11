@@ -87,6 +87,16 @@ backgroundColor   128 128 128 255
 margin            8
 contentPadding    4
 
+:Panel window
+margin                   12
+contentPadding           4
+widgetAlignment    TOP LEFT
+backgroundColor          128 128 128 255
+buttonStyle              default
+labelStyle               small
+scrollbarStyle           default
+textInputStyle    default
+
 :Scrollbar default
 backgroundColor       0 128 0 255
 knobColor             0 255 0 255
@@ -115,6 +125,7 @@ contentPadding           4
 labelStyle               small
 buttonStyle              default
 scrollbarStyle           default
+panelStyle               window
 
 :Window tooltip
 backgroundColor           96  96  96 128
@@ -123,6 +134,7 @@ margin                   8
 labelStyle               small
 buttonStyle              default
 offsetFromMouse          16 16
+panelStyle               window
 
 :Console default
 font                 debug

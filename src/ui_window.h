@@ -6,28 +6,33 @@
 // AKA, I messed up.
 struct WindowContext
 {
-	struct UIState *uiState;
-	struct Window *window;
+	WindowContext(struct Window *window, struct UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender);
+
+	UIState *uiState;
+	Window *window;
 	UIWindowStyle *windowStyle;
 
 	bool doUpdate;
 	bool doRender;
 
+	UIPanel windowPanel;
+
 	Rect2I totalContentArea;
 	Rect2I contentArea;
-	u32 alignment;
-	s32 currentY;
-	s32 currentLeft;
-	s32 currentRight;
-	s32 largestItemWidth;
-	s32 largestItemHeightOnLine;
 
-	s32 columnStartOffsetX;
-	s32 columnScrollbarWidth;
-	struct ScrollbarState *columnScrollbarState;
+	u32 alignment = ALIGN_TOP | ALIGN_EXPAND_H;
+	s32 currentY = 0;
+	s32 currentLeft = 0;
+	s32 currentRight = 0;
+	s32 largestItemWidth = 0;
+	s32 largestItemHeightOnLine = 0;
+
+	s32 columnStartOffsetX = 0;
+	s32 columnScrollbarWidth = 0;
+	struct ScrollbarState *columnScrollbarState = null;
 
 	// Results
-	bool closeRequested;
+	bool closeRequested = false;
 };
 
 typedef void (*WindowProc)(WindowContext*, void*);

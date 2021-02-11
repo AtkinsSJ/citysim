@@ -42,6 +42,7 @@ void initUITheme(UITheme *theme)
 	PROP(margin,                   PropType_Int,       false, false, false,  true, false, false,  true);
 	PROP(offsetFromMouse,          PropType_V2I,       false, false, false, false, false, false,  true);
 	PROP(padding,                  PropType_Int,        true,  true, false, false, false,  true, false);
+	PROP(panelStyle,               PropType_Style,     false, false, false, false, false, false,  true);
 	PROP(pressedBackgroundColor,   PropType_Color,      true, false, false, false, false, false, false);
 	PROP(scrollbarStyle,           PropType_Style,     false,  true, false,  true, false, false,  true);
 	PROP(showCaret,                PropType_Bool,      false, false, false, false, false,  true, false);
@@ -158,6 +159,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			window->buttonStyle = style->buttonStyle;
 			window->labelStyle = style->labelStyle;
 			window->scrollbarStyle = style->scrollbarStyle;
+			window->panelStyle = style->panelStyle;
 		} break;
 	}
 }

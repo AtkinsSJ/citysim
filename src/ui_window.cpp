@@ -42,7 +42,7 @@ void window_column(WindowContext *context, s32 width, ScrollbarState *scrollbar)
 	if (scrollbar != null)
 	{
 		// Scrollbar!
-		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &context->windowStyle->scrollbarStyle);
+		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&context->windowStyle->scrollbarStyle);
 
 		context->contentArea.w -= scrollbarStyle->width;
 		context->columnScrollbarWidth = scrollbarStyle->width;
@@ -79,7 +79,7 @@ void window_completeColumn(WindowContext *context)
 	{
 		if (context->columnScrollbarState != null)
 		{
-			UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &context->windowStyle->scrollbarStyle);
+			UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&context->windowStyle->scrollbarStyle);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
 								context->contentArea.y,
 								context->columnScrollbarWidth,
@@ -95,7 +95,7 @@ void window_completeColumn(WindowContext *context)
 
 		if (context->columnScrollbarState != null)
 		{
-			UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &context->windowStyle->scrollbarStyle);
+			UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&context->windowStyle->scrollbarStyle);
 			Rect2I scrollbarBounds = irectXYWH(context->contentArea.x + context->contentArea.w,
 								context->contentArea.y,
 								context->columnScrollbarWidth,
@@ -221,7 +221,7 @@ void window_label(WindowContext *context, String text, String styleName)
 
 	UILabelStyle *style = null;
 	if (!isEmpty(styleName))  style = findLabelStyle(&assets->theme, styleName);
-	if (style == null)        style = findStyle<UILabelStyle>(&assets->theme, &context->windowStyle->labelStyle);
+	if (style == null)        style = findStyle<UILabelStyle>(&context->windowStyle->labelStyle);
 
 	u32 alignment = context->alignment;
 	Rect2I space = window_getCurrentLayoutPosition(context);
@@ -250,7 +250,7 @@ bool window_button(WindowContext *context, String text, s32 textWidth, ButtonSta
 	bool buttonClicked = false;
 	UIButtonStyle *style = null;
 	if (!isEmpty(styleName))  style = findButtonStyle(&assets->theme, styleName);
-	if (style == null)        style = findStyle<UIButtonStyle>(&assets->theme, &context->windowStyle->buttonStyle);
+	if (style == null)        style = findStyle<UIButtonStyle>(&context->windowStyle->buttonStyle);
 
 	u32 textAlignment = style->textAlignment;
 	s32 buttonPadding = style->padding;
@@ -469,26 +469,18 @@ Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 					windowArea.h - barHeight - (margin * 2));
 }
 
-WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender)
-{
-	WindowContext context = {};
-	context.uiState = uiState;
-	context.window = window;
-	context.windowStyle = windowStyle;
-	context.totalContentArea = getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->margin);
-	context.contentArea = context.totalContentArea;
-	context.currentLeft = 0;
-	context.currentRight = context.contentArea.w;
-	context.currentY = 0;
-	context.largestItemWidth = 0;
-	context.largestItemHeightOnLine = 0;
-	context.alignment = ALIGN_TOP | ALIGN_EXPAND_H;
-
-	context.doUpdate = doUpdate;
-	context.doRender = doRender;
-
-	return context;
-}
+WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender)
+	: window(window),
+	  windowStyle(windowStyle),
+	  uiState(uiState),
+	  doUpdate(doUpdate),
+	  doRender(doRender),
+	  totalContentArea(getWindowContentArea(window->area, (window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight, windowStyle->margin)),
+	  contentArea(totalContentArea),
+	  currentRight(contentArea.w),
+	  windowPanel(contentArea, findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
+	      Panel_LayoutTopToBottom | Panel_IsTopLevel | (doUpdate ? Panel_DoUpdate : 0) | (doRender ? Panel_DoRender : 0))
+{}
 
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
 {
@@ -597,7 +589,7 @@ void updateWindows(UIState *uiState)
 
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		WindowContext context = makeWindowContext(window, windowStyle, uiState, true, false);
+		WindowContext context = WindowContext(window, windowStyle, uiState, true, false);
 
 		// Run the WindowProc once first so we can measure its size
 		updateWindow(uiState, window, &context, isActive);
@@ -729,14 +721,14 @@ void renderWindows(UIState *uiState)
 
 		if (!window->isInitialised)
 		{
-			WindowContext updateContext = makeWindowContext(window, windowStyle, uiState, true, false);
+			WindowContext updateContext = WindowContext(window, windowStyle, uiState, true, false);
 			updateWindow(uiState, window, &updateContext, isActive);
 			window->isInitialised = true;
 		}
 
 		RenderItem_DrawSingleRect *contentBackground = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
 
-		WindowContext context = makeWindowContext(window, windowStyle, uiState, false, true);
+		WindowContext context = WindowContext(window, windowStyle, uiState, false, true);
 		window->windowProc(&context, window->userData);
 
 		Rect2I wholeWindowArea = window->area;
