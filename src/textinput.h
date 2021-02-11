@@ -25,7 +25,6 @@ Rect2I drawTextInput(struct RenderBuffer *renderBuffer, TextInput *textInput, st
 
 void append(TextInput *textInput, char *source, s32 length);
 void append(TextInput *textInput, String source);
-void append(TextInput *textInput, char *source);
 void insert(TextInput *textInput, String source);
 void insert(TextInput *textInput, char c);
 

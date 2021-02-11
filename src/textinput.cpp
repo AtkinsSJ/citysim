@@ -212,14 +212,9 @@ void append(TextInput *textInput, char *source, s32 length)
 	textInput->glyphLength += glyphsToCopy;
 }
 
-void append(TextInput *textInput, String source)
+inline void append(TextInput *textInput, String source)
 {
 	append(textInput, source.chars, source.length);
-}
-
-void append(TextInput *textInput, char *source)
-{
-	append(textInput, makeString(source));
 }
 
 void insert(TextInput *textInput, String source)
@@ -259,7 +254,7 @@ void insert(TextInput *textInput, String source)
 	textInput->caretGlyphPos += glyphsToCopy;
 }
 
-void insert(TextInput *textInput, char c)
+inline void insert(TextInput *textInput, char c)
 {
 	insert(textInput, makeString(&c, 1));
 }
