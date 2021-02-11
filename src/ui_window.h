@@ -17,20 +17,6 @@ struct WindowContext
 
 	UIPanel windowPanel;
 
-	Rect2I totalContentArea;
-	Rect2I contentArea;
-
-	u32 alignment = ALIGN_TOP | ALIGN_EXPAND_H;
-	s32 currentY = 0;
-	s32 currentLeft = 0;
-	s32 currentRight = 0;
-	s32 largestItemWidth = 0;
-	s32 largestItemHeightOnLine = 0;
-
-	s32 columnStartOffsetX = 0;
-	s32 columnScrollbarWidth = 0;
-	struct ScrollbarState *columnScrollbarState = null;
-
 	// Results
 	bool closeRequested = false;
 };
@@ -68,44 +54,6 @@ struct Window
 // PUBLIC
 //
 void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose=null);
-
-
-
-// Columns!
-//
-// This is very basic right now and probably will need rewriting later to be more comprehensive.
-// Start columns with window_beginColumns().
-// Then, start each column with window_column(context, width) or window_columnPercent(context, widthPercent)
-// For the final column, don't pass a width (or make it 0) and it will fill the remaining space.
-// Then, call window_endColumns() to finish.
-//
-// Internally, this all works by modifying the context->contentArea, which is what the 
-// window_label() etc functions use to lay themselves out. So, they don't have to know anything
-// about columns or other layout complexities! So that's pretty nice.
-void window_beginColumns(WindowContext *context, s32 height=0);
-void window_column(WindowContext *context, s32 width=0, ScrollbarState *scrollbar=null);
-void window_columnPercent(WindowContext *context, f32 widthPercent, ScrollbarState *scrollbar=null);
-Rect2I window_getColumnArea(WindowContext *context);
-void window_endColumns(WindowContext *context);
-// Internal
-void window_completeColumn(WindowContext *context);
-
-Rect2I window_getCurrentLayoutPosition(WindowContext *context);
-void window_completeWidget(WindowContext *context, V2I widgetSize);
-void window_startNewLine(WindowContext *context, u32 hAlignment=0);
-void window_alignWidgets(WindowContext *context, u32 hAlignment);
-
-// Elements
-void window_label(WindowContext *context, String text, String styleName = nullString);
-/*
- * If you pass textWidth, then the button will be sized as though the text was that size. If you leave
- * it blank (or pass -1 manually) then the button will be automatically sized to wrap the contained text.
- * Either way, it always matches the size vertically.
- */
-bool window_button(WindowContext *context, String text, s32 textWidth = -1, ButtonState state = Button_Normal, String styleName = nullString);
-
-// Returns true if RETURN was pressed, same as updateTextInput().
-bool window_textInput(WindowContext *context, TextInput *textInput, String styleName = nullString);
 
 void updateWindows(UIState *uiState);
 void renderWindows(UIState *uiState);

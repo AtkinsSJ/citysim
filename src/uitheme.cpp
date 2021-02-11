@@ -28,23 +28,22 @@ void initUITheme(UITheme *theme)
 	}
 
 	//                                                   btn   cnsl  label  panel  scrll  txtin  windw
-	PROP(backgroundColor,          PropType_Color,      true,  true, false,  true,  true,  true,  true);
-	PROP(backgroundColorInactive,  PropType_Color,     false, false, false, false, false, false,  true);
-	PROP(buttonStyle,              PropType_Style,     false, false, false,  true, false, false,  true);
+	PROP(backgroundColor,          PropType_Color,      true,  true, false,  true,  true,  true, false);
+	PROP(buttonStyle,              PropType_Style,     false, false, false,  true, false, false, false);
 	PROP(caretFlashCycleDuration,  PropType_Float,     false, false, false, false, false,  true, false);
 	PROP(widgetAlignment,          PropType_Alignment, false, false, false,  true, false, false, false);
-	PROP(contentPadding,           PropType_Int,       false, false, false,  true, false, false,  true);
+	PROP(contentPadding,           PropType_Int,       false, false, false,  true, false, false, false);
 	PROP(disabledBackgroundColor,  PropType_Color,      true, false, false, false, false, false, false);
 	PROP(font,                     PropType_Font,       true,  true,  true, false, false,  true, false);
 	PROP(hoverBackgroundColor,     PropType_Color,      true, false, false, false, false, false, false);
 	PROP(knobColor,                PropType_Color,     false, false, false, false,  true, false, false);
-	PROP(labelStyle,               PropType_Style,     false, false, false,  true, false, false,  true);
-	PROP(margin,                   PropType_Int,       false, false, false,  true, false, false,  true);
+	PROP(labelStyle,               PropType_Style,     false, false, false,  true, false, false, false);
+	PROP(margin,                   PropType_Int,       false, false, false,  true, false, false, false);
 	PROP(offsetFromMouse,          PropType_V2I,       false, false, false, false, false, false,  true);
 	PROP(padding,                  PropType_Int,        true,  true, false, false, false,  true, false);
 	PROP(panelStyle,               PropType_Style,     false, false, false, false, false, false,  true);
 	PROP(pressedBackgroundColor,   PropType_Color,      true, false, false, false, false, false, false);
-	PROP(scrollbarStyle,           PropType_Style,     false,  true, false,  true, false, false,  true);
+	PROP(scrollbarStyle,           PropType_Style,     false,  true, false,  true, false, false, false);
 	PROP(showCaret,                PropType_Bool,      false, false, false, false, false,  true, false);
 	PROP(textAlignment,            PropType_Alignment,  true, false, false, false, false,  true, false);
 	PROP(textColor,                PropType_Color,      true, false,  true, false, false,  true, false);
@@ -148,17 +147,8 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			window->titleColor = style->titleColor;
 			window->titleBarButtonHoverColor = style->titleBarButtonHoverColor;
 
-			window->backgroundColor = style->backgroundColor;
-			window->backgroundColorInactive = style->backgroundColorInactive;
-
-			window->margin = style->margin;
-			window->contentPadding = style->contentPadding;
-
 			window->offsetFromMouse = style->offsetFromMouse;
 
-			window->buttonStyle = style->buttonStyle;
-			window->labelStyle = style->labelStyle;
-			window->scrollbarStyle = style->scrollbarStyle;
 			window->panelStyle = style->panelStyle;
 		} break;
 	}

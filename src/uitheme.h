@@ -84,8 +84,6 @@ struct UIScrollbarStyle
 
 struct UIWindowStyle
 {
-	// TODO: Will probably use a Panel for the main body of the window
-
 	s32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -93,17 +91,8 @@ struct UIWindowStyle
 	V4 titleColor;
 	V4 titleBarButtonHoverColor;
 
-	V4 backgroundColor;
-	V4 backgroundColorInactive;
-
-	s32 margin;
-	s32 contentPadding;
-
 	V2I offsetFromMouse;
 
-	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
-	UIStyleReference labelStyle = UIStyleReference(UIStyle_Label);
-	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
 	UIStyleReference panelStyle = UIStyleReference(UIStyle_Panel);
 };
 
@@ -140,7 +129,6 @@ struct UIStyle
 
 	// PROPERTIES
 	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
-	V4 backgroundColorInactive;
 	V4 backgroundColor;
 	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
 	f32 caretFlashCycleDuration;
