@@ -27,7 +27,6 @@ Panels:
 ✔ Replace PopupMenu
 - Replace window content layout with panels?
 - Replace DataView UI
-- Consider putting a UIState pointer in UIPanel?
 
 BUG: Can't save games without selecting an existing one
 

@@ -1185,8 +1185,6 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 	if (isMenuVisible(uiState, Menu_DataViews))
 	{
-		s32 menuMultiplier = 1; // DEBUG!
-
 		// Measure the menu contents
 		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(theme, &popupMenuPanelStyle->buttonStyle);
 		s32 buttonMaxWidth = 0;
@@ -1202,9 +1200,9 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 		}
 		s32 popupMenuWidth = buttonMaxWidth + (popupMenuPanelStyle->margin * 2);
 		s32 popupMenuMaxHeight = windowHeight - 128;
-		s32 estimatedMenuHeight = menuMultiplier * ((DataViewCount * buttonMaxHeight)
+		s32 estimatedMenuHeight = (DataViewCount * buttonMaxHeight)
 								+ ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
-								+ (popupMenuPanelStyle->margin * 2));
+								+ (popupMenuPanelStyle->margin * 2);
 
 		UIPanel menu = UIPanel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->margin, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, false);
 
@@ -1218,7 +1216,6 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
 
-			for (int i=0; i < menuMultiplier; i++)
 			if (menu.addButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
 			{
 				hideMenus(uiState);
