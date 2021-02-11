@@ -32,6 +32,8 @@ void insert(TextInput *textInput, char c);
 void clear(TextInput *textInput);
 void backspace(TextInput *textInput);
 void deleteChar(TextInput *textInput);
+void backspaceWholeWord(TextInput *textInput);
+void deleteWholeWord(TextInput *textInput);
 
 void moveCaretLeft(TextInput *textInput, s32 count = 1);
 void moveCaretRight(TextInput *textInput, s32 count = 1);
@@ -39,3 +41,12 @@ void moveCaretLeftWholeWord(TextInput *textInput);
 void moveCaretRightWholeWord(TextInput *textInput);
 
 bool isEmpty(TextInput *textInput);
+
+// Private
+struct TextInputPos
+{
+	s32 bytePos;
+	s32 glyphPos;
+};
+TextInputPos findStartOfWordLeft(TextInput *textInput);
+TextInputPos findStartOfWordRight(TextInput *textInput);

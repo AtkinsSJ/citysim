@@ -10,6 +10,116 @@ TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist
 	return b;
 }
 
+// Returns true if pressed RETURN
+bool updateTextInput(TextInput *textInput)
+{
+	bool pressedReturn = false;
+
+	if (hasCapturedInput(textInput))
+	{
+		if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
+		{
+			backspaceWholeWord(textInput);
+			textInput->caretFlashCounter = 0;
+		}
+		else if (keyJustPressed(SDLK_BACKSPACE))
+		{
+			backspace(textInput);
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_DELETE, KeyMod_Ctrl))
+		{
+			deleteWholeWord(textInput);
+			textInput->caretFlashCounter = 0;
+		}
+		else if (keyJustPressed(SDLK_DELETE))
+		{
+			deleteChar(textInput);
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_RETURN))
+		{
+			pressedReturn = true;
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_LEFT))
+		{
+			if (modifierKeyIsPressed(KeyMod_Ctrl))
+			{
+				moveCaretLeftWholeWord(textInput);
+			}
+			else
+			{
+				moveCaretLeft(textInput, 1);
+			}
+			textInput->caretFlashCounter = 0;
+		}
+		else if (keyJustPressed(SDLK_RIGHT))
+		{
+			if (modifierKeyIsPressed(KeyMod_Ctrl))
+			{
+				moveCaretRightWholeWord(textInput);
+			}
+			else
+			{
+				moveCaretRight(textInput, 1);
+			}
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_HOME))
+		{
+			textInput->caretBytePos = 0;
+			textInput->caretGlyphPos = 0;
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_END))
+		{
+			textInput->caretBytePos = textInput->byteLength;
+			textInput->caretGlyphPos = textInput->glyphLength;
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (wasTextEntered())
+		{
+			// Filter the input to remove any blacklisted characters
+			String enteredText = getEnteredText();
+			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+			{
+				char c = enteredText[charIndex];
+				if (!contains(textInput->characterBlacklist, c))
+				{
+					insert(textInput, c);
+				}
+			}
+
+			textInput->caretFlashCounter = 0;
+		}
+
+		if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
+		{
+			// Filter the input to remove any blacklisted characters
+			String enteredText = getClipboardText();
+			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+			{
+				char c = enteredText[charIndex];
+				if (!contains(textInput->characterBlacklist, c))
+				{
+					insert(textInput, c);
+				}
+			}
+			
+			textInput->caretFlashCounter = 0;
+		}
+	}
+
+	return pressedReturn;
+}
+
 String textInputToString(TextInput *textInput)
 {
 	return makeString(textInput->buffer, textInput->byteLength);
@@ -154,72 +264,12 @@ void insert(TextInput *textInput, char c)
 	insert(textInput, makeString(&c, 1));
 }
 
-void moveCaretLeft(TextInput *textInput, s32 count)
+void clear(TextInput *textInput)
 {
-	if (count < 1) return;
-
-	if (textInput->caretGlyphPos > 0)
-	{
-		s32 toMove = min(count, textInput->caretGlyphPos);
-
-		while (toMove--)
-		{
-			textInput->caretBytePos = findStartOfGlyph(textInput->buffer, textInput->caretBytePos - 1);
-			textInput->caretGlyphPos--;
-		}
-	}
-}
-
-void moveCaretRight(TextInput *textInput, s32 count)
-{
-	if (count < 1) return;
-
-	if (textInput->caretGlyphPos < textInput->glyphLength)
-	{
-		s32 toMove = min(count, textInput->glyphLength - textInput->caretGlyphPos);
-
-		while (toMove--)
-		{
-			textInput->caretBytePos = findStartOfNextGlyph(textInput->buffer, textInput->caretBytePos, textInput->maxByteLength);
-			textInput->caretGlyphPos++;
-		}
-	}
-}
-
-void moveCaretLeftWholeWord(TextInput *textInput)
-{
-	bool done = false;
-	while (!done)
-	{
-		moveCaretLeft(textInput, 1);
-		unichar glyph = readUnicodeChar(textInput->buffer + textInput->caretBytePos);
-		if (textInput->caretBytePos == 0)
-		{
-			done = true;
-		}
-		else if (isWhitespace(glyph))
-		{
-			done = true;
-		}
-	}
-}
-
-void moveCaretRightWholeWord(TextInput *textInput)
-{
-	bool done = false;
-	while (!done)
-	{
-		moveCaretRight(textInput, 1);
-		unichar glyph = readUnicodeChar(textInput->buffer + textInput->caretBytePos);
-		if (textInput->caretGlyphPos >= textInput->glyphLength)
-		{
-			done = true;
-		}
-		else if (isWhitespace(glyph))
-		{
-			done = true;
-		}
-	}
+	textInput->byteLength = 0;
+	textInput->glyphLength = 0;
+	textInput->caretBytePos = 0;
+	textInput->caretGlyphPos = 0;
 }
 
 void backspace(TextInput *textInput)
@@ -264,120 +314,123 @@ void deleteChar(TextInput *textInput)
 	}
 }
 
-void clear(TextInput *textInput)
+void backspaceWholeWord(TextInput *textInput)
 {
-	textInput->byteLength = 0;
-	textInput->glyphLength = 0;
-	textInput->caretBytePos = 0;
-	textInput->caretGlyphPos = 0;
+	TextInputPos newCaretPos = findStartOfWordLeft(textInput);
+	s32 toBackspace = textInput->caretGlyphPos - newCaretPos.glyphPos;
+
+	// @Speed: This is a really slow way of doing it!!!!!!!
+	for (s32 i=0; i < toBackspace; i++)
+	{
+		backspace(textInput);
+	}
 }
 
-// Returns true if pressed RETURN
-bool updateTextInput(TextInput *textInput)
+void deleteWholeWord(TextInput *textInput)
 {
-	bool pressedReturn = false;
+	TextInputPos newCaretPos = findStartOfWordRight(textInput);
+	s32 toDelete = newCaretPos.glyphPos - textInput->caretGlyphPos;
 
-	if (hasCapturedInput(textInput))
+	// @Speed: This is a really slow way of doing it!!!!!!!
+	for (s32 i=0; i < toDelete; i++)
 	{
-		if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
-		{
-			clear(textInput);
-			textInput->caretFlashCounter = 0;
-		}
-		else if (keyJustPressed(SDLK_BACKSPACE))
-		{
-			backspace(textInput);
-			textInput->caretFlashCounter = 0;
-		}
+		deleteChar(textInput);
+	}
+}
 
-		if (keyJustPressed(SDLK_DELETE))
-		{
-			deleteChar(textInput);
-			textInput->caretFlashCounter = 0;
-		}
+void moveCaretLeft(TextInput *textInput, s32 count)
+{
+	if (count < 1) return;
 
-		if (keyJustPressed(SDLK_RETURN))
-		{
-			pressedReturn = true;
-			textInput->caretFlashCounter = 0;
-		}
+	if (textInput->caretGlyphPos > 0)
+	{
+		s32 toMove = min(count, textInput->caretGlyphPos);
 
-		if (keyJustPressed(SDLK_LEFT))
+		while (toMove--)
 		{
-			if (modifierKeyIsPressed(KeyMod_Ctrl))
-			{
-				moveCaretLeftWholeWord(textInput);
-			}
-			else
-			{
-				moveCaretLeft(textInput, 1);
-			}
-			textInput->caretFlashCounter = 0;
-		}
-		else if (keyJustPressed(SDLK_RIGHT))
-		{
-			if (modifierKeyIsPressed(KeyMod_Ctrl))
-			{
-				moveCaretRightWholeWord(textInput);
-			}
-			else
-			{
-				moveCaretRight(textInput, 1);
-			}
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (keyJustPressed(SDLK_HOME))
-		{
-			textInput->caretBytePos = 0;
-			textInput->caretGlyphPos = 0;
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (keyJustPressed(SDLK_END))
-		{
-			textInput->caretBytePos = textInput->byteLength;
-			textInput->caretGlyphPos = textInput->glyphLength;
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (wasTextEntered())
-		{
-			// Filter the input to remove any blacklisted characters
-			String enteredText = getEnteredText();
-			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
-			{
-				char c = enteredText[charIndex];
-				if (!contains(textInput->characterBlacklist, c))
-				{
-					insert(textInput, c);
-				}
-			}
-
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
-		{
-			// Filter the input to remove any blacklisted characters
-			String enteredText = getClipboardText();
-			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
-			{
-				char c = enteredText[charIndex];
-				if (!contains(textInput->characterBlacklist, c))
-				{
-					insert(textInput, c);
-				}
-			}
-			
-			textInput->caretFlashCounter = 0;
+			textInput->caretBytePos = findStartOfGlyph(textInput->buffer, textInput->caretBytePos - 1);
+			textInput->caretGlyphPos--;
 		}
 	}
+}
 
-	return pressedReturn;
+void moveCaretRight(TextInput *textInput, s32 count)
+{
+	if (count < 1) return;
+
+	if (textInput->caretGlyphPos < textInput->glyphLength)
+	{
+		s32 toMove = min(count, textInput->glyphLength - textInput->caretGlyphPos);
+
+		while (toMove--)
+		{
+			textInput->caretBytePos = findStartOfNextGlyph(textInput->buffer, textInput->caretBytePos, textInput->maxByteLength);
+			textInput->caretGlyphPos++;
+		}
+	}
+}
+
+inline void moveCaretLeftWholeWord(TextInput *textInput)
+{
+	TextInputPos newCaretPos = findStartOfWordLeft(textInput);
+	textInput->caretBytePos  = newCaretPos.bytePos;
+	textInput->caretGlyphPos = newCaretPos.glyphPos;
+}
+
+void moveCaretRightWholeWord(TextInput *textInput)
+{
+	TextInputPos newCaretPos = findStartOfWordRight(textInput);
+	textInput->caretBytePos  = newCaretPos.bytePos;
+	textInput->caretGlyphPos = newCaretPos.glyphPos;
 }
 
 inline bool isEmpty(TextInput *textInput)
 {
 	return textInput->byteLength == 0;
+}
+
+TextInputPos findStartOfWordLeft(TextInput *textInput)
+{
+	TextInputPos result = {textInput->caretBytePos, textInput->caretGlyphPos};
+
+	if (result.glyphPos > 0)
+	{
+		result.glyphPos--;
+		result.bytePos = findStartOfGlyph(textInput->buffer, result.bytePos - 1);
+	}
+
+	while (result.glyphPos > 0)
+	{
+		s32 nextBytePos = findStartOfGlyph(textInput->buffer, result.bytePos - 1);
+
+		unichar glyph = readUnicodeChar(textInput->buffer + nextBytePos);
+		if (isWhitespace(glyph))
+		{
+			break;
+		}
+
+		result.glyphPos--;
+		result.bytePos = nextBytePos;
+	}
+
+	return result;
+}
+
+TextInputPos findStartOfWordRight(TextInput *textInput)
+{
+	TextInputPos result = {textInput->caretBytePos, textInput->caretGlyphPos};
+
+	while (result.glyphPos < textInput->glyphLength)
+	{
+		result.glyphPos++;
+		result.bytePos = findStartOfNextGlyph(textInput->buffer, result.bytePos, textInput->maxByteLength);
+
+		unichar glyph = readUnicodeChar(textInput->buffer + result.bytePos);
+		if (isWhitespace(glyph))
+		{
+			break;
+		}
+	}
+
+	return result;
 }

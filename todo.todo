@@ -49,8 +49,6 @@ UIMessage:
 - Queue them, instead of having one that's overwritten
 - Animate them, with some kind of tweening system, so they pop up and down again
 
-TextInput: Ctrl-delete to delete a word, like we have Ctrl-backspace already.
-
 Window/UI System features:
 - Confirmation dialogs
 - Frames
