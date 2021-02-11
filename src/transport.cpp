@@ -128,13 +128,13 @@ inline s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
 	return city->transportLayer.tileTransportDistance[type].get(x, y);
 }
 
-void debugInspectTransport(WindowContext *context, City *city, s32 x, s32 y)
+void debugInspectTransport(UIPanel *panel, City *city, s32 x, s32 y)
 {
-	window_label(context, "*** TRANSPORT INFO ***"_s);
+	panel->addText("*** TRANSPORT INFO ***"_s);
 
 	// Transport
 	for (s32 transportType = 0; transportType < TransportTypeCount; transportType++)
 	{
-		window_label(context, myprintf("Distance to transport #{0}: {1}"_s, {formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType))}));
+		panel->addText(myprintf("Distance to transport #{0}: {1}"_s, {formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType))}));
 	}
 }

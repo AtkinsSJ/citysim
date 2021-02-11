@@ -29,4 +29,4 @@ bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type);
 bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags_TransportType types);
 s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type);
 
-void debugInspectTransport(WindowContext *context, City *city, s32 x, s32 y);
+void debugInspectTransport(UIPanel *panel, City *city, s32 x, s32 y);

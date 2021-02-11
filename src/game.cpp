@@ -335,6 +335,9 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 {
 	DEBUG_FUNCTION();
 
+	UIPanel *ui = &context->windowPanel;
+	ui->alignWidgets(ALIGN_EXPAND_H);
+
 	GameState *gameState = (GameState *) userData;
 	City *city = &gameState->city;
 
@@ -343,15 +346,15 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// CitySector
 	CitySector *sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
-	window_label(context, myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
+	ui->addText(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
 
 	// Terrain
 	TerrainDef *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Terrain: {0}"_s, {getText(terrain->textAssetName)}));
+	ui->addText(myprintf("Terrain: {0}"_s, {getText(terrain->textAssetName)}));
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	window_label(context, myprintf("Zone: {0}"_s, {zone ? getText(getZoneDef(zone).textAssetName) : "None"_s}));
+	ui->addText(myprintf("Zone: {0}"_s, {zone ? getText(getZoneDef(zone).textAssetName) : "None"_s}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -359,44 +362,44 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	{
 		s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
-		window_label(context, myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex)}));
-		window_label(context, myprintf("Constructed: {0}"_s, {formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTime_ShortDate)}));
-		window_label(context, myprintf("Variant: {0}"_s, {formatInt(building->variantIndex)}));
-		window_label(context, myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
-		window_label(context, myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));
-		window_label(context, myprintf("- Power: {0}"_s, {formatInt(def->power)}));
+		ui->addText(myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex)}));
+		ui->addText(myprintf("Constructed: {0}"_s, {formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTime_ShortDate)}));
+		ui->addText(myprintf("Variant: {0}"_s, {formatInt(building->variantIndex)}));
+		ui->addText(myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
+		ui->addText(myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));
+		ui->addText(myprintf("- Power: {0}"_s, {formatInt(def->power)}));
 
 		// Problems
 		for (s32 problemIndex = 0; problemIndex < BuildingProblemCount; problemIndex++)
 		{
 			if (hasProblem(building, (BuildingProblem) problemIndex))
 			{
-				window_label(context, myprintf("- PROBLEM: {0}"_s, {getText(buildingProblemNames[problemIndex])}));
+				ui->addText(myprintf("- PROBLEM: {0}"_s, {getText(buildingProblemNames[problemIndex])}));
 			}
 		}
 	}
 	else
 	{
-		window_label(context, "Building: None"_s);
+		ui->addText("Building: None"_s);
 	}
 
 	// Land value
-	window_label(context, myprintf("Land value: {0}%"_s, {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
+	ui->addText(myprintf("Land value: {0}%"_s, {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
 	// Debug info
 	if (!isEmpty(&gameState->inspectTileDebugFlags))
 	{
 		if (gameState->inspectTileDebugFlags & DebugInspect_Fire)
 		{
-			debugInspectFire(context, city, tilePos.x, tilePos.y);
+			debugInspectFire(ui, city, tilePos.x, tilePos.y);
 		}
 		if (gameState->inspectTileDebugFlags & DebugInspect_Power)
 		{
-			debugInspectPower(context, city, tilePos.x, tilePos.y);
+			debugInspectPower(ui, city, tilePos.x, tilePos.y);
 		}
 		if (gameState->inspectTileDebugFlags & DebugInspect_Transport)
 		{
-			debugInspectTransport(context, city, tilePos.x, tilePos.y);
+			debugInspectTransport(ui, city, tilePos.x, tilePos.y);
 		}
 	}
 
@@ -416,38 +419,30 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 {
 	DEBUG_FUNCTION();
+	UIPanel *ui = &context->windowPanel;
+	ui->alignWidgets(ALIGN_EXPAND_H);
 
-	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(&context->windowStyle->buttonStyle);
-	s32 availableButtonTextWidth = context->contentArea.w - (2 * buttonStyle->padding);
-
-	String resume = getText("button_resume"_s);
-	String save   = getText("button_save"_s);
-	String load   = getText("button_load"_s);
-	String about  = getText("button_about"_s);
-	String exit   = getText("button_exit"_s);
-	s32 maxButtonTextWidth = availableButtonTextWidth;//calculateMaxTextWidth(buttonFont, {resume, save, load, about, exit}, availableButtonTextWidth);
-
-	if (window_button(context, resume, maxButtonTextWidth))
+	if (ui->addButton(getText("button_resume"_s)))
 	{
 		context->closeRequested = true;
 	}
 
-	if (window_button(context, save, maxButtonTextWidth))
+	if (ui->addButton(getText("button_save"_s)))
 	{
 		showSaveGameWindow(context->uiState);
 	}
 
-	if (window_button(context, load, maxButtonTextWidth))
+	if (ui->addButton(getText("button_load"_s)))
 	{
 		showLoadGameWindow(context->uiState);
 	}
 
-	if (window_button(context, about, maxButtonTextWidth))
+	if (ui->addButton(getText("button_about"_s)))
 	{
 		showAboutWindow(context->uiState);
 	}
 
-	if (window_button(context, exit, maxButtonTextWidth))
+	if (ui->addButton(getText("button_exit"_s)))
 	{
 		globalAppState.gameState->status = GameStatus_Quit;
 		// NB: We don't close the window here, because doing so makes the window disappear one frame
@@ -667,26 +662,28 @@ void showCostTooltip(UIState *uiState, s32 buildCost)
 void debugToolsWindowProc(WindowContext *context, void *userData)
 {
 	GameState *gameState = (GameState *)userData;
+	UIPanel *ui = &context->windowPanel;
+	ui->alignWidgets(ALIGN_EXPAND_H);
 
-	if (window_button(context, "Inspect fire info"_s, -1, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire)))
+	if (ui->addButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Fire;
 	}
-	if (window_button(context, "Add Fire"_s, -1, buttonIsActive(gameState->actionMode == ActionMode_Debug_AddFire)))
+	if (ui->addButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_AddFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_AddFire;
 	}
-	if (window_button(context, "Remove Fire"_s, -1, buttonIsActive(gameState->actionMode == ActionMode_Debug_RemoveFire)))
+	if (ui->addButton("Remove Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_RemoveFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_RemoveFire;
 	}
 
-	if (window_button(context, "Inspect power info"_s, -1, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Power)))
+	if (ui->addButton("Inspect power info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Power)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Power;
 	}
 	
-	if (window_button(context, "Inspect transport info"_s, -1, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Transport)))
+	if (ui->addButton("Inspect transport info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Transport)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Transport;
 	}
