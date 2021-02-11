@@ -1,6 +1,6 @@
 #pragma once
 
-UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool topToBottom, bool thisIsTopLevel)
+UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 {
 	DEBUG_FUNCTION();
 
@@ -13,8 +13,11 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool topToBottom, bool
 		this->style = panelStyle;
 	}
 
-	this->isTopLevel = thisIsTopLevel;
+	this->isTopLevel = (flags & Panel_IsTopLevel) != 0;
 	this->hasAddedWidgets = false;
+
+	this->doUpdate = (flags & Panel_DoUpdate) != 0;
+	this->doRender = (flags & Panel_DoRender) != 0;
 	
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
@@ -28,7 +31,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, bool topToBottom, bool
 	this->vScrollbar = null;
 
 	// Relative to contentArea
-	this->topToBottom = topToBottom;
+	this->topToBottom = (flags & Panel_LayoutTopToBottom) != 0;
 	this->currentLeft= 0;
 	this->currentRight = this->contentArea.w;
 	this->currentTop = 0;
@@ -313,7 +316,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, topToBottom, false);
+		return UIPanel(rowBounds, rowStyle, getFlagsForChild());
 	}
 	else
 	{
@@ -333,7 +336,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 		
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, topToBottom, false);
+		return UIPanel(rowBounds, rowStyle, getFlagsForChild());
 	}
 }
 
@@ -361,7 +364,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.x += width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, topToBottom, false);
+		return UIPanel(columnBounds, columnStyle, getFlagsForChild());
 	}
 	else
 	{
@@ -373,7 +376,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.w -= width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, topToBottom, false);
+		return UIPanel(columnBounds, columnStyle, getFlagsForChild());
 	}
 }
 
@@ -475,6 +478,17 @@ void UIPanel::end(bool shrinkToContentHeight)
 	{
 		addUIRect(uiState, bounds);
 	}
+}
+
+inline u32 UIPanel::getFlagsForChild()
+{
+	u32 flags = 0;
+
+	if (doUpdate)    flags |= Panel_DoUpdate;
+	if (doRender)    flags |= Panel_DoRender;
+	if (topToBottom) flags |= Panel_LayoutTopToBottom;
+
+	return flags;
 }
 
 void UIPanel::prepareForWidgets()

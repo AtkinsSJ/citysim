@@ -22,11 +22,22 @@
 //
 // - Sam, 04/02/2021
 //
+
+enum UIPanelFlags
+{
+	Panel_LayoutTopToBottom = 1 << 0,
+	Panel_IsTopLevel 		= 1 << 1,
+	Panel_DoUpdate			= 1 << 2,
+	Panel_DoRender			= 1 << 3,
+
+	PanelDefaultFlags = Panel_LayoutTopToBottom | Panel_IsTopLevel | Panel_DoUpdate | Panel_DoRender
+};
+
 struct UIPanel
 {
-	UIPanel(Rect2I bounds, UIPanelStyle *style = null, bool topToBottom = true, bool isTopLevel = true);
-	UIPanel(Rect2I bounds, String styleName, bool topToBottom = true)
-		: UIPanel(bounds, findPanelStyle(&assets->theme, styleName), topToBottom) {}
+	UIPanel(Rect2I bounds, UIPanelStyle *style = null, u32 flags = PanelDefaultFlags);
+	UIPanel(Rect2I bounds, String styleName, u32 flags = PanelDefaultFlags)
+		: UIPanel(bounds, findPanelStyle(&assets->theme, styleName), flags) {}
 
 	// Configuration functions, which should be called before adding any widgets
 	void enableHorizontalScrolling(ScrollbarState *hScrollbar);
@@ -53,6 +64,7 @@ struct UIPanel
 	void end(bool shinkToContentHeight = false);
 
 	// "Private"
+	u32 getFlagsForChild();
 	void prepareForWidgets();
 	Rect2I getCurrentLayoutPosition();
 	void completeWidget(V2I widgetSize);
@@ -62,6 +74,9 @@ struct UIPanel
 
 	bool isTopLevel;
 	bool hasAddedWidgets;
+
+	bool doUpdate; // Should widgets execute their logic? eg, buttons react to being clicked?
+	bool doRender; // Should we draw ourselves and our widgets?
 
 	Rect2I bounds;
 	Rect2I contentArea;

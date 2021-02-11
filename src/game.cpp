@@ -1204,7 +1204,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 								+ ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
 								+ (popupMenuPanelStyle->margin * 2);
 
-		UIPanel menu = UIPanel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->margin, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, false);
+		UIPanel menu = UIPanel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->margin, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, Panel_IsTopLevel | Panel_DoUpdate | Panel_DoRender);
 
 		// Enable scrolling if there's too many items to fit
 		if (estimatedMenuHeight > popupMenuMaxHeight)
@@ -1236,7 +1236,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 		s32 paletteBlockSize = font->lineHeight;
 
-		UIPanel ui = UIPanel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
+		UIPanel ui = UIPanel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, Panel_IsTopLevel | Panel_DoUpdate | Panel_DoRender);
 		{
 			// We're working from bottom to top, so we start at the end.
 

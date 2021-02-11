@@ -92,7 +92,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 
 	if (true)
 	{
-		UIPanel menu = UIPanel(irectAligned(0, windowHeight, 200, windowHeight, ALIGN_BOTTOM | ALIGN_LEFT), null, false);
+		UIPanel menu = UIPanel(irectAligned(0, windowHeight, 200, windowHeight, ALIGN_BOTTOM | ALIGN_LEFT), null, Panel_IsTopLevel | Panel_DoUpdate | Panel_DoRender);
 
 		for (int i=0; i < 20; i++)
 		{
@@ -104,7 +104,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	}
 
 	// This is a copy of savedGamesWindowProc() in our new system, for testing
-	if (false)
+	if (true)
 	{
 		UIPanel testPanel(irectXYWH(32, 4, 780, 580));
 		{
