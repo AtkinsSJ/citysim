@@ -95,7 +95,7 @@ void UIPanel::addText(String text, String styleName)
 		V2I topLeft = calculateTextPosition(origin, textSize, this->widgetAlignment);
 		Rect2I textBounds = irectPosSize(topLeft, textSize);
 
-		// if (context->doRender)
+		if (doRender)
 		{
 			drawText(&renderer->uiBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
 		}
@@ -133,7 +133,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 		V2I textSize = calculateTextSize(font, text, buttonWidth - (buttonStyle->padding * 2));
 		Rect2I buttonBounds = irectAligned(buttonOrigin, v2i(buttonWidth, textSize.y + (buttonPadding * 2)), buttonAlignment);
 
-		// if (this->doRender)
+		if (doRender)
 		{
 			V4 backColor = buttonStyle->backgroundColor;
 			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
@@ -171,7 +171,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 			fillDrawRectPlaceholder(background, buttonBounds, backColor);
 		}
 
-		// if (this->doUpdate)
+		if (doUpdate)
 		{
 			if ((state != Button_Disabled)
 			 && justClickedOnUI(uiState, buttonBounds))
@@ -194,7 +194,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	prepareForWidgets();
 
 	bool result = false;
-	// if (context->doUpdate)
+	if (doUpdate)
 	{
 		result = updateTextInput(textInput);
 	}
@@ -214,12 +214,12 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 		V2I textInputSize = calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
 		Rect2I textInputBounds = irectAligned(origin, textInputSize, alignment);
 
-		// if (context->doRender)
+		if (doRender)
 		{
 			drawTextInput(&renderer->uiBuffer, textInput, textInputStyle, textInputBounds);
 		}
 
-		// if (context->doUpdate)
+		if (doUpdate)
 		{
 			// Capture the input focus if we just clicked on this TextInput
 			if (justClickedOnUI(globalAppState.uiState, textInputBounds))
@@ -417,7 +417,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 
 	if (!hasAddedWidgets)
 	{
-		// if (context->doRender)
+		if (doRender)
 		{
 			addBeginScissor(&renderer->uiBuffer, rect2(bounds));
 
@@ -432,14 +432,14 @@ void UIPanel::end(bool shrinkToContentHeight)
 	{
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
 
-		// if (context->doUpdate)
+		if (doUpdate)
 		{
 			updateScrollbar(uiState, hScrollbar, currentLeft + style->margin, hScrollbarBounds, scrollbarStyle);
 		}
 
 		f32 scrollPercent = getScrollbarPercent(hScrollbar, hScrollbarBounds.h);
 
-		// if (context->doRender)
+		if (doRender)
 		{
 			drawScrollbar(&renderer->uiBuffer, scrollPercent, hScrollbarBounds.pos, hScrollbarBounds.h, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 		}
@@ -449,20 +449,20 @@ void UIPanel::end(bool shrinkToContentHeight)
 	{
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&assets->theme, &style->scrollbarStyle);
 
-		// if (context->doUpdate)
+		if (doUpdate)
 		{
 			updateScrollbar(uiState, vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
 		}
 
 		f32 scrollPercent = getScrollbarPercent(vScrollbar, vScrollbarBounds.h);
 
-		// if (context->doRender)
+		if (doRender)
 		{
 			drawScrollbar(&renderer->uiBuffer, scrollPercent, vScrollbarBounds.pos, vScrollbarBounds.h, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
 		}
 	}
 
-	// if (context->doRender)
+	if (doRender)
 	{
 		// Fill in the background
 		fillDrawRectPlaceholder(backgroundPlaceholder, bounds, style->backgroundColor);
@@ -495,7 +495,7 @@ void UIPanel::prepareForWidgets()
 {
 	if (!hasAddedWidgets)
 	{
-		// if (context->doRender)
+		if (doRender)
 		{
 			addBeginScissor(&renderer->uiBuffer, rect2(bounds));
 
