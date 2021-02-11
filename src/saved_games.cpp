@@ -185,138 +185,140 @@ void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
 
 void savedGamesWindowProc(WindowContext *context, void *userData)
 {
+	UIPanel *ui = &context->windowPanel;
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	bool isSaveWindow = userData != null;
 
 	SavedGameInfo *selectedSavedGame = null;
 	bool justClickedSavedGame = false;
 
-	s32 bottomBarHeight = 30; // @Cleanup: magic number!
+	UIPanel bottomBar = ui->row(26, ALIGN_BOTTOM, "plain"_s);
 
-	window_beginColumns(context, context->contentArea.h - bottomBarHeight);
-
-	// List of saved games
-	window_columnPercent(context, 0.4f, &catalogue->savedGamesListScrollbar);
-
-	if (catalogue->savedGames.count == 0)
+	UIPanel savesList = ui->column(320, ALIGN_LEFT, "inset"_s);
 	{
-		window_label(context, getText("msg_no_saved_games"_s));
-	}
-	else
-	{
-		for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
+		savesList.enableVerticalScrolling(&catalogue->savedGamesListScrollbar);
+		savesList.alignWidgets(ALIGN_EXPAND_H);
+
+		if (catalogue->savedGames.count == 0)
 		{
-			SavedGameInfo *savedGame = get(&it);
-			s32 index = getIndex(&it);
-
-			if (window_button(context, savedGame->shortName, -1, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
+			savesList.addText(getText("msg_no_saved_games"_s));
+		}
+		else
+		{
+			for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
 			{
-				// Select it and show information in the details pane
-				catalogue->selectedSavedGameIndex = index;
-				justClickedSavedGame = true;
-			}
+				SavedGameInfo *savedGame = get(&it);
+				s32 index = getIndex(&it);
 
-			if (catalogue->selectedSavedGameIndex == index)
-			{
-				selectedSavedGame = savedGame;
+				if (savesList.addButton(savedGame->shortName, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
+				{
+					// Select it and show information in the details pane
+					catalogue->selectedSavedGameIndex = index;
+					justClickedSavedGame = true;
+				}
+
+				if (catalogue->selectedSavedGameIndex == index)
+				{
+					selectedSavedGame = savedGame;
+				}
 			}
 		}
 	}
+	savesList.end();
 
-	// Details about the selected saved game
-	window_column(context);
-
+	// Now we have the saved-game info
 	if (selectedSavedGame)
 	{
-		window_alignWidgets(context, ALIGN_RIGHT);
-		if (window_button(context, getText("button_delete_save"_s), -1, Button_Normal, "delete"_s))
+		ui->alignWidgets(ALIGN_RIGHT);
+		if (ui->addButton(getText("button_delete_save"_s), Button_Normal, "delete"_s))
 		{
-			deleteSave(context->uiState, selectedSavedGame);
+			deleteSave(globalAppState.uiState, selectedSavedGame);
 		}
-		window_alignWidgets(context, ALIGN_EXPAND_H);
 
-		window_label(context, selectedSavedGame->shortName);
-		window_label(context, myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
-		window_label(context, selectedSavedGame->cityName);
-		window_label(context, myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
-		window_label(context, myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));
-		window_label(context, myprintf("{0} population"_s, {formatInt(selectedSavedGame->population)}));
+		ui->alignWidgets(ALIGN_EXPAND_H);
+		ui->addText(selectedSavedGame->shortName);
+		ui->addText(myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
+		ui->addText(selectedSavedGame->cityName);
+		ui->addText(myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
+		ui->addText(myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));
+		ui->addText(myprintf("{0} population"_s, {formatInt(selectedSavedGame->population)}));
 
 		if (selectedSavedGame->problems != 0)
 		{
 			if (selectedSavedGame->problems & SAVE_IS_FROM_NEWER_VERSION)
 			{
-				window_label(context, getText("msg_load_version_too_new"_s));
+				ui->addText(getText("msg_load_version_too_new"_s));
 			}
 		}
 	}
 
-	window_endColumns(context);
-
-	if (isSaveWindow)
+	// Bottom bar
 	{
-		// 'Save' buttons
-		window_alignWidgets(context, ALIGN_LEFT);
-		if (window_button(context, getText("button_back"_s)))
+		if (isSaveWindow)
 		{
-			context->closeRequested = true;
-		}
-
-		window_label(context, "Save game name:"_s);
-
-		window_alignWidgets(context, ALIGN_RIGHT);
-		bool pressedSave = window_button(context, getText("button_save"_s), -1, !isEmpty(&catalogue->saveGameName) ? Button_Normal : Button_Disabled);
-
-		window_alignWidgets(context, ALIGN_EXPAND_H);
-		if (justClickedSavedGame)
-		{
-			clear(&catalogue->saveGameName);
-			append(&catalogue->saveGameName, selectedSavedGame->shortName);
-		}
-
-		bool pressedEnterInTextInput = window_textInput(context, &catalogue->saveGameName);
-		String inputName = trim(textInputToString(&catalogue->saveGameName));
-
-		// Show a warning if we're overwriting an existing save that ISN'T the active one
-		if (!isEmpty(inputName) && !equals(inputName, catalogue->activeSavedGameName))
-		{
-			Indexed<SavedGameInfo *> fileToOverwrite = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
-				return equals(inputName, info->shortName);
-			});
-
-			if (fileToOverwrite.index != -1)
+			// 'Save' buttons
+			bottomBar.alignWidgets(ALIGN_LEFT);
+			if (bottomBar.addButton(getText("button_back"_s)))
 			{
-				window_label(context, getText("msg_save_warning_overwrite"_s), "warning"_s);
+				context->closeRequested = true;
 			}
-		}
 
-		if (pressedSave || pressedEnterInTextInput)
-		{
-			if (!isEmpty(inputName))
+			bottomBar.addText("Save game name:"_s);
+
+			bottomBar.alignWidgets(ALIGN_RIGHT);
+			bool pressedSave = bottomBar.addButton(getText("button_save"_s), !isEmpty(&catalogue->saveGameName) ? Button_Normal : Button_Disabled);
+
+			bottomBar.alignWidgets(ALIGN_EXPAND_H);
+			if (justClickedSavedGame)
 			{
-				if (saveGame(context->uiState, inputName))
+				clear(&catalogue->saveGameName);
+				append(&catalogue->saveGameName, selectedSavedGame->shortName);
+			}
+
+			bool pressedEnterInTextInput = bottomBar.addTextInput(&catalogue->saveGameName);
+			String inputName = trim(textInputToString(&catalogue->saveGameName));
+
+			// Show a warning if we're overwriting an existing save that ISN'T the active one
+			if (!isEmpty(inputName) && !equals(inputName, catalogue->activeSavedGameName))
+			{
+				Indexed<SavedGameInfo *> fileToOverwrite = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
+					return equals(inputName, info->shortName);
+				});
+
+				if (fileToOverwrite.index != -1)
 				{
-					context->closeRequested = true;
+					bottomBar.addText(getText("msg_save_warning_overwrite"_s), "warning"_s);
+				}
+			}
+
+			if (pressedSave || pressedEnterInTextInput)
+			{
+				if (!isEmpty(inputName))
+				{
+					if (saveGame(globalAppState.uiState, inputName))
+					{
+						context->closeRequested = true;
+					}
 				}
 			}
 		}
-	}
-	else
-	{
-		// 'Load' buttons
-		window_alignWidgets(context, ALIGN_LEFT);
-		if (window_button(context, getText("button_back"_s)))
+		else
 		{
-			context->closeRequested = true;
-		}
+			bottomBar.alignWidgets(ALIGN_LEFT);
+			if (bottomBar.addButton(getText("button_back"_s)))
+			{
+				context->closeRequested = true;
+			}
 
-		window_alignWidgets(context, ALIGN_RIGHT);
-		if (window_button(context, getText("button_load"_s), -1, selectedSavedGame ? Button_Normal : Button_Disabled))
-		{
-			loadGame(context->uiState, selectedSavedGame);
-			context->closeRequested = true;
+			bottomBar.alignWidgets(ALIGN_RIGHT);
+			if (bottomBar.addButton(getText("button_load"_s), selectedSavedGame ? Button_Normal : Button_Disabled))
+			{
+				loadGame(globalAppState.uiState, selectedSavedGame);
+				context->closeRequested = true;
+			}
 		}
 	}
+	bottomBar.end();
 }
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)
