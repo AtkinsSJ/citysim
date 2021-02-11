@@ -385,10 +385,12 @@ void UIPanel::end(bool shrinkToContentHeight)
 	DEBUG_FUNCTION();
 	UIState *uiState = globalAppState.uiState;
 
+	// Make sure the current line's height is taken into account
+	startNewLine();
+
 	// @Hack! I don't at all understand why we get a trailing space of 2x the contentPadding at the end.
 	if (!topToBottom && hasAddedWidgets)
 	{
-		startNewLine();
 		currentBottom += (style->contentPadding * 2);
 	}
 

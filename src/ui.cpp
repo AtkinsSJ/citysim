@@ -93,13 +93,14 @@ Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I ori
 
 void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 {
-	window_label(context, context->uiState->tooltipText);
+	UIPanel *ui = &context->windowPanel;
+	ui->addText(context->uiState->tooltipText);
 }
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
 {
 	static String styleName = "tooltip"_s;
-	showWindow(uiState, nullString, 300, 0, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
+	showWindow(uiState, nullString, 300, 100, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)

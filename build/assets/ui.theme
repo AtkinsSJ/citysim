@@ -97,6 +97,11 @@ labelStyle               small
 scrollbarStyle           default
 textInputStyle    default
 
+:Panel tooltip
+backgroundColor           96  96  96 128
+margin                   8
+labelStyle               small
+
 :Scrollbar default
 backgroundColor       0 128 0 255
 knobColor             0 255 0 255
@@ -134,7 +139,7 @@ margin                   8
 labelStyle               small
 buttonStyle              default
 offsetFromMouse          16 16
-panelStyle               window
+panelStyle               tooltip
 
 :Console default
 font                 debug

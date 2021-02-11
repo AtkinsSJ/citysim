@@ -511,10 +511,11 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 		context->windowPanel.end();
 	}
 
-	if (window->flags & WinFlag_ShrinkWidth)
-	{
-		window->area.w = context->largestItemWidth + (context->windowStyle->margin * 2);
-	}
+	// TODO: Reimplement WinFlag_ShrinkWidth?
+	// if (window->flags & WinFlag_ShrinkWidth)
+	// {
+	// 	window->area.w = context->largestItemWidth + (context->windowStyle->margin * 2);
+	// }
 
 	// Handle dragging/position first, BEFORE we use the window rect anywhere
 	if (window->flags & WinFlag_Modal)
