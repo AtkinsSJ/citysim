@@ -24,7 +24,7 @@ bool updateTextInput(TextInput *textInput)
 		}
 		else if (keyJustPressed(SDLK_BACKSPACE))
 		{
-			backspace(textInput);
+			backspaceChars(textInput);
 			textInput->caretFlashCounter = 0;
 		}
 
@@ -35,7 +35,7 @@ bool updateTextInput(TextInput *textInput)
 		}
 		else if (keyJustPressed(SDLK_DELETE))
 		{
-			deleteChar(textInput);
+			deleteChars(textInput);
 			textInput->caretFlashCounter = 0;
 		}
 
@@ -272,13 +272,15 @@ void clear(TextInput *textInput)
 	textInput->caretGlyphPos = 0;
 }
 
-void backspace(TextInput *textInput)
+void backspaceChars(TextInput *textInput, s32 count)
 {
 	if (textInput->caretGlyphPos > 0) 
 	{
+		s32 charsToDelete = min(count, textInput->caretGlyphPos);
+
 		s32 oldBytePos = textInput->caretBytePos;
 
-		moveCaretLeft(textInput, 1);
+		moveCaretLeft(textInput, charsToDelete);
 
 		s32 bytesToRemove = oldBytePos - textInput->caretBytePos;
 
@@ -291,15 +293,27 @@ void backspace(TextInput *textInput)
 		}
 
 		textInput->byteLength -= bytesToRemove;
-		textInput->glyphLength--;
+		textInput->glyphLength -= charsToDelete;
 	}
 }
 
-void deleteChar(TextInput *textInput)
+void deleteChars(TextInput *textInput, s32 count)
 {
-	if (textInput->caretGlyphPos < textInput->glyphLength) 
+	s32 remainingChars = textInput->glyphLength - textInput->caretGlyphPos;
+	if (remainingChars > 0) 
 	{
-		s32 bytesToRemove = findStartOfNextGlyph(textInput->buffer, textInput->caretBytePos, textInput->maxByteLength) - textInput->caretBytePos;
+		s32 charsToDelete = min(count, remainingChars);
+
+		// Move the caret so we can count the bytes
+		s32 oldBytePos = textInput->caretBytePos;
+		s32 oldGlyphPos = textInput->caretGlyphPos;
+		moveCaretRight(textInput, charsToDelete);
+
+		s32 bytesToRemove = textInput->caretBytePos - oldBytePos;
+
+		// Move it back because we don't actually want it moved
+		textInput->caretBytePos = oldBytePos;
+		textInput->caretGlyphPos = oldGlyphPos;
 
 		// copy everything bytesToRemove to the left
 		for (s32 i = textInput->caretBytePos;
@@ -310,7 +324,7 @@ void deleteChar(TextInput *textInput)
 		}
 
 		textInput->byteLength -= bytesToRemove;
-		textInput->glyphLength--;
+		textInput->glyphLength -= charsToDelete;
 	}
 }
 
@@ -319,11 +333,7 @@ void backspaceWholeWord(TextInput *textInput)
 	TextInputPos newCaretPos = findStartOfWordLeft(textInput);
 	s32 toBackspace = textInput->caretGlyphPos - newCaretPos.glyphPos;
 
-	// @Speed: This is a really slow way of doing it!!!!!!!
-	for (s32 i=0; i < toBackspace; i++)
-	{
-		backspace(textInput);
-	}
+	backspaceChars(textInput, toBackspace);
 }
 
 void deleteWholeWord(TextInput *textInput)
@@ -331,11 +341,7 @@ void deleteWholeWord(TextInput *textInput)
 	TextInputPos newCaretPos = findStartOfWordRight(textInput);
 	s32 toDelete = newCaretPos.glyphPos - textInput->caretGlyphPos;
 
-	// @Speed: This is a really slow way of doing it!!!!!!!
-	for (s32 i=0; i < toDelete; i++)
-	{
-		deleteChar(textInput);
-	}
+	deleteChars(textInput, toDelete);
 }
 
 void moveCaretLeft(TextInput *textInput, s32 count)

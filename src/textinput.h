@@ -30,8 +30,8 @@ void insert(TextInput *textInput, String source);
 void insert(TextInput *textInput, char c);
 
 void clear(TextInput *textInput);
-void backspace(TextInput *textInput);
-void deleteChar(TextInput *textInput);
+void backspaceChars(TextInput *textInput, s32 count = 1);
+void deleteChars(TextInput *textInput, s32 count = 1);
 void backspaceWholeWord(TextInput *textInput);
 void deleteWholeWord(TextInput *textInput);
 
