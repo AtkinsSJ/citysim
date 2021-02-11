@@ -21,6 +21,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 	
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
+	this->topToBottom = (flags & Panel_LayoutTopToBottom) != 0;
 
 	// Default to left-aligned
 	u32 hAlignment = this->style->widgetAlignment & ALIGN_H;
@@ -31,8 +32,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 	this->vScrollbar = null;
 
 	// Relative to contentArea
-	this->topToBottom = (flags & Panel_LayoutTopToBottom) != 0;
-	this->currentLeft= 0;
+	this->currentLeft = 0;
 	this->currentRight = this->contentArea.w;
 	this->currentTop = 0;
 	this->currentBottom = this->contentArea.h;
