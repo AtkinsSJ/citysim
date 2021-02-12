@@ -61,7 +61,7 @@ struct UIPanel
 	UIPanel row(s32 height, Alignment vAlignment, String styleName = nullString);
 	UIPanel column(s32 width, Alignment hAlignment, String styleName = nullString);
 
-	void end(bool shinkToContentHeight = false);
+	void end(bool shinkToContentHeight = false, bool shrinkToContentWidth = false);
 
 	// "Private"
 	u32 getFlagsForChild();

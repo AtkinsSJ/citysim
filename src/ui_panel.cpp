@@ -380,10 +380,36 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 	}
 }
 
-void UIPanel::end(bool shrinkToContentHeight)
+void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 {
 	DEBUG_FUNCTION();
 	UIState *uiState = globalAppState.uiState;
+
+	if (shrinkToContentWidth)
+	{
+		// @Hack! This is pretty janky, but we only need it to work in one very simple case (tooltips)
+		// so we'll run with it
+
+		if (widgetAlignment & ALIGN_LEFT)
+		{
+			s32 contentWidth = currentLeft;
+			s32 widthDifference = contentArea.w - contentWidth;
+			if (widthDifference > 0)
+			{
+				bounds.w -= widthDifference;
+			}
+		}
+		else
+		{
+			s32 contentWidth = contentArea.w - currentRight;
+			s32 widthDifference = contentArea.w - contentWidth;
+			if (widthDifference > 0)
+			{
+				bounds.x += widthDifference;
+				bounds.w -= widthDifference;
+			}
+		}
+	}
 
 	// Make sure the current line's height is taken into account
 	startNewLine();

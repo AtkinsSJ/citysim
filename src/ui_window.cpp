@@ -116,22 +116,22 @@ void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool
 
 	window->windowProc(context, window->userData);
 
-	if (window->flags & WinFlag_AutomaticHeight)
+	bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
+	bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
+
+	context->windowPanel.end(shrinkHeight, shrinkWidth);
+
+	if (shrinkHeight)
 	{
-		context->windowPanel.end(true);
 		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
 		window->area.h = barHeight + context->windowPanel.bounds.h;
 	}
-	else
-	{
-		context->windowPanel.end();
-	}
 
-	// TODO: Reimplement WinFlag_ShrinkWidth?
-	// if (window->flags & WinFlag_ShrinkWidth)
-	// {
-	// 	window->area.w = context->largestItemWidth + (context->windowStyle->margin * 2);
-	// }
+	if (shrinkWidth)
+	{
+		window->area.w = context->windowPanel.bounds.w;
+		window->area.x = context->windowPanel.bounds.x;
+	}
 
 	// Handle dragging/position first, BEFORE we use the window rect anywhere
 	if (window->flags & WinFlag_Modal)
@@ -343,6 +343,9 @@ void renderWindows(UIState *uiState)
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 
+		bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
+		bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
+
 		if (isModal)
 		{
 			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
@@ -354,13 +357,18 @@ void renderWindows(UIState *uiState)
 		{
 			WindowContext updateContext = WindowContext(window, windowStyle, uiState, true, false);
 			updateWindow(uiState, window, &updateContext, isActive);
-			updateContext.windowPanel.end((window->flags & WinFlag_AutomaticHeight) != 0);
+			updateContext.windowPanel.end(shrinkHeight, shrinkWidth);
 			window->isInitialised = true;
 		}
 
 		WindowContext context = WindowContext(window, windowStyle, uiState, false, true);
 		window->windowProc(&context, window->userData);
-		context.windowPanel.end((window->flags & WinFlag_AutomaticHeight) != 0);
+		// NB: This is a bit hacky. We have to pass shrinkHeight to this rendering pass because when creating a
+		// WindowContext above, we set the window's height to be really large if the window has automatic height.
+		// So, without it, the window's background is very large. But, we must NOT pass shrinkWidth, because then
+		// it shrinks the background's width down to 0 for some reason. I'm now realising this is just a bug I
+		// haven't tracked down, so I should fix it instead of this @Hack
+		context.windowPanel.end(shrinkHeight, false);
 
 		Rect2I wholeWindowArea = window->area;
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
