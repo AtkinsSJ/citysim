@@ -424,54 +424,21 @@ void addClear(RenderBuffer *buffer, V4 clearColor)
 	clear->clearColor = clearColor;
 }
 
-void addBeginScissor(RenderBuffer *buffer, Rect2 bounds)
+void addBeginScissor(RenderBuffer *buffer, Rect2I bounds)
 {
 	ASSERT(bounds.w >= 0);
 	ASSERT(bounds.h >= 0);
 
 	RenderItem_BeginScissor *scissor = appendRenderItem<RenderItem_BeginScissor>(buffer, RenderItemType_BeginScissor);
 
-	//
-	// Project the bounds using the camera matrix.
-	// This is foolish and fraught with peril! GPU scissors only accept axis-aligned rectangles,
-	// so if our matrix does something else then we'll have a bad time. (Well, it'll probably
-	// look really cool, but I'd rather things only look cool when I tell them to.)
-	// If we do want to have wacky-angled or funky-shaped scissor areas, we can use a stencil
-	// buffer instead.
-	//
-	// - Sam, 23/09/2019
-	//
+	// We have to flip the bounds rectangle vertically because OpenGL has the origin in the bottom-left,
+	// whereas our system uses the top-left!
 
-	V2 minCorner = bounds.pos;
-	V2 maxCorner = bounds.pos + bounds.size;
+	bounds.y = inputState->windowHeight - bounds.y - bounds.h;
 
-	V4 projectedMin = buffer->currentCamera->projectionMatrix * v4(minCorner.x, minCorner.y, 0.0f, 1.0f);
-	V4 projectedMax = buffer->currentCamera->projectionMatrix * v4(maxCorner.x, maxCorner.y, 0.0f, 1.0f);
+	// Crop to window bounds
+	scissor->bounds = intersect(bounds, irectXYWH(0, 0, inputState->windowWidth, inputState->windowHeight));
 
-	s32 screenWidth  = inputState->windowWidth;
-	s32 screenHeight = inputState->windowHeight;
-
-	// At this point we're in -1 to 1 coordinates
-
-	// So, we need to map back into pixel space
-
-	// Also, note that even though these are called min/max, they might be the opposite way around
-	// because of the projection matrix! We're just calling them that to match minCorner/maxCorner above.
-
-	s32 screenMinX = floor_s32((projectedMin.x + 1.0f) * (screenWidth  * 0.5f));
-	s32 screenMinY = floor_s32((projectedMin.y + 1.0f) * (screenHeight * 0.5f));
-	s32 screenMaxX =  ceil_s32((projectedMax.x + 1.0f) * (screenWidth  * 0.5f));
-	s32 screenMaxY =  ceil_s32((projectedMax.y + 1.0f) * (screenHeight * 0.5f));
-
-	s32 width  = abs_s32(screenMinX - screenMaxX);
-	s32 height = abs_s32(screenMinY - screenMaxY);
-	ASSERT(width >= 0);
-	ASSERT(height >= 0);
-
-	Rect2I resultBounds = irectXYWH(min(screenMinX, screenMaxX), min(screenMinY, screenMaxY), width, height);
-
-	// Crop it to be within the screen bounds
-	scissor->bounds = intersect(resultBounds, irectXYWH(0, 0, inputState->windowWidth, inputState->windowHeight));
 	ASSERT(scissor->bounds.w >= 0);
 	ASSERT(scissor->bounds.h >= 0);
 

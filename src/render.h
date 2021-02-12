@@ -291,9 +291,8 @@ void addSetTextureRaw(RenderBuffer *buffer, s32 width, s32 height, u8 bytesPerPi
 
 void addClear(RenderBuffer *buffer, V4 clearColor = {});
 
-// NB: bounds rectangle is in the coordinates of the buffer's camera, to make life easier.
-// (glScissor() takes window-pixel coordinates, but the Y is inverted. Bleh.)
-void addBeginScissor(RenderBuffer *buffer, Rect2 bounds);
+// NB: bounds rectangle is in window pixels, with the origin at the top-left
+void addBeginScissor(RenderBuffer *buffer, Rect2I bounds);
 void addEndScissor(RenderBuffer *buffer);
 
 void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color);

@@ -6,12 +6,10 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	
 	AppStatus result = AppStatus_MainMenu;
 
-	s32 windowWidth = round_s32(renderer->uiCamera.size.x);
-	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	UITheme *theme = &assets->theme;
 
-	V2I position = v2i(windowWidth / 2, 157);
-	s32 maxLabelWidth = windowWidth - 256;
+	V2I position = v2i(inputState->windowWidth / 2, 157);
+	s32 maxLabelWidth = inputState->windowWidth - 256;
 
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);

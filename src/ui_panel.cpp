@@ -421,7 +421,7 @@ void UIPanel::end(bool shrinkToContentHeight)
 	{
 		if (doRender)
 		{
-			addBeginScissor(&renderer->uiBuffer, rect2(bounds));
+			addBeginScissor(&renderer->uiBuffer, bounds);
 
 			// Prepare to render background
 			// TODO: Handle backgrounds that aren't a solid colour
@@ -499,7 +499,7 @@ void UIPanel::prepareForWidgets()
 	{
 		if (doRender)
 		{
-			addBeginScissor(&renderer->uiBuffer, rect2(bounds));
+			addBeginScissor(&renderer->uiBuffer, bounds);
 
 			pushInputScissorRect(globalAppState.uiState, bounds);
 
