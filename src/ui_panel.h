@@ -99,5 +99,5 @@ struct UIPanel
 	s32 largestLineWidth;
 
 	UIPanelStyle *style;
-	RenderItem_DrawSingleRect *backgroundPlaceholder;
+	UIBackground background;
 };

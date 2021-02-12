@@ -1,5 +1,9 @@
 // ui.cpp
 
+#include "ui_background.cpp"
+#include "ui_panel.cpp"
+#include "ui_window.cpp"
+
 void initUIState(UIState *uiState, MemoryArena *arena)
 {
 	*uiState = {};

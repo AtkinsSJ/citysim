@@ -18,29 +18,17 @@ Notes for searching:
 
 ------------------------------------------------
 
-Panels:
-	A generalisation of UIMessage, PopupMenu, etc... Anything with widgets inside basically.
-✔ Styles
-✔ Actually implement them
-✔ Scrolling!
-✔ Replace UIMessage
-✔ Replace PopupMenu
-✔ Replace window content layout with panels?
-✔ Replace DataView UI
-✔ Reimplement width-shrink-to-fit for tooltips!
-✔ Fix occasional gap between window title bar and content
-
-Render bug - cost tooltip is half opacity when dragging a rectangle over its upper-left corner
-
-Asset references
-- We can't keep asset pointers around through an asset reload, because they point to the wrong memory. We solved this with SpriteRef for the Sprite* case, but we also store SpriteGroup*s and others. Perhaps a template AssetRef<Type> which works in the same way would be useful?
-
 Backgrounds:
 - A general struct that abstracts how different backgrounds are drawn, so that eg a Panel can just say it has a background, call prepareBackgroundPlaceholder() and fillBackgroundPlaceholder() (or something) and be done.
 - Kinds:
 	- Solid colour
 	- Fixed image?
 	- Nine-patch
+
+Render bug - cost tooltip is half opacity when dragging a rectangle over its upper-left corner
+
+Asset references
+- We can't keep asset pointers around through an asset reload, because they point to the wrong memory. We solved this with SpriteRef for the Sprite* case, but we also store SpriteGroup*s and others. Perhaps a template AssetRef<Type> which works in the same way would be useful?
 
 Scrollbar improvements:
 - Convert drawScrollbar() to take a ScrollbarState

@@ -1,5 +1,42 @@
 #pragma once
 
+Maybe<UIBackgroundStyle> readBackgroundStyle(LineReader *reader)
+{
+	String typeName = readToken(reader);
+	Maybe<UIBackgroundStyle> result = makeFailure<UIBackgroundStyle>();
+
+	if (equals(typeName, "none"_s))
+	{
+		result = makeSuccess(UIBackgroundStyle());
+	}
+	else if (equals(typeName, "color"_s))
+	{
+		Maybe<V4> color = readColor(reader);
+		if (color.isValid)
+		{
+			result = makeSuccess(UIBackgroundStyle(color.value));
+		}
+	}
+	else if (equals(typeName, "image"_s))
+	{
+		ASSERT(!"Not implemented");
+	}
+	else if (equals(typeName, "gradient"_s))
+	{
+		ASSERT(!"Not implemented");
+	}
+	else if (equals(typeName, "ninepatch"_s))
+	{
+		ASSERT(!"Not implemented");
+	}
+	else
+	{
+		error(reader, "Unrecognised background type '{0}'"_s, {typeName});
+	}
+
+	return result;
+}
+
 void initUITheme(UITheme *theme)
 {
 	initHashTable(&theme->fontNamesToAssetNames);
@@ -28,7 +65,8 @@ void initUITheme(UITheme *theme)
 	}
 
 	//                                                   btn   cnsl  label  panel  scrll  txtin  windw
-	PROP(backgroundColor,          PropType_Color,      true,  true, false,  true,  true,  true, false);
+	PROP(background,               PropType_Background, true, false, false,  true, false, false, false);
+	PROP(backgroundColor,          PropType_Color,      true,  true, false, false,  true,  true, false);
 	PROP(buttonStyle,              PropType_Style,     false, false, false,  true, false, false, false);
 	PROP(caretFlashCycleDuration,  PropType_Float,     false, false, false, false, false,  true, false);
 	PROP(widgetAlignment,          PropType_Alignment, false, false, false,  true, false, false, false);
@@ -73,6 +111,8 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			button->textColor = style->textColor;
 			button->textAlignment = style->textAlignment;
 
+			button->background = style->background;
+
 			button->backgroundColor = style->backgroundColor;
 			button->hoverBackgroundColor = style->hoverBackgroundColor;
 			button->pressedBackgroundColor = style->pressedBackgroundColor;
@@ -107,7 +147,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			panel->margin = style->margin;
 			panel->contentPadding = style->contentPadding;
 			panel->widgetAlignment = style->widgetAlignment;
-			panel->backgroundColor = style->backgroundColor;
+			panel->background = style->background;
 
 			panel->buttonStyle = style->buttonStyle;
 			panel->labelStyle = style->labelStyle;
@@ -348,6 +388,14 @@ void loadUITheme(Blob data, Asset *asset)
 								if (value.isValid)
 								{
 									*((u32*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+								}
+							} break;
+
+							case PropType_Background: {
+								Maybe<UIBackgroundStyle> value = readBackgroundStyle(&reader);
+								if (value.isValid)
+								{
+									*((UIBackgroundStyle*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
 							} break;
 

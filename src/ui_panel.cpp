@@ -40,6 +40,8 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 	this->largestItemWidth = 0;
 	this->largestItemHeightOnLine = 0;
 	this->largestLineWidth = 0;
+
+	this->background = UIBackground(&this->style->background);
 }
 
 void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
@@ -458,8 +460,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 			addBeginScissor(&renderer->uiBuffer, bounds);
 
 			// Prepare to render background
-			// TODO: Handle backgrounds that aren't a solid colour
-			this->backgroundPlaceholder = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
+			background.preparePlaceholder(&renderer->uiBuffer);
 		}
 	}
 
@@ -501,7 +502,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	if (doRender)
 	{
 		// Fill in the background
-		fillDrawRectPlaceholder(backgroundPlaceholder, bounds, style->backgroundColor);
+		background.fillPlaceholder(bounds);
 
 		// Clear any scissor stuff
 		addEndScissor(&renderer->uiBuffer);
@@ -538,8 +539,7 @@ void UIPanel::prepareForWidgets()
 			pushInputScissorRect(globalAppState.uiState, bounds);
 
 			// Prepare to render background
-			// TODO: Handle backgrounds that aren't a solid colour
-			this->backgroundPlaceholder = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
+			background.preparePlaceholder(&renderer->uiBuffer);
 		}
 
 		hasAddedWidgets = true;

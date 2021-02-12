@@ -28,11 +28,43 @@ struct UIStyleReference
 	UIStyleReference(UIStyleType type) : styleType(type) {}
 };
 
+enum UIBackgroundType
+{
+	Background_None,
+	Background_Color,
+	Background_Image,
+	Background_Gradient,
+	Background_Ninepatch,
+};
+
+struct UIBackgroundStyle
+{
+	UIBackgroundStyle(UIBackgroundType type)
+		: type(type) {}
+
+	UIBackgroundStyle() : UIBackgroundStyle(Background_None) 
+	{}
+
+	UIBackgroundStyle(V4 color) : UIBackgroundStyle(Background_Color)
+	{
+		this->color = color;
+	}
+
+	UIBackgroundType type;
+	union
+	{
+		V4 color;
+	};
+};
+Maybe<UIBackgroundStyle> readBackgroundStyle(struct LineReader *reader);
+
 struct UIButtonStyle
 {
 	FontReference font;
 	V4 textColor;
 	u32 textAlignment;
+
+	UIBackgroundStyle background;
 
 	V4 backgroundColor;
 	V4 hoverBackgroundColor;
@@ -54,7 +86,7 @@ struct UIPanelStyle
 	s32 contentPadding;
 	u32 widgetAlignment;
 	
-	V4 backgroundColor;
+	UIBackgroundStyle background;
 
 	UIStyleReference buttonStyle    = UIStyleReference(UIStyle_Button);
 	UIStyleReference labelStyle     = UIStyleReference(UIStyle_Label);
@@ -111,6 +143,7 @@ struct UIConsoleStyle
 enum PropType
 {
 	PropType_Alignment,
+	PropType_Background,
 	PropType_Bool,
 	PropType_Color,
 	PropType_Float,
@@ -128,6 +161,9 @@ struct UIStyle
 	String name;
 
 	// PROPERTIES
+
+	UIBackgroundStyle background;
+
 	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
 	V4 backgroundColor;
 	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
