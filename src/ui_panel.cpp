@@ -39,6 +39,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 
 	this->largestItemWidth = 0;
 	this->largestItemHeightOnLine = 0;
+	this->largestLineWidth = 0;
 }
 
 void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
@@ -260,6 +261,9 @@ void UIPanel::startNewLine(u32 hAlignment)
 {
 	DEBUG_FUNCTION();
 
+	s32 lineWidth = (widgetAlignment & ALIGN_RIGHT) ? currentRight : currentLeft;
+	largestLineWidth = max(largestLineWidth, lineWidth);
+
 	currentLeft = 0;
 	currentRight = contentArea.w;
 
@@ -385,32 +389,6 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	DEBUG_FUNCTION();
 	UIState *uiState = globalAppState.uiState;
 
-	if (shrinkToContentWidth)
-	{
-		// @Hack! This is pretty janky, but we only need it to work in one very simple case (tooltips)
-		// so we'll run with it
-
-		if (widgetAlignment & ALIGN_LEFT)
-		{
-			s32 contentWidth = currentLeft;
-			s32 widthDifference = contentArea.w - contentWidth;
-			if (widthDifference > 0)
-			{
-				bounds.w -= widthDifference;
-			}
-		}
-		else
-		{
-			s32 contentWidth = contentArea.w - currentRight;
-			s32 widthDifference = contentArea.w - contentWidth;
-			if (widthDifference > 0)
-			{
-				bounds.x += widthDifference;
-				bounds.w -= widthDifference;
-			}
-		}
-	}
-
 	// Make sure the current line's height is taken into account
 	startNewLine();
 
@@ -422,6 +400,31 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 	s32 contentHeight = (topToBottom ? (currentTop + style->margin)
 									 : (contentArea.h - currentBottom));
+
+	bool boundsChanged = false;
+
+	if (shrinkToContentWidth)
+	{
+		if (widgetAlignment & ALIGN_LEFT)
+		{
+			s32 widthDifference = contentArea.w - largestLineWidth;
+			if (widthDifference > 0)
+			{
+				bounds.w -= widthDifference;
+				boundsChanged = true;
+			}
+		}
+		else
+		{
+			s32 widthDifference = contentArea.w - largestLineWidth;
+			if (widthDifference > 0)
+			{
+				bounds.x += widthDifference;
+				bounds.w -= widthDifference;
+				boundsChanged = true;
+			}
+		}
+	}
 
 	if (shrinkToContentHeight)
 	{
@@ -437,8 +440,13 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 			bounds.y += (bounds.h - newHeight);
 			bounds.h = newHeight;
 		}
+	}
 
+	if (boundsChanged)
+	{
 		hScrollbarBounds.w = bounds.w;
+		hScrollbarBounds.x = bounds.x;
+
 		vScrollbarBounds.h = bounds.h;
 		vScrollbarBounds.y = bounds.y;
 	}

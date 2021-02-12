@@ -96,6 +96,7 @@ struct UIPanel
 	
 	s32 largestItemWidth;
 	s32 largestItemHeightOnLine;
+	s32 largestLineWidth;
 
 	UIPanelStyle *style;
 	RenderItem_DrawSingleRect *backgroundPlaceholder;

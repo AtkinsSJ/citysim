@@ -101,9 +101,7 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState
 	  	  irectXYWH(window->area.x,
 	  	  		window->area.y + ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight),
 	  	  		window->area.w,
-	  	  		((window->flags & WinFlag_AutomaticHeight)
-	  	  			? 10000 : 
-	  	  			(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight)))),
+	  	  		(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))),
 	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
 	      Panel_LayoutTopToBottom | Panel_IsTopLevel | (doUpdate ? Panel_DoUpdate : 0) | (doRender ? Panel_DoRender : 0)
 	  )
@@ -363,12 +361,7 @@ void renderWindows(UIState *uiState)
 
 		WindowContext context = WindowContext(window, windowStyle, uiState, false, true);
 		window->windowProc(&context, window->userData);
-		// NB: This is a bit hacky. We have to pass shrinkHeight to this rendering pass because when creating a
-		// WindowContext above, we set the window's height to be really large if the window has automatic height.
-		// So, without it, the window's background is very large. But, we must NOT pass shrinkWidth, because then
-		// it shrinks the background's width down to 0 for some reason. I'm now realising this is just a bug I
-		// haven't tracked down, so I should fix it instead of this @Hack
-		context.windowPanel.end(shrinkHeight, false);
+		context.windowPanel.end(shrinkHeight, shrinkWidth);
 
 		Rect2I wholeWindowArea = window->area;
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;

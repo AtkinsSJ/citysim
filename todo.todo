@@ -27,8 +27,10 @@ Panels:
 ✔ Replace PopupMenu
 ✔ Replace window content layout with panels?
 ✔ Replace DataView UI
-- Reimplement width-shrink-to-fit for tooltips!
+✔ Reimplement width-shrink-to-fit for tooltips!
 ✔ Fix occasional gap between window title bar and content
+
+Render bug - cost tooltip is half opacity when dragging a rectangle over its upper-left corner
 
 Asset references
 - We can't keep asset pointers around through an asset reload, because they point to the wrong memory. We solved this with SpriteRef for the Sprite* case, but we also store SpriteGroup*s and others. Perhaps a template AssetRef<Type> which works in the same way would be useful?
