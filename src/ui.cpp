@@ -1,6 +1,6 @@
 // ui.cpp
 
-#include "ui_background.cpp"
+#include "ui_drawable.cpp"
 #include "ui_panel.cpp"
 #include "ui_window.cpp"
 
@@ -156,7 +156,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	
 	bool buttonClicked = false;
 
-	UIBackgroundStyle *backgroundStyle = &style->background;
+	UIDrawableStyle *backgroundStyle = &style->background;
 
 	u32 textAlignment = style->textAlignment;
 
@@ -198,7 +198,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 		backgroundStyle = &style->hoverBackground;
 	}
 
-	UIBackground buttonBackground = UIBackground(backgroundStyle);
+	UIDrawable buttonBackground = UIDrawable(backgroundStyle);
 	buttonBackground.draw(&renderer->uiBuffer, bounds);
 
 	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
@@ -331,7 +331,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 // window_completeColumn() into that, too.
 void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, UIScrollbarStyle *style)
 {
-	UIBackground background = UIBackground(&style->background);
+	UIDrawable background = UIDrawable(&style->background);
 	Rect2I backgroundRect = irectXYWH(topLeft.x, topLeft.y, style->width, height);
 	background.draw(uiBuffer, backgroundRect);
 

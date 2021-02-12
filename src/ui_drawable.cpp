@@ -1,30 +1,30 @@
 #pragma once
 
-void UIBackground::preparePlaceholder(RenderBuffer *buffer)
+void UIDrawable::preparePlaceholder(RenderBuffer *buffer)
 {
 	switch (style->type)
 	{
-		case Background_None:
+		case Drawable_None:
 		{
 			return; // Nothing to do!
 		} break;
 
-		case Background_Color:
+		case Drawable_Color:
 		{
 			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured);
 		} break;
 
-		// case Background_Image:
+		// case Drawable_Image:
 		// {
 
 		// } break;
 
-		// case Background_Gradient:
+		// case Drawable_Gradient:
 		// {
 		// 	rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured);
 		// } break;
 
-		// case Background_Ninepatch:
+		// case Drawable_Ninepatch:
 		// {
 
 		// } break;
@@ -33,31 +33,31 @@ void UIBackground::preparePlaceholder(RenderBuffer *buffer)
 	}
 }
 
-void UIBackground::fillPlaceholder(Rect2I bounds)
+void UIDrawable::fillPlaceholder(Rect2I bounds)
 {
 	switch (style->type)
 	{
-		case Background_None:
+		case Drawable_None:
 		{
 			return; // Nothing to do!
 		} break;
 
-		case Background_Color:
+		case Drawable_Color:
 		{
 			fillDrawRectPlaceholder(rectPlaceholder, bounds, style->color);
 		} break;
 
-		// case Background_Image:
+		// case Drawable_Image:
 		// {
 
 		// } break;
 
-		// case Background_Gradient:
+		// case Drawable_Gradient:
 		// {
 		// 	fillDrawRectPlaceholder(rectPlaceholder, bounds, style->color);
 		// } break;
 
-		// case Background_Ninepatch:
+		// case Drawable_Ninepatch:
 		// {
 
 		// } break;
@@ -66,31 +66,31 @@ void UIBackground::fillPlaceholder(Rect2I bounds)
 	}
 }
 
-void UIBackground::draw(RenderBuffer *buffer, Rect2I bounds)
+void UIDrawable::draw(RenderBuffer *buffer, Rect2I bounds)
 {
 	switch (style->type)
 	{
-		case Background_None:
+		case Drawable_None:
 		{
 			return; // Nothing to do!
 		} break;
 
-		case Background_Color:
+		case Drawable_Color:
 		{
 			drawSingleRect(buffer, bounds, renderer->shaderIds.untextured, style->color);
 		} break;
 
-		// case Background_Image:
+		// case Drawable_Image:
 		// {
 
 		// } break;
 
-		// case Background_Gradient:
+		// case Drawable_Gradient:
 		// {
 		// 	fillDrawRectPlaceholder(rectPlaceholder, bounds, style->color);
 		// } break;
 
-		// case Background_Ninepatch:
+		// case Drawable_Ninepatch:
 		// {
 
 		// } break;

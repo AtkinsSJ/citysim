@@ -62,7 +62,7 @@ void renderConsole(Console *console)
 	s32 heightOfOutputArea = textPos.y;
 
 	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
-	UIBackground(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
+	UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
 
 	V2I knobSize = v2i(scrollbarStyle->width, scrollbarStyle->width);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));

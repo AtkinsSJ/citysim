@@ -25,7 +25,7 @@ inline ButtonState buttonIsActive(bool isActive)
 	return isActive ? Button_Active : Button_Normal;
 }
 
-#include "ui_background.h"
+#include "ui_drawable.h"
 #include "ui_panel.h"
 #include "ui_window.h"
 

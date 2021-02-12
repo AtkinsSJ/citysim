@@ -41,7 +41,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 	this->largestItemHeightOnLine = 0;
 	this->largestLineWidth = 0;
 
-	this->background = UIBackground(&this->style->background);
+	this->background = UIDrawable(&this->style->background);
 }
 
 void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
@@ -138,7 +138,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 
 		if (doRender)
 		{
-			UIBackgroundStyle *backgroundStyle = &buttonStyle->background;
+			UIDrawableStyle *backgroundStyle = &buttonStyle->background;
 
 			if (state == Button_Disabled)
 			{
@@ -165,7 +165,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 				backgroundStyle = &buttonStyle->hoverBackground;
 			}
 
-			UIBackground buttonBackground = UIBackground(backgroundStyle);
+			UIDrawable buttonBackground = UIDrawable(backgroundStyle);
 			buttonBackground.preparePlaceholder(&renderer->uiBuffer);
 
 			V2I textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);

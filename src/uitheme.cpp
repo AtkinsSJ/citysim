@@ -1,20 +1,20 @@
 #pragma once
 
-Maybe<UIBackgroundStyle> readBackgroundStyle(LineReader *reader)
+Maybe<UIDrawableStyle> readBackgroundStyle(LineReader *reader)
 {
 	String typeName = readToken(reader);
-	Maybe<UIBackgroundStyle> result = makeFailure<UIBackgroundStyle>();
+	Maybe<UIDrawableStyle> result = makeFailure<UIDrawableStyle>();
 
 	if (equals(typeName, "none"_s))
 	{
-		result = makeSuccess(UIBackgroundStyle());
+		result = makeSuccess(UIDrawableStyle());
 	}
 	else if (equals(typeName, "color"_s))
 	{
 		Maybe<V4> color = readColor(reader);
 		if (color.isValid)
 		{
-			result = makeSuccess(UIBackgroundStyle(color.value));
+			result = makeSuccess(UIDrawableStyle(color.value));
 		}
 	}
 	else if (equals(typeName, "image"_s))
@@ -389,10 +389,10 @@ void loadUITheme(Blob data, Asset *asset)
 							} break;
 
 							case PropType_Background: {
-								Maybe<UIBackgroundStyle> value = readBackgroundStyle(&reader);
+								Maybe<UIDrawableStyle> value = readBackgroundStyle(&reader);
 								if (value.isValid)
 								{
-									*((UIBackgroundStyle*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+									*((UIDrawableStyle*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
 							} break;
 

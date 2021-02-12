@@ -28,35 +28,35 @@ struct UIStyleReference
 	UIStyleReference(UIStyleType type) : styleType(type) {}
 };
 
-enum UIBackgroundType
+enum UIDrawableType
 {
-	Background_None,
-	Background_Color,
-	Background_Image,
-	Background_Gradient,
-	Background_Ninepatch,
+	Drawable_None,
+	Drawable_Color,
+	Drawable_Image,
+	Drawable_Gradient,
+	Drawable_Ninepatch,
 };
 
-struct UIBackgroundStyle
+struct UIDrawableStyle
 {
-	UIBackgroundStyle(UIBackgroundType type)
+	UIDrawableStyle(UIDrawableType type)
 		: type(type) {}
 
-	UIBackgroundStyle() : UIBackgroundStyle(Background_None) 
+	UIDrawableStyle() : UIDrawableStyle(Drawable_None) 
 	{}
 
-	UIBackgroundStyle(V4 color) : UIBackgroundStyle(Background_Color)
+	UIDrawableStyle(V4 color) : UIDrawableStyle(Drawable_Color)
 	{
 		this->color = color;
 	}
 
-	UIBackgroundType type;
+	UIDrawableType type;
 	union
 	{
 		V4 color;
 	};
 };
-Maybe<UIBackgroundStyle> readBackgroundStyle(struct LineReader *reader);
+Maybe<UIDrawableStyle> readBackgroundStyle(struct LineReader *reader);
 
 struct UIButtonStyle
 {
@@ -64,10 +64,10 @@ struct UIButtonStyle
 	V4 textColor;
 	u32 textAlignment;
 
-	UIBackgroundStyle background;
-	UIBackgroundStyle hoverBackground;
-	UIBackgroundStyle pressedBackground;
-	UIBackgroundStyle disabledBackground;
+	UIDrawableStyle background;
+	UIDrawableStyle hoverBackground;
+	UIDrawableStyle pressedBackground;
+	UIDrawableStyle disabledBackground;
 
 	s32 padding;
 };
@@ -84,7 +84,7 @@ struct UIPanelStyle
 	s32 contentPadding;
 	u32 widgetAlignment;
 	
-	UIBackgroundStyle background;
+	UIDrawableStyle background;
 
 	UIStyleReference buttonStyle    = UIStyleReference(UIStyle_Button);
 	UIStyleReference labelStyle     = UIStyleReference(UIStyle_Label);
@@ -98,7 +98,7 @@ struct UITextInputStyle
 	V4 textColor;
 	u32 textAlignment;
 
-	UIBackgroundStyle background;
+	UIDrawableStyle background;
 	s32 padding;
 	
 	bool showCaret;
@@ -107,7 +107,7 @@ struct UITextInputStyle
 
 struct UIScrollbarStyle
 {
-	UIBackgroundStyle background;
+	UIDrawableStyle background;
 	V4 knobColor;
 	s32 width;
 };
@@ -131,7 +131,7 @@ struct UIConsoleStyle
 	FontReference font;
 	V4 outputTextColor[CLS_COUNT];
 
-	UIBackgroundStyle background;
+	UIDrawableStyle background;
 	s32 padding;
 
 	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
@@ -160,10 +160,10 @@ struct UIStyle
 
 	// PROPERTIES
 
-	UIBackgroundStyle background;
-	UIBackgroundStyle disabledBackground;
-	UIBackgroundStyle hoverBackground;
-	UIBackgroundStyle pressedBackground;
+	UIDrawableStyle background;
+	UIDrawableStyle disabledBackground;
+	UIDrawableStyle hoverBackground;
+	UIDrawableStyle pressedBackground;
 
 	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
 	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);

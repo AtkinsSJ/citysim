@@ -158,7 +158,7 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInp
 	BitmapFont *font = getFont(&style->font);
 
 
-	UIBackground(&style->background).draw(renderBuffer, bounds);
+	UIDrawable(&style->background).draw(renderBuffer, bounds);
 
 	bool showCaret = style->showCaret
 					 && hasCapturedInput(textInput)
