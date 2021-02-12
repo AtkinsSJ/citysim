@@ -339,8 +339,10 @@ void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 h
 	s32 knobHeight = min(knobWidth, height); // TODO: make it larger?
 
 	s32 scrollY = round_s32(scrollPercent * (height - knobHeight));
-	Rect2 knobRect = rectXYWHi(topLeft.x, topLeft.y + scrollY, knobWidth, knobHeight);
-	drawSingleRect(uiBuffer, knobRect, renderer->shaderIds.untextured, style->knobColor);
+
+	UIDrawable knob = UIDrawable(&style->knob);
+	Rect2I knobRect = irectXYWH(topLeft.x, topLeft.y + scrollY, knobWidth, knobHeight);
+	knob.draw(uiBuffer, knobRect);
 }
 
 inline f32 getScrollbarPercent(ScrollbarState *scrollbar, s32 scrollbarHeight)

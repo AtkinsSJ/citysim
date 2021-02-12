@@ -56,7 +56,7 @@ struct UIDrawableStyle
 		V4 color;
 	};
 };
-Maybe<UIDrawableStyle> readBackgroundStyle(struct LineReader *reader);
+Maybe<UIDrawableStyle> readDrawableStyle(struct LineReader *reader);
 
 struct UIButtonStyle
 {
@@ -108,7 +108,7 @@ struct UITextInputStyle
 struct UIScrollbarStyle
 {
 	UIDrawableStyle background;
-	V4 knobColor;
+	UIDrawableStyle knob;
 	s32 width;
 };
 
@@ -141,9 +141,9 @@ struct UIConsoleStyle
 enum PropType
 {
 	PropType_Alignment,
-	PropType_Background,
 	PropType_Bool,
 	PropType_Color,
+	PropType_Drawable,
 	PropType_Float,
 	PropType_Font,
 	PropType_Int,
@@ -171,7 +171,7 @@ struct UIStyle
 	u32 widgetAlignment;
 	s32 contentPadding;
 	FontReference font;
-	V4 knobColor;
+	UIDrawableStyle knob;
 	UIStyleReference labelStyle = UIStyleReference(UIStyle_Label);
 	s32 margin;
 	V2I offsetFromMouse;
