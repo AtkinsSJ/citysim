@@ -65,22 +65,21 @@ void initUITheme(UITheme *theme)
 	}
 
 	//                                                   btn   cnsl  label  panel  scrll  txtin  windw
-	PROP(background,               PropType_Background, true, false, false,  true, false, false, false);
-	PROP(backgroundColor,          PropType_Color,      true,  true, false, false,  true,  true, false);
+	PROP(background,               PropType_Background, true,  true, false,  true,  true,  true, false);
 	PROP(buttonStyle,              PropType_Style,     false, false, false,  true, false, false, false);
 	PROP(caretFlashCycleDuration,  PropType_Float,     false, false, false, false, false,  true, false);
 	PROP(widgetAlignment,          PropType_Alignment, false, false, false,  true, false, false, false);
 	PROP(contentPadding,           PropType_Int,       false, false, false,  true, false, false, false);
-	PROP(disabledBackgroundColor,  PropType_Color,      true, false, false, false, false, false, false);
+	PROP(disabledBackground,       PropType_Background, true, false, false, false, false, false, false);
 	PROP(font,                     PropType_Font,       true,  true,  true, false, false,  true, false);
-	PROP(hoverBackgroundColor,     PropType_Color,      true, false, false, false, false, false, false);
+	PROP(hoverBackground,          PropType_Background, true, false, false, false, false, false, false);
 	PROP(knobColor,                PropType_Color,     false, false, false, false,  true, false, false);
 	PROP(labelStyle,               PropType_Style,     false, false, false,  true, false, false, false);
 	PROP(margin,                   PropType_Int,       false, false, false,  true, false, false, false);
 	PROP(offsetFromMouse,          PropType_V2I,       false, false, false, false, false, false,  true);
 	PROP(padding,                  PropType_Int,        true,  true, false, false, false,  true, false);
 	PROP(panelStyle,               PropType_Style,     false, false, false, false, false, false,  true);
-	PROP(pressedBackgroundColor,   PropType_Color,      true, false, false, false, false, false, false);
+	PROP(pressedBackground,        PropType_Background, true, false, false, false, false, false, false);
 	PROP(scrollbarStyle,           PropType_Style,     false,  true, false,  true, false, false, false);
 	PROP(showCaret,                PropType_Bool,      false, false, false, false, false,  true, false);
 	PROP(textAlignment,            PropType_Alignment,  true, false, false, false, false,  true, false);
@@ -112,11 +111,9 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			button->textAlignment = style->textAlignment;
 
 			button->background = style->background;
-
-			button->backgroundColor = style->backgroundColor;
-			button->hoverBackgroundColor = style->hoverBackgroundColor;
-			button->pressedBackgroundColor = style->pressedBackgroundColor;
-			button->disabledBackgroundColor = style->disabledBackgroundColor;
+			button->hoverBackground = style->hoverBackground;
+			button->pressedBackground = style->pressedBackground;
+			button->disabledBackground = style->disabledBackground;
 
 			button->padding = style->padding;
 		} break;
@@ -127,7 +124,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			console->font = style->font;
 			copyMemory(style->outputTextColor, console->outputTextColor, CLS_COUNT);
 
-			console->backgroundColor = style->backgroundColor;
+			console->background = style->background;
 			console->padding = style->padding;
 
 			console->scrollbarStyle = style->scrollbarStyle;
@@ -158,7 +155,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 		case UIStyle_Scrollbar: {
 			UIScrollbarStyle *scrollbar = put(&theme->scrollbarStyles, style->name, UIScrollbarStyle());
 
-			scrollbar->backgroundColor = style->backgroundColor;
+			scrollbar->background = style->background;
 			scrollbar->knobColor = style->knobColor;
 			scrollbar->width = style->width;
 		} break;
@@ -170,7 +167,7 @@ void saveStyleToTheme(UITheme *theme, UIStyle *style)
 			textInput->textColor = style->textColor;
 			textInput->textAlignment = style->textAlignment;
 
-			textInput->backgroundColor = style->backgroundColor;
+			textInput->background = style->background;
 			textInput->padding = style->padding;
 	
 			textInput->showCaret = style->showCaret;

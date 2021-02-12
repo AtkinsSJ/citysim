@@ -157,14 +157,14 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInp
 	String text = textInputToString(textInput);
 	BitmapFont *font = getFont(&style->font);
 
-	Rect2I textBounds = shrink(bounds, style->padding);
 
-	drawSingleRect(renderBuffer, bounds, renderer->shaderIds.untextured, style->backgroundColor);
+	UIBackground(&style->background).draw(renderBuffer, bounds);
 
 	bool showCaret = style->showCaret
 					 && hasCapturedInput(textInput)
 					 && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
 
+	Rect2I textBounds = shrink(bounds, style->padding);
 	DrawTextResult drawTextResult = {};
 	drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
 

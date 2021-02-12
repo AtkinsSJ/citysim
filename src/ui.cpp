@@ -156,12 +156,13 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	
 	bool buttonClicked = false;
 
-	V4 backColor = style->backgroundColor;
+	UIBackgroundStyle *backgroundStyle = &style->background;
+
 	u32 textAlignment = style->textAlignment;
 
 	if (state == Button_Disabled)
 	{
-		backColor = style->disabledBackgroundColor;
+		backgroundStyle = &style->disabledBackground;
 	}
 	else if (!uiState->mouseInputHandled && isMouseInUIBounds(uiState, bounds))
 	{
@@ -173,7 +174,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 		{
 			if (isMouseInUIBounds(uiState, bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
-				backColor = style->pressedBackgroundColor;
+				backgroundStyle = &style->pressedBackground;
 			}
 		}
 		else
@@ -183,7 +184,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 			{
 				buttonClicked = true;
 			}
-			backColor = style->hoverBackgroundColor;
+			backgroundStyle = &style->hoverBackground;
 		}
 
 		if (tooltip.length)
@@ -194,10 +195,12 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	}
 	else if (state == Button_Active)
 	{
-		backColor = style->hoverBackgroundColor;
+		backgroundStyle = &style->hoverBackground;
 	}
 
-	drawSingleRect(&renderer->uiBuffer, bounds, renderer->shaderIds.untextured, backColor);
+	UIBackground buttonBackground = UIBackground(backgroundStyle);
+	buttonBackground.draw(&renderer->uiBuffer, bounds);
+
 	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	uiText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 
@@ -326,15 +329,18 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 // over to using a ScrollbarState too.
 // NB: Roll the "just draw the background if the content is too small for a scrollbar" stuff from 
 // window_completeColumn() into that, too.
-void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID)
+void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, UIScrollbarStyle *style)
 {
-	Rect2 backgroundRect = rectXYWHi(topLeft.x, topLeft.y, knobSize.x, height);
-	drawSingleRect(uiBuffer, backgroundRect, shaderID, backgroundColor);
+	UIBackground background = UIBackground(&style->background);
+	Rect2I backgroundRect = irectXYWH(topLeft.x, topLeft.y, style->width, height);
+	background.draw(uiBuffer, backgroundRect);
 
-	knobSize.y = min(knobSize.y, height); // force knob to fit
-	s32 scrollY = round_s32(scrollPercent * (height - knobSize.y));
-	Rect2 knobRect = rectXYWHi(topLeft.x, topLeft.y + scrollY, knobSize.x, knobSize.y);
-	drawSingleRect(uiBuffer, knobRect, shaderID, knobColor);
+	s32 knobWidth = style->width;
+	s32 knobHeight = min(knobWidth, height); // TODO: make it larger?
+
+	s32 scrollY = round_s32(scrollPercent * (height - knobHeight));
+	Rect2 knobRect = rectXYWHi(topLeft.x, topLeft.y + scrollY, knobWidth, knobHeight);
+	drawSingleRect(uiBuffer, knobRect, renderer->shaderIds.untextured, style->knobColor);
 }
 
 inline f32 getScrollbarPercent(ScrollbarState *scrollbar, s32 scrollbarHeight)

@@ -138,17 +138,11 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 
 		if (doRender)
 		{
-			V4 backColor = buttonStyle->backgroundColor;
-			RenderItem_DrawSingleRect *background = appendDrawRectPlaceholder(&renderer->uiBuffer, renderer->shaderIds.untextured);
-
-			V2I textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
-			V2I textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
-			Rect2I textBounds = irectPosSize(textTopLeft, textSize);
-			drawText(&renderer->uiBuffer, font, text, textBounds, textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
+			UIBackgroundStyle *backgroundStyle = &buttonStyle->background;
 
 			if (state == Button_Disabled)
 			{
-				backColor = buttonStyle->disabledBackgroundColor;
+				backgroundStyle = &buttonStyle->disabledBackground;
 			}
 			else if (isMouseInUIBounds(uiState, buttonBounds))
 			{
@@ -158,20 +152,28 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 				{
 					if (isMouseInUIBounds(uiState, buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 					{
-						backColor = buttonStyle->pressedBackgroundColor;
+						backgroundStyle = &buttonStyle->pressedBackground;
 					}
 				}
 				else
 				{
-					backColor = buttonStyle->hoverBackgroundColor;
+					backgroundStyle = &buttonStyle->hoverBackground;
 				}
 			}
 			else if (state == Button_Active)
 			{
-				backColor = buttonStyle->hoverBackgroundColor;
+				backgroundStyle = &buttonStyle->hoverBackground;
 			}
 
-			fillDrawRectPlaceholder(background, buttonBounds, backColor);
+			UIBackground buttonBackground = UIBackground(backgroundStyle);
+			buttonBackground.preparePlaceholder(&renderer->uiBuffer);
+
+			V2I textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
+			V2I textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
+			Rect2I textBounds = irectPosSize(textTopLeft, textSize);
+			drawText(&renderer->uiBuffer, font, text, textBounds, textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
+
+			buttonBackground.fillPlaceholder(buttonBounds);
 		}
 
 		if (doUpdate)
@@ -478,7 +480,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (doRender)
 		{
-			drawScrollbar(&renderer->uiBuffer, scrollPercent, hScrollbarBounds.pos, hScrollbarBounds.h, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+			drawScrollbar(&renderer->uiBuffer, scrollPercent, hScrollbarBounds.pos, hScrollbarBounds.h, scrollbarStyle);
 		}
 	}
 
@@ -495,7 +497,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (doRender)
 		{
-			drawScrollbar(&renderer->uiBuffer, scrollPercent, vScrollbarBounds.pos, vScrollbarBounds.h, v2i(scrollbarStyle->width, scrollbarStyle->width), scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+			drawScrollbar(&renderer->uiBuffer, scrollPercent, vScrollbarBounds.pos, vScrollbarBounds.h, scrollbarStyle);
 		}
 	}
 

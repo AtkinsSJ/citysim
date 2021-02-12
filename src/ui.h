@@ -77,7 +77,7 @@ void pushUiMessage(UIState *uiState, String message);
 void drawUiMessage(UIState *uiState);
 
 void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
-void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, V2I knobSize, V4 knobColor, V4 backgroundColor, s8 shaderID);
+void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, UIScrollbarStyle *style);
 f32 getScrollbarPercent(ScrollbarState *state, s32 scrollbarHeight); // Percent meaning 0.99 = 99%. (I know that's not a percent, but whatever)
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);

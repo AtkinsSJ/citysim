@@ -65,11 +65,9 @@ struct UIButtonStyle
 	u32 textAlignment;
 
 	UIBackgroundStyle background;
-
-	V4 backgroundColor;
-	V4 hoverBackgroundColor;
-	V4 pressedBackgroundColor;
-	V4 disabledBackgroundColor;
+	UIBackgroundStyle hoverBackground;
+	UIBackgroundStyle pressedBackground;
+	UIBackgroundStyle disabledBackground;
 
 	s32 padding;
 };
@@ -100,7 +98,7 @@ struct UITextInputStyle
 	V4 textColor;
 	u32 textAlignment;
 
-	V4 backgroundColor;
+	UIBackgroundStyle background;
 	s32 padding;
 	
 	bool showCaret;
@@ -109,7 +107,7 @@ struct UITextInputStyle
 
 struct UIScrollbarStyle
 {
-	V4 backgroundColor;
+	UIBackgroundStyle background;
 	V4 knobColor;
 	s32 width;
 };
@@ -133,7 +131,7 @@ struct UIConsoleStyle
 	FontReference font;
 	V4 outputTextColor[CLS_COUNT];
 
-	V4 backgroundColor;
+	UIBackgroundStyle background;
 	s32 padding;
 
 	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
@@ -163,16 +161,16 @@ struct UIStyle
 	// PROPERTIES
 
 	UIBackgroundStyle background;
+	UIBackgroundStyle disabledBackground;
+	UIBackgroundStyle hoverBackground;
+	UIBackgroundStyle pressedBackground;
 
 	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
-	V4 backgroundColor;
 	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
 	f32 caretFlashCycleDuration;
 	u32 widgetAlignment;
 	s32 contentPadding;
-	V4 disabledBackgroundColor;
 	FontReference font;
-	V4 hoverBackgroundColor;
 	V4 knobColor;
 	UIStyleReference labelStyle = UIStyleReference(UIStyle_Label);
 	s32 margin;
@@ -181,7 +179,6 @@ struct UIStyle
 	V4 outputTextColor[CLS_COUNT];
 	s32 padding;
 	UIStyleReference panelStyle = UIStyleReference(UIStyle_Panel);
-	V4 pressedBackgroundColor;
 	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
 	bool showCaret;
 	u32 textAlignment;

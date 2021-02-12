@@ -62,11 +62,11 @@ void renderConsole(Console *console)
 	s32 heightOfOutputArea = textPos.y;
 
 	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
-	drawSingleRect(renderBuffer, consoleBackRect, renderer->shaderIds.untextured, consoleStyle->backgroundColor);
+	UIBackground(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
 
 	V2I knobSize = v2i(scrollbarStyle->width, scrollbarStyle->width);
 	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollbar(renderBuffer, scrollPercent, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, knobSize, scrollbarStyle->knobColor, scrollbarStyle->backgroundColor, renderer->shaderIds.untextured);
+	drawScrollbar(renderBuffer, scrollPercent, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollbarStyle);
 
 	textPos.y -= consoleStyle->padding;
 

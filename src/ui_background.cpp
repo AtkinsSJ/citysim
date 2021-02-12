@@ -65,3 +65,36 @@ void UIBackground::fillPlaceholder(Rect2I bounds)
 		INVALID_DEFAULT_CASE;
 	}
 }
+
+void UIBackground::draw(RenderBuffer *buffer, Rect2I bounds)
+{
+	switch (style->type)
+	{
+		case Background_None:
+		{
+			return; // Nothing to do!
+		} break;
+
+		case Background_Color:
+		{
+			drawSingleRect(buffer, bounds, renderer->shaderIds.untextured, style->color);
+		} break;
+
+		// case Background_Image:
+		// {
+
+		// } break;
+
+		// case Background_Gradient:
+		// {
+		// 	fillDrawRectPlaceholder(rectPlaceholder, bounds, style->color);
+		// } break;
+
+		// case Background_Ninepatch:
+		// {
+
+		// } break;
+
+		INVALID_DEFAULT_CASE;
+	}
+}
