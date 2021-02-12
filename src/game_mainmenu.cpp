@@ -89,19 +89,6 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	{
 		result = AppStatus_Quit;
 	}
-
-	if (true)
-	{
-		UIPanel menu = UIPanel(irectAligned(0, windowHeight, 200, windowHeight, ALIGN_BOTTOM | ALIGN_LEFT), null, Panel_IsTopLevel | Panel_DoUpdate | Panel_DoRender);
-
-		for (int i=0; i < 20; i++)
-		{
-			menu.addText(formatInt(i));
-			menu.startNewLine();
-		}
-
-		menu.end(true);
-	}
 	
 	return result;
 }
