@@ -299,11 +299,14 @@ void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 sha
 void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color);
 void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color);
 void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
+void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
 
 // For when you want something to appear NOW in the render-order, but you don't know its details until later
 RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID);
 void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color);
 void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color);
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11);
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11);
 
 // NB: The Rects drawn must all have the same Texture!
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);

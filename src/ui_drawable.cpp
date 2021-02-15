@@ -19,10 +19,10 @@ void UIDrawable::preparePlaceholder(RenderBuffer *buffer)
 
 		// } break;
 
-		// case Drawable_Gradient:
-		// {
-		// 	rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured);
-		// } break;
+		case Drawable_Gradient:
+		{
+			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured);
+		} break;
 
 		// case Drawable_Ninepatch:
 		// {
@@ -52,10 +52,10 @@ void UIDrawable::fillPlaceholder(Rect2I bounds)
 
 		// } break;
 
-		// case Drawable_Gradient:
-		// {
-		// 	fillDrawRectPlaceholder(rectPlaceholder, bounds, style->color);
-		// } break;
+		case Drawable_Gradient:
+		{
+			fillDrawRectPlaceholder(rectPlaceholder, bounds, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
+		} break;
 
 		// case Drawable_Ninepatch:
 		// {
@@ -85,10 +85,10 @@ void UIDrawable::draw(RenderBuffer *buffer, Rect2I bounds)
 
 		// } break;
 
-		// case Drawable_Gradient:
-		// {
-		// 	fillDrawRectPlaceholder(rectPlaceholder, bounds, style->color);
-		// } break;
+		case Drawable_Gradient:
+		{
+			drawSingleRect(buffer, bounds, renderer->shaderIds.untextured, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
+		} break;
 
 		// case Drawable_Ninepatch:
 		// {

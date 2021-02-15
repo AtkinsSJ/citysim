@@ -23,7 +23,15 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 	}
 	else if (equals(typeName, "gradient"_s))
 	{
-		ASSERT(!"Not implemented");
+		Maybe<V4> color00 = readColor(reader);
+		Maybe<V4> color01 = readColor(reader);
+		Maybe<V4> color10 = readColor(reader);
+		Maybe<V4> color11 = readColor(reader);
+
+		if (color00.isValid && color01.isValid && color10.isValid && color11.isValid)
+		{
+			result = makeSuccess(UIDrawableStyle(color00.value, color01.value, color10.value, color11.value));
+		}
 	}
 	else if (equals(typeName, "ninepatch"_s))
 	{

@@ -489,7 +489,12 @@ void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color00,
 	rect->color01 = color01;
 	rect->color10 = color10;
 	rect->color11 = color11;
-	rect->uv = {};
+	rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+}
+
+inline void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11)
+{
+	drawSingleRect(buffer, rect2(bounds), shaderID, color00, color01, color10, color11);
 }
 
 RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID)
@@ -501,24 +506,29 @@ RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 sh
 	return rect;
 }
 
-void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color)
+inline void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color)
 {
-	placeholder->bounds = bounds;
-	placeholder->color00 = color;
-	placeholder->color01 = color;
-	placeholder->color10 = color;
-	placeholder->color11 = color;
-	placeholder->uv = {};
+	fillDrawRectPlaceholder(placeholder, bounds, color, color, color, color);
 }
 
-void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color)
+inline void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color)
 {
-	placeholder->bounds = rectXYWHi(bounds.x, bounds.y, bounds.w, bounds.h);
-	placeholder->color00 = color;
-	placeholder->color01 = color;
-	placeholder->color10 = color;
-	placeholder->color11 = color;
-	placeholder->uv = {};
+	fillDrawRectPlaceholder(placeholder, rect2(bounds), color, color, color, color);
+}
+
+void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11)
+{
+	placeholder->bounds = bounds;
+	placeholder->color00 = color00;
+	placeholder->color01 = color01;
+	placeholder->color10 = color10;
+	placeholder->color11 = color11;
+	placeholder->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+}
+
+inline void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11)
+{
+	fillDrawRectPlaceholder(placeholder, rect2(bounds), color00, color01, color10, color11);
 }
 
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)

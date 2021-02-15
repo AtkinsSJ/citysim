@@ -21,8 +21,9 @@ Notes for searching:
 Drawables (née Backgrounds):
 - A general struct that abstracts how different backgrounds are drawn, so that eg a Panel can just say it has a background, call prepareBackgroundPlaceholder() and fillBackgroundPlaceholder() (or something) and be done.
 - Kinds:
-	- Solid colour
-	- Fixed image?
+	✔ Solid colour
+	✔ Gradient
+	- Fixed image
 	- Nine-patch
 
 Render bug - cost tooltip is half opacity when dragging a rectangle over its upper-left corner
@@ -47,8 +48,6 @@ Window/UI System features:
 - Embedded images
 - Image buttons
 - Align things to the bottom
-- Graphical backgrounds for things, instead of just solid colours.
-	- Nine-patches!
 - Parity between windowed and non-windowed UI. They're very different right now which is awkward.
 	- Possibly, have toolbar style menus in the game just be windows with a forced background depth and snapping to a set position?
 	- Or, could treat those and window contents as "panels", which then handle the layout.

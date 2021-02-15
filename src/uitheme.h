@@ -50,10 +50,26 @@ struct UIDrawableStyle
 		this->color = color;
 	}
 
+	UIDrawableStyle(V4 color00, V4 color01, V4 color10, V4 color11) : UIDrawableStyle(Drawable_Gradient)
+	{
+		this->gradient.color00 = color00;
+		this->gradient.color01 = color01;
+		this->gradient.color10 = color10;
+		this->gradient.color11 = color11;
+	}
+
+
 	UIDrawableType type;
 	union
 	{
 		V4 color;
+		
+		struct {
+			V4 color00;
+			V4 color01;
+			V4 color10;
+			V4 color11;
+		} gradient;
 	};
 };
 Maybe<UIDrawableStyle> readDrawableStyle(struct LineReader *reader);
