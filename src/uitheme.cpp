@@ -17,10 +17,6 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 			result = makeSuccess(UIDrawableStyle(color.value));
 		}
 	}
-	else if (equals(typeName, "image"_s))
-	{
-		ASSERT(!"Not implemented");
-	}
 	else if (equals(typeName, "gradient"_s))
 	{
 		Maybe<V4> color00 = readColor(reader);
@@ -36,6 +32,14 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 	else if (equals(typeName, "ninepatch"_s))
 	{
 		ASSERT(!"Not implemented");
+	}
+	else if (equals(typeName, "sprite"_s))
+	{
+		String spriteName = readToken(reader);
+		Maybe<s32> spriteIndex = readInt<s32>(reader, true);
+		s32 index = spriteIndex.isValid ? spriteIndex.value : 0;
+
+		result = makeSuccess(UIDrawableStyle(getSpriteRef(spriteName, index)));
 	}
 	else
 	{

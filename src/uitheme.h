@@ -32,9 +32,9 @@ enum UIDrawableType
 {
 	Drawable_None,
 	Drawable_Color,
-	Drawable_Image,
 	Drawable_Gradient,
 	Drawable_Ninepatch,
+	Drawable_Sprite,
 };
 
 struct UIDrawableStyle
@@ -58,18 +58,24 @@ struct UIDrawableStyle
 		this->gradient.color11 = color11;
 	}
 
+	UIDrawableStyle(SpriteRef sprite) : UIDrawableStyle(Drawable_Sprite)
+	{
+		this->sprite = sprite;
+	}
 
 	UIDrawableType type;
 	union
 	{
 		V4 color;
-		
+
 		struct {
 			V4 color00;
 			V4 color01;
 			V4 color10;
 			V4 color11;
 		} gradient;
+
+		SpriteRef sprite;
 	};
 };
 Maybe<UIDrawableStyle> readDrawableStyle(struct LineReader *reader);
