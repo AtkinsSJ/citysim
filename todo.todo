@@ -31,6 +31,9 @@ Render bug - cost tooltip is half opacity when dragging a rectangle over its upp
 Asset references
 - We can't keep asset pointers around through an asset reload, because they point to the wrong memory. We solved this with SpriteRef for the Sprite* case, but we also store SpriteGroup*s and others. Perhaps a template AssetRef<Type> which works in the same way would be useful?
 
+Record sprite size in Sprite struct
+- So we can draw them at their native size
+
 Scrollbar improvements:
 - Convert drawScrollbar() to take a ScrollbarState
 	-> need to convert the console to using a ScrollbarState first

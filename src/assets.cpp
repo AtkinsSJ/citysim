@@ -698,6 +698,19 @@ inline SpriteGroup *getSpriteGroup(String name)
 	return &getAsset(AssetType_Sprite, name)->spriteGroup;
 }
 
+Sprite *getSprite(String name, s32 offset)
+{
+	Sprite *result = null;
+
+	SpriteGroup *group = getSpriteGroup(name);
+	if (group != null)
+	{
+		result = group->sprites + (offset % group->count);
+	}
+
+	return result;
+}
+
 inline Sprite *getSprite(SpriteGroup *group, s32 offset)
 {
 	return group->sprites + (offset % group->count);

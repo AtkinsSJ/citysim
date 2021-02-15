@@ -78,35 +78,6 @@ void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expan
 	}
 }
 
-void UIPanel::addText(String text, String styleName)
-{
-	DEBUG_FUNCTION();
-	
-	prepareForWidgets();
-
-	UILabelStyle *labelStyle = null;
-	if (!isEmpty(styleName))  labelStyle = findLabelStyle(&assets->theme, styleName);
-	if (labelStyle == null)   labelStyle = findStyle<UILabelStyle>(&this->style->labelStyle);
-
-	Rect2I space = getCurrentLayoutPosition();
-	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
-
-	BitmapFont *font = getFont(&labelStyle->font);
-	if (font)
-	{
-		V2I textSize = calculateTextSize(font, text, space.w);
-		V2I topLeft = calculateTextPosition(origin, textSize, this->widgetAlignment);
-		Rect2I textBounds = irectPosSize(topLeft, textSize);
-
-		if (doRender)
-		{
-			drawText(&renderer->uiBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
-		}
-
-		completeWidget(textSize);
-	}
-}
-
 bool UIPanel::addButton(String text, ButtonState state, String styleName)
 {
 	DEBUG_FUNCTION();
@@ -190,6 +161,54 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	}
 
 	return buttonWasClicked;
+}
+
+void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
+{
+	DEBUG_FUNCTION();
+
+	prepareForWidgets();
+
+	Rect2I layoutPosition = getCurrentLayoutPosition();
+	V2I origin = alignWithinRectangle(layoutPosition, widgetAlignment);
+	V2I size = v2i(width, height);
+
+	if (sprite != null)
+	{
+		Rect2I spriteBounds = irectAligned(origin, size, widgetAlignment);
+		drawSingleSprite(&renderer->uiBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
+	}
+
+	completeWidget(size);
+}
+
+void UIPanel::addText(String text, String styleName)
+{
+	DEBUG_FUNCTION();
+	
+	prepareForWidgets();
+
+	UILabelStyle *labelStyle = null;
+	if (!isEmpty(styleName))  labelStyle = findLabelStyle(&assets->theme, styleName);
+	if (labelStyle == null)   labelStyle = findStyle<UILabelStyle>(&this->style->labelStyle);
+
+	Rect2I space = getCurrentLayoutPosition();
+	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
+
+	BitmapFont *font = getFont(&labelStyle->font);
+	if (font)
+	{
+		V2I textSize = calculateTextSize(font, text, space.w);
+		V2I topLeft = calculateTextPosition(origin, textSize, this->widgetAlignment);
+		Rect2I textBounds = irectPosSize(topLeft, textSize);
+
+		if (doRender)
+		{
+			drawText(&renderer->uiBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
+		}
+
+		completeWidget(textSize);
+	}
 }
 
 bool UIPanel::addTextInput(TextInput *textInput, String styleName)

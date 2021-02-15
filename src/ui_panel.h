@@ -44,8 +44,9 @@ struct UIPanel
 	void enableVerticalScrolling(ScrollbarState *vScrollbar, bool expandWidth=false);
 
 	// Add stuff to the panel
-	void addText(String text, String styleName = nullString);
 	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
+	void addSprite(Sprite *sprite, s32 width, s32 height);
+	void addText(String text, String styleName = nullString);
 	bool addTextInput(TextInput *textInput, String styleName = nullString);
 	// Add a blank rectangle as if it were a widget. (So, leaving padding between
 	// it and other widgets.) The bounds are returned so you can draw your own
