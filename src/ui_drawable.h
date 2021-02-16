@@ -14,6 +14,6 @@ struct UIDrawable
 
 	union
 	{
-		RenderItem_DrawSingleRect *rectPlaceholder;
+		DrawRectPlaceholder rectPlaceholder;
 	};
 };

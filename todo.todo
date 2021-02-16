@@ -23,7 +23,7 @@ Drawables (née Backgrounds):
 - Kinds:
 	✔ Solid colour
 	✔ Gradient
-	- Fixed image
+	✔ Fixed image
 	- Nine-patch
 
 Render bug - cost tooltip is half opacity when dragging a rectangle over its upper-left corner

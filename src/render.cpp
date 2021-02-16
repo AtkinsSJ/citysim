@@ -497,38 +497,69 @@ inline void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 
 	drawSingleRect(buffer, rect2(bounds), shaderID, color00, color01, color10, color11);
 }
 
-RenderItem_DrawSingleRect *appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID)
+DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID, bool hasTexture)
 {
 	addSetShader(buffer, shaderID);
 
-	RenderItem_DrawSingleRect *rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+	DrawRectPlaceholder result = {};
 
-	return rect;
+	if (hasTexture)
+	{
+		RenderItem_SetTexture *textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture);
+		*textureItem = {};
+
+		// We need to clear this, because we don't know what this texture will be, so any following draw calls
+		// have to assume that they need to set their texture
+		buffer->currentTexture = null;
+
+		result.setTexture = textureItem;
+	}
+
+	result.drawRect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+
+	return result;
 }
 
-inline void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color)
+inline void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 color)
 {
 	fillDrawRectPlaceholder(placeholder, bounds, color, color, color, color);
 }
 
-inline void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color)
+inline void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4 color)
 {
 	fillDrawRectPlaceholder(placeholder, rect2(bounds), color, color, color, color);
 }
 
-void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11)
+void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11)
 {
-	placeholder->bounds = bounds;
-	placeholder->color00 = color00;
-	placeholder->color01 = color01;
-	placeholder->color10 = color10;
-	placeholder->color11 = color11;
-	placeholder->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+	RenderItem_DrawSingleRect *rect = placeholder->drawRect;
+
+	rect->bounds = bounds;
+	rect->color00 = color00;
+	rect->color01 = color01;
+	rect->color10 = color10;
+	rect->color11 = color11;
+	rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
-inline void fillDrawRectPlaceholder(RenderItem_DrawSingleRect *placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11)
+inline void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11)
 {
 	fillDrawRectPlaceholder(placeholder, rect2(bounds), color00, color01, color10, color11);
+}
+
+void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, Sprite *sprite, V4 color)
+{
+	ASSERT(placeholder->setTexture != null);
+
+	placeholder->setTexture->texture = sprite->texture;
+
+	RenderItem_DrawSingleRect *rect = placeholder->drawRect;
+	rect->bounds = bounds;
+	rect->color00 = color;
+	rect->color01 = color;
+	rect->color10 = color;
+	rect->color11 = color;
+	rect->uv = sprite->uv;
 }
 
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)

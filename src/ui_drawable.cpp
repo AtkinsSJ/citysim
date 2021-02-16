@@ -26,7 +26,7 @@ void UIDrawable::preparePlaceholder(RenderBuffer *buffer)
 
 		case Drawable_Sprite:
 		{
-			// rectPlaceholder = appendDrawSpritePlaceholder(buffer, renderer->shaderIds.pixelArt);
+			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.pixelArt, true);
 		} break;
 
 		INVALID_DEFAULT_CASE;
@@ -44,12 +44,12 @@ void UIDrawable::fillPlaceholder(Rect2I bounds)
 
 		case Drawable_Color:
 		{
-			fillDrawRectPlaceholder(rectPlaceholder, bounds, style->color);
+			fillDrawRectPlaceholder(&rectPlaceholder, bounds, style->color);
 		} break;
 
 		case Drawable_Gradient:
 		{
-			fillDrawRectPlaceholder(rectPlaceholder, bounds, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
+			fillDrawRectPlaceholder(&rectPlaceholder, bounds, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
 		} break;
 
 		// case Drawable_Ninepatch:
@@ -59,7 +59,7 @@ void UIDrawable::fillPlaceholder(Rect2I bounds)
 
 		case Drawable_Sprite:
 		{
-			// fillDrawRectPlaceholder(rectPlaceholder, rect2(bounds), getSprite(&style->sprite));
+			fillDrawRectPlaceholder(&rectPlaceholder, rect2(bounds), getSprite(&style->sprite), makeWhite());
 		} break;
 
 		INVALID_DEFAULT_CASE;
@@ -92,7 +92,7 @@ void UIDrawable::draw(RenderBuffer *buffer, Rect2I bounds)
 
 		case Drawable_Sprite:
 		{
-			// DO A THING
+			drawSingleSprite(buffer, getSprite(&style->sprite), rect2(bounds), renderer->shaderIds.pixelArt, makeWhite());
 		} break;
 
 		INVALID_DEFAULT_CASE;
