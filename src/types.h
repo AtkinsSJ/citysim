@@ -153,6 +153,18 @@ inline Maybe<T> makeFailure()
 	return result;
 }
 
+template <typename T>
+inline bool allAreValid(Maybe<T> input)
+{
+	return input.isValid;
+}
+
+template <typename T, typename... TS>
+bool allAreValid(Maybe<T> first, Maybe<TS>... rest)
+{
+	return first.isValid && allAreValid(rest...);
+}
+
 template<typename T>
 struct Indexed
 {

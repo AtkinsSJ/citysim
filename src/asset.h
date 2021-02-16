@@ -9,6 +9,7 @@ enum AssetType
 	AssetType_Cursor,
 	AssetType_CursorDefs,
 	AssetType_DevKeymap,
+	AssetType_Ninepatch,
 	AssetType_Palette,
 	AssetType_PaletteDefs,
 	AssetType_Shader,
@@ -30,6 +31,7 @@ String assetTypeNames[] = {
 	"Cursor"_s,
 	"CursorDefs"_s,
 	"DevKeymap"_s,
+	"Ninepatch"_s,
 	"Palette"_s,
 	"PaletteDefs"_s,
 	"Shader"_s,
@@ -52,6 +54,31 @@ struct Cursor
 	String imageFilePath; // Full path
 	V2I hotspot;
 	SDL_Cursor *sdlCursor;
+};
+
+struct Ninepatch
+{
+	Asset *texture;
+
+	s32 pu0;
+	s32 pu1;
+	s32 pu2;
+	s32 pu3;
+
+	s32 pv0;
+	s32 pv1;
+	s32 pv2;
+	s32 pv3;
+
+	f32 u0;
+	f32 u1;
+	f32 u2;
+	f32 u3;
+
+	f32 v0;
+	f32 v1;
+	f32 v2;
+	f32 v3;
 };
 
 enum PaletteType
@@ -162,6 +189,8 @@ struct Asset
 			Array<String> cursorNames;
 		} cursorDefs;
 		Cursor cursor;
+
+		Ninepatch ninepatch;
 
 		struct {
 			Array<String> paletteNames;

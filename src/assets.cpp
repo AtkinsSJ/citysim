@@ -268,6 +268,27 @@ void loadAsset(Asset *asset)
 			asset->state = AssetState_Loaded;
 		} break;
 
+		case AssetType_Ninepatch:
+		{
+			// Convert UVs from pixel space to 0-1 space
+			Asset *t = asset->ninepatch.texture;
+			ensureAssetIsLoaded(t);
+			f32 textureWidth  = (f32) t->texture.surface->w;
+			f32 textureHeight = (f32) t->texture.surface->h;
+
+			asset->ninepatch.u0 = asset->ninepatch.pu0 / textureWidth;
+			asset->ninepatch.u1 = asset->ninepatch.pu1 / textureWidth;
+			asset->ninepatch.u2 = asset->ninepatch.pu2 / textureWidth;
+			asset->ninepatch.u3 = asset->ninepatch.pu3 / textureWidth;
+
+			asset->ninepatch.v0 = asset->ninepatch.pv0 / textureHeight;
+			asset->ninepatch.v1 = asset->ninepatch.pv1 / textureHeight;
+			asset->ninepatch.v2 = asset->ninepatch.pv2 / textureHeight;
+			asset->ninepatch.v3 = asset->ninepatch.pv3 / textureHeight;
+
+			asset->state = AssetState_Loaded;
+		} break;
+
 		case AssetType_Palette:
 		{
 			Palette *palette = &asset->palette;
@@ -516,10 +537,32 @@ void removeAsset(AssetType type, String name)
 	}
 }
 
-Asset *addTexture(String filename, bool isAlphaPremultiplied)
+Asset *addFont(String name, String filename)
 {
-	Asset *asset = addAsset(AssetType_Texture, filename);
-	asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
+	Asset *asset = addAsset(AssetType_BitmapFont, filename);
+	put(&assets->theme.fontNamesToAssetNames, intern(&assets->assetStrings, name), asset->shortName);
+
+	return asset;
+}
+
+Asset *addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
+{
+	Asset *texture = addTexture(filename, false);
+
+	Asset *asset = addAsset(AssetType_Ninepatch, name, 0);
+
+	Ninepatch *ninepatch = &asset->ninepatch;
+	ninepatch->texture = texture;
+
+	ninepatch->pu0 = pu0;
+	ninepatch->pu1 = pu1;
+	ninepatch->pu2 = pu2;
+	ninepatch->pu3 = pu3;
+
+	ninepatch->pv0 = pv0;
+	ninepatch->pv1 = pv1;
+	ninepatch->pv2 = pv2;
+	ninepatch->pv3 = pv3;
 
 	return asset;
 }
@@ -537,10 +580,12 @@ Asset *addSpriteGroup(String name, s32 spriteCount)
 	return spriteGroup;
 }
 
-void addFont(String name, String filename)
+Asset *addTexture(String filename, bool isAlphaPremultiplied)
 {
-	Asset *asset = addAsset(AssetType_BitmapFont, filename);
-	put(&assets->theme.fontNamesToAssetNames, intern(&assets->assetStrings, name), asset->shortName);
+	Asset *asset = addAsset(AssetType_Texture, filename);
+	asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
+
+	return asset;
 }
 
 void loadAssets()
@@ -1116,7 +1161,30 @@ void loadSpriteDefs(Blob data, Asset *asset)
 			command.chars++;
 			command.length--;
 
-			if (equals(command, "SpriteGroup"_s))
+			textureAsset = null;
+
+			if (equals(command, "Ninepatch"_s))
+			{
+				String name = readToken(&reader);
+				String filename = readToken(&reader);
+				Maybe<s32> pu0 = readInt<s32>(&reader);
+				Maybe<s32> pu1 = readInt<s32>(&reader);
+				Maybe<s32> pu2 = readInt<s32>(&reader);
+				Maybe<s32> pu3 = readInt<s32>(&reader);
+				Maybe<s32> pv0 = readInt<s32>(&reader);
+				Maybe<s32> pv1 = readInt<s32>(&reader);
+				Maybe<s32> pv2 = readInt<s32>(&reader);
+				Maybe<s32> pv3 = readInt<s32>(&reader);
+
+				if (isEmpty(name) || isEmpty(filename) || !allAreValid(pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3))
+				{
+					error(&reader, "Couldn't parse Ninepatch. Expected: ':Ninepatch identifier filename.png pu0 pu1 pu2 pu3 pv0 pv1 pv2 pv3'"_s);
+					return;
+				}
+
+				addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
+			}
+			else if (equals(command, "SpriteGroup"_s))
 			{
 				String name              = readToken(&reader);
 				String filename          = readToken(&reader);

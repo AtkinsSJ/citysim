@@ -2,3 +2,5 @@
 
 :SpriteGroup btn_wood btn_wood.png 78x26
 sprite 0 0
+
+:Ninepatch btn_white btn_white_9.png   1 11 14 24     1 11 14 24
