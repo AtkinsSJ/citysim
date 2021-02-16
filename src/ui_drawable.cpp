@@ -85,14 +85,14 @@ void UIDrawable::draw(RenderBuffer *buffer, Rect2I bounds)
 			drawSingleRect(buffer, bounds, renderer->shaderIds.untextured, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
 		} break;
 
-		// case Drawable_Ninepatch:
-		// {
-
-		// } break;
+		case Drawable_Ninepatch:
+		{
+			drawNinepatch(buffer, bounds, renderer->shaderIds.textured, &getAsset(&style->ninepatch)->ninepatch);
+		} break;
 
 		case Drawable_Sprite:
 		{
-			drawSingleSprite(buffer, getSprite(&style->sprite), rect2(bounds), renderer->shaderIds.pixelArt, makeWhite());
+			drawSingleSprite(buffer, getSprite(&style->sprite), rect2(bounds), renderer->shaderIds.textured, makeWhite());
 		} break;
 
 		INVALID_DEFAULT_CASE;

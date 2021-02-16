@@ -73,6 +73,8 @@ String getAssetPath(AssetType type, String shortName);
 
 Asset *getAsset(AssetType type, String shortName);
 Asset *getAssetIfExists(AssetType type, String shortName);
+AssetRef getAssetRef(AssetType type, String shortName);
+Asset *getAsset(AssetRef *ref);
 
 BitmapFont *getFont(String fontName);
 BitmapFont *getFont(FontReference *fontRef);

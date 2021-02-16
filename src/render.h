@@ -238,6 +238,7 @@ struct Renderer
 		s8 paletted;
 		s8 pixelArt;
 		s8 text;
+		s8 textured;
 		s8 untextured;
 	} shaderIds;
 
@@ -314,6 +315,8 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11);
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11);
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, Sprite *sprite, V4 color);
+
+void drawNinepatch(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, Ninepatch *ninepatch, V4 color = makeWhite());
 
 // NB: The Rects drawn must all have the same Texture!
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);

@@ -92,6 +92,7 @@ void rendererLoadAssets()
 	// Cache the shader IDs so we don't have to do so many hash lookups
 	renderer->shaderIds.pixelArt   = getShader("pixelart.glsl"_s)->rendererShaderID;
 	renderer->shaderIds.text       = getShader("textured.glsl"_s)->rendererShaderID;
+	renderer->shaderIds.textured   = getShader("textured.glsl"_s)->rendererShaderID;
 	renderer->shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
 
 	if (!isEmpty(renderer->currentCursorName))
@@ -560,6 +561,54 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, Spr
 	rect->color10 = color;
 	rect->color11 = color;
 	rect->uv = sprite->uv;
+}
+
+void drawNinepatch(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, Ninepatch *ninepatch, V4 color)
+{
+	DrawRectsGroup *group = beginRectsGroupInternal(buffer, ninepatch->texture, shaderID, 9);
+
+	// NB: See comments in the Ninepatch struct for how we coul avoid doing the  UV calculations repeatedly,
+	// and why we haven't done so.
+
+	s32 x0 = bounds.x;
+	s32 x1 = bounds.x + ninepatch->pu1 - ninepatch->pu0;
+	s32 x2 = bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2);
+	s32 x3 = bounds.x + bounds.w;
+
+	s32 y0 = bounds.y;
+	s32 y1 = bounds.y + ninepatch->pv1 - ninepatch->pv0;
+	s32 y2 = bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2);
+	s32 y3 = bounds.y + bounds.h;
+
+	// top left
+	addRectInternal(group, rectMinMax(x0, y0, x1, y1), color, rectMinMax(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1));
+
+	// top
+	addRectInternal(group, rectMinMax(x1, y0, x2, y1), color, rectMinMax(ninepatch->u1, ninepatch->v0, ninepatch->u2, ninepatch->v1));
+
+	// top-right
+	addRectInternal(group, rectMinMax(x2, y0, x3, y1), color, rectMinMax(ninepatch->u2, ninepatch->v0, ninepatch->u3, ninepatch->v1));
+
+	// middle left
+	addRectInternal(group, rectMinMax(x0, y1, x1, y2), color, rectMinMax(ninepatch->u0, ninepatch->v1, ninepatch->u1, ninepatch->v2));
+
+	// middle
+	addRectInternal(group, rectMinMax(x1, y1, x2, y2), color, rectMinMax(ninepatch->u1, ninepatch->v1, ninepatch->u2, ninepatch->v2));
+
+	// middle-right
+	addRectInternal(group, rectMinMax(x2, y1, x3, y2), color, rectMinMax(ninepatch->u2, ninepatch->v1, ninepatch->u3, ninepatch->v2));
+
+	// bottom left
+	addRectInternal(group, rectMinMax(x0, y2, x1, y3), color, rectMinMax(ninepatch->u0, ninepatch->v2, ninepatch->u1, ninepatch->v3));
+
+	// bottom
+	addRectInternal(group, rectMinMax(x1, y2, x2, y3), color, rectMinMax(ninepatch->u1, ninepatch->v2, ninepatch->u2, ninepatch->v3));
+
+	// bottom-right
+	addRectInternal(group, rectMinMax(x2, y2, x3, y3), color, rectMinMax(ninepatch->u2, ninepatch->v2, ninepatch->u3, ninepatch->v3));
+
+
+	endRectsGroup(group);
 }
 
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)

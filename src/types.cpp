@@ -759,6 +759,18 @@ inline Rect2 rect2(Rect2I source)
 	return rectXYWHi(source.x, source.y, source.w, source.h);
 }
 
+inline Rect2 rectMinMax(f32 minX, f32 minY, f32 maxX, f32 maxY)
+{
+	Rect2 rect;
+
+	rect.x = minX;
+	rect.y = minY;
+	rect.w = maxX - minX;
+	rect.h = maxY - minY;
+
+	return rect;
+}
+
 inline Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
 {
 	Rect2 rect = {};

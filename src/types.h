@@ -408,6 +408,7 @@ Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h);
 Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h);
 Rect2 rectPosSize(V2 pos, V2 size);
 Rect2 rectCentreSize(V2 centre, V2 size);
+Rect2 rectMinMax(f32 minX, f32 minY, f32 maxX, f32 maxY);
 Rect2 rectAligned(V2 origin, V2 size, u32 alignment);
 Rect2 rect2(Rect2I source);
 

@@ -31,7 +31,9 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 	}
 	else if (equals(typeName, "ninepatch"_s))
 	{
-		ASSERT(!"Not implemented");
+		String ninepatchName = readToken(reader);
+		
+		result = makeSuccess(UIDrawableStyle(getAssetRef(AssetType_Ninepatch, ninepatchName)));
 	}
 	else if (equals(typeName, "sprite"_s))
 	{

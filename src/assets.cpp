@@ -709,13 +709,6 @@ void reloadAssets()
 	consoleWriteLine("Assets reloaded successfully!"_s, CLS_Success);
 }
 
-Asset *getAssetIfExists(AssetType type, String shortName)
-{
-	Asset **result = find(&assets->assetsByType[type], shortName);
-
-	return (result == null) ? null : *result;
-}
-
 Asset *getAsset(AssetType type, String shortName)
 {
 	DEBUG_FUNCTION();
@@ -731,6 +724,44 @@ Asset *getAsset(AssetType type, String shortName)
 	}
 	
 	return result;
+}
+
+Asset *getAssetIfExists(AssetType type, String shortName)
+{
+	Asset **result = find(&assets->assetsByType[type], shortName);
+
+	return (result == null) ? null : *result;
+}
+
+AssetRef getAssetRef(AssetType type, String shortName)
+{
+	AssetRef result = {};
+
+	result.type = type;
+	result.name = shortName;
+
+	return result;
+}
+
+Asset *getAsset(AssetRef *ref)
+{
+	if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks))
+	{
+		Asset *asset = getAssetIfExists(ref->type, ref->name);
+		if (asset != null)
+		{
+			ref->pointer = asset;
+		}
+		else
+		{
+			// TODO: Dummy sprite!
+			ASSERT(!"Asset not found");
+		}
+
+		ref->pointerRetrievedTicks = SDL_GetTicks();
+	}
+
+	return ref->pointer;
 }
 
 inline Array<V4> *getPalette(String name)

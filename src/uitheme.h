@@ -63,6 +63,11 @@ struct UIDrawableStyle
 		this->sprite = sprite;
 	}
 
+	UIDrawableStyle(AssetRef ninepatchRef) : UIDrawableStyle(Drawable_Ninepatch)
+	{
+		this->ninepatch = ninepatchRef;
+	}
+
 	UIDrawableType type;
 	union
 	{
@@ -74,6 +79,8 @@ struct UIDrawableStyle
 			V4 color10;
 			V4 color11;
 		} gradient;
+
+		AssetRef ninepatch;
 
 		SpriteRef sprite;
 	};
