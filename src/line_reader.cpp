@@ -287,10 +287,9 @@ Maybe<V4> readColor(LineReader *reader)
 	if (r.isValid && g.isValid && b.isValid)
 	{
 		// NB: We default to fully opaque if no alpha is provided
-		// FIXME: We *also* default to fully opaque if the alpha is provided but it can't be read as an int... hmmm.
-		Maybe<s64> a = asInt(readToken(reader));
+		Maybe<u8> a = readInt<u8>(reader, true);
 
-		result = makeSuccess(color255(r.value, g.value, b.value, (u8)a.orDefault(255)));
+		result = makeSuccess(color255(r.value, g.value, b.value, a.orDefault(255)));
 	}
 	else
 	{
