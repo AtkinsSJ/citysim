@@ -98,10 +98,13 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState
 	  doUpdate(doUpdate),
 	  doRender(doRender),
 	  windowPanel(
-	  	  irectXYWH(window->area.x,
+	  	  irectXYWH(
+	  	  		window->area.x,
 	  	  		window->area.y + ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight),
 	  	  		window->area.w,
-	  	  		(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))),
+	  	  		(window->flags & WinFlag_AutomaticHeight) ? 10000 : 
+	  	  			(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))
+	  	  ),
 	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
 	      Panel_LayoutTopToBottom
 	       | ((window->flags & WinFlag_Tooltip) ? 0 : Panel_BlocksMouse)
