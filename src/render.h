@@ -316,7 +316,13 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11);
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, Sprite *sprite, V4 color);
 
+struct DrawNinepatchPlaceholder
+{
+	RenderItem_DrawRects_Item *firstRect;
+};
 void drawNinepatch(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, Ninepatch *ninepatch, V4 color = makeWhite());
+DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer *buffer, Asset *texture, s8 shaderID);
+void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder *placeholder, Rect2I bounds, Ninepatch *ninepatch, V4 color = makeWhite());
 
 // NB: The Rects drawn must all have the same Texture!
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);
@@ -325,6 +331,12 @@ DrawRectsGroup *beginRectsGroupTextured(RenderBuffer *buffer, Asset *texture, s8
 DrawRectsGroup *beginRectsGroupUntextured(RenderBuffer *buffer, s8 shaderID, s32 maxCount);
 // TODO: Have the shaderID be last and default to the standard text shader, so I don't have to always pass it
 DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s8 shaderID, s32 maxCount);
+
+// Makes space for `count` rects, and returns a pointer to the first one, so you can modify them later.
+// Guarantees that they're contiguous, but that means that there must be room for `count` items in the
+// group's current sub-group.
+// Basically, call this before adding anything, with count <= 255, and you'll be fine.
+RenderItem_DrawRects_Item *reserve(DrawRectsGroup *group, s32 count);
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
 void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);
 void addSpriteRect(DrawRectsGroup *state, Sprite *sprite, Rect2 bounds, V4 color);

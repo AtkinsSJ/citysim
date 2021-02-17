@@ -19,10 +19,10 @@ void UIDrawable::preparePlaceholder(RenderBuffer *buffer)
 			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured);
 		} break;
 
-		// case Drawable_Ninepatch:
-		// {
-
-		// } break;
+		case Drawable_Ninepatch:
+		{
+			ninepatchPlaceholder = appendDrawNinepatchPlaceholder(buffer, getAsset(&style->ninepatch)->ninepatch.texture, renderer->shaderIds.textured);
+		} break;
 
 		case Drawable_Sprite:
 		{
@@ -52,10 +52,10 @@ void UIDrawable::fillPlaceholder(Rect2I bounds)
 			fillDrawRectPlaceholder(&rectPlaceholder, bounds, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
 		} break;
 
-		// case Drawable_Ninepatch:
-		// {
-
-		// } break;
+		case Drawable_Ninepatch:
+		{
+			fillDrawNinepatchPlaceholder(&ninepatchPlaceholder, bounds, &getAsset(&style->ninepatch)->ninepatch, makeWhite());
+		} break;
 
 		case Drawable_Sprite:
 		{

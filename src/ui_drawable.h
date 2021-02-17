@@ -14,6 +14,7 @@ struct UIDrawable
 
 	union
 	{
-		DrawRectPlaceholder rectPlaceholder;
+		DrawRectPlaceholder      rectPlaceholder;
+		DrawNinepatchPlaceholder ninepatchPlaceholder;
 	};
 };

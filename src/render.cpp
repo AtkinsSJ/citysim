@@ -567,18 +567,18 @@ void drawNinepatch(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, Ninepatch *
 {
 	DrawRectsGroup *group = beginRectsGroupInternal(buffer, ninepatch->texture, shaderID, 9);
 
-	// NB: See comments in the Ninepatch struct for how we coul avoid doing the  UV calculations repeatedly,
+	// NB: See comments in the Ninepatch struct for how we could avoid doing the  UV calculations repeatedly,
 	// and why we haven't done so.
 
-	s32 x0 = bounds.x;
-	s32 x1 = bounds.x + ninepatch->pu1 - ninepatch->pu0;
-	s32 x2 = bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2);
-	s32 x3 = bounds.x + bounds.w;
+	f32 x0 = (f32)(bounds.x);
+	f32 x1 = (f32)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
+	f32 x2 = (f32)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
+	f32 x3 = (f32)(bounds.x + bounds.w);
 
-	s32 y0 = bounds.y;
-	s32 y1 = bounds.y + ninepatch->pv1 - ninepatch->pv0;
-	s32 y2 = bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2);
-	s32 y3 = bounds.y + bounds.h;
+	f32 y0 = (f32)(bounds.y);
+	f32 y1 = (f32)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
+	f32 y2 = (f32)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
+	f32 y3 = (f32)(bounds.y + bounds.h);
 
 	// top left
 	addRectInternal(group, rectMinMax(x0, y0, x1, y1), color, rectMinMax(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1));
@@ -609,6 +609,89 @@ void drawNinepatch(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, Ninepatch *
 
 
 	endRectsGroup(group);
+}
+
+DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer *buffer, Asset *texture, s8 shaderID)
+{
+	DrawNinepatchPlaceholder placeholder = {};
+
+	DrawRectsGroup *rectsGroup = beginRectsGroupTextured(buffer, texture, shaderID, 9);
+	placeholder.firstRect = reserve(rectsGroup, 9);
+	endRectsGroup(rectsGroup);
+
+	return placeholder;
+}
+
+void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder *placeholder, Rect2I bounds, Ninepatch *ninepatch, V4 color)
+{
+	// @Copypasta drawNinepatch()
+	// NB: See comments in the Ninepatch struct for how we could avoid doing the  UV calculations repeatedly,
+	// and why we haven't done so.
+
+	f32 x0 = (f32)(bounds.x);
+	f32 x1 = (f32)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
+	f32 x2 = (f32)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
+	f32 x3 = (f32)(bounds.x + bounds.w);
+
+	f32 y0 = (f32)(bounds.y);
+	f32 y1 = (f32)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
+	f32 y2 = (f32)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
+	f32 y3 = (f32)(bounds.y + bounds.h);
+
+	RenderItem_DrawRects_Item *rect = placeholder->firstRect;
+
+	// top left
+	rect->bounds = rectMinMax(x0, y0, x1, y1);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1);
+	rect++;
+
+	// top
+	rect->bounds = rectMinMax(x1, y0, x2, y1);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u1, ninepatch->v0, ninepatch->u2, ninepatch->v1);
+	rect++;
+
+	// top-right
+	rect->bounds = rectMinMax(x2, y0, x3, y1);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u2, ninepatch->v0, ninepatch->u3, ninepatch->v1);
+	rect++;
+
+	// middle left
+	rect->bounds = rectMinMax(x0, y1, x1, y2);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u0, ninepatch->v1, ninepatch->u1, ninepatch->v2);
+	rect++;
+
+	// middle
+	rect->bounds = rectMinMax(x1, y1, x2, y2);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u1, ninepatch->v1, ninepatch->u2, ninepatch->v2);
+	rect++;
+
+	// middle-right
+	rect->bounds = rectMinMax(x2, y1, x3, y2);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u2, ninepatch->v1, ninepatch->u3, ninepatch->v2);
+	rect++;
+
+	// bottom left
+	rect->bounds = rectMinMax(x0, y2, x1, y3);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u0, ninepatch->v2, ninepatch->u1, ninepatch->v3);
+	rect++;
+
+	// bottom
+	rect->bounds = rectMinMax(x1, y2, x2, y3);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u1, ninepatch->v2, ninepatch->u2, ninepatch->v3);
+	rect++;
+
+	// bottom-right
+	rect->bounds = rectMinMax(x2, y2, x3, y3);
+	rect->color = color;
+	rect->uv = rectMinMax(ninepatch->u2, ninepatch->v2, ninepatch->u3, ninepatch->v3);
 }
 
 DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount)
@@ -672,6 +755,18 @@ void endCurrentSubGroup(DrawRectsGroup *group)
 	group->buffer->hasRangeReserved = false;
 
 	group->buffer->currentChunk->used += group->currentSubGroup->header->count * sizeof(RenderItem_DrawRects_Item);
+}
+
+RenderItem_DrawRects_Item *reserve(DrawRectsGroup *group, s32 count)
+{
+	ASSERT((group->currentSubGroup->header->count + count) <= group->currentSubGroup->maxCount);
+
+	RenderItem_DrawRects_Item *result = group->currentSubGroup->first + group->currentSubGroup->header->count;
+
+	group->currentSubGroup->header->count = (u8)(group->currentSubGroup->header->count + count);
+	group->count += count;
+
+	return result;
 }
 
 void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv)

@@ -754,7 +754,7 @@ Asset *getAsset(AssetRef *ref)
 		}
 		else
 		{
-			// TODO: Dummy sprite!
+			// TODO: Is there some way we could return a dummy asset here? Maybe one per AssetType?
 			ASSERT(!"Asset not found");
 		}
 
