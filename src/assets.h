@@ -63,6 +63,7 @@ void loadAsset(Asset *asset);
 void ensureAssetIsLoaded(Asset *asset);
 void unloadAsset(Asset *asset);
 void removeAsset(AssetType type, String name);
+void removeAssets(Array<AssetID> assetsToRemove);
 
 void addAssets();
 void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType=AssetType_Unknown);
@@ -101,5 +102,3 @@ void loadCursorDefs(Blob data, Asset *asset);
 void loadPaletteDefs(Blob data, Asset *asset);
 void loadSpriteDefs(Blob data, Asset *asset);
 void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData);
-
-void removeSpriteDefs(Array<String> namesToRemove);

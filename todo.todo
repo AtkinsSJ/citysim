@@ -20,7 +20,7 @@ Notes for searching:
 
 Ninepatches
 ✔ UIDrawable
-- Make sure that reloading the .sprites file correctly deallocates any Ninepatches it defines
+✔ Make sure that reloading the .sprites file correctly deallocates any Ninepatches it defines
 	- Maybe replace the Array<String> we have for several asset types that records the names of assets it added, with an array of the names and types. That way, files can define multiple kinds of assets. And we could start merging things together maybe, instead of having to segregate the data.
 	- eg, probably makes sense to put building sprite defs alongside the building data definitions. And so on.
 

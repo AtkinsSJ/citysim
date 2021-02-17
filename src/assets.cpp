@@ -479,8 +479,8 @@ void unloadAsset(Asset *asset)
 
 		case AssetType_SpriteDefs:
 		{
-			removeSpriteDefs(asset->spriteDefs.spriteGroupNames);
-			asset->spriteDefs.spriteGroupNames = makeArray<String>(0, null);
+			removeAssets(asset->spriteDefs.sprites);
+			asset->spriteDefs.sprites = makeArray<AssetID>(0, null);
 		} break;
 
 		case AssetType_TerrainDefs:
@@ -534,6 +534,15 @@ void removeAsset(AssetType type, String name)
 	{
 		unloadAsset(asset);
 		removeKey(&assets->assetsByType[type], name);
+	}
+}
+
+void removeAssets(Array<AssetID> assetsToRemove)
+{
+	for (s32 nameIndex = 0; nameIndex < assetsToRemove.count; nameIndex++)
+	{
+		AssetID assetToRemove = assetsToRemove[nameIndex];
+		removeAsset(assetToRemove.type, assetToRemove.name);
 	}
 }
 
@@ -1182,6 +1191,23 @@ void loadSpriteDefs(Blob data, Asset *asset)
 	Asset *spriteGroup = null;
 	s32 spriteIndex = 0;
 
+	// Count the number of child assets, so we can allocate our spriteNames array
+	s32 childAssetCount = 0;
+	while (loadNextLine(&reader))
+	{
+		String command = readToken(&reader);
+
+		if (command.chars[0] == ':')
+		{
+			childAssetCount++;
+		}
+	}
+	asset->data = assetsAllocate(assets, sizeof(AssetID) * childAssetCount);
+	asset->spriteDefs.sprites = makeArray(childAssetCount, (AssetID *) asset->data.memory);
+	s32 cursorIndex = 0;
+	restart(&reader);
+
+	// Now, actually read things
 	while (loadNextLine(&reader))
 	{
 		String command = readToken(&reader);
@@ -1213,7 +1239,11 @@ void loadSpriteDefs(Blob data, Asset *asset)
 					return;
 				}
 
-				addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
+				Asset *ninepatch = addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
+
+				asset->spriteDefs.sprites[cursorIndex].name = ninepatch->shortName;
+				asset->spriteDefs.sprites[cursorIndex].type = ninepatch->type;
+				cursorIndex++;
 			}
 			else if (equals(command, "SpriteGroup"_s))
 			{
@@ -1238,6 +1268,10 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				}
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
+
+				asset->spriteDefs.sprites[cursorIndex].name = spriteGroup->shortName;
+				asset->spriteDefs.sprites[cursorIndex].type = spriteGroup->type;
+				cursorIndex++;
 			}
 			else
 			{
@@ -1296,15 +1330,6 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				return;
 			}
 		}
-	}
-}
-
-void removeSpriteDefs(Array<String> namesToRemove)
-{
-	for (s32 nameIndex = 0; nameIndex < namesToRemove.count; nameIndex++)
-	{
-		String spriteGroupName = namesToRemove[nameIndex];
-		removeAsset(AssetType_Sprite, spriteGroupName);
 	}
 }
 

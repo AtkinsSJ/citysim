@@ -49,6 +49,12 @@ enum AssetState
 	AssetState_Loaded,
 };
 
+struct AssetID
+{
+	AssetType type;
+	String name;
+};
+
 struct Cursor
 {
 	String imageFilePath; // Full path
@@ -221,7 +227,7 @@ struct Asset
 		SpriteGroup spriteGroup;
 
 		struct {
-			Array<String> spriteGroupNames;
+			Array<AssetID> sprites;
 		} spriteDefs;
 
 		struct {
