@@ -32,8 +32,13 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 	else if (equals(typeName, "ninepatch"_s))
 	{
 		String ninepatchName = readToken(reader);
+
+		Maybe<V4> color = readColor(reader, true);
 		
-		result = makeSuccess(UIDrawableStyle(getAssetRef(AssetType_Ninepatch, ninepatchName)));
+		result = makeSuccess(UIDrawableStyle(
+			getAssetRef(AssetType_Ninepatch, ninepatchName),
+			color.orDefault(makeWhite())
+		));
 	}
 	else if (equals(typeName, "sprite"_s))
 	{
@@ -41,7 +46,9 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 		Maybe<s32> spriteIndex = readInt<s32>(reader, true);
 		s32 index = spriteIndex.isValid ? spriteIndex.value : 0;
 
-		result = makeSuccess(UIDrawableStyle(getSpriteRef(spriteName, index)));
+		Maybe<V4> color = readColor(reader, true);
+
+		result = makeSuccess(UIDrawableStyle(getSpriteRef(spriteName, index), color.orDefault(makeWhite())));
 	}
 	else
 	{

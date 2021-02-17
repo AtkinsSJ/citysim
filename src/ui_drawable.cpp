@@ -54,12 +54,12 @@ void UIDrawable::fillPlaceholder(Rect2I bounds)
 
 		case Drawable_Ninepatch:
 		{
-			fillDrawNinepatchPlaceholder(&ninepatchPlaceholder, bounds, &getAsset(&style->ninepatch)->ninepatch, makeWhite());
+			fillDrawNinepatchPlaceholder(&ninepatchPlaceholder, bounds, &getAsset(&style->ninepatch)->ninepatch, style->color);
 		} break;
 
 		case Drawable_Sprite:
 		{
-			fillDrawRectPlaceholder(&rectPlaceholder, rect2(bounds), getSprite(&style->sprite), makeWhite());
+			fillDrawRectPlaceholder(&rectPlaceholder, rect2(bounds), getSprite(&style->sprite), style->color);
 		} break;
 
 		INVALID_DEFAULT_CASE;
@@ -87,12 +87,12 @@ void UIDrawable::draw(RenderBuffer *buffer, Rect2I bounds)
 
 		case Drawable_Ninepatch:
 		{
-			drawNinepatch(buffer, bounds, renderer->shaderIds.textured, &getAsset(&style->ninepatch)->ninepatch);
+			drawNinepatch(buffer, bounds, renderer->shaderIds.textured, &getAsset(&style->ninepatch)->ninepatch, style->color);
 		} break;
 
 		case Drawable_Sprite:
 		{
-			drawSingleSprite(buffer, getSprite(&style->sprite), rect2(bounds), renderer->shaderIds.textured, makeWhite());
+			drawSingleSprite(buffer, getSprite(&style->sprite), rect2(bounds), renderer->shaderIds.textured, style->color);
 		} break;
 
 		INVALID_DEFAULT_CASE;

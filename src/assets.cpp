@@ -747,7 +747,7 @@ AssetRef getAssetRef(AssetType type, String shortName)
 	AssetRef result = {};
 
 	result.type = type;
-	result.name = shortName;
+	result.name = intern(&assets->assetStrings, shortName);
 
 	return result;
 }
@@ -805,7 +805,7 @@ SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
 {
 	SpriteRef result = {};
 
-	result.spriteGroupName = groupName;
+	result.spriteGroupName = intern(&assets->assetStrings, groupName);
 	result.spriteIndex = spriteIndex;
 
 	// NB: We don't retrieve the sprite now, we just leave the pointerRetrievedTicks value at 0

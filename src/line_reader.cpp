@@ -271,30 +271,33 @@ Maybe<bool> readBool(LineReader *reader, bool isOptional, char splitChar)
 	return result;
 }
 
-Maybe<V4> readColor(LineReader *reader)
+Maybe<V4> readColor(LineReader *reader, bool isOptional)
 {
 	// TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
 	// We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
 
 	String allArguments = getRemainderOfLine(reader);
 
-	Maybe<u8> r = readInt<u8>(reader);
-	Maybe<u8> g = readInt<u8>(reader);
-	Maybe<u8> b = readInt<u8>(reader);
+	Maybe<V4> result = makeFailure<V4>();
 
-	Maybe<V4> result;
-
-	if (r.isValid && g.isValid && b.isValid)
+	if (! (isOptional && isEmpty(allArguments)) )
 	{
-		// NB: We default to fully opaque if no alpha is provided
-		Maybe<u8> a = readInt<u8>(reader, true);
+		Maybe<u8> r = readInt<u8>(reader);
+		Maybe<u8> g = readInt<u8>(reader);
+		Maybe<u8> b = readInt<u8>(reader);
 
-		result = makeSuccess(color255(r.value, g.value, b.value, a.orDefault(255)));
-	}
-	else
-	{
-		error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, {allArguments});
-		result = makeFailure<V4>();
+		if (r.isValid && g.isValid && b.isValid)
+		{
+			// NB: We default to fully opaque if no alpha is provided
+			Maybe<u8> a = readInt<u8>(reader, true);
+
+			result = makeSuccess(color255(r.value, g.value, b.value, a.orDefault(255)));
+		}
+		else
+		{
+			error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, {allArguments});
+			result = makeFailure<V4>();
+		}
 	}
 
 	return result;

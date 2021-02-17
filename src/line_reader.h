@@ -50,7 +50,7 @@ Maybe<T>    readInt  (LineReader *reader, bool isOptional=false, char splitChar=
 Maybe<f64>  readFloat(LineReader *reader, bool isOptional=false, char splitChar=0);
 Maybe<bool> readBool (LineReader *reader, bool isOptional=false, char splitChar=0);
 
-Maybe<V4> readColor(LineReader *reader);
+Maybe<V4> readColor(LineReader *reader, bool isOptional=false);
 Maybe<u32> readAlignment(LineReader *reader);
 Maybe<struct EffectRadius> readEffectRadius(LineReader *reader);
 Maybe<V2I> readV2I(LineReader *reader);
