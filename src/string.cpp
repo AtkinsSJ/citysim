@@ -96,6 +96,23 @@ inline bool equals(String a, String b)
 	return result;
 }
 
+inline bool stringIsValid(String s)
+{
+	bool isValid = true;
+
+	// NB: The final char (length-1) is allowed to be null, so we only check until the one before that
+	for (s32 index=0; index < s.length-1; index++)
+	{
+		if (s.chars[index] == 0)
+		{
+			isValid = false;
+			break;
+		}
+	}
+
+	return isValid;
+}
+
 u32 hashString(String *s)
 {
 	// DEBUG_FUNCTION(); // Can't, because we use String hashes in the debug system!

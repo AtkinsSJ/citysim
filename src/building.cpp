@@ -530,7 +530,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						*variant = {};
 
 						String directionFlags = readToken(&reader);
-						String spriteName = readToken(&reader);
+						String spriteName = intern(&assets->assetStrings, readToken(&reader));
 
 						if (directionFlags.length == 8)
 						{

@@ -7,6 +7,8 @@ void initStringTable(StringTable *table)
 
 String intern(StringTable *table, String input)
 {
+	ASSERT(stringIsValid(input));
+
 	HashTable<String> *hashTable = &table->table;
 
 	HashTableEntry<String> *entry = findEntryInternal(hashTable, input);

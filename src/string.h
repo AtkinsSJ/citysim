@@ -39,6 +39,7 @@ String pushString(MemoryArena *arena, String src);
 u32 hashString(String *s);
 
 bool equals(String a, String b);
+bool stringIsValid(String s);
 
 void reverse(char* first, u32 length);
 String trim(String input);
