@@ -53,11 +53,57 @@ void initAssets()
 
 	// Placeholder assets!
 	{
+		// BitmapFont
+		makePlaceholderAsset(AssetType_BitmapFont);
+
+		// BuildingDefs
+		makePlaceholderAsset(AssetType_BuildingDefs);
+
+		// Cursor
+		Asset *placeholderCursor = makePlaceholderAsset(AssetType_Cursor);
+		placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+
+		// CursorDefs
+		makePlaceholderAsset(AssetType_CursorDefs);
+
+		// DevKeymap
+		makePlaceholderAsset(AssetType_DevKeymap);
+
+		// Ninepatch
+		Asset *placeholderNinepatch = makePlaceholderAsset(AssetType_Ninepatch);
+		placeholderNinepatch->ninepatch.texture = &assets->placeholderAssets[AssetType_Texture];
+
+		// Palette
+		Asset *placeholderPalette = makePlaceholderAsset(AssetType_Palette);
+		placeholderPalette->palette.type = PaletteType_Fixed;
+		placeholderPalette->palette.size = 0;
+		placeholderPalette->palette.paletteData = makeArray<V4>(0, null);
+
+		// PaletteDefs
+		makePlaceholderAsset(AssetType_PaletteDefs);
+
+		// Shader
+		makePlaceholderAsset(AssetType_Shader);
+
+		// Sprite!
+		Asset *placeholderSprite = makePlaceholderAsset(AssetType_Sprite);
+		placeholderSprite->data = assetsAllocate(assets, 1 * sizeof(Sprite));
+		placeholderSprite->spriteGroup.count = 1;
+		placeholderSprite->spriteGroup.sprites = (Sprite*) placeholderSprite->data.memory;
+		placeholderSprite->spriteGroup.sprites[0].texture = &assets->placeholderAssets[AssetType_Texture];
+		placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+
+		// SpriteDefs
+		makePlaceholderAsset(AssetType_SpriteDefs);
+
+		// TerrainDefs
+		makePlaceholderAsset(AssetType_TerrainDefs);
+
+		// Texts
+		makePlaceholderAsset(AssetType_Texts);
+
 		// Texture
-		Asset *placeholderTexture = &assets->placeholderAssets[AssetType_Texture];
-		*placeholderTexture = {};
-		placeholderTexture->type = AssetType_Texture;
-		placeholderTexture->state = AssetState_Loaded;
+		Asset *placeholderTexture = makePlaceholderAsset(AssetType_Texture);
 		placeholderTexture->data = assetsAllocate(assets, 2 * 2 * sizeof(u32));
 		u32 *pixels = (u32*)placeholderTexture->data.memory;
 		pixels[0] = pixels[3] = 0xffff00ff;
@@ -66,37 +112,23 @@ void initAssets()
 							0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 		placeholderTexture->texture.isFileAlphaPremultiplied = true;
 
-		// Sprite!
-		Asset *placeholderSprite = &assets->placeholderAssets[AssetType_Sprite];
-		*placeholderSprite = {};
-		placeholderSprite->type = AssetType_Sprite;
-		placeholderSprite->state = AssetState_Loaded;
-		placeholderSprite->data = assetsAllocate(assets, 1 * sizeof(Sprite));
-		placeholderSprite->spriteGroup.count = 1;
-		placeholderSprite->spriteGroup.sprites = (Sprite*) placeholderSprite->data.memory;
-		placeholderSprite->spriteGroup.sprites[0].texture = &assets->placeholderAssets[AssetType_Texture];
-		placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-
-		// Cursor
-		Asset *placeholderCursor = &assets->placeholderAssets[AssetType_Cursor];
-		*placeholderCursor = {};
-		placeholderCursor->type = AssetType_Cursor;
-		placeholderCursor->state = AssetState_Loaded;
-		placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-
-		// Palette
-		Asset *placeholderPalette = &assets->placeholderAssets[AssetType_Palette];
-		*placeholderPalette = {};
-		placeholderPalette->type = AssetType_Palette;
-		placeholderPalette->state = AssetState_Loaded;
-		placeholderPalette->palette.type = PaletteType_Fixed;
-		placeholderPalette->palette.size = 0;
-		placeholderPalette->palette.paletteData = makeArray<V4>(0, null);
+		// UITheme
+		makePlaceholderAsset(AssetType_UITheme);
 	}
 
 	// NB: This might fail, or we might be on a platform where it isn't implemented.
 	// That's OK though! 
 	assets->assetChangeHandle = beginWatchingDirectory(assets->assetsPath);
+}
+
+Asset *makePlaceholderAsset(AssetType type)
+{
+	Asset *result = &assets->placeholderAssets[type];
+	*result = {};
+	result->type = type;
+	result->state = AssetState_Loaded;
+
+	return result;
 }
 
 Blob assetsAllocate(Assets *theAssets, smm size)
@@ -756,17 +788,7 @@ Asset *getAsset(AssetRef *ref)
 {
 	if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks))
 	{
-		Asset *asset = getAssetIfExists(ref->type, ref->name);
-		if (asset != null)
-		{
-			ref->pointer = asset;
-		}
-		else
-		{
-			// TODO: Is there some way we could return a dummy asset here? Maybe one per AssetType?
-			ASSERT(!"Asset not found");
-		}
-
+		ref->pointer = getAsset(ref->type, ref->name);
 		ref->pointerRetrievedTicks = SDL_GetTicks();
 	}
 

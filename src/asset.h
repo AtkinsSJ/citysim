@@ -15,9 +15,9 @@ enum AssetType
 	AssetType_Shader,
 	AssetType_Sprite,
 	AssetType_SpriteDefs,
+	AssetType_TerrainDefs,
 	AssetType_Texts,
 	AssetType_Texture,
-	AssetType_TerrainDefs,
 	AssetType_UITheme,
 
 	AssetTypeCount,
@@ -234,11 +234,11 @@ struct Asset
 			Array<String> terrainIDs;
 		} terrainDefs;
 
-		Texture texture;
-
 		struct {
 			Array<String> keys;
 			bool isFallbackLocale;
 		} texts;
+
+		Texture texture;
 	};
 };

@@ -50,6 +50,7 @@ struct Assets
 };
 
 void initAssets();
+Asset *makePlaceholderAsset(AssetType type);
 
 void reloadLocaleSpecificAssets();
 
