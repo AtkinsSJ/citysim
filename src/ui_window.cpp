@@ -103,7 +103,10 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState
 	  	  		window->area.w,
 	  	  		(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))),
 	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
-	      Panel_LayoutTopToBottom | Panel_IsTopLevel | (doUpdate ? Panel_DoUpdate : 0) | (doRender ? Panel_DoRender : 0)
+	      Panel_LayoutTopToBottom
+	       | ((window->flags & WinFlag_Tooltip) ? 0 : Panel_BlocksMouse)
+	       | (doUpdate ? Panel_DoUpdate : 0)
+	       | (doRender ? Panel_DoRender : 0)
 	  )
 {}
 

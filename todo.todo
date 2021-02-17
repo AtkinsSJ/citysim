@@ -18,8 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Render bug - cost tooltip is half opacity when dragging a rectangle over its upper-left corner
-
 Bug: road and powerline sprites are showing the placeholder texture
 
 UITheme as asset

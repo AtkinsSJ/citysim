@@ -26,11 +26,11 @@
 enum UIPanelFlags
 {
 	Panel_LayoutTopToBottom = 1 << 0,
-	Panel_IsTopLevel 		= 1 << 1,
+	Panel_BlocksMouse 		= 1 << 1,
 	Panel_DoUpdate			= 1 << 2,
 	Panel_DoRender			= 1 << 3,
 
-	PanelDefaultFlags = Panel_LayoutTopToBottom | Panel_IsTopLevel | Panel_DoUpdate | Panel_DoRender
+	PanelDefaultFlags = Panel_LayoutTopToBottom | Panel_DoUpdate | Panel_DoRender | Panel_BlocksMouse
 };
 
 struct UIPanel
@@ -73,7 +73,7 @@ struct UIPanel
 	// Call after modifying the contentArea. Updates the positions fields to match.
 	void updateLayoutPosition();
 
-	bool isTopLevel;
+	bool blocksMouse;
 	bool hasAddedWidgets;
 
 	bool doUpdate; // Should widgets execute their logic? eg, buttons react to being clicked?

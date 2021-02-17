@@ -13,8 +13,8 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 		this->style = panelStyle;
 	}
 
-	this->isTopLevel = (flags & Panel_IsTopLevel) != 0;
 	this->hasAddedWidgets = false;
+	this->blocksMouse = (flags & Panel_BlocksMouse) != 0;
 
 	this->doUpdate = (flags & Panel_DoUpdate) != 0;
 	this->doRender = (flags & Panel_DoRender) != 0;
@@ -532,7 +532,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	}
 
 	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
-	if (isTopLevel)
+	if (blocksMouse)
 	{
 		addUIRect(uiState, bounds);
 	}
