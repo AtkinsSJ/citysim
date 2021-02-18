@@ -1214,7 +1214,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 	}
 	asset->data = assetsAllocate(assets, sizeof(AssetID) * childAssetCount);
 	asset->spriteDefs.sprites = makeArray(childAssetCount, (AssetID *) asset->data.memory);
-	s32 cursorIndex = 0;
+	s32 childAssetIndex = 0;
 	restart(&reader);
 
 	// Now, actually read things
@@ -1229,6 +1229,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 			command.length--;
 
 			textureAsset = null;
+			spriteGroup = null;
 
 			if (equals(command, "Ninepatch"_s))
 			{
@@ -1251,9 +1252,36 @@ void loadSpriteDefs(Blob data, Asset *asset)
 
 				Asset *ninepatch = addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
 
-				asset->spriteDefs.sprites[cursorIndex].name = ninepatch->shortName;
-				asset->spriteDefs.sprites[cursorIndex].type = ninepatch->type;
-				cursorIndex++;
+				asset->spriteDefs.sprites[childAssetIndex].name = ninepatch->shortName;
+				asset->spriteDefs.sprites[childAssetIndex].type = ninepatch->type;
+				childAssetIndex++;
+			}
+			else if (equals(command, "Sprite"_s))
+			{
+				// @Copypasta from the SpriteGroup branch, and the 'sprite' property
+				String name              = readToken(&reader);
+				String filename          = readToken(&reader);
+				Maybe<V2I> spriteSizeIn  = readV2I  (&reader);
+
+				if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.isValid)
+				{
+					error(&reader, "Couldn't parse Sprite. Expected: ':Sprite identifier filename.png SWxSH'"_s);
+					return;
+				}
+
+				spriteSize = spriteSizeIn.value;
+
+				Asset *group = addSpriteGroup(name, 1);
+
+				Sprite *sprite = group->spriteGroup.sprites;
+				sprite->texture = addTexture(filename, false);
+				sprite->uv = rectXYWHi(0, 0, spriteSize.x, spriteSize.y);
+				sprite->pixelWidth = spriteSize.x;
+				sprite->pixelHeight = spriteSize.y;
+
+				asset->spriteDefs.sprites[childAssetIndex].name = group->shortName;
+				asset->spriteDefs.sprites[childAssetIndex].type = group->type;
+				childAssetIndex++;
 			}
 			else if (equals(command, "SpriteGroup"_s))
 			{
@@ -1279,9 +1307,9 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 
-				asset->spriteDefs.sprites[cursorIndex].name = spriteGroup->shortName;
-				asset->spriteDefs.sprites[cursorIndex].type = spriteGroup->type;
-				cursorIndex++;
+				asset->spriteDefs.sprites[childAssetIndex].name = spriteGroup->shortName;
+				asset->spriteDefs.sprites[childAssetIndex].type = spriteGroup->type;
+				childAssetIndex++;
 			}
 			else
 			{
@@ -1293,7 +1321,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 		{
 			if (spriteGroup == null)
 			{
-				error(&reader, "Found a property before starting a :SpriteGroup!"_s);
+				error(&reader, "Found a property outside of a :SpriteGroup!"_s);
 				return;
 			}
 			else if (equals(command, "border"_s))
