@@ -4,10 +4,9 @@ void aboutWindowProc(WindowContext *context, void * /*userData*/)
 {
 	UIPanel *ui = &context->windowPanel;
 
-	s32 imageWidth = 64;
-	s32 imageHeight = 64;
-	UIPanel leftColumn = ui->column(imageWidth, ALIGN_LEFT, "plain"_s);
-	leftColumn.addSprite(getSprite("b_forest"_s), imageWidth, imageHeight);
+	UIPanel leftColumn = ui->column(64, ALIGN_LEFT, "plain"_s);
+	leftColumn.alignWidgets(ALIGN_H_CENTRE);
+	leftColumn.addSprite(getSprite("b_hospital"_s));
 	leftColumn.end();
 
 	ui->addText(getText("game_title"_s), "title"_s);

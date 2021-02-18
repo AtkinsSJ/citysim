@@ -1325,6 +1325,8 @@ void loadSpriteDefs(Blob data, Asset *asset)
 					sprite->uv = rectXYWHi(spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
 										   spriteBorder.y + y * (spriteSize.y + spriteBorder.y + spriteBorder.y),
 										   spriteSize.x, spriteSize.y);
+					sprite->pixelWidth = spriteSize.x;
+					sprite->pixelHeight = spriteSize.y;
 
 					spriteIndex++;
 				}

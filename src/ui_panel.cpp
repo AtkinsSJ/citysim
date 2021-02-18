@@ -175,6 +175,9 @@ void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 
 	if (sprite != null)
 	{
+		if (size.x == -1) size.x = sprite->pixelWidth;
+		if (size.y == -1) size.y = sprite->pixelHeight;
+
 		Rect2I spriteBounds = irectAligned(origin, size, widgetAlignment);
 		drawSingleSprite(&renderer->uiBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
 	}

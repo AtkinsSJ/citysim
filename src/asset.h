@@ -146,6 +146,8 @@ struct Sprite
 {
 	Asset *texture;
 	Rect2 uv; // in (0 to 1) space
+	s32 pixelWidth;
+	s32 pixelHeight;
 };
 
 struct SpriteGroup
