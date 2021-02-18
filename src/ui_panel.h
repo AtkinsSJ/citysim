@@ -45,6 +45,7 @@ struct UIPanel
 
 	// Add stuff to the panel
 	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
+	bool addImageButton(Sprite *sprite, ButtonState state = Button_Normal, String styleName = nullString);
 	void addSprite(Sprite *sprite, s32 width = -1, s32 height = -1);
 	void addText(String text, String styleName = nullString);
 	bool addTextInput(TextInput *textInput, String styleName = nullString);

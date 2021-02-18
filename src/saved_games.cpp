@@ -230,7 +230,8 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	if (selectedSavedGame)
 	{
 		ui->alignWidgets(ALIGN_RIGHT);
-		if (ui->addButton(getText("button_delete_save"_s), Button_Normal, "delete"_s))
+		// if (ui->addButton(getText("button_delete_save"_s), Button_Normal, "delete"_s))
+		if (ui->addImageButton(getSprite("icon_delete"_s), Button_Normal, "delete"_s))
 		{
 			deleteSave(globalAppState.uiState, selectedSavedGame);
 		}

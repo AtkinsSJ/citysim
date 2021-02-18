@@ -4,3 +4,6 @@
 sprite 0 0
 
 :Ninepatch btn_white btn_white_9.png   1 11 14 24     1 11 14 24
+
+:SpriteGroup icon_delete icon_delete.png 24x24
+sprite 0 0

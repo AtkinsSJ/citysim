@@ -100,6 +100,36 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	return buttonResult.wasClicked;
 }
 
+bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName)
+{
+	DEBUG_FUNCTION();
+	
+	prepareForWidgets();
+
+	UIButtonStyle *buttonStyle = null;
+	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(assets->theme, styleName);
+	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&this->style->buttonStyle);
+
+	Rect2I space = getCurrentLayoutPosition();
+	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
+
+	V2I spriteSize = v2i(sprite->pixelWidth, sprite->pixelHeight);
+
+	if (availableButtonContentSize < sprite->pixelWidth)
+	{
+		// Scale the image so it fits
+		f32 ratio = (f32)availableButtonContentSize / (f32)sprite->pixelWidth;
+
+		spriteSize.x = availableButtonContentSize;
+		spriteSize.y = floor_s32(ratio * (f32)sprite->pixelHeight);
+	}
+
+	AddButtonInternalResult buttonResult = addButtonInternal(spriteSize, state, buttonStyle);
+	drawSingleSprite(&renderer->uiBuffer, sprite, rect2(buttonResult.contentBounds), renderer->shaderIds.textured, makeWhite());
+
+	return buttonResult.wasClicked;
+}
+
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 {
 	DEBUG_FUNCTION();
@@ -481,8 +511,6 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, ButtonState state, UIButtonStyle *buttonStyle)
 {
 	DEBUG_FUNCTION();
-	
-	prepareForWidgets();
 
 	UIState *uiState = globalAppState.uiState;
 
