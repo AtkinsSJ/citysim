@@ -145,6 +145,26 @@ V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, b
 	return result;
 }
 
+V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
+{
+	s32 doublePadding = (buttonStyle->padding * 2);
+
+	V2I result = {};
+
+	if (fillWidth && (maxWidth > 0))
+	{
+		result.x = maxWidth;
+	}
+	else
+	{
+		result.x = (contentSize.x + doublePadding);
+	}
+
+	result.y = contentSize.y + doublePadding;
+
+	return result;
+}
+
 bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, SDL_Keycode shortcutKey, String tooltip)
 {
 	DEBUG_FUNCTION();

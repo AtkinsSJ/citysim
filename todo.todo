@@ -18,6 +18,10 @@ Notes for searching:
 
 ------------------------------------------------
 
+Image buttons
+- Split the generic button code from the text/image content
+- Implement image button
+
 Scrollbar improvements:
 - Convert drawScrollbar() to take a ScrollbarState
 	-> need to convert the console to using a ScrollbarState first
@@ -31,13 +35,12 @@ UIMessage:
 
 Window/UI System features:
 - Confirmation dialogs
-- Frames
-- Embedded images
+✔ Frames
+✔ Embedded images
 - Image buttons
-- Align things to the bottom
-- Parity between windowed and non-windowed UI. They're very different right now which is awkward.
-	- Possibly, have toolbar style menus in the game just be windows with a forced background depth and snapping to a set position?
-	- Or, could treat those and window contents as "panels", which then handle the layout.
+✔ Align things to the bottom
+✔ Parity between windowed and non-windowed UI. They're very different right now which is awkward.
+- Convert the in-game toolbar to a Panel?
 
 Saving and loading:
 - Save/Load window revamp!

@@ -84,83 +84,20 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	
 	prepareForWidgets();
 
-	UIState *uiState = globalAppState.uiState;
-
-	bool buttonWasClicked = false;
 	UIButtonStyle *buttonStyle = null;
 	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(assets->theme, styleName);
 	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&this->style->buttonStyle);
 
-	u32 textAlignment = buttonStyle->textAlignment;
-	s32 buttonPadding = buttonStyle->padding;
-
-	s32 buttonAlignment = this->widgetAlignment;
 	Rect2I space = getCurrentLayoutPosition();
-	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
+	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
 
 	BitmapFont *font = getFont(&buttonStyle->font);
-	if (font)
-	{
-		bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-		s32 buttonWidth = calculateButtonSize(text, buttonStyle, space.w, fillWidth).x;
+	V2I textSize = calculateTextSize(font, text, availableButtonContentSize);
+	AddButtonInternalResult buttonResult = addButtonInternal(textSize, state, buttonStyle);
 
-		V2I textSize = calculateTextSize(font, text, buttonWidth - (buttonStyle->padding * 2));
-		Rect2I buttonBounds = irectAligned(buttonOrigin, v2i(buttonWidth, textSize.y + (buttonPadding * 2)), buttonAlignment);
+	drawText(&renderer->uiBuffer, font, text, buttonResult.contentBounds, buttonStyle->textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
 
-		if (doRender)
-		{
-			UIDrawableStyle *backgroundStyle = &buttonStyle->background;
-
-			if (state == Button_Disabled)
-			{
-				backgroundStyle = &buttonStyle->disabledBackground;
-			}
-			else if (isMouseInUIBounds(uiState, buttonBounds))
-			{
-				// Mouse pressed: must have started and currently be inside the bounds to show anything
-				// Mouse unpressed: show hover if in bounds
-				if (mouseButtonPressed(MouseButton_Left))
-				{
-					if (isMouseInUIBounds(uiState, buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-					{
-						backgroundStyle = &buttonStyle->pressedBackground;
-					}
-				}
-				else
-				{
-					backgroundStyle = &buttonStyle->hoverBackground;
-				}
-			}
-			else if (state == Button_Active)
-			{
-				backgroundStyle = &buttonStyle->hoverBackground;
-			}
-
-			UIDrawable buttonBackground = UIDrawable(backgroundStyle);
-			buttonBackground.preparePlaceholder(&renderer->uiBuffer);
-
-			V2I textOrigin = alignWithinRectangle(buttonBounds, textAlignment, buttonPadding);
-			V2I textTopLeft = calculateTextPosition(textOrigin, textSize, textAlignment);
-			Rect2I textBounds = irectPosSize(textTopLeft, textSize);
-			drawText(&renderer->uiBuffer, font, text, textBounds, textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
-
-			buttonBackground.fillPlaceholder(buttonBounds);
-		}
-
-		if (doUpdate)
-		{
-			if ((state != Button_Disabled)
-			 && justClickedOnUI(uiState, buttonBounds))
-			{
-				buttonWasClicked = true;
-				uiState->mouseInputHandled = true;
-			}
-		}
-
-		completeWidget(buttonBounds.size);
-	}
-
-	return buttonWasClicked;
+	return buttonResult.wasClicked;
 }
 
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
@@ -539,6 +476,77 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	{
 		addUIRect(uiState, bounds);
 	}
+}
+
+UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, ButtonState state, UIButtonStyle *buttonStyle)
+{
+	DEBUG_FUNCTION();
+	
+	prepareForWidgets();
+
+	UIState *uiState = globalAppState.uiState;
+
+	AddButtonInternalResult result = {};
+
+	s32 buttonAlignment = this->widgetAlignment;
+	Rect2I space = getCurrentLayoutPosition();
+	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
+
+	bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+	V2I buttonSize = calculateButtonSize(contentSize, buttonStyle, space.w, fillWidth);
+	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, buttonAlignment);
+
+	result.contentBounds = irectAligned(
+		alignWithinRectangle(buttonBounds, buttonStyle->textAlignment, buttonStyle->padding),
+		contentSize,
+		buttonStyle->textAlignment
+	);
+
+	if (doRender)
+	{
+		UIDrawableStyle *backgroundStyle = &buttonStyle->background;
+
+		if (state == Button_Disabled)
+		{
+			backgroundStyle = &buttonStyle->disabledBackground;
+		}
+		else if (isMouseInUIBounds(uiState, buttonBounds))
+		{
+			// Mouse pressed: must have started and currently be inside the bounds to show anything
+			// Mouse unpressed: show hover if in bounds
+			if (mouseButtonPressed(MouseButton_Left))
+			{
+				if (isMouseInUIBounds(uiState, buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+				{
+					backgroundStyle = &buttonStyle->pressedBackground;
+				}
+			}
+			else
+			{
+				backgroundStyle = &buttonStyle->hoverBackground;
+			}
+		}
+		else if (state == Button_Active)
+		{
+			backgroundStyle = &buttonStyle->hoverBackground;
+		}
+
+		UIDrawable(backgroundStyle).draw(&renderer->uiBuffer, buttonBounds);
+	}
+
+	if (doUpdate)
+	{
+		if ((state != Button_Disabled)
+		 && justClickedOnUI(uiState, buttonBounds))
+		{
+			result.wasClicked = true;
+			uiState->mouseInputHandled = true;
+		}
+	}
+
+	completeWidget(buttonBounds.size);
+
+	return result;
 }
 
 inline u32 UIPanel::getFlagsForChild()
