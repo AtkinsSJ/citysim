@@ -6,7 +6,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 
 	if (panelStyle == null)
 	{
-		this->style = findPanelStyle(&assets->theme, "default"_s);
+		this->style = findPanelStyle(assets->theme, "default"_s);
 	}
 	else
 	{
@@ -88,7 +88,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 
 	bool buttonWasClicked = false;
 	UIButtonStyle *buttonStyle = null;
-	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(&assets->theme, styleName);
+	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(assets->theme, styleName);
 	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&this->style->buttonStyle);
 
 	u32 textAlignment = buttonStyle->textAlignment;
@@ -189,7 +189,7 @@ void UIPanel::addText(String text, String styleName)
 	prepareForWidgets();
 
 	UILabelStyle *labelStyle = null;
-	if (!isEmpty(styleName))  labelStyle = findLabelStyle(&assets->theme, styleName);
+	if (!isEmpty(styleName))  labelStyle = findLabelStyle(assets->theme, styleName);
 	if (labelStyle == null)   labelStyle = findStyle<UILabelStyle>(&this->style->labelStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
@@ -224,7 +224,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	}
 
 	UITextInputStyle *textInputStyle = null;
-	if (!isEmpty(styleName))    textInputStyle = findTextInputStyle(&assets->theme, styleName);
+	if (!isEmpty(styleName))    textInputStyle = findTextInputStyle(assets->theme, styleName);
 	if (textInputStyle == null) textInputStyle = findStyle<UITextInputStyle>(&this->style->textInputStyle);
 
 	s32 alignment = this->widgetAlignment;
@@ -321,7 +321,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 	startNewLine();
 
 	UIPanelStyle *rowStyle = null;
-	if (!isEmpty(styleName)) rowStyle = findPanelStyle(&assets->theme, styleName);
+	if (!isEmpty(styleName)) rowStyle = findPanelStyle(assets->theme, styleName);
 	if (rowStyle == null)    rowStyle = this->style;
 
 	if (vAlignment == ALIGN_TOP)
@@ -377,7 +377,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 	startNewLine();
 
 	UIPanelStyle *columnStyle = null;
-	if (!isEmpty(styleName)) columnStyle = findPanelStyle(&assets->theme, styleName);
+	if (!isEmpty(styleName)) columnStyle = findPanelStyle(assets->theme, styleName);
 	if (columnStyle == null) columnStyle = this->style;
 
 	if (hAlignment == ALIGN_LEFT)

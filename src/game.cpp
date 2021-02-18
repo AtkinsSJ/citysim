@@ -461,7 +461,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	s32 windowWidth  = round_s32(renderer->uiCamera.size.x);
 	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	V2I centre = v2i(renderer->uiCamera.pos);
-	UITheme *theme = &assets->theme;
+	UITheme *theme = assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 	City *city = &gameState->city;
@@ -1161,7 +1161,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
-	UITheme *theme = &assets->theme;
+	UITheme *theme = assets->theme;
 	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 

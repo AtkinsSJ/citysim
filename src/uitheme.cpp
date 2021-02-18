@@ -58,17 +58,9 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 	return result;
 }
 
-void initUITheme(UITheme *theme)
+void initUIStyleProperties()
 {
-	initHashTable(&theme->buttonStyles);
-	initHashTable(&theme->consoleStyles);
-	initHashTable(&theme->labelStyles);
-	initHashTable(&theme->panelStyles);
-	initHashTable(&theme->scrollbarStyles);
-	initHashTable(&theme->textInputStyles);
-	initHashTable(&theme->windowStyles);
-
-	initHashTable(&theme->styleProperties, 0.75f, 256);
+	initHashTable(&uiStyleProperties, 0.75f, 256);
 	#define PROP(name, _type, inButton, inConsole, inLabel, inPanel, inScrollbar, inTextInput, inWindow) {\
 		UIProperty property = {}; \
 		property.type = _type; \
@@ -80,7 +72,7 @@ void initUITheme(UITheme *theme)
 		property.existsInStyle[UIStyle_Scrollbar] = inScrollbar; \
 		property.existsInStyle[UIStyle_TextInput] = inTextInput; \
 		property.existsInStyle[UIStyle_Window]    = inWindow; \
-		put(&theme->styleProperties, makeString(#name), property); \
+		put(&uiStyleProperties, makeString(#name), property); \
 	}
 
 	//                                                    btn   cnsl  label  panel  scrll  txtin  windw
@@ -113,103 +105,12 @@ void initUITheme(UITheme *theme)
 	PROP(width,                    PropType_Int,        false, false, false, false,  true, false, false);
 
 	#undef PROP
-
-	// TODO: Remove this!
-	theme->overlayColor = color255(0, 0, 0, 128);
 }
 
-void saveStyleToTheme(UITheme *theme, UIStyle *style)
+struct UIStylePack
 {
-	switch (style->type)
-	{
-		case UIStyle_Button: {
-			UIButtonStyle *button = put(&theme->buttonStyles, style->name, UIButtonStyle());
-
-			button->font = style->font;
-			button->textColor = style->textColor;
-			button->textAlignment = style->textAlignment;
-
-			button->background = style->background;
-			button->hoverBackground = style->hoverBackground;
-			button->pressedBackground = style->pressedBackground;
-			button->disabledBackground = style->disabledBackground;
-
-			button->padding = style->padding;
-		} break;
-
-		case UIStyle_Console: {
-			UIConsoleStyle *console = put(&theme->consoleStyles, style->name, UIConsoleStyle());
-
-			console->font = style->font;
-			copyMemory(style->outputTextColor, console->outputTextColor, CLS_COUNT);
-
-			console->background = style->background;
-			console->padding = style->padding;
-
-			console->scrollbarStyle = style->scrollbarStyle;
-			console->textInputStyle = style->textInputStyle;
-		} break;
-
-		case UIStyle_Label: {
-			UILabelStyle *label = put(&theme->labelStyles, style->name, UILabelStyle());
-
-			label->font = style->font;
-			label->textColor = style->textColor;
-		} break;
-
-		case UIStyle_Panel: {
-			UIPanelStyle *panel = put(&theme->panelStyles, style->name, UIPanelStyle());
-
-			panel->margin = style->margin;
-			panel->contentPadding = style->contentPadding;
-			panel->widgetAlignment = style->widgetAlignment;
-			panel->background = style->background;
-
-			panel->buttonStyle = style->buttonStyle;
-			panel->labelStyle = style->labelStyle;
-			panel->scrollbarStyle = style->scrollbarStyle;
-			panel->textInputStyle = style->textInputStyle;
-		} break;
-
-		case UIStyle_Scrollbar: {
-			UIScrollbarStyle *scrollbar = put(&theme->scrollbarStyles, style->name, UIScrollbarStyle());
-
-			scrollbar->background = style->background;
-			scrollbar->knob = style->knob;
-			scrollbar->width = style->width;
-		} break;
-
-		case UIStyle_TextInput: {
-			UITextInputStyle *textInput = put(&theme->textInputStyles, style->name, UITextInputStyle());
-
-			textInput->font = style->font;
-			textInput->textColor = style->textColor;
-			textInput->textAlignment = style->textAlignment;
-
-			textInput->background = style->background;
-			textInput->padding = style->padding;
-	
-			textInput->showCaret = style->showCaret;
-			textInput->caretFlashCycleDuration = style->caretFlashCycleDuration;
-		} break;
-
-		case UIStyle_Window: {
-			UIWindowStyle *window = put(&theme->windowStyles, style->name, UIWindowStyle());
-
-			window->titleBarHeight = style->titleBarHeight;
-			window->titleBarColor = style->titleBarColor;
-			window->titleBarColorInactive = style->titleBarColorInactive;
-			window->titleFont = style->titleFont;
-			window->titleColor = style->titleColor;
-			window->titleBarButtonHoverColor = style->titleBarButtonHoverColor;
-
-			window->offsetFromMouse = style->offsetFromMouse;
-
-			window->panelStyle = style->panelStyle;
-		} break;
-	}
-}
-
+	UIStyle styleByType[UIStyleTypeCount];
+};
 UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, UIStyleType type)
 {
 	UIStylePack *pack = findOrAdd(styles, name);
@@ -226,20 +127,18 @@ void loadUITheme(Blob data, Asset *asset)
 {
 	LineReader reader = readLines(asset->shortName, data);
 
-	UITheme *theme = &assets->theme;
-	clear(&theme->buttonStyles);
-	clear(&theme->consoleStyles);
-	clear(&theme->labelStyles);
-	clear(&theme->panelStyles);
-	clear(&theme->scrollbarStyles);
-	clear(&theme->textInputStyles);
-	clear(&theme->windowStyles);
-
 	HashTable<UIStylePack> styles;
 	initHashTable(&styles);
 
 	HashTable<String> fontNamesToAssetNames;
 	initHashTable(&fontNamesToAssetNames);
+
+	defer {
+		freeHashTable(&styles);
+		freeHashTable(&fontNamesToAssetNames);
+	};
+
+	s32 styleCount[UIStyleTypeCount] = {};
 
 	String currentSection = nullString;
 	UIStyle *target = null;
@@ -277,6 +176,7 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_Button);
 				target->name = name;
 				target->type = UIStyle_Button;
+				styleCount[UIStyle_Button]++;
 			}
 			else if (equals(firstWord, "Console"_s))
 			{
@@ -284,6 +184,7 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_Console);
 				target->name = name;
 				target->type = UIStyle_Console;
+				styleCount[UIStyle_Console]++;
 			}
 			else if (equals(firstWord, "Label"_s))
 			{
@@ -291,6 +192,7 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_Label);
 				target->name = name;
 				target->type = UIStyle_Label;
+				styleCount[UIStyle_Label]++;
 			}
 			else if (equals(firstWord, "Panel"_s))
 			{
@@ -298,6 +200,7 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_Panel);
 				target->name = name;
 				target->type = UIStyle_Panel;
+				styleCount[UIStyle_Panel]++;
 			}
 			else if (equals(firstWord, "Scrollbar"_s))
 			{
@@ -305,6 +208,7 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_Scrollbar);
 				target->name = name;
 				target->type = UIStyle_Scrollbar;
+				styleCount[UIStyle_Scrollbar]++;
 			}
 			else if (equals(firstWord, "TextInput"_s))
 			{
@@ -312,6 +216,7 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_TextInput);
 				target->name = name;
 				target->type = UIStyle_TextInput;
+				styleCount[UIStyle_TextInput]++;
 			}
 			else if (equals(firstWord, "Window"_s))
 			{
@@ -319,6 +224,7 @@ void loadUITheme(Blob data, Asset *asset)
 				target = addStyle(&styles, name, UIStyle_Window);
 				target->name = name;
 				target->type = UIStyle_Window;
+				styleCount[UIStyle_Window]++;
 			}
 			else
 			{
@@ -390,7 +296,7 @@ void loadUITheme(Blob data, Asset *asset)
 			else
 			{
 				// Check our properties map for a match
-				UIProperty *property = find(&theme->styleProperties, firstWord);
+				UIProperty *property = find(&uiStyleProperties, firstWord);
 				if (property)
 				{
 					if (property->existsInStyle[target->type])
@@ -501,6 +407,58 @@ void loadUITheme(Blob data, Asset *asset)
 	}
 
 	// Actually write out the styles into the UITheme
+
+	// First, figure out how much space to allocate
+	smm styleArraySize[UIStyleTypeCount] = {};
+	styleArraySize[UIStyle_Button] 		= styleCount[UIStyle_Button] 	* sizeof(UIButtonStyle);
+	styleArraySize[UIStyle_Console] 	= styleCount[UIStyle_Console] 	* sizeof(UIConsoleStyle);
+	styleArraySize[UIStyle_Label] 		= styleCount[UIStyle_Label] 	* sizeof(UILabelStyle);
+	styleArraySize[UIStyle_Panel] 		= styleCount[UIStyle_Panel] 	* sizeof(UIPanelStyle);
+	styleArraySize[UIStyle_Scrollbar] 	= styleCount[UIStyle_Scrollbar] * sizeof(UIScrollbarStyle);
+	styleArraySize[UIStyle_TextInput] 	= styleCount[UIStyle_TextInput] * sizeof(UITextInputStyle);
+	styleArraySize[UIStyle_Window] 		= styleCount[UIStyle_Window] 	* sizeof(UIWindowStyle);
+
+	smm totalSize = 0;
+	for (s32 i=0; i < UIStyleTypeCount; i++)
+	{
+		totalSize += styleArraySize[i];
+	}
+
+	asset->data = assetsAllocate(assets, totalSize);
+	u8* pos = asset->data.memory;
+
+	UITheme *theme = &asset->theme;
+	// TODO: Remove this!
+	theme->overlayColor = color255(0, 0, 0, 128);
+
+	theme->buttonStyles = makeArray(styleCount[UIStyle_Button], (UIButtonStyle *) pos);
+	pos += styleArraySize[UIStyle_Button];
+	UIButtonStyle *nextButtonStyle = &theme->buttonStyles[0];
+
+	theme->consoleStyles = makeArray(styleCount[UIStyle_Console], (UIConsoleStyle *) pos);
+	pos += styleArraySize[UIStyle_Console];
+	UIConsoleStyle *nextConsoleStyle = &theme->consoleStyles[0];
+
+	theme->labelStyles = makeArray(styleCount[UIStyle_Label], (UILabelStyle *) pos);
+	pos += styleArraySize[UIStyle_Label];
+	UILabelStyle *nextLabelStyle = &theme->labelStyles[0];
+
+	theme->panelStyles = makeArray(styleCount[UIStyle_Panel], (UIPanelStyle *) pos);
+	pos += styleArraySize[UIStyle_Panel];
+	UIPanelStyle *nextPanelStyle = &theme->panelStyles[0];
+
+	theme->scrollbarStyles = makeArray(styleCount[UIStyle_Scrollbar], (UIScrollbarStyle *) pos);
+	pos += styleArraySize[UIStyle_Scrollbar];
+	UIScrollbarStyle *nextScrollbarStyle = &theme->scrollbarStyles[0];
+
+	theme->textInputStyles = makeArray(styleCount[UIStyle_TextInput], (UITextInputStyle *) pos);
+	pos += styleArraySize[UIStyle_TextInput];
+	UITextInputStyle *nextTextInputStyle = &theme->textInputStyles[0];
+
+	theme->windowStyles = makeArray(styleCount[UIStyle_Window], (UIWindowStyle *) pos);
+	pos += styleArraySize[UIStyle_Window];
+	UIWindowStyle *nextWindowStyle = &theme->windowStyles[0];
+
 	for (auto it = iterate(&styles); hasNext(&it); next(&it))
 	{
 		UIStylePack *stylePack = get(&it);
@@ -510,12 +468,104 @@ void loadUITheme(Blob data, Asset *asset)
 			// For undefined styles, the parent struct will be all nulls, so the type will not match
 			if (style->type == sectionType)
 			{
-				saveStyleToTheme(theme, style);
+				switch (style->type)
+				{
+					case UIStyle_Button: {
+						UIButtonStyle *button = nextButtonStyle++;
+						button->name = style->name;
+
+						button->font = style->font;
+						button->textColor = style->textColor;
+						button->textAlignment = style->textAlignment;
+
+						button->background = style->background;
+						button->hoverBackground = style->hoverBackground;
+						button->pressedBackground = style->pressedBackground;
+						button->disabledBackground = style->disabledBackground;
+
+						button->padding = style->padding;
+					} break;
+
+					case UIStyle_Console: {
+						UIConsoleStyle *console = nextConsoleStyle++;
+						console->name = style->name;
+
+						console->font = style->font;
+						copyMemory(style->outputTextColor, console->outputTextColor, CLS_COUNT);
+
+						console->background = style->background;
+						console->padding = style->padding;
+
+						console->scrollbarStyle = style->scrollbarStyle;
+						console->textInputStyle = style->textInputStyle;
+					} break;
+
+					case UIStyle_Label: {
+						UILabelStyle *label = nextLabelStyle++;
+						label->name = style->name;
+
+						label->font = style->font;
+						label->textColor = style->textColor;
+					} break;
+
+					case UIStyle_Panel: {
+						UIPanelStyle *panel = nextPanelStyle++;
+						panel->name = style->name;
+
+						panel->margin = style->margin;
+						panel->contentPadding = style->contentPadding;
+						panel->widgetAlignment = style->widgetAlignment;
+						panel->background = style->background;
+
+						panel->buttonStyle = style->buttonStyle;
+						panel->labelStyle = style->labelStyle;
+						panel->scrollbarStyle = style->scrollbarStyle;
+						panel->textInputStyle = style->textInputStyle;
+					} break;
+
+					case UIStyle_Scrollbar: {
+						UIScrollbarStyle *scrollbar = nextScrollbarStyle++;
+						scrollbar->name = style->name;
+
+						scrollbar->background = style->background;
+						scrollbar->knob = style->knob;
+						scrollbar->width = style->width;
+					} break;
+
+					case UIStyle_TextInput: {
+						UITextInputStyle *textInput = nextTextInputStyle++;
+						textInput->name = style->name;
+
+						textInput->font = style->font;
+						textInput->textColor = style->textColor;
+						textInput->textAlignment = style->textAlignment;
+
+						textInput->background = style->background;
+						textInput->padding = style->padding;
+				
+						textInput->showCaret = style->showCaret;
+						textInput->caretFlashCycleDuration = style->caretFlashCycleDuration;
+					} break;
+
+					case UIStyle_Window: {
+						UIWindowStyle *window = nextWindowStyle++;
+						window->name = style->name;
+
+						window->titleBarHeight = style->titleBarHeight;
+						window->titleBarColor = style->titleBarColor;
+						window->titleBarColorInactive = style->titleBarColorInactive;
+						window->titleFont = style->titleFont;
+						window->titleColor = style->titleColor;
+						window->titleBarButtonHoverColor = style->titleBarButtonHoverColor;
+
+						window->offsetFromMouse = style->offsetFromMouse;
+
+						window->panelStyle = style->panelStyle;
+					} break;
+				}
 			}
 		}
 	}
-
-	freeHashTable(&styles);
 }
 
 template <typename T>

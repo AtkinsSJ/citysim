@@ -166,6 +166,20 @@ struct Texture
 	};
 };
 
+struct UITheme
+{
+	// TODO: Remove this!
+	V4 overlayColor;
+
+	Array<struct UIButtonStyle>    buttonStyles;
+	Array<struct UIConsoleStyle>   consoleStyles;
+	Array<struct UILabelStyle>     labelStyles;
+	Array<struct UIPanelStyle>     panelStyles;
+	Array<struct UIScrollbarStyle> scrollbarStyles;
+	Array<struct UITextInputStyle> textInputStyles;
+	Array<struct UIWindowStyle>    windowStyles;
+};
+
 struct AssetRef
 {
 	AssetType type;
@@ -240,5 +254,7 @@ struct Asset
 		} texts;
 
 		Texture texture;
+
+		UITheme theme;
 	};
 };

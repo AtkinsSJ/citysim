@@ -28,12 +28,7 @@ struct Assets
 	// The missing assets are logged here!
 	Set<String> missingAssetNames[AssetTypeCount];
 
-	// TODO: If the theme is an asset, we should remove this direct reference!
-	// Will want to make the UITheme itself a densely-packed struct, rather than a set of hashtables,
-	// so that we can put the whole thing inside the Asset's data blob.
-	// After all, the theme doesn't change after it's loaded. We can use the string identifiers
-	// for linking, and then just use direct IDs maybe? IDK, it's worth a thought.
-	UITheme theme;
+	UITheme *theme;
 
 	// TODO: this probably belongs somewhere else? IDK.
 	// It feels icky having parts of assets directly in this struct, but when there's only 1, and you

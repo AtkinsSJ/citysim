@@ -41,7 +41,7 @@ void initAssets()
 		initSet<String>(&assets->missingAssetNames[assetType], &assets->assetArena, compareStrings);
 	}
 
-	initUITheme(&assets->theme);
+	initUIStyleProperties();
 
 	initTerrainCatalogue();
 	initBuildingCatalogue();
@@ -449,6 +449,7 @@ void loadAsset(Asset *asset)
 		{
 			loadUITheme(fileData, asset);
 			asset->state = AssetState_Loaded;
+			assets->theme = &asset->theme;
 		} break;
 
 		default:

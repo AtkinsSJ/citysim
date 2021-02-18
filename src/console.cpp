@@ -47,7 +47,7 @@ void renderConsole(Console *console)
 
 	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
 
-	UIConsoleStyle *consoleStyle = findConsoleStyle(&assets->theme, "default"_s);
+	UIConsoleStyle *consoleStyle = findConsoleStyle(assets->theme, "default"_s);
 	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
 	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
 

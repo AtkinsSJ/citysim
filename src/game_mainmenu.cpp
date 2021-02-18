@@ -6,7 +6,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	
 	AppStatus result = AppStatus_MainMenu;
 
-	UITheme *theme = &assets->theme;
+	UITheme *theme = assets->theme;
 
 	V2I position = v2i(inputState->windowWidth / 2, 157);
 	s32 maxLabelWidth = inputState->windowWidth - 256;
@@ -20,7 +20,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	position.y += (uiText(&renderer->uiBuffer, font, getText("game_subtitle"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	UIButtonStyle *style = findButtonStyle(&assets->theme, "default"_s);
+	UIButtonStyle *style = findButtonStyle(assets->theme, "default"_s);
 
 	s32 buttonPadding = 8;
 

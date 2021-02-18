@@ -151,7 +151,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	
 	if (style == null)
 	{
-		style = findButtonStyle(&assets->theme, "default"_s);
+		style = findButtonStyle(assets->theme, "default"_s);
 	}
 	
 	bool buttonClicked = false;
@@ -256,7 +256,7 @@ void drawUiMessage(UIState *uiState)
 
 		if (uiState->message.countdown > 0)
 		{
-			UIPanelStyle *style = findPanelStyle(&assets->theme, "toast"_s);
+			UIPanelStyle *style = findPanelStyle(assets->theme, "toast"_s);
 
 			// f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
 			// TODO: Animate this based on t.
@@ -292,7 +292,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 	{
 		if (style == null)
 		{
-			style = findScrollbarStyle(&assets->theme, "default"_s);
+			style = findScrollbarStyle(assets->theme, "default"_s);
 		}
 
 		if (!uiState->mouseInputHandled)

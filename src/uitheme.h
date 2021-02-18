@@ -91,6 +91,8 @@ Maybe<UIDrawableStyle> readDrawableStyle(struct LineReader *reader);
 
 struct UIButtonStyle
 {
+	String name;
+
 	FontReference font;
 	V4 textColor;
 	u32 textAlignment;
@@ -103,14 +105,32 @@ struct UIButtonStyle
 	s32 padding;
 };
 
+struct UIConsoleStyle
+{
+	String name;
+	
+	FontReference font;
+	V4 outputTextColor[CLS_COUNT];
+
+	UIDrawableStyle background;
+	s32 padding;
+
+	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
+	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
+};
+
 struct UILabelStyle
 {
+	String name;
+	
 	FontReference font;
 	V4 textColor;
 };
 
 struct UIPanelStyle
 {
+	String name;
+	
 	s32 margin;
 	s32 contentPadding;
 	u32 widgetAlignment;
@@ -123,8 +143,19 @@ struct UIPanelStyle
 	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
 };
 
+struct UIScrollbarStyle
+{
+	String name;
+	
+	UIDrawableStyle background;
+	UIDrawableStyle knob;
+	s32 width;
+};
+
 struct UITextInputStyle
 {
+	String name;
+	
 	FontReference font;
 	V4 textColor;
 	u32 textAlignment;
@@ -136,15 +167,10 @@ struct UITextInputStyle
 	f32 caretFlashCycleDuration;
 };
 
-struct UIScrollbarStyle
-{
-	UIDrawableStyle background;
-	UIDrawableStyle knob;
-	s32 width;
-};
-
 struct UIWindowStyle
 {
+	String name;
+	
 	s32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -155,18 +181,6 @@ struct UIWindowStyle
 	V2I offsetFromMouse;
 
 	UIStyleReference panelStyle = UIStyleReference(UIStyle_Panel);
-};
-
-struct UIConsoleStyle
-{
-	FontReference font;
-	V4 outputTextColor[CLS_COUNT];
-
-	UIDrawableStyle background;
-	s32 padding;
-
-	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
-	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
 };
 
 enum PropType
@@ -224,11 +238,6 @@ struct UIStyle
 	s32 width;
 };
 
-struct UIStylePack
-{
-	UIStyle styleByType[UIStyleTypeCount];
-};
-
 struct UIProperty
 {
 	PropType type;
@@ -236,23 +245,9 @@ struct UIProperty
 	bool existsInStyle[UIStyleTypeCount];
 };
 
-struct UITheme
-{
-	HashTable<UIProperty> styleProperties;
+HashTable<UIProperty> uiStyleProperties;
+void initUIStyleProperties();
 
-	// TODO: Remove this!
-	V4 overlayColor;
-
-	HashTable<UIButtonStyle>    buttonStyles;
-	HashTable<UIConsoleStyle>   consoleStyles;
-	HashTable<UILabelStyle>     labelStyles;
-	HashTable<UIPanelStyle>     panelStyles;
-	HashTable<UIScrollbarStyle> scrollbarStyles;
-	HashTable<UITextInputStyle> textInputStyles;
-	HashTable<UIWindowStyle>    windowStyles;
-};
-
-void initUITheme(UITheme *theme);
 void loadUITheme(Blob data, struct Asset *asset);
 
 template <typename T>
@@ -261,36 +256,53 @@ T* findStyle(UITheme *theme, UIStyleReference *reference);
 template <typename T>
 inline T* findStyle(UIStyleReference *reference)
 {
-	return findStyle<T>(&assets->theme, reference);
+	return findStyle<T>(assets->theme, reference);
+}
+
+template <typename T>
+T* findInArrayByName(Array<T> *array, String name)
+{
+	T *result = null;
+
+	for (s32 i=0; i < array->count; i++)
+	{
+		T *it = &(*array)[i];
+
+		if (equals(it->name, name))
+		{
+			result = it;
+			break;
+		}
+	}
+
+	return result;
 }
 
 inline UIButtonStyle *findButtonStyle(UITheme *theme, String name)
 {
-	return find(&theme->buttonStyles, name);
+	return findInArrayByName(&theme->buttonStyles, name);
 }
 inline UIConsoleStyle *findConsoleStyle(UITheme *theme, String name)
 {
-	return find(&theme->consoleStyles, name);
+	return findInArrayByName(&theme->consoleStyles, name);
 }
 inline UILabelStyle *findLabelStyle(UITheme *theme, String name)
 {
-	return find(&theme->labelStyles, name);
+	return findInArrayByName(&theme->labelStyles, name);
 }
 inline UIPanelStyle *findPanelStyle(UITheme *theme, String name)
 {
-	auto style = find(&theme->panelStyles, name);
-	if (style == null) logError("Unable to find panel style '{0}'"_s, {name});
-	return style;
+	return findInArrayByName(&theme->panelStyles, name);
 }
 inline UIScrollbarStyle *findScrollbarStyle(UITheme *theme, String name)
 {
-	return find(&theme->scrollbarStyles, name);
+	return findInArrayByName(&theme->scrollbarStyles, name);
 }
 inline UITextInputStyle *findTextInputStyle(UITheme *theme, String name)
 {
-	return find(&theme->textInputStyles, name);
+	return findInArrayByName(&theme->textInputStyles, name);
 }
 inline UIWindowStyle *findWindowStyle(UITheme *theme, String name)
 {
-	return find(&theme->windowStyles, name);
+	return findInArrayByName(&theme->windowStyles, name);
 }

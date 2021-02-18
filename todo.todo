@@ -18,14 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-UITheme as asset
-	- As we now read all the styles into a temporary hashtable, and then move it over into the Theme, we can know how large the theme needs to be, and thus put the hash tables in the Asset::data. Will need to add functionality to HashTable so that it can be handed the memory to use, and prevented from reallocating, but that's probably all.
-		- Remember to update the placeholder theme definition in initAssets()!
-✔ Get rid of UITheme.fontNamesToAssetNames
-	✔ We can do the mapping when we convert UIStyle into a specific style type
-- Move styleProperties out of the theme
-	- It's probably fine as a constant
-
 Replace FontReference with a proper AssetRef
 
 
