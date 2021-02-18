@@ -2,19 +2,24 @@
 
 inline BitmapFontGlyphEntry *findGlyphInternal(BitmapFont *font, unichar targetChar)
 {
-	u32 index = targetChar % font->glyphCapacity;
 	BitmapFontGlyphEntry *result = null;
 
-	while (true)
+	// Protect against div-0 error if this is the empty placeholder font
+	if (font->glyphCapacity > 0)
 	{
-		BitmapFontGlyphEntry *entry = font->glyphEntries + index;
-		if (entry->codepoint == targetChar || !entry->isOccupied)
-		{
-			result = entry;
-			break;
-		}
+		u32 index = targetChar % font->glyphCapacity;
 
-		index = (index + 1) % font->glyphCapacity;
+		while (true)
+		{
+			BitmapFontGlyphEntry *entry = font->glyphEntries + index;
+			if (entry->codepoint == targetChar || !entry->isOccupied)
+			{
+				result = entry;
+				break;
+			}
+
+			index = (index + 1) % font->glyphCapacity;
+		}
 	}
 
 	return result;

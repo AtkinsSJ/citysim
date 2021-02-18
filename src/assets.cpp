@@ -578,14 +578,6 @@ void removeAssets(Array<AssetID> assetsToRemove)
 	}
 }
 
-Asset *addFont(String name, String filename)
-{
-	Asset *asset = addAsset(AssetType_BitmapFont, filename);
-	put(&assets->theme.fontNamesToAssetNames, intern(&assets->assetStrings, name), asset->shortName);
-
-	return asset;
-}
-
 Asset *addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
 {
 	Asset *texture = addTexture(filename, false);
@@ -866,24 +858,14 @@ BitmapFont *getFont(String fontName)
 {
 	BitmapFont *result = null;
 
-	String *fontFilename = find(&assets->theme.fontNamesToAssetNames, fontName);
-	if (fontFilename == null)
+	Asset *fontAsset = getAsset(AssetType_BitmapFont, fontName);
+	if (fontAsset != null)
 	{
-		// Fall back to treating it as a filename
-		Asset *fontAsset = getAsset(AssetType_BitmapFont, fontName);
-		if (fontAsset != null)
-		{
-			result = &fontAsset->bitmapFont;
-		}
-		logError("Failed to find font named '{0}' in the UITheme."_s, {fontName});
+		result = &fontAsset->bitmapFont;
 	}
 	else
 	{
-		Asset *fontAsset = getAsset(AssetType_BitmapFont, *fontFilename);
-		if (fontAsset != null)
-		{
-			result = &fontAsset->bitmapFont;
-		}
+		logError("Failed to find font named '{0}'."_s, {fontName});
 	}
 
 	return result;

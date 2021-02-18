@@ -55,7 +55,6 @@ Asset *makePlaceholderAsset(AssetType type);
 void reloadLocaleSpecificAssets();
 
 Asset *addAsset(AssetType type, String shortName, u32 flags = AssetDefaultFlags);
-Asset *addFont(String name, String filename);
 Asset *addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
 Asset *addTexture(String filename, bool isAlphaPremultiplied);
 Asset *addSpriteGroup(String name, s32 spriteCount);

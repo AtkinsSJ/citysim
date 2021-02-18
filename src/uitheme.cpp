@@ -60,8 +60,6 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 
 void initUITheme(UITheme *theme)
 {
-	initHashTable(&theme->fontNamesToAssetNames);
-
 	initHashTable(&theme->buttonStyles);
 	initHashTable(&theme->consoleStyles);
 	initHashTable(&theme->labelStyles);
@@ -229,7 +227,6 @@ void loadUITheme(Blob data, Asset *asset)
 	LineReader reader = readLines(asset->shortName, data);
 
 	UITheme *theme = &assets->theme;
-	clear(&theme->fontNamesToAssetNames);
 	clear(&theme->buttonStyles);
 	clear(&theme->consoleStyles);
 	clear(&theme->labelStyles);
@@ -240,6 +237,9 @@ void loadUITheme(Blob data, Asset *asset)
 
 	HashTable<UIStylePack> styles;
 	initHashTable(&styles);
+
+	HashTable<String> fontNamesToAssetNames;
+	initHashTable(&fontNamesToAssetNames);
 
 	String currentSection = nullString;
 	UIStyle *target = null;
@@ -263,17 +263,13 @@ void loadUITheme(Blob data, Asset *asset)
 
 				if (!isEmpty(fontName) && !isEmpty(fontFilename))
 				{
-					addFont(fontName, fontFilename);
+					Asset *fontAsset = addAsset(AssetType_BitmapFont, fontFilename);
+					put(&fontNamesToAssetNames, fontName, fontAsset->shortName);
 				}
 				else
 				{
 					error(&reader, "Invalid font declaration: '{0}'"_s, {getLine(&reader)});
 				}
-			}
-			else if (equals(firstWord, "General"_s))
-			{
-				target = null;
-				// target->type = UIStyle_General;
 			}
 			else if (equals(firstWord, "Button"_s))
 			{
@@ -445,7 +441,15 @@ void loadUITheme(Blob data, Asset *asset)
 								String value = intern(&assets->assetStrings, readToken(&reader));
 								FontReference *fontRef = ((FontReference*)((u8*)(target) + property->offsetInStyleStruct));
 								*fontRef = {};
-								fontRef->fontName = value;
+								String *fontFilename = find(&fontNamesToAssetNames, value);
+								if (fontFilename != null)
+								{
+									fontRef->fontName = *fontFilename;
+								}
+								else
+								{
+									error(&reader, "Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, {value});
+								}
 							} break;
 
 							case PropType_Int: {

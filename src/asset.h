@@ -24,7 +24,7 @@ enum AssetType
 	AssetType_Unknown = -1
 };
 
-String assetTypeNames[] = {
+String assetTypeNames[AssetTypeCount] = {
 	"Misc"_s,
 	"BitmapFont"_s,
 	"BuildingDefs"_s,

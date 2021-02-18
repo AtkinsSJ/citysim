@@ -243,8 +243,6 @@ struct UITheme
 	// TODO: Remove this!
 	V4 overlayColor;
 
-	HashTable<String> fontNamesToAssetNames;
-
 	HashTable<UIButtonStyle>    buttonStyles;
 	HashTable<UIConsoleStyle>   consoleStyles;
 	HashTable<UILabelStyle>     labelStyles;

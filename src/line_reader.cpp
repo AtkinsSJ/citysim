@@ -165,7 +165,6 @@ void error(LineReader *reader, String message, std::initializer_list<String> arg
 {
 	String text = myprintf(message, args, false);
 	logError("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->position.currentLineNumber), text});
-	DEBUG_BREAK();
 }
 
 String readToken(LineReader *reader, char splitChar)
