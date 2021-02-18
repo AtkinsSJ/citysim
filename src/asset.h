@@ -55,6 +55,17 @@ struct AssetID
 	String name;
 };
 
+struct Asset;
+
+struct AssetRef
+{
+	AssetType type;
+	String name;
+
+	Asset *pointer;
+	u32 pointerRetrievedTicks;
+};
+
 struct Cursor
 {
 	String imageFilePath; // Full path
@@ -178,15 +189,6 @@ struct UITheme
 	Array<struct UIScrollbarStyle> scrollbarStyles;
 	Array<struct UITextInputStyle> textInputStyles;
 	Array<struct UIWindowStyle>    windowStyles;
-};
-
-struct AssetRef
-{
-	AssetType type;
-	String name;
-
-	Asset *pointer;
-	u32 pointerRetrievedTicks;
 };
 
 enum AssetFlags

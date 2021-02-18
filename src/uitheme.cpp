@@ -345,12 +345,12 @@ void loadUITheme(Blob data, Asset *asset)
 
 							case PropType_Font: {
 								String value = intern(&assets->assetStrings, readToken(&reader));
-								FontReference *fontRef = ((FontReference*)((u8*)(target) + property->offsetInStyleStruct));
+								AssetRef *fontRef = ((AssetRef*)((u8*)(target) + property->offsetInStyleStruct));
 								*fontRef = {};
 								String *fontFilename = find(&fontNamesToAssetNames, value);
 								if (fontFilename != null)
 								{
-									fontRef->fontName = *fontFilename;
+									*fontRef = getAssetRef(AssetType_BitmapFont, *fontFilename);
 								}
 								else
 								{

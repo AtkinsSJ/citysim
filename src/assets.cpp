@@ -872,14 +872,19 @@ BitmapFont *getFont(String fontName)
 	return result;
 }
 
-inline BitmapFont *getFont(FontReference *fontRef)
+BitmapFont *getFont(AssetRef *fontRef)
 {
-	if (fontRef->font == null)
+	ASSERT(fontRef->type == AssetType_BitmapFont);
+
+	BitmapFont *result = null;
+	Asset *asset = getAsset(fontRef);
+
+	if (asset != null)
 	{
-		fontRef->font = getFont(fontRef->fontName);
+		result = &asset->bitmapFont;
 	}
 
-	return fontRef->font;
+	return result;
 }
 
 inline String getText(String name)

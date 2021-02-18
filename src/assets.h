@@ -73,7 +73,7 @@ AssetRef getAssetRef(AssetType type, String shortName);
 Asset *getAsset(AssetRef *ref);
 
 BitmapFont *getFont(String fontName);
-BitmapFont *getFont(FontReference *fontRef);
+BitmapFont *getFont(AssetRef *fontRef);
 
 Array<V4> *getPalette(String name);
 Shader *getShader(String shaderName);

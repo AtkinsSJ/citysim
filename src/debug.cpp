@@ -196,7 +196,15 @@ void debugTextOut(DebugTextState *textState, String text, bool doHighlight = fal
 void renderDebugData(DebugState *debugState)
 {
 	DEBUG_FUNCTION_T(DCDT_Debug);
-	BitmapFont *font = getFont("debug"_s);
+
+	// This is the only usage of getFont(String). Ideally we'd replace it with an
+	// AssetRef, but there's no obvious place to put it. It can't go in the
+	// DebugState because debugInit() is called before the Asset system is
+	// initialised, so getAssetRef() won't work. (getAssetRef() interns the
+	// string it's given, so it crashes if the Asset system isn't initialised.)
+	// So for now, we're keeping this old method.
+	// - Sam, 18/02/2020
+	BitmapFont *font = getFont("debug.fnt"_s);
 	RenderBuffer *renderBuffer = &renderer->debugBuffer;
 
 	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();

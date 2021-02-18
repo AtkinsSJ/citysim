@@ -18,11 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Replace FontReference with a proper AssetRef
-
-
-
-
 Record sprite size in Sprite struct
 - So we can draw them at their native size
 

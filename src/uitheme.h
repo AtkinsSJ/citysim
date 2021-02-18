@@ -93,7 +93,7 @@ struct UIButtonStyle
 {
 	String name;
 
-	FontReference font;
+	AssetRef font;
 	V4 textColor;
 	u32 textAlignment;
 
@@ -109,7 +109,7 @@ struct UIConsoleStyle
 {
 	String name;
 	
-	FontReference font;
+	AssetRef font;
 	V4 outputTextColor[CLS_COUNT];
 
 	UIDrawableStyle background;
@@ -123,7 +123,7 @@ struct UILabelStyle
 {
 	String name;
 	
-	FontReference font;
+	AssetRef font;
 	V4 textColor;
 };
 
@@ -156,7 +156,7 @@ struct UITextInputStyle
 {
 	String name;
 	
-	FontReference font;
+	AssetRef font;
 	V4 textColor;
 	u32 textAlignment;
 
@@ -174,7 +174,7 @@ struct UIWindowStyle
 	s32 titleBarHeight;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
-	FontReference titleFont;
+	AssetRef titleFont;
 	V4 titleColor;
 	V4 titleBarButtonHoverColor;
 
@@ -215,7 +215,7 @@ struct UIStyle
 	f32 caretFlashCycleDuration;
 	u32 widgetAlignment;
 	s32 contentPadding;
-	FontReference font;
+	AssetRef font;
 	UIDrawableStyle knob;
 	UIStyleReference labelStyle = UIStyleReference(UIStyle_Label);
 	s32 margin;
@@ -234,7 +234,7 @@ struct UIStyle
 	V4 titleBarColorInactive;
 	s32 titleBarHeight;
 	V4 titleColor;
-	FontReference titleFont;
+	AssetRef titleFont;
 	s32 width;
 };
 
