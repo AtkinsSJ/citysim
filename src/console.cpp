@@ -2,19 +2,12 @@
 
 static Console theConsole;
 
-void consoleWriteLine(String text, ConsoleLineStyleID style)
-{
-	if (globalConsole)
-	{
-		ConsoleOutputLine *line = appendBlank(&globalConsole->outputLines);
-		line->style = style;
-		line->text = pushString(globalConsole->outputLines.memoryArena, text);
-	}
-}
-
 void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed)
 {
 	Console *console = &theConsole;
+
+	console->style = UIStyleRef(UIStyle_Console, "default"_s);
+
 	console->currentHeight = 0;
 
 	console->openHeight = openHeight;
@@ -27,6 +20,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 
 	initChunkedArray(&console->outputLines, debugArena, 1024);
 	console->scrollPos = 0;
+	console->scrollbar = {};
 
 	initChunkedArray(&console->commands, &globalAppState.systemArena, 64);
 	initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
@@ -37,122 +31,6 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	globalConsole = console;
 
 	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
-}
-
-void renderConsole(Console *console)
-{
-	RenderBuffer *renderBuffer = &renderer->debugBuffer;
-
-	s32 actualConsoleHeight = floor_s32(console->currentHeight * renderer->uiCamera.size.y);
-
-	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
-
-	UIConsoleStyle *consoleStyle = findConsoleStyle(assets->theme, "default"_s);
-	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
-	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
-
-	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, screenWidth);
-	V2I textInputPos  = v2i(0, actualConsoleHeight - textInputSize.y);
-	Rect2I textInputBounds = irectPosSize(textInputPos, textInputSize);
-	drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
-
-	V2I textPos = v2i(consoleStyle->padding, textInputBounds.y);
-	s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
-
-	s32 heightOfOutputArea = textPos.y;
-
-	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
-	UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
-
-	V2I knobSize = v2i(scrollbarStyle->width, scrollbarStyle->width);
-	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollbar(renderBuffer, scrollPercent, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollbarStyle);
-
-	textPos.y -= consoleStyle->padding;
-
-	// print output lines
-	BitmapFont *consoleFont = getFont(&consoleStyle->font);
-	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
-	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
-		hasNext(&it);
-		next(&it))
-	{
-		ConsoleOutputLine *line = get(&it);
-		V4 outputTextColor = consoleStyle->outputTextColor[line->style];
-
-		Rect2I resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
-		textPos.y -= resultRect.h;
-
-		// If we've gone off the screen, stop!
-		if ((textPos.y < 0) || (textPos.y > renderer->uiCamera.size.y))
-		{
-			break;
-		}
-	}
-}
-
-void consoleHandleCommand(Console *console, String commandInput)
-{
-	// copy input to output, for readability
-	consoleWriteLine(myprintf("> {0}"_s, {commandInput}), CLS_InputEcho);
-
-	if (!isEmpty(commandInput))
-	{
-		// Add to history
-		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, commandInput));
-		console->inputHistoryCursor = -1;
-
-		s32 tokenCount = countTokens(commandInput);
-		if (tokenCount > 0)
-		{
-			bool foundCommand = false;
-			String arguments;
-			String firstToken = nextToken(commandInput, &arguments);
-
-			for (auto it = iterate(&globalConsole->commands);
-				hasNext(&it);
-				next(&it))
-			{
-				Command *command = get(&it);
-
-				if (equals(command->name, firstToken))
-				{
-					foundCommand = true;
-
-					s32 argCount = tokenCount - 1;
-					bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
-					if ((argCount < command->minArgs) || tooManyArgs)
-					{
-						if (command->minArgs == command->maxArgs)
-						{
-							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given."_s,
-								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
-						}
-						else
-						{
-							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given."_s,
-								{firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount)}), CLS_Error);
-						}
-					}
-					else
-					{
-						u32 commandStartTime = SDL_GetTicks();
-						command->function(console, argCount, arguments);
-						u32 commandEndTime = SDL_GetTicks();
-
-						consoleWriteLine(myprintf("Command executed in {0}ms"_s, {formatInt(commandEndTime - commandStartTime)}));
-					}
-
-					break;
-				}
-			}
-
-			if (!foundCommand)
-			{
-				consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands."_s, {firstToken}), CLS_Error);
-			}
-		}
-	}
 }
 
 void updateConsole(Console *console)
@@ -269,6 +147,60 @@ void updateConsole(Console *console)
 		{
 			console->scrollPos = clamp(console->scrollPos + (inputState->wheelY * 3), 0, consoleMaxScrollPos(console));
 		}
+
+		// updateScrollbar(&globalAppState.uiState, &console->scrollbar, console->outputLines.count * 
+	}
+}
+
+void renderConsole(Console *console)
+{
+	RenderBuffer *renderBuffer = &renderer->debugBuffer;
+
+	s32 actualConsoleHeight = floor_s32(console->currentHeight * renderer->uiCamera.size.y);
+
+	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
+
+	UIConsoleStyle   *consoleStyle   = findStyle<UIConsoleStyle>(&console->style);
+	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
+	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
+
+	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, screenWidth);
+	V2I textInputPos  = v2i(0, actualConsoleHeight - textInputSize.y);
+	Rect2I textInputBounds = irectPosSize(textInputPos, textInputSize);
+	drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
+
+	V2I textPos = v2i(consoleStyle->padding, textInputBounds.y);
+	s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
+
+	s32 heightOfOutputArea = textPos.y;
+
+	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
+	UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
+
+	V2I knobSize = v2i(scrollbarStyle->width, scrollbarStyle->width);
+	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
+	drawScrollbar(renderBuffer, scrollPercent, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollbarStyle);
+
+	textPos.y -= consoleStyle->padding;
+
+	// print output lines
+	BitmapFont *consoleFont = getFont(&consoleStyle->font);
+	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
+	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
+		hasNext(&it);
+		next(&it))
+	{
+		ConsoleOutputLine *line = get(&it);
+		V4 outputTextColor = consoleStyle->outputTextColor[line->style];
+
+		Rect2I resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
+		textPos.y -= resultRect.h;
+
+		// If we've gone off the screen, stop!
+		if ((textPos.y < 0) || (textPos.y > renderer->uiCamera.size.y))
+		{
+			break;
+		}
 	}
 }
 
@@ -294,5 +226,79 @@ void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
 			commandShortcut->shortcut = shortcut;
 			commandShortcut->command = command;
 		}
+	}
+}
+
+void consoleHandleCommand(Console *console, String commandInput)
+{
+	// copy input to output, for readability
+	consoleWriteLine(myprintf("> {0}"_s, {commandInput}), CLS_InputEcho);
+
+	if (!isEmpty(commandInput))
+	{
+		// Add to history
+		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, commandInput));
+		console->inputHistoryCursor = -1;
+
+		s32 tokenCount = countTokens(commandInput);
+		if (tokenCount > 0)
+		{
+			bool foundCommand = false;
+			String arguments;
+			String firstToken = nextToken(commandInput, &arguments);
+
+			for (auto it = iterate(&globalConsole->commands);
+				hasNext(&it);
+				next(&it))
+			{
+				Command *command = get(&it);
+
+				if (equals(command->name, firstToken))
+				{
+					foundCommand = true;
+
+					s32 argCount = tokenCount - 1;
+					bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
+					if ((argCount < command->minArgs) || tooManyArgs)
+					{
+						if (command->minArgs == command->maxArgs)
+						{
+							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given."_s,
+								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
+						}
+						else
+						{
+							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given."_s,
+								{firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount)}), CLS_Error);
+						}
+					}
+					else
+					{
+						u32 commandStartTime = SDL_GetTicks();
+						command->function(console, argCount, arguments);
+						u32 commandEndTime = SDL_GetTicks();
+
+						consoleWriteLine(myprintf("Command executed in {0}ms"_s, {formatInt(commandEndTime - commandStartTime)}));
+					}
+
+					break;
+				}
+			}
+
+			if (!foundCommand)
+			{
+				consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands."_s, {firstToken}), CLS_Error);
+			}
+		}
+	}
+}
+
+void consoleWriteLine(String text, ConsoleLineStyleID style)
+{
+	if (globalConsole)
+	{
+		ConsoleOutputLine *line = appendBlank(&globalConsole->outputLines);
+		line->style = style;
+		line->text = pushString(globalConsole->outputLines.memoryArena, text);
 	}
 }

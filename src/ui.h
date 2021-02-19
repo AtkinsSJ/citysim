@@ -1,6 +1,32 @@
 #pragma once
 // ui.h
 
+enum UIStyleType {
+	// NB: When changing this, make sure to change the lambdas in findStyle() to match!
+	UIStyle_None = 0,
+	UIStyle_Button = 1,
+	UIStyle_Console,
+	UIStyle_Label,
+	UIStyle_Panel,
+	UIStyle_Scrollbar,
+	UIStyle_TextInput,
+	UIStyle_Window,
+	UIStyleTypeCount
+};
+
+struct UIStyleRef
+{
+	String name;
+	UIStyleType styleType;
+
+	void *pointer = null;
+	u32 pointerRetrievedTicks = 0;
+
+	UIStyleRef() {}
+	UIStyleRef(UIStyleType type) : styleType(type) {}
+	UIStyleRef(UIStyleType type, String name) : styleType(type), name(name) {}
+};
+
 const f32 uiMessageDisplayTime = 2.0f;
 struct UIMessage
 {
@@ -25,10 +51,6 @@ inline ButtonState buttonIsActive(bool isActive)
 	return isActive ? Button_Active : Button_Normal;
 }
 
-#include "ui_drawable.h"
-#include "ui_panel.h"
-#include "ui_window.h"
-
 struct UIState
 {
 	String tooltipText;
@@ -46,11 +68,21 @@ struct UIState
 	Stack<Rect2I> inputScissorRects;
 
 	// Window stuff
-	ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
+	ChunkedArray<struct Window> openWindows; // Order: index 0 is the top, then each one is below the previous
 	bool isDraggingWindow;
 	V2I windowDragWindowStartPos;
 	bool isAPauseWindowOpen; // Do any open windows have the WinFlag_Pause flag?
 };
+
+struct RenderBuffer;
+struct BitmapFont;
+struct UIButtonStyle;
+struct UIPanel;
+struct UIPanelStyle;
+struct UIScrollbarStyle;
+struct WindowContext;
+
+typedef void (*WindowProc)(WindowContext*, void*);
 
 void initUIState(UIState *uiState, MemoryArena *arena);
 

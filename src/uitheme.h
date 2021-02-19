@@ -1,33 +1,5 @@
 #pragma once
 
-// TODO: Maybe rather than putting String names of styles (and fonts) in these, they should
-// use a combined name-and-pointer, so that most of the time the pointer is used, but
-// whenever the theme is modified the pointers can be re-connected.
-// - Sam, 15/01/2020
-
-enum UIStyleType {
-	// NB: When changing this, make sure to change the lambdas in findStyle() to match!
-	UIStyle_None = 0,
-	UIStyle_Button = 1,
-	UIStyle_Console,
-	UIStyle_Label,
-	UIStyle_Panel,
-	UIStyle_Scrollbar,
-	UIStyle_TextInput,
-	UIStyle_Window,
-	UIStyleTypeCount
-};
-
-struct UIStyleReference
-{
-	String name;
-	UIStyleType styleType;
-
-	void *pointer;
-
-	UIStyleReference(UIStyleType type) : styleType(type) {}
-};
-
 enum UIDrawableType
 {
 	Drawable_None,
@@ -115,8 +87,8 @@ struct UIConsoleStyle
 	UIDrawableStyle background;
 	s32 padding;
 
-	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
-	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
+	UIStyleRef scrollbarStyle = UIStyleRef(UIStyle_Scrollbar);
+	UIStyleRef textInputStyle = UIStyleRef(UIStyle_TextInput);
 };
 
 struct UILabelStyle
@@ -137,10 +109,10 @@ struct UIPanelStyle
 	
 	UIDrawableStyle background;
 
-	UIStyleReference buttonStyle    = UIStyleReference(UIStyle_Button);
-	UIStyleReference labelStyle     = UIStyleReference(UIStyle_Label);
-	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
-	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
+	UIStyleRef buttonStyle    = UIStyleRef(UIStyle_Button);
+	UIStyleRef labelStyle     = UIStyleRef(UIStyle_Label);
+	UIStyleRef scrollbarStyle = UIStyleRef(UIStyle_Scrollbar);
+	UIStyleRef textInputStyle = UIStyleRef(UIStyle_TextInput);
 };
 
 struct UIScrollbarStyle
@@ -180,7 +152,7 @@ struct UIWindowStyle
 
 	V2I offsetFromMouse;
 
-	UIStyleReference panelStyle = UIStyleReference(UIStyle_Panel);
+	UIStyleRef panelStyle = UIStyleRef(UIStyle_Panel);
 };
 
 enum PropType
@@ -211,24 +183,24 @@ struct UIStyle
 	UIDrawableStyle pressedBackground;
 
 	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
-	UIStyleReference buttonStyle = UIStyleReference(UIStyle_Button);
+	UIStyleRef buttonStyle = UIStyleRef(UIStyle_Button);
 	f32 caretFlashCycleDuration;
 	u32 widgetAlignment;
 	s32 contentPadding;
 	AssetRef font;
 	UIDrawableStyle knob;
-	UIStyleReference labelStyle = UIStyleReference(UIStyle_Label);
+	UIStyleRef labelStyle = UIStyleRef(UIStyle_Label);
 	s32 margin;
 	V2I offsetFromMouse;
 	V4 overlayColor;
 	V4 outputTextColor[CLS_COUNT];
 	s32 padding;
-	UIStyleReference panelStyle = UIStyleReference(UIStyle_Panel);
-	UIStyleReference scrollbarStyle = UIStyleReference(UIStyle_Scrollbar);
+	UIStyleRef panelStyle = UIStyleRef(UIStyle_Panel);
+	UIStyleRef scrollbarStyle = UIStyleRef(UIStyle_Scrollbar);
 	bool showCaret;
 	u32 textAlignment;
 	V4 textColor;
-	UIStyleReference textInputStyle = UIStyleReference(UIStyle_TextInput);
+	UIStyleRef textInputStyle = UIStyleRef(UIStyle_TextInput);
 	V4 titleBarButtonHoverColor;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -251,10 +223,10 @@ void initUIStyleProperties();
 void loadUITheme(Blob data, struct Asset *asset);
 
 template <typename T>
-T* findStyle(UITheme *theme, UIStyleReference *reference);
+T* findStyle(UITheme *theme, UIStyleRef *reference);
 
 template <typename T>
-inline T* findStyle(UIStyleReference *reference)
+inline T* findStyle(UIStyleRef *reference)
 {
 	return findStyle<T>(assets->theme, reference);
 }

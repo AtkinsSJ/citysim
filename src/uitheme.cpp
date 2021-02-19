@@ -370,7 +370,7 @@ void loadUITheme(Blob data, Asset *asset)
 								String value = intern(&assets->assetStrings, readToken(&reader));
 								// The style-type is already specified in the UIStyle struct, so we only need
 								// to overwrite the name of the style we're looking for.
-								UIStyleReference *styleRef = ((UIStyleReference*)((u8*)(target) + property->offsetInStyleStruct));
+								UIStyleRef *styleRef = ((UIStyleRef*)((u8*)(target) + property->offsetInStyleStruct));
 								styleRef->name = value;
 							} break;
 
@@ -569,7 +569,7 @@ void loadUITheme(Blob data, Asset *asset)
 }
 
 template <typename T>
-bool checkStyleMatchesType(UIStyleReference *reference)
+bool checkStyleMatchesType(UIStyleRef *reference)
 {
 	switch (reference->styleType)
 	{
@@ -587,9 +587,9 @@ bool checkStyleMatchesType(UIStyleReference *reference)
 }
 
 template <typename T>
-inline T* findStyle(UITheme *theme, UIStyleReference *reference)
+inline T* findStyle(UITheme *theme, UIStyleRef *ref)
 {
-	ASSERT(checkStyleMatchesType<T>(reference));
+	ASSERT(checkStyleMatchesType<T>(ref));
 
 	// Order must match enum UIStyleType
 	static void* (*findStyleByType[UIStyleTypeCount])(UITheme*, String) = {
@@ -603,10 +603,11 @@ inline T* findStyle(UITheme *theme, UIStyleReference *reference)
 		[] (UITheme *theme, String name) { return (void*) findWindowStyle(theme, name); }
 	};
 
-	if (reference->pointer == null)
+	if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks))
 	{
-		reference->pointer = findStyleByType[reference->styleType](theme, reference->name);
+		ref->pointer = findStyleByType[ref->styleType](theme, ref->name);
+		ref->pointerRetrievedTicks = SDL_GetTicks();
 	}
 
-	return (T*) reference->pointer;
+	return (T*) ref->pointer;
 }

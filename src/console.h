@@ -49,6 +49,8 @@ struct Command
 
 struct Console
 {
+	UIStyleRef style;
+
 	f32 currentHeight;
 	f32 targetHeight;
 	f32 openHeight; // % of screen height
@@ -61,6 +63,7 @@ struct Console
 
 	ChunkedArray<ConsoleOutputLine> outputLines;
 	s32 scrollPos; // first line to draw, just above the console input
+	ScrollbarState scrollbar;
 
 	ChunkedArray<Command> commands;
 	ChunkedArray<CommandShortcut> commandShortcuts;

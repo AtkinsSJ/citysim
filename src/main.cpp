@@ -39,6 +39,7 @@ struct Settings     *settings;
 #include "log.h"
 #include "types.h"
 #include "memory.h"
+#include "string.h"
 #include "random.h"
 #include "pool.h"
 #include "chunked_array.h"
@@ -49,13 +50,13 @@ struct Settings     *settings;
 #include "occupancy_array.h"
 #include "linked_list.h"
 #include "splat.h"
-#include "string.h"
 #include "time.h"
 #include "unicode.h"
 #include "stringbuilder.h"
 #include "hash_table.h"
 #include "string_table.h"
 #include "input.h"
+#include "ui.h"
 #include "debug.h"
 #include "endian.h"
 #include "textinput.h"
@@ -73,7 +74,9 @@ struct Settings     *settings;
 #include "assets.h"
 #include "line_reader.h"
 #include "render.h"
-#include "ui.h"
+#include "ui_drawable.h"
+#include "ui_panel.h"
+#include "ui_window.h"
 
 struct City;
 

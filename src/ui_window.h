@@ -21,8 +21,6 @@ struct WindowContext
 	bool closeRequested = false;
 };
 
-typedef void (*WindowProc)(WindowContext*, void*);
-
 enum WindowFlags
 {
 	WinFlag_AutomaticHeight = 1 << 0, // Height determined by content
