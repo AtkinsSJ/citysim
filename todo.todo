@@ -22,13 +22,19 @@ Scrollbar improvements:
 - Convert drawScrollbar() to take a ScrollbarState
 	✔ need to convert the console to using a ScrollbarState first
 - Increase the bar size to something more reasonable
+	- Mouse click-and-drag on the bar, instead of just jumping to where the mouse is when pressed
 - Add support for horizontal scrollbars
 - Configurable mouse-wheel step size
+- Using scrollbars is really janky, they could do with a rethink on how they work probably
+	Maybe, instead of them storing the pixel scrollPosition, they just store a %. Then, the user code converts that % into something meaningful?
+	The trouble is, we use the pixel scrollPosition to determine how much to offset content in a panel, without knowing how big that content is. The scrollPosition essentially just keeps the content height from the previous frame.
+	Maybe we save the content height in the ScrollbarState? We can't put it in the Panel, as the Panel doesn't exist across frames.
 
 UIMessage:
 - Rename to Toast, because that's what I call them
 - Queue them, instead of having one that's overwritten
 - Animate them, with some kind of tweening system, so they pop up and down again
+- Record them maybe?
 
 Window/UI System features:
 - Confirmation dialogs
