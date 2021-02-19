@@ -19,7 +19,6 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	console->inputHistoryCursor = -1;
 
 	initChunkedArray(&console->outputLines, debugArena, 1024);
-	console->scrollPos = 0;
 	console->scrollbar = {};
 
 	initChunkedArray(&console->commands, &globalAppState.systemArena, 64);
@@ -35,6 +34,8 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 
 void updateConsole(Console *console)
 {
+	bool scrollToBottom = false;
+
 	// Keyboard shortcuts for commands
 	for (auto it = iterate(&console->commandShortcuts);
 		hasNext(&it);
@@ -45,7 +46,7 @@ void updateConsole(Console *console)
 		if (wasShortcutJustPressed(shortcut->shortcut))
 		{
 			consoleHandleCommand(console, shortcut->command);
-			console->scrollPos = 0;
+			scrollToBottom = true;
 		}
 	}
 
@@ -62,7 +63,7 @@ void updateConsole(Console *console)
 			{
 				console->targetHeight = console->maximisedHeight;
 			}
-			console->scrollPos = 0;
+			scrollToBottom = true;
 		}
 		else
 		{
@@ -73,7 +74,7 @@ void updateConsole(Console *console)
 			else
 			{
 				console->targetHeight = console->openHeight;
-				console->scrollPos = 0;
+				scrollToBottom = true;
 			}
 		}
 	}
@@ -101,7 +102,7 @@ void updateConsole(Console *console)
 		if (updateTextInput(&console->input))
 		{
 			consoleHandleCommand(console, textInputToString(&console->input));
-			console->scrollPos = 0;
+			scrollToBottom = true;
 			clear(&console->input);
 		}
 		else
@@ -142,13 +143,16 @@ void updateConsole(Console *console)
 			}
 		}
 
-		// scrolling!
-		if (inputState->wheelY != 0)
+		UIConsoleStyle *consoleStyle = findStyle<UIConsoleStyle>(&console->style);
+		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
+		Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
+		s32 contentHeight = (console->outputLines.count * getFont(&consoleStyle->font)->lineHeight) + scrollbarBounds.h;
+		if (scrollToBottom)
 		{
-			console->scrollPos = clamp(console->scrollPos + (inputState->wheelY * 3), 0, consoleMaxScrollPos(console));
+			console->scrollbar.scrollPosition = contentHeight;
 		}
 
-		// updateScrollbar(&globalAppState.uiState, &console->scrollbar, console->outputLines.count * 
+		updateScrollbar(globalAppState.uiState, &console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
 	}
 }
 
@@ -158,7 +162,7 @@ void renderConsole(Console *console)
 
 	s32 actualConsoleHeight = floor_s32(console->currentHeight * renderer->uiCamera.size.y);
 
-	s32 screenWidth = round_s32(renderer->uiCamera.size.x);
+	s32 screenWidth = inputState->windowWidth;
 
 	UIConsoleStyle   *consoleStyle   = findStyle<UIConsoleStyle>(&console->style);
 	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
@@ -177,16 +181,16 @@ void renderConsole(Console *console)
 	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
 	UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
 
-	V2I knobSize = v2i(scrollbarStyle->width, scrollbarStyle->width);
-	f32 scrollPercent = 1.0f - ((f32)console->scrollPos / (f32)consoleMaxScrollPos(console));
-	drawScrollbar(renderBuffer, scrollPercent, v2i(screenWidth - knobSize.x, 0), heightOfOutputArea, scrollbarStyle);
+	Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
+	drawScrollbar(renderBuffer, getScrollbarPercent(&console->scrollbar, scrollbarBounds.h), scrollbarBounds.pos, scrollbarBounds.h, scrollbarStyle);
 
 	textPos.y -= consoleStyle->padding;
 
 	// print output lines
 	BitmapFont *consoleFont = getFont(&consoleStyle->font);
+	s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPosition / consoleFont->lineHeight), 0, console->outputLines.count - 1);
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
-	for (auto it = iterate(&console->outputLines, console->outputLines.count - console->scrollPos - 1, false, true);
+	for (auto it = iterate(&console->outputLines, scrollLinePos, false, true);
 		hasNext(&it);
 		next(&it))
 	{
@@ -301,4 +305,17 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 		line->style = style;
 		line->text = pushString(globalConsole->outputLines.memoryArena, text);
 	}
+}
+
+Rect2I getConsoleScrollbarBounds(Console *console)
+{
+	UIConsoleStyle   *consoleStyle   = findStyle<UIConsoleStyle>  (&console->style);
+	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
+	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
+
+	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, inputState->windowWidth);
+
+	Rect2I scrollbarBounds = irectXYWH(inputState->windowWidth - scrollbarStyle->width, 0, scrollbarStyle->width, floor_s32(console->currentHeight * inputState->windowHeight) - textInputSize.y);
+
+	return scrollbarBounds;
 }

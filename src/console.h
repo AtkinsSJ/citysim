@@ -62,7 +62,6 @@ struct Console
 	s32 inputHistoryCursor;
 
 	ChunkedArray<ConsoleOutputLine> outputLines;
-	s32 scrollPos; // first line to draw, just above the console input
 	ScrollbarState scrollbar;
 
 	ChunkedArray<Command> commands;
@@ -81,6 +80,9 @@ void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);
 void consoleHandleCommand(Console *console, String commandInput);
 
 void consoleWriteLine(String text, ConsoleLineStyleID style=CLS_Default);
+
+// Private
+Rect2I getConsoleScrollbarBounds(Console *console);
 
 inline s32 consoleMaxScrollPos(Console *console)
 {

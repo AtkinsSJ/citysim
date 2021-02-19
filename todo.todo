@@ -20,9 +20,10 @@ Notes for searching:
 
 Scrollbar improvements:
 - Convert drawScrollbar() to take a ScrollbarState
-	-> need to convert the console to using a ScrollbarState first
+	✔ need to convert the console to using a ScrollbarState first
 - Increase the bar size to something more reasonable
 - Add support for horizontal scrollbars
+- Configurable mouse-wheel step size
 
 UIMessage:
 - Rename to Toast, because that's what I call them
