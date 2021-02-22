@@ -28,7 +28,7 @@ struct UIStyleRef
 };
 
 const f32 uiMessageDisplayTime = 2.0f;
-struct UIMessage
+struct Toast
 {
 	String text;
 	f32 countdown; // In seconds
@@ -54,7 +54,7 @@ inline ButtonState buttonIsActive(bool isActive)
 struct UIState
 {
 	String tooltipText;
-	UIMessage message;
+	Toast message;
 
 	// TODO: Replace this with better "this input has already been used" code!
 	ChunkedArray<Rect2I> uiRects;
@@ -106,8 +106,8 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 
 // NB: `message` is copied into the UIState, so it can be a temporary allocation
-void pushUiMessage(UIState *uiState, String message);
-void drawUiMessage(UIState *uiState);
+void pushToast(UIState *uiState, String message);
+void drawToast(UIState *uiState);
 
 void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
 void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, UIScrollbarStyle *style);

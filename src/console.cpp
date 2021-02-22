@@ -188,7 +188,7 @@ void renderConsole(Console *console)
 
 	// print output lines
 	BitmapFont *consoleFont = getFont(&consoleStyle->font);
-	s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPosition / consoleFont->lineHeight), 0, console->outputLines.count - 1);
+	s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPosition / (f32)consoleFont->lineHeight), 0, console->outputLines.count - 1);
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
 	for (auto it = iterate(&console->outputLines, scrollLinePos, false, true);
 		hasNext(&it);

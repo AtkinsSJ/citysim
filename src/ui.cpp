@@ -260,13 +260,13 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 	return currentlyOpen;
 }
 
-void pushUiMessage(UIState *uiState, String message)
+void pushToast(UIState *uiState, String message)
 {
 	copyString(message, &uiState->message.text);
 	uiState->message.countdown = uiMessageDisplayTime;
 }
 
-void drawUiMessage(UIState *uiState)
+void drawToast(UIState *uiState)
 {
 	DEBUG_FUNCTION();
 	

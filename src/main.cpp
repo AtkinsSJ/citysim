@@ -409,7 +409,7 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				drawUiMessage(&uiState);
+				drawToast(&uiState);
 			}
 
 

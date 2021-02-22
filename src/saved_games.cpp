@@ -343,7 +343,7 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 		u32 endTicks = SDL_GetTicks();
 		logInfo("Loaded save '{0}' in {1} milliseconds."_s, {savedGame->shortName, formatInt(endTicks - startTicks)});
 
-		pushUiMessage(uiState, myprintf(getText("msg_load_success"_s), {savedGame->shortName}));
+		pushToast(uiState, myprintf(getText("msg_load_success"_s), {savedGame->shortName}));
 
 		globalAppState.appStatus = AppStatus_Game;
 
@@ -352,7 +352,7 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 	}
 	else
 	{
-		pushUiMessage(uiState, myprintf(getText("msg_load_failure"_s), {savedGame->shortName}));
+		pushToast(uiState, myprintf(getText("msg_load_failure"_s), {savedGame->shortName}));
 	}
 }
 
@@ -373,14 +373,14 @@ bool saveGame(UIState *uiState, String saveName)
 
 	if (saveSucceeded)
 	{
-		pushUiMessage(uiState, myprintf(getText("msg_save_success"_s), {saveFile.path}));
+		pushToast(uiState, myprintf(getText("msg_save_success"_s), {saveFile.path}));
 
 		// Store that we saved it
 		savedGamesCatalogue.activeSavedGameName = intern(&catalogue->stringsTable, saveName);
 	}
 	else
 	{
-		pushUiMessage(uiState, myprintf(getText("msg_save_failure"_s), {saveFile.path}));
+		pushToast(uiState, myprintf(getText("msg_save_failure"_s), {saveFile.path}));
 	}
 
 	return saveSucceeded;
@@ -392,11 +392,11 @@ bool deleteSave(UIState *uiState, SavedGameInfo *savedGame)
 
 	if (success)
 	{
-		pushUiMessage(uiState, myprintf(getText("msg_delete_save_success"_s), {savedGame->shortName}));
+		pushToast(uiState, myprintf(getText("msg_delete_save_success"_s), {savedGame->shortName}));
 	}
 	else
 	{
-		pushUiMessage(uiState, myprintf(getText("msg_delete_save_failure"_s), {savedGame->shortName}));
+		pushToast(uiState, myprintf(getText("msg_delete_save_failure"_s), {savedGame->shortName}));
 	}
 
 	return success;

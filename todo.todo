@@ -31,7 +31,7 @@ Scrollbar improvements:
 	Maybe we save the content height in the ScrollbarState? We can't put it in the Panel, as the Panel doesn't exist across frames.
 
 UIMessage:
-- Rename to Toast, because that's what I call them
+✔ Rename to Toast, because that's what I call them
 - Queue them, instead of having one that's overwritten
 - Animate them, with some kind of tweening system, so they pop up and down again
 - Record them maybe?
