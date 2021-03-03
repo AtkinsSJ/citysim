@@ -22,7 +22,7 @@ Notes for searching:
       TANGENT!
 #####################
 Convert data structures to .method() style
-- BitArray
+✔ BitArray
 ✔ ChunkedArray
 - HashTable
 - OccupancyArray

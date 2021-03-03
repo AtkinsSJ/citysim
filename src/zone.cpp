@@ -216,8 +216,8 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 
 			for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
 			{
-				unsetBit(&layer->sectorsWithZones     [zoneType], sectorIndex);
-				unsetBit(&layer->sectorsWithEmptyZones[zoneType], sectorIndex);
+				layer->sectorsWithZones     [zoneType].unsetBit(sectorIndex);
+				layer->sectorsWithEmptyZones[zoneType].unsetBit(sectorIndex);
 			}
 
 			sector->zoneSectorFlags = 0;
@@ -255,27 +255,27 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 
 			if (sector->zoneSectorFlags & ZoneSector_HasResZones)
 			{
-				setBit(&layer->sectorsWithZones[Zone_Residential], sectorIndex);
+				layer->sectorsWithZones[Zone_Residential].setBit(sectorIndex);
 			}
 			if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones)
 			{
-				setBit(&layer->sectorsWithEmptyZones[Zone_Residential], sectorIndex);
+				layer->sectorsWithEmptyZones[Zone_Residential].setBit(sectorIndex);
 			}
 			if (sector->zoneSectorFlags & ZoneSector_HasComZones)
 			{
-				setBit(&layer->sectorsWithZones[Zone_Commercial], sectorIndex);
+				layer->sectorsWithZones[Zone_Commercial].setBit(sectorIndex);
 			}
 			if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones)
 			{
-				setBit(&layer->sectorsWithEmptyZones[Zone_Commercial], sectorIndex);
+				layer->sectorsWithEmptyZones[Zone_Commercial].setBit(sectorIndex);
 			}
 			if (sector->zoneSectorFlags & ZoneSector_HasIndZones)
 			{
-				setBit(&layer->sectorsWithZones[Zone_Industrial], sectorIndex);
+				layer->sectorsWithZones[Zone_Industrial].setBit(sectorIndex);
 			}
 			if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones)
 			{
-				setBit(&layer->sectorsWithEmptyZones[Zone_Industrial], sectorIndex);
+				layer->sectorsWithEmptyZones[Zone_Industrial].setBit(sectorIndex);
 			}
 		}
 

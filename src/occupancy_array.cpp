@@ -27,7 +27,7 @@ Indexed<T*> append(OccupancyArray<T> *array)
 		// - Sam, 21/08/2019
 		smm structSize = sizeof(OccupancyArrayChunk<T>);
 		smm arraySize = sizeof(T) * array->itemsPerChunk;
-		s32 occupancyArrayCount = calculateBitArrayU64Count(array->itemsPerChunk);
+		s32 occupancyArrayCount = BitArray::calculateU64Count(array->itemsPerChunk);
 		smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
 
 		Blob blob = allocateBlob(array->memoryArena, structSize + arraySize + occupancyArraySize);
@@ -55,11 +55,11 @@ Indexed<T*> append(OccupancyArray<T> *array)
 	OccupancyArrayChunk<T> *chunk = array->firstChunkWithSpace;
 
 	// getFirstUnsetBitIndex() to find the free slot
-	s32 indexInChunk = getFirstUnsetBitIndex(&chunk->occupancy);
+	s32 indexInChunk = chunk->occupancy.getFirstUnsetBitIndex();
 	ASSERT(indexInChunk >= 0 && indexInChunk < array->itemsPerChunk);
 
 	// mark that slot as occupied
-	setBit(&chunk->occupancy, indexInChunk);
+	chunk->occupancy.setBit(indexInChunk);
 	result.index = indexInChunk + (array->firstChunkWithSpaceIndex * array->itemsPerChunk);
 	result.value = chunk->items + indexInChunk;
 
@@ -150,7 +150,7 @@ void removeIndex(OccupancyArray<T> *array, s32 indexToRemove)
 
 	// Mark it as unoccupied
 	ASSERT(chunk->occupancy[itemIndex]);
-	unsetBit(&chunk->occupancy, itemIndex);
+	chunk->occupancy.unsetBit(itemIndex);
 
 	// Decrease counts
 	array->count--;

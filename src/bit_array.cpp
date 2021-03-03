@@ -3,7 +3,7 @@ void initBitArray(BitArray *array, MemoryArena *arena, s32 size)
 {
 	array->size = size;
 	array->setBitCount = 0;
-	array->u64s = allocateArray<u64>(arena, calculateBitArrayU64Count(size));
+	array->u64s = allocateArray<u64>(arena, BitArray::calculateU64Count(size));
 }
 
 void initBitArray(BitArray *array, s32 size, Array<u64> u64s)
@@ -36,11 +36,11 @@ inline bool BitArray::operator[](u32 index)
 	return result;
 }
 
-void setBit(BitArray *array, s32 index)
+void BitArray::setBit(s32 index)
 {
 	// NB: Check and assert done this way so that in debug builds, we assert, but
 	// in release builds without asserts, we just do nothing for non-existent bits.
-	if (index >= array->size || index < 0)
+	if (index >= size || index < 0)
 	{
 		ASSERT(false);
 	}
@@ -50,21 +50,21 @@ void setBit(BitArray *array, s32 index)
 		u32 bitIndex = index & 63;
 		u64 mask = ((u64)1 << bitIndex);
 
-		bool wasSet = (array->u64s[fieldIndex] & mask) != 0;
+		bool wasSet = (u64s[fieldIndex] & mask) != 0;
 
 		if (!wasSet)
 		{
-			array->u64s[fieldIndex] |= mask;
-			array->setBitCount++;
+			u64s[fieldIndex] |= mask;
+			setBitCount++;
 		}
 	}
 }
 
-void unsetBit(BitArray *array, s32 index)
+void BitArray::unsetBit(s32 index)
 {
 	// NB: Check and assert done this way so that in debug builds, we assert, but
 	// in release builds without asserts, we just do nothing for non-existent bits. 
-	if (index >= array->size || index < 0)
+	if (index >= size || index < 0)
 	{
 		ASSERT(false);
 	}
@@ -74,33 +74,33 @@ void unsetBit(BitArray *array, s32 index)
 		u32 bitIndex = index & 63;
 		u64 mask = ((u64)1 << bitIndex);
 
-		bool wasSet = (array->u64s[fieldIndex] & mask) != 0;
+		bool wasSet = (u64s[fieldIndex] & mask) != 0;
 
 		if (wasSet)
 		{
-			array->u64s[fieldIndex] &= ~mask;
-			array->setBitCount--;
+			u64s[fieldIndex] &= ~mask;
+			setBitCount--;
 		}
 	}
 }
 
-void clearBits(BitArray *array)
+void BitArray::clearBits()
 {
-	array->setBitCount = 0;
+	setBitCount = 0;
 
-	for (s32 i = 0; i < array->u64s.count; i++)
+	for (s32 i = 0; i < u64s.count; i++)
 	{
-		array->u64s[i] = 0;
+		u64s[i] = 0;
 	}
 }
 
-Array<s32> getSetBitIndices(BitArray *array)
+Array<s32> BitArray::getSetBitIndices()
 {
-	Array<s32> result = allocateArray<s32>(tempArena, array->setBitCount);
+	Array<s32> result = allocateArray<s32>(tempArena, setBitCount);
 
 	s32 pos = 0;
 
-	for (auto it = array->iterateSetBits(); it.hasNext(); it.next())
+	for (auto it = iterateSetBits(); it.hasNext(); it.next())
 	{
 		result[pos++] = it.getIndex();
 	}
@@ -108,25 +108,25 @@ Array<s32> getSetBitIndices(BitArray *array)
 	return result;
 }
 
-inline s32 getFirstSetBitIndex(BitArray *array)
+inline s32 BitArray::getFirstSetBitIndex()
 {
-	return getFirstMatchingBitIndex(array, true);
+	return getFirstMatchingBitIndex(true);
 }
 
-inline s32 getFirstUnsetBitIndex(BitArray *array)
+inline s32 BitArray::getFirstUnsetBitIndex()
 {
-	return getFirstMatchingBitIndex(array, false);
+	return getFirstMatchingBitIndex(false);
 }
 
-s32 getFirstMatchingBitIndex(BitArray *array, bool set)
+s32 BitArray::getFirstMatchingBitIndex(bool set)
 {
 	s32 result = -1;
 
-	if (array->setBitCount != array->size)
+	if (setBitCount != size)
 	{
-		for (s32 index = 0; index < array->size; index++)
+		for (s32 index = 0; index < size; index++)
 		{
-			if ((*array)[index] == set)
+			if ((*this)[index] == set)
 			{
 				result = index;
 				break;
@@ -136,6 +136,10 @@ s32 getFirstMatchingBitIndex(BitArray *array, bool set)
 
 	return result;
 }
+
+//////////////////////////////////////////////////
+// ITERATOR STUFF                               //
+//////////////////////////////////////////////////
 
 BitArrayIterator BitArray::iterateSetBits()
 {

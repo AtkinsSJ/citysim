@@ -16,6 +16,21 @@ struct BitArray
 
 // Methods
 
+	static inline s32 calculateU64Count(s32 bitCount)
+	{
+		return 1 + ((bitCount-1) / 64);
+	}
+
+	void setBit(s32 index);
+	void unsetBit(s32 index);
+	void clearBits();
+
+	// Returns a temporary array containing the indices of the set bits from this array
+	Array<s32> getSetBitIndices();
+	s32 getFirstSetBitIndex();
+	s32 getFirstUnsetBitIndex();
+	s32 getFirstMatchingBitIndex(bool set);
+
 	// NB: This only handles iterating through set bits, because that's all we need right now,
 	// and I'm not sure iterating through unset bits too is useful.
 	// (Because you can just do a regular
@@ -30,24 +45,8 @@ void initBitArray(BitArray *array, MemoryArena *arena, s32 size);
 // If you want, you can supply the memory directly, in case you want to allocate it with something else.
 // Of course, you MUST pass an array of u64s that is big enough!
 // IMPORTANT: we assume that the array is set to all 0s!
-// To get the size, call calculateBitArrayU64Count() below.
+// To get the size, call calculateU64Count() below.
 void initBitArray(BitArray *array, s32 size, Array<u64> u64s);
-inline s32 calculateBitArrayU64Count(s32 bitCount)
-{
-	return 1 + ((bitCount-1) / 64);
-}
-
-void setBit(BitArray *array, s32 index);
-void unsetBit(BitArray *array, s32 index);
-
-void clearBits(BitArray *array);
-
-// Returns a temporary array containing the indices of the set bits from this array
-Array<s32> getSetBitIndices(BitArray *array);
-
-s32 getFirstSetBitIndex(BitArray *array);
-s32 getFirstUnsetBitIndex(BitArray *array);
-s32 getFirstMatchingBitIndex(BitArray *array, bool set);
 
 struct BitArrayIterator
 {

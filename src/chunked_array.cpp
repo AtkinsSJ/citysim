@@ -544,7 +544,6 @@ void ChunkedArray<T>::sortInternal(Comparison compareElements, s32 lowIndex, s32
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
 
-
 template<typename T>
 inline bool ChunkedArrayIterator<T>::hasNext()
 {
