@@ -1,5 +1,18 @@
 #pragma once
 
+//
+// Queue! Your standard FIFO data structure
+// 
+// Internally this works using a linked list of arrays of items. When the end
+// chunk fills up, we add a new chunk. When the first chunk becomes empty, we
+// remove it and point to the next chunk. Chunks are pooled so that we're not
+// making unnecessary allocations - a queue doesn't make any allocations
+// except to become larger.
+// 
+// Queues don't share pools at this time, (03/03/2021) but that would not be a
+// difficult change to make.
+//
+
 template <typename T>
 struct QueueChunk : PoolItem
 {

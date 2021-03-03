@@ -57,7 +57,7 @@ T *Queue<T>::push(T item)
 		endChunk = newChunk;
 	}
 
-	T *result = endChunk->items + + endChunk->startIndex + endChunk->count;
+	T *result = endChunk->items + endChunk->startIndex + endChunk->count;
 	endChunk->count++;
 	count++;
 
@@ -94,7 +94,7 @@ Maybe<T> Queue<T>::pop()
 				{
 					newStartChunk->prevChunk = null;
 				}
-				
+
 				addItemToPool(startChunk, &chunkPool);
 				startChunk = newStartChunk;
 
