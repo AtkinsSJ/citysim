@@ -333,11 +333,11 @@ void GL_loadAssets()
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	for (auto it = iterate(&assets->assetsByType[AssetType_Texture]);
-		hasNext(&it);
-		next(&it))
+	for (auto it = assets->assetsByType[AssetType_Texture].iterate();
+		it.hasNext();
+		it.next())
 	{
-		Asset *asset = *get(&it);
+		Asset *asset = *it.get();
 		Texture *texture = &asset->texture;
 
 		glGenTextures(1, &texture->gl.glTextureID);
@@ -347,11 +347,11 @@ void GL_loadAssets()
 	// Shaders
 	gl->shaders.clear(); // Just in case
 	ASSERT(assets->assetsByType[AssetType_Shader].count <= s8Max);
-	for (auto it = iterate(&assets->assetsByType[AssetType_Shader]);
-		hasNext(&it);
-		next(&it))
+	for (auto it = assets->assetsByType[AssetType_Shader].iterate();
+		it.hasNext();
+		it.next())
 	{
-		Asset *asset = *get(&it);
+		Asset *asset = *it.get();
 
 		s8 shaderIndex = (s8) gl->shaders.count;
 		GL_ShaderProgram *shader = gl->shaders.appendBlank();
@@ -373,11 +373,11 @@ void GL_unloadAssets()
 	GL_Renderer *gl = (GL_Renderer *)renderer->platformRenderer;
 
 	// Textures
-	for (auto it = iterate(&assets->assetsByType[AssetType_Texture]);
-		hasNext(&it);
-		next(&it))
+	for (auto it = assets->assetsByType[AssetType_Texture].iterate();
+		it.hasNext();
+		it.next())
 	{
-		Asset *asset = *get(&it);
+		Asset *asset = *it.get();
 		Texture *texture = &asset->texture;
 
 		if (texture->gl.isLoaded && texture->gl.glTextureID != 0)

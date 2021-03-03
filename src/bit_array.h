@@ -61,9 +61,3 @@ struct BitArrayIterator
 	s32 getIndex();
 	bool getValue();
 };
-
-BitArrayIterator iterateSetBits(BitArray *array) { return array->iterateSetBits(); }
-void next(BitArrayIterator *iterator) { iterator->next(); }
-bool hasNext(BitArrayIterator *iterator) { return iterator->hasNext(); }
-s32 getIndex(BitArrayIterator *iterator) { return iterator->getIndex(); }
-bool getValue(BitArrayIterator *iterator) { return iterator->getValue(); }

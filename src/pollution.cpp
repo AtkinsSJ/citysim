@@ -23,19 +23,19 @@ void updatePollutionLayer(City *city, PollutionLayer *layer)
 			
 			// Recalculate the building contributions
 			for (auto rectIt = layer->dirtyRects.rects.iterate();
-				hasNext(&rectIt);
-				next(&rectIt))
+				rectIt.hasNext();
+				rectIt.next())
 			{
-				Rect2I dirtyRect = getValue(&rectIt);
+				Rect2I dirtyRect = rectIt.getValue();
 
 				fillRegion<s16>(&layer->tileBuildingContributions, dirtyRect, 0);
 
 				ChunkedArray<Building *> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
 				for (auto buildingIt = contributingBuildings.iterate();
-					hasNext(&buildingIt);
-					next(&buildingIt))
+					buildingIt.hasNext();
+					buildingIt.next())
 				{
-					Building *building = getValue(&buildingIt);
+					Building *building = buildingIt.getValue();
 					BuildingDef *def = getBuildingDef(building);
 					if (hasEffect(&def->pollutionEffect))
 					{
@@ -71,10 +71,10 @@ void updatePollutionLayer(City *city, PollutionLayer *layer)
 			DEBUG_BLOCK_T("updatePollutionLayer: combine", DCDT_Simulation);
 
 			for (auto rectIt = layer->dirtyRects.rects.iterate();
-				hasNext(&rectIt);
-				next(&rectIt))
+				rectIt.hasNext();
+				rectIt.next())
 			{
-				Rect2I dirtyRect = getValue(&rectIt);
+				Rect2I dirtyRect = rectIt.getValue();
 
 				for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
 				{

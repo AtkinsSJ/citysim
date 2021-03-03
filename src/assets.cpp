@@ -626,9 +626,9 @@ void loadAssets()
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next())
 	{
-		Asset *asset = get(&it);
+		Asset *asset = it.get();
 		loadAsset(asset);
 	}
 
@@ -691,11 +691,11 @@ void addAssets()
 
 	addAssetsFromDirectory(nullString);
 
-	for (auto it = iterate(&assets->directoryNameToType);
-		hasNext(&it);
-		next(&it))
+	for (auto it = assets->directoryNameToType.iterate();
+		it.hasNext();
+		it.next())
 	{
-		auto entry = getEntry(&it);
+		auto entry = it.getEntry();
 		addAssetsFromDirectory(entry->key, entry->value);
 	}
 }
@@ -714,9 +714,9 @@ void reloadAssets()
 	rendererUnloadAssets();
 
 	// Clear managed assets
-	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next())
 	{
-		Asset *asset = get(&it);
+		Asset *asset = it.get();
 		unloadAsset(asset);
 	}
 
@@ -979,18 +979,18 @@ void reloadLocaleSpecificAssets()
 	// Clear the list of missing texts because they might not be missing in the new locale!
 	clear(&assets->missingTextIDs);
 
-	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next())
 	{
-		Asset *asset = get(&it);
+		Asset *asset = it.get();
 		if (asset->flags & Asset_IsLocaleSpecific)
 		{
 			unloadAsset(asset);
 		}
 	}
 
-	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next())
 	{
-		Asset *asset = get(&it);
+		Asset *asset = it.get();
 		if (asset->flags & Asset_IsLocaleSpecific)
 		{
 			loadAsset(asset);

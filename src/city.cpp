@@ -90,9 +90,9 @@ void drawEntities(City *city, Rect2I visibleTileBounds)
 	V4 drawColorDemolish = color255(255,128,128,255);
 	Rect2 demolitionRect = rect2(city->demolitionRect);
 
-	for (auto it = iterate(&city->entities); hasNext(&it); next(&it))
+	for (auto it = city->entities.iterate(); it.hasNext(); it.next())
 	{
-		auto entity = get(&it);
+		auto entity = it.get();
 		if (overlaps(cropArea, entity->bounds))
 		{
 			// TODO: Batch these together somehow? Our batching is a bit complicated.
@@ -347,9 +347,9 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 
 	// Building demolition cost
 	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
-	for (auto it = buildingsToDemolish.iterate(); hasNext(&it); next(&it))
+	for (auto it = buildingsToDemolish.iterate(); it.hasNext(); it.next())
 	{
-		Building *building = getValue(&it);
+		Building *building = it.getValue();
 		total += getBuildingDef(building->typeID)->demolishCost;
 	}
 
@@ -365,10 +365,10 @@ void demolishRect(City *city, Rect2I area)
 	// Building demolition
 	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
 	for (auto it = buildingsToDemolish.iterate(buildingsToDemolish.count-1, false, true);
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		Building *building = getValue(&it);
+		Building *building = it.getValue();
 		BuildingDef *def = getBuildingDef(building->typeID);
 
 		city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
@@ -481,9 +481,9 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 		{
 			CitySector *sector = getSector(&city->sectors, sX, sY);
 
-			for (auto it = sector->ownedBuildings.iterate(); hasNext(&it); next(&it))
+			for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next())
 			{
-				Building *building = getValue(&it);
+				Building *building = it.getValue();
 				if (overlaps(building->footprint, area))
 				{
 					result.append(building);
@@ -561,9 +561,9 @@ void updateSomeBuildings(City *city)
 	{
 		CitySector *sector = getNextSector(&city->sectors);
 
-		for (auto it = sector->ownedBuildings.iterate(); hasNext(&it); next(&it))
+		for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next())
 		{
-			Building *building = getValue(&it);
+			Building *building = it.getValue();
 			updateBuilding(city, building);
 		}
 	}

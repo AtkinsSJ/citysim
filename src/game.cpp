@@ -607,10 +607,10 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 
 			for (auto it = constructibleBuildings->iterate();
-				hasNext(&it);
-				next(&it))
+				it.hasNext();
+				it.next())
 			{
-				BuildingDef *buildingDef = getValue(&it);
+				BuildingDef *buildingDef = it.getValue();
 
 				if (menu.addButton(getText(buildingDef->textAssetName),
 						buttonIsActive((gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID))))
@@ -754,9 +754,9 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 	bool mouseIsOverUI = uiState->mouseInputHandled;
 	if (!mouseIsOverUI)
 	{
-		for (auto it = uiState->uiRects.iterate(); hasNext(&it); next(&it))
+		for (auto it = uiState->uiRects.iterate(); it.hasNext(); it.next())
 		{
-			if (contains(getValue(&it), uiCamera->mousePos))
+			if (contains(it.getValue(), uiCamera->mousePos))
 			{
 				mouseIsOverUI = true;
 				break;

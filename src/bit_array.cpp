@@ -100,9 +100,9 @@ Array<s32> getSetBitIndices(BitArray *array)
 
 	s32 pos = 0;
 
-	for (auto it = iterateSetBits(array); hasNext(&it); next(&it))
+	for (auto it = array->iterateSetBits(); it.hasNext(); it.next())
 	{
-		result[pos++] = getIndex(&it);
+		result[pos++] = it.getIndex();
 	}
 
 	return result;
@@ -148,9 +148,9 @@ BitArrayIterator BitArray::iterateSetBits()
 	iterator.isDone = (setBitCount == 0);
 
 	// If the first bit is unset, we need to skip ahead
-	if (!iterator.isDone && !getValue(&iterator))
+	if (!iterator.isDone && !iterator.getValue())
 	{
-		next(&iterator);
+		iterator.next();
 	}
 
 	return iterator;

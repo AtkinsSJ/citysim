@@ -723,10 +723,10 @@ BuildingDef *findRandomZoneBuilding(ZoneType zoneType, Random *random, Filter fi
 	// Something to decide on later.
 	// - Sam, 18/08/2019
 	for (auto it = buildings->iterate(randomBelow(random, truncate32(buildings->count)));
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		BuildingDef *def = getValue(&it);
+		BuildingDef *def = it.getValue();
 
 		if (filter(def))
 		{
@@ -950,9 +950,9 @@ Maybe<BuildingDef *> findBuildingIntersection(BuildingDef *defA, BuildingDef *de
 	Maybe<BuildingDef *> result = makeFailure<BuildingDef *>();
 
 	// It's horrible linear search time!
-	for (auto it = buildingCatalogue.intersectionBuildings.iterate(); hasNext(&it); next(&it))
+	for (auto it = buildingCatalogue.intersectionBuildings.iterate(); it.hasNext(); it.next())
 	{
-		BuildingDef *itDef = getValue(&it);
+		BuildingDef *itDef = it.getValue();
 
 		if (itDef->isIntersection)
 		{
@@ -972,9 +972,9 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(&catalogue->allBuildings); hasNext(&it); next(&it))
+	for (auto it = catalogue->allBuildings.iterate(); it.hasNext(); it.next())
 	{
-		BuildingDef *def = get(&it);
+		BuildingDef *def = it.get();
 
 		// Account for the "null" building
 		if (!isEmpty(def->spriteName))
@@ -1161,9 +1161,9 @@ inline bool buildingHasPower(Building *building)
 void saveBuildingTypes()
 {
 	// Post-processing of BuildingDefs
-	for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
+	for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
 	{
-		auto def = get(&it);
+		auto def = it.get();
 		if (def->isIntersection)
 		{
 			BuildingDef *part1Def = findBuildingDef(def->intersectionPart1Name);
@@ -1199,9 +1199,9 @@ void remapBuildingTypes(City *city)
 {
 	// First, remap any IDs that are not present in the current data, so they won't get
 	// merged accidentally.
-	for (auto it = iterate(&buildingCatalogue.buildingNameToOldTypeID); hasNext(&it); next(&it))
+	for (auto it = buildingCatalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next())
 	{
-		auto entry = getEntry(&it);
+		auto entry = it.getEntry();
 		if (!contains(&buildingCatalogue.buildingNameToTypeID, entry->key))
 		{
 			put(&buildingCatalogue.buildingNameToTypeID, entry->key, buildingCatalogue.buildingNameToTypeID.count);
@@ -1211,9 +1211,9 @@ void remapBuildingTypes(City *city)
 	if (buildingCatalogue.buildingNameToOldTypeID.count > 0)
 	{
 		Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, buildingCatalogue.buildingNameToOldTypeID.count);
-		for (auto it = iterate(&buildingCatalogue.buildingNameToOldTypeID); hasNext(&it); next(&it))
+		for (auto it = buildingCatalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next())
 		{
-			auto entry = getEntry(&it);
+			auto entry = it.getEntry();
 			String buildingName = entry->key;
 			s32 oldType         = entry->value;
 
@@ -1228,9 +1228,9 @@ void remapBuildingTypes(City *city)
 			}
 		}
 
-		for (auto it = iterate(&city->buildings); hasNext(&it); next(&it))
+		for (auto it = city->buildings.iterate(); it.hasNext(); it.next())
 		{
-			Building *building = get(&it);
+			Building *building = it.get();
 			s32 oldType = building->typeID;
 			if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0))
 			{

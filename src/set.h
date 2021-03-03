@@ -42,21 +42,3 @@ struct SetIterator
 	T *get();
 	T getValue();
 };
-
-template<typename T>
-SetIterator<T> iterate(Set<T> *set)
-{
-	return set->iterate();
-}
-
-template<typename T>
-void next(SetIterator<T> *iterator) { iterator->next(); }
-
-template<typename T>
-bool hasNext(SetIterator<T> *iterator) { return iterator->hasNext(); }
-
-template<typename T>
-T *get(SetIterator<T> *iterator) { return iterator->get(); }
-
-template<typename T>
-T getValue(SetIterator<T> *iterator) { return iterator->getValue(); }

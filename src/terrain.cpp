@@ -167,9 +167,9 @@ void refreshTerrainSpriteCache(TerrainCatalogue *catalogue)
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(&catalogue->terrainDefs); hasNext(&it); next(&it))
+	for (auto it = catalogue->terrainDefs.iterate(); it.hasNext(); it.next())
 	{
-		TerrainDef *def = get(&it);
+		TerrainDef *def = it.get();
 
 		// Account for the "null" terrain
 		if (!isEmpty(def->spriteName))
@@ -377,9 +377,9 @@ void remapTerrainTypes(City *city)
 {
 	// First, remap any Names that are not present in the current data, so they won't get
 	// merged accidentally.
-	for (auto it = iterate(&terrainCatalogue.terrainNameToOldType); hasNext(&it); next(&it))
+	for (auto it = terrainCatalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next())
 	{
-		auto entry = getEntry(&it);
+		auto entry = it.getEntry();
 		if (!contains(&terrainCatalogue.terrainNameToType, entry->key))
 		{
 			put(&terrainCatalogue.terrainNameToType, entry->key, (u8)terrainCatalogue.terrainNameToType.count);
@@ -389,9 +389,9 @@ void remapTerrainTypes(City *city)
 	if (terrainCatalogue.terrainNameToOldType.count > 0)
 	{
 		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainCatalogue.terrainNameToOldType.count);
-		for (auto it = iterate(&terrainCatalogue.terrainNameToOldType); hasNext(&it); next(&it))
+		for (auto it = terrainCatalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next())
 		{
-			auto entry = getEntry(&it);
+			auto entry = it.getEntry();
 			String terrainName = entry->key;
 			u8 oldType       = entry->value;
 

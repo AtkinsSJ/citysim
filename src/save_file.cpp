@@ -92,9 +92,9 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			// Terrain types table
 			chunk.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
 			chunk.offsetForTerrainTypeTable = offset;
-			for (auto it = iterate(&terrainCatalogue.terrainDefs); hasNext(&it); next(&it))
+			for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next())
 			{
-				TerrainDef *def = get(&it);
+				TerrainDef *def = it.get();
 				if (def->typeID == 0) continue; // Skip the null terrain def!
 
 				u32 typeID = def->typeID;
@@ -134,9 +134,9 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			// Building types table
 			chunk.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
 			chunk.offsetForBuildingTypeTable = offset;
-			for (auto it = iterate(&buildingCatalogue.allBuildings); hasNext(&it); next(&it))
+			for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
 			{
-				BuildingDef *def = get(&it);
+				BuildingDef *def = it.get();
 				if (def->typeID == 0) continue; // Skip the null building def!
 
 				u32 typeID = def->typeID;
@@ -173,9 +173,9 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, chunk.buildingCount);
 			s32 tempBuildingIndex = 0;
 
-			for (auto it = iterate(&city->buildings); hasNext(&it); next(&it))
+			for (auto it = city->buildings.iterate(); it.hasNext(); it.next())
 			{
-				Building *building = get(&it);
+				Building *building = it.get();
 				if (building->id == 0) continue; // Skip the null building!
 
 				SAVBuilding *sb = tempBuildings + tempBuildingIndex;
@@ -273,9 +273,9 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			{
 				FireSector *sector = getSectorByIndex(&layer->sectors, sectorIndex);
 
-				for (auto it = sector->activeFires.iterate(); hasNext(&it); next(&it))
+				for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next())
 				{
-					Fire *fire = get(&it);
+					Fire *fire = it.get();
 					SAVFire *savFire = tempFires + tempFireIndex++;
 					*savFire = {};
 					savFire->x = (u16) fire->pos.x;

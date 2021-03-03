@@ -205,10 +205,10 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		}
 		else
 		{
-			for (auto it = catalogue->savedGames.iterate(); hasNext(&it); next(&it))
+			for (auto it = catalogue->savedGames.iterate(); it.hasNext(); it.next())
 			{
-				SavedGameInfo *savedGame = get(&it);
-				s32 index = getIndex(&it);
+				SavedGameInfo *savedGame = it.get();
+				s32 index = it.getIndex();
 
 				if (savesList.addButton(savedGame->shortName, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
 				{

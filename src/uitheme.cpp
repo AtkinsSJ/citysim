@@ -459,9 +459,9 @@ void loadUITheme(Blob data, Asset *asset)
 	pos += styleArraySize[UIStyle_Window];
 	UIWindowStyle *nextWindowStyle = &theme->windowStyles[0];
 
-	for (auto it = iterate(&styles); hasNext(&it); next(&it))
+	for (auto it = styles.iterate(); it.hasNext(); it.next())
 	{
-		UIStylePack *stylePack = get(&it);
+		UIStylePack *stylePack = it.get();
 		for (s32 sectionType = 1; sectionType < UIStyleTypeCount; sectionType++)
 		{
 			UIStyle *style = stylePack->styleByType + sectionType;

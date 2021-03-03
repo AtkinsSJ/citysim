@@ -176,10 +176,10 @@ Indexed<T *> ChunkedArray<T>::findFirst(Filter filter)
 
 	for (auto it = iterate(); it.hasNext(); it.next())
 	{
-		T *entry = ::get(&it);
+		T *entry = it.get();
 		if (filter(entry))
 		{
-			result = makeIndexedValue(entry, getIndex(&it));
+			result = makeIndexedValue(entry, it.getIndex());
 			break;
 		}
 	}

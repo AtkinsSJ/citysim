@@ -59,11 +59,11 @@ struct ChunkedArray
 	 * every item is iterated once. If false, we stop after the last item.
 	 * Example usage:
 
-		for (auto it = iterate(&array, randomBelow(random, array.count), true);
-			hasNext(&it);
-			next(&it))
+		for (auto it = array.iterate(randomBelow(random, array.count), true);
+			it.hasNext();
+			it.next())
 		{
-			auto thing = get(&it);
+			auto thing = it.get();
 			// do stuff with the thing
 		}
 	 */
@@ -135,33 +135,3 @@ struct ChunkedArrayIterator
 	s32 getIndex();
 	T getValue();
 };
-
-template<typename T>
-void next(ChunkedArrayIterator<T> *iterator)
-{
-	iterator->next();
-}
-
-template<typename T>
-bool hasNext(ChunkedArrayIterator<T> *iterator)
-{
-	return iterator->hasNext();
-}
-
-template<typename T>
-T *get(ChunkedArrayIterator<T> *iterator)
-{
-	return iterator->get();
-}
-
-template<typename T>
-s32 getIndex(ChunkedArrayIterator<T> *iterator)
-{
-	return iterator->getIndex();
-}
-
-template<typename T>
-T getValue(ChunkedArrayIterator<T> *iterator)
-{
-	return iterator->getValue();
-}

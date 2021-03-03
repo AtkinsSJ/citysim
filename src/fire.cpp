@@ -45,10 +45,10 @@ void updateFireLayer(City *city, FireLayer *layer)
 
 		// Recalculate fire distances
 		for (auto rectIt = layer->dirtyRects.rects.iterate();
-			hasNext(&rectIt);
-			next(&rectIt))
+			rectIt.hasNext();
+			rectIt.next())
 		{
-			Rect2I dirtyRect = getValue(&rectIt);
+			Rect2I dirtyRect = rectIt.getValue();
 			fillRegion<u16>(&layer->tileFireProximityEffect, dirtyRect, 0);
 
 			Rect2I expandedRect = expand(dirtyRect, layer->maxFireRadius);
@@ -60,9 +60,9 @@ void updateFireLayer(City *city, FireLayer *layer)
 				{
 					FireSector *sector = getSector(&layer->sectors, sx, sy);
 
-					for (auto it = sector->activeFires.iterate(); hasNext(&it); next(&it))
+					for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next())
 					{
-						Fire *fire = get(&it);
+						Fire *fire = it.get();
 						if (contains(expandedRect, fire->pos))
 						{
 							// TODO: Different "strengths" of fire should have different effects
@@ -92,9 +92,9 @@ void updateFireLayer(City *city, FireLayer *layer)
 				DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
 				// Building fire protection
 				fillRegion<u8>(&layer->tileFireProtection, sector->bounds, 0);
-				for (auto it = layer->fireProtectionBuildings.iterate(); hasNext(&it); next(&it))
+				for (auto it = layer->fireProtectionBuildings.iterate(); it.hasNext(); it.next())
 				{
-					Building *building = getBuilding(city, getValue(&it));
+					Building *building = getBuilding(city, it.getValue());
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building);
@@ -178,9 +178,9 @@ bool doesAreaContainFire(City *city, Rect2I bounds)
 			sx++)
 		{
 			FireSector *sector = getSector(&layer->sectors, sx, sy);
-			for (auto it = sector->activeFires.iterate(); hasNext(&it); next(&it))
+			for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next())
 			{
-				Fire *fire = get(&it);
+				Fire *fire = it.get();
 
 				if (contains(bounds, fire->pos))
 				{

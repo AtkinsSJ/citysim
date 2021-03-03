@@ -165,11 +165,11 @@ void saveSettings()
 	append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n"_s);
 	append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n"_s);
 
-	for (auto it = iterate(&settings->defs);
-		hasNext(&it);
-		next(&it))
+	for (auto it = settings->defs.iterate();
+		it.hasNext();
+		it.next())
 	{
-		auto entry = getEntry(&it);
+		auto entry = it.getEntry();
 		String name = entry->key;
 		SettingDef *def = &entry->value;
 
@@ -234,11 +234,11 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
 	s32 settingsAreaWidth = 600;
 	V2I labelPos   = v2i(windowCentre - (settingsAreaWidth / 2), 300);
 	V2I settingPos = v2i(windowCentre + (settingsAreaWidth / 2), 300);
-	for (auto it = iterate(&settings->defs);
-		hasNext(&it);
-		next(&it))
+	for (auto it = settings->defs.iterate();
+		it.hasNext();
+		it.next())
 	{
-		SettingDef *def = get(&it);
+		SettingDef *def = it.get();
 
 		uiText(&renderer->uiBuffer, font, getText(def->textAssetName), labelPos, ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
 		uiText(&renderer->uiBuffer, font, settingToString(&settings->workingState, def), settingPos, ALIGN_RIGHT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);

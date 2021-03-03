@@ -185,9 +185,9 @@ T *put(HashTable<T> *table, String key, T value)
 template<typename T>
 void putAll(HashTable<T> *table, HashTable<T> *source)
 {
-	for (auto it = iterate(source); hasNext(&it); next(&it))
+	for (auto it = source->iterate(); it.hasNext(); it.next())
 	{
-		auto entry = getEntry(&it);
+		auto entry = it.getEntry();
 		put(table, entry->key, entry->value);
 	}
 }
@@ -244,9 +244,9 @@ HashTableIterator<T> HashTable<T>::iterate()
 	iterator.isDone = (count == 0);
 
 	// If the first entry is unoccupied, we need to skip ahead
-	if (!iterator.isDone && !getEntry(&iterator)->isOccupied)
+	if (!iterator.isDone && !iterator.getEntry()->isOccupied)
 	{
-		next(&iterator);
+		iterator.next();
 	}
 
 	return iterator;

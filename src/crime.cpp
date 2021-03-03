@@ -32,9 +32,9 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 	// the game is running. It'll only happen incredibly rarely during normal play, but during
 	// development we have this whole hot-loaded building defs system, so it's better to be safe.
 	layer->totalJailCapacity = 0;
-	for (auto it = layer->policeBuildings.iterate(); hasNext(&it); next(&it))
+	for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next())
 	{
-		Building *building = getBuilding(city, getValue(&it));
+		Building *building = getBuilding(city, it.getValue());
 		if (building != null)
 		{
 			BuildingDef *def = getBuildingDef(building);
@@ -52,9 +52,9 @@ void updateCrimeLayer(City *city, CrimeLayer *layer)
 			{
 				DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DCDT_Simulation);
 				fillRegion<u8>(&layer->tilePoliceCoverage, sector->bounds, 0);
-				for (auto it = layer->policeBuildings.iterate(); hasNext(&it); next(&it))
+				for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next())
 				{
-					Building *building = getBuilding(city, getValue(&it));
+					Building *building = getBuilding(city, it.getValue());
 					if (building != null)
 					{
 						BuildingDef *def = getBuildingDef(building);

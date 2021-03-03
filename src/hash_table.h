@@ -86,18 +86,3 @@ struct HashTableIterator
 	T *get();
 	HashTableEntry<T> *getEntry();
 };
-
-template<typename T>
-HashTableIterator<T> iterate(HashTable<T> *table) { return table->iterate(); }
-
-template<typename T>
-void next(HashTableIterator<T> *iterator) { iterator->next(); }
-
-template<typename T>
-bool hasNext(HashTableIterator<T> *iterator) { return iterator->hasNext(); }
-
-template<typename T>
-HashTableEntry<T> *getEntry(HashTableIterator<T> *iterator) { return iterator->getEntry(); }
-
-template<typename T>
-T *get(HashTableIterator<T> *iterator) { return iterator->get(); }

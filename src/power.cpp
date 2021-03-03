@@ -106,10 +106,10 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 
 	// Reset each to 0
 	for (auto it = sector->powerGroups.iterate();
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		PowerGroup *powerGroup = get(&it);
+		PowerGroup *powerGroup = it.get();
 		powerGroup->production = 0;
 		powerGroup->consumption = 0;
 	}
@@ -117,10 +117,10 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 	// Count power from buildings
 	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds, BQF_RequireOriginInArea);
 	for (auto it = sectorBuildings.iterate();
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		Building *building = getValue(&it);
+		Building *building = it.getValue();
 		BuildingDef *def = getBuildingDef(building->typeID);
 
 		if (def->power != 0)
@@ -275,9 +275,9 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 
 
 	// Step 0: Remove the old PowerGroups.
-	for (auto it = sector->powerGroups.iterate(); hasNext(&it); next(&it))
+	for (auto it = sector->powerGroups.iterate(); it.hasNext(); it.next())
 	{
-		PowerGroup *powerGroup = get(&it);
+		PowerGroup *powerGroup = it.get();
 		powerGroup->sectorBoundaries.clear();
 	}
 	sector->powerGroups.clear();
@@ -335,10 +335,10 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 	// Store references to the buildings in each group, for faster updating later
 	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds);
 	for (auto it = sectorBuildings.iterate();
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		Building *building = getValue(&it);
+		Building *building = it.getValue();
 		if (getBuildingDef(building->typeID)->power == 0) continue; // We only care about powered buildings!
 
 		if (contains(sector->bounds, building->footprint.pos))
@@ -527,10 +527,10 @@ void floodFillCityPowerNetwork(PowerLayer *layer, PowerGroup *powerGroup, PowerN
 	network->groups.append(powerGroup);
 
 	for (auto it = powerGroup->sectorBoundaries.iterate();
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		Rect2I bounds = getValue(&it);
+		Rect2I bounds = it.getValue();
 		PowerSector *sector = getSectorAtTilePos(&layer->sectors, bounds.x, bounds.y);
 		bounds = intersectRelative(sector->bounds, bounds);
 
@@ -562,16 +562,16 @@ void recalculatePowerConnectivity(PowerLayer *layer)
 
 	// Clean up networks
 	for (auto networkIt = layer->networks.iterate();
-		hasNext(&networkIt);
-		next(&networkIt))
+		networkIt.hasNext();
+		networkIt.next())
 	{
-		PowerNetwork *powerNetwork = get(&networkIt);
+		PowerNetwork *powerNetwork = networkIt.get();
 
 		for (auto groupIt = powerNetwork->groups.iterate();
-			hasNext(&groupIt);
-			next(&groupIt))
+			groupIt.hasNext();
+			groupIt.next())
 		{
-			PowerGroup *group = getValue(&groupIt);
+			PowerGroup *group = groupIt.getValue();
 			group->networkID = 0;
 		}
 
@@ -591,10 +591,10 @@ void recalculatePowerConnectivity(PowerLayer *layer)
 		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 
 		for (auto it = sector->powerGroups.iterate();
-			hasNext(&it);
-			next(&it))
+			it.hasNext();
+			it.next())
 		{
-			PowerGroup *powerGroup = get(&it);
+			PowerGroup *powerGroup = it.get();
 			if (powerGroup->networkID == 0)
 			{
 				PowerNetwork *network = newPowerNetwork(layer);
@@ -614,10 +614,10 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		initSet<PowerSector *>(&touchedSectors, tempArena, [](PowerSector **a, PowerSector **b) { return *a == *b; });
 
 		for (auto it = layer->dirtyRects.rects.iterate();
-			hasNext(&it);
-			next(&it))
+			it.hasNext();
+			it.next())
 		{
-			Rect2I dirtyRect = getValue(&it);
+			Rect2I dirtyRect = it.getValue();
 
 			// Clear the "distance to power" for the surrounding area to 0 or 255
 			for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++)
@@ -661,9 +661,9 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		updateDistances(&layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
 
 		// Rebuild the sectors that were modified
-		for (auto it = iterate(&touchedSectors); hasNext(&it); next(&it))
+		for (auto it = touchedSectors.iterate(); it.hasNext(); it.next())
 		{
-			PowerSector *sector = getValue(&it);
+			PowerSector *sector = it.getValue();
 
 			recalculateSectorPowerGroups(city, sector);
 		}
@@ -686,18 +686,18 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 	// Sum each PowerGroup's power into its Network
 	for (auto networkIt = layer->networks.iterate();
-		hasNext(&networkIt);
-		next(&networkIt))
+		networkIt.hasNext();
+		networkIt.next())
 	{
-		PowerNetwork *network = get(&networkIt);
+		PowerNetwork *network = networkIt.get();
 		network->cachedProduction = 0;
 		network->cachedConsumption = 0;
 
 		for (auto groupIt = network->groups.iterate();
-			hasNext(&groupIt);
-			next(&groupIt))
+			groupIt.hasNext();
+			groupIt.next())
 		{
-			PowerGroup *powerGroup = getValue(&groupIt);
+			PowerGroup *powerGroup = groupIt.getValue();
 			network->cachedProduction += powerGroup->production;
 			network->cachedConsumption += powerGroup->consumption;
 		}
@@ -709,10 +709,10 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 	// Supply power to buildings
 	for (auto networkIt = layer->networks.iterate();
-		hasNext(&networkIt);
-		next(&networkIt))
+		networkIt.hasNext();
+		networkIt.next())
 	{
-		PowerNetwork *network = get(&networkIt);
+		PowerNetwork *network = networkIt.get();
 
 		// Figure out which mode this network is in.
 		enum NetworkMode {
@@ -741,16 +741,16 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		// Now, iterate the buildings and give them power based on that mode.
 		s32 powerRemaining = network->cachedProduction;
 		for (auto groupIt = network->groups.iterate();
-			hasNext(&groupIt);
-			next(&groupIt))
+			groupIt.hasNext();
+			groupIt.next())
 		{
-			PowerGroup *powerGroup = getValue(&groupIt);
+			PowerGroup *powerGroup = groupIt.getValue();
 
 			for (auto buildingRefIt = powerGroup->buildings.iterate();
-				hasNext(&buildingRefIt);
-				next(&buildingRefIt))
+				buildingRefIt.hasNext();
+				buildingRefIt.next())
 			{
-				BuildingRef buildingRef = getValue(&buildingRefIt);
+				BuildingRef buildingRef = buildingRefIt.getValue();
 				Building *building = getBuilding(city, buildingRef);
 
 				if (building != null)

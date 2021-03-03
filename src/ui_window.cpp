@@ -41,14 +41,14 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 
 			s32 oldWindowIndex = 0;
 			for (auto it = uiState->openWindows.iterate();
-				hasNext(&it);
-				next(&it))
+				it.hasNext();
+				it.next())
 			{
-				Window *oldWindow = get(&it);
+				Window *oldWindow = it.get();
 				if (oldWindow->windowProc == windowProc)
 				{
 					toReplace = oldWindow;
-					oldWindowIndex = (s32) getIndex(&it);
+					oldWindowIndex = (s32) it.getIndex();
 					break;
 				}
 			}
@@ -210,11 +210,11 @@ void updateWindows(UIState *uiState)
 
 	bool isActive = true;
 	for (auto it = uiState->openWindows.iterate();
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		Window *window = get(&it);
-		s32 windowIndex = (s32) getIndex(&it);
+		Window *window = it.get();
+		s32 windowIndex = (s32) it.getIndex();
 
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
@@ -337,11 +337,11 @@ void renderWindows(UIState *uiState)
 {
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	for (auto it = uiState->openWindows.iterateBackwards();
-		hasNext(&it);
-		next(&it))
+		it.hasNext();
+		it.next())
 	{
-		Window *window = get(&it);
-		s32 windowIndex = getIndex(&it);
+		Window *window = it.get();
+		s32 windowIndex = it.getIndex();
 
 		bool isActive = window->wasActiveLastUpdate;
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;

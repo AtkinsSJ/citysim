@@ -37,9 +37,9 @@ void processDebugData(DebugState *debugState)
 	moveAllNodes(&debugState->topCodeBlocksSentinel, &debugState->topCodeBlocksFreeListSentinel);
 	ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel)); //List we just freed is not empty!
 
-	for (auto it = iterate(&debugState->codeData); hasNext(&it); next(&it))
+	for (auto it = debugState->codeData.iterate(); it.hasNext(); it.next())
 	{
-		DebugCodeData *code = get(&it);
+		DebugCodeData *code = it.get();
 
 		// Move the `working` stuff into the correct frame
 		if (debugState->captureDebugData)
@@ -491,9 +491,9 @@ void debugTrackAssets(DebugState *debugState)
 	}
 
 	// The asset-memory stuff
-	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next())
 	{
-		Asset *asset = get(&it);
+		Asset *asset = it.get();
 
 		if (asset->state == AssetState_Loaded) assetData->loadedAssetCount[frameIndex]++;
 	}

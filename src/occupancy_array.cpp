@@ -197,9 +197,9 @@ OccupancyArrayIterator<T> OccupancyArray<T>::iterate()
 	iterator.isDone = (count == 0);
 
 	// If the first entry is unoccupied, we need to skip ahead
-	if (!iterator.isDone && (get(&iterator) == null))
+	if (!iterator.isDone && (iterator.get() == null))
 	{
-		next(&iterator);
+		iterator.next();
 	}
 
 	return iterator;
