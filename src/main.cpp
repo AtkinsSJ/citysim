@@ -296,12 +296,27 @@ int main(int argc, char *argv[])
 #if 0
 	Queue<s32> testQueue;
 	initQueue(&testQueue, &globalAppState.systemArena);
+	for (s32 i=1; i <= 10; i++) testQueue.push(-1);
+
 	for (s32 i=1; i <= 100; i++)
 	{
 		testQueue.push(i);
-		logInfo("Queue: {0}"_s, {formatInt(testQueue.pop().orDefault(-1))});
 	}
-		logInfo("Queue: {0}"_s, {formatInt(testQueue.pop().orDefault(-1))});
+
+	for (s32 i=1; i <= 10; i++) testQueue.pop();
+	
+	for (auto it = testQueue.iterate(); it.hasNext(); it.next())
+	{
+		auto thing = it.get();
+		logInfo("Forwards: {0}"_s, {formatInt(*thing)});
+	}
+
+	for (auto it = testQueue.iterate(true); it.hasNext(); it.next())
+	{
+		auto thing = it.get();
+		logInfo("Reverse: {0}"_s, {formatInt(*thing)});
+	}
+
 #endif
 
 	// GAME LOOP

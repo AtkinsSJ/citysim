@@ -25,11 +25,16 @@ struct QueueChunk : PoolItem
 };
 
 template <typename T>
+struct QueueIterator;
+
+template <typename T>
 struct Queue
 {
 	bool isEmpty();
 	T *push(T item);
 	Maybe<T> pop();
+
+	QueueIterator<T> iterate(bool goBackwards = false);
 
 	// "private"
 	Pool<QueueChunk<T>> chunkPool;
@@ -43,3 +48,20 @@ struct Queue
 
 template <typename T>
 void initQueue(Queue<T> *queue, MemoryArena *arena, s32 chunkSize = 32);
+
+template <typename T>
+struct QueueIterator
+{
+	Queue<T> *queue;
+	bool goBackwards;
+
+	QueueChunk<T> *currentChunk;
+	s32 indexInChunk;
+
+	bool isDone;
+
+
+	bool hasNext();
+	void next();
+	T *get();
+};

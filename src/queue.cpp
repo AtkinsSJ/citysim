@@ -109,3 +109,84 @@ Maybe<T> Queue<T>::pop()
 
 	return result;
 }
+
+template <typename T>
+QueueIterator<T> Queue<T>::iterate(bool goBackwards)
+{
+	QueueIterator<T> result = {};
+
+	result.queue = this;
+	result.goBackwards = goBackwards;
+	result.isDone = isEmpty();
+
+	if (!result.isDone)
+	{
+		if (goBackwards)
+		{
+			result.currentChunk = this->endChunk;
+			result.indexInChunk = this->endChunk->startIndex + this->endChunk->count - 1;
+		}
+		else
+		{
+			result.currentChunk = this->startChunk;
+			result.indexInChunk = this->startChunk->startIndex;
+		}
+	}
+
+	return result;
+}
+
+template <typename T>
+bool QueueIterator<T>::hasNext()
+{
+	return !isDone;
+}
+
+template <typename T>
+void QueueIterator<T>::next()
+{
+	if (isDone) return;
+
+	if (goBackwards)
+	{
+		indexInChunk--;
+		if (indexInChunk < currentChunk->startIndex)
+		{
+			// Previous chunk
+			if (currentChunk->prevChunk == null)
+			{
+				// We're done!
+				isDone = true;
+			}
+			else
+			{
+				currentChunk = currentChunk->prevChunk;
+				indexInChunk = currentChunk->startIndex + currentChunk->count - 1;
+			}
+		}
+	}
+	else
+	{
+		indexInChunk++;
+		if (indexInChunk >= currentChunk->count + currentChunk->startIndex)
+		{
+			// Next chunk
+			if (currentChunk->nextChunk == null)
+			{
+				// We're done!
+				isDone = true;
+			}
+			else
+			{
+				currentChunk = currentChunk->nextChunk;
+				indexInChunk = currentChunk->startIndex;
+			}
+		}
+	}
+}
+
+template <typename T>
+T *QueueIterator<T>::get()
+{
+	return currentChunk->items + indexInChunk;
+}
