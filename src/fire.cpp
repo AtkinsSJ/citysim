@@ -157,7 +157,7 @@ Indexed<Fire*> findFireAt(City *city, s32 x, s32 y)
 	if (layer->activeFireCount > 0)
 	{
 		FireSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
-		result = findFirst(&sector->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
+		result = sector->activeFires.findFirst([=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
 	}
 
 	return result;
@@ -242,13 +242,13 @@ void removeFireAt(City *city, s32 x, s32 y)
 	FireLayer *layer = &city->fireLayer;
 
 	FireSector *sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
-	Indexed<Fire*> fireAtPosition = findFirst(&sectorAtPosition->activeFires, [=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
+	Indexed<Fire*> fireAtPosition = sectorAtPosition->activeFires.findFirst([=](Fire *fire) { return fire->pos.x == x && fire->pos.y == y; });
 
 	if (fireAtPosition.value != null)
 	{
 		// Remove it!
 		removeEntity(city, fireAtPosition.value->entity);
-		removeIndex(&sectorAtPosition->activeFires, fireAtPosition.index);
+		sectorAtPosition->activeFires.removeIndex(fireAtPosition.index);
 		layer->activeFireCount--;
 
 		markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
@@ -267,7 +267,7 @@ void notifyBuildingDemolished(FireLayer *layer, BuildingDef *def, Building *buil
 {
 	if (hasEffect(&def->fireProtection))
 	{
-		bool success = findAndRemove(&layer->fireProtectionBuildings, getReferenceTo(building));
+		bool success = layer->fireProtectionBuildings.findAndRemove(getReferenceTo(building));
 		ASSERT(success);
 	}
 }

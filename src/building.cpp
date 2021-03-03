@@ -616,11 +616,11 @@ void removeBuildingDefs(Array<String> idsToRemove)
 		BuildingDef *def = findBuildingDef(buildingID);
 		if (def != null)
 		{
-			findAndRemove(&catalogue->constructibleBuildings, def);
-			findAndRemove(&catalogue->rGrowableBuildings,     def);
-			findAndRemove(&catalogue->cGrowableBuildings,     def);
-			findAndRemove(&catalogue->iGrowableBuildings,     def);
-			findAndRemove(&catalogue->intersectionBuildings,  def);
+			catalogue->constructibleBuildings.findAndRemove(def);
+			catalogue->rGrowableBuildings.findAndRemove(def);
+			catalogue->cGrowableBuildings.findAndRemove(def);
+			catalogue->iGrowableBuildings.findAndRemove(def);
+			catalogue->intersectionBuildings.findAndRemove(def);
 
 			removeKey(&catalogue->buildingsByName, buildingID);
 

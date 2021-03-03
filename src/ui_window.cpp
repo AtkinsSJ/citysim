@@ -5,7 +5,7 @@ static void makeWindowActive(UIState *uiState, s32 windowIndex)
 	// Don't do anything if it's already the active window.
 	if (windowIndex == 0)  return;
 
-	moveItemKeepingOrder(&uiState->openWindows, windowIndex, 0);
+	uiState->openWindows.moveItemKeepingOrder(windowIndex, 0);
 }
 
 /**
@@ -319,7 +319,7 @@ void updateWindows(UIState *uiState)
 		}
 
 		uiState->isDraggingWindow = false;
-		removeIndex(&uiState->openWindows, closeWindow, true);
+		uiState->openWindows.removeIndex(closeWindow, true);
 	}
 	/*
 	 * NB: This is an imaginary else-if, because if we try to set a new active window, AND close one,

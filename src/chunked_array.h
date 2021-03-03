@@ -46,12 +46,34 @@ struct ChunkedArray
 	// Marks all the chunks as empty. Returns them to a chunkpool if there is one.
 	void clear();
 
+	// NB: Returns an Indexed<> of null/-1 if nothing is found.
+	// A Maybe<> would be more specific, but Maybe<Indexed<T*>> is heading into ridiculousness territory.
+	// Filter is a function with signature: bool filter(T *value)
+	template <typename Filter>
+	Indexed<T *> findFirst(Filter filter);
+
+	bool findAndRemove(T toRemove);
+	void removeIndex(s32 indexToRemove, bool keepItemOrder=false);
+	template<typename Filter>
+	s32 removeAll(Filter filter, s32 limit = -1);
+
+	// Inserts the item at fromIndex into toIndex, moving other items around as necessary
+	void moveItemKeepingOrder(s32 fromIndex, s32 toIndex);
+
+	template <typename Comparison>
+	void sort(Comparison compareElements);
+
 // "private"
 	T *appendUninitialised();
 
 	void appendChunk();
 	ArrayChunk<T> *getChunkByIndex(s32 chunkIndex);
 	ArrayChunk<T> *getLastNonEmptyChunk();
+
+	void returnLastChunkToPool();
+
+	template <typename Comparison>
+	void sortInternal(Comparison compareElements, s32 lowIndex, s32 highIndex);
 };
 
 template<typename T>
@@ -79,30 +101,6 @@ void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool);
 
 template<typename T>
 ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk);
-
-template<typename T>
-bool findAndRemove(ChunkedArray<T> *array, T toRemove);
-
-// NB: Returns an Indexed<> of null/-1 if nothing is found.
-// A Maybe<> would be more specific, but Maybe<Indexed<T*>> is heading into ridiculousness territory.
-// Filter is a function with signature: bool filter(T *value)
-template<typename T, typename Filter>
-Indexed<T *> findFirst(ChunkedArray<T> *array, Filter filter);
-
-template<typename T, typename Filter>
-s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit = -1);
-
-template<typename T>
-void removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder=false);
-
-template<typename T>
-void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex);
-
-template<typename T, typename Comparison>
-void sortChunkedArray(ChunkedArray<T> *array, Comparison compareElements);
-
-template<typename T, typename Comparison>
-void sortChunkedArrayInternal(ChunkedArray<T> *array, Comparison compareElements, s32 lowIndex, s32 highIndex);
 
 //////////////////////////////////////////////////
 // POOL STUFF                                   //

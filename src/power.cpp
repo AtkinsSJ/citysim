@@ -799,7 +799,7 @@ void notifyBuildingDemolished(PowerLayer *layer, BuildingDef *def, Building *bui
 {
 	if (def->power > 0)
 	{
-		bool success = findAndRemove(&layer->powerBuildings, getReferenceTo(building));
+		bool success = layer->powerBuildings.findAndRemove(getReferenceTo(building));
 		ASSERT(success);
 	}
 }

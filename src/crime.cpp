@@ -92,7 +92,7 @@ void notifyBuildingDemolished(CrimeLayer *layer, BuildingDef *def, Building *bui
 {
 	if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
 	{
-		bool success = findAndRemove(&layer->policeBuildings, getReferenceTo(building));
+		bool success = layer->policeBuildings.findAndRemove(getReferenceTo(building));
 		ASSERT(success);
 	}
 }

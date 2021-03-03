@@ -136,7 +136,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 	}
 
 	// Sort the saved games by most-recent first
-	sortChunkedArray(&catalogue->savedGames, [](SavedGameInfo *a, SavedGameInfo *b) {
+	catalogue->savedGames.sort([](SavedGameInfo *a, SavedGameInfo *b) {
 		return a->saveTime.unixTimestamp > b->saveTime.unixTimestamp;
 	});
 
@@ -159,7 +159,7 @@ void showSaveGameWindow(UIState *uiState)
 	captureInput(&catalogue->saveGameName);
 
 	// If we're playing a save file, select that by default
-	Indexed<SavedGameInfo *> selectedSavedGame = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
+	Indexed<SavedGameInfo *> selectedSavedGame = catalogue->savedGames.findFirst([&](SavedGameInfo *info) {
 		return equals(info->shortName, catalogue->activeSavedGameName);
 	});
 	if (selectedSavedGame.index != -1)
@@ -282,7 +282,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			// Show a warning if we're overwriting an existing save that ISN'T the active one
 			if (!isEmpty(inputName) && !equals(inputName, catalogue->activeSavedGameName))
 			{
-				Indexed<SavedGameInfo *> fileToOverwrite = findFirst(&catalogue->savedGames, [&](SavedGameInfo *info) {
+				Indexed<SavedGameInfo *> fileToOverwrite = catalogue->savedGames.findFirst([&](SavedGameInfo *info) {
 					return equals(inputName, info->shortName);
 				});
 

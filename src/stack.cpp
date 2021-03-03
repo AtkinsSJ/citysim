@@ -39,7 +39,7 @@ Maybe<T> pop(Stack<T> *stack)
 	if (!isEmpty(stack))
 	{
 		result = makeSuccess(*stack->_array.get(stack->_array.count-1));
-		removeIndex(&stack->_array, stack->_array.count-1);
+		stack->_array.removeIndex(stack->_array.count-1);
 	}
 
 	return result;

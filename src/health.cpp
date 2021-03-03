@@ -93,7 +93,7 @@ void notifyBuildingDemolished(HealthLayer *layer, BuildingDef *def, Building *bu
 {
 	if (hasEffect(&def->healthEffect))
 	{
-		bool success = findAndRemove(&layer->healthBuildings, getReferenceTo(building));
+		bool success = layer->healthBuildings.findAndRemove(getReferenceTo(building));
 		ASSERT(success);
 	}
 }

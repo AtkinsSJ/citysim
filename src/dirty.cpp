@@ -56,7 +56,7 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 				Rect2I existingRect = getValue(&it);
 				if (contains(rectToAdd, existingRect))
 				{
-					removeIndex(&dirtyRects->rects, getIndex(&it), false);
+					dirtyRects->rects.removeIndex(getIndex(&it), false);
 				}
 			}
 		}
