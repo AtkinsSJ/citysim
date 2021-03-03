@@ -30,7 +30,7 @@ void updateTransportLayer(City *city, TransportLayer *layer)
 		// So, I think #2 is the better option, but I should test that later if it becomes expensive performance-wise.
 		// - Sam, 28/08/2019
 
-		for (auto it = iterate(&layer->dirtyRects.rects);
+		for (auto it = layer->dirtyRects.rects.iterate();
 			hasNext(&it);
 			next(&it))
 		{

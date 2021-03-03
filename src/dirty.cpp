@@ -33,7 +33,7 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 	else
 	{
 		// Check to see if this rectangle is contained by an existing dirty rect
-		for (auto it = iterate(&dirtyRects->rects);
+		for (auto it = dirtyRects->rects.iterate();
 			hasNext(&it);
 			next(&it))
 		{
@@ -49,7 +49,7 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 		// Remove any existing rects that are inside our new one
 		if (!added)
 		{
-			for (auto it = iterateBackwards(&dirtyRects->rects);
+			for (auto it = dirtyRects->rects.iterateBackwards();
 				hasNext(&it);
 				next(&it))
 			{
@@ -86,7 +86,7 @@ Rect2I getOverallRect(DirtyRects *dirtyRects)
 	{
 		result = *dirtyRects->rects.get(0);
 
-		for (auto it = iterate(&dirtyRects->rects, 1, false);
+		for (auto it = dirtyRects->rects.iterate(1, false);
 			hasNext(&it);
 			next(&it))
 		{

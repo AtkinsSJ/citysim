@@ -722,7 +722,7 @@ BuildingDef *findRandomZoneBuilding(ZoneType zoneType, Random *random, Filter fi
 	// Growing a whole "block" of a building might make more sense for residential at least.
 	// Something to decide on later.
 	// - Sam, 18/08/2019
-	for (auto it = iterate(buildings, randomBelow(random, truncate32(buildings->count)));
+	for (auto it = buildings->iterate(randomBelow(random, truncate32(buildings->count)));
 		hasNext(&it);
 		next(&it))
 	{
@@ -950,7 +950,7 @@ Maybe<BuildingDef *> findBuildingIntersection(BuildingDef *defA, BuildingDef *de
 	Maybe<BuildingDef *> result = makeFailure<BuildingDef *>();
 
 	// It's horrible linear search time!
-	for (auto it = iterate(&buildingCatalogue.intersectionBuildings); hasNext(&it); next(&it))
+	for (auto it = buildingCatalogue.intersectionBuildings.iterate(); hasNext(&it); next(&it))
 	{
 		BuildingDef *itDef = getValue(&it);
 

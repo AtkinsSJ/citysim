@@ -93,7 +93,7 @@ void updateDistances(Array2<u8> *tileDistance, DirtyRects *dirtyRects, u8 maxDis
 	
 	for (s32 iteration = 0; iteration < maxDistance; iteration++)
 	{
-		for (auto it = iterate(&dirtyRects->rects);
+		for (auto it = dirtyRects->rects.iterate();
 			hasNext(&it);
 			next(&it))
 		{
@@ -205,7 +205,7 @@ void drawBuildingHighlights(City *city, Iterable *buildingRefs)
 		s32 paletteIndexUnpowered = 1;
 
 		DrawRectsGroup *buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, buildingRefs->count);
-		for (auto it = iterate(buildingRefs); hasNext(&it); next(&it))
+		for (auto it = buildingRefs->iterate(); hasNext(&it); next(&it))
 		{
 			Building *building = getBuilding(city, getValue(&it));
 			// NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
@@ -254,7 +254,7 @@ void drawBuildingEffectRadii(City *city, Iterable *buildingRefs, EffectRadius Bu
 
 		DrawRingsGroup *buildingRadii = beginRingsGroup(&renderer->worldOverlayBuffer, buildingRefs->count);
 
-		for (auto it = iterate(buildingRefs); hasNext(&it); next(&it))
+		for (auto it = buildingRefs->iterate(); hasNext(&it); next(&it))
 		{
 			Building *building = getBuilding(city, getValue(&it));
 			// NB: We don't filter buildings outside of the visibleTileBounds because their radius might be

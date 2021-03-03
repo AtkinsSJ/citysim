@@ -40,7 +40,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 			Window *toReplace = null;
 
 			s32 oldWindowIndex = 0;
-			for (auto it = iterate(&uiState->openWindows);
+			for (auto it = uiState->openWindows.iterate();
 				hasNext(&it);
 				next(&it))
 			{
@@ -209,7 +209,7 @@ void updateWindows(UIState *uiState)
 	uiState->isAPauseWindowOpen = false;
 
 	bool isActive = true;
-	for (auto it = iterate(&uiState->openWindows);
+	for (auto it = uiState->openWindows.iterate();
 		hasNext(&it);
 		next(&it))
 	{
@@ -336,7 +336,7 @@ void updateWindows(UIState *uiState)
 void renderWindows(UIState *uiState)
 {
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	for (auto it = iterateBackwards(&uiState->openWindows);
+	for (auto it = uiState->openWindows.iterateBackwards();
 		hasNext(&it);
 		next(&it))
 	{

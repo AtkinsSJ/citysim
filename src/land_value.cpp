@@ -28,7 +28,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 			DEBUG_BLOCK_T("updateLandValueLayer: building effects", DCDT_Simulation);
 			
 			// Recalculate the building contributions
-			for (auto rectIt = iterate(&layer->dirtyRects.rects);
+			for (auto rectIt = layer->dirtyRects.rects.iterate();
 				hasNext(&rectIt);
 				next(&rectIt))
 			{
@@ -37,7 +37,7 @@ void updateLandValueLayer(City *city, LandValueLayer *layer)
 				fillRegion<s16>(&layer->tileBuildingContributions, dirtyRect, 0);
 
 				ChunkedArray<Building *> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
-				for (auto buildingIt = iterate(&contributingBuildings);
+				for (auto buildingIt = contributingBuildings.iterate();
 					hasNext(&buildingIt);
 					next(&buildingIt))
 				{

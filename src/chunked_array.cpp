@@ -1,5 +1,24 @@
 #pragma once
 
+//////////////////////////////////////////////////
+// POOL STUFF                                   //
+//////////////////////////////////////////////////
+
+template<typename T>
+void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk)
+{
+	pool->itemsPerChunk = itemsPerChunk;
+	
+	initPool<ArrayChunk<T>>(pool, arena, [](MemoryArena *arena, void *userData) {
+		s32 itemsPerChunk = *((s32*)userData);
+		return allocateChunk<T>(arena, itemsPerChunk);
+	}, &pool->itemsPerChunk);
+}
+
+//////////////////////////////////////////////////
+// CHUNKED ARRAY STUFF                          //
+//////////////////////////////////////////////////
+
 template<typename T>
 void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, s32 itemsPerChunk)
 {
@@ -127,12 +146,35 @@ void ChunkedArray<T>::clear()
 }
 
 template<typename T>
+ChunkedArrayIterator<T> ChunkedArray<T>::iterate(s32 initialIndex, bool wrapAround, bool goBackwards)
+{
+	ChunkedArrayIterator<T> iterator = {};
+
+	iterator.array = this;
+	iterator.itemsIterated = 0;
+	iterator.wrapAround = wrapAround;
+	iterator.goBackwards = goBackwards;
+
+	// If the array is empty, we can skip some work.
+	iterator.isDone = count == 0;
+
+	if (!iterator.isDone)
+	{
+		iterator.chunkIndex   = initialIndex / itemsPerChunk;
+		iterator.currentChunk = getChunkByIndex(iterator.chunkIndex);
+		iterator.indexInChunk = initialIndex % itemsPerChunk;
+	}
+
+	return iterator;
+}
+
+template<typename T>
 template<typename Filter>
 Indexed<T *> ChunkedArray<T>::findFirst(Filter filter)
 {
 	Indexed<T*> result = makeNullIndexedValue<T*>();
 
-	for (auto it = iterate(this); hasNext(&it); next(&it))
+	for (auto it = iterate(); hasNext(&it); next(&it))
 	{
 		T *entry = ::get(&it);
 		if (filter(entry))
@@ -499,45 +541,9 @@ void ChunkedArray<T>::sortInternal(Comparison compareElements, s32 lowIndex, s32
 }
 
 //////////////////////////////////////////////////
-// POOL STUFF                                   //
-//////////////////////////////////////////////////
-
-template<typename T>
-void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk)
-{
-	pool->itemsPerChunk = itemsPerChunk;
-	
-	initPool<ArrayChunk<T>>(pool, arena, [](MemoryArena *arena, void *userData) {
-		s32 itemsPerChunk = *((s32*)userData);
-		return allocateChunk<T>(arena, itemsPerChunk);
-	}, &pool->itemsPerChunk);
-}
-
-//////////////////////////////////////////////////
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
-template<typename T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, s32 initialIndex, bool wrapAround, bool goBackwards)
-{
-	ChunkedArrayIterator<T> iterator = {};
 
-	iterator.array = array;
-	iterator.itemsIterated = 0;
-	iterator.wrapAround = wrapAround;
-	iterator.goBackwards = goBackwards;
-
-	// If the array is empty, we can skip some work.
-	iterator.isDone = array->count == 0;
-
-	if (!iterator.isDone)
-	{
-		iterator.chunkIndex   = initialIndex / array->itemsPerChunk;
-		iterator.currentChunk = array->getChunkByIndex(iterator.chunkIndex);
-		iterator.indexInChunk = initialIndex % array->itemsPerChunk;
-	}
-
-	return iterator;
-}
 
 template<typename T>
 bool hasNext(ChunkedArrayIterator<T> *iterator)

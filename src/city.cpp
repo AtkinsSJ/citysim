@@ -347,7 +347,7 @@ s32 calculateDemolitionCost(City *city, Rect2I area)
 
 	// Building demolition cost
 	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
-	for (auto it = iterate(&buildingsToDemolish); hasNext(&it); next(&it))
+	for (auto it = buildingsToDemolish.iterate(); hasNext(&it); next(&it))
 	{
 		Building *building = getValue(&it);
 		total += getBuildingDef(building->typeID)->demolishCost;
@@ -364,7 +364,7 @@ void demolishRect(City *city, Rect2I area)
 
 	// Building demolition
 	ChunkedArray<Building *> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
-	for (auto it = iterate(&buildingsToDemolish, buildingsToDemolish.count-1, false, true);
+	for (auto it = buildingsToDemolish.iterate(buildingsToDemolish.count-1, false, true);
 		hasNext(&it);
 		next(&it))
 	{
@@ -481,7 +481,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 		{
 			CitySector *sector = getSector(&city->sectors, sX, sY);
 
-			for (auto it = iterate(&sector->ownedBuildings); hasNext(&it); next(&it))
+			for (auto it = sector->ownedBuildings.iterate(); hasNext(&it); next(&it))
 			{
 				Building *building = getValue(&it);
 				if (overlaps(building->footprint, area))
@@ -561,7 +561,7 @@ void updateSomeBuildings(City *city)
 	{
 		CitySector *sector = getNextSector(&city->sectors);
 
-		for (auto it = iterate(&sector->ownedBuildings); hasNext(&it); next(&it))
+		for (auto it = sector->ownedBuildings.iterate(); hasNext(&it); next(&it))
 		{
 			Building *building = getValue(&it);
 			updateBuilding(city, building);

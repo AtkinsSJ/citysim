@@ -23,6 +23,12 @@ struct ArrayChunkPool : Pool<ArrayChunk<T>>
 };
 
 template<typename T>
+void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk);
+
+template <typename T>
+struct ChunkedArrayIterator;
+
+template<typename T>
 struct ChunkedArray
 {
 	ArrayChunkPool<T> *chunkPool;
@@ -45,6 +51,27 @@ struct ChunkedArray
 
 	// Marks all the chunks as empty. Returns them to a chunkpool if there is one.
 	void clear();
+
+	/**
+	 * This will iterate through every item in the array, starting at whichever initialIndex
+	 * you specify (default to the beginning).
+	 * If wrapAround is true, the iterator will wrap from the end to the beginning so that
+	 * every item is iterated once. If false, we stop after the last item.
+	 * Example usage:
+
+		for (auto it = iterate(&array, randomBelow(random, array.count), true);
+			hasNext(&it);
+			next(&it))
+		{
+			auto thing = get(&it);
+			// do stuff with the thing
+		}
+	 */
+	ChunkedArrayIterator<T> iterate(s32 initialIndex = 0, bool wrapAround = true, bool goBackwards = false);
+	inline ChunkedArrayIterator<T> iterateBackwards()
+	{
+		return iterate(count - 1, false, true);
+	}
 
 	// NB: Returns an Indexed<> of null/-1 if nothing is found.
 	// A Maybe<> would be more specific, but Maybe<Indexed<T*>> is heading into ridiculousness territory.
@@ -77,6 +104,15 @@ struct ChunkedArray
 };
 
 template<typename T>
+void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, s32 itemsPerChunk);
+
+template<typename T>
+void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool);
+
+template<typename T>
+ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk);
+
+template<typename T>
 struct ChunkedArrayIterator
 {
 	ChunkedArray<T> *array;
@@ -92,50 +128,6 @@ struct ChunkedArrayIterator
 	s32 itemsIterated;
 	bool isDone;
 };
-
-template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, s32 itemsPerChunk);
-
-template<typename T>
-void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool);
-
-template<typename T>
-ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk);
-
-//////////////////////////////////////////////////
-// POOL STUFF                                   //
-//////////////////////////////////////////////////
-
-template<typename T>
-void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk);
-
-//////////////////////////////////////////////////
-// ITERATOR STUFF                               //
-//////////////////////////////////////////////////
-/**
- * This will iterate through every item in the array, starting at whichever initialIndex
- * you specify (default to the beginning).
- * If wrapAround is true, the iterator will wrap from the end to the beginning so that
- * every item is iterated once. If false, we stop after the last item.
- * Example usage:
-
-	for (auto it = iterate(&array, randomBelow(random, array.count), true);
-		hasNext(&it);
-		next(&it))
-	{
-		auto thing = get(&it);
-		// do stuff with the thing
-	}
- */
-
-template<typename T>
-ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, s32 initialIndex = 0, bool wrapAround = true, bool goBackwards = false);
-
-template<typename T>
-inline ChunkedArrayIterator<T> iterateBackwards(ChunkedArray<T> *array)
-{
-	return iterate(array, array->count - 1, false, true);
-}
 
 template<typename T>
 void next(ChunkedArrayIterator<T> *iterator);

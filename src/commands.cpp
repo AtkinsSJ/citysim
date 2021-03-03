@@ -76,7 +76,7 @@ ConsoleCommand(help)
 {
 	consoleWriteLine("Available commands are:"_s);
 
-	for (auto it = iterate(&globalConsole->commands);
+	for (auto it = globalConsole->commands.iterate();
 		hasNext(&it);
 		next(&it))
 	{

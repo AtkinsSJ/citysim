@@ -273,7 +273,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			{
 				FireSector *sector = getSectorByIndex(&layer->sectors, sectorIndex);
 
-				for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+				for (auto it = sector->activeFires.iterate(); hasNext(&it); next(&it))
 				{
 					Fire *fire = get(&it);
 					SAVFire *savFire = tempFires + tempFireIndex++;

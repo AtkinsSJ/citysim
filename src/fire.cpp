@@ -44,7 +44,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 		DEBUG_BLOCK_T("updateFireLayer: building effects", DCDT_Simulation);
 
 		// Recalculate fire distances
-		for (auto rectIt = iterate(&layer->dirtyRects.rects);
+		for (auto rectIt = layer->dirtyRects.rects.iterate();
 			hasNext(&rectIt);
 			next(&rectIt))
 		{
@@ -60,7 +60,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 				{
 					FireSector *sector = getSector(&layer->sectors, sx, sy);
 
-					for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+					for (auto it = sector->activeFires.iterate(); hasNext(&it); next(&it))
 					{
 						Fire *fire = get(&it);
 						if (contains(expandedRect, fire->pos))
@@ -92,7 +92,7 @@ void updateFireLayer(City *city, FireLayer *layer)
 				DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
 				// Building fire protection
 				fillRegion<u8>(&layer->tileFireProtection, sector->bounds, 0);
-				for (auto it = iterate(&layer->fireProtectionBuildings); hasNext(&it); next(&it))
+				for (auto it = layer->fireProtectionBuildings.iterate(); hasNext(&it); next(&it))
 				{
 					Building *building = getBuilding(city, getValue(&it));
 					if (building != null)
@@ -178,7 +178,7 @@ bool doesAreaContainFire(City *city, Rect2I bounds)
 			sx++)
 		{
 			FireSector *sector = getSector(&layer->sectors, sx, sy);
-			for (auto it = iterate(&sector->activeFires); hasNext(&it); next(&it))
+			for (auto it = sector->activeFires.iterate(); hasNext(&it); next(&it))
 			{
 				Fire *fire = get(&it);
 

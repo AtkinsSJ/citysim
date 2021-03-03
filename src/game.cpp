@@ -606,7 +606,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 
-			for (auto it = iterate(constructibleBuildings);
+			for (auto it = constructibleBuildings->iterate();
 				hasNext(&it);
 				next(&it))
 			{
@@ -754,7 +754,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 	bool mouseIsOverUI = uiState->mouseInputHandled;
 	if (!mouseIsOverUI)
 	{
-		for (auto it = iterate(&uiState->uiRects); hasNext(&it); next(&it))
+		for (auto it = uiState->uiRects.iterate(); hasNext(&it); next(&it))
 		{
 			if (contains(getValue(&it), uiCamera->mousePos))
 			{

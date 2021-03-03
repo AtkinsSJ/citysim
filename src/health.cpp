@@ -28,12 +28,6 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 		DEBUG_BLOCK_T("updateHealthLayer: dirty rects", DCDT_Simulation);
 
 		// TODO: do we actually need dirty rects? I can't think of anything, unless we move the "register building" stuff to that.
-		// for (auto rectIt = iterate(&layer->dirtyRects.rects);
-		// 	!rectIt.isDone;
-		// 	next(&rectIt))
-		// {
-		// 	Rect2I dirtyRect = getValue(rectIt);
-		// }
 
 		clearDirtyRects(&layer->dirtyRects);
 	}
@@ -48,7 +42,7 @@ void updateHealthLayer(City *city, HealthLayer *layer)
 			{
 				DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DCDT_Simulation);
 				fillRegion<u8>(&layer->tileHealthCoverage, sector->bounds, 0);
-				for (auto it = iterate(&layer->healthBuildings); hasNext(&it); next(&it))
+				for (auto it = layer->healthBuildings.iterate(); hasNext(&it); next(&it))
 				{
 					Building *building = getBuilding(city, getValue(&it));
 					if (building != null)

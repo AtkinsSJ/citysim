@@ -626,7 +626,7 @@ void loadAssets()
 {
 	DEBUG_FUNCTION();
 
-	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
 	{
 		Asset *asset = get(&it);
 		loadAsset(asset);
@@ -714,7 +714,7 @@ void reloadAssets()
 	rendererUnloadAssets();
 
 	// Clear managed assets
-	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
 	{
 		Asset *asset = get(&it);
 		unloadAsset(asset);
@@ -979,7 +979,7 @@ void reloadLocaleSpecificAssets()
 	// Clear the list of missing texts because they might not be missing in the new locale!
 	clear(&assets->missingTextIDs);
 
-	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
 	{
 		Asset *asset = get(&it);
 		if (asset->flags & Asset_IsLocaleSpecific)
@@ -988,7 +988,7 @@ void reloadLocaleSpecificAssets()
 		}
 	}
 
-	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
 	{
 		Asset *asset = get(&it);
 		if (asset->flags & Asset_IsLocaleSpecific)

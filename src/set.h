@@ -35,7 +35,7 @@ template<typename T>
 SetIterator<T> iterate(Set<T> *set)
 {
 	SetIterator<T> result = {};
-	result.itemsIterator = iterate(&set->items);
+	result.itemsIterator = set->items.iterate();
 
 	return result;
 }

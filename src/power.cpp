@@ -105,7 +105,7 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 	DEBUG_FUNCTION();
 
 	// Reset each to 0
-	for (auto it = iterate(&sector->powerGroups);
+	for (auto it = sector->powerGroups.iterate();
 		hasNext(&it);
 		next(&it))
 	{
@@ -116,7 +116,7 @@ void updateSectorPowerValues(City *city, PowerSector *sector)
 
 	// Count power from buildings
 	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds, BQF_RequireOriginInArea);
-	for (auto it = iterate(&sectorBuildings);
+	for (auto it = sectorBuildings.iterate();
 		hasNext(&it);
 		next(&it))
 	{
@@ -275,7 +275,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 
 
 	// Step 0: Remove the old PowerGroups.
-	for (auto it = iterate(&sector->powerGroups); hasNext(&it); next(&it))
+	for (auto it = sector->powerGroups.iterate(); hasNext(&it); next(&it))
 	{
 		PowerGroup *powerGroup = get(&it);
 		powerGroup->sectorBoundaries.clear();
@@ -334,7 +334,7 @@ void recalculateSectorPowerGroups(City *city, PowerSector *sector)
 
 	// Store references to the buildings in each group, for faster updating later
 	ChunkedArray<Building *> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds);
-	for (auto it = iterate(&sectorBuildings);
+	for (auto it = sectorBuildings.iterate();
 		hasNext(&it);
 		next(&it))
 	{
@@ -526,7 +526,7 @@ void floodFillCityPowerNetwork(PowerLayer *layer, PowerGroup *powerGroup, PowerN
 	powerGroup->networkID = network->id;
 	network->groups.append(powerGroup);
 
-	for (auto it = iterate(&powerGroup->sectorBoundaries);
+	for (auto it = powerGroup->sectorBoundaries.iterate();
 		hasNext(&it);
 		next(&it))
 	{
@@ -561,13 +561,13 @@ void recalculatePowerConnectivity(PowerLayer *layer)
 	DEBUG_FUNCTION();
 
 	// Clean up networks
-	for (auto networkIt = iterate(&layer->networks);
+	for (auto networkIt = layer->networks.iterate();
 		hasNext(&networkIt);
 		next(&networkIt))
 	{
 		PowerNetwork *powerNetwork = get(&networkIt);
 
-		for (auto groupIt = iterate(&powerNetwork->groups);
+		for (auto groupIt = powerNetwork->groups.iterate();
 			hasNext(&groupIt);
 			next(&groupIt))
 		{
@@ -590,7 +590,7 @@ void recalculatePowerConnectivity(PowerLayer *layer)
 	{
 		PowerSector *sector = &layer->sectors.sectors[sectorIndex];
 
-		for (auto it = iterate(&sector->powerGroups);
+		for (auto it = sector->powerGroups.iterate();
 			hasNext(&it);
 			next(&it))
 		{
@@ -613,7 +613,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		Set<PowerSector *> touchedSectors;
 		initSet<PowerSector *>(&touchedSectors, tempArena, [](PowerSector **a, PowerSector **b) { return *a == *b; });
 
-		for (auto it = iterate(&layer->dirtyRects.rects);
+		for (auto it = layer->dirtyRects.rects.iterate();
 			hasNext(&it);
 			next(&it))
 		{
@@ -685,7 +685,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 	}
 
 	// Sum each PowerGroup's power into its Network
-	for (auto networkIt = iterate(&layer->networks);
+	for (auto networkIt = layer->networks.iterate();
 		hasNext(&networkIt);
 		next(&networkIt))
 	{
@@ -693,7 +693,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 		network->cachedProduction = 0;
 		network->cachedConsumption = 0;
 
-		for (auto groupIt = iterate(&network->groups);
+		for (auto groupIt = network->groups.iterate();
 			hasNext(&groupIt);
 			next(&groupIt))
 		{
@@ -708,7 +708,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 	}
 
 	// Supply power to buildings
-	for (auto networkIt = iterate(&layer->networks);
+	for (auto networkIt = layer->networks.iterate();
 		hasNext(&networkIt);
 		next(&networkIt))
 	{
@@ -740,13 +740,13 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 
 		// Now, iterate the buildings and give them power based on that mode.
 		s32 powerRemaining = network->cachedProduction;
-		for (auto groupIt = iterate(&network->groups);
+		for (auto groupIt = network->groups.iterate();
 			hasNext(&groupIt);
 			next(&groupIt))
 		{
 			PowerGroup *powerGroup = getValue(&groupIt);
 
-			for (auto buildingRefIt = iterate(&powerGroup->buildings);
+			for (auto buildingRefIt = powerGroup->buildings.iterate();
 				hasNext(&buildingRefIt);
 				next(&buildingRefIt))
 			{

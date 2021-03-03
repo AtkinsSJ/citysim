@@ -205,7 +205,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		}
 		else
 		{
-			for (auto it = iterate(&catalogue->savedGames); hasNext(&it); next(&it))
+			for (auto it = catalogue->savedGames.iterate(); hasNext(&it); next(&it))
 			{
 				SavedGameInfo *savedGame = get(&it);
 				s32 index = getIndex(&it);

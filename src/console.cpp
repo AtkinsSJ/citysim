@@ -37,7 +37,7 @@ void updateConsole(Console *console)
 	bool scrollToBottom = false;
 
 	// Keyboard shortcuts for commands
-	for (auto it = iterate(&console->commandShortcuts);
+	for (auto it = console->commandShortcuts.iterate();
 		hasNext(&it);
 		next(&it))
 	{
@@ -190,7 +190,7 @@ void renderConsole(Console *console)
 	BitmapFont *consoleFont = getFont(&consoleStyle->font);
 	s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPosition / (f32)consoleFont->lineHeight), 0, console->outputLines.count - 1);
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
-	for (auto it = iterate(&console->outputLines, scrollLinePos, false, true);
+	for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
 		hasNext(&it);
 		next(&it))
 	{
@@ -251,7 +251,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 			String arguments;
 			String firstToken = nextToken(commandInput, &arguments);
 
-			for (auto it = iterate(&globalConsole->commands);
+			for (auto it = globalConsole->commands.iterate();
 				hasNext(&it);
 				next(&it))
 			{

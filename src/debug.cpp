@@ -491,7 +491,7 @@ void debugTrackAssets(DebugState *debugState)
 	}
 
 	// The asset-memory stuff
-	for (auto it = iterate(&assets->allAssets); hasNext(&it); next(&it))
+	for (auto it = assets->allAssets.iterate(); hasNext(&it); next(&it))
 	{
 		Asset *asset = get(&it);
 
