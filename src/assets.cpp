@@ -726,10 +726,10 @@ void reloadAssets()
 		clear(&assets->assetsByType[assetType]);
 
 		// Reset missing text warnings
-		clear(&assets->missingAssetNames[assetType]);
+		assets->missingAssetNames[assetType].clear();
 	}
 
-	clear(&assets->missingTextIDs);
+	assets->missingTextIDs.clear();
 
 	// Regenerate asset catalogue
 	assets->allAssets.clear();
@@ -750,7 +750,7 @@ Asset *getAsset(AssetType type, String shortName)
 
 	if (result == null)
 	{
-		if (add(&assets->missingAssetNames[type], shortName))
+		if (assets->missingAssetNames[type].add(shortName))
 		{
 			logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, {assetTypeNames[type], shortName});
 		}
@@ -929,7 +929,7 @@ inline String getText(String name)
 		// What we're doing for now is to only report a missing text if it's not in the missingTextIDs
 		// set. (And then add it.)
 
-		if (add(&assets->missingTextIDs, name))
+		if (assets->missingTextIDs.add(name))
 		{
 			if (defaultText != null)
 			{
@@ -977,7 +977,7 @@ String getAssetPath(AssetType type, String shortName)
 void reloadLocaleSpecificAssets()
 {
 	// Clear the list of missing texts because they might not be missing in the new locale!
-	clear(&assets->missingTextIDs);
+	assets->missingTextIDs.clear();
 
 	for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next())
 	{

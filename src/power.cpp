@@ -652,7 +652,7 @@ void updatePowerLayer(City *city, PowerLayer *layer)
 			{
 				for (s32 sX = sectorsRect.x; sX < sectorsRect.x + sectorsRect.w; sX++)
 				{
-					add(&touchedSectors, getSector(&layer->sectors, sX, sY));
+					touchedSectors.add(getSector(&layer->sectors, sX, sY));
 				}
 			}
 		}

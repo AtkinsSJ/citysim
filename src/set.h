@@ -14,21 +14,17 @@ struct Set
 	bool (*areItemsEqual)(T *a, T *b);
 
 // Methods
+
+	// Returns true if the item got added (aka, it was not already in the set)
+	bool add(T item);
+	bool contains(T item);
+	void clear();
+
 	SetIterator<T> iterate();
 };
 
 template<typename T>
 void initSet(Set<T> *set, MemoryArena *arena, bool (*areItemsEqual)(T *a, T *b) = [](T *a, T *b) { return *a == *b; });
-
-// Returns true if the item got added (aka, it was not already in the set)
-template<typename T>
-bool add(Set<T> *set, T item);
-
-template<typename T>
-bool contains(Set<T> *set, T item);
-
-template<typename T>
-void clear(Set<T> *set);
 
 template<typename T>
 struct SetIterator

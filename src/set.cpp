@@ -9,13 +9,13 @@ void initSet(Set<T> *set, MemoryArena *arena, bool (*areItemsEqual)(T *a, T *b))
 }
 
 template<typename T>
-bool add(Set<T> *set, T item)
+bool Set<T>::add(T item)
 {
 	bool didAdd = false;
 
-	if (!contains(set, item))
+	if (!contains(item))
 	{
-		set->items.append(item);
+		items.append(item);
 		didAdd = true;
 	}
 
@@ -23,13 +23,13 @@ bool add(Set<T> *set, T item)
 }
 
 template<typename T>
-bool contains(Set<T> *set, T item)
+bool Set<T>::contains(T item)
 {
 	bool result = false;
 
-	for (auto it = set->items.iterate(); it.hasNext(); it.next())
+	for (auto it = items.iterate(); it.hasNext(); it.next())
 	{
-		if (set->areItemsEqual(&item, it.get()))
+		if (areItemsEqual(&item, it.get()))
 		{
 			result = true;
 			break;
@@ -40,9 +40,9 @@ bool contains(Set<T> *set, T item)
 }
 
 template<typename T>
-void clear(Set<T> *set)
+void Set<T>::clear()
 {
-	set->items.clear();
+	items.clear();
 }
 
 template<typename T>
