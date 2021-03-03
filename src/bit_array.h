@@ -1,5 +1,7 @@
 #pragma once
 
+struct BitArrayIterator;
+
 struct BitArray
 {
 	s32 size;
@@ -11,6 +13,16 @@ struct BitArray
 
 	// TODO: Could keep a record of the highest/lowest set/unset bit indices, rather than calculating them each time!
 	// Wouldn't even be that hard, just a min() or max() when a bit changes.
+
+// Methods
+
+	// NB: This only handles iterating through set bits, because that's all we need right now,
+	// and I'm not sure iterating through unset bits too is useful.
+	// (Because you can just do a regular
+	//     for (s32 i=0; i < array.size; i++) { do thing with array[i]; }
+	// loop in that case!)
+	// - Sam, 18/08/2019
+	BitArrayIterator iterateSetBits();
 };
 
 void initBitArray(BitArray *array, MemoryArena *arena, s32 size);
@@ -42,16 +54,16 @@ struct BitArrayIterator
 	BitArray *array;
 	s32 currentIndex;
 	bool isDone;
+
+// Methods
+	bool hasNext();
+	void next();
+	s32 getIndex();
+	bool getValue();
 };
 
-// NB: This only handles iterating through set bits, because that's all we need right now,
-// and I'm not sure iterating through unset bits too is useful.
-// (Because you can just do a regular
-//     for (s32 i=0; i < array.size; i++) { do thing with array[i]; }
-// loop in that case!)
-// - Sam, 18/08/2019
-BitArrayIterator iterateSetBits(BitArray *array);
-void next(BitArrayIterator *iterator);
-bool hasNext(BitArrayIterator *iterator);
-s32 getIndex(BitArrayIterator *iterator);
-bool getValue(BitArrayIterator *iterator);
+BitArrayIterator iterateSetBits(BitArray *array) { return array->iterateSetBits(); }
+void next(BitArrayIterator *iterator) { iterator->next(); }
+bool hasNext(BitArrayIterator *iterator) { return iterator->hasNext(); }
+s32 getIndex(BitArrayIterator *iterator) { return iterator->getIndex(); }
+bool getValue(BitArrayIterator *iterator) { return iterator->getValue(); }

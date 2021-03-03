@@ -12,6 +12,9 @@ struct HashTableEntry
 };
 
 template<typename T>
+struct HashTableIterator;
+
+template<typename T>
 struct HashTable
 {
 	s32 count;
@@ -24,6 +27,9 @@ struct HashTable
 	// issues.
 	// - Sam, 08/01/2020
 	MemoryArena keyDataArena;
+
+// Methods
+	HashTableIterator<T> iterate();
 };
 
 template<typename T>
@@ -73,19 +79,25 @@ struct HashTableIterator
 	s32 currentIndex;
 
 	bool isDone;
+
+// Methods
+	bool hasNext();
+	void next();
+	T *get();
+	HashTableEntry<T> *getEntry();
 };
 
 template<typename T>
-HashTableIterator<T> iterate(HashTable<T> *table);
+HashTableIterator<T> iterate(HashTable<T> *table) { return table->iterate(); }
 
 template<typename T>
-void next(HashTableIterator<T> *iterator);
+void next(HashTableIterator<T> *iterator) { iterator->next(); }
 
 template<typename T>
-bool hasNext(HashTableIterator<T> *iterator);
+bool hasNext(HashTableIterator<T> *iterator) { return iterator->hasNext(); }
 
 template<typename T>
-HashTableEntry<T> *getEntry(HashTableIterator<T> *iterator);
+HashTableEntry<T> *getEntry(HashTableIterator<T> *iterator) { return iterator->getEntry(); }
 
 template<typename T>
-T *get(HashTableIterator<T> *iterator);
+T *get(HashTableIterator<T> *iterator) { return iterator->get(); }

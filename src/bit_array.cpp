@@ -137,15 +137,15 @@ s32 getFirstMatchingBitIndex(BitArray *array, bool set)
 	return result;
 }
 
-BitArrayIterator iterateSetBits(BitArray *array)
+BitArrayIterator BitArray::iterateSetBits()
 {
 	BitArrayIterator iterator = {};
 
-	iterator.array = array;
+	iterator.array = this;
 	iterator.currentIndex = 0;
 
 	// If bitfield is empty, we can skip some work
-	iterator.isDone = (array->setBitCount == 0);
+	iterator.isDone = (setBitCount == 0);
 
 	// If the first bit is unset, we need to skip ahead
 	if (!iterator.isDone && !getValue(&iterator))
@@ -156,35 +156,35 @@ BitArrayIterator iterateSetBits(BitArray *array)
 	return iterator;
 }
 
-void next(BitArrayIterator *iterator)
+void BitArrayIterator::next()
 {
-	while (!iterator->isDone)
+	while (!isDone)
 	{
-		iterator->currentIndex++;
+		currentIndex++;
 
-		if (iterator->currentIndex >= iterator->array->size)
+		if (currentIndex >= array->size)
 		{
-			iterator->isDone = true;
+			isDone = true;
 		}
 		else
 		{
 			// Only stop iterating if we find a set bit
-			if (getValue(iterator)) break;
+			if (getValue()) break;
 		}
 	}
 }
 
-inline bool hasNext(BitArrayIterator *iterator)
+inline bool BitArrayIterator::hasNext()
 {
-	return !iterator->isDone;
+	return !isDone;
 }
 
-inline s32 getIndex(BitArrayIterator *iterator)
+inline s32 BitArrayIterator::getIndex()
 {
-	return iterator->currentIndex;
+	return currentIndex;
 }
 
-inline bool getValue(BitArrayIterator *iterator)
+inline bool BitArrayIterator::getValue()
 {
-	return (*iterator->array)[iterator->currentIndex];
+	return (*array)[currentIndex];
 }

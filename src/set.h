@@ -1,6 +1,9 @@
 #pragma once
 
 template<typename T>
+struct SetIterator;
+
+template<typename T>
 struct Set
 {
 	// TODO: @Speed: This is a really dumb, linearly-compare-with-all-the-elements implementation!
@@ -9,6 +12,9 @@ struct Set
 	// - Sam, 03/09/2019
 	ChunkedArray<T> items;
 	bool (*areItemsEqual)(T *a, T *b);
+
+// Methods
+	SetIterator<T> iterate();
 };
 
 template<typename T>
@@ -29,37 +35,28 @@ struct SetIterator
 {
 	// This is SUPER JANKY
 	ChunkedArrayIterator<T> itemsIterator;
+
+// Methods
+	bool hasNext();
+	void next();
+	T *get();
+	T getValue();
 };
 
 template<typename T>
 SetIterator<T> iterate(Set<T> *set)
 {
-	SetIterator<T> result = {};
-	result.itemsIterator = set->items.iterate();
-
-	return result;
+	return set->iterate();
 }
 
 template<typename T>
-void next(SetIterator<T> *iterator)
-{
-	next(&iterator->itemsIterator);
-}
+void next(SetIterator<T> *iterator) { iterator->next(); }
 
 template<typename T>
-bool hasNext(SetIterator<T> *iterator)
-{
-	return !iterator->itemsIterator.isDone;
-}
+bool hasNext(SetIterator<T> *iterator) { return iterator->hasNext(); }
 
 template<typename T>
-T *get(SetIterator<T> *iterator)
-{
-	return get(iterator->itemsIterator);
-}
+T *get(SetIterator<T> *iterator) { return iterator->get(); }
 
 template<typename T>
-T getValue(SetIterator<T> *iterator)
-{
-	return getValue(&iterator->itemsIterator);
-}
+T getValue(SetIterator<T> *iterator) { return iterator->getValue(); }

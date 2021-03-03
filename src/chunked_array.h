@@ -159,3 +159,9 @@ s32 getIndex(ChunkedArrayIterator<T> *iterator)
 {
 	return iterator->getIndex();
 }
+
+template<typename T>
+T getValue(ChunkedArrayIterator<T> *iterator)
+{
+	return iterator->getValue();
+}

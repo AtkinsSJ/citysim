@@ -10,6 +10,9 @@ struct OccupancyArrayChunk
 	OccupancyArrayChunk<T> *nextChunk;
 };
 
+template<typename T>
+struct OccupancyArrayIterator;
+
 // A chunked array that keeps track of which slots are empty, and attempts to fill them.
 // (The regular ChunkedArray just moves the elements to fill empty slots, so the order can change.)
 template<typename T>
@@ -26,6 +29,9 @@ struct OccupancyArray
 
 	s32 firstChunkWithSpaceIndex;
 	OccupancyArrayChunk<T> *firstChunkWithSpace;
+
+// Methods
+	OccupancyArrayIterator<T> iterate();
 };
 
 template<typename T>
@@ -50,19 +56,25 @@ struct OccupancyArrayIterator
 	s32 indexInChunk;
 
 	bool isDone;
+
+// Methods
+	bool hasNext();
+	void next();
+	T *get();
+	s32 getIndex();
 };
 
 template<typename T>
-OccupancyArrayIterator<T> iterate(OccupancyArray<T> *array);
+OccupancyArrayIterator<T> iterate(OccupancyArray<T> *array) { return array->iterate(); }
 
 template<typename T>
-bool hasNext(OccupancyArrayIterator<T> *iterator);
+bool hasNext(OccupancyArrayIterator<T> *iterator) { return iterator->hasNext(); }
 
 template<typename T>
-void next(OccupancyArrayIterator<T> *iterator);
+void next(OccupancyArrayIterator<T> *iterator) { iterator->next(); }
 
 template<typename T>
-T *get(OccupancyArrayIterator<T> *iterator);
+T *get(OccupancyArrayIterator<T> *iterator) { return iterator->get(); }
 
 template<typename T>
-s32 getIndex(OccupancyArrayIterator<T> *iterator);
+s32 getIndex(OccupancyArrayIterator<T> *iterator) { return iterator->getIndex(); }

@@ -44,3 +44,40 @@ void clear(Set<T> *set)
 {
 	set->items.clear();
 }
+
+template<typename T>
+SetIterator<T> Set<T>::iterate()
+{
+	SetIterator<T> result = {};
+	result.itemsIterator = items.iterate();
+
+	return result;
+}
+
+//////////////////////////////////////////////////
+// ITERATOR STUFF                               //
+//////////////////////////////////////////////////
+
+template<typename T>
+void SetIterator<T>::next()
+{
+	itemsIterator.next();
+}
+
+template<typename T>
+bool SetIterator<T>::hasNext()
+{
+	return !itemsIterator.isDone;
+}
+
+template<typename T>
+T *SetIterator<T>::get()
+{
+	return itemsIterator.get();
+}
+
+template<typename T>
+T SetIterator<T>::getValue()
+{
+	return itemsIterator.getValue();
+}

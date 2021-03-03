@@ -233,15 +233,15 @@ void freeHashTable(HashTable<T> *table)
 }
 
 template<typename T>
-HashTableIterator<T> iterate(HashTable<T> *table)
+HashTableIterator<T> HashTable<T>::iterate()
 {
 	HashTableIterator<T> iterator = {};
 
-	iterator.hashTable = table;
+	iterator.hashTable = this;
 	iterator.currentIndex = 0;
 
 	// If the table is empty, we can skip some work.
-	iterator.isDone = (table->count == 0);
+	iterator.isDone = (count == 0);
 
 	// If the first entry is unoccupied, we need to skip ahead
 	if (!iterator.isDone && !getEntry(&iterator)->isOccupied)
@@ -253,20 +253,20 @@ HashTableIterator<T> iterate(HashTable<T> *table)
 }
 
 template<typename T>
-void next(HashTableIterator<T> *iterator)
+void HashTableIterator<T>::next()
 {
-	while (!iterator->isDone)
+	while (!isDone)
 	{
-		iterator->currentIndex++;
+		currentIndex++;
 
-		if (iterator->currentIndex >= iterator->hashTable->capacity)
+		if (currentIndex >= hashTable->capacity)
 		{
-			iterator->isDone = true;
+			isDone = true;
 		}
 		else
 		{
 			// Only stop iterating if we find an occupied entry
-			if (getEntry(iterator)->isOccupied)
+			if (getEntry()->isOccupied)
 			{
 				break;
 			}
@@ -275,19 +275,19 @@ void next(HashTableIterator<T> *iterator)
 }
 
 template<typename T>
-inline bool hasNext(HashTableIterator<T> *iterator)
+inline bool HashTableIterator<T>::hasNext()
 {
-	return !iterator->isDone;
+	return !isDone;
 }
 
 template<typename T>
-HashTableEntry<T> *getEntry(HashTableIterator<T> *iterator)
+HashTableEntry<T> *HashTableIterator<T>::getEntry()
 {
-	return iterator->hashTable->entries + iterator->currentIndex;
+	return hashTable->entries + currentIndex;
 }
 
 template<typename T>
-T *get(HashTableIterator<T> *iterator)
+T *HashTableIterator<T>::get()
 {
-	return &getEntry(iterator)->value;
+	return &getEntry()->value;
 }

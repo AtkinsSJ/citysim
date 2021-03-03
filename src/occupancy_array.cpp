@@ -184,17 +184,17 @@ T *get(OccupancyArray<T> *array, s32 index)
 }
 
 template<typename T>
-OccupancyArrayIterator<T> iterate(OccupancyArray<T> *array)
+OccupancyArrayIterator<T> OccupancyArray<T>::iterate()
 {
 	OccupancyArrayIterator<T> iterator = {};
 
-	iterator.array = array;
+	iterator.array = this;
 	iterator.chunkIndex = 0;
 	iterator.indexInChunk = 0;
-	iterator.currentChunk = array->firstChunk;
+	iterator.currentChunk = firstChunk;
 
 	// If the table is empty, we can skip some work.
-	iterator.isDone = (array->count == 0);
+	iterator.isDone = (count == 0);
 
 	// If the first entry is unoccupied, we need to skip ahead
 	if (!iterator.isDone && (get(&iterator) == null))
@@ -206,34 +206,34 @@ OccupancyArrayIterator<T> iterate(OccupancyArray<T> *array)
 }
 
 template<typename T>
-inline bool hasNext(OccupancyArrayIterator<T> *iterator)
+inline bool OccupancyArrayIterator<T>::hasNext()
 {
-	return !iterator->isDone;
+	return !isDone;
 }
 
 template<typename T>
-void next(OccupancyArrayIterator<T> *iterator)
+void OccupancyArrayIterator<T>::next()
 {
-	while (!iterator->isDone)
+	while (!isDone)
 	{
-		iterator->indexInChunk++;
+		indexInChunk++;
 
-		if (iterator->indexInChunk >= iterator->array->itemsPerChunk)
+		if (indexInChunk >= array->itemsPerChunk)
 		{
 			// Next chunk
-			iterator->chunkIndex++;
-			iterator->currentChunk = iterator->currentChunk->nextChunk;
-			iterator->indexInChunk = 0;
+			chunkIndex++;
+			currentChunk = currentChunk->nextChunk;
+			indexInChunk = 0;
 
-			if (iterator->currentChunk == null)
+			if (currentChunk == null)
 			{
 				// We're not wrapping, so we're done
-				iterator->isDone = true;
+				isDone = true;
 			}
 		}
 
 		// Only stop iterating if we find an occupied entry
-		if (iterator->currentChunk != null && get(iterator) != null)
+		if (currentChunk != null && get() != null)
 		{
 			break;
 		}
@@ -241,22 +241,22 @@ void next(OccupancyArrayIterator<T> *iterator)
 }
 
 template<typename T>
-inline T *get(OccupancyArrayIterator<T> *iterator)
+inline T *OccupancyArrayIterator<T>::get()
 {
 	T *result = null;
 
-	if (iterator->currentChunk->occupancy[iterator->indexInChunk])
+	if (currentChunk->occupancy[indexInChunk])
 	{
-		result = iterator->currentChunk->items + iterator->indexInChunk;
+		result = currentChunk->items + indexInChunk;
 	}
 
 	return result;
 }
 
 template<typename T>
-inline s32 getIndex(OccupancyArrayIterator<T> *iterator)
+inline s32 OccupancyArrayIterator<T>::getIndex()
 {
-	s32 result = (iterator->chunkIndex * iterator->array->itemsPerChunk) + iterator->indexInChunk;
+	s32 result = (chunkIndex * array->itemsPerChunk) + indexInChunk;
 
 	return result;
 }
