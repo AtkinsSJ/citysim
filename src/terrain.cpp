@@ -37,7 +37,7 @@ void initTerrainCatalogue()
 	initStringTable(&terrainCatalogue.terrainNames);
 
 	initHashTable(&terrainCatalogue.terrainNameToType, 0.75f, 128);
-	put<u8>(&terrainCatalogue.terrainNameToType, nullString, 0);
+	terrainCatalogue.terrainNameToType.put(nullString, 0);
 
 	initHashTable(&terrainCatalogue.terrainNameToOldType, 0.75f, 128);
 }
@@ -99,8 +99,8 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				
 				def->name = intern(&terrainCatalogue.terrainNames, name);
 				asset->terrainDefs.terrainIDs[terrainIDsIndex++] = def->name;
-				put(&terrainCatalogue.terrainDefsByName, def->name, def);
-				put(&terrainCatalogue.terrainNameToType, def->name, def->typeID);
+				terrainCatalogue.terrainDefsByName.put(def->name, def);
+				terrainCatalogue.terrainNameToType.put(def->name, def->typeID);
 			}
 			else
 			{
@@ -145,7 +145,7 @@ void removeTerrainDefs(Array<String> namesToRemove)
 		{
 			removeIndex(&terrainCatalogue.terrainDefs, terrainIndex);
 
-			removeKey(&terrainCatalogue.terrainNameToType, terrainName);
+			terrainCatalogue.terrainNameToType.removeKey(terrainName);
 		}
 	}
 }
@@ -185,7 +185,7 @@ u8 findTerrainTypeByName(String name)
 	
 	u8 result = 0;
 
-	TerrainDef **def = find(&terrainCatalogue.terrainDefsByName, name);
+	TerrainDef **def = terrainCatalogue.terrainDefsByName.find(name);
 	if (def != null && *def != null)
 	{
 		result = (*def)->typeID;
@@ -370,7 +370,7 @@ void generateTerrain(City *city, Random *gameRandom)
 
 void saveTerrainTypes()
 {
-	putAll(&terrainCatalogue.terrainNameToOldType, &terrainCatalogue.terrainNameToType);
+	terrainCatalogue.terrainNameToOldType.putAll(&terrainCatalogue.terrainNameToType);
 }
 
 void remapTerrainTypes(City *city)
@@ -380,9 +380,9 @@ void remapTerrainTypes(City *city)
 	for (auto it = terrainCatalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next())
 	{
 		auto entry = it.getEntry();
-		if (!contains(&terrainCatalogue.terrainNameToType, entry->key))
+		if (!terrainCatalogue.terrainNameToType.contains(entry->key))
 		{
-			put(&terrainCatalogue.terrainNameToType, entry->key, (u8)terrainCatalogue.terrainNameToType.count);
+			terrainCatalogue.terrainNameToType.put(entry->key, (u8)terrainCatalogue.terrainNameToType.count);
 		}
 	}
 
@@ -395,7 +395,7 @@ void remapTerrainTypes(City *city)
 			String terrainName = entry->key;
 			u8 oldType       = entry->value;
 
-			u8 *newType = find(&terrainCatalogue.terrainNameToType, terrainName);
+			u8 *newType = terrainCatalogue.terrainNameToType.find(terrainName);
 			if (newType == null)
 			{
 				oldTypeToNewType[oldType] = 0;

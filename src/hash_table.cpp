@@ -1,39 +1,6 @@
 #pragma once
 
 template<typename T>
-void expandHashTable(HashTable<T> *table, s32 newCapacity)
-{
-	ASSERT(newCapacity > 0); //, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
-	ASSERT(newCapacity > table->capacity); //, "Attempted to shrink a hash table from {0} to {1}", {formatInt(table->capacity), formatInt(newCapacity)});
-
-	s32 oldCount = table->count;
-	s32 oldCapacity = table->capacity;
-	HashTableEntry<T> *oldItems = table->entries;
-
-	table->capacity = newCapacity;
-	table->entries = (HashTableEntry<T>*) allocateRaw(newCapacity * sizeof(HashTableEntry<T>));
-	table->count = 0;
-
-	if (oldItems != null)
-	{
-		// Migrate old entries over
-		for (s32 i=0; i < oldCapacity; i++)
-		{
-			HashTableEntry<T> *oldEntry = oldItems + i;
-
-			if (oldEntry->isOccupied)
-			{
-				put(table, oldEntry->key, oldEntry->value);
-			}
-		}
-
-		deallocateRaw(oldItems);
-	}
-
-	ASSERT(oldCount == table->count);//, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
-}
-
-template<typename T>
 void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 {
 	*table = {};
@@ -42,36 +9,58 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 
 	if (initialCapacity > 0)
 	{
-		expandHashTable(table, ceil_s32(initialCapacity / maxLoadFactor));
+		table->expand(ceil_s32(initialCapacity / maxLoadFactor));
 	}
 
 	initMemoryArena(&table->keyDataArena, KB(4), KB(4));
 }
 
-template<typename T>
-HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
+template <typename T>
+inline bool HashTable<T>::isInitialised()
 {
-	ASSERT(isHashTableInitialised(table));
+	return (entries != null || maxLoadFactor > 0.0f);
+}
+
+template<typename T>
+bool HashTable<T>::contains(String key)
+{
+	if (entries == null) return false;
+
+	HashTableEntry<T> *entry = findEntry(key);
+	if (!entry->isOccupied)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+template<typename T>
+HashTableEntry<T> *HashTable<T>::findEntry(String key)
+{
+	ASSERT(isInitialised());
 
 	// Expand if necessary
-	if (table->count + 1 > (table->capacity * table->maxLoadFactor))
+	if (count + 1 > (capacity * maxLoadFactor))
 	{
 		s32 newCapacity = max(
-			ceil_s32((table->count + 1) / table->maxLoadFactor),
-			(table->capacity < 8) ? 8 : table->capacity * 2
+			ceil_s32((count + 1) / maxLoadFactor),
+			(capacity < 8) ? 8 : capacity * 2
 		);
-		expandHashTable(table, newCapacity);
+		expand(newCapacity);
 	}
 
 	u32 hash = hashString(&key);
-	u32 index = hash % table->capacity;
+	u32 index = hash % capacity;
 	HashTableEntry<T> *result = null;
 
 	// "Linear probing" - on collision, just keep going until you find an empty slot
 	s32 itemsChecked = 0;
 	while (true)
 	{
-		HashTableEntry<T> *entry = table->entries + index;
+		HashTableEntry<T> *entry = entries + index;
 
 		if (entry->isGravestone)
 		{
@@ -89,28 +78,22 @@ HashTableEntry<T> *findEntryInternal(HashTable<T> *table, String key)
 			break;
 		}
 
-		index = (index + 1) % table->capacity;
+		index = (index + 1) % capacity;
 
 		// Prevent the edge case infinite loop if all unoccupied spaces are gravestones
 		itemsChecked++;
-		if (itemsChecked >= table->capacity) break;
+		if (itemsChecked >= capacity) break;
 	}
 
 	return result;
 }
 
 template<typename T>
-HashTableEntry<T> *findEntry(HashTable<T> *table, String key)
+T *HashTable<T>::find(String key)
 {
-	return findEntryInternal(table, key);
-}
+	if (entries == null) return null;
 
-template<typename T>
-T *find(HashTable<T> *table, String key)
-{
-	if (table->entries == null) return null;
-
-	HashTableEntry<T> *entry = findEntryInternal(table, key);
+	HashTableEntry<T> *entry = findEntry(key);
 	if (!entry->isOccupied)
 	{
 		return null;
@@ -122,32 +105,22 @@ T *find(HashTable<T> *table, String key)
 }
 
 template<typename T>
-bool contains(HashTable<T> *table, String key)
+inline T HashTable<T>::findValue(String key)
 {
-	if (table->entries == null) return false;
-
-	HashTableEntry<T> *entry = findEntryInternal(table, key);
-	if (!entry->isOccupied)
-	{
-		return false;
-	}
-	else
-	{
-		return true;
-	}
+	return *find(key);
 }
 
 template<typename T>
-T *findOrAdd(HashTable<T> *table, String key)
+T *HashTable<T>::findOrAdd(String key)
 {
-	HashTableEntry<T> *entry = findEntryInternal(table, key);
+	HashTableEntry<T> *entry = findEntry(key);
 	if (!entry->isOccupied)
 	{
-		table->count++;
+		count++;
 		entry->isOccupied = true;
 		entry->isGravestone = false;
 
-		String theKey = pushString(&table->keyDataArena, key);
+		String theKey = pushString(&keyDataArena, key);
 		hashString(&theKey);
 		entry->key = theKey;
 	}
@@ -156,23 +129,17 @@ T *findOrAdd(HashTable<T> *table, String key)
 }
 
 template<typename T>
-T findValue(HashTable<T> *table, String key)
+T *HashTable<T>::put(String key, T value)
 {
-	return *find(table, key);
-}
-
-template<typename T>
-T *put(HashTable<T> *table, String key, T value)
-{
-	HashTableEntry<T> *entry = findEntryInternal(table, key);
+	HashTableEntry<T> *entry = findEntry(key);
 
 	if (!entry->isOccupied)
 	{
-		table->count++;
+		count++;
 		entry->isOccupied = true;
 		entry->isGravestone = false;
 
-		String theKey = pushString(&table->keyDataArena, key);
+		String theKey = pushString(&keyDataArena, key);
 		hashString(&theKey);
 		entry->key = theKey;
 	}
@@ -183,40 +150,40 @@ T *put(HashTable<T> *table, String key, T value)
 }
 
 template<typename T>
-void putAll(HashTable<T> *table, HashTable<T> *source)
+void HashTable<T>::putAll(HashTable<T> *source)
 {
 	for (auto it = source->iterate(); it.hasNext(); it.next())
 	{
 		auto entry = it.getEntry();
-		put(table, entry->key, entry->value);
+		put(entry->key, entry->value);
 	}
 }
 
 template<typename T>
-void removeKey(HashTable<T> *table, String key)
+void HashTable<T>::removeKey(String key)
 {
-	if (table->entries == null) return;
+	if (entries == null) return;
 
-	HashTableEntry<T> *entry = findEntryInternal(table, key);
+	HashTableEntry<T> *entry = findEntry(key);
 	if (entry->isOccupied)
 	{
 		entry->isGravestone = true;
 		entry->isOccupied = false;
-		table->count--;
+		count--;
 	}
 }
 
 template<typename T>
-void clear(HashTable<T> *table)
+void HashTable<T>::clear()
 {
-	if (table->count > 0)
+	if (count > 0)
 	{
-		table->count = 0;
-		if (table->entries != null)
+		count = 0;
+		if (entries != null)
 		{
-			for (s32 i=0; i < table->capacity; i++)
+			for (s32 i=0; i < capacity; i++)
 			{
-				table->entries[i] = {};
+				entries[i] = {};
 			}
 		}
 	}
@@ -250,6 +217,39 @@ HashTableIterator<T> HashTable<T>::iterate()
 	}
 
 	return iterator;
+}
+
+template<typename T>
+void HashTable<T>::expand(s32 newCapacity)
+{
+	ASSERT(newCapacity > 0); //, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
+	ASSERT(newCapacity > capacity); //, "Attempted to shrink a hash table from {0} to {1}", {formatInt(capacity), formatInt(newCapacity)});
+
+	s32 oldCount = count;
+	s32 oldCapacity = capacity;
+	HashTableEntry<T> *oldItems = entries;
+
+	capacity = newCapacity;
+	entries = (HashTableEntry<T>*) allocateRaw(newCapacity * sizeof(HashTableEntry<T>));
+	count = 0;
+
+	if (oldItems != null)
+	{
+		// Migrate old entries over
+		for (s32 i=0; i < oldCapacity; i++)
+		{
+			HashTableEntry<T> *oldEntry = oldItems + i;
+
+			if (oldEntry->isOccupied)
+			{
+				put(oldEntry->key, oldEntry->value);
+			}
+		}
+
+		deallocateRaw(oldItems);
+	}
+
+	ASSERT(oldCount == count);//, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
 }
 
 template<typename T>

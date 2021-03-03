@@ -29,45 +29,26 @@ struct HashTable
 	MemoryArena keyDataArena;
 
 // Methods
+	bool isInitialised();
+
+	bool contains(String key);
+	HashTableEntry<T> *findEntry(String key);
+	T *find(String key);
+	T findValue(String key);
+	T *findOrAdd(String key);
+	T *put(String key, T value={});
+	void putAll(HashTable<T> *source);
+	void removeKey(String key);
+	void clear();
+
 	HashTableIterator<T> iterate();
+
+// "Private"
+	void expand(s32 newCapacity);
 };
 
 template<typename T>
-inline bool isHashTableInitialised(HashTable<T> *table)
-{
-	return (table->entries != null || table->maxLoadFactor > 0.0f);
-}
-
-template<typename T>
 void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, s32 initialCapacity=0);
-
-template<typename T>
-T *find(HashTable<T> *table, String key);
-
-template<typename T>
-bool contains(HashTable<T> *table, String key);
-
-template<typename T>
-HashTableEntry<T> *findEntry(HashTable<T> *table, String key);
-
-// Adds a blank entry with the key if it can't find an existing one
-template<typename T>
-T *findOrAdd(HashTable<T> *table, String key);
-
-template<typename T>
-T findValue(HashTable<T> *table, String key);
-
-template<typename T>
-T *put(HashTable<T> *table, String key, T value={});
-
-template<typename T>
-void putAll(HashTable<T> *table, HashTable<T> *source);
-
-template<typename T>
-void removeKey(HashTable<T> *table, String key);
-
-template<typename T>
-void clear(HashTable<T> *table);
 
 template<typename T>
 void freeHashTable(HashTable<T> *table);

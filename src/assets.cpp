@@ -14,19 +14,19 @@ void initAssets()
 	// Well, for now at least.
 	// - Sam, 19/05/2019
 	initHashTable(&assets->fileExtensionToType);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "buildings"_s), AssetType_BuildingDefs);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "cursors"_s),   AssetType_CursorDefs);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "keymap"_s),    AssetType_DevKeymap);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "palettes"_s),  AssetType_PaletteDefs);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "sprites"_s),   AssetType_SpriteDefs);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "terrain"_s),   AssetType_TerrainDefs);
-	put(&assets->fileExtensionToType, intern(&assets->assetStrings, "theme"_s),     AssetType_UITheme);
+	assets->fileExtensionToType.put(intern(&assets->assetStrings, "buildings"_s), AssetType_BuildingDefs);
+	assets->fileExtensionToType.put(intern(&assets->assetStrings, "cursors"_s),   AssetType_CursorDefs);
+	assets->fileExtensionToType.put(intern(&assets->assetStrings, "keymap"_s),    AssetType_DevKeymap);
+	assets->fileExtensionToType.put(intern(&assets->assetStrings, "palettes"_s),  AssetType_PaletteDefs);
+	assets->fileExtensionToType.put(intern(&assets->assetStrings, "sprites"_s),   AssetType_SpriteDefs);
+	assets->fileExtensionToType.put(intern(&assets->assetStrings, "terrain"_s),   AssetType_TerrainDefs);
+	assets->fileExtensionToType.put(intern(&assets->assetStrings, "theme"_s),     AssetType_UITheme);
 
 	initHashTable(&assets->directoryNameToType);
-	put(&assets->directoryNameToType, intern(&assets->assetStrings, "fonts"_s),     AssetType_BitmapFont);
-	put(&assets->directoryNameToType, intern(&assets->assetStrings, "shaders"_s),   AssetType_Shader);
-	put(&assets->directoryNameToType, intern(&assets->assetStrings, "textures"_s),  AssetType_Texture);
-	put(&assets->directoryNameToType, intern(&assets->assetStrings, "locale"_s),    AssetType_Texts);
+	assets->directoryNameToType.put(intern(&assets->assetStrings, "fonts"_s),     AssetType_BitmapFont);
+	assets->directoryNameToType.put(intern(&assets->assetStrings, "shaders"_s),   AssetType_Shader);
+	assets->directoryNameToType.put(intern(&assets->assetStrings, "textures"_s),  AssetType_Texture);
+	assets->directoryNameToType.put(intern(&assets->assetStrings, "locale"_s),    AssetType_Texts);
 
 	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
 	assets->assetMemoryAllocated = 0;
@@ -162,7 +162,7 @@ Asset *addAsset(AssetType type, String shortName, u32 flags)
 	asset->data.memory = null;
 	asset->flags = flags;
 
-	put(&assets->assetsByType[type], internedShortName, asset);
+	assets->assetsByType[type].put(internedShortName, asset);
 
 	return asset;
 }
@@ -530,7 +530,7 @@ void unloadAsset(Asset *asset)
 			for (s32 keyIndex = 0; keyIndex < asset->texts.keys.count; keyIndex++)
 			{
 				String key = asset->texts.keys[keyIndex];
-				removeKey(textsTable, key);
+				textsTable->removeKey(key);
 			}
 
 			asset->texts.keys = makeArray<String>(0, null);
@@ -566,7 +566,7 @@ void removeAsset(AssetType type, String name)
 	else
 	{
 		unloadAsset(asset);
-		removeKey(&assets->assetsByType[type], name);
+		assets->assetsByType[type].removeKey(name);
 	}
 }
 
@@ -671,7 +671,7 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 		if (assetType == AssetType_Unknown)
 		{
 			String fileExtension = getFileExtension(filename);
-			AssetType *foundAssetType = find(&assets->fileExtensionToType, fileExtension);
+			AssetType *foundAssetType = assets->fileExtensionToType.find(fileExtension);
 			assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
 			// logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
 		}
@@ -723,7 +723,7 @@ void reloadAssets()
 	// Clear the hash tables
 	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
 	{
-		clear(&assets->assetsByType[assetType]);
+		assets->assetsByType[assetType].clear();
 
 		// Reset missing text warnings
 		assets->missingAssetNames[assetType].clear();
@@ -762,7 +762,7 @@ Asset *getAsset(AssetType type, String shortName)
 
 Asset *getAssetIfExists(AssetType type, String shortName)
 {
-	Asset **result = find(&assets->assetsByType[type], shortName);
+	Asset **result = assets->assetsByType[type].find(shortName);
 
 	return (result == null) ? null : *result;
 }
@@ -895,7 +895,7 @@ inline String getText(String name)
 
 	String result = name;
 
-	String *foundText = find(&assets->texts, name);
+	String *foundText = assets->texts.find(name);
 	if (foundText != null)
 	{
 		result = *foundText;
@@ -903,7 +903,7 @@ inline String getText(String name)
 	else
 	{
 		// Try to fall back to english if possible
-		String *defaultText = find(&assets->defaultTexts, name);
+		String *defaultText = assets->defaultTexts.find(name);
 		if (defaultText != null)
 		{
 			result = *defaultText;
@@ -1439,7 +1439,7 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 		// Check that we don't already have a text with that name.
 		// If we do, one will overwrite the other, and that could be unpredictable if they're
 		// in different files. Things will still work, but it would be confusing! And unintended.
-		String *existingValue = find(texts, key);
+		String *existingValue = texts->find(key);
 		if (existingValue != null && !equals(*existingValue, key))
 		{
 			warn(&reader, "Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, {key, *existingValue});
@@ -1447,7 +1447,7 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 
 		asset->texts.keys[keyCount++] = key;
 
-		put(texts, key, text);
+		texts->put(key, text);
 	}
 
 	asset->texts.keys.count = keyCount;

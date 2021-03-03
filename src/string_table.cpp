@@ -11,7 +11,7 @@ String intern(StringTable *table, String input)
 
 	HashTable<String> *hashTable = &table->table;
 
-	HashTableEntry<String> *entry = findEntryInternal(hashTable, input);
+	HashTableEntry<String> *entry = hashTable->findEntry(input);
 	if (!entry->isOccupied)
 	{
 		hashTable->count++;

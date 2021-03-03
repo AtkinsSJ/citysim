@@ -21,7 +21,7 @@ void initInput(InputState *theInput)
 	{
 		String key = pushString(systemArena, 1, true);
 		key[0] = c;
-		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_a + (c - 'A')));
+		theInput->keyNames.put(key, (SDL_Keycode)(SDLK_a + (c - 'A')));
 	}
 
 	// Numbers
@@ -29,18 +29,18 @@ void initInput(InputState *theInput)
 	{
 		String key = pushString(systemArena, 1, true);
 		key[0] = '0' + i;
-		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_0 + i));
+		theInput->keyNames.put(key, (SDL_Keycode)(SDLK_0 + i));
 	}
 
 	// F keys
 	for (char i = 0; i <= 12; i++)
 	{
 		String key = pushString(systemArena, myprintf("F{0}"_s, {formatInt(i+1)}));
-		put(&theInput->keyNames, key, (SDL_Keycode)(SDLK_F1 + i));
+		theInput->keyNames.put(key, (SDL_Keycode)(SDLK_F1 + i));
 	}
 
 	// Misc
-	put(&theInput->keyNames, pushString(systemArena, "Home"), (SDL_Keycode)SDLK_HOME);
+	theInput->keyNames.put(pushString(systemArena, "Home"), (SDL_Keycode)SDLK_HOME);
 }
 
 void updateInput()
@@ -376,7 +376,7 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 		}
 		else
 		{
-			SDL_Keycode *found = find(&inputState->keyNames, keyName);
+			SDL_Keycode *found = inputState->keyNames.find(keyName);
 			if (found)
 			{
 				result.key = *found;

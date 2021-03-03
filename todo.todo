@@ -24,7 +24,7 @@ Notes for searching:
 Convert data structures to .method() style
 ✔ BitArray
 ✔ ChunkedArray
-- HashTable
+✔ HashTable
 - OccupancyArray
 ✔ Queue
 ✔ Set

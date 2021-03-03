@@ -72,7 +72,7 @@ void initUIStyleProperties()
 		property.existsInStyle[UIStyle_Scrollbar] = inScrollbar; \
 		property.existsInStyle[UIStyle_TextInput] = inTextInput; \
 		property.existsInStyle[UIStyle_Window]    = inWindow; \
-		put(&uiStyleProperties, makeString(#name), property); \
+		uiStyleProperties.put(makeString(#name), property); \
 	}
 
 	//                                                    btn   cnsl  label  panel  scrll  txtin  windw
@@ -113,7 +113,7 @@ struct UIStylePack
 };
 UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, UIStyleType type)
 {
-	UIStylePack *pack = findOrAdd(styles, name);
+	UIStylePack *pack = styles->findOrAdd(name);
 	UIStyle *result = pack->styleByType + type;
 	*result = UIStyle();
 
@@ -163,7 +163,7 @@ void loadUITheme(Blob data, Asset *asset)
 				if (!isEmpty(fontName) && !isEmpty(fontFilename))
 				{
 					Asset *fontAsset = addAsset(AssetType_BitmapFont, fontFilename);
-					put(&fontNamesToAssetNames, fontName, fontAsset->shortName);
+					fontNamesToAssetNames.put(fontName, fontAsset->shortName);
 				}
 				else
 				{
@@ -239,7 +239,7 @@ void loadUITheme(Blob data, Asset *asset)
 			{
 				// Clones an existing style
 				String parentStyleName = readToken(&reader);
-				UIStylePack *parentPack = find(&styles, parentStyleName);
+				UIStylePack *parentPack = styles.find(parentStyleName);
 				if (parentPack == null)
 				{
 					error(&reader, "Unable to find style named '{0}'"_s, {parentStyleName});
@@ -296,7 +296,7 @@ void loadUITheme(Blob data, Asset *asset)
 			else
 			{
 				// Check our properties map for a match
-				UIProperty *property = find(&uiStyleProperties, firstWord);
+				UIProperty *property = uiStyleProperties.find(firstWord);
 				if (property)
 				{
 					if (property->existsInStyle[target->type])
@@ -347,7 +347,7 @@ void loadUITheme(Blob data, Asset *asset)
 								String value = intern(&assets->assetStrings, readToken(&reader));
 								AssetRef *fontRef = ((AssetRef*)((u8*)(target) + property->offsetInStyleStruct));
 								*fontRef = {};
-								String *fontFilename = find(&fontNamesToAssetNames, value);
+								String *fontFilename = fontNamesToAssetNames.find(value);
 								if (fontFilename != null)
 								{
 									*fontRef = getAssetRef(AssetType_BitmapFont, *fontFilename);

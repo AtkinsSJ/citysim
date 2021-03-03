@@ -9,7 +9,7 @@ void registerSetting(String settingName, smm offset, Type type, s32 count, Strin
 	def.type = type;
 	def.count = count;
 
-	put(&settings->defs, settingName, def);
+	settings->defs.put(settingName, def);
 }
 
 SettingsState makeDefaultSettings()
@@ -58,7 +58,7 @@ void loadSettingsFile(String name, Blob settingsData)
 	{
 		String settingName = readToken(&reader, '=');
 
-		SettingDef *def = find(&settings->defs, settingName);
+		SettingDef *def = settings->defs.find(settingName);
 
 		if (def == null)
 		{

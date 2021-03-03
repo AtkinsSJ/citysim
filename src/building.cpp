@@ -47,7 +47,7 @@ void initBuildingCatalogue()
 	initStringTable(&catalogue->buildingNames);
 
 	initHashTable(&catalogue->buildingNameToTypeID, 0.75f, 128);
-	put<s32>(&catalogue->buildingNameToTypeID, nullString, 0);
+	catalogue->buildingNameToTypeID.put(nullString, 0);
 	initHashTable(&catalogue->buildingNameToOldTypeID, 0.75f, 128);
 
 	catalogue->maxRBuildingDim = 0;
@@ -103,8 +103,8 @@ BuildingDef *appendNewBuildingDef(String name)
 	initFlags(&result->transportTypes, TransportTypeCount);
 
 	result->fireRisk = 1.0f;
-	put(&buildingCatalogue.buildingsByName, result->name, result);
-	put(&buildingCatalogue.buildingNameToTypeID, result->name, result->typeID);
+	buildingCatalogue.buildingsByName.put(result->name, result);
+	buildingCatalogue.buildingNameToTypeID.put(result->name, result->typeID);
 
 	return result;
 }
@@ -206,7 +206,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					return;
 				}
 
-				def = put(&templates, pushString(tempArena, name));
+				def = templates.put(pushString(tempArena, name));
 				initFlags(&def->flags, BuildingFlagCount);
 				initFlags(&def->transportTypes, TransportTypeCount);
 			}
@@ -327,7 +327,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				{
 					String templateName = readToken(&reader);
 					
-					BuildingDef *templateDef = find(&templates, templateName);
+					BuildingDef *templateDef = templates.find(templateName);
 					if (templateDef == null)
 					{
 						error(&reader, "Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, {templateName});
@@ -622,11 +622,11 @@ void removeBuildingDefs(Array<String> idsToRemove)
 			catalogue->iGrowableBuildings.findAndRemove(def);
 			catalogue->intersectionBuildings.findAndRemove(def);
 
-			removeKey(&catalogue->buildingsByName, buildingID);
+			catalogue->buildingsByName.removeKey(buildingID);
 
 			removeIndex(&catalogue->allBuildings, def->typeID);
 
-			removeKey(&catalogue->buildingNameToTypeID, buildingID);
+			catalogue->buildingNameToTypeID.removeKey(buildingID);
 		}
 	}
 
@@ -672,7 +672,7 @@ inline BuildingDef *findBuildingDef(String name)
 {
 	BuildingDef *result = null;
 
-	BuildingDef **findResult = find(&buildingCatalogue.buildingsByName, name);
+	BuildingDef **findResult = buildingCatalogue.buildingsByName.find(name);
 	if (findResult != null)
 	{
 		result = *findResult;
@@ -1192,7 +1192,7 @@ void saveBuildingTypes()
 	}
 
 	// Actual saving
-	putAll(&buildingCatalogue.buildingNameToOldTypeID, &buildingCatalogue.buildingNameToTypeID);
+	buildingCatalogue.buildingNameToOldTypeID.putAll(&buildingCatalogue.buildingNameToTypeID);
 }
 
 void remapBuildingTypes(City *city)
@@ -1202,9 +1202,9 @@ void remapBuildingTypes(City *city)
 	for (auto it = buildingCatalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next())
 	{
 		auto entry = it.getEntry();
-		if (!contains(&buildingCatalogue.buildingNameToTypeID, entry->key))
+		if (!buildingCatalogue.buildingNameToTypeID.contains(entry->key))
 		{
-			put(&buildingCatalogue.buildingNameToTypeID, entry->key, buildingCatalogue.buildingNameToTypeID.count);
+			buildingCatalogue.buildingNameToTypeID.put(entry->key, buildingCatalogue.buildingNameToTypeID.count);
 		}
 	}
 
@@ -1217,7 +1217,7 @@ void remapBuildingTypes(City *city)
 			String buildingName = entry->key;
 			s32 oldType         = entry->value;
 
-			s32 *newType = find(&buildingCatalogue.buildingNameToTypeID, buildingName);
+			s32 *newType = buildingCatalogue.buildingNameToTypeID.find(buildingName);
 			if (newType == null)
 			{
 				oldTypeToNewType[oldType] = 0;

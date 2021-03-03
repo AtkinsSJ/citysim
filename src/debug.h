@@ -173,7 +173,7 @@ void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag=DCDT_Mi
 
 DebugCodeData *debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {
-	DebugCodeData *result = findOrAdd(&globalDebugState->codeData, name);
+	DebugCodeData *result = globalDebugState->codeData.findOrAdd(name);
 	result->name = name;
 	result->tag = tag;
 
