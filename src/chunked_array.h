@@ -109,13 +109,6 @@ ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk);
 template<typename T>
 void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk);
 
-// Used as Pool's allocateItem() function pointer
-template<typename T>
-ArrayChunk<T> *allocateChunkFromPool(MemoryArena *arena, void *userData);
-
-template<typename T>
-void returnLastChunkToPool(ChunkedArray<T> *array);
-
 //////////////////////////////////////////////////
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////

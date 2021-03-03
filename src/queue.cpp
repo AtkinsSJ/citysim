@@ -7,24 +7,21 @@ void initQueue(Queue<T> *queue, MemoryArena *arena, s32 chunkSize)
 
 	queue->chunkSize = chunkSize;
 
-	initPool<QueueChunk<T>>(&queue->chunkPool, arena, &allocateQueueChunk, &queue->chunkSize);
+	initPool<QueueChunk<T>>(&queue->chunkPool, arena, [](MemoryArena *arena, void *userData) {
+		s32 chunkSize = *(s32*)userData;
+
+		u8 *bytes = (u8*) allocate(arena, sizeof(QueueChunk<T>) + (sizeof(T) * chunkSize));
+		QueueChunk<T> *newChunk = (QueueChunk<T> *)bytes;
+		*newChunk = {};
+		newChunk->items = (T *)(bytes + sizeof(QueueChunk<T>));
+
+		return newChunk;
+	}, &queue->chunkSize);
 
 	// We're starting off with one chunk, even though it's empty. Perhaps we should wait
 	// until we actually add something? I'm not sure.
 	queue->startChunk = getItemFromPool(&queue->chunkPool);
 	queue->endChunk = queue->startChunk;
-}
-
-template <typename T>
-QueueChunk<T> *allocateQueueChunk(MemoryArena *arena, void *userData) {
-	s32 chunkSize = *(s32*)userData;
-
-	u8 *bytes = (u8*) allocate(arena, sizeof(QueueChunk<T>) + (sizeof(T) * chunkSize));
-	QueueChunk<T> *newChunk = (QueueChunk<T> *)bytes;
-	*newChunk = {};
-	newChunk->items = (T *)(bytes + sizeof(QueueChunk<T>));
-
-	return newChunk;
 }
 
 template <typename T>

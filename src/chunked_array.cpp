@@ -506,14 +506,11 @@ template<typename T>
 void initChunkPool(ArrayChunkPool<T> *pool, MemoryArena *arena, s32 itemsPerChunk)
 {
 	pool->itemsPerChunk = itemsPerChunk;
-	initPool<ArrayChunk<T>>(pool, arena, &allocateChunkFromPool, &pool->itemsPerChunk);
-}
-
-template<typename T>
-ArrayChunk<T> *allocateChunkFromPool(MemoryArena *arena, void *userData)
-{
-	s32 itemsPerChunk = *((s32*)userData);
-	return allocateChunk<T>(arena, itemsPerChunk);
+	
+	initPool<ArrayChunk<T>>(pool, arena, [](MemoryArena *arena, void *userData) {
+		s32 itemsPerChunk = *((s32*)userData);
+		return allocateChunk<T>(arena, itemsPerChunk);
+	}, &pool->itemsPerChunk);
 }
 
 //////////////////////////////////////////////////
