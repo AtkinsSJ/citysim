@@ -294,26 +294,14 @@ int main(int argc, char *argv[])
 
 	// TEST STUFF
 #if 0
-	s32 testW = 26;
-	s32 testH = 10;
-	char *test = allocateMultiple<char>(tempArena, testW * testH);
-	fillMemory(test, '#', testW * testH);
-
-	char *pos = test;
-	for (s32 row = 0; row < testH; row++)
+	Queue<s32> testQueue;
+	initQueue(&testQueue, &globalAppState.systemArena);
+	for (s32 i=1; i <= 100; i++)
 	{
-		for (char c = 'A'; c <= 'Z'; c++)
-		{
-			*pos = c;
-			pos++;
-		}
+		testQueue.push(i);
+		logInfo("Queue: {0}"_s, {formatInt(testQueue.pop().orDefault(-1))});
 	}
-
-	Rect2I region = irectXYWH(1, 1, testW - 2, testH - 2);
-	char *part = copyRegion(test, testW, testH, region, tempArena);
-
-	s32 pause=1000;
-
+		logInfo("Queue: {0}"_s, {formatInt(testQueue.pop().orDefault(-1))});
 #endif
 
 	// GAME LOOP
