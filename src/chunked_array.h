@@ -127,19 +127,35 @@ struct ChunkedArrayIterator
 	// For simplicity, we increment it each time we next(), and when it equals the count, we're done.
 	s32 itemsIterated;
 	bool isDone;
+
+// Methods
+	bool hasNext();
+	void next();
+	T *get();
+	s32 getIndex();
+	T getValue();
 };
 
 template<typename T>
-void next(ChunkedArrayIterator<T> *iterator);
+void next(ChunkedArrayIterator<T> *iterator)
+{
+	iterator->next();
+}
 
 template<typename T>
-bool hasNext(ChunkedArrayIterator<T> *iterator);
+bool hasNext(ChunkedArrayIterator<T> *iterator)
+{
+	return iterator->hasNext();
+}
 
 template<typename T>
-T *get(ChunkedArrayIterator<T> *iterator);
+T *get(ChunkedArrayIterator<T> *iterator)
+{
+	return iterator->get();
+}
 
 template<typename T>
-s32 getIndex(ChunkedArrayIterator<T> *iterator);
-
-template<typename T>
-T getValue(ChunkedArrayIterator<T> *iterator);
+s32 getIndex(ChunkedArrayIterator<T> *iterator)
+{
+	return iterator->getIndex();
+}

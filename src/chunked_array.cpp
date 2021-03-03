@@ -174,7 +174,7 @@ Indexed<T *> ChunkedArray<T>::findFirst(Filter filter)
 {
 	Indexed<T*> result = makeNullIndexedValue<T*>();
 
-	for (auto it = iterate(); hasNext(&it); next(&it))
+	for (auto it = iterate(); it.hasNext(); it.next())
 	{
 		T *entry = ::get(&it);
 		if (filter(entry))
@@ -546,99 +546,99 @@ void ChunkedArray<T>::sortInternal(Comparison compareElements, s32 lowIndex, s32
 
 
 template<typename T>
-bool hasNext(ChunkedArrayIterator<T> *iterator)
+inline bool ChunkedArrayIterator<T>::hasNext()
 {
-	return !iterator->isDone;
+	return !isDone;
 }
 
 template<typename T>
-void next(ChunkedArrayIterator<T> *iterator)
+void ChunkedArrayIterator<T>::next()
 {
-	if (iterator->isDone) return;
+	if (isDone) return;
 
-	iterator->itemsIterated++;
-	if (iterator->itemsIterated >= iterator->array->count)
+	itemsIterated++;
+	if (itemsIterated >= array->count)
 	{
 		// We've seen each index once
-		iterator->isDone = true;
+		isDone = true;
 	}
 
-	if (iterator->goBackwards)
+	if (goBackwards)
 	{
-		iterator->indexInChunk--;
+		indexInChunk--;
 
-		if (iterator->indexInChunk < 0)
+		if (indexInChunk < 0)
 		{
 			// Prev chunk
-			iterator->currentChunk = iterator->currentChunk->prevChunk;
-			iterator->chunkIndex--;
+			currentChunk = currentChunk->prevChunk;
+			chunkIndex--;
 
-			if (iterator->currentChunk == null)
+			if (currentChunk == null)
 			{
-				if (iterator->wrapAround)
+				if (wrapAround)
 				{
 					// Wrap to the beginning!
-					iterator->chunkIndex   = iterator->array->chunkCount - 1;
-					iterator->currentChunk = iterator->array->lastChunk;
-					iterator->indexInChunk = iterator->currentChunk->count - 1;
+					chunkIndex   = array->chunkCount - 1;
+					currentChunk = array->lastChunk;
+					indexInChunk = currentChunk->count - 1;
 				}
 				else
 				{
 					// We're not wrapping, so we're done
-					iterator->isDone = true;
+					isDone = true;
 				}
 			}
 			else
 			{
-				iterator->indexInChunk = iterator->currentChunk->count - 1;
+				indexInChunk = currentChunk->count - 1;
 			}
 		}
 	}
 	else
 	{
-		iterator->indexInChunk++;
+		indexInChunk++;
 
-		if (iterator->indexInChunk >= iterator->currentChunk->count)
+		if (indexInChunk >= currentChunk->count)
 		{
 			// Next chunk
-			iterator->chunkIndex++;
-			iterator->currentChunk = iterator->currentChunk->nextChunk;
-			iterator->indexInChunk = 0;
+			chunkIndex++;
+			currentChunk = currentChunk->nextChunk;
+			indexInChunk = 0;
 
-			if (iterator->currentChunk == null)
+			if (currentChunk == null)
 			{
-				if (iterator->wrapAround)
+				if (wrapAround)
 				{
 					// Wrap to the beginning!
-					iterator->chunkIndex = 0;
-					iterator->currentChunk = iterator->array->firstChunk;
+					chunkIndex = 0;
+					currentChunk = array->firstChunk;
 				}
 				else
 				{
 					// We're not wrapping, so we're done
-					iterator->isDone = true;
+					isDone = true;
 				}
 			}
 		}
 	}
 
-	ASSERT(iterator->isDone || iterator->indexInChunk >= 0 && iterator->indexInChunk < iterator->currentChunk->count); //Bounds check
+	ASSERT(isDone || indexInChunk >= 0 && indexInChunk < currentChunk->count); //Bounds check
 }
 
 template<typename T>
-inline T *get(ChunkedArrayIterator<T> *iterator)
+inline T *ChunkedArrayIterator<T>::get()
 {
-	return &iterator->currentChunk->items[iterator->indexInChunk];
+	return &currentChunk->items[indexInChunk];
 }
 
 template<typename T>
-s32 getIndex(ChunkedArrayIterator<T> *iterator)
+s32 ChunkedArrayIterator<T>::getIndex()
 {
-	return (iterator->chunkIndex * iterator->array->itemsPerChunk) + iterator->indexInChunk;
+	return (chunkIndex * array->itemsPerChunk) + indexInChunk;
 }
 
 template<typename T>
-inline T getValue(ChunkedArrayIterator<T> *iterator)
+inline T ChunkedArrayIterator<T>::getValue()
 {
-	return iterator->currentChunk->items[iterator->indexInChunk];
+	return currentChunk->items[indexInChunk];
 }
