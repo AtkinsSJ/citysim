@@ -136,7 +136,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	building->entity->canBeDemolished = true;
 
 	CitySector *ownerSector = getSectorAtTilePos(&city->sectors, footprint.x, footprint.y);
-	append(&ownerSector->ownedBuildings, building);
+	ownerSector->ownedBuildings.append(building);
 
 	for (s32 y = footprint.y;
 		y < footprint.y + footprint.h;
@@ -425,7 +425,7 @@ void demolishRect(City *city, Rect2I area)
 			CitySector *sector = getSector(&city->sectors, sX, sY);
 			
 			// Rebuild the ownedBuildings array
-			clear(&sector->ownedBuildings);
+			sector->ownedBuildings.clear();
 
 			for (s32 y = sector->bounds.y;
 				y < sector->bounds.y + sector->bounds.h;
@@ -440,7 +440,7 @@ void demolishRect(City *city, Rect2I area)
 					{
 						if (b->footprint.x == x && b->footprint.y == y)
 						{
-							append(&sector->ownedBuildings, b);
+							sector->ownedBuildings.append(b);
 						}
 					}
 				}
@@ -486,7 +486,7 @@ ChunkedArray<Building *> findBuildingsOverlappingArea(City *city, Rect2I area, u
 				Building *building = getValue(&it);
 				if (overlaps(building->footprint, area))
 				{
-					append(&result, building);
+					result.append(building);
 				}
 			}
 		}

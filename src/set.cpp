@@ -15,7 +15,7 @@ bool add(Set<T> *set, T item)
 
 	if (!contains(set, item))
 	{
-		append(&set->items, item);
+		set->items.append(item);
 		didAdd = true;
 	}
 
@@ -42,5 +42,5 @@ bool contains(Set<T> *set, T item)
 template<typename T>
 void clear(Set<T> *set)
 {
-	clear(&set->items);
+	set->items.clear();
 }

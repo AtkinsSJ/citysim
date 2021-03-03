@@ -84,7 +84,7 @@ void notifyNewBuilding(CrimeLayer *layer, BuildingDef *def, Building *building)
 {
 	if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0))
 	{
-		append(&layer->policeBuildings, getReferenceTo(building));
+		layer->policeBuildings.append(getReferenceTo(building));
 	}
 }
 

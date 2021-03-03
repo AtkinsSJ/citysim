@@ -42,7 +42,7 @@ void updateSavedGamesCatalogue()
 		// any that have been deleted.) This might not take much effort?
 		// - Sam, 25/03/2019
 
-		clear(&catalogue->savedGames);
+		catalogue->savedGames.clear();
 		readSavedGamesInfo(catalogue);
 	}
 }
@@ -60,7 +60,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 		FileInfo *fileInfo = getFileInfo(&it);
 		if (fileInfo->flags & (FileFlag_Directory | FileFlag_Hidden)) continue;
 
-		SavedGameInfo *savedGame = appendBlank(&catalogue->savedGames);
+		SavedGameInfo *savedGame = catalogue->savedGames.appendBlank();
 
 		savedGame->shortName = intern(&catalogue->stringsTable, getFileName(fileInfo->filename));
 		savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({catalogue->savedGamesPath, fileInfo->filename}));
@@ -199,7 +199,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		savesList.enableVerticalScrolling(&catalogue->savedGamesListScrollbar);
 		savesList.alignWidgets(ALIGN_EXPAND_H);
 
-		if (catalogue->savedGames.count == 0)
+		if (catalogue->savedGames.isEmpty())
 		{
 			savesList.addText(getText("msg_no_saved_games"_s));
 		}

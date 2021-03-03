@@ -345,7 +345,7 @@ void GL_loadAssets()
 	}
 
 	// Shaders
-	clear(&gl->shaders); // Just in case
+	gl->shaders.clear(); // Just in case
 	ASSERT(assets->assetsByType[AssetType_Shader].count <= s8Max);
 	for (auto it = iterate(&assets->assetsByType[AssetType_Shader]);
 		hasNext(&it);
@@ -354,7 +354,7 @@ void GL_loadAssets()
 		Asset *asset = *get(&it);
 
 		s8 shaderIndex = (s8) gl->shaders.count;
-		GL_ShaderProgram *shader = appendBlank(&gl->shaders);
+		GL_ShaderProgram *shader = gl->shaders.appendBlank();
 		shader->asset = asset;
 		asset->shader.rendererShaderID = shaderIndex;
 
@@ -392,11 +392,11 @@ void GL_unloadAssets()
 	gl->currentShader = -1;
 	for (s8 shaderID=0; shaderID < gl->shaders.count; shaderID++)
 	{
-		GL_ShaderProgram *shader = get(&gl->shaders, shaderID);
+		GL_ShaderProgram *shader = gl->shaders.get(shaderID);
 		glDeleteProgram(shader->shaderProgramID);
 		*shader = {};
 	}
-	clear(&gl->shaders);
+	gl->shaders.clear();
 }
 
 inline GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID)
@@ -406,13 +406,13 @@ inline GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID)
 	// Early-out if nothing is changing!
 	if (shaderID == gl->currentShader)
 	{
-		return get(&gl->shaders, gl->currentShader);
+		return gl->shaders.get(gl->currentShader);
 	}
 
 	if (gl->currentShader >= 0 && gl->currentShader < gl->shaders.count)
 	{
 		// Clean up the old shader's stuff
-		GL_ShaderProgram *oldShader = get(&gl->shaders, gl->currentShader);
+		GL_ShaderProgram *oldShader = gl->shaders.get(gl->currentShader);
 		glDisableVertexAttribArray(oldShader->aPositionLoc);
 		glDisableVertexAttribArray(oldShader->aColorLoc);
 		if (oldShader->aUVLoc != -1)
@@ -422,7 +422,7 @@ inline GL_ShaderProgram *useShader(GL_Renderer *gl, s8 shaderID)
 	}
 
 	gl->currentShader = shaderID;
-	GL_ShaderProgram *activeShader = get(&gl->shaders, gl->currentShader);
+	GL_ShaderProgram *activeShader = gl->shaders.get(gl->currentShader);
 
 	ASSERT(activeShader->isValid); //Attempting to use a shader that isn't loaded!
 	glUseProgram(activeShader->shaderProgramID);
@@ -941,7 +941,7 @@ void flushVertices(GL_Renderer *gl)
 		glDrawElements(GL_TRIANGLES, gl->indexCount, GL_UNSIGNED_INT, NULL);
 	}
 
-	DEBUG_DRAW_CALL(get(&gl->shaders, gl->currentShader)->asset->shortName, (gl->currentTexture == null) ? nullString : gl->currentTexture->shortName, (gl->vertexCount >> 2));
+	DEBUG_DRAW_CALL(gl->shaders.get(gl->currentShader)->asset->shortName, (gl->currentTexture == null) ? nullString : gl->currentTexture->shortName, (gl->vertexCount >> 2));
 
 	gl->vertexCount = 0;
 	gl->indexCount = 0;

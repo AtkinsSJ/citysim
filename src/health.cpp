@@ -85,7 +85,7 @@ void notifyNewBuilding(HealthLayer *layer, BuildingDef *def, Building *building)
 {
 	if (hasEffect(&def->healthEffect))
 	{
-		append(&layer->healthBuildings, getReferenceTo(building));
+		layer->healthBuildings.append(getReferenceTo(building));
 	}
 }
 

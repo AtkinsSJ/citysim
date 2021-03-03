@@ -150,7 +150,7 @@ Asset *addAsset(AssetType type, String shortName, u32 flags)
 	Asset *existing = getAssetIfExists(type, internedShortName);
 	if (existing) return existing;
 
-	Asset *asset = appendBlank(&assets->allAssets);
+	Asset *asset = assets->allAssets.appendBlank();
 	asset->type = type;
 	asset->shortName = internedShortName;
 	if (flags & Asset_IsAFile)
@@ -732,7 +732,7 @@ void reloadAssets()
 	clear(&assets->missingTextIDs);
 
 	// Regenerate asset catalogue
-	clear(&assets->allAssets);
+	assets->allAssets.clear();
 	addAssets();
 	loadAssets();
 

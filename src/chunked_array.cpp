@@ -11,7 +11,7 @@ void initChunkedArray(ChunkedArray<T> *array, MemoryArena *arena, s32 itemsPerCh
 	array->firstChunk = null;
 	array->lastChunk = null;
 
-	appendChunk(array);
+	array->appendChunk();
 }
 
 template<typename T>
@@ -27,20 +27,89 @@ void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool)
 }
 
 template<typename T>
-void clear(ChunkedArray<T> *array)
+inline bool ChunkedArray<T>::isEmpty()
 {
-	array->count = 0;
-	for (ArrayChunk<T> *chunk = array->firstChunk; chunk; chunk = chunk->nextChunk)
+	return count == 0;
+}
+
+template<typename T>
+T *ChunkedArray<T>::get(s32 index)
+{
+	ASSERT(index >= 0 && index < count); //Index out of array bounds!
+
+	T *result = null;
+
+	s32 chunkIndex = index / itemsPerChunk;
+	s32 itemIndex  = index % itemsPerChunk;
+
+	if (chunkIndex == 0)
+	{
+		// Early out!
+		result = firstChunk->items + itemIndex;
+	}
+	else if (chunkIndex == (chunkCount - 1))
+	{
+		// Early out!
+		result = lastChunk->items + itemIndex;
+	}
+	else
+	{
+		// Walk the chunk chain
+		ArrayChunk<T> *chunk = firstChunk;
+		while (chunkIndex > 0)
+		{
+			chunkIndex--;
+			chunk = chunk->nextChunk;
+		}
+
+		result = chunk->items + itemIndex;
+	}
+
+	return result;
+}
+
+template<typename T>
+void ChunkedArray<T>::clear()
+{
+	count = 0;
+	for (ArrayChunk<T> *chunk = firstChunk; chunk; chunk = chunk->nextChunk)
 	{
 		chunk->count = 0;
 	}
 
-	if (array->chunkPool != null)
+	if (chunkPool != null)
 	{
-		while (array->chunkCount > 0)
+		while (chunkCount > 0)
 		{
-			returnLastChunkToPool(array);
+			returnLastChunkToPool(this);
 		}
+	}
+}
+
+template <typename T>
+T *ChunkedArray<T>::append(T item)
+{
+	T *result = appendUninitialised();
+	*result = item;
+	return result;
+}
+
+template <typename T>
+T *ChunkedArray<T>::appendBlank()
+{
+	T *result = appendUninitialised();
+	*result = {};
+	return result;
+}
+
+template<typename T>
+void ChunkedArray<T>::reserve(s32 desiredSize)
+{
+	DEBUG_FUNCTION();
+	
+	while (((itemsPerChunk * chunkCount) - count) < desiredSize)
+	{
+		appendChunk();
 	}
 }
 
@@ -58,167 +127,6 @@ ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk)
 }
 
 template<typename T>
-void appendChunk(ChunkedArray<T> *array)
-{
-	ArrayChunk<T> *newChunk = null;
-	
-	// Attempt to get a chunk from the pool if we can
-	if (array->chunkPool != null)
-	{
-		newChunk = getItemFromPool(array->chunkPool);
-	}
-	else
-	{
-		newChunk = allocateChunk<T>(array->memoryArena, array->itemsPerChunk);
-	}
-	newChunk->prevChunk = array->lastChunk;
-	newChunk->nextChunk = null;
-
-	array->chunkCount++;
-	if (array->lastChunk != null)
-	{
-		array->lastChunk->nextChunk = newChunk;
-	}
-	array->lastChunk = newChunk;
-	if (array->firstChunk == null)
-	{
-		array->firstChunk = newChunk;
-	}
-}
-
-template<typename T>
-T *appendUninitialised(ChunkedArray<T> *array)
-{
-	bool useLastChunk = (array->count >= array->itemsPerChunk * (array->chunkCount-1));
-	if (array->count >= (array->itemsPerChunk * array->chunkCount))
-	{
-		appendChunk(array);
-		useLastChunk = true;
-	}
-
-	// Shortcut to the last chunk, because that's what we want 99% of the time!
-	ArrayChunk<T> *chunk = null;
-	if (useLastChunk)
-	{
-		chunk = array->lastChunk;
-	}
-	else
-	{
-		chunk = array->firstChunk;
-		s32 indexWithinChunk = array->count;
-		while (indexWithinChunk >= array->itemsPerChunk)
-		{
-			chunk = chunk->nextChunk;
-			indexWithinChunk -= array->itemsPerChunk;
-		}
-	}
-
-	array->count++;
-
-	T *result = chunk->items + chunk->count++;
-
-	return result;
-}
-
-template<typename T>
-inline T *append(ChunkedArray<T> *array, T item)
-{
-	T *result = appendUninitialised(array);
-	*result = item;
-	return result;
-}
-
-template<typename T>
-inline T *appendBlank(ChunkedArray<T> *array)
-{
-	T *result = appendUninitialised(array);
-	*result = {};
-	return result;
-}
-
-template<typename T>
-T *get(ChunkedArray<T> *array, s32 index)
-{
-	ASSERT(index >= 0 && index < array->count); //Index out of array bounds!
-
-	T *result = null;
-
-	s32 chunkIndex = index / array->itemsPerChunk;
-	s32 itemIndex  = index % array->itemsPerChunk;
-
-	if (chunkIndex == 0)
-	{
-		// Early out!
-		result = array->firstChunk->items + itemIndex;
-	}
-	else if (chunkIndex == (array->chunkCount - 1))
-	{
-		// Early out!
-		result = array->lastChunk->items + itemIndex;
-	}
-	else
-	{
-		// Walk the chunk chain
-		ArrayChunk<T> *chunk = array->firstChunk;
-		while (chunkIndex > 0)
-		{
-			chunkIndex--;
-			chunk = chunk->nextChunk;
-		}
-
-		result = chunk->items + itemIndex;
-	}
-
-	return result;
-}
-
-template<typename T>
-ArrayChunk<T> *getChunkByIndex(ChunkedArray<T> *array, s32 chunkIndex)
-{
-	ASSERT(chunkIndex >= 0 && chunkIndex < array->chunkCount); //chunkIndex is out of range!
-
-	ArrayChunk<T> *chunk = null;
-
-	// Shortcuts for known values
-	if (chunkIndex == 0)
-	{
-		chunk = array->firstChunk;
-	}
-	else if (chunkIndex == (array->chunkCount - 1))
-	{
-		chunk = array->lastChunk;
-	}
-	else
-	{
-		// Walk the chunk chain
-		chunk = array->firstChunk;
-		while (chunkIndex > 0)
-		{
-			chunkIndex--;
-			chunk = chunk->nextChunk;
-		}
-	}
-
-	return chunk;
-}
-
-template<typename T>
-ArrayChunk<T> *getLastNonEmptyChunk(ChunkedArray<T> *array)
-{
-	ArrayChunk<T> *lastNonEmptyChunk = array->lastChunk;
-
-	if (array->count > 0)
-	{
-		while (lastNonEmptyChunk->count == 0)
-		{
-			lastNonEmptyChunk = lastNonEmptyChunk->prevChunk;
-		}
-	}
-
-	return lastNonEmptyChunk;
-}
-
-template<typename T>
 void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex)
 {
 	DEBUG_FUNCTION();
@@ -231,7 +139,7 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex)
 		// Moving >, so move each item in the range left 1
 		s32 chunkIndex = fromIndex / array->itemsPerChunk;
 		s32 itemIndex  = fromIndex % array->itemsPerChunk;
-		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+		ArrayChunk<T> *chunk = array->getChunkByIndex(chunkIndex);
 
 		T movingItem = chunk->items[itemIndex];
 
@@ -258,7 +166,7 @@ void moveItemKeepingOrder(ChunkedArray<T> *array, s32 fromIndex, s32 toIndex)
 		// Moving <, so move each item in the range right 1
 		s32 chunkIndex = fromIndex / array->itemsPerChunk;
 		s32 itemIndex  = fromIndex % array->itemsPerChunk;
-		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+		ArrayChunk<T> *chunk = array->getChunkByIndex(chunkIndex);
 		
 		T movingItem = chunk->items[itemIndex];
 
@@ -299,7 +207,7 @@ s32 removeAll(ChunkedArray<T> *array, Filter filter, s32 limit)
 				// FOUND ONE!
 				removedCount++;
 
-				ArrayChunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
+				ArrayChunk<T> *lastNonEmptyChunk = array->getLastNonEmptyChunk();
 
 				// Now, to copy the last element in the array to this position
 				chunk->items[i] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
@@ -376,7 +284,7 @@ void removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 		return;
 	}
 	
-	ArrayChunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk(array);
+	ArrayChunk<T> *lastNonEmptyChunk = array->getLastNonEmptyChunk();
 
 	if (keepItemOrder)
 	{
@@ -393,7 +301,7 @@ void removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 		s32 chunkIndex = indexToRemove / array->itemsPerChunk;
 		s32 itemIndex  = indexToRemove % array->itemsPerChunk;
 
-		ArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+		ArrayChunk<T> *chunk = array->getChunkByIndex(chunkIndex);
 
 		// We don't need to rearrange things if we're removing the last item
 		if (indexToRemove != array->count - 1)
@@ -410,17 +318,6 @@ void removeIndex(ChunkedArray<T> *array, s32 indexToRemove, bool keepItemOrder)
 	if ((array->chunkPool != null) && (array->lastChunk != null) && (array->lastChunk->count == 0))
 	{
 		returnLastChunkToPool(array);
-	}
-}
-
-template<typename T>
-void reserve(ChunkedArray<T> *array, s32 desiredSize)
-{
-	DEBUG_FUNCTION();
-	
-	while (((array->itemsPerChunk * array->chunkCount) - array->count) < desiredSize)
-	{
-		appendChunk(array);
 	}
 }
 
@@ -441,15 +338,15 @@ void sortChunkedArrayInternal(ChunkedArray<T> *array, Comparison compareElements
 	{
 		s32 partitionIndex = 0;
 		{
-			T *pivot = get(array, highIndex);
+			T *pivot = array->get(highIndex);
 			s32 i = (lowIndex - 1);
 			for (s32 j = lowIndex; j < highIndex; j++)
 			{
-				T *itemJ = get(array, j);
+				T *itemJ = array->get(j);
 				if (compareElements(itemJ, pivot))
 				{
 					i++;
-					T *itemI = get(array, i);
+					T *itemI = array->get(i);
 					T temp = {};
 
 					temp = *itemI;
@@ -458,8 +355,8 @@ void sortChunkedArrayInternal(ChunkedArray<T> *array, Comparison compareElements
 				}
 			}
 			
-			T *itemIPlus1 = get(array, i+1);
-			T *itemHighIndex = get(array, highIndex);
+			T *itemIPlus1 = array->get(i+1);
+			T *itemHighIndex = array->get(highIndex);
 			T temp = {};
 
 			temp = *itemIPlus1;
@@ -472,6 +369,116 @@ void sortChunkedArrayInternal(ChunkedArray<T> *array, Comparison compareElements
 		sortChunkedArrayInternal(array, compareElements, lowIndex, partitionIndex - 1);
 		sortChunkedArrayInternal(array, compareElements, partitionIndex + 1, highIndex);
 	}
+}
+
+template <typename T>
+T *ChunkedArray<T>::appendUninitialised()
+{
+	bool useLastChunk = (count >= itemsPerChunk * (chunkCount-1));
+	if (count >= (itemsPerChunk * chunkCount))
+	{
+		appendChunk();
+		useLastChunk = true;
+	}
+
+	// Shortcut to the last chunk, because that's what we want 99% of the time!
+	ArrayChunk<T> *chunk = null;
+	if (useLastChunk)
+	{
+		chunk = lastChunk;
+	}
+	else
+	{
+		chunk = firstChunk;
+		s32 indexWithinChunk = count;
+		while (indexWithinChunk >= itemsPerChunk)
+		{
+			chunk = chunk->nextChunk;
+			indexWithinChunk -= itemsPerChunk;
+		}
+	}
+
+	count++;
+
+	T *result = chunk->items + chunk->count++;
+
+	return result;
+}
+
+
+template<typename T>
+void ChunkedArray<T>::appendChunk()
+{
+	ArrayChunk<T> *newChunk = null;
+	
+	// Attempt to get a chunk from the pool if we can
+	if (chunkPool != null)
+	{
+		newChunk = getItemFromPool(chunkPool);
+	}
+	else
+	{
+		newChunk = allocateChunk<T>(memoryArena, itemsPerChunk);
+	}
+	newChunk->prevChunk = lastChunk;
+	newChunk->nextChunk = null;
+
+	chunkCount++;
+	if (lastChunk != null)
+	{
+		lastChunk->nextChunk = newChunk;
+	}
+	lastChunk = newChunk;
+	if (firstChunk == null)
+	{
+		firstChunk = newChunk;
+	}
+}
+
+template<typename T>
+ArrayChunk<T> *ChunkedArray<T>::getChunkByIndex(s32 chunkIndex)
+{
+	ASSERT(chunkIndex >= 0 && chunkIndex < chunkCount); //chunkIndex is out of range!
+
+	ArrayChunk<T> *chunk = null;
+
+	// Shortcuts for known values
+	if (chunkIndex == 0)
+	{
+		chunk = firstChunk;
+	}
+	else if (chunkIndex == (chunkCount - 1))
+	{
+		chunk = lastChunk;
+	}
+	else
+	{
+		// Walk the chunk chain
+		chunk = firstChunk;
+		while (chunkIndex > 0)
+		{
+			chunkIndex--;
+			chunk = chunk->nextChunk;
+		}
+	}
+
+	return chunk;
+}
+
+template<typename T>
+ArrayChunk<T> *ChunkedArray<T>::getLastNonEmptyChunk()
+{
+	ArrayChunk<T> *lastNonEmptyChunk = lastChunk;
+
+	if (count > 0)
+	{
+		while (lastNonEmptyChunk->count == 0)
+		{
+			lastNonEmptyChunk = lastNonEmptyChunk->prevChunk;
+		}
+	}
+
+	return lastNonEmptyChunk;
 }
 
 //////////////////////////////////////////////////
@@ -524,7 +531,7 @@ ChunkedArrayIterator<T> iterate(ChunkedArray<T> *array, s32 initialIndex, bool w
 	if (!iterator.isDone)
 	{
 		iterator.chunkIndex   = initialIndex / array->itemsPerChunk;
-		iterator.currentChunk = getChunkByIndex(array, iterator.chunkIndex);
+		iterator.currentChunk = array->getChunkByIndex(iterator.chunkIndex);
 		iterator.indexInChunk = initialIndex % array->itemsPerChunk;
 	}
 

@@ -360,7 +360,7 @@ int main(int argc, char *argv[])
 			addSetCamera(&renderer->uiBuffer, uiCamera);
 
 			{
-				clear(&uiState.uiRects);
+				uiState.uiRects.clear();
 				uiState.mouseInputHandled = false;
 				updateWindows(&uiState);
 				
@@ -405,7 +405,7 @@ int main(int argc, char *argv[])
 					}
 
 					appState->appStatus = newAppStatus;
-					clear(&uiState.openWindows);
+					uiState.openWindows.clear();
 
 					// Initialise new state
 					if (appState->appStatus == AppStatus_SettingsMenu)

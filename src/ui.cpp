@@ -76,9 +76,9 @@ inline Rect2I getInputScissorRect(UIState *uiState)
 	return result;
 }
 
-void addUIRect(UIState *uiState, Rect2I bounds)
+inline void addUIRect(UIState *uiState, Rect2I bounds)
 {
-	append(&uiState->uiRects, bounds);
+	uiState->uiRects.append(bounds);
 }
 
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)

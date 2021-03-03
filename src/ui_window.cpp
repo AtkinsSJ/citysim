@@ -77,7 +77,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 
 	if (!createdWindowAlready)
 	{
-		append(&uiState->openWindows, newWindow);
+		uiState->openWindows.append(newWindow);
 		makeWindowActive(uiState, truncate32(uiState->openWindows.count-1));
 	}
 }
@@ -312,7 +312,7 @@ void updateWindows(UIState *uiState)
 
 	if (closeWindow != -1)
 	{
-		Window *window = get(&uiState->openWindows, closeWindow);
+		Window *window = uiState->openWindows.get(closeWindow);
 		if (window->onClose != null)
 		{
 			window->onClose(null, window->userData);

@@ -64,13 +64,13 @@ void markRectAsDirty(DirtyRects *dirtyRects, Rect2I rect)
 
 	if (!added)
 	{
-		append(&dirtyRects->rects, rectToAdd);
+		dirtyRects->rects.append(rectToAdd);
 	}
 }
 
 void clearDirtyRects(DirtyRects *dirtyRects)
 {
-	clear(&dirtyRects->rects);
+	dirtyRects->rects.clear();
 }
 
 inline bool isDirty(DirtyRects *dirtyRects)
@@ -84,7 +84,7 @@ Rect2I getOverallRect(DirtyRects *dirtyRects)
 
 	if (dirtyRects->rects.count > 0)
 	{
-		result = *get(&dirtyRects->rects, 0);
+		result = *dirtyRects->rects.get(0);
 
 		for (auto it = iterate(&dirtyRects->rects, 1, false);
 			hasNext(&it);

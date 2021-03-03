@@ -9,13 +9,13 @@ void initStack(Stack<T> *stack, MemoryArena *arena, s32 itemsPerChunk)
 template <typename T>
 inline bool isEmpty(Stack<T> *stack)
 {
-	return (stack->_array.count == 0);
+	return (stack->_array.isEmpty());
 }
 
 template <typename T>
 T *push(Stack<T> *stack, T item)
 {
-	return append(&stack->_array, item);
+	return stack->_array.append(item);
 }
 
 template <typename T>
@@ -25,7 +25,7 @@ T *peek(Stack<T> *stack)
 
 	if (!isEmpty(stack))
 	{
-		result = get(&stack->_array, stack->_array.count-1);
+		result = stack->_array.get(stack->_array.count-1);
 	}
 
 	return result;
@@ -38,7 +38,7 @@ Maybe<T> pop(Stack<T> *stack)
 
 	if (!isEmpty(stack))
 	{
-		result = makeSuccess(*get(&stack->_array, stack->_array.count-1));
+		result = makeSuccess(*stack->_array.get(stack->_array.count-1));
 		removeIndex(&stack->_array, stack->_array.count-1);
 	}
 

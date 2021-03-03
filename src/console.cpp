@@ -122,7 +122,7 @@ void updateConsole(Console *console)
 					}
 
 					clear(&console->input);
-					String oldInput = *get(&console->inputHistory, console->inputHistoryCursor);
+					String oldInput = *console->inputHistory.get(console->inputHistoryCursor);
 					append(&console->input, oldInput);
 				}
 				else if (keyJustPressed(SDLK_DOWN))
@@ -137,7 +137,7 @@ void updateConsole(Console *console)
 					}
 
 					clear(&console->input);
-					String oldInput = *get(&console->inputHistory, console->inputHistoryCursor);
+					String oldInput = *console->inputHistory.get(console->inputHistoryCursor);
 					append(&console->input, oldInput);
 				}
 			}
@@ -212,7 +212,7 @@ void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
 {
 	LineReader reader = readLines(filename, data);
 
-	clear(&console->commandShortcuts);
+	console->commandShortcuts.clear();
 
 	while (loadNextLine(&reader))
 	{
@@ -226,7 +226,7 @@ void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename)
 		}
 		else
 		{
-			CommandShortcut *commandShortcut = appendBlank(&console->commandShortcuts);
+			CommandShortcut *commandShortcut = console->commandShortcuts.appendBlank();
 			commandShortcut->shortcut = shortcut;
 			commandShortcut->command = command;
 		}
@@ -241,7 +241,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 	if (!isEmpty(commandInput))
 	{
 		// Add to history
-		append(&console->inputHistory, pushString(console->inputHistory.memoryArena, commandInput));
+		console->inputHistory.append(pushString(console->inputHistory.memoryArena, commandInput));
 		console->inputHistoryCursor = -1;
 
 		s32 tokenCount = countTokens(commandInput);
@@ -301,7 +301,7 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 {
 	if (globalConsole)
 	{
-		ConsoleOutputLine *line = appendBlank(&globalConsole->outputLines);
+		ConsoleOutputLine *line = globalConsole->outputLines.appendBlank();
 		line->style = style;
 		line->text = pushString(globalConsole->outputLines.memoryArena, text);
 	}

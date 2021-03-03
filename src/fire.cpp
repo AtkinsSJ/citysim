@@ -217,7 +217,7 @@ void addFireRaw(City *city, s32 x, s32 y, GameTimestamp startDate)
 
 	FireSector *sector = getSectorAtTilePos(&layer->sectors, x, y);
 
-	Fire *fire = appendBlank(&sector->activeFires);
+	Fire *fire = sector->activeFires.appendBlank();
 
 	fire->pos = v2i(x, y);
 	fire->startDate = startDate;
@@ -259,7 +259,7 @@ void notifyNewBuilding(FireLayer *layer, BuildingDef *def, Building *building)
 {
 	if (hasEffect(&def->fireProtection))
 	{
-		append(&layer->fireProtectionBuildings, getReferenceTo(building));
+		layer->fireProtectionBuildings.append(getReferenceTo(building));
 	}
 }
 

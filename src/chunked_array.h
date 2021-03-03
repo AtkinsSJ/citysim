@@ -34,6 +34,24 @@ struct ChunkedArray
 
 	ArrayChunk<T> *firstChunk;
 	ArrayChunk<T> *lastChunk;
+
+// Methods
+	bool isEmpty();
+	T *get(s32 index);
+
+	T *append(T item);
+	T *appendBlank();
+	void reserve(s32 desiredSize);
+
+	// Marks all the chunks as empty. Returns them to a chunkpool if there is one.
+	void clear();
+
+// "private"
+	T *appendUninitialised();
+
+	void appendChunk();
+	ArrayChunk<T> *getChunkByIndex(s32 chunkIndex);
+	ArrayChunk<T> *getLastNonEmptyChunk();
 };
 
 template<typename T>
@@ -61,25 +79,6 @@ void initChunkedArray(ChunkedArray<T> *array, ArrayChunkPool<T> *pool);
 
 template<typename T>
 ArrayChunk<T> *allocateChunk(MemoryArena *arena, s32 itemsPerChunk);
-
-// Marks all the chunks as empty. Returns them to a chunkpool if there is one.
-template<typename T>
-void clear(ChunkedArray<T> *array);
-
-template<typename T>
-T *append(ChunkedArray<T> *array, T item);
-
-template<typename T>
-T *appendBlank(ChunkedArray<T> *array);
-
-template<typename T>
-T *appendUninitialised(ChunkedArray<T> *array);
-
-template<typename T>
-T *get(ChunkedArray<T> *array, s32 index);
-
-template<typename T>
-void reserve(ChunkedArray<T> *array, s32 desiredSize);
 
 template<typename T>
 bool findAndRemove(ChunkedArray<T> *array, T toRemove);

@@ -233,18 +233,18 @@ ConsoleCommand(zoom)
 void initCommands(Console *console)
 {
 	// NB: a max-arguments value of -1 means "no maximum"
-	append(&console->commands, Command(CMD(help)));
-	append(&console->commands, Command(CMD(debug_tools)));
-	append(&console->commands, Command(CMD(exit)));
-	append(&console->commands, Command(CMD(funds), 1));
-	append(&console->commands, Command(CMD(generate)));
-	append(&console->commands, Command(CMD(hello), 0, 1));
-	append(&console->commands, Command(CMD(mark_all_dirty)));
-	append(&console->commands, Command(CMD(reload_assets)));
-	append(&console->commands, Command(CMD(reload_settings)));
-	append(&console->commands, Command(CMD(show_layer), 0, 1));
-	append(&console->commands, Command(CMD(window_size), 0, 2));
-	append(&console->commands, Command(CMD(zoom), 0, 1));
+	console->commands.append(Command(CMD(help)));
+	console->commands.append(Command(CMD(debug_tools)));
+	console->commands.append(Command(CMD(exit)));
+	console->commands.append(Command(CMD(funds), 1));
+	console->commands.append(Command(CMD(generate)));
+	console->commands.append(Command(CMD(hello), 0, 1));
+	console->commands.append(Command(CMD(mark_all_dirty)));
+	console->commands.append(Command(CMD(reload_assets)));
+	console->commands.append(Command(CMD(reload_settings)));
+	console->commands.append(Command(CMD(show_layer), 0, 1));
+	console->commands.append(Command(CMD(window_size), 0, 2));
+	console->commands.append(Command(CMD(zoom), 0, 1));
 }
 #undef CMD
 

@@ -28,7 +28,7 @@ QueueChunk<T> *allocateQueueChunk(MemoryArena *arena, void *userData) {
 }
 
 template <typename T>
-bool Queue<T>::isEmpty()
+inline bool Queue<T>::isEmpty()
 {
 	return (count == 0);
 }

@@ -64,30 +64,30 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 
 	if (def->buildMethod != BuildMethod_None)
 	{
-		append(&catalogue->constructibleBuildings, def);
+		catalogue->constructibleBuildings.append(def);
 	}
 
 	switch(def->growsInZone)
 	{
 		case Zone_Residential: {
-			append(&catalogue->rGrowableBuildings, def);
+			catalogue->rGrowableBuildings.append(def);
 			catalogue->maxRBuildingDim = max(catalogue->maxRBuildingDim, max(def->width, def->height));
 		} break;
 
 		case Zone_Commercial: {
-			append(&catalogue->cGrowableBuildings, def);
+			catalogue->cGrowableBuildings.append(def);
 			catalogue->maxCBuildingDim = max(catalogue->maxCBuildingDim, max(def->width, def->height));
 		} break;
 
 		case Zone_Industrial: {
-			append(&catalogue->iGrowableBuildings, def);
+			catalogue->iGrowableBuildings.append(def);
 			catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->width, def->height));
 		} break;
 	}
 
 	if (def->isIntersection)
 	{
-		append(&catalogue->intersectionBuildings, def);
+		catalogue->intersectionBuildings.append(def);
 	}
 
 	ASSERT(catalogue->allBuildings.count == (catalogue->buildingsByName.count + 1)); // NB: +1 for the null building.
