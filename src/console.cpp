@@ -81,7 +81,7 @@ void updateConsole(Console *console)
 
 	if (console->currentHeight != console->targetHeight)
 	{
-		console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * SECONDS_PER_FRAME);
+		console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * globalAppState.deltaTime);
 	}
 
 	// This is a little hacky... I think we want the console to ALWAYS consume input if it is open.

@@ -168,7 +168,7 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInp
 	DrawTextResult drawTextResult = {};
 	drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caretGlyphPos, &drawTextResult);
 
-	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + SECONDS_PER_FRAME, style->caretFlashCycleDuration);
+	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + globalAppState.deltaTime, style->caretFlashCycleDuration);
 
 	if (showCaret)
 	{

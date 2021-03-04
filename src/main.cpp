@@ -110,15 +110,7 @@ struct City;
 // TODO: Some kind of switch to determine which renderer we want to load.
 #include "render_gl.h"
 
-struct AppState
-{
-	AppStatus appStatus;
-	MemoryArena systemArena;
-
-	UIState *uiState;
-	GameState *gameState;
-	Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
-};
+#include "global_state.h"
 AppState globalAppState;
 
 #include "about.cpp"
@@ -244,6 +236,9 @@ int main(int argc, char *argv[])
 
 	globalAppState = {};
 	AppState *appState = &globalAppState;
+	globalAppState.rawDeltaTime = SECONDS_PER_FRAME;
+	globalAppState.speedMultiplier = 1.0f;
+	globalAppState.deltaTime = globalAppState.rawDeltaTime * globalAppState.speedMultiplier;
 
 	initMemoryArena(&globalAppState.systemArena, MB(1));
 
@@ -329,7 +324,6 @@ int main(int argc, char *argv[])
 
 	// GAME LOOP
 	u64 frameStartTime = SDL_GetPerformanceCounter();
-	f32 deltaTime = SECONDS_PER_FRAME;
 	while (appState->appStatus != AppStatus_Quit)
 	{
 		{
@@ -378,22 +372,22 @@ int main(int argc, char *argv[])
 				{
 					case AppStatus_MainMenu:
 					{
-						newAppStatus = updateAndRenderMainMenu(&uiState, deltaTime);
+						newAppStatus = updateAndRenderMainMenu(&uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Credits:
 					{
-						newAppStatus = updateAndRenderCredits(&uiState, deltaTime);
+						newAppStatus = updateAndRenderCredits(&uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_SettingsMenu:
 					{
-						newAppStatus = updateAndRenderSettingsMenu(&uiState, deltaTime);
+						newAppStatus = updateAndRenderSettingsMenu(&uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Game:
 					{
-						newAppStatus = updateAndRenderGame(appState->gameState, &uiState, deltaTime);
+						newAppStatus = updateAndRenderGame(appState->gameState, &uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Quit: break;
@@ -464,7 +458,8 @@ int main(int argc, char *argv[])
 			SDL_GL_SwapWindow(renderer->window);
 			
 			u64 now = SDL_GetPerformanceCounter();
-			deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));
+			f32 deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));
+			globalAppState.setDeltaTimeFromLastFrame(deltaTime);
 			frameStartTime = now;
 		}
 

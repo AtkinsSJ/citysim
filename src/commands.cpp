@@ -168,6 +168,31 @@ ConsoleCommand(show_layer)
 	}
 }
 
+ConsoleCommand(speed)
+{
+	if (argumentsCount == 0)
+	{
+		consoleWriteLine(myprintf("Current game speed: {0}"_s, {formatFloat(globalAppState.speedMultiplier, 3)}), CLS_Success);
+	}
+	else
+	{
+		String remainder = arguments;
+		
+		Maybe<f64> speedMultiplier = asFloat(nextToken(remainder, &remainder));
+
+		if (speedMultiplier.isValid)
+		{
+			f32 multiplier = (f32) speedMultiplier.value;
+			globalAppState.setSpeedMultiplier(multiplier);
+			consoleWriteLine(myprintf("Set speed to {0}"_s, {formatFloat(multiplier, 3)}), CLS_Success);
+		}
+		else
+		{
+			consoleWriteLine("Usage: speed (multiplier), where multiplier is a float, or with no argument to list the current speed"_s, CLS_Error);
+		}
+	}
+}
+
 ConsoleCommand(toast)
 {
 	UIState *uiState = globalAppState.uiState;
@@ -249,6 +274,7 @@ void initCommands(Console *console)
 	console->commands.append(Command(CMD(reload_assets)));
 	console->commands.append(Command(CMD(reload_settings)));
 	console->commands.append(Command(CMD(show_layer), 0, 1));
+	console->commands.append(Command(CMD(speed), 0, 1));
 	console->commands.append(Command(CMD(toast), 1, -1));
 	console->commands.append(Command(CMD(window_size), 0, 2));
 	console->commands.append(Command(CMD(zoom), 0, 1));

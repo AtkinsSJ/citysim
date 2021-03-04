@@ -83,7 +83,7 @@ void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityW
 	}
 
 	// Panning
-	f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32) sqrt(camera->zoom)) * SECONDS_PER_FRAME;
+	f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32) sqrt(camera->zoom)) * globalAppState.deltaTime;
 	f32 cameraEdgeScrollPixelMargin = 8.0f;
 
 	if (mouseButtonPressed(MouseButton_Middle))

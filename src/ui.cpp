@@ -279,7 +279,7 @@ void drawToast(UIState *uiState)
 	{
 		Toast *toast = currentToast.value;
 
-		toast->time += SECONDS_PER_FRAME;
+		toast->time += globalAppState.deltaTime;
 
 		if (toast->time >= toast->duration)
 		{
