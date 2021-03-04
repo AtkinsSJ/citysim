@@ -31,19 +31,12 @@ struct Command
 	void (*function)(Console*, s32, String);
 	s32 minArgs, maxArgs;
 
-	Command(String name, void (*function)(Console*, s32, String), s32 minArgs=0, s32 maxArgs=-1)
+	Command(String name, void (*function)(Console*, s32, String), s32 minArgs=0, s32 maxArgs=0)
 	{
 		this->name = name;
 		this->function = function;
 		this->minArgs = minArgs;
-		if (maxArgs == -1)
-		{
-			this->maxArgs = minArgs;
-		}
-		else
-		{
-			this->maxArgs = maxArgs;
-		}
+		this->maxArgs = maxArgs;
 	}
 };
 

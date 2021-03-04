@@ -267,12 +267,17 @@ void consoleHandleCommand(Console *console, String commandInput)
 					{
 						if (command->minArgs == command->maxArgs)
 						{
-							consoleWriteLine(myprintf("Command '{0}' accepts only {1} argument(s), but {2} given."_s,
+							consoleWriteLine(myprintf("Command '{0}' requires only {1} argument(s), but {2} given."_s,
+								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
+						}
+						else if (command->maxArgs == -1)
+						{
+							consoleWriteLine(myprintf("Command '{0}' requires at least {1} argument(s), but {2} given."_s,
 								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
 						}
 						else
 						{
-							consoleWriteLine(myprintf("Command '{0}' accepts between {1} and {2} arguments, but {3} given."_s,
+							consoleWriteLine(myprintf("Command '{0}' requires between {1} and {2} arguments, but {3} given."_s,
 								{firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount)}), CLS_Error);
 						}
 					}

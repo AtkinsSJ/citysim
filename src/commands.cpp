@@ -168,6 +168,12 @@ ConsoleCommand(show_layer)
 	}
 }
 
+ConsoleCommand(toast)
+{
+	UIState *uiState = globalAppState.uiState;
+	pushToast(uiState, arguments);
+}
+
 ConsoleCommand(window_size)
 {
 	if (argumentsCount == 2)
@@ -236,13 +242,14 @@ void initCommands(Console *console)
 	console->commands.append(Command(CMD(help)));
 	console->commands.append(Command(CMD(debug_tools)));
 	console->commands.append(Command(CMD(exit)));
-	console->commands.append(Command(CMD(funds), 1));
+	console->commands.append(Command(CMD(funds), 1, 1));
 	console->commands.append(Command(CMD(generate)));
 	console->commands.append(Command(CMD(hello), 0, 1));
 	console->commands.append(Command(CMD(mark_all_dirty)));
 	console->commands.append(Command(CMD(reload_assets)));
 	console->commands.append(Command(CMD(reload_settings)));
 	console->commands.append(Command(CMD(show_layer), 0, 1));
+	console->commands.append(Command(CMD(toast), 1, -1));
 	console->commands.append(Command(CMD(window_size), 0, 2));
 	console->commands.append(Command(CMD(zoom), 0, 1));
 }

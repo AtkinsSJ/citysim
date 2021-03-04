@@ -9,7 +9,7 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 	*uiState = {};
 
 	uiState->message = {};
-	uiState->message.text = pushString(arena, 256);
+	uiState->message.text = makeString(uiState->message._chars, MAX_TOAST_LENGTH);
 	uiState->message.countdown = -1;
 
 	initChunkedArray(&uiState->uiRects, arena, 64);

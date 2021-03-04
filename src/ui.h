@@ -28,10 +28,12 @@ struct UIStyleRef
 };
 
 const f32 uiMessageDisplayTime = 2.0f;
+const s32 MAX_TOAST_LENGTH = 1024;
 struct Toast
 {
-	String text;
 	f32 countdown; // In seconds
+	String text;
+	char _chars[MAX_TOAST_LENGTH];
 };
 
 struct ScrollbarState
@@ -54,7 +56,6 @@ inline ButtonState buttonIsActive(bool isActive)
 struct UIState
 {
 	String tooltipText;
-	Toast message;
 
 	// TODO: Replace this with better "this input has already been used" code!
 	ChunkedArray<Rect2I> uiRects;
@@ -66,6 +67,9 @@ struct UIState
 	// they should set it to true. 
 	bool mouseInputHandled;
 	Stack<Rect2I> inputScissorRects;
+
+	// Toast stuff
+	Toast message;
 
 	// Window stuff
 	ChunkedArray<struct Window> openWindows; // Order: index 0 is the top, then each one is below the previous
