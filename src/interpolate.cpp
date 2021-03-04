@@ -19,7 +19,7 @@ f32 interpolate(f32 start, f32 end, f32 t, InterpolationType interpolation)
 			interpolatedT = 1 - cos32(t * PI32 * 0.5f);
 		} break;
 		case Interpolate_SineOut: {
-			interpolatedT = cos32(t * PI32 * 0.5f);
+			interpolatedT = sin32(t * PI32 * 0.5f);
 		} break;
 
 		INVALID_DEFAULT_CASE;

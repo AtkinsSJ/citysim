@@ -24,6 +24,9 @@ UIMessage:
 ✔ Animate them, with some kind of tweening system, so they pop up and down again
 - Record them maybe?
 
+Replace uses of SECONDS_PER_FRAME with the real deltaTime stored somewhere globally
+- For one thing, that'd allow us to modify the game speed for testing (eg, slow things down to view them carefully)
+
 Scrollbar improvements:
 - Convert drawScrollbar() to take a ScrollbarState
 	✔ need to convert the console to using a ScrollbarState first

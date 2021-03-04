@@ -290,24 +290,26 @@ void drawToast(UIState *uiState)
 			UIPanelStyle *style = findPanelStyle(assets->theme, "toast"_s);
 			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
 
-			if (toast->time < TOAST_APPEAR_TIME)
-			{
-				// Animate in
-				f32 t = toast->time / TOAST_APPEAR_TIME;
-				origin.y += round_s32(interpolate(100, 0, t, Interpolate_Sine));
-			}
-			else if (toast->time > (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME))
-			{
-				// Animate out
-				f32 t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
-				origin.y += round_s32(interpolate(0, 100, t, Interpolate_Sine));
-			}
-
 			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
 			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
 			V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (2 * style->margin));
 
 			V2I toastSize = v2i(textSize.x + (2 * style->margin), textSize.y + (2 * style->margin));
+
+			f32 animationDistance = toastSize.y + 16.0f;
+
+			if (toast->time < TOAST_APPEAR_TIME)
+			{
+				// Animate in
+				f32 t = toast->time / TOAST_APPEAR_TIME;
+				origin.y += round_s32(interpolate(animationDistance, 0, t, Interpolate_SineOut));
+			}
+			else if (toast->time > (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME))
+			{
+				// Animate out
+				f32 t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
+				origin.y += round_s32(interpolate(0, animationDistance, t, Interpolate_SineIn));
+			}
 			Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
 
 			UIPanel panel = UIPanel(toastBounds, style);
