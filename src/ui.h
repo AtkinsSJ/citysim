@@ -69,7 +69,7 @@ struct UIState
 	Stack<Rect2I> inputScissorRects;
 
 	// Toast stuff
-	Toast message;
+	Queue<Toast> toasts;
 
 	// Window stuff
 	ChunkedArray<struct Window> openWindows; // Order: index 0 is the top, then each one is below the previous

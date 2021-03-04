@@ -31,7 +31,7 @@ inline bool Queue<T>::isEmpty()
 }
 
 template <typename T>
-T *Queue<T>::push(T item)
+T *Queue<T>::push()
 {
 	if (endChunk == null)
 	{
@@ -58,7 +58,26 @@ T *Queue<T>::push(T item)
 	endChunk->count++;
 	count++;
 
+	return result;
+}
+
+template <typename T>
+T *Queue<T>::push(T item)
+{
+	T *result = push();
 	*result = item;
+	return result;
+}
+
+template <typename T>
+Maybe<T*> Queue<T>::peek()
+{
+	Maybe<T*> result = makeFailure<T*>();
+
+	if (!isEmpty())
+	{
+		result = makeSuccess(startChunk->items + startChunk->startIndex);
+	}
 
 	return result;
 }
@@ -68,7 +87,7 @@ Maybe<T> Queue<T>::pop()
 {
 	Maybe<T> result = makeFailure<T>();
 
-	if (count > 0)
+	if (!isEmpty())
 	{
 		result = makeSuccess(startChunk->items[startChunk->startIndex]);
 

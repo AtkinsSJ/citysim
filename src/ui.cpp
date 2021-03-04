@@ -8,9 +8,7 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 {
 	*uiState = {};
 
-	uiState->message = {};
-	uiState->message.text = makeString(uiState->message._chars, MAX_TOAST_LENGTH);
-	uiState->message.countdown = -1;
+	initQueue(&uiState->toasts, arena);
 
 	initChunkedArray(&uiState->uiRects, arena, 64);
 
@@ -262,19 +260,26 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 
 void pushToast(UIState *uiState, String message)
 {
-	copyString(message, &uiState->message.text);
-	uiState->message.countdown = uiMessageDisplayTime;
+	Toast *newToast = uiState->toasts.push();
+
+	*newToast = {};
+	newToast->text = makeString(newToast->_chars, MAX_TOAST_LENGTH);
+	copyString(message, &newToast->text);
+	newToast->countdown = uiMessageDisplayTime;
 }
 
 void drawToast(UIState *uiState)
 {
 	DEBUG_FUNCTION();
-	
-	if (uiState->message.countdown > 0)
-	{
-		uiState->message.countdown -= SECONDS_PER_FRAME;
 
-		if (uiState->message.countdown > 0)
+	Maybe<Toast*> currentToast = uiState->toasts.peek();
+	if (currentToast.isValid)
+	{
+		Toast *toast = currentToast.value;
+
+		toast->countdown -= SECONDS_PER_FRAME;
+
+		if (toast->countdown > 0)
 		{
 			UIPanelStyle *style = findPanelStyle(assets->theme, "toast"_s);
 
@@ -285,14 +290,18 @@ void drawToast(UIState *uiState)
 
 			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
 			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
-			V2I textSize = calculateTextSize(getFont(&labelStyle->font), uiState->message.text, maxWidth - (2 * style->margin));
+			V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (2 * style->margin));
 
 			V2I toastSize = v2i(textSize.x + (2 * style->margin), textSize.y + (2 * style->margin));
 			Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
 
-			UIPanel toast = UIPanel(toastBounds, style);
-			toast.addText(uiState->message.text);
-			toast.end();
+			UIPanel panel = UIPanel(toastBounds, style);
+			panel.addText(toast->text);
+			panel.end();
+		}
+		else
+		{
+			uiState->toasts.pop();
 		}
 	}
 }

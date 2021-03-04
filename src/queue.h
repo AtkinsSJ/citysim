@@ -31,7 +31,9 @@ template <typename T>
 struct Queue
 {
 	bool isEmpty();
+	T *push();
 	T *push(T item);
+	Maybe<T*> peek();
 	Maybe<T> pop();
 
 	QueueIterator<T> iterate(bool goBackwards = false);
