@@ -13,11 +13,11 @@ void initOccupancyArray(OccupancyArray<T> *array, MemoryArena *arena, s32 itemsP
 }
 
 template<typename T>
-Indexed<T*> append(OccupancyArray<T> *array)
+Indexed<T*> OccupancyArray<T>::append()
 {
 	Indexed<T*> result = {};
 
-	if (array->firstChunkWithSpace == null)
+	if (firstChunkWithSpace == null)
 	{
 		// Append a new chunk
 
@@ -26,66 +26,66 @@ Indexed<T*> append(OccupancyArray<T> *array)
 		// Actually, this one has two extra parts, so that's even more complicated...
 		// - Sam, 21/08/2019
 		smm structSize = sizeof(OccupancyArrayChunk<T>);
-		smm arraySize = sizeof(T) * array->itemsPerChunk;
-		s32 occupancyArrayCount = BitArray::calculateU64Count(array->itemsPerChunk);
+		smm arraySize = sizeof(T) * itemsPerChunk;
+		s32 occupancyArrayCount = BitArray::calculateU64Count(itemsPerChunk);
 		smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
 
-		Blob blob = allocateBlob(array->memoryArena, structSize + arraySize + occupancyArraySize);
+		Blob blob = allocateBlob(memoryArena, structSize + arraySize + occupancyArraySize);
 		OccupancyArrayChunk<T> *newChunk = (OccupancyArrayChunk<T> *)blob.memory;
 		*newChunk = {};
 		newChunk->items = (T *)(blob.memory + structSize);
-		initBitArray(&newChunk->occupancy, array->itemsPerChunk, makeArray(occupancyArrayCount, (u64 *)(blob.memory + structSize + arraySize)));
+		initBitArray(&newChunk->occupancy, itemsPerChunk, makeArray(occupancyArrayCount, (u64 *)(blob.memory + structSize + arraySize)));
 
-		array->chunkCount++;
+		chunkCount++;
 
 		// Attach the chunk to the end, but also make it the "firstChunkWithSpace"
-		if (array->firstChunk == null) array->firstChunk = newChunk;
+		if (firstChunk == null) firstChunk = newChunk;
 
-		if (array->lastChunk != null)
+		if (lastChunk != null)
 		{
-			array->lastChunk->nextChunk = newChunk;
-			newChunk->prevChunk = array->lastChunk;
+			lastChunk->nextChunk = newChunk;
+			newChunk->prevChunk = lastChunk;
 		}
-		array->lastChunk = newChunk;
+		lastChunk = newChunk;
 
-		array->firstChunkWithSpace = newChunk;
-		array->firstChunkWithSpaceIndex = array->chunkCount - 1;
+		firstChunkWithSpace = newChunk;
+		firstChunkWithSpaceIndex = chunkCount - 1;
 	}
 
-	OccupancyArrayChunk<T> *chunk = array->firstChunkWithSpace;
+	OccupancyArrayChunk<T> *chunk = firstChunkWithSpace;
 
 	// getFirstUnsetBitIndex() to find the free slot
 	s32 indexInChunk = chunk->occupancy.getFirstUnsetBitIndex();
-	ASSERT(indexInChunk >= 0 && indexInChunk < array->itemsPerChunk);
+	ASSERT(indexInChunk >= 0 && indexInChunk < itemsPerChunk);
 
 	// mark that slot as occupied
 	chunk->occupancy.setBit(indexInChunk);
-	result.index = indexInChunk + (array->firstChunkWithSpaceIndex * array->itemsPerChunk);
+	result.index = indexInChunk + (firstChunkWithSpaceIndex * itemsPerChunk);
 	result.value = chunk->items + indexInChunk;
 
 	// Make sure the "new" element is actually new and blank and fresh
 	*result.value = {};
 
 	// update counts
-	array->count++;
+	count++;
 
-	if (chunk->occupancy.setBitCount == array->itemsPerChunk)
+	if (chunk->occupancy.setBitCount == itemsPerChunk)
 	{
 		// recalculate firstChunkWithSpace/Index
-		if (array->count == array->itemsPerChunk * array->chunkCount)
+		if (count == itemsPerChunk * chunkCount)
 		{
 			// We're full! So just set the firstChunkWithSpace to null
-			array->firstChunkWithSpace = null;
-			array->firstChunkWithSpaceIndex = -1;
+			firstChunkWithSpace = null;
+			firstChunkWithSpaceIndex = -1;
 		}
 		else
 		{
 			// There's a chunk with space, we just have to find it
-			// Assuming that array->firstChunkWithSpace is the first chunk with space, we just need to walk forwards from it.
+			// Assuming that firstChunkWithSpace is the first chunk with space, we just need to walk forwards from it.
 			// (If that's not, we have bigger problems!)
 			OccupancyArrayChunk<T> *nextChunk = chunk->nextChunk;
-			s32 nextChunkIndex = array->firstChunkWithSpaceIndex + 1;
-			while (nextChunk->occupancy.setBitCount == array->itemsPerChunk)
+			s32 nextChunkIndex = firstChunkWithSpaceIndex + 1;
+			while (nextChunk->occupancy.setBitCount == itemsPerChunk)
 			{
 				// NB: We don't check for a null nextChunk. It should never be null - if it is, something is corrupted
 				// and we want to crash here, and the dereference will do that so no need to assert!
@@ -94,86 +94,52 @@ Indexed<T*> append(OccupancyArray<T> *array)
 				nextChunkIndex++;
 			}
 
-			array->firstChunkWithSpace = nextChunk;
-			array->firstChunkWithSpaceIndex = nextChunkIndex;
+			firstChunkWithSpace = nextChunk;
+			firstChunkWithSpaceIndex = nextChunkIndex;
 		}
 	}
 
-	ASSERT(result.value == get(array, result.index));
+	ASSERT(result.value == get(result.index));
 
 	return result;
 }
 
 template<typename T>
-OccupancyArrayChunk<T> *getChunkByIndex(OccupancyArray<T> *array, s32 chunkIndex)
+void OccupancyArray<T>::removeIndex(s32 indexToRemove)
 {
-	ASSERT(chunkIndex >= 0 && chunkIndex < array->chunkCount); //chunkIndex is out of range!
+	ASSERT(indexToRemove < chunkCount * itemsPerChunk);
 
-	OccupancyArrayChunk<T> *chunk = null;
+	s32 chunkIndex = indexToRemove / itemsPerChunk;
+	s32 itemIndex  = indexToRemove % itemsPerChunk;
 
-	// Shortcuts for known values
-	if (chunkIndex == 0)
-	{
-		chunk = array->firstChunk;
-	}
-	else if (chunkIndex == (array->chunkCount - 1))
-	{
-		chunk = array->lastChunk;
-	}
-	else if (chunkIndex == array->firstChunkWithSpaceIndex)
-	{
-		chunk = array->firstChunkWithSpace;
-	}
-	else
-	{
-		// Walk the chunk chain
-		chunk = array->firstChunk;
-		while (chunkIndex > 0)
-		{
-			chunkIndex--;
-			chunk = chunk->nextChunk;
-		}
-	}
-
-	return chunk;
-}
-
-template<typename T>
-void removeIndex(OccupancyArray<T> *array, s32 indexToRemove)
-{
-	ASSERT(indexToRemove < array->chunkCount * array->itemsPerChunk);
-
-	s32 chunkIndex = indexToRemove / array->itemsPerChunk;
-	s32 itemIndex  = indexToRemove % array->itemsPerChunk;
-
-	OccupancyArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+	OccupancyArrayChunk<T> *chunk = getChunkByIndex(chunkIndex);
 
 	// Mark it as unoccupied
 	ASSERT(chunk->occupancy[itemIndex]);
 	chunk->occupancy.unsetBit(itemIndex);
 
 	// Decrease counts
-	array->count--;
+	count--;
 
 	// Update firstChunkWithSpace/Index if the index is lower.
-	if (chunkIndex < array->firstChunkWithSpaceIndex)
+	if (chunkIndex < firstChunkWithSpaceIndex)
 	{
-		array->firstChunkWithSpaceIndex = chunkIndex;
-		array->firstChunkWithSpace = chunk;
+		firstChunkWithSpaceIndex = chunkIndex;
+		firstChunkWithSpace = chunk;
 	}
 }
 
 template<typename T>
-T *get(OccupancyArray<T> *array, s32 index)
+T *OccupancyArray<T>::get(s32 index)
 {
-	ASSERT(index < array->chunkCount * array->itemsPerChunk);
+	ASSERT(index < chunkCount * itemsPerChunk);
 
 	T *result = null;
 
-	s32 chunkIndex = index / array->itemsPerChunk;
-	s32 itemIndex  = index % array->itemsPerChunk;
+	s32 chunkIndex = index / itemsPerChunk;
+	s32 itemIndex  = index % itemsPerChunk;
 
-	OccupancyArrayChunk<T> *chunk = getChunkByIndex(array, chunkIndex);
+	OccupancyArrayChunk<T> *chunk = getChunkByIndex(chunkIndex);
 
 	if (chunk != null && chunk->occupancy[itemIndex])
 	{
@@ -203,6 +169,40 @@ OccupancyArrayIterator<T> OccupancyArray<T>::iterate()
 	}
 
 	return iterator;
+}
+
+template<typename T>
+OccupancyArrayChunk<T> *OccupancyArray<T>::getChunkByIndex(s32 chunkIndex)
+{
+	ASSERT(chunkIndex >= 0 && chunkIndex < chunkCount); //chunkIndex is out of range!
+
+	OccupancyArrayChunk<T> *chunk = null;
+
+	// Shortcuts for known values
+	if (chunkIndex == 0)
+	{
+		chunk = firstChunk;
+	}
+	else if (chunkIndex == (chunkCount - 1))
+	{
+		chunk = lastChunk;
+	}
+	else if (chunkIndex == firstChunkWithSpaceIndex)
+	{
+		chunk = firstChunkWithSpace;
+	}
+	else
+	{
+		// Walk the chunk chain
+		chunk = firstChunk;
+		while (chunkIndex > 0)
+		{
+			chunkIndex--;
+			chunk = chunk->nextChunk;
+		}
+	}
+
+	return chunk;
 }
 
 template<typename T>

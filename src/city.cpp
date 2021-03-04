@@ -23,7 +23,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 	}
 
 	initOccupancyArray(&city->buildings, gameArena, 1024);
-	append(&city->buildings); // Null building
+	city->buildings.append(); // Null building
 
 	initOccupancyArray(&city->entities, gameArena, 1024);
 
@@ -54,7 +54,7 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 template <typename T>
 Entity *addEntity(City *city, EntityType type, T *entityData)
 {
-	auto entityRecord = append(&city->entities);
+	Indexed<Entity*> entityRecord = city->entities.append();
 	// logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
 	entityRecord.value->index = entityRecord.index;
 
@@ -75,7 +75,7 @@ Entity *addEntity(City *city, EntityType type, T *entityData)
 inline void removeEntity(City *city, Entity *entity)
 {
 	// logInfo("Removing entity #{0}"_s, {formatInt(entity->index)});
-	removeIndex(&city->entities, entity->index);
+	city->entities.removeIndex(entity->index);
 }
 
 void drawEntities(City *city, Rect2I visibleTileBounds)
@@ -117,7 +117,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 {
 	DEBUG_FUNCTION();
 
-	auto buildingSlot = append(&city->buildings);
+	Indexed<Building*> buildingSlot = city->buildings.append();
 	s32 buildingIndex = buildingSlot.index;
 	Building *building = buildingSlot.value;
 	building->id = id;
@@ -385,7 +385,7 @@ void demolishRect(City *city, Rect2I area)
 		building->typeID = -1;
 
 		s32 buildingIndex = city->tileBuildingIndex.get(buildingFootprint.x, buildingFootprint.y);
-		removeIndex(&city->buildings, buildingIndex);
+		city->buildings.removeIndex(buildingIndex);
 		removeEntity(city, building->entity);
 
 		building = null; // For safety, because we just deleted the Building!
@@ -547,7 +547,7 @@ Building* getBuildingAt(City *city, s32 x, s32 y)
 		u32 buildingID = city->tileBuildingIndex.get(x, y);
 		if (buildingID > 0)
 		{
-			result = get(&city->buildings, buildingID);
+			result = city->buildings.get(buildingID);
 		}
 	}
 

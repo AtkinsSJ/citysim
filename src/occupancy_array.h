@@ -31,20 +31,17 @@ struct OccupancyArray
 	OccupancyArrayChunk<T> *firstChunkWithSpace;
 
 // Methods
+	Indexed<T*> append();
+	T *get(s32 index);
+	void removeIndex(s32 indexToRemove);
+
 	OccupancyArrayIterator<T> iterate();
+
+	OccupancyArrayChunk<T> *getChunkByIndex(s32 chunkIndex);
 };
 
 template<typename T>
 void initOccupancyArray(OccupancyArray<T> *array, MemoryArena *arena, s32 itemsPerChunk);
-
-template<typename T>
-Indexed<T*> append(OccupancyArray<T> *array);
-
-template<typename T>
-void removeIndex(OccupancyArray<T> *array, s32 indexToRemove);
-
-template<typename T>
-T *get(OccupancyArray<T> *array, s32 index);
 
 template<typename T>
 struct OccupancyArrayIterator

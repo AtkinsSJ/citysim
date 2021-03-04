@@ -38,7 +38,7 @@ void initBuildingCatalogue()
 	// So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
 	// and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
 	// Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
-	Indexed<BuildingDef*> nullBuildingDef = append(&catalogue->allBuildings);
+	Indexed<BuildingDef*> nullBuildingDef = catalogue->allBuildings.append();
 	*nullBuildingDef.value = {};
 	initFlags(&nullBuildingDef.value->flags, BuildingFlagCount);
 	initFlags(&nullBuildingDef.value->transportTypes, TransportTypeCount);
@@ -95,7 +95,7 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 
 BuildingDef *appendNewBuildingDef(String name)
 {
-	Indexed<BuildingDef *> newDef = append(&buildingCatalogue.allBuildings);
+	Indexed<BuildingDef *> newDef = buildingCatalogue.allBuildings.append();
 	BuildingDef *result = newDef.value;
 	result->name = intern(&buildingCatalogue.buildingNames, name);
 	result->typeID = newDef.index;
@@ -624,7 +624,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
 
 			catalogue->buildingsByName.removeKey(buildingID);
 
-			removeIndex(&catalogue->allBuildings, def->typeID);
+			catalogue->allBuildings.removeIndex(def->typeID);
 
 			catalogue->buildingNameToTypeID.removeKey(buildingID);
 		}
@@ -645,11 +645,11 @@ void removeBuildingDefs(Array<String> idsToRemove)
 
 inline BuildingDef *getBuildingDef(s32 buildingTypeID)
 {
-	BuildingDef *result = get(&buildingCatalogue.allBuildings, 0);
+	BuildingDef *result = buildingCatalogue.allBuildings.get(0);
 
 	if (buildingTypeID > 0 && buildingTypeID < buildingCatalogue.allBuildings.count)
 	{
-		BuildingDef *found = get(&buildingCatalogue.allBuildings, buildingTypeID);
+		BuildingDef *found = buildingCatalogue.allBuildings.get(buildingTypeID);
 		if (found != null) result = found;
 	}
 

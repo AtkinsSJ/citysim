@@ -30,7 +30,7 @@ void initTerrainCatalogue()
 	terrainCatalogue = {};
 
 	initOccupancyArray(&terrainCatalogue.terrainDefs, &globalAppState.systemArena, 128);
-	Indexed<TerrainDef*> nullTerrainDef = append(&terrainCatalogue.terrainDefs);
+	Indexed<TerrainDef*> nullTerrainDef = terrainCatalogue.terrainDefs.append();
 	*nullTerrainDef.value = {};
 
 	initHashTable(&terrainCatalogue.terrainDefsByName, 0.75f, 128);
@@ -87,7 +87,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 					return;
 				}
 
-				Indexed<TerrainDef *> slot = append(&terrainCatalogue.terrainDefs);
+				Indexed<TerrainDef *> slot = terrainCatalogue.terrainDefs.append();
 				def = slot.value;
 
 				if (slot.index > u8Max)
@@ -143,7 +143,7 @@ void removeTerrainDefs(Array<String> namesToRemove)
 		s32 terrainIndex = findTerrainTypeByName(terrainName);
 		if (terrainIndex > 0)
 		{
-			removeIndex(&terrainCatalogue.terrainDefs, terrainIndex);
+			terrainCatalogue.terrainDefs.removeIndex(terrainIndex);
 
 			terrainCatalogue.terrainNameToType.removeKey(terrainName);
 		}
@@ -152,11 +152,11 @@ void removeTerrainDefs(Array<String> namesToRemove)
 
 inline TerrainDef *getTerrainDef(u8 terrainType)
 {
-	TerrainDef *result = get(&terrainCatalogue.terrainDefs, 0);
+	TerrainDef *result = terrainCatalogue.terrainDefs.get(0);
 
 	if (terrainType > 0 && terrainType < terrainCatalogue.terrainDefs.count)
 	{
-		TerrainDef *found = get(&terrainCatalogue.terrainDefs, terrainType);
+		TerrainDef *found = terrainCatalogue.terrainDefs.get(terrainType);
 		if (found != null) result = found;
 	}
 
