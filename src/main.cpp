@@ -38,6 +38,9 @@ struct Settings     *settings;
 
 #include "log.h"
 #include "types.h"
+#include "maths.h"
+#include "vector.h"
+#include "rectangle.h"
 #include "memory.h"
 #include "string.h"
 #include "random.h"
@@ -148,6 +151,7 @@ AppState globalAppState;
 #include "line_reader.cpp"
 #include "linked_list.cpp"
 #include "log.cpp"
+#include "maths.cpp"
 #include "memory.cpp"
 #include "occupancy_array.cpp"
 #include "pathing.cpp"
@@ -155,6 +159,7 @@ AppState globalAppState;
 #include "power.cpp"
 #include "queue.cpp"
 #include "random.cpp"
+#include "rectangle.cpp"
 #include "render.cpp"
 #include "save_file.cpp"
 #include "saved_games.cpp"
@@ -175,6 +180,7 @@ AppState globalAppState;
 #include "ui.cpp"
 #include "uitheme.cpp"
 #include "unicode.cpp"
+#include "vector.cpp"
 #include "write_buffer.cpp"
 #include "zone.cpp"
 
