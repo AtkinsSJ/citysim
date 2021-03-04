@@ -265,7 +265,9 @@ void pushToast(UIState *uiState, String message)
 	*newToast = {};
 	newToast->text = makeString(newToast->_chars, MAX_TOAST_LENGTH);
 	copyString(message, &newToast->text);
-	newToast->countdown = uiMessageDisplayTime;
+
+	newToast->duration = TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME + TOAST_DISAPPEAR_TIME;
+	newToast->time = 0;
 }
 
 void drawToast(UIState *uiState)
@@ -277,16 +279,29 @@ void drawToast(UIState *uiState)
 	{
 		Toast *toast = currentToast.value;
 
-		toast->countdown -= SECONDS_PER_FRAME;
+		toast->time += SECONDS_PER_FRAME;
 
-		if (toast->countdown > 0)
+		if (toast->time >= toast->duration)
+		{
+			uiState->toasts.pop();
+		}
+		else
 		{
 			UIPanelStyle *style = findPanelStyle(assets->theme, "toast"_s);
-
-			// f32 t = (f32)uiState->message.countdown / uiMessageDisplayTime;
-			// TODO: Animate this based on t.
-			// Though probably we want to keep a little animation-state enum instead of just a timer.
 			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
+
+			if (toast->time < TOAST_APPEAR_TIME)
+			{
+				// Animate in
+				f32 t = toast->time / TOAST_APPEAR_TIME;
+				origin.y += round_s32(interpolate(100, 0, t, Interpolate_Sine));
+			}
+			else if (toast->time > (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME))
+			{
+				// Animate out
+				f32 t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
+				origin.y += round_s32(interpolate(0, 100, t, Interpolate_Sine));
+			}
 
 			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
 			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
@@ -298,10 +313,6 @@ void drawToast(UIState *uiState)
 			UIPanel panel = UIPanel(toastBounds, style);
 			panel.addText(toast->text);
 			panel.end();
-		}
-		else
-		{
-			uiState->toasts.pop();
 		}
 	}
 }

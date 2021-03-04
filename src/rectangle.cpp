@@ -151,6 +151,9 @@ inline Rect2 intersect(Rect2 inner, Rect2 outer)
 		result.h -= topExtension;
 	}
 
+	result.w = max(result.w, 0.0f);
+	result.h = max(result.h, 0.0f);
+
 	return result;
 }
 
@@ -433,6 +436,9 @@ inline Rect2I intersect(Rect2I inner, Rect2I outer)
 		result.y += topExtension;
 		result.h -= topExtension;
 	}
+
+	result.w = max(result.w, 0);
+	result.h = max(result.h, 0);
 
 	return result;
 }

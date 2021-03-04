@@ -21,7 +21,7 @@ Notes for searching:
 UIMessage:
 ✔ Rename to Toast, because that's what I call them
 ✔ Queue them, instead of having one that's overwritten
-- Animate them, with some kind of tweening system, so they pop up and down again
+✔ Animate them, with some kind of tweening system, so they pop up and down again
 - Record them maybe?
 
 Scrollbar improvements:

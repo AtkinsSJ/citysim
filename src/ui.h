@@ -27,11 +27,15 @@ struct UIStyleRef
 	UIStyleRef(UIStyleType type, String name) : styleType(type), name(name) {}
 };
 
-const f32 uiMessageDisplayTime = 2.0f;
+const f32 TOAST_APPEAR_TIME    = 0.2f;
+const f32 TOAST_DISPLAY_TIME   = 2.0f;
+const f32 TOAST_DISAPPEAR_TIME = 0.2f;
 const s32 MAX_TOAST_LENGTH = 1024;
 struct Toast
 {
-	f32 countdown; // In seconds
+	f32 duration;
+	f32 time; // In seconds, from 0 to duration
+
 	String text;
 	char _chars[MAX_TOAST_LENGTH];
 };
