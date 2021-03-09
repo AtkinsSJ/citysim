@@ -76,6 +76,7 @@ struct UIPanel
 	void prepareForWidgets();
 	Rect2I getCurrentLayoutPosition();
 	void completeWidget(V2I widgetSize);
+	UIPanelStyle *getPanelStyle(String styleName);
 
 	// Call after modifying the contentArea. Updates the positions fields to match.
 	void updateLayoutPosition();

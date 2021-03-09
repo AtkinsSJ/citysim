@@ -328,22 +328,18 @@ void confirmDeleteSaveWindowProc(WindowContext *context, void * /*userData*/)
 	SavedGameInfo *savedGame = savedGamesCatalogue.savedGames.get(savedGamesCatalogue.selectedSavedGameIndex);
 
 	ui->addText(getText("msg_delete_save_confirm"_s, {savedGame->shortName}));
+	ui->startNewLine(ALIGN_RIGHT);
 
-	UIPanel buttonBar = ui->row(26, ALIGN_TOP, "plain"_s); // NB: Magic number, from manually measuring the button height!
-	buttonBar.alignWidgets(ALIGN_RIGHT);
-
-	if (buttonBar.addButton(getText("button_delete"_s), Button_Normal, "delete"_s))
+	if (ui->addButton(getText("button_delete"_s), Button_Normal, "delete"_s))
 	{
 		deleteSave(globalAppState.uiState, savedGame);
 		context->closeRequested = true;
 	}
 
-	if (buttonBar.addButton(getText("button_cancel"_s)))
+	if (ui->addButton(getText("button_cancel"_s)))
 	{
 		context->closeRequested = true;
 	}
-
-	buttonBar.end();
 }
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)

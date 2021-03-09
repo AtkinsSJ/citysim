@@ -290,9 +290,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 	startNewLine();
 
-	UIPanelStyle *rowStyle = null;
-	if (!isEmpty(styleName)) rowStyle = findPanelStyle(assets->theme, styleName);
-	if (rowStyle == null)    rowStyle = this->style;
+	UIPanelStyle *rowStyle = getPanelStyle(styleName);
 
 	if (vAlignment == ALIGN_TOP)
 	{
@@ -346,9 +344,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 
 	startNewLine();
 
-	UIPanelStyle *columnStyle = null;
-	if (!isEmpty(styleName)) columnStyle = findPanelStyle(assets->theme, styleName);
-	if (columnStyle == null) columnStyle = this->style;
+	UIPanelStyle *columnStyle = getPanelStyle(styleName);
 
 	if (hAlignment == ALIGN_LEFT)
 	{
@@ -689,6 +685,15 @@ void UIPanel::completeWidget(V2I widgetSize)
 		// New line with the same alignment
 		startNewLine();
 	}
+}
+
+inline UIPanelStyle *UIPanel::getPanelStyle(String styleName)
+{
+	UIPanelStyle *result = null;
+	if (!isEmpty(styleName)) result = findPanelStyle(assets->theme, styleName);
+	if (result == null)      result = this->style;
+
+	return result;
 }
 
 void UIPanel::updateLayoutPosition()
