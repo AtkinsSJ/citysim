@@ -342,7 +342,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	City *city = &gameState->city;
 
 	V2I tilePos = gameState->inspectedTilePosition;
-	context->window->title = myprintf(getText("title_inspect"_s), {formatInt(tilePos.x), formatInt(tilePos.y)});
+	context->window->title = getText("title_inspect"_s, {formatInt(tilePos.x), formatInt(tilePos.y)});
 
 	// CitySector
 	CitySector *sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
