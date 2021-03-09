@@ -148,7 +148,7 @@ void showLoadGameWindow(UIState *uiState)
 	catalogue->selectedSavedGameName = nullString;
 	catalogue->selectedSavedGameIndex = -1;
 
-	showWindow(uiState, getText("title_load_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc, null);
+	showWindow(uiState, getText("title_load_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc);
 }
 
 void showSaveGameWindow(UIState *uiState)
@@ -230,10 +230,9 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	if (selectedSavedGame)
 	{
 		ui->alignWidgets(ALIGN_RIGHT);
-		// if (ui->addButton(getText("button_delete_save"_s), Button_Normal, "delete"_s))
 		if (ui->addImageButton(getSprite("icon_delete"_s), Button_Normal, "delete"_s))
 		{
-			deleteSave(globalAppState.uiState, selectedSavedGame);
+			showWindow(globalAppState.uiState, getText("title_delete_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal, confirmDeleteSaveWindowProc);
 		}
 
 		ui->alignWidgets(ALIGN_EXPAND_H);
@@ -320,6 +319,31 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		}
 	}
 	bottomBar.end();
+}
+
+void confirmDeleteSaveWindowProc(WindowContext *context, void * /*userData*/)
+{
+	UIPanel *ui = &context->windowPanel;
+
+	SavedGameInfo *savedGame = savedGamesCatalogue.savedGames.get(savedGamesCatalogue.selectedSavedGameIndex);
+
+	ui->addText(getText("msg_delete_save_confirm"_s, {savedGame->shortName}));
+
+	UIPanel buttonBar = ui->row(26, ALIGN_TOP, "plain"_s); // NB: Magic number, from manually measuring the button height!
+	buttonBar.alignWidgets(ALIGN_RIGHT);
+
+	if (buttonBar.addButton(getText("button_delete"_s), Button_Normal, "delete"_s))
+	{
+		deleteSave(globalAppState.uiState, savedGame);
+		context->closeRequested = true;
+	}
+
+	if (buttonBar.addButton(getText("button_cancel"_s)))
+	{
+		context->closeRequested = true;
+	}
+
+	buttonBar.end();
 }
 
 void loadGame(UIState *uiState, SavedGameInfo *savedGame)

@@ -121,7 +121,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, UIScrollbarStyle *style);
 f32 getScrollbarPercent(ScrollbarState *state, s32 scrollbarHeight); // Percent meaning 0.99 = 99%. (I know that's not a percent, but whatever)
 
-void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData);
+void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData = null);
 // Is this something we should actually expose??? IDK
 void basicTooltipWindowProc(WindowContext *context, void *userData);
 

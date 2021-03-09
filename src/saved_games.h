@@ -57,6 +57,7 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame);
 bool deleteSave(UIState *uiState, SavedGameInfo *savedGame);
 
 void savedGamesWindowProc(WindowContext *context, void *userData);
+void confirmDeleteSaveWindowProc(WindowContext *context, void *userData);
 void showSaveGameWindow(UIState *uiState);
 void showLoadGameWindow(UIState *uiState);
 void saveGameWindowOnClose(WindowContext *context, void *userData);

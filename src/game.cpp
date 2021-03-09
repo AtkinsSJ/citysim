@@ -555,7 +555,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		{
 			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
 					   WinFlag_Unique | WinFlag_Modal | WinFlag_AutomaticHeight | WinFlag_Pause,
-					   pauseMenuWindowProc, null);
+					   pauseMenuWindowProc);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 

@@ -31,7 +31,7 @@ Scrollbar improvements:
 	Maybe we save the content height in the ScrollbarState? We can't put it in the Panel, as the Panel doesn't exist across frames.
 
 Window/UI System features:
-- Confirmation dialogs
+✔ Confirmation dialogs
 ✔ Frames
 ✔ Embedded images
 ✔ Image buttons
@@ -42,7 +42,7 @@ Window/UI System features:
 Saving and loading:
 - Save/Load window revamp!
 - Deleting saved games
-	- Add a confirmation dialog!
+	✔ Add a confirmation dialog!
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 

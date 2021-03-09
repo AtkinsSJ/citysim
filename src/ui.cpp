@@ -36,7 +36,8 @@ inline bool justClickedOnUI(UIState *uiState, Rect2I bounds)
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	Rect2I clippedBounds = isInputScissorActive(uiState) ? intersect(bounds, getInputScissorRect(uiState)) : bounds;
 
-	bool result = contains(clippedBounds, mousePos)
+	bool result = !uiState->mouseInputHandled
+			   && contains(clippedBounds, mousePos)
 			   && mouseButtonJustReleased(MouseButton_Left)
 			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
 
@@ -208,7 +209,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 		if (tooltip.length)
 		{
 			uiState->tooltipText = tooltip;
-			showTooltip(uiState, basicTooltipWindowProc, null);
+			showTooltip(uiState, basicTooltipWindowProc);
 		}
 	}
 	else if (state == Button_Active)

@@ -1,12 +1,26 @@
 #pragma once
 
-static void makeWindowActive(UIState *uiState, s32 windowIndex)
-{
-	// Don't do anything if it's already the active window.
-	if (windowIndex == 0)  return;
-
-	uiState->openWindows.moveItemKeepingOrder(windowIndex, 0);
-}
+WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender)
+	: window(window),
+	  windowStyle(windowStyle),
+	  uiState(uiState),
+	  doUpdate(doUpdate),
+	  doRender(doRender),
+	  windowPanel(
+	  	  irectXYWH(
+	  	  		window->area.x,
+	  	  		window->area.y + ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight),
+	  	  		window->area.w,
+	  	  		(window->flags & WinFlag_AutomaticHeight) ? 10000 : 
+	  	  			(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))
+	  	  ),
+	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
+	      Panel_LayoutTopToBottom
+	       | ((window->flags & WinFlag_Tooltip) ? 0 : Panel_BlocksMouse)
+	       | (doUpdate ? Panel_DoUpdate : 0)
+	       | (doRender ? Panel_DoRender : 0)
+	  )
+{}
 
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
@@ -81,37 +95,6 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 		makeWindowActive(uiState, truncate32(uiState->openWindows.count-1));
 	}
 }
-
-inline static
-Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
-{
-	return irectXYWH(windowArea.x + margin,
-					windowArea.y + barHeight + margin,
-					windowArea.w - (margin * 2),
-					windowArea.h - barHeight - (margin * 2));
-}
-
-WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender)
-	: window(window),
-	  windowStyle(windowStyle),
-	  uiState(uiState),
-	  doUpdate(doUpdate),
-	  doRender(doRender),
-	  windowPanel(
-	  	  irectXYWH(
-	  	  		window->area.x,
-	  	  		window->area.y + ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight),
-	  	  		window->area.w,
-	  	  		(window->flags & WinFlag_AutomaticHeight) ? 10000 : 
-	  	  			(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))
-	  	  ),
-	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
-	      Panel_LayoutTopToBottom
-	       | ((window->flags & WinFlag_Tooltip) ? 0 : Panel_BlocksMouse)
-	       | (doUpdate ? Panel_DoUpdate : 0)
-	       | (doRender ? Panel_DoRender : 0)
-	  )
-{}
 
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
 {
@@ -398,4 +381,21 @@ void renderWindows(UIState *uiState)
 			uiText(&renderer->uiBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, titleColor);
 		}
 	}
+}
+
+static void makeWindowActive(UIState *uiState, s32 windowIndex)
+{
+	// Don't do anything if it's already the active window.
+	if (windowIndex == 0)  return;
+
+	uiState->openWindows.moveItemKeepingOrder(windowIndex, 0);
+}
+
+inline static
+Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
+{
+	return irectXYWH(windowArea.x + margin,
+					windowArea.y + barHeight + margin,
+					windowArea.w - (margin * 2),
+					windowArea.h - barHeight - (margin * 2));
 }

@@ -51,7 +51,7 @@ struct Window
 //
 // PUBLIC
 //
-void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose=null);
+void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData = null, WindowProc onClose = null);
 
 void updateWindows(UIState *uiState);
 void renderWindows(UIState *uiState);
@@ -61,5 +61,3 @@ void renderWindows(UIState *uiState);
 //
 static void makeWindowActive(UIState *uiState, s32 windowIndex);
 static Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding);
-
-WindowContext makeWindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender);

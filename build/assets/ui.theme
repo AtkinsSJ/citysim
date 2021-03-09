@@ -25,11 +25,10 @@ textAlignment          H_CENTRE V_CENTRE
 
 :Button delete
 extends default
-background        color 192 128 128 255
-background             color 192 128 128 255
-hoverBackground        color 255 128 128 255
-pressedBackground      color 220 128 128 255
-disabledBackground     color 128  64  64 255
+background             ninepatch btn_white 230 100 100 255
+hoverBackground        ninepatch btn_white 255 120 120 255
+pressedBackground      ninepatch btn_white 220 100 100 255
+disabledBackground     ninepatch btn_white 128  64  64 255
 
 :Label title
 font              normal

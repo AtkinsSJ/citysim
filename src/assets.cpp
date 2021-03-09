@@ -945,6 +945,13 @@ inline String getText(String name)
 	return result;
 }
 
+inline String getText(String name, std::initializer_list<String> args)
+{
+	String format = getText(name);
+
+	return myprintf(format, args);
+}
+
 String getAssetPath(AssetType type, String shortName)
 {
 	String result = shortName;

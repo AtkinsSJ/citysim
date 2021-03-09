@@ -86,6 +86,7 @@ SpriteRef getSpriteRef(String groupName, s32 spriteIndex);
 Sprite *getSprite(SpriteRef *ref);
 
 String getText(String name);
+String getText(String name, std::initializer_list<String> args);
 
 //
 // Internal
