@@ -37,7 +37,7 @@ struct UIPanel
 {
 	UIPanel(Rect2I bounds, UIPanelStyle *style = null, u32 flags = PanelDefaultFlags);
 	UIPanel(Rect2I bounds, String styleName, u32 flags = PanelDefaultFlags)
-		: UIPanel(bounds, findPanelStyle(assets->theme, styleName), flags) {}
+		: UIPanel(bounds, findStyle<UIPanelStyle>(styleName), flags) {}
 
 	// Configuration functions, which should be called before adding any widgets
 	void enableHorizontalScrolling(ScrollbarState *hScrollbar);

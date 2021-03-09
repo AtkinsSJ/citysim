@@ -462,7 +462,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	V2I centre = v2i(renderer->uiCamera.pos);
 	UITheme *theme = assets->theme;
-	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
+	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 	City *city = &gameState->city;
 
@@ -489,7 +489,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// We're sizing the clock area based on the speed control buttons.
 		// The >>> button is the largest, so they're all set to that size.
 		// For the total area, we just add their widths and padding together.
-		UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
+		UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
 		V2I speedButtonSize = calculateButtonSize(">>>"_s, buttonStyle);
 		s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
 
@@ -543,8 +543,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	uiText(uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
 	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-	UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
-	UIPanelStyle *popupMenuPanelStyle = findPanelStyle(theme, "popupMenu"_s);
+	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
+	UIPanelStyle *popupMenuPanelStyle = findStyle<UIPanelStyle>("popupMenu"_s);
 	// Build UI
 	{
 		// The, um, "MENU" menu. Hmmm.
@@ -1162,12 +1162,12 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	UITheme *theme = assets->theme;
-	UILabelStyle *labelStyle = findLabelStyle(theme, "title"_s);
+	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
-	UIButtonStyle *buttonStyle = findButtonStyle(theme, "default"_s);
-	UIPanelStyle *popupMenuPanelStyle = findPanelStyle(theme, "popupMenu"_s);
+	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
+	UIPanelStyle *popupMenuPanelStyle = findStyle<UIPanelStyle>("popupMenu"_s);
 
 	// Data-views menu
 	String dataViewButtonText = getText("button_data_views"_s);

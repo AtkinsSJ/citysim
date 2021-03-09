@@ -223,13 +223,27 @@ void initUIStyleProperties();
 void loadUITheme(Blob data, struct Asset *asset);
 
 template <typename T>
-T* findStyle(UITheme *theme, UIStyleRef *reference);
+T* findStyle(UIStyleRef *reference);
 
 template <typename T>
-inline T* findStyle(UIStyleRef *reference)
+inline T* findStyle(String styleName, UIStyleRef *defaultStyle)
 {
-	return findStyle<T>(assets->theme, reference);
+	T *result = null;
+	if (!isEmpty(styleName)) result = findStyle<T>(styleName);
+	if (result == null)      result = findStyle<T>(defaultStyle);
+
+	return result;
 }
+
+template <typename T>
+T* findStyle(String styleName);
+template <> UIButtonStyle    *findStyle<UIButtonStyle>   (String styleName);
+template <> UIConsoleStyle   *findStyle<UIConsoleStyle>  (String styleName);
+template <> UILabelStyle     *findStyle<UILabelStyle>    (String styleName);
+template <> UIPanelStyle     *findStyle<UIPanelStyle>    (String styleName);
+template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName);
+template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName);
+template <> UIWindowStyle    *findStyle<UIWindowStyle>   (String styleName);
 
 template <typename T>
 T* findInArrayByName(Array<T> *array, String name)
@@ -248,33 +262,4 @@ T* findInArrayByName(Array<T> *array, String name)
 	}
 
 	return result;
-}
-
-inline UIButtonStyle *findButtonStyle(UITheme *theme, String name)
-{
-	return findInArrayByName(&theme->buttonStyles, name);
-}
-inline UIConsoleStyle *findConsoleStyle(UITheme *theme, String name)
-{
-	return findInArrayByName(&theme->consoleStyles, name);
-}
-inline UILabelStyle *findLabelStyle(UITheme *theme, String name)
-{
-	return findInArrayByName(&theme->labelStyles, name);
-}
-inline UIPanelStyle *findPanelStyle(UITheme *theme, String name)
-{
-	return findInArrayByName(&theme->panelStyles, name);
-}
-inline UIScrollbarStyle *findScrollbarStyle(UITheme *theme, String name)
-{
-	return findInArrayByName(&theme->scrollbarStyles, name);
-}
-inline UITextInputStyle *findTextInputStyle(UITheme *theme, String name)
-{
-	return findInArrayByName(&theme->textInputStyles, name);
-}
-inline UIWindowStyle *findWindowStyle(UITheme *theme, String name)
-{
-	return findInArrayByName(&theme->windowStyles, name);
 }

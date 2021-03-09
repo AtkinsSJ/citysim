@@ -6,7 +6,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 
 	if (panelStyle == null)
 	{
-		this->style = findPanelStyle(assets->theme, "default"_s);
+		this->style = findStyle<UIPanelStyle>("default"_s);
 	}
 	else
 	{
@@ -84,9 +84,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	
 	prepareForWidgets();
 
-	UIButtonStyle *buttonStyle = null;
-	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(assets->theme, styleName);
-	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&this->style->buttonStyle);
+	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(styleName, &this->style->buttonStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
@@ -106,9 +104,7 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 	
 	prepareForWidgets();
 
-	UIButtonStyle *buttonStyle = null;
-	if (!isEmpty(styleName))  buttonStyle = findButtonStyle(assets->theme, styleName);
-	if (buttonStyle == null)  buttonStyle = findStyle<UIButtonStyle>(&this->style->buttonStyle);
+	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(styleName, &this->style->buttonStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
@@ -158,9 +154,7 @@ void UIPanel::addText(String text, String styleName)
 	
 	prepareForWidgets();
 
-	UILabelStyle *labelStyle = null;
-	if (!isEmpty(styleName))  labelStyle = findLabelStyle(assets->theme, styleName);
-	if (labelStyle == null)   labelStyle = findStyle<UILabelStyle>(&this->style->labelStyle);
+	UILabelStyle *labelStyle = findStyle<UILabelStyle>(styleName, &this->style->labelStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
@@ -193,9 +187,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 		result = updateTextInput(textInput);
 	}
 
-	UITextInputStyle *textInputStyle = null;
-	if (!isEmpty(styleName))    textInputStyle = findTextInputStyle(assets->theme, styleName);
-	if (textInputStyle == null) textInputStyle = findStyle<UITextInputStyle>(&this->style->textInputStyle);
+	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(styleName, &this->style->textInputStyle);
 
 	s32 alignment = this->widgetAlignment;
 	Rect2I space = getCurrentLayoutPosition();
@@ -690,7 +682,7 @@ void UIPanel::completeWidget(V2I widgetSize)
 inline UIPanelStyle *UIPanel::getPanelStyle(String styleName)
 {
 	UIPanelStyle *result = null;
-	if (!isEmpty(styleName)) result = findPanelStyle(assets->theme, styleName);
+	if (!isEmpty(styleName)) result = findStyle<UIPanelStyle>(styleName);
 	if (result == null)      result = this->style;
 
 	return result;

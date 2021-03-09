@@ -170,7 +170,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	
 	if (style == null)
 	{
-		style = findButtonStyle(assets->theme, "default"_s);
+		style = findStyle<UIButtonStyle>("default"_s);
 	}
 	
 	bool buttonClicked = false;
@@ -288,7 +288,7 @@ void drawToast(UIState *uiState)
 		}
 		else
 		{
-			UIPanelStyle *style = findPanelStyle(assets->theme, "toast"_s);
+			UIPanelStyle *style = findStyle<UIPanelStyle>("toast"_s);
 			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
 
 			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
@@ -335,7 +335,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 	{
 		if (style == null)
 		{
-			style = findScrollbarStyle(assets->theme, "default"_s);
+			style = findStyle<UIScrollbarStyle>("default"_s);
 		}
 
 		if (!uiState->mouseInputHandled)

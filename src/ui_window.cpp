@@ -203,7 +203,7 @@ void updateWindows(UIState *uiState)
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
 
-		UIWindowStyle *windowStyle = findWindowStyle(assets->theme, window->styleName);
+		UIWindowStyle *windowStyle = findStyle<UIWindowStyle>(window->styleName);
 
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
@@ -338,7 +338,7 @@ void renderWindows(UIState *uiState)
 			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
 		}
 
-		UIWindowStyle *windowStyle = findWindowStyle(assets->theme, window->styleName);
+		UIWindowStyle *windowStyle = findStyle<UIWindowStyle>(window->styleName);
 
 		if (!window->isInitialised)
 		{

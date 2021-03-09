@@ -587,27 +587,56 @@ bool checkStyleMatchesType(UIStyleRef *reference)
 }
 
 template <typename T>
-inline T* findStyle(UITheme *theme, UIStyleRef *ref)
+inline T* findStyle(UIStyleRef *ref)
 {
 	ASSERT(checkStyleMatchesType<T>(ref));
 
 	// Order must match enum UIStyleType
-	static void* (*findStyleByType[UIStyleTypeCount])(UITheme*, String) = {
+	static void* (*findStyleByType[UIStyleTypeCount])(String) = {
 		null,
-		[] (UITheme *theme, String name) { return (void*) findButtonStyle(theme, name); },
-		[] (UITheme *theme, String name) { return (void*) findConsoleStyle(theme, name); },
-		[] (UITheme *theme, String name) { return (void*) findLabelStyle(theme, name); },
-		[] (UITheme *theme, String name) { return (void*) findPanelStyle(theme, name); },
-		[] (UITheme *theme, String name) { return (void*) findScrollbarStyle(theme, name); },
-		[] (UITheme *theme, String name) { return (void*) findTextInputStyle(theme, name); },
-		[] (UITheme *theme, String name) { return (void*) findWindowStyle(theme, name); }
+		[] (String name) { return (void*) findStyle<UIButtonStyle>(name); },
+		[] (String name) { return (void*) findStyle<UIConsoleStyle>(name); },
+		[] (String name) { return (void*) findStyle<UILabelStyle>(name); },
+		[] (String name) { return (void*) findStyle<UIPanelStyle>(name); },
+		[] (String name) { return (void*) findStyle<UIScrollbarStyle>(name); },
+		[] (String name) { return (void*) findStyle<UITextInputStyle>(name); },
+		[] (String name) { return (void*) findStyle<UIWindowStyle>(name); }
 	};
 
 	if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks))
 	{
-		ref->pointer = findStyleByType[ref->styleType](theme, ref->name);
+		ref->pointer = findStyleByType[ref->styleType](ref->name);
 		ref->pointerRetrievedTicks = SDL_GetTicks();
 	}
 
 	return (T*) ref->pointer;
+}
+
+template <> UIButtonStyle *findStyle<UIButtonStyle>(String styleName)
+{
+	return findInArrayByName(&assets->theme->buttonStyles, styleName);
+}
+template <> UIConsoleStyle *findStyle<UIConsoleStyle>(String styleName)
+{
+	return findInArrayByName(&assets->theme->consoleStyles, styleName);
+}
+template <> UILabelStyle *findStyle<UILabelStyle>(String styleName)
+{
+	return findInArrayByName(&assets->theme->labelStyles, styleName);
+}
+template <> UIPanelStyle *findStyle<UIPanelStyle>(String styleName)
+{
+	return findInArrayByName(&assets->theme->panelStyles, styleName);
+}
+template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName)
+{
+	return findInArrayByName(&assets->theme->scrollbarStyles, styleName);
+}
+template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName)
+{
+	return findInArrayByName(&assets->theme->textInputStyles, styleName);
+}
+template <> UIWindowStyle *findStyle<UIWindowStyle>(String styleName)
+{
+	return findInArrayByName(&assets->theme->windowStyles, styleName);
 }
