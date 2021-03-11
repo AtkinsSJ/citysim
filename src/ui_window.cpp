@@ -96,88 +96,21 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 	}
 }
 
-void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
+void closeWindow(WindowProc windowProc)
 {
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
+	UIState *uiState = globalAppState.uiState;
+	s32 removedCount = uiState->openWindows.removeAll([&](Window window) { return window.windowProc == windowProc; });
 
-	window->windowProc(context, window->userData);
-
-	bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
-	bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
-
-	context->windowPanel.end(shrinkHeight, shrinkWidth);
-
-	if (shrinkHeight)
+	if ((removedCount == 0) && !uiState->openWindows.isEmpty())
 	{
-		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-		window->area.h = barHeight + context->windowPanel.bounds.h;
+		logInfo("closeWindow() call didn't find any windows that matched the WindowProc."_s);
 	}
+}
 
-	if (shrinkWidth)
-	{
-		window->area.w = context->windowPanel.bounds.w;
-		window->area.x = context->windowPanel.bounds.x;
-	}
-
-	// Handle dragging/position first, BEFORE we use the window rect anywhere
-	if (window->flags & WinFlag_Modal)
-	{
-		// Modal windows can't be moved, they just auto-centre
-		window->area = centreWithin(validWindowArea, window->area);
-	}
-	else if (isActive && uiState->isDraggingWindow)
-	{
-		if (mouseButtonJustReleased(MouseButton_Left))
-		{
-			uiState->isDraggingWindow = false;
-		}
-		else
-		{
-			V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
-			window->area.x = uiState->windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
-			window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
-		}
-		
-		uiState->mouseInputHandled = true;
-	}
-	else if (window->flags & WinFlag_Tooltip)
-	{
-		window->area.pos = v2i(renderer->uiCamera.mousePos) + context->windowStyle->offsetFromMouse;
-	}
-
-	// Keep window on screen
-	{
-		// X
-		if (window->area.w > validWindowArea.w)
-		{
-			// If it's too big, centre it.
-			window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
-		}
-		else if (window->area.x < validWindowArea.x)
-		{
-			window->area.x = validWindowArea.x;
-		}
-		else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
-		{
-			window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
-		}
-
-		// Y
-		if (window->area.h > validWindowArea.h)
-		{
-			// If it's too big, centre it.
-			window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
-		}
-		else if (window->area.y < validWindowArea.y)
-		{
-			window->area.y = validWindowArea.y;
-		}
-		else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
-		{
-			window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
-		}
-	}
+void closeAllWindows()
+{
+	UIState *uiState = globalAppState.uiState;
+	uiState->openWindows.clear();
 }
 
 void updateWindows(UIState *uiState)
@@ -197,7 +130,7 @@ void updateWindows(UIState *uiState)
 		it.next())
 	{
 		Window *window = it.get();
-		s32 windowIndex = (s32) it.getIndex();
+		s32 windowIndex = it.getIndex();
 
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
@@ -398,4 +331,88 @@ Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 					windowArea.y + barHeight + margin,
 					windowArea.w - (margin * 2),
 					windowArea.h - barHeight - (margin * 2));
+}
+
+void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
+{
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
+	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
+
+	window->windowProc(context, window->userData);
+
+	bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
+	bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
+
+	context->windowPanel.end(shrinkHeight, shrinkWidth);
+
+	if (shrinkHeight)
+	{
+		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
+		window->area.h = barHeight + context->windowPanel.bounds.h;
+	}
+
+	if (shrinkWidth)
+	{
+		window->area.w = context->windowPanel.bounds.w;
+		window->area.x = context->windowPanel.bounds.x;
+	}
+
+	// Handle dragging/position first, BEFORE we use the window rect anywhere
+	if (window->flags & WinFlag_Modal)
+	{
+		// Modal windows can't be moved, they just auto-centre
+		window->area = centreWithin(validWindowArea, window->area);
+	}
+	else if (isActive && uiState->isDraggingWindow)
+	{
+		if (mouseButtonJustReleased(MouseButton_Left))
+		{
+			uiState->isDraggingWindow = false;
+		}
+		else
+		{
+			V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+			window->area.x = uiState->windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
+			window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
+		}
+		
+		uiState->mouseInputHandled = true;
+	}
+	else if (window->flags & WinFlag_Tooltip)
+	{
+		window->area.pos = v2i(renderer->uiCamera.mousePos) + context->windowStyle->offsetFromMouse;
+	}
+
+	// Keep window on screen
+	{
+		// X
+		if (window->area.w > validWindowArea.w)
+		{
+			// If it's too big, centre it.
+			window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
+		}
+		else if (window->area.x < validWindowArea.x)
+		{
+			window->area.x = validWindowArea.x;
+		}
+		else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
+		{
+			window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
+		}
+
+		// Y
+		if (window->area.h > validWindowArea.h)
+		{
+			// If it's too big, centre it.
+			window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
+		}
+		else if (window->area.y < validWindowArea.y)
+		{
+			window->area.y = validWindowArea.y;
+		}
+		else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
+		{
+			window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
+		}
+	}
 }

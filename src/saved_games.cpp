@@ -367,6 +367,8 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 
 		globalAppState.appStatus = AppStatus_Game;
 
+		closeWindow(pauseMenuWindowProc);
+
 		// Filename is interned so it's safe to copy it
 		savedGamesCatalogue.activeSavedGameName = savedGame->shortName;
 	}

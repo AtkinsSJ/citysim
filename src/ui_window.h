@@ -53,6 +53,12 @@ struct Window
 //
 void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData = null, WindowProc onClose = null);
 
+// Close any open windows that use the given WindowProc.
+// Generally, there will only be one window per WindowProc, so that's an easy 1-to-1 mapping.
+// If we later want better granularity, I'll have to figure something else out!
+void closeWindow(WindowProc windowProc);
+void closeAllWindows();
+
 void updateWindows(UIState *uiState);
 void renderWindows(UIState *uiState);
 
@@ -61,3 +67,4 @@ void renderWindows(UIState *uiState);
 //
 static void makeWindowActive(UIState *uiState, s32 windowIndex);
 static Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding);
+void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive);
