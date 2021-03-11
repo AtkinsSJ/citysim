@@ -99,9 +99,13 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 void closeWindow(WindowProc windowProc)
 {
 	UIState *uiState = globalAppState.uiState;
-	s32 removedCount = uiState->openWindows.removeAll([&](Window window) { return window.windowProc == windowProc; });
+	Indexed<Window*> windowToRemove = uiState->openWindows.findFirst([&](Window *window) { return window->windowProc == windowProc; });
 
-	if ((removedCount == 0) && !uiState->openWindows.isEmpty())
+	if (windowToRemove.index != -1)
+	{
+		uiState->windowsToClose.add(windowToRemove.index);
+	}
+	else if (!uiState->openWindows.isEmpty())
 	{
 		logInfo("closeWindow() call didn't find any windows that matched the WindowProc."_s);
 	}
@@ -110,7 +114,10 @@ void closeWindow(WindowProc windowProc)
 void closeAllWindows()
 {
 	UIState *uiState = globalAppState.uiState;
-	uiState->openWindows.clear();
+	for (s32 windowIndex = 0; windowIndex < uiState->openWindows.count; windowIndex++)
+	{
+		uiState->windowsToClose.add(windowIndex);
+	}
 }
 
 void updateWindows(UIState *uiState)
@@ -119,7 +126,6 @@ void updateWindows(UIState *uiState)
 
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	s32 newActiveWindow = -1;
-	s32 closeWindow = -1;
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
 	uiState->isAPauseWindowOpen = false;
@@ -131,6 +137,9 @@ void updateWindows(UIState *uiState)
 	{
 		Window *window = it.get();
 		s32 windowIndex = it.getIndex();
+
+		// Skip this Window if we've requested to close it.
+		if (uiState->windowsToClose.contains(windowIndex)) continue;
 
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
@@ -147,7 +156,7 @@ void updateWindows(UIState *uiState)
 
 		if (context.closeRequested || isTooltip)
 		{
-			closeWindow = windowIndex;
+			uiState->windowsToClose.add(windowIndex);
 		}
 
 		if (!context.closeRequested && ((window->flags & WinFlag_Pause) != 0))
@@ -169,7 +178,7 @@ void updateWindows(UIState *uiState)
 			if (hoveringOverCloseButton)
 			{
 				// If we're inside the X, close it!
-				closeWindow = windowIndex;
+				uiState->windowsToClose.add(windowIndex);
 			}
 			else
 			{
@@ -226,23 +235,34 @@ void updateWindows(UIState *uiState)
 		}
 	}
 
-	if (closeWindow != -1)
+	// Clear the newActiveWindow if it's one that's being closed
+	if (uiState->windowsToClose.contains(newActiveWindow))
 	{
-		Window *window = uiState->openWindows.get(closeWindow);
-		if (window->onClose != null)
+		newActiveWindow = -1;
+	}
+
+	// Close any windows that were requested
+	if (!uiState->windowsToClose.isEmpty())
+	{
+		Array<s32> windowsToClose = uiState->windowsToClose.asSortedArray();
+
+		for (s32 i = windowsToClose.count - 1; i >= 0; i--)
 		{
-			window->onClose(null, window->userData);
+			s32 windowIndex = windowsToClose[i];
+
+			Window *window = uiState->openWindows.get(windowIndex);
+			if (window->onClose != null)
+			{
+				window->onClose(null, window->userData);
+			}
+
+			uiState->isDraggingWindow = false;
+			uiState->openWindows.removeIndex(windowIndex, true);
 		}
 
-		uiState->isDraggingWindow = false;
-		uiState->openWindows.removeIndex(closeWindow, true);
+		uiState->windowsToClose.clear();
 	}
-	/*
-	 * NB: This is an imaginary else-if, because if we try to set a new active window, AND close one,
-	 * then things break. However, we never intentionally do that! I'm leaving this code "dangerous",
-	 * because that way, we crash when we try to do both at once, instead of hiding the bug.
-	 * - Sam, 3/2/2019
-	 */
+
 	if (newActiveWindow != -1)
 	{
 		makeWindowActive(uiState, newActiveWindow);

@@ -18,9 +18,13 @@ struct Set
 	// Returns true if the item got added (aka, it was not already in the set)
 	bool add(T item);
 	bool contains(T item);
+	bool isEmpty();
 	void clear();
 
 	SetIterator<T> iterate();
+
+	// The compare() function should return true if 'a' comes before 'b'
+	Array<T> asSortedArray(bool (*compare)(T a, T b) = [](T a, T b) { return a < b; });
 };
 
 template<typename T>

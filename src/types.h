@@ -208,6 +208,9 @@ template<typename T>
 Array<T> makeArray(s32 count, T *items);
 
 template<typename T>
+Array<T> makeEmptyArray();
+
+template<typename T>
 bool isInitialised(Array<T> *array);
 
 template<typename T>

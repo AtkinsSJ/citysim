@@ -297,27 +297,19 @@ int main(int argc, char *argv[])
 
 	// TEST STUFF
 #if 0
-	Queue<s32> testQueue;
-	initQueue(&testQueue, &globalAppState.systemArena);
-	for (s32 i=1; i <= 10; i++) testQueue.push(-1);
+	Set<s32> test;
+	initSet(&test, tempArena);
+	test.add(101);
+	test.add(101);
+	test.add(73);
+	test.add(34);
+	test.add(999);
+	test.add(34);
 
-	for (s32 i=1; i <= 100; i++)
+	Array<s32> testArray = test.asSortedArray();
+	for (s32 i=0; i < testArray.count; i++)
 	{
-		testQueue.push(i);
-	}
-
-	for (s32 i=1; i <= 10; i++) testQueue.pop();
-	
-	for (auto it = testQueue.iterate(); it.hasNext(); it.next())
-	{
-		auto thing = it.get();
-		logInfo("Forwards: {0}"_s, {formatInt(*thing)});
-	}
-
-	for (auto it = testQueue.iterate(true); it.hasNext(); it.next())
-	{
-		auto thing = it.get();
-		logInfo("Reverse: {0}"_s, {formatInt(*thing)});
+		logInfo("Value #{0} = {1}"_s, {formatInt(i), formatInt(testArray[i])});
 	}
 
 #endif

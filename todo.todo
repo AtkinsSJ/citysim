@@ -38,6 +38,9 @@ Window/UI System features:
 ✔ Align things to the bottom
 ✔ Parity between windowed and non-windowed UI. They're very different right now which is awkward.
 - Convert the in-game toolbar to a Panel?
+- Get a better handle on whether elements should react to mouse hover. It's weird and wrong right now:
+	- We currently don't highlight the window-close button unless it's the active window
+	- But we do highlight buttons on windows that are "behind" a modal one!
 
 Saving and loading:
 - Save/Load window revamp!
@@ -45,8 +48,6 @@ Saving and loading:
 	✔ Add a confirmation dialog!
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
-
-Close the pause window after loading a game
 
 Text Input:
 - Guide for handling textinputs properly: https://wiki.libsdl.org/Tutorials/TextInput

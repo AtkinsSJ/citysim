@@ -192,7 +192,7 @@ bool ChunkedArray<T>::findAndRemove(T toRemove)
 {
 	DEBUG_FUNCTION();
 
-	s32 removed = removeAll([&](T t) { return equals(t, toRemove); }, 1);
+	s32 removed = removeAll([&](T *t) { return equals(*t, toRemove); }, 1);
 
 	return removed > 0;
 }
@@ -260,7 +260,7 @@ s32 ChunkedArray<T>::removeAll(Filter filter, s32 limit)
 	{
 		for (s32 i=0; i<chunk->count; i++)
 		{
-			if (filter(chunk->items[i]))
+			if (filter(chunk->items + i))
 			{
 				// FOUND ONE!
 				removedCount++;

@@ -8,13 +8,13 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 {
 	*uiState = {};
 
+	initChunkedArray(&uiState->uiRects, arena, 64);
+	initStack(&uiState->inputScissorRects, arena);
+
 	initQueue(&uiState->toasts, arena);
 
-	initChunkedArray(&uiState->uiRects, arena, 64);
-
 	initChunkedArray(&uiState->openWindows, arena, 64);
-
-	initStack(&uiState->inputScissorRects, arena);
+	initSet(&uiState->windowsToClose, arena);
 }
 
 inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds)

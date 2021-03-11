@@ -26,6 +26,13 @@ Array<T> makeArray(s32 count, T *items)
 	return result;
 }
 
+
+template<typename T>
+inline Array<T> makeEmptyArray()
+{
+	return makeArray<T>(0, null);
+}
+
 template<typename T>
 inline bool isInitialised(Array<T> *array)
 {
@@ -91,6 +98,8 @@ void sortArrayInternal(Array<T> *array, Comparison compareElements, s32 lowIndex
 template<typename T, typename Comparison>
 inline void sortArray(Array<T> *array, Comparison compareElements)
 {
+	DEBUG_FUNCTION();
+	
 	sortArrayInternal(array, compareElements, 0, array->count-1);
 }
 

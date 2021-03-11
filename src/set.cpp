@@ -39,6 +39,12 @@ bool Set<T>::contains(T item)
 	return result;
 }
 
+template <typename T>
+bool Set<T>::isEmpty()
+{
+	return items.isEmpty();
+}
+
 template<typename T>
 void Set<T>::clear()
 {
@@ -50,6 +56,29 @@ SetIterator<T> Set<T>::iterate()
 {
 	SetIterator<T> result = {};
 	result.itemsIterator = items.iterate();
+
+	return result;
+}
+
+template<typename T>
+Array<T> Set<T>::asSortedArray(bool (*compare)(T a, T b))
+{
+	Array<T> result = makeEmptyArray<T>();
+
+	if (!isEmpty())
+	{
+		result = allocateArray<T>(tempArena, items.count);
+
+		// Gather
+		s32 currentIndex = 0;
+		for (auto it = iterate(); it.hasNext(); it.next())
+		{
+			result[currentIndex++] = it.getValue();
+		}
+
+		// Sort
+		sortArray(&result, compare);
+	}
 
 	return result;
 }
