@@ -120,7 +120,7 @@ struct UIScrollbarStyle
 	String name;
 	
 	UIDrawableStyle background;
-	UIDrawableStyle knob;
+	UIDrawableStyle thumb;
 	s32 width;
 };
 
@@ -188,7 +188,7 @@ struct UIStyle
 	u32 widgetAlignment;
 	s32 contentPadding;
 	AssetRef font;
-	UIDrawableStyle knob;
+	UIDrawableStyle thumb;
 	UIStyleRef labelStyle = UIStyleRef(UIStyle_Label);
 	s32 margin;
 	V2I offsetFromMouse;

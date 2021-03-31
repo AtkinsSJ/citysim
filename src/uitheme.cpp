@@ -76,26 +76,26 @@ void initUIStyleProperties()
 	}
 
 	//                                                    btn   cnsl  label  panel  scrll  txtin  windw
-	PROP(background,               PropType_Drawable,  true,  true, false,  true,  true,  true, false);
+	PROP(background,               PropType_Drawable,    true,  true, false,  true,  true,  true, false);
 	PROP(buttonStyle,              PropType_Style,      false, false, false,  true, false, false, false);
 	PROP(caretFlashCycleDuration,  PropType_Float,      false, false, false, false, false,  true, false);
 	PROP(widgetAlignment,          PropType_Alignment,  false, false, false,  true, false, false, false);
 	PROP(contentPadding,           PropType_Int,        false, false, false,  true, false, false, false);
-	PROP(disabledBackground,       PropType_Drawable,  true, false, false, false, false, false, false);
+	PROP(disabledBackground,       PropType_Drawable,    true, false, false, false, false, false, false);
 	PROP(font,                     PropType_Font,        true,  true,  true, false, false,  true, false);
-	PROP(hoverBackground,          PropType_Drawable,  true, false, false, false, false, false, false);
-	PROP(knob,                     PropType_Drawable, false, false, false, false,  true, false, false);
+	PROP(hoverBackground,          PropType_Drawable,    true, false, false, false, false, false, false);
 	PROP(labelStyle,               PropType_Style,      false, false, false,  true, false, false, false);
 	PROP(margin,                   PropType_Int,        false, false, false,  true, false, false, false);
 	PROP(offsetFromMouse,          PropType_V2I,        false, false, false, false, false, false,  true);
 	PROP(padding,                  PropType_Int,         true,  true, false, false, false,  true, false);
 	PROP(panelStyle,               PropType_Style,      false, false, false, false, false, false,  true);
-	PROP(pressedBackground,        PropType_Drawable,  true, false, false, false, false, false, false);
+	PROP(pressedBackground,        PropType_Drawable,    true, false, false, false, false, false, false);
 	PROP(scrollbarStyle,           PropType_Style,      false,  true, false,  true, false, false, false);
 	PROP(showCaret,                PropType_Bool,       false, false, false, false, false,  true, false);
 	PROP(textAlignment,            PropType_Alignment,   true, false, false, false, false,  true, false);
 	PROP(textColor,                PropType_Color,       true, false,  true, false, false,  true, false);
 	PROP(textInputStyle,           PropType_Style,      false,  true, false,  true, false, false, false);
+	PROP(thumb,                    PropType_Drawable,   false, false, false, false,  true, false, false);
 	PROP(titleBarButtonHoverColor, PropType_Color,      false, false, false, false, false, false,  true);
 	PROP(titleBarColor,            PropType_Color,      false, false, false, false, false, false,  true);
 	PROP(titleBarColorInactive,    PropType_Color,      false, false, false, false, false, false,  true);
@@ -528,7 +528,7 @@ void loadUITheme(Blob data, Asset *asset)
 						scrollbar->name = style->name;
 
 						scrollbar->background = style->background;
-						scrollbar->knob = style->knob;
+						scrollbar->thumb = style->thumb;
 						scrollbar->width = style->width;
 					} break;
 

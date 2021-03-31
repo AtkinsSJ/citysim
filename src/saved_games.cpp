@@ -20,6 +20,8 @@ void initSavedGamesCatalogue()
 	catalogue->selectedSavedGameIndex = -1;
 	catalogue->saveGameName = newTextInput(&catalogue->savedGamesArena, 64, "\\/:*?\"'`<>|[]()^#%&!@+={}~."_s);
 
+	initScrollbar(&catalogue->savedGamesListScrollbar, false);
+
 	// Initial saved-games scan
 	readSavedGamesInfo(catalogue);
 }

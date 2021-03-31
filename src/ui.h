@@ -42,8 +42,12 @@ struct Toast
 
 struct ScrollbarState
 {
+	bool isHorizontal;
 	s32 contentSize;
 	s32 scrollPosition;
+
+	bool isDraggingThumb;
+	s32 thumbDragStartPos;
 };
 
 enum ButtonState
@@ -118,6 +122,8 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 void pushToast(UIState *uiState, String message);
 void drawToast(UIState *uiState);
 
+void initScrollbar(ScrollbarState *state, bool isHorizontal);
+Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
 void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
 void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, UIScrollbarStyle *style);
 f32 getScrollbarPercent(ScrollbarState *state, s32 scrollbarHeight); // Percent meaning 0.99 = 99%. (I know that's not a percent, but whatever)

@@ -100,7 +100,7 @@ textInputStyle    default
 
 :Scrollbar default
 background       color 0 128 0 255
-knob             color 0 255 0 255
+thumb             color 0 255 0 255
 width                16
 
 :TextInput default
@@ -153,5 +153,5 @@ caretFlashCycleDuration 1.0
 
 :Scrollbar console
 background     color 0   0   0   0
-knob           color 48  48  48 245
+thumb           color 48  48  48 245
 width             12
