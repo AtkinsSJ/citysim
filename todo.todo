@@ -19,7 +19,10 @@ Notes for searching:
 ------------------------------------------------
 
 Scrollbar improvements:
-- Convert drawScrollbar() to take a ScrollbarState
+- BUG: Dragging the thumb is sometimes off a bit, can't figure out why.
+	By which I mean, your mouse cursor slides along it as you drag it the full length of the scrollbar
+	Also, dragging the thumb in the minimised console is really slow
+✔ Convert drawScrollbar() to take a ScrollbarState
 	✔ need to convert the console to using a ScrollbarState first
 - Increase the bar size to something more reasonable
 	- Mouse click-and-drag on the bar, instead of just jumping to where the mouse is when pressed

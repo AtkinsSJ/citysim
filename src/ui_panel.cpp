@@ -453,11 +453,9 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 			updateScrollbar(uiState, hScrollbar, currentLeft + style->margin, hScrollbarBounds, scrollbarStyle);
 		}
 
-		f32 scrollPercent = getScrollbarPercent(hScrollbar, hScrollbarBounds.h);
-
 		if (doRender)
 		{
-			drawScrollbar(&renderer->uiBuffer, scrollPercent, hScrollbarBounds.pos, hScrollbarBounds.h, scrollbarStyle);
+			drawScrollbar(&renderer->uiBuffer, hScrollbar, hScrollbarBounds, scrollbarStyle);
 		}
 	}
 
@@ -470,11 +468,9 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 			updateScrollbar(uiState, vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
 		}
 
-		f32 scrollPercent = getScrollbarPercent(vScrollbar, vScrollbarBounds.h);
-
 		if (doRender)
 		{
-			drawScrollbar(&renderer->uiBuffer, scrollPercent, vScrollbarBounds.pos, vScrollbarBounds.h, scrollbarStyle);
+			drawScrollbar(&renderer->uiBuffer, vScrollbar, vScrollbarBounds, scrollbarStyle);
 		}
 	}
 

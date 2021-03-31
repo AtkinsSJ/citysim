@@ -440,27 +440,16 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 	}
 }
 
-// TODO: We really want a version of this that just takes a ScrollbarState*, it'd make many things simpler.
-// However, we use this without a ScrollbarState in the console, currently. May or may not want to move that
-// over to using a ScrollbarState too.
-// NB: Roll the "just draw the background if the content is too small for a scrollbar" stuff from 
-// window_completeColumn() into that, too.
-void drawScrollbar(RenderBuffer *uiBuffer, f32 scrollPercent, V2I topLeft, s32 height, UIScrollbarStyle *style)
+// TODO: Just draw the background if the content is too small for a scrollbar
+void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
 {
 	UIDrawable background = UIDrawable(&style->background);
-	Rect2I backgroundRect = irectXYWH(topLeft.x, topLeft.y, style->width, height);
-	background.draw(uiBuffer, backgroundRect);
+	background.draw(uiBuffer, bounds);
 
-	// Rect2I thumbBounds - getScrollbarThumbBounds(state, scrollbarBounds, style);
-
-	s32 thumbWidth = style->width;
-	s32 thumbHeight = min(thumbWidth * 3, height); // TODO: make it larger?
-
-	s32 scrollY = round_s32(scrollPercent * (height - thumbHeight));
+	Rect2I thumbBounds = getScrollbarThumbBounds(state, bounds, style);
 
 	UIDrawable thumb = UIDrawable(&style->thumb);
-	Rect2I thumbRect = irectXYWH(topLeft.x, topLeft.y + scrollY, thumbWidth, thumbHeight);
-	thumb.draw(uiBuffer, thumbRect);
+	thumb.draw(uiBuffer, thumbBounds);
 }
 
 inline f32 getScrollbarPercent(ScrollbarState *scrollbar, s32 scrollbarHeight)
