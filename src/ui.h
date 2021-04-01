@@ -44,7 +44,7 @@ struct ScrollbarState
 {
 	bool isHorizontal;
 	s32 contentSize;
-	s32 scrollPosition;
+	f32 scrollPercent;
 
 	bool isDraggingThumb;
 	f32 thumbDragStartPercent;
@@ -126,7 +126,7 @@ void initScrollbar(ScrollbarState *state, bool isHorizontal);
 Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
 void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
-f32 getScrollbarPercent(ScrollbarState *state, s32 scrollbarHeight); // Percent meaning 0.99 = 99%. (I know that's not a percent, but whatever)
+s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData = null);
 // Is this something we should actually expose??? IDK

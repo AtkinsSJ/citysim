@@ -149,7 +149,7 @@ void updateConsole(Console *console)
 		s32 contentHeight = (console->outputLines.count * getFont(&consoleStyle->font)->lineHeight) + scrollbarBounds.h;
 		if (scrollToBottom)
 		{
-			console->scrollbar.scrollPosition = contentHeight;
+			console->scrollbar.scrollPercent = 1.0f;
 		}
 
 		updateScrollbar(globalAppState.uiState, &console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
@@ -188,7 +188,7 @@ void renderConsole(Console *console)
 
 	// print output lines
 	BitmapFont *consoleFont = getFont(&consoleStyle->font);
-	s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPosition / (f32)consoleFont->lineHeight), 0, console->outputLines.count - 1);
+	s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
 	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
 	for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
 		it.hasNext();

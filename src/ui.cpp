@@ -338,8 +338,7 @@ Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UI
 		s32 thumbHeight = style->width;
 		s32 thumbWidth = min(style->width * 3, scrollbarBounds.w); // TODO: make it larger?
 
-		f32 scrollPercent = getScrollbarPercent(state, scrollbarBounds.w);
-		s32 thumbPos = round_s32(scrollPercent * (scrollbarBounds.w - thumbWidth));
+		s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.w - thumbWidth));
 
 		result = irectXYWH(scrollbarBounds.x + thumbPos, scrollbarBounds.y, thumbWidth, thumbHeight);
 	}
@@ -348,8 +347,7 @@ Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UI
 		s32 thumbWidth = style->width;
 		s32 thumbHeight = min(style->width * 3, scrollbarBounds.h); // TODO: make it larger?
 
-		f32 scrollPercent = getScrollbarPercent(state, scrollbarBounds.h);
-		s32 thumbPos = round_s32(scrollPercent * (scrollbarBounds.h - thumbHeight));
+		s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.h - thumbHeight));
 
 		result = irectXYWH(scrollbarBounds.x, scrollbarBounds.y + thumbPos, thumbWidth, thumbHeight);
 	}
@@ -366,7 +364,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 	// If the content is smaller than the scrollbar, then snap it to position 0 and don't allow interaction.
 	if (bounds.h > state->contentSize)
 	{
-		state->scrollPosition = 0;
+		state->scrollPercent = 0.0f;
 	}
 	else
 	{
@@ -390,7 +388,10 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 			{
 				// One scroll step is usually 3 lines of text.
 				// 64px seems reasonable?
-				state->scrollPosition = clamp(state->scrollPosition - (64 * mouseWheelDelta), 0, overflowSize);
+				s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
+				s32 scrollOffset = oldScrollOffset - (64 * mouseWheelDelta);
+
+				state->scrollPercent = clamp01((f32)scrollOffset / (f32)overflowSize);
 			}
 
 			// Mouse stuff
@@ -416,24 +417,20 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 						}
 
 						f32 dragPercent = (f32)dragDistance / thumbRange;
-						f32 scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
-
-						state->scrollPosition = round_s32(scrollPercent * overflowSize);
+						state->scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
 					}
 					// Else, if we clicked on the thumb, begin dragging
 					else if (mouseButtonJustPressed(MouseButton_Left) && isMouseInUIBounds(uiState, thumbBounds, clickStartPos))
 					{
 						state->isDraggingThumb = true;
-						state->thumbDragStartPercent = getScrollbarPercent(state, gutterSize);
+						state->thumbDragStartPercent = state->scrollPercent;
 					}
 					// Else, jump to mouse position
 					else
 					{
 						V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
 
-						f32 scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
-						state->scrollPosition = round_s32(scrollPercent * overflowSize);
-						state->isDraggingThumb = false;
+						state->scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
 					}
 
 					uiState->mouseInputHandled = true;
@@ -459,18 +456,11 @@ void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds,
 	thumb.draw(uiBuffer, thumbBounds);
 }
 
-inline f32 getScrollbarPercent(ScrollbarState *scrollbar, s32 scrollbarHeight)
+s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize)
 {
-	f32 result = 0.0f;
+	s32 overflowSize = state->contentSize - scrollbarSize;
 
-	// We only do this if the content is large enough to need scrolling.
-	// If it's not, we default to 0 above.
-	if (scrollbarHeight <= scrollbar->contentSize)
-	{
-		result = (f32)scrollbar->scrollPosition / (f32)(scrollbar->contentSize - scrollbarHeight);
-	}
-
-	result = clamp01(result);
+	s32 result = round_s32(state->scrollPercent * overflowSize);
 
 	return result;
 }

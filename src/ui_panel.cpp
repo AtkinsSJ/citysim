@@ -603,7 +603,7 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 		
 		if (vScrollbar != null)
 		{
-			result.y -= vScrollbar->scrollPosition;
+			result.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
 		}
 	}
 	else
@@ -612,14 +612,14 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 
 		if (vScrollbar != null)
 		{
-			result.y += (vScrollbar->contentSize - vScrollbar->scrollPosition - bounds.h);
+			result.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
 		}
 	}
 
 	// Adjust if we're in a scrolling area
 	if (hScrollbar != null)
 	{
-		result.x = result.x - hScrollbar->scrollPosition;
+		result.x = result.x - getScrollbarContentOffset(hScrollbar, bounds.w);
 	}
 
 	ASSERT(result.w > 0);

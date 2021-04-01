@@ -28,7 +28,7 @@ Scrollbar improvements:
 	- Mouse click-and-drag on the bar, instead of just jumping to where the mouse is when pressed
 - Add support for horizontal scrollbars
 - Configurable mouse-wheel step size
-- Using scrollbars is really janky, they could do with a rethink on how they work probably
+✔ Using scrollbars is really janky, they could do with a rethink on how they work probably
 	Maybe, instead of them storing the pixel scrollPosition, they just store a %. Then, the user code converts that % into something meaningful?
 	The trouble is, we use the pixel scrollPosition to determine how much to offset content in a panel, without knowing how big that content is. The scrollPosition essentially just keeps the content height from the previous frame.
 	Maybe we save the content height in the ScrollbarState? We can't put it in the Panel, as the Panel doesn't exist across frames.
