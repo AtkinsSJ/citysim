@@ -181,6 +181,11 @@ inline f32 areaOf(Rect2 rect)
 	return abs_f32(rect.w * rect.h);
 }
 
+inline bool hasPositiveArea(Rect2 rect)
+{
+	return (rect.w > 0 && rect.h > 0);
+}
+
 inline V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding)
 {
 	V2 result;
@@ -469,6 +474,11 @@ inline V2 centreOf(Rect2I rect)
 inline s32 areaOf(Rect2I rect)
 {
 	return abs_s32(rect.w * rect.h);
+}
+
+inline bool hasPositiveArea(Rect2I rect)
+{
+	return (rect.w > 0 && rect.h > 0);
 }
 
 inline Rect2I centreWithin(Rect2I outer, Rect2I inner)

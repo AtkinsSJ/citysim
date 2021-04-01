@@ -334,10 +334,20 @@ Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UI
 {
 	Rect2I result;
 
+	// NB: This algorithm for thumb size came from here: https://ux.stackexchange.com/a/85698
+	// (Which is ultimately taken from Microsoft's .NET documentation.)
+	// Anyway, it's simple enough, but distinguishes between the size of visible content, and
+	// the size of the scrollbar's track. For us, for now, those are the same value, but I'm
+	// keeping them as separate variables, which is why viewportSize and trackSize are
+	// the same. If we add scrollbar buttons, that'll reduce the track size.
+	// - Sam, 01/04/2021
 	if (state->isHorizontal)
 	{
 		s32 thumbHeight = style->width;
-		s32 thumbWidth = min(style->width * 3, scrollbarBounds.w); // TODO: make it larger?
+		s32 viewportSize = scrollbarBounds.w;
+		s32 trackSize = scrollbarBounds.w;
+		s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
+		s32 thumbWidth = clamp(desiredThumbSize, style->width, scrollbarBounds.w);
 
 		s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.w - thumbWidth));
 
@@ -346,7 +356,10 @@ Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UI
 	else
 	{
 		s32 thumbWidth = style->width;
-		s32 thumbHeight = min(style->width * 3, scrollbarBounds.h); // TODO: make it larger?
+		s32 viewportSize = scrollbarBounds.h;
+		s32 trackSize = scrollbarBounds.h;
+		s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
+		s32 thumbHeight = clamp(desiredThumbSize, style->width, scrollbarBounds.h);
 
 		s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.h - thumbHeight));
 
@@ -446,6 +459,8 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 // TODO: Just draw the background if the content is too small for a scrollbar
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
 {
+	ASSERT(hasPositiveArea(bounds));
+	
 	UIDrawable background = UIDrawable(&style->background);
 	background.draw(uiBuffer, bounds);
 

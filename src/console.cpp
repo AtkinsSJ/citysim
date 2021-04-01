@@ -184,7 +184,10 @@ void renderConsole(Console *console)
 	UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
 
 	Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
-	drawScrollbar(renderBuffer, &console->scrollbar, scrollbarBounds, scrollbarStyle);
+	if (hasPositiveArea(scrollbarBounds))
+	{
+		drawScrollbar(renderBuffer, &console->scrollbar, scrollbarBounds, scrollbarStyle);
+	}
 
 	textPos.y -= consoleStyle->padding;
 

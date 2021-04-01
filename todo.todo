@@ -24,8 +24,8 @@ Scrollbar improvements:
 	✔ Also, dragging the thumb in the minimised console is really slow
 ✔ Convert drawScrollbar() to take a ScrollbarState
 	✔ need to convert the console to using a ScrollbarState first
-- Increase the bar size to something more reasonable
-	- Mouse click-and-drag on the bar, instead of just jumping to where the mouse is when pressed
+✔ Increase the bar size to something more reasonable
+	✔ Mouse click-and-drag on the bar, instead of just jumping to where the mouse is when pressed
 - Add support for horizontal scrollbars
 ✔ Configurable mouse-wheel step size
 ✔ Using scrollbars is really janky, they could do with a rethink on how they work probably
