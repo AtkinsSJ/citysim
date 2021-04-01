@@ -413,6 +413,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 		{
 			contentHeight = currentTop - style->contentPadding + (2 *style->margin);
 			bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
+			boundsChanged = true;
 		}
 		else
 		{
@@ -420,6 +421,14 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 			s32 newHeight = clamp(contentHeight, (2 *style->margin), bounds.h);
 			bounds.y += (bounds.h - newHeight);
 			bounds.h = newHeight;
+			boundsChanged = true;
+		}
+
+		if (hScrollbar)
+		{
+			bounds.h += hScrollbarBounds.h;
+			if (!topToBottom) bounds.y -= hScrollbarBounds.h;
+			boundsChanged = true;
 		}
 	}
 
@@ -450,7 +459,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (doUpdate)
 		{
-			updateScrollbar(uiState, hScrollbar, currentLeft + style->margin, hScrollbarBounds, scrollbarStyle);
+			updateScrollbar(uiState, hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle);
 		}
 
 		if (doRender)
@@ -619,6 +628,7 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 	// Adjust if we're in a scrolling area
 	if (hScrollbar != null)
 	{
+		result.w = s16Max; // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
 		result.x = result.x - getScrollbarContentOffset(hScrollbar, bounds.w);
 	}
 

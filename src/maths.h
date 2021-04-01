@@ -1,24 +1,5 @@
 #pragma once
 
-const s8  s8Min  = INT8_MIN;
-const s8  s8Max  = INT8_MAX;
-const s16 s16Min = INT16_MIN;
-const s16 s16Max = INT16_MAX;
-const s32 s32Min = INT32_MIN;
-const s32 s32Max = INT32_MAX;
-const s64 s64Min = INT64_MIN;
-const s64 s64Max = INT64_MAX;
-
-const u8  u8Max  = UINT8_MAX;
-const u16 u16Max = UINT16_MAX;
-const u32 u32Max = UINT32_MAX;
-const u64 u64Max = UINT64_MAX;
-
-const f32 f32Min = -FLT_MAX;
-const f32 f32Max =  FLT_MAX;
-const f64 f64Min = -DBL_MAX;
-const f64 f64Max =  DBL_MAX;
-
 const f32 PI32 = 3.14159265358979323846f;
 const f32 radToDeg = 180.0f / PI32;
 const f32 degToRad = PI32 / 180.0f;

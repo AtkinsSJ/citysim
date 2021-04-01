@@ -397,11 +397,11 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 
 			// Scrollwheel stuff
 			// (It's weird that we're putting this within mouseInputHandled, but eh)
-			s32 mouseWheelDelta = inputState->wheelY;
+			s32 mouseWheelDelta = (state->isHorizontal ? inputState->wheelX : -inputState->wheelY);
 			if (mouseWheelDelta != 0)
 			{
 				s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
-				s32 scrollOffset = oldScrollOffset - (state->mouseWheelStepSize * mouseWheelDelta);
+				s32 scrollOffset = oldScrollOffset + (state->mouseWheelStepSize * mouseWheelDelta);
 
 				state->scrollPercent = clamp01((f32)scrollOffset / (f32)overflowSize);
 			}
@@ -460,7 +460,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
 {
 	ASSERT(hasPositiveArea(bounds));
-	
+
 	UIDrawable background = UIDrawable(&style->background);
 	background.draw(uiBuffer, bounds);
 

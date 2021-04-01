@@ -18,6 +18,10 @@ Notes for searching:
 
 ------------------------------------------------
 
+Make the scissor for UIPanel be a placeholder, which we fill in at the end.
+	This is because the hScrollbar extends the panel size, but only after the panel has already had the scissor applied!
+	I guess this is really a problem with the panel being created with too small bounds? IDK, that doesn't seem to be the case, but I'll leave that for next time.
+
 Scrollbar improvements:
 ✔ BUG: Dragging the thumb is sometimes off a bit, can't figure out why.
 	✔ By which I mean, your mouse cursor slides along it as you drag it the full length of the scrollbar
