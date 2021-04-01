@@ -322,11 +322,12 @@ void drawToast(UIState *uiState)
 	}
 }
 
-void initScrollbar(ScrollbarState *state, bool isHorizontal)
+void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize)
 {
 	*state = {};
 
 	state->isHorizontal = isHorizontal;
+	state->mouseWheelStepSize = mouseWheelStepSize;
 }
 
 Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style)
@@ -386,10 +387,8 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 			s32 mouseWheelDelta = inputState->wheelY;
 			if (mouseWheelDelta != 0)
 			{
-				// One scroll step is usually 3 lines of text.
-				// 64px seems reasonable?
 				s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
-				s32 scrollOffset = oldScrollOffset - (64 * mouseWheelDelta);
+				s32 scrollOffset = oldScrollOffset - (state->mouseWheelStepSize * mouseWheelDelta);
 
 				state->scrollPercent = clamp01((f32)scrollOffset / (f32)overflowSize);
 			}

@@ -48,6 +48,8 @@ struct ScrollbarState
 
 	bool isDraggingThumb;
 	f32 thumbDragStartPercent;
+
+	s32 mouseWheelStepSize;
 };
 
 enum ButtonState
@@ -122,7 +124,7 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 void pushToast(UIState *uiState, String message);
 void drawToast(UIState *uiState);
 
-void initScrollbar(ScrollbarState *state, bool isHorizontal);
+void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
 Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
 void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);

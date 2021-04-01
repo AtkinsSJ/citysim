@@ -146,12 +146,14 @@ void updateConsole(Console *console)
 		UIConsoleStyle *consoleStyle = findStyle<UIConsoleStyle>(&console->style);
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
 		Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
-		s32 contentHeight = (console->outputLines.count * getFont(&consoleStyle->font)->lineHeight) + scrollbarBounds.h;
+		s32 fontLineHeight = getFont(&consoleStyle->font)->lineHeight;
+		s32 contentHeight = ((console->outputLines.count-1) * fontLineHeight) + scrollbarBounds.h;
 		if (scrollToBottom)
 		{
 			console->scrollbar.scrollPercent = 1.0f;
 		}
 
+		console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
 		updateScrollbar(globalAppState.uiState, &console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
 	}
 }
