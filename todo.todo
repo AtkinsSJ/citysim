@@ -19,9 +19,9 @@ Notes for searching:
 ------------------------------------------------
 
 Scrollbar improvements:
-- BUG: Dragging the thumb is sometimes off a bit, can't figure out why.
-	By which I mean, your mouse cursor slides along it as you drag it the full length of the scrollbar
-	Also, dragging the thumb in the minimised console is really slow
+✔ BUG: Dragging the thumb is sometimes off a bit, can't figure out why.
+	✔ By which I mean, your mouse cursor slides along it as you drag it the full length of the scrollbar
+	✔ Also, dragging the thumb in the minimised console is really slow
 ✔ Convert drawScrollbar() to take a ScrollbarState
 	✔ need to convert the console to using a ScrollbarState first
 - Increase the bar size to something more reasonable
@@ -64,7 +64,6 @@ Building problems:
 		(eg, if a 5x5 area is without power, but only one icon is shown in the middle, then demolishing the building in the middle would remove the icon. We need to make sure other icons pop up in its place so the lack of power is still indicated for the other buildings in that area.)
 		-> Have the Zots system respond to dirty-rects and regenerate the zots
 - Problems have a start time. This gives some breathing room so that briefly having a problem doesn't immediately have consequences.
-- I guess we need a game clock before we can do that though!
 
 ENTITIES:
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.

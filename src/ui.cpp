@@ -380,7 +380,8 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 			s32 overflowSize   = state->contentSize - (state->isHorizontal ? bounds.w : bounds.h);
 			Rect2I thumbBounds = getScrollbarThumbBounds(state, bounds, style);
 			s32 thumbSize      = state->isHorizontal ? thumbBounds.w : thumbBounds.h;
-			s32 thumbRange     = state->isHorizontal ? (bounds.w - thumbBounds.w) : (bounds.h - thumbBounds.h);
+			s32 gutterSize     = state->isHorizontal ? bounds.w : bounds.h;
+			s32 thumbRange     = gutterSize - thumbSize;
 
 			// Scrollwheel stuff
 			// (It's weird that we're putting this within mouseInputHandled, but eh)
@@ -403,22 +404,27 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 					// If we are dragging the thumb, move it
 					if (state->isDraggingThumb)
 					{
+						s32 dragDistance = 0;
+
 						if (state->isHorizontal)
 						{
-							state->scrollPosition = state->thumbDragStartPos - (s32)(clickStartPos.x) + mousePos.x;
+							dragDistance = mousePos.x - (s32)clickStartPos.x;
 						}
 						else
 						{
-							state->scrollPosition = state->thumbDragStartPos - (s32)(clickStartPos.y) + mousePos.y;
+							dragDistance = mousePos.y - (s32)clickStartPos.y;
 						}
 
-						state->scrollPosition = clamp(state->scrollPosition, 0, overflowSize);
+						f32 dragPercent = (f32)dragDistance / thumbRange;
+						f32 scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
+
+						state->scrollPosition = round_s32(scrollPercent * overflowSize);
 					}
 					// Else, if we clicked on the thumb, begin dragging
 					else if (mouseButtonJustPressed(MouseButton_Left) && isMouseInUIBounds(uiState, thumbBounds, clickStartPos))
 					{
 						state->isDraggingThumb = true;
-						state->thumbDragStartPos = state->scrollPosition;
+						state->thumbDragStartPercent = getScrollbarPercent(state, gutterSize);
 					}
 					// Else, jump to mouse position
 					else
@@ -427,6 +433,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 
 						f32 scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
 						state->scrollPosition = round_s32(scrollPercent * overflowSize);
+						state->isDraggingThumb = false;
 					}
 
 					uiState->mouseInputHandled = true;

@@ -47,7 +47,7 @@ struct ScrollbarState
 	s32 scrollPosition;
 
 	bool isDraggingThumb;
-	s32 thumbDragStartPos;
+	f32 thumbDragStartPercent;
 };
 
 enum ButtonState
