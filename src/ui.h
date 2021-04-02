@@ -125,7 +125,8 @@ void pushToast(UIState *uiState, String message);
 void drawToast(UIState *uiState);
 
 void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
-Rect2I getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
+// NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
+Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
 void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
 s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
