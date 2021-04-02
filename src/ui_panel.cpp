@@ -424,6 +424,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 			boundsChanged = true;
 		}
 
+		// Make sure there is space for the scrollbar if we have one
 		if (hScrollbar)
 		{
 			bounds.h += hScrollbarBounds.h;
@@ -436,6 +437,8 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	{
 		hScrollbarBounds.w = bounds.w;
 		hScrollbarBounds.x = bounds.x;
+		// In case the height has shrunk, move the scrollbar to the bottom edge
+		hScrollbarBounds.y = bounds.y + bounds.h - hScrollbarBounds.h;
 
 		vScrollbarBounds.h = bounds.h;
 		vScrollbarBounds.y = bounds.y;

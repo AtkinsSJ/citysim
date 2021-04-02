@@ -18,11 +18,8 @@ Notes for searching:
 
 ------------------------------------------------
 
-Make the scissor for UIPanel be a placeholder, which we fill in at the end.
-	This is because the hScrollbar extends the panel size, but only after the panel has already had the scissor applied!
-	I guess this is really a problem with the panel being created with too small bounds? IDK, that doesn't seem to be the case, but I'll leave that for next time.
-
 Scrollbar improvements:
+- Don't draw the thumb if the content is smaller than the viewport
 ✔ BUG: Dragging the thumb is sometimes off a bit, can't figure out why.
 	✔ By which I mean, your mouse cursor slides along it as you drag it the full length of the scrollbar
 	✔ Also, dragging the thumb in the minimised console is really slow
@@ -30,7 +27,7 @@ Scrollbar improvements:
 	✔ need to convert the console to using a ScrollbarState first
 ✔ Increase the bar size to something more reasonable
 	✔ Mouse click-and-drag on the bar, instead of just jumping to where the mouse is when pressed
-- Add support for horizontal scrollbars
+✔ Add support for horizontal scrollbars
 ✔ Configurable mouse-wheel step size
 ✔ Using scrollbars is really janky, they could do with a rethink on how they work probably
 	Maybe, instead of them storing the pixel scrollPosition, they just store a %. Then, the user code converts that % into something meaningful?
