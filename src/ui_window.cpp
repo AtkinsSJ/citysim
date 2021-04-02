@@ -200,12 +200,13 @@ void updateWindows(UIState *uiState)
 			}
 		}
 
+		// Prevent anything behind a modal window from interacting with the mouse
 		if (isModal)
 		{
 			uiState->mouseInputHandled = true; 
 		}
-
-		if (contains(wholeWindowArea, mousePos))
+		// Prevent anything behind this window from interacting with the mouse
+		else if (contains(wholeWindowArea, mousePos))
 		{
 			// Tooltips don't take mouse input
 			if (!isTooltip)

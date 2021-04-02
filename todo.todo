@@ -25,7 +25,8 @@ Window/UI System features:
 ✔ Image buttons
 ✔ Align things to the bottom
 ✔ Parity between windowed and non-windowed UI. They're very different right now which is awkward.
-- Convert the in-game toolbar to a Panel?
+✖ Convert the in-game toolbar to a Panel?
+	✖ Nah! It's all temporary UI anyway, so just use Panels when we do it for real
 - Get a better handle on whether elements should react to mouse hover. It's weird and wrong right now:
 	- We currently don't highlight the window-close button unless it's the active window
 	- But we do highlight buttons on windows that are "behind" a modal one!
