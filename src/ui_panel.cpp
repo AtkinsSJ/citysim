@@ -544,7 +544,7 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 		{
 			backgroundStyle = &buttonStyle->disabledBackground;
 		}
-		else if (isMouseInUIBounds(uiState, buttonBounds))
+		else if (!uiState->mouseInputHandled && isMouseInUIBounds(uiState, buttonBounds))
 		{
 			// Mouse pressed: must have started and currently be inside the bounds to show anything
 			// Mouse unpressed: show hover if in bounds
