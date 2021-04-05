@@ -161,6 +161,7 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 
 		// If the window is new, make sure it has a valid area by running the WindowProc once
+		// (Otherwise, windows may appear in the wrong place or at the wrong size on the frame they are created.)
 		if (!window->isInitialised)
 		{
 			window->isInitialised = true;

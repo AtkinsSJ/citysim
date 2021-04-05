@@ -45,7 +45,6 @@ struct Window
 	WindowProc onClose;
 
 	bool isInitialised;
-	bool wasActiveLastUpdate;
 };
 
 //
