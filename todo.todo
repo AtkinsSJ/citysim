@@ -33,7 +33,7 @@ Single-pass windows
 ✔ Move dragging/snapping behaviour to before running the WindowProc
 ✖ Get rid of the doUpdate/doRender stuff from Panels
 - Re-add the !mouseInputHandled thing to buttons to respond to mouse hover/click
-- Fix that panel images draw when doRender is false! Maybe check the other widgets too
+✔ Fix that panel images draw when doRender is false! Maybe check the other widgets too
 
 Window/UI System features:
 ✔ Confirmation dialogs

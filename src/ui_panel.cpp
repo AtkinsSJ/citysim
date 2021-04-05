@@ -93,7 +93,10 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	V2I textSize = calculateTextSize(font, text, availableButtonContentSize);
 	AddButtonInternalResult buttonResult = addButtonInternal(textSize, state, buttonStyle);
 
-	drawText(&renderer->uiBuffer, font, text, buttonResult.contentBounds, buttonStyle->textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
+	if (doRender)
+	{
+		drawText(&renderer->uiBuffer, font, text, buttonResult.contentBounds, buttonStyle->textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
+	}
 
 	return buttonResult.wasClicked;
 }
@@ -121,7 +124,11 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 	}
 
 	AddButtonInternalResult buttonResult = addButtonInternal(spriteSize, state, buttonStyle);
-	drawSingleSprite(&renderer->uiBuffer, sprite, rect2(buttonResult.contentBounds), renderer->shaderIds.textured, makeWhite());
+
+	if (doRender)
+	{
+		drawSingleSprite(&renderer->uiBuffer, sprite, rect2(buttonResult.contentBounds), renderer->shaderIds.textured, makeWhite());
+	}
 
 	return buttonResult.wasClicked;
 }
@@ -141,8 +148,11 @@ void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 		if (size.x == -1) size.x = sprite->pixelWidth;
 		if (size.y == -1) size.y = sprite->pixelHeight;
 
-		Rect2I spriteBounds = irectAligned(origin, size, widgetAlignment);
-		drawSingleSprite(&renderer->uiBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
+		if (doRender)
+		{
+			Rect2I spriteBounds = irectAligned(origin, size, widgetAlignment);
+			drawSingleSprite(&renderer->uiBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
+		}
 	}
 
 	completeWidget(size);
