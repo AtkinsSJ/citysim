@@ -356,7 +356,8 @@ int main(int argc, char *argv[])
 			{
 				uiState.uiRects.clear();
 				uiState.mouseInputHandled = false;
-				updateWindows(&uiState);
+				// updateWindows(&uiState);
+				updateAndRenderWindows(&uiState);
 				
 				AppStatus newAppStatus = appState->appStatus;
 
@@ -387,7 +388,7 @@ int main(int argc, char *argv[])
 					INVALID_DEFAULT_CASE;
 				}
 
-				renderWindows(&uiState);
+				// renderWindows(&uiState);
 
 				if (newAppStatus != appState->appStatus)
 				{
