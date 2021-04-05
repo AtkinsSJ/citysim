@@ -28,7 +28,9 @@ Obstacles to migrating to single-pass UI update/render:
 Single-pass windows
 - Remove Window::isInitialised
 - Remove Window::wasActiveLastUpdate
-- Move dragging/snapping behaviour to before running the WindowProc
+✔ Move dragging/snapping behaviour to before running the WindowProc
+- Get rid of the doUpdate/doRender stuff from Panels
+- Re-add the !mouseInputHandled thing to buttons to respond to mouse hover/click
 
 Window/UI System features:
 ✔ Confirmation dialogs

@@ -152,8 +152,6 @@ void updateAndRenderWindows(UIState *uiState)
 
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		WindowContext context = WindowContext(window, windowStyle, uiState, true, true);
-
 		// TODO: Grab a renderbuffer here
 
 		// Modal windows get a translucent colour over everything behind them
@@ -162,83 +160,79 @@ void updateAndRenderWindows(UIState *uiState)
 			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
 		}
 
-		// TODO: We need to handle window-dragging/keeping-on-screen/etc *before* we run the WindowProc
-
-		// NB: Was updateWindow()
+		// Handle dragging the window
+		if (isModal)
 		{
-			window->windowProc(&context, window->userData);
-
-			context.windowPanel.end(shrinkHeight, shrinkWidth);
-
-			if (shrinkHeight)
+			// Modal windows can't be moved, they just auto-centre
+			window->area = centreWithin(validWindowArea, window->area);
+		}
+		else if (isActive && uiState->isDraggingWindow)
+		{
+			if (mouseButtonJustReleased(MouseButton_Left))
 			{
-				window->area.h = barHeight + context.windowPanel.bounds.h;
+				uiState->isDraggingWindow = false;
+			}
+			else
+			{
+				V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+				window->area.x = uiState->windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
+				window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
+			}
+			
+			uiState->mouseInputHandled = true;
+		}
+		else if (isTooltip)
+		{
+			window->area.pos = v2i(renderer->uiCamera.mousePos) + windowStyle->offsetFromMouse;
+		}
+
+		// Keep window on screen
+		{
+			// X
+			if (window->area.w > validWindowArea.w)
+			{
+				// If it's too big, centre it.
+				window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
+			}
+			else if (window->area.x < validWindowArea.x)
+			{
+				window->area.x = validWindowArea.x;
+			}
+			else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
+			{
+				window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
 			}
 
-			if (shrinkWidth)
+			// Y
+			if (window->area.h > validWindowArea.h)
 			{
-				window->area.w = context.windowPanel.bounds.w;
-				window->area.x = context.windowPanel.bounds.x;
+				// If it's too big, centre it.
+				window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
 			}
+			else if (window->area.y < validWindowArea.y)
+			{
+				window->area.y = validWindowArea.y;
+			}
+			else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
+			{
+				window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
+			}
+		}
 
-			// Handle dragging/position first, BEFORE we use the window rect anywhere
-			if (isModal)
-			{
-				// Modal windows can't be moved, they just auto-centre
-				window->area = centreWithin(validWindowArea, window->area);
-			}
-			else if (isActive && uiState->isDraggingWindow)
-			{
-				if (mouseButtonJustReleased(MouseButton_Left))
-				{
-					uiState->isDraggingWindow = false;
-				}
-				else
-				{
-					V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
-					window->area.x = uiState->windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
-					window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
-				}
-				
-				uiState->mouseInputHandled = true;
-			}
-			else if (isTooltip)
-			{
-				window->area.pos = v2i(renderer->uiCamera.mousePos) + context.windowStyle->offsetFromMouse;
-			}
+		// Actually run the window proc
+		WindowContext context = WindowContext(window, windowStyle, uiState, true, true);
+		window->windowProc(&context, window->userData);
+		context.windowPanel.end(shrinkHeight, shrinkWidth);
 
-			// Keep window on screen
-			{
-				// X
-				if (window->area.w > validWindowArea.w)
-				{
-					// If it's too big, centre it.
-					window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
-				}
-				else if (window->area.x < validWindowArea.x)
-				{
-					window->area.x = validWindowArea.x;
-				}
-				else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
-				{
-					window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
-				}
+		if (shrinkHeight)
+		{
+			window->area.h = barHeight + context.windowPanel.bounds.h;
+		}
 
-				// Y
-				if (window->area.h > validWindowArea.h)
-				{
-					// If it's too big, centre it.
-					window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
-				}
-				else if (window->area.y < validWindowArea.y)
-				{
-					window->area.y = validWindowArea.y;
-				}
-				else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
-				{
-					window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
-				}
-			}
+		if (shrinkWidth)
+		{
+			window->area.w = context.windowPanel.bounds.w;
+			window->area.x = context.windowPanel.bounds.x;
 		}
 
 		if (context.closeRequested || isTooltip)
