@@ -1,6 +1,6 @@
 #pragma once
 
-UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
+UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffer *renderBuffer)
 {
 	DEBUG_FUNCTION();
 
@@ -18,6 +18,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags)
 
 	this->doUpdate = (flags & Panel_DoUpdate) != 0;
 	this->doRender = (flags & Panel_DoRender) != 0;
+	this->renderBuffer = renderBuffer;
 	
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
@@ -95,7 +96,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 
 	if (doRender)
 	{
-		drawText(&renderer->uiBuffer, font, text, buttonResult.contentBounds, buttonStyle->textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
+		drawText(renderBuffer, font, text, buttonResult.contentBounds, buttonStyle->textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
 	}
 
 	return buttonResult.wasClicked;
@@ -127,7 +128,7 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 
 	if (doRender)
 	{
-		drawSingleSprite(&renderer->uiBuffer, sprite, rect2(buttonResult.contentBounds), renderer->shaderIds.textured, makeWhite());
+		drawSingleSprite(renderBuffer, sprite, rect2(buttonResult.contentBounds), renderer->shaderIds.textured, makeWhite());
 	}
 
 	return buttonResult.wasClicked;
@@ -151,7 +152,7 @@ void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 		if (doRender)
 		{
 			Rect2I spriteBounds = irectAligned(origin, size, widgetAlignment);
-			drawSingleSprite(&renderer->uiBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
+			drawSingleSprite(renderBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
 		}
 	}
 
@@ -178,7 +179,7 @@ void UIPanel::addText(String text, String styleName)
 
 		if (doRender)
 		{
-			drawText(&renderer->uiBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
+			drawText(renderBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
 		}
 
 		completeWidget(textSize);
@@ -212,7 +213,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 
 		if (doRender)
 		{
-			drawTextInput(&renderer->uiBuffer, textInput, textInputStyle, textInputBounds);
+			drawTextInput(renderBuffer, textInput, textInputStyle, textInputBounds);
 		}
 
 		if (doUpdate)
@@ -458,10 +459,10 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	{
 		if (doRender)
 		{
-			addBeginScissor(&renderer->uiBuffer, bounds);
+			addBeginScissor(renderBuffer, bounds);
 
 			// Prepare to render background
-			background.preparePlaceholder(&renderer->uiBuffer);
+			background.preparePlaceholder(renderBuffer);
 		}
 	}
 
@@ -477,7 +478,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (doRender)
 		{
-			drawScrollbar(&renderer->uiBuffer, hScrollbar, hScrollbarBounds, scrollbarStyle);
+			drawScrollbar(renderBuffer, hScrollbar, hScrollbarBounds, scrollbarStyle);
 		}
 	}
 
@@ -492,7 +493,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (doRender)
 		{
-			drawScrollbar(&renderer->uiBuffer, vScrollbar, vScrollbarBounds, scrollbarStyle);
+			drawScrollbar(renderBuffer, vScrollbar, vScrollbarBounds, scrollbarStyle);
 		}
 	}
 
@@ -502,7 +503,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 		background.fillPlaceholder(bounds);
 
 		// Clear any scissor stuff
-		addEndScissor(&renderer->uiBuffer);
+		addEndScissor(renderBuffer);
 
 		popInputScissorRect(uiState);
 	}
@@ -565,7 +566,7 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 			backgroundStyle = &buttonStyle->hoverBackground;
 		}
 
-		UIDrawable(backgroundStyle).draw(&renderer->uiBuffer, buttonBounds);
+		UIDrawable(backgroundStyle).draw(renderBuffer, buttonBounds);
 	}
 
 	if (doUpdate)
@@ -600,12 +601,12 @@ void UIPanel::prepareForWidgets()
 	{
 		if (doRender)
 		{
-			addBeginScissor(&renderer->uiBuffer, bounds);
+			addBeginScissor(renderBuffer, bounds);
 
 			pushInputScissorRect(globalAppState.uiState, bounds);
 
 			// Prepare to render background
-			background.preparePlaceholder(&renderer->uiBuffer);
+			background.preparePlaceholder(renderBuffer);
 		}
 
 		hasAddedWidgets = true;

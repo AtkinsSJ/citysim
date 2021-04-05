@@ -1,11 +1,12 @@
 #pragma once
 
-WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender)
+WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender, RenderBuffer *renderBuffer)
 	: window(window),
 	  windowStyle(windowStyle),
 	  uiState(uiState),
 	  doUpdate(doUpdate),
 	  doRender(doRender),
+	  renderBuffer(renderBuffer),
 	  windowPanel(
 	  	  irectXYWH(
 	  	  		window->area.x,
@@ -18,7 +19,8 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState
 	      Panel_LayoutTopToBottom
 	       | ((window->flags & WinFlag_Tooltip) ? 0 : Panel_BlocksMouse)
 	       | (doUpdate ? Panel_DoUpdate : 0)
-	       | (doRender ? Panel_DoRender : 0)
+	       | (doRender ? Panel_DoRender : 0),
+	       renderBuffer
 	  )
 {}
 
@@ -166,7 +168,7 @@ void updateAndRenderWindows(UIState *uiState)
 		{
 			window->isInitialised = true;
 
-			WindowContext context = WindowContext(window, windowStyle, uiState, false, false);
+			WindowContext context = WindowContext(window, windowStyle, uiState, false, false, null);
 			window->windowProc(&context, window->userData);
 			context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -242,7 +244,7 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 
 		// Actually run the window proc
-		WindowContext context = WindowContext(window, windowStyle, uiState, true, true);
+		WindowContext context = WindowContext(window, windowStyle, uiState, true, true, &renderer->uiBuffer);
 		window->windowProc(&context, window->userData);
 		context.windowPanel.end(shrinkHeight, shrinkWidth);
 
