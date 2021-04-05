@@ -26,11 +26,14 @@ Obstacles to migrating to single-pass UI update/render:
 	-> OR: we just do the window update/render after the game update/render! We do it first because we want to know if the mouse input is consumed so we don't click "through" the UI into the game world. BUT, we can just examine the window rectangles to see if that's the case!
 
 Single-pass windows
-- Remove Window::isInitialised
+- Get windows to render back-to-front
+- Get windows drawing in front of other UI again
+✖ Remove Window::isInitialised
 - Remove Window::wasActiveLastUpdate
 ✔ Move dragging/snapping behaviour to before running the WindowProc
-- Get rid of the doUpdate/doRender stuff from Panels
+✖ Get rid of the doUpdate/doRender stuff from Panels
 - Re-add the !mouseInputHandled thing to buttons to respond to mouse hover/click
+- Fix that panel images draw when doRender is false! Maybe check the other widgets too
 
 Window/UI System features:
 ✔ Confirmation dialogs

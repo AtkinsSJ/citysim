@@ -160,6 +160,27 @@ void updateAndRenderWindows(UIState *uiState)
 			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
 		}
 
+		// If the window is new, make sure it has a valid area by running the WindowProc once
+		if (!window->isInitialised)
+		{
+			window->isInitialised = true;
+
+			WindowContext context = WindowContext(window, windowStyle, uiState, false, false);
+			window->windowProc(&context, window->userData);
+			context.windowPanel.end(shrinkHeight, shrinkWidth);
+
+			if (shrinkHeight)
+			{
+				window->area.h = barHeight + context.windowPanel.bounds.h;
+			}
+
+			if (shrinkWidth)
+			{
+				window->area.w = context.windowPanel.bounds.w;
+				window->area.x = context.windowPanel.bounds.x;
+			}
+		}
+
 		// Handle dragging the window
 		if (isModal)
 		{
@@ -369,223 +390,6 @@ void updateAndRenderWindows(UIState *uiState)
 	}
 }
 
-void updateWindows(UIState *uiState)
-{
-	DEBUG_FUNCTION();
-
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	s32 newActiveWindow = -1;
-	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
-
-	uiState->isAPauseWindowOpen = false;
-
-	bool isActive = true;
-	for (auto it = uiState->openWindows.iterate();
-		it.hasNext();
-		it.next())
-	{
-		Window *window = it.get();
-		s32 windowIndex = it.getIndex();
-
-		// Skip this Window if we've requested to close it.
-		if (uiState->windowsToClose.contains(windowIndex)) continue;
-
-		bool isModal     = (window->flags & WinFlag_Modal) != 0;
-		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
-		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
-
-		UIWindowStyle *windowStyle = findStyle<UIWindowStyle>(window->styleName);
-
-		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
-
-		WindowContext context = WindowContext(window, windowStyle, uiState, true, false);
-
-		// Run the WindowProc once first so we can measure its size
-		updateWindow(uiState, window, &context, isActive);
-
-		if (context.closeRequested || isTooltip)
-		{
-			uiState->windowsToClose.add(windowIndex);
-		}
-
-		if (!context.closeRequested && ((window->flags & WinFlag_Pause) != 0))
-		{
-			uiState->isAPauseWindowOpen = true;
-		}
-
-		Rect2I wholeWindowArea = window->area;
-		Rect2I barArea = irectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
-		Rect2I closeButtonRect = irectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
-		Rect2I contentArea = getWindowContentArea(window->area, barHeight, 0);
-
-		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
-
-		if ((!uiState->mouseInputHandled || windowIndex == 0)
-			 && contains(wholeWindowArea, mousePos)
-			 && mouseButtonJustPressed(MouseButton_Left))
-		{
-			if (hoveringOverCloseButton)
-			{
-				// If we're inside the X, close it!
-				uiState->windowsToClose.add(windowIndex);
-			}
-			else
-			{
-				if (!isModal && contains(barArea, mousePos))
-				{
-					// If we're inside the title bar, start dragging!
-					uiState->isDraggingWindow = true;
-					uiState->windowDragWindowStartPos = window->area.pos;
-				}
-
-				// Make this the active window! 
-				newActiveWindow = windowIndex;
-			}
-
-			// Tooltips don't take mouse input
-			if (!isTooltip)
-			{
-				uiState->mouseInputHandled = true;
-			}
-		}
-
-		// Prevent anything behind a modal window from interacting with the mouse
-		if (isModal)
-		{
-			uiState->mouseInputHandled = true; 
-		}
-		// Prevent anything behind this window from interacting with the mouse
-		else if (contains(wholeWindowArea, mousePos))
-		{
-			// Tooltips don't take mouse input
-			if (!isTooltip)
-			{
-				uiState->mouseInputHandled = true;
-			}
-		}
-
-		window->wasActiveLastUpdate = isActive;
-
-		//
-		// NB: This is a little confusing, so some explanation:
-		// Tooltips are windows, theoretically the front-most window, because they're shown fresh each frame.
-		// We take the front-most window as the active one. Problem is, we don't want the "real" front-most
-		// window to appear inactive just because a tooltip is visible. It feels weird and glitchy.
-		// So, instead of "isActive = (i == 0)", weset it to true before the loop, and then set it to false
-		// the first time we finish a window that wasn't a tooltip, which will be the front-most non-tooltip
-		// window!
-		// Actually, a similar thing will apply to UI messages once we port those, so I'll have to break it
-		// into a separate WindowFlag.
-		//
-		// - Sam, 02/06/2019
-		//
-		if (!isTooltip)
-		{
-			isActive = false;
-		}
-	}
-
-	// Clear the newActiveWindow if it's one that's being closed
-	if (uiState->windowsToClose.contains(newActiveWindow))
-	{
-		newActiveWindow = -1;
-	}
-
-	// Close any windows that were requested
-	if (!uiState->windowsToClose.isEmpty())
-	{
-		Array<s32> windowsToClose = uiState->windowsToClose.asSortedArray();
-
-		for (s32 i = windowsToClose.count - 1; i >= 0; i--)
-		{
-			s32 windowIndex = windowsToClose[i];
-
-			Window *window = uiState->openWindows.get(windowIndex);
-			if (window->onClose != null)
-			{
-				window->onClose(null, window->userData);
-			}
-
-			uiState->isDraggingWindow = false;
-			uiState->openWindows.removeIndex(windowIndex, true);
-		}
-
-		uiState->windowsToClose.clear();
-	}
-
-	if (newActiveWindow != -1)
-	{
-		makeWindowActive(uiState, newActiveWindow);
-	}
-}
-
-void renderWindows(UIState *uiState)
-{
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	for (auto it = uiState->openWindows.iterateBackwards();
-		it.hasNext();
-		it.next())
-	{
-		Window *window = it.get();
-		s32 windowIndex = it.getIndex();
-
-		bool isActive = window->wasActiveLastUpdate;
-		bool isModal     = (window->flags & WinFlag_Modal) != 0;
-		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
-
-		bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
-		bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
-
-		if (isModal)
-		{
-			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
-		}
-
-		UIWindowStyle *windowStyle = findStyle<UIWindowStyle>(window->styleName);
-
-		if (!window->isInitialised)
-		{
-			WindowContext updateContext = WindowContext(window, windowStyle, uiState, true, false);
-			updateWindow(uiState, window, &updateContext, isActive);
-			updateContext.windowPanel.end(shrinkHeight, shrinkWidth);
-			window->isInitialised = true;
-		}
-
-		WindowContext context = WindowContext(window, windowStyle, uiState, false, true);
-		window->windowProc(&context, window->userData);
-		context.windowPanel.end(shrinkHeight, shrinkWidth);
-
-		Rect2I wholeWindowArea = window->area;
-		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
-		Rect2I barArea = irectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
-		Rect2I closeButtonRect = irectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
-		Rect2I contentArea = getWindowContentArea(window->area, barHeight, 0);
-
-		bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
-
-		if (hasTitleBar)
-		{
-			V4 barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
-			V4 titleColor = windowStyle->titleColor;
-
-			String closeButtonString = "X"_s;
-			V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
-
-			BitmapFont *titleFont = getFont(&windowStyle->titleFont);
-
-			drawSingleRect(&renderer->uiBuffer, barArea, renderer->shaderIds.untextured, barColor);
-			uiText(&renderer->uiBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, titleColor);
-
-			if (hoveringOverCloseButton
-			 && (!uiState->mouseInputHandled || windowIndex == 0))
-			{
-				drawSingleRect(&renderer->uiBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
-			}
-			uiText(&renderer->uiBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, titleColor);
-		}
-	}
-}
-
 static void makeWindowActive(UIState *uiState, s32 windowIndex)
 {
 	// Don't do anything if it's already the active window.
@@ -601,88 +405,4 @@ Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 					windowArea.y + barHeight + margin,
 					windowArea.w - (margin * 2),
 					windowArea.h - barHeight - (margin * 2));
-}
-
-void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive)
-{
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
-
-	window->windowProc(context, window->userData);
-
-	bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
-	bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
-
-	context->windowPanel.end(shrinkHeight, shrinkWidth);
-
-	if (shrinkHeight)
-	{
-		s32 barHeight = (window->flags & WinFlag_Headless) ? 0 : context->windowStyle->titleBarHeight;
-		window->area.h = barHeight + context->windowPanel.bounds.h;
-	}
-
-	if (shrinkWidth)
-	{
-		window->area.w = context->windowPanel.bounds.w;
-		window->area.x = context->windowPanel.bounds.x;
-	}
-
-	// Handle dragging/position first, BEFORE we use the window rect anywhere
-	if (window->flags & WinFlag_Modal)
-	{
-		// Modal windows can't be moved, they just auto-centre
-		window->area = centreWithin(validWindowArea, window->area);
-	}
-	else if (isActive && uiState->isDraggingWindow)
-	{
-		if (mouseButtonJustReleased(MouseButton_Left))
-		{
-			uiState->isDraggingWindow = false;
-		}
-		else
-		{
-			V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
-			window->area.x = uiState->windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
-			window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
-		}
-		
-		uiState->mouseInputHandled = true;
-	}
-	else if (window->flags & WinFlag_Tooltip)
-	{
-		window->area.pos = v2i(renderer->uiCamera.mousePos) + context->windowStyle->offsetFromMouse;
-	}
-
-	// Keep window on screen
-	{
-		// X
-		if (window->area.w > validWindowArea.w)
-		{
-			// If it's too big, centre it.
-			window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
-		}
-		else if (window->area.x < validWindowArea.x)
-		{
-			window->area.x = validWindowArea.x;
-		}
-		else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w))
-		{
-			window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
-		}
-
-		// Y
-		if (window->area.h > validWindowArea.h)
-		{
-			// If it's too big, centre it.
-			window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
-		}
-		else if (window->area.y < validWindowArea.y)
-		{
-			window->area.y = validWindowArea.y;
-		}
-		else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h))
-		{
-			window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
-		}
-	}
 }

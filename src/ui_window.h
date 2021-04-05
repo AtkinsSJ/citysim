@@ -59,8 +59,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 void closeWindow(WindowProc windowProc);
 void closeAllWindows();
 
-void updateWindows(UIState *uiState);
-void renderWindows(UIState *uiState);
+void updateAndRenderWindows(UIState *uiState);
 
 //
 // INTERNAL
