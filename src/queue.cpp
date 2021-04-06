@@ -111,7 +111,7 @@ Maybe<T> Queue<T>::pop()
 					newStartChunk->prevChunk = null;
 				}
 
-				addItemToPool(startChunk, &chunkPool);
+				addItemToPool(&chunkPool, startChunk);
 				startChunk = newStartChunk;
 
 				// If we just removed the only chunk, make sure to clear the endChunk to match.

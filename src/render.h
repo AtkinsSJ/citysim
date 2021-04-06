@@ -187,7 +187,7 @@ struct RenderBufferChunk : PoolItem
 	RenderBufferChunk *nextChunk;
 };
 
-struct RenderBuffer
+struct RenderBuffer : PoolItem
 {
 	String name;
 	String renderProfileName;
@@ -220,6 +220,7 @@ struct Renderer
 	bool cursorIsVisible;
 	SDL_Cursor *systemWaitCursor;
 
+	Pool<RenderBuffer> renderBufferPool;
 	RenderBuffer worldBuffer;
 	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
@@ -257,7 +258,9 @@ void rendererLoadAssets();
 void rendererUnloadAssets();
 void freeRenderer();
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool);
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Pool<RenderBufferChunk> *chunkPool);
+RenderBuffer *getTemporaryRenderBuffer();
+void returnTemporaryRenderBuffer(RenderBuffer *buffer);
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
 void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer);
 void clearRenderBuffer(RenderBuffer *buffer);

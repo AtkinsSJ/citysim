@@ -43,10 +43,17 @@ void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 	renderer->renderBufferChunkSize = KB(64);
 	initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk, renderer);
 
-	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer",        &renderer->chunkPool);
-	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer", &renderer->chunkPool);
-	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer",           &renderer->chunkPool);
-	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer",        &renderer->chunkPool);
+	initPool<RenderBuffer>(&renderer->renderBufferPool, renderArena,
+		[](MemoryArena *arena, void *) -> RenderBuffer*
+		{
+			RenderBuffer *buffer = allocateStruct<RenderBuffer>(arena);
+			initRenderBuffer(arena, buffer, nullString, &renderer->chunkPool);
+			return buffer;
+		}, renderer);
+	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer"_s,        &renderer->chunkPool);
+	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer"_s, &renderer->chunkPool);
+	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer"_s,           &renderer->chunkPool);
+	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer"_s,        &renderer->chunkPool);
 
 	// Hide cursor until stuff loads
 	setCursorVisible(false);
@@ -54,6 +61,9 @@ void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 
 void render()
 {
+	DEBUG_POOL(&renderer->renderBufferPool, "renderBufferPool");
+	DEBUG_POOL(&renderer->chunkPool, "renderChunkPool");
+
 	linkRenderBufferToNext(&renderer->worldBuffer, &renderer->worldOverlayBuffer);
 	linkRenderBufferToNext(&renderer->worldOverlayBuffer, &renderer->uiBuffer);
 	linkRenderBufferToNext(&renderer->uiBuffer, &renderer->debugBuffer);
@@ -74,7 +84,7 @@ void render()
 			chunk = chunk->nextChunk)
 		{
 			chunk->used = 0;
-			addItemToPool(chunk, &renderer->chunkPool);
+			addItemToPool(&renderer->chunkPool, chunk);
 		}
 	}
 
@@ -201,7 +211,7 @@ void setCursorVisible(bool visible)
 	SDL_ShowCursor(visible ? 1 : 0);
 }
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool<RenderBufferChunk> *chunkPool)
+void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Pool<RenderBufferChunk> *chunkPool)
 {
 	*buffer = {};
 
@@ -228,6 +238,17 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, char *name, Pool
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = buffer->name;
 	bufferStart->renderProfileName = buffer->renderProfileName;
+}
+
+inline RenderBuffer *getTemporaryRenderBuffer()
+{
+	return getItemFromPool(&renderer->renderBufferPool);
+}
+
+void returnTemporaryRenderBuffer(RenderBuffer *buffer)
+{
+	clearRenderBuffer(buffer);
+	addItemToPool(&renderer->renderBufferPool, buffer);
 }
 
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData)

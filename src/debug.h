@@ -24,6 +24,10 @@
 			static String GLUE(debugArenaName____, __LINE__) = makeString(name, true); \
 			debugTrackArena(globalDebugState, arena, GLUE(debugArenaName____, __LINE__))
 
+	#define DEBUG_POOL(pool, name) \
+			static String GLUE(debugPoolName____, __LINE__) = makeString(name, true); \
+			debugTrackPool(globalDebugState, pool, GLUE(debugPoolName____, __LINE__))
+
 	#define DEBUG_ASSETS() debugTrackAssets(globalDebugState)
 	#define DEBUG_BEGIN_RENDER_BUFFER(bufferName, profileName) debugStartTrackingRenderBuffer(globalDebugState, bufferName, profileName)
 	#define DEBUG_DRAW_CALL(shader, texture, itemCount) debugTrackDrawCall(globalDebugState, shader, texture, itemCount)
@@ -38,7 +42,9 @@
 	#define DEBUG_FUNCTION_T(...)
 
 	#define DEBUG_ARENA(...)
+	#define DEBUG_POOL(...)
 	#define DEBUG_ASSETS(...)
+
 	#define DEBUG_BEGIN_RENDER_BUFFER(...)
 	#define DEBUG_DRAW_CALL(...)
 	#define DEBUG_TRACK_RENDER_BUFFER_CHUNK(...)
@@ -57,6 +63,14 @@ struct DebugArenaData : LinkedListNode<DebugArenaData>
 	u32 blockCount[DEBUG_FRAMES_COUNT];
 	smm totalSize[DEBUG_FRAMES_COUNT];
 	smm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
+};
+
+struct DebugPoolData : LinkedListNode<DebugPoolData>
+{
+	String name;
+
+	smm pooledItemCount[DEBUG_FRAMES_COUNT];
+	smm totalItemCount[DEBUG_FRAMES_COUNT];
 };
 
 enum DebugCodeDataTag
@@ -149,6 +163,7 @@ struct DebugState
 	u64 frameEndCycle[DEBUG_FRAMES_COUNT];
 
 	DebugArenaData arenaDataSentinel;
+	DebugPoolData poolDataSentinel;
 	DebugRenderBufferData renderBufferDataSentinel;
 	DebugRenderBufferData *currentRenderBuffer;
 	DebugAssetData assetData; // Not a sentinel because there's only one asset system!
@@ -163,7 +178,9 @@ struct DebugState
 void debugInit();
 void updateAndRenderDebugData(DebugState *debugState);
 
-void debugTrackArena(DebugState *debugState, MemoryArena *arena, String arenaName);
+void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name);
+template <typename T>
+void debugTrackPool(DebugState *debugState, Pool<T> *pool, String name);
 void debugTrackAssets(DebugState *debugState);
 void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName, String renderProfileName);
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn);

@@ -32,16 +32,22 @@ struct Pool
 	T *(*allocateItem)(MemoryArena *arena, void *userData);
 	void *userData; // Passed to allocateItem()
 
+	smm pooledItemCount; // How many items reside in the pool
+	smm totalItemCount;  // How many items this pool has created, total
+
 	T *firstItem;
 };
 
 template<typename T>
 void initPool(Pool<T> *pool, MemoryArena *arena, T *(*allocateItem)(MemoryArena *arena, void *userData), void *userData=null)
 {
+	*pool = {};
 	pool->memoryArena = arena;
 	pool->allocateItem = allocateItem;
 	pool->userData = userData;
 	pool->firstItem = null;
+	pool->pooledItemCount = 0;
+	pool->totalItemCount = 0;
 }
 
 template<typename T>
@@ -57,10 +63,13 @@ T *getItemFromPool(Pool<T> *pool)
 		{
 			pool->firstItem->prevPoolItem = null;
 		}
+
+		pool->pooledItemCount--;
 	}
 	else
 	{
 		result = pool->allocateItem(pool->memoryArena, pool->userData);
+		pool->totalItemCount++;
 	}
 
 	result->prevPoolItem = null;
@@ -70,7 +79,7 @@ T *getItemFromPool(Pool<T> *pool)
 }
 
 template<typename T>
-void addItemToPool(T *item, Pool<T> *pool)
+void addItemToPool(Pool<T> *pool, T *item)
 {
 	// Remove item from its existing list
 	if (item->prevPoolItem != null) item->prevPoolItem->nextPoolItem = item->nextPoolItem;
@@ -84,4 +93,6 @@ void addItemToPool(T *item, Pool<T> *pool)
 		pool->firstItem->prevPoolItem = item;
 	}
 	pool->firstItem = item;
+
+	pool->pooledItemCount++;
 }

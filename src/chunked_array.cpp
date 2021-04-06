@@ -492,7 +492,7 @@ void ChunkedArray<T>::returnLastChunkToPool()
 	if (firstChunk == chunk) firstChunk = lastChunk;
 	chunkCount--;
 
-	addItemToPool<ArrayChunk<T>>(chunk, chunkPool);
+	addItemToPool<ArrayChunk<T>>(chunkPool, chunk);
 }
 
 template<typename T>

@@ -8,6 +8,7 @@ void debugInit()
 	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 
 	initLinkedListSentinel(&globalDebugState->arenaDataSentinel);
+	initLinkedListSentinel(&globalDebugState->poolDataSentinel);
 	initLinkedListSentinel(&globalDebugState->renderBufferDataSentinel);
 
 	initHashTable(&globalDebugState->codeData, 0.5f, 2048);
@@ -274,6 +275,20 @@ void renderDebugData(DebugState *debugState)
 		}
 	}
 
+	// Pools
+	{
+		DebugPoolData *pool = debugState->poolDataSentinel.nextNode;
+		while (pool != &debugState->poolDataSentinel)
+		{
+			debugTextOut(&textState, myprintf("Pool {0}: {1} / {2}"_s, {
+				pool->name,
+				formatInt(pool->pooledItemCount[rfi]),
+				formatInt(pool->totalItemCount[rfi])
+			}));
+			pool = pool->nextNode;
+		}
+	}
+
 	// Render buffers
 	{
 		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
@@ -447,6 +462,24 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 				block = block->prevBlock;
 			}
 		}
+	}
+}
+
+template <typename T>
+void debugTrackPool(DebugState *debugState, Pool<T> *pool, String name)
+{
+	DebugPoolData *poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
+	u32 frameIndex = debugState->writingFrameIndex;
+
+	if (pool)
+	{
+		poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
+		poolData->totalItemCount[frameIndex] = pool->totalItemCount;
+	}
+	else
+	{
+		poolData->pooledItemCount[frameIndex] = 0;
+		poolData->totalItemCount[frameIndex] = 0;
 	}
 }
 
