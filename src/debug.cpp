@@ -107,6 +107,51 @@ void processDebugData(DebugState *debugState)
 	}
 }
 
+void clearNewFrameDebugData(DebugState *debugState)
+{
+	u32 frameIndex = debugState->writingFrameIndex;
+
+	// Clear away old data before we record the new
+	// This stops ghost data hanging around if the thing isn't tracked at all this frame
+
+	// Memory arenas
+	{
+		DebugArenaData *arena = debugState->arenaDataSentinel.nextNode;
+		while (arena != &debugState->arenaDataSentinel)
+		{
+			arena->blockCount[frameIndex] = 0;
+			arena->totalSize[frameIndex] = 0;
+			arena->usedSize[frameIndex] = 0;
+			arena = arena->nextNode;
+		}
+	}
+
+	// Pools
+	{
+		DebugPoolData *pool = debugState->poolDataSentinel.nextNode;
+		while (pool != &debugState->poolDataSentinel)
+		{
+			pool->pooledItemCount[frameIndex] = 0;
+			pool->totalItemCount[frameIndex] = 0;
+			pool = pool->nextNode;
+		}
+	}
+
+	// Render buffers
+	{
+		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
+		while (renderBufferData != &debugState->renderBufferDataSentinel)
+		{
+			renderBufferData->drawCallCount[frameIndex] = 0;
+			renderBufferData->chunkCount[frameIndex] = 0;
+			renderBufferData->startTime[frameIndex] = 0;
+			renderBufferData->endTime[frameIndex] = 0;
+
+			renderBufferData = renderBufferData->nextNode;
+		}
+	}
+}
+
 struct DebugTextState
 {
 	V2I pos;
@@ -406,6 +451,8 @@ void updateAndRenderDebugData(DebugState *debugState)
 	{
 		renderDebugData(debugState);
 	}
+
+	clearNewFrameDebugData(debugState);
 }
 
 template<typename T>
@@ -440,10 +487,6 @@ void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
 
 	u32 frameIndex = debugState->writingFrameIndex;
 
-	arenaData->blockCount[frameIndex] = 0;
-	arenaData->totalSize[frameIndex] = 0;
-	arenaData->usedSize[frameIndex] = 0;
-
 	if (arena) // So passing null just keeps it zeroed out
 	{
 		if (arena->currentBlock)
@@ -475,11 +518,6 @@ void debugTrackPool(DebugState *debugState, Pool<T> *pool, String name)
 	{
 		poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
 		poolData->totalItemCount[frameIndex] = pool->totalItemCount;
-	}
-	else
-	{
-		poolData->pooledItemCount[frameIndex] = 0;
-		poolData->totalItemCount[frameIndex] = 0;
 	}
 }
 
