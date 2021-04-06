@@ -154,12 +154,12 @@ void updateAndRenderWindows(UIState *uiState)
 
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
-		// TODO: Grab a renderbuffer here
+		window->renderBuffer = getTemporaryRenderBuffer(window->title);
 
 		// Modal windows get a translucent colour over everything behind them
 		if (isModal)
 		{
-			drawSingleRect(&renderer->uiBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
+			drawSingleRect(window->renderBuffer, rectPosSize(v2(0,0), renderer->uiCamera.size), renderer->shaderIds.untextured, color255(64, 64, 64, 128)); 
 		}
 
 		// If the window is new, make sure it has a valid area by running the WindowProc once
@@ -244,7 +244,7 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 
 		// Actually run the window proc
-		WindowContext context = WindowContext(window, windowStyle, uiState, true, true, &renderer->uiBuffer);
+		WindowContext context = WindowContext(window, windowStyle, uiState, true, true, window->renderBuffer);
 		window->windowProc(&context, window->userData);
 		context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -285,15 +285,15 @@ void updateAndRenderWindows(UIState *uiState)
 
 			BitmapFont *titleFont = getFont(&windowStyle->titleFont);
 
-			drawSingleRect(&renderer->uiBuffer, barArea, renderer->shaderIds.untextured, barColor);
-			uiText(&renderer->uiBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor);
+			drawSingleRect(window->renderBuffer, barArea, renderer->shaderIds.untextured, barColor);
+			uiText(window->renderBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!uiState->mouseInputHandled || windowIndex == 0))
 			{
-				drawSingleRect(&renderer->uiBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
+				drawSingleRect(window->renderBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
 			}
-			uiText(&renderer->uiBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, windowStyle->titleColor);
+			uiText(window->renderBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, windowStyle->titleColor);
 
 			if ((!uiState->mouseInputHandled || windowIndex == 0)
 				 && contains(wholeWindowArea, mousePos)
@@ -378,6 +378,8 @@ void updateAndRenderWindows(UIState *uiState)
 			if (window->onClose != null)
 			{
 				window->onClose(null, window->userData);
+				returnTemporaryRenderBuffer(window->renderBuffer);
+				window->renderBuffer = null;
 			}
 
 			uiState->isDraggingWindow = false;
@@ -390,6 +392,16 @@ void updateAndRenderWindows(UIState *uiState)
 	if (newActiveWindow != -1)
 	{
 		makeWindowActive(uiState, newActiveWindow);
+	}
+
+	// Now, render the windows in the correct order!
+	for (auto it = uiState->openWindows.iterateBackwards();
+		it.hasNext();
+		it.next())
+	{
+		Window *window = it.get();
+		returnTemporaryRenderBuffer(window->renderBuffer, &renderer->windowBuffer);
+		window->renderBuffer = null;
 	}
 }
 

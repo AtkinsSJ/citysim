@@ -314,7 +314,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, getFlagsForChild());
+		return UIPanel(rowBounds, rowStyle, getFlagsForChild(), renderBuffer);
 	}
 	else
 	{
@@ -334,7 +334,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 		
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, getFlagsForChild());
+		return UIPanel(rowBounds, rowStyle, getFlagsForChild(), renderBuffer);
 	}
 }
 
@@ -360,7 +360,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.x += width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, getFlagsForChild());
+		return UIPanel(columnBounds, columnStyle, getFlagsForChild(), renderBuffer);
 	}
 	else
 	{
@@ -372,7 +372,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.w -= width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, getFlagsForChild());
+		return UIPanel(columnBounds, columnStyle, getFlagsForChild(), renderBuffer);
 	}
 }
 

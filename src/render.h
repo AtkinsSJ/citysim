@@ -223,6 +223,7 @@ struct Renderer
 	RenderBuffer worldBuffer;
 	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
+	RenderBuffer windowBuffer;
 	RenderBuffer debugBuffer;
 
 	smm renderBufferChunkSize;
@@ -258,11 +259,13 @@ void rendererUnloadAssets();
 void freeRenderer();
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Pool<RenderBufferChunk> *chunkPool);
-RenderBuffer *getTemporaryRenderBuffer(String name);
-void returnTemporaryRenderBuffer(RenderBuffer *buffer);
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
 void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer);
 void clearRenderBuffer(RenderBuffer *buffer);
+
+RenderBuffer *getTemporaryRenderBuffer(String name);
+// NB: If targetBuffer is not null, we append buffer's data to it, so it becomes the "owner"
+void returnTemporaryRenderBuffer(RenderBuffer *buffer, RenderBuffer *targetBuffer = null);
 
 void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);
@@ -273,6 +276,8 @@ f32 snapZoomLevel(f32 zoom);
 
 void setCursor(String cursorName);
 void setCursorVisible(bool visible);
+
+void appendRenderItemType(RenderBuffer *buffer, RenderItemType type);
 
 u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
 

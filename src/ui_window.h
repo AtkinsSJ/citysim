@@ -45,6 +45,10 @@ struct Window
 	void *userData;
 	WindowProc onClose;
 
+	// Only used temporarily within updateAndRenderWindows()!
+	// In user code, use WindowContext::renderBuffer instead
+	RenderBuffer *renderBuffer;
+
 	bool isInitialised;
 };
 

@@ -18,29 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Obstacles to migrating to single-pass UI update/render:
-- We update windows front-to-back, but draw back-to-front
-	-> Can be solved by rendering each window to a temporary RenderBuffer, then connecting them together in the reverse order
-- We draw windows above regular UI
-	-> Can be fixed by making the window render-buffers come after the UI one, or by making regular UI a background window
-	-> OR: we just do the window update/render after the game update/render! We do it first because we want to know if the mouse input is consumed so we don't click "through" the UI into the game world. BUT, we can just examine the window rectangles to see if that's the case!
-
-THE PLAN:
-- Generate a collection of RenderBuffers for window usage
-- Windows claim a RenderBuffer to use
-- All WindowProc calls render to their designated buffer
-- Afterwards, we link those buffers up in the order we want them drawn, and then hand them back to the renderer
-
-Single-pass windows
-- Get windows to render back-to-front
-- Get windows drawing in front of other UI again
-✖ Remove Window::isInitialised
-✔ Remove Window::wasActiveLastUpdate
-✔ Move dragging/snapping behaviour to before running the WindowProc
-✖ Get rid of the doUpdate/doRender stuff from Panels
-✔ Re-add the !mouseInputHandled thing to buttons to respond to mouse hover/click
-✔ Fix that panel images draw when doRender is false! Maybe check the other widgets too
-
 Window/UI System features:
 ✔ Confirmation dialogs
 ✔ Frames

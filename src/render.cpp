@@ -53,6 +53,7 @@ void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 	initRenderBuffer(renderArena, &renderer->worldBuffer,        "WorldBuffer"_s,        &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer"_s, &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->uiBuffer,           "UIBuffer"_s,           &renderer->chunkPool);
+	initRenderBuffer(renderArena, &renderer->windowBuffer,       "WindowBuffer"_s,       &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer"_s,        &renderer->chunkPool);
 
 	// Hide cursor until stuff loads
@@ -66,7 +67,8 @@ void render()
 
 	linkRenderBufferToNext(&renderer->worldBuffer, &renderer->worldOverlayBuffer);
 	linkRenderBufferToNext(&renderer->worldOverlayBuffer, &renderer->uiBuffer);
-	linkRenderBufferToNext(&renderer->uiBuffer, &renderer->debugBuffer);
+	linkRenderBufferToNext(&renderer->uiBuffer, &renderer->windowBuffer);
+	linkRenderBufferToNext(&renderer->windowBuffer, &renderer->debugBuffer);
 
 	renderer->render(renderer->worldBuffer.firstChunk);
 
@@ -92,6 +94,7 @@ void render()
 	clearRenderBuffer(&renderer->worldBuffer);
 	clearRenderBuffer(&renderer->worldOverlayBuffer);
 	clearRenderBuffer(&renderer->uiBuffer);
+	clearRenderBuffer(&renderer->windowBuffer);
 	clearRenderBuffer(&renderer->debugBuffer);
 }
 
@@ -238,22 +241,6 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Poo
 	}
 }
 
-inline RenderBuffer *getTemporaryRenderBuffer(String name)
-{
-	RenderBuffer *result = getItemFromPool(&renderer->renderBufferPool);
-
-	addSectionMarker(result, name);
-
-	return result;
-}
-
-void returnTemporaryRenderBuffer(RenderBuffer *buffer)
-{
-	buffer->name = nullString;
-	clearRenderBuffer(buffer);
-	addItemToPool(&renderer->renderBufferPool, buffer);
-}
-
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData)
 {
 	smm newChunkSize = ((Renderer*)userData)->renderBufferChunkSize;
@@ -280,10 +267,35 @@ void clearRenderBuffer(RenderBuffer *buffer)
 	}
 }
 
-inline void appendRenderItemType(RenderBuffer *buffer, RenderItemType type)
+inline RenderBuffer *getTemporaryRenderBuffer(String name)
 {
-	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
-	buffer->currentChunk->used += sizeof(RenderItemType);
+	RenderBuffer *result = getItemFromPool(&renderer->renderBufferPool);
+
+	addSectionMarker(result, name);
+
+	return result;
+}
+
+void returnTemporaryRenderBuffer(RenderBuffer *buffer, RenderBuffer *targetBuffer)
+{
+	// Move our chunks to the targetBuffer
+	if (targetBuffer != null && buffer->currentChunk != null)
+	{
+		// This is very similar to the code in linkRenderBufferToNext(), with an important difference:
+		// link...() keeps the currentChunk the same, so the targetBuffer doesn't consider itself to own those chunks.
+		// Whereas here, we make it take ownership of them. Probably linkRenderBufferToNext() wants to be
+		// replaced entirely with temporarily-allocated buffers like this, but we'll see.
+		// - Sam, 06/04/2021
+		ASSERT((targetBuffer->currentChunk->size - targetBuffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
+		appendRenderItemType(targetBuffer, RenderItemType_NextMemoryChunk);
+		targetBuffer->currentChunk->nextChunk = buffer->firstChunk;
+		buffer->firstChunk->prevChunk = targetBuffer->currentChunk;
+		targetBuffer->currentChunk = buffer->currentChunk;
+	}
+
+	buffer->name = nullString;
+	clearRenderBuffer(buffer);
+	addItemToPool(&renderer->renderBufferPool, buffer);
 }
 
 void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer)
@@ -299,6 +311,12 @@ void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer)
 	// Add to the renderbuffer
 	buffer->currentChunk->nextChunk = nextBuffer->firstChunk;
 	nextBuffer->firstChunk->prevChunk = buffer->currentChunk;
+}
+
+inline void appendRenderItemType(RenderBuffer *buffer, RenderItemType type)
+{
+	*(RenderItemType *)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
+	buffer->currentChunk->used += sizeof(RenderItemType);
 }
 
 // NB: reservedSize is for extra data that you want to make sure there is room for,
@@ -383,7 +401,7 @@ inline T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 cou
 void addSectionMarker(RenderBuffer *buffer, String name)
 {
 	ASSERT(!isEmpty(name));
-	
+
 	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
 	bufferStart->name = name;
 	bufferStart->renderProfileName = pushString(&renderer->renderArena, myprintf("render({0})"_s, {name}));
