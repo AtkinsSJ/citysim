@@ -47,7 +47,7 @@ enum RenderItemType
 struct RenderItem_SectionMarker
 {
 	String name;
-	String renderProfileName;
+	String renderProfileName; // Used for tracking time as a DEBUG_BLOCK
 };
 
 struct RenderItem_SetCamera
@@ -190,7 +190,6 @@ struct RenderBufferChunk : PoolItem
 struct RenderBuffer : PoolItem
 {
 	String name;
-	String renderProfileName;
 	
 	RenderBufferChunk *firstChunk;
 	RenderBufferChunk *currentChunk;
@@ -259,7 +258,7 @@ void rendererUnloadAssets();
 void freeRenderer();
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Pool<RenderBufferChunk> *chunkPool);
-RenderBuffer *getTemporaryRenderBuffer();
+RenderBuffer *getTemporaryRenderBuffer(String name);
 void returnTemporaryRenderBuffer(RenderBuffer *buffer);
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
 void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer);
@@ -293,6 +292,8 @@ template<typename T>
 T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos);
 template<typename T>
 T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 count);
+
+void addSectionMarker(RenderBuffer *buffer, String name);
 
 void addSetCamera(RenderBuffer *buffer, Camera *camera);
 void addSetShader(RenderBuffer *buffer, s8 shaderID);

@@ -218,9 +218,6 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Poo
 	buffer->name = pushString(arena, name);
 	hashString(&buffer->name);
 
-	buffer->renderProfileName = pushString(arena, myprintf("render({0})"_s, {buffer->name}));
-	hashString(&buffer->renderProfileName);
-
 	buffer->hasRangeReserved = false;
 	buffer->scissorCount = 0;
 
@@ -235,18 +232,24 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Poo
 	// TODO: @Speed: This should probably be delayed until we first try to append an item to this buffer.
 	// Right now, we're reallocating a chunk we just freed, and (potentially) only to hold this one marker!
 	// See also clearRenderBuffer()
-	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
-	bufferStart->name = buffer->name;
-	bufferStart->renderProfileName = buffer->renderProfileName;
+	if (!isEmpty(buffer->name))
+	{
+		addSectionMarker(buffer, buffer->name);
+	}
 }
 
-inline RenderBuffer *getTemporaryRenderBuffer()
+inline RenderBuffer *getTemporaryRenderBuffer(String name)
 {
-	return getItemFromPool(&renderer->renderBufferPool);
+	RenderBuffer *result = getItemFromPool(&renderer->renderBufferPool);
+
+	addSectionMarker(result, name);
+
+	return result;
 }
 
 void returnTemporaryRenderBuffer(RenderBuffer *buffer)
 {
+	buffer->name = nullString;
 	clearRenderBuffer(buffer);
 	addItemToPool(&renderer->renderBufferPool, buffer);
 }
@@ -269,11 +272,12 @@ void clearRenderBuffer(RenderBuffer *buffer)
 
 	buffer->firstChunk = null;
 	buffer->currentChunk = null;
-	
+
 	// TODO: @Speed: See initRenderBuffer()
-	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
-	bufferStart->name = buffer->name;
-	bufferStart->renderProfileName = buffer->renderProfileName;
+	if (!isEmpty(buffer->name))
+	{
+		addSectionMarker(buffer, buffer->name);
+	}
 }
 
 inline void appendRenderItemType(RenderBuffer *buffer, RenderItemType type)
@@ -374,6 +378,16 @@ inline T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 cou
 	T *item = (T *)(renderBufferChunk->memory + *pos);
 	*pos += sizeof(T) * count;
 	return item;
+}
+
+void addSectionMarker(RenderBuffer *buffer, String name)
+{
+	ASSERT(!isEmpty(name));
+	
+	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
+	bufferStart->name = name;
+	bufferStart->renderProfileName = pushString(&renderer->renderArena, myprintf("render({0})"_s, {name}));
+	hashString(&bufferStart->renderProfileName);
 }
 
 void addSetCamera(RenderBuffer *buffer, Camera *camera)
