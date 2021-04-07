@@ -85,6 +85,19 @@ ConsoleCommand(help)
 	}
 }
 
+ConsoleCommand(map_info)
+{
+	if (!checkInGame()) return;
+
+	City *city = &globalAppState.gameState->city;
+
+	consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, {
+		formatInt(city->bounds.w),
+		formatInt(city->bounds.h),
+		formatInt(city->terrainLayer.terrainGenerationSeed)
+	}), CLS_Success);
+}
+
 ConsoleCommand(mark_all_dirty)
 {
 	City *city = &globalAppState.gameState->city;
@@ -270,6 +283,7 @@ void initCommands(Console *console)
 	console->commands.append(Command(CMD(funds), 1, 1));
 	console->commands.append(Command(CMD(generate)));
 	console->commands.append(Command(CMD(hello), 0, 1));
+	console->commands.append(Command(CMD(map_info)));
 	console->commands.append(Command(CMD(mark_all_dirty)));
 	console->commands.append(Command(CMD(reload_assets)));
 	console->commands.append(Command(CMD(reload_settings)));
