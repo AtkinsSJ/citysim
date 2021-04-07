@@ -451,8 +451,6 @@ inline static void closeWindow(UIState *uiState, s32 windowIndex)
 			window->renderBuffer = null;
 		}
 	}
-
-	// !!!! @Hack What is this doing here???
-	uiState->isDraggingWindow = false;
+	
 	uiState->openWindows.removeIndex(windowIndex, true);
 }
