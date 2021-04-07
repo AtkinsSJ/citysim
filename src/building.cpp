@@ -983,6 +983,18 @@ void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
 	}
 }
 
+void initBuilding(Building *building, s32 id, BuildingDef *def, Rect2I footprint, GameTimestamp creationDate)
+{
+	*building = {};
+
+	building->id = id;
+	building->typeID = def->typeID;
+	building->creationDate = creationDate;
+	building->footprint = footprint;
+	building->problems = makeArray<BuildingProblem>(BuildingProblemCount, building->_problemsData);
+	building->variantIndex = NO_VARIANT;
+}
+
 void updateBuilding(City *city, Building *building)
 {
 	BuildingDef *def = getBuildingDef(building->typeID);
@@ -1073,17 +1085,41 @@ void updateBuilding(City *city, Building *building)
 
 inline void addProblem(Building *building, BuildingProblemType problem)
 {
-	building->problems += problem;
+	BuildingProblem *bp = building->problems.append();
+	bp->type = problem;
+	bp->startDate = getCurrentTimestamp();
+
+	// TODO: Update zots!
 }
 
 inline void removeProblem(Building *building, BuildingProblemType problem)
 {
-	building->problems -= problem;
+	for (s32 i=0; i < building->problems.count; i++)
+	{
+		if (building->problems[i].type == problem)
+		{
+			building->problems[i] = building->problems[building->problems.count];
+			building->problems.count--;
+
+			// TODO: Update zots!
+		}
+	}
 }
 
 inline bool hasProblem(Building *building, BuildingProblemType problem)
 {
-	return building->problems & problem;
+	bool result = false;
+
+	for (s32 i=0; i < building->problems.count; i++)
+	{
+		if (building->problems[i].type == problem)
+		{
+			result = true;
+			break;
+		}
+	}
+
+	return result;
 }
 
 void loadBuildingSprite(Building *building)
@@ -1149,7 +1185,7 @@ inline s32 getRequiredPower(Building *building)
 
 inline bool buildingHasPower(Building *building)
 {
-	return !(building->problems & BuildingProblem_NoPower);
+	return !hasProblem(building, BuildingProblem_NoPower);
 }
 
 void saveBuildingTypes()

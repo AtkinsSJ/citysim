@@ -120,12 +120,7 @@ Building *addBuildingDirect(City *city, s32 id, BuildingDef *def, Rect2I footpri
 	Indexed<Building*> buildingSlot = city->buildings.append();
 	s32 buildingIndex = buildingSlot.index;
 	Building *building = buildingSlot.value;
-	building->id = id;
-	building->typeID = def->typeID;
-	building->creationDate = creationDate;
-	building->footprint = footprint;
-	initFlags(&building->problems, BuildingProblemCount);
-	building->variantIndex = NO_VARIANT;
+	initBuilding(building, id, def, footprint, creationDate);
 	
 	// Random sprite!
 	building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);

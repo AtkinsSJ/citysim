@@ -142,7 +142,7 @@ enum BuildingProblemType
 struct BuildingProblem
 {
 	BuildingProblemType type;
-	GameTimestamp startTime;
+	GameTimestamp startDate;
 };
 
 String buildingProblemNames[BuildingProblemCount] = {
@@ -168,11 +168,8 @@ struct Building
 
 	s32 allocatedPower;
 
-	// TODO: Need to know how long a problem has been going/when it started, because you don't
-	// want a building to abandon immediately when a problem occurs, but want some kind of
-	// countdown. That needs to be recorded in the savegame too.
-	Flags8<BuildingProblemType> problems;
-	// Array<BuildingProblem> problems;
+	Array<BuildingProblem> problems;
+	BuildingProblem _problemsData[BuildingProblemCount];
 };
 
 // NB: If someone needs a pointer to a building across multiple frames, use one of these references.
@@ -206,6 +203,7 @@ bool buildingDefHasType(BuildingDef *def, s32 typeID);
 s32 getRequiredPower(Building *building);
 bool buildingHasPower(Building *building);
 
+void initBuilding(Building *building);
 void updateBuilding(City *city, Building *building);
 void addProblem(Building *building, BuildingProblemType problem);
 void removeProblem(Building *building, BuildingProblemType problem);
