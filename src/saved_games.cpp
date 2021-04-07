@@ -234,7 +234,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		ui->alignWidgets(ALIGN_RIGHT);
 		if (ui->addImageButton(getSprite("icon_delete"_s), Button_Normal, "delete"_s))
 		{
-			showWindow(globalAppState.uiState, getText("title_delete_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal, confirmDeleteSaveWindowProc);
+			showWindow(globalAppState.uiState, getText("title_delete_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmDeleteSaveWindowProc);
 		}
 
 		ui->alignWidgets(ALIGN_EXPAND_H);
@@ -281,6 +281,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			String inputName = trim(textInputToString(&catalogue->saveGameName));
 
 			// Show a warning if we're overwriting an existing save that ISN'T the active one
+			bool showOverwriteWarning = false;
 			if (!isEmpty(inputName) && !equals(inputName, catalogue->activeSavedGameName))
 			{
 				Indexed<SavedGameInfo *> fileToOverwrite = catalogue->savedGames.findFirst([&](SavedGameInfo *info) {
@@ -289,7 +290,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 
 				if (fileToOverwrite.index != -1)
 				{
-					bottomBar.addText(getText("msg_save_warning_overwrite"_s), "warning"_s);
+					showOverwriteWarning = true;
 				}
 			}
 
@@ -297,7 +298,11 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			{
 				if (!isEmpty(inputName))
 				{
-					if (saveGame(globalAppState.uiState, inputName))
+					if (showOverwriteWarning)
+					{
+						showWindow(globalAppState.uiState, getText("title_overwrite_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmOverwriteSaveWindowProc);
+					}
+					else if (saveGame(globalAppState.uiState, inputName))
 					{
 						context->closeRequested = true;
 					}
@@ -321,6 +326,27 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		}
 	}
 	bottomBar.end();
+}
+
+void confirmOverwriteSaveWindowProc(WindowContext *context, void * /*userData*/)
+{
+	UIPanel *ui = &context->windowPanel;
+
+	String inputName = trim(textInputToString(&savedGamesCatalogue.saveGameName));
+
+	ui->addText(getText("msg_save_overwrite_confirm"_s, {inputName}));
+	ui->startNewLine(ALIGN_RIGHT);
+
+	if (ui->addButton(getText("button_overwrite"_s), Button_Normal, "delete"_s))
+	{
+		saveGame(globalAppState.uiState, inputName);
+		context->closeRequested = true;
+	}
+
+	if (ui->addButton(getText("button_cancel"_s)))
+	{
+		context->closeRequested = true;
+	}
 }
 
 void confirmDeleteSaveWindowProc(WindowContext *context, void * /*userData*/)

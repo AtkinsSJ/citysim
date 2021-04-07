@@ -26,9 +26,6 @@ Would be nice if items in Pools didn't have to extend PoolItem. Can we sneak the
 - So, maybe we change how that works entirely? At least 2 uses of Pools do require fancy logic in allocateItem() though.
 
 Saving and loading:
-- Save/Load window revamp!
-✔ Deleting saved games
-	✔ Add a confirmation dialog!
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 

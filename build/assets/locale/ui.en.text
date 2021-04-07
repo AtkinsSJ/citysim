@@ -16,6 +16,7 @@ button_exit          Exit
 button_load          Load
 button_menu          Menu
 button_new_game      New Game
+button_overwrite     Overwrite
 button_play          Play
 button_resume        Resume
 button_save          Save
@@ -79,6 +80,7 @@ title_delete_save    Delete saved game
 title_inspect        Inspecting {0}, {1}
 title_load_game      Load a game
 title_menu           Menu
+title_overwrite_save Save game
 title_save_game      Save
 title_settings       Settings
 
@@ -101,7 +103,7 @@ msg_load_version_too_new         This save file was created by a newer version o
 msg_no_saved_games               No saved games found.
 msg_save_success                 Game saved as '{0}'
 msg_save_failure                 Failed to save game as '{0}'!
-msg_save_warning_overwrite       This will overwrite a previous save game!
+msg_save_overwrite_confirm       Saving as '{0}' will overwrite a previous saved game
 
 building_problem_fire          On fire!
 building_problem_no_power      No power!
