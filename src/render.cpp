@@ -271,7 +271,10 @@ inline RenderBuffer *getTemporaryRenderBuffer(String name)
 {
 	RenderBuffer *result = getItemFromPool(&renderer->renderBufferPool);
 
-	addSectionMarker(result, name);
+	if (!isEmpty(name))
+	{
+		addSectionMarker(result, name);
+	}
 
 	return result;
 }

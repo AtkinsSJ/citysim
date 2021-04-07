@@ -130,6 +130,7 @@ void updateAndRenderWindows(UIState *uiState)
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
 	uiState->isAPauseWindowOpen = false;
+	s32 tooltipIndex = -1;
 
 	bool isActive = true;
 	for (auto it = uiState->openWindows.iterate();
@@ -145,6 +146,12 @@ void updateAndRenderWindows(UIState *uiState)
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
 		bool isTooltip   = (window->flags & WinFlag_Tooltip) != 0;
+
+		if (isTooltip)
+		{
+			ASSERT(tooltipIndex == -1); // Multiple tooltips???
+			tooltipIndex = windowIndex;
+		}
 
 		bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
 		bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
@@ -258,7 +265,7 @@ void updateAndRenderWindows(UIState *uiState)
 			window->area.x = context.windowPanel.bounds.x;
 		}
 
-		if (context.closeRequested || isTooltip)
+		if (context.closeRequested)
 		{
 			uiState->windowsToClose.add(windowIndex);
 		}
@@ -358,6 +365,13 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 	}
 
+	// Put the tooltip on top of everything else
+	// FIXME: Actually, this won't do that! windowsToMakeActive is not FIFO! But, it's better than nothing
+	if (tooltipIndex != -1)
+	{
+		uiState->windowsToMakeActive.add(tooltipIndex);
+	}
+
 	// Close any windows that were requested
 	if (!uiState->windowsToClose.isEmpty())
 	{
@@ -366,20 +380,7 @@ void updateAndRenderWindows(UIState *uiState)
 		for (s32 i = windowsToClose.count - 1; i >= 0; i--)
 		{
 			s32 windowIndex = windowsToClose[i];
-
-			// Remove it from windowsToMakeActive
-			uiState->windowsToMakeActive.remove(windowIndex);
-
-			Window *window = uiState->openWindows.get(windowIndex);
-			if (window->onClose != null)
-			{
-				window->onClose(null, window->userData);
-				returnTemporaryRenderBuffer(window->renderBuffer);
-				window->renderBuffer = null;
-			}
-
-			uiState->isDraggingWindow = false;
-			uiState->openWindows.removeIndex(windowIndex, true);
+			closeWindow(uiState, windowIndex);
 		}
 
 		uiState->windowsToClose.clear();
@@ -416,6 +417,15 @@ void updateAndRenderWindows(UIState *uiState)
 		returnTemporaryRenderBuffer(window->renderBuffer, &renderer->windowBuffer);
 		window->renderBuffer = null;
 	}
+
+	// Remove the tooltip now that it's been shown
+	if (tooltipIndex != -1)
+	{
+		// We moved the tooltip to index 0 when we did the activate-windows loop!
+		tooltipIndex = 0; 
+		ASSERT((uiState->openWindows.get(tooltipIndex)->flags & WinFlag_Tooltip) != 0);
+		closeWindow(uiState, tooltipIndex);
+	}
 }
 
 inline static
@@ -425,4 +435,24 @@ Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 					windowArea.y + barHeight + margin,
 					windowArea.w - (margin * 2),
 					windowArea.h - barHeight - (margin * 2));
+}
+
+inline static void closeWindow(UIState *uiState, s32 windowIndex)
+{
+	uiState->windowsToMakeActive.remove(windowIndex);
+
+	Window *window = uiState->openWindows.get(windowIndex);
+	if (window->onClose != null)
+	{
+		window->onClose(null, window->userData);
+		if (window->renderBuffer != null)
+		{
+			returnTemporaryRenderBuffer(window->renderBuffer);
+			window->renderBuffer = null;
+		}
+	}
+
+	// !!!! @Hack What is this doing here???
+	uiState->isDraggingWindow = false;
+	uiState->openWindows.removeIndex(windowIndex, true);
 }
