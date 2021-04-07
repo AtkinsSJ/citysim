@@ -68,6 +68,5 @@ void updateAndRenderWindows(UIState *uiState);
 //
 // INTERNAL
 //
-static void makeWindowActive(UIState *uiState, s32 windowIndex);
 static Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding);
 void updateWindow(UIState *uiState, Window *window, WindowContext *context, bool isActive);

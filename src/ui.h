@@ -84,6 +84,7 @@ struct UIState
 	// Window stuff
 	ChunkedArray<struct Window> openWindows; // Order: index 0 is the top, then each one is below the previous
 	Set<s32> windowsToClose;
+	Set<s32> windowsToMakeActive;
 	bool isDraggingWindow;
 	V2I windowDragWindowStartPos;
 	bool isAPauseWindowOpen; // Do any open windows have the WinFlag_Pause flag?

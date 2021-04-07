@@ -18,19 +18,8 @@ Notes for searching:
 
 ------------------------------------------------
 
-Window/UI System features:
-✔ Confirmation dialogs
-✔ Frames
-✔ Embedded images
-✔ Image buttons
-✔ Align things to the bottom
-✔ Parity between windowed and non-windowed UI. They're very different right now which is awkward.
-✖ Convert the in-game toolbar to a Panel?
-	✖ Nah! It's all temporary UI anyway, so just use Panels when we do it for real
-- Get a better handle on whether elements should react to mouse hover. It's weird and wrong right now:
-	- We currently don't highlight the window-close button unless it's the active window
-	- But we do highlight buttons on windows that are "behind" a modal one!
-- WindowFlag for allowing windows to leave the screen bounds?
+Move "keepItemOrder" concept from ChunkedArray methods to a bool field.
+- Check uses, but probably, we either always want a given array to stay in order, or we never do.
 
 Would be nice if items in Pools didn't have to extend PoolItem. Can we sneak the prev/next data in secretly instead?
 - The catch is that allocateItem() would need to know about that extra size.
@@ -38,7 +27,7 @@ Would be nice if items in Pools didn't have to extend PoolItem. Can we sneak the
 
 Saving and loading:
 - Save/Load window revamp!
-- Deleting saved games
+✔ Deleting saved games
 	✔ Add a confirmation dialog!
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.

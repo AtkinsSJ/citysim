@@ -22,6 +22,17 @@ bool Set<T>::add(T item)
 	return didAdd;
 }
 
+template <typename T>
+bool Set<T>::remove(T item)
+{
+	bool didRemove = false;
+
+	s32 removed = items.removeAll([&](T *t) {return areItemsEqual(&item, t); }, 1);
+	didRemove = (removed == 1);
+
+	return didRemove;
+}
+
 template<typename T>
 bool Set<T>::contains(T item)
 {

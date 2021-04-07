@@ -17,6 +17,7 @@ struct Set
 
 	// Returns true if the item got added (aka, it was not already in the set)
 	bool add(T item);
+	bool remove(T item);
 	bool contains(T item);
 	bool isEmpty();
 	void clear();

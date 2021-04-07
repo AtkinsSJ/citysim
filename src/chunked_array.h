@@ -79,10 +79,10 @@ struct ChunkedArray
 	template <typename Filter>
 	Indexed<T *> findFirst(Filter filter);
 
-	bool findAndRemove(T toRemove);
-	void removeIndex(s32 indexToRemove, bool keepItemOrder=false);
+	bool findAndRemove(T toRemove, bool keepItemOrder = false);
+	void removeIndex(s32 indexToRemove, bool keepItemOrder = false);
 	template<typename Filter>
-	s32 removeAll(Filter filter, s32 limit = -1);
+	s32 removeAll(Filter filter, s32 limit = -1, bool keepItemOrder = false);
 
 	// Inserts the item at fromIndex into toIndex, moving other items around as necessary
 	void moveItemKeepingOrder(s32 fromIndex, s32 toIndex);

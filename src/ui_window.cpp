@@ -85,7 +85,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 				newWindow.area = toReplace->area;
 
 				*toReplace = newWindow;
-				makeWindowActive(uiState, oldWindowIndex);
+				uiState->windowsToMakeActive.add(oldWindowIndex);
 				createdWindowAlready = true;
 			}
 		}
@@ -94,7 +94,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 	if (!createdWindowAlready)
 	{
 		uiState->openWindows.append(newWindow);
-		makeWindowActive(uiState, truncate32(uiState->openWindows.count-1));
+		uiState->windowsToMakeActive.add(truncate32(uiState->openWindows.count-1));
 	}
 }
 
@@ -127,7 +127,6 @@ void updateAndRenderWindows(UIState *uiState)
 	DEBUG_FUNCTION();
 
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	s32 newActiveWindow = -1;
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
 	uiState->isAPauseWindowOpen = false;
@@ -313,8 +312,8 @@ void updateAndRenderWindows(UIState *uiState)
 						uiState->windowDragWindowStartPos = window->area.pos;
 					}
 
-					// Make this the active window! 
-					newActiveWindow = windowIndex;
+					// Make this the active window!
+					uiState->windowsToMakeActive.add(windowIndex);
 				}
 
 				// Tooltips don't take mouse input
@@ -359,12 +358,6 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 	}
 
-	// Clear the newActiveWindow if it's one that's being closed
-	if (uiState->windowsToClose.contains(newActiveWindow))
-	{
-		newActiveWindow = -1;
-	}
-
 	// Close any windows that were requested
 	if (!uiState->windowsToClose.isEmpty())
 	{
@@ -373,6 +366,9 @@ void updateAndRenderWindows(UIState *uiState)
 		for (s32 i = windowsToClose.count - 1; i >= 0; i--)
 		{
 			s32 windowIndex = windowsToClose[i];
+
+			// Remove it from windowsToMakeActive
+			uiState->windowsToMakeActive.remove(windowIndex);
 
 			Window *window = uiState->openWindows.get(windowIndex);
 			if (window->onClose != null)
@@ -389,9 +385,26 @@ void updateAndRenderWindows(UIState *uiState)
 		uiState->windowsToClose.clear();
 	}
 
-	if (newActiveWindow != -1)
+	// Activate any windows
+	if (!uiState->windowsToMakeActive.isEmpty())
 	{
-		makeWindowActive(uiState, newActiveWindow);
+		Array<s32> windowsToMakeActive = uiState->windowsToMakeActive.asSortedArray();
+
+		// NB: Because the windowsToMakeActive are in ascending index order, and we always move them to a lower position,
+		// we are guaranteed to not perturb the positions of any later window indices, so this operation is completely
+		// safe, and we can do it really simply. Hooray!
+		// - Sam, 07/04/2021
+		for (s32 i = 0; i < windowsToMakeActive.count; i++)
+		{
+			s32 windowIndex = windowsToMakeActive[i];
+
+			// Don't do anything if it's already the active window.
+			if (windowIndex == 0) continue;
+
+			uiState->openWindows.moveItemKeepingOrder(windowIndex, 0);
+		}
+
+		uiState->windowsToMakeActive.clear();
 	}
 
 	// Now, render the windows in the correct order!
@@ -403,14 +416,6 @@ void updateAndRenderWindows(UIState *uiState)
 		returnTemporaryRenderBuffer(window->renderBuffer, &renderer->windowBuffer);
 		window->renderBuffer = null;
 	}
-}
-
-static void makeWindowActive(UIState *uiState, s32 windowIndex)
-{
-	// Don't do anything if it's already the active window.
-	if (windowIndex == 0)  return;
-
-	uiState->openWindows.moveItemKeepingOrder(windowIndex, 0);
 }
 
 inline static

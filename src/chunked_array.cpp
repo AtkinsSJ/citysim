@@ -188,11 +188,11 @@ Indexed<T *> ChunkedArray<T>::findFirst(Filter filter)
 }
 
 template<typename T>
-bool ChunkedArray<T>::findAndRemove(T toRemove)
+bool ChunkedArray<T>::findAndRemove(T toRemove, bool keepItemOrder)
 {
 	DEBUG_FUNCTION();
 
-	s32 removed = removeAll([&](T *t) { return equals(*t, toRemove); }, 1);
+	s32 removed = removeAll([&](T *t) { return equals(*t, toRemove); }, 1, keepItemOrder);
 
 	return removed > 0;
 }
@@ -247,7 +247,7 @@ void ChunkedArray<T>::removeIndex(s32 indexToRemove, bool keepItemOrder)
 
 template<typename T>
 template<typename Filter>
-s32 ChunkedArray<T>::removeAll(Filter filter, s32 limit)
+s32 ChunkedArray<T>::removeAll(Filter filter, s32 limit, bool keepItemOrder)
 {
 	DEBUG_FUNCTION();
 
@@ -263,14 +263,8 @@ s32 ChunkedArray<T>::removeAll(Filter filter, s32 limit)
 			if (filter(chunk->items + i))
 			{
 				// FOUND ONE!
+				removeIndex(i, keepItemOrder);
 				removedCount++;
-
-				ArrayChunk<T> *lastNonEmptyChunk = getLastNonEmptyChunk();
-
-				// Now, to copy the last element in the array to this position
-				chunk->items[i] = lastNonEmptyChunk->items[lastNonEmptyChunk->count-1];
-				lastNonEmptyChunk->count--;
-				count--;
 
 				if (limited && removedCount >= limit)
 				{

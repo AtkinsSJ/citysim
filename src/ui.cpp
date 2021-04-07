@@ -15,6 +15,7 @@ void initUIState(UIState *uiState, MemoryArena *arena)
 
 	initChunkedArray(&uiState->openWindows, arena, 64);
 	initSet(&uiState->windowsToClose, arena);
+	initSet(&uiState->windowsToMakeActive, arena);
 
 	initScrollbar(&uiState->openMenuScrollbar, false);
 }
