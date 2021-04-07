@@ -482,7 +482,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// Map the file's building type IDs to the game's ones
 				// NB: count+1 because the file won't save the null building, so we need to compensate
-				Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1);
+				Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1, true);
 				u8 *at = startOfChunk + cBuildings->offsetForBuildingTypeTable;
 				for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
 				{
@@ -654,7 +654,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// Map the file's terrain type IDs to the game's ones
 				// NB: count+1 because the file won't save the null terrain, so we need to compensate
-				Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, cTerrain->terrainTypeCount + 1);
+				Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, cTerrain->terrainTypeCount + 1, true);
 				u8 *at = startOfChunk + cTerrain->offsetForTerrainTypeTable;
 				for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
 				{

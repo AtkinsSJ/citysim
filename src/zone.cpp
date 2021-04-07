@@ -15,7 +15,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 
 		zoneLayer->tileDesirability[zoneType] = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
 
-		zoneLayer->mostDesirableSectors[zoneType] = allocateArray<s32>(gameArena, sectorCount);
+		zoneLayer->mostDesirableSectors[zoneType] = allocateArray<s32>(gameArena, sectorCount, true);
 		for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
 		{
 			// To start with, we just fill the array 0-to-N because we don't know what's the most desirable.
@@ -364,7 +364,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 	// Sort the mostDesirableSectors array
 	for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
 	{
-		sortArray(&layer->mostDesirableSectors[zoneType], [&](s32 sectorIndexA, s32 sectorIndexB){
+		layer->mostDesirableSectors[zoneType].sort([&](s32 sectorIndexA, s32 sectorIndexB){
 			return layer->sectors[sectorIndexA].averageDesirability[zoneType] > layer->sectors[sectorIndexB].averageDesirability[zoneType];
 		});
 

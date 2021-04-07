@@ -34,7 +34,7 @@ Indexed<T*> OccupancyArray<T>::append()
 		OccupancyArrayChunk<T> *newChunk = (OccupancyArrayChunk<T> *)blob.memory;
 		*newChunk = {};
 		newChunk->items = (T *)(blob.memory + structSize);
-		initBitArray(&newChunk->occupancy, itemsPerChunk, makeArray(occupancyArrayCount, (u64 *)(blob.memory + structSize + arraySize)));
+		initBitArray(&newChunk->occupancy, itemsPerChunk, makeArray(occupancyArrayCount, (u64 *)(blob.memory + structSize + arraySize), occupancyArrayCount));
 
 		chunkCount++;
 

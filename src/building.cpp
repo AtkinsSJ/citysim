@@ -139,8 +139,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 	asset->data = assetsAllocate(assets, buildingNamesSize + variantsSize);
 	asset->buildingDefs.buildingIDs = makeArray(buildingCount, (String *) asset->data.memory);
 	u8 *variantsMemory = asset->data.memory + buildingNamesSize;
-	s32 buildingIDsIndex = 0;
-	s32 variantIndex = 0;
 
 	restart(&reader);
 
@@ -176,7 +174,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 
 				def = appendNewBuildingDef(name);
-				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->name;
+				asset->buildingDefs.buildingIDs.append(def->name);
 			}
 			else if (equals(firstWord, "Intersection"_s))
 			{
@@ -191,7 +189,7 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				}
 
 				def = appendNewBuildingDef(name);
-				asset->buildingDefs.buildingIDs[buildingIDsIndex++] = def->name;
+				asset->buildingDefs.buildingIDs.append(def->name);
 
 				def->isIntersection = true;
 				def->intersectionPart1Name = intern(&catalogue->buildingNames, part1Name);
@@ -221,7 +219,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 			{
 				def->variants = makeArray(variantCount, (BuildingVariant *)variantsMemory);
 				variantsMemory += sizeof(BuildingVariant) * variantCount;
-				variantIndex = 0;
 			}
 
 		}
@@ -522,10 +519,9 @@ void loadBuildingDefs(Blob data, Asset *asset)
 					// - Sam, 19/02/2020
 					//
 
-					if (variantIndex < def->variants.count)
+					if (def->variants.count < def->variants.capacity)
 					{
-						BuildingVariant *variant = def->variants.items + variantIndex;
-						variantIndex++;
+						BuildingVariant *variant = def->variants.append();
 
 						*variant = {};
 
@@ -572,8 +568,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 
 							connectionsString[connectionIndex] = asChar(variant->connections[connectionIndex]);
 						}
-
-						logInfo("{0} variant {1} has connections {2} (from '{3}')"_s, {def->name, formatInt(variantIndex), connectionsString, directionFlags});
 
 						variant->spriteName = spriteName;
 					}
@@ -1077,17 +1071,17 @@ void updateBuilding(City *city, Building *building)
 	}
 }
 
-inline void addProblem(Building *building, BuildingProblem problem)
+inline void addProblem(Building *building, BuildingProblemType problem)
 {
 	building->problems += problem;
 }
 
-inline void removeProblem(Building *building, BuildingProblem problem)
+inline void removeProblem(Building *building, BuildingProblemType problem)
 {
 	building->problems -= problem;
 }
 
-inline bool hasProblem(Building *building, BuildingProblem problem)
+inline bool hasProblem(Building *building, BuildingProblemType problem)
 {
 	return building->problems & problem;
 }
@@ -1210,7 +1204,7 @@ void remapBuildingTypes(City *city)
 
 	if (buildingCatalogue.buildingNameToOldTypeID.count > 0)
 	{
-		Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, buildingCatalogue.buildingNameToOldTypeID.count);
+		Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, buildingCatalogue.buildingNameToOldTypeID.count, true);
 		for (auto it = buildingCatalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next())
 		{
 			auto entry = it.getEntry();

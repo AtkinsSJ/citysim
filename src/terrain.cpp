@@ -61,7 +61,6 @@ void loadTerrainDefs(Blob data, Asset *asset)
 
 	asset->data = assetsAllocate(assets, sizeof(String) * terrainCount);
 	asset->terrainDefs.terrainIDs = makeArray(terrainCount, (String *) asset->data.memory);
-	s32 terrainIDsIndex = 0;
 
 	restart(&reader);
 
@@ -98,7 +97,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				def->typeID = (u8) slot.index;
 				
 				def->name = intern(&terrainCatalogue.terrainNames, name);
-				asset->terrainDefs.terrainIDs[terrainIDsIndex++] = def->name;
+				asset->terrainDefs.terrainIDs.append(def->name);
 				terrainCatalogue.terrainDefsByName.put(def->name, def);
 				terrainCatalogue.terrainNameToType.put(def->name, def->typeID);
 			}
@@ -268,7 +267,7 @@ void generateTerrain(City *city, Random *gameRandom)
 	}
 
 	// Generate a river
-	Array<f32> riverOffset = allocateArray<f32>(tempArena, city->bounds.h);
+	Array<f32> riverOffset = allocateArray<f32>(tempArena, city->bounds.h, true);
 	generate1DNoise(&terrainRandom, &riverOffset, 10);
 	f32 riverMaxWidth = randomFloatBetween(&terrainRandom, 12, 16);
 	f32 riverMinWidth = randomFloatBetween(&terrainRandom, 6, riverMaxWidth);
@@ -288,7 +287,7 @@ void generateTerrain(City *city, Random *gameRandom)
 	}
 
 	// Coastline
-	Array<f32> coastlineOffset = allocateArray<f32>(tempArena, city->bounds.w);
+	Array<f32> coastlineOffset = allocateArray<f32>(tempArena, city->bounds.w, true);
 	generate1DNoise(&terrainRandom, &coastlineOffset, 10);
 	for (s32 x=0; x < city->bounds.w; x++)
 	{
@@ -388,7 +387,7 @@ void remapTerrainTypes(City *city)
 
 	if (terrainCatalogue.terrainNameToOldType.count > 0)
 	{
-		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainCatalogue.terrainNameToOldType.count);
+		Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrainCatalogue.terrainNameToOldType.count, true);
 		for (auto it = terrainCatalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next())
 		{
 			auto entry = it.getEntry();

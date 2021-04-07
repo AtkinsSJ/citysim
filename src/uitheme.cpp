@@ -433,31 +433,24 @@ void loadUITheme(Blob data, Asset *asset)
 
 	theme->buttonStyles = makeArray(styleCount[UIStyle_Button], (UIButtonStyle *) pos);
 	pos += styleArraySize[UIStyle_Button];
-	UIButtonStyle *nextButtonStyle = &theme->buttonStyles[0];
 
 	theme->consoleStyles = makeArray(styleCount[UIStyle_Console], (UIConsoleStyle *) pos);
 	pos += styleArraySize[UIStyle_Console];
-	UIConsoleStyle *nextConsoleStyle = &theme->consoleStyles[0];
 
 	theme->labelStyles = makeArray(styleCount[UIStyle_Label], (UILabelStyle *) pos);
 	pos += styleArraySize[UIStyle_Label];
-	UILabelStyle *nextLabelStyle = &theme->labelStyles[0];
 
 	theme->panelStyles = makeArray(styleCount[UIStyle_Panel], (UIPanelStyle *) pos);
 	pos += styleArraySize[UIStyle_Panel];
-	UIPanelStyle *nextPanelStyle = &theme->panelStyles[0];
 
 	theme->scrollbarStyles = makeArray(styleCount[UIStyle_Scrollbar], (UIScrollbarStyle *) pos);
 	pos += styleArraySize[UIStyle_Scrollbar];
-	UIScrollbarStyle *nextScrollbarStyle = &theme->scrollbarStyles[0];
 
 	theme->textInputStyles = makeArray(styleCount[UIStyle_TextInput], (UITextInputStyle *) pos);
 	pos += styleArraySize[UIStyle_TextInput];
-	UITextInputStyle *nextTextInputStyle = &theme->textInputStyles[0];
 
 	theme->windowStyles = makeArray(styleCount[UIStyle_Window], (UIWindowStyle *) pos);
 	pos += styleArraySize[UIStyle_Window];
-	UIWindowStyle *nextWindowStyle = &theme->windowStyles[0];
 
 	for (auto it = styles.iterate(); it.hasNext(); it.next())
 	{
@@ -471,7 +464,7 @@ void loadUITheme(Blob data, Asset *asset)
 				switch (style->type)
 				{
 					case UIStyle_Button: {
-						UIButtonStyle *button = nextButtonStyle++;
+						UIButtonStyle *button = theme->buttonStyles.append();
 						button->name = style->name;
 
 						button->font = style->font;
@@ -487,7 +480,7 @@ void loadUITheme(Blob data, Asset *asset)
 					} break;
 
 					case UIStyle_Console: {
-						UIConsoleStyle *console = nextConsoleStyle++;
+						UIConsoleStyle *console = theme->consoleStyles.append();
 						console->name = style->name;
 
 						console->font = style->font;
@@ -501,7 +494,7 @@ void loadUITheme(Blob data, Asset *asset)
 					} break;
 
 					case UIStyle_Label: {
-						UILabelStyle *label = nextLabelStyle++;
+						UILabelStyle *label = theme->labelStyles.append();
 						label->name = style->name;
 
 						label->font = style->font;
@@ -509,7 +502,7 @@ void loadUITheme(Blob data, Asset *asset)
 					} break;
 
 					case UIStyle_Panel: {
-						UIPanelStyle *panel = nextPanelStyle++;
+						UIPanelStyle *panel = theme->panelStyles.append();
 						panel->name = style->name;
 
 						panel->margin = style->margin;
@@ -524,7 +517,7 @@ void loadUITheme(Blob data, Asset *asset)
 					} break;
 
 					case UIStyle_Scrollbar: {
-						UIScrollbarStyle *scrollbar = nextScrollbarStyle++;
+						UIScrollbarStyle *scrollbar = theme->scrollbarStyles.append();
 						scrollbar->name = style->name;
 
 						scrollbar->background = style->background;
@@ -533,7 +526,7 @@ void loadUITheme(Blob data, Asset *asset)
 					} break;
 
 					case UIStyle_TextInput: {
-						UITextInputStyle *textInput = nextTextInputStyle++;
+						UITextInputStyle *textInput = theme->textInputStyles.append();
 						textInput->name = style->name;
 
 						textInput->font = style->font;
@@ -548,7 +541,7 @@ void loadUITheme(Blob data, Asset *asset)
 					} break;
 
 					case UIStyle_Window: {
-						UIWindowStyle *window = nextWindowStyle++;
+						UIWindowStyle *window = theme->windowStyles.append();
 						window->name = style->name;
 
 						window->titleBarHeight = style->titleBarHeight;

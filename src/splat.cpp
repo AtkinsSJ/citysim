@@ -9,7 +9,7 @@ Splat createRandomSplat(s32 centreX, s32 centreY, f32 minRadius, f32 maxRadius, 
 	result.maxRadius = maxRadius;
 	result.radiusRange = maxRadius - minRadius;
 
-	result.radius = allocateArray<f32>(memoryArena, resolution);
+	result.radius = allocateArray<f32>(memoryArena, resolution, true);
 	result.degreesToIndex = resolution / 360.0f;
 
 	generate1DNoise(random, &result.radius, smoothness, true);

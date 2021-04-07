@@ -79,10 +79,10 @@ inline T *allocateMultiple(MemoryArena *arena, smm count)
 }
 
 template<typename T>
-inline Array<T> allocateArray(MemoryArena *arena, s32 count)
+inline Array<T> allocateArray(MemoryArena *arena, s32 count, bool markAsFull)
 {
 	ASSERT(count > 0);
-	return makeArray<T>(count, allocateMultiple<T>(arena, count));
+	return makeArray<T>(count, allocateMultiple<T>(arena, count), markAsFull ? count : 0);
 }
 
 template<typename T>

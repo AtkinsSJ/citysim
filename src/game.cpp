@@ -372,7 +372,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 		// Problems
 		for (s32 problemIndex = 0; problemIndex < BuildingProblemCount; problemIndex++)
 		{
-			if (hasProblem(building, (BuildingProblem) problemIndex))
+			if (hasProblem(building, (BuildingProblemType) problemIndex))
 			{
 				ui->addText(myprintf("- PROBLEM: {0}"_s, {getText(buildingProblemNames[problemIndex])}));
 			}
@@ -1074,12 +1074,10 @@ void setFixedColors(DataViewUI *dataView, String paletteName, std::initializer_l
 {
 	dataView->hasFixedColors = true;
 	dataView->fixedPaletteName = paletteName;
-	dataView->fixedColorNames = allocateArray<String>(&globalAppState.systemArena, truncate32(names.size()));
-	s32 nameIndex = 0;
+	dataView->fixedColorNames = allocateArray<String>(&globalAppState.systemArena, truncate32(names.size()), false);
 	for (auto it = names.begin(); it != names.end(); it++)
 	{
-		dataView->fixedColorNames[nameIndex] = pushString(&globalAppState.systemArena, *it);
-		nameIndex++;
+		dataView->fixedColorNames.append( pushString(&globalAppState.systemArena, *it) );
 	}
 }
 
@@ -1267,8 +1265,8 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 					Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
 					Array<V4> *gradientPalette = getPalette(dataView->gradientPaletteName);
-					V4 minColor = asOpaque(*first(gradientPalette));
-					V4 maxColor = asOpaque( *last(gradientPalette));
+					V4 minColor = asOpaque(*gradientPalette->first());
+					V4 maxColor = asOpaque(*gradientPalette->last());
 
 					drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, maxColor, maxColor, minColor, minColor);
 				}

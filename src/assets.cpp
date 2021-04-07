@@ -77,7 +77,7 @@ void initAssets()
 		Asset *placeholderPalette = makePlaceholderAsset(AssetType_Palette);
 		placeholderPalette->palette.type = PaletteType_Fixed;
 		placeholderPalette->palette.size = 0;
-		placeholderPalette->palette.paletteData = makeArray<V4>(0, null);
+		placeholderPalette->palette.paletteData = makeEmptyArray<V4>();
 
 		// PaletteDefs
 		makePlaceholderAsset(AssetType_PaletteDefs);
@@ -328,7 +328,7 @@ void loadAsset(Asset *asset)
 			{
 				case PaletteType_Gradient: {
 					asset->data = assetsAllocate(assets, palette->size * sizeof(V4));
-					palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.memory);
+					palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.memory, palette->size);
 					
 					f32 ratio = 1.0f / (f32)(palette->size);
 					for (s32 i=0; i < palette->size; i++)
@@ -476,7 +476,7 @@ void unloadAsset(Asset *asset)
 		{
 			// Remove all of our terrain defs
 			removeBuildingDefs(asset->buildingDefs.buildingIDs);
-			asset->buildingDefs.buildingIDs = makeArray<String>(0, null);
+			asset->buildingDefs.buildingIDs = makeEmptyArray<String>();
 		} break;
 
 		case AssetType_CursorDefs:
@@ -487,7 +487,7 @@ void unloadAsset(Asset *asset)
 				String cursorName = asset->cursorDefs.cursorNames[cursorIndex];
 				removeAsset(AssetType_Cursor, cursorName);
 			}
-			asset->cursorDefs.cursorNames = makeArray<String>(0, null);
+			asset->cursorDefs.cursorNames = makeEmptyArray<String>();
 		} break;
 
 		case AssetType_Cursor:
@@ -507,20 +507,20 @@ void unloadAsset(Asset *asset)
 				String paletteName = asset->paletteDefs.paletteNames[paletteIndex];
 				removeAsset(AssetType_Palette, paletteName);
 			}
-			asset->paletteDefs.paletteNames = makeArray<String>(0, null);
+			asset->paletteDefs.paletteNames = makeEmptyArray<String>();
 		} break;
 
 		case AssetType_SpriteDefs:
 		{
 			removeAssets(asset->spriteDefs.sprites);
-			asset->spriteDefs.sprites = makeArray<AssetID>(0, null);
+			asset->spriteDefs.sprites = makeEmptyArray<AssetID>();
 		} break;
 
 		case AssetType_TerrainDefs:
 		{
 			// Remove all of our terrain defs
 			removeTerrainDefs(asset->terrainDefs.terrainIDs);
-			asset->terrainDefs.terrainIDs = makeArray<String>(0, null);
+			asset->terrainDefs.terrainIDs = makeEmptyArray<String>();
 		} break;
 
 		case AssetType_Texts:
@@ -533,7 +533,7 @@ void unloadAsset(Asset *asset)
 				textsTable->removeKey(key);
 			}
 
-			asset->texts.keys = makeArray<String>(0, null);
+			asset->texts.keys = makeEmptyArray<String>();
 		} break;
 
 		case AssetType_Texture:
@@ -1023,7 +1023,6 @@ void loadCursorDefs(Blob data, Asset *asset)
 
 	asset->data = assetsAllocate(assets, sizeof(String) * cursorCount);
 	asset->cursorDefs.cursorNames = makeArray(cursorCount, (String *) asset->data.memory);
-	s32 cursorIndex = 0;
 
 	restart(&reader);
 
@@ -1031,7 +1030,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 	{
 		String name     = intern(&assets->assetStrings, readToken(&reader));
 		String filename = readToken(&reader);
-		asset->cursorDefs.cursorNames[cursorIndex++] = name;
+		asset->cursorDefs.cursorNames.append(name);
 
 		Maybe<s32> hotX = readInt<s32>(&reader);
 		Maybe<s32> hotY = readInt<s32>(&reader);
@@ -1071,7 +1070,6 @@ void loadPaletteDefs(Blob data, Asset *asset)
 
 	asset->data = assetsAllocate(assets, sizeof(String) * paletteCount);
 	asset->paletteDefs.paletteNames = makeArray(paletteCount, (String *) asset->data.memory);
-	s32 paletteIndex = 0;
 
 	restart(&reader);
 
@@ -1088,7 +1086,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 			{
 				String paletteName = intern(&assets->assetStrings, readToken(&reader));
 				paletteAsset = addAsset(AssetType_Palette, paletteName, 0);
-				asset->paletteDefs.paletteNames[paletteIndex++] = paletteName;
+				asset->paletteDefs.paletteNames.append(paletteName);
 			}
 			else
 			{
@@ -1136,20 +1134,20 @@ void loadPaletteDefs(Blob data, Asset *asset)
 				{
 					if (paletteAsset->palette.type == PaletteType_Fixed)
 					{
-						if (!isInitialised(&paletteAsset->palette.paletteData))
+						if (!paletteAsset->palette.paletteData.isInitialised())
 						{
 							paletteAsset->data = assetsAllocate(assets, paletteAsset->palette.size * sizeof(V4));
 							paletteAsset->palette.paletteData = makeArray<V4>(paletteAsset->palette.size, (V4*)paletteAsset->data.memory);
 						}
 
-						s32 colorIndex = paletteAsset->palette.fixed.currentPos++;
+						s32 colorIndex = paletteAsset->palette.paletteData.count;
 						if (colorIndex >= paletteAsset->palette.size)
 						{
 							error(&reader, "Too many 'color' definitions! 'size' must be large enough."_s);
 						}
 						else
 						{
-							paletteAsset->palette.paletteData[colorIndex] = color.value;
+							paletteAsset->palette.paletteData.append(color.value);
 						}
 					}
 					else
@@ -1221,7 +1219,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 	}
 	asset->data = assetsAllocate(assets, sizeof(AssetID) * childAssetCount);
 	asset->spriteDefs.sprites = makeArray(childAssetCount, (AssetID *) asset->data.memory);
-	s32 childAssetIndex = 0;
+
 	restart(&reader);
 
 	// Now, actually read things
@@ -1259,9 +1257,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 
 				Asset *ninepatch = addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
 
-				asset->spriteDefs.sprites[childAssetIndex].name = ninepatch->shortName;
-				asset->spriteDefs.sprites[childAssetIndex].type = ninepatch->type;
-				childAssetIndex++;
+				asset->spriteDefs.sprites.append(makeAssetID(ninepatch->type, ninepatch->shortName));
 			}
 			else if (equals(command, "Sprite"_s))
 			{
@@ -1286,9 +1282,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				sprite->pixelWidth = spriteSize.x;
 				sprite->pixelHeight = spriteSize.y;
 
-				asset->spriteDefs.sprites[childAssetIndex].name = group->shortName;
-				asset->spriteDefs.sprites[childAssetIndex].type = group->type;
-				childAssetIndex++;
+				asset->spriteDefs.sprites.append(makeAssetID(group->type, group->shortName));
 			}
 			else if (equals(command, "SpriteGroup"_s))
 			{
@@ -1314,9 +1308,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 
-				asset->spriteDefs.sprites[childAssetIndex].name = spriteGroup->shortName;
-				asset->spriteDefs.sprites[childAssetIndex].type = spriteGroup->type;
-				childAssetIndex++;
+				asset->spriteDefs.sprites.append(makeAssetID(spriteGroup->type, spriteGroup->shortName));
 			}
 			else
 			{
@@ -1400,7 +1392,6 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 	asset->data = assetsAllocate(assets, fileData.size + keyArraySize);
 
 	asset->texts.keys = makeArray(lineCount, (String*)asset->data.memory);
-	s32 keyCount = 0;
 
 	smm currentSize = keyArraySize;
 	char *currentPos = (char *)(asset->data.memory + keyArraySize);
@@ -1452,10 +1443,8 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 			warn(&reader, "Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, {key, *existingValue});
 		}
 
-		asset->texts.keys[keyCount++] = key;
+		asset->texts.keys.append(key);
 
 		texts->put(key, text);
 	}
-
-	asset->texts.keys.count = keyCount;
 }

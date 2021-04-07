@@ -55,6 +55,16 @@ struct AssetID
 	String name;
 };
 
+inline AssetID makeAssetID(AssetType type, String name)
+{
+	AssetID result = {};
+
+	result.type = type;
+	result.name = name;
+
+	return result;
+}
+
 struct Asset;
 
 struct AssetRef
@@ -120,10 +130,6 @@ struct Palette
 
 	union
 	{
-		struct
-		{
-			s32 currentPos;
-		} fixed;
 		struct
 		{
 			V4 from;

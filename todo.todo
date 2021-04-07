@@ -18,6 +18,15 @@ Notes for searching:
 
 ------------------------------------------------
 
+Building problems:
+- Problem icon entities (Zots!)
+	- Maintain minimum distance between them, so it's not cluttered and chaotic.
+	- Appear/disappear when the building gains or loses its problem
+	- Somehow, we need to make sure that preventing overlaps doesn't result in none showing at all if one is removed!
+		(eg, if a 5x5 area is without power, but only one icon is shown in the middle, then demolishing the building in the middle would remove the icon. We need to make sure other icons pop up in its place so the lack of power is still indicated for the other buildings in that area.)
+		-> Have the Zots system respond to dirty-rects and regenerate the zots
+- Problems have a start time. This gives some breathing room so that briefly having a problem doesn't immediately have consequences.
+
 Move "keepItemOrder" concept from ChunkedArray methods to a bool field.
 - Check uses, but probably, we either always want a given array to stay in order, or we never do.
 
@@ -32,15 +41,6 @@ Saving and loading:
 Text Input:
 - Guide for handling textinputs properly: https://wiki.libsdl.org/Tutorials/TextInput
 	- It's pretty scanty, but we do see there's a way to tell it where our text input is, so the OS can make that look correct.
-
-Building problems:
-- Problem icon entities (Zots!)
-	- Maintain minimum distance between them, so it's not cluttered and chaotic.
-	- Appear/disappear when the building gains or loses its problem
-	- Somehow, we need to make sure that preventing overlaps doesn't result in none showing at all if one is removed!
-		(eg, if a 5x5 area is without power, but only one icon is shown in the middle, then demolishing the building in the middle would remove the icon. We need to make sure other icons pop up in its place so the lack of power is still indicated for the other buildings in that area.)
-		-> Have the Zots system respond to dirty-rects and regenerate the zots
-- Problems have a start time. This gives some breathing room so that briefly having a problem doesn't immediately have consequences.
 
 ENTITIES:
 - What properties should entities have besides rendering? Currently, they're just sprites with a position. Either we want to actually make them entities in some way, or change the name.

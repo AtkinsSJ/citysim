@@ -17,26 +17,20 @@ inline String typeNameOf()
  **********************************************/
 
 template<typename T>
-Array<T> makeArray(s32 count, T *items)
+Array<T> makeArray(s32 capacity, T *items, s32 count)
 {
 	Array<T> result;
+	result.capacity = capacity;
 	result.count = count;
 	result.items = items;
 
 	return result;
 }
 
-
 template<typename T>
 inline Array<T> makeEmptyArray()
 {
 	return makeArray<T>(0, null);
-}
-
-template<typename T>
-inline bool isInitialised(Array<T> *array)
-{
-	return array->items != null;
 }
 
 template<typename T>
@@ -47,60 +41,98 @@ inline T& Array<T>::operator[](s32 index)
 }
 
 template<typename T>
-inline T *first(Array<T> *array)
+inline T *Array<T>::first()
 {
-	ASSERT(array->count > 0); //Index out of range!
-	return &array->items[0];
+	ASSERT(count > 0); //Index out of range!
+	return &items[0];
 }
 
 template<typename T>
-inline T *last(Array<T> *array)
+inline T *Array<T>::last()
 {
-	ASSERT(array->count > 0); //Index out of range!
-	return &array->items[array->count-1];
+	ASSERT(count > 0); //Index out of range!
+	return &items[count-1];
+}
+
+template <typename T>
+inline T *Array<T>::append()
+{
+	ASSERT(count < capacity);
+
+	T *result = items + count++;
+
+	return result;
+}
+
+template <typename T>
+inline T *Array<T>::append(T item)
+{
+	T *result = append();
+	*result = item;
+	return result;
 }
 
 template<typename T>
-void swap(Array<T> *array, s32 indexA, s32 indexB)
+inline bool Array<T>::isInitialised()
 {
-	T temp = array->items[indexA];
-	array->items[indexA] = array->items[indexB];
-	array->items[indexB] = temp;
+	return items != null;
 }
 
-template<typename T, typename Comparison>
-void sortArrayInternal(Array<T> *array, Comparison compareElements, s32 lowIndex, s32 highIndex)
+template <typename T>
+bool Array<T>::isEmpty()
+{
+	return count == 0;
+}
+
+template <typename T>
+bool Array<T>::hasRoom()
+{
+	return count < capacity;
+}
+
+template<typename T>
+void Array<T>::swap(s32 indexA, s32 indexB)
+{
+	T temp = items[indexA];
+	items[indexA] = items[indexB];
+	items[indexB] = temp;
+}
+
+template<typename T>
+template<typename Comparison>
+inline void Array<T>::sort(Comparison compareElements)
+{
+	DEBUG_FUNCTION();
+	
+	sortInternal(compareElements, 0, count-1);
+}
+
+template<typename T>
+template<typename Comparison>
+void Array<T>::sortInternal(Comparison compareElements, s32 lowIndex, s32 highIndex)
 {
 	// Quicksort implementation
 	if (lowIndex < highIndex)
 	{
 		s32 partitionIndex = 0;
 		{
-			T pivot = array->items[highIndex];
+			T pivot = items[highIndex];
 			s32 i = (lowIndex - 1);
 			for (s32 j = lowIndex; j < highIndex; j++)
 			{
-				if (compareElements(array->items[j], pivot))
+				if (compareElements(items[j], pivot))
 				{
 					i++;
-					swap(array, i, j);
+					swap(i, j);
 				}
 			}
-			swap(array, i+1, highIndex);
+			swap(i+1, highIndex);
 			partitionIndex = i+1;
 		}
 
-		sortArrayInternal(array, compareElements, lowIndex, partitionIndex - 1);
-		sortArrayInternal(array, compareElements, partitionIndex + 1, highIndex);
+		sortInternal(compareElements, lowIndex, partitionIndex - 1);
+		sortInternal(compareElements, partitionIndex + 1, highIndex);
 	}
-}
-
-template<typename T, typename Comparison>
-inline void sortArray(Array<T> *array, Comparison compareElements)
-{
-	DEBUG_FUNCTION();
-	
-	sortArrayInternal(array, compareElements, 0, array->count-1);
 }
 
 /**********************************************

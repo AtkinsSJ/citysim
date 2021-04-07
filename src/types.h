@@ -202,13 +202,6 @@ inline Indexed<T> makeIndexedValue(T value, s32 index)
 	return result;
 }
 
-struct Matrix4 {
-	union {
-		f32 v[4][4]; // Column-major order, so [COLUMN][ROW]
-		f32 flat[4*4];
-	};
-};
-
 //
 // Array
 //
@@ -216,34 +209,37 @@ struct Matrix4 {
 template<typename T>
 struct Array
 {
+	s32 capacity;
 	s32 count;
 	T *items;
 
 	// NB: it's a reference so you can do assignments!
 	T& operator[](s32 index);
+	T* first();
+	T* last();
+
+	T *append();
+	T *append(T item);
+
+	bool isInitialised();
+	bool isEmpty();
+	bool hasRoom();
+
+	void swap(s32 indexA, s32 indexB);
+
+	// compareElements(T a, T b) -> returns (a < b), to sort low to high
+	template<typename Comparison>
+	void sort(Comparison compareElements);
+
+	template<typename Comparison>
+	void sortInternal(Comparison compareElements, s32 lowIndex, s32 highIndex);
 };
 
 template<typename T>
-Array<T> makeArray(s32 count, T *items);
+Array<T> makeArray(s32 capacity, T *items, s32 count = 0);
 
 template<typename T>
 Array<T> makeEmptyArray();
-
-template<typename T>
-bool isInitialised(Array<T> *array);
-
-template<typename T>
-T *first(Array<T> *array);
-
-template<typename T>
-T *last(Array<T> *array);
-
-template<typename T>
-void swap(Array<T> *array, s32 indexA, s32 indexB);
-
-// compareElements(T a, T b) -> returns (a < b), to sort low to high
-template<typename T, typename Comparison>
-void sortArray(Array<T> *array, Comparison compareElements);
 
 //
 // 2D Array
@@ -272,12 +268,6 @@ template<typename T>
 void fillRegion(Array2<T> *array, Rect2I region, T value);
 
 //
-// Rect2
-//
-//
-// Rect2I
-//
-//
 // Matrix4
 //
 // Matrices! Pretty sure I'm only going to use this for the camera projection,
@@ -286,6 +276,14 @@ void fillRegion(Array2<T> *array, Rect2I region, T value);
 //
 // TODO: When I move to 3D, implement full rotation of matrices!
 //
+
+struct Matrix4 {
+	union {
+		f32 v[4][4]; // Column-major order, so [COLUMN][ROW]
+		f32 flat[4*4];
+	};
+};
+
 Matrix4 identityMatrix4();
 Matrix4 orthographicMatrix4(f32 left, f32 right, f32 top, f32 bottom, f32 nearClip, f32 farClip);
 Matrix4 inverse(Matrix4 *source);

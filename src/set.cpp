@@ -78,17 +78,16 @@ Array<T> Set<T>::asSortedArray(bool (*compare)(T a, T b))
 
 	if (!isEmpty())
 	{
-		result = allocateArray<T>(tempArena, items.count);
+		result = allocateArray<T>(tempArena, items.count, false);
 
 		// Gather
-		s32 currentIndex = 0;
 		for (auto it = iterate(); it.hasNext(); it.next())
 		{
-			result[currentIndex++] = it.getValue();
+			result.append(it.getValue());
 		}
 
 		// Sort
-		sortArray(&result, compare);
+		result.sort(compare);
 	}
 
 	return result;
