@@ -141,6 +141,7 @@ enum BuildingProblemType
 
 struct BuildingProblem
 {
+	bool isActive;
 	BuildingProblemType type;
 	GameTimestamp startDate;
 };
@@ -168,8 +169,7 @@ struct Building
 
 	s32 allocatedPower;
 
-	Array<BuildingProblem> problems;
-	BuildingProblem _problemsData[BuildingProblemCount];
+	BuildingProblem problems[BuildingProblemCount];
 };
 
 // NB: If someone needs a pointer to a building across multiple frames, use one of these references.

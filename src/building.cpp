@@ -991,7 +991,6 @@ void initBuilding(Building *building, s32 id, BuildingDef *def, Rect2I footprint
 	building->typeID = def->typeID;
 	building->creationDate = creationDate;
 	building->footprint = footprint;
-	building->problems = makeArray<BuildingProblem>(BuildingProblemCount, building->_problemsData);
 	building->variantIndex = NO_VARIANT;
 }
 
@@ -1073,7 +1072,7 @@ void updateBuilding(City *city, Building *building)
 	V4 drawColorNormal = makeWhite();
 	V4 drawColorNoPower = color255(32,32,64,255);
 
-	if (hasProblem(building, BuildingProblem_NoPower))
+	if (!buildingHasPower(building))
 	{
 		building->entity->color = drawColorNoPower;
 	}
@@ -1085,39 +1084,30 @@ void updateBuilding(City *city, Building *building)
 
 inline void addProblem(Building *building, BuildingProblemType problem)
 {
-	BuildingProblem *bp = building->problems.append();
-	bp->type = problem;
-	bp->startDate = getCurrentTimestamp();
+	BuildingProblem *bp = &building->problems[problem];
+	if (!bp->isActive)
+	{
+		bp->isActive = true;
+		bp->type = problem;
+		bp->startDate = getCurrentTimestamp();
+	}
 
 	// TODO: Update zots!
 }
 
 inline void removeProblem(Building *building, BuildingProblemType problem)
 {
-	for (s32 i=0; i < building->problems.count; i++)
+	if (building->problems[problem].isActive)
 	{
-		if (building->problems[i].type == problem)
-		{
-			building->problems[i] = building->problems[building->problems.count];
-			building->problems.count--;
+		building->problems[problem].isActive = false;
 
-			// TODO: Update zots!
-		}
+		// TODO: Update zots!
 	}
 }
 
 inline bool hasProblem(Building *building, BuildingProblemType problem)
 {
-	bool result = false;
-
-	for (s32 i=0; i < building->problems.count; i++)
-	{
-		if (building->problems[i].type == problem)
-		{
-			result = true;
-			break;
-		}
-	}
+	bool result = building->problems[problem].isActive;
 
 	return result;
 }

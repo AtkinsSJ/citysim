@@ -27,6 +27,9 @@ Building problems:
 		-> Have the Zots system respond to dirty-rects and regenerate the zots
 - Problems have a start time. This gives some breathing room so that briefly having a problem doesn't immediately have consequences.
 
+Make Window RenderBuffers live as long as their Window does
+- Instead of allocating and freeing them every frame, which does nothing except waste CPU cycles
+
 Move "keepItemOrder" concept from ChunkedArray methods to a bool field.
 - Check uses, but probably, we either always want a given array to stay in order, or we never do.
 
