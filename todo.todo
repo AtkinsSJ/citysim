@@ -27,9 +27,6 @@ Building problems:
 		-> Have the Zots system respond to dirty-rects and regenerate the zots
 - Problems have a start time. This gives some breathing room so that briefly having a problem doesn't immediately have consequences.
 
-Make Window RenderBuffers live as long as their Window does
-- Instead of allocating and freeing them every frame, which does nothing except waste CPU cycles
-
 Move "keepItemOrder" concept from ChunkedArray methods to a bool field.
 - Check uses, but probably, we either always want a given array to stay in order, or we never do.
 
@@ -88,8 +85,6 @@ Saving and loading!
 - LZ77-based compression option. https://en.wikipedia.org/wiki/LZ77_and_LZ78
 
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
-
-Window buttons should still do hover-states even on inactive windows.
 
 StringBuilder: Chunks instead of reallocating to a larger buffer size
 

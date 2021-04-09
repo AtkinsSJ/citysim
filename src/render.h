@@ -220,6 +220,7 @@ struct Renderer
 	SDL_Cursor *systemWaitCursor;
 
 	Pool<RenderBuffer> renderBufferPool;
+	Array<RenderBuffer *> renderBuffers;
 	RenderBuffer worldBuffer;
 	RenderBuffer worldOverlayBuffer;
 	RenderBuffer uiBuffer;
@@ -246,7 +247,7 @@ struct Renderer
 	// Don't access these directly!
 	void *platformRenderer;
 	void (*windowResized)(s32, s32);
-	void (*render)(RenderBufferChunk *);
+	void (*render)(Array<RenderBuffer *>);
 	void (*loadAssets)();
 	void (*unloadAssets)();
 	void (*free)();
@@ -260,12 +261,11 @@ void freeRenderer();
 
 void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Pool<RenderBufferChunk> *chunkPool);
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
-void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer);
 void clearRenderBuffer(RenderBuffer *buffer);
 
 RenderBuffer *getTemporaryRenderBuffer(String name);
-// NB: If targetBuffer is not null, we append buffer's data to it, so it becomes the "owner"
-void returnTemporaryRenderBuffer(RenderBuffer *buffer, RenderBuffer *targetBuffer = null);
+void transferRenderBufferData(RenderBuffer *buffer, RenderBuffer *targetBuffer);
+void returnTemporaryRenderBuffer(RenderBuffer *buffer);
 
 void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
 void updateCameraMatrix(Camera *camera);

@@ -75,7 +75,7 @@ struct GL_Renderer
 };
 
 bool GL_initializeRenderer(SDL_Window *window);
-void GL_render(RenderBufferChunk *firstChunk);
+void GL_render(Array<RenderBuffer *> buffers);
 void GL_windowResized(s32 newWidth, s32 newHeight);
 void GL_loadAssets();
 void GL_unloadAssets();

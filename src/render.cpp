@@ -56,6 +56,13 @@ void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 	initRenderBuffer(renderArena, &renderer->windowBuffer,       "WindowBuffer"_s,       &renderer->chunkPool);
 	initRenderBuffer(renderArena, &renderer->debugBuffer,        "DebugBuffer"_s,        &renderer->chunkPool);
 
+	renderer->renderBuffers = allocateArray<RenderBuffer *>(renderArena, 5);
+	renderer->renderBuffers.append(&renderer->worldBuffer);
+	renderer->renderBuffers.append(&renderer->worldOverlayBuffer);
+	renderer->renderBuffers.append(&renderer->uiBuffer);
+	renderer->renderBuffers.append(&renderer->windowBuffer);
+	renderer->renderBuffers.append(&renderer->debugBuffer);
+
 	// Hide cursor until stuff loads
 	setCursorVisible(false);
 }
@@ -65,37 +72,12 @@ void render()
 	DEBUG_POOL(&renderer->renderBufferPool, "renderBufferPool");
 	DEBUG_POOL(&renderer->chunkPool, "renderChunkPool");
 
-	linkRenderBufferToNext(&renderer->worldBuffer, &renderer->worldOverlayBuffer);
-	linkRenderBufferToNext(&renderer->worldOverlayBuffer, &renderer->uiBuffer);
-	linkRenderBufferToNext(&renderer->uiBuffer, &renderer->windowBuffer);
-	linkRenderBufferToNext(&renderer->windowBuffer, &renderer->debugBuffer);
+	renderer->render(renderer->renderBuffers);
 
-	renderer->render(renderer->worldBuffer.firstChunk);
-
-	// Return the chunks to the pool
-	// NB: We can't easily shortcut this by just modifying the first/last pointers,
-	// because the nextChunk list is different from the pool's list!
-	// Originally I thought it's simpler to keep them separate, but that's actually making
-	// me more confused.
-	// Anyway, the number of RenderBufferChunks is quite low, so for now this isn't a real bottleneck.
-	// - Sam, 26/07/2019
-	if (renderer->worldBuffer.currentChunk != null)
+	for (s32 i = 0; i < renderer->renderBuffers.count; i++)
 	{
-		for (RenderBufferChunk *chunk = renderer->worldBuffer.firstChunk;
-			chunk != null;
-			chunk = chunk->nextChunk)
-		{
-			chunk->used = 0;
-			addItemToPool(&renderer->chunkPool, chunk);
-		}
+		clearRenderBuffer(renderer->renderBuffers[i]);
 	}
-
-	// Individual clean-up
-	clearRenderBuffer(&renderer->worldBuffer);
-	clearRenderBuffer(&renderer->worldOverlayBuffer);
-	clearRenderBuffer(&renderer->uiBuffer);
-	clearRenderBuffer(&renderer->windowBuffer);
-	clearRenderBuffer(&renderer->debugBuffer);
 }
 
 void rendererLoadAssets()
@@ -231,14 +213,6 @@ void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Poo
 
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
-
-	// TODO: @Speed: This should probably be delayed until we first try to append an item to this buffer.
-	// Right now, we're reallocating a chunk we just freed, and (potentially) only to hold this one marker!
-	// See also clearRenderBuffer()
-	if (!isEmpty(buffer->name))
-	{
-		addSectionMarker(buffer, buffer->name);
-	}
 }
 
 RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData)
@@ -257,63 +231,55 @@ void clearRenderBuffer(RenderBuffer *buffer)
 	buffer->currentShader = -1;
 	buffer->currentTexture = null;
 
+	for (RenderBufferChunk *chunk = buffer->firstChunk;
+		chunk != null;
+		chunk = chunk->nextChunk)
+	{
+		chunk->used = 0;
+		addItemToPool(&renderer->chunkPool, chunk);
+	}
+
 	buffer->firstChunk = null;
 	buffer->currentChunk = null;
-
-	// TODO: @Speed: See initRenderBuffer()
-	if (!isEmpty(buffer->name))
-	{
-		addSectionMarker(buffer, buffer->name);
-	}
 }
 
 inline RenderBuffer *getTemporaryRenderBuffer(String name)
 {
 	RenderBuffer *result = getItemFromPool(&renderer->renderBufferPool);
-
-	if (!isEmpty(name))
-	{
-		addSectionMarker(result, name);
-	}
+	result->name = pushString(&renderer->renderArena, name); // @Leak
 
 	return result;
 }
 
-void returnTemporaryRenderBuffer(RenderBuffer *buffer, RenderBuffer *targetBuffer)
+void returnTemporaryRenderBuffer(RenderBuffer *buffer)
 {
-	// Move our chunks to the targetBuffer
-	if (targetBuffer != null && buffer->currentChunk != null)
-	{
-		// This is very similar to the code in linkRenderBufferToNext(), with an important difference:
-		// link...() keeps the currentChunk the same, so the targetBuffer doesn't consider itself to own those chunks.
-		// Whereas here, we make it take ownership of them. Probably linkRenderBufferToNext() wants to be
-		// replaced entirely with temporarily-allocated buffers like this, but we'll see.
-		// - Sam, 06/04/2021
-		ASSERT((targetBuffer->currentChunk->size - targetBuffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
-		appendRenderItemType(targetBuffer, RenderItemType_NextMemoryChunk);
-		targetBuffer->currentChunk->nextChunk = buffer->firstChunk;
-		buffer->firstChunk->prevChunk = targetBuffer->currentChunk;
-		targetBuffer->currentChunk = buffer->currentChunk;
-	}
-
 	buffer->name = nullString;
 	clearRenderBuffer(buffer);
 	addItemToPool(&renderer->renderBufferPool, buffer);
 }
 
-void linkRenderBufferToNext(RenderBuffer *buffer, RenderBuffer *nextBuffer)
+void transferRenderBufferData(RenderBuffer *buffer, RenderBuffer *targetBuffer)
 {
-	// TODO: @Speed: Could optimise this by skipping empty buffers, so we just jump straight
-	// to the nextBuffer. However, right now every buffer has a chunk in which contains its name,
-	// so currentChunk is never null anyway.
-	// - Sam, 26/07/2019
-	ASSERT(buffer->currentChunk != null);
-	ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
-	appendRenderItemType(buffer, RenderItemType_NextMemoryChunk);
+	if (buffer->currentChunk != null)
+	{
+		// If the target is empty, we can take a shortcut and just copy the pointers
+		if (targetBuffer->currentChunk == null)
+		{
+			targetBuffer->firstChunk = buffer->firstChunk;
+			targetBuffer->currentChunk = buffer->currentChunk;
+		}
+		else
+		{
+			ASSERT((targetBuffer->currentChunk->size - targetBuffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
+			appendRenderItemType(targetBuffer, RenderItemType_NextMemoryChunk);
+			targetBuffer->currentChunk->nextChunk = buffer->firstChunk;
+			buffer->firstChunk->prevChunk = targetBuffer->currentChunk;
+			targetBuffer->currentChunk = buffer->currentChunk;
+		}
+	}
 
-	// Add to the renderbuffer
-	buffer->currentChunk->nextChunk = nextBuffer->firstChunk;
-	nextBuffer->firstChunk->prevChunk = buffer->currentChunk;
+	buffer->firstChunk = null;
+	buffer->currentChunk = null;
 }
 
 inline void appendRenderItemType(RenderBuffer *buffer, RenderItemType type)
@@ -350,6 +316,7 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 		{
 			buffer->firstChunk = newChunk;
 			buffer->currentChunk = newChunk;
+			addSectionMarker(buffer, buffer->name);
 		}
 		else
 		{

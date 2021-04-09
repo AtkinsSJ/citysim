@@ -46,6 +46,8 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 	newWindow.userData = userData;
 	newWindow.onClose = onClose;
 
+	newWindow.renderBuffer = getTemporaryRenderBuffer(newWindow.title);
+
 	bool createdWindowAlready = false;
 
 	if (uiState->openWindows.count > 0)
@@ -159,8 +161,6 @@ void updateAndRenderWindows(UIState *uiState)
 		UIWindowStyle *windowStyle = findStyle<UIWindowStyle>(window->styleName);
 
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
-
-		window->renderBuffer = getTemporaryRenderBuffer(window->title);
 
 		// Modal windows get a translucent colour over everything behind them
 		if (isModal)
@@ -414,8 +414,7 @@ void updateAndRenderWindows(UIState *uiState)
 		it.next())
 	{
 		Window *window = it.get();
-		returnTemporaryRenderBuffer(window->renderBuffer, &renderer->windowBuffer);
-		window->renderBuffer = null;
+		transferRenderBufferData(window->renderBuffer, &renderer->windowBuffer);
 	}
 
 	// Remove the tooltip now that it's been shown

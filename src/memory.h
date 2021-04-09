@@ -104,7 +104,7 @@ template<typename T>
 T *allocateMultiple(MemoryArena *arena, smm count);
 
 template<typename T>
-Array<T> allocateArray(MemoryArena *arena, s32 count, bool markAsFull);
+Array<T> allocateArray(MemoryArena *arena, s32 count, bool markAsFull = false);
 
 template<typename T>
 Array2<T> allocateArray2(MemoryArena *arena, s32 w, s32 h);

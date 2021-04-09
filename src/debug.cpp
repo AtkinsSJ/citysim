@@ -594,12 +594,15 @@ void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferN
 
 void debugEndTrackingRenderBuffer(DebugState *debugState)
 {
-	u32 frameIndex = debugState->writingFrameIndex;
+	if (debugState->currentRenderBuffer != null)
+	{
+		u32 frameIndex = debugState->writingFrameIndex;
 
-	debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
-	debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
+		debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
+		debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
 
-	debugState->currentRenderBuffer = null;
+		debugState->currentRenderBuffer = null;
+	}
 }
 
 void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn)
