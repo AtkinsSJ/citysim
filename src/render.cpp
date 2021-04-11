@@ -316,7 +316,10 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 		{
 			buffer->firstChunk = newChunk;
 			buffer->currentChunk = newChunk;
-			addSectionMarker(buffer, buffer->name);
+			if (!isEmpty(buffer->name))
+			{
+				addSectionMarker(buffer, buffer->name);
+			}
 		}
 		else
 		{
