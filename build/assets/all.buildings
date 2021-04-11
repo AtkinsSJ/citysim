@@ -62,10 +62,10 @@ carries_transport road
 carries_power true
 
 variant 1212 b_powerline_road_1212
-variant *2*2 b_powerline_road_1212
-variant 1*1* b_powerline_road_1212
 variant 2121 b_powerline_road_2121
+variant *2*2 b_powerline_road_1212
 variant 2*2* b_powerline_road_2121
+variant 1*1* b_powerline_road_1212
 variant *1*1 b_powerline_road_2121
 
 #

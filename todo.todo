@@ -19,6 +19,10 @@ Notes for searching:
 ------------------------------------------------
 
 Building problems:
+- I think we want to split this into two concepts: Access, and Problems
+	- Access is stuff like "has power", "has water"
+	- Because, not having water is not an urgent problem - water is not a requirement in SimCity.
+	- This also works for Impressions-style games
 - Problem icon entities (Zots!)
 	- Maintain minimum distance between them, so it's not cluttered and chaotic.
 	- Appear/disappear when the building gains or loses its problem
@@ -94,6 +98,19 @@ Multiple Cities
 - Honestly, I don't like the name "City" for the struct anyway. Not sure what it *should* be called though.
 	- Could call each one a "World", and the overall game state the "Universe"? (Unless we want to have multiple cities on one planet, then it'd be confusing?)
 	- "Map" is a decent term, but it's also what you'd call the minimap. Though actually, if it's a "MiniMap" that's fine.
+
+Multiple buildings per tile?
+- I'm starting to think our "building pointer per tile" thing is too rigid. There are several situations where we might want multiple buildings on a single tile:
+	- Water pipes or subway tunnels
+	- Power lines over roads
+	- Even something like adding a bus stop to a road tile (SC4 RTMT style)
+- It's definitely convenient having that tile->building lookup, but there are other ways of doing it.
+	eg, we *already* store a list of buildings in each CitySector!
+- Then, we can maybe abandon the Building/Entity separation. Make buildings be entities, stop handling them specially.
+- Things that would have to change:
+	- Tile inspection would have to query all buildings overlapping that tile, and show info about them all perhaps
+	- "Can I build this here?" needs to consider what buildings are on the tile, not just "is it clear?"
+		- I generally want to improve that system, so we can do bridges over water!
 
 _hashed string suffix?
 Console commands in a HashTable
