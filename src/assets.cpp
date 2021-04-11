@@ -671,8 +671,8 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 		if (assetType == AssetType_Unknown)
 		{
 			String fileExtension = getFileExtension(filename);
-			AssetType *foundAssetType = assets->fileExtensionToType.find(fileExtension);
-			assetType = (foundAssetType == null) ? AssetType_Misc : *foundAssetType;
+			Maybe<AssetType> foundAssetType = assets->fileExtensionToType.findValue(fileExtension);
+			assetType = foundAssetType.orDefault(AssetType_Misc);
 			// logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
 		}
 		else
@@ -762,9 +762,9 @@ Asset *getAsset(AssetType type, String shortName)
 
 Asset *getAssetIfExists(AssetType type, String shortName)
 {
-	Asset **result = assets->assetsByType[type].find(shortName);
+	Maybe<Asset *> result = assets->assetsByType[type].findValue(shortName);
 
-	return (result == null) ? null : *result;
+	return result.isValid ? result.value : null;
 }
 
 AssetRef getAssetRef(AssetType type, String shortName)
@@ -895,18 +895,18 @@ inline String getText(String name)
 
 	String result = name;
 
-	String *foundText = assets->texts.find(name);
-	if (foundText != null)
+	Maybe<String> foundText = assets->texts.findValue(name);
+	if (foundText.isValid)
 	{
-		result = *foundText;
+		result = foundText.value;
 	}
 	else
 	{
 		// Try to fall back to english if possible
-		String *defaultText = assets->defaultTexts.find(name);
-		if (defaultText != null)
+		Maybe<String> defaultText = assets->defaultTexts.findValue(name);
+		if (defaultText.isValid)
 		{
-			result = *defaultText;
+			result = defaultText.value;
 		}
 
 		// Dilemma: We probably want to report missing texts, somehow... because we'd want to know
@@ -931,7 +931,7 @@ inline String getText(String name)
 
 		if (assets->missingTextIDs.add(name))
 		{
-			if (defaultText != null)
+			if (defaultText.isValid)
 			{
 				logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, {getLocale(), name});
 			}
@@ -1437,10 +1437,10 @@ void loadTexts(HashTable<String> *texts, Asset *asset, Blob fileData)
 		// Check that we don't already have a text with that name.
 		// If we do, one will overwrite the other, and that could be unpredictable if they're
 		// in different files. Things will still work, but it would be confusing! And unintended.
-		String *existingValue = texts->find(key);
-		if (existingValue != null && !equals(*existingValue, key))
+		Maybe<String> existingValue = texts->findValue(key);
+		if (existingValue.isValid && !equals(existingValue.value, key))
 		{
-			warn(&reader, "Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, {key, *existingValue});
+			warn(&reader, "Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, {key, existingValue.value});
 		}
 
 		asset->texts.keys.append(key);

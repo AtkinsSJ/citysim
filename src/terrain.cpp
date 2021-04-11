@@ -184,10 +184,10 @@ u8 findTerrainTypeByName(String name)
 	
 	u8 result = 0;
 
-	TerrainDef **def = terrainCatalogue.terrainDefsByName.find(name);
-	if (def != null && *def != null)
+	Maybe<TerrainDef *> def = terrainCatalogue.terrainDefsByName.findValue(name);
+	if (def.isValid && def.value != null)
 	{
-		result = (*def)->typeID;
+		result = def.value->typeID;
 	}
 
 	return result;
@@ -394,15 +394,7 @@ void remapTerrainTypes(City *city)
 			String terrainName = entry->key;
 			u8 oldType       = entry->value;
 
-			u8 *newType = terrainCatalogue.terrainNameToType.find(terrainName);
-			if (newType == null)
-			{
-				oldTypeToNewType[oldType] = 0;
-			}
-			else
-			{
-				oldTypeToNewType[oldType] = *newType;
-			}
+			oldTypeToNewType[oldType] = terrainCatalogue.terrainNameToType.findValue(terrainName).orDefault(0);
 		}
 
 		TerrainLayer *layer = &city->terrainLayer;

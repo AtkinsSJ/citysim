@@ -58,14 +58,15 @@ void loadSettingsFile(String name, Blob settingsData)
 	{
 		String settingName = readToken(&reader, '=');
 
-		SettingDef *def = settings->defs.find(settingName);
+		Maybe<SettingDef *> maybeDef = settings->defs.find(settingName);
 
-		if (def == null)
+		if (!maybeDef.isValid)
 		{
 			error(&reader, "Unrecognized setting: {0}"_s, {settingName});
 		}
 		else
 		{
+			SettingDef *def = maybeDef.value;
 			u8* firstItem = ((u8*)(&settings->settings)) + def->offsetWithinSettingsState;
 
 			for (s32 i=0; i < def->count; i++)

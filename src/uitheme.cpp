@@ -239,14 +239,14 @@ void loadUITheme(Blob data, Asset *asset)
 			{
 				// Clones an existing style
 				String parentStyleName = readToken(&reader);
-				UIStylePack *parentPack = styles.find(parentStyleName);
-				if (parentPack == null)
+				Maybe<UIStylePack *> parentPack = styles.find(parentStyleName);
+				if (!parentPack.isValid)
 				{
 					error(&reader, "Unable to find style named '{0}'"_s, {parentStyleName});
 				}
 				else
 				{
-					UIStyle *parent = parentPack->styleByType + target->type;
+					UIStyle *parent = parentPack.value->styleByType + target->type;
 					// For undefined styles, the parent struct will be all nulls, so the type will not match
 					if (parent->type != target->type)
 					{
@@ -296,7 +296,7 @@ void loadUITheme(Blob data, Asset *asset)
 			else
 			{
 				// Check our properties map for a match
-				UIProperty *property = uiStyleProperties.find(firstWord);
+				UIProperty *property = uiStyleProperties.find(firstWord).orDefault(null);
 				if (property)
 				{
 					if (property->existsInStyle[target->type])
@@ -347,10 +347,10 @@ void loadUITheme(Blob data, Asset *asset)
 								String value = intern(&assets->assetStrings, readToken(&reader));
 								AssetRef *fontRef = ((AssetRef*)((u8*)(target) + property->offsetInStyleStruct));
 								*fontRef = {};
-								String *fontFilename = fontNamesToAssetNames.find(value);
-								if (fontFilename != null)
+								Maybe<String> fontFilename = fontNamesToAssetNames.findValue(value);
+								if (fontFilename.isValid)
 								{
-									*fontRef = getAssetRef(AssetType_BitmapFont, *fontFilename);
+									*fontRef = getAssetRef(AssetType_BitmapFont, fontFilename.value);
 								}
 								else
 								{
@@ -600,29 +600,29 @@ inline T* findStyle(UIStyleRef *ref)
 
 template <> UIButtonStyle *findStyle<UIButtonStyle>(String styleName)
 {
-	return assets->theme->buttonStyles.find(styleName);
+	return assets->theme->buttonStyles.find(styleName).orDefault(null);
 }
 template <> UIConsoleStyle *findStyle<UIConsoleStyle>(String styleName)
 {
-	return assets->theme->consoleStyles.find(styleName);
+	return assets->theme->consoleStyles.find(styleName).orDefault(null);
 }
 template <> UILabelStyle *findStyle<UILabelStyle>(String styleName)
 {
-	return assets->theme->labelStyles.find(styleName);
+	return assets->theme->labelStyles.find(styleName).orDefault(null);
 }
 template <> UIPanelStyle *findStyle<UIPanelStyle>(String styleName)
 {
-	return assets->theme->panelStyles.find(styleName);
+	return assets->theme->panelStyles.find(styleName).orDefault(null);
 }
 template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName)
 {
-	return assets->theme->scrollbarStyles.find(styleName);
+	return assets->theme->scrollbarStyles.find(styleName).orDefault(null);
 }
 template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName)
 {
-	return assets->theme->textInputStyles.find(styleName);
+	return assets->theme->textInputStyles.find(styleName).orDefault(null);
 }
 template <> UIWindowStyle *findStyle<UIWindowStyle>(String styleName)
 {
-	return assets->theme->windowStyles.find(styleName);
+	return assets->theme->windowStyles.find(styleName).orDefault(null);
 }

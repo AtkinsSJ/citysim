@@ -324,31 +324,33 @@ void loadBuildingDefs(Blob data, Asset *asset)
 				{
 					String templateName = readToken(&reader);
 					
-					BuildingDef *templateDef = templates.find(templateName);
-					if (templateDef == null)
+					Maybe<BuildingDef *> templateDef = templates.find(templateName);
+					if (!templateDef.isValid)
 					{
 						error(&reader, "Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, {templateName});
 					}
 					else
 					{
+						BuildingDef *tDef = templateDef.value;
+
 						// Copy the def... this could be messy
 						// (We can't just do copyMemory() because we don't want to change the name or typeID.)
-						def->flags = templateDef->flags;
-						def->size = templateDef->size;
-						def->spriteName = templateDef->spriteName;
-						def->sprites = templateDef->sprites;
-						def->buildMethod = templateDef->buildMethod;
-						def->buildCost = templateDef->buildCost;
-						def->growsInZone = templateDef->growsInZone;
-						def->demolishCost = templateDef->demolishCost;
-						def->residents = templateDef->residents;
-						def->jobs = templateDef->jobs;
-						def->transportTypes = templateDef->transportTypes;
-						def->power = templateDef->power;
-						def->landValueEffect = templateDef->landValueEffect;
-						def->pollutionEffect = templateDef->pollutionEffect;
-						def->fireRisk = templateDef->fireRisk;
-						def->fireProtection = templateDef->fireProtection;
+						def->flags = tDef->flags;
+						def->size = tDef->size;
+						def->spriteName = tDef->spriteName;
+						def->sprites = tDef->sprites;
+						def->buildMethod = tDef->buildMethod;
+						def->buildCost = tDef->buildCost;
+						def->growsInZone = tDef->growsInZone;
+						def->demolishCost = tDef->demolishCost;
+						def->residents = tDef->residents;
+						def->jobs = tDef->jobs;
+						def->transportTypes = tDef->transportTypes;
+						def->power = tDef->power;
+						def->landValueEffect = tDef->landValueEffect;
+						def->pollutionEffect = tDef->pollutionEffect;
+						def->fireRisk = tDef->fireRisk;
+						def->fireProtection = tDef->fireProtection;
 					}
 				}
 				else if (equals(firstWord, "fire_protection"_s))
@@ -664,13 +666,7 @@ inline BuildingDef *getBuildingDef(Building *building)
 
 inline BuildingDef *findBuildingDef(String name)
 {
-	BuildingDef *result = null;
-
-	BuildingDef **findResult = buildingCatalogue.buildingsByName.find(name);
-	if (findResult != null)
-	{
-		result = *findResult;
-	}
+	BuildingDef *result = buildingCatalogue.buildingsByName.findValue(name).orDefault(null);
 
 	return result;
 }
@@ -1237,15 +1233,7 @@ void remapBuildingTypes(City *city)
 			String buildingName = entry->key;
 			s32 oldType         = entry->value;
 
-			s32 *newType = buildingCatalogue.buildingNameToTypeID.find(buildingName);
-			if (newType == null)
-			{
-				oldTypeToNewType[oldType] = 0;
-			}
-			else
-			{
-				oldTypeToNewType[oldType] = *newType;
-			}
+			oldTypeToNewType[oldType] = buildingCatalogue.buildingNameToTypeID.findValue(buildingName).orDefault(0);
 		}
 
 		for (auto it = city->buildings.iterate(); it.hasNext(); it.next())

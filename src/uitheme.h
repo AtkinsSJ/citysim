@@ -244,22 +244,3 @@ template <> UIPanelStyle     *findStyle<UIPanelStyle>    (String styleName);
 template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName);
 template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName);
 template <> UIWindowStyle    *findStyle<UIWindowStyle>   (String styleName);
-
-template <typename T>
-T* findInArrayByName(Array<T> *array, String name)
-{
-	T *result = null;
-
-	for (s32 i=0; i < array->count; i++)
-	{
-		T *it = &(*array)[i];
-
-		if (equals(it->name, name))
-		{
-			result = it;
-			break;
-		}
-	}
-
-	return result;
-}

@@ -24,7 +24,10 @@ Fixed-size HashTable
 	✔ Console commands
 - Figure out a better solution for storing the keys
 
-- Make Hashtable.find() return a Maybe<>
+Theme default styles
+- I guess as a two-part fallback:
+	1) Search for a style named "default"
+	2) Use a hard-coded default value
 
 Multi-threading!
 - Figure out how to get it working at all

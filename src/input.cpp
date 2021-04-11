@@ -376,10 +376,10 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 		}
 		else
 		{
-			SDL_Keycode *found = inputState->keyNames.find(keyName);
-			if (found)
+			Maybe<SDL_Keycode> found = inputState->keyNames.findValue(keyName);
+			if (found.isValid)
 			{
-				result.key = *found;
+				result.key = found.value;
 			}
 			else
 			{

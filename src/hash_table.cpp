@@ -176,25 +176,37 @@ HashTableEntry<T> *HashTable<T>::findOrAddEntry(String key)
 }
 
 template<typename T>
-T *HashTable<T>::find(String key)
+Maybe<T*> HashTable<T>::find(String key)
 {
-	if (entries == null) return null;
+	Maybe<T*> result = makeFailure<T*>();
 
-	HashTableEntry<T> *entry = findEntry(key);
-	if (!entry->isOccupied)
+	if (entries != null)
 	{
-		return null;
+		HashTableEntry<T> *entry = findEntry(key);
+		if (entry->isOccupied)
+		{
+			result = makeSuccess(&entry->value);
+		}
 	}
-	else
-	{
-		return &entry->value;
-	}
+
+	return result;
 }
 
 template<typename T>
-inline T HashTable<T>::findValue(String key)
+Maybe<T> HashTable<T>::findValue(String key)
 {
-	return *find(key);
+	Maybe<T> result = makeFailure<T>();
+
+	if (entries != null)
+	{
+		HashTableEntry<T> *entry = findEntry(key);
+		if (entry->isOccupied)
+		{
+			result = makeSuccess(entry->value);
+		}
+	}
+
+	return result;
 }
 
 template<typename T>
