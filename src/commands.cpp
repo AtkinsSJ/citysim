@@ -273,26 +273,28 @@ ConsoleCommand(zoom)
 	}
 }
 
-#define CMD(name) #name##_s, &cmd_##name
+#undef ConsoleCommand
+
+#define ConsoleCommand(name, ...) Command(#name##_h, &cmd_##name, __VA_ARGS__)
 void initCommands(Console *console)
 {
 	// NB: a max-arguments value of -1 means "no maximum"
-	console->commands.append(Command(CMD(help)));
-	console->commands.append(Command(CMD(debug_tools)));
-	console->commands.append(Command(CMD(exit)));
-	console->commands.append(Command(CMD(funds), 1, 1));
-	console->commands.append(Command(CMD(generate)));
-	console->commands.append(Command(CMD(hello), 0, 1));
-	console->commands.append(Command(CMD(map_info)));
-	console->commands.append(Command(CMD(mark_all_dirty)));
-	console->commands.append(Command(CMD(reload_assets)));
-	console->commands.append(Command(CMD(reload_settings)));
-	console->commands.append(Command(CMD(show_layer), 0, 1));
-	console->commands.append(Command(CMD(speed), 0, 1));
-	console->commands.append(Command(CMD(toast), 1, -1));
-	console->commands.append(Command(CMD(window_size), 0, 2));
-	console->commands.append(Command(CMD(zoom), 0, 1));
+	console->commands.append(ConsoleCommand(help));
+	console->commands.append(ConsoleCommand(debug_tools));
+	console->commands.append(ConsoleCommand(exit));
+	console->commands.append(ConsoleCommand(funds, 1, 1));
+	console->commands.append(ConsoleCommand(generate));
+	console->commands.append(ConsoleCommand(hello, 0, 1));
+	console->commands.append(ConsoleCommand(map_info));
+	console->commands.append(ConsoleCommand(mark_all_dirty));
+	console->commands.append(ConsoleCommand(reload_assets));
+	console->commands.append(ConsoleCommand(reload_settings));
+	console->commands.append(ConsoleCommand(show_layer, 0, 1));
+	console->commands.append(ConsoleCommand(speed, 0, 1));
+	console->commands.append(ConsoleCommand(toast, 1, -1));
+	console->commands.append(ConsoleCommand(window_size, 0, 2));
+	console->commands.append(ConsoleCommand(zoom, 0, 1));
 }
-#undef CMD
+#undef ConsoleCommand
 
 #pragma warning(pop)

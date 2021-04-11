@@ -146,15 +146,18 @@ void updateConsole(Console *console)
 		UIConsoleStyle *consoleStyle = findStyle<UIConsoleStyle>(&console->style);
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
 		Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
-		s32 fontLineHeight = getFont(&consoleStyle->font)->lineHeight;
-		s32 contentHeight = ((console->outputLines.count-1) * fontLineHeight) + scrollbarBounds.h;
-		if (scrollToBottom)
+		if (hasPositiveArea(scrollbarBounds))
 		{
-			console->scrollbar.scrollPercent = 1.0f;
-		}
+			s32 fontLineHeight = getFont(&consoleStyle->font)->lineHeight;
+			s32 contentHeight = ((console->outputLines.count-1) * fontLineHeight) + scrollbarBounds.h;
+			if (scrollToBottom)
+			{
+				console->scrollbar.scrollPercent = 1.0f;
+			}
 
-		console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
-		updateScrollbar(globalAppState.uiState, &console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
+			console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
+			updateScrollbar(globalAppState.uiState, &console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
+		}
 	}
 }
 
@@ -252,54 +255,56 @@ void consoleHandleCommand(Console *console, String commandInput)
 		s32 tokenCount = countTokens(commandInput);
 		if (tokenCount > 0)
 		{
-			bool foundCommand = false;
 			String arguments;
 			String firstToken = nextToken(commandInput, &arguments);
 
+			// Find the command
+			Command *command = null;
 			for (auto it = globalConsole->commands.iterate();
 				it.hasNext();
 				it.next())
 			{
-				Command *command = it.get();
-
-				if (equals(command->name, firstToken))
+				Command *c = it.get();
+				if (equals(c->name, firstToken))
 				{
-					foundCommand = true;
-
-					s32 argCount = tokenCount - 1;
-					bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
-					if ((argCount < command->minArgs) || tooManyArgs)
-					{
-						if (command->minArgs == command->maxArgs)
-						{
-							consoleWriteLine(myprintf("Command '{0}' requires only {1} argument(s), but {2} given."_s,
-								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
-						}
-						else if (command->maxArgs == -1)
-						{
-							consoleWriteLine(myprintf("Command '{0}' requires at least {1} argument(s), but {2} given."_s,
-								{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
-						}
-						else
-						{
-							consoleWriteLine(myprintf("Command '{0}' requires between {1} and {2} arguments, but {3} given."_s,
-								{firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount)}), CLS_Error);
-						}
-					}
-					else
-					{
-						u32 commandStartTime = SDL_GetTicks();
-						command->function(console, argCount, arguments);
-						u32 commandEndTime = SDL_GetTicks();
-
-						consoleWriteLine(myprintf("Command executed in {0}ms"_s, {formatInt(commandEndTime - commandStartTime)}));
-					}
-
+					command = c;
 					break;
 				}
 			}
 
-			if (!foundCommand)
+			// Run the command
+			if (command != null)
+			{
+				s32 argCount = tokenCount - 1;
+				bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
+				if ((argCount < command->minArgs) || tooManyArgs)
+				{
+					if (command->minArgs == command->maxArgs)
+					{
+						consoleWriteLine(myprintf("Command '{0}' requires exactly {1} argument(s), but {2} given."_s,
+							{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
+					}
+					else if (command->maxArgs == -1)
+					{
+						consoleWriteLine(myprintf("Command '{0}' requires at least {1} argument(s), but {2} given."_s,
+							{firstToken, formatInt(command->minArgs), formatInt(argCount)}), CLS_Error);
+					}
+					else
+					{
+						consoleWriteLine(myprintf("Command '{0}' requires between {1} and {2} arguments, but {3} given."_s,
+							{firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount)}), CLS_Error);
+					}
+				}
+				else
+				{
+					u32 commandStartTime = SDL_GetTicks();
+					command->function(console, argCount, arguments);
+					u32 commandEndTime = SDL_GetTicks();
+
+					consoleWriteLine(myprintf("Command executed in {0}ms"_s, {formatInt(commandEndTime - commandStartTime)}));
+				}
+			}
+			else
 			{
 				consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands."_s, {firstToken}), CLS_Error);
 			}

@@ -29,6 +29,11 @@ inline String operator"" _s(const char *chars, size_t length)
 	return makeString((char*)chars, (s32)length);
 }
 
+inline String operator"" _h(const char *chars, size_t length)
+{
+	return makeString((char*)chars, (s32)length, true);
+}
+
 void copyString(char *src, s32 srcLength, String *dest);
 void copyString(String src, String *dest);
 

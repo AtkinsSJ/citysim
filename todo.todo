@@ -18,6 +18,11 @@ Notes for searching:
 
 ------------------------------------------------
 
+Fixed-size HashTable
+- Would be useful for:
+	- UITheme style data
+	- Console commands
+
 Multi-threading!
 - Figure out how to get it working at all
 - Loading screen, as a test!
@@ -115,9 +120,6 @@ Multiple buildings per tile?
 	- Tile inspection would have to query all buildings overlapping that tile, and show info about them all perhaps
 	- "Can I build this here?" needs to consider what buildings are on the tile, not just "is it clear?"
 		- I generally want to improve that system, so we can do bridges over water!
-
-_hashed string suffix?
-Console commands in a HashTable
 
 Automatically record, and output to a file, which strings are missing from the current locale. Possibly put this behind a setting which defaults to false, to reduce the performance impact. - See comment in getText()
 
