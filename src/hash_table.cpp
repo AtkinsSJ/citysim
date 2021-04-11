@@ -135,19 +135,44 @@ HashTableEntry<T> *HashTable<T>::findOrAddEntry(String key)
 {
 	ASSERT(isInitialised());
 
-	// Expand if necessary
-	if (count + 1 > (capacity * maxLoadFactor))
-	{
-		ASSERT(!hasFixedMemory);
+	HashTableEntry<T> *result = null;
 
+	if (capacity > 0)
+	{
+		result = findEntry(key);
+
+		if (!result->isOccupied)
+		{
+			// Expand if needed!
+			if (count + 1 > (capacity * maxLoadFactor))
+			{
+				ASSERT(!hasFixedMemory);
+
+				s32 newCapacity = max(
+					ceil_s32((count + 1) / maxLoadFactor),
+					(capacity < 8) ? 8 : capacity * 2
+				);
+				expand(newCapacity);
+
+				// We now have to search again, because the result we got before is now invalid
+				result = findEntry(key);
+			}
+		}
+	}
+	else
+	{
+		// We're at 0 capacity, so expand
 		s32 newCapacity = max(
 			ceil_s32((count + 1) / maxLoadFactor),
 			(capacity < 8) ? 8 : capacity * 2
 		);
 		expand(newCapacity);
+
+		// We now have to search again, because the result we got before is now invalid
+		result = findEntry(key);
 	}
 
-	return findEntry(key);
+	return result;
 }
 
 template<typename T>

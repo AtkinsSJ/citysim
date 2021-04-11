@@ -24,6 +24,8 @@ Fixed-size HashTable
 	✔ Console commands
 - Figure out a better solution for storing the keys
 
+- Make Hashtable.find() return a Maybe<>
+
 Multi-threading!
 - Figure out how to get it working at all
 - Loading screen, as a test!
