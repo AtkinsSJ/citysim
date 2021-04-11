@@ -1,6 +1,6 @@
 #pragma once
 
-template<typename T>
+template <typename T>
 void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 {
 	*table = {};
@@ -13,6 +13,55 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 	}
 
 	initMemoryArena(&table->keyDataArena, KB(4), KB(4));
+}
+
+template<typename T>
+void freeHashTable(HashTable<T> *table)
+{
+	ASSERT(!table->hasFixedMemory);
+
+	if (table->entries != null)
+	{
+		deallocateRaw(table->entries);
+		*table = {};
+	}
+}
+
+template <typename T>
+smm calculateHashTableDataSize(s32 capacity, f32 maxLoadFactor)
+{
+	s32 desiredCapacity = ceil_s32((f32)capacity / maxLoadFactor);
+
+	return desiredCapacity * sizeof(HashTableEntry<T>);
+}
+
+template <typename T>
+void initFixedSizeHashTable(HashTable<T> *table, s32 capacity, f32 maxLoadFactor, Blob entryData)
+{
+	*table = {};
+	table->maxLoadFactor = maxLoadFactor;
+	table->capacity = ceil_s32((f32)capacity / maxLoadFactor);
+	table->hasFixedMemory = true;
+
+	smm requiredSize = calculateHashTableDataSize<T>(capacity, maxLoadFactor);
+	ASSERT(requiredSize >= entryData.size);
+
+	table->entries = (HashTableEntry<T> *)entryData.memory;
+
+	// TODO: Eliminate this somehow
+	initMemoryArena(&table->keyDataArena, KB(4), KB(4));
+}
+
+template <typename T>
+HashTable<T> allocateFixedSizeHashTable(MemoryArena *arena, s32 capacity, f32 maxLoadFactor)
+{
+	HashTable<T> result;
+
+	smm hashTableDataSize = calculateHashTableDataSize<T>(capacity, maxLoadFactor);
+	Blob hashTableData = allocateBlob(arena, hashTableDataSize);
+	initFixedSizeHashTable<T>(&result, capacity, maxLoadFactor, hashTableData);
+
+	return result;
 }
 
 template <typename T>
@@ -45,6 +94,8 @@ HashTableEntry<T> *HashTable<T>::findEntry(String key)
 	// Expand if necessary
 	if (count + 1 > (capacity * maxLoadFactor))
 	{
+		ASSERT(!hasFixedMemory);
+
 		s32 newCapacity = max(
 			ceil_s32((count + 1) / maxLoadFactor),
 			(capacity < 8) ? 8 : capacity * 2
@@ -176,6 +227,8 @@ void HashTable<T>::removeKey(String key)
 template<typename T>
 void HashTable<T>::clear()
 {
+	ASSERT(!hasFixedMemory);
+
 	if (count > 0)
 	{
 		count = 0;
@@ -186,16 +239,6 @@ void HashTable<T>::clear()
 				entries[i] = {};
 			}
 		}
-	}
-}
-
-template<typename T>
-void freeHashTable(HashTable<T> *table)
-{
-	if (table->entries != null)
-	{
-		deallocateRaw(table->entries);
-		*table = {};
 	}
 }
 
@@ -222,6 +265,7 @@ HashTableIterator<T> HashTable<T>::iterate()
 template<typename T>
 void HashTable<T>::expand(s32 newCapacity)
 {
+	ASSERT(!hasFixedMemory);
 	ASSERT(newCapacity > 0); //, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
 	ASSERT(newCapacity > capacity); //, "Attempted to shrink a hash table from {0} to {1}", {formatInt(capacity), formatInt(newCapacity)});
 

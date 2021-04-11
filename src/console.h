@@ -57,7 +57,7 @@ struct Console
 	ChunkedArray<ConsoleOutputLine> outputLines;
 	ScrollbarState scrollbar;
 
-	ChunkedArray<Command> commands;
+	HashTable<Command> commands;
 	ChunkedArray<CommandShortcut> commandShortcuts;
 };
 

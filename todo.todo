@@ -21,7 +21,8 @@ Notes for searching:
 Fixed-size HashTable
 - Would be useful for:
 	- UITheme style data
-	- Console commands
+	✔ Console commands
+- Figure out a better solution for storing the keys
 
 Multi-threading!
 - Figure out how to get it working at all

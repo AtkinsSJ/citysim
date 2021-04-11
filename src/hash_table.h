@@ -1,5 +1,15 @@
 #pragma once
 
+//
+// It's a Hash Table! Keys go in, items go out
+//
+// We have a couple of different ways of creating one:
+// 1) initHashTable() - the HashTable will manage its own memory, and will grow to make room
+// 2) allocateFixedSizeHashTable() - The HashTable's memory is allocated from an Arena, and it won't grow
+// 3) initFixedSizeHashTable() - Like 2, except you manually pass the memory in, so you can get it from
+//    anywhere. Use calculateHashTableDataSize() to do the working out for you.
+//
+
 template<typename T>
 struct HashTableEntry
 {
@@ -20,6 +30,7 @@ struct HashTable
 	s32 count;
 	s32 capacity;
 	f32 maxLoadFactor;
+	bool hasFixedMemory; // Fixed-memory HashTables don't expand in size
 	HashTableEntry<T> *entries;
 
 	// @Size: In a lot of cases, we already store the key in a separate StringTable, so having
@@ -52,6 +63,15 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor=0.75f, s32 initialCapa
 
 template<typename T>
 void freeHashTable(HashTable<T> *table);
+
+template <typename T>
+HashTable<T> allocateFixedSizeHashTable(MemoryArena *arena, s32 capacity, f32 maxLoadFactor = 0.75f);
+
+template <typename T>
+smm calculateHashTableDataSize(s32 capacity, f32 maxLoadFactor);
+
+template <typename T>
+void initFixedSizeHashTable(HashTable<T> *table, s32 capacity, f32 maxLoadFactor, Blob entryData);
 
 template<typename T>
 struct HashTableIterator

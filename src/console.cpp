@@ -21,7 +21,6 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	initChunkedArray(&console->outputLines, debugArena, 1024);
 	initScrollbar(&console->scrollbar, false);
 
-	initChunkedArray(&console->commands, &globalAppState.systemArena, 64);
 	initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
 
 	initCommands(console);

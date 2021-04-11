@@ -275,26 +275,30 @@ ConsoleCommand(zoom)
 
 #undef ConsoleCommand
 
-#define ConsoleCommand(name, ...) Command(#name##_h, &cmd_##name, __VA_ARGS__)
 void initCommands(Console *console)
 {
+	// NB: Increase the count before we reach it - hash tables like lots of extra space!
+	s32 commandCapacity = 128;
+	console->commands = allocateFixedSizeHashTable<Command>(&globalAppState.systemArena, commandCapacity);
+
 	// NB: a max-arguments value of -1 means "no maximum"
-	console->commands.append(ConsoleCommand(help));
-	console->commands.append(ConsoleCommand(debug_tools));
-	console->commands.append(ConsoleCommand(exit));
-	console->commands.append(ConsoleCommand(funds, 1, 1));
-	console->commands.append(ConsoleCommand(generate));
-	console->commands.append(ConsoleCommand(hello, 0, 1));
-	console->commands.append(ConsoleCommand(map_info));
-	console->commands.append(ConsoleCommand(mark_all_dirty));
-	console->commands.append(ConsoleCommand(reload_assets));
-	console->commands.append(ConsoleCommand(reload_settings));
-	console->commands.append(ConsoleCommand(show_layer, 0, 1));
-	console->commands.append(ConsoleCommand(speed, 0, 1));
-	console->commands.append(ConsoleCommand(toast, 1, -1));
-	console->commands.append(ConsoleCommand(window_size, 0, 2));
-	console->commands.append(ConsoleCommand(zoom, 0, 1));
+#define AddCommand(name, ...) console->commands.put(#name##_h, Command(#name##_h, &cmd_##name, __VA_ARGS__))
+	AddCommand(help);
+	AddCommand(debug_tools);
+	AddCommand(exit);
+	AddCommand(funds, 1, 1);
+	AddCommand(generate);
+	AddCommand(hello, 0, 1);
+	AddCommand(map_info);
+	AddCommand(mark_all_dirty);
+	AddCommand(reload_assets);
+	AddCommand(reload_settings);
+	AddCommand(show_layer, 0, 1);
+	AddCommand(speed, 0, 1);
+	AddCommand(toast, 1, -1);
+	AddCommand(window_size, 0, 2);
+	AddCommand(zoom, 0, 1);
+#undef AddCommand
 }
-#undef ConsoleCommand
 
 #pragma warning(pop)
