@@ -1,13 +1,8 @@
 #pragma once
 
-Blob allocateBlob(MemoryArena *arena, smm size)
+inline Blob allocateBlob(MemoryArena *arena, smm size)
 {
-	Blob result = {};
-
-	result.size = size;
-	result.memory = (u8*) allocate(arena, size);
-
-	return result;
+	return makeBlob(size, (u8*) allocate(arena, size));
 }
 
 MemoryBlock *addMemoryBlock(MemoryArena *arena, smm size)

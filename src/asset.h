@@ -190,13 +190,13 @@ struct UITheme
 	// TODO: Remove this!
 	V4 overlayColor;
 
-	Array<struct UIButtonStyle>    buttonStyles;
-	Array<struct UIConsoleStyle>   consoleStyles;
-	Array<struct UILabelStyle>     labelStyles;
-	Array<struct UIPanelStyle>     panelStyles;
-	Array<struct UIScrollbarStyle> scrollbarStyles;
-	Array<struct UITextInputStyle> textInputStyles;
-	Array<struct UIWindowStyle>    windowStyles;
+	HashTable<struct UIButtonStyle>    buttonStyles;
+	HashTable<struct UIConsoleStyle>   consoleStyles;
+	HashTable<struct UILabelStyle>     labelStyles;
+	HashTable<struct UIPanelStyle>     panelStyles;
+	HashTable<struct UIScrollbarStyle> scrollbarStyles;
+	HashTable<struct UITextInputStyle> textInputStyles;
+	HashTable<struct UIWindowStyle>    windowStyles;
 };
 
 enum AssetFlags

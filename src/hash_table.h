@@ -44,6 +44,7 @@ struct HashTable
 
 	bool contains(String key);
 	HashTableEntry<T> *findEntry(String key);
+	HashTableEntry<T> *findOrAddEntry(String key);
 	T *find(String key);
 	T findValue(String key);
 	T *findOrAdd(String key);

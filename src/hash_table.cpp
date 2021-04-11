@@ -5,6 +5,7 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 {
 	*table = {};
 
+	ASSERT(maxLoadFactor < 1.0f);
 	table->maxLoadFactor = maxLoadFactor;
 
 	if (initialCapacity > 0)
@@ -38,6 +39,8 @@ smm calculateHashTableDataSize(s32 capacity, f32 maxLoadFactor)
 template <typename T>
 void initFixedSizeHashTable(HashTable<T> *table, s32 capacity, f32 maxLoadFactor, Blob entryData)
 {
+	ASSERT(maxLoadFactor < 1.0f);
+
 	*table = {};
 	table->maxLoadFactor = maxLoadFactor;
 	table->capacity = ceil_s32((f32)capacity / maxLoadFactor);
@@ -91,18 +94,6 @@ HashTableEntry<T> *HashTable<T>::findEntry(String key)
 {
 	ASSERT(isInitialised());
 
-	// Expand if necessary
-	if (count + 1 > (capacity * maxLoadFactor))
-	{
-		ASSERT(!hasFixedMemory);
-
-		s32 newCapacity = max(
-			ceil_s32((count + 1) / maxLoadFactor),
-			(capacity < 8) ? 8 : capacity * 2
-		);
-		expand(newCapacity);
-	}
-
 	u32 hash = hashString(&key);
 	u32 index = hash % capacity;
 	HashTableEntry<T> *result = null;
@@ -140,6 +131,26 @@ HashTableEntry<T> *HashTable<T>::findEntry(String key)
 }
 
 template<typename T>
+HashTableEntry<T> *HashTable<T>::findOrAddEntry(String key)
+{
+	ASSERT(isInitialised());
+
+	// Expand if necessary
+	if (count + 1 > (capacity * maxLoadFactor))
+	{
+		ASSERT(!hasFixedMemory);
+
+		s32 newCapacity = max(
+			ceil_s32((count + 1) / maxLoadFactor),
+			(capacity < 8) ? 8 : capacity * 2
+		);
+		expand(newCapacity);
+	}
+
+	return findEntry(key);
+}
+
+template<typename T>
 T *HashTable<T>::find(String key)
 {
 	if (entries == null) return null;
@@ -164,7 +175,7 @@ inline T HashTable<T>::findValue(String key)
 template<typename T>
 T *HashTable<T>::findOrAdd(String key)
 {
-	HashTableEntry<T> *entry = findEntry(key);
+	HashTableEntry<T> *entry = findOrAddEntry(key);
 	if (!entry->isOccupied)
 	{
 		count++;
@@ -182,7 +193,7 @@ T *HashTable<T>::findOrAdd(String key)
 template<typename T>
 T *HashTable<T>::put(String key, T value)
 {
-	HashTableEntry<T> *entry = findEntry(key);
+	HashTableEntry<T> *entry = findOrAddEntry(key);
 
 	if (!entry->isOccupied)
 	{

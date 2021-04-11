@@ -15,6 +15,15 @@ struct Blob
 	smm size;
 	u8 *memory;
 };
+inline Blob makeBlob(smm size, u8* memory)
+{
+	Blob result = {};
+
+	result.size = size;
+	result.memory = memory;
+
+	return result;
+}
 
 // NB: MemoryBlock is positioned just before its memory pointer.
 // So when deallocating, we can just free(block)!
