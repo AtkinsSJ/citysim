@@ -340,17 +340,21 @@ void renderDebugData(DebugState *debugState)
 		while (renderBufferData != &debugState->renderBufferDataSentinel)
 		{
 			s32 drawCallCount = renderBufferData->drawCallCount[rfi];
-			s32 itemsDrawn = 0;
-			for (s32 i=0; i<drawCallCount; i++)
+			// Skip empty renderbuffers
+			if (drawCallCount != 0)
 			{
-				itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
+				s32 itemsDrawn = 0;
+				for (s32 i=0; i<drawCallCount; i++)
+				{
+					itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
+				}
+				debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)"_s, {
+					renderBufferData->name,
+					formatInt(itemsDrawn),
+					formatInt(drawCallCount),
+					formatInt(renderBufferData->chunkCount[rfi])
+				}));
 			}
-			debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)"_s, {
-				renderBufferData->name,
-				formatInt(itemsDrawn),
-				formatInt(drawCallCount),
-				formatInt(renderBufferData->chunkCount[rfi])
-			}));
 			renderBufferData = renderBufferData->nextNode;
 		}
 	}

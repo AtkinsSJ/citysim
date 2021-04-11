@@ -18,6 +18,10 @@ Notes for searching:
 
 ------------------------------------------------
 
+Multi-threading!
+- Figure out how to get it working at all
+- Loading screen, as a test!
+
 Building problems:
 - I think we want to split this into two concepts: Access, and Problems
 	- Access is stuff like "has power", "has water"
