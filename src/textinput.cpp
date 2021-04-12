@@ -385,9 +385,16 @@ void moveCaretRightWholeWord(TextInput *textInput)
 	textInput->caretGlyphPos = newCaretPos.glyphPos;
 }
 
-inline bool isEmpty(TextInput *textInput)
+inline bool TextInput::isEmpty()
 {
-	return textInput->byteLength == 0;
+	return byteLength == 0;
+}
+
+String TextInput::getLastWord()
+{
+	TextInputPos startOfWord = findStartOfWordLeft(this);
+	String result = makeString(buffer + startOfWord.bytePos, caretBytePos - startOfWord.bytePos);
+	return result;
 }
 
 TextInputPos findStartOfWordLeft(TextInput *textInput)

@@ -291,29 +291,50 @@ Maybe<bool> asBool(String input)
 	return result;
 }
 
-inline bool isNullTerminated(String s)
+bool String::isNullTerminated()
 {
 	// A 0-length string, by definition, can't have a null terminator
-	bool result = (s.length > 0) && (s.chars[s.length-1] == 0);
+	bool result = (length > 0) && (chars[length-1] == 0);
 	return result;
 }
 
-inline bool isEmpty(String s)
+bool String::isEmpty()
 {
-	return (s.length <= 0);
+	return (length == 0);
 }
 
-bool endsWith(String s, String suffix)
+bool String::startsWith(String prefix)
 {
 	bool result = false;
 
-	if (s.length == suffix.length)
+	if (length == prefix.length)
 	{
-		result = equals(s, suffix);
+		result = equals(*this, prefix);
 	}
-	else if (s.length > suffix.length)
+	else if (length > prefix.length)
 	{
-		result = isMemoryEqual<char>(suffix.chars, (s.chars + s.length - suffix.length), suffix.length);
+		result = isMemoryEqual<char>(prefix.chars, chars, prefix.length);
+	}
+	else
+	{
+		// Otherwise, prefix > s, so it can't end with it!
+		result = false;
+	}
+
+	return result;
+}
+
+bool String::endsWith(String suffix)
+{
+	bool result = false;
+
+	if (length == suffix.length)
+	{
+		result = equals(*this, suffix);
+	}
+	else if (length > suffix.length)
+	{
+		result = isMemoryEqual<char>(suffix.chars, (chars + length - suffix.length), suffix.length);
 	}
 	else
 	{
@@ -322,6 +343,16 @@ bool endsWith(String s, String suffix)
 	}
 
 	return result;
+}
+
+inline bool isNullTerminated(String s)
+{
+	return s.isNullTerminated();
+}
+
+inline bool isEmpty(String s)
+{
+	return s.isEmpty();
 }
 
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex)

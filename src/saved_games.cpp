@@ -268,7 +268,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			bottomBar.addText("Save game name:"_s);
 
 			bottomBar.alignWidgets(ALIGN_RIGHT);
-			bool pressedSave = bottomBar.addButton(getText("button_save"_s), !isEmpty(&catalogue->saveGameName) ? Button_Normal : Button_Disabled);
+			bool pressedSave = bottomBar.addButton(getText("button_save"_s), catalogue->saveGameName.isEmpty() ? Button_Disabled : Button_Normal);
 
 			bottomBar.alignWidgets(ALIGN_EXPAND_H);
 			if (justClickedSavedGame)
@@ -411,7 +411,7 @@ bool saveGame(UIState *uiState, String saveName)
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 
 	String saveFilename = saveName;
-	if (!endsWith(saveFilename, ".sav"_s))
+	if (!saveFilename.endsWith(".sav"_s))
 	{
 		saveFilename = concatenate({saveName, ".sav"_s});
 	}

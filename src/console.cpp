@@ -50,7 +50,7 @@ void updateConsole(Console *console)
 	}
 
 	// Show/hide the console
-	if (keyJustPressed(SDLK_TAB))
+	if (keyJustPressed(SDLK_BACKQUOTE))
 	{
 		if (modifierKeyIsPressed(KeyMod_Ctrl))
 		{
@@ -96,7 +96,7 @@ void updateConsole(Console *console)
 		releaseInput(&console->input);
 	}
 
-	if (console->currentHeight > 0)
+	if (hasCapturedInput(&console->input))
 	{
 		if (updateTextInput(&console->input))
 		{
@@ -106,10 +106,48 @@ void updateConsole(Console *console)
 		}
 		else
 		{
-			// Command history
-			if (console->inputHistory.count > 0)
+			// Tab completion
+			if (keyJustPressed(SDLK_TAB))
 			{
-				if (keyJustPressed(SDLK_UP))
+				String wordToComplete = console->input.getLastWord();
+				if (!wordToComplete.isEmpty())
+				{
+					// Search through our commands to find one that matches
+					// Eventually, we might want to cache an array of commands, but that's a low priority for now
+					String completeCommand = nullString;
+
+					for (auto it = console->commands.iterate();
+						it.hasNext();
+						it.next())
+					{
+						Command *c = it.get();
+						if (c->name.startsWith(wordToComplete))
+						{
+							completeCommand = c->name;
+							break;
+						}
+					}
+
+					if (!completeCommand.isEmpty())
+					{
+						String completion = makeString(completeCommand.chars + wordToComplete.length, completeCommand.length - wordToComplete.length);
+						insert(&console->input, completion);
+					}
+
+					if (completeCommand.isEmpty())
+					{
+						logDebug("Word to complete: `{0}`, but no matches found"_s, {wordToComplete});
+					}
+					else
+					{
+						logDebug("Word to complete: `{0}`, completed to: `{1}`"_s, {wordToComplete, completeCommand});
+					}
+				}
+			}
+			// Command history
+			else if (keyJustPressed(SDLK_UP))
+			{
+				if (console->inputHistory.count > 0)
 				{
 					if (console->inputHistoryCursor == -1)
 					{
@@ -124,7 +162,11 @@ void updateConsole(Console *console)
 					String oldInput = *console->inputHistory.get(console->inputHistoryCursor);
 					append(&console->input, oldInput);
 				}
-				else if (keyJustPressed(SDLK_DOWN))
+			}
+			// Command history
+			else if (keyJustPressed(SDLK_DOWN))
+			{
+				if (console->inputHistory.count > 0)
 				{
 					if (console->inputHistoryCursor == -1)
 					{
@@ -141,7 +183,10 @@ void updateConsole(Console *console)
 				}
 			}
 		}
+	}
 
+	if (console->currentHeight > 0)
+	{
 		UIConsoleStyle *consoleStyle = findStyle<UIConsoleStyle>(&console->style);
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
 		Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
@@ -259,7 +304,7 @@ void consoleHandleCommand(Console *console, String commandInput)
 
 			// Find the command
 			Command *command = null;
-			for (auto it = globalConsole->commands.iterate();
+			for (auto it = console->commands.iterate();
 				it.hasNext();
 				it.next())
 			{

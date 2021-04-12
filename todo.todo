@@ -18,12 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Fixed-size HashTable
-✔ Would be useful for:
-	✔ UITheme style data
-	✔ Console commands
-- Figure out a better solution for storing the keys
-
 Theme default styles
 - I guess as a two-part fallback:
 	1) Search for a style named "default"
@@ -157,6 +151,12 @@ Texture-linking 2.0:
 		- So, here it specifies what we'd call a Building to be placed at that spot, and not a Variant. (Which makes sense because it's effectively multiple building types otherwise!) (Though... we could implement this as a Building per intersection combination, and then variants within it. eg, one power-line-over-road building with variants for straight/diagonal combinations.)
 - Terrain also wants a variants system... probably we can reuse a lot of this for that. So, you define that there is water here and sand there and grass there, and then it picks an appropriate sprite for it.
 	- This implies we want two parts to this: one is pickVariant() which you give the context to and the possible options, and it returns the variant you want; and the other part is code that produces that context information. Because the network system and the terrain system work on different underlying data.
+
+Figure out a better solution for storing the keys in fisxed-size HashTables (and maybe HashTables in general)
+- One idea: Have space in the HashTableEntry to keep the key, if they're always below a given size?
+	-> But, how do we make the size variable from one HashTable to another? Do we even want to do that?
+- Alternative: Require that keys are stored somewhere outside of the HashTable?
+- IDK!
 
 Zones:
 - Desirability per zone type

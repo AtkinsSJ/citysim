@@ -14,9 +14,12 @@ struct TextInput
 	f32 caretFlashCounter;
 
 	String characterBlacklist;
+
+	bool isEmpty();
+	String getLastWord();
 };
 
-TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist=nullString);
+TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist = "`"_s);
 // Returns true if pressed RETURN
 bool updateTextInput(TextInput *textInput);
 String textInputToString(TextInput *textInput);
@@ -38,8 +41,6 @@ void moveCaretLeft(TextInput *textInput, s32 count = 1);
 void moveCaretRight(TextInput *textInput, s32 count = 1);
 void moveCaretLeftWholeWord(TextInput *textInput);
 void moveCaretRightWholeWord(TextInput *textInput);
-
-bool isEmpty(TextInput *textInput);
 
 // Private
 struct TextInputPos

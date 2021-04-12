@@ -1,7 +1,8 @@
 #pragma once
 
 //
-// NB: Declare these inline with the _s suffix!
+// NB: Strings are UTF-8. The length and maxLength are measured in bytes, not in glyphs.
+// Probably one day we should make this consistent with TextInput using both, but eh.
 //
 
 struct String
@@ -14,6 +15,11 @@ struct String
 	u32 hash;
 
 	char &operator[](s32 index);
+
+	bool isNullTerminated();
+	bool startsWith(String prefix);
+	bool endsWith(String suffix);
+	bool isEmpty();
 };
 
 const String nullString = {};
@@ -57,7 +63,6 @@ Maybe<bool> asBool(String input);
 
 bool isNullTerminated(String s);
 bool isEmpty(String s);
-bool endsWith(String s, String suffix);
 
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex=-1);
 bool contains(String input, char c);
