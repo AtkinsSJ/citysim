@@ -246,7 +246,12 @@ void clearRenderBuffer(RenderBuffer *buffer)
 inline RenderBuffer *getTemporaryRenderBuffer(String name)
 {
 	RenderBuffer *result = getItemFromPool(&renderer->renderBufferPool);
-	result->name = pushString(&renderer->renderArena, name); // @Leak
+
+	// We only use this for debugging, and it's a leak, so limit it to debug builds
+	if (globalDebugState != null)
+	{
+		result->name = pushString(&globalDebugState->debugArena, name);
+	}
 
 	return result;
 }
