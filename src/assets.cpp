@@ -464,7 +464,6 @@ void loadAsset(Asset *asset)
 		{
 			loadUITheme(fileData, asset);
 			asset->state = AssetState_Loaded;
-			assets->theme = &asset->theme;
 		} break;
 
 		default:
@@ -703,7 +702,7 @@ void reloadAssets()
 	DEBUG_FUNCTION();
 
 	// Preparation
-	consoleWriteLine("Reloading assets..."_s);
+	logInfo("Reloading assets..."_s);
 	rendererUnloadAssets();
 
 	// Clear managed assets
@@ -733,7 +732,7 @@ void reloadAssets()
 	rendererLoadAssets();
 	refreshBuildingSpriteCache(&buildingCatalogue);
 	refreshTerrainSpriteCache(&terrainCatalogue);
-	consoleWriteLine("Assets reloaded successfully!"_s, CLS_Success);
+	logInfo("Assets reloaded successfully!"_s);
 }
 
 Asset *getAsset(AssetType type, String shortName)

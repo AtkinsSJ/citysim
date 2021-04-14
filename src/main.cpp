@@ -65,7 +65,6 @@ struct Settings     *settings;
 #include "debug.h"
 #include "endian.h"
 #include "textinput.h"
-#include "console.h"
 #define STB_PERLIN_IMPLEMENTATION
 #include "stb_perlin.h"
 #include "platform.h"
@@ -76,6 +75,7 @@ struct Settings     *settings;
 #include "bmfont.h"
 #include "asset.h"
 #include "assets.h"
+#include "console.h"
 #include "line_reader.h"
 #include "render.h"
 #include "ui_drawable.h"
@@ -230,8 +230,6 @@ int main(int argc, char *argv[])
 
 	// INIT
 	u32 initStartTicks = SDL_GetTicks();
-	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
-	enableCustomLogger();
 
 	globalAppState = {};
 	AppState *appState = &globalAppState;
@@ -247,9 +245,11 @@ int main(int argc, char *argv[])
 
 #if BUILD_DEBUG
 	debugInit();
-	initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
-
 	globalDebugState->showDebugData = false;
+	
+	initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+	enableCustomLogger();
 #endif
 
 	initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(null));

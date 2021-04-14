@@ -7,14 +7,21 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 
 	if (equals(typeName, "none"_s))
 	{
-		result = makeSuccess(UIDrawableStyle());
+		UIDrawableStyle drawable = {};
+		drawable.type = Drawable_None;
+
+		result = makeSuccess(drawable);
 	}
 	else if (equals(typeName, "color"_s))
 	{
 		Maybe<V4> color = readColor(reader);
 		if (color.isValid)
 		{
-			result = makeSuccess(UIDrawableStyle(color.value));
+			UIDrawableStyle drawable = {};
+			drawable.type = Drawable_Color;
+			drawable.color = color.value;
+
+			result = makeSuccess(drawable);
 		}
 	}
 	else if (equals(typeName, "gradient"_s))
@@ -26,7 +33,14 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 
 		if (color00.isValid && color01.isValid && color10.isValid && color11.isValid)
 		{
-			result = makeSuccess(UIDrawableStyle(color00.value, color01.value, color10.value, color11.value));
+			UIDrawableStyle drawable = {};
+			drawable.type = Drawable_Gradient;
+			drawable.gradient.color00 = color00.value;
+			drawable.gradient.color01 = color01.value;
+			drawable.gradient.color10 = color10.value;
+			drawable.gradient.color11 = color11.value;
+
+			result = makeSuccess(drawable);
 		}
 	}
 	else if (equals(typeName, "ninepatch"_s))
@@ -35,10 +49,12 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 
 		Maybe<V4> color = readColor(reader, true);
 		
-		result = makeSuccess(UIDrawableStyle(
-			getAssetRef(AssetType_Ninepatch, ninepatchName),
-			color.orDefault(makeWhite())
-		));
+		UIDrawableStyle drawable = {};
+		drawable.type = Drawable_Ninepatch;
+		drawable.color = color.orDefault(makeWhite());
+		drawable.ninepatch = getAssetRef(AssetType_Ninepatch, ninepatchName);
+
+		result = makeSuccess(drawable);
 	}
 	else if (equals(typeName, "sprite"_s))
 	{
@@ -48,7 +64,12 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 
 		Maybe<V4> color = readColor(reader, true);
 
-		result = makeSuccess(UIDrawableStyle(getSpriteRef(spriteName, index), color.orDefault(makeWhite())));
+		UIDrawableStyle drawable = {};
+		drawable.type = Drawable_Sprite;
+		drawable.color = color.orDefault(makeWhite());
+		drawable.sprite = getSpriteRef(spriteName, index);
+
+		result = makeSuccess(drawable);
 	}
 	else
 	{
@@ -77,24 +98,24 @@ void initUIStyleProperties()
 
 	//                                                    btn   cnsl  label  panel  scrll  txtin  windw
 	PROP(background,               PropType_Drawable,    true,  true, false,  true,  true,  true, false);
-	PROP(buttonStyleName,          PropType_Style,      false, false, false,  true, false, false, false);
+	PROP(buttonStyle,       	   PropType_Style,      false, false, false,  true, false, false, false);
 	PROP(caretFlashCycleDuration,  PropType_Float,      false, false, false, false, false,  true, false);
 	PROP(widgetAlignment,          PropType_Alignment,  false, false, false,  true, false, false, false);
 	PROP(contentPadding,           PropType_Int,        false, false, false,  true, false, false, false);
 	PROP(disabledBackground,       PropType_Drawable,    true, false, false, false, false, false, false);
 	PROP(font,                     PropType_Font,        true,  true,  true, false, false,  true, false);
 	PROP(hoverBackground,          PropType_Drawable,    true, false, false, false, false, false, false);
-	PROP(labelStyleName,           PropType_Style,      false, false, false,  true, false, false, false);
+	PROP(labelStyle,        	   PropType_Style,      false, false, false,  true, false, false, false);
 	PROP(margin,                   PropType_Int,        false, false, false,  true, false, false, false);
 	PROP(offsetFromMouse,          PropType_V2I,        false, false, false, false, false, false,  true);
 	PROP(padding,                  PropType_Int,         true,  true, false, false, false,  true, false);
-	PROP(panelStyleName,           PropType_Style,      false, false, false, false, false, false,  true);
+	PROP(panelStyle,        	   PropType_Style,      false, false, false, false, false, false,  true);
 	PROP(pressedBackground,        PropType_Drawable,    true, false, false, false, false, false, false);
-	PROP(scrollbarStyleName,       PropType_Style,      false,  true, false,  true, false, false, false);
+	PROP(scrollbarStyle,    	   PropType_Style,      false,  true, false,  true, false, false, false);
 	PROP(showCaret,                PropType_Bool,       false, false, false, false, false,  true, false);
 	PROP(textAlignment,            PropType_Alignment,   true, false, false, false, false,  true, false);
 	PROP(textColor,                PropType_Color,       true, false,  true, false, false,  true, false);
-	PROP(textInputStyleName,       PropType_Style,      false,  true, false,  true, false, false, false);
+	PROP(textInputStyle,    	   PropType_Style,      false,  true, false,  true, false, false, false);
 	PROP(thumb,                    PropType_Drawable,   false, false, false, false,  true, false, false);
 	PROP(titleBarButtonHoverColor, PropType_Color,      false, false, false, false, false, false,  true);
 	PROP(titleBarColor,            PropType_Color,      false, false, false, false, false, false,  true);
@@ -238,11 +259,11 @@ void loadUITheme(Blob data, Asset *asset)
 			if (equals(firstWord, "extends"_s))
 			{
 				// Clones an existing style
-				String parentStyleName = readToken(&reader);
-				Maybe<UIStylePack *> parentPack = styles.find(parentStyleName);
+				String parentStyle = readToken(&reader);
+				Maybe<UIStylePack *> parentPack = styles.find(parentStyle);
 				if (!parentPack.isValid)
 				{
-					error(&reader, "Unable to find style named '{0}'"_s, {parentStyleName});
+					error(&reader, "Unable to find style named '{0}'"_s, {parentStyle});
 				}
 				else
 				{
@@ -451,8 +472,8 @@ void loadUITheme(Blob data, Asset *asset)
 						console->background = style->background;
 						console->padding = style->padding;
 
-						console->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyleName);
-						console->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyleName);
+						console->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle);
+						console->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
 					} break;
 
 					case UIStyle_Label: {
@@ -478,10 +499,10 @@ void loadUITheme(Blob data, Asset *asset)
 						panel->widgetAlignment = style->widgetAlignment;
 						panel->background = style->background;
 
-						panel->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyleName);
-						panel->labelStyle = getAssetRef(AssetType_LabelStyle, style->labelStyleName);
-						panel->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyleName);
-						panel->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyleName);
+						panel->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyle);
+						panel->labelStyle = getAssetRef(AssetType_LabelStyle, style->labelStyle);
+						panel->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle);
+						panel->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
 					} break;
 
 					case UIStyle_Scrollbar: {
@@ -530,49 +551,12 @@ void loadUITheme(Blob data, Asset *asset)
 
 						window->offsetFromMouse = style->offsetFromMouse;
 
-						window->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyleName);
+						window->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle);
 					} break;
 				}
 			}
 		}
 	}
-
-
-	// // First, figure out how much space to allocate
-	// f32 loadFactor = 0.75f;
-	// smm styleDataSize[UIStyleTypeCount] = {};
-	// styleDataSize[UIStyle_Button] 		= calculateHashTableDataSize<UIButtonStyle>(styleCount[UIStyle_Button], loadFactor);
-	// styleDataSize[UIStyle_Console] 		= calculateHashTableDataSize<UIConsoleStyle>(styleCount[UIStyle_Console], loadFactor);
-	// styleDataSize[UIStyle_Label] 		= calculateHashTableDataSize<UILabelStyle>(styleCount[UIStyle_Label], loadFactor);
-	// styleDataSize[UIStyle_Panel] 		= calculateHashTableDataSize<UIPanelStyle>(styleCount[UIStyle_Panel], loadFactor);
-	// styleDataSize[UIStyle_Scrollbar] 	= calculateHashTableDataSize<UIScrollbarStyle>(styleCount[UIStyle_Scrollbar], loadFactor);
-	// styleDataSize[UIStyle_TextInput] 	= calculateHashTableDataSize<UITextInputStyle>(styleCount[UIStyle_TextInput], loadFactor);
-	// styleDataSize[UIStyle_Window] 		= calculateHashTableDataSize<UIWindowStyle>(styleCount[UIStyle_Window], loadFactor);
-
-	// smm totalSize = 0;
-	// for (s32 i=0; i < UIStyleTypeCount; i++)
-	// {
-	// 	totalSize += styleDataSize[i];
-	// }
-
-	// asset->data = assetsAllocate(assets, totalSize);
-	// u8* pos = asset->data.memory;
-	// Blob styleData[UIStyleTypeCount] = {};
-	// for (s32 i=0; i < UIStyleTypeCount; i++)
-	// {
-	// 	styleData[i] = makeBlob(styleDataSize[i], pos);
-	// 	pos += styleDataSize[i];
-	// }
-
-	// UITheme *theme = &asset->theme;
-
-	// initFixedSizeHashTable<UIButtonStyle>(&theme->buttonStyles, styleCount[UIStyle_Button], loadFactor, styleData[UIStyle_Button]);
-	// initFixedSizeHashTable<UIConsoleStyle>(&theme->consoleStyles, styleCount[UIStyle_Console], loadFactor, styleData[UIStyle_Console]);
-	// initFixedSizeHashTable<UILabelStyle>(&theme->labelStyles, styleCount[UIStyle_Label], loadFactor, styleData[UIStyle_Label]);
-	// initFixedSizeHashTable<UIPanelStyle>(&theme->panelStyles, styleCount[UIStyle_Panel], loadFactor, styleData[UIStyle_Panel]);
-	// initFixedSizeHashTable<UIScrollbarStyle>(&theme->scrollbarStyles, styleCount[UIStyle_Scrollbar], loadFactor, styleData[UIStyle_Scrollbar]);
-	// initFixedSizeHashTable<UITextInputStyle>(&theme->textInputStyles, styleCount[UIStyle_TextInput], loadFactor, styleData[UIStyle_TextInput]);
-	// initFixedSizeHashTable<UIWindowStyle>(&theme->windowStyles, styleCount[UIStyle_Window], loadFactor, styleData[UIStyle_Window]);
 }
 
 template <typename T>
@@ -605,64 +589,85 @@ inline T* findStyle(AssetRef *ref)
 
 template <> UIButtonStyle *findStyle<UIButtonStyle>(String styleName)
 {
-	Maybe<UIButtonStyle *> result = assets->theme->buttonStyles.find(styleName);
-	if (!result.isValid)
+	UIButtonStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_ButtonStyle, styleName);
+	if (asset != null)
 	{
-		result = assets->theme->buttonStyles.find("default"_h);
+		result = (UIButtonStyle *)&asset->_localData;
 	}
-	return result.orDefault(null);
+
+	return result;
 }
 template <> UIConsoleStyle *findStyle<UIConsoleStyle>(String styleName)
 {
-	Maybe<UIConsoleStyle *> result = assets->theme->consoleStyles.find(styleName);
-	if (!result.isValid)
+	UIConsoleStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_ConsoleStyle, styleName);
+	if (asset != null)
 	{
-		result = assets->theme->consoleStyles.find("default"_h);
+		result = (UIConsoleStyle *)&asset->_localData;
 	}
-	return result.orDefault(null);
+
+	return result;
 }
 template <> UILabelStyle *findStyle<UILabelStyle>(String styleName)
 {
-	Maybe<UILabelStyle *> result = assets->theme->labelStyles.find(styleName);
-	if (!result.isValid)
+	UILabelStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_LabelStyle, styleName);
+	if (asset != null)
 	{
-		result = assets->theme->labelStyles.find("default"_h);
+		result = (UILabelStyle *)&asset->_localData;
 	}
-	return result.orDefault(null);
+
+	return result;
 }
 template <> UIPanelStyle *findStyle<UIPanelStyle>(String styleName)
 {
-	Maybe<UIPanelStyle *> result = assets->theme->panelStyles.find(styleName);
-	if (!result.isValid)
+	UIPanelStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_PanelStyle, styleName);
+	if (asset != null)
 	{
-		result = assets->theme->panelStyles.find("default"_h);
+		result = (UIPanelStyle *)&asset->_localData;
 	}
-	return result.orDefault(null);
+
+	return result;
 }
 template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName)
 {
-	Maybe<UIScrollbarStyle *> result = assets->theme->scrollbarStyles.find(styleName);
-	if (!result.isValid)
+	UIScrollbarStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_ScrollbarStyle, styleName);
+	if (asset != null)
 	{
-		result = assets->theme->scrollbarStyles.find("default"_h);
+		result = (UIScrollbarStyle *)&asset->_localData;
 	}
-	return result.orDefault(null);
+
+	return result;
 }
 template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName)
 {
-	Maybe<UITextInputStyle *> result = assets->theme->textInputStyles.find(styleName);
-	if (!result.isValid)
+	UITextInputStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_TextInputStyle, styleName);
+	if (asset != null)
 	{
-		result = assets->theme->textInputStyles.find("default"_h);
+		result = (UITextInputStyle *)&asset->_localData;
 	}
-	return result.orDefault(null);
+
+	return result;
 }
 template <> UIWindowStyle *findStyle<UIWindowStyle>(String styleName)
 {
-	Maybe<UIWindowStyle *> result = assets->theme->windowStyles.find(styleName);
-	if (!result.isValid)
+	UIWindowStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_WindowStyle, styleName);
+	if (asset != null)
 	{
-		result = assets->theme->windowStyles.find("default"_h);
+		result = (UIWindowStyle *)&asset->_localData;
 	}
-	return result.orDefault(null);
+
+	return result;
 }

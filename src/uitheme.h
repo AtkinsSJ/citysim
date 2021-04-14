@@ -11,37 +11,6 @@ enum UIDrawableType
 
 struct UIDrawableStyle
 {
-	UIDrawableStyle(UIDrawableType type)
-		: type(type) {}
-
-	UIDrawableStyle() : UIDrawableStyle(Drawable_None) 
-	{}
-
-	UIDrawableStyle(V4 color) : UIDrawableStyle(Drawable_Color)
-	{
-		this->color = color;
-	}
-
-	UIDrawableStyle(V4 color00, V4 color01, V4 color10, V4 color11) : UIDrawableStyle(Drawable_Gradient)
-	{
-		this->gradient.color00 = color00;
-		this->gradient.color01 = color01;
-		this->gradient.color10 = color10;
-		this->gradient.color11 = color11;
-	}
-
-	UIDrawableStyle(SpriteRef sprite, V4 color) : UIDrawableStyle(Drawable_Sprite)
-	{
-		this->sprite = sprite;
-		this->color = color;
-	}
-
-	UIDrawableStyle(AssetRef ninepatchRef, V4 color) : UIDrawableStyle(Drawable_Ninepatch)
-	{
-		this->ninepatch = ninepatchRef;
-		this->color = color;
-	}
-
 	UIDrawableType type;
 	V4 color;
 
@@ -77,6 +46,17 @@ struct UIButtonStyle
 	s32 padding;
 };
 
+enum ConsoleLineStyleID
+{
+	CLS_Default,
+	CLS_InputEcho,
+	CLS_Success,
+	CLS_Warning,
+	CLS_Error,
+
+	CLS_COUNT
+};
+
 struct UIConsoleStyle
 {
 	String name;
@@ -109,8 +89,8 @@ struct UIPanelStyle
 	
 	UIDrawableStyle background;
 
-	AssetRef buttonStyle   ;
-	AssetRef labelStyle    ;
+	AssetRef buttonStyle;
+	AssetRef labelStyle;
 	AssetRef scrollbarStyle;
 	AssetRef textInputStyle;
 };
@@ -183,24 +163,24 @@ struct UIStyle
 	UIDrawableStyle pressedBackground;
 
 	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
-	String buttonStyleName;
+	String buttonStyle;
 	f32 caretFlashCycleDuration;
 	u32 widgetAlignment;
 	s32 contentPadding;
 	AssetRef font;
 	UIDrawableStyle thumb;
-	String labelStyleName;
+	String labelStyle;
 	s32 margin;
 	V2I offsetFromMouse;
 	V4 overlayColor;
 	V4 outputTextColor[CLS_COUNT];
 	s32 padding;
-	String panelStyleName;
-	String scrollbarStyleName;
+	String panelStyle;
+	String scrollbarStyle;
 	bool showCaret;
 	u32 textAlignment;
 	V4 textColor;
-	String textInputStyleName;
+	String textInputStyle;
 	V4 titleBarButtonHoverColor;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -219,17 +199,6 @@ struct UIProperty
 
 HashTable<UIProperty> uiStyleProperties;
 void initUIStyleProperties();
-
-struct UITheme
-{
-	HashTable<struct UIButtonStyle>    buttonStyles;
-	HashTable<struct UIConsoleStyle>   consoleStyles;
-	HashTable<struct UILabelStyle>     labelStyles;
-	HashTable<struct UIPanelStyle>     panelStyles;
-	HashTable<struct UIScrollbarStyle> scrollbarStyles;
-	HashTable<struct UITextInputStyle> textInputStyles;
-	HashTable<struct UIWindowStyle>    windowStyles;
-};
 
 void loadUITheme(Blob data, struct Asset *asset);
 

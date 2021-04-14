@@ -267,8 +267,6 @@ struct Asset
 
 		Texture texture;
 
-		UITheme theme;
-
 		UIButtonStyle    buttonStyle;
 		UIConsoleStyle   consoleStyle;
 		UILabelStyle     labelStyle;

@@ -6,7 +6,8 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 {
 	Console *console = &theConsole;
 
-	console->style = getAssetRef(AssetType_ConsoleStyle, "default"_s);
+	// NB: Console->style is initialised later, in updateConsole(), because initConsole() happens
+	// before the asset system is initialised!
 
 	console->currentHeight = 0;
 
@@ -34,6 +35,12 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 void updateConsole(Console *console)
 {
 	bool scrollToBottom = false;
+
+	// Late-init the console style
+	if (console->style.type != AssetType_ConsoleStyle)
+	{
+		console->style = getAssetRef(AssetType_ConsoleStyle, "default"_s);
+	}
 
 	// Keyboard shortcuts for commands
 	for (auto it = console->commandShortcuts.iterate();

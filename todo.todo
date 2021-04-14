@@ -18,10 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Make styles be assets?
-- I was starting to flesh out the UITheme code to add defaults and logging of missing styles, and realised this is just a duplicate of stuff the asset system already does!
-- We'd then demote UITheme to being a meta-asset, like the other data files that just define child assets.
-
 Multi-threading!
 - Figure out how to get it working at all
 - Loading screen, as a test!

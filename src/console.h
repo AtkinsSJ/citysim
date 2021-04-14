@@ -1,15 +1,6 @@
 #pragma once
 
-enum ConsoleLineStyleID
-{
-	CLS_Default,
-	CLS_InputEcho,
-	CLS_Success,
-	CLS_Warning,
-	CLS_Error,
-
-	CLS_COUNT
-};
+// NB: ConsoleLineStyleID is in uitheme.h
 
 struct ConsoleOutputLine
 {
