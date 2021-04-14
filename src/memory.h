@@ -44,6 +44,8 @@ struct MemoryArenaResetState
 
 struct MemoryArena
 {
+	String name;
+
 	MemoryBlock *currentBlock;
 
 	smm minimumBlockSize;
@@ -52,12 +54,12 @@ struct MemoryArena
 };
 
 // Creates an arena, and pushes a struct on it which contains the arena.
-#define bootstrapArena(containerType, containerName, arenaVarName)  \
+#define bootstrapArena(containerType, containerName, arenaVarName)                    \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
-	bool bootstrapSucceeded = initMemoryArena(&bootstrap, sizeof(containerType)); \
-	ASSERT(bootstrapSucceeded); \
-	containerName = allocateStruct<containerType>(&bootstrap);                            \
+	bool bootstrapSucceeded = initMemoryArena(&bootstrap, #arenaVarName##_s, sizeof(containerType));     \
+	ASSERT(bootstrapSucceeded);                                                       \
+	containerName = allocateStruct<containerType>(&bootstrap);                        \
 	containerName->arenaVarName = bootstrap;                                          \
 	markResetPosition(&containerName->arenaVarName);                                  \
 }
@@ -93,7 +95,7 @@ T *bootstrapMemoryArena(smm offsetOfArenaMember)
 }
 */
 
-bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize=MB(1));
+bool initMemoryArena(MemoryArena *arena, String name, smm size, smm minimumBlockSize=MB(1));
 void markResetPosition(MemoryArena *arena);
 void resetMemoryArena(MemoryArena *arena);
 void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState);

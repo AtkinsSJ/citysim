@@ -5,7 +5,7 @@ void initSavedGamesCatalogue()
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	*catalogue = {};
 
-	initMemoryArena(&catalogue->savedGamesArena, MB(1));
+	initMemoryArena(&catalogue->savedGamesArena, "SavedGames"_s, MB(1));
 
 	initStringTable(&catalogue->stringsTable);
 

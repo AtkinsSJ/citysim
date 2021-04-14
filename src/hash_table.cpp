@@ -13,7 +13,7 @@ void initHashTable(HashTable<T> *table, f32 maxLoadFactor, s32 initialCapacity)
 		table->expand(ceil_s32(initialCapacity / maxLoadFactor));
 	}
 
-	initMemoryArena(&table->keyDataArena, KB(4), KB(4));
+	initMemoryArena(&table->keyDataArena, "HashTable"_s, KB(4), KB(4));
 }
 
 template<typename T>
@@ -52,7 +52,7 @@ void initFixedSizeHashTable(HashTable<T> *table, s32 capacity, f32 maxLoadFactor
 	table->entries = (HashTableEntry<T> *)entryData.memory;
 
 	// TODO: Eliminate this somehow
-	initMemoryArena(&table->keyDataArena, KB(4), KB(4));
+	initMemoryArena(&table->keyDataArena, "FixedSizeHashTable"_s, KB(4), KB(4));
 }
 
 template <typename T>

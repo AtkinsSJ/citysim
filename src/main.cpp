@@ -41,8 +41,8 @@ struct Settings     *settings;
 #include "maths.h"
 #include "vector.h"
 #include "rectangle.h"
-#include "memory.h"
 #include "string.h"
+#include "memory.h"
 #include "random.h"
 #include "pool.h"
 #include "chunked_array.h"
@@ -237,10 +237,10 @@ int main(int argc, char *argv[])
 	globalAppState.speedMultiplier = 1.0f;
 	globalAppState.deltaTime = globalAppState.rawDeltaTime * globalAppState.speedMultiplier;
 
-	initMemoryArena(&globalAppState.systemArena, MB(1));
+	initMemoryArena(&globalAppState.systemArena, "System"_s, MB(1));
 
 	MemoryArena globalFrameTempArena;
-	initMemoryArena(&globalFrameTempArena, MB(4));
+	initMemoryArena(&globalFrameTempArena, "Temp"_s, MB(4));
 	tempArena = &globalFrameTempArena;
 
 #if BUILD_DEBUG

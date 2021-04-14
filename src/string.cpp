@@ -115,7 +115,6 @@ inline bool stringIsValid(String s)
 
 u32 hashString(String *s)
 {
-	// DEBUG_FUNCTION(); // Can't, because we use String hashes in the debug system!
 
 	u32 result = s->hash;
 
@@ -179,8 +178,6 @@ inline String trim(String input)
 
 Maybe<s64> asInt(String input)
 {
-	DEBUG_FUNCTION();
-
 	Maybe<s64> result = makeFailure<s64>();
 	
 	bool succeeded = input.length > 0;
@@ -271,7 +268,6 @@ Maybe<f64> asFloat(String input)
 
 Maybe<bool> asBool(String input)
 {
-	DEBUG_FUNCTION();
 
 	Maybe<bool> result;
 
@@ -420,7 +416,6 @@ bool contains(String input, char c)
 
 s32 countTokens(String input)
 {
-	DEBUG_FUNCTION();
 	
 	s32 result = 0;
 
@@ -452,7 +447,6 @@ s32 countTokens(String input)
 // Otherwise, we stop at the first whitespace character, determined by isWhitespace()
 String nextToken(String input, String *remainder, char splitChar)
 {
-	DEBUG_FUNCTION();
 	
 	String firstWord = input;
 	firstWord.length = 0;
@@ -502,7 +496,6 @@ String nextToken(String input, String *remainder, char splitChar)
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String *leftResult, String *rightResult)
 {
-	DEBUG_FUNCTION();
 	
 	bool foundDivider = false;
 
@@ -571,8 +564,6 @@ String concatenate(std::initializer_list<String> strings, String between)
  */
 String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate)
 {
-	DEBUG_FUNCTION();
-
 	// Null bytes are a pain.
 	// If we have a terminating one, just trim it off for now (and optionally re-attach it
 	// based on the zeroTerminate param.
@@ -648,8 +639,6 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 const char* const intBaseChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 String formatInt(u64 value, u8 base, s32 zeroPadWidth)
 {
-	DEBUG_FUNCTION();
-	
 	ASSERT((base > 1) && (base <= 36)); //formatInt() only handles base 2 to base 36.
 	s32 arraySize = max(64, zeroPadWidth);
 	char *temp = allocateMultiple<char>(tempArena, arraySize); // Worst case is base 1, which is 64 characters!
@@ -675,8 +664,6 @@ String formatInt(u64 value, u8 base, s32 zeroPadWidth)
 
 String formatInt(s64 value, u8 base, s32 zeroPadWidth)
 {
-	DEBUG_FUNCTION();
-	
 	ASSERT((base > 1) && (base <= 36)); //formatInt() only handles base 2 to base 36.
 	s32 arraySize = max(65, zeroPadWidth+1);
 	char *temp = allocateMultiple<char>(tempArena, arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
@@ -716,8 +703,6 @@ String formatInt(s64 value, u8 base, s32 zeroPadWidth)
 // on to myprintf() again! Like, that's super dumb.
 String formatFloat(f64 value, s32 decimalPlaces)
 {
-	DEBUG_FUNCTION();
-	
 	String formatString = myprintf("%.{0}f"_s, {formatInt(decimalPlaces)}, true);
 
 	s32 length = 100; // TODO: is 100 enough?
@@ -729,8 +714,6 @@ String formatFloat(f64 value, s32 decimalPlaces)
 
 String formatString(String value, s32 length, bool alignLeft, char paddingChar)
 {
-	DEBUG_FUNCTION();
-	
 	if ((value.length == length) || (length == -1)) return value;
 
 	if (length < value.length)

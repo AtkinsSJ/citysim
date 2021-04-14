@@ -27,7 +27,7 @@ const String nullString = {};
 String makeString(char *chars, s32 length, bool hash=false);
 String makeString(char *chars, bool hash=false);
 String makeString(const char *chars, bool hash=false);
-String stringFromBlob(Blob blob, bool hash=false);
+String stringFromBlob(struct Blob blob, bool hash=false);
 String repeatChar(char c, s32 length);
 
 inline String operator"" _s(const char *chars, size_t length)

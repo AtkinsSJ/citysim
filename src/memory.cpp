@@ -24,6 +24,11 @@ MemoryBlock *addMemoryBlock(MemoryArena *arena, smm size)
 
 void *allocate(MemoryArena *arena, smm size)
 {
+	if (size > arena->minimumBlockSize)
+	{
+		logWarn("Large allocation in {0} arena: {1} bytes when block size is {2} bytes"_s, {arena->name, formatInt(size), formatInt(arena->minimumBlockSize)});
+	}
+
 	if ((arena->currentBlock == 0)
 		|| (arena->currentBlock->used + size > arena->currentBlock->size))
 	{
@@ -150,7 +155,7 @@ void markResetPosition(MemoryArena *arena)
 	arena->resetState.used = arena->currentBlock ? arena->currentBlock->used : 0;
 }
 
-bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize)
+bool initMemoryArena(MemoryArena *arena, String name, smm size, smm minimumBlockSize)
 {
 	bool succeeded = true;
 
@@ -162,6 +167,8 @@ bool initMemoryArena(MemoryArena *arena, smm size, smm minimumBlockSize)
 		arena->currentBlock = addMemoryBlock(arena, max(size, minimumBlockSize));
 		succeeded = (arena->currentBlock->memory != 0);
 	}
+
+	arena->name = pushString(arena, name);
 
 	markResetPosition(arena);
 	
