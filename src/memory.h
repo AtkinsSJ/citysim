@@ -54,10 +54,11 @@ struct MemoryArena
 };
 
 // Creates an arena, and pushes a struct on it which contains the arena.
-#define bootstrapArena(containerType, containerName, arenaVarName)                    \
+// Optional final param is the block size
+#define bootstrapArena(containerType, containerName, arenaVarName, ...)               \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
-	bool bootstrapSucceeded = initMemoryArena(&bootstrap, #arenaVarName##_s, sizeof(containerType));     \
+	bool bootstrapSucceeded = initMemoryArena(&bootstrap, #arenaVarName##_s, sizeof(containerType), __VA_ARGS__);     \
 	ASSERT(bootstrapSucceeded);                                                       \
 	containerName = allocateStruct<containerType>(&bootstrap);                        \
 	containerName->arenaVarName = bootstrap;                                          \
