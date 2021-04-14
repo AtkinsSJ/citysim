@@ -27,8 +27,6 @@ enum RenderItemType
 {
 	RenderItemType_NextMemoryChunk,
 
-	RenderItemType_SectionMarker,
-
 	RenderItemType_SetCamera,
 	RenderItemType_SetPalette,
 	RenderItemType_SetShader,
@@ -42,12 +40,6 @@ enum RenderItemType
 	RenderItemType_DrawSingleRect,
 	RenderItemType_DrawRects,
 	RenderItemType_DrawRings,
-};
-
-struct RenderItem_SectionMarker
-{
-	String name;
-	String renderProfileName; // Used for tracking time as a DEBUG_BLOCK
 };
 
 struct RenderItem_SetCamera
@@ -297,8 +289,6 @@ template<typename T>
 T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos);
 template<typename T>
 T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 count);
-
-void addSectionMarker(RenderBuffer *buffer, String name);
 
 void addSetCamera(RenderBuffer *buffer, Camera *camera);
 void addSetShader(RenderBuffer *buffer, s8 shaderID);

@@ -316,10 +316,6 @@ u8 *appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size
 		{
 			buffer->firstChunk = newChunk;
 			buffer->currentChunk = newChunk;
-			if (!isEmpty(buffer->name))
-			{
-				addSectionMarker(buffer, buffer->name);
-			}
 		}
 		else
 		{
@@ -369,16 +365,6 @@ inline T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 cou
 	T *item = (T *)(renderBufferChunk->memory + *pos);
 	*pos += sizeof(T) * count;
 	return item;
-}
-
-void addSectionMarker(RenderBuffer *buffer, String name)
-{
-	ASSERT(!isEmpty(name));
-
-	RenderItem_SectionMarker *bufferStart = appendRenderItem<RenderItem_SectionMarker>(buffer, RenderItemType_SectionMarker);
-	bufferStart->name = name;
-	bufferStart->renderProfileName = pushString(&renderer->renderArena, myprintf("render({0})"_s, {name}));
-	hashString(&bufferStart->renderProfileName);
 }
 
 void addSetCamera(RenderBuffer *buffer, Camera *camera)

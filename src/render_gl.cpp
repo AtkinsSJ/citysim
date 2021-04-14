@@ -457,6 +457,8 @@ void GL_render(Array<RenderBuffer *> buffers)
 		RenderBuffer *buffer = buffers[bufferIndex];
 		RenderBufferChunk *renderBufferChunk = buffer->firstChunk;
 
+		DEBUG_BEGIN_RENDER_BUFFER(buffer->name, buffer->name);
+
 		smm pos = 0;
 		while ((renderBufferChunk != null) && (pos < renderBufferChunk->used))
 		{
@@ -471,13 +473,6 @@ void GL_render(Array<RenderBuffer *> buffers)
 					DEBUG_TRACK_RENDER_BUFFER_CHUNK();
 					renderBufferChunk = renderBufferChunk->nextChunk;
 					pos = 0;
-				} break;
-
-				case RenderItemType_SectionMarker:
-				{
-					DEBUG_BLOCK_T("render: RenderItemType_SectionMarker", DCDT_Renderer);
-					RenderItem_SectionMarker *header = readRenderItem<RenderItem_SectionMarker>(renderBufferChunk, &pos);
-					DEBUG_BEGIN_RENDER_BUFFER(header->name, header->renderProfileName);
 				} break;
 
 				case RenderItemType_SetCamera:
@@ -766,11 +761,11 @@ void GL_render(Array<RenderBuffer *> buffers)
 		{
 			flushVertices(gl);
 		}
+		
+		DEBUG_END_RENDER_BUFFER();
 	}
 
 	ASSERT(isEmpty(&gl->scissorStack));
-
-	DEBUG_END_RENDER_BUFFER();
 }
 
 inline void uploadTexture2D(GLenum pixelFormat, s32 width, s32 height, void *pixelData)
