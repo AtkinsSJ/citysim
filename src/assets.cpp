@@ -28,7 +28,9 @@ void initAssets()
 	assets->directoryNameToType.put(intern(&assets->assetStrings, "textures"_s),  AssetType_Texture);
 	assets->directoryNameToType.put(intern(&assets->assetStrings, "locale"_s),    AssetType_Texts);
 
-	initChunkedArray(&assets->allAssets, &assets->assetArena, 2048);
+	// NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
+	// (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
+	initChunkedArray(&assets->allAssets, &assets->assetArena, 1024);
 	assets->assetMemoryAllocated = 0;
 	assets->maxAssetMemoryAllocated = 0;
 

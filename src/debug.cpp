@@ -297,7 +297,7 @@ void renderDebugData(DebugState *debugState)
 			formatInt(usedAssetMemory),
 			formatInt(totalAssetMemory),
 
-			formatInt(assetData->arenaTotalSize[rfi]),
+			formatInt(assetData->arenaUsedSize[rfi]),
 			formatInt(assetData->assetMemoryAllocated[rfi]),
 			formatInt(assetData->assetsByNameSize[rfi]),
 			formatInt(sizeof(Asset))
