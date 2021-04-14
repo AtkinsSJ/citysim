@@ -93,6 +93,8 @@ String getText(String name, std::initializer_list<String> args);
 //
 
 Blob assetsAllocate(Assets *theAssets, smm size);
+void allocateChildren(Asset *asset, s32 childCount);
+void addChildAsset(Asset *parent, Asset *child);
 
 void loadCursorDefs(Blob data, Asset *asset);
 void loadPaletteDefs(Blob data, Asset *asset);

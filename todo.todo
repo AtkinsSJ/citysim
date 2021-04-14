@@ -18,6 +18,8 @@ Notes for searching:
 
 ------------------------------------------------
 
+BUG: Memory leak in the render arena! Don't know what yet. 54 bytes per frame.
+
 Make styles be assets?
 - I was starting to flesh out the UITheme code to add defaults and logging of missing styles, and realised this is just a duplicate of stuff the asset system already does!
 - We'd then demote UITheme to being a meta-asset, like the other data files that just define child assets.

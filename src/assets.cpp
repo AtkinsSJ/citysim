@@ -143,6 +143,17 @@ Blob assetsAllocate(Assets *theAssets, smm size)
 	return result;
 }
 
+void allocateChildren(Asset *asset, s32 childCount)
+{
+	asset->data = assetsAllocate(assets, childCount * sizeof(AssetID));
+	asset->children = makeArray(childCount, (AssetID *) asset->data.memory);
+}
+
+void addChildAsset(Asset *parent, Asset *child)
+{
+	parent->children.append(makeAssetID(child->type, child->shortName));
+}
+
 Asset *addAsset(AssetType type, String shortName, u32 flags)
 {
 	String internedShortName = intern(&assets->assetStrings, shortName);
@@ -479,17 +490,6 @@ void unloadAsset(Asset *asset)
 			asset->buildingDefs.buildingIDs = makeEmptyArray<String>();
 		} break;
 
-		case AssetType_CursorDefs:
-		{
-			// Remove all of our cursor assets
-			for (s32 cursorIndex = 0; cursorIndex < asset->cursorDefs.cursorNames.count; cursorIndex++)
-			{
-				String cursorName = asset->cursorDefs.cursorNames[cursorIndex];
-				removeAsset(AssetType_Cursor, cursorName);
-			}
-			asset->cursorDefs.cursorNames = makeEmptyArray<String>();
-		} break;
-
 		case AssetType_Cursor:
 		{
 			if (asset->cursor.sdlCursor != null)
@@ -497,23 +497,6 @@ void unloadAsset(Asset *asset)
 				SDL_FreeCursor(asset->cursor.sdlCursor);
 				asset->cursor.sdlCursor = null;
 			}
-		} break;
-
-		case AssetType_PaletteDefs:
-		{
-			// Remove all of our palette assets
-			for (s32 paletteIndex = 0; paletteIndex < asset->paletteDefs.paletteNames.count; paletteIndex++)
-			{
-				String paletteName = asset->paletteDefs.paletteNames[paletteIndex];
-				removeAsset(AssetType_Palette, paletteName);
-			}
-			asset->paletteDefs.paletteNames = makeEmptyArray<String>();
-		} break;
-
-		case AssetType_SpriteDefs:
-		{
-			removeAssets(asset->spriteDefs.sprites);
-			asset->spriteDefs.sprites = makeEmptyArray<AssetID>();
 		} break;
 
 		case AssetType_TerrainDefs:
@@ -544,6 +527,12 @@ void unloadAsset(Asset *asset)
 				asset->texture.surface = null;
 			}
 		} break;
+	}
+
+	if (!asset->children.isEmpty())
+	{
+		removeAssets(asset->children);
+		asset->children = makeEmptyArray<AssetID>();
 	}
 
 	if (asset->data.memory != null)
@@ -1021,8 +1010,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 		cursorCount++;
 	}
 
-	asset->data = assetsAllocate(assets, sizeof(String) * cursorCount);
-	asset->cursorDefs.cursorNames = makeArray(cursorCount, (String *) asset->data.memory);
+	allocateChildren(asset, cursorCount);
 
 	restart(&reader);
 
@@ -1030,7 +1018,6 @@ void loadCursorDefs(Blob data, Asset *asset)
 	{
 		String name     = intern(&assets->assetStrings, readToken(&reader));
 		String filename = readToken(&reader);
-		asset->cursorDefs.cursorNames.append(name);
 
 		Maybe<s32> hotX = readInt<s32>(&reader);
 		Maybe<s32> hotY = readInt<s32>(&reader);
@@ -1041,6 +1028,7 @@ void loadCursorDefs(Blob data, Asset *asset)
 			Asset *cursorAsset = addAsset(AssetType_Cursor, name, 0);
 			cursorAsset->cursor.imageFilePath = intern(&assets->assetStrings, getAssetPath(AssetType_Cursor, filename));
 			cursorAsset->cursor.hotspot = v2i(hotX.value, hotY.value);
+			addChildAsset(asset, cursorAsset);
 		}
 		else
 		{
@@ -1068,8 +1056,7 @@ void loadPaletteDefs(Blob data, Asset *asset)
 		}
 	}
 
-	asset->data = assetsAllocate(assets, sizeof(String) * paletteCount);
-	asset->paletteDefs.paletteNames = makeArray(paletteCount, (String *) asset->data.memory);
+	allocateChildren(asset, paletteCount);
 
 	restart(&reader);
 
@@ -1084,9 +1071,8 @@ void loadPaletteDefs(Blob data, Asset *asset)
 
 			if (equals(command, "Palette"_s))
 			{
-				String paletteName = intern(&assets->assetStrings, readToken(&reader));
-				paletteAsset = addAsset(AssetType_Palette, paletteName, 0);
-				asset->paletteDefs.paletteNames.append(paletteName);
+				paletteAsset = addAsset(AssetType_Palette, readToken(&reader), 0);
+				addChildAsset(asset, paletteAsset);
 			}
 			else
 			{
@@ -1217,8 +1203,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 			childAssetCount++;
 		}
 	}
-	asset->data = assetsAllocate(assets, sizeof(AssetID) * childAssetCount);
-	asset->spriteDefs.sprites = makeArray(childAssetCount, (AssetID *) asset->data.memory);
+	allocateChildren(asset, childAssetCount);
 
 	restart(&reader);
 
@@ -1257,7 +1242,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 
 				Asset *ninepatch = addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
 
-				asset->spriteDefs.sprites.append(makeAssetID(ninepatch->type, ninepatch->shortName));
+				addChildAsset(asset, ninepatch);
 			}
 			else if (equals(command, "Sprite"_s))
 			{
@@ -1282,7 +1267,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				sprite->pixelWidth = spriteSize.x;
 				sprite->pixelHeight = spriteSize.y;
 
-				asset->spriteDefs.sprites.append(makeAssetID(group->type, group->shortName));
+				addChildAsset(asset, group);
 			}
 			else if (equals(command, "SpriteGroup"_s))
 			{
@@ -1308,7 +1293,7 @@ void loadSpriteDefs(Blob data, Asset *asset)
 				spriteGroup = addSpriteGroup(name, spriteCount);
 				spriteIndex = 0;
 
-				asset->spriteDefs.sprites.append(makeAssetID(spriteGroup->type, spriteGroup->shortName));
+				addChildAsset(asset, spriteGroup);
 			}
 			else
 			{

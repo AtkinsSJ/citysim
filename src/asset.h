@@ -218,6 +218,8 @@ struct Asset
 	u32 flags; // AssetFlags
 	AssetState state;
 
+	Array<AssetID> children;
+
 	// Depending on the AssetType, this could be the file contents, or something else!
 	Blob data;
 
@@ -234,25 +236,15 @@ struct Asset
 			Array<String> buildingIDs;
 		} buildingDefs;
 
-		struct {
-			Array<String> cursorNames;
-		} cursorDefs;
 		Cursor cursor;
 
 		Ninepatch ninepatch;
 
-		struct {
-			Array<String> paletteNames;
-		} paletteDefs;
 		Palette palette;
 
 		Shader shader;
 
 		SpriteGroup spriteGroup;
-
-		struct {
-			Array<AssetID> sprites;
-		} spriteDefs;
 
 		struct {
 			Array<String> terrainIDs;
