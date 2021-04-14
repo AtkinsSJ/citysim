@@ -600,29 +600,64 @@ inline T* findStyle(UIStyleRef *ref)
 
 template <> UIButtonStyle *findStyle<UIButtonStyle>(String styleName)
 {
-	return assets->theme->buttonStyles.find(styleName).orDefault(null);
+	Maybe<UIButtonStyle *> result = assets->theme->buttonStyles.find(styleName);
+	if (!result.isValid)
+	{
+		result = assets->theme->buttonStyles.find("default"_h);
+	}
+	return result.orDefault(null);
 }
 template <> UIConsoleStyle *findStyle<UIConsoleStyle>(String styleName)
 {
-	return assets->theme->consoleStyles.find(styleName).orDefault(null);
+	Maybe<UIConsoleStyle *> result = assets->theme->consoleStyles.find(styleName);
+	if (!result.isValid)
+	{
+		result = assets->theme->consoleStyles.find("default"_h);
+	}
+	return result.orDefault(null);
 }
 template <> UILabelStyle *findStyle<UILabelStyle>(String styleName)
 {
-	return assets->theme->labelStyles.find(styleName).orDefault(null);
+	Maybe<UILabelStyle *> result = assets->theme->labelStyles.find(styleName);
+	if (!result.isValid)
+	{
+		result = assets->theme->labelStyles.find("default"_h);
+	}
+	return result.orDefault(null);
 }
 template <> UIPanelStyle *findStyle<UIPanelStyle>(String styleName)
 {
-	return assets->theme->panelStyles.find(styleName).orDefault(null);
+	Maybe<UIPanelStyle *> result = assets->theme->panelStyles.find(styleName);
+	if (!result.isValid)
+	{
+		result = assets->theme->panelStyles.find("default"_h);
+	}
+	return result.orDefault(null);
 }
 template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName)
 {
-	return assets->theme->scrollbarStyles.find(styleName).orDefault(null);
+	Maybe<UIScrollbarStyle *> result = assets->theme->scrollbarStyles.find(styleName);
+	if (!result.isValid)
+	{
+		result = assets->theme->scrollbarStyles.find("default"_h);
+	}
+	return result.orDefault(null);
 }
 template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName)
 {
-	return assets->theme->textInputStyles.find(styleName).orDefault(null);
+	Maybe<UITextInputStyle *> result = assets->theme->textInputStyles.find(styleName);
+	if (!result.isValid)
+	{
+		result = assets->theme->textInputStyles.find("default"_h);
+	}
+	return result.orDefault(null);
 }
 template <> UIWindowStyle *findStyle<UIWindowStyle>(String styleName)
 {
-	return assets->theme->windowStyles.find(styleName).orDefault(null);
+	Maybe<UIWindowStyle *> result = assets->theme->windowStyles.find(styleName);
+	if (!result.isValid)
+	{
+		result = assets->theme->windowStyles.find("default"_h);
+	}
+	return result.orDefault(null);
 }

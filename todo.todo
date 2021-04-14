@@ -18,10 +18,9 @@ Notes for searching:
 
 ------------------------------------------------
 
-Theme default styles
-- I guess as a two-part fallback:
-	1) Search for a style named "default"
-	2) Use a hard-coded default value
+Make styles be assets?
+- I was starting to flesh out the UITheme code to add defaults and logging of missing styles, and realised this is just a duplicate of stuff the asset system already does!
+- We'd then demote UITheme to being a meta-asset, like the other data files that just define child assets.
 
 Multi-threading!
 - Figure out how to get it working at all
@@ -82,6 +81,7 @@ STATS!
 - Saving these probably wants some kind of compression. It's a whole bunch of data.
 
 Placeholder font that's hard-coded. Tricky!
+- Then, we can have placeholder styles too
 
 Lua scripting?
 - We want a way of doing arbitrary calculations for Buffs, and this would also allow more interesting behaviour, especially with mods. But, it's also a big job to implement.
