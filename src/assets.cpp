@@ -124,9 +124,13 @@ void initAssets()
 Asset *makePlaceholderAsset(AssetType type)
 {
 	Asset *result = &assets->placeholderAssets[type];
-	*result = {};
 	result->type = type;
+	result->shortName = nullString;
+	result->fullName = nullString;
+	result->flags = 0;
 	result->state = AssetState_Loaded;
+	result->children = makeEmptyArray<AssetID>();
+	result->data = {};
 
 	return result;
 }

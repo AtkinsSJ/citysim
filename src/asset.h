@@ -20,6 +20,14 @@ enum AssetType
 	AssetType_Texture,
 	AssetType_UITheme,
 
+	AssetType_ButtonStyle,
+	AssetType_ConsoleStyle,
+	AssetType_LabelStyle,
+	AssetType_PanelStyle,
+	AssetType_ScrollbarStyle,
+	AssetType_TextInputStyle,
+	AssetType_WindowStyle,
+
 	AssetTypeCount,
 	AssetType_Unknown = -1
 };
@@ -41,6 +49,14 @@ String assetTypeNames[AssetTypeCount] = {
 	"Texture"_s,
 	"TerrainDefs"_s,
 	"UITheme"_s,
+
+	"ButtonStyle"_s,
+	"ConsoleStyle"_s,
+	"LabelStyle"_s,
+	"PanelStyle"_s,
+	"ScrollbarStyle"_s,
+	"TextInputStyle"_s,
+	"WindowStyle"_s,
 };
 
 enum AssetState
@@ -185,19 +201,7 @@ struct Texture
 	};
 };
 
-struct UITheme
-{
-	// TODO: Remove this!
-	V4 overlayColor;
-
-	HashTable<struct UIButtonStyle>    buttonStyles;
-	HashTable<struct UIConsoleStyle>   consoleStyles;
-	HashTable<struct UILabelStyle>     labelStyles;
-	HashTable<struct UIPanelStyle>     panelStyles;
-	HashTable<struct UIScrollbarStyle> scrollbarStyles;
-	HashTable<struct UITextInputStyle> textInputStyles;
-	HashTable<struct UIWindowStyle>    windowStyles;
-};
+#include "uitheme.h"
 
 enum AssetFlags
 {
@@ -230,6 +234,12 @@ struct Asset
 	// the other asset types. Though 65 isn't much, so maybe it's not a big deal. We'll see if we
 	// have anything bigger later. (Well, the BitmapFont is definitely bigger!)
 	union {
+		// NB: Here as a pointer target, so we can cast to the desired type. eg:
+		//    (UIBUttonStyle *)(&asset->_localData) 
+		u8 _localData;
+
+		// Actual local data follows
+
 		BitmapFont bitmapFont;
 
 		struct {
@@ -258,5 +268,13 @@ struct Asset
 		Texture texture;
 
 		UITheme theme;
+
+		UIButtonStyle    buttonStyle;
+		UIConsoleStyle   consoleStyle;
+		UILabelStyle     labelStyle;
+		UIPanelStyle     panelStyle;
+		UIScrollbarStyle scrollbarStyle;
+		UITextInputStyle textInputStyle;
+		UIWindowStyle    windowStyle;
 	};
 };

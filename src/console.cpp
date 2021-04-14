@@ -6,7 +6,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 {
 	Console *console = &theConsole;
 
-	console->style = UIStyleRef(UIStyle_Console, "default"_s);
+	console->style = getAssetRef(AssetType_ConsoleStyle, "default"_s);
 
 	console->currentHeight = 0;
 

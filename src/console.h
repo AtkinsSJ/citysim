@@ -42,7 +42,7 @@ struct Command
 
 struct Console
 {
-	UIStyleRef style;
+	AssetRef style;
 
 	f32 currentHeight;
 	f32 targetHeight;

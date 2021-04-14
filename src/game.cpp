@@ -473,7 +473,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 	Rect2I uiRect = irectXYWH(0,0, windowWidth, toolbarBottom);
 	addUIRect(uiState, uiRect);
-	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, theme->overlayColor);
+	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
 	uiText(uiBuffer, font, city->name,
 	       v2i(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
@@ -1173,7 +1173,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, windowHeight - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
 
 	Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
-	drawSingleRect(uiBuffer, dataViewUIBounds, renderer->shaderIds.untextured, theme->overlayColor);
+	drawSingleRect(uiBuffer, dataViewUIBounds, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
 	if (uiButton(uiState, dataViewButtonText, dataViewButtonBounds, buttonStyle))
 	{

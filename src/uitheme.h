@@ -87,8 +87,8 @@ struct UIConsoleStyle
 	UIDrawableStyle background;
 	s32 padding;
 
-	UIStyleRef scrollbarStyle = UIStyleRef(UIStyle_Scrollbar);
-	UIStyleRef textInputStyle = UIStyleRef(UIStyle_TextInput);
+	AssetRef scrollbarStyle;
+	AssetRef textInputStyle;
 };
 
 struct UILabelStyle
@@ -109,10 +109,10 @@ struct UIPanelStyle
 	
 	UIDrawableStyle background;
 
-	UIStyleRef buttonStyle    = UIStyleRef(UIStyle_Button);
-	UIStyleRef labelStyle     = UIStyleRef(UIStyle_Label);
-	UIStyleRef scrollbarStyle = UIStyleRef(UIStyle_Scrollbar);
-	UIStyleRef textInputStyle = UIStyleRef(UIStyle_TextInput);
+	AssetRef buttonStyle   ;
+	AssetRef labelStyle    ;
+	AssetRef scrollbarStyle;
+	AssetRef textInputStyle;
 };
 
 struct UIScrollbarStyle
@@ -152,7 +152,7 @@ struct UIWindowStyle
 
 	V2I offsetFromMouse;
 
-	UIStyleRef panelStyle = UIStyleRef(UIStyle_Panel);
+	AssetRef panelStyle;
 };
 
 enum PropType
@@ -183,24 +183,24 @@ struct UIStyle
 	UIDrawableStyle pressedBackground;
 
 	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
-	UIStyleRef buttonStyle = UIStyleRef(UIStyle_Button);
+	String buttonStyleName;
 	f32 caretFlashCycleDuration;
 	u32 widgetAlignment;
 	s32 contentPadding;
 	AssetRef font;
 	UIDrawableStyle thumb;
-	UIStyleRef labelStyle = UIStyleRef(UIStyle_Label);
+	String labelStyleName;
 	s32 margin;
 	V2I offsetFromMouse;
 	V4 overlayColor;
 	V4 outputTextColor[CLS_COUNT];
 	s32 padding;
-	UIStyleRef panelStyle = UIStyleRef(UIStyle_Panel);
-	UIStyleRef scrollbarStyle = UIStyleRef(UIStyle_Scrollbar);
+	String panelStyleName;
+	String scrollbarStyleName;
 	bool showCaret;
 	u32 textAlignment;
 	V4 textColor;
-	UIStyleRef textInputStyle = UIStyleRef(UIStyle_TextInput);
+	String textInputStyleName;
 	V4 titleBarButtonHoverColor;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
@@ -220,13 +220,24 @@ struct UIProperty
 HashTable<UIProperty> uiStyleProperties;
 void initUIStyleProperties();
 
+struct UITheme
+{
+	HashTable<struct UIButtonStyle>    buttonStyles;
+	HashTable<struct UIConsoleStyle>   consoleStyles;
+	HashTable<struct UILabelStyle>     labelStyles;
+	HashTable<struct UIPanelStyle>     panelStyles;
+	HashTable<struct UIScrollbarStyle> scrollbarStyles;
+	HashTable<struct UITextInputStyle> textInputStyles;
+	HashTable<struct UIWindowStyle>    windowStyles;
+};
+
 void loadUITheme(Blob data, struct Asset *asset);
 
 template <typename T>
-T* findStyle(UIStyleRef *reference);
+T* findStyle(AssetRef *reference);
 
 template <typename T>
-inline T* findStyle(String styleName, UIStyleRef *defaultStyle)
+inline T* findStyle(String styleName, AssetRef *defaultStyle)
 {
 	T *result = null;
 	if (!isEmpty(styleName)) result = findStyle<T>(styleName);

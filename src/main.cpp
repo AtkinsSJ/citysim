@@ -75,7 +75,6 @@ struct Settings     *settings;
 #include "font.h"
 #include "bmfont.h"
 #include "asset.h"
-#include "uitheme.h"
 #include "assets.h"
 #include "line_reader.h"
 #include "render.h"
