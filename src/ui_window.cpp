@@ -441,14 +441,16 @@ inline static void closeWindow(UIState *uiState, s32 windowIndex)
 	uiState->windowsToMakeActive.remove(windowIndex);
 
 	Window *window = uiState->openWindows.get(windowIndex);
+	
 	if (window->onClose != null)
 	{
 		window->onClose(null, window->userData);
-		if (window->renderBuffer != null)
-		{
-			returnTemporaryRenderBuffer(window->renderBuffer);
-			window->renderBuffer = null;
-		}
+	}
+
+	if (window->renderBuffer != null)
+	{
+		returnTemporaryRenderBuffer(window->renderBuffer);
+		window->renderBuffer = null;
 	}
 	
 	uiState->openWindows.removeIndex(windowIndex, true);
