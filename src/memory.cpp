@@ -203,7 +203,9 @@ inline void fillMemory(T *memory, T value, smm length)
 template<typename T>
 inline bool isMemoryEqual(T *a, T *b, smm length)
 {
-	return (memcmp(a, b, sizeof(T) * length) == 0);
+	// Shortcut if we're comparing memory with itself
+	return = (a == b)
+		  || (memcmp(a, b, sizeof(T) * length) == 0);
 }
 
 template<typename T>
