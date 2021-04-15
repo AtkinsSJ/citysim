@@ -1,11 +1,29 @@
 # Terrain!
 
-:Terrain water
-name t_water
-sprite t_water
-can_build_on false
-
 :Terrain ground
 name t_ground
 sprite t_grass
 can_build_on true
+
+:Terrain water
+name t_water
+sprite t_water
+can_build_on false
+bordering ground
+	# nb: no entry for '0' because that's not a border!
+	t_grass_edge_nw # 1
+	t_grass_edge_n
+	t_grass_edge_n
+	t_grass_edge_ne
+	t_grass_edge_nw_ne
+	t_grass_edge_n
+	t_grass_edge_n
+
+	t_grass_edge_e
+	t_grass_edge_e # missing!
+	t_grass_edge_n_e
+	t_grass_edge_e
+	t_grass_edge_e
+	t_grass_edge_e
+	t_grass_edge_e
+	t_grass_edge_e

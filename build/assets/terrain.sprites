@@ -13,3 +13,35 @@ sprite 0 1
 sprite 1 1
 sprite 2 1
 sprite 3 1
+
+:Sprite t_grass_edge_nw 			terrain-grass_00.png 16x16
+:Sprite t_grass_edge_ne 			terrain-grass_01.png 16x16
+:Sprite t_grass_edge_nw_se 			terrain-grass_02.png 16x16
+:Sprite t_grass_edge_n_sw_se 		terrain-grass_03.png 16x16
+:Sprite t_grass_edge_e_nw_sw 		terrain-grass_04.png 16x16
+:Sprite t_grass_edge_w_e 			terrain-grass_05.png 16x16
+:Sprite t_grass_edge_sw 			terrain-grass_06.png 16x16
+:Sprite t_grass_edge_se 			terrain-grass_07.png 16x16
+:Sprite t_grass_edge_ne_sw 			terrain-grass_08.png 16x16
+:Sprite t_grass_edge_w_ne_se		terrain-grass_09.png 16x16
+
+:Sprite t_grass_edge_s_nw_ne 		terrain-grass_10.png 16x16
+:Sprite t_grass_edge_n_s 			terrain-grass_11.png 16x16
+:Sprite t_grass_edge_n_w 			terrain-grass_12.png 16x16
+:Sprite t_grass_edge_n 				terrain-grass_13.png 16x16
+:Sprite t_grass_edge_n_e 			terrain-grass_14.png 16x16
+:Sprite t_grass_edge_e_s_nw 		terrain-grass_15.png 16x16
+:Sprite t_grass_edge_n_e_w 			terrain-grass_16.png 16x16
+:Sprite t_grass_edge_s_w_ne 		terrain-grass_17.png 16x16
+:Sprite t_grass_edge_w 				terrain-grass_18.png 16x16
+:Sprite t_grass_edge_e 				terrain-grass_19.png 16x16
+
+:Sprite t_grass_edge_n_s_w 			terrain-grass_20.png 16x16
+:Sprite t_grass_edge_nw_ne_se_sw 	terrain-grass_21.png 16x16
+:Sprite t_grass_edge_n_e_s 			terrain-grass_22.png 16x16
+:Sprite t_grass_edge_s_w 			terrain-grass_23.png 16x16
+:Sprite t_grass_edge_s 				terrain-grass_24.png 16x16
+:Sprite t_grass_edge_e_s 			terrain-grass_25.png 16x16
+:Sprite t_grass_edge_n_e_sw 		terrain-grass_26.png 16x16
+:Sprite t_grass_edge_e_s_w 			terrain-grass_27.png 16x16
+:Sprite t_grass_edge_n_w_se 		terrain-grass_28.png 16x16
