@@ -686,6 +686,8 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// Sprite offset
 				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, &layer->tileSpriteOffset);
+
+				assignTerrainTiles(city);
 			}
 			else if (header->identifier == SAV_TPRT_ID)
 			{

@@ -3,9 +3,11 @@
 void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena)
 {
 	layer->tileTerrainType     = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
-	layer->tileSpriteOffset    = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
 	layer->tileHeight          = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
 	layer->tileDistanceToWater = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+
+	layer->tileSpriteOffset    = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+	layer->tileSprite          = allocateArray2<SpriteRef>(gameArena, city->bounds.w, city->bounds.h);
 }
 
 inline TerrainDef *getTerrainAt(City *city, s32 x, s32 y)
@@ -199,9 +201,6 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 
 	TerrainLayer *layer = &city->terrainLayer;
 
-	s32 terrainType = -1;
-	SpriteGroup *terrainSprites = null;
-
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 	V4 white = makeWhite();
 
@@ -219,22 +218,9 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			x < visibleArea.x + visibleArea.w;
 			x++)
 		{
-			s32 type = layer->tileTerrainType.get(x, y);
-
-			if (type != terrainType)
-			{
-				terrainType = type;
-				terrainSprites = getTerrainDef((u8)terrainType)->sprites;
-			}
-
-			// Null terrain has no sprites, so only draw if there's something to draw!
-			if (terrainSprites != null)
-			{
-				Sprite *sprite = getSprite(terrainSprites, layer->tileSpriteOffset.get(x, y));
-				spriteBounds.x = (f32) x;
-
-				addSpriteRect(group, sprite, spriteBounds, white);
-			}
+			Sprite *sprite = getSprite(&layer->tileSprite.get(x,y));
+			spriteBounds.x = (f32) x;
+			addSpriteRect(group, sprite, spriteBounds, white);
 		}
 	}
 	endRectsGroup(group);
@@ -362,9 +348,25 @@ void generateTerrain(City *city, Random *gameRandom)
 		}
 	}
 
-	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
+	assignTerrainTiles(city);
 
 	updateDistances(&layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
+}
+
+void assignTerrainTiles(City *city)
+{
+	TerrainLayer *layer = &city->terrainLayer;
+
+	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
+	for (s32 y = 0; y < city->bounds.h; y++)
+	{
+		for (s32 x = 0; x < city->bounds.w; x++)
+		{
+			TerrainDef *def = getTerrainAt(city, x, y);
+
+			layer->tileSprite.set(x, y, getSpriteRef(def->spriteName, layer->tileSpriteOffset.get(x, y)));
+		}
+	}
 }
 
 void saveTerrainTypes()

@@ -1,49 +1,34 @@
 # Road
 
-:SpriteGroup b_road_0000 road-0000.png 16x16
-sprite 0 0
+:Sprite b_road_0000 road-0000.png 16x16
 
-:SpriteGroup b_road_1000 road-1000.png 16x16
-sprite 0 0
+:Sprite b_road_1000 road-1000.png 16x16
 
-:SpriteGroup b_road_0100 road-0100.png 16x16
-sprite 0 0
+:Sprite b_road_0100 road-0100.png 16x16
 
-:SpriteGroup b_road_1100 road-1100.png 16x16
-sprite 0 0
+:Sprite b_road_1100 road-1100.png 16x16
 
-:SpriteGroup b_road_0010 road-0010.png 16x16
-sprite 0 0
+:Sprite b_road_0010 road-0010.png 16x16
 
-:SpriteGroup b_road_1010 road-1010.png 16x16
-sprite 0 0
+:Sprite b_road_1010 road-1010.png 16x16
 
-:SpriteGroup b_road_0110 road-0110.png 16x16
-sprite 0 0
+:Sprite b_road_0110 road-0110.png 16x16
 
-:SpriteGroup b_road_1110 road-1110.png 16x16
-sprite 0 0
+:Sprite b_road_1110 road-1110.png 16x16
 
-:SpriteGroup b_road_0001 road-0001.png 16x16
-sprite 0 0
+:Sprite b_road_0001 road-0001.png 16x16
 
-:SpriteGroup b_road_1001 road-1001.png 16x16
-sprite 0 0
+:Sprite b_road_1001 road-1001.png 16x16
 
-:SpriteGroup b_road_0101 road-0101.png 16x16
-sprite 0 0
+:Sprite b_road_0101 road-0101.png 16x16
 
-:SpriteGroup b_road_1101 road-1101.png 16x16
-sprite 0 0
+:Sprite b_road_1101 road-1101.png 16x16
 
-:SpriteGroup b_road_0011 road-0011.png 16x16
-sprite 0 0
+:Sprite b_road_0011 road-0011.png 16x16
 
-:SpriteGroup b_road_1011 road-1011.png 16x16
-sprite 0 0
+:Sprite b_road_1011 road-1011.png 16x16
 
-:SpriteGroup b_road_0111 road-0111.png 16x16
-sprite 0 0
+:Sprite b_road_0111 road-0111.png 16x16
 
 :SpriteGroup b_road_1111 road-1111.png 16x16
 sprite 0 0

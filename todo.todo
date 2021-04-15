@@ -18,6 +18,30 @@ Notes for searching:
 
 ------------------------------------------------
 
+Other terrain stuff:
+- Use AssetRefs instead of refreshTerrainSpriteCache()
+
+Terrain
+- Two parts: What terrain type a tile is, and what tile is used for it
+- Tiles visually blend between terrain types
+- Multiple tiles per configuration, to add variety
+- Render water separately, behind the terrain tile
+	-> So, coast tiles are transparent where the water would be
+	-> Maybe all transitions work this way? But how do we decide which goes above/below another?
+
+Terrain tile rules:
+- If we're grass, be solid grass
+- Match based on the 4 ortho neighbours
+- Then, if a side is empty, match based on its corners
+- OR: Maybe we use the full 8-side lookup, but have duplicate values! AKA, map multiple values to the same tile
+
+Shrink String
+- It's currently 24 bytes, which is a bit hefty
+- With work, I reckon we can reduce it to 16 bytes
+	1) Remove maxLength, replace with an 'editable string' struct
+	2) Remove hasHash, use a hash value of 0 to signify no hash
+		-> Modify hash function so it never returns 0!
+
 Multi-threading!
 - Figure out how to get it working at all
 - Loading screen, as a test!
@@ -94,8 +118,6 @@ Saving and loading!
 - LZ77-based compression option. https://en.wikipedia.org/wiki/LZ77_and_LZ78
 
 Window procs should decide the window title instead of showWindow(), it's weird having it there.
-
-StringBuilder: Chunks instead of reallocating to a larger buffer size
 
 Multiple Cities
 - Our eventual goal, the game I actually want to make, is code-named "Cities In Space". It involves having multiple colony-cities (different planets, etc) which trade resources between.
@@ -367,15 +389,6 @@ Split the game code from the platform code
 Transport networks
 - Actually check that people can get to work, and how bad the traffic is, etc
 - Later we may want SC4-style subcategories like "lorry" and "bus" but for now we can just divide it into "road" and "rail". The thought is eventually we might record separate networks for road/rail but each one has a bitfield for subcategories... but really, that's massive overkill right now!
-
-GUI
-- Convert Toasts (née UI-Messages) to use windows too
-	- This is somewhat more involved....
-	- Multiple toasts can exist at once. I'm thinking each new one pushes all the previous ones up.
-	- After an amount of time, they fade out.
-	- So, probably keep Toasts in a separate array to Windows, because they work in a special way. Still use the WindowProc/Context stuff for convenience, but don't deal with them in updateAndRenderWindows(). So, also no need for a special WinFlag!
-	- Remove UIMessage styles
-- ALIGN_EXPAND_H for buttons
 
 Building menus:
 - Store in the BuildingCatalogue which menu a building is in, in a queryable way

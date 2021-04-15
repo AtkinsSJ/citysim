@@ -13,6 +13,7 @@
  *
  * TODO: Maybe we should use a chunked approach? That way we're not throwing away the old buffer,
  * but adding an additional one that carries on. That'a a bit more complicated though.
+ * For now, I've added logging when we call expand() so we can see if that's ever an issue.
  */
 
 struct StringBuilder

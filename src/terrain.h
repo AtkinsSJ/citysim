@@ -35,6 +35,7 @@ struct TerrainLayer
 	Array2<u8> tileDistanceToWater;
 
 	Array2<u8> tileSpriteOffset;
+	Array2<SpriteRef> tileSprite;
 };
 
 void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena);
@@ -49,6 +50,8 @@ void generateTerrain(City *city, Random *gameRandom);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 TerrainDef *getTerrainAt(City *city, s32 x, s32 y);
 u8 getDistanceToWaterAt(City *city, s32 x, s32 y);
+
+void assignTerrainTiles(City *city);
 
 void saveTerrainTypes();
 void remapTerrainTypes(City *city);
