@@ -204,7 +204,7 @@ template<typename T>
 inline bool isMemoryEqual(T *a, T *b, smm length)
 {
 	// Shortcut if we're comparing memory with itself
-	return = (a == b)
+	return (a == b)
 		  || (memcmp(a, b, sizeof(T) * length) == 0);
 }
 

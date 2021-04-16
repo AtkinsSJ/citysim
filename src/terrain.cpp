@@ -8,6 +8,7 @@ void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena)
 
 	layer->tileSpriteOffset    = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
 	layer->tileSprite          = allocateArray2<SpriteRef>(gameArena, city->bounds.w, city->bounds.h);
+	layer->tileBorderSprite    = allocateArray2<SpriteRef>(gameArena, city->bounds.w, city->bounds.h);
 }
 
 inline TerrainDef *getTerrainAt(City *city, s32 x, s32 y)
@@ -90,6 +91,7 @@ void loadTerrainDefs(Blob data, Asset *asset)
 
 				Indexed<TerrainDef *> slot = terrainCatalogue.terrainDefs.append();
 				def = slot.value;
+				*def = {};
 
 				if (slot.index > u8Max)
 				{
@@ -115,10 +117,23 @@ void loadTerrainDefs(Blob data, Asset *asset)
 				error(&reader, "Found a property before starting a :Terrain!"_s);
 				return;
 			}
+			else if (equals(firstWord, "borders"_s))
+			{
+				def->borderSpriteNames = allocateArray<String>(&assets->assetArena, 80);
+			}
+			else if (equals(firstWord, "border"_s))
+			{
+				def->borderSpriteNames.append(intern(&assets->assetStrings, readToken(&reader)));
+			}
 			else if (equals(firstWord, "can_build_on"_s))
 			{
 				Maybe<bool> boolRead = readBool(&reader);
 				if (boolRead.isValid) def->canBuildOn = boolRead.value;
+			}
+			else if (equals(firstWord, "draw_borders_over"_s))
+			{
+				Maybe<bool> boolRead = readBool(&reader);
+				if (boolRead.isValid) def->drawBordersOver = boolRead.value;
 			}
 			else if (equals(firstWord, "name"_s))
 			{
@@ -221,6 +236,13 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 			Sprite *sprite = getSprite(&layer->tileSprite.get(x,y));
 			spriteBounds.x = (f32) x;
 			addSpriteRect(group, sprite, spriteBounds, white);
+
+			SpriteRef *borderSpriteRef = &layer->tileBorderSprite.get(x,y);
+			if (!borderSpriteRef->spriteGroupName.isEmpty())
+			{
+				Sprite *borderSprite = getSprite(borderSpriteRef);
+				addSpriteRect(group, borderSprite, spriteBounds, white);
+			}
 		}
 	}
 	endRectsGroup(group);
@@ -365,6 +387,45 @@ void assignTerrainTiles(City *city)
 			TerrainDef *def = getTerrainAt(city, x, y);
 
 			layer->tileSprite.set(x, y, getSpriteRef(def->spriteName, layer->tileSpriteOffset.get(x, y)));
+			
+			if (def->drawBordersOver)
+			{
+				// First, determine if we have a bordering type
+				TerrainDef *borders[8] = {}; // Starting NW, going clockwise
+				borders[0] = getTerrainAt(city, x-1, y-1);
+				borders[1] = getTerrainAt(city, x  , y-1);
+				borders[2] = getTerrainAt(city, x+1, y-1);
+				borders[3] = getTerrainAt(city, x+1, y  );
+				borders[4] = getTerrainAt(city, x+1, y+1);
+				borders[5] = getTerrainAt(city, x  , y+1);
+				borders[6] = getTerrainAt(city, x-1, y+1);
+				borders[7] = getTerrainAt(city, x-1, y  );
+
+				// Find the first match, if any
+				// Eventually we probably want to use whichever border terrain is most common instead
+				TerrainDef *borderTerrain = null;
+				for (s32 i=0; i < 8; i++)
+				{
+					if ((borders[i] != def) && (!borders[i]->borderSpriteNames.isEmpty()))
+					{
+						borderTerrain = borders[i];
+						break;
+					}
+				}
+
+				if (borderTerrain)
+				{
+					// Determine which border sprite to use based on our borders
+					u8 n = (borders[1] == borderTerrain) ? 2 : (borders[0] == borderTerrain) ? 1 : 0;
+					u8 e = (borders[3] == borderTerrain) ? 2 : (borders[2] == borderTerrain) ? 1 : 0;
+					u8 s = (borders[5] == borderTerrain) ? 2 : (borders[4] == borderTerrain) ? 1 : 0;
+					u8 w = (borders[7] == borderTerrain) ? 2 : (borders[6] == borderTerrain) ? 1 : 0;
+
+					u8 borderSpriteIndex = w + (s * 3) + (e * 9) + (n * 27) - 1;
+					ASSERT(borderSpriteIndex >= 0 && borderSpriteIndex <= 80);
+					layer->tileBorderSprite.set(x, y, getSpriteRef(borderTerrain->borderSpriteNames[borderSpriteIndex], layer->tileSpriteOffset.get(x, y)));
+				}
+			}
 		}
 	}
 }

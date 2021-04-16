@@ -11,6 +11,10 @@ struct TerrainDef
 	SpriteGroup *sprites;
 
 	bool canBuildOn;
+	
+	Array<String> borderSpriteNames;
+
+	bool drawBordersOver;
 };
 
 struct TerrainCatalogue
@@ -36,6 +40,7 @@ struct TerrainLayer
 
 	Array2<u8> tileSpriteOffset;
 	Array2<SpriteRef> tileSprite;
+	Array2<SpriteRef> tileBorderSprite;
 };
 
 void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena);
