@@ -350,7 +350,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 
 	// Terrain
 	TerrainDef *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
-	ui->addText(myprintf("Terrain: {0}"_s, {getText(terrain->textAssetName)}));
+	ui->addText(myprintf("Terrain: {0}, {1} tiles from water"_s, {getText(terrain->textAssetName), formatInt(getDistanceToWaterAt(city, tilePos.x, tilePos.y))}));
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
@@ -946,6 +946,18 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 							drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
+				}
+			} break;
+
+			case ActionMode_SetTerrain:
+			{
+				// Temporary click-and-drag, no-cost terrain editing
+				// We probably want to make this better in several ways, and add a cost to it, and such
+				if (!mouseIsOverUI
+				 && mouseButtonPressed(MouseButton_Left)
+				 && tileExists(city, mouseTilePos.x, mouseTilePos.y))
+				{
+					setTerrainAt(city, mouseTilePos.x, mouseTilePos.y, gameState->selectedTerrainID);
 				}
 			} break;
 

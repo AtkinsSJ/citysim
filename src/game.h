@@ -126,7 +126,7 @@ struct GameState
 	{
 		s32 selectedBuildingTypeID;
 		ZoneType selectedZoneID;
-		s32 selectedTerrainID;
+		u8 selectedTerrainID;
 	};
 
 	// NB: This only works because we've made the inspect window unique! If we want to have multiple

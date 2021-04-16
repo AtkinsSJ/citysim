@@ -52,9 +52,12 @@ TerrainDef *getTerrainDef(u8 terrainType);
 void generateTerrain(City *city, Random *gameRandom);
 void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID);
 TerrainDef *getTerrainAt(City *city, s32 x, s32 y);
-u8 getDistanceToWaterAt(City *city, s32 x, s32 y);
+void setTerrainAt(City *city, s32 x, s32 y, u8 terrainType);
 
-void assignTerrainTiles(City *city);
+u8 getDistanceToWaterAt(City *city, s32 x, s32 y);
+void updateDistanceToWater(City *city, Rect2I bounds);
+
+void assignTerrainSprites(City *city, Rect2I bounds);
 
 void saveTerrainTypes();
 void remapTerrainTypes(City *city);

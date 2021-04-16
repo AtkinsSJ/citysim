@@ -23,9 +23,58 @@ inline u8 getTerrainHeightAt(City *city, s32 x, s32 y)
 	return city->terrainLayer.tileHeight.get(x, y);
 }
 
+void setTerrainAt(City *city, s32 x, s32 y, u8 terrainType)
+{
+	u8 existingTerrain = city->terrainLayer.tileTerrainType.getIfExists(x, y, 0);
+	// Ignore for tiles that don't exist, or are already the desired type
+	if (existingTerrain == 0 || existingTerrain == terrainType)
+	{
+		return;
+	}
+
+	// Set the terrain
+	city->terrainLayer.tileTerrainType.set(x, y, terrainType);
+
+	// Update sprites on this and neighbouring tiles
+	Rect2I spriteUpdateBounds = intersect(irectXYWH(x-1, y-1, 3, 3), city->bounds);
+	assignTerrainSprites(city, spriteUpdateBounds);
+
+	// Update distance to water
+	updateDistanceToWater(city, irectXYWH(x, y, 1, 1));
+}
+
 inline u8 getDistanceToWaterAt(City *city, s32 x, s32 y)
 {
 	return city->terrainLayer.tileDistanceToWater.get(x, y);
+}
+
+void updateDistanceToWater(City *city, Rect2I dirtyBounds)
+{
+	TerrainLayer *layer = &city->terrainLayer;
+	Rect2I bounds = intersect(expand(dirtyBounds, maxDistanceToWater), city->bounds);
+	u8 tWater  = truncate<u8>(findTerrainTypeByName("water"_s));
+
+	for (s32 y=bounds.y;
+		y < bounds.y + bounds.h;
+		y++)
+	{
+		for (s32 x=bounds.x;
+			x < bounds.x + bounds.w;
+			x++)
+		{
+			u8 tileType = layer->tileTerrainType.getIfExists(x, y, 0);
+			if (tileType == tWater)
+			{
+				layer->tileDistanceToWater.set(x, y, 0);
+			}
+			else
+			{
+				layer->tileDistanceToWater.set(x, y, 255);
+			}
+		}
+	}
+
+	updateDistances(&layer->tileDistanceToWater, bounds, maxDistanceToWater);
 }
 
 void initTerrainCatalogue()
@@ -244,8 +293,6 @@ void generateTerrain(City *city, Random *gameRandom)
 	u8 tWater  = truncate<u8>(findTerrainTypeByName("water"_s));
 	BuildingDef *treeDef = findBuildingDef("tree"_s);
 
-	fill<u8>(&layer->tileDistanceToWater, 255);
-
 	Random terrainRandom;
 	s32 seed = randomNext(gameRandom);
 	layer->terrainGenerationSeed = seed;
@@ -276,7 +323,6 @@ void generateTerrain(City *city, Random *gameRandom)
 		for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) 
 		{
 			layer->tileTerrainType.set(x, y, tWater);
-			layer->tileDistanceToWater.set(x, y, 0);
 		}
 	}
 
@@ -292,7 +338,6 @@ void generateTerrain(City *city, Random *gameRandom)
 			s32 y = city->bounds.h - 1 - i;
 
 			layer->tileTerrainType.set(x, y, tWater);
-			layer->tileDistanceToWater.set(x, y, 0);
 		}
 	}
 
@@ -316,7 +361,6 @@ void generateTerrain(City *city, Random *gameRandom)
 				if (contains(&pondSplat, x, y))
 				{
 					layer->tileTerrainType.set(x, y, tWater);
-					layer->tileDistanceToWater.set(x, y, 0);
 				}
 			}
 		}
@@ -356,19 +400,23 @@ void generateTerrain(City *city, Random *gameRandom)
 		}
 	}
 
-	assignTerrainTiles(city);
+	assignTerrainSprites(city, city->bounds);
 
-	updateDistances(&layer->tileDistanceToWater, city->bounds, maxDistanceToWater);
+	updateDistanceToWater(city, city->bounds);
 }
 
-void assignTerrainTiles(City *city)
+void assignTerrainSprites(City *city, Rect2I bounds)
 {
 	TerrainLayer *layer = &city->terrainLayer;
 
-	// TODO: assign a terrain tile variant for each tile, depending on its neighbours
-	for (s32 y = 0; y < city->bounds.h; y++)
+	// Assign a terrain tile variant for each tile, depending on its neighbours
+	for (s32 y=bounds.y;
+		y < bounds.y + bounds.h;
+		y++)
 	{
-		for (s32 x = 0; x < city->bounds.w; x++)
+		for (s32 x=bounds.x;
+			x < bounds.x + bounds.w;
+			x++)
 		{
 			TerrainDef *def = getTerrainAt(city, x, y);
 
@@ -411,6 +459,14 @@ void assignTerrainTiles(City *city)
 					ASSERT(borderSpriteIndex >= 0 && borderSpriteIndex <= 80);
 					layer->tileBorderSprite.set(x, y, getSpriteRef(borderTerrain->borderSpriteNames[borderSpriteIndex], layer->tileSpriteOffset.get(x, y)));
 				}
+				else
+				{
+					layer->tileBorderSprite.set(x, y, {});
+				}
+			}
+			else
+			{
+				layer->tileBorderSprite.set(x, y, {});
 			}
 		}
 	}

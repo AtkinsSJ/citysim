@@ -18,11 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Other terrain stuff:
-✔ Remove refreshTerrainSpriteCache()
-✔ Remove refreshBuildingSpriteCache()
-- Add terrain modification abilities
-
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it
 - Tiles visually blend between terrain types
