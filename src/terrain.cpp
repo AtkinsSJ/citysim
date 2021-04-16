@@ -219,9 +219,9 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 	Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 	V4 white = makeWhite();
 
-	s32 tilesToDraw = areaOf(visibleArea);
-	Asset *terrainTexture = getSprite(getTerrainDef(1)->sprites, 0)->texture;
-	DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
+	// s32 tilesToDraw = areaOf(visibleArea);
+	// Asset *terrainTexture = getSprite(getTerrainDef(1)->sprites, 0)->texture;
+	// DrawRectsGroup *group = beginRectsGroupTextured(&renderer->worldBuffer, terrainTexture, shaderID, tilesToDraw);
 
 	for (s32 y=visibleArea.y;
 		y < visibleArea.y + visibleArea.h;
@@ -235,17 +235,19 @@ void drawTerrain(City *city, Rect2I visibleArea, s8 shaderID)
 		{
 			Sprite *sprite = getSprite(&layer->tileSprite.get(x,y));
 			spriteBounds.x = (f32) x;
-			addSpriteRect(group, sprite, spriteBounds, white);
+			drawSingleSprite(&renderer->worldBuffer, sprite, spriteBounds, shaderID, white);
+			// addSpriteRect(group, sprite, spriteBounds, white);
 
 			SpriteRef *borderSpriteRef = &layer->tileBorderSprite.get(x,y);
 			if (!borderSpriteRef->spriteGroupName.isEmpty())
 			{
 				Sprite *borderSprite = getSprite(borderSpriteRef);
-				addSpriteRect(group, borderSprite, spriteBounds, white);
+				drawSingleSprite(&renderer->worldBuffer, borderSprite, spriteBounds, shaderID, white);
+				// addSpriteRect(group, borderSprite, spriteBounds, white);
 			}
 		}
 	}
-	endRectsGroup(group);
+	// endRectsGroup(group);
 }
 
 void generateTerrain(City *city, Random *gameRandom)
