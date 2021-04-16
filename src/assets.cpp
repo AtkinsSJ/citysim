@@ -733,7 +733,6 @@ void reloadAssets()
 	// After stuff
 	rendererLoadAssets();
 	refreshBuildingSpriteCache(&buildingCatalogue);
-	refreshTerrainSpriteCache(&terrainCatalogue);
 	logInfo("Assets reloaded successfully!"_s);
 }
 

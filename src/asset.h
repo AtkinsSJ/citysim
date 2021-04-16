@@ -90,6 +90,10 @@ struct AssetRef
 
 	Asset *pointer;
 	u32 pointerRetrievedTicks;
+
+	bool isValid() {
+		return !isEmpty(name);
+	}
 };
 
 struct Cursor

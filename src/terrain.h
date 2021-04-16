@@ -8,7 +8,6 @@ struct TerrainDef
 	String textAssetName;
 
 	String spriteName;
-	SpriteGroup *sprites;
 
 	bool canBuildOn;
 	
@@ -47,7 +46,6 @@ void initTerrainLayer(TerrainLayer *layer, City *city, MemoryArena *gameArena);
 
 void initTerrainCatalogue();
 void loadTerrainDefs(Blob data, Asset *asset);
-void refreshTerrainSpriteCache(TerrainCatalogue *catalogue);
 void removeTerrainDefs(Array<String> namesToRemove);
 TerrainDef *getTerrainDef(u8 terrainType);
 

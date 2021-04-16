@@ -288,7 +288,6 @@ int main(int argc, char *argv[])
 	initCamera(uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
 	refreshBuildingSpriteCache(&buildingCatalogue);
-	refreshTerrainSpriteCache(&terrainCatalogue);
 
 	u32 initFinishedTicks = SDL_GetTicks();
 	logInfo("Game initialised in {0} milliseconds."_s, {formatInt(initFinishedTicks - initStartTicks)});

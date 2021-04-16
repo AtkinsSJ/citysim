@@ -179,22 +179,6 @@ inline TerrainDef *getTerrainDef(u8 terrainType)
 	return result;
 }
 
-void refreshTerrainSpriteCache(TerrainCatalogue *catalogue)
-{
-	DEBUG_FUNCTION();
-
-	for (auto it = catalogue->terrainDefs.iterate(); it.hasNext(); it.next())
-	{
-		TerrainDef *def = it.get();
-
-		// Account for the "null" terrain
-		if (!isEmpty(def->spriteName))
-		{
-			def->sprites = getSpriteGroup(def->spriteName);
-		}
-	}
-}
-
 u8 findTerrainTypeByName(String name)
 {
 	DEBUG_FUNCTION();
