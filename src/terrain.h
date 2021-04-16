@@ -62,3 +62,6 @@ void remapTerrainTypes(City *city);
 // Returns 0 if not found
 u8 findTerrainTypeByName(String name);
 
+void showTerrainWindow();
+void modifyTerrainWindowProc(WindowContext*, void*);
+

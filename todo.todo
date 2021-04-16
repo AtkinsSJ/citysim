@@ -44,6 +44,13 @@ Shrink String
 	2) Remove hasHash, use a hash value of 0 to signify no hash
 		-> Modify hash function so it never returns 0!
 
+Sort out the UIState nonsense
+- If we have to keep it (and I think we do) at least remove it from function calls. It just makes a mess.
+
+Window system:
+- Function to detect if a window is open
+- Function to close a window
+
 Multi-threading!
 - Figure out how to get it working at all
 - Loading screen, as a test!

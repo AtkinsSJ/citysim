@@ -21,6 +21,7 @@ button_play          Play
 button_resume        Resume
 button_save          Save
 button_settings      Settings
+button_terrain       Terrain
 button_website       Website
 button_zone          Zone...
 
@@ -83,6 +84,7 @@ title_menu           Menu
 title_overwrite_save Save game
 title_save_game      Save
 title_settings       Settings
+title_terrain        Edit Terrain
 
 city_default_name    City Name Here
 player_default_name  Defacto

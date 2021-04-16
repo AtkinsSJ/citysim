@@ -23,6 +23,8 @@ enum ActionMode
 	ActionMode_Demolish,
 	ActionMode_Zone,
 
+	ActionMode_SetTerrain,
+
 	ActionMode_Debug_AddFire,
 	ActionMode_Debug_RemoveFire,
 
@@ -124,6 +126,7 @@ struct GameState
 	{
 		s32 selectedBuildingTypeID;
 		ZoneType selectedZoneID;
+		s32 selectedTerrainID;
 	};
 
 	// NB: This only works because we've made the inspect window unique! If we want to have multiple

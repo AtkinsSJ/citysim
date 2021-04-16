@@ -625,6 +625,17 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
+		// The Terrain button
+		String terrainButtonText = getText("button_terrain"_s);
+		buttonRect.size = calculateButtonSize(terrainButtonText, buttonStyle);
+		// TODO: Detect if window is open already. Close it if it is
+		if (uiButton(uiState, terrainButtonText, buttonRect, buttonStyle))//, buttonIsActive(isMenuVisible(uiState, Menu_Build))))
+		{
+			showTerrainWindow();
+		}
+		buttonRect.x += buttonRect.w + uiPadding;
+
+		// Demolish button
 		String demolishButtonText = getText("button_demolish"_s);
 		buttonRect.size = calculateButtonSize(demolishButtonText, buttonStyle);
 		if (uiButton(uiState, demolishButtonText, buttonRect, buttonStyle,
