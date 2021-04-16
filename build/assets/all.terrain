@@ -11,19 +11,92 @@ sprite t_water
 can_build_on false
 bordering ground
 	# nb: no entry for '0' because that's not a border!
-	t_grass_edge_nw # 1
-	t_grass_edge_n
-	t_grass_edge_n
-	t_grass_edge_ne
-	t_grass_edge_nw_ne
-	t_grass_edge_n
-	t_grass_edge_n
+	# t_grass_edge_0000
+	t_grass_edge_1000
+	t_grass_edge_2000
+	t_grass_edge_0010
+	t_grass_edge_1010
+	t_grass_edge_2010
+	t_grass_edge_0020
+	t_grass_edge_1020
+	t_grass_edge_2020
 
-	t_grass_edge_e
-	t_grass_edge_e # missing!
-	t_grass_edge_n_e
-	t_grass_edge_e
-	t_grass_edge_e
-	t_grass_edge_e
-	t_grass_edge_e
-	t_grass_edge_e
+	t_grass_edge_0100
+	t_grass_edge_1100
+	t_grass_edge_2100
+	t_grass_edge_0110
+	t_grass_edge_1110
+	t_grass_edge_2110
+	t_grass_edge_0120
+	t_grass_edge_1120
+	t_grass_edge_2120
+
+	t_grass_edge_0200
+	t_grass_edge_1200
+	t_grass_edge_2200
+	t_grass_edge_0210
+	t_grass_edge_1210
+	t_grass_edge_2210
+	t_grass_edge_0220
+	t_grass_edge_1220
+	t_grass_edge_2220
+
+	t_grass_edge_0001
+	t_grass_edge_1001
+	t_grass_edge_2001
+	t_grass_edge_0011
+	t_grass_edge_1011
+	t_grass_edge_2011
+	t_grass_edge_0021
+	t_grass_edge_1021
+	t_grass_edge_2021
+
+	t_grass_edge_0101
+	t_grass_edge_1101
+	t_grass_edge_2101
+	t_grass_edge_0111
+	t_grass_edge_1111
+	t_grass_edge_2111
+	t_grass_edge_0121
+	t_grass_edge_1121
+	t_grass_edge_2121
+
+	t_grass_edge_0201
+	t_grass_edge_1201
+	t_grass_edge_2201
+	t_grass_edge_0211
+	t_grass_edge_1211
+	t_grass_edge_2211
+	t_grass_edge_0221
+	t_grass_edge_1221
+	t_grass_edge_2221
+
+	t_grass_edge_0002
+	t_grass_edge_1002
+	t_grass_edge_2002
+	t_grass_edge_0012
+	t_grass_edge_1012
+	t_grass_edge_2012
+	t_grass_edge_0022
+	t_grass_edge_1022
+	t_grass_edge_2022
+
+	t_grass_edge_0102
+	t_grass_edge_1102
+	t_grass_edge_2102
+	t_grass_edge_0112
+	t_grass_edge_1112
+	t_grass_edge_2112
+	t_grass_edge_0122
+	t_grass_edge_1122
+	t_grass_edge_2122
+
+	t_grass_edge_0202
+	t_grass_edge_1202
+	t_grass_edge_2202
+	t_grass_edge_0212
+	t_grass_edge_1212
+	t_grass_edge_2212
+	t_grass_edge_0222
+	t_grass_edge_1222
+	t_grass_edge_2222
