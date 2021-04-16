@@ -19,8 +19,9 @@ Notes for searching:
 ------------------------------------------------
 
 Other terrain stuff:
-✔ Use AssetRefs instead of refreshTerrainSpriteCache()
-- Use AssetRefs instead of refreshBuildingSpriteCache()
+✔ Remove refreshTerrainSpriteCache()
+✔ Remove refreshBuildingSpriteCache()
+- Add terrain modification abilities
 
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it

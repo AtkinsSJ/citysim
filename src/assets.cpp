@@ -732,7 +732,6 @@ void reloadAssets()
 
 	// After stuff
 	rendererLoadAssets();
-	refreshBuildingSpriteCache(&buildingCatalogue);
 	logInfo("Assets reloaded successfully!"_s);
 }
 

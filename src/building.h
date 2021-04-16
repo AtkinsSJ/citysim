@@ -46,7 +46,6 @@ struct BuildingVariant
 	ConnectionType connections[ConnectionDirectionCount];
 	
 	String spriteName;
-	SpriteGroup *sprites;
 };
 
 struct BuildingDef
@@ -68,7 +67,6 @@ struct BuildingDef
 		};
 	};
 	String spriteName;
-	SpriteGroup *sprites;
 	Array<BuildingVariant> variants;
 
 	BuildMethod buildMethod;
@@ -192,7 +190,6 @@ void initBuildingCatalogue();
 
 BuildingDef *appendNewBuildingDef(String name);
 void loadBuildingDefs(Blob data, Asset *asset);
-void refreshBuildingSpriteCache(BuildingCatalogue *catalogue);
 void removeBuildingDefs(Array<String> idsToRemove);
 BuildingDef *getBuildingDef(s32 buildingTypeID);
 BuildingDef *getBuildingDef(Building *building);

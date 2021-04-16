@@ -798,7 +798,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 
 							if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
 
-							Sprite *sprite = getSprite(buildingDef->sprites, 0);
+							Sprite *sprite = getSprite(buildingDef->spriteName, 0);
 							V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
 							drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect2(footprint), renderer->shaderIds.pixelArt, color);
 						}
@@ -833,7 +833,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 
 								if (canAfford(city, buildCost))
 								{
-									Sprite *sprite = getSprite(buildingDef->sprites, 0);
+									Sprite *sprite = getSprite(buildingDef->spriteName, 0);
 									s32 maxGhosts = (dragResult.dragRect.w / buildingDef->width) * (dragResult.dragRect.h / buildingDef->height);
 									// TODO: If maxGhosts is 1, just draw 1!
 									DrawRectsGroup *rectsGroup = beginRectsGroupTextured(&renderer->worldOverlayBuffer, sprite->texture, renderer->shaderIds.pixelArt, maxGhosts);

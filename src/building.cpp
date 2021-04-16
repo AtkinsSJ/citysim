@@ -338,7 +338,6 @@ void loadBuildingDefs(Blob data, Asset *asset)
 						def->flags = tDef->flags;
 						def->size = tDef->size;
 						def->spriteName = tDef->spriteName;
-						def->sprites = tDef->sprites;
 						def->buildMethod = tDef->buildMethod;
 						def->buildCost = tDef->buildCost;
 						def->growsInZone = tDef->growsInZone;
@@ -956,27 +955,6 @@ Maybe<BuildingDef *> findBuildingIntersection(BuildingDef *defA, BuildingDef *de
 	}
 
 	return result;
-}
-
-void refreshBuildingSpriteCache(BuildingCatalogue *catalogue)
-{
-	DEBUG_FUNCTION();
-
-	for (auto it = catalogue->allBuildings.iterate(); it.hasNext(); it.next())
-	{
-		BuildingDef *def = it.get();
-
-		// Account for the "null" building
-		if (!isEmpty(def->spriteName))
-		{
-			def->sprites = getSpriteGroup(def->spriteName);
-		}
-
-		for (s32 variantIndex = 0; variantIndex < def->variants.count; variantIndex++)
-		{
-			def->variants[variantIndex].sprites = getSpriteGroup(def->variants[variantIndex].spriteName);
-		}
-	}
 }
 
 void initBuilding(Building *building, s32 id, BuildingDef *def, Rect2I footprint, GameTimestamp creationDate)
