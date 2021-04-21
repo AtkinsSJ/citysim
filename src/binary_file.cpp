@@ -1,20 +1,33 @@
 #pragma once
 
+FileHeader makeFileHeader(FileIdentifier identifier, u8 version)
+{
+	FileHeader result = {};
+
+	result.identifier    = identifier;
+	result.version       = version;
+	result.unixNewline   = 0x0A;
+	result.dosNewline[0] = 0x0D;
+	result.dosNewline[1] = 0x0A;
+
+	return result;
+}
+
 bool fileHeaderIsValid(FileHeader *fileHeader, String saveFileName, FileIdentifier identifier)
 {
 	bool isValid = true;
 
-	FileHeader example = FileHeader(identifier, 0);
-	if (fileHeader->identifier != example.identifier)
+	if (fileHeader->identifier != identifier)
 	{
 		logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
 			saveFileName,
-			makeString((char*)(&example.identifier), 4),
+			makeString((char*)(&identifier), 4),
 			makeString((char*)(&fileHeader->identifier), 4)
 		});
 		isValid = false;
 	}
-	else if (!isMemoryEqual(&fileHeader->unixNewline, &example.unixNewline, 3))
+	else if ((fileHeader->unixNewline != 0x0A)
+		  || (fileHeader->dosNewline[0] != 0x0D) || (fileHeader->dosNewline[1] != 0x0A))
 	{
 		logError("Save file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, {
 			saveFileName

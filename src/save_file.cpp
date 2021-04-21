@@ -39,7 +39,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		City *city = &gameState->city;
 
 		// File Header
-		FileHeader fileHeader = FileHeader(SAV_FILE_ID, SAV_VERSION);
+		FileHeader fileHeader = makeFileHeader(SAV_FILE_ID, SAV_VERSION);
 		append(&buffer, sizeof(fileHeader), &fileHeader);
 
 		// Meta

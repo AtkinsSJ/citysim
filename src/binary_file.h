@@ -49,12 +49,8 @@ struct FileHeader
 	leU8 version;
 
 	// Bytes for checking for unwanted newline-conversion
-	leU8 unixNewline = 0x0A;
-	leU8 dosNewline[2] = {0x0D, 0x0A};
-
-	FileHeader(FileIdentifier theIdentifier, leU8 theVersion)
-		: identifier(theIdentifier), version(theVersion)
-	{}
+	leU8 unixNewline; // = 0x0A;
+	leU8 dosNewline[2]; // = {0x0D, 0x0A};
 };
 
 struct FileChunkHeader
@@ -67,6 +63,7 @@ struct FileChunkHeader
 
 #pragma pack(pop)
 
+FileHeader makeFileHeader(FileIdentifier identifier, u8 version);
 bool fileHeaderIsValid(FileHeader *fileHeader, String saveFileName, FileIdentifier identifier);
 bool checkFileHeaderVersion(FileHeader *fileHeader, String saveFileName, u8 currentVersion);
 String readString(FileString source, u8 *base);
