@@ -18,6 +18,13 @@ Notes for searching:
 
 ------------------------------------------------
 
+Saving and loading:
+- Add a table-of-contents at the start of our binary files, which lists the chunks, along with their sizes and offsets. That way, we could read a specific chunk's data without having to read the entire file into memory.
+	-> Then, can have a function to get just that chunk's data, either from the file already in memory or by getting it from the file directly
+- Rewrite WriteBuffer API to make it more useful. (Returning pointers, etc)
+- Move save-file code for each layer into the layer.
+	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
+
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it
 - Tiles visually blend between terrain types
@@ -69,12 +76,6 @@ Move "keepItemOrder" concept from ChunkedArray methods to a bool field.
 Would be nice if items in Pools didn't have to extend PoolItem. Can we sneak the prev/next data in secretly instead?
 - The catch is that allocateItem() would need to know about that extra size.
 - So, maybe we change how that works entirely? At least 2 uses of Pools do require fancy logic in allocateItem() though.
-
-Saving and loading:
-- Move save-file code for each layer into the layer.
-	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
-- Might be worth having a table-of-contents at the start of our binary files, which lists the chunks, along with their sizes and offsets. That way, we could read a specific chunk's data without having to read the entire file into memory.
-	-> Then, can have a function to get just that chunk's data, either from the file already in memory or by getting it from the file directly
 
 Text Input:
 - Guide for handling textinputs properly: https://wiki.libsdl.org/Tutorials/TextInput

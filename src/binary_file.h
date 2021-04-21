@@ -1,5 +1,44 @@
 #pragma once
 
+/*
+
+	It's our own binary file-format!
+
+	It's basically a container format with individually-versioned sections, and
+	attempts made to accomodate changes to the data without the format itself
+	having to change.
+
+	Files begin with a FileHeader, which tells you what kind of file it is, its
+	version, where the table of contents can be found, and some fixed bytes used
+	to detect if the file has been corrupted by newline conversion. The version
+	refers to the overall container format - individual sections have their own
+	versioning so changes can be made without invalidating the entire file.
+
+	The table of contents is a series of FileTOCEntry's, which tell you where to
+	find each section. This is to allow partial reading of the file if there's
+	only one section you are interested in.
+
+	The sections themselves each begin with a FileSectionHeader, which tells you
+	the name, size and version of the section that follows directly after. Then,
+	the section data can behave however it likes!
+
+	For large blobs of data, FileBlob can be used. I wanted to avoid nailing down
+	how each blob is stored, so FileBlob records the encoding scheme used,
+	meaning that any blob can use any scheme and it will still be read correctly.
+	(Well, assuming the game knows about that scheme, but that's what versioning
+	is for!)
+
+	FileTOCEntry and FileSectionHeader are a little redundant: We could eliminate
+	the header and just put everything in the TOC entry. But, I like the apparent
+	safety of having both. You know what to expect when following a TOC entry,
+	and if you don't find a matching section header, you know something is wrong
+	immediately. I think the minor increase in file size and computation time is
+	worth it.
+
+	- Sam, 21/04/2021
+	
+ */
+
 #pragma pack(push, 1)
 
 typedef u32 FileIdentifier;
@@ -51,14 +90,25 @@ struct FileHeader
 	// Bytes for checking for unwanted newline-conversion
 	leU8 unixNewline; // = 0x0A;
 	leU8 dosNewline[2]; // = {0x0D, 0x0A};
+
+	// Offset within the file
+	leU32 tocOffset;
+	leU32 tocEntryCount;
 };
 
-struct FileChunkHeader
+struct FileTOCEntry
+{
+	FileIdentifier sectionID;
+	leU32 offset; // Within file
+	leU32 length;
+};
+
+struct FileSectionHeader
 {
 	LittleEndian<FileIdentifier> identifier;
 	leU8 version;
 	leU8 _pad[3]; // For future use maybe? Mostly just to make this be a multiple of 4 bytes.
-	leU32 length; // Length of the chunk, NOT including the size of this FileChunkHeader
+	leU32 length; // Length of the chunk, NOT including the size of this FileSectionHeader
 };
 
 #pragma pack(pop)
@@ -73,3 +123,18 @@ FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data
 FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, Array2<u8> *data, FileBlobCompressionScheme scheme);
 bool decodeBlob(FileBlob blob, u8 *baseMemory, u8 *dest, s32 destSize);
 bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest);
+
+struct FileWriter
+{
+	void addTOCEntry(FileIdentifier sectionID);
+	template <typename T>
+	T *startSection(FileIdentifier sectionID, u8 sectionVersion);
+	void endSection();
+	bool outputToFile(FileHandle *file);
+
+	WriteBuffer buffer;
+
+	FileHeader *header;
+};
+
+FileWriter startWritingFile(FileIdentifier identifier, u8 version);

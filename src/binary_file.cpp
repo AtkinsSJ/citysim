@@ -156,3 +156,43 @@ bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest)
 {
 	return decodeBlob(blob, baseMemory, dest->items, dest->w * dest->h);
 }
+
+FileWriter startWritingFile(FileIdentifier identifier, u8 version)
+{
+	FileWriter writer = {};
+	initWriteBuffer(&writer.buffer);
+
+	FileHeader fileHeader = makeFileHeader(identifier, version);
+	appendStruct<FileHeader>(&writer.buffer, &fileHeader);
+
+	return writer;
+}
+
+void FileWriter::addTOCEntry(FileIdentifier sectionID)
+{
+	// TODO: Implement!
+
+	// s32 startOffset = reserve(&buffer, sizeof(FileTOCEntry));
+
+	// FileTOCEntry entry = {};
+
+	// entry.sectionID = sectionID;
+
+}
+
+template <typename T>
+T *FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
+{
+	
+	return null;
+}
+
+void FileWriter::endSection()
+{
+	// TODO: Update TOC!
+}
+
+bool FileWriter::outputToFile(FileHandle *file)
+{
+	return writeToFile(file, &buffer);
+}

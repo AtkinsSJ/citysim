@@ -101,8 +101,8 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 			}
 
 			// META chunk
-			FileChunkHeader *header = (FileChunkHeader *) pos;
-			pos += sizeof(FileChunkHeader);
+			FileSectionHeader *header = (FileSectionHeader *) pos;
+			pos += sizeof(FileSectionHeader);
 			if (pos > eof)
 			{
 				savedGame->isReadable = false;
