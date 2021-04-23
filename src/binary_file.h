@@ -92,8 +92,8 @@ struct FileHeader
 	leU8 dosNewline[2]; // = {0x0D, 0x0A};
 
 	// Offset within the file
-	leU32 tocOffset;
-	leU32 tocEntryCount;
+	// leU32 tocOffset;
+	// leU32 tocEntryCount;
 };
 
 struct FileTOCEntry
@@ -127,14 +127,20 @@ bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest);
 struct FileWriter
 {
 	void addTOCEntry(FileIdentifier sectionID);
+
 	template <typename T>
 	T *startSection(FileIdentifier sectionID, u8 sectionVersion);
 	void endSection();
+
+
+
 	bool outputToFile(FileHandle *file);
 
 	WriteBuffer buffer;
 
-	FileHeader *header;
+	FileSectionHeader sectionHeader;
+	s32 startOfSectionHeader;
+	s32 startOfSectionData;
 };
 
 FileWriter startWritingFile(FileIdentifier identifier, u8 version);

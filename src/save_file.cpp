@@ -2,32 +2,6 @@
 
 bool writeSaveFile(FileHandle *file, GameState *gameState)
 {
-	struct ChunkHeaderWrapper
-	{
-		WriteBuffer *buffer;
-		s32 startOfChunkHeader;
-		s32 startOfChunkData;
-
-		FileSectionHeader chunkHeader;
-
-		ChunkHeaderWrapper(WriteBuffer *buffer, FileIdentifier chunkID, u8 chunkVersion)
-		{
-			this->buffer = buffer;
-			this->startOfChunkHeader = reserve(buffer, sizeof(FileSectionHeader));
-			this->startOfChunkData = getCurrentPosition(buffer);
-
-			this->chunkHeader = {};
-			this->chunkHeader.identifier = chunkID;
-			this->chunkHeader.version = chunkVersion;
-		}
-
-		~ChunkHeaderWrapper()
-		{
-			this->chunkHeader.length = getCurrentPosition(buffer) - this->startOfChunkData;
-			overwriteAt(buffer, startOfChunkHeader, sizeof(FileSectionHeader), &this->chunkHeader);
-		}
-	};
-
 	bool succeeded = file->isOpen;
 
 	if (succeeded)
@@ -52,312 +26,334 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Meta
 		{
-			SAVChunk_Meta *meta = writer.startSection<SAVChunk_Meta>(SAV_META_ID, SAV_META_VERSION);
+			writer.startSection<SAVChunk_Meta>(SAV_META_ID, SAV_META_VERSION);
 
-			// ChunkHeaderWrapper wrapper(&buffer, SAV_META_ID, SAV_META_VERSION);
-
-			meta->saveTimestamp = getCurrentUnixTimestamp();
-			meta->cityWidth     = (u16) city->bounds.w;
-			meta->cityHeight    = (u16) city->bounds.h;
-			meta->funds         = city->funds;
-			meta->population    = getTotalResidents(city);
-			meta->jobs          = getTotalJobs(city);
+			SAVChunk_Meta meta = {};
+			meta.saveTimestamp = getCurrentUnixTimestamp();
+			meta.cityWidth     = (u16) city->bounds.w;
+			meta.cityHeight    = (u16) city->bounds.h;
+			meta.funds         = city->funds;
+			meta.population    = getTotalResidents(city);
+			meta.jobs          = getTotalJobs(city);
 
 			s32 stringOffset = sizeof(meta);
-			meta->cityName = {(u32)city->name.length, (u32)stringOffset};
-			stringOffset += meta->cityName.length;
-			meta->playerName = {(u32)city->playerName.length, (u32)stringOffset};
-			stringOffset += meta->playerName.length;
+			meta.cityName = {(u32)city->name.length, (u32)stringOffset};
+			stringOffset += meta.cityName.length;
+			meta.playerName = {(u32)city->playerName.length, (u32)stringOffset};
+			stringOffset += meta.playerName.length;
 
 			// Clock
 			GameClock *clock = &gameState->gameClock;
-			meta->currentDate = clock->currentDay;
-			meta->timeWithinDay = clock->timeWithinDay;
+			meta.currentDate = clock->currentDay;
+			meta.timeWithinDay = clock->timeWithinDay;
 			
 			// Camera
 			Camera *camera = &renderer->worldCamera;
-			meta->cameraX = camera->pos.x;
-			meta->cameraY = camera->pos.y;
-			meta->cameraZoom = camera->zoom;
+			meta.cameraX = camera->pos.x;
+			meta.cameraY = camera->pos.y;
+			meta.cameraZoom = camera->zoom;
 
-			// // Write the data
-			// appendStruct(&buffer, &meta);
-			// append(&buffer, city->name.length, city->name.chars);
-			// append(&buffer, city->playerName.length, city->playerName.chars);
+			// Write the data
+			appendStruct(&writer.buffer, &meta);
+			append(&writer.buffer, city->name.length, city->name.chars);
+			append(&writer.buffer, city->playerName.length, city->playerName.chars);
 
 			writer.endSection();
 		}
 
-		// // Terrain
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_TERR_ID, SAV_TERR_VERSION);
-		// 	TerrainLayer *layer = &city->terrainLayer;
+		// Terrain
+		{
 
-		// 	SAVChunk_Terrain chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	s32 offset = sizeof(chunk);
+			writer.startSection<SAVChunk_Meta>(SAV_TERR_ID, SAV_TERR_VERSION);
+			TerrainLayer *layer = &city->terrainLayer;
 
-		// 	// Terrain generation parameters
-		// 	chunk.terrainGenerationSeed = layer->terrainGenerationSeed;
+			SAVChunk_Terrain chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
 
-		// 	// Terrain types table
-		// 	chunk.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
-		// 	chunk.offsetForTerrainTypeTable = offset;
-		// 	for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next())
-		// 	{
-		// 		TerrainDef *def = it.get();
-		// 		if (def->typeID == 0) continue; // Skip the null terrain def!
+			// Terrain generation parameters
+			chunk.terrainGenerationSeed = layer->terrainGenerationSeed;
 
-		// 		u32 typeID = def->typeID;
-		// 		u32 nameLength = def->name.length;
+			// Terrain types table
+			chunk.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
+			chunk.offsetForTerrainTypeTable = offset;
+			for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next())
+			{
+				TerrainDef *def = it.get();
+				if (def->typeID == 0) continue; // Skip the null terrain def!
 
-		// 		// 4 byte int id, 4 byte length, then the text as bytes
-		// 		appendStruct(&buffer, &typeID);
-		// 		appendStruct(&buffer, &nameLength);
-		// 		append(&buffer, nameLength, def->name.chars);
+				u32 typeID = def->typeID;
+				u32 nameLength = def->name.length;
 
-		// 		offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
-		// 	}
+				// 4 byte int id, 4 byte length, then the text as bytes
+				appendStruct(&writer.buffer, &typeID);
+				appendStruct(&writer.buffer, &nameLength);
+				append(&writer.buffer, nameLength, def->name.chars);
 
-		// 	// Tile terrain type (u8)
-		// 	chunk.tileTerrainType = appendBlob(offset, &buffer, &layer->tileTerrainType, Blob_RLE_S8);
-		// 	offset += chunk.tileTerrainType.length;
+				offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
+			}
 
-		// 	// Tile height (u8)
-		// 	chunk.tileHeight = appendBlob(offset, &buffer, &layer->tileHeight, Blob_RLE_S8);
-		// 	offset += chunk.tileHeight.length;
+			// Tile terrain type (u8)
+			chunk.tileTerrainType = appendBlob(offset, &writer.buffer, &layer->tileTerrainType, Blob_RLE_S8);
+			offset += chunk.tileTerrainType.length;
 
-		// 	// Tile sprite offset (u8)
-		// 	chunk.tileSpriteOffset = appendBlob(offset, &buffer, &layer->tileSpriteOffset, Blob_Uncompressed);
-		// 	offset += chunk.tileSpriteOffset.length;
+			// Tile height (u8)
+			chunk.tileHeight = appendBlob(offset, &writer.buffer, &layer->tileHeight, Blob_RLE_S8);
+			offset += chunk.tileHeight.length;
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			// Tile sprite offset (u8)
+			chunk.tileSpriteOffset = appendBlob(offset, &writer.buffer, &layer->tileSpriteOffset, Blob_Uncompressed);
+			offset += chunk.tileSpriteOffset.length;
 
-		// // Buildings
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_BLDG_ID, SAV_BLDG_VERSION);
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// 	SAVChunk_Buildings chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	s32 offset = sizeof(chunk);
+			writer.endSection();
+		}
 
-		// 	// Building types table
-		// 	chunk.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
-		// 	chunk.offsetForBuildingTypeTable = offset;
-		// 	for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
-		// 	{
-		// 		BuildingDef *def = it.get();
-		// 		if (def->typeID == 0) continue; // Skip the null building def!
+		// Buildings
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_BLDG_ID, SAV_BLDG_VERSION);
 
-		// 		u32 typeID = def->typeID;
-		// 		u32 nameLength = def->name.length;
+			SAVChunk_Buildings chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
 
-		// 		// 4 byte int id, 4 byte length, then the text as bytes
-		// 		appendStruct(&buffer, &typeID);
-		// 		appendStruct(&buffer, &nameLength);
-		// 		append(&buffer, nameLength, def->name.chars);
+			// Building types table
+			chunk.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
+			chunk.offsetForBuildingTypeTable = offset;
+			for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
+			{
+				BuildingDef *def = it.get();
+				if (def->typeID == 0) continue; // Skip the null building def!
 
-		// 		offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
-		// 	}
+				u32 typeID = def->typeID;
+				u32 nameLength = def->name.length;
 
-		// 	// Highest ID
-		// 	chunk.highestBuildingID = city->highestBuildingID;
+				// 4 byte int id, 4 byte length, then the text as bytes
+				appendStruct(&writer.buffer, &typeID);
+				appendStruct(&writer.buffer, &nameLength);
+				append(&writer.buffer, nameLength, def->name.chars);
 
-		// 	//
-		// 	// The buildings themselves!
-		// 	// I'm not sure how to actually do this... current thought is that the "core" building
-		// 	// data will be here, and that other stuff (eg, health/education of the occupants)
-		// 	// will be in the relevant layers' chunks. That seems the most extensible?
-		// 	// Another option would be to store the buildings here as a series of arrays, one
-		// 	// for each field, like we do for Terrain. That feels really messy though.
-		// 	// The tricky thing is that the Building struct in game feels likely to change a lot,
-		// 	// and we want the save format to change as little as possible... though that only
-		// 	// matters once the game is released (or near enough release that I start making
-		// 	// pre-made maps) so maybe it's not such a big issue?
-		// 	// Eh, going to just go ahead with a placeholder version, like the rest of this code!
-		// 	//
-		// 	// - Sam, 11/10/2019
-		// 	//
-		// 	chunk.buildingCount = city->buildings.count - 1; // Not the null building!
+				offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
+			}
 
-		// 	SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, chunk.buildingCount);
-		// 	s32 tempBuildingIndex = 0;
+			// Highest ID
+			chunk.highestBuildingID = city->highestBuildingID;
 
-		// 	for (auto it = city->buildings.iterate(); it.hasNext(); it.next())
-		// 	{
-		// 		Building *building = it.get();
-		// 		if (building->id == 0) continue; // Skip the null building!
+			//
+			// The buildings themselves!
+			// I'm not sure how to actually do this... current thought is that the "core" building
+			// data will be here, and that other stuff (eg, health/education of the occupants)
+			// will be in the relevant layers' chunks. That seems the most extensible?
+			// Another option would be to store the buildings here as a series of arrays, one
+			// for each field, like we do for Terrain. That feels really messy though.
+			// The tricky thing is that the Building struct in game feels likely to change a lot,
+			// and we want the save format to change as little as possible... though that only
+			// matters once the game is released (or near enough release that I start making
+			// pre-made maps) so maybe it's not such a big issue?
+			// Eh, going to just go ahead with a placeholder version, like the rest of this code!
+			//
+			// - Sam, 11/10/2019
+			//
+			chunk.buildingCount = city->buildings.count - 1; // Not the null building!
 
-		// 		SAVBuilding *sb = tempBuildings + tempBuildingIndex;
-		// 		*sb = {};
-		// 		sb->id = building->id;
-		// 		sb->typeID = building->typeID;
-		// 		sb->creationDate = building->creationDate;
-		// 		sb->x = (u16) building->footprint.x;
-		// 		sb->y = (u16) building->footprint.y;
-		// 		sb->w = (u16) building->footprint.w;
-		// 		sb->h = (u16) building->footprint.h;
-		// 		sb->spriteOffset = (u16) building->spriteOffset;
-		// 		sb->currentResidents = (u16) building->currentResidents;
-		// 		sb->currentJobs = (u16) building->currentJobs;
-		// 		sb->variantIndex = (u16) building->variantIndex;
+			SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, chunk.buildingCount);
+			s32 tempBuildingIndex = 0;
 
-		// 		tempBuildingIndex++;
-		// 	}
-		// 	chunk.buildings = appendBlob(offset, &buffer, chunk.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, Blob_Uncompressed);
-		// 	offset += chunk.buildings.length;
+			for (auto it = city->buildings.iterate(); it.hasNext(); it.next())
+			{
+				Building *building = it.get();
+				if (building->id == 0) continue; // Skip the null building!
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+				SAVBuilding *sb = tempBuildings + tempBuildingIndex;
+				*sb = {};
+				sb->id = building->id;
+				sb->typeID = building->typeID;
+				sb->creationDate = building->creationDate;
+				sb->x = (u16) building->footprint.x;
+				sb->y = (u16) building->footprint.y;
+				sb->w = (u16) building->footprint.w;
+				sb->h = (u16) building->footprint.h;
+				sb->spriteOffset = (u16) building->spriteOffset;
+				sb->currentResidents = (u16) building->currentResidents;
+				sb->currentJobs = (u16) building->currentJobs;
+				sb->variantIndex = (u16) building->variantIndex;
 
-		// // Zones
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_ZONE_ID, SAV_ZONE_VERSION);
-		// 	ZoneLayer *layer = &city->zoneLayer;
+				tempBuildingIndex++;
+			}
+			chunk.buildings = appendBlob(offset, &writer.buffer, chunk.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, Blob_Uncompressed);
+			offset += chunk.buildings.length;
 
-		// 	SAVChunk_Zone chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	s32 offset = sizeof(chunk);
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// 	// Tile zones
-		// 	chunk.tileZone = appendBlob(offset, &buffer, &layer->tileZone, Blob_RLE_S8);
-		// 	offset += chunk.tileZone.length;
+			writer.endSection();
+		}
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+		// Zones
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_ZONE_ID, SAV_ZONE_VERSION);
+			ZoneLayer *layer = &city->zoneLayer;
 
-		// // Budget
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_BDGT_ID, SAV_BDGT_VERSION);
-		// 	// BudgetLayer *layer = &city->budgetLayer;
+			SAVChunk_Zone chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
 
-		// 	SAVChunk_Budget chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	// s32 offset = sizeof(chunk);
+			// Tile zones
+			chunk.tileZone = appendBlob(offset, &writer.buffer, &layer->tileZone, Blob_RLE_S8);
+			offset += chunk.tileZone.length;
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// // Crime
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_CRIM_ID, SAV_CRIM_VERSION);
-		// 	CrimeLayer *layer = &city->crimeLayer;
+			writer.endSection();
+		}
 
-		// 	SAVChunk_Crime chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	// s32 offset = sizeof(chunk);
+		// Budget
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_BDGT_ID, SAV_BDGT_VERSION);
+			// BudgetLayer *layer = &city->budgetLayer;
 
-		// 	chunk.totalJailCapacity = layer->totalJailCapacity;
-		// 	chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
+			SAVChunk_Budget chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// // Education
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_EDUC_ID, SAV_EDUC_VERSION);
-		// 	// EducationLayer *layer = &city->educationLayer;
+			writer.endSection();
+		}
 
-		// 	SAVChunk_Education chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	// s32 offset = sizeof(chunk);
+		// Crime
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_CRIM_ID, SAV_CRIM_VERSION);
+			CrimeLayer *layer = &city->crimeLayer;
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			SAVChunk_Crime chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
 
-		// // Fire
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_FIRE_ID, SAV_FIRE_VERSION);
-		// 	FireLayer *layer = &city->fireLayer;
+			chunk.totalJailCapacity = layer->totalJailCapacity;
+			chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
 
-		// 	SAVChunk_Fire chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	s32 offset = sizeof(chunk);
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// 	// Active fires
-		// 	chunk.activeFireCount = layer->activeFireCount;
-		// 	SAVFire *tempFires = allocateMultiple<SAVFire>(tempArena, chunk.activeFireCount);
-		// 	s32 tempFireIndex = 0;
-		// 	// ughhhh I have to iterate the sectors to get this information!
-		// 	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
-		// 	{
-		// 		FireSector *sector = getSectorByIndex(&layer->sectors, sectorIndex);
+			writer.endSection();
+		}
 
-		// 		for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next())
-		// 		{
-		// 			Fire *fire = it.get();
-		// 			SAVFire *savFire = tempFires + tempFireIndex++;
-		// 			*savFire = {};
-		// 			savFire->x = (u16) fire->pos.x;
-		// 			savFire->y = (u16) fire->pos.y;
-		// 			savFire->startDate = fire->startDate;
-		// 		}
-		// 	}
-		// 	chunk.activeFires = appendBlob(offset, &buffer, chunk.activeFireCount * sizeof(SAVFire), (u8*)tempFires, Blob_Uncompressed);
-		// 	offset += chunk.activeFires.length;
+		// Education
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_EDUC_ID, SAV_EDUC_VERSION);
+			// EducationLayer *layer = &city->educationLayer;
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			SAVChunk_Education chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
 
-		// // Health
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_HLTH_ID, SAV_HLTH_VERSION);
-		// 	// HealthLayer *layer = &city->healthLayer;
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// 	SAVChunk_Health chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	// s32 offset = sizeof(chunk);
+			writer.endSection();
+		}
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+		// Fire
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_FIRE_ID, SAV_FIRE_VERSION);
+			FireLayer *layer = &city->fireLayer;
 
-		// // Land Value
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_LVAL_ID, SAV_LVAL_VERSION);
-		// 	LandValueLayer *layer = &city->landValueLayer;
+			SAVChunk_Fire chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
 
-		// 	SAVChunk_LandValue chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	s32 offset = sizeof(chunk);
+			// Active fires
+			chunk.activeFireCount = layer->activeFireCount;
+			SAVFire *tempFires = allocateMultiple<SAVFire>(tempArena, chunk.activeFireCount);
+			s32 tempFireIndex = 0;
+			// ughhhh I have to iterate the sectors to get this information!
+			for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
+			{
+				FireSector *sector = getSectorByIndex(&layer->sectors, sectorIndex);
 
-		// 	// Tile land value
-		// 	chunk.tileLandValue = appendBlob(offset, &buffer, &layer->tileLandValue, Blob_Uncompressed);
-		// 	offset += chunk.tileLandValue.length;
+				for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next())
+				{
+					Fire *fire = it.get();
+					SAVFire *savFire = tempFires + tempFireIndex++;
+					*savFire = {};
+					savFire->x = (u16) fire->pos.x;
+					savFire->y = (u16) fire->pos.y;
+					savFire->startDate = fire->startDate;
+				}
+			}
+			chunk.activeFires = appendBlob(offset, &writer.buffer, chunk.activeFireCount * sizeof(SAVFire), (u8*)tempFires, Blob_Uncompressed);
+			offset += chunk.activeFires.length;
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// // Pollution
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_PLTN_ID, SAV_PLTN_VERSION);
-		// 	PollutionLayer *layer = &city->pollutionLayer;
+			writer.endSection();
+		}
 
-		// 	SAVChunk_Pollution chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	s32 offset = sizeof(chunk);
+		// Health
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_HLTH_ID, SAV_HLTH_VERSION);
+			// HealthLayer *layer = &city->healthLayer;
 
-		// 	// Tile pollution
-		// 	chunk.tilePollution = appendBlob(offset, &buffer, &layer->tilePollution, Blob_Uncompressed);
-		// 	offset += chunk.tilePollution.length;
+			SAVChunk_Health chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
 
-		// // Transport
-		// {
-		// 	ChunkHeaderWrapper wrapper(&buffer, SAV_TPRT_ID, SAV_TPRT_VERSION);
-		// 	// TransportLayer *layer = &city->transportLayer;
+			writer.endSection();
+		}
 
-		// 	SAVChunk_Transport chunk = {};
-		// 	s32 startOfChunk = reserve(&buffer, sizeof(chunk));
-		// 	// s32 offset = sizeof(chunk);
+		// Land Value
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_LVAL_ID, SAV_LVAL_VERSION);
+			LandValueLayer *layer = &city->landValueLayer;
 
-		// 	overwriteAt(&buffer, startOfChunk, sizeof(chunk), &chunk);
-		// }
+			SAVChunk_LandValue chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
+
+			// Tile land value
+			chunk.tileLandValue = appendBlob(offset, &writer.buffer, &layer->tileLandValue, Blob_Uncompressed);
+			offset += chunk.tileLandValue.length;
+
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
+
+			writer.endSection();
+		}
+
+		// Pollution
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_PLTN_ID, SAV_PLTN_VERSION);
+			PollutionLayer *layer = &city->pollutionLayer;
+
+			SAVChunk_Pollution chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			s32 offset = sizeof(chunk);
+
+			// Tile pollution
+			chunk.tilePollution = appendBlob(offset, &writer.buffer, &layer->tilePollution, Blob_Uncompressed);
+			offset += chunk.tilePollution.length;
+
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
+
+			writer.endSection();
+		}
+
+		// Transport
+		{
+			writer.startSection<SAVChunk_Meta>(SAV_TPRT_ID, SAV_TPRT_VERSION);
+			// TransportLayer *layer = &city->transportLayer;
+
+			SAVChunk_Transport chunk = {};
+			s32 startOfChunk = reserve(&writer.buffer, sizeof(chunk));
+			// s32 offset = sizeof(chunk);
+
+			overwriteAt(&writer.buffer, startOfChunk, sizeof(chunk), &chunk);
+
+			writer.endSection();
+		}
 
 
-		// succeeded = writeToFile(file, &buffer);
+		// succeeded = writeToFile(file, &writer.buffer);
 
 		succeeded = writer.outputToFile(file);
 	}

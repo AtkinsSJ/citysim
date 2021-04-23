@@ -183,13 +183,22 @@ void FileWriter::addTOCEntry(FileIdentifier sectionID)
 template <typename T>
 T *FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 {
-	
+	this->startOfSectionHeader = reserve(&buffer, sizeof(FileSectionHeader));
+	this->startOfSectionData = getCurrentPosition(&buffer);
+
+	this->sectionHeader = {};
+	this->sectionHeader.identifier = sectionID;
+	this->sectionHeader.version = sectionVersion;
+
 	return null;
 }
 
 void FileWriter::endSection()
 {
 	// TODO: Update TOC!
+
+	this->sectionHeader.length = getCurrentPosition(&buffer) - this->startOfSectionData;
+	overwriteAt(&buffer, startOfSectionHeader, sizeof(FileSectionHeader), &this->sectionHeader);
 }
 
 bool FileWriter::outputToFile(FileHandle *file)
