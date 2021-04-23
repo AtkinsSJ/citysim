@@ -119,8 +119,6 @@ bool checkFileHeaderVersion(FileHeader *fileHeader, String saveFileName, u8 curr
 String readString(FileString source, u8 *base);
 void rleDecode(u8 *source, u8 *dest, s32 destSize);
 
-FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data, FileBlobCompressionScheme scheme);
-FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, Array2<u8> *data, FileBlobCompressionScheme scheme);
 bool decodeBlob(FileBlob blob, u8 *baseMemory, u8 *dest, s32 destSize);
 bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest);
 
@@ -138,9 +136,11 @@ struct FileWriter
 
 	template <typename T>
 	T *startSection(FileIdentifier sectionID, u8 sectionVersion);
+
+	FileBlob appendBlob(s32 currentOffset, s32 length, u8 *data, FileBlobCompressionScheme scheme);
+	FileBlob appendBlob(s32 currentOffset, Array2<u8> *data, FileBlobCompressionScheme scheme);
+
 	void endSection();
-
-
 
 	bool outputToFile(FileHandle *file);
 };

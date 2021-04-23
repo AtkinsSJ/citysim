@@ -89,39 +89,6 @@ void rleDecode(u8 *source, u8 *dest, s32 destSize)
 	}
 }
 
-FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data, FileBlobCompressionScheme scheme)
-{
-	FileBlob result = {};
-	result.compressionScheme = scheme;
-	result.relativeOffset = currentOffset;
-	result.decompressedLength = length;
-
-	switch (scheme)
-	{
-		case Blob_Uncompressed: {
-			buffer->appendBytes(length, data);
-			result.length = length;
-		} break;
-
-		case Blob_RLE_S8: {
-			WriteBufferRange range = buffer->appendRLEBytes(length, data);
-			result.length = range.length;
-		} break;
-
-		default: {
-			logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to Blob_Uncompressed."_s, {formatInt(scheme)});
-			result = appendBlob(currentOffset, buffer, length, data, Blob_Uncompressed);
-		} break;
-	}
-
-	return result;
-}
-
-FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, Array2<u8> *data, FileBlobCompressionScheme scheme)
-{
-	return appendBlob(currentOffset, buffer, data->w * data->h, data->items, scheme);
-}
-
 bool decodeBlob(FileBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
 {
 	bool succeeded = true;
@@ -192,6 +159,39 @@ T *FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	this->sectionHeader.version = sectionVersion;
 
 	return null;
+}
+
+FileBlob FileWriter::appendBlob(s32 currentOffset, s32 length, u8 *data, FileBlobCompressionScheme scheme)
+{
+	FileBlob result = {};
+	result.compressionScheme = scheme;
+	result.relativeOffset = currentOffset;
+	result.decompressedLength = length;
+
+	switch (scheme)
+	{
+		case Blob_Uncompressed: {
+			buffer.appendBytes(length, data);
+			result.length = length;
+		} break;
+
+		case Blob_RLE_S8: {
+			WriteBufferRange range = buffer.appendRLEBytes(length, data);
+			result.length = range.length;
+		} break;
+
+		default: {
+			logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to Blob_Uncompressed."_s, {formatInt(scheme)});
+			result = appendBlob(currentOffset, length, data, Blob_Uncompressed);
+		} break;
+	}
+
+	return result;
+}
+
+FileBlob FileWriter::appendBlob(s32 currentOffset, Array2<u8> *data, FileBlobCompressionScheme scheme)
+{
+	return appendBlob(currentOffset, data->w * data->h, data->items, scheme);
 }
 
 void FileWriter::endSection()
