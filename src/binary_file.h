@@ -136,6 +136,8 @@ struct FileWriter
 
 	void startSection(FileIdentifier sectionID, u8 sectionVersion);
 
+	s32 getSectionRelativeOffset();
+
 	FileBlob appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme);
 	FileBlob appendBlob(Array2<u8> *data, FileBlobCompressionScheme scheme);
 

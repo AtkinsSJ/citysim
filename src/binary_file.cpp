@@ -158,6 +158,11 @@ void FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	this->sectionHeader.version = sectionVersion;
 }
 
+s32 FileWriter::getSectionRelativeOffset()
+{
+	return buffer.getCurrentPosition() - startOfSectionData;
+}
+
 FileBlob FileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme)
 {
 	FileBlob result = {};

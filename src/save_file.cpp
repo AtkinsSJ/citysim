@@ -62,15 +62,14 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			TerrainLayer *layer = &city->terrainLayer;
 
 			SAVChunk_Terrain chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
-			s32 offset = sizeof(chunk);
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Terrain>();
 
 			// Terrain generation parameters
 			chunk.terrainGenerationSeed = layer->terrainGenerationSeed;
 
 			// Terrain types table
 			chunk.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
-			chunk.offsetForTerrainTypeTable = offset;
+			chunk.offsetForTerrainTypeTable = writer.getSectionRelativeOffset();
 			for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next())
 			{
 				TerrainDef *def = it.get();
@@ -83,8 +82,6 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 				writer.buffer.appendLiteral(typeID);
 				writer.buffer.appendLiteral(nameLength);
 				writer.buffer.appendBytes(nameLength, def->name.chars);
-
-				offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
 			}
 
 			// Tile terrain type (u8)
@@ -106,12 +103,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			writer.startSection(SAV_BLDG_ID, SAV_BLDG_VERSION);
 
 			SAVChunk_Buildings chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
-			s32 offset = sizeof(chunk);
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Buildings>();
 
 			// Building types table
 			chunk.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
-			chunk.offsetForBuildingTypeTable = offset;
+			chunk.offsetForBuildingTypeTable = writer.getSectionRelativeOffset();
 			for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
 			{
 				BuildingDef *def = it.get();
@@ -124,8 +120,6 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 				writer.buffer.appendLiteral(typeID);
 				writer.buffer.appendLiteral(nameLength);
 				writer.buffer.appendBytes(nameLength, def->name.chars);
-
-				offset += sizeof(typeID) + sizeof(nameLength) + nameLength;
 			}
 
 			// Highest ID
@@ -185,7 +179,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			ZoneLayer *layer = &city->zoneLayer;
 
 			SAVChunk_Zone chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Zone>();
 
 			// Tile zones
 			chunk.tileZone = writer.appendBlob(&layer->tileZone, Blob_RLE_S8);
@@ -201,7 +195,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			// BudgetLayer *layer = &city->budgetLayer;
 
 			SAVChunk_Budget chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Budget>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -214,7 +208,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			CrimeLayer *layer = &city->crimeLayer;
 
 			SAVChunk_Crime chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Crime>();
 
 			chunk.totalJailCapacity = layer->totalJailCapacity;
 			chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
@@ -230,7 +224,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			// EducationLayer *layer = &city->educationLayer;
 
 			SAVChunk_Education chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Education>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -243,7 +237,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			FireLayer *layer = &city->fireLayer;
 
 			SAVChunk_Fire chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Fire>();
 
 			// Active fires
 			chunk.activeFireCount = layer->activeFireCount;
@@ -277,7 +271,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			// HealthLayer *layer = &city->healthLayer;
 
 			SAVChunk_Health chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Health>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -290,7 +284,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			LandValueLayer *layer = &city->landValueLayer;
 
 			SAVChunk_LandValue chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_LandValue>();
 
 			// Tile land value
 			chunk.tileLandValue = writer.appendBlob(&layer->tileLandValue, Blob_Uncompressed);
@@ -306,7 +300,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			PollutionLayer *layer = &city->pollutionLayer;
 
 			SAVChunk_Pollution chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Pollution>();
 
 			// Tile pollution
 			chunk.tilePollution = writer.appendBlob(&layer->tilePollution, Blob_Uncompressed);
@@ -322,7 +316,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			// TransportLayer *layer = &city->transportLayer;
 
 			SAVChunk_Transport chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Transport>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
