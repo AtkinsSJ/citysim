@@ -126,6 +126,14 @@ bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest);
 
 struct FileWriter
 {
+	WriteBuffer buffer;
+
+	FileSectionHeader sectionHeader;
+	s32 startOfSectionHeader;
+	s32 startOfSectionData;
+
+// Methods
+
 	void addTOCEntry(FileIdentifier sectionID);
 
 	template <typename T>
@@ -135,12 +143,6 @@ struct FileWriter
 
 
 	bool outputToFile(FileHandle *file);
-
-	WriteBuffer buffer;
-
-	FileSectionHeader sectionHeader;
-	s32 startOfSectionHeader;
-	s32 startOfSectionData;
 };
 
 FileWriter startWritingFile(FileIdentifier identifier, u8 version);

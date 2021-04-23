@@ -1,111 +1,115 @@
 #pragma once
 
-void initWriteBuffer(WriteBuffer *buffer, s32 chunkSize, MemoryArena *arena)
+void WriteBuffer::init(s32 chunkSize_, MemoryArena *arena_)
 {
-	buffer->arena = arena;
-	buffer->chunkSize = chunkSize;
-	buffer->byteCount = 0;
-	buffer->chunkCount = 0;
-	buffer->firstChunk = null;
-	buffer->lastChunk = null;
+	this->arena = arena_;
+	this->chunkSize = chunkSize_;
+	this->byteCount = 0;
+	this->chunkCount = 0;
+	this->firstChunk = null;
+	this->lastChunk = null;
 
-	appendNewChunk(buffer);
+	appendNewChunk();
 }
 
-bool writeToFile(FileHandle *file, WriteBuffer *buffer)
+template <typename T>
+inline WriteBufferLocation WriteBuffer::appendLiteral(T literal)
 {
-	bool succeeded = true;
-
-	// Iterate chunks
-	for (WriteBufferChunk *chunk = buffer->firstChunk;
-		chunk != null;
-		chunk = chunk->nextChunk)
-	{
-		succeeded = writeToFile(file, chunk->used, chunk->bytes);
-		if (!succeeded) break;
-	}
-
-	return succeeded;
+	return appendBytes(sizeof(T), &literal);
 }
 
-void appendNewChunk(WriteBuffer *buffer)
+template <typename T>
+inline WriteBufferLocation WriteBuffer::reserveLiteral()
 {
-	Blob blob = allocateBlob(buffer->arena, sizeof(WriteBufferChunk) + buffer->chunkSize);
-	WriteBufferChunk *newChunk = (WriteBufferChunk *)blob.memory;
-	newChunk->used = 0;
-	newChunk->bytes = (u8 *) (blob.memory + sizeof(WriteBufferChunk));
-	newChunk->nextChunk = null;
-
-	if (buffer->chunkCount == 0)
-	{
-		buffer->firstChunk = buffer->lastChunk = newChunk;
-		buffer->chunkCount = 1;
-	}
-	else
-	{
-		buffer->lastChunk->nextChunk = newChunk;
-		buffer->lastChunk = newChunk;
-		buffer->chunkCount++;
-	}
+	return reserveBytes(sizeof(T));
 }
 
-void appendS8(WriteBuffer *buffer, s8 byte)
+template <typename T>
+inline WriteBufferLocation WriteBuffer::appendStruct(T *theStruct)
 {
-	if (buffer->lastChunk->used >= buffer->chunkSize)
-	{
-		appendNewChunk(buffer);
-	}
-
-	buffer->lastChunk->bytes[buffer->lastChunk->used++] = *((u8*)&byte);
-	buffer->byteCount++;
+	return appendBytes(sizeof(T), theStruct);
 }
 
-void appendU8(WriteBuffer *buffer, u8 byte)
+template <typename T>
+inline WriteBufferLocation WriteBuffer::reserveStruct()
 {
-	if (buffer->lastChunk->used >= buffer->chunkSize)
-	{
-		appendNewChunk(buffer);
-	}
-
-	buffer->lastChunk->bytes[buffer->lastChunk->used++] = byte;
-	buffer->byteCount++;
+	return reserveBytes(sizeof(T));
 }
 
-void append(WriteBuffer *buffer, s32 length, void *data)
+WriteBufferLocation WriteBuffer::appendBytes(s32 length, void *bytes)
 {
+	WriteBufferLocation startLoc = getCurrentPosition();
+
 	// Data might not fit in the current chunk, so keep allocating new ones until we're done
 	s32 remainingLength = length;
-	u8 *dataPos = (u8*) data;
+	u8 *dataPos = (u8*) bytes;
 
 	while (remainingLength > 0)
 	{
-		s32 remainingInChunk = buffer->chunkSize - buffer->lastChunk->used;
+		s32 remainingInChunk = chunkSize - lastChunk->used;
 		if (remainingInChunk > remainingLength)
 		{
 			// Copy the whole thing into the current chunk
-			copyMemory(dataPos, (buffer->lastChunk->bytes + buffer->lastChunk->used), remainingLength);
-			buffer->lastChunk->used += remainingLength;
-			buffer->byteCount += remainingLength;
+			copyMemory(dataPos, (lastChunk->bytes + lastChunk->used), remainingLength);
+			lastChunk->used += remainingLength;
+			byteCount += remainingLength;
 			remainingLength = 0;
 		}
 		else
 		{
 			// Copy the amount that will fit in the current chunk
 			s32 lengthToCopy = remainingInChunk;
-			copyMemory(dataPos, (buffer->lastChunk->bytes + buffer->lastChunk->used), lengthToCopy);
+			copyMemory(dataPos, (lastChunk->bytes + lastChunk->used), lengthToCopy);
 			dataPos += lengthToCopy;
-			buffer->lastChunk->used += lengthToCopy;
-			buffer->byteCount += lengthToCopy;
+			lastChunk->used += lengthToCopy;
+			byteCount += lengthToCopy;
 			remainingLength -= lengthToCopy;
 
 			// Get a new chunk
-			appendNewChunk(buffer);
+			appendNewChunk();
 		}
 	}
+
+	return startLoc;
 }
 
-s32 appendRLE(WriteBuffer *buffer, s32 length, u8 *data)
+WriteBufferLocation WriteBuffer::reserveBytes(s32 length)
 {
+	WriteBufferLocation result = getCurrentPosition();
+
+	s32 remainingLength = length;
+
+	while (remainingLength > 0)
+	{
+		s32 remainingInChunk = chunkSize - lastChunk->used;
+		if (remainingInChunk > remainingLength)
+		{
+			// Fit the whole thing into the current chunk
+			lastChunk->used += remainingLength;
+			byteCount += remainingLength;
+			remainingLength = 0;
+		}
+		else
+		{
+			// Fit the amount that will fit in the current chunk
+			s32 lengthToCopy = remainingInChunk;
+			lastChunk->used += lengthToCopy;
+			byteCount += lengthToCopy;
+			remainingLength -= lengthToCopy;
+
+			// Get a new chunk
+			appendNewChunk();
+		}
+	}
+
+	return result;
+}
+
+WriteBufferRange WriteBuffer::appendRLEBytes(s32 length, u8 *bytes)
+{
+	WriteBufferRange result = {};
+	result.start = getCurrentPosition();
+
 	// Our scheme is, (s8 length, u8...data)
 	// Positive length = repeat the next byte `length` times.
 	// Negative length = copy the next `-length` bytes literally.
@@ -114,10 +118,8 @@ s32 appendRLE(WriteBuffer *buffer, s32 length, u8 *data)
 
 	// Though, for attempt #1 we'll stick to always outputting runs, even if it's
 	// a run of length 1.
-	u8 *end = data + length;
-	u8 *pos = data;
-
-	s32 outputLength = 0;
+	u8 *end = bytes + length;
+	u8 *pos = bytes;
 
 	while (pos < end)
 	{
@@ -129,71 +131,43 @@ s32 appendRLE(WriteBuffer *buffer, s32 length, u8 *data)
 			pos++;
 		}
 
-		appendS8(buffer, count);
-		appendU8(buffer, value);
-		outputLength += 2;
-	}
-
-	return outputLength;
-}
-
-s32 getCurrentPosition(WriteBuffer *buffer)
-{
-	s32 result = buffer->byteCount;
-	return result;
-}
-
-s32 reserve(WriteBuffer *buffer, s32 length)
-{
-	s32 result = buffer->byteCount;
-
-	s32 remainingLength = length;
-
-	while (remainingLength > 0)
-	{
-		s32 remainingInChunk = buffer->chunkSize - buffer->lastChunk->used;
-		if (remainingInChunk > remainingLength)
-		{
-			// Fit the whole thing into the current chunk
-			buffer->lastChunk->used += remainingLength;
-			buffer->byteCount += remainingLength;
-			remainingLength = 0;
-		}
-		else
-		{
-			// Fit the amount that will fit in the current chunk
-			s32 lengthToCopy = remainingInChunk;
-			buffer->lastChunk->used += lengthToCopy;
-			buffer->byteCount += lengthToCopy;
-			remainingLength -= lengthToCopy;
-
-			// Get a new chunk
-			appendNewChunk(buffer);
-		}
+		appendLiteral<s8>(count);
+		appendLiteral<u8>(value);
+		result.length += 2;
 	}
 
 	return result;
 }
 
-void overwriteAt(WriteBuffer *buffer, s32 indexInBuffer, s32 length, void *data)
+inline WriteBufferLocation WriteBuffer::getCurrentPosition()
+{
+	return byteCount;
+}
+
+s32 WriteBuffer::getLengthSince(WriteBufferLocation start)
+{
+	return getCurrentPosition() - start;
+}
+
+void WriteBuffer::overwriteAt(WriteBufferLocation location, s32 length, void *data)
 {
 	// Find the chunk this starts in
 	WriteBufferChunk *chunk;
-	s32 chunkIndex = indexInBuffer / buffer->chunkSize;
-	chunk = buffer->firstChunk;
+	s32 chunkIndex = location / chunkSize;
+	chunk = firstChunk;
 	while (chunkIndex > 0)
 	{
 		chunk = chunk->nextChunk;
 		chunkIndex--;
 	}
 
-	s32 posInChunk = indexInBuffer % buffer->chunkSize;
+	s32 posInChunk = location % chunkSize;
 
 	s32 remainingLength = length;
 	u8 *dataPos = (u8*) data;
 	while (remainingLength > 0)
 	{
-		s32 remainingInChunk = buffer->chunkSize - posInChunk;
+		s32 remainingInChunk = chunkSize - posInChunk;
 		if (remainingInChunk > remainingLength)
 		{
 			// Copy the whole thing into the current chunk
@@ -212,5 +186,42 @@ void overwriteAt(WriteBuffer *buffer, s32 indexInBuffer, s32 length, void *data)
 			chunk = chunk->nextChunk;
 			posInChunk = 0;
 		}
+	}
+}
+
+bool WriteBuffer::writeToFile(FileHandle *file)
+{
+	bool succeeded = true;
+
+	// Iterate chunks
+	for (WriteBufferChunk *chunk = firstChunk;
+		chunk != null;
+		chunk = chunk->nextChunk)
+	{
+		succeeded = ::writeToFile(file, chunk->used, chunk->bytes);
+		if (!succeeded) break;
+	}
+
+	return succeeded;
+}
+
+void WriteBuffer::appendNewChunk()
+{
+	Blob blob = allocateBlob(arena, sizeof(WriteBufferChunk) + chunkSize);
+	WriteBufferChunk *newChunk = (WriteBufferChunk *)blob.memory;
+	newChunk->used = 0;
+	newChunk->bytes = (u8 *) (blob.memory + sizeof(WriteBufferChunk));
+	newChunk->nextChunk = null;
+
+	if (chunkCount == 0)
+	{
+		firstChunk = lastChunk = newChunk;
+		chunkCount = 1;
+	}
+	else
+	{
+		lastChunk->nextChunk = newChunk;
+		lastChunk = newChunk;
+		chunkCount++;
 	}
 }

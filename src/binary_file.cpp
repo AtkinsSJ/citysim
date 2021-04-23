@@ -99,12 +99,13 @@ FileBlob appendBlob(s32 currentOffset, WriteBuffer *buffer, s32 length, u8 *data
 	switch (scheme)
 	{
 		case Blob_Uncompressed: {
-			append(buffer, length, data);
+			buffer->appendBytes(length, data);
 			result.length = length;
 		} break;
 
 		case Blob_RLE_S8: {
-			result.length = appendRLE(buffer, length, data);
+			WriteBufferRange range = buffer->appendRLEBytes(length, data);
+			result.length = range.length;
 		} break;
 
 		default: {
@@ -160,10 +161,10 @@ bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest)
 FileWriter startWritingFile(FileIdentifier identifier, u8 version)
 {
 	FileWriter writer = {};
-	initWriteBuffer(&writer.buffer);
+	writer.buffer.init();
 
 	FileHeader fileHeader = makeFileHeader(identifier, version);
-	appendStruct<FileHeader>(&writer.buffer, &fileHeader);
+	writer.buffer.appendStruct<FileHeader>(&fileHeader);
 
 	return writer;
 }
@@ -183,8 +184,8 @@ void FileWriter::addTOCEntry(FileIdentifier sectionID)
 template <typename T>
 T *FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 {
-	this->startOfSectionHeader = reserve(&buffer, sizeof(FileSectionHeader));
-	this->startOfSectionData = getCurrentPosition(&buffer);
+	this->startOfSectionHeader = buffer.reserveStruct<FileSectionHeader>();
+	this->startOfSectionData = buffer.getCurrentPosition();
 
 	this->sectionHeader = {};
 	this->sectionHeader.identifier = sectionID;
@@ -197,11 +198,11 @@ void FileWriter::endSection()
 {
 	// TODO: Update TOC!
 
-	this->sectionHeader.length = getCurrentPosition(&buffer) - this->startOfSectionData;
-	overwriteAt(&buffer, startOfSectionHeader, sizeof(FileSectionHeader), &this->sectionHeader);
+	this->sectionHeader.length = buffer.getLengthSince(this->startOfSectionData);
+	buffer.overwriteAt(startOfSectionHeader, sizeof(FileSectionHeader), &this->sectionHeader);
 }
 
 bool FileWriter::outputToFile(FileHandle *file)
 {
-	return writeToFile(file, &buffer);
+	return buffer.writeToFile(file);
 }

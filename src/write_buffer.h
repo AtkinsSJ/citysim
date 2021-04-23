@@ -1,11 +1,30 @@
 #pragma once
 
+/*
+
+	A WriteBuffer lets you compose a blob of binary data, without knowing in
+	advance how large it will be. The buffer is divided into uniform chunks.
+	Changing the data by direct pointer access is not allowed, as the type you
+	are changing may be split across multiple chunks. Instead, use overwriteAt(),
+	which makes those changes correctly. Functions that append data return a
+	WriteBufferLocation for the start of that data, to make using overwriteAt()
+	easier.
+
+*/
+
 struct WriteBufferChunk
 {
 	s32 used;
 	u8 *bytes;
 
 	WriteBufferChunk *nextChunk;
+};
+
+typedef s32 WriteBufferLocation;
+struct WriteBufferRange
+{
+	WriteBufferLocation start;
+	s32 length;
 };
 
 struct WriteBuffer
@@ -17,31 +36,35 @@ struct WriteBuffer
 	s32 chunkCount;
 	WriteBufferChunk *firstChunk;
 	WriteBufferChunk *lastChunk;
-};
 
-void initWriteBuffer(WriteBuffer *buffer, s32 chunkSize = KB(4), MemoryArena *arena = tempArena);
+// Methods
 
-bool writeToFile(FileHandle *file, WriteBuffer *buffer);
+	void init(s32 chunkSize = KB(4), MemoryArena *arena = tempArena);
 
-void append(WriteBuffer *buffer, s32 length, void *data);
-template<typename T>
-inline void appendStruct(WriteBuffer *buffer, T *data)
-{
-	append(buffer, sizeof(T), data);
-}
+	template <typename T>
+	WriteBufferLocation appendLiteral(T literal);
+	template <typename T>
+	WriteBufferLocation reserveLiteral();
 
-void appendS8(WriteBuffer *buffer, s8 byte);
-void appendU8(WriteBuffer *buffer, u8 byte);
+	template <typename T>
+	WriteBufferLocation appendStruct(T *theStruct);
+	template <typename T>
+	WriteBufferLocation reserveStruct();
 
-// Returns the number of bytes written
-s32 appendRLE(WriteBuffer *buffer, s32 length, u8 *data);
+	WriteBufferLocation appendBytes(s32 length, void *bytes);
+	WriteBufferLocation reserveBytes(s32 length);
 
-// Like append(), but leaves the bytes blank to fill in later. Returns the start byte's index.
-s32 reserve(WriteBuffer *buffer, s32 length);
+	WriteBufferRange appendRLEBytes(s32 length, u8 *bytes);
 
-s32 getCurrentPosition(WriteBuffer *buffer);
+	WriteBufferLocation getCurrentPosition();
+	s32 getLengthSince(WriteBufferLocation start); // How many bytes were output since that point
 
-void overwriteAt(WriteBuffer *buffer, s32 indexInBuffer, s32 length, void *data);
+	void overwriteAt(WriteBufferLocation location, s32 length, void *data);
+
+	bool writeToFile(FileHandle *file);
+
 
 // Internal
-void appendNewChunk(WriteBuffer *buffer);
+
+	void appendNewChunk();
+};
