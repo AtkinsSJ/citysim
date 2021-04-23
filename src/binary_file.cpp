@@ -148,8 +148,7 @@ void FileWriter::addTOCEntry(FileIdentifier sectionID)
 
 }
 
-template <typename T>
-T *FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
+void FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 {
 	this->startOfSectionHeader = buffer.reserveStruct<FileSectionHeader>();
 	this->startOfSectionData = buffer.getCurrentPosition();
@@ -157,8 +156,6 @@ T *FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	this->sectionHeader = {};
 	this->sectionHeader.identifier = sectionID;
 	this->sectionHeader.version = sectionVersion;
-
-	return null;
 }
 
 FileBlob FileWriter::appendBlob(s32 currentOffset, s32 length, u8 *data, FileBlobCompressionScheme scheme)
@@ -192,6 +189,17 @@ FileBlob FileWriter::appendBlob(s32 currentOffset, s32 length, u8 *data, FileBlo
 FileBlob FileWriter::appendBlob(s32 currentOffset, Array2<u8> *data, FileBlobCompressionScheme scheme)
 {
 	return appendBlob(currentOffset, data->w * data->h, data->items, scheme);
+}
+	
+FileString FileWriter::appendString(String s)
+{
+	FileString result = {};
+
+	result.length = s.length;
+	result.relativeOffset = buffer.getCurrentPosition() - startOfSectionData;
+	buffer.appendBytes(s.length, s.chars);
+
+	return result;
 }
 
 void FileWriter::endSection()

@@ -26,7 +26,8 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Meta
 		{
-			/*SAVChunk_Meta *meta = */writer.startSection<SAVChunk_Meta>(SAV_META_ID, SAV_META_VERSION);
+			writer.startSection(SAV_META_ID, SAV_META_VERSION);
+			WriteBufferLocation metaLoc = writer.buffer.reserveStruct<SAVChunk_Meta>();
 
 			SAVChunk_Meta meta = {};
 			meta.saveTimestamp = getCurrentUnixTimestamp();
@@ -36,11 +37,8 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			meta.population    = getTotalResidents(city);
 			meta.jobs          = getTotalJobs(city);
 
-			s32 stringOffset = sizeof(SAVChunk_Meta);
-			meta.cityName = {(u32)city->name.length, (u32)stringOffset};
-			stringOffset += meta.cityName.length;
-			meta.playerName = {(u32)city->playerName.length, (u32)stringOffset};
-			stringOffset += meta.playerName.length;
+			meta.cityName   = writer.appendString(city->name);
+			meta.playerName = writer.appendString(city->playerName);
 
 			// Clock
 			GameClock *clock = &gameState->gameClock;
@@ -53,18 +51,14 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			meta.cameraY = camera->pos.y;
 			meta.cameraZoom = camera->zoom;
 
-			// Write the data
-			writer.buffer.appendStruct<SAVChunk_Meta>(&meta);
-			writer.buffer.appendBytes(city->name.length, city->name.chars);
-			writer.buffer.appendBytes(city->playerName.length, city->playerName.chars);
-
+			writer.buffer.overwriteAt(metaLoc, sizeof(meta), &meta);
 			writer.endSection();
 		}
 
 		// Terrain
 		{
 
-			writer.startSection<SAVChunk_Meta>(SAV_TERR_ID, SAV_TERR_VERSION);
+			writer.startSection(SAV_TERR_ID, SAV_TERR_VERSION);
 			TerrainLayer *layer = &city->terrainLayer;
 
 			SAVChunk_Terrain chunk = {};
@@ -112,7 +106,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Buildings
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_BLDG_ID, SAV_BLDG_VERSION);
+			writer.startSection(SAV_BLDG_ID, SAV_BLDG_VERSION);
 
 			SAVChunk_Buildings chunk = {};
 			WriteBufferLocation startOfChunk = writer.buffer.reserveBytes(sizeof(chunk));
@@ -191,7 +185,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Zones
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_ZONE_ID, SAV_ZONE_VERSION);
+			writer.startSection(SAV_ZONE_ID, SAV_ZONE_VERSION);
 			ZoneLayer *layer = &city->zoneLayer;
 
 			SAVChunk_Zone chunk = {};
@@ -209,7 +203,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Budget
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_BDGT_ID, SAV_BDGT_VERSION);
+			writer.startSection(SAV_BDGT_ID, SAV_BDGT_VERSION);
 			// BudgetLayer *layer = &city->budgetLayer;
 
 			SAVChunk_Budget chunk = {};
@@ -223,7 +217,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Crime
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_CRIM_ID, SAV_CRIM_VERSION);
+			writer.startSection(SAV_CRIM_ID, SAV_CRIM_VERSION);
 			CrimeLayer *layer = &city->crimeLayer;
 
 			SAVChunk_Crime chunk = {};
@@ -240,7 +234,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Education
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_EDUC_ID, SAV_EDUC_VERSION);
+			writer.startSection(SAV_EDUC_ID, SAV_EDUC_VERSION);
 			// EducationLayer *layer = &city->educationLayer;
 
 			SAVChunk_Education chunk = {};
@@ -254,7 +248,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Fire
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_FIRE_ID, SAV_FIRE_VERSION);
+			writer.startSection(SAV_FIRE_ID, SAV_FIRE_VERSION);
 			FireLayer *layer = &city->fireLayer;
 
 			SAVChunk_Fire chunk = {};
@@ -290,7 +284,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Health
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_HLTH_ID, SAV_HLTH_VERSION);
+			writer.startSection(SAV_HLTH_ID, SAV_HLTH_VERSION);
 			// HealthLayer *layer = &city->healthLayer;
 
 			SAVChunk_Health chunk = {};
@@ -304,7 +298,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Land Value
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_LVAL_ID, SAV_LVAL_VERSION);
+			writer.startSection(SAV_LVAL_ID, SAV_LVAL_VERSION);
 			LandValueLayer *layer = &city->landValueLayer;
 
 			SAVChunk_LandValue chunk = {};
@@ -322,7 +316,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Pollution
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_PLTN_ID, SAV_PLTN_VERSION);
+			writer.startSection(SAV_PLTN_ID, SAV_PLTN_VERSION);
 			PollutionLayer *layer = &city->pollutionLayer;
 
 			SAVChunk_Pollution chunk = {};
@@ -340,7 +334,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Transport
 		{
-			writer.startSection<SAVChunk_Meta>(SAV_TPRT_ID, SAV_TPRT_VERSION);
+			writer.startSection(SAV_TPRT_ID, SAV_TPRT_VERSION);
 			// TransportLayer *layer = &city->transportLayer;
 
 			SAVChunk_Transport chunk = {};

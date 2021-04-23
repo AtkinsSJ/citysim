@@ -21,7 +21,6 @@ Notes for searching:
 Saving and loading:
 - Add a table-of-contents at the start of our binary files, which lists the chunks, along with their sizes and offsets. That way, we could read a specific chunk's data without having to read the entire file into memory.
 	-> Then, can have a function to get just that chunk's data, either from the file already in memory or by getting it from the file directly
-- Rewrite WriteBuffer API to make it more useful. (Returning pointers, etc)
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 

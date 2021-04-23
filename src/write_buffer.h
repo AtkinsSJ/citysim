@@ -21,6 +21,7 @@ struct WriteBufferChunk
 };
 
 typedef s32 WriteBufferLocation;
+
 struct WriteBufferRange
 {
 	WriteBufferLocation start;
