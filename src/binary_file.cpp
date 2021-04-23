@@ -158,11 +158,11 @@ void FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	this->sectionHeader.version = sectionVersion;
 }
 
-FileBlob FileWriter::appendBlob(s32 currentOffset, s32 length, u8 *data, FileBlobCompressionScheme scheme)
+FileBlob FileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme)
 {
 	FileBlob result = {};
 	result.compressionScheme = scheme;
-	result.relativeOffset = currentOffset;
+	result.relativeOffset = buffer.getCurrentPosition() - startOfSectionData;
 	result.decompressedLength = length;
 
 	switch (scheme)
@@ -179,16 +179,16 @@ FileBlob FileWriter::appendBlob(s32 currentOffset, s32 length, u8 *data, FileBlo
 
 		default: {
 			logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to Blob_Uncompressed."_s, {formatInt(scheme)});
-			result = appendBlob(currentOffset, length, data, Blob_Uncompressed);
+			result = appendBlob(length, data, Blob_Uncompressed);
 		} break;
 	}
 
 	return result;
 }
 
-FileBlob FileWriter::appendBlob(s32 currentOffset, Array2<u8> *data, FileBlobCompressionScheme scheme)
+FileBlob FileWriter::appendBlob(Array2<u8> *data, FileBlobCompressionScheme scheme)
 {
-	return appendBlob(currentOffset, data->w * data->h, data->items, scheme);
+	return appendBlob(data->w * data->h, data->items, scheme);
 }
 	
 FileString FileWriter::appendString(String s)
