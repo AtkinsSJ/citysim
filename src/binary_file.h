@@ -162,6 +162,9 @@ struct FileWriter
 	void endSection();
 
 	bool outputToFile(FileHandle *file);
+
+// Internal
+	Indexed<FileTOCEntry> findTOCEntry(FileIdentifier sectionID);
 };
 
 FileWriter startWritingFile(FileIdentifier identifier, u8 version);

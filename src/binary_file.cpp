@@ -163,6 +163,10 @@ void FileWriter::addTOCEntry(FileIdentifier sectionID)
 {
 	ASSERT(!tocComplete);
 
+	// Make sure this entry doesn't exist already
+	Indexed<FileTOCEntry> existingTocEntry = findTOCEntry(sectionID);
+	ASSERT(existingTocEntry.index == -1); // Duplicate TOC entry!
+
 	// Add a TOC entry with no location or length
 	FileTOCEntry tocEntry = {};
 	tocEntry.sectionID = sectionID;
@@ -187,27 +191,9 @@ void FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	sectionHeader.version = sectionVersion;
 
 	// Find our TOC entry
-	// So, we have to walk the array, which is... interesting
-	// TODO: maybe just keep a table of toc entry locations?
-	FileHeader fileHeader = buffer.readAt<FileHeader>(fileHeaderLoc);
-	WriteBufferLocation tocEntryLoc = fileHeaderLoc + fileHeader.toc.relativeOffset;
-	bool foundTOCEntry = false;
-	for (u32 i=0; i < fileHeader.toc.count; i++)
-	{
-		FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryLoc);
-
-		if (tocEntry.sectionID == sectionID)
-		{
-			foundTOCEntry = true;
-			sectionTOCLoc = tocEntryLoc;
-
-			break;
-		}
-
-		tocEntryLoc += sizeof(FileTOCEntry);
-	}
-
-	ASSERT(foundTOCEntry); // Must add a TOC entry for each section in advance!
+	Indexed<FileTOCEntry> tocEntry = findTOCEntry(sectionID);
+	ASSERT(tocEntry.index >= 0); // Must add a TOC entry for each section in advance!
+	sectionTOCLoc = tocEntry.index;
 }
 
 s32 FileWriter::getSectionRelativeOffset()
@@ -291,4 +277,30 @@ void FileWriter::endSection()
 bool FileWriter::outputToFile(FileHandle *file)
 {
 	return buffer.writeToFile(file);
+}
+
+Indexed<FileTOCEntry> FileWriter::findTOCEntry(FileIdentifier sectionID)
+{
+	Indexed<FileTOCEntry> result;
+	result.index = -1; // Assume failure
+
+	// Find our TOC entry
+	// So, we have to walk the array, which is... interesting
+	// TODO: maybe just keep a table of toc entry locations?
+	FileHeader fileHeader = buffer.readAt<FileHeader>(fileHeaderLoc);
+	WriteBufferLocation tocEntryLoc = fileHeaderLoc + fileHeader.toc.relativeOffset;
+	for (u32 i=0; i < fileHeader.toc.count; i++)
+	{
+		FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryLoc);
+
+		if (tocEntry.sectionID == sectionID)
+		{
+			result = makeIndexedValue<FileTOCEntry>(tocEntry, tocEntryLoc);
+			break;
+		}
+
+		tocEntryLoc += sizeof(FileTOCEntry);
+	}
+
+	return result;
 }
