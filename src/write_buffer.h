@@ -60,6 +60,9 @@ struct WriteBuffer
 	WriteBufferLocation getCurrentPosition();
 	s32 getLengthSince(WriteBufferLocation start); // How many bytes were output since that point
 
+	template <typename T>
+	T readAt(WriteBufferLocation location);
+
 	void overwriteAt(WriteBufferLocation location, s32 length, void *data);
 
 	bool writeToFile(FileHandle *file);
@@ -67,5 +70,6 @@ struct WriteBuffer
 
 // Internal
 
+	WriteBufferChunk *getChunkAt(WriteBufferLocation location);
 	void appendNewChunk();
 };

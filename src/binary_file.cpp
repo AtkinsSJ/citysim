@@ -149,32 +149,65 @@ FileWriter startWritingFile(FileIdentifier identifier, u8 version)
 	FileWriter writer = {};
 	writer.buffer.init();
 
+	writer.fileHeaderLoc = writer.buffer.reserveStruct<FileHeader>();
 	FileHeader fileHeader = makeFileHeader(identifier, version);
-	writer.buffer.appendStruct<FileHeader>(&fileHeader);
+	fileHeader.toc.count = 0;
+	fileHeader.toc.relativeOffset = writer.buffer.getLengthSince(writer.fileHeaderLoc);
+
+	writer.buffer.overwriteAt(writer.fileHeaderLoc, sizeof(FileHeader), &fileHeader);
 
 	return writer;
 }
 
 void FileWriter::addTOCEntry(FileIdentifier sectionID)
 {
-	// TODO: Implement!
+	ASSERT(!tocComplete);
 
-	// s32 startOffset = reserve(&buffer, sizeof(FileTOCEntry));
+	// Add a TOC entry with no location or length
+	FileTOCEntry tocEntry = {};
+	tocEntry.sectionID = sectionID;
+	buffer.appendStruct<FileTOCEntry>(&tocEntry);
 
-	// FileTOCEntry entry = {};
-
-	// entry.sectionID = sectionID;
-
+	// Find the TOC entry count and increment it
+	WriteBufferLocation tocCountLoc = fileHeaderLoc + offsetof(FileHeader, toc.count);
+	leU32 tocCount = buffer.readAt<leU32>(tocCountLoc);
+	tocCount = tocCount + 1;
+	buffer.overwriteAt(tocCountLoc, sizeof(leU32), &tocCount);
 }
 
 void FileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 {
-	this->startOfSectionHeader = buffer.reserveStruct<FileSectionHeader>();
-	this->startOfSectionData = buffer.getCurrentPosition();
+	tocComplete = true;
+	
+	startOfSectionHeader = buffer.reserveStruct<FileSectionHeader>();
+	startOfSectionData = buffer.getCurrentPosition();
 
-	this->sectionHeader = {};
-	this->sectionHeader.identifier = sectionID;
-	this->sectionHeader.version = sectionVersion;
+	sectionHeader = {};
+	sectionHeader.identifier = sectionID;
+	sectionHeader.version = sectionVersion;
+
+	// Find our TOC entry
+	// So, we have to walk the array, which is... interesting
+	// TODO: maybe just keep a table of toc entry locations?
+	FileHeader fileHeader = buffer.readAt<FileHeader>(fileHeaderLoc);
+	WriteBufferLocation tocEntryLoc = fileHeaderLoc + fileHeader.toc.relativeOffset;
+	bool foundTOCEntry = false;
+	for (u32 i=0; i < fileHeader.toc.count; i++)
+	{
+		FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryLoc);
+
+		if (tocEntry.sectionID == sectionID)
+		{
+			foundTOCEntry = true;
+			sectionTOCLoc = tocEntryLoc;
+
+			break;
+		}
+
+		tocEntryLoc += sizeof(FileTOCEntry);
+	}
+
+	ASSERT(foundTOCEntry); // Must add a TOC entry for each section in advance!
 }
 
 s32 FileWriter::getSectionRelativeOffset()
@@ -243,10 +276,16 @@ FileString FileWriter::appendString(String s)
 
 void FileWriter::endSection()
 {
-	// TODO: Update TOC!
+	// Update section header
+	u32 sectionLength = buffer.getLengthSince(startOfSectionData);
+	sectionHeader.length = sectionLength;
+	buffer.overwriteAt(startOfSectionHeader, sizeof(FileSectionHeader), &sectionHeader);
 
-	this->sectionHeader.length = buffer.getLengthSince(this->startOfSectionData);
-	buffer.overwriteAt(startOfSectionHeader, sizeof(FileSectionHeader), &this->sectionHeader);
+	// Update TOC
+	FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(sectionTOCLoc);
+	tocEntry.offset = startOfSectionHeader;
+	tocEntry.length = sectionLength;
+	buffer.overwriteAt(sectionTOCLoc, sizeof(FileTOCEntry), &tocEntry);
 }
 
 bool FileWriter::outputToFile(FileHandle *file)

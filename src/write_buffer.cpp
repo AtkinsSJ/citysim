@@ -149,18 +149,46 @@ s32 WriteBuffer::getLengthSince(WriteBufferLocation start)
 	return getCurrentPosition() - start;
 }
 
+template <typename T>
+T WriteBuffer::readAt(WriteBufferLocation location)
+{
+	T result;
+
+	WriteBufferChunk *chunk = getChunkAt(location);
+	s32 posInChunk = location % chunkSize;
+
+	u8 *dataPos = (u8*) &result;
+	s32 remainingLength = sizeof(T);
+	while (remainingLength > 0)
+	{
+		s32 remainingInChunk = chunkSize - posInChunk;
+		if (remainingInChunk > remainingLength)
+		{
+			// Copy the whole thing into the current chunk
+			copyMemory((chunk->bytes + posInChunk), dataPos, remainingLength);
+			remainingLength = 0;
+		}
+		else
+		{
+			// Copy the amount that will fit in the current chunk
+			s32 lengthToCopy = remainingInChunk;
+			copyMemory((chunk->bytes + posInChunk), dataPos, lengthToCopy);
+			dataPos += lengthToCopy;
+			remainingLength -= lengthToCopy;
+
+			// Go to next chunk
+			chunk = chunk->nextChunk;
+			posInChunk = 0;
+		}
+	}
+
+	return result;
+}
+
 void WriteBuffer::overwriteAt(WriteBufferLocation location, s32 length, void *data)
 {
 	// Find the chunk this starts in
-	WriteBufferChunk *chunk;
-	s32 chunkIndex = location / chunkSize;
-	chunk = firstChunk;
-	while (chunkIndex > 0)
-	{
-		chunk = chunk->nextChunk;
-		chunkIndex--;
-	}
-
+	WriteBufferChunk *chunk = getChunkAt(location);
 	s32 posInChunk = location % chunkSize;
 
 	s32 remainingLength = length;
@@ -203,6 +231,19 @@ bool WriteBuffer::writeToFile(FileHandle *file)
 	}
 
 	return succeeded;
+}
+
+WriteBufferChunk *WriteBuffer::getChunkAt(WriteBufferLocation location)
+{
+	s32 chunkIndex = location / chunkSize;
+	WriteBufferChunk *chunk = firstChunk;
+	while (chunkIndex > 0)
+	{
+		chunk = chunk->nextChunk;
+		chunkIndex--;
+	}
+
+	return chunk;
 }
 
 void WriteBuffer::appendNewChunk()

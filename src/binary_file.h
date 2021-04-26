@@ -98,8 +98,7 @@ struct FileHeader
 	leU8 dosNewline[2]; // = {0x0D, 0x0A};
 
 	// Offset within the file
-	// leU32 tocOffset;
-	// leU32 tocEntryCount;
+	FileArray toc; // FileTOCEntry
 };
 
 struct FileTOCEntry
@@ -135,8 +134,11 @@ bool decodeBlob(FileBlob blob, u8 *baseMemory, Array2<u8> *dest);
 struct FileWriter
 {
 	WriteBuffer buffer;
+	WriteBufferLocation fileHeaderLoc;
+	bool tocComplete;
 
 	FileSectionHeader sectionHeader;
+	WriteBufferLocation sectionTOCLoc;
 	WriteBufferLocation startOfSectionHeader;
 	WriteBufferLocation startOfSectionData;
 
