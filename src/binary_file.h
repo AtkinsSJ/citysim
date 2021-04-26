@@ -48,10 +48,18 @@ inline FileIdentifier operator"" _id(const char *chars, size_t length)
 	return *((u32*)chars);
 }
 
-struct FileString
+struct FileArray
+{
+	leU32 count; // Element count, not byte count
+	leU32 relativeOffset;
+};
+
+struct FileBlob
 {
 	leU32 length;
+	leU32 decompressedLength;
 	leU32 relativeOffset;
+	leU32 compressionScheme; // FileBlobCompressionScheme
 };
 
 enum FileBlobCompressionScheme
@@ -74,12 +82,10 @@ enum FileBlobCompressionScheme
 	//
 };
 
-struct FileBlob
+struct FileString
 {
 	leU32 length;
-	leU32 decompressedLength;
 	leU32 relativeOffset;
-	leU32 compressionScheme;
 };
 
 struct FileHeader
@@ -116,6 +122,10 @@ struct FileSectionHeader
 FileHeader makeFileHeader(FileIdentifier identifier, u8 version);
 bool fileHeaderIsValid(FileHeader *fileHeader, String saveFileName, FileIdentifier identifier);
 bool checkFileHeaderVersion(FileHeader *fileHeader, String saveFileName, u8 currentVersion);
+
+template <typename T>
+bool readArray(FileArray source, u8 *baseMemory, Array<T> *dest);
+
 String readString(FileString source, u8 *base);
 void rleDecode(u8 *source, u8 *dest, s32 destSize);
 
@@ -137,6 +147,9 @@ struct FileWriter
 	void startSection(FileIdentifier sectionID, u8 sectionVersion);
 
 	s32 getSectionRelativeOffset();
+
+	template <typename T>
+	FileArray appendArray(Array<T> data);
 
 	FileBlob appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme);
 	FileBlob appendBlob(Array2<u8> *data, FileBlobCompressionScheme scheme);

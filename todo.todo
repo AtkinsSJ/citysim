@@ -21,8 +21,11 @@ Notes for searching:
 Saving and loading:
 - Add a table-of-contents at the start of our binary files, which lists the chunks, along with their sizes and offsets. That way, we could read a specific chunk's data without having to read the entire file into memory.
 	-> Then, can have a function to get just that chunk's data, either from the file already in memory or by getting it from the file directly
+- Do we want WriteBuffer to exist? It's only used for FileWriter, and merging the two would make calling simpler.
+- Add a FileReader type thing, for abstracting reading data out like FileWriter
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
+
 
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it
@@ -68,6 +71,11 @@ Building problems:
 		(eg, if a 5x5 area is without power, but only one icon is shown in the middle, then demolishing the building in the middle would remove the icon. We need to make sure other icons pop up in its place so the lack of power is still indicated for the other buildings in that area.)
 		-> Have the Zots system respond to dirty-rects and regenerate the zots
 - Problems have a start time. This gives some breathing room so that briefly having a problem doesn't immediately have consequences.
+
+Multi-building lots!
+- See notes, titled "Building Complexes". Basically, give buildings a parent, which they appear as part of.
+- Grown buildings can thus be constructed from pieces by the game
+- Civic buildings can also be built from pieces, by the player, like SC2013.
 
 Move "keepItemOrder" concept from ChunkedArray methods to a bool field.
 - Check uses, but probably, we either always want a given array to stay in order, or we never do.

@@ -55,6 +55,25 @@ bool checkFileHeaderVersion(FileHeader *fileHeader, String saveFileName, u8 curr
 	return isValid;
 }
 
+template <typename T>
+bool readArray(FileArray source, u8 *baseMemory, Array<T> *dest)
+{
+	bool succeeded = true;
+
+	if ((u32)dest->capacity < source.count)
+	{
+		logError("Unable to decode array because the destination is too small! (Need {0}, got {1})"_s, {formatInt(source.count), formatInt(dest->capacity)});
+		succeeded = false;
+	}
+	else
+	{
+		copyMemory<T>((T*)(baseMemory + source.relativeOffset), dest->items, source.count);
+		dest->count = source.count;
+	}
+
+	return succeeded;
+}
+
 String readString(FileString source, u8 *base)
 {
 	return makeString((char *)(base + source.relativeOffset), source.length, false);
@@ -163,11 +182,26 @@ s32 FileWriter::getSectionRelativeOffset()
 	return buffer.getCurrentPosition() - startOfSectionData;
 }
 
+template <typename T>
+FileArray FileWriter::appendArray(Array<T> data)
+{
+	FileArray result = {};
+	result.count = data.count;
+	result.relativeOffset = getSectionRelativeOffset();
+
+	for (s32 i=0; i < data.count; i++)
+	{
+		buffer.appendStruct<T>(&data[i]);
+	}
+
+	return result;
+}
+
 FileBlob FileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme)
 {
 	FileBlob result = {};
 	result.compressionScheme = scheme;
-	result.relativeOffset = buffer.getCurrentPosition() - startOfSectionData;
+	result.relativeOffset = getSectionRelativeOffset();
 	result.decompressedLength = length;
 
 	switch (scheme)
@@ -201,7 +235,7 @@ FileString FileWriter::appendString(String s)
 	FileString result = {};
 
 	result.length = s.length;
-	result.relativeOffset = buffer.getCurrentPosition() - startOfSectionData;
+	result.relativeOffset = getSectionRelativeOffset();
 	buffer.appendBytes(s.length, s.chars);
 
 	return result;

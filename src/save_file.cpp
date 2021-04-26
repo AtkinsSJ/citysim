@@ -241,8 +241,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 			// Active fires
 			chunk.activeFireCount = layer->activeFireCount;
-			SAVFire *tempFires = allocateMultiple<SAVFire>(tempArena, chunk.activeFireCount);
-			s32 tempFireIndex = 0;
+			Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, chunk.activeFireCount);
 			// ughhhh I have to iterate the sectors to get this information!
 			for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
 			{
@@ -251,14 +250,14 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 				for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next())
 				{
 					Fire *fire = it.get();
-					SAVFire *savFire = tempFires + tempFireIndex++;
+					SAVFire *savFire = tempFires.append();
 					*savFire = {};
 					savFire->x = (u16) fire->pos.x;
 					savFire->y = (u16) fire->pos.y;
 					savFire->startDate = fire->startDate;
 				}
 			}
-			chunk.activeFires = writer.appendBlob(chunk.activeFireCount * sizeof(SAVFire), (u8*)tempFires, Blob_Uncompressed);
+			chunk.activeFires = writer.appendArray<SAVFire>(tempFires);
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -570,14 +569,14 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				FireLayer *layer = &city->fireLayer;
 
 				// Active fires
-				SAVFire *tempFires = allocateMultiple<SAVFire>(tempArena, cFire->activeFireCount);
-				if (decodeBlob(cFire->activeFires, startOfChunk, (u8*)tempFires, cFire->activeFireCount * sizeof(SAVFire)))
+				Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, cFire->activeFireCount);
+				if (readArray(cFire->activeFires, startOfChunk, &tempFires))
 				{
 					for (u32 activeFireIndex = 0;
 						activeFireIndex < cFire->activeFireCount;
 						activeFireIndex++)
 					{
-						SAVFire *savFire = tempFires + activeFireIndex;
+						SAVFire *savFire = &tempFires[activeFireIndex];
 
 						addFireRaw(city, savFire->x, savFire->y, savFire->startDate);
 					}
