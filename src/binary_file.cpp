@@ -276,6 +276,22 @@ void FileWriter::endSection()
 
 bool FileWriter::outputToFile(FileHandle *file)
 {
+	// Check that the TOC entries are all filled-in
+
+	// TODO: Maybe in release, we just remove the empty TOC entries? That'll
+	// leave a gap in the file, but as long as we move later TOC entries so that
+	// they're contiguous, it should be fine!
+	FileHeader fileHeader = buffer.readAt<FileHeader>(fileHeaderLoc);
+	WriteBufferLocation tocEntryLoc = fileHeaderLoc + fileHeader.toc.relativeOffset;
+	for (u32 i=0; i < fileHeader.toc.count; i++)
+	{
+		FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryLoc);
+
+		ASSERT(tocEntry.offset != 0 || tocEntry.length != 0);
+
+		tocEntryLoc += sizeof(FileTOCEntry);
+	}
+
 	return buffer.writeToFile(file);
 }
 

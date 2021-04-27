@@ -26,7 +26,7 @@ Saving and loading:
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 - Extend overWriteAt() to have versions for structs or literals, like the append() and reserve() functions, for ease of use
-- Check all TOC entries are filled in before you try to save the file
+✔ Check all TOC entries are filled in before you try to save the file
 
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it
