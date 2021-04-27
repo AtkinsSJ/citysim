@@ -102,6 +102,7 @@ struct City;
 #include "city.h"
 
 #include "binary_file.h"
+#include "binary_file_writer.h"
 #include "save_file.h"
 #include "saved_games.h"
 #include "game.h"
@@ -115,6 +116,7 @@ AppState globalAppState;
 #include "about.cpp"
 #include "assets.cpp"
 #include "binary_file.cpp"
+#include "binary_file_writer.cpp"
 #include "bit_array.cpp"
 #include "bmfont.cpp"
 #include "building.cpp"
