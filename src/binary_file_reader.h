@@ -5,12 +5,15 @@
 // we only ever need one section in memory at a time.
 struct BinaryFileReader
 {
+	// Data about the file itself
 	FileHandle *fileHandle;
 	bool isValidFile;
 	u32 problems;
 
+	// TOC
 	Array<FileTOCEntry> toc;
 
+	// Working data for the section we're currently operating on
 	FileIdentifier currentSectionID;
 	FileSectionHeader *currentSectionHeader;
 	Blob currentSection;
@@ -23,6 +26,11 @@ struct BinaryFileReader
 	T *readStruct(smm relativeOffset);
 
 	String readString(FileString fileString);
+
+	// For cases we don't handle, you can directly access the bytes of the current section with this.
+	// But generally, you want to use readX() methods instead.
+	// TODO: Ideally, we don't want to allow this at all, but instead have a safe way of reading arbitrary data.
+	u8 *startReadingBytes(smm relativeOffset);
 };
 
 enum BinaryFileProblems

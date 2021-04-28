@@ -29,6 +29,8 @@ void *allocate(MemoryArena *arena, smm size)
 		logWarn("Large allocation in {0} arena: {1} bytes when block size is {2} bytes"_s, {arena->name, formatInt(size), formatInt(arena->minimumBlockSize)});
 	}
 
+	ASSERT(size < GB(1)); // Something is very wrong if we're trying to allocate an entire gigabyte for something!
+
 	if ((arena->currentBlock == 0)
 		|| (arena->currentBlock->used + size > arena->currentBlock->size))
 	{
@@ -37,12 +39,6 @@ void *allocate(MemoryArena *arena, smm size)
 	}
 
 	ASSERT(arena->currentBlock != null); //No memory in arena!
-
-	// TODO: Prevent normal allocations while temp mem is open, and vice versa
-	// We tried passing an isTempAllocation bool, but code that just takes a MemoryArena doesn't know
-	// what kind of memory it's allocating from so it fails.
-	// For it to work we'd have to duplicate every function that takes an arena eg readFile()
-	// ASSERT(isTempAllocation == arena->hasTemporaryArenaOpen); //Mixing temporary and regular allocations!
 	
 	void *result = arena->currentBlock->memory + arena->currentBlock->used;
 	memset(result, 0, size);
@@ -105,6 +101,8 @@ inline Array2<T> allocateArray2(MemoryArena *arena, s32 w, s32 h)
 
 u8 *allocateRaw(smm size)
 {
+	ASSERT(size < GB(1)); // Something is very wrong if we're trying to allocate an entire gigabyte for something!
+	
 	u8 *result = (u8*) calloc(size, 1);
 	ASSERT(result != null); //calloc() failed!!! I don't think there's anything reasonable we can do here.
 	return result;
