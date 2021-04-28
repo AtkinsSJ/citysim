@@ -23,9 +23,6 @@ struct BinaryFileReader
 	T *readStruct(smm relativeOffset);
 
 	String readString(FileString fileString);
-
-	template <typename T>
-	Maybe<Array<T>> readArray(smm basePosition, FileArray fileArray);
 };
 
 enum BinaryFileProblems

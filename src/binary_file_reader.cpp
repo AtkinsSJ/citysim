@@ -41,10 +41,10 @@ BinaryFileReader readBinaryFile(FileHandle *handle, FileIdentifier identifier)
 		else
 		{
 			// Read the TOC in
-			Maybe<Array<FileTOCEntry>> maybeToc = reader.readArray<FileTOCEntry>(0, header.toc);
-			if (maybeToc.isValid)
+			Array<FileTOCEntry> toc = allocateArray<FileTOCEntry>(tempArena, header.toc.count, false);
+			if (readArray(handle, header.toc.relativeOffset, header.toc.count, &toc))
 			{
-				reader.toc = maybeToc.value;
+				reader.toc = toc;
 				reader.isValidFile = true;
 			}
 			else
@@ -139,23 +139,6 @@ String BinaryFileReader::readString(FileString fileString)
 	{
 		smm stringStartPos = sizeof(FileSectionHeader) + fileString.relativeOffset;
 		result = makeString((char *)(currentSection.memory + stringStartPos), fileString.length, false);
-	}
-
-	return result;
-}
-
-template <typename T>
-Maybe<Array<T>> BinaryFileReader::readArray(smm basePosition, FileArray fileArray)
-{
-	Maybe<Array<T>> result = makeFailure<Array<T>>();
-
-	Array<T> array = allocateArray<T>(tempArena, fileArray.count, true);
-
-	smm byteLength = fileArray.count * sizeof(T);
-	smm bytesRead = readData(fileHandle, basePosition + fileArray.relativeOffset, byteLength, array.items);
-	if (bytesRead == byteLength)
-	{
-		result = makeSuccess(array);
 	}
 
 	return result;

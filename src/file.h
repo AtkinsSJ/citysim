@@ -110,6 +110,9 @@ smm readData(FileHandle *file, smm position, smm size, void *result);
 template <typename T>
 bool readStruct(FileHandle *file, smm position, T *result);
 
+template <typename T>
+bool readArray(FileHandle *file, smm position, s32 count, Array<T> *result);
+
 bool writeFile(String filePath, String contents);
 
 bool writeToFile(FileHandle *file, smm dataLength, void *data);

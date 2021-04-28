@@ -51,6 +51,7 @@ void updateSavedGamesCatalogue()
 
 void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 {
+	// Load the save game metadata
 	for (auto it = iterateDirectoryListing(constructPath({catalogue->savedGamesPath}, true));
 		hasNextFile(&it);
 		findNextFile(&it))
@@ -94,7 +95,6 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 	catalogue->savedGames.sort([](SavedGameInfo *a, SavedGameInfo *b) {
 		return a->saveTime.unixTimestamp > b->saveTime.unixTimestamp;
 	});
-
 }
 
 void showLoadGameWindow(UIState *uiState)

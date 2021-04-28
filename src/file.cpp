@@ -171,12 +171,41 @@ bool readStruct(FileHandle *file, smm position, T *result)
 
 	bool succeeded = true;
 
-	smm size = sizeof(T);
-	smm bytesRead = readData(file, position, size, result);
-	if (bytesRead != size)
+	smm byteLength = sizeof(T);
+	smm bytesRead = readData(file, position, byteLength, result);
+	if (bytesRead != byteLength)
 	{
 		succeeded = false;
 		logWarn("Failed to read struct '{0}' from file '{1}'"_s, {typeNameOf<T>(), file->path});
+	}
+
+	return succeeded;
+}
+
+template <typename T>
+bool readArray(FileHandle *file, smm position, s32 count, Array<T> *result)
+{
+	DEBUG_FUNCTION();
+
+	bool succeeded = false;
+
+	if (result->capacity >= count)
+	{
+		smm byteLength = sizeof(T) * count;
+		smm bytesRead = readData(file, position, byteLength, result->items);
+		if (bytesRead == byteLength)
+		{
+			result->count = count;
+			succeeded = true;
+		}
+		else
+		{
+			logWarn("Failed to read array of '{0}', length {1}, from file '{2}': Reached end of file"_s, {typeNameOf<T>(), formatInt(count), file->path});
+		}
+	}
+	else
+	{
+		logError("Failed to read array of '{0}', length {1}, from file '{2}': result parameter too small"_s, {typeNameOf<T>(), formatInt(count), file->path});
 	}
 
 	return succeeded;
