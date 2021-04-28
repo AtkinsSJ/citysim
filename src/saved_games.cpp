@@ -51,10 +51,6 @@ void updateSavedGamesCatalogue()
 
 void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 {
-	// We picked 4KB somewhat arbitrarily. It should be way more than enough, given that the META
-	// chunk comes first, which we require.
-	Blob tempBuffer = allocateBlob(tempArena, KB(4));
-
 	for (auto it = iterateDirectoryListing(constructPath({catalogue->savedGamesPath}, true));
 		hasNextFile(&it);
 		findNextFile(&it))
@@ -66,72 +62,29 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 
 		savedGame->shortName = intern(&catalogue->stringsTable, getFileName(fileInfo->filename));
 		savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({catalogue->savedGamesPath, fileInfo->filename}));
-
-		// Now we have to read the file a little to get the META stuff out of it. Hmmmm.
+		savedGame->isReadable = false;
 
 		FileHandle savedFile = openFile(savedGame->fullPath, FileAccess_Read);
-		savedGame->isReadable = savedFile.isOpen;
-		if (savedGame->isReadable)
+		if (savedFile.isOpen)
 		{
-			smm sizeRead = readFromFile(&savedFile, tempBuffer.size, tempBuffer.memory);
+			BinaryFileReader reader = readBinaryFile(&savedFile, SAV_FILE_ID);
 
-			u8 *pos = tempBuffer.memory;
-			u8 *eof = pos + sizeRead;
-
-			// @Copypasta from loadSaveFile() - might want to extract things out at some point!
-
-			// File Header
-			FileHeader *fileHeader = (FileHeader *) pos;
-			pos += sizeof(FileHeader);
-			if (pos > eof)
+			if (reader.isValidFile)
 			{
-				savedGame->isReadable = false;
-				continue;
-			}
-
-			if (!fileHeaderIsValid(fileHeader, savedGame->shortName, SAV_FILE_ID))
-			{
-				savedGame->isReadable = false;
-				continue;
-			}
-
-			if (fileHeader->version > SAV_VERSION)
-			{
-				savedGame->problems |= SAVE_IS_FROM_NEWER_VERSION;
-			}
-
-			// META chunk
-			FileSectionHeader *header = (FileSectionHeader *) pos;
-			pos += sizeof(FileSectionHeader);
-			if (pos > eof)
-			{
-				savedGame->isReadable = false;
-				continue;
-			}
-
-			if (header->identifier == SAV_META_ID)
-			{
-				// Load Meta
-				if (header->version > SAV_META_VERSION)
+				// Read the META section, which is all we care about
+				bool readSection = reader.startSection(SAV_META_ID, SAV_META_VERSION);
+				if (readSection)
 				{
-					savedGame->problems |= SAVE_IS_FROM_NEWER_VERSION;
-				}
+					SAVChunk_Meta *meta = reader.readStruct<SAVChunk_Meta>(0);
 
-				u8 *startOfChunk = pos;
-				SAVChunk_Meta *cMeta = (SAVChunk_Meta *) pos;
-				pos += header->length;
-				if (pos > eof)
-				{
-					savedGame->isReadable = false;
-					continue;
+					savedGame->saveTime   = getLocalTimeFromTimestamp(meta->saveTimestamp);
+					savedGame->cityName   = intern(&catalogue->stringsTable, reader.readString(meta->cityName));
+					savedGame->playerName = intern(&catalogue->stringsTable, reader.readString(meta->playerName));
+					savedGame->citySize   = v2i(meta->cityWidth, meta->cityHeight);
+					savedGame->funds      = meta->funds;
+					savedGame->population = meta->population;
+					savedGame->isReadable = true;
 				}
-
-				savedGame->saveTime   = getLocalTimeFromTimestamp(cMeta->saveTimestamp);
-				savedGame->cityName   = intern(&catalogue->stringsTable, readString(cMeta->cityName, startOfChunk));
-				savedGame->playerName = intern(&catalogue->stringsTable, readString(cMeta->playerName, startOfChunk));
-				savedGame->citySize   = v2i(cMeta->cityWidth, cMeta->cityHeight);
-				savedGame->funds      = cMeta->funds;
-				savedGame->population = cMeta->population;
 			}
 		}
 		closeFile(&savedFile);

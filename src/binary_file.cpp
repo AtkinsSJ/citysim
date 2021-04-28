@@ -19,7 +19,7 @@ bool fileHeaderIsValid(FileHeader *fileHeader, String saveFileName, FileIdentifi
 
 	if (fileHeader->identifier != identifier)
 	{
-		logError("Save file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
+		logError("Binary file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, {
 			saveFileName,
 			makeString((char*)(&identifier), 4),
 			makeString((char*)(&fileHeader->identifier), 4)
@@ -29,25 +29,17 @@ bool fileHeaderIsValid(FileHeader *fileHeader, String saveFileName, FileIdentifi
 	else if ((fileHeader->unixNewline != 0x0A)
 		  || (fileHeader->dosNewline[0] != 0x0D) || (fileHeader->dosNewline[1] != 0x0A))
 	{
-		logError("Save file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, {
+		logError("Binary file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, {
 			saveFileName
 		});
 		isValid = false;
 	}
-
-	return isValid;
-}
-
-bool checkFileHeaderVersion(FileHeader *fileHeader, String saveFileName, u8 currentVersion)
-{
-	bool isValid = true;
-
-	if (fileHeader->version > currentVersion)
+	else if (fileHeader->version > BINARY_FILE_FORMAT_VERSION)
 	{
-		logError("Save file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
+		logError("Binary file '{0}' was created with a newer save file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
 			saveFileName,
 			formatInt(fileHeader->version),
-			formatInt(currentVersion),
+			formatInt(BINARY_FILE_FORMAT_VERSION),
 		});
 		isValid = false;
 	}

@@ -147,6 +147,41 @@ smm readFromFile(FileHandle *file, smm size, u8 *memory)
 	return bytesRead;
 }
 
+smm readData(FileHandle *file, smm position, smm size, void *result)
+{
+	DEBUG_FUNCTION();
+
+	smm bytesRead = 0;
+
+	if (file->isOpen)
+	{
+		if (SDL_RWseek(file->sdl_file, position, RW_SEEK_SET) != -1)
+		{
+			bytesRead = SDL_RWread(file->sdl_file, result, 1, size);
+		}
+	}
+
+	return bytesRead;
+}
+
+template <typename T>
+bool readStruct(FileHandle *file, smm position, T *result)
+{
+	DEBUG_FUNCTION();
+
+	bool succeeded = true;
+
+	smm size = sizeof(T);
+	smm bytesRead = readData(file, position, size, result);
+	if (bytesRead != size)
+	{
+		succeeded = false;
+		logWarn("Failed to read struct '{0}' from file '{1}'"_s, {typeNameOf<T>(), file->path});
+	}
+
+	return succeeded;
+}
+
 File readFile(FileHandle *handle, MemoryArena *arena)
 {
 	DEBUG_FUNCTION();

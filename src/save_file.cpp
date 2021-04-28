@@ -352,7 +352,6 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 	City *city = &gameState->city;
 
-
 	File saveFile = readFile(file);
 	bool succeeded = saveFile.isLoaded;
 
@@ -375,12 +374,6 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 		}
 
 		if (!fileHeaderIsValid(fileHeader, saveFile.name, SAV_FILE_ID))
-		{
-			succeeded = false;
-			break;
-		}
-
-		if (!checkFileHeaderVersion(fileHeader, saveFile.name, SAV_VERSION))
 		{
 			succeeded = false;
 			break;

@@ -93,14 +93,22 @@ bool createDirectory(String path);
 
 File readFile(FileHandle *file, MemoryArena *arena=tempArena);
 File readFile(MemoryArena *memoryArena, String filePath);
-// Returns how much was read
-smm readFromFile(FileHandle *file, smm size, u8 *memory);
 // Reads the entire file into a Blob that's allocated in temporary memory.
 // If you want to refer to parts of it later, you need to copy the data somewhere else!
 inline Blob readTempFile(String filePath)
 {
 	return readFile(tempArena, filePath).data;
 }
+
+// Returns how much was read
+smm readFromFile(FileHandle *file, smm size, u8 *memory);
+
+// Attempts to read `size` bytes from position `position`, and copies them to `result`.
+// If there are fewer than `size` bytes remaining, reads all it can. Returns how many bytes were read.
+smm readData(FileHandle *file, smm position, smm size, void *result);
+
+template <typename T>
+bool readStruct(FileHandle *file, smm position, T *result);
 
 bool writeFile(String filePath, String contents);
 

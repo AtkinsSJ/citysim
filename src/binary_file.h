@@ -41,11 +41,20 @@
 
 #pragma pack(push, 1)
 
+const u8 BINARY_FILE_FORMAT_VERSION = 1;
+
 typedef u32 FileIdentifier;
 inline FileIdentifier operator"" _id(const char *chars, size_t length)
 {
 	ASSERT(length == 4);
 	return *((u32*)chars);
+}
+
+inline String toString(FileIdentifier identifier)
+{
+	String result = pushString(tempArena, 4);
+	copyMemory<char>((char*)&identifier, result.chars, 4);
+	return result;
 }
 
 struct FileArray
@@ -105,7 +114,7 @@ struct FileTOCEntry
 {
 	FileIdentifier sectionID;
 	leU32 offset; // Within file
-	leU32 length;
+	leU32 length; // Length of the section, should match the FileSectionHeader.length
 };
 
 struct FileSectionHeader
@@ -113,14 +122,13 @@ struct FileSectionHeader
 	LittleEndian<FileIdentifier> identifier;
 	leU8 version;
 	leU8 _pad[3]; // For future use maybe? Mostly just to make this be a multiple of 4 bytes.
-	leU32 length; // Length of the chunk, NOT including the size of this FileSectionHeader
+	leU32 length; // Length of the section, NOT including the size of this FileSectionHeader
 };
 
 #pragma pack(pop)
 
 FileHeader makeFileHeader(FileIdentifier identifier, u8 version);
 bool fileHeaderIsValid(FileHeader *fileHeader, String saveFileName, FileIdentifier identifier);
-bool checkFileHeaderVersion(FileHeader *fileHeader, String saveFileName, u8 currentVersion);
 
 template <typename T>
 bool readArray(FileArray source, u8 *baseMemory, Array<T> *dest);
