@@ -27,6 +27,9 @@ struct BinaryFileReader
 	template <typename T>
 	T *readStruct(smm relativeOffset);
 
+	template <typename T>
+	bool readArray(FileArray source, Array<T> *dest);
+
 	String readString(FileString fileString);
 
 	// readBlob() functions return whether it succeeded

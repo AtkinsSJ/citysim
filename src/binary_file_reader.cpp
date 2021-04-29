@@ -123,13 +123,33 @@ T *BinaryFileReader::readStruct(smm relativeOffset)
 		// Make sure that T actually fits where it was requested
 		smm structStartPos = sizeof(FileSectionHeader) + relativeOffset;
 
-		if ((relativeOffset >= 0) && ((structStartPos + sizeof(T)) < currentSectionHeader->length))
+		if ((relativeOffset >= 0) && ((relativeOffset + sizeof(T)) <= currentSectionHeader->length))
 		{
 			result = (T*) (currentSection.memory + structStartPos);
 		}
 	}
 
 	return result;
+}
+
+template <typename T>
+bool BinaryFileReader::readArray(FileArray source, Array<T> *dest)
+{
+	bool succeeded = false;
+
+	if (source.count <= (u32)dest->capacity)
+	{
+		if (source.count < (u32)dest->capacity)
+		{
+			logWarn("Destination passed to readArray() is larger than needed. (Need {0}, got {1})"_s, {formatInt(source.count), formatInt(dest->capacity)});
+		}
+
+		copyMemory<T>((T*)sectionMemoryAt(source.relativeOffset), dest->items, source.count);
+		dest->count = source.count;
+		succeeded = true;
+	}
+
+	return succeeded;
 }
 
 String BinaryFileReader::readString(FileString fileString)
@@ -148,9 +168,9 @@ bool BinaryFileReader::readBlob(FileBlob source, u8 *dest, smm destSize)
 {
 	bool succeeded = false;
 
-	if (destSize >= source.decompressedLength)
+	if (source.decompressedLength <= destSize)
 	{
-		if (destSize > source.decompressedLength)
+		if (source.decompressedLength < destSize)
 		{
 			logWarn("Destination passed to readBlob() is larger than needed. (Need {0}, got {1})"_s, {formatInt(source.decompressedLength), formatInt(destSize)});
 		}

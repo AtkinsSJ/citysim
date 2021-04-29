@@ -12,16 +12,16 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Prepare the TOC
 		writer.addTOCEntry(SAV_META_ID);
-		writer.addTOCEntry(SAV_BDGT_ID);
+		writer.addTOCEntry(SAV_BUDGET_ID);
 		writer.addTOCEntry(SAV_BUILDING_ID);
-		writer.addTOCEntry(SAV_CRIM_ID);
-		writer.addTOCEntry(SAV_EDUC_ID);
+		writer.addTOCEntry(SAV_CRIME_ID);
+		writer.addTOCEntry(SAV_EDUCATION_ID);
 		writer.addTOCEntry(SAV_FIRE_ID);
-		writer.addTOCEntry(SAV_HLTH_ID);
-		writer.addTOCEntry(SAV_LVAL_ID);
-		writer.addTOCEntry(SAV_PLTN_ID);
+		writer.addTOCEntry(SAV_HEALTH_ID);
+		writer.addTOCEntry(SAV_LANDVALUE_ID);
+		writer.addTOCEntry(SAV_POLLUTION_ID);
 		writer.addTOCEntry(SAV_TERRAIN_ID);
-		writer.addTOCEntry(SAV_TPRT_ID);
+		writer.addTOCEntry(SAV_TRANSPORT_ID);
 		writer.addTOCEntry(SAV_ZONE_ID);
 
 		// Meta
@@ -191,11 +191,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Budget
 		{
-			writer.startSection(SAV_BDGT_ID, SAV_BDGT_VERSION);
+			writer.startSection(SAV_BUDGET_ID, SAV_BUDGET_VERSION);
 			// BudgetLayer *layer = &city->budgetLayer;
 
-			SAVChunk_Budget chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Budget>();
+			SAVSection_Budget chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Budget>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -204,11 +204,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Crime
 		{
-			writer.startSection(SAV_CRIM_ID, SAV_CRIM_VERSION);
+			writer.startSection(SAV_CRIME_ID, SAV_CRIME_VERSION);
 			CrimeLayer *layer = &city->crimeLayer;
 
-			SAVChunk_Crime chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Crime>();
+			SAVSection_Crime chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Crime>();
 
 			chunk.totalJailCapacity = layer->totalJailCapacity;
 			chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
@@ -220,11 +220,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Education
 		{
-			writer.startSection(SAV_EDUC_ID, SAV_EDUC_VERSION);
+			writer.startSection(SAV_EDUCATION_ID, SAV_EDUCATION_VERSION);
 			// EducationLayer *layer = &city->educationLayer;
 
-			SAVChunk_Education chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Education>();
+			SAVSection_Education chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Education>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -236,8 +236,8 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			writer.startSection(SAV_FIRE_ID, SAV_FIRE_VERSION);
 			FireLayer *layer = &city->fireLayer;
 
-			SAVChunk_Fire chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Fire>();
+			SAVSection_Fire chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Fire>();
 
 			// Active fires
 			chunk.activeFireCount = layer->activeFireCount;
@@ -266,11 +266,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Health
 		{
-			writer.startSection(SAV_HLTH_ID, SAV_HLTH_VERSION);
+			writer.startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
 			// HealthLayer *layer = &city->healthLayer;
 
-			SAVChunk_Health chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Health>();
+			SAVSection_Health chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Health>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -279,11 +279,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Land Value
 		{
-			writer.startSection(SAV_LVAL_ID, SAV_LVAL_VERSION);
+			writer.startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
 			LandValueLayer *layer = &city->landValueLayer;
 
-			SAVChunk_LandValue chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_LandValue>();
+			SAVSection_LandValue chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_LandValue>();
 
 			// Tile land value
 			chunk.tileLandValue = writer.appendBlob(&layer->tileLandValue, Blob_Uncompressed);
@@ -295,11 +295,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Pollution
 		{
-			writer.startSection(SAV_PLTN_ID, SAV_PLTN_VERSION);
+			writer.startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
 			PollutionLayer *layer = &city->pollutionLayer;
 
-			SAVChunk_Pollution chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Pollution>();
+			SAVSection_Pollution chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Pollution>();
 
 			// Tile pollution
 			chunk.tilePollution = writer.appendBlob(&layer->tilePollution, Blob_Uncompressed);
@@ -311,11 +311,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Transport
 		{
-			writer.startSection(SAV_TPRT_ID, SAV_TPRT_VERSION);
+			writer.startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
 			// TransportLayer *layer = &city->transportLayer;
 
-			SAVChunk_Transport chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Transport>();
+			SAVSection_Transport chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Transport>();
 
 			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
 
@@ -521,193 +521,111 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 		}
 		else break;
 
+		// CRIME
+		bool readCrime = reader.startSection(SAV_CRIME_ID, SAV_CRIME_VERSION);
+		if (readCrime)
+		{
+			// Load Crime
+			SAVSection_Crime *cCrime = reader.readStruct<SAVSection_Crime>(0);
+			CrimeLayer *layer = &city->crimeLayer;
+
+			layer->totalJailCapacity    = cCrime->totalJailCapacity;
+			layer->occupiedJailCapacity = cCrime->occupiedJailCapacity;
+		}
+		else break;
+
+		// EDUCATION
+		bool readEducation = reader.startSection(SAV_EDUCATION_ID, SAV_EDUCATION_VERSION);
+		if (readEducation)
+		{
+			SAVSection_Education *education = reader.readStruct<SAVSection_Education>(0);
+			education = education;
+
+			// TODO: Implement Education!
+		}
+		else break;
+
+		// FIRE
+		bool readFire = reader.startSection(SAV_FIRE_ID, SAV_FIRE_VERSION);
+		if (readFire)
+		{
+			SAVSection_Fire *cFire = reader.readStruct<SAVSection_Fire>(0);
+			FireLayer *layer = &city->fireLayer;
+
+			// Active fires
+			Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, cFire->activeFireCount);
+			if (!reader.readArray(cFire->activeFires, &tempFires)) break;
+			for (u32 activeFireIndex = 0;
+				activeFireIndex < cFire->activeFireCount;
+				activeFireIndex++)
+			{
+				SAVFire *savFire = &tempFires[activeFireIndex];
+
+				addFireRaw(city, savFire->x, savFire->y, savFire->startDate);
+			}
+			ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
+		}
+		else break;
+
+		// HEALTH
+		bool readHealth = reader.startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
+		if (readHealth)
+		{
+			SAVSection_Health *cHealth = reader.readStruct<SAVSection_Health>(0);
+			cHealth = cHealth;
+
+			// TODO: Implement Health!
+		}
+		else break;
+
+		// LAND VALUE
+		bool readLandValue = reader.startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
+		if (readLandValue)
+		{
+			SAVSection_LandValue *cLandValue = reader.readStruct<SAVSection_LandValue>(0);
+			LandValueLayer *layer = &city->landValueLayer;
+
+			if (!reader.readBlob(cLandValue->tileLandValue, &layer->tileLandValue)) break;
+		}
+		else break;
+
+		// Pollution
+		bool readPollution = reader.startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
+		if (readPollution)
+		{
+			SAVSection_Pollution *cPollution = reader.readStruct<SAVSection_Pollution>(0);
+			PollutionLayer *layer = &city->pollutionLayer;
+
+			if (!reader.readBlob(cPollution->tilePollution, &layer->tilePollution)) break;
+		}
+		else break;
+
+		// TRANSPORT
+		bool readTransport = reader.startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
+		if (readTransport)
+		{
+			SAVSection_Transport *cTransport = reader.readStruct<SAVSection_Transport>(0);
+			cTransport = cTransport;
+
+			// TODO: Implement Transport!
+		}
+		else break;
+
+		// BUDGET
+		bool readBudget = reader.startSection(SAV_BUDGET_ID, SAV_BUDGET_VERSION);
+		if (readBudget)
+		{
+			SAVSection_Budget *cBudget = reader.readStruct<SAVSection_Budget>(0);
+			cBudget = cBudget;
+
+			// TODO: Implement Budget!
+		}
+		else break;
+
 		// And we're done!
 		succeeded = true;
 		break;
 	}
-
-//
-//
-//
-//
-//
-//
-//
-//
-#if 0
-	File saveFile = readFile(file);
-	bool succeeded = saveFile.isLoaded;
-
-	// NB: We use a while() so that we can break out of it easily below.
-	// I guess I could use gotos instead, but that feels worse than abusing a while, somehow.
-	while (succeeded)
-	{
-		u8 *start = saveFile.data.memory;
-		u8 *eof = start + saveFile.data.size;
-
-		u8 *pos = start;
-
-		// File Header
-		FileHeader *fileHeader = (FileHeader *) pos;
-		pos += sizeof(FileHeader);
-		if (pos > eof)
-		{
-			succeeded = false;
-			break;
-		}
-
-		if (!fileHeaderIsValid(fileHeader, saveFile.name, SAV_FILE_ID))
-		{
-			succeeded = false;
-			break;
-		}
-
-		// Macros are horrible, but I don't think it's possible to do these another way!
-		#define READ_CHUNK(Type) (Type *) pos; pos += header->length; if (pos > eof) { succeeded = false; break; }
-		#define CHECK_VERSION(Chunk) if (header->version > SAV_ ## Chunk ## _VERSION) \
-				{\
-					logError("{0} chunk in save file '{1}' uses a newer save file format than we understand. {0} version is '{2}', maximum we support is '{3}'"_s, {\
-						#Chunk ## _s, saveFile.name, formatInt(header->version), formatInt(SAV_ ## Chunk ## _VERSION),\
-					});\
-					succeeded = false;\
-					break;\
-				}
-		#define REQUIRE_META(Chunk) if (!hasLoadedMeta) { logError("{0} chunk found before META chunk. META must be the first chunk in the file!"_s, {#Chunk ## _s}); succeeded = false; break;}
-
-		// Loop over file chunks
-		// NB: META chunk must be before any other data chunks, because without it we can't sensibly read
-		// any of the tile data!
-		bool hasLoadedMeta = false;
-		s32 cityTileCount = 0;
-		while (pos < eof)
-		{
-			FileSectionHeader *header = (FileSectionHeader *) pos;
-			pos += sizeof(FileSectionHeader);
-			if (pos > eof)
-			{
-				succeeded = false;
-				break;
-			}
-
-			if (header->identifier == SAV_BDGT_ID)
-			{
-				// Load Budget
-				CHECK_VERSION(BDGT);
-				REQUIRE_META(BDGT);
-
-				// u8 *startOfChunk = pos;
-				SAVChunk_Budget *budget = READ_CHUNK(SAVChunk_Budget);
-				budget = budget;
-
-				// TODO: Implement!
-			}
-			else if (header->identifier == SAV_CRIM_ID)
-			{
-				// Load Crime
-				CHECK_VERSION(CRIM);
-				REQUIRE_META(CRIM);
-
-				// u8 *startOfChunk = pos;
-				SAVChunk_Crime *cCrime = READ_CHUNK(SAVChunk_Crime);
-				CrimeLayer *layer = &city->crimeLayer;
-
-				layer->totalJailCapacity    = cCrime->totalJailCapacity;
-				layer->occupiedJailCapacity = cCrime->occupiedJailCapacity;
-			}
-			else if (header->identifier == SAV_EDUC_ID)
-			{
-				// Load Education
-				CHECK_VERSION(EDUC);
-				REQUIRE_META(EDUC);
-
-				// u8 *startOfChunk = pos;
-				SAVChunk_Education *education = READ_CHUNK(SAVChunk_Education);
-				education = education;
-
-				// TODO: Implement Education!
-			}
-			else if (header->identifier == SAV_FIRE_ID)
-			{
-				// Load Fire
-				CHECK_VERSION(FIRE);
-				REQUIRE_META(FIRE);
-
-				u8 *startOfChunk = pos;
-				SAVChunk_Fire *cFire = READ_CHUNK(SAVChunk_Fire);
-				FireLayer *layer = &city->fireLayer;
-
-				// Active fires
-				Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, cFire->activeFireCount);
-				if (readArray(cFire->activeFires, startOfChunk, &tempFires))
-				{
-					for (u32 activeFireIndex = 0;
-						activeFireIndex < cFire->activeFireCount;
-						activeFireIndex++)
-					{
-						SAVFire *savFire = &tempFires[activeFireIndex];
-
-						addFireRaw(city, savFire->x, savFire->y, savFire->startDate);
-					}
-					ASSERT((u32)layer->activeFireCount == cFire->activeFireCount);
-				}
-			}
-			else if (header->identifier == SAV_HLTH_ID)
-			{
-				// Load Health
-				CHECK_VERSION(HLTH);
-				REQUIRE_META(HLTH);
-
-				// u8 *startOfChunk = pos;
-				SAVChunk_Health *cHealth = READ_CHUNK(SAVChunk_Health);
-				cHealth = cHealth;
-
-				// TODO: Implement Health!
-			}
-			else if (header->identifier == SAV_LVAL_ID)
-			{
-				// Load Land Value
-				CHECK_VERSION(LVAL);
-				REQUIRE_META(LVAL);
-
-				u8 *startOfChunk = pos;
-				SAVChunk_LandValue *cLandValue = READ_CHUNK(SAVChunk_LandValue);
-				LandValueLayer *layer = &city->landValueLayer;
-
-				decodeBlob(cLandValue->tileLandValue, startOfChunk, &layer->tileLandValue);
-			}
-			else if (header->identifier == SAV_PLTN_ID)
-			{
-				// Load Pollution
-				CHECK_VERSION(PLTN);
-				REQUIRE_META(PLTN);
-
-				u8 *startOfChunk = pos;
-				SAVChunk_Pollution *cPollution = READ_CHUNK(SAVChunk_Pollution);
-				PollutionLayer *layer = &city->pollutionLayer;
-
-				decodeBlob(cPollution->tilePollution, startOfChunk, &layer->tilePollution);
-			}
-			else if (header->identifier == SAV_TPRT_ID)
-			{
-				// Load Transport
-				CHECK_VERSION(TPRT);
-				REQUIRE_META(TPRT);
-
-				// u8 *startOfChunk = pos;
-				SAVChunk_Transport *cTransport = READ_CHUNK(SAVChunk_Transport);
-				cTransport = cTransport;
-
-				// TODO: Implement Transport!
-			}
-		}
-
-		#undef READ
-
-		// This break is because we succeeded!
-		succeeded = true;
-		break;
-	}
-#endif
 
 	return succeeded;
 }

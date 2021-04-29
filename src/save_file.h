@@ -39,7 +39,7 @@ struct SAVSection_Meta
 	leF32 cameraZoom;
 };
 
-struct SAVChunk_Mods
+struct SAVSection_Mods
 {
 	// List which mods are enabled in this save, so that we know if they're present or not!
 	// Also, probably turn individual mods on/off to match the save game, that'd be useful!
@@ -57,9 +57,9 @@ struct SAVChunk_Mods
 	// binary blob.
 };
 
-const u8 SAV_BDGT_VERSION = 1;
-const FileIdentifier SAV_BDGT_ID = "BDGT"_id;
-struct SAVChunk_Budget
+const u8 SAV_BUDGET_VERSION = 1;
+const FileIdentifier SAV_BUDGET_ID = "BDGT"_id;
+struct SAVSection_Budget
 {
 	// TODO: Budget things
 };
@@ -98,24 +98,24 @@ struct SAVBuilding
 	// TODO: Record builidng problems somehow!
 };
 
-const u8 SAV_CRIM_VERSION = 1;
-const FileIdentifier SAV_CRIM_ID = "CRIM"_id;
-struct SAVChunk_Crime
+const u8 SAV_CRIME_VERSION = 1;
+const FileIdentifier SAV_CRIME_ID = "CRIM"_id;
+struct SAVSection_Crime
 {
 	leU32 totalJailCapacity;
 	leU32 occupiedJailCapacity;
 };
 
-const u8 SAV_EDUC_VERSION = 1;
-const FileIdentifier SAV_EDUC_ID = "EDUC"_id;
-struct SAVChunk_Education
+const u8 SAV_EDUCATION_VERSION = 1;
+const FileIdentifier SAV_EDUCATION_ID = "EDUC"_id;
+struct SAVSection_Education
 {
 	// Building education level, when that's implemented
 };
 
 const u8 SAV_FIRE_VERSION = 1;
 const FileIdentifier SAV_FIRE_ID = "FIRE"_id;
-struct SAVChunk_Fire
+struct SAVSection_Fire
 {
 	// Active fires
 	leU32 activeFireCount;
@@ -131,25 +131,25 @@ struct SAVFire
 	// TODO: severity
 };
 
-const u8 SAV_HLTH_VERSION = 1;
-const FileIdentifier SAV_HLTH_ID = "HLTH"_id;
-struct SAVChunk_Health
+const u8 SAV_HEALTH_VERSION = 1;
+const FileIdentifier SAV_HEALTH_ID = "HLTH"_id;
+struct SAVSection_Health
 {
 	// Building health level, when that's implemented
 };
 
-const u8 SAV_LVAL_VERSION = 1;
-const FileIdentifier SAV_LVAL_ID = "LVAL"_id;
-struct SAVChunk_LandValue
+const u8 SAV_LANDVALUE_VERSION = 1;
+const FileIdentifier SAV_LANDVALUE_ID = "LVAL"_id;
+struct SAVSection_LandValue
 {
 	// Kind of redundant as it can be calculated fresh, but in case we have over-time
 	// effects, we might as well put this here.
 	FileBlob tileLandValue; // Array of u8s
 };
 
-const u8 SAV_PLTN_VERSION = 1;
-const FileIdentifier SAV_PLTN_ID = "PLTN"_id;
-struct SAVChunk_Pollution
+const u8 SAV_POLLUTION_VERSION = 1;
+const FileIdentifier SAV_POLLUTION_ID = "PLTN"_id;
+struct SAVSection_Pollution
 {
 	// TODO: Maybe RLE this, but I'm not sure. It's probably pretty variable.
 	FileBlob tilePollution; // Array of u8s
@@ -171,9 +171,9 @@ struct SAVSection_Terrain
 	FileBlob tileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
 };
 
-const u8 SAV_TPRT_VERSION = 1;
-const FileIdentifier SAV_TPRT_ID = "TPRT"_id;
-struct SAVChunk_Transport
+const u8 SAV_TRANSPORT_VERSION = 1;
+const FileIdentifier SAV_TRANSPORT_ID = "TPRT"_id;
+struct SAVSection_Transport
 {
 	// TODO: Information about traffic density, routes, etc.
 	// (Not sure what we'll actually simulate yet!)
