@@ -27,8 +27,7 @@ struct BinaryFileWriter
 
 	FileBlob appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme);
 	FileBlob appendBlob(Array2<u8> *data, FileBlobCompressionScheme scheme);
-
-	// Relative to current section
+	
 	FileString appendString(String s);
 
 	template <typename T>

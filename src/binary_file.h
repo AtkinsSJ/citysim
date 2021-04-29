@@ -112,7 +112,7 @@ struct FileHeader
 
 struct FileTOCEntry
 {
-	FileIdentifier sectionID;
+	LittleEndian<FileIdentifier> sectionID;
 	leU32 offset; // Within file
 	leU32 length; // Length of the section, should match the FileSectionHeader.length
 };
