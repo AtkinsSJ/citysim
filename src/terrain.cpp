@@ -353,7 +353,7 @@ void generateTerrain(City *city, Random *gameRandom)
 
 		Splat pondSplat = createRandomSplat(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, &terrainRandom);
 
-		Rect2I boundingBox = getBoundingBox(&pondSplat);
+		Rect2I boundingBox = intersect(getBoundingBox(&pondSplat), city->bounds);
 		for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
 		{
 			for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
@@ -384,7 +384,7 @@ void generateTerrain(City *city, Random *gameRandom)
 
 			Splat forestSplat = createRandomSplat(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
 
-			Rect2I boundingBox = getBoundingBox(&forestSplat);
+			Rect2I boundingBox = intersect(getBoundingBox(&forestSplat), city->bounds);
 			for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++)
 			{
 				for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++)
