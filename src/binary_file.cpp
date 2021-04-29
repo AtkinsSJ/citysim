@@ -71,7 +71,7 @@ String readString(FileString source, u8 *base)
 	return makeString((char *)(base + source.relativeOffset), source.length, false);
 }
 
-void rleDecode(u8 *source, u8 *dest, s32 destSize)
+void rleDecode(u8 *source, u8 *dest, smm destSize)
 {
 	u8 *sourcePos = source;
 	u8 *destPos = dest;
@@ -100,7 +100,7 @@ void rleDecode(u8 *source, u8 *dest, s32 destSize)
 	}
 }
 
-bool decodeBlob(FileBlob blob, u8 *baseMemory, u8 *dest, s32 destSize)
+bool decodeBlob(FileBlob blob, u8 *baseMemory, u8 *dest, smm destSize)
 {
 	bool succeeded = true;
 

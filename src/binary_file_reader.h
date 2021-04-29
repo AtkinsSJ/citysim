@@ -27,10 +27,15 @@ struct BinaryFileReader
 
 	String readString(FileString fileString);
 
-	// For cases we don't handle, you can directly access the bytes of the current section with this.
-	// But generally, you want to use readX() methods instead.
-	// TODO: Ideally, we don't want to allow this at all, but instead have a safe way of reading arbitrary data.
-	u8 *startReadingBytes(smm relativeOffset);
+	// readBlob() functions return whether it succeeded
+	bool readBlob(FileBlob source, u8 *dest, smm destSize);
+	template <typename T>
+	bool readBlob(FileBlob source, Array<T> *dest);
+	template <typename T>
+	bool readBlob(FileBlob source, Array2<T> *dest);
+
+// Internal
+	u8 *sectionMemoryAt(smm relativeOffset);
 };
 
 enum BinaryFileProblems

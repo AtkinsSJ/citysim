@@ -389,7 +389,8 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			// Map the file's terrain type IDs to the game's ones
 			// NB: count+1 because the file won't save the null terrain, so we need to compensate
 			Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, cTerrain->terrainTypeCount + 1, true);
-			u8 *at = reader.startReadingBytes(cTerrain->offsetForTerrainTypeTable);
+			// TODO: Stop using internal method!
+			u8 *at = reader.sectionMemoryAt(cTerrain->offsetForTerrainTypeTable);
 			for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
 			{
 				u32 terrainType = *(u32 *)at;
@@ -405,25 +406,27 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			}
 
 			// Terrain type
-			// TODO: We could just not allocate this array, and write directly to the layer->tileTerrainType
-			u8 *decodedTileTerrainType = allocateMultiple<u8>(tempArena, cityTileCount);
-			if (decodeBlob(cTerrain->tileTerrainType, startOfChunk, decodedTileTerrainType, cityTileCount))
+			if (reader.readBlob(cTerrain->tileTerrainType, &layer->tileTerrainType))
 			{
-				for (s32 i = 0; i < cityTileCount; i++)
+				for (s32 y = 0; y < city->bounds.y; y++)
 				{
-					decodedTileTerrainType[i] = oldTypeToNewType[ decodedTileTerrainType[i] ];
+					for (s32 x = 0; x < city->bounds.x; x++)
+					{
+						layer->tileTerrainType.set(x, y,  oldTypeToNewType[layer->tileTerrainType.get(x, y)]);
+					}
 				}
-				copyMemory(decodedTileTerrainType, layer->tileTerrainType.items, cityTileCount);
 			}
 
 			// Terrain height
-			decodeBlob(cTerrain->tileHeight, startOfChunk, &layer->tileHeight);
+			reader.readBlob(cTerrain->tileHeight, &layer->tileHeight);
 
 			// Sprite offset
-			decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, &layer->tileSpriteOffset);
+			reader.readBlob(cTerrain->tileSpriteOffset, &layer->tileSpriteOffset);
 
 			assignTerrainSprites(city, city->bounds);
 		}
+
+		succeeded = true;
 	}
 
 //

@@ -137,9 +137,71 @@ String BinaryFileReader::readString(FileString fileString)
 
 	if (isValidFile && currentSectionHeader != null)
 	{
-		smm stringStartPos = sizeof(FileSectionHeader) + fileString.relativeOffset;
-		result = makeString((char *)(currentSection.memory + stringStartPos), fileString.length, false);
+		result = makeString((char *)sectionMemoryAt(fileString.relativeOffset), fileString.length, false);
 	}
 
 	return result;
+}
+
+bool BinaryFileReader::readBlob(FileBlob source, u8 *dest, smm destSize)
+{
+	bool succeeded = false;
+
+	if (destSize >= source.decompressedLength)
+	{
+		if (destSize > source.decompressedLength)
+		{
+			logWarn("Destination passed to readBlob() is larger than needed. (Need {0}, got {1})"_s, {formatInt(source.decompressedLength), formatInt(destSize)});
+		}
+
+		switch (source.compressionScheme)
+		{
+			case Blob_Uncompressed: {
+				copyMemory(sectionMemoryAt(source.relativeOffset), dest, source.length);
+				succeeded = true;
+			} break;
+
+			case Blob_RLE_S8: {
+				rleDecode(sectionMemoryAt(source.relativeOffset), dest, destSize);
+				succeeded = true;
+			} break;
+
+			default: {
+				logError("Failed to decode data blob from file: unrecognised encoding scheme! ({0})"_s, {formatInt(source.compressionScheme)});
+			} break;
+		}
+	}
+	else
+	{
+		logError("Destination passed to readBlob() is too small! (Need {0}, got {1})"_s, {formatInt(source.decompressedLength), formatInt(destSize)});
+	}
+
+	return succeeded;
+}
+
+template <typename T>
+bool BinaryFileReader::readBlob(FileBlob source, Array<T> *dest)
+{
+	smm destSize = dest->capacity * sizeof(T);
+
+	bool succeeded = readBlob(source, (u8*)dest->items, destSize);
+	if (succeeded)
+	{
+		dest->count = dest->capacity;
+	}
+
+	return succeeded;
+}
+
+template <typename T>
+bool BinaryFileReader::readBlob(FileBlob source, Array2<T> *dest)
+{
+	smm destSize = dest->w * dest->h * sizeof(T);
+
+	return readBlob(source, (u8*)dest->items, destSize);
+}
+
+u8 *BinaryFileReader::sectionMemoryAt(smm relativeOffset)
+{
+	return currentSection.memory + sizeof(FileSectionHeader) + relativeOffset;
 }
