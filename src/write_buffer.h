@@ -10,6 +10,11 @@
 	WriteBufferLocation for the start of that data, to make using overwriteAt()
 	easier.
 
+	As of 29/04/2021, we only use this in BinaryFileWriter, which wraps it. We
+	could just merge this into that, but I feel like this might be useful for
+	writing network packets at some point, or possibly binary files that don't
+	match our special format, so I'm keeping it for now.     - Sam
+
 */
 
 struct WriteBufferChunk

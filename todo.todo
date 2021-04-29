@@ -28,11 +28,11 @@ Saving and loading:
 - Extend overWriteAt() to have versions for structs or literals, like the append() and reserve() functions, for ease of use
 ✔ Check all TOC entries are filled in before you try to save the file
 - Migrate the save-file-problems stuff
-- Rename Chunk to Section in SAVChunk things
-- Rename the SAV_X_ID and _VERSION constants to have a friendlier name. Don't need to abbreviate the section names!
+✔ Rename Chunk to Section in SAVChunk things
+✔ Rename the SAV_X_ID and _VERSION constants to have a friendlier name. Don't need to abbreviate the section names!
 ✔ Add a MemoryArena parameter to FileReader in case we don't want things wiped at the end of the frame
 	✔-> Which we definitely don't want, because loading files is likely to take multiple frames! And also be done in a background thread, without access to the global tempArena.
-- Delete the old stuff in binary_file
+✔ Delete the old stuff in binary_file
 
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it
