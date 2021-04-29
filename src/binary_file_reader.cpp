@@ -1,7 +1,8 @@
 
-BinaryFileReader readBinaryFile(FileHandle *handle, FileIdentifier identifier)
+BinaryFileReader readBinaryFile(FileHandle *handle, FileIdentifier identifier, MemoryArena *arena)
 {
 	BinaryFileReader reader = {};
+	reader.arena = arena;
 	reader.fileHandle = handle;
 	reader.isValidFile = false;
 	reader.problems = 0;
@@ -41,7 +42,7 @@ BinaryFileReader readBinaryFile(FileHandle *handle, FileIdentifier identifier)
 		else
 		{
 			// Read the TOC in
-			Array<FileTOCEntry> toc = allocateArray<FileTOCEntry>(tempArena, header.toc.count, false);
+			Array<FileTOCEntry> toc = allocateArray<FileTOCEntry>(arena, header.toc.count, false);
 			if (readArray(handle, header.toc.relativeOffset, header.toc.count, &toc))
 			{
 				reader.toc = toc;
@@ -80,7 +81,7 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
 			{
 				// Read the whole section into memory
 				smm bytesToRead = sizeof(FileSectionHeader) + tocEntry->length;
-				currentSection = allocateBlob(tempArena, bytesToRead);
+				currentSection = allocateBlob(arena, bytesToRead);
 				smm bytesRead = readData(fileHandle, tocEntry->offset, bytesToRead, currentSection.memory);
 				if (bytesRead == bytesToRead)
 				{

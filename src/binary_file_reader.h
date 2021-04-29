@@ -5,6 +5,8 @@
 // we only ever need one section in memory at a time.
 struct BinaryFileReader
 {
+	MemoryArena *arena;
+
 	// Data about the file itself
 	FileHandle *fileHandle;
 	bool isValidFile;
@@ -46,4 +48,4 @@ enum BinaryFileProblems
 	BFP_CorruptTOC      = 1 << 3,
 };
 
-BinaryFileReader readBinaryFile(FileHandle *handle, FileIdentifier identifier);
+BinaryFileReader readBinaryFile(FileHandle *handle, FileIdentifier identifier, MemoryArena *arena);

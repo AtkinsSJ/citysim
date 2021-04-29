@@ -68,7 +68,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 		FileHandle savedFile = openFile(savedGame->fullPath, FileAccess_Read);
 		if (savedFile.isOpen)
 		{
-			BinaryFileReader reader = readBinaryFile(&savedFile, SAV_FILE_ID);
+			BinaryFileReader reader = readBinaryFile(&savedFile, SAV_FILE_ID, tempArena);
 
 			if (reader.isValidFile)
 			{
@@ -76,7 +76,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 				bool readSection = reader.startSection(SAV_META_ID, SAV_META_VERSION);
 				if (readSection)
 				{
-					SAVChunk_Meta *meta = reader.readStruct<SAVChunk_Meta>(0);
+					SAVSection_Meta *meta = reader.readStruct<SAVSection_Meta>(0);
 
 					savedGame->saveTime   = getLocalTimeFromTimestamp(meta->saveTimestamp);
 					savedGame->cityName   = intern(&catalogue->stringsTable, reader.readString(meta->cityName));

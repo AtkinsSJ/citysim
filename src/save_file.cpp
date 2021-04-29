@@ -13,23 +13,23 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		// Prepare the TOC
 		writer.addTOCEntry(SAV_META_ID);
 		writer.addTOCEntry(SAV_BDGT_ID);
-		writer.addTOCEntry(SAV_BLDG_ID);
+		writer.addTOCEntry(SAV_BUILDING_ID);
 		writer.addTOCEntry(SAV_CRIM_ID);
 		writer.addTOCEntry(SAV_EDUC_ID);
 		writer.addTOCEntry(SAV_FIRE_ID);
 		writer.addTOCEntry(SAV_HLTH_ID);
 		writer.addTOCEntry(SAV_LVAL_ID);
 		writer.addTOCEntry(SAV_PLTN_ID);
-		writer.addTOCEntry(SAV_TERR_ID);
+		writer.addTOCEntry(SAV_TERRAIN_ID);
 		writer.addTOCEntry(SAV_TPRT_ID);
 		writer.addTOCEntry(SAV_ZONE_ID);
 
 		// Meta
 		{
 			writer.startSection(SAV_META_ID, SAV_META_VERSION);
-			WriteBufferLocation metaLoc = writer.buffer.reserveStruct<SAVChunk_Meta>();
+			WriteBufferLocation metaLoc = writer.buffer.reserveStruct<SAVSection_Meta>();
 
-			SAVChunk_Meta meta = {};
+			SAVSection_Meta meta = {};
 			meta.saveTimestamp = getCurrentUnixTimestamp();
 			meta.cityWidth     = (u16) city->bounds.w;
 			meta.cityHeight    = (u16) city->bounds.h;
@@ -58,11 +58,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		// Terrain
 		{
 
-			writer.startSection(SAV_TERR_ID, SAV_TERR_VERSION);
+			writer.startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
 			TerrainLayer *layer = &city->terrainLayer;
 
-			SAVChunk_Terrain chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Terrain>();
+			SAVSection_Terrain chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Terrain>();
 
 			// Terrain generation parameters
 			chunk.terrainGenerationSeed = layer->terrainGenerationSeed;
@@ -100,10 +100,10 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Buildings
 		{
-			writer.startSection(SAV_BLDG_ID, SAV_BLDG_VERSION);
+			writer.startSection(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
 
-			SAVChunk_Buildings chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVChunk_Buildings>();
+			SAVSection_Buildings chunk = {};
+			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Buildings>();
 
 			// Building types table
 			chunk.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
@@ -354,8 +354,9 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 	City *city = &gameState->city;
 
-	BinaryFileReader reader = readBinaryFile(file, SAV_FILE_ID);
-	if (reader.isValidFile)
+	BinaryFileReader reader = readBinaryFile(file, SAV_FILE_ID, tempArena);
+	// This doesn't actually loop, we're just using a `while` so we can break out of it
+	while (reader.isValidFile)
 	{
 		s32 cityTileCount = 0;
 
@@ -363,7 +364,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 		bool readMeta = reader.startSection(SAV_META_ID, SAV_META_VERSION);
 		if (readMeta)
 		{
-			SAVChunk_Meta *meta = reader.readStruct<SAVChunk_Meta>(0);
+			SAVSection_Meta *meta = reader.readStruct<SAVSection_Meta>(0);
 
 			String cityName = reader.readString(meta->cityName);
 			String playerName = reader.readString(meta->playerName);
@@ -376,12 +377,13 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			// Camera
 			setCameraPos(&renderer->worldCamera, v2(meta->cameraX, meta->cameraY), meta->cameraZoom);
 		}
+		else break;
 
 		// TERRAIN
-		bool readTerrain = reader.startSection(SAV_TERR_ID, SAV_TERR_VERSION);
+		bool readTerrain = reader.startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
 		if (readTerrain)
 		{
-			SAVChunk_Terrain *cTerrain = reader.readStruct<SAVChunk_Terrain>(0);
+			SAVSection_Terrain *cTerrain = reader.readStruct<SAVSection_Terrain>(0);
 			TerrainLayer *layer = &city->terrainLayer;
 
 			layer->terrainGenerationSeed = cTerrain->terrainGenerationSeed;
@@ -425,8 +427,96 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 			assignTerrainSprites(city, city->bounds);
 		}
+		else break;
 
+		// BUILDINGS
+		bool readBuildings = reader.startSection(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
+		if (readBuildings)
+		{
+			SAVSection_Buildings *cBuildings = reader.readStruct<SAVSection_Buildings>(0);
+
+			city->highestBuildingID = cBuildings->highestBuildingID;
+
+			// Map the file's building type IDs to the game's ones
+			// NB: count+1 because the file won't save the null building, so we need to compensate
+			Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1, true);
+			// TODO: Stop using internal method!
+			u8 *at = reader.sectionMemoryAt(cBuildings->offsetForBuildingTypeTable);
+			for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
+			{
+				u32 buildingType = *(u32 *)at;
+				at += sizeof(u32);
+
+				u32 nameLength = *(u32 *)at;
+				at += sizeof(u32);
+
+				String buildingName = makeString((char*)at, nameLength, true);
+				at += nameLength;
+
+				BuildingDef *def = findBuildingDef(buildingName);
+				if (def == null)
+				{
+					// The building doesn't exist in the game... we'll remap to 0
+					// 
+					// Ideally, we'd keep the information about what a building really is, so
+					// that if it's later loaded into a game that does have that building, it'll work
+					// again instead of being forever lost. But, we're talking about a situation of
+					// the player messing around with the data files, or adding/removing/adding mods,
+					// so IDK. The saved game is already corrupted if you load it and stuff is missing - 
+					// playing at all from that point is going to break things, and if we later make
+					// that stuff appear again, we're actually just breaking it a second time!
+					// 
+					// So maybe, the real "correct" solution is to tell the player that things are missing
+					// from the game, and then just demolish the missing-id buildings.
+					//
+					// Mods probably want some way to define "migrations" for transforming saved games 
+					// when the mod's data changes. That's probably a good idea for the base game's data
+					// too, because changes happen!
+					//
+					// Lots to think about!
+					//
+					// - Sam, 11/11/2019
+					//
+					oldTypeToNewType[buildingType] = 0;
+				}
+				else
+				{
+					oldTypeToNewType[buildingType] = def->typeID;
+				}
+			}
+
+			Array<SAVBuilding> tempBuildings = allocateArray<SAVBuilding>(tempArena, cBuildings->buildingCount);
+			if (reader.readBlob(cBuildings->buildings, &tempBuildings))
+			{
+				for (u32 buildingIndex = 0;
+					buildingIndex < cBuildings->buildingCount;
+					buildingIndex++)
+				{
+					SAVBuilding *savBuilding = &tempBuildings[buildingIndex];
+
+					Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
+					BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
+					Building *building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
+					building->variantIndex     = savBuilding->variantIndex;
+					building->spriteOffset     = savBuilding->spriteOffset;
+					building->currentResidents = savBuilding->currentResidents;
+					building->currentJobs      = savBuilding->currentJobs;
+					// Because the sprite was assigned in addBuildingDirect(), before we loaded the variant, we
+					// need to overwrite the sprite here.
+					// Probably there's a better way to organise this, but this works.
+					// - Sam, 26/09/2020
+					loadBuildingSprite(building);
+
+					// This is a bit hacky but it's how we calculate it elsewhere
+					city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+				}
+			}
+		}
+		else break;
+
+		// And we're done!
 		succeeded = true;
+		break;
 	}
 
 //
@@ -494,27 +584,27 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 			// NB: The SAV_XXX_ID stuff isn't constant at compile time, or something,
 			// so we can't switch() on it, even though it looks like it should work!
-			if (header->identifier == SAV_META_ID)
-			{
-				// Load Meta
-				CHECK_VERSION(META);
+			// if (header->identifier == SAV_META_ID)
+			// {
+			// 	// Load Meta
+			// 	CHECK_VERSION(META);
 
-				u8 *startOfChunk = pos;
-				SAVChunk_Meta *cMeta = READ_CHUNK(SAVChunk_Meta);
+			// 	u8 *startOfChunk = pos;
+			// 	SAVSection_Meta *cMeta = READ_CHUNK(SAVSection_Meta);
 
-				String cityName = readString(cMeta->cityName, startOfChunk);
-				String playerName = readString(cMeta->playerName, startOfChunk);
-				initCity(&gameState->gameArena, city, cMeta->cityWidth, cMeta->cityHeight, cityName, playerName, cMeta->funds);
-				cityTileCount = city->bounds.w * city->bounds.h;
+			// 	String cityName = readString(cMeta->cityName, startOfChunk);
+			// 	String playerName = readString(cMeta->playerName, startOfChunk);
+			// 	initCity(&gameState->gameArena, city, cMeta->cityWidth, cMeta->cityHeight, cityName, playerName, cMeta->funds);
+			// 	cityTileCount = city->bounds.w * city->bounds.h;
 
-				// Clock
-				initGameClock(&gameState->gameClock, cMeta->currentDate, cMeta->timeWithinDay);
+			// 	// Clock
+			// 	initGameClock(&gameState->gameClock, cMeta->currentDate, cMeta->timeWithinDay);
 
-				// Camera
-				setCameraPos(&renderer->worldCamera, v2(cMeta->cameraX, cMeta->cameraY), cMeta->cameraZoom);
+			// 	// Camera
+			// 	setCameraPos(&renderer->worldCamera, v2(cMeta->cameraX, cMeta->cameraY), cMeta->cameraZoom);
 
-				hasLoadedMeta = true;
-			}
+			// 	hasLoadedMeta = true;
+			// }
 			else if (header->identifier == SAV_BDGT_ID)
 			{
 				// Load Budget
@@ -527,91 +617,91 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				// TODO: Implement!
 			}
-			else if (header->identifier == SAV_BLDG_ID)
-			{
-				// Load Building
-				CHECK_VERSION(BLDG);
-				REQUIRE_META(BLDG);
+			// else if (header->identifier == SAV_BUILDING_ID)
+			// {
+			// 	// Load Building
+			// 	CHECK_VERSION(BLDG);
+			// 	REQUIRE_META(BLDG);
 
-				u8 *startOfChunk = pos;
-				SAVChunk_Buildings *cBuildings = READ_CHUNK(SAVChunk_Buildings);
+			// 	u8 *startOfChunk = pos;
+			// 	SAVSection_Buildings *cBuildings = READ_CHUNK(SAVSection_Buildings);
 
-				city->highestBuildingID = cBuildings->highestBuildingID;
+			// 	city->highestBuildingID = cBuildings->highestBuildingID;
 
-				// Map the file's building type IDs to the game's ones
-				// NB: count+1 because the file won't save the null building, so we need to compensate
-				Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1, true);
-				u8 *at = startOfChunk + cBuildings->offsetForBuildingTypeTable;
-				for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
-				{
-					u32 buildingType = *(u32 *)at;
-					at += sizeof(u32);
+			// 	// Map the file's building type IDs to the game's ones
+			// 	// NB: count+1 because the file won't save the null building, so we need to compensate
+			// 	Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1, true);
+			// 	u8 *at = startOfChunk + cBuildings->offsetForBuildingTypeTable;
+			// 	for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
+			// 	{
+			// 		u32 buildingType = *(u32 *)at;
+			// 		at += sizeof(u32);
 
-					u32 nameLength = *(u32 *)at;
-					at += sizeof(u32);
+			// 		u32 nameLength = *(u32 *)at;
+			// 		at += sizeof(u32);
 
-					String buildingName = makeString((char*)at, nameLength, true);
-					at += nameLength;
+			// 		String buildingName = makeString((char*)at, nameLength, true);
+			// 		at += nameLength;
 
-					BuildingDef *def = findBuildingDef(buildingName);
-					if (def == null)
-					{
-						// The building doesn't exist in the game... we'll remap to 0
-						// 
-						// Ideally, we'd keep the information about what a building really is, so
-						// that if it's later loaded into a game that does have that building, it'll work
-						// again instead of being forever lost. But, we're talking about a situation of
-						// the player messing around with the data files, or adding/removing/adding mods,
-						// so IDK. The saved game is already corrupted if you load it and stuff is missing - 
-						// playing at all from that point is going to break things, and if we later make
-						// that stuff appear again, we're actually just breaking it a second time!
-						// 
-						// So maybe, the real "correct" solution is to tell the player that things are missing
-						// from the game, and then just demolish the missing-id buildings.
-						//
-						// Mods probably want some way to define "migrations" for transforming saved games 
-						// when the mod's data changes. That's probably a good idea for the base game's data
-						// too, because changes happen!
-						//
-						// Lots to think about!
-						//
-						// - Sam, 11/11/2019
-						//
-						oldTypeToNewType[buildingType] = 0;
-					}
-					else
-					{
-						oldTypeToNewType[buildingType] = def->typeID;
-					}
-				}
+			// 		BuildingDef *def = findBuildingDef(buildingName);
+			// 		if (def == null)
+			// 		{
+			// 			// The building doesn't exist in the game... we'll remap to 0
+			// 			// 
+			// 			// Ideally, we'd keep the information about what a building really is, so
+			// 			// that if it's later loaded into a game that does have that building, it'll work
+			// 			// again instead of being forever lost. But, we're talking about a situation of
+			// 			// the player messing around with the data files, or adding/removing/adding mods,
+			// 			// so IDK. The saved game is already corrupted if you load it and stuff is missing - 
+			// 			// playing at all from that point is going to break things, and if we later make
+			// 			// that stuff appear again, we're actually just breaking it a second time!
+			// 			// 
+			// 			// So maybe, the real "correct" solution is to tell the player that things are missing
+			// 			// from the game, and then just demolish the missing-id buildings.
+			// 			//
+			// 			// Mods probably want some way to define "migrations" for transforming saved games 
+			// 			// when the mod's data changes. That's probably a good idea for the base game's data
+			// 			// too, because changes happen!
+			// 			//
+			// 			// Lots to think about!
+			// 			//
+			// 			// - Sam, 11/11/2019
+			// 			//
+			// 			oldTypeToNewType[buildingType] = 0;
+			// 		}
+			// 		else
+			// 		{
+			// 			oldTypeToNewType[buildingType] = def->typeID;
+			// 		}
+			// 	}
 
-				SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, cBuildings->buildingCount);
-				if (decodeBlob(cBuildings->buildings, startOfChunk, (u8*)tempBuildings, cBuildings->buildingCount * sizeof(SAVBuilding)))
-				{
-					for (u32 buildingIndex = 0;
-						buildingIndex < cBuildings->buildingCount;
-						buildingIndex++)
-					{
-						SAVBuilding *savBuilding = tempBuildings + buildingIndex;
+			// 	SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, cBuildings->buildingCount);
+			// 	if (decodeBlob(cBuildings->buildings, startOfChunk, (u8*)tempBuildings, cBuildings->buildingCount * sizeof(SAVBuilding)))
+			// 	{
+			// 		for (u32 buildingIndex = 0;
+			// 			buildingIndex < cBuildings->buildingCount;
+			// 			buildingIndex++)
+			// 		{
+			// 			SAVBuilding *savBuilding = tempBuildings + buildingIndex;
 
-						Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
-						BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
-						Building *building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
-						building->variantIndex     = savBuilding->variantIndex;
-						building->spriteOffset     = savBuilding->spriteOffset;
-						building->currentResidents = savBuilding->currentResidents;
-						building->currentJobs      = savBuilding->currentJobs;
-						// Because the sprite was assigned in addBuildingDirect(), before we loaded the variant, we
-						// need to overwrite the sprite here.
-						// Probably there's a better way to organise this, but this works.
-						// - Sam, 26/09/2020
-						loadBuildingSprite(building);
+			// 			Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
+			// 			BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
+			// 			Building *building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
+			// 			building->variantIndex     = savBuilding->variantIndex;
+			// 			building->spriteOffset     = savBuilding->spriteOffset;
+			// 			building->currentResidents = savBuilding->currentResidents;
+			// 			building->currentJobs      = savBuilding->currentJobs;
+			// 			// Because the sprite was assigned in addBuildingDirect(), before we loaded the variant, we
+			// 			// need to overwrite the sprite here.
+			// 			// Probably there's a better way to organise this, but this works.
+			// 			// - Sam, 26/09/2020
+			// 			loadBuildingSprite(building);
 
-						// This is a bit hacky but it's how we calculate it elsewhere
-						city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
-					}
-				}
-			}
+			// 			// This is a bit hacky but it's how we calculate it elsewhere
+			// 			city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+			// 		}
+			// 	}
+			// }
 			else if (header->identifier == SAV_CRIM_ID)
 			{
 				// Load Crime
@@ -698,55 +788,55 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 				decodeBlob(cPollution->tilePollution, startOfChunk, &layer->tilePollution);
 			}
-			else if (header->identifier == SAV_TERR_ID)
-			{
-				// Load Terrain
-				CHECK_VERSION(TERR);
-				REQUIRE_META(TERR);
+			// else if (header->identifier == SAV_TERRAIN_ID)
+			// {
+			// 	// Load Terrain
+			// 	CHECK_VERSION(TERR);
+			// 	REQUIRE_META(TERR);
 
-				u8 *startOfChunk = pos;
-				SAVChunk_Terrain *cTerrain = READ_CHUNK(SAVChunk_Terrain);
-				TerrainLayer *layer = &city->terrainLayer;
+			// 	u8 *startOfChunk = pos;
+			// 	SAVSection_Terrain *cTerrain = READ_CHUNK(SAVSection_Terrain);
+			// 	TerrainLayer *layer = &city->terrainLayer;
 
-				layer->terrainGenerationSeed = cTerrain->terrainGenerationSeed;
+			// 	layer->terrainGenerationSeed = cTerrain->terrainGenerationSeed;
 
-				// Map the file's terrain type IDs to the game's ones
-				// NB: count+1 because the file won't save the null terrain, so we need to compensate
-				Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, cTerrain->terrainTypeCount + 1, true);
-				u8 *at = startOfChunk + cTerrain->offsetForTerrainTypeTable;
-				for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
-				{
-					u32 terrainType = *(u32 *)at;
-					at += sizeof(u32);
+			// 	// Map the file's terrain type IDs to the game's ones
+			// 	// NB: count+1 because the file won't save the null terrain, so we need to compensate
+			// 	Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, cTerrain->terrainTypeCount + 1, true);
+			// 	u8 *at = startOfChunk + cTerrain->offsetForTerrainTypeTable;
+			// 	for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
+			// 	{
+			// 		u32 terrainType = *(u32 *)at;
+			// 		at += sizeof(u32);
 
-					u32 nameLength = *(u32 *)at;
-					at += sizeof(u32);
+			// 		u32 nameLength = *(u32 *)at;
+			// 		at += sizeof(u32);
 
-					String terrainName = makeString((char*)at, nameLength, true);
-					at += nameLength;
+			// 		String terrainName = makeString((char*)at, nameLength, true);
+			// 		at += nameLength;
 
-					oldTypeToNewType[terrainType] = findTerrainTypeByName(terrainName);
-				}
+			// 		oldTypeToNewType[terrainType] = findTerrainTypeByName(terrainName);
+			// 	}
 
-				// Terrain type
-				u8 *decodedTileTerrainType = allocateMultiple<u8>(tempArena, cityTileCount);
-				if (decodeBlob(cTerrain->tileTerrainType, startOfChunk, decodedTileTerrainType, cityTileCount))
-				{
-					for (s32 i = 0; i < cityTileCount; i++)
-					{
-						decodedTileTerrainType[i] = oldTypeToNewType[ decodedTileTerrainType[i] ];
-					}
-					copyMemory(decodedTileTerrainType, layer->tileTerrainType.items, cityTileCount);
-				}
+			// 	// Terrain type
+			// 	u8 *decodedTileTerrainType = allocateMultiple<u8>(tempArena, cityTileCount);
+			// 	if (decodeBlob(cTerrain->tileTerrainType, startOfChunk, decodedTileTerrainType, cityTileCount))
+			// 	{
+			// 		for (s32 i = 0; i < cityTileCount; i++)
+			// 		{
+			// 			decodedTileTerrainType[i] = oldTypeToNewType[ decodedTileTerrainType[i] ];
+			// 		}
+			// 		copyMemory(decodedTileTerrainType, layer->tileTerrainType.items, cityTileCount);
+			// 	}
 
-				// Terrain height
-				decodeBlob(cTerrain->tileHeight, startOfChunk, &layer->tileHeight);
+			// 	// Terrain height
+			// 	decodeBlob(cTerrain->tileHeight, startOfChunk, &layer->tileHeight);
 
-				// Sprite offset
-				decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, &layer->tileSpriteOffset);
+			// 	// Sprite offset
+			// 	decodeBlob(cTerrain->tileSpriteOffset, startOfChunk, &layer->tileSpriteOffset);
 
-				assignTerrainSprites(city, city->bounds);
-			}
+			// 	assignTerrainSprites(city, city->bounds);
+			// }
 			else if (header->identifier == SAV_TPRT_ID)
 			{
 				// Load Transport

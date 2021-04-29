@@ -18,7 +18,7 @@ const FileIdentifier SAV_FILE_ID = "CITY"_id;
 
 const u8 SAV_META_VERSION = 1;
 const FileIdentifier SAV_META_ID = "META"_id;
-struct SAVChunk_Meta
+struct SAVSection_Meta
 {
 	leU64 saveTimestamp; // Unix timestamp
 	leU16 cityWidth;
@@ -64,9 +64,9 @@ struct SAVChunk_Budget
 	// TODO: Budget things
 };
 
-const u8 SAV_BLDG_VERSION = 1;
-const FileIdentifier SAV_BLDG_ID = "BLDG"_id;
-struct SAVChunk_Buildings
+const u8 SAV_BUILDING_VERSION = 1;
+const FileIdentifier SAV_BUILDING_ID = "BLDG"_id;
+struct SAVSection_Buildings
 {
 	leU32 buildingTypeCount;
 	leU32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
@@ -155,9 +155,9 @@ struct SAVChunk_Pollution
 	FileBlob tilePollution; // Array of u8s
 };
 
-const u8 SAV_TERR_VERSION = 1;
-const FileIdentifier SAV_TERR_ID = "TERR"_id;
-struct SAVChunk_Terrain
+const u8 SAV_TERRAIN_VERSION = 1;
+const FileIdentifier SAV_TERRAIN_ID = "TERR"_id;
+struct SAVSection_Terrain
 {
 	leS32 terrainGenerationSeed;
 	// TODO: Other terrain-generation parameters
