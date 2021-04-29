@@ -22,7 +22,7 @@ Saving and loading:
 ✔ Add a table-of-contents at the start of our binary files, which lists the chunks, along with their sizes and offsets. That way, we could read a specific chunk's data without having to read the entire file into memory.
 	✔ -> Then, can have a function to get just that chunk's data, either from the file already in memory or by getting it from the file directly
 - Do we want WriteBuffer to exist? It's only used for FileWriter, and merging the two would make calling simpler.
-- Add a FileReader type thing, for abstracting reading data out like FileWriter
+✔ Add a FileReader type thing, for abstracting reading data out like FileWriter
 - Move save-file code for each layer into the layer.
 	Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 - Extend overWriteAt() to have versions for structs or literals, like the append() and reserve() functions, for ease of use

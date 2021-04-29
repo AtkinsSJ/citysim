@@ -6,7 +6,13 @@ BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version)
 	writer.buffer.init();
 
 	writer.fileHeaderLoc = writer.buffer.reserveStruct<FileHeader>();
-	FileHeader fileHeader = makeFileHeader(identifier, version);
+
+	FileHeader fileHeader = {};
+	fileHeader.identifier    = identifier;
+	fileHeader.version       = version;
+	fileHeader.unixNewline   = 0x0A;
+	fileHeader.dosNewline[0] = 0x0D;
+	fileHeader.dosNewline[1] = 0x0A;
 	fileHeader.toc.count = 0;
 	fileHeader.toc.relativeOffset = writer.buffer.getLengthSince(writer.fileHeaderLoc);
 
