@@ -3,7 +3,7 @@
 struct BinaryFileWriter
 {
 	MemoryArena *arena;
-	
+
 	WriteBuffer buffer;
 	WriteBufferLocation fileHeaderLoc;
 	bool tocComplete;
@@ -17,6 +17,7 @@ struct BinaryFileWriter
 
 	void addTOCEntry(FileIdentifier sectionID);
 
+	template <typename T>
 	void startSection(FileIdentifier sectionID, u8 sectionVersion);
 
 	s32 getSectionRelativeOffset();
@@ -30,7 +31,8 @@ struct BinaryFileWriter
 	// Relative to current section
 	FileString appendString(String s);
 
-	void endSection();
+	template <typename T>
+	void endSection(T *sectionStruct);
 
 	bool outputToFile(FileHandle *file);
 

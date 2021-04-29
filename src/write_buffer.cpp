@@ -152,6 +152,9 @@ s32 WriteBuffer::getLengthSince(WriteBufferLocation start)
 template <typename T>
 T WriteBuffer::readAt(WriteBufferLocation location)
 {
+	// Make sure the requested range is valid
+	ASSERT((location + sizeof(T)) <= byteCount);
+
 	T result;
 
 	WriteBufferChunk *chunk = getChunkAt(location);
@@ -187,6 +190,9 @@ T WriteBuffer::readAt(WriteBufferLocation location)
 
 void WriteBuffer::overwriteAt(WriteBufferLocation location, s32 length, void *data)
 {
+	// Make sure the requested range is valid
+	ASSERT((location + length) <= byteCount);
+
 	// Find the chunk this starts in
 	WriteBufferChunk *chunk = getChunkAt(location);
 	s32 posInChunk = location % chunkSize;

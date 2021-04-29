@@ -26,50 +26,45 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 		// Meta
 		{
-			writer.startSection(SAV_META_ID, SAV_META_VERSION);
-			WriteBufferLocation metaLoc = writer.buffer.reserveStruct<SAVSection_Meta>();
+			writer.startSection<SAVSection_Meta>(SAV_META_ID, SAV_META_VERSION);
+			SAVSection_Meta metaSection = {};
 
-			SAVSection_Meta meta = {};
-			meta.saveTimestamp = getCurrentUnixTimestamp();
-			meta.cityWidth     = (u16) city->bounds.w;
-			meta.cityHeight    = (u16) city->bounds.h;
-			meta.funds         = city->funds;
-			meta.population    = getTotalResidents(city);
-			meta.jobs          = getTotalJobs(city);
+			metaSection.saveTimestamp = getCurrentUnixTimestamp();
+			metaSection.cityWidth     = (u16) city->bounds.w;
+			metaSection.cityHeight    = (u16) city->bounds.h;
+			metaSection.funds         = city->funds;
+			metaSection.population    = getTotalResidents(city);
+			metaSection.jobs          = getTotalJobs(city);
 
-			meta.cityName   = writer.appendString(city->name);
-			meta.playerName = writer.appendString(city->playerName);
+			metaSection.cityName   = writer.appendString(city->name);
+			metaSection.playerName = writer.appendString(city->playerName);
 
 			// Clock
 			GameClock *clock = &gameState->gameClock;
-			meta.currentDate = clock->currentDay;
-			meta.timeWithinDay = clock->timeWithinDay;
+			metaSection.currentDate = clock->currentDay;
+			metaSection.timeWithinDay = clock->timeWithinDay;
 			
 			// Camera
 			Camera *camera = &renderer->worldCamera;
-			meta.cameraX = camera->pos.x;
-			meta.cameraY = camera->pos.y;
-			meta.cameraZoom = camera->zoom;
+			metaSection.cameraX = camera->pos.x;
+			metaSection.cameraY = camera->pos.y;
+			metaSection.cameraZoom = camera->zoom;
 
-			writer.buffer.overwriteAt(metaLoc, sizeof(meta), &meta);
-			writer.endSection();
+			writer.endSection(&metaSection);
 		}
 
 		// Terrain
 		{
-
-			writer.startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
+			writer.startSection<SAVSection_Terrain>(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
+			SAVSection_Terrain terrainSection = {};
 			TerrainLayer *layer = &city->terrainLayer;
 
-			SAVSection_Terrain chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Terrain>();
-
 			// Terrain generation parameters
-			chunk.terrainGenerationSeed = layer->terrainGenerationSeed;
+			terrainSection.terrainGenerationSeed = layer->terrainGenerationSeed;
 
 			// Terrain types table
-			chunk.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
-			chunk.offsetForTerrainTypeTable = writer.getSectionRelativeOffset();
+			terrainSection.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
+			terrainSection.offsetForTerrainTypeTable = writer.getSectionRelativeOffset();
 			for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next())
 			{
 				TerrainDef *def = it.get();
@@ -85,29 +80,25 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			}
 
 			// Tile terrain type (u8)
-			chunk.tileTerrainType = writer.appendBlob(&layer->tileTerrainType, Blob_RLE_S8);
+			terrainSection.tileTerrainType = writer.appendBlob(&layer->tileTerrainType, Blob_RLE_S8);
 
 			// Tile height (u8)
-			chunk.tileHeight = writer.appendBlob(&layer->tileHeight, Blob_RLE_S8);
+			terrainSection.tileHeight = writer.appendBlob(&layer->tileHeight, Blob_RLE_S8);
 
 			// Tile sprite offset (u8)
-			chunk.tileSpriteOffset = writer.appendBlob(&layer->tileSpriteOffset, Blob_Uncompressed);
+			terrainSection.tileSpriteOffset = writer.appendBlob(&layer->tileSpriteOffset, Blob_Uncompressed);
 
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Terrain>(&terrainSection);
 		}
 
 		// Buildings
 		{
-			writer.startSection(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
-
-			SAVSection_Buildings chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Buildings>();
+			writer.startSection<SAVSection_Buildings>(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
+			SAVSection_Buildings buildingSection = {};
 
 			// Building types table
-			chunk.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
-			chunk.offsetForBuildingTypeTable = writer.getSectionRelativeOffset();
+			buildingSection.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
+			buildingSection.offsetForBuildingTypeTable = writer.getSectionRelativeOffset();
 			for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
 			{
 				BuildingDef *def = it.get();
@@ -123,7 +114,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			}
 
 			// Highest ID
-			chunk.highestBuildingID = city->highestBuildingID;
+			buildingSection.highestBuildingID = city->highestBuildingID;
 
 			//
 			// The buildings themselves!
@@ -140,9 +131,9 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			//
 			// - Sam, 11/10/2019
 			//
-			chunk.buildingCount = city->buildings.count - 1; // Not the null building!
+			buildingSection.buildingCount = city->buildings.count - 1; // Not the null building!
 
-			SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, chunk.buildingCount);
+			SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, buildingSection.buildingCount);
 			s32 tempBuildingIndex = 0;
 
 			for (auto it = city->buildings.iterate(); it.hasNext(); it.next())
@@ -166,82 +157,62 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 				tempBuildingIndex++;
 			}
-			chunk.buildings = writer.appendBlob(chunk.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, Blob_Uncompressed);
+			buildingSection.buildings = writer.appendBlob(buildingSection.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, Blob_Uncompressed);
 
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Buildings>(&buildingSection);
 		}
 
 		// Zones
 		{
-			writer.startSection(SAV_ZONE_ID, SAV_ZONE_VERSION);
 			ZoneLayer *layer = &city->zoneLayer;
-
-			SAVSection_Zone chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Zone>();
+			writer.startSection<SAVSection_Zone>(SAV_ZONE_ID, SAV_ZONE_VERSION);
+			SAVSection_Zone zoneSection = {};
 
 			// Tile zones
-			chunk.tileZone = writer.appendBlob(&layer->tileZone, Blob_RLE_S8);
+			zoneSection.tileZone = writer.appendBlob(&layer->tileZone, Blob_RLE_S8);
 
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Zone>(&zoneSection);
 		}
 
 		// Budget
 		{
-			writer.startSection(SAV_BUDGET_ID, SAV_BUDGET_VERSION);
+			writer.startSection<SAVSection_Budget>(SAV_BUDGET_ID, SAV_BUDGET_VERSION);
+			SAVSection_Budget budgetSection = {};
 			// BudgetLayer *layer = &city->budgetLayer;
 
-			SAVSection_Budget chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Budget>();
-
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Budget>(&budgetSection);
 		}
 
 		// Crime
 		{
-			writer.startSection(SAV_CRIME_ID, SAV_CRIME_VERSION);
 			CrimeLayer *layer = &city->crimeLayer;
+			writer.startSection<SAVSection_Crime>(SAV_CRIME_ID, SAV_CRIME_VERSION);
+			SAVSection_Crime crimeSection = {};
 
-			SAVSection_Crime chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Crime>();
+			crimeSection.totalJailCapacity = layer->totalJailCapacity;
+			crimeSection.occupiedJailCapacity = layer->occupiedJailCapacity;
 
-			chunk.totalJailCapacity = layer->totalJailCapacity;
-			chunk.occupiedJailCapacity = layer->occupiedJailCapacity;
-
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Crime>(&crimeSection);
 		}
 
 		// Education
 		{
-			writer.startSection(SAV_EDUCATION_ID, SAV_EDUCATION_VERSION);
+			writer.startSection<SAVSection_Education>(SAV_EDUCATION_ID, SAV_EDUCATION_VERSION);
+			SAVSection_Education educationSection = {};
 			// EducationLayer *layer = &city->educationLayer;
 
-			SAVSection_Education chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Education>();
-
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Education>(&educationSection);
 		}
 
 		// Fire
 		{
-			writer.startSection(SAV_FIRE_ID, SAV_FIRE_VERSION);
+			writer.startSection<SAVSection_Fire>(SAV_FIRE_ID, SAV_FIRE_VERSION);
+			SAVSection_Fire fireSection = {};
 			FireLayer *layer = &city->fireLayer;
 
-			SAVSection_Fire chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Fire>();
-
 			// Active fires
-			chunk.activeFireCount = layer->activeFireCount;
-			Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, chunk.activeFireCount);
+			fireSection.activeFireCount = layer->activeFireCount;
+			Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, fireSection.activeFireCount);
 			// ughhhh I have to iterate the sectors to get this information!
 			for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
 			{
@@ -257,73 +228,52 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 					savFire->startDate = fire->startDate;
 				}
 			}
-			chunk.activeFires = writer.appendArray<SAVFire>(tempFires);
+			fireSection.activeFires = writer.appendArray<SAVFire>(tempFires);
 
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Fire>(&fireSection);
 		}
 
 		// Health
 		{
-			writer.startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
+			writer.startSection<SAVSection_Health>(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
+			SAVSection_Health healthSection = {};
 			// HealthLayer *layer = &city->healthLayer;
 
-			SAVSection_Health chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Health>();
-
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Health>(&healthSection);
 		}
 
 		// Land Value
 		{
-			writer.startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
+			writer.startSection<SAVSection_LandValue>(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
+			SAVSection_LandValue landValueSection = {};
 			LandValueLayer *layer = &city->landValueLayer;
 
-			SAVSection_LandValue chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_LandValue>();
-
 			// Tile land value
-			chunk.tileLandValue = writer.appendBlob(&layer->tileLandValue, Blob_Uncompressed);
+			landValueSection.tileLandValue = writer.appendBlob(&layer->tileLandValue, Blob_Uncompressed);
 
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_LandValue>(&landValueSection);
 		}
 
 		// Pollution
 		{
-			writer.startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
+			writer.startSection<SAVSection_Pollution>(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
+			SAVSection_Pollution pollutionSection = {};
 			PollutionLayer *layer = &city->pollutionLayer;
 
-			SAVSection_Pollution chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Pollution>();
-
 			// Tile pollution
-			chunk.tilePollution = writer.appendBlob(&layer->tilePollution, Blob_Uncompressed);
+			pollutionSection.tilePollution = writer.appendBlob(&layer->tilePollution, Blob_Uncompressed);
 
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Pollution>(&pollutionSection);
 		}
 
 		// Transport
 		{
-			writer.startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
+			writer.startSection<SAVSection_Transport>(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
+			SAVSection_Transport transportSection = {};
 			// TransportLayer *layer = &city->transportLayer;
 
-			SAVSection_Transport chunk = {};
-			WriteBufferLocation startOfChunk = writer.buffer.reserveStruct<SAVSection_Transport>();
-
-			writer.buffer.overwriteAt(startOfChunk, sizeof(chunk), &chunk);
-
-			writer.endSection();
+			writer.endSection<SAVSection_Transport>(&transportSection);
 		}
-
-
-		// succeeded = writeToFile(file, &writer.buffer);
 
 		succeeded = writer.outputToFile(file);
 	}
@@ -383,17 +333,17 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 		bool readTerrain = reader.startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
 		if (readTerrain)
 		{
-			SAVSection_Terrain *cTerrain = reader.readStruct<SAVSection_Terrain>(0);
+			SAVSection_Terrain *terrain = reader.readStruct<SAVSection_Terrain>(0);
 			TerrainLayer *layer = &city->terrainLayer;
 
-			layer->terrainGenerationSeed = cTerrain->terrainGenerationSeed;
+			layer->terrainGenerationSeed = terrain->terrainGenerationSeed;
 
 			// Map the file's terrain type IDs to the game's ones
 			// NB: count+1 because the file won't save the null terrain, so we need to compensate
-			Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, cTerrain->terrainTypeCount + 1, true);
+			Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrain->terrainTypeCount + 1, true);
 			// TODO: Stop using internal method!
-			u8 *at = reader.sectionMemoryAt(cTerrain->offsetForTerrainTypeTable);
-			for (u32 i = 0; i < cTerrain->terrainTypeCount; i++)
+			u8 *at = reader.sectionMemoryAt(terrain->offsetForTerrainTypeTable);
+			for (u32 i = 0; i < terrain->terrainTypeCount; i++)
 			{
 				u32 terrainType = *(u32 *)at;
 				at += sizeof(u32);
@@ -408,7 +358,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			}
 
 			// Terrain type
-			if (!reader.readBlob(cTerrain->tileTerrainType, &layer->tileTerrainType)) break;
+			if (!reader.readBlob(terrain->tileTerrainType, &layer->tileTerrainType)) break;
 			for (s32 y = 0; y < city->bounds.y; y++)
 			{
 				for (s32 x = 0; x < city->bounds.x; x++)
@@ -418,10 +368,10 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			}
 
 			// Terrain height
-			if (!reader.readBlob(cTerrain->tileHeight, &layer->tileHeight)) break;
+			if (!reader.readBlob(terrain->tileHeight, &layer->tileHeight)) break;
 
 			// Sprite offset
-			if (!reader.readBlob(cTerrain->tileSpriteOffset, &layer->tileSpriteOffset)) break;
+			if (!reader.readBlob(terrain->tileSpriteOffset, &layer->tileSpriteOffset)) break;
 
 			assignTerrainSprites(city, city->bounds);
 		}

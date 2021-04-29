@@ -127,4 +127,6 @@ struct FileSectionHeader
 
 #pragma pack(pop)
 
+// // Returns number of bytes written
+// smm rleEncode(u8 *source, smm sourceSize, u8 *dest, smm destSize);
 void rleDecode(u8 *source, u8 *dest, smm destSize);

@@ -42,6 +42,7 @@ void BinaryFileWriter::addTOCEntry(FileIdentifier sectionID)
 	buffer.overwriteAt(tocCountLoc, sizeof(leU32), &tocCount);
 }
 
+template <typename T>
 void BinaryFileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 {
 	tocComplete = true;
@@ -57,6 +58,9 @@ void BinaryFileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	Indexed<FileTOCEntry> tocEntry = findTOCEntry(sectionID);
 	ASSERT(tocEntry.index >= 0); // Must add a TOC entry for each section in advance!
 	sectionTOCLoc = tocEntry.index;
+
+	// Reserve our "section struct"
+	buffer.reserveStruct<T>();
 }
 
 s32 BinaryFileWriter::getSectionRelativeOffset()
@@ -123,8 +127,11 @@ FileString BinaryFileWriter::appendString(String s)
 	return result;
 }
 
-void BinaryFileWriter::endSection()
+template <typename T>
+void BinaryFileWriter::endSection(T *sectionStruct)
 {
+	buffer.overwriteAt(startOfSectionData, sizeof(T), sectionStruct);
+
 	// Update section header
 	u32 sectionLength = buffer.getLengthSince(startOfSectionData);
 	sectionHeader.length = sectionLength;
