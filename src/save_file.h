@@ -181,7 +181,7 @@ struct SAVChunk_Transport
 
 const u8 SAV_ZONE_VERSION = 1;
 const FileIdentifier SAV_ZONE_ID = "ZONE"_id;
-struct SAVChunk_Zone
+struct SAVSection_Zone
 {
 	FileBlob tileZone; // Array of u8s
 };
