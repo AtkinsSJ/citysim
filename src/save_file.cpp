@@ -8,7 +8,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 	{
 		City *city = &gameState->city;
 
-		BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION);
+		BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION, tempArena);
 
 		// Prepare the TOC
 		writer.addTOCEntry(SAV_META_ID);

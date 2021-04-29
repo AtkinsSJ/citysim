@@ -1,9 +1,10 @@
 
 
-BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version)
+BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryArena *arena)
 {
 	BinaryFileWriter writer = {};
-	writer.buffer.init();
+	writer.arena = arena;
+	writer.buffer.init(KB(4), arena);
 
 	writer.fileHeaderLoc = writer.buffer.reserveStruct<FileHeader>();
 

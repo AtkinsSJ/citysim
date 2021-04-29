@@ -2,6 +2,8 @@
 
 struct BinaryFileWriter
 {
+	MemoryArena *arena;
+	
 	WriteBuffer buffer;
 	WriteBufferLocation fileHeaderLoc;
 	bool tocComplete;
@@ -36,4 +38,4 @@ struct BinaryFileWriter
 	Indexed<FileTOCEntry> findTOCEntry(FileIdentifier sectionID);
 };
 
-BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version);
+BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryArena *arena);

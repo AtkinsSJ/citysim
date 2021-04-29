@@ -135,7 +135,7 @@ const u8 SAV_HEALTH_VERSION = 1;
 const FileIdentifier SAV_HEALTH_ID = "HLTH"_id;
 struct SAVSection_Health
 {
-	// Building health level, when that's implemented
+	// TODO: Building health level, when that's implemented
 };
 
 const u8 SAV_LANDVALUE_VERSION = 1;
