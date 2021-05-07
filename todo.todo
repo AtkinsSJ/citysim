@@ -40,6 +40,8 @@ Saving and loading:
 ✔ Remove last uses of writer.buffer from writeSaveFile()
 	✔ It's the building/terrain type tables causing us trouble with their inline strings. Probably converting them to regular FileStrings with all the character data put after the array, would be better. (And more consistent.)
 
+BUG: Game loses distance-from-water data on load, AGAIN?!
+
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it
 - Tiles visually blend between terrain types

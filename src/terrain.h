@@ -68,3 +68,5 @@ u8 findTerrainTypeByName(String name);
 void showTerrainWindow();
 void modifyTerrainWindowProc(WindowContext*, void*);
 
+void saveTerrainLayer(TerrainLayer *layer, struct BinaryFileWriter *writer);
+bool loadTerrainLayer(TerrainLayer *layer, City *city, struct BinaryFileReader *reader);

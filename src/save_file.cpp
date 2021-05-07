@@ -56,40 +56,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 		}
 
 		// Terrain
-		{
-			writer.startSection<SAVSection_Terrain>(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
-			SAVSection_Terrain terrainSection = {};
-			TerrainLayer *layer = &city->terrainLayer;
-
-			// Terrain generation parameters
-			terrainSection.terrainGenerationSeed = layer->terrainGenerationSeed;
-
-			// Terrain types table
-			s32 terrainDefCount = terrainCatalogue.terrainDefs.count - 1; // Skip the null def
-			WriteBufferRange terrainTypeTableLoc = writer.reserveArray<SAVTerrainTypeEntry>(terrainDefCount);
-			Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(arena, terrainDefCount);
-			for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next())
-			{
-				TerrainDef *def = it.get();
-				if (def->typeID == 0) continue; // Skip the null terrain def!
-
-				SAVTerrainTypeEntry *entry = terrainTypeTable.append();
-				entry->typeID = def->typeID;
-				entry->name = writer.appendString(def->name);
-			}
-			terrainSection.terrainTypeTable = writer.writeArray<SAVTerrainTypeEntry>(terrainTypeTable, terrainTypeTableLoc);
-
-			// Tile terrain type (u8)
-			terrainSection.tileTerrainType = writer.appendBlob(&layer->tileTerrainType, Blob_RLE_S8);
-
-			// Tile height (u8)
-			terrainSection.tileHeight = writer.appendBlob(&layer->tileHeight, Blob_RLE_S8);
-
-			// Tile sprite offset (u8)
-			terrainSection.tileSpriteOffset = writer.appendBlob(&layer->tileSpriteOffset, Blob_Uncompressed);
-
-			writer.endSection<SAVSection_Terrain>(&terrainSection);
-		}
+		saveTerrainLayer(&city->terrainLayer, &writer);
 
 		// Buildings
 		{
@@ -329,45 +296,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 		else break;
 
 		// TERRAIN
-		bool readTerrain = reader.startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
-		if (readTerrain)
-		{
-			SAVSection_Terrain *terrain = reader.readStruct<SAVSection_Terrain>(0);
-			TerrainLayer *layer = &city->terrainLayer;
-
-			layer->terrainGenerationSeed = terrain->terrainGenerationSeed;
-
-			// Map the file's terrain type IDs to the game's ones
-			// NB: count+1 because the file won't save the null terrain, so we need to compensate
-			Array<u8> oldTypeToNewType = allocateArray<u8>(arena, terrain->terrainTypeTable.count + 1, true);
-			Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(arena, terrain->terrainTypeTable.count);
-			if (!reader.readArray(terrain->terrainTypeTable, &terrainTypeTable)) break;
-			for (s32 i=0; i < terrainTypeTable.count; i++)
-			{
-				SAVTerrainTypeEntry *entry = &terrainTypeTable[i];
-				String terrainName = reader.readString(entry->name);
-				oldTypeToNewType[entry->typeID] = findTerrainTypeByName(terrainName);
-			}
-
-			// Terrain type
-			if (!reader.readBlob(terrain->tileTerrainType, &layer->tileTerrainType)) break;
-			for (s32 y = 0; y < city->bounds.y; y++)
-			{
-				for (s32 x = 0; x < city->bounds.x; x++)
-				{
-					layer->tileTerrainType.set(x, y,  oldTypeToNewType[layer->tileTerrainType.get(x, y)]);
-				}
-			}
-
-			// Terrain height
-			if (!reader.readBlob(terrain->tileHeight, &layer->tileHeight)) break;
-
-			// Sprite offset
-			if (!reader.readBlob(terrain->tileSpriteOffset, &layer->tileSpriteOffset)) break;
-
-			assignTerrainSprites(city, city->bounds);
-		}
-		else break;
+		if (!loadTerrainLayer(&city->terrainLayer, city, &reader)) break;
 
 		// BUILDINGS
 		bool readBuildings = reader.startSection(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
