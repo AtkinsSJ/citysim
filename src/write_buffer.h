@@ -60,8 +60,6 @@ struct WriteBuffer
 	WriteBufferLocation appendBytes(s32 length, void *bytes);
 	WriteBufferLocation reserveBytes(s32 length);
 
-	WriteBufferRange appendRLEBytes(s32 length, u8 *bytes);
-
 	WriteBufferLocation getCurrentPosition();
 	s32 getLengthSince(WriteBufferLocation start); // How many bytes were output since that point
 

@@ -121,8 +121,35 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionS
 		} break;
 
 		case Blob_RLE_S8: {
-			WriteBufferRange range = buffer.appendRLEBytes(length, data);
-			result.length = range.length;
+
+			// Our scheme is, (s8 length, u8...data)
+			// Positive length = repeat the next byte `length` times.
+			// Negative length = copy the next `-length` bytes literally.
+
+			// TODO: Implement literals output! Right now we're always encoding runs, even of 1 byte!
+
+			// const s32 minRunLength = 4; // This is a fairly arbitrary number! Maybe it should be bigger, idk.
+
+			// Though, for attempt #1 we'll stick to always outputting runs, even if it's
+			// a run of length 1.
+			u8 *end = data + length;
+			u8 *pos = data;
+
+			while (pos < end)
+			{
+				s8 count = 1;
+				u8 value = *pos++;
+				while ((pos < end) && (count < s8Max) && (*pos == value))
+				{
+					count++;
+					pos++;
+				}
+
+				buffer.appendLiteral<s8>(count);
+				buffer.appendLiteral<u8>(value);
+			}
+
+			result.length = getSectionRelativeOffset() - result.relativeOffset;
 		} break;
 
 		default: {

@@ -35,7 +35,7 @@ Saving and loading:
 ✔ Add a MemoryArena parameter to FileReader in case we don't want things wiped at the end of the frame
 	✔-> Which we definitely don't want, because loading files is likely to take multiple frames! And also be done in a background thread, without access to the global tempArena.
 ✔ Delete the old stuff in binary_file
-- Move the rle-encoding code out of WriteBuffer and into binary_file
+✔ Move the rle-encoding code out of WriteBuffer and into binary_file
 	(WriteBuffer shouldn't need to know about an encoding scheme used by one user.)
 ✔ Remove last uses of writer.buffer from writeSaveFile()
 	✔ It's the building/terrain type tables causing us trouble with their inline strings. Probably converting them to regular FileStrings with all the character data put after the array, would be better. (And more consistent.)
@@ -63,6 +63,8 @@ Shrink String
 
 Sort out the UIState nonsense
 - If we have to keep it (and I think we do) at least remove it from function calls. It just makes a mess.
+
+Make our RLE encoder actually encode non-runs! (BinaryFileWriter::appendBlob)
 
 Window system:
 - Function to detect if a window is open

@@ -105,40 +105,6 @@ WriteBufferLocation WriteBuffer::reserveBytes(s32 length)
 	return result;
 }
 
-WriteBufferRange WriteBuffer::appendRLEBytes(s32 length, u8 *bytes)
-{
-	WriteBufferRange result = {};
-	result.start = getCurrentPosition();
-
-	// Our scheme is, (s8 length, u8...data)
-	// Positive length = repeat the next byte `length` times.
-	// Negative length = copy the next `-length` bytes literally.
-
-	// const s32 minRunLength = 4; // This is a fairly arbitrary number! Maybe it should be bigger, idk.
-
-	// Though, for attempt #1 we'll stick to always outputting runs, even if it's
-	// a run of length 1.
-	u8 *end = bytes + length;
-	u8 *pos = bytes;
-
-	while (pos < end)
-	{
-		s8 count = 1;
-		u8 value = *pos++;
-		while ((pos < end) && (count < s8Max) && (*pos == value))
-		{
-			count++;
-			pos++;
-		}
-
-		appendLiteral<s8>(count);
-		appendLiteral<u8>(value);
-		result.length += 2;
-	}
-
-	return result;
-}
-
 inline WriteBufferLocation WriteBuffer::getCurrentPosition()
 {
 	return byteCount;
