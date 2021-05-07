@@ -6,9 +6,11 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 	if (succeeded)
 	{
+		MemoryArena *arena = tempArena;
+
 		City *city = &gameState->city;
 
-		BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION, tempArena);
+		BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION, arena);
 
 		// Prepare the TOC
 		writer.addTOCEntry(SAV_META_ID);
@@ -63,21 +65,19 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			terrainSection.terrainGenerationSeed = layer->terrainGenerationSeed;
 
 			// Terrain types table
-			terrainSection.terrainTypeCount = terrainCatalogue.terrainDefs.count - 1; // Not the null def!
-			terrainSection.offsetForTerrainTypeTable = writer.getSectionRelativeOffset();
+			s32 terrainDefCount = terrainCatalogue.terrainDefs.count - 1; // Skip the null def
+			WriteBufferRange terrainTypeTableLoc = writer.reserveArray<SAVTerrainTypeEntry>(terrainDefCount);
+			Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(arena, terrainDefCount);
 			for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next())
 			{
 				TerrainDef *def = it.get();
 				if (def->typeID == 0) continue; // Skip the null terrain def!
 
-				u32 typeID = def->typeID;
-				u32 nameLength = def->name.length;
-
-				// 4 byte int id, 4 byte length, then the text as bytes
-				writer.buffer.appendLiteral(typeID);
-				writer.buffer.appendLiteral(nameLength);
-				writer.buffer.appendBytes(nameLength, def->name.chars);
+				SAVTerrainTypeEntry *entry = terrainTypeTable.append();
+				entry->typeID = def->typeID;
+				entry->name = writer.appendString(def->name);
 			}
+			terrainSection.terrainTypeTable = writer.writeArray<SAVTerrainTypeEntry>(terrainTypeTable, terrainTypeTableLoc);
 
 			// Tile terrain type (u8)
 			terrainSection.tileTerrainType = writer.appendBlob(&layer->tileTerrainType, Blob_RLE_S8);
@@ -133,7 +133,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			//
 			buildingSection.buildingCount = city->buildings.count - 1; // Not the null building!
 
-			SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(tempArena, buildingSection.buildingCount);
+			SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(arena, buildingSection.buildingCount);
 			s32 tempBuildingIndex = 0;
 
 			for (auto it = city->buildings.iterate(); it.hasNext(); it.next())
@@ -212,7 +212,7 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 
 			// Active fires
 			fireSection.activeFireCount = layer->activeFireCount;
-			Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, fireSection.activeFireCount);
+			Array<SAVFire> tempFires = allocateArray<SAVFire>(arena, fireSection.activeFireCount);
 			// ughhhh I have to iterate the sectors to get this information!
 			for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
 			{
@@ -303,8 +303,9 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 	bool succeeded = false;
 
 	City *city = &gameState->city;
+	MemoryArena *arena = tempArena;
 
-	BinaryFileReader reader = readBinaryFile(file, SAV_FILE_ID, tempArena);
+	BinaryFileReader reader = readBinaryFile(file, SAV_FILE_ID, arena);
 	// This doesn't actually loop, we're just using a `while` so we can break out of it
 	while (reader.isValidFile)
 	{
@@ -340,21 +341,14 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 			// Map the file's terrain type IDs to the game's ones
 			// NB: count+1 because the file won't save the null terrain, so we need to compensate
-			Array<u8> oldTypeToNewType = allocateArray<u8>(tempArena, terrain->terrainTypeCount + 1, true);
-			// TODO: Stop using internal method!
-			u8 *at = reader.sectionMemoryAt(terrain->offsetForTerrainTypeTable);
-			for (u32 i = 0; i < terrain->terrainTypeCount; i++)
+			Array<u8> oldTypeToNewType = allocateArray<u8>(arena, terrain->terrainTypeTable.count + 1, true);
+			Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(arena, terrain->terrainTypeTable.count);
+			if (!reader.readArray(terrain->terrainTypeTable, &terrainTypeTable)) break;
+			for (s32 i=0; i < terrainTypeTable.count; i++)
 			{
-				u32 terrainType = *(u32 *)at;
-				at += sizeof(u32);
-
-				u32 nameLength = *(u32 *)at;
-				at += sizeof(u32);
-
-				String terrainName = makeString((char*)at, nameLength, true);
-				at += nameLength;
-
-				oldTypeToNewType[terrainType] = findTerrainTypeByName(terrainName);
+				SAVTerrainTypeEntry *entry = &terrainTypeTable[i];
+				String terrainName = reader.readString(entry->name);
+				oldTypeToNewType[entry->typeID] = findTerrainTypeByName(terrainName);
 			}
 
 			// Terrain type
@@ -387,7 +381,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 			// Map the file's building type IDs to the game's ones
 			// NB: count+1 because the file won't save the null building, so we need to compensate
-			Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, cBuildings->buildingTypeCount+1, true);
+			Array<s32> oldTypeToNewType = allocateArray<s32>(arena, cBuildings->buildingTypeCount+1, true);
 			// TODO: Stop using internal method!
 			u8 *at = reader.sectionMemoryAt(cBuildings->offsetForBuildingTypeTable);
 			for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
@@ -433,7 +427,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 				}
 			}
 
-			Array<SAVBuilding> tempBuildings = allocateArray<SAVBuilding>(tempArena, cBuildings->buildingCount);
+			Array<SAVBuilding> tempBuildings = allocateArray<SAVBuilding>(arena, cBuildings->buildingCount);
 			if (!reader.readBlob(cBuildings->buildings, &tempBuildings)) break;
 			for (u32 buildingIndex = 0;
 				buildingIndex < cBuildings->buildingCount;
@@ -503,7 +497,7 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			FireLayer *layer = &city->fireLayer;
 
 			// Active fires
-			Array<SAVFire> tempFires = allocateArray<SAVFire>(tempArena, cFire->activeFireCount);
+			Array<SAVFire> tempFires = allocateArray<SAVFire>(arena, cFire->activeFireCount);
 			if (!reader.readArray(cFire->activeFires, &tempFires)) break;
 			for (u32 activeFireIndex = 0;
 				activeFireIndex < cFire->activeFireCount;

@@ -25,6 +25,11 @@ struct BinaryFileWriter
 	template <typename T>
 	FileArray appendArray(Array<T> data);
 
+	template <typename T>
+	WriteBufferRange reserveArray(s32 length);
+	template <typename T>
+	FileArray writeArray(Array<T> data, WriteBufferRange location);
+
 	FileBlob appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme);
 	FileBlob appendBlob(Array2<u8> *data, FileBlobCompressionScheme scheme);
 	

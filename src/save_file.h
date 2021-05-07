@@ -162,13 +162,16 @@ struct SAVSection_Terrain
 	leS32 terrainGenerationSeed;
 	// TODO: Other terrain-generation parameters
 
-	leU32 terrainTypeCount;
-	leU32 offsetForTerrainTypeTable; // Map from terrain string ID to to the int id used in the type array below.
-	// The terrain table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
+	FileArray terrainTypeTable; // SAVTerrainTypeEntry
 
 	FileBlob tileTerrainType;  // Array of u8s (NB: We could make this be a larger type and then compact it down to u8s in the file if there are few enough...)
 	FileBlob tileHeight;       // Array of u8s
 	FileBlob tileSpriteOffset; // Array of u8s    TODO: This is a lot of data, can we just store RNG parameters instead, and then generate them on load?
+};
+struct SAVTerrainTypeEntry
+{
+	leU32 typeID;
+	FileString name;
 };
 
 const u8 SAV_TRANSPORT_VERSION = 1;

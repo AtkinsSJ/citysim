@@ -83,6 +83,29 @@ FileArray BinaryFileWriter::appendArray(Array<T> data)
 	return result;
 }
 
+template <typename T>
+WriteBufferRange BinaryFileWriter::reserveArray(s32 length)
+{
+	WriteBufferRange result = {};
+	result.length = length * sizeof(T);
+	result.start = buffer.reserveBytes(result.length);
+	return result;
+}
+
+template <typename T>
+FileArray BinaryFileWriter::writeArray(Array<T> data, WriteBufferRange location)
+{
+	s32 dataLength = data.count * sizeof(T);
+	ASSERT(dataLength <= location.length);
+
+	buffer.overwriteAt(location.start, dataLength, data.items);
+
+	FileArray result = {};
+	result.count = data.count;
+	result.relativeOffset = location.start - startOfSectionData;
+	return result;
+}
+
 FileBlob BinaryFileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionScheme scheme)
 {
 	FileBlob result = {};
