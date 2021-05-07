@@ -68,15 +68,18 @@ const u8 SAV_BUILDING_VERSION = 1;
 const FileIdentifier SAV_BUILDING_ID = "BLDG"_id;
 struct SAVSection_Buildings
 {
-	leU32 buildingTypeCount;
-	leU32 offsetForBuildingTypeTable; // Map from Building string ID to to the int id used in the type array below.
-	// The Buildings table is just a sequence of (u32 id, u32 length, then `length` bytes for the characters)
+	FileArray buildingTypeTable; // SAVBuildingTypeEntry
 
 	leU32 highestBuildingID;
 
 	// Array of the buildings in the city, as SAVBuildings
 	leU32 buildingCount;
 	FileBlob buildings;
+};
+struct SAVBuildingTypeEntry
+{
+	leU32 typeID;
+	FileString name;
 };
 struct SAVBuilding
 {

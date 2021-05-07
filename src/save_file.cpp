@@ -97,21 +97,19 @@ bool writeSaveFile(FileHandle *file, GameState *gameState)
 			SAVSection_Buildings buildingSection = {};
 
 			// Building types table
-			buildingSection.buildingTypeCount = buildingCatalogue.allBuildings.count - 1; // Not the null def!
-			buildingSection.offsetForBuildingTypeTable = writer.getSectionRelativeOffset();
+			s32 buildingDefCount = buildingCatalogue.allBuildings.count - 1; // Skip the null def
+			WriteBufferRange buildingTypeTableLoc = writer.reserveArray<SAVBuildingTypeEntry>(buildingDefCount);
+			Array<SAVBuildingTypeEntry> buildingTypeTable = allocateArray<SAVBuildingTypeEntry>(arena, buildingDefCount);
 			for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
 			{
 				BuildingDef *def = it.get();
 				if (def->typeID == 0) continue; // Skip the null building def!
 
-				u32 typeID = def->typeID;
-				u32 nameLength = def->name.length;
-
-				// 4 byte int id, 4 byte length, then the text as bytes
-				writer.buffer.appendLiteral(typeID);
-				writer.buffer.appendLiteral(nameLength);
-				writer.buffer.appendBytes(nameLength, def->name.chars);
+				SAVBuildingTypeEntry *entry = buildingTypeTable.append();
+				entry->typeID = def->typeID;
+				entry->name = writer.appendString(def->name);
 			}
+			buildingSection.buildingTypeTable = writer.writeArray<SAVBuildingTypeEntry>(buildingTypeTable, buildingTypeTableLoc);
 
 			// Highest ID
 			buildingSection.highestBuildingID = city->highestBuildingID;
@@ -381,19 +379,13 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 
 			// Map the file's building type IDs to the game's ones
 			// NB: count+1 because the file won't save the null building, so we need to compensate
-			Array<s32> oldTypeToNewType = allocateArray<s32>(arena, cBuildings->buildingTypeCount+1, true);
-			// TODO: Stop using internal method!
-			u8 *at = reader.sectionMemoryAt(cBuildings->offsetForBuildingTypeTable);
-			for (u32 i = 0; i < cBuildings->buildingTypeCount; i++)
+			Array<u32> oldTypeToNewType = allocateArray<u32>(arena, cBuildings->buildingTypeTable.count + 1, true);
+			Array<SAVBuildingTypeEntry> buildingTypeTable = allocateArray<SAVBuildingTypeEntry>(arena, cBuildings->buildingTypeTable.count);
+			if (!reader.readArray(cBuildings->buildingTypeTable, &buildingTypeTable)) break;
+			for (s32 i=0; i < buildingTypeTable.count; i++)
 			{
-				u32 buildingType = *(u32 *)at;
-				at += sizeof(u32);
-
-				u32 nameLength = *(u32 *)at;
-				at += sizeof(u32);
-
-				String buildingName = makeString((char*)at, nameLength, true);
-				at += nameLength;
+				SAVBuildingTypeEntry *entry = &buildingTypeTable[i];
+				String buildingName = reader.readString(entry->name);
 
 				BuildingDef *def = findBuildingDef(buildingName);
 				if (def == null)
@@ -419,11 +411,11 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 					//
 					// - Sam, 11/11/2019
 					//
-					oldTypeToNewType[buildingType] = 0;
+					oldTypeToNewType[entry->typeID] = 0;
 				}
 				else
 				{
-					oldTypeToNewType[buildingType] = def->typeID;
+					oldTypeToNewType[entry->typeID] = def->typeID;
 				}
 			}
 
