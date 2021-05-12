@@ -69,6 +69,7 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 		if (savedFile.isOpen)
 		{
 			BinaryFileReader reader = readBinaryFile(&savedFile, SAV_FILE_ID, tempArena);
+			savedGame->problems = reader.problems;
 
 			if (reader.isValidFile)
 			{
@@ -198,12 +199,9 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		ui->addText(myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));
 		ui->addText(myprintf("{0} population"_s, {formatInt(selectedSavedGame->population)}));
 
-		if (selectedSavedGame->problems != 0)
+		if (selectedSavedGame->problems & BFP_VersionTooNew)
 		{
-			if (selectedSavedGame->problems & SAVE_IS_FROM_NEWER_VERSION)
-			{
-				ui->addText(getText("msg_load_version_too_new"_s));
-			}
+			ui->addText(getText("msg_load_version_too_new"_s));
 		}
 	}
 

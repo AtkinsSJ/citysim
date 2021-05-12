@@ -1,10 +1,5 @@
 #pragma once
 
-enum SavedGameProblem
-{
-	SAVE_IS_FROM_NEWER_VERSION = 1 << 0,
-};
-
 struct SavedGameInfo
 {
 	// File properties
@@ -13,7 +8,7 @@ struct SavedGameInfo
 	String fullPath;
 	DateTime saveTime;
 
-	u32 problems;
+	u32 problems; // BinaryFileProblems
 	
 	// City properties
 	String cityName;
