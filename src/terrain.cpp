@@ -620,6 +620,7 @@ bool loadTerrainLayer(TerrainLayer *layer, City *city, struct BinaryFileReader *
 		if (!reader->readBlob(section->tileSpriteOffset, &layer->tileSpriteOffset)) break;
 
 		assignTerrainSprites(city, city->bounds);
+		updateDistanceToWater(city, city->bounds);
 
 		succeeded = true;
 		break;

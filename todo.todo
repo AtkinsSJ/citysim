@@ -18,8 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-BUG: Game loses distance-from-water data on load, AGAIN?!
-
 Terrain
 - Two parts: What terrain type a tile is, and what tile is used for it
 - Tiles visually blend between terrain types
