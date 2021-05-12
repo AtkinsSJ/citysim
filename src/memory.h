@@ -97,9 +97,10 @@ T *bootstrapMemoryArena(smm offsetOfArenaMember)
 */
 
 bool initMemoryArena(MemoryArena *arena, String name, smm size, smm minimumBlockSize=MB(1));
+MemoryArenaResetState getArenaPosition(MemoryArena *arena);
+void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState);
 void markResetPosition(MemoryArena *arena);
 void resetMemoryArena(MemoryArena *arena);
-void revertMemoryArena(MemoryArena *arena, MemoryArenaResetState resetState);
 void freeMemoryArena(MemoryArena *arena);
 
 // Allocates directly from the OS, not from an arena

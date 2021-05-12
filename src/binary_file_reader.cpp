@@ -55,6 +55,9 @@ BinaryFileReader readBinaryFile(FileHandle *handle, FileIdentifier identifier, M
 		}
 	}
 
+	// Save the current arena state so we can revert to it after each section
+	reader.arenaResetState = getArenaPosition(arena);
+
 	return reader;
 }
 
@@ -66,6 +69,8 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
 	{
 		if (sectionID != currentSectionID)
 		{
+			revertMemoryArena(arena, arenaResetState);
+
 			// Find the section in the TOC
 			FileTOCEntry *tocEntry = null;
 			for (s32 tocIndex = 0; tocIndex < toc.count; tocIndex++)

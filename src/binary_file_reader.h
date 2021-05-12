@@ -6,6 +6,7 @@
 struct BinaryFileReader
 {
 	MemoryArena *arena;
+	MemoryArenaResetState arenaResetState;
 
 	// Data about the file itself
 	FileHandle *fileHandle;

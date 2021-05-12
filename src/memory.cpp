@@ -158,10 +158,19 @@ void freeMemoryArena(MemoryArena *arena)
 	deallocateRaw(finalBlock);
 }
 
+MemoryArenaResetState getArenaPosition(MemoryArena *arena)
+{
+	MemoryArenaResetState result = {};
+
+	result.currentBlock = arena->currentBlock;
+	result.used = arena->currentBlock ? arena->currentBlock->used : 0;
+
+	return result;
+}
+
 void markResetPosition(MemoryArena *arena)
 {
-	arena->resetState.currentBlock = arena->currentBlock;
-	arena->resetState.used = arena->currentBlock ? arena->currentBlock->used : 0;
+	arena->resetState = getArenaPosition(arena);
 }
 
 bool initMemoryArena(MemoryArena *arena, String name, smm size, smm minimumBlockSize)
