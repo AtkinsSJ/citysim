@@ -91,3 +91,27 @@ void notifyBuildingDemolished(HealthLayer *layer, BuildingDef *def, Building *bu
 		ASSERT(success);
 	}
 }
+
+void saveHealthLayer(HealthLayer * /*layer*/, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_Health>(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
+	SAVSection_Health healthSection = {};
+
+	writer->endSection<SAVSection_Health>(&healthSection);
+}
+
+bool loadHealthLayer(HealthLayer * /*layer*/, City * /*city*/, struct BinaryFileReader *reader)
+{
+	bool succeeded = false;
+	while (reader->startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION))
+	{
+		SAVSection_Health *section = reader->readStruct<SAVSection_Health>(0);
+		if (!section) break;
+
+		succeeded = true;
+		break;
+	}
+
+	return succeeded;
+}
+

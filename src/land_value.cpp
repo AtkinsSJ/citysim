@@ -138,3 +138,32 @@ inline f32 getLandValuePercentAt(City *city, s32 x, s32 y)
 {
 	return city->landValueLayer.tileLandValue.get(x, y) / 255.0f;
 }
+
+void saveLandValueLayer(LandValueLayer *layer, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_LandValue>(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
+	SAVSection_LandValue landValueSection = {};
+
+	// Tile land value
+	landValueSection.tileLandValue = writer->appendBlob(&layer->tileLandValue, Blob_Uncompressed);
+
+	writer->endSection<SAVSection_LandValue>(&landValueSection);
+}
+
+bool loadLandValueLayer(LandValueLayer *layer, City * /*city*/, struct BinaryFileReader *reader)
+{
+	bool succeeded = false;
+	while (reader->startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION))
+	{
+		SAVSection_LandValue *section = reader->readStruct<SAVSection_LandValue>(0);
+		if (!section) break;
+
+		if (!reader->readBlob(section->tileLandValue, &layer->tileLandValue)) break;
+
+		succeeded = true;
+		break;
+	}
+
+	return succeeded;
+}
+

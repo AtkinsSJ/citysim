@@ -101,3 +101,33 @@ f32 getPoliceCoveragePercentAt(City *city, s32 x, s32 y)
 {
 	return city->crimeLayer.tilePoliceCoverage.get(x, y) / 255.0f;
 }
+
+void saveCrimeLayer(CrimeLayer *layer, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_Crime>(SAV_CRIME_ID, SAV_CRIME_VERSION);
+	SAVSection_Crime crimeSection = {};
+
+	crimeSection.totalJailCapacity = layer->totalJailCapacity;
+	crimeSection.occupiedJailCapacity = layer->occupiedJailCapacity;
+
+	writer->endSection<SAVSection_Crime>(&crimeSection);
+}
+
+bool loadCrimeLayer(CrimeLayer *layer, City * /*city*/, struct BinaryFileReader *reader)
+{
+	bool succeeded = false;
+	while (reader->startSection(SAV_CRIME_ID, SAV_CRIME_VERSION))
+	{
+		// Load Crime
+		SAVSection_Crime *section = reader->readStruct<SAVSection_Crime>(0);
+		if (!section) break;
+
+		layer->totalJailCapacity    = section->totalJailCapacity;
+		layer->occupiedJailCapacity = section->occupiedJailCapacity;
+
+		succeeded = true;
+		break;
+	}
+
+	return succeeded;
+}

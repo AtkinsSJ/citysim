@@ -18,3 +18,6 @@ void updateLandValueLayer(City *city, LandValueLayer *layer);
 void markLandValueLayerDirty(LandValueLayer *layer, Rect2I bounds);
 
 f32 getLandValuePercentAt(City *city, s32 x, s32 y);
+
+void saveLandValueLayer(LandValueLayer *layer, struct BinaryFileWriter *writer);
+bool loadLandValueLayer(LandValueLayer *layer, City *city, struct BinaryFileReader *reader);

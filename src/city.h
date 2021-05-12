@@ -26,7 +26,10 @@ struct City
 
 	OccupancyArray<Entity> entities;
 
+	BudgetLayer    budgetLayer;
+
 	CrimeLayer     crimeLayer;
+	EducationLayer educationLayer;
 	FireLayer      fireLayer;
 	HealthLayer    healthLayer;
 	LandValueLayer landValueLayer;
@@ -80,6 +83,9 @@ template <typename T>
 Entity *addEntity(City *city, EntityType type, T *entityData);
 void removeEntity(City *city, Entity *entity);
 void drawEntities(City *city, Rect2I visibleTileBounds);
+
+void saveBuildings(City *city, struct BinaryFileWriter *writer);
+bool loadBuildings(City *city, struct BinaryFileReader *reader);
 
 //
 // Private API

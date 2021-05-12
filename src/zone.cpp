@@ -671,3 +671,31 @@ inline s32 getTotalJobs(City *city)
 {
 	return city->zoneLayer.population[Zone_Commercial] + city->zoneLayer.population[Zone_Industrial] + city->zoneLayer.population[Zone_None];
 }
+
+void saveZoneLayer(ZoneLayer *layer, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_Zone>(SAV_ZONE_ID, SAV_ZONE_VERSION);
+	SAVSection_Zone zoneSection = {};
+
+	// Tile zones
+	zoneSection.tileZone = writer->appendBlob(&layer->tileZone, Blob_RLE_S8);
+
+	writer->endSection<SAVSection_Zone>(&zoneSection);
+}
+
+bool loadZoneLayer(ZoneLayer *layer, City * /*city*/, struct BinaryFileReader *reader)
+{
+	bool succeeded = false;
+	while (reader->startSection(SAV_ZONE_ID, SAV_ZONE_VERSION))
+	{
+		SAVSection_Zone *section = reader->readStruct<SAVSection_Zone>(0);
+		if (!section) break;
+
+		if (!reader->readBlob(section->tileZone, &layer->tileZone)) break;
+
+		succeeded = true;
+		break;
+	}
+
+	return succeeded;
+}

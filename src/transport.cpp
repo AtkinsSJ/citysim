@@ -138,3 +138,28 @@ void debugInspectTransport(UIPanel *panel, City *city, s32 x, s32 y)
 		panel->addText(myprintf("Distance to transport #{0}: {1}"_s, {formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType))}));
 	}
 }
+
+void saveTransportLayer(TransportLayer * /*layer*/, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_Transport>(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
+	SAVSection_Transport transportSection = {};
+
+	writer->endSection<SAVSection_Transport>(&transportSection);
+}
+
+bool loadTransportLayer(TransportLayer * /*layer*/, City * /*city*/, struct BinaryFileReader *reader)
+{
+	bool succeeded = false;
+	while (reader->startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION))
+	{
+		SAVSection_Transport *section = reader->readStruct<SAVSection_Transport>(0);
+		if (!section) break;
+
+		// TODO: Implement Transport!
+
+		succeeded = true;
+		break;
+	}
+
+	return succeeded;
+}

@@ -21,3 +21,6 @@ void notifyNewBuilding(HealthLayer *layer, BuildingDef *def, Building *building)
 void notifyBuildingDemolished(HealthLayer *layer, BuildingDef *def, Building *building);
 
 f32 getHealthCoveragePercentAt(City *city, s32 x, s32 y);
+
+void saveHealthLayer(HealthLayer *layer, struct BinaryFileWriter *writer);
+bool loadHealthLayer(HealthLayer *layer, City *city, struct BinaryFileReader *reader);

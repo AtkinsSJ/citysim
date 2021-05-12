@@ -27,7 +27,9 @@ void initCity(MemoryArena *gameArena, City *city, u32 width, u32 height, String 
 
 	initOccupancyArray(&city->entities, gameArena, 1024);
 
+	initBudgetLayer   (&city->budgetLayer,    city, gameArena);
 	initCrimeLayer    (&city->crimeLayer,     city, gameArena);
+	initEducationLayer(&city->educationLayer, city, gameArena);
 	initFireLayer     (&city->fireLayer,      city, gameArena);
 	initHealthLayer   (&city->healthLayer,    city, gameArena);
 	initLandValueLayer(&city->landValueLayer, city, gameArena);
@@ -562,4 +564,156 @@ void updateSomeBuildings(City *city)
 			updateBuilding(city, building);
 		}
 	}
+}
+
+void saveBuildings(City *city, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_Buildings>(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
+	SAVSection_Buildings buildingSection = {};
+
+	// Building types table
+	s32 buildingDefCount = buildingCatalogue.allBuildings.count - 1; // Skip the null def
+	WriteBufferRange buildingTypeTableLoc = writer->reserveArray<SAVBuildingTypeEntry>(buildingDefCount);
+	Array<SAVBuildingTypeEntry> buildingTypeTable = allocateArray<SAVBuildingTypeEntry>(writer->arena, buildingDefCount);
+	for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next())
+	{
+		BuildingDef *def = it.get();
+		if (def->typeID == 0) continue; // Skip the null building def!
+
+		SAVBuildingTypeEntry *entry = buildingTypeTable.append();
+		entry->typeID = def->typeID;
+		entry->name = writer->appendString(def->name);
+	}
+	buildingSection.buildingTypeTable = writer->writeArray<SAVBuildingTypeEntry>(buildingTypeTable, buildingTypeTableLoc);
+
+	// Highest ID
+	buildingSection.highestBuildingID = city->highestBuildingID;
+
+	//
+	// The buildings themselves!
+	// I'm not sure how to actually do this... current thought is that the "core" building
+	// data will be here, and that other stuff (eg, health/education of the occupants)
+	// will be in the relevant layers' chunks. That seems the most extensible?
+	// Another option would be to store the buildings here as a series of arrays, one
+	// for each field, like we do for Terrain. That feels really messy though.
+	// The tricky thing is that the Building struct in game feels likely to change a lot,
+	// and we want the save format to change as little as possible... though that only
+	// matters once the game is released (or near enough release that I start making
+	// pre-made maps) so maybe it's not such a big issue?
+	// Eh, going to just go ahead with a placeholder version, like the rest of this code!
+	//
+	// - Sam, 11/10/2019
+	//
+	buildingSection.buildingCount = city->buildings.count - 1; // Not the null building!
+
+	SAVBuilding *tempBuildings = allocateMultiple<SAVBuilding>(writer->arena, buildingSection.buildingCount);
+	s32 tempBuildingIndex = 0;
+
+	for (auto it = city->buildings.iterate(); it.hasNext(); it.next())
+	{
+		Building *building = it.get();
+		if (building->id == 0) continue; // Skip the null building!
+
+		SAVBuilding *sb = tempBuildings + tempBuildingIndex;
+		*sb = {};
+		sb->id = building->id;
+		sb->typeID = building->typeID;
+		sb->creationDate = building->creationDate;
+		sb->x = (u16) building->footprint.x;
+		sb->y = (u16) building->footprint.y;
+		sb->w = (u16) building->footprint.w;
+		sb->h = (u16) building->footprint.h;
+		sb->spriteOffset = (u16) building->spriteOffset;
+		sb->currentResidents = (u16) building->currentResidents;
+		sb->currentJobs = (u16) building->currentJobs;
+		sb->variantIndex = (u16) building->variantIndex;
+
+		tempBuildingIndex++;
+	}
+	buildingSection.buildings = writer->appendBlob(buildingSection.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, Blob_Uncompressed);
+
+	writer->endSection<SAVSection_Buildings>(&buildingSection);
+}
+
+bool loadBuildings(City *city, struct BinaryFileReader *reader)
+{
+	bool succeeded = reader->startSection(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
+	while (succeeded)
+	{
+		SAVSection_Buildings *section = reader->readStruct<SAVSection_Buildings>(0);
+		if (!section) break;
+
+		city->highestBuildingID = section->highestBuildingID;
+
+		// Map the file's building type IDs to the game's ones
+		// NB: count+1 because the file won't save the null building, so we need to compensate
+		Array<u32> oldTypeToNewType = allocateArray<u32>(reader->arena, section->buildingTypeTable.count + 1, true);
+		Array<SAVBuildingTypeEntry> buildingTypeTable = allocateArray<SAVBuildingTypeEntry>(reader->arena, section->buildingTypeTable.count);
+		if (!reader->readArray(section->buildingTypeTable, &buildingTypeTable)) break;
+		for (s32 i=0; i < buildingTypeTable.count; i++)
+		{
+			SAVBuildingTypeEntry *entry = &buildingTypeTable[i];
+			String buildingName = reader->readString(entry->name);
+
+			BuildingDef *def = findBuildingDef(buildingName);
+			if (def == null)
+			{
+				// The building doesn't exist in the game... we'll remap to 0
+				// 
+				// Ideally, we'd keep the information about what a building really is, so
+				// that if it's later loaded into a game that does have that building, it'll work
+				// again instead of being forever lost. But, we're talking about a situation of
+				// the player messing around with the data files, or adding/removing/adding mods,
+				// so IDK. The saved game is already corrupted if you load it and stuff is missing - 
+				// playing at all from that point is going to break things, and if we later make
+				// that stuff appear again, we're actually just breaking it a second time!
+				// 
+				// So maybe, the real "correct" solution is to tell the player that things are missing
+				// from the game, and then just demolish the missing-id buildings.
+				//
+				// Mods probably want some way to define "migrations" for transforming saved games 
+				// when the mod's data changes. That's probably a good idea for the base game's data
+				// too, because changes happen!
+				//
+				// Lots to think about!
+				//
+				// - Sam, 11/11/2019
+				//
+				oldTypeToNewType[entry->typeID] = 0;
+			}
+			else
+			{
+				oldTypeToNewType[entry->typeID] = def->typeID;
+			}
+		}
+
+		Array<SAVBuilding> tempBuildings = allocateArray<SAVBuilding>(reader->arena, section->buildingCount);
+		if (!reader->readBlob(section->buildings, &tempBuildings)) break;
+		for (u32 buildingIndex = 0;
+			buildingIndex < section->buildingCount;
+			buildingIndex++)
+		{
+			SAVBuilding *savBuilding = &tempBuildings[buildingIndex];
+
+			Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
+			BuildingDef *def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
+			Building *building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
+			building->variantIndex     = savBuilding->variantIndex;
+			building->spriteOffset     = savBuilding->spriteOffset;
+			building->currentResidents = savBuilding->currentResidents;
+			building->currentJobs      = savBuilding->currentJobs;
+			// Because the sprite was assigned in addBuildingDirect(), before we loaded the variant, we
+			// need to overwrite the sprite here.
+			// Probably there's a better way to organise this, but this works.
+			// - Sam, 26/09/2020
+			loadBuildingSprite(building);
+
+			// This is a bit hacky but it's how we calculate it elsewhere
+			city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+		}
+
+		break;
+	}
+
+	return succeeded;
 }

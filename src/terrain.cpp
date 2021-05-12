@@ -582,23 +582,20 @@ void saveTerrainLayer(TerrainLayer *layer, BinaryFileWriter *writer)
 
 bool loadTerrainLayer(TerrainLayer *layer, City *city, struct BinaryFileReader *reader)
 {
-	bool succeeded = reader->startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
+	bool succeeded = false;
 
-	while (succeeded) // So we can break out of it
+	while (reader->startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION)) // So we can break out of it
 	{
-		SAVSection_Terrain *terrain = reader->readStruct<SAVSection_Terrain>(0);
+		SAVSection_Terrain *section = reader->readStruct<SAVSection_Terrain>(0);
+		if (!section) break;
 
-		layer->terrainGenerationSeed = terrain->terrainGenerationSeed;
+		layer->terrainGenerationSeed = section->terrainGenerationSeed;
 
 		// Map the file's terrain type IDs to the game's ones
 		// NB: count+1 because the file won't save the null terrain, so we need to compensate
-		Array<u8> oldTypeToNewType = allocateArray<u8>(reader->arena, terrain->terrainTypeTable.count + 1, true);
-		Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(reader->arena, terrain->terrainTypeTable.count);
-		if (!reader->readArray(terrain->terrainTypeTable, &terrainTypeTable))
-		{
-			succeeded = false;
-			break;
-		}
+		Array<u8> oldTypeToNewType = allocateArray<u8>(reader->arena, section->terrainTypeTable.count + 1, true);
+		Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(reader->arena, section->terrainTypeTable.count);
+		if (!reader->readArray(section->terrainTypeTable, &terrainTypeTable)) break;
 		for (s32 i=0; i < terrainTypeTable.count; i++)
 		{
 			SAVTerrainTypeEntry *entry = &terrainTypeTable[i];
@@ -607,11 +604,7 @@ bool loadTerrainLayer(TerrainLayer *layer, City *city, struct BinaryFileReader *
 		}
 
 		// Terrain type
-		if (!reader->readBlob(terrain->tileTerrainType, &layer->tileTerrainType))
-		{
-			succeeded = false;
-			break;
-		}
+		if (!reader->readBlob(section->tileTerrainType, &layer->tileTerrainType)) break;
 		for (s32 y = 0; y < city->bounds.y; y++)
 		{
 			for (s32 x = 0; x < city->bounds.x; x++)
@@ -621,21 +614,14 @@ bool loadTerrainLayer(TerrainLayer *layer, City *city, struct BinaryFileReader *
 		}
 
 		// Terrain height
-		if (!reader->readBlob(terrain->tileHeight, &layer->tileHeight))
-		{
-			succeeded = false;
-			break;
-		}
+		if (!reader->readBlob(section->tileHeight, &layer->tileHeight)) break;
 
 		// Sprite offset
-		if (!reader->readBlob(terrain->tileSpriteOffset, &layer->tileSpriteOffset))
-		{
-			succeeded = false;
-			break;
-		}
+		if (!reader->readBlob(section->tileSpriteOffset, &layer->tileSpriteOffset)) break;
 
 		assignTerrainSprites(city, city->bounds);
 
+		succeeded = true;
 		break;
 	}
 

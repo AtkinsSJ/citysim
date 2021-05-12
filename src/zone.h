@@ -97,3 +97,6 @@ bool isZoneAcceptable(City *city, ZoneType zoneType, s32 x, s32 y);
 
 s32 getTotalResidents(City *city);
 s32 getTotalJobs(City *city);
+
+void saveZoneLayer(ZoneLayer *layer, struct BinaryFileWriter *writer);
+bool loadZoneLayer(ZoneLayer *layer, City *city, struct BinaryFileReader *reader);

@@ -112,3 +112,32 @@ inline f32 getPollutionPercentAt(City *city, s32 x, s32 y)
 {
 	return city->pollutionLayer.tilePollution.get(x, y) / 255.0f;
 }
+
+void savePollutionLayer(PollutionLayer *layer, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_Pollution>(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
+	SAVSection_Pollution pollutionSection = {};
+
+	// Tile pollution
+	pollutionSection.tilePollution = writer->appendBlob(&layer->tilePollution, Blob_Uncompressed);
+
+	writer->endSection<SAVSection_Pollution>(&pollutionSection);
+}
+
+bool loadPollutionLayer(PollutionLayer *layer, City * /*city*/, struct BinaryFileReader *reader)
+{
+	bool succeeded = false;
+	while (reader->startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION))
+	{
+		SAVSection_Pollution *section = reader->readStruct<SAVSection_Pollution>(0);
+		if (!section) break;
+
+		if (!reader->readBlob(section->tilePollution, &layer->tilePollution)) break;
+
+		succeeded = true;
+		break;
+	}
+
+	return succeeded;
+}
+

@@ -22,3 +22,6 @@ void notifyNewBuilding(CrimeLayer *layer, BuildingDef *def, Building *building);
 void notifyBuildingDemolished(CrimeLayer *layer, BuildingDef *def, Building *building);
 
 f32 getPoliceCoveragePercentAt(City *city, s32 x, s32 y);
+
+void saveCrimeLayer(CrimeLayer *layer, struct BinaryFileWriter *writer);
+bool loadCrimeLayer(CrimeLayer *layer, City *city, struct BinaryFileReader *reader);

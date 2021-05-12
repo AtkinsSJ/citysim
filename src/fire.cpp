@@ -310,3 +310,59 @@ void debugInspectFire(UIPanel *panel, City *city, s32 x, s32 y)
 		formatFloat(layer->tileOverallFireRisk.get(x, y) / 2.55f, 1)
 	}));
 }
+
+void saveFireLayer(FireLayer *layer, struct BinaryFileWriter *writer)
+{
+	writer->startSection<SAVSection_Fire>(SAV_FIRE_ID, SAV_FIRE_VERSION);
+	SAVSection_Fire fireSection = {};
+
+	// Active fires
+	fireSection.activeFireCount = layer->activeFireCount;
+	Array<SAVFire> tempFires = allocateArray<SAVFire>(writer->arena, fireSection.activeFireCount);
+	// ughhhh I have to iterate the sectors to get this information!
+	for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++)
+	{
+		FireSector *sector = getSectorByIndex(&layer->sectors, sectorIndex);
+
+		for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next())
+		{
+			Fire *fire = it.get();
+			SAVFire *savFire = tempFires.append();
+			*savFire = {};
+			savFire->x = (u16) fire->pos.x;
+			savFire->y = (u16) fire->pos.y;
+			savFire->startDate = fire->startDate;
+		}
+	}
+	fireSection.activeFires = writer->appendArray<SAVFire>(tempFires);
+
+	writer->endSection<SAVSection_Fire>(&fireSection);
+}
+
+bool loadFireLayer(FireLayer *layer, City *city, struct BinaryFileReader *reader)
+{
+	bool succeeded = false;
+	while (reader->startSection(SAV_FIRE_ID, SAV_FIRE_VERSION))
+	{
+		SAVSection_Fire *section = reader->readStruct<SAVSection_Fire>(0);
+		if (!section) break;
+
+		// Active fires
+		Array<SAVFire> tempFires = allocateArray<SAVFire>(reader->arena, section->activeFireCount);
+		if (!reader->readArray(section->activeFires, &tempFires)) break;
+		for (u32 activeFireIndex = 0;
+			activeFireIndex < section->activeFireCount;
+			activeFireIndex++)
+		{
+			SAVFire *savFire = &tempFires[activeFireIndex];
+
+			addFireRaw(city, savFire->x, savFire->y, savFire->startDate);
+		}
+		ASSERT((u32)layer->activeFireCount == section->activeFireCount);
+
+		succeeded = true;
+		break;
+	}
+
+	return succeeded;
+}
