@@ -6,6 +6,12 @@ struct BinaryFileWriter
 
 	WriteBuffer buffer;
 	WriteBufferRange fileHeaderLoc;
+
+	// TODO: Maybe keep the TOC in a more convenient format, like a HashTable? If
+	// so, we'd probably want to decide in advance how many TOC entries there can
+	// be, in startWritingFile(), and we can then get rid of addTOCEntry() and
+	// just do the TOC adding in startSection(). But that's all feeling too
+	// complicated for me today.
 	bool tocComplete;
 
 	FileSectionHeader sectionHeader;
