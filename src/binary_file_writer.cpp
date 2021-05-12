@@ -123,27 +123,58 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionS
 			// Positive length = repeat the next byte `length` times.
 			// Negative length = copy the next `-length` bytes literally.
 
-			// TODO: Implement literals output! Right now we're always encoding runs, even of 1 byte!
+			const s32 minRunLength = 4; // This is a fairly arbitrary number! Maybe it should be bigger, idk.
 
-			// const s32 minRunLength = 4; // This is a fairly arbitrary number! Maybe it should be bigger, idk.
-
-			// Though, for attempt #1 we'll stick to always outputting runs, even if it's
-			// a run of length 1.
 			u8 *end = data + length;
 			u8 *pos = data;
+			s32 remainingLength = length;
 
 			while (pos < end)
 			{
-				s8 count = 1;
-				u8 value = *pos++;
-				while ((pos < end) && (count < s8Max) && (*pos == value))
+				// Detect if this is a run
+				s8 runLength = countRunLength(min(remainingLength, s8Max), pos);
+				if (runLength >= minRunLength)
 				{
-					count++;
-					pos++;
-				}
+					// Output the run!
+					buffer.append<s8>(&runLength);
+					buffer.append<u8>(pos);
 
-				buffer.append<s8>(&count);
-				buffer.append<u8>(&value);
+					pos += runLength;
+					remainingLength -= runLength;
+				}
+				else
+				{
+					// This is literals!
+					WriteBufferRange literalCount = buffer.reserve<s8>();
+
+					s32 literalLength = 0;
+
+					// We detect the end of the literals by repeatedly testing if the next bytes are a run
+					runLength = countRunLength(min(remainingLength, s8Max), pos + literalLength);
+					while ((runLength < minRunLength)
+						&& (remainingLength > 0))
+					{
+						literalLength += runLength;
+						remainingLength -= runLength;
+						runLength = countRunLength(min(remainingLength, s8Max), pos + literalLength);
+					}
+
+					// Output literals
+					s8 outputLength = truncate<s8>(-literalLength);
+					buffer.append<s8>(&outputLength);
+					buffer.appendBytes(literalLength, pos);
+					pos += literalLength;
+
+					// // Also, if we did detect a run, output that too!
+					// if (runLength >= minRunLength)
+					// {
+					// 	buffer.append<s8>(&runLength);
+					// 	buffer.append<u8>(pos);
+
+					// 	pos += runLength;
+					// 	remainingLength -= runLength;
+					// }
+				}
 			}
 
 			result.length = getSectionRelativeOffset() - result.relativeOffset;
@@ -239,4 +270,18 @@ Maybe<WriteBufferRange> BinaryFileWriter::findTOCEntry(FileIdentifier sectionID)
 	}
 
 	return result;
+}
+
+s8 BinaryFileWriter::countRunLength(s32 dataLength, u8 *data)
+{
+	s8 runLength = 1;
+
+	while ((runLength < dataLength)
+		&& (runLength < s8Max)
+		&& (data[runLength] == data[0]))
+	{
+		runLength++;
+	}
+
+	return runLength;
 }

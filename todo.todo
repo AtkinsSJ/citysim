@@ -18,20 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Terrain
-- Two parts: What terrain type a tile is, and what tile is used for it
-- Tiles visually blend between terrain types
-- Multiple tiles per configuration, to add variety
-- Render water separately, behind the terrain tile
-	-> So, coast tiles are transparent where the water would be
-	-> Maybe all transitions work this way? But how do we decide which goes above/below another?
-
-Terrain tile rules:
-- If we're grass, be solid grass
-- Match based on the 4 ortho neighbours
-- Then, if a side is empty, match based on its corners
-- OR: Maybe we use the full 8-side lookup, but have duplicate values! AKA, map multiple values to the same tile
-
 Shrink String
 - It's currently 24 bytes, which is a bit hefty
 - With work, I reckon we can reduce it to 16 bytes

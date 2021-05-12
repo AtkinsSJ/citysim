@@ -48,6 +48,7 @@ struct BinaryFileWriter
 
 // Internal
 	Maybe<WriteBufferRange> findTOCEntry(FileIdentifier sectionID);
+	s8 countRunLength(s32 dataLength, u8 *data);
 };
 
 BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryArena *arena);
