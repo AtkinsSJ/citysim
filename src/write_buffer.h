@@ -48,14 +48,9 @@ struct WriteBuffer
 	void init(s32 chunkSize = KB(4), MemoryArena *arena = tempArena);
 
 	template <typename T>
-	WriteBufferLocation appendLiteral(T literal);
+	WriteBufferLocation append(T *thing);
 	template <typename T>
-	WriteBufferLocation reserveLiteral();
-
-	template <typename T>
-	WriteBufferLocation appendStruct(T *theStruct);
-	template <typename T>
-	WriteBufferLocation reserveStruct();
+	WriteBufferLocation reserve();
 
 	WriteBufferLocation appendBytes(s32 length, void *bytes);
 	WriteBufferLocation reserveBytes(s32 length);

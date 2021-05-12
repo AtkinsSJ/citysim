@@ -6,7 +6,7 @@ BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryA
 	writer.arena = arena;
 	writer.buffer.init(KB(4), arena);
 
-	writer.fileHeaderLoc = writer.buffer.reserveStruct<FileHeader>();
+	writer.fileHeaderLoc = writer.buffer.reserve<FileHeader>();
 
 	FileHeader fileHeader = {};
 	fileHeader.identifier    = identifier;
@@ -33,7 +33,7 @@ void BinaryFileWriter::addTOCEntry(FileIdentifier sectionID)
 	// Add a TOC entry with no location or length
 	FileTOCEntry tocEntry = {};
 	tocEntry.sectionID = sectionID;
-	buffer.appendStruct<FileTOCEntry>(&tocEntry);
+	buffer.append<FileTOCEntry>(&tocEntry);
 
 	// Find the TOC entry count and increment it
 	WriteBufferLocation tocCountLoc = fileHeaderLoc + offsetof(FileHeader, toc.count);
@@ -47,7 +47,7 @@ void BinaryFileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 {
 	tocComplete = true;
 	
-	startOfSectionHeader = buffer.reserveStruct<FileSectionHeader>();
+	startOfSectionHeader = buffer.reserve<FileSectionHeader>();
 	startOfSectionData = buffer.getCurrentPosition();
 
 	sectionHeader = {};
@@ -60,7 +60,7 @@ void BinaryFileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	sectionTOCLoc = tocEntry.index;
 
 	// Reserve our "section struct"
-	buffer.reserveStruct<T>();
+	buffer.reserve<T>();
 }
 
 s32 BinaryFileWriter::getSectionRelativeOffset()
@@ -77,7 +77,7 @@ FileArray BinaryFileWriter::appendArray(Array<T> data)
 
 	for (s32 i=0; i < data.count; i++)
 	{
-		buffer.appendStruct<T>(&data[i]);
+		buffer.append<T>(&data[i]);
 	}
 
 	return result;
@@ -145,8 +145,8 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionS
 					pos++;
 				}
 
-				buffer.appendLiteral<s8>(count);
-				buffer.appendLiteral<u8>(value);
+				buffer.append<s8>(&count);
+				buffer.append<u8>(&value);
 			}
 
 			result.length = getSectionRelativeOffset() - result.relativeOffset;

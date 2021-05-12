@@ -13,25 +13,13 @@ void WriteBuffer::init(s32 chunkSize_, MemoryArena *arena_)
 }
 
 template <typename T>
-inline WriteBufferLocation WriteBuffer::appendLiteral(T literal)
+inline WriteBufferLocation WriteBuffer::append(T *thing)
 {
-	return appendBytes(sizeof(T), &literal);
+	return appendBytes(sizeof(T), thing);
 }
 
 template <typename T>
-inline WriteBufferLocation WriteBuffer::reserveLiteral()
-{
-	return reserveBytes(sizeof(T));
-}
-
-template <typename T>
-inline WriteBufferLocation WriteBuffer::appendStruct(T *theStruct)
-{
-	return appendBytes(sizeof(T), theStruct);
-}
-
-template <typename T>
-inline WriteBufferLocation WriteBuffer::reserveStruct()
+inline WriteBufferLocation WriteBuffer::reserve()
 {
 	return reserveBytes(sizeof(T));
 }
