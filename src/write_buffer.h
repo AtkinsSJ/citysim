@@ -48,20 +48,24 @@ struct WriteBuffer
 	void init(s32 chunkSize = KB(4), MemoryArena *arena = tempArena);
 
 	template <typename T>
-	WriteBufferLocation append(T *thing);
+	WriteBufferRange append(T *thing);
 	template <typename T>
-	WriteBufferLocation reserve();
+	WriteBufferRange reserve();
 
-	WriteBufferLocation appendBytes(s32 length, void *bytes);
-	WriteBufferLocation reserveBytes(s32 length);
+	WriteBufferRange appendBytes(s32 length, void *bytes);
+	WriteBufferRange reserveBytes(s32 length);
 
 	WriteBufferLocation getCurrentPosition();
 	s32 getLengthSince(WriteBufferLocation start); // How many bytes were output since that point
 
 	template <typename T>
+	T readAt(WriteBufferRange range);
+	template <typename T>
 	T readAt(WriteBufferLocation location);
 
 	void overwriteAt(WriteBufferLocation location, s32 length, void *data);
+	template <typename T>
+	void overwriteAt(WriteBufferRange range, T *data);
 
 	bool writeToFile(FileHandle *file);
 

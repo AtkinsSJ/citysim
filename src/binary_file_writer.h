@@ -5,12 +5,12 @@ struct BinaryFileWriter
 	MemoryArena *arena;
 
 	WriteBuffer buffer;
-	WriteBufferLocation fileHeaderLoc;
+	WriteBufferRange fileHeaderLoc;
 	bool tocComplete;
 
 	FileSectionHeader sectionHeader;
-	WriteBufferLocation sectionTOCLoc;
-	WriteBufferLocation startOfSectionHeader;
+	WriteBufferRange sectionTOCRange;
+	WriteBufferRange sectionHeaderRange;
 	WriteBufferLocation startOfSectionData;
 
 // Methods
@@ -41,7 +41,7 @@ struct BinaryFileWriter
 	bool outputToFile(FileHandle *file);
 
 // Internal
-	Indexed<FileTOCEntry> findTOCEntry(FileIdentifier sectionID);
+	Maybe<WriteBufferRange> findTOCEntry(FileIdentifier sectionID);
 };
 
 BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryArena *arena);

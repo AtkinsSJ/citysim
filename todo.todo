@@ -27,7 +27,7 @@ Saving and loading:
 	✔ Pass a struct with member functions for reading or writing, so the layer doesn't have to know how that works.
 	✔ Save and restore the memory arena's position, to reduce total memory usage
 		✔(Once a layer is done, it doesn't need the temp memory it used, so we can re-use that.)
-- Extend overWriteAt() to have versions for structs or literals, like the append() and reserve() functions, for ease of use
+✖ Extend overWriteAt() to have versions for structs or literals, like the append() and reserve() functions, for ease of use
 ✔ Check all TOC entries are filled in before you try to save the file
 ✔ Migrate the save-file-problems stuff
 ✔ Rename Chunk to Section in SAVChunk things
@@ -39,6 +39,7 @@ Saving and loading:
 	✔(WriteBuffer shouldn't need to know about an encoding scheme used by one user.)
 ✔ Remove last uses of writer.buffer from writeSaveFile()
 	✔ It's the building/terrain type tables causing us trouble with their inline strings. Probably converting them to regular FileStrings with all the character data put after the array, would be better. (And more consistent.)
+- Compile a more convenient TOC structure in Reader, so we don't have to walk the array each time
 
 BUG: Game loses distance-from-water data on load, AGAIN?!
 

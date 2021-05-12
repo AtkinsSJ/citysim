@@ -15,9 +15,9 @@ BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryA
 	fileHeader.dosNewline[0] = 0x0D;
 	fileHeader.dosNewline[1] = 0x0A;
 	fileHeader.toc.count = 0;
-	fileHeader.toc.relativeOffset = writer.buffer.getLengthSince(writer.fileHeaderLoc);
+	fileHeader.toc.relativeOffset = writer.buffer.getLengthSince(writer.fileHeaderLoc.start);
 
-	writer.buffer.overwriteAt(writer.fileHeaderLoc, sizeof(FileHeader), &fileHeader);
+	writer.buffer.overwriteAt<FileHeader>(writer.fileHeaderLoc, &fileHeader);
 
 	return writer;
 }
@@ -27,8 +27,8 @@ void BinaryFileWriter::addTOCEntry(FileIdentifier sectionID)
 	ASSERT(!tocComplete);
 
 	// Make sure this entry doesn't exist already
-	Indexed<FileTOCEntry> existingTocEntry = findTOCEntry(sectionID);
-	ASSERT(existingTocEntry.index == -1); // Duplicate TOC entry!
+	Maybe<WriteBufferRange> existingTocEntry = findTOCEntry(sectionID);
+	ASSERT(!existingTocEntry.isValid); // Duplicate TOC entry!
 
 	// Add a TOC entry with no location or length
 	FileTOCEntry tocEntry = {};
@@ -36,7 +36,7 @@ void BinaryFileWriter::addTOCEntry(FileIdentifier sectionID)
 	buffer.append<FileTOCEntry>(&tocEntry);
 
 	// Find the TOC entry count and increment it
-	WriteBufferLocation tocCountLoc = fileHeaderLoc + offsetof(FileHeader, toc.count);
+	WriteBufferLocation tocCountLoc = fileHeaderLoc.start + offsetof(FileHeader, toc.count);
 	leU32 tocCount = buffer.readAt<leU32>(tocCountLoc);
 	tocCount = tocCount + 1;
 	buffer.overwriteAt(tocCountLoc, sizeof(leU32), &tocCount);
@@ -47,7 +47,7 @@ void BinaryFileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 {
 	tocComplete = true;
 	
-	startOfSectionHeader = buffer.reserve<FileSectionHeader>();
+	sectionHeaderRange = buffer.reserve<FileSectionHeader>();
 	startOfSectionData = buffer.getCurrentPosition();
 
 	sectionHeader = {};
@@ -55,9 +55,9 @@ void BinaryFileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
 	sectionHeader.version = sectionVersion;
 
 	// Find our TOC entry
-	Indexed<FileTOCEntry> tocEntry = findTOCEntry(sectionID);
-	ASSERT(tocEntry.index >= 0); // Must add a TOC entry for each section in advance!
-	sectionTOCLoc = tocEntry.index;
+	Maybe<WriteBufferRange> tocEntry = findTOCEntry(sectionID);
+	ASSERT(tocEntry.isValid); // Must add a TOC entry for each section in advance!
+	sectionTOCRange = tocEntry.value;
 
 	// Reserve our "section struct"
 	buffer.reserve<T>();
@@ -86,10 +86,7 @@ FileArray BinaryFileWriter::appendArray(Array<T> data)
 template <typename T>
 WriteBufferRange BinaryFileWriter::reserveArray(s32 length)
 {
-	WriteBufferRange result = {};
-	result.length = length * sizeof(T);
-	result.start = buffer.reserveBytes(result.length);
-	return result;
+	return buffer.reserveBytes(length * sizeof(T));
 }
 
 template <typename T>
@@ -185,13 +182,13 @@ void BinaryFileWriter::endSection(T *sectionStruct)
 	// Update section header
 	u32 sectionLength = buffer.getLengthSince(startOfSectionData);
 	sectionHeader.length = sectionLength;
-	buffer.overwriteAt(startOfSectionHeader, sizeof(FileSectionHeader), &sectionHeader);
+	buffer.overwriteAt<FileSectionHeader>(sectionHeaderRange, &sectionHeader);
 
 	// Update TOC
-	FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(sectionTOCLoc);
-	tocEntry.offset = startOfSectionHeader;
+	FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(sectionTOCRange);
+	tocEntry.offset = sectionHeaderRange.start;
 	tocEntry.length = sectionLength;
-	buffer.overwriteAt(sectionTOCLoc, sizeof(FileTOCEntry), &tocEntry);
+	buffer.overwriteAt<FileTOCEntry>(sectionTOCRange, &tocEntry);
 }
 
 bool BinaryFileWriter::outputToFile(FileHandle *file)
@@ -202,7 +199,7 @@ bool BinaryFileWriter::outputToFile(FileHandle *file)
 	// leave a gap in the file, but as long as we move later TOC entries so that
 	// they're contiguous, it should be fine!
 	FileHeader fileHeader = buffer.readAt<FileHeader>(fileHeaderLoc);
-	WriteBufferLocation tocEntryLoc = fileHeaderLoc + fileHeader.toc.relativeOffset;
+	WriteBufferLocation tocEntryLoc = fileHeaderLoc.start + fileHeader.toc.relativeOffset;
 	for (u32 i=0; i < fileHeader.toc.count; i++)
 	{
 		FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryLoc);
@@ -215,27 +212,30 @@ bool BinaryFileWriter::outputToFile(FileHandle *file)
 	return buffer.writeToFile(file);
 }
 
-Indexed<FileTOCEntry> BinaryFileWriter::findTOCEntry(FileIdentifier sectionID)
+Maybe<WriteBufferRange> BinaryFileWriter::findTOCEntry(FileIdentifier sectionID)
 {
-	Indexed<FileTOCEntry> result;
-	result.index = -1; // Assume failure
+	Maybe<WriteBufferRange> result = makeFailure<WriteBufferRange>();
 
 	// Find our TOC entry
 	// So, we have to walk the array, which is... interesting
 	// TODO: maybe just keep a table of toc entry locations?
 	FileHeader fileHeader = buffer.readAt<FileHeader>(fileHeaderLoc);
-	WriteBufferLocation tocEntryLoc = fileHeaderLoc + fileHeader.toc.relativeOffset;
+
+	WriteBufferRange tocEntryRange = {};
+	tocEntryRange.start = fileHeaderLoc.start + fileHeader.toc.relativeOffset;
+	tocEntryRange.length = sizeof(FileTOCEntry);
+
 	for (u32 i=0; i < fileHeader.toc.count; i++)
 	{
-		FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryLoc);
+		FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryRange);
 
 		if (tocEntry.sectionID == sectionID)
 		{
-			result = makeIndexedValue<FileTOCEntry>(tocEntry, tocEntryLoc);
+			result = makeSuccess(tocEntryRange);
 			break;
 		}
 
-		tocEntryLoc += sizeof(FileTOCEntry);
+		tocEntryRange.start += sizeof(FileTOCEntry);
 	}
 
 	return result;

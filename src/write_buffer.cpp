@@ -13,20 +13,22 @@ void WriteBuffer::init(s32 chunkSize_, MemoryArena *arena_)
 }
 
 template <typename T>
-inline WriteBufferLocation WriteBuffer::append(T *thing)
+inline WriteBufferRange WriteBuffer::append(T *thing)
 {
 	return appendBytes(sizeof(T), thing);
 }
 
 template <typename T>
-inline WriteBufferLocation WriteBuffer::reserve()
+inline WriteBufferRange WriteBuffer::reserve()
 {
 	return reserveBytes(sizeof(T));
 }
 
-WriteBufferLocation WriteBuffer::appendBytes(s32 length, void *bytes)
+WriteBufferRange WriteBuffer::appendBytes(s32 length, void *bytes)
 {
-	WriteBufferLocation startLoc = getCurrentPosition();
+	WriteBufferRange result = {};
+	result.start = getCurrentPosition();
+	result.length = length;
 
 	// Data might not fit in the current chunk, so keep allocating new ones until we're done
 	s32 remainingLength = length;
@@ -58,12 +60,14 @@ WriteBufferLocation WriteBuffer::appendBytes(s32 length, void *bytes)
 		}
 	}
 
-	return startLoc;
+	return result;
 }
 
-WriteBufferLocation WriteBuffer::reserveBytes(s32 length)
+WriteBufferRange WriteBuffer::reserveBytes(s32 length)
 {
-	WriteBufferLocation result = getCurrentPosition();
+	WriteBufferRange result = {};
+	result.start = getCurrentPosition();
+	result.length = length;
 
 	s32 remainingLength = length;
 
@@ -101,6 +105,13 @@ inline WriteBufferLocation WriteBuffer::getCurrentPosition()
 s32 WriteBuffer::getLengthSince(WriteBufferLocation start)
 {
 	return getCurrentPosition() - start;
+}
+
+template <typename T>
+T WriteBuffer::readAt(WriteBufferRange range)
+{
+	ASSERT(sizeof(T) <= range.length);
+	return readAt<T>(range.start);
 }
 
 template <typename T>
@@ -175,6 +186,13 @@ void WriteBuffer::overwriteAt(WriteBufferLocation location, s32 length, void *da
 			posInChunk = 0;
 		}
 	}
+}
+
+template <typename T>
+void WriteBuffer::overwriteAt(WriteBufferRange range, T *data)
+{
+	ASSERT(sizeof(T) <= range.length);
+	overwriteAt(range.start, min(range.length, (s32)sizeof(T)), data);
 }
 
 bool WriteBuffer::writeToFile(FileHandle *file)
