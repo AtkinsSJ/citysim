@@ -6,8 +6,6 @@ inline String makeString(char *chars, s32 length, bool hash)
 	String result = {};
 	result.chars = chars;
 	result.length = length;
-	result.maxLength = result.length;
-	result.hasHash = false;
 	result.hash = 0;
 
 	if (hash)
@@ -40,7 +38,7 @@ inline char & String::operator[](s32 index)
 
 void copyString(char *src, s32 srcLength, String *dest)
 {
-	s32 copyLength = min(srcLength, dest->maxLength);
+	s32 copyLength = min(srcLength, dest->length);
 	copyMemory(src, dest->chars, copyLength);
 	dest->length = copyLength;
 }
@@ -50,12 +48,11 @@ inline void copyString(String src, String *dest)
 	copyString(src.chars, src.length, dest);
 }
 
-inline String pushString(MemoryArena *arena, s32 length, bool setLength)
+inline String pushString(MemoryArena *arena, s32 length)
 {
 	String s = {};
 	s.chars = allocateMultiple<char>(arena, length);
-	s.length = setLength ? length : 0;
-	s.maxLength = length;
+	s.length = length;
 
 	return s;
 }
@@ -84,7 +81,7 @@ inline bool equals(String a, String b)
 	{
 		result = false;
 	}
-	else if (a.hasHash && b.hasHash && a.hash != b.hash)
+	else if (a.hash && b.hash && a.hash != b.hash)
 	{
 		result = false;
 	}
@@ -115,10 +112,9 @@ inline bool stringIsValid(String s)
 
 u32 hashString(String *s)
 {
-
 	u32 result = s->hash;
 
-	if (!s->hasHash)
+	if (!s->hash)
 	{
 		// FNV-1a hash
 		// http://www.isthe.com/chongo/tech/comp/fnv/
@@ -129,8 +125,7 @@ u32 hashString(String *s)
 			result *= 16777619;
 		}
 
-		s->hash = result;
-		s->hasHash = true;
+		s->hash = max(result, 1); // Force the hash to be at least 1, so we can use 0 to mean "no hash"
 	}
 
 	return result;
@@ -470,8 +465,6 @@ String nextToken(String input, String *remainder, char splitChar)
 		firstWord = trim(firstWord);
 	}
 
-	firstWord.maxLength = firstWord.length;
-
 	if (remainder)
 	{
 		// NB: We have to make sure we properly initialise remainder here, because we had a bug before
@@ -486,8 +479,6 @@ String nextToken(String input, String *remainder, char splitChar)
 			remainder->chars++;
 			*remainder = trimStart(*remainder);
 		}
-
-		remainder->maxLength = remainder->length;
 	}
 
 	return firstWord;

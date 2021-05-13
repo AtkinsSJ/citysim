@@ -12,6 +12,7 @@ void initInput(InputState *theInput)
 	MemoryArena *systemArena = &globalAppState.systemArena;
 
 	theInput->textEntered = makeString(&theInput->_textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
+	theInput->textEnteredLength = 0;
 
 	// Key names
 	initHashTable(&theInput->keyNames, 0.75f, SDL_NUM_SCANCODES);
@@ -19,7 +20,7 @@ void initInput(InputState *theInput)
 	// Letters
 	for (char c = 'A'; c <= 'Z'; c++)
 	{
-		String key = pushString(systemArena, 1, true);
+		String key = pushString(systemArena, 1);
 		key[0] = c;
 		theInput->keyNames.put(key, (SDL_Keycode)(SDLK_a + (c - 'A')));
 	}
@@ -27,7 +28,7 @@ void initInput(InputState *theInput)
 	// Numbers
 	for (char i = 0; i <= 9; i++)
 	{
-		String key = pushString(systemArena, 1, true);
+		String key = pushString(systemArena, 1);
 		key[0] = '0' + i;
 		theInput->keyNames.put(key, (SDL_Keycode)(SDLK_0 + i));
 	}
@@ -59,7 +60,7 @@ void updateInput()
 	copyMemory(inputState->_keyDown, inputState->_keyWasDown, KEYBOARD_KEY_COUNT);
 
 	inputState->hasUnhandledTextEntered = false;
-	inputState->textEntered.length = 0;
+	inputState->textEnteredLength = 0;
 
 	inputState->receivedQuitSignal = false;
 	inputState->wasWindowResized = false;
@@ -135,7 +136,8 @@ void updateInput()
 			} break;
 			case SDL_TEXTINPUT: {
 				inputState->hasUnhandledTextEntered = true;
-				copyString(event.text.text, truncate32(strlen(event.text.text)), &inputState->textEntered);
+				inputState->textEnteredLength = truncate32(strlen(event.text.text));
+				copyString(event.text.text, inputState->textEnteredLength, &inputState->textEntered);
 			} break;
 		}
 	}
@@ -310,7 +312,7 @@ inline bool wasTextEntered()
 inline String getEnteredText()
 {
 	inputState->hasUnhandledTextEntered = false;
-	return inputState->textEntered;
+	return makeString(inputState->textEntered.chars, inputState->textEnteredLength);
 }
 
 inline String getClipboardText()

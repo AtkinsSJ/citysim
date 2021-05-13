@@ -47,6 +47,7 @@ struct InputState
 
 	bool hasUnhandledTextEntered; // Has anyone requested the _textEntered?
 	String textEntered;
+	s32 textEnteredLength;
 	char _textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
 
 	// Extra
