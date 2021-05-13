@@ -505,7 +505,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 		// Clear any scissor stuff
 		addEndScissor(renderBuffer);
 
-		popInputScissorRect(uiState);
+		UI::popInputScissorRect();
 	}
 
 	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
@@ -601,7 +601,7 @@ void UIPanel::prepareForWidgets()
 		{
 			addBeginScissor(renderBuffer, bounds);
 
-			pushInputScissorRect(globalAppState.uiState, bounds);
+			UI::pushInputScissorRect(bounds);
 
 			// Prepare to render background
 			background.preparePlaceholder(renderBuffer);

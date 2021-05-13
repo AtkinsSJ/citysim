@@ -4,37 +4,6 @@
 #include "ui_panel.cpp"
 #include "ui_window.cpp"
 
-inline void pushInputScissorRect(UIState *uiState, Rect2I bounds)
-{
-	push(&uiState->inputScissorRects, bounds);
-}
-
-inline void popInputScissorRect(UIState *uiState)
-{
-	pop(&uiState->inputScissorRects);
-}
-
-inline bool isInputScissorActive(UIState *uiState)
-{
-	return !isEmpty(&uiState->inputScissorRects);
-}
-
-inline Rect2I getInputScissorRect(UIState *uiState)
-{
-	Rect2I result;
-
-	if (isInputScissorActive(uiState))
-	{
-		result = *peek(&uiState->inputScissorRects);
-	}
-	else
-	{
-		result = irectInfinity();
-	}
-
-	return result;
-}
-
 inline void addUIRect(UIState *uiState, Rect2I bounds)
 {
 	uiState->uiRects.append(bounds);
@@ -428,7 +397,7 @@ inline bool UI::isMouseInUIBounds(Rect2I bounds)
 
 inline bool UI::isMouseInUIBounds(Rect2I bounds, V2 mousePos)
 {
-	Rect2I clippedBounds = isInputScissorActive(&uiState) ? intersect(bounds, getInputScissorRect(&uiState)) : bounds;
+	Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
 
 	bool result = contains(clippedBounds, mousePos);
 
@@ -438,12 +407,43 @@ inline bool UI::isMouseInUIBounds(Rect2I bounds, V2 mousePos)
 inline bool UI::justClickedOnUI(Rect2I bounds)
 {
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	Rect2I clippedBounds = isInputScissorActive(&uiState) ? intersect(bounds, getInputScissorRect(&uiState)) : bounds;
+	Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
 
 	bool result = !UI::isMouseInputHandled()
 			   && contains(clippedBounds, mousePos)
 			   && mouseButtonJustReleased(MouseButton_Left)
 			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+
+	return result;
+}
+
+inline void UI::pushInputScissorRect(Rect2I bounds)
+{
+	push(&uiState.inputScissorRects, bounds);
+}
+
+inline void UI::popInputScissorRect()
+{
+	pop(&uiState.inputScissorRects);
+}
+
+inline bool UI::isInputScissorActive()
+{
+	return !isEmpty(&uiState.inputScissorRects);
+}
+
+inline Rect2I UI::getInputScissorRect()
+{
+	Rect2I result;
+
+	if (isInputScissorActive())
+	{
+		result = *peek(&uiState.inputScissorRects);
+	}
+	else
+	{
+		result = irectInfinity();
+	}
 
 	return result;
 }

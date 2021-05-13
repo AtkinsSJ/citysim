@@ -87,13 +87,6 @@ struct WindowContext;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
-void pushInputScissorRect(UIState *uiState, Rect2I bounds);
-void popInputScissorRect(UIState *uiState);
-bool isInputScissorActive(UIState *uiState);
-// NB: This is safe to call whether or not a scissor is active. It returns
-// either the scissor or a functionally infinite rectangle.
-Rect2I getInputScissorRect(UIState *uiState);
-
 void addUIRect(UIState *uiState, Rect2I bounds);
 
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
@@ -126,6 +119,14 @@ namespace UI
 	bool isMouseInUIBounds(Rect2I bounds);
 	bool isMouseInUIBounds(Rect2I bounds, V2 mousePos);
 	bool justClickedOnUI(Rect2I bounds);
+
+	// Input Scissor
+	void pushInputScissorRect(Rect2I bounds);
+	void popInputScissorRect();
+	bool isInputScissorActive();
+	// NB: This is safe to call whether or not a scissor is active. It returns
+	// either the scissor or a functionally infinite rectangle.
+	Rect2I getInputScissorRect();
 
 	// Menus
 	void showMenu(s32 menuID);
