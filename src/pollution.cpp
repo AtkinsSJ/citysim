@@ -119,7 +119,7 @@ void savePollutionLayer(PollutionLayer *layer, struct BinaryFileWriter *writer)
 	SAVSection_Pollution pollutionSection = {};
 
 	// Tile pollution
-	pollutionSection.tilePollution = writer->appendBlob(&layer->tilePollution, Blob_Uncompressed);
+	pollutionSection.tilePollution = writer->appendBlob(&layer->tilePollution, Blob_RLE_S8);
 
 	writer->endSection<SAVSection_Pollution>(&pollutionSection);
 }

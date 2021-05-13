@@ -28,8 +28,6 @@ Shrink String
 Sort out the UIState nonsense
 - If we have to keep it (and I think we do) at least remove it from function calls. It just makes a mess.
 
-Make our RLE encoder actually encode non-runs! (BinaryFileWriter::appendBlob)
-
 Window system:
 - Function to detect if a window is open
 - Function to close a window

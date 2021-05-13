@@ -145,7 +145,7 @@ void saveLandValueLayer(LandValueLayer *layer, struct BinaryFileWriter *writer)
 	SAVSection_LandValue landValueSection = {};
 
 	// Tile land value
-	landValueSection.tileLandValue = writer->appendBlob(&layer->tileLandValue, Blob_Uncompressed);
+	landValueSection.tileLandValue = writer->appendBlob(&layer->tileLandValue, Blob_RLE_S8);
 
 	writer->endSection<SAVSection_LandValue>(&landValueSection);
 }

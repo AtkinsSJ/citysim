@@ -163,15 +163,15 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionS
 					buffer.appendBytes(literalLength, pos);
 					pos += literalLength;
 
-					// // Also, if we did detect a run, output that too!
-					// if (runLength >= minRunLength)
-					// {
-					// 	buffer.append<s8>(&runLength);
-					// 	buffer.append<u8>(pos);
+					// Also, if we did detect a run, output that too!
+					if (runLength >= minRunLength)
+					{
+						buffer.append<s8>(&runLength);
+						buffer.append<u8>(pos);
 
-					// 	pos += runLength;
-					// 	remainingLength -= runLength;
-					// }
+						pos += runLength;
+						remainingLength -= runLength;
+					}
 				}
 			}
 
