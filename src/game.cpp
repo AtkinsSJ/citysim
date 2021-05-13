@@ -474,12 +474,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	UI::addUIRect(uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
-	uiText(uiBuffer, font, city->name,
+	UI::drawText(uiBuffer, font, city->name,
 	       v2i(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
 
-	uiText(uiBuffer, font, myprintf("£{0} (-£{1}/month)"_s, {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2i(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
+	UI::drawText(uiBuffer, font, myprintf("£{0} (-£{1}/month)"_s, {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2i(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
 
-	uiText(uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}"_s, {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
+	UI::drawText(uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}"_s, {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
 
 	// Game clock
 	{
@@ -502,7 +502,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		dateProgressRect.w = round_s32(dateProgressRect.w * clock->timeWithinDay);
 		drawSingleRect(uiBuffer, dateProgressRect, renderer->shaderIds.untextured, color255(64, 255, 64, 128));
 
-		uiText(uiBuffer, font, dateString, alignWithinRectangle(dateRect, ALIGN_TOP | ALIGN_H_CENTRE), ALIGN_TOP | ALIGN_H_CENTRE, labelStyle->textColor, clockWidth);
+		UI::drawText(uiBuffer, font, dateString, alignWithinRectangle(dateRect, ALIGN_TOP | ALIGN_H_CENTRE), ALIGN_TOP | ALIGN_H_CENTRE, labelStyle->textColor, clockWidth);
 
 		// Speed control buttons
 		Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarBottom - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
@@ -535,11 +535,11 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	}
 
 /*
-	uiText(uiBuffer, font, myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
+	UI::drawText(uiBuffer, font, myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
 	       v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 */
 
-	uiText(uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
+	UI::drawText(uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
 	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);

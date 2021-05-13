@@ -4,20 +4,6 @@
 #include "ui_panel.cpp"
 #include "ui_window.cpp"
 
-Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
-{
-	DEBUG_FUNCTION();
-
-	V2I textSize = calculateTextSize(font, text, maxWidth);
-	V2I topLeft  = calculateTextPosition(origin, textSize, align);
-
-	Rect2I bounds = irectPosSize(topLeft, textSize);
-
-	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text);
-
-	return bounds;
-}
-
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
 {
 	s32 doublePadding = (buttonStyle->padding * 2);
@@ -132,7 +118,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	buttonBackground.draw(&renderer->uiBuffer, bounds);
 
 	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	uiText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
+	UI::drawText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if (state != Button_Disabled
@@ -449,6 +435,20 @@ bool UI::mouseIsWithinUIRects(V2 mousePos)
 	}
 
 	return result;
+}
+
+Rect2I UI::drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
+{
+	DEBUG_FUNCTION();
+
+	V2I textSize = calculateTextSize(font, text, maxWidth);
+	V2I topLeft  = calculateTextPosition(origin, textSize, align);
+
+	Rect2I bounds = irectPosSize(topLeft, textSize);
+
+	drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text);
+
+	return bounds;
 }
 
 void UI::showMenu(s32 menuID)

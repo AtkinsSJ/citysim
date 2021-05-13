@@ -256,7 +256,7 @@ void renderConsole(Console *console)
 		ConsoleOutputLine *line = it.get();
 		V4 outputTextColor = consoleStyle->outputTextColor[line->style];
 
-		Rect2I resultRect = uiText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
+		Rect2I resultRect = UI::drawText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
 		textPos.y -= resultRect.h;
 
 		// If we've gone off the screen, stop!

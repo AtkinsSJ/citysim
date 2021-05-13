@@ -12,10 +12,10 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 
-	position.y += (uiText(&renderer->uiBuffer, font, getText("game_title"_s),
+	position.y += (UI::drawText(&renderer->uiBuffer, font, getText("game_title"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	position.y += (uiText(&renderer->uiBuffer, font, getText("game_subtitle"_s),
+	position.y += (UI::drawText(&renderer->uiBuffer, font, getText("game_subtitle"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
 	UIButtonStyle *style = findStyle<UIButtonStyle>("default"_s);

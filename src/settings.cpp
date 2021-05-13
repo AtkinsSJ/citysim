@@ -227,7 +227,7 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
 	BitmapFont *font = getFont(&labelStyle->font);
 
 	V2I titlePos = v2i(windowWidth / 2, 157);
-	uiText(&renderer->uiBuffer, font, getText("title_settings"_s),
+	UI::drawText(&renderer->uiBuffer, font, getText("title_settings"_s),
 			titlePos, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
 
 	// Settings go here!!!
@@ -241,8 +241,8 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
 	{
 		SettingDef *def = it.get();
 
-		uiText(&renderer->uiBuffer, font, getText(def->textAssetName), labelPos, ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
-		uiText(&renderer->uiBuffer, font, settingToString(&settings->workingState, def), settingPos, ALIGN_RIGHT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
+		UI::drawText(&renderer->uiBuffer, font, getText(def->textAssetName), labelPos, ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
+		UI::drawText(&renderer->uiBuffer, font, settingToString(&settings->workingState, def), settingPos, ALIGN_RIGHT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
 
 		labelPos.y += 60;
 		settingPos.y += 60;

@@ -292,14 +292,14 @@ void updateAndRenderWindows(UIState *uiState)
 			BitmapFont *titleFont = getFont(&windowStyle->titleFont);
 
 			drawSingleRect(window->renderBuffer, barArea, renderer->shaderIds.untextured, barColor);
-			uiText(window->renderBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor);
+			UI::drawText(window->renderBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor);
 
 			if (hoveringOverCloseButton
 			 && (!UI::isMouseInputHandled() || windowIndex == 0))
 			{
 				drawSingleRect(window->renderBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
 			}
-			uiText(window->renderBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, windowStyle->titleColor);
+			UI::drawText(window->renderBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, windowStyle->titleColor);
 
 			if ((!UI::isMouseInputHandled() || windowIndex == 0)
 				 && contains(wholeWindowArea, mousePos)

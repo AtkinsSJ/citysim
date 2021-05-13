@@ -18,7 +18,7 @@ AppStatus updateAndRenderCredits(UIState *uiState, f32 /*deltaTime*/)
 	while (loadNextLine(&reader))
 	{
 		String line = getLine(&reader);
-		position.y += (uiText(&renderer->uiBuffer, font, line,
+		position.y += (UI::drawText(&renderer->uiBuffer, font, line,
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
 
