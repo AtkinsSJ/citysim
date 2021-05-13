@@ -274,7 +274,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBou
 	return result;
 }
 
-void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style)
+void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style)
 {
 	DEBUG_FUNCTION();
 
@@ -389,34 +389,6 @@ s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize)
 	return result;
 }
 
-void showMenu(UIState *uiState, s32 menuID)
-{
-	uiState->openMenu = menuID;
-	uiState->openMenuScrollbar = {};
-}
-
-inline void hideMenus(UIState *uiState)
-{
-	uiState->openMenu = 0;
-}
-
-inline void toggleMenuVisible(UIState *uiState, s32 menuID)
-{
-	if (isMenuVisible(uiState, menuID))
-	{
-		hideMenus(uiState);
-	}
-	else
-	{
-		showMenu(uiState, menuID);
-	}
-}
-
-inline bool isMenuVisible(UIState *uiState, s32 menuID)
-{
-	return (uiState->openMenu == menuID);
-}
-
 void UI::init(MemoryArena *arena)
 {
 	uiState = {};
@@ -474,6 +446,34 @@ inline bool UI::justClickedOnUI(Rect2I bounds)
 			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
 
 	return result;
+}
+
+void UI::showMenu(s32 menuID)
+{
+	uiState.openMenu = menuID;
+	uiState.openMenuScrollbar = {};
+}
+
+void UI::hideMenus()
+{
+	uiState.openMenu = 0;
+}
+
+void UI::toggleMenuVisible(s32 menuID)
+{
+	if (isMenuVisible(menuID))
+	{
+		hideMenus();
+	}
+	else
+	{
+		showMenu(menuID);
+	}
+}
+
+inline bool UI::isMenuVisible(s32 menuID)
+{
+	return (uiState.openMenu == menuID);
 }
 
 void UI::pushToast(String message)

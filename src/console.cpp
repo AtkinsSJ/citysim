@@ -207,7 +207,7 @@ void updateConsole(Console *console)
 			}
 
 			console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
-			updateScrollbar(globalAppState.uiState, &console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
+			updateScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
 		}
 	}
 }

@@ -473,7 +473,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (doUpdate)
 		{
-			updateScrollbar(uiState, hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle);
+			updateScrollbar(hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle);
 		}
 
 		if (doRender)
@@ -488,7 +488,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (doUpdate)
 		{
-			updateScrollbar(uiState, vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
+			updateScrollbar(vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
 		}
 
 		if (doRender)

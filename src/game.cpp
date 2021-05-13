@@ -561,12 +561,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The "ZONE" menu
 		String zoneButtonText = getText("button_zone"_s);
 		buttonRect.size = calculateButtonSize(zoneButtonText, buttonStyle);
-		if (uiButton(uiState, zoneButtonText, buttonRect, buttonStyle, buttonIsActive(isMenuVisible(uiState, Menu_Zone))))
+		if (uiButton(uiState, zoneButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Zone))))
 		{
-			toggleMenuVisible(uiState, Menu_Zone);
+			UI::toggleMenuVisible(Menu_Zone);
 		}
 
-		if (isMenuVisible(uiState, Menu_Zone))
+		if (UI::isMenuVisible(Menu_Zone))
 		{
 			s32 popupMenuWidth = 150;
 			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
@@ -577,7 +577,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				if (menu.addButton(getText(getZoneDef(zoneIndex).textAssetName),
 					buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
 				{
-					hideMenus(uiState);
+					UI::hideMenus();
 					gameState->selectedZoneID = (ZoneType) zoneIndex;
 					gameState->actionMode = ActionMode_Zone;
 					setCursor("build"_s);
@@ -591,12 +591,12 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The "BUILD" menu
 		String buildButtonText = getText("button_build"_s);
 		buttonRect.size = calculateButtonSize(buildButtonText, buttonStyle);
-		if (uiButton(uiState, buildButtonText, buttonRect, buttonStyle, buttonIsActive(isMenuVisible(uiState, Menu_Build))))
+		if (uiButton(uiState, buildButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Build))))
 		{
-			toggleMenuVisible(uiState, Menu_Build);
+			UI::toggleMenuVisible(Menu_Build);
 		}
 
-		if (isMenuVisible(uiState, Menu_Build))
+		if (UI::isMenuVisible(Menu_Build))
 		{
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
@@ -614,7 +614,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 				if (menu.addButton(getText(buildingDef->textAssetName),
 						buttonIsActive((gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID))))
 				{
-					hideMenus(uiState);
+					UI::hideMenus();
 					gameState->selectedBuildingTypeID = buildingDef->typeID;
 					gameState->actionMode = ActionMode_Build;
 					setCursor("build"_s);
@@ -628,8 +628,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The Terrain button
 		String terrainButtonText = getText("button_terrain"_s);
 		buttonRect.size = calculateButtonSize(terrainButtonText, buttonStyle);
-		// TODO: Detect if window is open already. Close it if it is
-		if (uiButton(uiState, terrainButtonText, buttonRect, buttonStyle))//, buttonIsActive(isMenuVisible(uiState, Menu_Build))))
+		// TODO: Detect if window is open already. Close it if it is @DetectWindowOpen @CloseWindow
+		if (uiButton(uiState, terrainButtonText, buttonRect, buttonStyle))//, buttonIsActive(UI::isMenuVisible(Menu_Build))))
 		{
 			showTerrainWindow();
 		}
@@ -1198,10 +1198,10 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 	if (uiButton(uiState, dataViewButtonText, dataViewButtonBounds, buttonStyle))
 	{
-		toggleMenuVisible(uiState, Menu_DataViews);
+		UI::toggleMenuVisible(Menu_DataViews);
 	}
 
-	if (isMenuVisible(uiState, Menu_DataViews))
+	if (UI::isMenuVisible(Menu_DataViews))
 	{
 		// Measure the menu contents
 		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(&popupMenuPanelStyle->buttonStyle);
@@ -1236,7 +1236,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 			if (menu.addButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
 			{
-				hideMenus(uiState);
+				UI::hideMenus();
 				gameState->dataLayerToDraw = (DataView) dataViewID;
 			}
 		}

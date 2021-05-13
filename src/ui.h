@@ -105,18 +105,13 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
 // NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
 Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
-void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
+void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
 s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
 
 void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData = null);
 // Is this something we should actually expose??? IDK
 void basicTooltipWindowProc(WindowContext *context, void *userData);
-
-void showMenu(UIState *uiState, s32 menuID);
-void hideMenus(UIState *uiState);
-void toggleMenuVisible(UIState *uiState, s32 menuID);
-bool isMenuVisible(UIState *uiState, s32 menuID);
 
 namespace UI
 {
@@ -131,6 +126,12 @@ namespace UI
 	bool isMouseInUIBounds(Rect2I bounds);
 	bool isMouseInUIBounds(Rect2I bounds, V2 mousePos);
 	bool justClickedOnUI(Rect2I bounds);
+
+	// Menus
+	void showMenu(s32 menuID);
+	void hideMenus();
+	void toggleMenuVisible(s32 menuID);
+	bool isMenuVisible(s32 menuID);
 
 	// Toasts
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation
