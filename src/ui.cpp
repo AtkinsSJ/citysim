@@ -18,18 +18,6 @@ Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I ori
 	return bounds;
 }
 
-void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
-{
-	UIPanel *ui = &context->windowPanel;
-	ui->addText(context->uiState->tooltipText);
-}
-
-void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData)
-{
-	static String styleName = "tooltip"_s;
-	showWindow(uiState, nullString, 300, 100, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
-}
-
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
 {
 	s32 doublePadding = (buttonStyle->padding * 2);
@@ -132,8 +120,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 
 		if (tooltip.length)
 		{
-			uiState->tooltipText = tooltip;
-			showTooltip(uiState, basicTooltipWindowProc);
+			UI::showTooltip(tooltip);
 		}
 	}
 	else if (state == Button_Active)
@@ -551,4 +538,22 @@ void UI::drawToast()
 			panel.end();
 		}
 	}
+}
+
+void UI::showTooltip(String text)
+{
+	uiState.tooltipText = text;
+	showTooltip(basicTooltipWindowProc);
+}
+
+void UI::showTooltip(WindowProc tooltipProc, void *userData)
+{
+	static String styleName = "tooltip"_s;
+	showWindow(&uiState, nullString, 300, 100, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
+}
+
+void UI::basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
+{
+	UIPanel *ui = &context->windowPanel;
+	ui->addText(context->uiState->tooltipText);
 }

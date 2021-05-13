@@ -666,9 +666,9 @@ void costTooltipWindowProc(WindowContext *context, void *userData)
 	ui->addText(text, style);
 }
 
-void showCostTooltip(UIState *uiState, s32 buildCost)
+void showCostTooltip(s32 buildCost)
 {
-	showTooltip(uiState, costTooltipWindowProc, (void*)(smm)buildCost);
+	UI::showTooltip(costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
 void debugToolsWindowProc(WindowContext *context, void *userData)
@@ -796,7 +796,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 								}
 							}
 
-							if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
+							if (!mouseIsOverUI) showCostTooltip(buildCost);
 
 							Sprite *sprite = getSprite(buildingDef->spriteName, 0);
 							V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
@@ -829,7 +829,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 
 							case DragResult_ShowPreview:
 							{
-								if (!mouseIsOverUI) showCostTooltip(uiState, buildCost);
+								if (!mouseIsOverUI) showCostTooltip(buildCost);
 
 								if (canAfford(city, buildCost))
 								{
@@ -883,7 +883,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 
 					case DragResult_ShowPreview:
 					{
-						if (!mouseIsOverUI) showCostTooltip(uiState, zoneCost);
+						if (!mouseIsOverUI) showCostTooltip(zoneCost);
 						if (canAfford(city, zoneCost))
 						{
 							V4 palette[] = {
@@ -923,7 +923,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 
 					case DragResult_ShowPreview:
 					{
-						if (!mouseIsOverUI) showCostTooltip(uiState, demolishCost);
+						if (!mouseIsOverUI) showCostTooltip(demolishCost);
 
 						if (canAfford(city, demolishCost))
 						{

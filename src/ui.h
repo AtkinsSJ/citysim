@@ -100,9 +100,6 @@ void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UISc
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
 s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
 
-void showTooltip(UIState *uiState, WindowProc tooltipProc, void *userData = null);
-// Is this something we should actually expose??? IDK
-void basicTooltipWindowProc(WindowContext *context, void *userData);
 
 namespace UI
 {
@@ -142,4 +139,9 @@ namespace UI
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation
 	void pushToast(String message);
 	void drawToast();
+
+	// Tooltip
+	void showTooltip(String text);
+	void showTooltip(WindowProc tooltipProc, void *userData = null);
+	void basicTooltipWindowProc(WindowContext *context, void *userData);
 }
