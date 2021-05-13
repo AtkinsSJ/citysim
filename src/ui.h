@@ -87,8 +87,6 @@ struct WindowContext;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
-void addUIRect(UIState *uiState, Rect2I bounds);
-
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
 V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
@@ -127,6 +125,12 @@ namespace UI
 	// NB: This is safe to call whether or not a scissor is active. It returns
 	// either the scissor or a functionally infinite rectangle.
 	Rect2I getInputScissorRect();
+
+	// UI Rects
+	// (Rectangle areas which block the mouse from interacting with the game
+	// world. eg, stops you clicking through windows)
+	void addUIRect(Rect2I bounds);
+	bool mouseIsWithinUIRects(V2 mousePos);
 
 	// Menus
 	void showMenu(s32 menuID);

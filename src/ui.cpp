@@ -4,11 +4,6 @@
 #include "ui_panel.cpp"
 #include "ui_window.cpp"
 
-inline void addUIRect(UIState *uiState, Rect2I bounds)
-{
-	uiState->uiRects.append(bounds);
-}
-
 Rect2I uiText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
 {
 	DEBUG_FUNCTION();
@@ -443,6 +438,27 @@ inline Rect2I UI::getInputScissorRect()
 	else
 	{
 		result = irectInfinity();
+	}
+
+	return result;
+}
+
+inline void UI::addUIRect(Rect2I bounds)
+{
+	uiState.uiRects.append(bounds);
+}
+
+bool UI::mouseIsWithinUIRects(V2 mousePos)
+{
+	bool result = false;
+
+	for (auto it = uiState.uiRects.iterate(); it.hasNext(); it.next())
+	{
+		if (contains(it.getValue(), mousePos))
+		{
+			result = true;
+			break;
+		}
 	}
 
 	return result;

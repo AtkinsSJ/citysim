@@ -379,7 +379,6 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 {
 	DEBUG_FUNCTION();
-	UIState *uiState = globalAppState.uiState;
 
 	// Make sure the current line's height is taken into account
 	startNewLine();
@@ -511,7 +510,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
 	if (blocksMouse)
 	{
-		addUIRect(uiState, bounds);
+		UI::addUIRect(bounds);
 	}
 }
 

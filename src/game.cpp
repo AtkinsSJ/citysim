@@ -471,7 +471,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	s32 toolbarBottom = 64;
 
 	Rect2I uiRect = irectXYWH(0,0, windowWidth, toolbarBottom);
-	addUIRect(uiState, uiRect);
+	UI::addUIRect(uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
 	uiText(uiBuffer, font, city->name,
@@ -761,18 +761,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 	}
 
 	V2I mouseTilePos = v2i(worldCamera->mousePos);
-	bool mouseIsOverUI = UI::isMouseInputHandled();
-	if (!mouseIsOverUI)
-	{
-		for (auto it = uiState->uiRects.iterate(); it.hasNext(); it.next())
-		{
-			if (contains(it.getValue(), uiCamera->mousePos))
-			{
-				mouseIsOverUI = true;
-				break;
-			}
-		}
-	}
+	bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects(uiCamera->mousePos);
 
 	city->demolitionRect = irectNegativeInfinity();
 
