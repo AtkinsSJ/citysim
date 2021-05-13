@@ -145,8 +145,6 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8 *data, FileBlobCompressionS
 				else
 				{
 					// This is literals!
-					WriteBufferRange literalCount = buffer.reserve<s8>();
-
 					s32 literalLength = 0;
 
 					// We detect the end of the literals by repeatedly testing if the next bytes are a run

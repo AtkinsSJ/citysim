@@ -300,22 +300,22 @@ int main(int argc, char *argv[])
 
 
 	// TEST STUFF
-#if 0
-	Set<s32> test;
-	initSet(&test, tempArena);
-	test.add(101);
-	test.add(101);
-	test.add(73);
-	test.add(34);
-	test.add(999);
-	test.add(34);
-
-	Array<s32> testArray = test.asSortedArray();
-	for (s32 i=0; i < testArray.count; i++)
+#if 1
+	BinaryFileWriter test = startWritingFile(SAV_FILE_ID, BINARY_FILE_FORMAT_VERSION, tempArena);
+	test.addTOCEntry("TEST"_id);
+	struct TestSection
 	{
-		logInfo("Value #{0} = {1}"_s, {formatInt(i), formatInt(testArray[i])});
-	}
-
+		leU32 a;
+		leU32 b;
+		FileBlob data;
+	};
+	test.startSection<TestSection>("TEST"_id, 1);
+	TestSection ts = {};
+	ts.a = 123456789;
+	ts.b = 987654321;
+	String testBlob = "12212233313334444122155555122122188888888"_s;
+	ts.data = test.appendBlob(testBlob.length, (u8*)testBlob.chars, Blob_RLE_S8);
+	test.endSection(&ts);
 #endif
 
 	// GAME LOOP
