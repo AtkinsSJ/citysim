@@ -282,9 +282,8 @@ int main(int argc, char *argv[])
 	setCursor("default"_s);
 	setCursorVisible(true);
 
-	UIState uiState;
-	initUIState(&uiState, &appState->systemArena);
-	globalAppState.uiState = &uiState;
+	UI::init(&appState->systemArena);
+	globalAppState.uiState = &UI::uiState;
 
 	initSavedGamesCatalogue();
 
@@ -358,10 +357,9 @@ int main(int argc, char *argv[])
 			addSetCamera(&renderer->uiBuffer, uiCamera);
 
 			{
-				uiState.uiRects.clear();
-				uiState.mouseInputHandled = false;
+				UI::startFrame();
 				
-				updateAndRenderWindows(&uiState);
+				updateAndRenderWindows(&UI::uiState);
 				
 				AppStatus newAppStatus = appState->appStatus;
 
@@ -369,22 +367,22 @@ int main(int argc, char *argv[])
 				{
 					case AppStatus_MainMenu:
 					{
-						newAppStatus = updateAndRenderMainMenu(&uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderMainMenu(&UI::uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Credits:
 					{
-						newAppStatus = updateAndRenderCredits(&uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderCredits(&UI::uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_SettingsMenu:
 					{
-						newAppStatus = updateAndRenderSettingsMenu(&uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderSettingsMenu(&UI::uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Game:
 					{
-						newAppStatus = updateAndRenderGame(appState->gameState, &uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderGame(appState->gameState, &UI::uiState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Quit: break;
@@ -402,7 +400,7 @@ int main(int argc, char *argv[])
 					}
 
 					appState->appStatus = newAppStatus;
-					uiState.openWindows.clear();
+					UI::uiState.openWindows.clear();
 
 					// Initialise new state
 					if (appState->appStatus == AppStatus_SettingsMenu)
@@ -411,7 +409,7 @@ int main(int argc, char *argv[])
 					}
 				}
 
-				drawToast(&uiState);
+				UI::drawToast();
 			}
 
 

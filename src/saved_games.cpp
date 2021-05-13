@@ -253,7 +253,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 					{
 						showWindow(globalAppState.uiState, getText("title_overwrite_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmOverwriteSaveWindowProc);
 					}
-					else if (saveGame(globalAppState.uiState, inputName))
+					else if (saveGame(inputName))
 					{
 						context->closeRequested = true;
 					}
@@ -271,7 +271,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			bottomBar.alignWidgets(ALIGN_RIGHT);
 			if (bottomBar.addButton(getText("button_load"_s), selectedSavedGame ? Button_Normal : Button_Disabled))
 			{
-				loadGame(globalAppState.uiState, selectedSavedGame);
+				loadGame(selectedSavedGame);
 				context->closeRequested = true;
 			}
 		}
@@ -290,7 +290,7 @@ void confirmOverwriteSaveWindowProc(WindowContext *context, void * /*userData*/)
 
 	if (ui->addButton(getText("button_overwrite"_s), Button_Normal, "delete"_s))
 	{
-		saveGame(globalAppState.uiState, inputName);
+		saveGame(inputName);
 		context->closeRequested = true;
 	}
 
@@ -311,7 +311,7 @@ void confirmDeleteSaveWindowProc(WindowContext *context, void * /*userData*/)
 
 	if (ui->addButton(getText("button_delete"_s), Button_Normal, "delete"_s))
 	{
-		deleteSave(globalAppState.uiState, savedGame);
+		deleteSave(savedGame);
 		context->closeRequested = true;
 	}
 
@@ -321,7 +321,7 @@ void confirmDeleteSaveWindowProc(WindowContext *context, void * /*userData*/)
 	}
 }
 
-void loadGame(UIState *uiState, SavedGameInfo *savedGame)
+void loadGame(SavedGameInfo *savedGame)
 {
 	if (globalAppState.gameState != null)
 	{
@@ -342,7 +342,7 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 		u32 endTicks = SDL_GetTicks();
 		logInfo("Loaded save '{0}' in {1} milliseconds."_s, {savedGame->shortName, formatInt(endTicks - startTicks)});
 
-		pushToast(uiState, getText("msg_load_success"_s, {savedGame->shortName}));
+		UI::pushToast(getText("msg_load_success"_s, {savedGame->shortName}));
 
 		globalAppState.appStatus = AppStatus_Game;
 
@@ -353,11 +353,11 @@ void loadGame(UIState *uiState, SavedGameInfo *savedGame)
 	}
 	else
 	{
-		pushToast(uiState, getText("msg_load_failure"_s, {savedGame->shortName}));
+		UI::pushToast(getText("msg_load_failure"_s, {savedGame->shortName}));
 	}
 }
 
-bool saveGame(UIState *uiState, String saveName)
+bool saveGame(String saveName)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 
@@ -374,30 +374,30 @@ bool saveGame(UIState *uiState, String saveName)
 
 	if (saveSucceeded)
 	{
-		pushToast(uiState, getText("msg_save_success"_s, {saveFile.path}));
+		UI::pushToast(getText("msg_save_success"_s, {saveFile.path}));
 
 		// Store that we saved it
 		savedGamesCatalogue.activeSavedGameName = intern(&catalogue->stringsTable, saveName);
 	}
 	else
 	{
-		pushToast(uiState, getText("msg_save_failure"_s, {saveFile.path}));
+		UI::pushToast(getText("msg_save_failure"_s, {saveFile.path}));
 	}
 
 	return saveSucceeded;
 }
 
-bool deleteSave(UIState *uiState, SavedGameInfo *savedGame)
+bool deleteSave(SavedGameInfo *savedGame)
 {
 	bool success = deleteFile(savedGame->fullPath);
 
 	if (success)
 	{
-		pushToast(uiState, getText("msg_delete_save_success"_s, {savedGame->shortName}));
+		UI::pushToast(getText("msg_delete_save_success"_s, {savedGame->shortName}));
 	}
 	else
 	{
-		pushToast(uiState, getText("msg_delete_save_failure"_s, {savedGame->shortName}));
+		UI::pushToast(getText("msg_delete_save_failure"_s, {savedGame->shortName}));
 	}
 
 	return success;

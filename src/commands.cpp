@@ -208,8 +208,7 @@ ConsoleCommand(speed)
 
 ConsoleCommand(toast)
 {
-	UIState *uiState = globalAppState.uiState;
-	pushToast(uiState, arguments);
+	UI::pushToast(arguments);
 }
 
 ConsoleCommand(window_size)

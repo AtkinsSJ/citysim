@@ -219,9 +219,9 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 		if (doUpdate)
 		{
 			// Capture the input focus if we just clicked on this TextInput
-			if (justClickedOnUI(globalAppState.uiState, textInputBounds))
+			if (UI::justClickedOnUI(textInputBounds))
 			{
-				globalAppState.uiState->mouseInputHandled = true;
+				UI::markMouseInputHandled();
 				captureInput(textInput);
 				textInput->caretFlashCounter = 0;
 			}
@@ -519,8 +519,6 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 {
 	DEBUG_FUNCTION();
 
-	UIState *uiState = globalAppState.uiState;
-
 	AddButtonInternalResult result = {};
 
 	s32 buttonAlignment = this->widgetAlignment;
@@ -545,13 +543,13 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 		{
 			backgroundStyle = &buttonStyle->disabledBackground;
 		}
-		else if (!uiState->mouseInputHandled && isMouseInUIBounds(uiState, buttonBounds))
+		else if (!UI::isMouseInputHandled() && UI::isMouseInUIBounds(buttonBounds))
 		{
 			// Mouse pressed: must have started and currently be inside the bounds to show anything
 			// Mouse unpressed: show hover if in bounds
 			if (mouseButtonPressed(MouseButton_Left))
 			{
-				if (isMouseInUIBounds(uiState, buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+				if (UI::isMouseInUIBounds(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 				{
 					backgroundStyle = &buttonStyle->pressedBackground;
 				}
@@ -572,10 +570,10 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 	if (doUpdate)
 	{
 		if ((state != Button_Disabled)
-		 && justClickedOnUI(uiState, buttonBounds))
+		 && UI::justClickedOnUI(buttonBounds))
 		{
 			result.wasClicked = true;
-			uiState->mouseInputHandled = true;
+			UI::markMouseInputHandled();
 		}
 	}
 

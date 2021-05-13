@@ -47,9 +47,9 @@ void initSavedGamesCatalogue();
 void updateSavedGamesCatalogue();
 void readSavedGamesInfo(SavedGamesCatalogue *catalogue);
 
-bool saveGame(UIState *uiState, String saveName);
-void loadGame(UIState *uiState, SavedGameInfo *savedGame);
-bool deleteSave(UIState *uiState, SavedGameInfo *savedGame);
+bool saveGame(String saveName);
+void loadGame(SavedGameInfo *savedGame);
+bool deleteSave(SavedGameInfo *savedGame);
 
 void showSaveGameWindow(UIState *uiState);
 void showLoadGameWindow(UIState *uiState);

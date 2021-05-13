@@ -87,12 +87,6 @@ struct WindowContext;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
-void initUIState(UIState *uiState, MemoryArena *arena);
-
-bool isMouseInUIBounds(UIState *uiState, Rect2I bounds);
-bool isMouseInUIBounds(UIState *uiState, Rect2I bounds, V2 mousePos);
-bool justClickedOnUI(UIState *uiState, Rect2I bounds);
-
 void pushInputScissorRect(UIState *uiState, Rect2I bounds);
 void popInputScissorRect(UIState *uiState);
 bool isInputScissorActive(UIState *uiState);
@@ -107,10 +101,6 @@ V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 
 V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
 bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-
-// NB: `message` is copied into the UIState, so it can be a temporary allocation
-void pushToast(UIState *uiState, String message);
-void drawToast(UIState *uiState);
 
 void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
 // NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
@@ -127,3 +117,23 @@ void showMenu(UIState *uiState, s32 menuID);
 void hideMenus(UIState *uiState);
 void toggleMenuVisible(UIState *uiState, s32 menuID);
 bool isMenuVisible(UIState *uiState, s32 menuID);
+
+namespace UI
+{
+	UIState uiState;
+
+	void init(MemoryArena *arena);
+	void startFrame();
+
+	// Input
+	bool isMouseInputHandled();
+	void markMouseInputHandled();
+	bool isMouseInUIBounds(Rect2I bounds);
+	bool isMouseInUIBounds(Rect2I bounds, V2 mousePos);
+	bool justClickedOnUI(Rect2I bounds);
+
+	// Toasts
+	// NB: `message` is copied into the UIState, so it can be a temporary allocation
+	void pushToast(String message);
+	void drawToast();
+}

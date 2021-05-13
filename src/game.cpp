@@ -761,7 +761,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 	}
 
 	V2I mouseTilePos = v2i(worldCamera->mousePos);
-	bool mouseIsOverUI = uiState->mouseInputHandled;
+	bool mouseIsOverUI = UI::isMouseInputHandled();
 	if (!mouseIsOverUI)
 	{
 		for (auto it = uiState->uiRects.iterate(); it.hasNext(); it.next())
@@ -834,7 +834,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 								}
 								else
 								{
-									pushToast(uiState, getText("msg_cannot_afford_construction"_s));
+									UI::pushToast(getText("msg_cannot_afford_construction"_s));
 								}
 							} break;
 
@@ -928,7 +928,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 						}
 						else
 						{
-							pushToast(uiState, getText("msg_cannot_afford_demolition"_s));
+							UI::pushToast(getText("msg_cannot_afford_demolition"_s));
 						}
 					} break;
 

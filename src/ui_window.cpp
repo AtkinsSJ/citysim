@@ -209,7 +209,7 @@ void updateAndRenderWindows(UIState *uiState)
 				window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
 			}
 			
-			uiState->mouseInputHandled = true;
+			UI::markMouseInputHandled();
 		}
 		else if (isTooltip)
 		{
@@ -295,13 +295,13 @@ void updateAndRenderWindows(UIState *uiState)
 			uiText(window->renderBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor);
 
 			if (hoveringOverCloseButton
-			 && (!uiState->mouseInputHandled || windowIndex == 0))
+			 && (!UI::isMouseInputHandled() || windowIndex == 0))
 			{
 				drawSingleRect(window->renderBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
 			}
 			uiText(window->renderBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, windowStyle->titleColor);
 
-			if ((!uiState->mouseInputHandled || windowIndex == 0)
+			if ((!UI::isMouseInputHandled() || windowIndex == 0)
 				 && contains(wholeWindowArea, mousePos)
 				 && mouseButtonJustPressed(MouseButton_Left))
 			{
@@ -326,7 +326,7 @@ void updateAndRenderWindows(UIState *uiState)
 				// Tooltips don't take mouse input
 				if (!isTooltip)
 				{
-					uiState->mouseInputHandled = true;
+					UI::markMouseInputHandled();
 				}
 			}
 		}
@@ -334,7 +334,7 @@ void updateAndRenderWindows(UIState *uiState)
 		// Prevent anything behind a modal window from interacting with the mouse
 		if (isModal)
 		{
-			uiState->mouseInputHandled = true; 
+			UI::markMouseInputHandled(); 
 		}
 		// Prevent anything behind this window from interacting with the mouse
 		else if (contains(wholeWindowArea, mousePos))
@@ -342,7 +342,7 @@ void updateAndRenderWindows(UIState *uiState)
 			// Tooltips don't take mouse input
 			if (!isTooltip)
 			{
-				uiState->mouseInputHandled = true;
+				UI::markMouseInputHandled();
 			}
 		}
 

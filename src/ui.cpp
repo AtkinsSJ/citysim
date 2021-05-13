@@ -4,49 +4,6 @@
 #include "ui_panel.cpp"
 #include "ui_window.cpp"
 
-void initUIState(UIState *uiState, MemoryArena *arena)
-{
-	*uiState = {};
-
-	initChunkedArray(&uiState->uiRects, arena, 64);
-	initStack(&uiState->inputScissorRects, arena);
-
-	initQueue(&uiState->toasts, arena);
-
-	initChunkedArray(&uiState->openWindows, arena, 64);
-	initSet(&uiState->windowsToClose, arena);
-	initSet(&uiState->windowsToMakeActive, arena);
-
-	initScrollbar(&uiState->openMenuScrollbar, false);
-}
-
-inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds)
-{
-	return isMouseInUIBounds(uiState, bounds, renderer->uiCamera.mousePos);
-}
-
-inline bool isMouseInUIBounds(UIState *uiState, Rect2I bounds, V2 mousePos)
-{
-	Rect2I clippedBounds = isInputScissorActive(uiState) ? intersect(bounds, getInputScissorRect(uiState)) : bounds;
-
-	bool result = contains(clippedBounds, mousePos);
-
-	return result;
-}
-
-inline bool justClickedOnUI(UIState *uiState, Rect2I bounds)
-{
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
-	Rect2I clippedBounds = isInputScissorActive(uiState) ? intersect(bounds, getInputScissorRect(uiState)) : bounds;
-
-	bool result = !uiState->mouseInputHandled
-			   && contains(clippedBounds, mousePos)
-			   && mouseButtonJustReleased(MouseButton_Left)
-			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
-
-	return result;
-}
-
 inline void pushInputScissorRect(UIState *uiState, Rect2I bounds)
 {
 	push(&uiState->inputScissorRects, bounds);
@@ -186,15 +143,15 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 	{
 		backgroundStyle = &style->disabledBackground;
 	}
-	else if (!uiState->mouseInputHandled && isMouseInUIBounds(uiState, bounds))
+	else if (!UI::isMouseInputHandled() && UI::isMouseInUIBounds(bounds))
 	{
-		uiState->mouseInputHandled = true;
+		UI::markMouseInputHandled();
 
 		// Mouse pressed: must have started and currently be inside the bounds to show anything
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(MouseButton_Left))
 		{
-			if (isMouseInUIBounds(uiState, bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			if (UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				backgroundStyle = &style->pressedBackground;
 			}
@@ -202,7 +159,7 @@ bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style
 		else
 		{
 			if (mouseButtonJustReleased(MouseButton_Left)
-			 && isMouseInUIBounds(uiState, bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			 && UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 			}
@@ -260,67 +217,6 @@ bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIBu
 	}
 
 	return currentlyOpen;
-}
-
-void pushToast(UIState *uiState, String message)
-{
-	Toast *newToast = uiState->toasts.push();
-
-	*newToast = {};
-	newToast->text = makeString(newToast->_chars, MAX_TOAST_LENGTH);
-	copyString(message, &newToast->text);
-
-	newToast->duration = TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME + TOAST_DISAPPEAR_TIME;
-	newToast->time = 0;
-}
-
-void drawToast(UIState *uiState)
-{
-	DEBUG_FUNCTION();
-
-	Maybe<Toast*> currentToast = uiState->toasts.peek();
-	if (currentToast.isValid)
-	{
-		Toast *toast = currentToast.value;
-
-		toast->time += globalAppState.deltaTime;
-
-		if (toast->time >= toast->duration)
-		{
-			uiState->toasts.pop();
-		}
-		else
-		{
-			UIPanelStyle *style = findStyle<UIPanelStyle>("toast"_s);
-			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
-
-			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
-			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
-			V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (2 * style->margin));
-
-			V2I toastSize = v2i(textSize.x + (2 * style->margin), textSize.y + (2 * style->margin));
-
-			f32 animationDistance = toastSize.y + 16.0f;
-
-			if (toast->time < TOAST_APPEAR_TIME)
-			{
-				// Animate in
-				f32 t = toast->time / TOAST_APPEAR_TIME;
-				origin.y += round_s32(interpolate(animationDistance, 0, t, Interpolate_SineOut));
-			}
-			else if (toast->time > (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME))
-			{
-				// Animate out
-				f32 t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
-				origin.y += round_s32(interpolate(0, animationDistance, t, Interpolate_SineIn));
-			}
-			Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
-
-			UIPanel panel = UIPanel(toastBounds, style);
-			panel.addText(toast->text);
-			panel.end();
-		}
-	}
 }
 
 void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize)
@@ -396,7 +292,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 			style = findStyle<UIScrollbarStyle>("default"_s);
 		}
 
-		if (!uiState->mouseInputHandled)
+		if (!UI::isMouseInputHandled())
 		{
 			Maybe<Rect2I> thumb = getScrollbarThumbBounds(state, bounds, style);
 			if (thumb.isValid)
@@ -424,7 +320,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 					V2 clickStartPos = getClickStartPos(MouseButton_Left, &renderer->uiCamera);
 					V2I mousePos = v2i(renderer->uiCamera.mousePos);
 
-					if (isMouseInUIBounds(uiState, bounds, clickStartPos))
+					if (UI::isMouseInUIBounds(bounds, clickStartPos))
 					{
 						// If we are dragging the thumb, move it
 						if (state->isDraggingThumb)
@@ -444,7 +340,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 							state->scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
 						}
 						// Else, if we clicked on the thumb, begin dragging
-						else if (mouseButtonJustPressed(MouseButton_Left) && isMouseInUIBounds(uiState, thumbBounds, clickStartPos))
+						else if (mouseButtonJustPressed(MouseButton_Left) && UI::isMouseInUIBounds(thumbBounds, clickStartPos))
 						{
 							state->isDraggingThumb = true;
 							state->thumbDragStartPercent = state->scrollPercent;
@@ -457,7 +353,7 @@ void updateScrollbar(UIState *uiState, ScrollbarState *state, s32 contentSize, R
 							state->scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
 						}
 
-						uiState->mouseInputHandled = true;
+						UI::markMouseInputHandled();
 					}
 				}
 				else
@@ -519,4 +415,124 @@ inline void toggleMenuVisible(UIState *uiState, s32 menuID)
 inline bool isMenuVisible(UIState *uiState, s32 menuID)
 {
 	return (uiState->openMenu == menuID);
+}
+
+void UI::init(MemoryArena *arena)
+{
+	uiState = {};
+
+	initChunkedArray(&uiState.uiRects, arena, 64);
+	initStack(&uiState.inputScissorRects, arena);
+
+	initQueue(&uiState.toasts, arena);
+
+	initChunkedArray(&uiState.openWindows, arena, 64);
+	initSet(&uiState.windowsToClose, arena);
+	initSet(&uiState.windowsToMakeActive, arena);
+
+	initScrollbar(&uiState.openMenuScrollbar, false);
+}
+
+void UI::startFrame()
+{
+	uiState.uiRects.clear();
+	uiState.mouseInputHandled = false;
+}
+
+inline bool UI::isMouseInputHandled()
+{
+	return uiState.mouseInputHandled;
+}
+
+inline void UI::markMouseInputHandled()
+{
+	uiState.mouseInputHandled = true;
+}
+
+inline bool UI::isMouseInUIBounds(Rect2I bounds)
+{
+	return isMouseInUIBounds(bounds, renderer->uiCamera.mousePos);
+}
+
+inline bool UI::isMouseInUIBounds(Rect2I bounds, V2 mousePos)
+{
+	Rect2I clippedBounds = isInputScissorActive(&uiState) ? intersect(bounds, getInputScissorRect(&uiState)) : bounds;
+
+	bool result = contains(clippedBounds, mousePos);
+
+	return result;
+}
+
+inline bool UI::justClickedOnUI(Rect2I bounds)
+{
+	V2I mousePos = v2i(renderer->uiCamera.mousePos);
+	Rect2I clippedBounds = isInputScissorActive(&uiState) ? intersect(bounds, getInputScissorRect(&uiState)) : bounds;
+
+	bool result = !UI::isMouseInputHandled()
+			   && contains(clippedBounds, mousePos)
+			   && mouseButtonJustReleased(MouseButton_Left)
+			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+
+	return result;
+}
+
+void UI::pushToast(String message)
+{
+	Toast *newToast = uiState.toasts.push();
+
+	*newToast = {};
+	newToast->text = makeString(newToast->_chars, MAX_TOAST_LENGTH);
+	copyString(message, &newToast->text);
+
+	newToast->duration = TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME + TOAST_DISAPPEAR_TIME;
+	newToast->time = 0;
+}
+
+void UI::drawToast()
+{
+	DEBUG_FUNCTION();
+
+	Maybe<Toast*> currentToast = uiState.toasts.peek();
+	if (currentToast.isValid)
+	{
+		Toast *toast = currentToast.value;
+
+		toast->time += globalAppState.deltaTime;
+
+		if (toast->time >= toast->duration)
+		{
+			uiState.toasts.pop();
+		}
+		else
+		{
+			UIPanelStyle *style = findStyle<UIPanelStyle>("toast"_s);
+			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
+
+			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
+			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
+			V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (2 * style->margin));
+
+			V2I toastSize = v2i(textSize.x + (2 * style->margin), textSize.y + (2 * style->margin));
+
+			f32 animationDistance = toastSize.y + 16.0f;
+
+			if (toast->time < TOAST_APPEAR_TIME)
+			{
+				// Animate in
+				f32 t = toast->time / TOAST_APPEAR_TIME;
+				origin.y += round_s32(interpolate(animationDistance, 0, t, Interpolate_SineOut));
+			}
+			else if (toast->time > (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME))
+			{
+				// Animate out
+				f32 t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
+				origin.y += round_s32(interpolate(0, animationDistance, t, Interpolate_SineIn));
+			}
+			Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
+
+			UIPanel panel = UIPanel(toastBounds, style);
+			panel.addText(toast->text);
+			panel.end();
+		}
+	}
 }

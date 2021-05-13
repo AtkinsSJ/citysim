@@ -18,8 +18,8 @@ Notes for searching:
 
 ------------------------------------------------
 
-Sort out the UIState nonsense
-- If we have to keep it (and I think we do) at least remove it from function calls. It just makes a mess.
+Sort out the UIState nonsense: Putting things in a UI namespace
+- Audit all uses of UIState*
 
 Window system:
 - Function to detect if a window is open
