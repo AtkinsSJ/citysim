@@ -6,9 +6,8 @@
 // AKA, I messed up.
 struct WindowContext
 {
-	WindowContext(struct Window *window, struct UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender, RenderBuffer *renderBuffer);
+	WindowContext(struct Window *window, struct UIWindowStyle *windowStyle, bool doUpdate, bool doRender, RenderBuffer *renderBuffer);
 
-	UIState *uiState;
 	Window *window;
 	UIWindowStyle *windowStyle;
 

@@ -1,9 +1,8 @@
 #pragma once
 
-WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState *uiState, bool doUpdate, bool doRender, RenderBuffer *renderBuffer)
+WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, bool doUpdate, bool doRender, RenderBuffer *renderBuffer)
 	: window(window),
 	  windowStyle(windowStyle),
-	  uiState(uiState),
 	  doUpdate(doUpdate),
 	  doRender(doRender),
 	  renderBuffer(renderBuffer),
@@ -172,7 +171,7 @@ void UI::updateAndRenderWindows()
 		{
 			window->isInitialised = true;
 
-			WindowContext context = WindowContext(window, windowStyle, &uiState, false, false, null);
+			WindowContext context = WindowContext(window, windowStyle, false, false, null);
 			window->windowProc(&context, window->userData);
 			context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -248,7 +247,7 @@ void UI::updateAndRenderWindows()
 		}
 
 		// Actually run the window proc
-		WindowContext context = WindowContext(window, windowStyle, &uiState, true, true, window->renderBuffer);
+		WindowContext context = WindowContext(window, windowStyle, true, true, window->renderBuffer);
 		window->windowProc(&context, window->userData);
 		context.windowPanel.end(shrinkHeight, shrinkWidth);
 

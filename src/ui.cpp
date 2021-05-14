@@ -553,5 +553,5 @@ void UI::showTooltip(WindowProc tooltipProc, void *userData)
 void UI::basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 {
 	UIPanel *ui = &context->windowPanel;
-	ui->addText(context->uiState->tooltipText);
+	ui->addText(uiState.tooltipText);
 }
