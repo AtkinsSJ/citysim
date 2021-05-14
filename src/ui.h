@@ -54,6 +54,7 @@ inline ButtonState buttonIsActive(bool isActive)
 struct RenderBuffer;
 struct BitmapFont;
 struct UIButtonStyle;
+struct UICheckboxStyle;
 struct UIPanel;
 struct UIPanelStyle;
 struct UIScrollbarStyle;
@@ -131,6 +132,10 @@ namespace UI
 	V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
 	bool putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 	bool putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+
+	// Checkboxes
+	V2I calculateCheckboxSize(UICheckboxStyle *checkboxStyle);
+	void putCheckbox(bool *checked, UICheckboxStyle *checkboxStyle);
 
 	// Menus
 	void showMenu(s32 menuID);

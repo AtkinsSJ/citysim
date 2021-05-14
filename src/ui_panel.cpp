@@ -43,6 +43,8 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffe
 	this->largestLineWidth = 0;
 
 	this->background = UIDrawable(&this->style->background);
+
+	ASSERT(this->doUpdate && this->doRender);
 }
 
 void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
@@ -142,7 +144,10 @@ void UIPanel::addCheckbox(bool *checked, String styleName)
 
 	UICheckboxStyle *checkboxStyle = findStyle<UICheckboxStyle>(styleName, &this->style->checkboxStyle);
 
-	
+	Rect2I space = getCurrentLayoutPosition();
+	// V2I checkboxBounds = UI::calculateCheckboxSize(checkboxStyle);
+
+
 }
 
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
