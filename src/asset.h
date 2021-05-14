@@ -21,6 +21,7 @@ enum AssetType
 	AssetType_UITheme,
 
 	AssetType_ButtonStyle,
+	AssetType_CheckboxStyle,
 	AssetType_ConsoleStyle,
 	AssetType_LabelStyle,
 	AssetType_PanelStyle,
@@ -272,6 +273,7 @@ struct Asset
 		Texture texture;
 
 		UIButtonStyle    buttonStyle;
+		UICheckboxStyle  checkboxStyle;
 		UIConsoleStyle   consoleStyle;
 		UILabelStyle     labelStyle;
 		UIPanelStyle     panelStyle;

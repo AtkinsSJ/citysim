@@ -67,7 +67,6 @@ void loadSettingsFile(String name, Blob settingsData)
 		else
 		{
 			SettingDef *def = maybeDef.value;
-			u8* firstItem = ((u8*)(&settings->settings)) + def->offsetWithinSettingsState;
 
 			for (s32 i=0; i < def->count; i++)
 			{
@@ -78,7 +77,7 @@ void loadSettingsFile(String name, Blob settingsData)
 						Maybe<bool> value = readBool(&reader);
 						if (value.isValid)
 						{
-							((bool *)firstItem)[i] = value.value;
+							setSettingData<bool>(&settings->settings, def, value.value, i);
 						}
 					} break;
 
@@ -87,13 +86,14 @@ void loadSettingsFile(String name, Blob settingsData)
 						Maybe<s32> value = readInt<s32>(&reader);
 						if (value.isValid)
 						{
-							((s32 *)firstItem)[i] = value.value;
+							setSettingData<s32>(&settings->settings, def, value.value, i);
 						}
 					} break;
 
 					case Type_String:
 					{
-						((String *)firstItem)[i] = pushString(&settings->settingsArena, readToken(&reader));
+						String value = pushString(&settings->settingsArena, readToken(&reader));
+						setSettingData<String>(&settings->settings, def, value, i);
 					} break;
 
 					default: ASSERT(false); //Unhandled setting type!
@@ -129,8 +129,6 @@ String settingToString(SettingsState *state, SettingDef *def)
 {
 	StringBuilder stb = newStringBuilder(256);
 
-	u8* firstItem = ((u8*) state) + def->offsetWithinSettingsState;
-
 	for (s32 i=0; i < def->count; i++)
 	{
 		if (i > 0) append(&stb, ' ');
@@ -139,17 +137,17 @@ String settingToString(SettingsState *state, SettingDef *def)
 		{
 			case Type_bool:
 			{
-				append(&stb, formatBool(((bool *)firstItem)[i]));
+				append(&stb, formatBool(getSettingData<bool>(state, def, i)));
 			} break;
 
 			case Type_s32:
 			{
-				append(&stb, formatInt(((s32 *)firstItem)[i]));
+				append(&stb, formatInt(getSettingData<s32>(state, def, i)));
 			} break;
 
 			case Type_String:
 			{
-				append(&stb, ((String *)firstItem)[i]);
+				append(&stb, getSettingData<String>(state, def, i));
 			} break;
 
 			default: ASSERT(false); //Unhandled setting type!
@@ -213,7 +211,7 @@ void showSettingsWindow()
 {
 	settings->workingState = settings->settings;
 
-	UI::showWindow(getText("title_settings"_s), 600, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_AutomaticHeight|WinFlag_Modal, settingsWindowProc);
+	UI::showWindow(getText("title_settings"_s), 480, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_AutomaticHeight|WinFlag_Modal, settingsWindowProc);
 }
 
 void settingsWindowProc(WindowContext *context, void*)
@@ -230,7 +228,18 @@ void settingsWindowProc(WindowContext *context, void*)
 
 		ui->startNewLine(ALIGN_LEFT);
 		ui->addText(name);
-		ui->addText(settingToString(&settings->workingState, def));
+		
+		ui->alignWidgets(ALIGN_RIGHT);
+		switch (def->type)
+		{
+			case Type_bool: {
+				ui->addCheckbox(getSettingDataRaw<bool>(&settings->workingState, def));
+			} break;
+
+			default: {
+				ui->addText(settingToString(&settings->workingState, def));
+			} break;
+		}
 	}
 
 	ui->startNewLine(ALIGN_LEFT);
@@ -249,4 +258,23 @@ void settingsWindowProc(WindowContext *context, void*)
 		applySettings();
 		context->closeRequested = true;
 	}
+}
+
+template <typename T>
+T *getSettingDataRaw(SettingsState *state, SettingDef *def, s32 index)
+{
+	T *firstItem = (T*)((u8*)(state) + def->offsetWithinSettingsState);
+	return firstItem + index;
+}
+
+template <typename T>
+inline T getSettingData(SettingsState *state, SettingDef *def, s32 index)
+{
+	return *getSettingDataRaw<T>(state, def, index);
+}
+
+template <typename T>
+inline void setSettingData(SettingsState *state, SettingDef *def, T value, s32 index)
+{
+	*getSettingDataRaw<T>(state, def, index) = value;
 }

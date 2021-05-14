@@ -134,6 +134,17 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 	return buttonResult.wasClicked;
 }
 
+void UIPanel::addCheckbox(bool *checked, String styleName)
+{
+	DEBUG_FUNCTION();
+
+	prepareForWidgets();
+
+	UICheckboxStyle *checkboxStyle = findStyle<UICheckboxStyle>(styleName, &this->style->checkboxStyle);
+
+	
+}
+
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 {
 	DEBUG_FUNCTION();

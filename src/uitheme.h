@@ -46,6 +46,23 @@ struct UIButtonStyle
 	s32 padding;
 };
 
+struct UICheckboxStyle
+{
+	String name;
+
+	UIDrawableStyle checkImage;
+	UIDrawableStyle hoverCheckImage;
+	UIDrawableStyle pressedCheckImage;
+	UIDrawableStyle disabledCheckImage;
+
+	UIDrawableStyle background;
+	UIDrawableStyle hoverBackground;
+	UIDrawableStyle pressedBackground;
+	UIDrawableStyle disabledBackground;
+
+	s32 padding;
+};
+
 enum ConsoleLineStyleID
 {
 	CLS_Default,
@@ -90,6 +107,7 @@ struct UIPanelStyle
 	UIDrawableStyle background;
 
 	AssetRef buttonStyle;
+	AssetRef checkboxStyle;
 	AssetRef labelStyle;
 	AssetRef scrollbarStyle;
 	AssetRef textInputStyle;
@@ -156,38 +174,50 @@ struct UIStyle
 	String name;
 
 	// PROPERTIES
+	s32 padding;
+	s32 contentPadding;
+	s32 margin;
+	V2I offsetFromMouse;
+	s32 width;
+	u32 widgetAlignment;
 
 	UIDrawableStyle background;
 	UIDrawableStyle disabledBackground;
 	UIDrawableStyle hoverBackground;
 	UIDrawableStyle pressedBackground;
 
-	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
 	String buttonStyle;
-	f32 caretFlashCycleDuration;
-	u32 widgetAlignment;
-	s32 contentPadding;
-	AssetRef font;
-	UIDrawableStyle thumb;
+	String checkboxStyle;
 	String labelStyle;
-	s32 margin;
-	V2I offsetFromMouse;
-	V4 overlayColor;
-	V4 outputTextColor[CLS_COUNT];
-	s32 padding;
 	String panelStyle;
 	String scrollbarStyle;
+	String textInputStyle;
+
+	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
+	
 	bool showCaret;
+	f32 caretFlashCycleDuration;
+	UIDrawableStyle thumb;
+	
+	V4 overlayColor;
+	V4 outputTextColor[CLS_COUNT];
+
+	AssetRef font;
 	u32 textAlignment;
 	V4 textColor;
-	String textInputStyle;
+	
 	V4 titleBarButtonHoverColor;
 	V4 titleBarColor;
 	V4 titleBarColorInactive;
 	s32 titleBarHeight;
 	V4 titleColor;
 	AssetRef titleFont;
-	s32 width;
+
+	// Checkbox specific
+	UIDrawableStyle checkImage;
+	UIDrawableStyle hoverCheckImage;
+	UIDrawableStyle pressedCheckImage;
+	UIDrawableStyle disabledCheckImage;
 };
 
 struct UIProperty
@@ -218,6 +248,7 @@ inline T* findStyle(String styleName, AssetRef *defaultStyle)
 template <typename T>
 T* findStyle(String styleName);
 template <> UIButtonStyle    *findStyle<UIButtonStyle>   (String styleName);
+template <> UICheckboxStyle  *findStyle<UICheckboxStyle> (String styleName);
 template <> UIConsoleStyle   *findStyle<UIConsoleStyle>  (String styleName);
 template <> UILabelStyle     *findStyle<UILabelStyle>    (String styleName);
 template <> UIPanelStyle     *findStyle<UIPanelStyle>    (String styleName);

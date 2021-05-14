@@ -82,11 +82,12 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 void initUIStyleProperties()
 {
 	initHashTable(&uiStyleProperties, 0.75f, 256);
-	#define PROP(name, _type, inButton, inConsole, inLabel, inPanel, inScrollbar, inTextInput, inWindow) {\
+	#define PROP(name, _type, inButton, inCheckbox, inConsole, inLabel, inPanel, inScrollbar, inTextInput, inWindow) {\
 		UIProperty property = {}; \
 		property.type = _type; \
 		property.offsetInStyleStruct = offsetof(UIStyle, name); \
 		property.existsInStyle[UIStyle_Button]    = inButton; \
+		property.existsInStyle[UIStyle_Checkbox]  = inCheckbox; \
 		property.existsInStyle[UIStyle_Console]   = inConsole; \
 		property.existsInStyle[UIStyle_Label]     = inLabel; \
 		property.existsInStyle[UIStyle_Panel]     = inPanel; \
@@ -96,34 +97,39 @@ void initUIStyleProperties()
 		uiStyleProperties.put(makeString(#name), property); \
 	}
 
-	//                                                    btn   cnsl  label  panel  scrll  txtin  windw
-	PROP(background,               PropType_Drawable,    true,  true, false,  true,  true,  true, false);
-	PROP(buttonStyle,       	   PropType_Style,      false, false, false,  true, false, false, false);
-	PROP(caretFlashCycleDuration,  PropType_Float,      false, false, false, false, false,  true, false);
-	PROP(widgetAlignment,          PropType_Alignment,  false, false, false,  true, false, false, false);
-	PROP(contentPadding,           PropType_Int,        false, false, false,  true, false, false, false);
-	PROP(disabledBackground,       PropType_Drawable,    true, false, false, false, false, false, false);
-	PROP(font,                     PropType_Font,        true,  true,  true, false, false,  true, false);
-	PROP(hoverBackground,          PropType_Drawable,    true, false, false, false, false, false, false);
-	PROP(labelStyle,        	   PropType_Style,      false, false, false,  true, false, false, false);
-	PROP(margin,                   PropType_Int,        false, false, false,  true, false, false, false);
-	PROP(offsetFromMouse,          PropType_V2I,        false, false, false, false, false, false,  true);
-	PROP(padding,                  PropType_Int,         true,  true, false, false, false,  true, false);
-	PROP(panelStyle,        	   PropType_Style,      false, false, false, false, false, false,  true);
-	PROP(pressedBackground,        PropType_Drawable,    true, false, false, false, false, false, false);
-	PROP(scrollbarStyle,    	   PropType_Style,      false,  true, false,  true, false, false, false);
-	PROP(showCaret,                PropType_Bool,       false, false, false, false, false,  true, false);
-	PROP(textAlignment,            PropType_Alignment,   true, false, false, false, false,  true, false);
-	PROP(textColor,                PropType_Color,       true, false,  true, false, false,  true, false);
-	PROP(textInputStyle,    	   PropType_Style,      false,  true, false,  true, false, false, false);
-	PROP(thumb,                    PropType_Drawable,   false, false, false, false,  true, false, false);
-	PROP(titleBarButtonHoverColor, PropType_Color,      false, false, false, false, false, false,  true);
-	PROP(titleBarColor,            PropType_Color,      false, false, false, false, false, false,  true);
-	PROP(titleBarColorInactive,    PropType_Color,      false, false, false, false, false, false,  true);
-	PROP(titleBarHeight,           PropType_Int,        false, false, false, false, false, false,  true);
-	PROP(titleColor,               PropType_Color,      false, false, false, false, false, false,  true);
-	PROP(titleFont,                PropType_Font,       false, false, false, false, false, false,  true);
-	PROP(width,                    PropType_Int,        false, false, false, false,  true, false, false);
+	//                                                    btn  chkbx  cnsl   label  panel  scrll  txtin  windw
+	PROP(background,               PropType_Drawable,    true,  true,  true, false,  true,  true,  true, false);
+	PROP(buttonStyle,       	   PropType_Style,      false, false, false, false,  true, false, false, false);
+	PROP(caretFlashCycleDuration,  PropType_Float,      false, false, false, false, false, false,  true, false);
+	PROP(checkImage,               PropType_Drawable,   false,  true, false, false, false, false, false, false);
+	PROP(checkboxStyle,            PropType_Style,      false, false, false, false,  true, false, false, false);
+	PROP(contentPadding,           PropType_Int,        false, false, false, false,  true, false, false, false);
+	PROP(disabledBackground,       PropType_Drawable,    true,  true, false, false, false, false, false, false);
+	PROP(disabledCheckImage,       PropType_Drawable,   false,  true, false, false, false, false, false, false);
+	PROP(font,                     PropType_Font,        true, false,  true,  true, false, false,  true, false);
+	PROP(hoverBackground,          PropType_Drawable,    true,  true, false, false, false, false, false, false);
+	PROP(hoverCheckImage,          PropType_Drawable,   false,  true, false, false, false, false, false, false);
+	PROP(labelStyle,        	   PropType_Style,      false, false, false, false,  true, false, false, false);
+	PROP(margin,                   PropType_Int,        false, false, false, false,  true, false, false, false);
+	PROP(offsetFromMouse,          PropType_V2I,        false, false, false, false, false, false, false,  true);
+	PROP(padding,                  PropType_Int,         true,  true,  true, false, false, false,  true, false);
+	PROP(panelStyle,        	   PropType_Style,      false, false, false, false, false, false, false,  true);
+	PROP(pressedBackground,        PropType_Drawable,    true,  true, false, false, false, false, false, false);
+	PROP(pressedCheckImage,        PropType_Drawable,   false,  true, false, false, false, false, false, false);
+	PROP(scrollbarStyle,    	   PropType_Style,      false, false,  true, false,  true, false, false, false);
+	PROP(showCaret,                PropType_Bool,       false, false, false, false, false, false,  true, false);
+	PROP(textAlignment,            PropType_Alignment,   true, false, false, false, false, false,  true, false);
+	PROP(textColor,                PropType_Color,       true, false, false,  true, false, false,  true, false);
+	PROP(textInputStyle,    	   PropType_Style,      false, false,  true, false,  true, false, false, false);
+	PROP(thumb,                    PropType_Drawable,   false, false, false, false, false,  true, false, false);
+	PROP(titleBarButtonHoverColor, PropType_Color,      false, false, false, false, false, false, false,  true);
+	PROP(titleBarColor,            PropType_Color,      false, false, false, false, false, false, false,  true);
+	PROP(titleBarColorInactive,    PropType_Color,      false, false, false, false, false, false, false,  true);
+	PROP(titleBarHeight,           PropType_Int,        false, false, false, false, false, false, false,  true);
+	PROP(titleColor,               PropType_Color,      false, false, false, false, false, false, false,  true);
+	PROP(titleFont,                PropType_Font,       false, false, false, false, false, false, false,  true);
+	PROP(widgetAlignment,          PropType_Alignment,  false, false, false, false,  true, false, false, false);
+	PROP(width,                    PropType_Int,        false, false, false, false, false,  true, false, false);
 
 	#undef PROP
 }
@@ -198,6 +204,14 @@ void loadUITheme(Blob data, Asset *asset)
 				target->name = name;
 				target->type = UIStyle_Button;
 				styleCount[UIStyle_Button]++;
+			}
+			else if (equals(firstWord, "Checkbox"_s))
+			{
+				String name = intern(&assets->assetStrings, readToken(&reader));
+				target = addStyle(&styles, name, UIStyle_Checkbox);
+				target->name = name;
+				target->type = UIStyle_Checkbox;
+				styleCount[UIStyle_Checkbox]++;
 			}
 			else if (equals(firstWord, "Console"_s))
 			{
@@ -459,6 +473,26 @@ void loadUITheme(Blob data, Asset *asset)
 						button->padding = style->padding;
 					} break;
 
+					case UIStyle_Checkbox: {
+						Asset *childAsset = addAsset(AssetType_CheckboxStyle, style->name, 0);
+						addChildAsset(asset, childAsset);
+
+						UICheckboxStyle *checkbox = &childAsset->checkboxStyle;
+						checkbox->name = style->name;
+
+						checkbox->checkImage = style->checkImage;
+						checkbox->hoverCheckImage = style->hoverCheckImage;
+						checkbox->pressedCheckImage = style->pressedCheckImage;
+						checkbox->disabledCheckImage = style->disabledCheckImage;
+
+						checkbox->background = style->background;
+						checkbox->hoverBackground = style->hoverBackground;
+						checkbox->pressedBackground = style->pressedBackground;
+						checkbox->disabledBackground = style->disabledBackground;
+
+						checkbox->padding = style->padding;
+					} break;
+
 					case UIStyle_Console: {
 						Asset *childAsset = addAsset(AssetType_ConsoleStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
@@ -499,8 +533,9 @@ void loadUITheme(Blob data, Asset *asset)
 						panel->widgetAlignment = style->widgetAlignment;
 						panel->background = style->background;
 
-						panel->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyle);
-						panel->labelStyle = getAssetRef(AssetType_LabelStyle, style->labelStyle);
+						panel->buttonStyle    = getAssetRef(AssetType_ButtonStyle, style->buttonStyle);
+						panel->checkboxStyle  = getAssetRef(AssetType_CheckboxStyle, style->checkboxStyle);
+						panel->labelStyle     = getAssetRef(AssetType_LabelStyle, style->labelStyle);
 						panel->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle);
 						panel->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
 					} break;
@@ -565,6 +600,7 @@ bool checkStyleMatchesType(AssetRef *reference)
 	switch (reference->type)
 	{
 		case AssetType_ButtonStyle: 	return (typeid(T*) == typeid(UIButtonStyle*));
+		case AssetType_CheckboxStyle: 	return (typeid(T*) == typeid(UICheckboxStyle*));
 		case AssetType_ConsoleStyle: 	return (typeid(T*) == typeid(UIConsoleStyle*));
 		case AssetType_LabelStyle: 	 	return (typeid(T*) == typeid(UILabelStyle*));
 		case AssetType_PanelStyle:      return (typeid(T*) == typeid(UIPanelStyle*));
@@ -595,6 +631,18 @@ template <> UIButtonStyle *findStyle<UIButtonStyle>(String styleName)
 	if (asset != null)
 	{
 		result = (UIButtonStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UICheckboxStyle *findStyle<UICheckboxStyle>(String styleName)
+{
+	UICheckboxStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_CheckboxStyle, styleName);
+	if (asset != null)
+	{
+		result = (UICheckboxStyle *)&asset->_localData;
 	}
 
 	return result;

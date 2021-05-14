@@ -67,6 +67,14 @@ void registerSetting(String settingName, smm offset, Type type, s32 count, Strin
 SettingsState makeDefaultSettings();
 void loadSettingsFile(String name, Blob settingsData);
 
+// Grab a setting. index is for multi-value settings, to specify the array index
+template <typename T>
+T *getSettingDataRaw(SettingsState *state, SettingDef *def, s32 index = 0);
+template <typename T>
+T getSettingData(SettingsState *state, SettingDef *def, s32 index = 0);
+template <typename T>
+void setSettingData(SettingsState *state, SettingDef *def, T value, s32 index = 0);
+
 String getUserDataPath();
 String getUserSettingsPath();
 String settingToString(SettingsState *state, SettingDef *def);

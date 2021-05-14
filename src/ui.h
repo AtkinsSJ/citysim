@@ -5,6 +5,7 @@ enum UIStyleType {
 	// NB: When changing this, make sure to change the lambdas in findStyle() to match!
 	UIStyle_None = 0,
 	UIStyle_Button = 1,
+	UIStyle_Checkbox,
 	UIStyle_Console,
 	UIStyle_Label,
 	UIStyle_Panel,
