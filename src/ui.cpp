@@ -4,158 +4,6 @@
 #include "ui_panel.cpp"
 #include "ui_window.cpp"
 
-V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
-{
-	s32 doublePadding = (buttonStyle->padding * 2);
-	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
-
-	V2I result = {};
-	BitmapFont *font = getFont(&buttonStyle->font);
-
-	if (textMaxWidth < 0)
-	{
-		// ERROR! Negative text width means we can't fit any so give up.
-		// (NB: 0 means "whatever", so we only worry if it's less than that.)
-		DEBUG_BREAK();
-
-		result.x = maxWidth;
-		result.y = font->lineHeight;
-	}
-	else
-	{
-		V2I textSize = calculateTextSize(font, text, textMaxWidth);
-
-		s32 resultWidth = 0;
-
-		if (fillWidth && (maxWidth > 0))
-		{
-			resultWidth = maxWidth;
-		}
-		else
-		{
-			resultWidth = (textSize.x + doublePadding);
-		}
-
-		result = v2i(resultWidth, textSize.y + doublePadding);
-	}
-
-	return result;
-}
-
-V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
-{
-	s32 doublePadding = (buttonStyle->padding * 2);
-
-	V2I result = {};
-
-	if (fillWidth && (maxWidth > 0))
-	{
-		result.x = maxWidth;
-	}
-	else
-	{
-		result.x = (contentSize.x + doublePadding);
-	}
-
-	result.y = contentSize.y + doublePadding;
-
-	return result;
-}
-
-bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, SDL_Keycode shortcutKey, String tooltip)
-{
-	DEBUG_FUNCTION();
-	
-	if (style == null)
-	{
-		style = findStyle<UIButtonStyle>("default"_s);
-	}
-	
-	bool buttonClicked = false;
-
-	UIDrawableStyle *backgroundStyle = &style->background;
-
-	u32 textAlignment = style->textAlignment;
-
-	if (state == Button_Disabled)
-	{
-		backgroundStyle = &style->disabledBackground;
-	}
-	else if (!UI::isMouseInputHandled() && UI::isMouseInUIBounds(bounds))
-	{
-		UI::markMouseInputHandled();
-
-		// Mouse pressed: must have started and currently be inside the bounds to show anything
-		// Mouse unpressed: show hover if in bounds
-		if (mouseButtonPressed(MouseButton_Left))
-		{
-			if (UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-			{
-				backgroundStyle = &style->pressedBackground;
-			}
-		}
-		else
-		{
-			if (mouseButtonJustReleased(MouseButton_Left)
-			 && UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-			{
-				buttonClicked = true;
-			}
-			backgroundStyle = &style->hoverBackground;
-		}
-
-		if (tooltip.length)
-		{
-			UI::showTooltip(tooltip);
-		}
-	}
-	else if (state == Button_Active)
-	{
-		backgroundStyle = &style->hoverBackground;
-	}
-
-	UIDrawable buttonBackground = UIDrawable(backgroundStyle);
-	buttonBackground.draw(&renderer->uiBuffer, bounds);
-
-	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	UI::drawText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
-
-	// Keyboard shortcut!
-	if (state != Button_Disabled
-	&& !isInputCaptured()
-	&& (shortcutKey != SDLK_UNKNOWN) && keyJustPressed(shortcutKey))
-	{
-		buttonClicked = true;
-	}
-
-	return buttonClicked;
-}
-
-bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey, String tooltip)
-{
-	DEBUG_FUNCTION();
-	
-	bool currentlyOpen = uiState->openMenu == menuID;
-	if (uiButton(uiState, text, bounds, style, buttonIsActive(currentlyOpen), shortcutKey, tooltip))
-	{
-		if (currentlyOpen)
-		{
-			uiState->openMenu = 0;
-			currentlyOpen = false;
-		}
-		else
-		{
-			// NB: Do all menu-state-initialisation here!
-			uiState->openMenu = menuID;
-			currentlyOpen = true;
-
-			uiState->openMenuScrollbar = {};
-		}
-	}
-
-	return currentlyOpen;
-}
-
 void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize)
 {
 	*state = {};
@@ -451,8 +299,158 @@ Rect2I UI::drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V
 	return bounds;
 }
 
+V2I UI::calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
+{
+	s32 doublePadding = (buttonStyle->padding * 2);
+	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
+
+	V2I result = {};
+	BitmapFont *font = getFont(&buttonStyle->font);
+
+	if (textMaxWidth < 0)
+	{
+		// ERROR! Negative text width means we can't fit any so give up.
+		// (NB: 0 means "whatever", so we only worry if it's less than that.)
+		DEBUG_BREAK();
+
+		result.x = maxWidth;
+		result.y = font->lineHeight;
+	}
+	else
+	{
+		V2I textSize = calculateTextSize(font, text, textMaxWidth);
+
+		s32 resultWidth = 0;
+
+		if (fillWidth && (maxWidth > 0))
+		{
+			resultWidth = maxWidth;
+		}
+		else
+		{
+			resultWidth = (textSize.x + doublePadding);
+		}
+
+		result = v2i(resultWidth, textSize.y + doublePadding);
+	}
+
+	return result;
+}
+
+V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
+{
+	s32 doublePadding = (buttonStyle->padding * 2);
+
+	V2I result = {};
+
+	if (fillWidth && (maxWidth > 0))
+	{
+		result.x = maxWidth;
+	}
+	else
+	{
+		result.x = (contentSize.x + doublePadding);
+	}
+
+	result.y = contentSize.y + doublePadding;
+
+	return result;
+}
+
+bool UI::putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, SDL_Keycode shortcutKey, String tooltip)
+{
+	DEBUG_FUNCTION();
+	
+	if (style == null)
+	{
+		style = findStyle<UIButtonStyle>("default"_s);
+	}
+	
+	bool buttonClicked = false;
+
+	UIDrawableStyle *backgroundStyle = &style->background;
+
+	u32 textAlignment = style->textAlignment;
+
+	if (state == Button_Disabled)
+	{
+		backgroundStyle = &style->disabledBackground;
+	}
+	else if (!UI::isMouseInputHandled() && UI::isMouseInUIBounds(bounds))
+	{
+		UI::markMouseInputHandled();
+
+		// Mouse pressed: must have started and currently be inside the bounds to show anything
+		// Mouse unpressed: show hover if in bounds
+		if (mouseButtonPressed(MouseButton_Left))
+		{
+			if (UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			{
+				backgroundStyle = &style->pressedBackground;
+			}
+		}
+		else
+		{
+			if (mouseButtonJustReleased(MouseButton_Left)
+			 && UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			{
+				buttonClicked = true;
+			}
+			backgroundStyle = &style->hoverBackground;
+		}
+
+		if (tooltip.length)
+		{
+			UI::showTooltip(tooltip);
+		}
+	}
+	else if (state == Button_Active)
+	{
+		backgroundStyle = &style->hoverBackground;
+	}
+
+	UIDrawable buttonBackground = UIDrawable(backgroundStyle);
+	buttonBackground.draw(&renderer->uiBuffer, bounds);
+
+	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
+	UI::drawText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
+
+	// Keyboard shortcut!
+	if (state != Button_Disabled
+	&& !isInputCaptured()
+	&& (shortcutKey != SDLK_UNKNOWN) && keyJustPressed(shortcutKey))
+	{
+		buttonClicked = true;
+	}
+
+	return buttonClicked;
+}
+
+bool UI::putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey, String tooltip)
+{
+	DEBUG_FUNCTION();
+	
+	bool currentlyOpen = uiState.openMenu == menuID;
+	if (putButton(text, bounds, style, buttonIsActive(currentlyOpen), shortcutKey, tooltip))
+	{
+		if (currentlyOpen)
+		{
+			hideMenus();
+			currentlyOpen = false;
+		}
+		else
+		{
+			showMenu(menuID);
+			currentlyOpen = true;
+		}
+	}
+
+	return currentlyOpen;
+}
+
 void UI::showMenu(s32 menuID)
 {
+	// NB: Do all menu-state-initialisation here!
 	uiState.openMenu = menuID;
 	uiState.openMenuScrollbar = {};
 }

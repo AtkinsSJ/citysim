@@ -214,7 +214,7 @@ void initSettingsMenu()
 	settings->workingState = settings->settings;
 }
 
-AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
+AppStatus updateAndRenderSettingsMenu(f32 /*deltaTime*/)
 {
 	AppStatus result = AppStatus_SettingsMenu;
 
@@ -251,9 +251,9 @@ AppStatus updateAndRenderSettingsMenu(UIState *uiState, f32 /*deltaTime*/)
 	UIButtonStyle *style = findStyle<UIButtonStyle>("default"_s);
 	s32 uiBorderPadding = 8;
 	String backText = getText("button_back"_s);
-	V2I backSize = calculateButtonSize(backText, style);
+	V2I backSize = UI::calculateButtonSize(backText, style);
 	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
-	if (uiButton(uiState, backText, buttonRect, style, Button_Normal, SDLK_ESCAPE))
+	if (UI::putButton(backText, buttonRect, style, Button_Normal, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

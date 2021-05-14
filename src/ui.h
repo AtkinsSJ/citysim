@@ -87,11 +87,6 @@ struct WindowContext;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
-V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
-V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
-bool uiButton(UIState *uiState, String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-bool uiMenuButton(UIState *uiState, String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-
 void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
 // NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
 Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
@@ -128,8 +123,14 @@ namespace UI
 	void addUIRect(Rect2I bounds);
 	bool mouseIsWithinUIRects(V2 mousePos);
 
-	// Widgets
+	// Text
 	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
+
+	// Buttons
+	V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
+	V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
+	bool putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
+	bool putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
 
 	// Menus
 	void showMenu(s32 menuID);

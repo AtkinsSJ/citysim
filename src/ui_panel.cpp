@@ -525,7 +525,7 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
 
 	bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-	V2I buttonSize = calculateButtonSize(contentSize, buttonStyle, space.w, fillWidth);
+	V2I buttonSize = UI::calculateButtonSize(contentSize, buttonStyle, space.w, fillWidth);
 	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, buttonAlignment);
 
 	result.contentBounds = irectAligned(

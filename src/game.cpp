@@ -489,7 +489,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// The >>> button is the largest, so they're all set to that size.
 		// For the total area, we just add their widths and padding together.
 		UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
-		V2I speedButtonSize = calculateButtonSize(">>>"_s, buttonStyle);
+		V2I speedButtonSize = UI::calculateButtonSize(">>>"_s, buttonStyle);
 		s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
 
 		String dateString = formatDateTime(clock->cosmeticDate, DateTime_ShortDate);
@@ -507,28 +507,28 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		// Speed control buttons
 		Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarBottom - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
 
-		if (uiButton(uiState, ">>>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Fast)))
+		if (UI::putButton(">>>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Fast)))
 		{
 			clock->speed = Speed_Fast;
 			clock->isPaused = false;
 		}
 		speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-		if (uiButton(uiState, ">>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Medium)))
+		if (UI::putButton(">>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Medium)))
 		{
 			clock->speed = Speed_Medium;
 			clock->isPaused = false;
 		}
 		speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-		if (uiButton(uiState, ">"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Slow)))
+		if (UI::putButton(">"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Slow)))
 		{
 			clock->speed = Speed_Slow;
 			clock->isPaused = false;
 		}
 		speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-		if (uiButton(uiState, "||"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->isPaused)))
+		if (UI::putButton("||"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->isPaused)))
 		{
 			clock->isPaused = !clock->isPaused;
 		}
@@ -548,9 +548,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 	{
 		// The, um, "MENU" menu. Hmmm.
 		String menuButtonText = getText("button_menu"_s);
-		V2I buttonSize = calculateButtonSize(menuButtonText, buttonStyle);
+		V2I buttonSize = UI::calculateButtonSize(menuButtonText, buttonStyle);
 		Rect2I buttonRect = irectXYWH(uiPadding, toolbarBottom - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
-		if (uiButton(uiState, menuButtonText, buttonRect, buttonStyle))
+		if (UI::putButton(menuButtonText, buttonRect, buttonStyle))
 		{
 			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
 					   WinFlag_Unique | WinFlag_Modal | WinFlag_AutomaticHeight | WinFlag_Pause,
@@ -560,8 +560,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		// The "ZONE" menu
 		String zoneButtonText = getText("button_zone"_s);
-		buttonRect.size = calculateButtonSize(zoneButtonText, buttonStyle);
-		if (uiButton(uiState, zoneButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Zone))))
+		buttonRect.size = UI::calculateButtonSize(zoneButtonText, buttonStyle);
+		if (UI::putButton(zoneButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Zone))))
 		{
 			UI::toggleMenuVisible(Menu_Zone);
 		}
@@ -590,8 +590,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		// The "BUILD" menu
 		String buildButtonText = getText("button_build"_s);
-		buttonRect.size = calculateButtonSize(buildButtonText, buttonStyle);
-		if (uiButton(uiState, buildButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Build))))
+		buttonRect.size = UI::calculateButtonSize(buildButtonText, buttonStyle);
+		if (UI::putButton(buildButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Build))))
 		{
 			UI::toggleMenuVisible(Menu_Build);
 		}
@@ -627,9 +627,9 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		// The Terrain button
 		String terrainButtonText = getText("button_terrain"_s);
-		buttonRect.size = calculateButtonSize(terrainButtonText, buttonStyle);
+		buttonRect.size = UI::calculateButtonSize(terrainButtonText, buttonStyle);
 		// TODO: Detect if window is open already. Close it if it is @DetectWindowOpen @CloseWindow
-		if (uiButton(uiState, terrainButtonText, buttonRect, buttonStyle))//, buttonIsActive(UI::isMenuVisible(Menu_Build))))
+		if (UI::putButton(terrainButtonText, buttonRect, buttonStyle))//, buttonIsActive(UI::isMenuVisible(Menu_Build))))
 		{
 			showTerrainWindow();
 		}
@@ -637,8 +637,8 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 
 		// Demolish button
 		String demolishButtonText = getText("button_demolish"_s);
-		buttonRect.size = calculateButtonSize(demolishButtonText, buttonStyle);
-		if (uiButton(uiState, demolishButtonText, buttonRect, buttonStyle,
+		buttonRect.size = UI::calculateButtonSize(demolishButtonText, buttonStyle);
+		if (UI::putButton(demolishButtonText, buttonRect, buttonStyle,
 					buttonIsActive(gameState->actionMode == ActionMode_Demolish),
 					SDLK_x, "(X)"_s))
 		{
@@ -1179,13 +1179,13 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 
 	// Data-views menu
 	String dataViewButtonText = getText("button_data_views"_s);
-	V2I dataViewButtonSize = calculateButtonSize(dataViewButtonText, buttonStyle);
+	V2I dataViewButtonSize = UI::calculateButtonSize(dataViewButtonText, buttonStyle);
 	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, windowHeight - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
 
 	Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
 	drawSingleRect(uiBuffer, dataViewUIBounds, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
-	if (uiButton(uiState, dataViewButtonText, dataViewButtonBounds, buttonStyle))
+	if (UI::putButton(dataViewButtonText, dataViewButtonBounds, buttonStyle))
 	{
 		UI::toggleMenuVisible(Menu_DataViews);
 	}
@@ -1200,7 +1200,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 		for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1))
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
-			V2I buttonSize = calculateButtonSize(buttonText, popupButtonStyle);
+			V2I buttonSize = UI::calculateButtonSize(buttonText, popupButtonStyle);
 			buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
 			buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
 			menuContentHeight += buttonSize.y;

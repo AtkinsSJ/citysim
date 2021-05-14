@@ -1,6 +1,6 @@
 #pragma once
 
-AppStatus updateAndRenderCredits(UIState *uiState, f32 /*deltaTime*/)
+AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 {
 	AppStatus result = AppStatus_Credits;
 
@@ -25,9 +25,9 @@ AppStatus updateAndRenderCredits(UIState *uiState, f32 /*deltaTime*/)
 	UIButtonStyle *style = findStyle<UIButtonStyle>("default"_s);
 	s32 uiBorderPadding = 8;
 	String backText = getText("button_back"_s);
-	V2I backSize = calculateButtonSize(backText, style);
+	V2I backSize = UI::calculateButtonSize(backText, style);
 	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
-	if (uiButton(uiState, getText("button_back"_s), buttonRect, style, Button_Normal, SDLK_ESCAPE))
+	if (UI::putButton(getText("button_back"_s), buttonRect, style, Button_Normal, SDLK_ESCAPE))
 	{
 		result = AppStatus_MainMenu;
 	}

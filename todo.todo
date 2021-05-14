@@ -27,6 +27,14 @@ Window system:
 - Function to detect if a window is open @DetectWindowOpen
 - Function to close a window @CloseWindow
 
+UI Widgets:
+- Radio buttons
+- Checkboxes
+- Sliders (eg, volume)
+
+Settings window that lets you modify them
+	(Instead of the Settings Screen we have now. A window makes more sense.)
+
 Multi-threading!
 - Figure out how to get it working at all
 - Loading screen, as a test!

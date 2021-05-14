@@ -372,12 +372,12 @@ int main(int argc, char *argv[])
 
 					case AppStatus_Credits:
 					{
-						newAppStatus = updateAndRenderCredits(&UI::uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderCredits(globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_SettingsMenu:
 					{
-						newAppStatus = updateAndRenderSettingsMenu(&UI::uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderSettingsMenu(globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Game:
