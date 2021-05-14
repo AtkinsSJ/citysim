@@ -283,7 +283,6 @@ int main(int argc, char *argv[])
 	setCursorVisible(true);
 
 	UI::init(&appState->systemArena);
-	globalAppState.uiState = &UI::uiState;
 
 	initSavedGamesCatalogue();
 
@@ -400,7 +399,7 @@ int main(int argc, char *argv[])
 					}
 
 					appState->appStatus = newAppStatus;
-					UI::uiState.openWindows.clear();
+					UI::closeAllWindows();
 
 					// Initialise new state
 					if (appState->appStatus == AppStatus_SettingsMenu)

@@ -5,7 +5,6 @@ struct AppState
 	AppStatus appStatus;
 	MemoryArena systemArena;
 
-	UIState *uiState;
 	GameState *gameState;
 	Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
 

@@ -50,33 +50,6 @@ inline ButtonState buttonIsActive(bool isActive)
 	return isActive ? Button_Active : Button_Normal;
 }
 
-struct UIState
-{
-	String tooltipText;
-
-	// TODO: Replace this with better "this input has already been used" code!
-	ChunkedArray<Rect2I> uiRects;
-
-	s32 openMenu;
-	ScrollbarState openMenuScrollbar;
-
-	// UI elements that react to the mouse should only do so if this is false - and then
-	// they should set it to true. 
-	bool mouseInputHandled;
-	Stack<Rect2I> inputScissorRects;
-
-	// Toast stuff
-	Queue<Toast> toasts;
-
-	// Window stuff
-	ChunkedArray<struct Window> openWindows; // Order: index 0 is the top, then each one is below the previous
-	Set<s32> windowsToClose;
-	Set<s32> windowsToMakeActive;
-	bool isDraggingWindow;
-	V2I windowDragWindowStartPos;
-	bool isAPauseWindowOpen; // Do any open windows have the WinFlag_Pause flag?
-};
-
 struct RenderBuffer;
 struct BitmapFont;
 struct UIButtonStyle;
@@ -84,6 +57,7 @@ struct UIPanel;
 struct UIPanelStyle;
 struct UIScrollbarStyle;
 struct WindowContext;
+struct Window;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
@@ -94,9 +68,34 @@ void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UISc
 void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
 s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
 
-
 namespace UI
 {
+	struct UIState
+	{
+		String tooltipText;
+
+		// TODO: Replace this with better "this input has already been used" code!
+		ChunkedArray<Rect2I> uiRects;
+
+		s32 openMenu;
+		ScrollbarState openMenuScrollbar;
+
+		// UI elements that react to the mouse should only do so if this is false - and then
+		// they should set it to true. 
+		bool mouseInputHandled;
+		Stack<Rect2I> inputScissorRects;
+
+		// Toast stuff
+		Queue<Toast> toasts;
+
+		// Window stuff
+		ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
+		Set<s32> windowsToClose;
+		Set<s32> windowsToMakeActive;
+		bool isDraggingWindow;
+		V2I windowDragWindowStartPos;
+		bool isAPauseWindowOpen; // Do any open windows have the WinFlag_Pause flag?
+	};
 	UIState uiState;
 
 	void init(MemoryArena *arena);

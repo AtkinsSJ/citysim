@@ -18,11 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Sort out the UIState nonsense: Putting things in a UI namespace
-- Audit all uses of UIState*
-- Remove it from globalAppState
-- Move UIState inside the UI namespace
-
 Window system:
 - Function to detect if a window is open @DetectWindowOpen
 - Function to close a window @CloseWindow
