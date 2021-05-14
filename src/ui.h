@@ -137,6 +137,7 @@ namespace UI
 	void hideMenus();
 	void toggleMenuVisible(s32 menuID);
 	bool isMenuVisible(s32 menuID);
+	ScrollbarState *getMenuScrollbar();
 
 	// Toasts
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation

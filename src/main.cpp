@@ -382,7 +382,7 @@ int main(int argc, char *argv[])
 
 					case AppStatus_Game:
 					{
-						newAppStatus = updateAndRenderGame(appState->gameState, &UI::uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderGame(appState->gameState, globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Quit: break;

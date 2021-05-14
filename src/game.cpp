@@ -453,7 +453,7 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 	}
 }
 
-void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
+void updateAndRenderGameUI(GameState *gameState)
 {
 	DEBUG_FUNCTION();
 	
@@ -648,7 +648,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		buttonRect.x += buttonRect.w + uiPadding;
 	}
 
-	drawDataViewUI(uiState, gameState);
+	drawDataViewUI(gameState);
 }
 
 void costTooltipWindowProc(WindowContext *context, void *userData)
@@ -701,7 +701,7 @@ void debugToolsWindowProc(WindowContext *context, void *userData)
 	}
 }
 
-AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaTime)
+AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 {
 	DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
@@ -715,7 +715,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 	}
 
 	// Update the simulation... need a smarter way of doing this!
-	if (!uiState->isAPauseWindowOpen)
+	if (!UI::hasPauseWindowOpen())
 	{
 		DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
 
@@ -747,7 +747,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 
 
 	// UI!
-	updateAndRenderGameUI(uiState, gameState);
+	updateAndRenderGameUI(gameState);
 
 	V4 ghostColorValid    = color255(128,255,128,255);
 	V4 ghostColorInvalid  = color255(255,0,0,128);
@@ -1164,7 +1164,7 @@ void drawDataViewOverlay(GameState *gameState, Rect2I visibleTileBounds)
 	}
 }
 
-void drawDataViewUI(UIState *uiState, GameState *gameState)
+void drawDataViewUI(GameState *gameState)
 {
 	DEBUG_FUNCTION();
 	
@@ -1216,7 +1216,7 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 		// Enable scrolling if there's too many items to fit
 		if (estimatedMenuHeight > popupMenuMaxHeight)
 		{
-			menu.enableVerticalScrolling(&uiState->openMenuScrollbar, true);
+			menu.enableVerticalScrolling(UI::getMenuScrollbar(), true);
 		}
 
 		for (s32 dataViewID = DataViewCount - 1; dataViewID >= 0; dataViewID = dataViewID - 1)
@@ -1234,7 +1234,8 @@ void drawDataViewUI(UIState *uiState, GameState *gameState)
 	}
 
 	// Data-view info
-	if (uiState->openMenu != Menu_DataViews && gameState->dataLayerToDraw != DataView_None)
+	if (!UI::isMenuVisible(Menu_DataViews)
+	 && gameState->dataLayerToDraw != DataView_None)
 	{
 		V2I uiPos = dataViewButtonBounds.pos;
 		uiPos.y -= uiPadding;

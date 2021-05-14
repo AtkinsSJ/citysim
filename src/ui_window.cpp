@@ -99,6 +99,11 @@ void UI::showWindow(String title, s32 width, s32 height, V2I position, String st
 	}
 }
 
+bool UI::hasPauseWindowOpen()
+{
+	return uiState.isAPauseWindowOpen;
+}
+
 void UI::closeWindow(WindowProc windowProc)
 {
 	Indexed<Window*> windowToRemove = uiState.openWindows.findFirst([&](Window *window) { return window->windowProc == windowProc; });

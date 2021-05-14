@@ -140,18 +140,18 @@ struct GameState
 GameState *newGameState(); // A blank game state with no city
 void beginNewGame(); // A game state for a new map
 
-AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaTime);
+AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime);
 void freeGameState(GameState *gameState);
 
 void inputMoveCamera(Camera *camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight);
-void updateAndRenderGameUI(UIState *uiState, GameState *gameState);
-void showCostTooltip(UIState *uiState, s32 buildCost);
+void updateAndRenderGameUI(GameState *gameState);
+void showCostTooltip(s32 buildCost);
 
 Rect2I getDragArea(DragState *dragState, Rect2I cityBounds, DragType dragType, V2I itemSize);
 DragResult updateDragState(DragState *dragState, Rect2I cityBounds, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = {1,1});
 
 void drawDataViewOverlay(GameState *gameState, Rect2I visibleTileBounds);
-void drawDataViewUI(UIState *uiState, GameState *gameState);
+void drawDataViewUI(GameState *gameState);
 
 //
 // Internal

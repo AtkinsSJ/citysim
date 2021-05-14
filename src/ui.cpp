@@ -477,6 +477,11 @@ inline bool UI::isMenuVisible(s32 menuID)
 	return (uiState.openMenu == menuID);
 }
 
+inline ScrollbarState *UI::getMenuScrollbar()
+{
+	return &uiState.openMenuScrollbar;
+}
+
 void UI::pushToast(String message)
 {
 	Toast *newToast = uiState.toasts.push();
