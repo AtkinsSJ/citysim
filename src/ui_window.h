@@ -52,21 +52,24 @@ struct Window
 	bool isInitialised;
 };
 
-//
-// PUBLIC
-//
-void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData = null, WindowProc onClose = null);
+namespace UI
+{
+	//
+	// PUBLIC
+	//
+	void showWindow(String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData = null, WindowProc onClose = null);
 
-// Close any open windows that use the given WindowProc.
-// Generally, there will only be one window per WindowProc, so that's an easy 1-to-1 mapping.
-// If we later want better granularity, I'll have to figure something else out!
-void closeWindow(WindowProc windowProc);
-void closeAllWindows();
+	// Close any open windows that use the given WindowProc.
+	// Generally, there will only be one window per WindowProc, so that's an easy 1-to-1 mapping.
+	// If we later want better granularity, I'll have to figure something else out!
+	void closeWindow(WindowProc windowProc);
+	void closeAllWindows();
 
-void updateAndRenderWindows(UIState *uiState);
+	void updateAndRenderWindows();
 
-//
-// INTERNAL
-//
-static Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding);
-static void closeWindow(UIState *uiState, s32 windowIndex);
+	//
+	// INTERNAL
+	//
+	static Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 contentPadding);
+	static void closeWindow(s32 windowIndex);
+}

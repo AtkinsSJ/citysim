@@ -523,7 +523,7 @@ void remapTerrainTypes(City *city)
 
 void showTerrainWindow()
 {
-	showWindow(globalAppState.uiState, getText("title_terrain"_s), 300, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_AutomaticHeight, modifyTerrainWindowProc);
+	UI::showWindow(getText("title_terrain"_s), 300, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_AutomaticHeight, modifyTerrainWindowProc);
 }
 
 void modifyTerrainWindowProc(WindowContext *context, void *)

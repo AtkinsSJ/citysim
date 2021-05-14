@@ -429,17 +429,17 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 
 	if (ui->addButton(getText("button_save"_s)))
 	{
-		showSaveGameWindow(context->uiState);
+		showSaveGameWindow();
 	}
 
 	if (ui->addButton(getText("button_load"_s)))
 	{
-		showLoadGameWindow(context->uiState);
+		showLoadGameWindow();
 	}
 
 	if (ui->addButton(getText("button_about"_s)))
 	{
-		showAboutWindow(context->uiState);
+		showAboutWindow();
 	}
 
 	if (ui->addButton(getText("button_exit"_s)))
@@ -552,7 +552,7 @@ void updateAndRenderGameUI(UIState *uiState, GameState *gameState)
 		Rect2I buttonRect = irectXYWH(uiPadding, toolbarBottom - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
 		if (UI::putButton(menuButtonText, buttonRect, buttonStyle))
 		{
-			showWindow(uiState, getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
+			UI::showWindow(getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
 					   WinFlag_Unique | WinFlag_Modal | WinFlag_AutomaticHeight | WinFlag_Pause,
 					   pauseMenuWindowProc);
 		}
@@ -978,7 +978,7 @@ AppStatus updateAndRenderGame(GameState *gameState, UIState *uiState, f32 deltaT
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
 						V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
-						showWindow(uiState, "Inspect tile"_s, 250, 200, windowPos, "default"_s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						UI::showWindow("Inspect tile"_s, 250, 200, windowPos, "default"_s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;

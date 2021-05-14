@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
 			{
 				UI::startFrame();
 				
-				updateAndRenderWindows(&UI::uiState);
+				UI::updateAndRenderWindows();
 				
 				AppStatus newAppStatus = appState->appStatus;
 
@@ -367,7 +367,7 @@ int main(int argc, char *argv[])
 				{
 					case AppStatus_MainMenu:
 					{
-						newAppStatus = updateAndRenderMainMenu(&UI::uiState, globalAppState.deltaTime);
+						newAppStatus = updateAndRenderMainMenu(globalAppState.deltaTime);
 					} break;
 
 					case AppStatus_Credits:

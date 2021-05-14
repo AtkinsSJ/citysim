@@ -51,8 +51,8 @@ bool saveGame(String saveName);
 void loadGame(SavedGameInfo *savedGame);
 bool deleteSave(SavedGameInfo *savedGame);
 
-void showSaveGameWindow(UIState *uiState);
-void showLoadGameWindow(UIState *uiState);
+void showSaveGameWindow();
+void showLoadGameWindow();
 
 // Internal
 void savedGamesWindowProc(WindowContext *context, void *userData);

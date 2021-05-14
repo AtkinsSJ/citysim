@@ -27,7 +27,7 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, UIState
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  */
-void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose)
+void UI::showWindow(String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose)
 {
 	if (windowProc == null)
 	{
@@ -50,7 +50,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 
 	bool createdWindowAlready = false;
 
-	if (uiState->openWindows.count > 0)
+	if (uiState.openWindows.count > 0)
 	{
 		// If the window wants to be unique, then we search for an existing one with the same WindowProc
 		if (flags & WinFlag_Unique)
@@ -58,7 +58,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 			Window *toReplace = null;
 
 			s32 oldWindowIndex = 0;
-			for (auto it = uiState->openWindows.iterate();
+			for (auto it = uiState.openWindows.iterate();
 				it.hasNext();
 				it.next())
 			{
@@ -87,7 +87,7 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 				newWindow.area = toReplace->area;
 
 				*toReplace = newWindow;
-				uiState->windowsToMakeActive.add(oldWindowIndex);
+				uiState.windowsToMakeActive.add(oldWindowIndex);
 				createdWindowAlready = true;
 			}
 		}
@@ -95,47 +95,45 @@ void showWindow(UIState *uiState, String title, s32 width, s32 height, V2I posit
 
 	if (!createdWindowAlready)
 	{
-		uiState->openWindows.append(newWindow);
-		uiState->windowsToMakeActive.add(truncate32(uiState->openWindows.count-1));
+		uiState.openWindows.append(newWindow);
+		uiState.windowsToMakeActive.add(truncate32(uiState.openWindows.count-1));
 	}
 }
 
-void closeWindow(WindowProc windowProc)
+void UI::closeWindow(WindowProc windowProc)
 {
-	UIState *uiState = globalAppState.uiState;
-	Indexed<Window*> windowToRemove = uiState->openWindows.findFirst([&](Window *window) { return window->windowProc == windowProc; });
+	Indexed<Window*> windowToRemove = uiState.openWindows.findFirst([&](Window *window) { return window->windowProc == windowProc; });
 
 	if (windowToRemove.index != -1)
 	{
-		uiState->windowsToClose.add(windowToRemove.index);
+		uiState.windowsToClose.add(windowToRemove.index);
 	}
-	else if (!uiState->openWindows.isEmpty())
+	else if (!uiState.openWindows.isEmpty())
 	{
 		logInfo("closeWindow() call didn't find any windows that matched the WindowProc."_s);
 	}
 }
 
-void closeAllWindows()
+void UI::closeAllWindows()
 {
-	UIState *uiState = globalAppState.uiState;
-	for (s32 windowIndex = 0; windowIndex < uiState->openWindows.count; windowIndex++)
+	for (s32 windowIndex = 0; windowIndex < uiState.openWindows.count; windowIndex++)
 	{
-		uiState->windowsToClose.add(windowIndex);
+		uiState.windowsToClose.add(windowIndex);
 	}
 }
 
-void updateAndRenderWindows(UIState *uiState)
+void UI::updateAndRenderWindows()
 {
 	DEBUG_FUNCTION();
 
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
-	uiState->isAPauseWindowOpen = false;
+	uiState.isAPauseWindowOpen = false;
 	s32 tooltipIndex = -1;
 
 	bool isActive = true;
-	for (auto it = uiState->openWindows.iterate();
+	for (auto it = uiState.openWindows.iterate();
 		it.hasNext();
 		it.next())
 	{
@@ -143,7 +141,7 @@ void updateAndRenderWindows(UIState *uiState)
 		s32 windowIndex = it.getIndex();
 
 		// Skip this Window if we've requested to close it.
-		if (uiState->windowsToClose.contains(windowIndex)) continue;
+		if (uiState.windowsToClose.contains(windowIndex)) continue;
 
 		bool isModal     = (window->flags & WinFlag_Modal) != 0;
 		bool hasTitleBar = (window->flags & WinFlag_Headless) == 0;
@@ -174,7 +172,7 @@ void updateAndRenderWindows(UIState *uiState)
 		{
 			window->isInitialised = true;
 
-			WindowContext context = WindowContext(window, windowStyle, uiState, false, false, null);
+			WindowContext context = WindowContext(window, windowStyle, &uiState, false, false, null);
 			window->windowProc(&context, window->userData);
 			context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -196,17 +194,17 @@ void updateAndRenderWindows(UIState *uiState)
 			// Modal windows can't be moved, they just auto-centre
 			window->area = centreWithin(validWindowArea, window->area);
 		}
-		else if (isActive && uiState->isDraggingWindow)
+		else if (isActive && uiState.isDraggingWindow)
 		{
 			if (mouseButtonJustReleased(MouseButton_Left))
 			{
-				uiState->isDraggingWindow = false;
+				uiState.isDraggingWindow = false;
 			}
 			else
 			{
 				V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
-				window->area.x = uiState->windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
-				window->area.y = uiState->windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
+				window->area.x = uiState.windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
+				window->area.y = uiState.windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
 			}
 			
 			UI::markMouseInputHandled();
@@ -250,7 +248,7 @@ void updateAndRenderWindows(UIState *uiState)
 		}
 
 		// Actually run the window proc
-		WindowContext context = WindowContext(window, windowStyle, uiState, true, true, window->renderBuffer);
+		WindowContext context = WindowContext(window, windowStyle, &uiState, true, true, window->renderBuffer);
 		window->windowProc(&context, window->userData);
 		context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -267,12 +265,12 @@ void updateAndRenderWindows(UIState *uiState)
 
 		if (context.closeRequested)
 		{
-			uiState->windowsToClose.add(windowIndex);
+			uiState.windowsToClose.add(windowIndex);
 		}
 
 		if (!context.closeRequested && ((window->flags & WinFlag_Pause) != 0))
 		{
-			uiState->isAPauseWindowOpen = true;
+			uiState.isAPauseWindowOpen = true;
 		}
 
 		Rect2I wholeWindowArea = window->area;
@@ -308,19 +306,19 @@ void updateAndRenderWindows(UIState *uiState)
 				if (hoveringOverCloseButton)
 				{
 					// If we're inside the X, close it!
-					uiState->windowsToClose.add(windowIndex);
+					uiState.windowsToClose.add(windowIndex);
 				}
 				else
 				{
 					if (!isModal && contains(barArea, mousePos))
 					{
 						// If we're inside the title bar, start dragging!
-						uiState->isDraggingWindow = true;
-						uiState->windowDragWindowStartPos = window->area.pos;
+						uiState.isDraggingWindow = true;
+						uiState.windowDragWindowStartPos = window->area.pos;
 					}
 
 					// Make this the active window!
-					uiState->windowsToMakeActive.add(windowIndex);
+					uiState.windowsToMakeActive.add(windowIndex);
 				}
 
 				// Tooltips don't take mouse input
@@ -369,27 +367,27 @@ void updateAndRenderWindows(UIState *uiState)
 	// FIXME: Actually, this won't do that! windowsToMakeActive is not FIFO! But, it's better than nothing
 	if (tooltipIndex != -1)
 	{
-		uiState->windowsToMakeActive.add(tooltipIndex);
+		uiState.windowsToMakeActive.add(tooltipIndex);
 	}
 
 	// Close any windows that were requested
-	if (!uiState->windowsToClose.isEmpty())
+	if (!uiState.windowsToClose.isEmpty())
 	{
-		Array<s32> windowsToClose = uiState->windowsToClose.asSortedArray();
+		Array<s32> windowsToClose = uiState.windowsToClose.asSortedArray();
 
 		for (s32 i = windowsToClose.count - 1; i >= 0; i--)
 		{
 			s32 windowIndex = windowsToClose[i];
-			closeWindow(uiState, windowIndex);
+			closeWindow(windowIndex);
 		}
 
-		uiState->windowsToClose.clear();
+		uiState.windowsToClose.clear();
 	}
 
 	// Activate any windows
-	if (!uiState->windowsToMakeActive.isEmpty())
+	if (!uiState.windowsToMakeActive.isEmpty())
 	{
-		Array<s32> windowsToMakeActive = uiState->windowsToMakeActive.asSortedArray();
+		Array<s32> windowsToMakeActive = uiState.windowsToMakeActive.asSortedArray();
 
 		// NB: Because the windowsToMakeActive are in ascending index order, and we always move them to a lower position,
 		// we are guaranteed to not perturb the positions of any later window indices, so this operation is completely
@@ -402,14 +400,14 @@ void updateAndRenderWindows(UIState *uiState)
 			// Don't do anything if it's already the active window.
 			if (windowIndex == 0) continue;
 
-			uiState->openWindows.moveItemKeepingOrder(windowIndex, 0);
+			uiState.openWindows.moveItemKeepingOrder(windowIndex, 0);
 		}
 
-		uiState->windowsToMakeActive.clear();
+		uiState.windowsToMakeActive.clear();
 	}
 
 	// Now, render the windows in the correct order!
-	for (auto it = uiState->openWindows.iterateBackwards();
+	for (auto it = uiState.openWindows.iterateBackwards();
 		it.hasNext();
 		it.next())
 	{
@@ -422,13 +420,12 @@ void updateAndRenderWindows(UIState *uiState)
 	{
 		// We moved the tooltip to index 0 when we did the activate-windows loop!
 		tooltipIndex = 0; 
-		ASSERT((uiState->openWindows.get(tooltipIndex)->flags & WinFlag_Tooltip) != 0);
-		closeWindow(uiState, tooltipIndex);
+		ASSERT((uiState.openWindows.get(tooltipIndex)->flags & WinFlag_Tooltip) != 0);
+		closeWindow(tooltipIndex);
 	}
 }
 
-inline static
-Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
+inline Rect2I UI::getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 {
 	return irectXYWH(windowArea.x + margin,
 					windowArea.y + barHeight + margin,
@@ -436,11 +433,11 @@ Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 					windowArea.h - barHeight - (margin * 2));
 }
 
-inline static void closeWindow(UIState *uiState, s32 windowIndex)
+inline void UI::closeWindow(s32 windowIndex)
 {
-	uiState->windowsToMakeActive.remove(windowIndex);
+	uiState.windowsToMakeActive.remove(windowIndex);
 
-	Window *window = uiState->openWindows.get(windowIndex);
+	Window *window = uiState.openWindows.get(windowIndex);
 	
 	if (window->onClose != null)
 	{
@@ -453,5 +450,5 @@ inline static void closeWindow(UIState *uiState, s32 windowIndex)
 		window->renderBuffer = null;
 	}
 	
-	uiState->openWindows.removeIndex(windowIndex, true);
+	uiState.openWindows.removeIndex(windowIndex, true);
 }

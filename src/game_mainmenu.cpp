@@ -1,6 +1,6 @@
 #pragma once
 
-AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
+AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 {
 	DEBUG_FUNCTION();
 	
@@ -63,7 +63,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (UI::putButton(loadText, buttonRect, style))
 	{
-		showLoadGameWindow(uiState);
+		showLoadGameWindow();
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (UI::putButton(creditsText, buttonRect, style))
@@ -78,7 +78,7 @@ AppStatus updateAndRenderMainMenu(UIState *uiState, f32 /*deltaTime*/)
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (UI::putButton(aboutText, buttonRect, style))
 	{
-		showAboutWindow(uiState);
+		showAboutWindow();
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (UI::putButton(exitText, buttonRect, style))

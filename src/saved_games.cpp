@@ -98,16 +98,16 @@ void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 	});
 }
 
-void showLoadGameWindow(UIState *uiState)
+void showLoadGameWindow()
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	catalogue->selectedSavedGameName = nullString;
 	catalogue->selectedSavedGameIndex = -1;
 
-	showWindow(uiState, getText("title_load_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc);
+	UI::showWindow(getText("title_load_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc);
 }
 
-void showSaveGameWindow(UIState *uiState)
+void showSaveGameWindow()
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 
@@ -130,7 +130,7 @@ void showSaveGameWindow(UIState *uiState)
 		catalogue->selectedSavedGameIndex = -1;
 	}
 
-	showWindow(uiState, getText("title_save_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
+	UI::showWindow(getText("title_save_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
 }
 
 void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
@@ -188,7 +188,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		ui->alignWidgets(ALIGN_RIGHT);
 		if (ui->addImageButton(getSprite("icon_delete"_s), Button_Normal, "delete"_s))
 		{
-			showWindow(globalAppState.uiState, getText("title_delete_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmDeleteSaveWindowProc);
+			UI::showWindow(getText("title_delete_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmDeleteSaveWindowProc);
 		}
 
 		ui->alignWidgets(ALIGN_EXPAND_H);
@@ -251,7 +251,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 				{
 					if (showOverwriteWarning)
 					{
-						showWindow(globalAppState.uiState, getText("title_overwrite_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmOverwriteSaveWindowProc);
+						UI::showWindow(getText("title_overwrite_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmOverwriteSaveWindowProc);
 					}
 					else if (saveGame(inputName))
 					{
@@ -346,7 +346,7 @@ void loadGame(SavedGameInfo *savedGame)
 
 		globalAppState.appStatus = AppStatus_Game;
 
-		closeAllWindows();
+		UI::closeAllWindows();
 
 		// Filename is interned so it's safe to copy it
 		savedGamesCatalogue.activeSavedGameName = savedGame->shortName;

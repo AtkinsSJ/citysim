@@ -22,7 +22,7 @@ void aboutWindowProc(WindowContext *context, void * /*userData*/)
 	}
 }
 
-void showAboutWindow(UIState *uiState)
+void showAboutWindow()
 {
-	showWindow(uiState, getText("title_about"_s), 300, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, aboutWindowProc);
+	UI::showWindow(getText("title_about"_s), 300, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, aboutWindowProc);
 }

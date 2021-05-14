@@ -547,7 +547,7 @@ void UI::showTooltip(String text)
 void UI::showTooltip(WindowProc tooltipProc, void *userData)
 {
 	static String styleName = "tooltip"_s;
-	showWindow(&uiState, nullString, 300, 100, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
+	showWindow(nullString, 300, 100, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
 }
 
 void UI::basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
