@@ -104,6 +104,13 @@ bool UI::hasPauseWindowOpen()
 	return uiState.isAPauseWindowOpen;
 }
 
+bool UI::isWindowOpen(WindowProc windowProc)
+{
+	Indexed<Window*> windowToRemove = uiState.openWindows.findFirst([&](Window *window) { return window->windowProc == windowProc; });
+
+	return windowToRemove.index != -1;
+}
+
 void UI::closeWindow(WindowProc windowProc)
 {
 	Indexed<Window*> windowToRemove = uiState.openWindows.findFirst([&](Window *window) { return window->windowProc == windowProc; });

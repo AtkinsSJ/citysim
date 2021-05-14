@@ -53,12 +53,15 @@ struct Window
 
 namespace UI
 {
-	//
-	// PUBLIC
-	//
+	// TODO: I don't like the API for this. Ideally we'd just say
+	// "showWindow(proc)" and it would figure out its size and stuff on its own.
+	// As it is, the user code has to know way too much about the window. We end
+	// up creating showXWindow() functions to wrap the showWindow call for each
+	// window type.
 	void showWindow(String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData = null, WindowProc onClose = null);
 
 	bool hasPauseWindowOpen();
+	bool isWindowOpen(WindowProc windowProc);
 
 	// Close any open windows that use the given WindowProc.
 	// Generally, there will only be one window per WindowProc, so that's an easy 1-to-1 mapping.

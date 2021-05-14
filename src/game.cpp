@@ -628,10 +628,17 @@ void updateAndRenderGameUI(GameState *gameState)
 		// The Terrain button
 		String terrainButtonText = getText("button_terrain"_s);
 		buttonRect.size = UI::calculateButtonSize(terrainButtonText, buttonStyle);
-		// TODO: Detect if window is open already. Close it if it is @DetectWindowOpen @CloseWindow
-		if (UI::putButton(terrainButtonText, buttonRect, buttonStyle))//, buttonIsActive(UI::isMenuVisible(Menu_Build))))
+		bool isTerrainWindowOpen = UI::isWindowOpen(modifyTerrainWindowProc);
+		if (UI::putButton(terrainButtonText, buttonRect, buttonStyle, buttonIsActive(isTerrainWindowOpen)))
 		{
-			showTerrainWindow();
+			if (isTerrainWindowOpen)
+			{
+				UI::closeWindow(modifyTerrainWindowProc);
+			}
+			else
+			{
+				showTerrainWindow();
+			}
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
 
