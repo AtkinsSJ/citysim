@@ -43,8 +43,6 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffe
 	this->largestLineWidth = 0;
 
 	this->background = UIDrawable(&this->style->background);
-
-	ASSERT(this->doUpdate && this->doRender);
 }
 
 void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
@@ -550,6 +548,8 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 		buttonStyle->textAlignment
 	);
 
+	WidgetMouseState mouseState = UI::getWidgetMouseState(buttonBounds);
+
 	if (doRender)
 	{
 		UIDrawableStyle *backgroundStyle = &buttonStyle->background;
@@ -558,16 +558,13 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 		{
 			backgroundStyle = &buttonStyle->disabledBackground;
 		}
-		else if (!UI::isMouseInputHandled() && UI::isMouseInUIBounds(buttonBounds))
+		else if (mouseState.isHovered)
 		{
 			// Mouse pressed: must have started and currently be inside the bounds to show anything
 			// Mouse unpressed: show hover if in bounds
-			if (mouseButtonPressed(MouseButton_Left))
+			if (mouseState.isPressed)
 			{
-				if (UI::isMouseInUIBounds(buttonBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-				{
-					backgroundStyle = &buttonStyle->pressedBackground;
-				}
+				backgroundStyle = &buttonStyle->pressedBackground;
 			}
 			else
 			{

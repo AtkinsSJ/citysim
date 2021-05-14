@@ -233,6 +233,26 @@ inline bool UI::justClickedOnUI(Rect2I bounds)
 	return result;
 }
 
+WidgetMouseState UI::getWidgetMouseState(Rect2I widgetBounds)
+{
+	WidgetMouseState result = {};
+
+	if (!isMouseInputHandled() && isMouseInUIBounds(widgetBounds))
+	{
+		result.isHovered = true;
+
+		// Mouse pressed: must have started and currently be inside the bounds to show anything
+		// Mouse unpressed: show hover if in bounds
+		if (mouseButtonPressed(MouseButton_Left)
+		 && isMouseInUIBounds(widgetBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+		{
+			result.isPressed = true;
+		}
+	}
+
+	return result;
+}
+
 inline void UI::pushInputScissorRect(Rect2I bounds)
 {
 	push(&uiState.inputScissorRects, bounds);
@@ -376,15 +396,15 @@ bool UI::putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState
 	{
 		backgroundStyle = &style->disabledBackground;
 	}
-	else if (!UI::isMouseInputHandled() && UI::isMouseInUIBounds(bounds))
+	else if (!isMouseInputHandled() && isMouseInUIBounds(bounds))
 	{
-		UI::markMouseInputHandled();
+		markMouseInputHandled();
 
 		// Mouse pressed: must have started and currently be inside the bounds to show anything
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(MouseButton_Left))
 		{
-			if (UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			if (isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				backgroundStyle = &style->pressedBackground;
 			}
@@ -392,7 +412,7 @@ bool UI::putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState
 		else
 		{
 			if (mouseButtonJustReleased(MouseButton_Left)
-			 && UI::isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+			 && isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 			{
 				buttonClicked = true;
 			}
@@ -401,7 +421,7 @@ bool UI::putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState
 
 		if (tooltip.length)
 		{
-			UI::showTooltip(tooltip);
+			showTooltip(tooltip);
 		}
 	}
 	else if (state == Button_Active)
@@ -413,7 +433,7 @@ bool UI::putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState
 	buttonBackground.draw(&renderer->uiBuffer, bounds);
 
 	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	UI::drawText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
+	drawText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 
 	// Keyboard shortcut!
 	if (state != Button_Disabled

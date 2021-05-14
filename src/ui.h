@@ -51,6 +51,12 @@ inline ButtonState buttonIsActive(bool isActive)
 	return isActive ? Button_Active : Button_Normal;
 }
 
+struct WidgetMouseState
+{
+	bool isHovered;
+	bool isPressed;
+};
+
 struct RenderBuffer;
 struct BitmapFont;
 struct UIButtonStyle;
@@ -109,6 +115,8 @@ namespace UI
 	bool isMouseInUIBounds(Rect2I bounds);
 	bool isMouseInUIBounds(Rect2I bounds, V2 mousePos);
 	bool justClickedOnUI(Rect2I bounds);
+
+	WidgetMouseState getWidgetMouseState(Rect2I bounds);
 
 	// Input Scissor
 	void pushInputScissorRect(Rect2I bounds);
