@@ -4,26 +4,27 @@ game_title           City Builder Test 9000
 game_subtitle        Very much a work in progress!
 game_copyright       © Copyright Samuel Atkins 20XX
 
-button_about         About
-button_back          Back
-button_build         Build...
-button_cancel        Cancel
-button_credits       Credits
-button_data_views	 Overlay
-button_demolish      Demolish
-button_delete        Delete
-button_exit          Exit
-button_load          Load
-button_menu          Menu
-button_new_game      New Game
-button_overwrite     Overwrite
-button_play          Play
-button_resume        Resume
-button_save          Save
-button_settings      Settings
-button_terrain       Terrain
-button_website       Website
-button_zone          Zone...
+button_about                 About
+button_back                  Back
+button_build                 Build...
+button_cancel                Cancel
+button_credits               Credits
+button_data_views        	 Overlay
+button_demolish              Demolish
+button_delete                Delete
+button_exit                  Exit
+button_load                  Load
+button_menu                  Menu
+button_new_game              New Game
+button_overwrite             Overwrite
+button_play                  Play
+button_restore_defaults      Restore defaults
+button_resume                Resume
+button_save                  Save
+button_settings              Settings
+button_terrain               Terrain
+button_website               Website
+button_zone                  Zone...
 
 data_view_none						None
 data_view_desirability_residential	Residential desirability

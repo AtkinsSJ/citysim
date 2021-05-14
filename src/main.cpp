@@ -25,7 +25,6 @@ enum AppStatus
 {
 	AppStatus_MainMenu,
 	AppStatus_Game,
-	AppStatus_SettingsMenu,
 	AppStatus_Credits,
 	AppStatus_Quit,
 };
@@ -374,11 +373,6 @@ int main(int argc, char *argv[])
 						newAppStatus = updateAndRenderCredits(globalAppState.deltaTime);
 					} break;
 
-					case AppStatus_SettingsMenu:
-					{
-						newAppStatus = updateAndRenderSettingsMenu(globalAppState.deltaTime);
-					} break;
-
 					case AppStatus_Game:
 					{
 						newAppStatus = updateAndRenderGame(appState->gameState, globalAppState.deltaTime);
@@ -400,12 +394,6 @@ int main(int argc, char *argv[])
 
 					appState->appStatus = newAppStatus;
 					UI::closeAllWindows();
-
-					// Initialise new state
-					if (appState->appStatus == AppStatus_SettingsMenu)
-					{
-						initSettingsMenu();
-					}
 				}
 
 				UI::drawToast();

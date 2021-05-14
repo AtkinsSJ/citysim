@@ -73,7 +73,7 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (UI::putButton(settingsText, buttonRect, style))
 	{
-		result = AppStatus_SettingsMenu;
+		showSettingsWindow();
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
 	if (UI::putButton(aboutText, buttonRect, style))

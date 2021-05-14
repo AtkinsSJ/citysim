@@ -57,8 +57,8 @@ WindowSettings getWindowSettings();
 String getLocale();
 
 // Menu
-void initSettingsMenu();
-AppStatus updateAndRenderSettingsMenu(f32 deltaTime);
+void showSettingsWindow();
+void settingsWindowProc(WindowContext*, void*);
 
 //
 // INTERNAL

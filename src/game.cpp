@@ -442,6 +442,11 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 		showAboutWindow();
 	}
 
+	if (ui->addButton(getText("button_settings"_s)))
+	{
+		showSettingsWindow();
+	}
+
 	if (ui->addButton(getText("button_exit"_s)))
 	{
 		globalAppState.gameState->status = GameStatus_Quit;

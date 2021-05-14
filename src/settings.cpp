@@ -209,54 +209,44 @@ String getLocale()
 	return settings->settings.locale;
 }
 
-void initSettingsMenu()
+void showSettingsWindow()
 {
 	settings->workingState = settings->settings;
+
+	UI::showWindow(getText("title_settings"_s), 600, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_AutomaticHeight|WinFlag_Modal, settingsWindowProc);
 }
 
-AppStatus updateAndRenderSettingsMenu(f32 /*deltaTime*/)
+void settingsWindowProc(WindowContext *context, void*)
 {
-	AppStatus result = AppStatus_SettingsMenu;
+	UIPanel *ui = &context->windowPanel;
 
-	s32 windowWidth  = round_s32(renderer->uiCamera.size.x);
-	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
-
-	s32 maxLabelWidth = windowWidth - 256;
-
-	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
-	BitmapFont *font = getFont(&labelStyle->font);
-
-	V2I titlePos = v2i(windowWidth / 2, 157);
-	UI::drawText(&renderer->uiBuffer, font, getText("title_settings"_s),
-			titlePos, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
-
-	// Settings go here!!!
-	s32 windowCentre = windowWidth / 2;
-	s32 settingsAreaWidth = 600;
-	V2I labelPos   = v2i(windowCentre - (settingsAreaWidth / 2), 300);
-	V2I settingPos = v2i(windowCentre + (settingsAreaWidth / 2), 300);
 	for (auto it = settings->defs.iterate();
 		it.hasNext();
 		it.next())
 	{
-		SettingDef *def = it.get();
+		auto entry = it.getEntry();
+		String name = entry->key;
+		SettingDef *def = &entry->value;
 
-		UI::drawText(&renderer->uiBuffer, font, getText(def->textAssetName), labelPos, ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
-		UI::drawText(&renderer->uiBuffer, font, settingToString(&settings->workingState, def), settingPos, ALIGN_RIGHT | ALIGN_TOP, labelStyle->textColor, settingsAreaWidth);
-
-		labelPos.y += 60;
-		settingPos.y += 60;
+		ui->startNewLine(ALIGN_LEFT);
+		ui->addText(name);
+		ui->addText(settingToString(&settings->workingState, def));
 	}
 
-	UIButtonStyle *style = findStyle<UIButtonStyle>("default"_s);
-	s32 uiBorderPadding = 8;
-	String backText = getText("button_back"_s);
-	V2I backSize = UI::calculateButtonSize(backText, style);
-	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
-	if (UI::putButton(backText, buttonRect, style, Button_Normal, SDLK_ESCAPE))
+	ui->startNewLine(ALIGN_LEFT);
+	if (ui->addButton(getText("button_cancel"_s)))
 	{
-		result = AppStatus_MainMenu;
+		context->closeRequested = true;
 	}
-
-	return result;
+	if (ui->addButton(getText("button_restore_defaults"_s)))
+	{
+		settings->workingState = makeDefaultSettings();
+	}
+	if (ui->addButton(getText("button_save"_s)))
+	{
+		settings->settings = settings->workingState;
+		saveSettings();
+		applySettings();
+		context->closeRequested = true;
+	}
 }
