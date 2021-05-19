@@ -6,13 +6,12 @@
 // AKA, I messed up.
 struct WindowContext
 {
-	WindowContext(struct Window *window, struct UIWindowStyle *windowStyle, bool doUpdate, bool doRender, RenderBuffer *renderBuffer);
+	WindowContext(struct Window *window, struct UIWindowStyle *windowStyle, bool hideWidgets, RenderBuffer *renderBuffer);
 
 	Window *window;
 	UIWindowStyle *windowStyle;
 
-	bool doUpdate;
-	bool doRender;
+	bool hideWidgets;
 	RenderBuffer *renderBuffer;
 
 	UIPanel windowPanel;

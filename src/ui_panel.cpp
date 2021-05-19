@@ -16,8 +16,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffe
 	this->hasAddedWidgets = false;
 	this->blocksMouse = (flags & Panel_BlocksMouse) != 0;
 
-	this->doUpdate = (flags & Panel_DoUpdate) != 0;
-	this->doRender = (flags & Panel_DoRender) != 0;
+	this->hideWidgets = (flags & Panel_HideWidgets) != 0;
 	this->renderBuffer = renderBuffer;
 	
 	this->bounds = bounds;
@@ -94,7 +93,7 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 	V2I textSize = calculateTextSize(font, text, availableButtonContentSize);
 	AddButtonInternalResult buttonResult = addButtonInternal(textSize, state, buttonStyle);
 
-	if (doRender)
+	if (!hideWidgets)
 	{
 		drawText(renderBuffer, font, text, buttonResult.contentBounds, buttonStyle->textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
 	}
@@ -126,7 +125,7 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 
 	AddButtonInternalResult buttonResult = addButtonInternal(spriteSize, state, buttonStyle);
 
-	if (doRender)
+	if (!hideWidgets)
 	{
 		drawSingleSprite(renderBuffer, sprite, rect2(buttonResult.contentBounds), renderer->shaderIds.textured, makeWhite());
 	}
@@ -163,7 +162,7 @@ void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 		if (size.x == -1) size.x = sprite->pixelWidth;
 		if (size.y == -1) size.y = sprite->pixelHeight;
 
-		if (doRender)
+		if (!hideWidgets)
 		{
 			Rect2I spriteBounds = irectAligned(origin, size, widgetAlignment);
 			drawSingleSprite(renderBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
@@ -191,7 +190,7 @@ void UIPanel::addText(String text, String styleName)
 		V2I topLeft = calculateTextPosition(origin, textSize, this->widgetAlignment);
 		Rect2I textBounds = irectPosSize(topLeft, textSize);
 
-		if (doRender)
+		if (!hideWidgets)
 		{
 			drawText(renderBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
 		}
@@ -207,7 +206,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	prepareForWidgets();
 
 	bool result = false;
-	if (doUpdate)
+	if (!hideWidgets)
 	{
 		result = updateTextInput(textInput);
 	}
@@ -225,13 +224,10 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 		V2I textInputSize = calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
 		Rect2I textInputBounds = irectAligned(origin, textInputSize, alignment);
 
-		if (doRender)
+		if (!hideWidgets)
 		{
 			drawTextInput(renderBuffer, textInput, textInputStyle, textInputBounds);
-		}
 
-		if (doUpdate)
-		{
 			// Capture the input focus if we just clicked on this TextInput
 			if (UI::justClickedOnUI(textInputBounds))
 			{
@@ -470,7 +466,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 	if (!hasAddedWidgets)
 	{
-		if (doRender)
+		if (!hideWidgets)
 		{
 			addBeginScissor(renderBuffer, bounds);
 
@@ -484,13 +480,10 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	{
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
 
-		if (doUpdate)
+		if (!hideWidgets)
 		{
 			updateScrollbar(hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle);
-		}
 
-		if (doRender)
-		{
 			drawScrollbar(renderBuffer, hScrollbar, hScrollbarBounds, scrollbarStyle);
 		}
 	}
@@ -499,18 +492,15 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	{
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
 
-		if (doUpdate)
+		if (!hideWidgets)
 		{
 			updateScrollbar(vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
-		}
 
-		if (doRender)
-		{
 			drawScrollbar(renderBuffer, vScrollbar, vScrollbarBounds, scrollbarStyle);
 		}
 	}
 
-	if (doRender)
+	if (!hideWidgets)
 	{
 		// Fill in the background
 		background.fillPlaceholder(bounds);
@@ -550,7 +540,7 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 
 	WidgetMouseState mouseState = UI::getWidgetMouseState(buttonBounds);
 
-	if (doRender)
+	if (!hideWidgets)
 	{
 		UIDrawableStyle *backgroundStyle = &buttonStyle->background;
 
@@ -577,10 +567,7 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 		}
 
 		UIDrawable(backgroundStyle).draw(renderBuffer, buttonBounds);
-	}
-
-	if (doUpdate)
-	{
+		
 		if ((state != Button_Disabled)
 		 && UI::justClickedOnUI(buttonBounds))
 		{
@@ -598,8 +585,7 @@ inline u32 UIPanel::getFlagsForChild()
 {
 	u32 flags = 0;
 
-	if (doUpdate)    flags |= Panel_DoUpdate;
-	if (doRender)    flags |= Panel_DoRender;
+	if (hideWidgets) flags |= Panel_HideWidgets;
 	if (topToBottom) flags |= Panel_LayoutTopToBottom;
 
 	return flags;
@@ -609,7 +595,7 @@ void UIPanel::prepareForWidgets()
 {
 	if (!hasAddedWidgets)
 	{
-		if (doRender)
+		if (!hideWidgets)
 		{
 			addBeginScissor(renderBuffer, bounds);
 

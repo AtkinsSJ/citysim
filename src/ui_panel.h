@@ -27,10 +27,9 @@ enum UIPanelFlags
 {
 	Panel_LayoutTopToBottom = 1 << 0,
 	Panel_BlocksMouse 		= 1 << 1,
-	Panel_DoUpdate			= 1 << 2,
-	Panel_DoRender			= 1 << 3,
+	Panel_HideWidgets		= 1 << 2, // Widgets are not updated or rendered, just laid out
 
-	PanelDefaultFlags = Panel_LayoutTopToBottom | Panel_DoUpdate | Panel_DoRender | Panel_BlocksMouse
+	PanelDefaultFlags = Panel_LayoutTopToBottom | Panel_BlocksMouse
 };
 
 struct UIPanel
@@ -85,8 +84,7 @@ struct UIPanel
 	bool blocksMouse;
 	bool hasAddedWidgets;
 
-	bool doUpdate; // Should widgets execute their logic? eg, buttons react to being clicked?
-	bool doRender; // Should we draw ourselves and our widgets?
+	bool hideWidgets; // Widgets are not updated or rendered, just laid out
 	RenderBuffer *renderBuffer;
 
 	Rect2I bounds;

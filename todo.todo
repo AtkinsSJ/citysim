@@ -24,6 +24,8 @@ UI Widgets:
 - Sliders (eg, volume)
 - Dropdown boxes? (eg, locale)
 	- I guess these are equivalent to our "menu buttons" but with special styling
+- Tabs!
+	- Basically just radio buttons with fancy styling
 
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
