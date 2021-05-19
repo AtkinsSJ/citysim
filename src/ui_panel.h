@@ -28,14 +28,12 @@ enum UIPanelFlags
 	Panel_LayoutBottomToTop = 1 << 0,
 	Panel_AllowClickThrough	= 1 << 1,
 	Panel_HideWidgets		= 1 << 2, // Widgets are not updated or rendered, just laid out
-
-	PanelDefaultFlags = 0
 };
 
 struct UIPanel
 {
-	UIPanel(Rect2I bounds, UIPanelStyle *style = null, u32 flags = PanelDefaultFlags, RenderBuffer *renderBuffer = &renderer->uiBuffer);
-	UIPanel(Rect2I bounds, String styleName, u32 flags = PanelDefaultFlags, RenderBuffer *renderBuffer = &renderer->uiBuffer)
+	UIPanel(Rect2I bounds, UIPanelStyle *style = null, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer);
+	UIPanel(Rect2I bounds, String styleName, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer)
 		: UIPanel(bounds, findStyle<UIPanelStyle>(styleName), flags, renderBuffer) {}
 
 	// Configuration functions, which should be called before adding any widgets
@@ -71,8 +69,7 @@ struct UIPanel
 		Rect2I contentBounds;
 		bool wasClicked;
 	};
-	AddButtonInternalResult addButtonInternal(V2I contentSize, ButtonState state, UIButtonStyle *buttonStyle); 
-	u32 getFlagsForChild();
+	AddButtonInternalResult addButtonInternal(V2I contentSize, ButtonState state, UIButtonStyle *buttonStyle);
 	void prepareForWidgets();
 	Rect2I getCurrentLayoutPosition();
 	void completeWidget(V2I widgetSize);
@@ -81,10 +78,15 @@ struct UIPanel
 	// Call after modifying the contentArea. Updates the positions fields to match.
 	void updateLayoutPosition();
 
+	// Flags, and bool versions for easier access
+	u32 flags;
 	bool allowClickThrough;
+	bool hideWidgets; // Widgets are not updated or rendered, just laid out
+	bool layoutBottomToTop;
+
+
 	bool hasAddedWidgets;
 
-	bool hideWidgets; // Widgets are not updated or rendered, just laid out
 	RenderBuffer *renderBuffer;
 
 	Rect2I bounds;
@@ -97,7 +99,6 @@ struct UIPanel
 	Rect2I vScrollbarBounds;
 
 	// Relative to contentArea
-	bool layoutBottomToTop;
 	s32 currentLeft;
 	s32 currentRight;
 	s32 currentTop;

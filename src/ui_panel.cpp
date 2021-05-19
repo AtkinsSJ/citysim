@@ -13,6 +13,8 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffe
 		this->style = panelStyle;
 	}
 
+	this->flags = flags;
+
 	this->hasAddedWidgets = false;
 	this->allowClickThrough = (flags & Panel_AllowClickThrough) != 0;
 
@@ -324,7 +326,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, getFlagsForChild(), renderBuffer);
+		return UIPanel(rowBounds, rowStyle, flags, renderBuffer);
 	}
 	else
 	{
@@ -344,7 +346,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 		
 		updateLayoutPosition();
 
-		return UIPanel(rowBounds, rowStyle, getFlagsForChild(), renderBuffer);
+		return UIPanel(rowBounds, rowStyle, flags, renderBuffer);
 	}
 }
 
@@ -370,7 +372,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.x += width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, getFlagsForChild(), renderBuffer);
+		return UIPanel(columnBounds, columnStyle, flags, renderBuffer);
 	}
 	else
 	{
@@ -382,7 +384,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 		contentArea.w -= width + style->contentPadding;
 		updateLayoutPosition();
 
-		return UIPanel(columnBounds, columnStyle, getFlagsForChild(), renderBuffer);
+		return UIPanel(columnBounds, columnStyle, flags, renderBuffer);
 	}
 }
 
@@ -579,17 +581,6 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 	completeWidget(buttonBounds.size);
 
 	return result;
-}
-
-inline u32 UIPanel::getFlagsForChild()
-{
-	u32 flags = 0;
-
-	if (hideWidgets) 		flags |= Panel_HideWidgets;
-	if (layoutBottomToTop)  flags |= Panel_LayoutBottomToTop;
-	if (allowClickThrough)  flags |= Panel_AllowClickThrough;
-
-	return flags;
 }
 
 void UIPanel::prepareForWidgets()
