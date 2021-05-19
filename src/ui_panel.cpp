@@ -14,7 +14,7 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffe
 	}
 
 	this->hasAddedWidgets = false;
-	this->blocksMouse = (flags & Panel_BlocksMouse) != 0;
+	this->allowClickThrough = (flags & Panel_AllowClickThrough) != 0;
 
 	this->hideWidgets = (flags & Panel_HideWidgets) != 0;
 	this->renderBuffer = renderBuffer;
@@ -512,7 +512,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	}
 
 	// Add a UI rect if we're top level. Otherwise, our parent already added one that encompasses us!
-	if (blocksMouse)
+	if (!allowClickThrough)
 	{
 		UI::addUIRect(bounds);
 	}
@@ -587,6 +587,7 @@ inline u32 UIPanel::getFlagsForChild()
 
 	if (hideWidgets) 		flags |= Panel_HideWidgets;
 	if (layoutBottomToTop)  flags |= Panel_LayoutBottomToTop;
+	if (allowClickThrough)  flags |= Panel_AllowClickThrough;
 
 	return flags;
 }

@@ -26,10 +26,10 @@
 enum UIPanelFlags
 {
 	Panel_LayoutBottomToTop = 1 << 0,
-	Panel_BlocksMouse 		= 1 << 1,
+	Panel_AllowClickThrough	= 1 << 1,
 	Panel_HideWidgets		= 1 << 2, // Widgets are not updated or rendered, just laid out
 
-	PanelDefaultFlags = Panel_BlocksMouse
+	PanelDefaultFlags = 0
 };
 
 struct UIPanel
@@ -81,7 +81,7 @@ struct UIPanel
 	// Call after modifying the contentArea. Updates the positions fields to match.
 	void updateLayoutPosition();
 
-	bool blocksMouse;
+	bool allowClickThrough;
 	bool hasAddedWidgets;
 
 	bool hideWidgets; // Widgets are not updated or rendered, just laid out

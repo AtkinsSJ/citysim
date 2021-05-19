@@ -14,7 +14,7 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, bool hi
 	  	  			(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))
 	  	  ),
 	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
-	      ((window->flags & WinFlag_Tooltip) ? 0 : Panel_BlocksMouse)
+	      ((window->flags & WinFlag_Tooltip) ? Panel_AllowClickThrough : 0)
 	       | (hideWidgets ? Panel_HideWidgets : 0),
 	       renderBuffer
 	  )
